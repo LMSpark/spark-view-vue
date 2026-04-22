@@ -181,7 +181,7 @@
                     "props": {
                       "field": "address",
                       "label": "地址",
-                      "width": 150
+                      "width": 144
                     }
                   }
                 ]

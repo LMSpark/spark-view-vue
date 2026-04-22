@@ -1,13 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
+  bindLiveModelAdapter,
   clearDomains,
   clearRegistry,
   createSession,
   executeStill,
+  getEditState,
   registerEditStills,
   type IStillSession,
   type StillResult,
 } from '../packages/spark-ai/src/stills'
+import { SparkNodeTree } from '../packages/spark-component/src/index'
+import { DataSetCrudTool } from '../packages/spark-data/src/index'
 
 let session: IStillSession
 let seq = 0
@@ -30,6 +34,22 @@ beforeEach(() => {
   registerEditStills()
   session = createSession()
   seq = 0
+  const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
+  const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
+  let script = ''
+  let style = ''
+  bindLiveModelAdapter(getEditState(session), {
+    getNodeTree: () => liveTree,
+    getDataSetTool: () => liveDataSet,
+    readScript: () => script,
+    writeScript(content) {
+      script = content
+    },
+    readStyle: () => style,
+    writeStyle(content) {
+      style = content
+    },
+  })
 })
 
 describe('sparkNodeTree legacy alias compatibility', () => {

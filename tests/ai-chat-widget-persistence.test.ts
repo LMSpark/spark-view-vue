@@ -77,4 +77,44 @@ describe('AiChatWidget persistence', () => {
     expect(restored.text()).toContain('world')
     expect(restored.text()).toContain('B-response')
   })
+
+  it('sanitizes interrupted streaming messages when restoring from storage', async () => {
+    localStorage.setItem('ai-chat-widget-test', JSON.stringify([
+      {
+        id: 'u1',
+        role: 'user',
+        content: '删除最后修改人字段',
+        timestamp: new Date().toISOString(),
+      },
+      {
+        id: 'a1',
+        role: 'assistant',
+        content: '已接收需求，正在执行 DataSet 模型级编辑...',
+        timestamp: new Date().toISOString(),
+        streaming: true,
+      },
+      {
+        id: 'a2',
+        role: 'assistant',
+        content: '',
+        timestamp: new Date().toISOString(),
+        streaming: true,
+      },
+    ]))
+
+    const restored = mount(AiChatWidget, {
+      props: {
+        title: 'Restored AI',
+        storageKey: 'ai-chat-widget-test',
+      },
+    })
+
+    await flushPromises()
+
+    expect(restored.text()).toContain('删除最后修改人字段')
+    expect(restored.text()).toContain('已接收需求，正在执行 DataSet 模型级编辑...')
+    expect(restored.text()).toContain('上一轮响应已中断，请重新发送继续。')
+    expect(restored.find('.streaming-cursor').exists()).toBe(false)
+    expect(restored.text()).not.toContain('思考中...')
+  })
 })

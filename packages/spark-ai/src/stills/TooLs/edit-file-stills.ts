@@ -5,14 +5,20 @@
  * catalog + 状态读写 + still 包装全部自包含，无外部子模块依赖。
  */
 
-import type { IStillSession, StillDefinition, StillResult } from './types'
-import { getEditState } from './edit-state'
+import type { IStillSession, StillDefinition, StillResult } from '../types'
 import {
-  FILE_READ_SCRIPT_ACTION,
-  FILE_WRITE_SCRIPT_ACTION,
-  FILE_READ_STYLE_ACTION,
-  FILE_WRITE_STYLE_ACTION,
-} from './action-names'
+  getEditState,
+  readActiveScript,
+  writeActiveScript,
+  readActiveStyle,
+  writeActiveStyle,
+} from '../edit-state'
+import {
+  TEXT_MODEL_READ_SCRIPT_ACTION,
+  TEXT_MODEL_WRITE_SCRIPT_ACTION,
+  TEXT_MODEL_READ_STYLE_ACTION,
+  TEXT_MODEL_WRITE_STYLE_ACTION,
+} from '../action-names'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 类型与文件目录
@@ -43,8 +49,8 @@ type EditFileKey = 'script' | 'style'
  */
 interface FileDescriptor {
   key: EditFileKey
-  readAction: string
-  writeAction: string
+  readActions: string[]
+  writeActions: string[]
   label: string
 }
 
@@ -59,17 +65,33 @@ interface FileDescriptor {
 const FILE_CATALOG: readonly FileDescriptor[] = [
   {
     key: 'script',
-    readAction: FILE_READ_SCRIPT_ACTION,
-    writeAction: FILE_WRITE_SCRIPT_ACTION,
+    readActions: [TEXT_MODEL_READ_SCRIPT_ACTION],
+    writeActions: [TEXT_MODEL_WRITE_SCRIPT_ACTION],
     label: 'script.js',
   },
   {
     key: 'style',
-    readAction: FILE_READ_STYLE_ACTION,
-    writeAction: FILE_WRITE_STYLE_ACTION,
+    readActions: [TEXT_MODEL_READ_STYLE_ACTION],
+    writeActions: [TEXT_MODEL_WRITE_STYLE_ACTION],
     label: 'style.css',
   },
 ]
+
+function ensureTextModelReadable(session: IStillSession, key: EditFileKey): string | null {
+  const state = getEditState(session)
+  if (key === 'script') {
+    return typeof state.liveModelAdapter?.readScript === 'function' ? null : '缺少 live text model: readScript'
+  }
+  return typeof state.liveModelAdapter?.readStyle === 'function' ? null : '缺少 live text model: readStyle'
+}
+
+function ensureTextModelWritable(session: IStillSession, key: EditFileKey): string | null {
+  const state = getEditState(session)
+  if (key === 'script') {
+    return typeof state.liveModelAdapter?.writeScript === 'function' ? null : '缺少 live text model: writeScript'
+  }
+  return typeof state.liveModelAdapter?.writeStyle === 'function' ? null : '缺少 live text model: writeStyle'
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 参数模型与状态访问
@@ -103,7 +125,10 @@ function validateEditFileWriteParams(params: unknown): string | null {
  * 这里按 key 透传，避免外层 still 直接接触状态字段名。
  */
 function readEditFileContent(session: IStillSession, key: EditFileKey): string {
-  return getEditState(session)[key]
+  const state = getEditState(session)
+  return key === 'script'
+    ? readActiveScript(state)
+    : readActiveStyle(state)
 }
 
 /**
@@ -113,7 +138,12 @@ function readEditFileContent(session: IStillSession, key: EditFileKey): string {
  * 这些职责分别由 diff/export 模块处理，避免本文件职责膨胀。
  */
 function writeEditFileContent(session: IStillSession, key: EditFileKey, content: string): void {
-  getEditState(session)[key] = content
+  const state = getEditState(session)
+  if (key === 'script') {
+    writeActiveScript(state, content)
+    return
+  }
+  writeActiveStyle(state, content)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -127,13 +157,22 @@ function writeEditFileContent(session: IStillSession, key: EditFileKey, content:
  * 1. 直接返回当前缓存中的全文；
  * 2. 不修改任何状态。
  */
-function createReadStill(desc: FileDescriptor): StillDefinition {
+function createReadStill(desc: FileDescriptor, action: string): StillDefinition {
   return {
-    action: desc.readAction,
+    action,
     type: 'describe',
-    description: `返回 ${desc.label} 当前内容`,
+    description: `返回 ${desc.label} 当前文本模型内容`,
     validate: () => null,
     execute: (session): StillResult => {
+      const readableError = ensureTextModelReadable(session, desc.key)
+      if (readableError) {
+        return {
+          ok: false,
+          code: 'NO_TEXT_MODEL',
+          msg: readableError,
+          fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditLiveModelAdapter.read*/write*',
+        }
+      }
       return {
         ok: true,
         data: { content: readEditFileContent(session, desc.key) },
@@ -148,14 +187,23 @@ function createReadStill(desc: FileDescriptor): StillDefinition {
  *
  * 写入语义是“整文件覆盖”，不额外引入阶段 guard。
  */
-function createWriteStill(desc: FileDescriptor): StillDefinition {
+function createWriteStill(desc: FileDescriptor, action: string): StillDefinition {
   const still: StillDefinition<EditFileWriteParams, undefined> = {
-    action: desc.writeAction,
+    action,
     type: 'request',
-    description: `写入 ${desc.label} 全文`,
-    paramsSchema: { content: `string — 完整的 ${desc.label} 内容` },
+    description: `写入 ${desc.label} 文本模型全文`,
+    paramsSchema: { content: `string — 完整的 ${desc.label} 文本模型内容` },
     validate: validateEditFileWriteParams,
     execute: (session, params): StillResult<undefined> => {
+      const writableError = ensureTextModelWritable(session, desc.key)
+      if (writableError) {
+        return {
+          ok: false,
+          code: 'NO_TEXT_MODEL',
+          msg: writableError,
+          fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditLiveModelAdapter.read*/write*',
+        }
+      }
       writeEditFileContent(session, desc.key, params.content)
       return { ok: true, data: undefined, summary: `${desc.label} 已更新` }
     },
@@ -176,6 +224,6 @@ function createWriteStill(desc: FileDescriptor): StillDefinition {
  * 3. 新增文件类型只需向 FILE_CATALOG 追加一行。
  */
 export const EDIT_FILE_STILLS: StillDefinition[] = FILE_CATALOG.flatMap((desc) => [
-  createReadStill(desc),
-  createWriteStill(desc),
+  ...desc.readActions.map((action) => createReadStill(desc, action)),
+  ...desc.writeActions.map((action) => createWriteStill(desc, action)),
 ])

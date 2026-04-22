@@ -33,7 +33,7 @@
         <el-alert
           v-if="isPageDataFile && pageDataBlockReason"
           class="floating-ai-panel__dataset-alert"
-          title="存在未导出 DataSet 改动"
+          title="存在未保存 DataSet 改动"
           type="warning"
           :closable="false"
           show-icon
@@ -41,30 +41,14 @@
           {{ pageDataBlockReason }}
         </el-alert>
         <AiChatWidget
-          storage-key="devsystem-global-ai-chat"
+          :key="currentAiChatStorageKey"
+          :storage-key="currentAiChatStorageKey"
           mode="multi"
           :title="currentAiTitle"
           :placeholder="currentAiPlaceholder"
           :compact="true"
           :sender="currentAiSender"
         />
-        <div v-if="isPageDataFile && pageDataTaskSteps.length > 0" class="floating-ai-panel__dataset-section">
-          <div class="floating-ai-panel__section-label">执行任务</div>
-          <div
-            v-for="step in pageDataTaskSteps"
-            :key="step.id"
-            class="floating-ai-panel__task-step"
-          >
-            <span class="floating-ai-panel__task-icon">
-              {{ step.status === 'done' ? '✅' : step.status === 'running' ? '⏳' : '⬜' }}
-            </span>
-            <span class="floating-ai-panel__task-name">{{ step.action }}</span>
-          </div>
-        </div>
-        <div v-if="isPageDataFile && pageDataSseTraceHtml" class="floating-ai-panel__dataset-section">
-          <div class="floating-ai-panel__section-label">SSE 与 LLM 交互</div>
-          <div class="floating-ai-panel__trace" v-html="pageDataSseTraceHtml" />
-        </div>
       </div>
 
       <div v-else-if="props.activeFile" class="floating-ai-panel__body">
@@ -98,7 +82,6 @@ import AiChatWidget from '@/components/AiChatWidget.vue'
 import NavIcon from '@/components/NavIcon.vue'
 import type { AiChatSender } from '@/composables/useAiChat'
 import type { AiChatSendRequest } from '@/composables/useAiChat'
-import { usePageDataEditSession } from '../composables/usePageDataEditSession'
 import { usePageModelSessionHost } from '../composables/usePageModelSessionHost'
 import { useRuleEditSession } from '../composables/useRuleEditSession'
 import { PAGE_FILE_NAMES } from '../useDevState'
@@ -110,20 +93,17 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const AI_CHAT_STORAGE_PREFIX = 'devsystem-ai-chat'
+
+function buildAiChatStorageKey(pageId: string | undefined | null): string {
+  return `${AI_CHAT_STORAGE_PREFIX}:${pageId ?? ''}`
+}
 
 const sharedSessionHost = usePageModelSessionHost({
-  getContextModel: () => props.state.readPageEditModel(),
-  bootstrapTag: 'dev-floating-ai-panel-bootstrap',
-  buildContextSignature(model) {
-    return JSON.stringify({
-      pageId: props.state.activePageId.value ?? '',
-      ruleJson: model.ruleJson,
-      pageDataJson: model.pageDataJson,
-      scriptJs: model.scriptJs,
-      styleCss: model.styleCss,
-    })
-  },
+  getLiveModelAdapter: () => props.state.createLiveEditModelAdapter(),
+  getSessionKey: () => props.state.activePageId.value ?? '',
 })
+const currentAiChatStorageKey = computed(() => buildAiChatStorageKey(props.state.activePageId.value))
 
 const supportsAiEditing = computed(() => {
   return props.activeFile === 'rule.json'
@@ -134,53 +114,26 @@ const supportsAiEditing = computed(() => {
 
 const isPageDataFile = computed(() => props.activeFile === 'pagedata.json')
 
-const pageDataSession = usePageDataEditSession({
-  getContextModel: () => props.state.readPageEditModel(),
-  getPageId: () => props.state.activePageId.value ?? '',
-  sessionHost: sharedSessionHost,
-  ensureContextLoaded: ensureAllContextFilesLoaded,
-  onApplyPageData: (pageDataJson, options) => {
-    props.state.applyPageEditModelPatch({ pageDataJson }, options)
-  },
-  onStatus: (message, type) => {
-    props.state.addStatus(message, type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error')
-  },
-})
-
 const pageDataBlockReason = computed(() => {
   if (!props.state.pageDataDesignerDirty.value) return ''
-  return '当前 DataSet 设计器存在未导出的本地改动。AI 结果仍会直接导入设计器；可使用设计器 Ctrl+Z / 重做，或顶部 AI 页面事务撤销进行回退。'
+  return '当前 DataSet 设计器存在尚未保存到服务端的本地模型改动。AI 会继续编辑同一内存模型；点击保存时会统一写回 pagedata.json 并提交到服务端。'
 })
 
 const pageDataTip = computed(() => {
   if (pageDataBlockReason.value) {
-    return 'pagedata.json 当前直接对接页面模型；即使设计器里还有未导出改动，AI 结果也会导入当前模型，并保留 DataSet 本地撤销链和 AI 页面事务撤销链。'
+    return 'pagedata.json 当前与 rule/script/style 共享同一会话与同一 live model；无论 AI 还是手工编辑，都会先改当前内存模型，保存时再统一写回 pagedata.json。'
   }
-  return 'pagedata.json 当前直接对接页面模型；AI 会在同页 4 文件上下文中读取 rule/script/style 语境，并只修改 pagedata 对应数据模型。'
-})
-
-const pageDataTaskSteps = computed(() => pageDataSession.runtime.taskSteps.value)
-
-const pageDataSseTraceHtml = computed(() => {
-  const lines = pageDataSession.runtime.sseLines.value
-  if (lines.length === 0) return ''
-  return lines.join('\n')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>')
+  return 'pagedata.json 当前与 rule/script/style 共享同一页面模型级 tool 会话；AI 会在同页 4 文件语境中优先执行 datasetTool.*。'
 })
 
 const pageModelTip = computed(() => {
   if (props.activeFile === 'script.js') {
-    return 'script.js 当前复用页面模型级 tool 会话；AI 直接读写统一的 4 文件页面模型。'
+    return 'script.js 当前复用页面模型级 tool 会话；AI 不维护副本，只通过 FC 读写统一的 4 文件 live model。'
   }
   if (props.activeFile === 'style.css') {
-    return 'style.css 当前复用页面模型级 tool 会话；AI 直接读写统一的 4 文件页面模型。'
+    return 'style.css 当前复用页面模型级 tool 会话；AI 不维护副本，只通过 FC 读写统一的 4 文件 live model。'
   }
-  return 'rule.json 当前直接走页面模型级 tool 会话；AI 直接读写统一的 4 文件页面模型。'
+  return 'rule.json 当前直接走页面模型级 tool 会话；AI 不维护副本，只通过 FC 读写统一的 4 文件 live model。'
 })
 
 const currentAiTip = computed(() => isPageDataFile.value ? pageDataTip.value : pageModelTip.value)
@@ -190,12 +143,10 @@ const currentAiPlaceholder = computed(() => isPageDataFile.value
   : '支持多轮对话；当前会通过 stills tool 层执行 4 文件模型级编辑')
 
 const ruleSession = useRuleEditSession({
-  getContextModel: () => props.state.readPageEditModel(),
+  getSessionKey: () => props.state.activePageId.value ?? '',
+  getLiveModelAdapter: () => props.state.createLiveEditModelAdapter(),
   sessionHost: sharedSessionHost,
   ensureContextLoaded: ensureAllContextFilesLoaded,
-  onApplyModel: (model) => {
-    props.state.applyPageEditModel(model)
-  },
   onStatus: (message, type) => {
     props.state.addStatus(message, type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error')
   },
@@ -205,7 +156,6 @@ watch(() => props.state.activePageId.value, (pageId, previousPageId) => {
   if (pageId !== previousPageId) {
     sharedSessionHost.resetSync()
     ruleSession.reset()
-    pageDataSession.reset()
   }
 })
 
@@ -229,7 +179,7 @@ function buildContinuationPrompt(prompt: string, historyMsgs: AiChatSendRequest[
     '[全局对话延续]',
     `当前页面: ${props.state.activePageId.value ?? 'unknown'}`,
     `当前焦点文件: ${props.activeFile ?? 'unknown'}`,
-    '以下是最近对话摘录；当前真实读写必须以当前页面重新 bootstrap 后的 4 文件模型为准。',
+    '以下是最近对话摘录；当前真实读写只以当前页面 live model 为准，AI 不维护独立模型副本。',
     transcript,
     '',
     '[本轮用户需求]',
@@ -241,8 +191,23 @@ const pageModelChatSender: AiChatSender = async (request) => {
   const prompt = [...request.historyMsgs].reverse().find(message => message.role === 'user')?.content?.trim() ?? ''
   if (!prompt) return
   request.onDelta?.('已接收需求，正在执行页面模型级编辑...\n')
+  await runRuleSessionChat(request, buildContinuationPrompt(prompt, request.historyMsgs))
+}
+
+function buildPageDataFocusedPrompt(prompt: string): string {
+  return [
+    '[pagedata 目标约束]',
+    '当前目标文件是 pagedata.json，优先使用 datasetTool.* 完成需求。',
+    '除非用户明确要求或存在强依赖，不修改 rule.json、script.js、style.css。',
+    '',
+    prompt,
+  ].join('\n')
+}
+
+async function runRuleSessionChat(request: AiChatSendRequest, prompt: string): Promise<void> {
   let streamed = false
-  await ruleSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs), {
+  await ruleSession.runLlm(prompt, {
+    ...(request.signal ? { signal: request.signal } : {}),
     onDelta: (delta) => {
       streamed = true
       request.onDelta?.(delta)
@@ -251,6 +216,7 @@ const pageModelChatSender: AiChatSender = async (request) => {
       request.onReasoning?.(reasoning)
     },
   })
+  if (request.signal?.aborted === true) return
   if (streamed) return
   const latest = ruleSession.log.value[0]
   if (!latest) {
@@ -268,21 +234,10 @@ const pageDataModelChatSender: AiChatSender = async (request) => {
   if (!prompt) return
 
   request.onDelta?.('已接收需求，正在执行 DataSet 模型级编辑...\n')
-
-  const result = await pageDataSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs), {
-    onDelta(delta) {
-      request.onDelta?.(delta)
-    },
-    onReasoning(reasoning) {
-      request.onReasoning?.(reasoning)
-    },
-  })
-
-  if (result.startsWith('DataSet 模型编辑失败:')) {
-    throw new Error(result)
-  }
-
-  request.onDelta?.(`\n\n${result}`)
+  await runRuleSessionChat(
+    request,
+    buildContinuationPrompt(buildPageDataFocusedPrompt(prompt), request.historyMsgs),
+  )
 }
 
 const currentAiSender = computed<AiChatSender>(() => isPageDataFile.value ? pageDataModelChatSender : pageModelChatSender)

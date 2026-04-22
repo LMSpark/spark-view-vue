@@ -71,6 +71,12 @@ export interface LlmResponse {
   toolCalls?: ToolCall[]
 }
 
+export interface SessionBackendSseEvent {
+  sessionId: string
+  type: string
+  data: string
+}
+
 /**
  * 后端会话客户端接口（依赖反转：编排器不知道后端在哪）。
  *
@@ -84,11 +90,11 @@ export interface LlmResponse {
  */
 export interface SessionBackend {
   /** 创建会话（附带 tool definitions），返回 sessionId */
-  createSession(systemPrompt: string, userPrompt: string, windowSize: number, tools?: ToolDefinition[]): Promise<string>
+  createSession(systemPrompt: string, userPrompt: string, windowSize: number, tools?: ToolDefinition[], signal?: AbortSignal): Promise<string>
   /** 调用 LLM 获取下一轮回复（后端自动管理对话历史 + 滑动窗口） */
-  executeTurn(sessionId: string): Promise<LlmResponse | null>
+  executeTurn(sessionId: string, options?: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void }): Promise<LlmResponse | null>
   /** 向会话追加消息（assistant + tool results） */
-  appendMessages(sessionId: string, messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }>): Promise<void>
+  appendMessages(sessionId: string, messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }>, signal?: AbortSignal): Promise<void>
   /** 获取完整对话记录（供 self-check 等后处理使用） */
   getConversation(sessionId: string): Promise<Array<{ role: string; content: string }>>
   /** 销毁单个会话 */
@@ -139,6 +145,8 @@ export interface OrchestratorConfig {
   resumeSessionId?: string
   /** 可选：显式指定本轮允许暴露给 LLM 的 tools；省略时导出全部已注册 stills。 */
   tools?: ToolDefinition[]
+  signal?: AbortSignal
+  onSseEvent?: (event: SessionBackendSseEvent) => void
   monitors?: SessionMonitor[]
   onRoundStart?: (round: number) => void
   onTurnComplete?: (turn: DialogueTurn) => void
@@ -387,11 +395,11 @@ export async function runStillsLoop(
 
   // ── 创建后端会话（附带 tools） ──
   const sessionId = config.resumeSessionId
-    ?? await backend.createSession(config.systemPrompt, userPrompt, config.slidingWindow, tools)
+    ?? await backend.createSession(config.systemPrompt, userPrompt, config.slidingWindow, tools, config.signal)
 
   // 续用会话时，把当前用户输入补充到既有会话，保留连续上下文。
   if (config.resumeSessionId) {
-    await backend.appendMessages(sessionId, [{ role: 'user', content: userPrompt }])
+    await backend.appendMessages(sessionId, [{ role: 'user', content: userPrompt }], config.signal)
   }
 
   const turns: DialogueTurn[] = []
@@ -412,7 +420,10 @@ export async function runStillsLoop(
       const roundStart = Date.now()
 
       // ── Step 1: 后端 executeTurn → LLM 回复 ──
-      const llmResponse = await backend.executeTurn(sessionId)
+      const llmResponse = await backend.executeTurn(sessionId, {
+        ...(config.signal ? { signal: config.signal } : {}),
+        ...(config.onSseEvent ? { onSseEvent: config.onSseEvent } : {}),
+      })
       if (llmResponse === null) {
         aborted = true
         abortReason = 'LLM 调用失败或会话不存在'
@@ -521,7 +532,7 @@ export async function runStillsLoop(
       if (aborted) break
 
       // ── Step 4: 向后端追加消息（assistant + tool results） ──
-      await backend.appendMessages(sessionId, messages)
+      await backend.appendMessages(sessionId, messages, config.signal)
 
       if (lastResult) {
         const lastTurn = turns[turns.length - 1]

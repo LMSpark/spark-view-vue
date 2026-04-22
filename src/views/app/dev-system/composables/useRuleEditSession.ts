@@ -10,19 +10,21 @@
 
 import { ref, shallowRef, onUnmounted } from 'vue'
 import {
+  getActiveNodeTree,
   executeStill,
   runStillsLoop,
   configureSessionBackend,
   createRepeatDetectionMonitor,
   generateToolDefinitions,
+  functionNameToAction,
   STILLS_EDIT_RUNTIME_PROMPT,
   getEditState,
   type IStillSession,
   type DialogueTurn,
 } from '@spark-view/spark-ai'
 import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
+import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
-import type { PageEditModel } from '../useDevState'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
 
@@ -102,14 +104,14 @@ export interface LogEntry {
 type StillsSession = IStillSession
 
 export interface RuleEditSessionOptions {
-  /** Returns the current 4-file page model for bootstrap params. */
-  getContextModel: () => PageEditModel
+  /** Returns the current page-scoped session key, usually pageId. */
+  getSessionKey: () => string
+  /** Returns the single live model adapter shared with manual editing. */
+  getLiveModelAdapter: () => EditLiveModelAdapter
   /** Optional shared page-model session host. */
   sessionHost?: PageModelSessionHost
   /** Ensures page context files are loaded before first bootstrap. */
   ensureContextLoaded?: () => Promise<void>
-  /** Called when an AI model result is ready. */
-  onApplyModel: (model: PageEditModel) => void
   /** Called to surface user-facing status messages. */
   onStatus: (msg: string, type: 'success' | 'warning' | 'error') => void
 }
@@ -117,15 +119,16 @@ export interface RuleEditSessionOptions {
 export interface RuleEditRunHooks {
   onDelta?: (delta: string) => void
   onReasoning?: (reasoning: string) => void
+  signal?: AbortSignal
 }
 
 export function useRuleEditSession(options: RuleEditSessionOptions) {
-  const { getContextModel, ensureContextLoaded, onApplyModel, onStatus } = options
+  const { getSessionKey, getLiveModelAdapter, ensureContextLoaded, onStatus } = options
   const ownsSessionHost = options.sessionHost === undefined
 
   const sessionHost = options.sessionHost ?? usePageModelSessionHost({
-    getContextModel,
-    bootstrapTag: 'bootstrap',
+    getLiveModelAdapter,
+    getSessionKey,
   })
 
   const ready = ref(false)
@@ -134,7 +137,8 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
   const aiBuffer = ref('')
   const log = ref<LogEntry[]>([])
   const nodeTree = shallowRef<SparkNodeTree | null>(null)
-  let runHooks: RuleEditRunHooks | null = null
+  let activeRunId = 0
+  let runAbortController: AbortController | null = null
 
   // ── Internal helpers ────────────────────────────────────────────────────────
 
@@ -143,52 +147,44 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     if (log.value.length > 30) log.value.splice(30)
   }
 
-  function buildSessionModel(currentSession: StillsSession): PageEditModel {
-    const state = getEditState(currentSession)
-    const root = state.nodeTree?.toJSON()
-    const ruleJson = Array.isArray(root?.children) ? (root.children as unknown as SparkNode[]) : []
-    return {
-      ruleJson,
-      pageDataJson: state.datasetEdit?.toJson() ?? { dataSetName: 'PageDataSet', tables: {} },
-      scriptJs: state.script,
-      styleCss: state.style,
-    }
-  }
-
-  function getChangedModelFields(before: PageEditModel, after: PageEditModel): string[] {
-    const changed: string[] = []
-    if (JSON.stringify(before.ruleJson) !== JSON.stringify(after.ruleJson)) changed.push('rule.json')
-    if (JSON.stringify(before.pageDataJson) !== JSON.stringify(after.pageDataJson)) changed.push('pagedata.json')
-    if (before.scriptJs !== after.scriptJs) changed.push('script.js')
-    if (before.styleCss !== after.styleCss) changed.push('style.css')
-    return changed
-  }
-
   function ensureSession(): StillsSession {
     const ensured = sessionHost.ensureSession()
     ready.value = true
     dirty.value = false
-    nodeTree.value = getEditState(ensured.session).nodeTree
+    nodeTree.value = getActiveNodeTree(getEditState(ensured.session))
     if (ensured.bootstrapped) {
-      pushLog('info', 'bootstrap', 'edit.bootstrap 完成，4 个文件已进入同一编辑会话')
+      pushLog('info', 'session-ready', '编辑会话已挂接到当前页面 live model；后续读写仅通过 FC 工具执行')
     }
     return ensured.session
   }
 
-  function applyModel(model: PageEditModel, tag: string, text: string) {
-    onApplyModel(model)
-    sessionHost.syncContext(model)
-    dirty.value = false
-    pushLog('success', tag, text)
-    return true
+  function linkAbortSignal(signal: AbortSignal | undefined, controller: AbortController): () => void {
+    if (!signal) return () => {}
+
+    const abortCurrentRun = () => {
+      controller.abort(signal.reason)
+    }
+
+    if (signal.aborted) {
+      abortCurrentRun()
+      return () => {}
+    }
+
+    signal.addEventListener('abort', abortCurrentRun, { once: true })
+    return () => signal.removeEventListener('abort', abortCurrentRun)
   }
 
-  function onSseEvent(event: { sessionId: string; type: string; data: string }) {
+  function abortActiveRun() {
+    runAbortController?.abort()
+    runAbortController = null
+  }
+
+  function onSseEvent(event: { sessionId: string; type: string; data: string }, hooks?: RuleEditRunHooks) {
     if (event.type === 'delta') {
       aiBuffer.value += event.data
-      runHooks?.onDelta?.(event.data)
+      hooks?.onDelta?.(event.data)
     } else if (event.type === 'reasoning') {
-      runHooks?.onReasoning?.(event.data)
+      hooks?.onReasoning?.(event.data)
     } else if (event.type === 'result') {
       try {
         const parsed = JSON.parse(event.data) as {
@@ -197,6 +193,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
         const actions = (parsed.toolCalls ?? [])
           .map(tc => tc.function?.name)
           .filter((n): n is string => Boolean(n))
+          .map(name => functionNameToAction(name))
         if (aiBuffer.value || actions.length > 0) {
           pushLog(
             'info',
@@ -237,7 +234,9 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
             ? `${result.summary}\n\n${JSON.stringify(result.data, null, 2)}`
             : JSON.stringify(result.data, null, 2),
         )
-        if (TOOL_WRITE_SET.has(action)) dirty.value = true
+        if (TOOL_WRITE_SET.has(action)) {
+          dirty.value = true
+        }
       } else {
         pushLog('error', `✗ ${action}`, `${result.msg}${result.fix ? `\n修复建议: ${result.fix}` : ''}`)
       }
@@ -250,21 +249,34 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
 
   /** Run the LLM orchestration loop for a given prompt (edit/chat mode). */
   async function runLlm(prompt: string, hooks?: RuleEditRunHooks): Promise<void> {
+    const runId = ++activeRunId
+    const runController = new AbortController()
+    abortActiveRun()
+    runAbortController = runController
+    const detachAbort = linkAbortSignal(hooks?.signal, runController)
+
     busy.value = true
     aiBuffer.value = ''
-    runHooks = hooks ?? null
     try {
       if (!ready.value) {
         await ensureContextLoaded?.()
       }
-      const baselineModel = getContextModel()
+      if (sessionHost.hasSessionMismatch(getSessionKey())) {
+        await sessionHost.reset()
+        ready.value = false
+      }
       const s = ensureSession()
-      configureSessionBackend({ getHeaders: createAuthHeaders, onSseEvent })
+      configureSessionBackend({ getHeaders: createAuthHeaders })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await runStillsLoop(prompt, s, sessionHost.backend, {
         maxRounds: 12,
         slidingWindow: 12,
         systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
+        signal: runController.signal,
+        onSseEvent(event) {
+          if (activeRunId !== runId || runController.signal.aborted) return
+          onSseEvent(event, hooks)
+        },
         ...sessionHost.getResumeSessionOptions(),
         tools: generateToolDefinitions({ compactDescriptions: true }),
         monitors: [createRepeatDetectionMonitor({ maxSameSignature: 2, maxConsecutiveErrors: 2 })],
@@ -279,47 +291,44 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
           }
         },
       })
+      if (runController.signal.aborted || activeRunId !== runId) {
+        return
+      }
       sessionHost.setBackendSessionId(result.sessionId)
       if (result.aborted) throw new Error(`Stills 中止: ${result.abortReason}`)
-      const nextModel = buildSessionModel(s)
-      const changedFields = getChangedModelFields(baselineModel, nextModel)
-      if (changedFields.length > 0 && applyModel(nextModel, '✅ 已应用', `模型更新完成 (${result.rounds} 轮): ${changedFields.join(', ')}`)) {
-        onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
+      const writeCount = result.turns.filter((turn) => {
+        const action = turn.toolBlock?.action
+        return turn.phase === 'stills-execute' && action !== undefined && TOOL_WRITE_SET.has(action) && turn.stillsResult?.ok
+      }).length
+      dirty.value = writeCount > 0
+      if (writeCount > 0) {
+        pushLog('success', '✅ 已同步', `已直接写入当前页面 live model (${result.rounds} 轮, ${writeCount} 次写操作)`)
       } else {
-        dirty.value = false
-        pushLog('info', `${result.rounds} 轮完成`, '未检测到模型变更')
-        onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
+        pushLog('info', `${result.rounds} 轮完成`, '未检测到写操作')
       }
+      onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
     } catch (err) {
+      if (runController.signal.aborted || activeRunId !== runId) {
+        return
+      }
       pushLog('error', '编辑失败', err instanceof Error ? err.message : String(err))
       onStatus(`AI 操作失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
       throw err
     } finally {
+      detachAbort()
+      if (runAbortController === runController) {
+        runAbortController = null
+      }
+      if (activeRunId === runId) {
+        busy.value = false
+      }
       configureSessionBackend({ getHeaders: createAuthHeaders })
-      runHooks = null
-      busy.value = false
-    }
-  }
-
-  /** Export current session state and write back rule.json. */
-  function exportAndApply(): void {
-    const currentSession = sessionHost.session.value
-    if (!dirty.value || currentSession === null) return
-    busy.value = true
-    try {
-      const model = buildSessionModel(currentSession)
-      if (applyModel(model, '已应用', '模型已写回编辑器')) return
-      dirty.value = false
-      pushLog('info', '已应用', '未检测到模型变更')
-    } catch (err) {
-      pushLog('error', '异常', err instanceof Error ? err.message : String(err))
-    } finally {
-      busy.value = false
     }
   }
 
   /** Reset session (re-bootstrap on next use). */
   function reset() {
+    abortActiveRun()
     if (ownsSessionHost) {
       sessionHost.resetSync()
     }
@@ -328,6 +337,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     nodeTree.value = null
     log.value = []
     aiBuffer.value = ''
+    busy.value = false
   }
 
   function loadRuleDocument(ruleJson: SparkNode[]): void {
@@ -349,10 +359,11 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
   }
 
   onUnmounted(() => {
+    abortActiveRun()
     if (ownsSessionHost) {
       sessionHost.resetSync()
     }
   })
 
-  return { ready, dirty, busy, aiBuffer, log, nodeTree, execTool, runLlm, exportAndApply, reset, loadRuleDocument, loadRuleJson }
+  return { ready, dirty, busy, aiBuffer, log, nodeTree, execTool, runLlm, reset, loadRuleDocument, loadRuleJson }
 }

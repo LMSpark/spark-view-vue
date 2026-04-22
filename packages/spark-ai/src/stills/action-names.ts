@@ -71,11 +71,11 @@ export const STYLE_ADD_RULE_ACTION = 'style.addRule'
 export const STYLE_REMOVE_RULE_ACTION = 'style.removeRule'
 export const STYLE_SET_THEME_ACTION = 'style.setTheme'
 
-// ── file (edit-domain) ───────────────────────────────────────
-export const FILE_READ_SCRIPT_ACTION = 'file.readScript'
-export const FILE_WRITE_SCRIPT_ACTION = 'file.writeScript'
-export const FILE_READ_STYLE_ACTION = 'file.readStyle'
-export const FILE_WRITE_STYLE_ACTION = 'file.writeStyle'
+// ── text-model (edit-domain) ─────────────────────────────────
+export const TEXT_MODEL_READ_SCRIPT_ACTION = 'textModel.readScript'
+export const TEXT_MODEL_WRITE_SCRIPT_ACTION = 'textModel.writeScript'
+export const TEXT_MODEL_READ_STYLE_ACTION = 'textModel.readStyle'
+export const TEXT_MODEL_WRITE_STYLE_ACTION = 'textModel.writeStyle'
 
 export const EDIT_BOOTSTRAP_ACTION = 'edit.bootstrap'
 export const EDIT_CHANGED_LINES_ACTION = 'edit.changedLines'

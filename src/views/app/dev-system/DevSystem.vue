@@ -46,7 +46,7 @@
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
               </span>
             </template>
-            <DevFileEditor v-if="workTab === fname" :state="state" :active-file="fname" :show-tabs="false" :show-data-set-ai-panel="false" />
+            <DevFileEditor v-if="workTab === fname" :state="state" :active-file="fname" :show-tabs="false" />
           </el-tab-pane>
           <!-- 🖼 实时预览 -->
           <el-tab-pane name="preview" :disabled="!state.activePageId.value">

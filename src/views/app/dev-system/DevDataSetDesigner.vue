@@ -3,9 +3,7 @@
   
   功能：
   - 可视化展示表结构和关联关系
-  - AI 辅助设计数据模型
-  - 执行任务进度展示
-  - 导出为 pagedata.json
+  - 可视化编辑数据模型
 -->
 <template>
   <div class="dataset-designer">
@@ -14,14 +12,10 @@
       <div class="ds-header__left">
         <NavIcon name="Coin" :size="18" />
         <span class="ds-title">DataSet 可视化设计器</span>
-        <el-tag v-if="hasChanges" type="warning" size="small" effect="plain">未保存</el-tag>
       </div>
       <div class="ds-header__actions">
-        <el-button size="small" @click="parseFromPageData(false)" :disabled="!state.activePageId.value">
-          <NavIcon name="Download" :size="14" /> 从 pagedata.json 加载
-        </el-button>
-        <el-button size="small" type="primary" @click="exportToPageData" :disabled="tables.length === 0">
-          <NavIcon name="Upload" :size="14" /> 导出到 pagedata.json
+        <el-button size="small" @click="refreshFromLiveData(false)" :disabled="!state.activePageId.value">
+          <NavIcon name="Refresh" :size="14" /> 刷新当前模型
         </el-button>
       </div>
     </div>
@@ -29,7 +23,7 @@
     <!-- 主体双栏 -->
     <div class="ds-body">
       <!-- 左侧：画布区域 -->
-      <div class="ds-canvas" :class="{ 'ds-canvas--full': !props.showAiPanel }">
+      <div class="ds-canvas ds-canvas--full">
         <div class="ds-toolbar">
           <el-button size="small" @click="addTable">
             <NavIcon name="Plus" :size="12" /> 添加表
@@ -162,7 +156,7 @@
             <div v-if="tables.length === 0" class="ds-empty">
               <NavIcon name="Coin" :size="48" />
               <p>暂无表结构</p>
-              <p class="ds-empty__hint">点击"添加表"或使用右侧 AI 助手生成数据模型</p>
+              <p class="ds-empty__hint">点击"添加表"或从 pagedata.json 加载数据模型</p>
             </div>
 
             <!-- 可拖拽表卡片 -->
@@ -278,98 +272,25 @@
           </div>
         </div>
       </div>
-
-      <!-- 右侧：AI 设计助手 -->
-      <div v-if="props.showAiPanel" class="ds-ai">
-        <div class="ds-ai__header">
-          <NavIcon name="Cpu" :size="16" />
-          <span>AI 设计助手</span>
-          <el-tag size="small" type="success" effect="plain" class="ds-ai__new-tag">NEW</el-tag>
-        </div>
-
-        <div class="ds-ai__feature-tip">
-          仅保留聊天模式，所有 AI 修改统一走 DataSet 模型级编辑执行链路。
-        </div>
-
-        <div class="ds-ai__form">
-          <div class="ds-ai__chat-widget">
-            <AiChatWidget
-              mode="multi"
-              title="DataSet 聊天助手"
-              placeholder="支持文本、附件、语音输入；可连续多轮对话"
-              :compact="true"
-              :sender="datasetDesignerChatSender"
-            />
-          </div>
-        </div>
-
-        <!-- 执行进度 -->
-        <div v-if="taskSteps.length > 0" class="ds-ai__task-steps">
-          <div class="ds-ai__label">📋 执行任务：</div>
-          <div class="ds-step" v-for="(step, idx) in taskSteps" :key="idx">
-            <span class="ds-step__icon">
-              {{ step.status === 'done' ? '✅' : step.status === 'running' ? '⏳' : '⬜' }}
-            </span>
-            <span class="ds-step__name">{{ step.action }}</span>
-          </div>
-        </div>
-
-        <!-- AI 响应 -->
-        <div v-if="pageDataModelSseTrace" class="ds-ai__response">
-          <div class="ds-ai__label">🛰️ SSE 与 LLM 交互：</div>
-          <div class="ds-ai__text" v-html="pageDataModelSseTraceHtml" />
-        </div>
-
-        <div v-if="aiResponse" class="ds-ai__response">
-          <div class="ds-ai__label">💡 AI 建议：</div>
-          <div class="ds-ai__text" v-html="aiResponseHtml" />
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
-import {
-  clearRegistry,
-  clearDomains,
-  registerEditStills,
-  createSession as createStillSession,
-  executeStill,
-  getEditState,
-  runStillsLoop,
-  SessionBackendImpl,
-  configureSessionBackend,
-  createRepeatDetectionMonitor,
-  generateToolDefinitions,
-  type DialogueTurn,
-} from '@spark-view/spark-ai'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import NavIcon from '@/components/NavIcon.vue'
-import AiChatWidget from '@/components/AiChatWidget.vue'
 import {
   buildDataSetMetadataFromDesignerProjection,
-  hasDesignerProjectionChanges,
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-  shouldSyncDesignerFromExternalPageDataChange,
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
   type LayoutForNewTable,
 } from './composables/designerProjection'
-import { createAuthHeaders } from '@/services/http'
-import type { AiChatSender, AiChatSendRequest } from '@/composables/useAiChat'
-import {
-  buildFineGrainedEditContext,
-  buildFineGrainedLoopSystemPrompt,
-  buildFineGrainedLoopUserPrompt,
-  summarizeFineGrainedTurns,
-} from './datasetFineEditOrchestration'
-import { PAGE_FILE_NAMES } from './useDevState'
-import type { DevState, PageDataAiTaskStep } from './useDevState'
+import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type { DataColumn, TableRelation, ITableMetadata, IDataSetMetadata } from '@spark-view/spark-data'
 
@@ -380,20 +301,15 @@ type DesignerColumn = DesignerTableProjection['columns'][number]
 type DesignerTable = DesignerTableProjection
 type DesignerRelation = DesignerRelationProjection
 
-type TaskStep = PageDataAiTaskStep
-
 interface RelationDraftState {
   sourceIndex: number
   sourceSelector: ReturnType<typeof buildRelationSelector>
   draft: DesignerRelation
 }
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   state: DevState
-  showAiPanel?: boolean
-}>(), {
-  showAiPanel: true,
-})
+}>()
 
 const tableUiState = ref<Record<string, DesignerTableUiState>>({})
 const selectedTableId = ref<string | null>(null)
@@ -419,7 +335,9 @@ const relEditorPos = computed(() => {
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
 const projectedMetadata = computed<IDataSetMetadata | null>(() => {
-  return props.state.pageDataDocument.value
+  // 以 DataSetCrudTool 为主数据源；pageDataDocument 仅用于驱动响应式刷新。
+  props.state.pageDataDocument.value
+  return props.state.pageDataTool.value?.toJson() ?? null
 })
 
 const tables = computed<DesignerTable[]>(() => {
@@ -436,16 +354,6 @@ const relations = computed<DesignerRelation[]>(() => (
 const viewDependencies = computed<NonNullable<IDataSetMetadata['viewDependencies']> | undefined>(() => (
   projectedMetadata.value?.viewDependencies
 ))
-
-const persistedPageDataMetadata = computed<IDataSetMetadata | null>(() => {
-  const content = props.state.editFiles['pagedata.json']
-  if (typeof content !== 'string') return null
-  try {
-    return DataSetCrudTool.fromJson(content).toJson()
-  } catch {
-    return null
-  }
-})
 
 function resetHistoryFromDesignerState(): void {
   const snapshot = buildDataSetMetadataFromDesigner()
@@ -621,22 +529,6 @@ const relationLines = computed(() => {
   }).filter((v): v is NonNullable<typeof v> => v !== null)
 })
 
-const aiResponse = ref('')
-const pageDataModelSseLines = ref<string[]>([])
-const taskSteps = ref<TaskStep[]>([])
-const pageDataModelSession = shallowRef<ReturnType<typeof createStillSession> | null>(null)
-const pageDataModelBackend = shallowRef<SessionBackendImpl | null>(null)
-const pageDataModelBackendSessionId = ref<string | null>(null)
-const pageDataModelContextSignature = ref('')
-const hasInitialPageDataSync = ref(false)
-let nextTaskStepId = 1
-const pendingTaskStepIds: string[] = []
-let pageDataModelStreamHooks: Pick<AiChatSendRequest, 'onDelta' | 'onReasoning'> | null = null
-
-const hasChanges = computed(() => {
-  return hasDesignerProjectionChanges(buildDataSetMetadataFromDesigner(), persistedPageDataMetadata.value)
-})
-
 function resetDesignerRuntimeState(): void {
   tableUiState.value = {}
   selectedTableId.value = null
@@ -645,33 +537,26 @@ function resetDesignerRuntimeState(): void {
   editingRel.value = null
   hoveredRelIdx.value = -1
   pendingProjectionLayout.value = null
-  hasInitialPageDataSync.value = false
 }
 
-function ensureInitialPageDataLoad(): void {
-  if (!props.state.activePageId.value) return
-  if (props.state.fileLoadState['pagedata.json'] === 'idle') {
-    void props.state.loadPageFile('pagedata.json')
+// ═══ 直接对接 DataSetCrudTool live model ═══
+
+function refreshFromLiveData(silent = false): void {
+  const tool = props.state.ensureLivePageDataTool()
+  if (!tool) {
+    if (!silent) {
+      ElMessage.warning('当前页面尚未初始化 DataSet 模型')
+    }
+    return
   }
-}
 
-function parsePersistedPageDataText(content: string | undefined): IDataSetMetadata | null {
-  if (typeof content !== 'string' || content.trim().length === 0) return null
-  try {
-    return DataSetCrudTool.fromJson(content).toJson()
-  } catch {
-    return null
-  }
+  props.state.syncPageDataDocumentFromTool()
+  editingRel.value = null
+  selectedTableId.value = null
 }
-
-// ═══ 自动从 pagedata.json 加载 ═══
 
 onMounted(async () => {
-  ensureInitialPageDataLoad()
-  if (props.state.fileLoadState['pagedata.json'] === 'loaded') {
-    parseFromPageData(true)
-    hasInitialPageDataSync.value = true
-  }
+  refreshFromLiveData(true)
   document.addEventListener('keydown', onKeydown)
 })
 
@@ -680,315 +565,9 @@ watch(
   (nextPageId, previousPageId) => {
     if (nextPageId === previousPageId) return
     resetDesignerRuntimeState()
-    resetPageDataModelRuntimeIndicators()
-    resetPageDataModelSessionStateSync()
-    ensureInitialPageDataLoad()
+    refreshFromLiveData(true)
   },
 )
-
-watch(
-  [() => props.state.fileLoadState['pagedata.json'], () => props.state.editFiles['pagedata.json']],
-  ([loadState, nextContent], [_previousLoadState, previousContent]) => {
-    if (loadState !== 'loaded') return
-
-    if (!hasInitialPageDataSync.value) {
-      parseFromPageData(true)
-      hasInitialPageDataSync.value = true
-      return
-    }
-
-    // 外部修改 pagedata.json 时自动重新加载
-    const shouldReload = shouldSyncDesignerFromExternalPageDataChange({
-      previousPersisted: parsePersistedPageDataText(previousContent),
-      nextPersisted: parsePersistedPageDataText(nextContent),
-    })
-
-    if (shouldReload) {
-      parseFromPageData(true, { preserveHistory: true })
-    }
-  },
-)
-
-watch(hasChanges, (dirty) => {
-  props.state.setPageDataDesignerDirty(dirty)
-}, { immediate: true })
-
-const aiResponseHtml = computed(() => {
-  if (!aiResponse.value) return ''
-  return aiResponse.value
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>')
-})
-
-const pageDataModelSseTrace = computed(() => pageDataModelSseLines.value.join('\n'))
-
-const pageDataModelSseTraceHtml = computed(() => {
-  if (!pageDataModelSseTrace.value) return ''
-  return pageDataModelSseTrace.value
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>')
-})
-
-const AI_STREAM_PREFIX = 'AI: '
-const REASONING_STREAM_PREFIX = '思考: '
-
-function resetPageDataModelRuntimeIndicators() {
-  pageDataModelSseLines.value = []
-  taskSteps.value = []
-  pendingTaskStepIds.splice(0, pendingTaskStepIds.length)
-  nextTaskStepId = 1
-}
-
-function clearPageDataModelSessionStateRefs() {
-  pageDataModelSession.value = null
-  pageDataModelBackend.value = null
-  pageDataModelBackendSessionId.value = null
-  pageDataModelContextSignature.value = ''
-}
-
-async function resetPageDataModelSessionState() {
-  const backend = pageDataModelBackend.value
-  const sessionId = pageDataModelBackendSessionId.value
-  clearPageDataModelSessionStateRefs()
-  if (backend && sessionId) {
-    try {
-      await backend.destroySession(sessionId)
-    } catch {
-      // ignore destroy failures during context refresh
-    }
-  }
-  clearRegistry()
-  clearDomains()
-}
-
-function resetPageDataModelSessionStateSync() {
-  const backend = pageDataModelBackend.value
-  const sessionId = pageDataModelBackendSessionId.value
-  clearPageDataModelSessionStateRefs()
-  if (backend && sessionId) {
-    void backend.destroySession(sessionId)
-  }
-  clearRegistry()
-  clearDomains()
-}
-
-async function ensurePageDataModelContextFilesLoaded() {
-  await Promise.all(
-    PAGE_FILE_NAMES
-      .filter(name => name !== 'pagedata.json')
-      .map(name => props.state.loadPageFile(name)),
-  )
-}
-
-function truncatePageDataModelContextText(content: string, limit = 1200): string {
-  if (content.length <= limit) return content
-  return `${content.slice(0, limit)}\n...<truncated>`
-}
-
-function buildPageDataModelContextSignature(input: {
-  pageId: string
-  ruleJson: unknown
-  pageDataJson: IDataSetMetadata
-  scriptJs: string
-  styleCss: string
-}): string {
-  return JSON.stringify(input)
-}
-
-async function buildPageDataModelContext(currentDataSet: IDataSetMetadata) {
-  await ensurePageDataModelContextFilesLoaded()
-
-  const pageModel = props.state.readPageEditModel({ pageDataJson: currentDataSet })
-
-  return {
-    ruleJson: pageModel.ruleJson,
-    scriptJs: pageModel.scriptJs,
-    styleCss: pageModel.styleCss,
-    signature: buildPageDataModelContextSignature({
-      pageId: props.state.activePageId.value ?? '',
-      ruleJson: pageModel.ruleJson,
-      pageDataJson: currentDataSet,
-      scriptJs: pageModel.scriptJs,
-      styleCss: pageModel.styleCss,
-    }),
-    promptContext: {
-      ruleNodeCount: pageModel.ruleJson.length,
-      scriptJsPreview: truncatePageDataModelContextText(pageModel.scriptJs),
-      styleCssPreview: truncatePageDataModelContextText(pageModel.styleCss),
-    },
-  }
-}
-
-function enqueuePageDataModelTaskSteps(actions: string[]) {
-  const normalizedActions = actions.filter(action => action.trim().length > 0)
-  if (normalizedActions.length === 0) return
-
-  const shouldStartRunning = pendingTaskStepIds.length === 0
-  const queuedSteps = normalizedActions.map((action, index) => ({
-    id: `pagedata-task-${nextTaskStepId++}`,
-    action,
-    status: (shouldStartRunning && index === 0 ? 'running' : 'pending') as TaskStep['status'],
-  }))
-
-  taskSteps.value.push(...queuedSteps)
-  pendingTaskStepIds.push(...queuedSteps.map(step => step.id))
-}
-
-function markPageDataModelTaskStepDone(action: string) {
-  const currentStepId = pendingTaskStepIds.shift()
-  if (!currentStepId) {
-    taskSteps.value.push({
-      id: `pagedata-task-${nextTaskStepId++}`,
-      action,
-      status: 'done',
-    })
-    return
-  }
-
-  const currentStep = taskSteps.value.find(step => step.id === currentStepId)
-  if (currentStep) {
-    currentStep.action = action
-    currentStep.status = 'done'
-  }
-
-  const nextStepId = pendingTaskStepIds[0]
-  if (!nextStepId) return
-  const nextStep = taskSteps.value.find(step => step.id === nextStepId)
-  if (nextStep && nextStep.status === 'pending') {
-    nextStep.status = 'running'
-  }
-}
-
-function pushPageDataModelSseLine(line: string) {
-  if (!line.trim()) return
-  pageDataModelSseLines.value.push(line)
-  if (pageDataModelSseLines.value.length > 120) {
-    pageDataModelSseLines.value.splice(0, pageDataModelSseLines.value.length - 120)
-  }
-}
-
-function upsertPageDataModelStreamingLine(prefix: string, chunk: string) {
-  if (!chunk) return
-  const lastIdx = pageDataModelSseLines.value.length - 1
-  const lastLine = lastIdx >= 0 ? pageDataModelSseLines.value[lastIdx] : undefined
-  if (lastLine !== undefined && lastLine.startsWith(prefix)) {
-    pageDataModelSseLines.value[lastIdx] = lastLine + chunk
-    return
-  }
-  pushPageDataModelSseLine(`${prefix}${chunk}`)
-}
-
-function closePageDataModelStreamingLines() {
-  const lastIdx = pageDataModelSseLines.value.length - 1
-  if (lastIdx < 0) return
-  const lastLine = pageDataModelSseLines.value[lastIdx]
-  if (lastLine !== undefined && (lastLine.startsWith(AI_STREAM_PREFIX) || lastLine.startsWith(REASONING_STREAM_PREFIX))) {
-    pageDataModelSseLines.value[lastIdx] = lastLine.trimEnd()
-  }
-}
-
-function onPageDataModelSseEvent(event: { sessionId: string; type: string; data: string }) {
-  if (event.type === 'delta') {
-    upsertPageDataModelStreamingLine(AI_STREAM_PREFIX, event.data)
-    pageDataModelStreamHooks?.onDelta?.(event.data)
-    return
-  }
-
-  if (event.type === 'reasoning') {
-    upsertPageDataModelStreamingLine(REASONING_STREAM_PREFIX, event.data)
-    pageDataModelStreamHooks?.onReasoning?.(event.data)
-    return
-  }
-
-  if (event.type === 'result') {
-    closePageDataModelStreamingLines()
-    try {
-      const parsed = JSON.parse(event.data) as {
-        text?: string
-        toolCalls?: Array<{ function?: { name?: string; arguments?: string } }>
-      }
-      if (parsed.text && parsed.text.trim()) {
-        pushPageDataModelSseLine(`结果: ${parsed.text}`)
-      }
-      if (Array.isArray(parsed.toolCalls) && parsed.toolCalls.length > 0) {
-        const actionList = parsed.toolCalls
-          .map(tc => tc.function?.name)
-          .filter((name): name is string => Boolean(name && name.length > 0))
-        if (actionList.length > 0) {
-          enqueuePageDataModelTaskSteps(actionList)
-          pushPageDataModelSseLine(`工具调用: ${actionList.join(', ')}`)
-        }
-      }
-    } catch {
-      pushPageDataModelSseLine(`结果(raw): ${event.data}`)
-    }
-    return
-  }
-
-  if (event.type === 'error') {
-    closePageDataModelStreamingLines()
-    pushPageDataModelSseLine(`错误: ${event.data}`)
-  }
-}
-
-function onPageDataModelTurnComplete(turn: DialogueTurn) {
-  if (turn.phase !== 'stills-execute' || !turn.toolBlock || !turn.stillsResult) return
-  const { action, id } = turn.toolBlock
-  const result = turn.stillsResult
-
-  markPageDataModelTaskStepDone(action)
-
-  if (result.ok) {
-    const warningCount = result.warnings?.length ?? 0
-    if (warningCount > 0) {
-      pushPageDataModelSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功，warnings=${warningCount}`)
-      for (const warning of result.warnings ?? []) {
-        pushPageDataModelSseLine(`  - warning[${warning.rule}]: ${warning.detail}${warning.fix ? ` | fix: ${warning.fix}` : ''}`)
-      }
-    } else {
-      pushPageDataModelSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功`)
-    }
-    return
-  }
-
-  pushPageDataModelSseLine(
-    `[Round ${turn.round}] 执行 ${action}(${id}) -> 失败` +
-    `${result.code ? ` | code=${result.code}` : ''}` +
-    `${result.msg ? ` | msg=${result.msg}` : ''}` +
-    `${result.fix ? ` | fix=${result.fix}` : ''}`,
-  )
-}
-
-type PageDataModelFailureTurn = Pick<DialogueTurn, 'phase' | 'toolBlock' | 'stillsResult'>
-
-function buildPageDataModelFailureDetails(turns: PageDataModelFailureTurn[]): string {
-  const executedActions = turns
-    .filter(turn => turn.phase === 'stills-execute' && turn.toolBlock)
-    .map(turn => turn.toolBlock!.action)
-
-  const lastFailure = [...turns]
-    .reverse()
-    .find(turn => turn.phase === 'stills-execute' && turn.stillsResult && !turn.stillsResult.ok)
-
-  const actionSummary = executedActions.length > 0
-    ? executedActions.join(' -> ')
-    : '（未记录到工具执行）'
-
-  if (!lastFailure || !lastFailure.stillsResult) {
-    return `已执行动作链：${actionSummary}`
-  }
-
-  const failedAction = lastFailure.toolBlock?.action ?? 'unknown'
-  const failedResult = lastFailure.stillsResult
-  return `已执行动作链：${actionSummary}\n最后失败点：${failedAction}`
-    + `${failedResult.code ? ` | code=${failedResult.code}` : ''}`
-    + `${failedResult.msg ? ` | msg=${failedResult.msg}` : ''}`
-    + `${failedResult.fix ? ` | fix=${failedResult.fix}` : ''}`
-}
 
 function normalizeRelation(rel: DesignerRelation): TableRelation {
   return {
@@ -1045,11 +624,8 @@ function readCurrentDataSetName(): string {
     return props.state.pageDataTool.value.dataSetName
   }
 
-  try {
-    const content = props.state.editFiles['pagedata.json'] ?? '{}'
-    return DataSetCrudTool.fromJson(content).dataSetName
-  } catch {
-    // ignore
+  if (projectedMetadata.value?.dataSetName) {
+    return projectedMetadata.value.dataSetName
   }
   return 'PageDataSet'
 }
@@ -1392,227 +968,8 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onDocMouseMove)
   document.removeEventListener('mouseup', onDocMouseUp)
   document.removeEventListener('keydown', onKeydown)
-  resetPageDataModelSessionStateSync()
 })
 
-// ═══ pagedata.json 互转 ═══
-
-function parseFromPageData(silent = false, options?: { preserveHistory?: boolean }) {
-  try {
-    const content = props.state.editFiles['pagedata.json'] ?? '{}'
-
-    const canPreserveHistory = Boolean(options?.preserveHistory && isDesignerStateInSyncWithHistory())
-    props.state.replaceLivePageData(content, { preserveHistory: canPreserveHistory })
-    editingRel.value = null
-    selectedTableId.value = null
-    
-    if (!silent) ElMessage.success(`已加载 ${tables.value.length} 个表`)
-  } catch {
-    if (!silent) ElMessage.error('解析 pagedata.json 失败')
-  }
-}
-
-function exportToPageData() {
-  let existingMeta: IDataSetMetadata | null = null
-  try {
-    existingMeta = props.state.readPageEditModel().pageDataJson
-  } catch { /* ignore */ }
-
-  if (!props.state.pageDataTool.value || !isDesignerStateInSyncWithHistory()) {
-    props.state.replaceLivePageData(buildDataSetMetadataFromDesigner(), { preserveHistory: true })
-  }
-  const tool = props.state.pageDataTool.value
-  if (!tool) {
-    ElMessage.error('导出失败：DataSet 工具实例不可用')
-    return
-  }
-  const toolJson = tool.toJson()
-
-  const pageData: IDataSetMetadata = {
-    ...toolJson,
-    dataSetName: existingMeta?.dataSetName ?? toolJson.dataSetName,
-    ...(existingMeta?.pageId ? { pageId: existingMeta.pageId } : {}),
-    ...(Array.isArray(existingMeta?.viewDependencies)
-      ? { viewDependencies: existingMeta.viewDependencies }
-      : toolJson.viewDependencies !== undefined
-        ? { viewDependencies: toolJson.viewDependencies }
-        : {}),
-  }
-  props.state.applyPageEditModelPatch({ pageDataJson: pageData }, { source: 'manual' })
-  ElMessage.success('已导出到 pagedata.json')
-}
-
-// ═══ AI DataSet 模型聊天编辑 ═══
-
-async function applyPageDataModelEdit(
-  prompt: string,
-  streamHooks?: Pick<AiChatSendRequest, 'onDelta' | 'onReasoning'>,
-) {
-  if (!prompt.trim()) return ''
-
-  aiResponse.value = ''
-  resetPageDataModelRuntimeIndicators()
-  pageDataModelStreamHooks = streamHooks ?? null
-
-  let lastTurns: DialogueTurn[] = []
-
-  try {
-    const currentDataSet = buildDataSetMetadataFromDesigner()
-    const pageContext = await buildPageDataModelContext(currentDataSet)
-    const contextSummary = buildFineGrainedEditContext(currentDataSet, pageContext.promptContext)
-
-    if (pageDataModelContextSignature.value !== '' && pageDataModelContextSignature.value !== pageContext.signature) {
-      await resetPageDataModelSessionState()
-    }
-
-    configureSessionBackend({
-      getHeaders: createAuthHeaders,
-      onSseEvent: onPageDataModelSseEvent,
-    })
-    if (!pageDataModelSession.value || !pageDataModelBackend.value) {
-      clearRegistry()
-      clearDomains()
-      registerEditStills()
-
-      const session = createStillSession()
-      const initResult = executeStill('edit.bootstrap', {
-        ruleJson: pageContext.ruleJson,
-        pageDataJson: currentDataSet,
-        scriptJs: pageContext.scriptJs,
-        styleCss: pageContext.styleCss,
-      }, session, 'dataset-fine-edit-bootstrap')
-
-      if (!initResult.ok) {
-        throw new Error(initResult.msg)
-      }
-
-      pageDataModelSession.value = session
-      pageDataModelBackend.value = new SessionBackendImpl()
-      pageDataModelContextSignature.value = pageContext.signature
-    }
-
-    const session = pageDataModelSession.value
-    const backend = pageDataModelBackend.value
-    if (!session || !backend) {
-      throw new Error('DataSet 模型会话初始化失败')
-    }
-
-    const orchestratorResult = await runStillsLoop(
-      buildFineGrainedLoopUserPrompt(prompt, contextSummary),
-      session,
-      backend,
-      {
-        maxRounds: 8,
-        slidingWindow: 12,
-        systemPrompt: buildFineGrainedLoopSystemPrompt(),
-        ...(pageDataModelBackendSessionId.value ? { resumeSessionId: pageDataModelBackendSessionId.value } : {}),
-        tools: generateToolDefinitions({
-          compactDescriptions: true,
-        }),
-        monitors: [
-          {
-            name: 'bootstrap-guard',
-            afterStillExecution(ctx) {
-              const action = ctx.currentTurn.toolBlock?.action ?? ''
-              const bootstrapActions = new Set(['session.describe', 'stills.capabilities'])
-              if (!bootstrapActions.has(action)) return []
-
-              const count = ctx.allTurns.filter(t => t.toolBlock?.action === action).length
-              if (count <= 1) return []
-
-              return [
-                `[流程约束] ${action} 已重复 ${count} 次。请停止重复能力探测，直接执行 datasetTool.* 完成模型修改。`,
-              ]
-            },
-          },
-          createRepeatDetectionMonitor({
-            maxSameSignature: 2,
-            maxConsecutiveErrors: 2,
-          }),
-        ],
-        onTurnComplete(turn) {
-          onPageDataModelTurnComplete(turn)
-        },
-      },
-    )
-    pageDataModelBackendSessionId.value = orchestratorResult.sessionId
-    lastTurns = orchestratorResult.turns
-
-    if (orchestratorResult.aborted) {
-      const details = buildPageDataModelFailureDetails(orchestratorResult.turns)
-      throw new Error(`${orchestratorResult.abortReason ?? 'DataSet 模型编排被中止'}\n${details}`)
-    }
-
-    const editState = getEditState(session)
-    const pagedata = editState.datasetEdit?.toJson()
-    if (!pagedata) {
-      throw new Error('DataSet 模型会话未生成可导出的 pagedata 模型')
-    }
-
-    props.state.applyPageEditModelPatch({ pageDataJson: pagedata }, { source: 'ai' })
-    parseFromPageData(true, { preserveHistory: true })
-    const appliedPageModel = props.state.readPageEditModel({ pageDataJson: buildDataSetMetadataFromDesigner() })
-    pageDataModelContextSignature.value = buildPageDataModelContextSignature({
-      pageId: props.state.activePageId.value ?? '',
-      ruleJson: appliedPageModel.ruleJson,
-      pageDataJson: appliedPageModel.pageDataJson,
-      scriptJs: appliedPageModel.scriptJs,
-      styleCss: appliedPageModel.styleCss,
-    })
-
-    aiResponse.value = `${summarizeFineGrainedTurns(orchestratorResult.turns)}
-
-当前 ${tables.value.length} 个表、${relations.value.length} 个关联。`
-  } catch (err) {
-    if (lastTurns.length > 0) {
-      pushPageDataModelSseLine('--- 失败定位摘要 ---')
-      pushPageDataModelSseLine(buildPageDataModelFailureDetails(lastTurns))
-    }
-    aiResponse.value = `DataSet 模型编辑失败: ${err instanceof Error ? err.message : String(err)}`
-  } finally {
-    pageDataModelStreamHooks = null
-    configureSessionBackend({ getHeaders: createAuthHeaders })
-  }
-
-  return aiResponse.value.trim()
-}
-
-const datasetDesignerChatSender: AiChatSender = async (request) => {
-  const latestUserMessage = [...request.historyMsgs]
-    .reverse()
-    .find(message => message.role === 'user')
-
-  const prompt = latestUserMessage?.content?.trim() ?? ''
-  if (!prompt) return
-
-  request.onDelta?.('已接收需求，正在执行 DataSet 模型级编辑...\n')
-
-  let streamed = false
-
-  const result = await applyPageDataModelEdit(prompt, {
-    onDelta(delta) {
-      streamed = true
-      request.onDelta?.(delta)
-    },
-    onReasoning(reasoning) {
-      request.onReasoning?.(reasoning)
-    },
-  })
-  if (!result) {
-    request.onDelta?.('DataSet 模型编辑已执行完成。')
-    return
-  }
-
-  if (result.startsWith('DataSet 模型编辑失败:')) {
-    throw new Error(result)
-  }
-
-  request.onDelta?.(streamed ? `\n\n${result}` : result)
-}
-
-onUnmounted(() => {
-  props.state.setPageDataDesignerDirty(false)
-})
 </script>
 
 <style scoped>

@@ -8,11 +8,14 @@
 import { describe, it, expect } from 'vitest'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import {
+  bindLiveModelAdapter,
   registerEditStills,
   createSession,
   executeStill,
 } from '../packages/spark-ai/src/stills/index'
 import { getEditState } from '../packages/spark-ai/src/stills/edit-state'
+import { SparkNodeTree } from '../packages/spark-component/src/index'
+import { DataSetCrudTool } from '../packages/spark-data/src/index'
 import { runStillsLoop } from '../packages/spark-ai/src/runtime/session-orchestrator'
 import { SessionBackendImpl, configureSessionBackend } from '../packages/spark-ai/src/session-backend'
 
@@ -136,6 +139,22 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     // 创建业务前端状态
     registerEditStills()
     const session = createSession()
+    const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
+    const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
+    let script = ''
+    let style = ''
+    bindLiveModelAdapter(getEditState(session), {
+      getNodeTree: () => liveTree,
+      getDataSetTool: () => liveDataSet,
+      readScript: () => script,
+      writeScript(content) {
+        script = content
+      },
+      readStyle: () => style,
+      writeStyle(content) {
+        style = content
+      },
+    })
 
     const seededBootstrap = executeStill('edit.bootstrap', {
       ruleJson: [
@@ -291,6 +310,22 @@ ${AUTONOMOUS_GUARDRAILS}
 
     registerEditStills()
     const session = createSession()
+    const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
+    const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
+    let script = ''
+    let style = ''
+    bindLiveModelAdapter(getEditState(session), {
+      getNodeTree: () => liveTree,
+      getDataSetTool: () => liveDataSet,
+      readScript: () => script,
+      writeScript(content) {
+        script = content
+      },
+      readStyle: () => style,
+      writeStyle(content) {
+        style = content
+      },
+    })
 
     const seededBootstrap = executeStill('edit.bootstrap', {
       ruleJson: [

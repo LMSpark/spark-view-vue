@@ -25,11 +25,11 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
   }
 
   function undo() {
-    state.undoFileSnapshot(activeFile.value)
+    state.goFileHistoryBack(activeFile.value)
   }
 
   function redo() {
-    state.redoFileSnapshot(activeFile.value)
+    state.goFileHistoryForward(activeFile.value)
   }
 
   async function save() {

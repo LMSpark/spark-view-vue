@@ -1,48 +1,47 @@
 import { shallowRef } from 'vue'
 import type { ShallowRef } from 'vue'
 import {
+  bindLiveModelAdapter,
+  captureBaselineSnapshot,
   clearRegistry,
   clearDomains,
   registerEditStills,
   createSession as createStillSession,
-  executeStill,
+  getEditState,
   SessionBackendImpl,
+  type EditLiveModelAdapter,
 } from '@spark-view/spark-ai'
-import type { PageEditModel } from '../useDevState'
 
 type StillsSession = ReturnType<typeof createStillSession>
 
 interface UsePageModelSessionHostOptions {
-  getContextModel: () => PageEditModel
-  bootstrapTag: string
-  buildContextSignature?: (model: PageEditModel) => string
+  getLiveModelAdapter: () => EditLiveModelAdapter
+  getSessionKey: () => string
 }
 
 export interface PageModelSessionHost {
   backend: SessionBackendImpl
   session: ShallowRef<StillsSession | null>
-  ensureSession: () => { session: StillsSession; bootstrapped: boolean; model: PageEditModel }
+  ensureSession: () => { session: StillsSession; bootstrapped: boolean }
   reset: () => Promise<void>
   resetSync: () => void
   setBackendSessionId: (sessionId: string | null) => void
   getResumeSessionOptions: () => { resumeSessionId?: string }
-  syncContext: (model?: PageEditModel) => void
-  hasContextMismatch: (model?: PageEditModel) => boolean
+  hasSessionMismatch: (sessionKey?: string) => boolean
 }
 
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions) {
-  const { getContextModel, bootstrapTag, buildContextSignature = JSON.stringify } = options
+  const { getLiveModelAdapter, getSessionKey } = options
 
   const backend = new SessionBackendImpl()
   const session = shallowRef<StillsSession | null>(null)
   let backendSessionId: string | null = null
-  let contextSignature = ''
+  let sessionKey = ''
 
-  function ensureSession(): { session: StillsSession; bootstrapped: boolean; model: PageEditModel } {
-    const model = getContextModel()
-    const nextSignature = buildContextSignature(model)
-    if (session.value && contextSignature === nextSignature) {
-      return { session: session.value, bootstrapped: false, model }
+  function ensureSession(): { session: StillsSession; bootstrapped: boolean } {
+    const nextSessionKey = getSessionKey()
+    if (session.value && sessionKey === nextSessionKey) {
+      return { session: session.value, bootstrapped: false }
     }
 
     if (backendSessionId) {
@@ -55,27 +54,20 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     registerEditStills()
 
     const nextSession = createStillSession()
-    const boot = executeStill('edit.bootstrap', {
-      ruleJson: model.ruleJson,
-      pageDataJson: model.pageDataJson,
-      scriptJs: model.scriptJs,
-      styleCss: model.styleCss,
-    }, nextSession, bootstrapTag)
-
-    if (!boot.ok) {
-      throw new Error(boot.msg)
-    }
+    const editState = getEditState(nextSession)
+    bindLiveModelAdapter(editState, getLiveModelAdapter())
+    captureBaselineSnapshot(editState)
 
     session.value = nextSession
-    contextSignature = nextSignature
-    return { session: nextSession, bootstrapped: true, model }
+    sessionKey = nextSessionKey
+    return { session: nextSession, bootstrapped: true }
   }
 
   async function reset(): Promise<void> {
     const previousBackendSessionId = backendSessionId
     session.value = null
     backendSessionId = null
-    contextSignature = ''
+    sessionKey = ''
 
     if (previousBackendSessionId) {
       try {
@@ -93,7 +85,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     const previousBackendSessionId = backendSessionId
     session.value = null
     backendSessionId = null
-    contextSignature = ''
+    sessionKey = ''
 
     if (previousBackendSessionId) {
       void backend.destroySession(previousBackendSessionId)
@@ -111,13 +103,8 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     return backendSessionId ? { resumeSessionId: backendSessionId } : {}
   }
 
-  function syncContext(model?: PageEditModel) {
-    contextSignature = buildContextSignature(model ?? getContextModel())
-  }
-
-  function hasContextMismatch(model?: PageEditModel): boolean {
-    const currentModel = model ?? getContextModel()
-    return contextSignature !== '' && contextSignature !== buildContextSignature(currentModel)
+  function hasSessionMismatch(nextSessionKey?: string): boolean {
+    return sessionKey !== '' && sessionKey !== (nextSessionKey ?? getSessionKey())
   }
 
   return {
@@ -128,7 +115,6 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     resetSync,
     setBackendSessionId,
     getResumeSessionOptions,
-    syncContext,
-    hasContextMismatch,
+    hasSessionMismatch,
   } satisfies PageModelSessionHost
 }

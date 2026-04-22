@@ -115,12 +115,25 @@ import { editDomain } from './edit-domain'
 export { editDomain, EDIT_STILLS } from './edit-domain'
 export { editInit, EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
 export { getEditState } from './edit-state'
-export type { EditDomainState, EditPhase } from './edit-state'
-export { EDIT_FILE_STILLS } from './edit-file-stills'
+export {
+  getActiveNodeTree,
+  notifyNodeTreeChanged,
+  getActiveDataSetTool,
+  notifyDataSetChanged,
+  readActiveScript,
+  writeActiveScript,
+  readActiveStyle,
+  writeActiveStyle,
+  bindLiveModelAdapter,
+  createCurrentEditModel,
+  captureBaselineSnapshot,
+} from './edit-state'
+export type { EditDomainState, EditPhase, EditLiveModelAdapter } from './edit-state'
+export { EDIT_FILE_STILLS } from './TooLs/edit-file-stills'
 export { EDIT_DIFF_STILLS } from './edit-diff-stills'
 export { EDIT_EXPORT_STILLS } from './edit-export-stills'
-export { EDIT_NODE_TREE_STILLS } from './edit-nodeTree-stills'
-export { EDIT_DATASET_STILLS } from './edit-dataset-stills'
+export { EDIT_NODE_TREE_STILLS } from './TooLs/edit-nodeTree-stills'
+export { EDIT_DATASET_STILLS } from './TooLs/edit-dataset-stills'
 
 // ═══════════════════════════════════════════════════════════
 // Register All

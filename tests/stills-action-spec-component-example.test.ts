@@ -8,6 +8,7 @@ import {
   type IStillSession,
   type StillResult,
 } from '../packages/spark-ai/src/stills'
+import { actionToFunctionName } from '../packages/spark-ai/src/tool-calling'
 
 let session: IStillSession
 
@@ -32,5 +33,14 @@ describe('stills.actionSpec component example', () => {
     expect(result.msg).toContain('组件 type')
     expect(result.fix).toContain('catalog.query')
     expect(result.fix).toContain('"type":"r-text"')
+  })
+
+  it('accepts FC function names and resolves them to canonical still actions', () => {
+    const result = exec('stills.actionSpec', { action: actionToFunctionName('datasetTool.deleteColumn') })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    expect((result.data as { action?: string }).action).toBe('datasetTool.deleteColumn')
+    expect(result.summary).toContain('datasetTool.deleteColumn')
   })
 })

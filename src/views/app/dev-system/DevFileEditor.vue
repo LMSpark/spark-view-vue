@@ -79,7 +79,6 @@
           <DevDataSetDesigner
             v-if="pageDataViewMode === 'visual'"
             :state="state"
-            :show-ai-panel="showDataSetAiPanel"
             class="code-input editor-dataset"
           />
           <el-input
@@ -166,10 +165,8 @@ const props = withDefaults(defineProps<{
   state: DevState
   activeFile?: PageFileName
   showTabs?: boolean
-  showDataSetAiPanel?: boolean
 }>(), {
   showTabs: true,
-  showDataSetAiPanel: true,
 })
 
 const emit = defineEmits<{
@@ -186,7 +183,6 @@ const pageDataViewMode = ref<'visual' | 'text'>('visual')
 const pageDataViewModePinned = ref(false)
 const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs)
-const showDataSetAiPanel = computed(() => props.showDataSetAiPanel)
 const editor = useDevFileEditor(props.state, resolvedActiveFile)
 
 watch(() => props.activeFile, (nextFile) => {

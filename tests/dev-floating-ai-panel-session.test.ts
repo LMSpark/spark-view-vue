@@ -9,9 +9,7 @@ const shared = vi.hoisted(() => ({
   },
   createHost: vi.fn(),
   ruleReset: vi.fn(),
-  pageDataReset: vi.fn(),
   ruleSessionOptions: [] as Array<Record<string, unknown>>,
-  pageDataSessionOptions: [] as Array<Record<string, unknown>>,
   aiWidgetMountCount: { value: 0 },
 }))
 
@@ -23,6 +21,7 @@ vi.mock('@/components/AiChatWidget.vue', () => ({
     props: {
       title: String,
       placeholder: String,
+      storageKey: String,
     },
     setup(props) {
       shared.aiWidgetMountCount.value += 1
@@ -30,6 +29,7 @@ vi.mock('@/components/AiChatWidget.vue', () => ({
         class: 'ai-chat-widget-stub',
         'data-title': props.title,
         'data-placeholder': props.placeholder,
+        'data-storage-key': props.storageKey,
       }, props.title ?? '')
     },
   }),
@@ -59,21 +59,6 @@ vi.mock('../src/views/app/dev-system/composables/useRuleEditSession', () => ({
   },
 }))
 
-vi.mock('../src/views/app/dev-system/composables/usePageDataEditSession', () => ({
-  usePageDataEditSession: (options: Record<string, unknown>) => {
-    shared.pageDataSessionOptions.push(options)
-    return {
-      reset: shared.pageDataReset,
-      runLlm: vi.fn(async () => ''),
-      sender: vi.fn(async () => {}),
-      runtime: {
-        taskSteps: { value: [] },
-        sseLines: { value: [] },
-      },
-    }
-  },
-}))
-
 import DevFloatingAiPanel from '../src/views/app/dev-system/components/DevFloatingAiPanel.vue'
 
 const TooltipStub = defineComponent({
@@ -98,22 +83,23 @@ describe('DevFloatingAiPanel shared session host', () => {
     shared.createHost.mockClear()
     shared.host.resetSync.mockClear()
     shared.ruleReset.mockClear()
-    shared.pageDataReset.mockClear()
     shared.ruleSessionOptions.length = 0
-    shared.pageDataSessionOptions.length = 0
     shared.aiWidgetMountCount.value = 0
+    localStorage.clear()
   })
 
-  it('shares one session host and does not reset the chat session when only the active file changes', async () => {
+  it('shares one session host, ignores active-file-only changes, and restores chat state by page-scoped key', async () => {
     const activePageId = ref('orders-page')
     const state = {
       activePageId,
       pageDataDesignerDirty: ref(false),
-      readPageEditModel: vi.fn(() => ({
-        ruleJson: [],
-        pageDataJson: { dataSetName: 'OrdersDS', tables: {} },
-        scriptJs: '',
-        styleCss: '',
+      createLiveEditModelAdapter: vi.fn(() => ({
+        getNodeTree: vi.fn(() => null),
+        getDataSetTool: vi.fn(() => null),
+        readScript: vi.fn(() => ''),
+        writeScript: vi.fn(),
+        readStyle: vi.fn(() => ''),
+        writeStyle: vi.fn(),
       })),
       addStatus: vi.fn(),
       canPageEditTransactionBack: vi.fn(() => false),
@@ -121,8 +107,6 @@ describe('DevFloatingAiPanel shared session host', () => {
       undoPageEditTransaction: vi.fn(),
       redoPageEditTransaction: vi.fn(),
       getPageEditTransactionCount: vi.fn(() => 0),
-      applyPageEditModelPatch: vi.fn(),
-      applyPageEditModel: vi.fn(),
       loadPageFile: vi.fn(async () => {}),
     } as unknown as DevState
 
@@ -140,24 +124,43 @@ describe('DevFloatingAiPanel shared session host', () => {
     })
 
     expect(shared.createHost).toHaveBeenCalledTimes(1)
+    expect(typeof shared.createHost.mock.calls[0]?.[0]?.getSessionKey).toBe('function')
+    expect(typeof shared.createHost.mock.calls[0]?.[0]?.getLiveModelAdapter).toBe('function')
+    expect(shared.createHost.mock.calls[0]?.[0]?.getContextModel).toBeUndefined()
     expect(shared.ruleSessionOptions[0]?.['sessionHost']).toBe(shared.host)
-    expect(shared.pageDataSessionOptions[0]?.['sessionHost']).toBe(shared.host)
+    expect(typeof shared.ruleSessionOptions[0]?.['getSessionKey']).toBe('function')
+    expect(typeof shared.ruleSessionOptions[0]?.['getLiveModelAdapter']).toBe('function')
+    expect(shared.ruleSessionOptions[0]?.['getContextModel']).toBeUndefined()
     expect(shared.aiWidgetMountCount.value).toBe(1)
+    expect(wrapper.find('.ai-chat-widget-stub').attributes('data-storage-key')).toBe('devsystem-ai-chat:orders-page')
 
     await wrapper.setProps({ activeFile: 'script.js' })
     await nextTick()
 
     expect(shared.ruleReset).not.toHaveBeenCalled()
-    expect(shared.pageDataReset).not.toHaveBeenCalled()
     expect(shared.host.resetSync).not.toHaveBeenCalled()
     expect(shared.aiWidgetMountCount.value).toBe(1)
+
+    localStorage.setItem('devsystem-ai-chat:orders-page', JSON.stringify([{ id: 'm1', role: 'user', content: 'cached-page-1', timestamp: new Date().toISOString() }]))
+    localStorage.setItem('devsystem-ai-chat:orders-page-v2', JSON.stringify([{ id: 'm2', role: 'assistant', content: 'cached-page-2', timestamp: new Date().toISOString() }]))
 
     activePageId.value = 'orders-page-v2'
     await nextTick()
 
+    expect(localStorage.getItem('devsystem-ai-chat:orders-page')).toContain('cached-page-1')
+    expect(localStorage.getItem('devsystem-ai-chat:orders-page-v2')).toContain('cached-page-2')
     expect(shared.host.resetSync).toHaveBeenCalledTimes(1)
     expect(shared.ruleReset).toHaveBeenCalledTimes(1)
-    expect(shared.pageDataReset).toHaveBeenCalledTimes(1)
-    expect(shared.aiWidgetMountCount.value).toBe(1)
+    expect(shared.aiWidgetMountCount.value).toBe(2)
+    expect(wrapper.find('.ai-chat-widget-stub').attributes('data-storage-key')).toBe('devsystem-ai-chat:orders-page-v2')
+
+    activePageId.value = 'orders-page'
+    await nextTick()
+
+    expect(shared.host.resetSync).toHaveBeenCalledTimes(2)
+    expect(shared.ruleReset).toHaveBeenCalledTimes(2)
+    expect(shared.aiWidgetMountCount.value).toBe(3)
+    expect(wrapper.find('.ai-chat-widget-stub').attributes('data-storage-key')).toBe('devsystem-ai-chat:orders-page')
+    expect(localStorage.getItem('devsystem-ai-chat:orders-page')).toContain('cached-page-1')
   })
 })

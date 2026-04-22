@@ -6,7 +6,14 @@
  */
 
 import type { StillDefinition, StillResult } from './types'
-import { getEditState, type EditDomainState } from './edit-state'
+import {
+  getActiveDataSetTool,
+  getActiveNodeTree,
+  getEditState,
+  readActiveScript,
+  readActiveStyle,
+  type EditDomainState,
+} from './edit-state'
 import { EditModel } from './edit-model'
 import {
   EDIT_CHANGED_LINES_ACTION,
@@ -27,7 +34,12 @@ export function collectEditChangedLines(state: EditDomainState): EditDiffLinesSu
   if (!state.baselineSnapshot) {
     return { ruleJson: 0, pageDataJson: 0, scriptJs: 0, styleCss: 0, total: 0 }
   }
-  const diff = new EditModel(state.nodeTree, state.datasetEdit, state.script, state.style)
+  const diff = new EditModel(
+    getActiveNodeTree(state),
+    getActiveDataSetTool(state),
+    readActiveScript(state),
+    readActiveStyle(state),
+  )
     .diffSnapshot(state.baselineSnapshot)
   return {
     ruleJson: diff.rule,

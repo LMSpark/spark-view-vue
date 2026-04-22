@@ -20,11 +20,11 @@ import type {
 } from './types'
 import { createEditState, type EditDomainState } from './edit-state'
 import { EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
-import { EDIT_FILE_STILLS } from './edit-file-stills'
+import { EDIT_FILE_STILLS } from './TooLs/edit-file-stills'
 import { EDIT_DIFF_STILLS } from './edit-diff-stills'
 import { EDIT_EXPORT_STILLS } from './edit-export-stills'
-import { EDIT_NODE_TREE_STILLS } from './edit-nodeTree-stills'
-import { EDIT_DATASET_STILLS } from './edit-dataset-stills'
+import { EDIT_NODE_TREE_STILLS } from './TooLs/edit-nodeTree-stills'
+import { EDIT_DATASET_STILLS } from './TooLs/edit-dataset-stills'
 
 // ═══════════════════════════════════════════════════════════
 // FC 工具清单

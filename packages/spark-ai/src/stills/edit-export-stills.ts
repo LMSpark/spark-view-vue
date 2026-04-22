@@ -6,7 +6,14 @@
  */
 
 import type { StillDefinition, StillResult } from './types'
-import { getEditState, type EditDomainState } from './edit-state'
+import {
+  getActiveDataSetTool,
+  getActiveNodeTree,
+  getEditState,
+  readActiveScript,
+  readActiveStyle,
+  type EditDomainState,
+} from './edit-state'
 import { EditModel, type EditFilesExport } from './edit-model'
 import { collectEditChangedLines } from './edit-diff-stills'
 import {
@@ -33,7 +40,12 @@ function finalizeEditFilesExport(state: EditDomainState): {
   data: EditFilesExportResult
   summary: string
 } {
-  const model = new EditModel(state.nodeTree, state.datasetEdit, state.script, state.style)
+  const model = new EditModel(
+    getActiveNodeTree(state),
+    getActiveDataSetTool(state),
+    readActiveScript(state),
+    readActiveStyle(state),
+  )
   const files = model.exportFiles()
   const changedLines = collectEditChangedLines(state)
   state.phase = 'saved'
@@ -47,13 +59,19 @@ function finalizeDatasetFileExport(state: EditDomainState): {
   data: DatasetFileExportResult
   summary: string
 } {
-  const model = new EditModel(state.nodeTree, state.datasetEdit, state.script, state.style)
+  const activeDataSetTool = getActiveDataSetTool(state)
+  const model = new EditModel(
+    getActiveNodeTree(state),
+    activeDataSetTool,
+    readActiveScript(state),
+    readActiveStyle(state),
+  )
   const pagedata = model.snapshot.pagedata
   const changedLines = state.baselineSnapshot
     ? { pagedataJson: model.diffSnapshot(state.baselineSnapshot).pagedata }
     : { pagedataJson: 0 }
-  const tables = state.datasetEdit
-    ? Object.keys(state.datasetEdit.toJson().tables).sort()
+  const tables = activeDataSetTool
+    ? Object.keys(activeDataSetTool.toJson().tables).sort()
     : []
   return {
     data: { file: { 'pagedata.json': pagedata }, changedLines, tables },

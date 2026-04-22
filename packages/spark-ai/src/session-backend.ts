@@ -5,7 +5,7 @@
  */
 
 import { createFetchClient, createRequest, Logger } from '@spark-view/spark-utils'
-import type { SessionBackend, LlmResponse } from './runtime/session-orchestrator'
+import type { SessionBackend, LlmResponse, SessionBackendSseEvent } from './runtime/session-orchestrator'
 import type { ToolCall, ToolDefinition } from './tool-calling'
 
 const log = Logger('SessionBackend')
@@ -96,6 +96,7 @@ export class SessionBackendImpl implements SessionBackend {
     userPrompt: string,
     windowSize: number,
     tools?: ToolDefinition[],
+    signal?: AbortSignal,
   ): Promise<string> {
     const resp = await this.http.post<{ sessionId: string }>(`${this.baseUrl}`, {
       protocolVersion: 3,
@@ -104,17 +105,20 @@ export class SessionBackendImpl implements SessionBackend {
       windowSize,
       mode: 'stills',
       tools: tools ?? null,
-    })
+    }, signal ? { signal } : undefined)
 
     const sessionId = resp.sessionId
     this.sessionIds.add(sessionId)
     return sessionId
   }
 
-  async executeTurn(sessionId: string): Promise<LlmResponse | null> {
+  async executeTurn(
+    sessionId: string,
+    options: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void } = {},
+  ): Promise<LlmResponse | null> {
     try {
       // 优先走 SSE 通道，确保与后端 /turn/stream 流式协议一致。
-      return await this.executeTurnViaSse(sessionId)
+      return await this.executeTurnViaSse(sessionId, options)
     } catch (err) {
       const detail = toBackendErrorMessage(err)
 
@@ -125,7 +129,7 @@ export class SessionBackendImpl implements SessionBackend {
 
       if (canFallback) {
         log.warn('SSE turn unavailable, fallback to non-stream turn:', detail)
-        return await this.executeTurnViaHttp(sessionId)
+        return await this.executeTurnViaHttp(sessionId, options.signal)
       }
 
       log.error('executeTurn failed:', detail, err)
@@ -133,7 +137,7 @@ export class SessionBackendImpl implements SessionBackend {
     }
   }
 
-  private async executeTurnViaHttp(sessionId: string): Promise<LlmResponse> {
+  private async executeTurnViaHttp(sessionId: string, signal?: AbortSignal): Promise<LlmResponse> {
     try {
       const resp = await this.http.post<{
         text: string
@@ -141,7 +145,7 @@ export class SessionBackendImpl implements SessionBackend {
         toolCalls?: ToolCall[]
       }>(`${this.baseUrl}/${sessionId}/turn`, {
         protocolVersion: 3,
-      })
+      }, signal ? { signal } : undefined)
 
       const result: LlmResponse = { text: resp.text }
       if (resp.reasoning !== undefined) result.reasoning = resp.reasoning
@@ -153,13 +157,18 @@ export class SessionBackendImpl implements SessionBackend {
     }
   }
 
-  private async executeTurnViaSse(sessionId: string): Promise<LlmResponse> {
+  private async executeTurnViaSse(
+    sessionId: string,
+    options: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void } = {},
+  ): Promise<LlmResponse> {
     const headers: Record<string, string> = _getHeaders ? _getHeaders() : {}
     const events = await this.sseClient.streamSSE({
       url: `${this.baseUrl}/${sessionId}/turn/stream`,
       method: 'POST',
       headers,
+      ...(options.signal ? { signal: options.signal } : {}),
     })
+    const onSseEvent = options.onSseEvent ?? _onSseEvent
 
     let finalResult: LlmResponse | null = null
     let streamError = ''
@@ -169,8 +178,8 @@ export class SessionBackendImpl implements SessionBackend {
       const data = event.data
       if (!data) continue
 
-      if (_onSseEvent) {
-        _onSseEvent({
+      if (onSseEvent) {
+        onSseEvent({
           sessionId,
           type: eventType,
           data,
@@ -222,11 +231,12 @@ export class SessionBackendImpl implements SessionBackend {
       tool_call_id?: string
       tool_calls?: ToolCall[]
     }>,
+    signal?: AbortSignal,
   ): Promise<void> {
     await this.http.post(`${this.baseUrl}/${sessionId}/append`, {
       protocolVersion: 3,
       messages,
-    })
+    }, signal ? { signal } : undefined)
   }
 
   async getConversation(

@@ -28,7 +28,7 @@ import type {
 } from './types'
 import { noGuard, readSessionBlueprint } from './types'
 import { getAllStills, getStill } from './dispatcher'
-import { getEditState } from './edit-state'
+import { getActiveDataSetTool, getEditState } from './edit-state'
 import { getDomain } from './domain'
 import {
   projectComponentDirectory,
@@ -47,6 +47,7 @@ import {
   CATALOG_QUERY_ACTION,
   CATALOG_GUIDE_ACTION,
 } from './action-names'
+import { functionNameToAction } from '../tool-calling'
 
 // =========================================================
 // 二、静态目录依赖与内部类型定义
@@ -259,7 +260,8 @@ function countTotalColumns(session: IStillSession): number {
 function getEffectiveDatasetSnapshot(session: IStillSession): IDataSetMetadata | null {
   if (session.domains['edit']) {
     const editState = getEditState(session)
-    return editState.datasetEdit ? editState.datasetEdit.toJson() : null
+    const tool = getActiveDataSetTool(editState)
+    return tool ? tool.toJson() : null
   }
 
   return null
@@ -509,7 +511,8 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
     return null
   },
   execute: (_session: IStillSession, params: ActionSpecParams): StillResult => {
-    const still = getStill(params.action)
+    const canonicalAction = functionNameToAction(params.action)
+    const still = getStill(params.action) ?? getStill(canonicalAction)
     if (still) {
       return {
         ok: true,
@@ -546,7 +549,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
       ok: false,
       code: 'UNKNOWN_ACTION',
       msg: `未知动作: ${params.action}`,
-      fix: '请先查 stills.capabilities 获取动作列表；组件定义请使用 catalog.query。',
+      fix: '请先查 stills.capabilities 获取动作列表；FC 下划线函数名与点号动作名都可用于 stills.actionSpec；组件定义请使用 catalog.query。',
     }
   },
 }

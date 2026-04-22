@@ -11,11 +11,9 @@ import type {
   StillDefinition,
 } from './types'
 import type { SparkNode } from '@spark-view/spark-component'
-import { SparkNodeTree } from '@spark-view/spark-component'
-import { DataSetCrudTool } from '@spark-view/spark-data'
 import { EditModel } from './edit-model'
 import type { EditDomainState } from './edit-state'
-import { getEditState } from './edit-state'
+import { getActiveDataSetTool, getActiveNodeTree, getEditState } from './edit-state'
 import { EDIT_BOOTSTRAP_ACTION } from './action-names'
 
 // ── Bootstrap Payload ────────────────────────────────────────
@@ -41,20 +39,49 @@ function validateEditBootstrapPayload(params: unknown): string | null {
 }
 
 function bootstrapEditSession(state: EditDomainState, payload: EditBootstrapPayload): void {
-  state.nodeTree = new SparkNodeTree({
-    root: { type: 'page', children: payload.ruleJson },
-  })
-  state.datasetEdit = DataSetCrudTool.fromJson(payload.pageDataJson)
-  state.script = payload.scriptJs
-  state.style = payload.styleCss
-  state.baselineSnapshot = new EditModel(state.nodeTree, state.datasetEdit, state.script, state.style).snapshot
+  const liveTree = getActiveNodeTree(state)
+  if (!liveTree) {
+    throw new Error('edit.bootstrap 失败：缺少 live SparkNodeTree，必须先绑定 EditLiveModelAdapter.getNodeTree')
+  }
+
+  const liveTool = getActiveDataSetTool(state)
+  if (!liveTool) {
+    throw new Error('edit.bootstrap 失败：缺少 live DataSetCrudTool，必须先绑定 EditLiveModelAdapter.getDataSetTool')
+  }
+
+  const writeScript = state.liveModelAdapter?.writeScript
+  const readScript = state.liveModelAdapter?.readScript
+  if (!writeScript || !readScript) {
+    throw new Error('edit.bootstrap 失败：缺少 live text model（EditLiveModelAdapter.readScript/writeScript）')
+  }
+
+  const writeStyle = state.liveModelAdapter?.writeStyle
+  const readStyle = state.liveModelAdapter?.readStyle
+  if (!writeStyle || !readStyle) {
+    throw new Error('edit.bootstrap 失败：缺少 live text model（EditLiveModelAdapter.readStyle/writeStyle）')
+  }
+
+  liveTree.loadRoot({ type: 'page', children: payload.ruleJson })
+  state.nodeTree = liveTree
+  // DataSetTool 必须复用 live adapter 返回的同一实例。
+  state.datasetEdit = liveTool
+  writeScript(payload.scriptJs)
+  writeStyle(payload.styleCss)
+  state.script = readScript()
+  state.style = readStyle()
+  state.baselineSnapshot = new EditModel(
+    state.nodeTree,
+    liveTool,
+    state.script,
+    state.style,
+  ).snapshot
   state.phase = 'editing'
 }
 
 export const editInit: StillDefinition<EditInitParams, undefined> = {
   action: EDIT_BOOTSTRAP_ACTION,
   type: 'request',
-  description: '引导编辑会话：接收 4 个文件内容，构建 SparkNodeTree + DataSetCrudTool + 存储 script/style',
+  description: '引导编辑会话：将 4 个文件内容同步到 live SparkNodeTree / live DataSetCrudTool 与 script/style',
   paramsSchema: {
     ruleJson: 'SparkNode[] — 解析后的规则数组',
     pageDataJson: 'IDataSetMetadata — 解析后的 DataSet 元数据',

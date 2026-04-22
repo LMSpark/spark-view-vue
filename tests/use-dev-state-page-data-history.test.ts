@@ -6,6 +6,10 @@ const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
   httpPut: vi.fn(),
 }))
 
+function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
 vi.mock('@/services/http', () => ({
   http: {
     get: httpGet,
@@ -96,6 +100,47 @@ describe('useDevState pagedata local history', () => {
     expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(editedPageDataText).text)
   })
 
+  it('keeps the live rule model in sync when undoing local rule history', () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+
+    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
+
+    expect(state.pageRuleDocument.value?.[0]?.type).toBe('el-button')
+    expect(state.goFileHistoryBack('rule.json')).toBe(true)
+    expect(state.editFiles['rule.json']).toBe(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    expect(state.pageRuleDocument.value?.[0]?.type).toBe('div')
+  })
+
+  it('keeps the live script document in sync when undoing local script history', () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+
+    state.updatePageFile('script.js', 'console.log("alpha")\n')
+    state.updatePageFile('script.js', 'console.log("beta")\n')
+
+    expect(state.pageScriptDocument.value).toBe('console.log("beta")\n')
+    expect(state.goFileHistoryBack('script.js')).toBe(true)
+    expect(state.editFiles['script.js']).toBe('console.log("alpha")\n')
+    expect(state.pageScriptDocument.value).toBe('console.log("alpha")\n')
+  })
+
+  it('keeps the live style document in sync when undoing local style history', () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+
+    state.updatePageFile('style.css', '.page { color: red; }\n')
+    state.updatePageFile('style.css', '.page { color: blue; }\n')
+
+    expect(state.pageStyleDocument.value).toBe('.page { color: blue; }\n')
+    expect(state.goFileHistoryBack('style.css')).toBe(true)
+    expect(state.editFiles['style.css']).toBe('.page { color: red; }\n')
+    expect(state.pageStyleDocument.value).toBe('.page { color: red; }\n')
+  })
+
   it('does not append local history on save because save only uploads to backend', async () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
@@ -117,7 +162,7 @@ describe('useDevState pagedata local history', () => {
     expect(state.fileDirty['pagedata.json']).toBe(false)
   })
 
-  it('uses the shared live pagedata tool as the readPageEditModel source before exporting text', () => {
+  it('uses the shared live pagedata document as the source before exporting text', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
     state.updatePageFile('rule.json', '[]\n')
@@ -135,13 +180,68 @@ describe('useDevState pagedata local history', () => {
 
     expect(state.pageDataTool.value?.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
     expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
-    expect(state.readPageEditModel().pageDataJson.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
     expect(state.editFiles['pagedata.json']).toBe(persistedText)
 
     expect(state.undoLivePageData()).toBe(true)
-    expect(state.readPageEditModel().pageDataJson.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(false)
+    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(false)
     expect(state.redoLivePageData()).toBe(true)
-    expect(state.readPageEditModel().pageDataJson.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+  })
+
+  it('saves the current live pagedata model when the designer changed only the in-memory model', async () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+    state.updatePageFile('rule.json', '[]\n')
+    state.updatePageFile('pagedata.json', createPageDataText('Save-Live-Alpha', true))
+
+    expect(state.mutateLivePageData((tool) => {
+      tool.createColumn({
+        tableName: 'Orders',
+        column: { name: 'status', type: 'string' },
+      })
+    })).toBe(true)
+
+    expect(state.pageDataDesignerDirty.value).toBe(true)
+    httpPut.mockResolvedValue({ ok: true })
+
+    await state.savePageFile('pagedata.json')
+
+    expect(httpPut).toHaveBeenCalledTimes(1)
+    expect(httpPut.mock.calls[0]?.[0]).toBe('/api/pages-config/orders-page/pagedata.json')
+    expect(String(httpPut.mock.calls[0]?.[1] ?? '')).toContain('status')
+    expect(state.editFiles['pagedata.json']).toContain('status')
+    expect(state.fileDirty['pagedata.json']).toBe(false)
+    expect(state.pageDataDesignerDirty.value).toBe(false)
+  })
+
+  it('reinitializes pagedata runtime state when switching to another page', () => {
+    const state = useDevState()
+
+    state.selectPage('orders-page')
+    state.updatePageFile('pagedata.json', createPageDataText('Cross-Page-Alpha', true))
+
+    expect(state.mutateLivePageData((tool) => {
+      tool.createColumn({
+        tableName: 'Orders',
+        column: { name: 'status', type: 'string' },
+      })
+    })).toBe(true)
+
+    expect(state.pageDataTool.value?.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
+    expect(state.pageDataDesignerDirty.value).toBe(true)
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
+
+    state.selectPage('orders-page-v2')
+
+    expect(state.activePageId.value).toBe('orders-page-v2')
+    expect(state.editFiles['pagedata.json']).toBe('')
+    expect(state.fileLoadState['pagedata.json']).toBe('idle')
+    expect(state.fileDirty['pagedata.json']).toBe(false)
+    expect(state.pageDataTool.value).toBeNull()
+    expect(state.pageDataDocument.value).toBeNull()
+    expect(state.pageDataDesignerDirty.value).toBe(false)
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(0)
   })
 
   it('does not record manual page-model patches into the AI transaction stack', () => {
@@ -150,7 +250,7 @@ describe('useDevState pagedata local history', () => {
     state.updatePageFile('rule.json', '[]\n')
     state.updatePageFile('pagedata.json', createPageDataText('Manual-Alpha', true))
 
-    const basePageData = state.readPageEditModel().pageDataJson
+    const basePageData = cloneJson(state.pageDataDocument.value!)
     const manualOrders = basePageData.tables['Orders']!
     const manualPageData = {
       ...basePageData,
@@ -166,7 +266,10 @@ describe('useDevState pagedata local history', () => {
       },
     }
 
-    state.applyPageEditModelPatch({ pageDataJson: manualPageData }, { source: 'manual' })
+    state.applyPageFiles(
+      { 'pagedata.json': canonicalizePageDataJson(JSON.stringify(manualPageData)).text },
+      { source: 'manual' },
+    )
 
     expect(state.editFiles['pagedata.json']).toContain('status')
     expect(state.getPageEditTransactionCount()).toBe(0)
@@ -187,7 +290,10 @@ describe('useDevState pagedata local history', () => {
       },
     }
 
-    state.applyPageEditModelPatch({ pageDataJson: aiPageData }, { source: 'ai' })
+    state.applyPageFiles(
+      { 'pagedata.json': canonicalizePageDataJson(JSON.stringify(aiPageData)).text },
+      { source: 'ai' },
+    )
 
     expect(state.getPageEditTransactionCount()).toBe(1)
     expect(state.canPageEditTransactionBack()).toBe(true)

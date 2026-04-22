@@ -5,13 +5,13 @@
  * 本文件自包含 catalog → StillDefinition 的投影逻辑。
  */
 
-import type { IStillSession, StillDefinition, StillResult } from './types'
-import { getEditState } from './edit-state'
-import { EDIT_BOOTSTRAP_ACTION } from './action-names'
+import type { IStillSession, StillDefinition, StillResult } from '../types'
+import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-state'
+import { EDIT_BOOTSTRAP_ACTION } from '../action-names'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   validateDataSetCrudToolStillParams,
-} from './dataset-crud-tool-stills-catalog'
+} from '../dataset-crud-tool-stills-catalog'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 类型与静态索引
@@ -118,7 +118,7 @@ function executeDatasetStillRow(
   params: unknown,
 ): StillResult {
   const state = getEditState(session)
-  const tool = state.datasetEdit
+  const tool = getActiveDataSetTool(state)
   if (!tool) {
     return {
       ok: false,
@@ -135,6 +135,10 @@ function executeDatasetStillRow(
         ? (member as DispatchFn).call(tool, ...resolveDispatchArgs(row.action, params))
         : member
     const data = stripLayoutField(rawData)
+
+    if (row.type === 'request') {
+      notifyDataSetChanged(state, tool)
+    }
 
     return { ok: true, data, summary: `${row.action} 完成` }
   } catch (err) {

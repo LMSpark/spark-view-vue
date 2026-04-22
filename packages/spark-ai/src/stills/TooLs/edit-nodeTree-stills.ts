@@ -12,10 +12,10 @@
 
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
 
-import type { IStillSession, StillDefinition, StillResult } from './types'
-import { getEditState } from './edit-state'
-import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from './spark-node-tree-tool-catalog'
-import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from './llm-params-validator'
+import type { IStillSession, StillDefinition, StillResult } from '../types'
+import { getActiveNodeTree, getEditState, notifyNodeTreeChanged } from '../edit-state'
+import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../spark-node-tree-tool-catalog'
+import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '../llm-params-validator'
 
 // ── 2. 类型定义 (Type Definitions) ────────────────────────────────────────────────
 
@@ -69,8 +69,9 @@ function executeNodeTreeStillRow(
   row: (typeof SPARK_NODE_TREE_TOOL_PARAMETER_TABLE)[number],
   params: unknown,
 ): StillResult {
+  const state = getEditState(session)
   // 从共享状态的 store 中获取已经初始化的页面节点树（SparkNodeTree）
-  const tree = getEditState(session).nodeTree
+  const tree = getActiveNodeTree(state)
 
   // 防卫检查：如因生命周期顺序错乱导致树未建立，给出修补建议
   if (!tree) {
@@ -90,6 +91,10 @@ function executeNodeTreeStillRow(
     
     // 执行底层修改逻辑，携带从外界传入的参数
     const data = fn.call(tree, params ?? {})
+
+    if (row.type === 'request') {
+      notifyNodeTreeChanged(state, tree)
+    }
     
     // 封装并返回成功摘要给调用方
     return { ok: true, data, summary: `${row.action} 完成` }

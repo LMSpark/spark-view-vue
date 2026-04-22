@@ -247,7 +247,7 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
 
 ══ Edit Domain: 动作纪律 ══
 
-  - 当前会话仅允许 edit domain 动作：edit.* / file.* / datasetTool.* / sparkNodeTree.* / dataset.export
+  - 当前会话仅允许 edit domain 动作：edit.* / textModel.* / datasetTool.* / sparkNodeTree.* / dataset.export
   - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
   - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
   - 首轮可调用 session.describe 或 stills.capabilities 了解 edit-domain 目录；之后不要重复能力探测
@@ -257,8 +257,8 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
   按目标文件选择动作：
   - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 queryComponentCatalog('*')，选定 type 后再 queryComponentGuide(type)
   - 修改 pagedata.json：使用 datasetTool.*；完成数据阶段后执行 dataset.export
-  - 修改 script.js：使用 file.readScript / file.writeScript
-  - 修改 style.css：使用 file.readStyle / file.writeStyle
+  - 修改 script.js：使用 textModel.readScript / textModel.writeScript
+  - 修改 style.css：使用 textModel.readStyle / textModel.writeStyle
 
   执行目标：
   - 只做满足当前请求的最小必要修改

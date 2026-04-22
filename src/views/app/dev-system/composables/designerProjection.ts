@@ -1,4 +1,4 @@
-import type { DataColumn, IDataSetMetadata, ITableMetadata, IViewMetadata, TableRelation } from '@spark-view/spark-data'
+import type { DataColumn, IDataSetMetadata, ITableMetadata, TableRelation } from '@spark-view/spark-data'
 
 export interface DesignerColumnProjection extends DataColumn {
   id: string
@@ -136,25 +136,6 @@ export function hasDesignerProjectionChanges(current: IDataSetMetadata, persiste
   return JSON.stringify(normalizeDesignerComparableMetadata(current)) !== JSON.stringify(normalizeDesignerComparableMetadata(persisted))
 }
 
-export function shouldSyncDesignerFromExternalPageDataChange(params: {
-  previousPersisted: IDataSetMetadata | null
-  nextPersisted: IDataSetMetadata | null
-}): boolean {
-  const { previousPersisted, nextPersisted } = params
-  if (nextPersisted === null) return false
-
-  const normalizedNext = JSON.stringify(normalizeDesignerComparableMetadata(nextPersisted))
-  const normalizedPrevious = previousPersisted === null
-    ? null
-    : JSON.stringify(normalizeDesignerComparableMetadata(previousPersisted))
-
-  if (normalizedPrevious !== null && normalizedPrevious === normalizedNext) {
-    return false
-  }
-
-  return true
-}
-
 function normalizeDesignerComparableMetadata(metadata: IDataSetMetadata): IDataSetMetadata {
   const { pageId: _pageId, ...rest } = metadata
   const tableEntries = Object.entries(metadata.tables)
@@ -179,21 +160,3 @@ function normalizeDesignerComparableMetadata(metadata: IDataSetMetadata): IDataS
   }
 }
 
-export function normalizeViewsFromLoose(rawViews: unknown): { default: IViewMetadata } & Record<string, IViewMetadata> {
-  const views = asRecord(rawViews) as Record<string, IViewMetadata> | null
-  if (views === null) {
-    return { default: { rows: [] } }
-  }
-  if (views['default'] === undefined) {
-    return {
-      ...views,
-      default: { rows: [] },
-    }
-  }
-  return views as { default: IViewMetadata } & Record<string, IViewMetadata>
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
-  return value as Record<string, unknown>
-}

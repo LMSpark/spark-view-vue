@@ -609,6 +609,54 @@ describe('runStillsLoop', () => {
     expect(result.rounds).toBe(1)
   })
 
+  it('forwards signal and per-run SSE handler to the backend', async () => {
+    const controller = new AbortController()
+    const sseSpy: Array<{ sessionId: string; type: string; data: string }> = []
+
+    exec('dataset.bootstrap', { dataSetName: 'DS' })
+
+    const backend: SessionBackend = {
+      async createSession(_systemPrompt, _userPrompt, _windowSize, _tools, signal) {
+        expect(signal).toBe(controller.signal)
+        return 'mock-session-id'
+      },
+      async executeTurn(_sessionId, options) {
+        expect(options?.signal).toBe(controller.signal)
+        options?.onSseEvent?.({
+          sessionId: 'mock-session-id',
+          type: 'delta',
+          data: 'stream-fragment',
+        })
+        return { text: 'done' }
+      },
+      async appendMessages(_sid, _msgs, signal) {
+        expect(signal).toBe(controller.signal)
+      },
+      async getConversation() { return [] },
+      async destroySession() { /* noop */ },
+      async destroyAllSessions() { /* noop */ },
+    }
+
+    const result = await runStillsLoop('test', session, backend, {
+      maxRounds: 5,
+      slidingWindow: 20,
+      systemPrompt: 'test',
+      signal: controller.signal,
+      onSseEvent(event) {
+        sseSpy.push(event)
+      },
+    })
+
+    expect(result.rounds).toBe(1)
+    expect(sseSpy).toEqual([
+      {
+        sessionId: 'mock-session-id',
+        type: 'delta',
+        data: 'stream-fragment',
+      },
+    ])
+  })
+
   it('injects escalated followUp after repeated same failed signature', async () => {
     type MockReply = {
       text?: string

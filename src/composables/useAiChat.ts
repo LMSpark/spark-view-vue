@@ -64,10 +64,32 @@ function restoreMessages(raw: string): ChatMessage[] {
 
   return parsed
     .filter(message => typeof message.content === 'string')
-    .map(message => ({
-      ...message,
-      timestamp: new Date(message.timestamp),
-    }))
+    .flatMap((message) => {
+      if (message.streaming !== true) {
+        return [{
+          ...message,
+          timestamp: new Date(message.timestamp),
+        }]
+      }
+
+      const content = message.content.trim()
+      const reasoning = message.reasoning?.trim() ?? ''
+      if (content === '' && reasoning === '') {
+        return []
+      }
+
+      const interruptionNotice = '⚠️ 上一轮响应已中断，请重新发送继续。'
+      const nextContent = message.role === 'assistant' && !message.content.includes(interruptionNotice)
+        ? `${message.content}${message.content.endsWith('\n') ? '' : '\n\n'}${interruptionNotice}`
+        : message.content
+
+      return [{
+        ...message,
+        content: nextContent,
+        streaming: false,
+        timestamp: new Date(message.timestamp),
+      }]
+    })
 }
 
 // ── Composable ───────────────────────────────────────────────────────────────
