@@ -734,28 +734,26 @@ function snapshotBlueprintStructure(blueprint: ExecutionBlueprint): string {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Protocol Block Helpers (修复提示生成)
+// FC Call Hint Helpers (修复提示生成)
 // ═══════════════════════════════════════════════════════════
 
-function formatProtocolBlock(
-  type: 'request' | 'describe',
-  action: string,
-  requestId: string,
-  params: unknown,
-): string {
-  return `@@${type}:${action}#${requestId}\n${JSON.stringify(params, null, 2)}\n@@end`
+function formatFunctionCallHint(action: string, requestId: string, params: unknown): string {
+  return [
+    `requestId: ${requestId}`,
+    `下一步直接调用 ${action.replace(/\./g, '_')}(${JSON.stringify(params, null, 2)})`,
+  ].join('\n')
 }
 
 function buildBlueprintDescribeFix(requestId = 'retry-blueprint-describe'): string {
-  return formatProtocolBlock('describe', BLUEPRINT_DESCRIBE_ACTION, requestId, {})
+  return formatFunctionCallHint(BLUEPRINT_DESCRIBE_ACTION, requestId, {})
 }
 
 function buildActionSpecFix(action: string, requestId = 'retry-action-spec'): string {
-  return formatProtocolBlock('describe', STILLS_ACTION_SPEC_ACTION, requestId, { action })
+  return formatFunctionCallHint(STILLS_ACTION_SPEC_ACTION, requestId, { action })
 }
 
 function buildPlanItemAdvanceFix(planItemId: string, note = '动作执行完成', requestId = 'retry-plan-item-advance'): string {
-  return formatProtocolBlock('request', 'blueprint.item.advance', requestId, {
+  return formatFunctionCallHint('blueprint.item.advance', requestId, {
     completedPlanItemId: planItemId,
     note,
   })
@@ -766,7 +764,7 @@ function buildCheckpointAdvanceFix(
   note = 'checkpoint 已完成',
   requestId = 'retry-checkpoint-advance',
 ): string {
-  return formatProtocolBlock('request', BLUEPRINT_ADVANCE_ACTION, requestId, {
+  return formatFunctionCallHint(BLUEPRINT_ADVANCE_ACTION, requestId, {
     completedCheckpointId: checkpointId,
     note,
   })

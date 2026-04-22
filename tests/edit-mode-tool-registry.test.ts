@@ -1,0 +1,26 @@
+import { beforeEach, describe, expect, it } from 'vitest'
+
+import {
+  clearDomains,
+  clearRegistry,
+  registerEditStills,
+} from '../packages/spark-ai/src/stills'
+import { functionNameToAction, generateToolDefinitions } from '../packages/spark-ai/src/tool-calling'
+
+beforeEach(() => {
+  clearDomains()
+  clearRegistry()
+  registerEditStills()
+})
+
+describe('edit mode tool registry', () => {
+  it('does not expose blueprint tools in edit mode', () => {
+    const actions = generateToolDefinitions().map(tool => functionNameToAction(tool.function.name))
+
+    expect(actions).not.toContain('blueprint.create')
+    expect(actions).not.toContain('blueprint.describe')
+    expect(actions).not.toContain('blueprint.revise')
+    expect(actions).not.toContain('blueprint.advance')
+    expect(actions.every(action => !action.startsWith('blueprint.'))).toBe(true)
+  })
+})

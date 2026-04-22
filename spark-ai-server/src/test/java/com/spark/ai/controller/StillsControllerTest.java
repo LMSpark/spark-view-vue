@@ -1,13 +1,9 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.stills.StillsAssistantService;
-import com.spark.ai.stills.StillsOrchestrator;
-import com.spark.ai.stills.StillsSessionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,15 +18,6 @@ class StillsControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean
-    StillsAssistantService assistantService;
-
-    @MockBean
-    StillsOrchestrator orchestrator;
-
-    @MockBean
-    StillsSessionService stillsSessionService;
-
     @Test
     void chatEndpoint_returnsGone() throws Exception {
         mockMvc.perform(post("/api/stills/chat")
@@ -44,7 +31,7 @@ class StillsControllerTest {
     void executeEndpoint_returnsGone() throws Exception {
         mockMvc.perform(post("/api/stills/execute")
                         .contentType(MediaType.TEXT_PLAIN)
-                        .content("@@request:x#1\n{}\n@@end"))
+                        .content("legacy-request"))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.error").value("LEGACY_PROTOCOL_REMOVED"));
     }

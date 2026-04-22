@@ -30,6 +30,8 @@ export type { TokenUsage }
 
 export type ChatMode = 'multi' | 'single'
 
+type MaybeGetter<T> = T | (() => T)
+
 export interface AiChatSendRequest {
   historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
   mode: ChatMode
@@ -42,20 +44,76 @@ export interface AiChatSendRequest {
 
 export type AiChatSender = (request: AiChatSendRequest) => Promise<void>
 
+function resolveOption<T>(value: MaybeGetter<T> | undefined): T | undefined {
+  if (typeof value === 'function') {
+    return (value as (() => T))()
+  }
+  return value
+}
+
+function serializeMessages(messages: ChatMessage[]): string {
+  return JSON.stringify(messages.map(message => ({
+    ...message,
+    timestamp: message.timestamp.toISOString(),
+  })))
+}
+
+function restoreMessages(raw: string): ChatMessage[] {
+  const parsed = JSON.parse(raw) as Array<Omit<ChatMessage, 'timestamp'> & { timestamp: string }>
+  if (!Array.isArray(parsed)) return []
+
+  return parsed
+    .filter(message => typeof message.content === 'string')
+    .map(message => ({
+      ...message,
+      timestamp: new Date(message.timestamp),
+    }))
+}
+
 // ── Composable ───────────────────────────────────────────────────────────────
 
 export function useAiChat(options?: {
-  mode?: ChatMode
-  systemPrompt?: string | undefined
-  sender?: AiChatSender
+  mode?: MaybeGetter<ChatMode>
+  systemPrompt?: MaybeGetter<string | undefined>
+  sender?: MaybeGetter<AiChatSender | undefined>
+  storageKey?: MaybeGetter<string | undefined>
 }) {
-  const mode = options?.mode ?? 'multi'
-  const systemPrompt = options?.systemPrompt
-  const sender = options?.sender
+  const getMode = () => resolveOption(options?.mode) ?? 'multi'
+  const getSystemPrompt = () => resolveOption(options?.systemPrompt)
+  const getSender = () => resolveOption(options?.sender)
+  const getStorageKey = () => resolveOption(options?.storageKey)
 
-  const messages = ref<ChatMessage[]>([])
+  const initialMessages = (() => {
+    const storageKey = getStorageKey()
+    if (!storageKey) return []
+
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (!raw) return []
+      return restoreMessages(raw)
+    } catch {
+      return []
+    }
+  })()
+
+  const messages = ref<ChatMessage[]>(initialMessages)
   const isStreaming = ref(false)
   const error = ref<string | null>(null)
+
+  function syncPersistedMessages() {
+    const storageKey = getStorageKey()
+    if (!storageKey) return
+
+    try {
+      if (messages.value.length === 0) {
+        localStorage.removeItem(storageKey)
+        return
+      }
+      localStorage.setItem(storageKey, serializeMessages(messages.value))
+    } catch {
+      // ignore persistence errors in chat UI
+    }
+  }
 
   /** 当前活跃 SSE 流的 AbortController（用于取消在途请求） */
   let _abortController: AbortController | null = null
@@ -73,6 +131,10 @@ export function useAiChat(options?: {
     if (!trimmed && !attachments?.length) return
     if (isStreaming.value) return
 
+    const mode = getMode()
+    const systemPrompt = getSystemPrompt()
+    const sender = getSender()
+
     error.value = null
 
     // 添加用户消息
@@ -84,6 +146,7 @@ export function useAiChat(options?: {
       timestamp: new Date(),
     }
     messages.value.push(userMsg)
+    syncPersistedMessages()
 
     // 准备 AI 回复占位
     const assistantMsg: ChatMessage = {
@@ -94,6 +157,7 @@ export function useAiChat(options?: {
       streaming: true,
     }
     messages.value.push(assistantMsg)
+    syncPersistedMessages()
     // 从 reactive 数组取回 proxy 引用，确保后续属性修改触发 Vue 响应式更新
     const reactiveMsg = messages.value[messages.value.length - 1] as ChatMessage
     isStreaming.value = true
@@ -124,12 +188,15 @@ export function useAiChat(options?: {
       _abortController = new AbortController()
       const onReasoning = (reasoning: string) => {
         reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
+        syncPersistedMessages()
       }
       const onDelta = (delta: string) => {
         reactiveMsg.content += delta
+        syncPersistedMessages()
       }
       const onUsage = (usageRaw: Record<string, unknown>) => {
         reactiveMsg.usage = parseTokenUsage(usageRaw)
+        syncPersistedMessages()
       }
 
       if (sender !== undefined) {
@@ -157,10 +224,12 @@ export function useAiChat(options?: {
       const msg = e instanceof Error ? e.message : '请求失败'
       error.value = msg
       reactiveMsg.content = `⚠️ ${msg}`
+      syncPersistedMessages()
     } finally {
       _abortController = null
       reactiveMsg.streaming = false
       isStreaming.value = false
+      syncPersistedMessages()
     }
   }
 
@@ -181,6 +250,7 @@ export function useAiChat(options?: {
     messages.value = []
     error.value = null
     isStreaming.value = false
+    syncPersistedMessages()
   }
 
   return {

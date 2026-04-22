@@ -39,6 +39,19 @@
               <NavIcon name="DocumentChecked" :size="14" /> 保存
             </el-button>
           </el-tooltip>
+          <span v-if="resolvedActiveFile === 'pagedata.json'" class="action-divider" />
+          <el-button-group v-if="resolvedActiveFile === 'pagedata.json'" class="action-group">
+            <el-tooltip content="结构合法时进入 DataSet 可视化设计器" placement="bottom" :show-after="600">
+              <el-button size="small" :type="pageDataViewMode === 'visual' ? 'primary' : 'default'" :disabled="Boolean(state.pageDataSetError.value)" @click="setPageDataViewMode('visual')">
+                <NavIcon name="Coin" :size="14" /> 可视化
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="直接编辑 pagedata.json 原始文本" placement="bottom" :show-after="600">
+              <el-button size="small" :type="pageDataViewMode === 'text' ? 'primary' : 'default'" @click="setPageDataViewMode('text')">
+                <NavIcon name="Document" :size="14" /> 文本
+              </el-button>
+            </el-tooltip>
+          </el-button-group>
           <span class="action-divider" />
           <el-button
             size="small"
@@ -62,7 +75,24 @@
       </el-tabs>
 
       <div class="editor-body" v-loading="!editor.isReady.value">
-        <div class="editor-area">
+        <div v-if="resolvedActiveFile === 'pagedata.json'" class="editor-area" :class="{ 'editor-area--dataset': pageDataViewMode === 'visual' }">
+          <DevDataSetDesigner
+            v-if="pageDataViewMode === 'visual'"
+            :state="state"
+            :show-ai-panel="showDataSetAiPanel"
+            class="code-input editor-dataset"
+          />
+          <el-input
+            v-else
+            :model-value="state.editFiles[resolvedActiveFile]"
+            type="textarea"
+            resize="none"
+            class="code-input code-input--pagedata-text"
+            @update:model-value="editor.updateText"
+          />
+        </div>
+
+        <div v-else class="editor-area">
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
             type="json-tree-editor"
@@ -72,17 +102,6 @@
             class="code-input code-input--json"
             height="100%"
             @update:value="editor.updateText"
-          />
-          <JsonTreeEditor
-            v-else-if="resolvedActiveFile === 'pagedata.json'"
-            type="json-tree-editor"
-            :value="state.editFiles[resolvedActiveFile] ?? ''"
-            :document-value="(state.pageDataDocument.value as JsonDocument | null)"
-            :policy="pageDataPolicy"
-            class="code-input code-input--json"
-            height="100%"
-            :schema="PAGE_DATA_JSON_SCHEMA"
-            @update:document-value="handleActivePageDataDocumentChange"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
@@ -101,19 +120,6 @@
             @update:model-value="editor.updateText"
           />
         </div>
-
-        <!-- AI 设计助手（右侧） -->
-        <DevEditorAiBar
-          v-if="props.showAiBar !== false"
-          :page-id="state.activePageId.value ?? ''"
-          :file-name="resolvedActiveFile"
-          :file-content="state.editFiles[resolvedActiveFile] ?? ''"
-          :context-files="state.editFiles"
-          :ensure-context-loaded="ensureAllContextFilesLoaded"
-          :enabled="Boolean(state.activePageId.value)"
-          @apply="handleAiApply"
-          @status="handleAiStatus"
-        />
 
         <!-- ── 版本侧栏（内联） ── -->
         <transition name="slide-version">
@@ -146,23 +152,28 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { SparkCodeEditor, JsonTreeEditor, type JsonDocument } from '@spark-view/spark-component'
+import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
-import { pageDataPolicy } from './policies/pageDataPolicy'
 import { rulePolicy } from './policies/rulePolicy'
 import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
-import { PAGE_DATA_JSON_SCHEMA } from './policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
-import DevEditorAiBar from './DevEditorAiBar.vue'
+import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   state: DevState
   activeFile?: PageFileName
   showTabs?: boolean
-  showAiBar?: boolean
+  showDataSetAiPanel?: boolean
+}>(), {
+  showTabs: true,
+  showDataSetAiPanel: true,
+})
+
+const emit = defineEmits<{
+  (e: 'active-file-change', file: PageFileName): void
 }>()
 
 const localActiveFile = ref<PageFileName>('rule.json')
@@ -171,8 +182,11 @@ const remoteVersionLoading = ref(false)
 const restoringVersion = ref<number | null>(null)
 const creatingVersion = ref(false)
 const remotePageVersions = ref<BackendPageVersionSummary[]>([])
+const pageDataViewMode = ref<'visual' | 'text'>('visual')
+const pageDataViewModePinned = ref(false)
 const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
-const showTabs = computed(() => props.showTabs ?? true)
+const showTabs = computed(() => props.showTabs)
+const showDataSetAiPanel = computed(() => props.showDataSetAiPanel)
 const editor = useDevFileEditor(props.state, resolvedActiveFile)
 
 watch(() => props.activeFile, (nextFile) => {
@@ -181,9 +195,30 @@ watch(() => props.activeFile, (nextFile) => {
   }
 }, { immediate: true })
 
+watch(resolvedActiveFile, (nextFile) => {
+  emit('active-file-change', nextFile)
+}, { immediate: true })
+
 watch(() => props.state.activePageId.value, () => {
   showVersionPanel.value = false
   remotePageVersions.value = []
+})
+
+watch([resolvedActiveFile, () => props.state.activePageId.value], () => {
+  if (resolvedActiveFile.value !== 'pagedata.json') return
+  resetPageDataViewMode()
+}, { immediate: true })
+
+watch(() => props.state.pageDataSetError.value, (nextError) => {
+  if (resolvedActiveFile.value !== 'pagedata.json') return
+  if (nextError) {
+    pageDataViewMode.value = 'text'
+    pageDataViewModePinned.value = false
+    return
+  }
+  if (!pageDataViewModePinned.value) {
+    pageDataViewMode.value = 'visual'
+  }
 })
 
 function isCodeFile(name: string): boolean {
@@ -194,10 +229,6 @@ function resolveCodeLanguage(name: string): 'javascript' | 'css' {
   return name.endsWith('.css') ? 'css' : 'javascript'
 }
 
-function handleActivePageDataDocumentChange(value: JsonDocument) {
-  editor.updateDocument(value as Record<string, unknown>)
-}
-
 function fileIcon(name: string): string {
   if (name === 'rule.json') return 'Crop'
   if (name === 'pagedata.json') return 'Coin'
@@ -206,26 +237,22 @@ function fileIcon(name: string): string {
   return 'Document'
 }
 
+function resetPageDataViewMode() {
+  pageDataViewModePinned.value = false
+  pageDataViewMode.value = props.state.pageDataSetError.value ? 'text' : 'visual'
+}
+
+function setPageDataViewMode(mode: 'visual' | 'text') {
+  pageDataViewModePinned.value = true
+  pageDataViewMode.value = mode
+}
+
 function saveFile() {
   void editor.save()
 }
 
 function refreshFile() {
   void editor.refresh()
-}
-
-async function ensureAllContextFilesLoaded() {
-  await Promise.all(PAGE_FILE_NAMES.map(name => props.state.loadPageFile(name)))
-}
-
-// ── AI 辅助处理 ──
-
-function handleAiApply(content: string) {
-  editor.updateText(content)
-}
-
-function handleAiStatus(message: string, type: 'success' | 'warning' | 'error') {
-  props.state.addStatus(message, type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error')
 }
 
 async function loadVersions() {
@@ -390,6 +417,15 @@ function formatVersionTime(raw: string | null | undefined): string {
   padding: 8px 12px 12px;
 }
 
+.editor-area--dataset {
+  padding: 0;
+  background: #f8fafc;
+}
+
+.editor-dataset {
+  min-width: 0;
+}
+
 .code-input {
   flex: 1;
   min-height: 0;
@@ -399,6 +435,17 @@ function formatVersionTime(raw: string | null | undefined): string {
 .code-input--json,
 .code-input--code {
   min-height: 0;
+}
+
+.code-input--pagedata-text :deep(.el-textarea),
+.code-input--pagedata-text :deep(.el-textarea__inner) {
+  height: 100%;
+  min-height: 100%;
+}
+
+.code-input--pagedata-text :deep(.el-textarea__inner) {
+  resize: none;
+  border-radius: 8px;
 }
 
 .code-input :deep(textarea) {

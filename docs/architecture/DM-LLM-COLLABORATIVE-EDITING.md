@@ -422,7 +422,7 @@ export const EDIT_MODE_PROMPT = `\
 3. script.js / style.css 是文件级：读取全文 → 修改 → 写回全文
 4. rule.json / pagedata.json 是增量级：通过具体操作修改，不要整体替换
 5. 一轮最多一个协议块（批量用 addNodes / setPropsBatch / createTable+columns）
-6. @@error 的 fix 字段是必读输入，修正后重试
+6. tool error 的 fix 字段是必读输入，修正后重试
 
 ══ 上下文 ══
 
@@ -479,7 +479,7 @@ export const EDIT_MODE_PROMPT = `\
 |------|---|------|
 | T10 | DevSystem | DevAiPanel 增加"编辑模式" toggle |
 | T11 | DevSystem | useDevEditSession composable（管理 edit session 生命周期） |
-| T12 | DevSystem | Stills 交互日志面板（展示 @@request/@@result/@@error 流） |
+| T12 | DevSystem | Stills 交互日志面板（展示 tool call / tool result / tool error 流） |
 | T13 | DevSystem | 编辑完成 → 回写 pagedata.json editor |
 | T14 | e2e test | "在订单表加一列 total" 端到端验证 |
 
@@ -725,7 +725,7 @@ function undoTransaction(state: EditDomainState, tx: EditTransaction): void {
 | 全局 registry 互斥：切换模式需清空注册 | 模式切换时 stills 不可用 | 切换时 clearRegistry + clearDomains + 重新注册；或改为隔离 registry |
 | DataSetCrudTool 构造改造破坏现有 API | 影响 Stills 现有用法 | 保持构造函数不变，仅新增静态工厂 |
 | LLM 上下文窗口不够放结构摘要 | 大页面配置可能超出 token 限制 | 渐进式摘要：首轮只放表名/列名，按需展开 |
-| script.js 文件级修改可能引入语法错误 | 保存后页面报错 | writeScript 后运行沙箱语法检查，失败则返回 @@error |
+| script.js 文件级修改可能引入语法错误 | 保存后页面报错 | writeScript 后运行沙箱语法检查，失败则返回 tool error |
 | human 和 LLM 同时编辑冲突 | 数据不一致 | Q3-C 决策：请求-响应轮次，human 发指令期间不接受其他编辑 |
 | script/style 编辑器内容与 session 状态分离 | LLM 循环期间 human 在 CodeEditor 修改 script/style，sync 时被覆盖 | 方案：LLM 循环进行中锁定 script/style 编辑器为只读；循环结束 syncToEditors() 后解锁 |
 | undoTransaction 部分失败 | nodeTree undo 成功但 datasetEdit undo 失败 → 状态不一致 | undo 循环中 catch 异常，回滚失败时 toast 警告 + 记录日志，不中断剩余回滚 |

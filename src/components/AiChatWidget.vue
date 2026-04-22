@@ -2,7 +2,7 @@
   <div class="ai-chat-widget" :class="{ compact: props.compact }">
     <!-- 头部 -->
     <div class="chat-header">
-      <span class="chat-title">{{ chatTitle }}</span>
+      <span class="chat-title">{{ props.title ?? 'AI 助手' }}</span>
       <div class="chat-header-actions">
         <button class="icon-btn" title="清空会话" :disabled="isStreaming" @click="handleClear">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -23,7 +23,7 @@
               14H6l-2 2V4h16v12z"
           />
         </svg>
-        <p>{{ chatPlaceholder }}</p>
+        <p>{{ props.placeholder ?? '有什么可以帮您？' }}</p>
       </div>
 
       <div
@@ -147,16 +147,14 @@ const props = defineProps<{
   placeholder?: string
   compact?: boolean
   sender?: AiChatSender
+  storageKey?: string
 }>()
 
-const chatMode = props.mode ?? 'multi'
-const chatTitle = props.title ?? 'AI 助手'
-const chatPlaceholder = props.placeholder ?? '有什么可以帮您？'
-
 const { messages, isStreaming, error, send, uploadFile, clear } = useAiChat({
-  mode: chatMode,
-  ...(props.systemPrompt !== undefined ? { systemPrompt: props.systemPrompt } : {}),
-  ...(props.sender !== undefined ? { sender: props.sender } : {}),
+  mode: () => props.mode ?? 'multi',
+  systemPrompt: () => props.systemPrompt,
+  sender: () => props.sender,
+  storageKey: () => props.storageKey,
 })
 
 const inputText = ref('')

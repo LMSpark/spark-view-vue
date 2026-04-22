@@ -5,6 +5,7 @@ import {
   detectRelevantSkillTypes,
   PAGE_SYSTEM_PROMPT,
   STILLS_RUNTIME_PROMPT,
+  STILLS_EDIT_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
 } from '@spark-view/spark-ai'
 import type {
@@ -223,5 +224,15 @@ describe('提示词内容完整性', () => {
     expect(STILLS_BLUEPRINT_PROMPT).toContain('session_describe')
     expect(STILLS_BLUEPRINT_PROMPT).toContain('stills_capabilities')
     expect(STILLS_BLUEPRINT_PROMPT).toContain('stills_actionSpec')
+  })
+
+  it('STILLS_EDIT_RUNTIME_PROMPT 只保留四文件直接编辑，不包含蓝图流程', () => {
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('四文件直接编辑')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('不是“需求调研 / 方案审阅 / 蓝图推进”')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('禁止输出或调用任何 blueprint.* 动作')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).not.toContain('生成确认问题')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).not.toContain('用户明确批准后')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).not.toContain('蓝图编排')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).not.toContain('blueprint.create')
   })
 })

@@ -1,8 +1,5 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.stills.StillsAssistantService;
-import com.spark.ai.stills.StillsOrchestrator;
-import com.spark.ai.stills.StillsSessionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,18 +22,6 @@ import java.util.Map;
 public class StillsController {
 
     private static final Logger log = LoggerFactory.getLogger(StillsController.class);
-
-    private final StillsAssistantService assistantService;
-    private final StillsOrchestrator orchestrator;
-    private final StillsSessionService stillsSessionService;
-
-    public StillsController(StillsAssistantService assistantService,
-                         StillsOrchestrator orchestrator,
-                         StillsSessionService stillsSessionService) {
-        this.assistantService = assistantService;
-        this.orchestrator = orchestrator;
-        this.stillsSessionService = stillsSessionService;
-    }
 
     /**
      * POST /api/stills/chat（已下线）。
@@ -158,6 +143,7 @@ public class StillsController {
     // ─────────────────────────────────────────────────────────────────────────
 
     private static ResponseEntity<Map<String, Object>> legacyStillsEndpointRemoved() {
+        log.debug("Rejected request to removed legacy /api/stills endpoint");
         return ResponseEntity.status(HttpStatus.GONE).body(Map.of(
                 "error", "LEGACY_PROTOCOL_REMOVED",
                 "message", "/api/stills/* 接口已下线，请改用 /api/ai/sessions 并传递 protocolVersion=3"

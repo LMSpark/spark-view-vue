@@ -43,6 +43,8 @@ AI 配置能力的系统设计与实施规划：
 
 | 文件 | 说明 |
 |------|------|
+| [DEVSYSTEM_AI_4FILE_IMPLEMENTATION_REVIEW_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_IMPLEMENTATION_REVIEW_PLAN.md) | **当前实施基线**：包含已审核计划、阶段性实施回写、偏离计划项、实际验证结果与后续入口 |
+| [DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md) | **预研母版**：DevSystem AI 统一到页面级 4 文件同层编辑的背景梳理与目标架构；审核时以实施计划书为准 |
 | [DEVSYSTEM_DATASET_TOOL_SSOT.md](architecture/DEVSYSTEM_DATASET_TOOL_SSOT.md) | **当前实现**：DevSystem / `pagedata.json` / `DataSetCrudTool` / AI 能力目录之间的 SSoT 边界与调用链 |
 | [AI_FRONTEND_UNIFICATION_PLAN.md](architecture/AI_FRONTEND_UNIFICATION_PLAN.md) | 前端 AI 引擎统一与细粒度编辑主链路规划 |
 | [AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md](architecture/AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md) | ~~旧~~ 全生命周期方案草案（含已删除的 design-session / AiDesignStudio 入口） |

@@ -117,6 +117,82 @@ describe('useDevState pagedata local history', () => {
     expect(state.fileDirty['pagedata.json']).toBe(false)
   })
 
+  it('uses the shared live pagedata tool as the readPageEditModel source before exporting text', () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+    state.updatePageFile('rule.json', '[]\n')
+
+    const initialPageDataText = createPageDataText('Live-Alpha', true)
+    state.updatePageFile('pagedata.json', initialPageDataText)
+    const persistedText = state.editFiles['pagedata.json']
+
+    expect(state.mutateLivePageData((tool) => {
+      tool.createColumn({
+        tableName: 'Orders',
+        column: { name: 'status', type: 'string' },
+      })
+    })).toBe(true)
+
+    expect(state.pageDataTool.value?.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
+    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(state.readPageEditModel().pageDataJson.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(state.editFiles['pagedata.json']).toBe(persistedText)
+
+    expect(state.undoLivePageData()).toBe(true)
+    expect(state.readPageEditModel().pageDataJson.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(false)
+    expect(state.redoLivePageData()).toBe(true)
+    expect(state.readPageEditModel().pageDataJson.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+  })
+
+  it('does not record manual page-model patches into the AI transaction stack', () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+    state.updatePageFile('rule.json', '[]\n')
+    state.updatePageFile('pagedata.json', createPageDataText('Manual-Alpha', true))
+
+    const basePageData = state.readPageEditModel().pageDataJson
+    const manualOrders = basePageData.tables['Orders']!
+    const manualPageData = {
+      ...basePageData,
+      tables: {
+        ...basePageData.tables,
+        Orders: {
+          ...manualOrders,
+          columns: [
+            ...manualOrders.columns,
+            { name: 'status', type: 'string' },
+          ],
+        },
+      },
+    }
+
+    state.applyPageEditModelPatch({ pageDataJson: manualPageData }, { source: 'manual' })
+
+    expect(state.editFiles['pagedata.json']).toContain('status')
+    expect(state.getPageEditTransactionCount()).toBe(0)
+    expect(state.canPageEditTransactionBack()).toBe(false)
+
+    const aiOrders = manualPageData.tables['Orders']!
+    const aiPageData = {
+      ...manualPageData,
+      tables: {
+        ...manualPageData.tables,
+        Orders: {
+          ...aiOrders,
+          columns: [
+            ...aiOrders.columns,
+            { name: 'memo', type: 'string' },
+          ],
+        },
+      },
+    }
+
+    state.applyPageEditModelPatch({ pageDataJson: aiPageData }, { source: 'ai' })
+
+    expect(state.getPageEditTransactionCount()).toBe(1)
+    expect(state.canPageEditTransactionBack()).toBe(true)
+  })
+
   it('tracks non-pagedata files with local undo redo history and restores clean state at the loaded baseline', async () => {
     const initialRuleText = '{\n  "name": "alpha"\n}\n'
     const updatedRuleText = '{\n  "name": "beta"\n}\n'

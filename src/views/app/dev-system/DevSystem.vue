@@ -46,7 +46,7 @@
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
               </span>
             </template>
-            <DevFileEditor v-if="workTab === fname" :state="state" :active-file="fname" :show-tabs="false" />
+            <DevFileEditor v-if="workTab === fname" :state="state" :active-file="fname" :show-tabs="false" :show-data-set-ai-panel="false" />
           </el-tab-pane>
           <!-- 🖼 实时预览 -->
           <el-tab-pane name="preview" :disabled="!state.activePageId.value">
@@ -54,20 +54,6 @@
               <span><NavIcon name="Monitor" :size="13" /> 实时预览</span>
             </template>
             <DevPreviewTab v-if="workTab === 'preview'" :state="state" :refresh-token="previewRefreshToken" />
-          </el-tab-pane>
-          <!-- 📊 DataSet 设计器 -->
-          <el-tab-pane name="dataset" :disabled="!state.activePageId.value">
-            <template #label>
-              <span><NavIcon name="Coin" :size="13" /> DataSet 设计</span>
-            </template>
-            <DevDataSetDesigner v-if="workTab === 'dataset'" :state="state" />
-          </el-tab-pane>
-          <!-- 🌳 Rule 可视化编辑器 -->
-          <el-tab-pane name="rule" :disabled="!state.activePageId.value">
-            <template #label>
-              <span><NavIcon name="Crop" :size="13" /> Rule 编辑</span>
-            </template>
-            <DevRuleEditor v-if="workTab === 'rule'" :state="state" />
           </el-tab-pane>
         </el-tabs>
         <div class="workspace-footer">
@@ -116,6 +102,8 @@
       </div>
     </div>
 
+    <DevFloatingAiPanel :state="state" :active-file="currentWorkspaceFile" />
+
 
   </div>
 </template>
@@ -132,8 +120,7 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
-import DevDataSetDesigner from './DevDataSetDesigner.vue'
-import DevRuleEditor from './DevRuleEditor.vue'
+import DevFloatingAiPanel from './components/DevFloatingAiPanel.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const { router, tenantPath } = useTenantRouter()

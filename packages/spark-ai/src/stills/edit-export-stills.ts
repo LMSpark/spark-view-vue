@@ -75,7 +75,7 @@ const editExportFiles: StillDefinition = {
 const datasetExport: StillDefinition = {
   action: DATASET_EXPORT_ACTION,
   type: 'request',
-  description: '仅导出 pagedata.json 及数据域变更统计，适用于先数据后布局的细粒度流程',
+  description: '仅导出 pagedata.json 及数据域变更统计，适用于页面模型里的数据优先增量编辑流程',
   validate: () => null,
   execute: (session): StillResult => {
     const result = finalizeDatasetFileExport(getEditState(session))

@@ -6,6 +6,7 @@ import {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
+  shouldSyncDesignerFromExternalPageDataChange,
   type DesignerTableProjection,
 } from '../src/views/app/dev-system/composables/designerProjection'
 
@@ -150,5 +151,108 @@ describe('DevDataSetDesigner projection helpers', () => {
 
     expect(hasDesignerProjectionChanges(persisted, persisted)).toBe(false)
     expect(hasDesignerProjectionChanges(changed, persisted)).toBe(true)
+  })
+
+  it('does not treat implicit default layout or preserved pageId as unsaved changes', () => {
+    const metadata = createMetadata({
+      pageId: 'page-001',
+    })
+    let nextId = 0
+    const projectedTables = projectDesignerTables(metadata, {}, () => `generated-${++nextId}`)
+    const projectedRelations = projectDesignerRelations(metadata)
+
+    const current = buildDataSetMetadataFromDesignerProjection({
+      dataSetName: metadata.dataSetName,
+      tables: projectedTables,
+      relations: projectedRelations,
+    })
+    const moved = buildDataSetMetadataFromDesignerProjection({
+      dataSetName: metadata.dataSetName,
+      tables: [
+        {
+          ...projectedTables[0]!,
+          x: projectedTables[0]!.x + 24,
+        },
+        projectedTables[1]!,
+      ],
+      relations: projectedRelations,
+    })
+
+    expect(hasDesignerProjectionChanges(current, metadata)).toBe(false)
+    expect(hasDesignerProjectionChanges(moved, metadata)).toBe(true)
+  })
+
+  it('reloads designer when external pagedata changes and local state was clean', () => {
+    const previousPersisted = createMetadata({ pageId: 'page-001' })
+    const usersTable = previousPersisted.tables['users']!
+    let nextId = 0
+    const projectedTables = projectDesignerTables(previousPersisted, {}, () => `generated-${++nextId}`)
+    const projectedRelations = projectDesignerRelations(previousPersisted)
+    const current = buildDataSetMetadataFromDesignerProjection({
+      dataSetName: previousPersisted.dataSetName,
+      tables: projectedTables,
+      relations: projectedRelations,
+    })
+    const nextPersisted = createMetadata({
+      pageId: 'page-001',
+      tables: {
+        ...previousPersisted.tables,
+        users: {
+          ...usersTable,
+          columns: usersTable.columns.filter(column => column.name !== 'name'),
+        },
+      },
+    })
+
+    expect(shouldSyncDesignerFromExternalPageDataChange({
+      previousPersisted,
+      nextPersisted,
+    })).toBe(true)
+  })
+
+  it('still reloads designer when external pagedata changes and local state is dirty', () => {
+    const previousPersisted = createMetadata({ pageId: 'page-001' })
+    const ordersTable = previousPersisted.tables['orders']!
+    let nextId = 0
+    const projectedTables = projectDesignerTables(previousPersisted, {}, () => `generated-${++nextId}`)
+    const projectedRelations = projectDesignerRelations(previousPersisted)
+    const current = buildDataSetMetadataFromDesignerProjection({
+      dataSetName: previousPersisted.dataSetName,
+      tables: [
+        {
+          ...projectedTables[0]!,
+          x: projectedTables[0]!.x + 36,
+        },
+        projectedTables[1]!,
+      ],
+      relations: projectedRelations,
+    })
+    const nextPersisted = createMetadata({
+      pageId: 'page-001',
+      tables: {
+        ...previousPersisted.tables,
+        orders: {
+          ...ordersTable,
+          columns: [
+            ...ordersTable.columns,
+            { name: 'status', type: 'string' },
+          ],
+        },
+      },
+    })
+
+    expect(shouldSyncDesignerFromExternalPageDataChange({
+      previousPersisted,
+      nextPersisted,
+    })).toBe(true)
+  })
+
+  it('does not reload designer when persisted pagedata snapshot has not changed', () => {
+    const previousPersisted = createMetadata({ pageId: 'page-001' })
+
+    expect(shouldSyncDesignerFromExternalPageDataChange({
+      previousPersisted,
+      nextPersisted: createMetadata({ pageId: 'page-001' }),
+    })).toBe(false)
   })
 })

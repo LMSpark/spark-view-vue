@@ -4,7 +4,7 @@
   功能：
   - 可视化展示表结构和关联关系
   - AI 辅助设计数据模型
-  - 蓝图执行进度展示
+  - 执行任务进度展示
   - 导出为 pagedata.json
 -->
 <template>
@@ -29,7 +29,7 @@
     <!-- 主体双栏 -->
     <div class="ds-body">
       <!-- 左侧：画布区域 -->
-      <div class="ds-canvas">
+      <div class="ds-canvas" :class="{ 'ds-canvas--full': !props.showAiPanel }">
         <div class="ds-toolbar">
           <el-button size="small" @click="addTable">
             <NavIcon name="Plus" :size="12" /> 添加表
@@ -280,7 +280,7 @@
       </div>
 
       <!-- 右侧：AI 设计助手 -->
-      <div class="ds-ai">
+      <div v-if="props.showAiPanel" class="ds-ai">
         <div class="ds-ai__header">
           <NavIcon name="Cpu" :size="16" />
           <span>AI 设计助手</span>
@@ -288,7 +288,7 @@
         </div>
 
         <div class="ds-ai__feature-tip">
-          仅保留聊天模式，所有 AI 修改统一走细粒度编辑执行链路。
+          仅保留聊天模式，所有 AI 修改统一走 DataSet 模型级编辑执行链路。
         </div>
 
         <div class="ds-ai__form">
@@ -303,10 +303,10 @@
           </div>
         </div>
 
-        <!-- 蓝图执行进度 -->
-        <div v-if="blueprint.length > 0" class="ds-ai__blueprint">
-          <div class="ds-ai__label">📋 执行计划：</div>
-          <div class="ds-step" v-for="(step, idx) in blueprint" :key="idx">
+        <!-- 执行进度 -->
+        <div v-if="taskSteps.length > 0" class="ds-ai__task-steps">
+          <div class="ds-ai__label">📋 执行任务：</div>
+          <div class="ds-step" v-for="(step, idx) in taskSteps" :key="idx">
             <span class="ds-step__icon">
               {{ step.status === 'done' ? '✅' : step.status === 'running' ? '⏳' : '⬜' }}
             </span>
@@ -315,9 +315,9 @@
         </div>
 
         <!-- AI 响应 -->
-        <div v-if="fineEditSseTrace" class="ds-ai__response">
+        <div v-if="pageDataModelSseTrace" class="ds-ai__response">
           <div class="ds-ai__label">🛰️ SSE 与 LLM 交互：</div>
-          <div class="ds-ai__text" v-html="fineEditSseTraceHtml" />
+          <div class="ds-ai__text" v-html="pageDataModelSseTraceHtml" />
         </div>
 
         <div v-if="aiResponse" class="ds-ai__response">
@@ -337,6 +337,7 @@ import {
   registerEditStills,
   createSession as createStillSession,
   executeStill,
+  getEditState,
   runStillsLoop,
   SessionBackendImpl,
   configureSessionBackend,
@@ -353,20 +354,22 @@ import {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
+  shouldSyncDesignerFromExternalPageDataChange,
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
   type LayoutForNewTable,
 } from './composables/designerProjection'
 import { createAuthHeaders } from '@/services/http'
-import type { AiChatSender } from '@/composables/useAiChat'
+import type { AiChatSender, AiChatSendRequest } from '@/composables/useAiChat'
 import {
   buildFineGrainedEditContext,
   buildFineGrainedLoopSystemPrompt,
   buildFineGrainedLoopUserPrompt,
   summarizeFineGrainedTurns,
 } from './datasetFineEditOrchestration'
-import type { DevState } from './useDevState'
+import { PAGE_FILE_NAMES } from './useDevState'
+import type { DevState, PageDataAiTaskStep } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type { DataColumn, TableRelation, ITableMetadata, IDataSetMetadata } from '@spark-view/spark-data'
 
@@ -377,10 +380,7 @@ type DesignerColumn = DesignerTableProjection['columns'][number]
 type DesignerTable = DesignerTableProjection
 type DesignerRelation = DesignerRelationProjection
 
-interface BlueprintStep {
-  action: string
-  status: 'pending' | 'running' | 'done'
-}
+type TaskStep = PageDataAiTaskStep
 
 interface RelationDraftState {
   sourceIndex: number
@@ -388,9 +388,12 @@ interface RelationDraftState {
   draft: DesignerRelation
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   state: DevState
-}>()
+  showAiPanel?: boolean
+}>(), {
+  showAiPanel: true,
+})
 
 const tableUiState = ref<Record<string, DesignerTableUiState>>({})
 const selectedTableId = ref<string | null>(null)
@@ -413,17 +416,10 @@ const relEditorPos = computed(() => {
 })
 
 // ═══ Undo / Redo（DataSetCrudTool 历史栈）═══
-const historyTool = shallowRef<DataSetCrudTool | null>(null)
-const historyTick = ref(0)
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
-function markHistoryChanged(): void {
-  historyTick.value += 1
-}
-
 const projectedMetadata = computed<IDataSetMetadata | null>(() => {
-  historyTick.value
-  return historyTool.value?.toJson() ?? null
+  return props.state.pageDataDocument.value
 })
 
 const tables = computed<DesignerTable[]>(() => {
@@ -453,18 +449,14 @@ const persistedPageDataMetadata = computed<IDataSetMetadata | null>(() => {
 
 function resetHistoryFromDesignerState(): void {
   const snapshot = buildDataSetMetadataFromDesigner()
-  if (!historyTool.value) {
-    historyTool.value = DataSetCrudTool.fromJson(snapshot)
-  } else {
-    historyTool.value.replaceFromJson(snapshot, { commitHistory: false })
-  }
-  markHistoryChanged()
+  props.state.replaceLivePageData(snapshot, { preserveHistory: false })
 }
 
 function isDesignerStateInSyncWithHistory(): boolean {
-  if (!historyTool.value) return false
+  const livePageDataTool = props.state.pageDataTool.value
+  if (!livePageDataTool) return false
   const current = JSON.stringify(buildDataSetMetadataFromDesigner())
-  const historical = JSON.stringify(historyTool.value.toJson())
+  const historical = JSON.stringify(livePageDataTool.toJson())
   return current === historical
 }
 
@@ -472,14 +464,15 @@ function applyMutationWithHistory(
   mutator: (tool: DataSetCrudTool) => void,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
-  if (!historyTool.value || !isDesignerStateInSyncWithHistory()) {
+  if (!props.state.pageDataTool.value || !isDesignerStateInSyncWithHistory()) {
     resetHistoryFromDesignerState()
   }
-  const tool = historyTool.value!
+  const tool = props.state.ensureLivePageDataTool()
+  if (!tool) return
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
     mutator(tool)
-    markHistoryChanged()
+    props.state.syncPageDataDocumentFromTool()
   } catch (error) {
     pendingProjectionLayout.value = null
     throw error
@@ -487,43 +480,39 @@ function applyMutationWithHistory(
 }
 
 function undo() {
-  if (!historyTool.value) return
-  const ok = historyTool.value.undo()
+  const ok = props.state.undoLivePageData()
   if (!ok) return
   editingRel.value = null
   selectedTableId.value = null
-  markHistoryChanged()
 }
 
 function redo() {
-  if (!historyTool.value) return
-  const ok = historyTool.value.redo()
+  const ok = props.state.redoLivePageData()
   if (!ok) return
   editingRel.value = null
   selectedTableId.value = null
-  markHistoryChanged()
 }
 
 function commitLayoutCheckpoint(): void {
-  if (!historyTool.value || !isDesignerStateInSyncWithHistory()) {
+  if (!props.state.pageDataTool.value || !isDesignerStateInSyncWithHistory()) {
     resetHistoryFromDesignerState()
   }
-  const tool = historyTool.value
+  const tool = props.state.ensureLivePageDataTool()
   if (!tool) return
   const anchor = tables.value[0]
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
   tool.updateTable({ tableName: anchor.tableName })
-  markHistoryChanged()
+  props.state.syncPageDataDocumentFromTool()
 }
 
 const canUndo = computed(() => {
-  historyTick.value
-  return historyTool.value?.canUndo ?? false
+  projectedMetadata.value
+  return props.state.pageDataTool.value?.canUndo ?? false
 })
 const canRedo = computed(() => {
-  historyTick.value
-  return historyTool.value?.canRedo ?? false
+  projectedMetadata.value
+  return props.state.pageDataTool.value?.canRedo ?? false
 })
 
 watch(
@@ -633,38 +622,96 @@ const relationLines = computed(() => {
 })
 
 const aiResponse = ref('')
-const fineEditSseLines = ref<string[]>([])
-const blueprint = ref<BlueprintStep[]>([])
-const fineEditSession = shallowRef<ReturnType<typeof createStillSession> | null>(null)
-const fineEditBackend = shallowRef<SessionBackendImpl | null>(null)
-const fineEditBackendSessionId = ref<string | null>(null)
+const pageDataModelSseLines = ref<string[]>([])
+const taskSteps = ref<TaskStep[]>([])
+const pageDataModelSession = shallowRef<ReturnType<typeof createStillSession> | null>(null)
+const pageDataModelBackend = shallowRef<SessionBackendImpl | null>(null)
+const pageDataModelBackendSessionId = ref<string | null>(null)
+const pageDataModelContextSignature = ref('')
+const hasInitialPageDataSync = ref(false)
+let nextTaskStepId = 1
+const pendingTaskStepIds: string[] = []
+let pageDataModelStreamHooks: Pick<AiChatSendRequest, 'onDelta' | 'onReasoning'> | null = null
 
 const hasChanges = computed(() => {
   return hasDesignerProjectionChanges(buildDataSetMetadataFromDesigner(), persistedPageDataMetadata.value)
 })
 
+function resetDesignerRuntimeState(): void {
+  tableUiState.value = {}
+  selectedTableId.value = null
+  expandedTables.value = new Set()
+  propsExpandedTables.value = new Set()
+  editingRel.value = null
+  hoveredRelIdx.value = -1
+  pendingProjectionLayout.value = null
+  hasInitialPageDataSync.value = false
+}
+
+function ensureInitialPageDataLoad(): void {
+  if (!props.state.activePageId.value) return
+  if (props.state.fileLoadState['pagedata.json'] === 'idle') {
+    void props.state.loadPageFile('pagedata.json')
+  }
+}
+
+function parsePersistedPageDataText(content: string | undefined): IDataSetMetadata | null {
+  if (typeof content !== 'string' || content.trim().length === 0) return null
+  try {
+    return DataSetCrudTool.fromJson(content).toJson()
+  } catch {
+    return null
+  }
+}
+
 // ═══ 自动从 pagedata.json 加载 ═══
 
 onMounted(async () => {
-  // 主动加载 pagedata.json（可能尚未被文件编辑器加载过）
-  if (!props.state.editFiles['pagedata.json'] && props.state.activePageId.value) {
-    await props.state.loadPageFile('pagedata.json')
-  }
-  if (props.state.editFiles['pagedata.json']) {
+  ensureInitialPageDataLoad()
+  if (props.state.fileLoadState['pagedata.json'] === 'loaded') {
     parseFromPageData(true)
+    hasInitialPageDataSync.value = true
   }
   document.addEventListener('keydown', onKeydown)
 })
 
 watch(
-  () => props.state.editFiles['pagedata.json'],
-  () => {
-    // 外部修改 pagedata.json 时自动重新加载
-    if (!hasChanges.value) {
+  () => props.state.activePageId.value,
+  (nextPageId, previousPageId) => {
+    if (nextPageId === previousPageId) return
+    resetDesignerRuntimeState()
+    resetPageDataModelRuntimeIndicators()
+    resetPageDataModelSessionStateSync()
+    ensureInitialPageDataLoad()
+  },
+)
+
+watch(
+  [() => props.state.fileLoadState['pagedata.json'], () => props.state.editFiles['pagedata.json']],
+  ([loadState, nextContent], [_previousLoadState, previousContent]) => {
+    if (loadState !== 'loaded') return
+
+    if (!hasInitialPageDataSync.value) {
       parseFromPageData(true)
+      hasInitialPageDataSync.value = true
+      return
+    }
+
+    // 外部修改 pagedata.json 时自动重新加载
+    const shouldReload = shouldSyncDesignerFromExternalPageDataChange({
+      previousPersisted: parsePersistedPageDataText(previousContent),
+      nextPersisted: parsePersistedPageDataText(nextContent),
+    })
+
+    if (shouldReload) {
+      parseFromPageData(true, { preserveHistory: true })
     }
   },
 )
+
+watch(hasChanges, (dirty) => {
+  props.state.setPageDataDesignerDirty(dirty)
+}, { immediate: true })
 
 const aiResponseHtml = computed(() => {
   if (!aiResponse.value) return ''
@@ -675,11 +722,11 @@ const aiResponseHtml = computed(() => {
     .replace(/\n/g, '<br>')
 })
 
-const fineEditSseTrace = computed(() => fineEditSseLines.value.join('\n'))
+const pageDataModelSseTrace = computed(() => pageDataModelSseLines.value.join('\n'))
 
-const fineEditSseTraceHtml = computed(() => {
-  if (!fineEditSseTrace.value) return ''
-  return fineEditSseTrace.value
+const pageDataModelSseTraceHtml = computed(() => {
+  if (!pageDataModelSseTrace.value) return ''
+  return pageDataModelSseTrace.value
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -689,94 +736,226 @@ const fineEditSseTraceHtml = computed(() => {
 const AI_STREAM_PREFIX = 'AI: '
 const REASONING_STREAM_PREFIX = '思考: '
 
-function pushFineEditSseLine(line: string) {
-  if (!line.trim()) return
-  fineEditSseLines.value.push(line)
-  if (fineEditSseLines.value.length > 120) {
-    fineEditSseLines.value.splice(0, fineEditSseLines.value.length - 120)
+function resetPageDataModelRuntimeIndicators() {
+  pageDataModelSseLines.value = []
+  taskSteps.value = []
+  pendingTaskStepIds.splice(0, pendingTaskStepIds.length)
+  nextTaskStepId = 1
+}
+
+function clearPageDataModelSessionStateRefs() {
+  pageDataModelSession.value = null
+  pageDataModelBackend.value = null
+  pageDataModelBackendSessionId.value = null
+  pageDataModelContextSignature.value = ''
+}
+
+async function resetPageDataModelSessionState() {
+  const backend = pageDataModelBackend.value
+  const sessionId = pageDataModelBackendSessionId.value
+  clearPageDataModelSessionStateRefs()
+  if (backend && sessionId) {
+    try {
+      await backend.destroySession(sessionId)
+    } catch {
+      // ignore destroy failures during context refresh
+    }
+  }
+  clearRegistry()
+  clearDomains()
+}
+
+function resetPageDataModelSessionStateSync() {
+  const backend = pageDataModelBackend.value
+  const sessionId = pageDataModelBackendSessionId.value
+  clearPageDataModelSessionStateRefs()
+  if (backend && sessionId) {
+    void backend.destroySession(sessionId)
+  }
+  clearRegistry()
+  clearDomains()
+}
+
+async function ensurePageDataModelContextFilesLoaded() {
+  await Promise.all(
+    PAGE_FILE_NAMES
+      .filter(name => name !== 'pagedata.json')
+      .map(name => props.state.loadPageFile(name)),
+  )
+}
+
+function truncatePageDataModelContextText(content: string, limit = 1200): string {
+  if (content.length <= limit) return content
+  return `${content.slice(0, limit)}\n...<truncated>`
+}
+
+function buildPageDataModelContextSignature(input: {
+  pageId: string
+  ruleJson: unknown
+  pageDataJson: IDataSetMetadata
+  scriptJs: string
+  styleCss: string
+}): string {
+  return JSON.stringify(input)
+}
+
+async function buildPageDataModelContext(currentDataSet: IDataSetMetadata) {
+  await ensurePageDataModelContextFilesLoaded()
+
+  const pageModel = props.state.readPageEditModel({ pageDataJson: currentDataSet })
+
+  return {
+    ruleJson: pageModel.ruleJson,
+    scriptJs: pageModel.scriptJs,
+    styleCss: pageModel.styleCss,
+    signature: buildPageDataModelContextSignature({
+      pageId: props.state.activePageId.value ?? '',
+      ruleJson: pageModel.ruleJson,
+      pageDataJson: currentDataSet,
+      scriptJs: pageModel.scriptJs,
+      styleCss: pageModel.styleCss,
+    }),
+    promptContext: {
+      ruleNodeCount: pageModel.ruleJson.length,
+      scriptJsPreview: truncatePageDataModelContextText(pageModel.scriptJs),
+      styleCssPreview: truncatePageDataModelContextText(pageModel.styleCss),
+    },
   }
 }
 
-function upsertFineEditStreamingLine(prefix: string, chunk: string) {
-  if (!chunk) return
-  const lastIdx = fineEditSseLines.value.length - 1
-  const lastLine = lastIdx >= 0 ? fineEditSseLines.value[lastIdx] : undefined
-  if (lastLine !== undefined && lastLine.startsWith(prefix)) {
-    fineEditSseLines.value[lastIdx] = lastLine + chunk
+function enqueuePageDataModelTaskSteps(actions: string[]) {
+  const normalizedActions = actions.filter(action => action.trim().length > 0)
+  if (normalizedActions.length === 0) return
+
+  const shouldStartRunning = pendingTaskStepIds.length === 0
+  const queuedSteps = normalizedActions.map((action, index) => ({
+    id: `pagedata-task-${nextTaskStepId++}`,
+    action,
+    status: (shouldStartRunning && index === 0 ? 'running' : 'pending') as TaskStep['status'],
+  }))
+
+  taskSteps.value.push(...queuedSteps)
+  pendingTaskStepIds.push(...queuedSteps.map(step => step.id))
+}
+
+function markPageDataModelTaskStepDone(action: string) {
+  const currentStepId = pendingTaskStepIds.shift()
+  if (!currentStepId) {
+    taskSteps.value.push({
+      id: `pagedata-task-${nextTaskStepId++}`,
+      action,
+      status: 'done',
+    })
     return
   }
-  pushFineEditSseLine(`${prefix}${chunk}`)
-}
 
-function closeFineEditStreamingLines() {
-  const lastIdx = fineEditSseLines.value.length - 1
-  if (lastIdx < 0) return
-  const lastLine = fineEditSseLines.value[lastIdx]
-  if (lastLine !== undefined && (lastLine.startsWith(AI_STREAM_PREFIX) || lastLine.startsWith(REASONING_STREAM_PREFIX))) {
-    fineEditSseLines.value[lastIdx] = lastLine.trimEnd()
+  const currentStep = taskSteps.value.find(step => step.id === currentStepId)
+  if (currentStep) {
+    currentStep.action = action
+    currentStep.status = 'done'
+  }
+
+  const nextStepId = pendingTaskStepIds[0]
+  if (!nextStepId) return
+  const nextStep = taskSteps.value.find(step => step.id === nextStepId)
+  if (nextStep && nextStep.status === 'pending') {
+    nextStep.status = 'running'
   }
 }
 
-function onFineEditSseEvent(event: { sessionId: string; type: string; data: string }) {
+function pushPageDataModelSseLine(line: string) {
+  if (!line.trim()) return
+  pageDataModelSseLines.value.push(line)
+  if (pageDataModelSseLines.value.length > 120) {
+    pageDataModelSseLines.value.splice(0, pageDataModelSseLines.value.length - 120)
+  }
+}
+
+function upsertPageDataModelStreamingLine(prefix: string, chunk: string) {
+  if (!chunk) return
+  const lastIdx = pageDataModelSseLines.value.length - 1
+  const lastLine = lastIdx >= 0 ? pageDataModelSseLines.value[lastIdx] : undefined
+  if (lastLine !== undefined && lastLine.startsWith(prefix)) {
+    pageDataModelSseLines.value[lastIdx] = lastLine + chunk
+    return
+  }
+  pushPageDataModelSseLine(`${prefix}${chunk}`)
+}
+
+function closePageDataModelStreamingLines() {
+  const lastIdx = pageDataModelSseLines.value.length - 1
+  if (lastIdx < 0) return
+  const lastLine = pageDataModelSseLines.value[lastIdx]
+  if (lastLine !== undefined && (lastLine.startsWith(AI_STREAM_PREFIX) || lastLine.startsWith(REASONING_STREAM_PREFIX))) {
+    pageDataModelSseLines.value[lastIdx] = lastLine.trimEnd()
+  }
+}
+
+function onPageDataModelSseEvent(event: { sessionId: string; type: string; data: string }) {
   if (event.type === 'delta') {
-    upsertFineEditStreamingLine(AI_STREAM_PREFIX, event.data)
+    upsertPageDataModelStreamingLine(AI_STREAM_PREFIX, event.data)
+    pageDataModelStreamHooks?.onDelta?.(event.data)
     return
   }
 
   if (event.type === 'reasoning') {
-    upsertFineEditStreamingLine(REASONING_STREAM_PREFIX, event.data)
+    upsertPageDataModelStreamingLine(REASONING_STREAM_PREFIX, event.data)
+    pageDataModelStreamHooks?.onReasoning?.(event.data)
     return
   }
 
   if (event.type === 'result') {
-    closeFineEditStreamingLines()
+    closePageDataModelStreamingLines()
     try {
       const parsed = JSON.parse(event.data) as {
         text?: string
         toolCalls?: Array<{ function?: { name?: string; arguments?: string } }>
       }
       if (parsed.text && parsed.text.trim()) {
-        pushFineEditSseLine(`结果: ${parsed.text}`)
+        pushPageDataModelSseLine(`结果: ${parsed.text}`)
       }
       if (Array.isArray(parsed.toolCalls) && parsed.toolCalls.length > 0) {
         const actionList = parsed.toolCalls
           .map(tc => tc.function?.name)
           .filter((name): name is string => Boolean(name && name.length > 0))
         if (actionList.length > 0) {
-          pushFineEditSseLine(`工具调用: ${actionList.join(', ')}`)
+          enqueuePageDataModelTaskSteps(actionList)
+          pushPageDataModelSseLine(`工具调用: ${actionList.join(', ')}`)
         }
       }
     } catch {
-      pushFineEditSseLine(`结果(raw): ${event.data}`)
+      pushPageDataModelSseLine(`结果(raw): ${event.data}`)
     }
     return
   }
 
   if (event.type === 'error') {
-    closeFineEditStreamingLines()
-    pushFineEditSseLine(`错误: ${event.data}`)
+    closePageDataModelStreamingLines()
+    pushPageDataModelSseLine(`错误: ${event.data}`)
   }
 }
 
-function onFineEditTurnComplete(turn: DialogueTurn) {
+function onPageDataModelTurnComplete(turn: DialogueTurn) {
   if (turn.phase !== 'stills-execute' || !turn.toolBlock || !turn.stillsResult) return
   const { action, id } = turn.toolBlock
   const result = turn.stillsResult
 
+  markPageDataModelTaskStepDone(action)
+
   if (result.ok) {
     const warningCount = result.warnings?.length ?? 0
     if (warningCount > 0) {
-      pushFineEditSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功，warnings=${warningCount}`)
+      pushPageDataModelSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功，warnings=${warningCount}`)
       for (const warning of result.warnings ?? []) {
-        pushFineEditSseLine(`  - warning[${warning.rule}]: ${warning.detail}${warning.fix ? ` | fix: ${warning.fix}` : ''}`)
+        pushPageDataModelSseLine(`  - warning[${warning.rule}]: ${warning.detail}${warning.fix ? ` | fix: ${warning.fix}` : ''}`)
       }
     } else {
-      pushFineEditSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功`)
+      pushPageDataModelSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功`)
     }
     return
   }
 
-  pushFineEditSseLine(
+  pushPageDataModelSseLine(
     `[Round ${turn.round}] 执行 ${action}(${id}) -> 失败` +
     `${result.code ? ` | code=${result.code}` : ''}` +
     `${result.msg ? ` | msg=${result.msg}` : ''}` +
@@ -784,9 +963,9 @@ function onFineEditTurnComplete(turn: DialogueTurn) {
   )
 }
 
-type FineEditFailureTurn = Pick<DialogueTurn, 'phase' | 'toolBlock' | 'stillsResult'>
+type PageDataModelFailureTurn = Pick<DialogueTurn, 'phase' | 'toolBlock' | 'stillsResult'>
 
-function buildFineEditFailureDetails(turns: FineEditFailureTurn[]): string {
+function buildPageDataModelFailureDetails(turns: PageDataModelFailureTurn[]): string {
   const executedActions = turns
     .filter(turn => turn.phase === 'stills-execute' && turn.toolBlock)
     .map(turn => turn.toolBlock!.action)
@@ -862,8 +1041,8 @@ function deleteTableWithRelationFallback(
 }
 
 function readCurrentDataSetName(): string {
-  if (historyTool.value) {
-    return historyTool.value.dataSetName
+  if (props.state.pageDataTool.value) {
+    return props.state.pageDataTool.value.dataSetName
   }
 
   try {
@@ -1213,15 +1392,7 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onDocMouseMove)
   document.removeEventListener('mouseup', onDocMouseUp)
   document.removeEventListener('keydown', onKeydown)
-
-  const backend = fineEditBackend.value
-  const sessionId = fineEditBackendSessionId.value
-  if (backend && sessionId) {
-    void backend.destroySession(sessionId)
-  }
-
-  clearRegistry()
-  clearDomains()
+  resetPageDataModelSessionStateSync()
 })
 
 // ═══ pagedata.json 互转 ═══
@@ -1231,13 +1402,9 @@ function parseFromPageData(silent = false, options?: { preserveHistory?: boolean
     const content = props.state.editFiles['pagedata.json'] ?? '{}'
 
     const canPreserveHistory = Boolean(options?.preserveHistory && isDesignerStateInSyncWithHistory())
-    const nextTool = DataSetCrudTool.reconcileFromJson(content, historyTool.value ?? undefined, {
-      preserveHistory: canPreserveHistory,
-    })
-    historyTool.value = nextTool
+    props.state.replaceLivePageData(content, { preserveHistory: canPreserveHistory })
     editingRel.value = null
     selectedTableId.value = null
-    markHistoryChanged()
     
     if (!silent) ElMessage.success(`已加载 ${tables.value.length} 个表`)
   } catch {
@@ -1248,14 +1415,13 @@ function parseFromPageData(silent = false, options?: { preserveHistory?: boolean
 function exportToPageData() {
   let existingMeta: IDataSetMetadata | null = null
   try {
-    const existing = DataSetCrudTool.fromJson(props.state.editFiles['pagedata.json'] ?? '{}')
-    existingMeta = existing.toJson()
+    existingMeta = props.state.readPageEditModel().pageDataJson
   } catch { /* ignore */ }
 
-  if (!historyTool.value || !isDesignerStateInSyncWithHistory()) {
-    resetHistoryFromDesignerState()
+  if (!props.state.pageDataTool.value || !isDesignerStateInSyncWithHistory()) {
+    props.state.replaceLivePageData(buildDataSetMetadataFromDesigner(), { preserveHistory: true })
   }
-  const tool = historyTool.value
+  const tool = props.state.pageDataTool.value
   if (!tool) {
     ElMessage.error('导出失败：DataSet 工具实例不可用')
     return
@@ -1272,56 +1438,63 @@ function exportToPageData() {
         ? { viewDependencies: toolJson.viewDependencies }
         : {}),
   }
-
-  const newContent = JSON.stringify(pageData, null, 2)
-  props.state.updatePageFile('pagedata.json', newContent)
+  props.state.applyPageEditModelPatch({ pageDataJson: pageData }, { source: 'manual' })
   ElMessage.success('已导出到 pagedata.json')
 }
 
-// ═══ AI 细粒度聊天编辑 ═══
+// ═══ AI DataSet 模型聊天编辑 ═══
 
-async function applyFineGrainedEdit(prompt: string) {
+async function applyPageDataModelEdit(
+  prompt: string,
+  streamHooks?: Pick<AiChatSendRequest, 'onDelta' | 'onReasoning'>,
+) {
   if (!prompt.trim()) return ''
 
   aiResponse.value = ''
-  fineEditSseLines.value = []
-  blueprint.value = []
+  resetPageDataModelRuntimeIndicators()
+  pageDataModelStreamHooks = streamHooks ?? null
 
   let lastTurns: DialogueTurn[] = []
 
   try {
     const currentDataSet = buildDataSetMetadataFromDesigner()
-    const contextSummary = buildFineGrainedEditContext(currentDataSet)
+    const pageContext = await buildPageDataModelContext(currentDataSet)
+    const contextSummary = buildFineGrainedEditContext(currentDataSet, pageContext.promptContext)
+
+    if (pageDataModelContextSignature.value !== '' && pageDataModelContextSignature.value !== pageContext.signature) {
+      await resetPageDataModelSessionState()
+    }
 
     configureSessionBackend({
       getHeaders: createAuthHeaders,
-      onSseEvent: onFineEditSseEvent,
+      onSseEvent: onPageDataModelSseEvent,
     })
-    if (!fineEditSession.value || !fineEditBackend.value) {
+    if (!pageDataModelSession.value || !pageDataModelBackend.value) {
       clearRegistry()
       clearDomains()
       registerEditStills()
 
       const session = createStillSession()
       const initResult = executeStill('edit.bootstrap', {
-        ruleJson: [],
+        ruleJson: pageContext.ruleJson,
         pageDataJson: currentDataSet,
-        scriptJs: '',
-        styleCss: '',
+        scriptJs: pageContext.scriptJs,
+        styleCss: pageContext.styleCss,
       }, session, 'dataset-fine-edit-bootstrap')
 
       if (!initResult.ok) {
         throw new Error(initResult.msg)
       }
 
-      fineEditSession.value = session
-      fineEditBackend.value = new SessionBackendImpl()
+      pageDataModelSession.value = session
+      pageDataModelBackend.value = new SessionBackendImpl()
+      pageDataModelContextSignature.value = pageContext.signature
     }
 
-    const session = fineEditSession.value
-    const backend = fineEditBackend.value
+    const session = pageDataModelSession.value
+    const backend = pageDataModelBackend.value
     if (!session || !backend) {
-      throw new Error('细粒度会话初始化失败')
+      throw new Error('DataSet 模型会话初始化失败')
     }
 
     const orchestratorResult = await runStillsLoop(
@@ -1332,7 +1505,7 @@ async function applyFineGrainedEdit(prompt: string) {
         maxRounds: 8,
         slidingWindow: 12,
         systemPrompt: buildFineGrainedLoopSystemPrompt(),
-        ...(fineEditBackendSessionId.value ? { resumeSessionId: fineEditBackendSessionId.value } : {}),
+        ...(pageDataModelBackendSessionId.value ? { resumeSessionId: pageDataModelBackendSessionId.value } : {}),
         tools: generateToolDefinitions({
           compactDescriptions: true,
         }),
@@ -1358,38 +1531,46 @@ async function applyFineGrainedEdit(prompt: string) {
           }),
         ],
         onTurnComplete(turn) {
-          onFineEditTurnComplete(turn)
+          onPageDataModelTurnComplete(turn)
         },
       },
     )
-    fineEditBackendSessionId.value = orchestratorResult.sessionId
+    pageDataModelBackendSessionId.value = orchestratorResult.sessionId
     lastTurns = orchestratorResult.turns
 
     if (orchestratorResult.aborted) {
-      const details = buildFineEditFailureDetails(orchestratorResult.turns)
-      throw new Error(`${orchestratorResult.abortReason ?? '细粒度编排被中止'}\n${details}`)
+      const details = buildPageDataModelFailureDetails(orchestratorResult.turns)
+      throw new Error(`${orchestratorResult.abortReason ?? 'DataSet 模型编排被中止'}\n${details}`)
     }
 
-    const exportResult = executeStill('dataset.export', {}, session, 'dataset-fine-edit-local-export')
-    if (!exportResult.ok) {
-      throw new Error(exportResult.msg)
+    const editState = getEditState(session)
+    const pagedata = editState.datasetEdit?.toJson()
+    if (!pagedata) {
+      throw new Error('DataSet 模型会话未生成可导出的 pagedata 模型')
     }
 
-    const exportData = exportResult.data as { file: { 'pagedata.json': string } }
-    const pagedata = exportData.file['pagedata.json']
-    props.state.updatePageFile('pagedata.json', pagedata)
+    props.state.applyPageEditModelPatch({ pageDataJson: pagedata }, { source: 'ai' })
     parseFromPageData(true, { preserveHistory: true })
+    const appliedPageModel = props.state.readPageEditModel({ pageDataJson: buildDataSetMetadataFromDesigner() })
+    pageDataModelContextSignature.value = buildPageDataModelContextSignature({
+      pageId: props.state.activePageId.value ?? '',
+      ruleJson: appliedPageModel.ruleJson,
+      pageDataJson: appliedPageModel.pageDataJson,
+      scriptJs: appliedPageModel.scriptJs,
+      styleCss: appliedPageModel.styleCss,
+    })
 
     aiResponse.value = `${summarizeFineGrainedTurns(orchestratorResult.turns)}
 
 当前 ${tables.value.length} 个表、${relations.value.length} 个关联。`
   } catch (err) {
     if (lastTurns.length > 0) {
-      pushFineEditSseLine('--- 失败定位摘要 ---')
-      pushFineEditSseLine(buildFineEditFailureDetails(lastTurns))
+      pushPageDataModelSseLine('--- 失败定位摘要 ---')
+      pushPageDataModelSseLine(buildPageDataModelFailureDetails(lastTurns))
     }
-    aiResponse.value = `细粒度编辑失败: ${err instanceof Error ? err.message : String(err)}`
+    aiResponse.value = `DataSet 模型编辑失败: ${err instanceof Error ? err.message : String(err)}`
   } finally {
+    pageDataModelStreamHooks = null
     configureSessionBackend({ getHeaders: createAuthHeaders })
   }
 
@@ -1404,20 +1585,34 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
   const prompt = latestUserMessage?.content?.trim() ?? ''
   if (!prompt) return
 
-  request.onDelta?.('已接收需求，正在执行 DataSet 细粒度编辑...\n')
+  request.onDelta?.('已接收需求，正在执行 DataSet 模型级编辑...\n')
 
-  const result = await applyFineGrainedEdit(prompt)
+  let streamed = false
+
+  const result = await applyPageDataModelEdit(prompt, {
+    onDelta(delta) {
+      streamed = true
+      request.onDelta?.(delta)
+    },
+    onReasoning(reasoning) {
+      request.onReasoning?.(reasoning)
+    },
+  })
   if (!result) {
-    request.onDelta?.('细粒度编辑已执行完成。')
+    request.onDelta?.('DataSet 模型编辑已执行完成。')
     return
   }
 
-  if (result.startsWith('细粒度编辑失败:')) {
+  if (result.startsWith('DataSet 模型编辑失败:')) {
     throw new Error(result)
   }
 
-  request.onDelta?.(result)
+  request.onDelta?.(streamed ? `\n\n${result}` : result)
 }
+
+onUnmounted(() => {
+  props.state.setPageDataDesignerDirty(false)
+})
 </script>
 
 <style scoped>
@@ -1470,6 +1665,10 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
   flex-direction: column;
   border-right: 1px solid #e2e8f0;
   min-width: 0;
+}
+
+.ds-canvas--full {
+  border-right: none;
 }
 
 .ds-toolbar {
@@ -1947,7 +2146,7 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
   color: #334155;
 }
 
-.ds-ai__blueprint {
+.ds-ai__task-steps {
   padding: 14px;
   border-bottom: 1px solid #f1f5f9;
 }

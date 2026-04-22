@@ -387,7 +387,7 @@
 - 下线或显式拒绝全部旧 stills 入口（含 `/api/stills/chat`、`/api/stills/execute`、`/api/stills/session*`）。
 
 2. [packages/spark-ai/src/protocol-parser.ts](packages/spark-ai/src/protocol-parser.ts)
-- 清理旧 `@@` 文本协议解析与调用路径。
+- 清理旧文本块协议解析与调用路径。
 
 3. [packages/spark-ai/src/session-backend.ts](packages/spark-ai/src/session-backend.ts)
 4. [packages/spark-ai/src/runtime/session-orchestrator.ts](packages/spark-ai/src/runtime/session-orchestrator.ts)

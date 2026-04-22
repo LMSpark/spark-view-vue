@@ -24,6 +24,13 @@ export interface DesignerTableUiState {
 
 export type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
 
+function getDefaultTablePosition(index: number): { x: number; y: number } {
+  return {
+    x: 50 + (index % 3) * 220,
+    y: 50 + Math.floor(index / 3) * 200,
+  }
+}
+
 export function reconcileDesignerTableUiState(
   metadata: IDataSetMetadata,
   currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>,
@@ -38,10 +45,7 @@ export function reconcileDesignerTableUiState(
   Object.entries(metadata.tables).forEach(([tableName, tableConfig], idx) => {
     const oldTable = oldByName.get(tableName)
     const oldColumnIdMap = new Map((oldTable?.columns ?? []).map(col => [col.name, col.id]))
-    const defaultLayout = {
-      x: 50 + (idx % 3) * 220,
-      y: 50 + Math.floor(idx / 3) * 200,
-    }
+    const defaultLayout = getDefaultTablePosition(idx)
     const newLayout = layoutForNewTable?.(tableName, newTableCount) ?? defaultLayout
     const persistedLayout = persistedPositions?.[tableName]
     if (!oldTable) newTableCount += 1
@@ -67,10 +71,7 @@ export function projectDesignerTables(
   return Object.entries(metadata.tables).map(([tableName, tableConfig], idx) => {
     const uiState = tableUiState[tableName]
     const persistedLayout = metadata.layout?.tablePositions?.[tableName]
-    const defaultLayout = {
-      x: 50 + (idx % 3) * 220,
-      y: 50 + Math.floor(idx / 3) * 200,
-    }
+    const defaultLayout = getDefaultTablePosition(idx)
     const columnIds = uiState?.columnIds ?? {}
 
     return {
@@ -131,7 +132,51 @@ export function hasDesignerProjectionChanges(current: IDataSetMetadata, persiste
   if (!persisted) {
     return Object.keys(current.tables).length > 0 || (current.tableRelations?.length ?? 0) > 0
   }
-  return JSON.stringify(current) !== JSON.stringify(persisted)
+
+  return JSON.stringify(normalizeDesignerComparableMetadata(current)) !== JSON.stringify(normalizeDesignerComparableMetadata(persisted))
+}
+
+export function shouldSyncDesignerFromExternalPageDataChange(params: {
+  previousPersisted: IDataSetMetadata | null
+  nextPersisted: IDataSetMetadata | null
+}): boolean {
+  const { previousPersisted, nextPersisted } = params
+  if (nextPersisted === null) return false
+
+  const normalizedNext = JSON.stringify(normalizeDesignerComparableMetadata(nextPersisted))
+  const normalizedPrevious = previousPersisted === null
+    ? null
+    : JSON.stringify(normalizeDesignerComparableMetadata(previousPersisted))
+
+  if (normalizedPrevious !== null && normalizedPrevious === normalizedNext) {
+    return false
+  }
+
+  return true
+}
+
+function normalizeDesignerComparableMetadata(metadata: IDataSetMetadata): IDataSetMetadata {
+  const { pageId: _pageId, ...rest } = metadata
+  const tableEntries = Object.entries(metadata.tables)
+  const tablePositions = Object.fromEntries(
+    tableEntries.map(([tableName], index) => [
+      tableName,
+      metadata.layout?.tablePositions?.[tableName] ?? getDefaultTablePosition(index),
+    ]),
+  )
+
+  return {
+    ...rest,
+    tableRelations: metadata.tableRelations ?? [],
+    ...(tableEntries.length > 0
+      ? {
+          layout: {
+            ...(metadata.layout ?? {}),
+            tablePositions,
+          },
+        }
+      : {}),
+  }
 }
 
 export function normalizeViewsFromLoose(rawViews: unknown): { default: IViewMetadata } & Record<string, IViewMetadata> {

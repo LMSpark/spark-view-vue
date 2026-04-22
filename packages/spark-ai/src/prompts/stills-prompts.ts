@@ -87,11 +87,11 @@ export const STILLS_DATASET_DOMAIN = `
 
   1. 生成确认问题
      针对需求生成确认问题，每个问题提供至少 5 个选项。
-     通过标准对话文本输出确认问题，结构采用 JSON 语义但不使用任何 @@ 协议块：
+    通过标准对话文本输出确认问题，结构采用 JSON 语义但不使用任何旧文本块协议：
      - title: 确认主题
      - questions: 问题列表
      - question.type = "single"（单选） | "multi"（多选）
-     前端将按 SAP3 标准会话消息解析并渲染交互，不再依赖 @@ 包裹协议。
+    前端将按 SAP3 标准会话消息解析并渲染交互，不再依赖旧文本块包裹协议。
      问题内容按当前阶段聚焦（见上方"整体工作流"）。
 
   2. 等待用户逐一选择
@@ -220,15 +220,51 @@ export const STILLS_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}\n${STILLS_DATASET_
 /**
  * Stills 编辑模式运行时提示词。
  *
- * 约束模型仅调用 edit domain（edit.* / file.* / datasetTool.* / sparkNodeTree.*），
- * 避免回退到生成模式动作目录。
+ * 4 文件同层编辑是直接增量修改模式，不走需求确认 / 方案审阅 / 蓝图编排。
+ * 仅允许围绕当前页面已 bootstrap 的 rule.json / pagedata.json / script.js / style.css
+ * 做最小必要修改。
  */
-export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_RUNTIME_PROMPT}
+export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
 
-【编辑模式强约束】
-- 当前会话仅允许 edit domain 动作：edit.* / file.* / datasetTool.* / sparkNodeTree.*
-- 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
-- 在本会话中，edit.bootstrap 已由宿主完成；如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复。
+══ Edit Domain: 四文件直接编辑 ══
+
+  当前会话已由宿主完成 edit.bootstrap，真实上下文就是当前页面的 4 个文件：
+  - rule.json
+  - pagedata.json
+  - script.js
+  - style.css
+
+  本模式是“直接编辑”，不是“需求调研 / 方案审阅 / 蓝图推进”：
+  - 禁止生成确认问卷、禁止等待“用户批准后执行”
+  - 禁止输出或调用任何 blueprint.* 动作
+  - 禁止把任务拆成 blueprint checkpoint / plan item
+  - 不要复述蓝图流程；直接围绕当前请求执行最小必要修改
+
+  信息不足时的处理原则：
+  - 先用只读动作补足上下文，不要先向用户发问
+  - 只有关键业务事实既无法从当前 4 文件、也无法从只读动作判定时，才做最小澄清
+  - 能直接改就直接改，不走“先出完整方案再执行”的流程
+
+══ Edit Domain: 动作纪律 ══
+
+  - 当前会话仅允许 edit domain 动作：edit.* / file.* / datasetTool.* / sparkNodeTree.* / dataset.export
+  - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
+  - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
+  - 首轮可调用 session.describe 或 stills.capabilities 了解 edit-domain 目录；之后不要重复能力探测
+  - 任何写动作之前，必须先调用 stills.actionSpec 获取目标动作的 paramsSchema / usageRules / failureModes
+  - tool result 若返回错误或 warnings，先读 code / msg / fix，再重新查询 actionSpec 后用修正参数重试
+
+  按目标文件选择动作：
+  - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 queryComponentCatalog('*')，选定 type 后再 queryComponentGuide(type)
+  - 修改 pagedata.json：使用 datasetTool.*；完成数据阶段后执行 dataset.export
+  - 修改 script.js：使用 file.readScript / file.writeScript
+  - 修改 style.css：使用 file.readStyle / file.writeStyle
+
+  执行目标：
+  - 只做满足当前请求的最小必要修改
+  - 保持 4 文件之间的一致性，不做无关重写
+  - 需求完成后立即停止工具调用并给出简短总结
+
 ${EDIT_FLOW_1001_DATA_FIRST_POLICY}
 
 ${EDIT_FLOW_1002_DATA_FIRST_SEQUENCE}

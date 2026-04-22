@@ -10,22 +10,21 @@
 
 import { ref, shallowRef, onUnmounted } from 'vue'
 import {
-  clearRegistry,
-  clearDomains,
-  registerEditStills,
-  createSession as createStillSession,
   executeStill,
   runStillsLoop,
-  SessionBackendImpl,
   configureSessionBackend,
   createRepeatDetectionMonitor,
   generateToolDefinitions,
   STILLS_EDIT_RUNTIME_PROMPT,
   getEditState,
+  type IStillSession,
   type DialogueTurn,
 } from '@spark-view/spark-ai'
 import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
 import { createAuthHeaders } from '@/services/http'
+import type { PageEditModel } from '../useDevState'
+import { usePageModelSessionHost } from './usePageModelSessionHost'
+import type { PageModelSessionHost } from './usePageModelSessionHost'
 
 // ── Catalog constants (exported for template use) ─────────────────────────────
 
@@ -100,15 +99,17 @@ export interface LogEntry {
 
 // ── Composable ────────────────────────────────────────────────────────────────
 
-type StillsSession = ReturnType<typeof createStillSession>
+type StillsSession = IStillSession
 
 export interface RuleEditSessionOptions {
-  /** Returns the 4 page files for bootstrap params. */
-  getContextFiles: () => Record<string, string>
+  /** Returns the current 4-file page model for bootstrap params. */
+  getContextModel: () => PageEditModel
+  /** Optional shared page-model session host. */
+  sessionHost?: PageModelSessionHost
   /** Ensures page context files are loaded before first bootstrap. */
   ensureContextLoaded?: () => Promise<void>
-  /** Called when an AI export is ready; receives all changed files (rule.json, pagedata.json, script.js, style.css). */
-  onApply: (files: Record<string, string>) => void
+  /** Called when an AI model result is ready. */
+  onApplyModel: (model: PageEditModel) => void
   /** Called to surface user-facing status messages. */
   onStatus: (msg: string, type: 'success' | 'warning' | 'error') => void
 }
@@ -119,13 +120,14 @@ export interface RuleEditRunHooks {
 }
 
 export function useRuleEditSession(options: RuleEditSessionOptions) {
-  const { getContextFiles, ensureContextLoaded, onApply, onStatus } = options
+  const { getContextModel, ensureContextLoaded, onApplyModel, onStatus } = options
+  const ownsSessionHost = options.sessionHost === undefined
 
-  // Single stable backend instance — not reactive (no template binding needed)
-  const backend = new SessionBackendImpl()
-  let backendSessionId: string | null = null
+  const sessionHost = options.sessionHost ?? usePageModelSessionHost({
+    getContextModel,
+    bootstrapTag: 'bootstrap',
+  })
 
-  const session = shallowRef<StillsSession | null>(null)
   const ready = ref(false)
   const dirty = ref(false)
   const busy = ref(false)
@@ -141,69 +143,41 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     if (log.value.length > 30) log.value.splice(30)
   }
 
-  function buildBootstrapParams() {
-    const files = getContextFiles()
-    const ruleRaw = files['rule.json'] ?? ''
-    // pagedata.json is optional context for the AI; fall back to {} when not yet loaded.
-    const pagedataRaw = files['pagedata.json']?.trim() ? files['pagedata.json'] : '{}'
-
-    if (!ruleRaw.trim()) throw new Error('缺少 rule.json')
-
-    const parsedRule = JSON.parse(ruleRaw) as unknown
-    const parsedPageData = JSON.parse(pagedataRaw) as unknown
-
-    const ruleJson = Array.isArray(parsedRule)
-      ? parsedRule
-      : (
-          typeof parsedRule === 'object' &&
-          parsedRule !== null &&
-          Array.isArray((parsedRule as Record<string, unknown>)['children'])
-        )
-          ? (parsedRule as Record<string, unknown>)['children'] as unknown[]
-          : null
-
-    if (!Array.isArray(ruleJson)) {
-      throw new Error('rule.json 必须是数组或含 children 的根对象')
-    }
-    if (typeof parsedPageData !== 'object' || parsedPageData === null || Array.isArray(parsedPageData)) {
-      throw new Error('pagedata.json 必须是对象')
-    }
-
+  function buildSessionModel(currentSession: StillsSession): PageEditModel {
+    const state = getEditState(currentSession)
+    const root = state.nodeTree?.toJSON()
+    const ruleJson = Array.isArray(root?.children) ? (root.children as unknown as SparkNode[]) : []
     return {
       ruleJson,
-      pageDataJson: parsedPageData as Record<string, unknown>,
-      scriptJs: files['script.js'] ?? '',
-      styleCss: files['style.css'] ?? '',
+      pageDataJson: state.datasetEdit?.toJson() ?? { dataSetName: 'PageDataSet', tables: {} },
+      scriptJs: state.script,
+      styleCss: state.style,
     }
+  }
+
+  function getChangedModelFields(before: PageEditModel, after: PageEditModel): string[] {
+    const changed: string[] = []
+    if (JSON.stringify(before.ruleJson) !== JSON.stringify(after.ruleJson)) changed.push('rule.json')
+    if (JSON.stringify(before.pageDataJson) !== JSON.stringify(after.pageDataJson)) changed.push('pagedata.json')
+    if (before.scriptJs !== after.scriptJs) changed.push('script.js')
+    if (before.styleCss !== after.styleCss) changed.push('style.css')
+    return changed
   }
 
   function ensureSession(): StillsSession {
-    if (session.value && ready.value) return session.value
-    clearRegistry()
-    clearDomains()
-    registerEditStills()
-    const s = createStillSession()
-    const boot = executeStill('edit.bootstrap', buildBootstrapParams(), s, 'bootstrap')
-    if (!boot.ok) throw new Error(`bootstrap 失败: ${boot.msg}`)
-    session.value = s
+    const ensured = sessionHost.ensureSession()
     ready.value = true
     dirty.value = false
-    nodeTree.value = getEditState(s).nodeTree
-    pushLog('info', 'bootstrap', 'edit.bootstrap 完成，4 个文件已进入同一编辑会话')
-    return s
+    nodeTree.value = getEditState(ensured.session).nodeTree
+    if (ensured.bootstrapped) {
+      pushLog('info', 'bootstrap', 'edit.bootstrap 完成，4 个文件已进入同一编辑会话')
+    }
+    return ensured.session
   }
 
-  function exportSessionFiles(currentSession: StillsSession): Record<string, string> {
-    const result = executeStill('edit.exportFiles', {}, currentSession, 'export')
-    if (!result.ok) throw new Error(result.msg)
-    const exportData = result.data as { files?: Record<string, string> }
-    return exportData.files ?? {}
-  }
-
-  function applyFiles(files: Record<string, string>, tag: string, text: string) {
-    if (Object.keys(files).length === 0) return false
-    if (!files['rule.json']) throw new Error('exportFiles 未返回 rule.json')
-    onApply(files)
+  function applyModel(model: PageEditModel, tag: string, text: string) {
+    onApplyModel(model)
+    sessionHost.syncContext(model)
     dirty.value = false
     pushLog('success', tag, text)
     return true
@@ -279,26 +253,22 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     busy.value = true
     aiBuffer.value = ''
     runHooks = hooks ?? null
-    const captureState: { files: Record<string, string> | null } = { files: null }
     try {
       if (!ready.value) {
         await ensureContextLoaded?.()
       }
+      const baselineModel = getContextModel()
       const s = ensureSession()
       configureSessionBackend({ getHeaders: createAuthHeaders, onSseEvent })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
-      const result = await runStillsLoop(prompt, s, backend, {
+      const result = await runStillsLoop(prompt, s, sessionHost.backend, {
         maxRounds: 12,
         slidingWindow: 12,
         systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
-        ...(backendSessionId ? { resumeSessionId: backendSessionId } : {}),
+        ...sessionHost.getResumeSessionOptions(),
         tools: generateToolDefinitions({ compactDescriptions: true }),
         monitors: [createRepeatDetectionMonitor({ maxSameSignature: 2, maxConsecutiveErrors: 2 })],
         onTurnComplete(turn: DialogueTurn) {
-          if (turn.toolBlock?.action === 'edit.exportFiles' && turn.stillsResult?.ok) {
-            const exportData = turn.stillsResult.data as { files?: Record<string, string> } | null | undefined
-            captureState.files = exportData?.files ?? null
-          }
           if (turn.toolBlock?.action && turn.stillsResult) {
             const r = turn.stillsResult
             if (r.ok) {
@@ -309,18 +279,16 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
           }
         },
       })
-      backendSessionId = result.sessionId
+      sessionHost.setBackendSessionId(result.sessionId)
       if (result.aborted) throw new Error(`Stills 中止: ${result.abortReason}`)
-      let filesToApply = captureState.files
-      if (filesToApply === null || Object.keys(filesToApply).length === 0) {
-        filesToApply = exportSessionFiles(s)
-      }
-      if (applyFiles(filesToApply, '✅ 已应用', `文件更新完成 (${result.rounds} 轮): ${Object.keys(filesToApply).join(', ')}`)) {
-        onStatus(`✅ 细粒度编辑完成 (${result.rounds} 轮)`, 'success')
+      const nextModel = buildSessionModel(s)
+      const changedFields = getChangedModelFields(baselineModel, nextModel)
+      if (changedFields.length > 0 && applyModel(nextModel, '✅ 已应用', `模型更新完成 (${result.rounds} 轮): ${changedFields.join(', ')}`)) {
+        onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
       } else {
         dirty.value = false
-        pushLog('info', `${result.rounds} 轮完成`, '未检测到文件变更')
-        onStatus(`✅ 细粒度编辑完成 (${result.rounds} 轮)`, 'success')
+        pushLog('info', `${result.rounds} 轮完成`, '未检测到模型变更')
+        onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
       }
     } catch (err) {
       pushLog('error', '编辑失败', err instanceof Error ? err.message : String(err))
@@ -335,13 +303,14 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
 
   /** Export current session state and write back rule.json. */
   function exportAndApply(): void {
-    if (!dirty.value || !session.value) return
+    const currentSession = sessionHost.session.value
+    if (!dirty.value || currentSession === null) return
     busy.value = true
     try {
-      const files = exportSessionFiles(session.value)
-      if (applyFiles(files, '已应用', `文件已写回编辑器: ${Object.keys(files).join(', ')}`)) return
+      const model = buildSessionModel(currentSession)
+      if (applyModel(model, '已应用', '模型已写回编辑器')) return
       dirty.value = false
-      pushLog('info', '已应用', '未检测到文件变更')
+      pushLog('info', '已应用', '未检测到模型变更')
     } catch (err) {
       pushLog('error', '异常', err instanceof Error ? err.message : String(err))
     } finally {
@@ -351,16 +320,20 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
 
   /** Reset session (re-bootstrap on next use). */
   function reset() {
-    if (backendSessionId) {
-      void backend.destroySession(backendSessionId)
-      backendSessionId = null
+    if (ownsSessionHost) {
+      sessionHost.resetSync()
     }
-    session.value = null
     ready.value = false
     dirty.value = false
     nodeTree.value = null
     log.value = []
     aiBuffer.value = ''
+  }
+
+  function loadRuleDocument(ruleJson: SparkNode[]): void {
+    const tree = nodeTree.value
+    if (!tree) return
+    tree.loadRoot({ type: 'page', children: ruleJson })
   }
 
   /** Sync externally edited rule JSON text into the session's SparkNodeTree (loadRoot). */
@@ -372,16 +345,14 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     } catch {
       return
     }
-    const tree = nodeTree.value
-    if (!tree) return
-    tree.loadRoot({ type: 'page', children: parsed })
+    loadRuleDocument(parsed)
   }
 
   onUnmounted(() => {
-    if (backendSessionId) void backend.destroySession(backendSessionId)
-    clearRegistry()
-    clearDomains()
+    if (ownsSessionHost) {
+      sessionHost.resetSync()
+    }
   })
 
-  return { ready, dirty, busy, aiBuffer, log, nodeTree, execTool, runLlm, exportAndApply, reset, loadRuleJson }
+  return { ready, dirty, busy, aiBuffer, log, nodeTree, execTool, runLlm, exportAndApply, reset, loadRuleDocument, loadRuleJson }
 }

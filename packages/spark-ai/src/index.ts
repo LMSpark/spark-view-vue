@@ -1,27 +1,14 @@
-// ── Protocol (unified @@ parsing primitives) ─────────────────────────────────
+// ── Chat Parsing Utilities ───────────────────────────────────────────────────
 export {
-  extractBlocks,
-  stripBlocks,
-  stripBlocksWithUnclosed,
-  extractProposalBlocks,
-  stripProposalBlocks,
   extractFirstJsonObject,
   parseTokenUsage,
   formatTokenUsage,
-  extractUiConfirmBlocks,
-  stripUiBlocks,
 } from './protocol-parser'
 export type {
   ProtocolRole,
   ProtocolMessage,
-  ProtocolBlock as UnifiedProtocolBlock,
-  ProposalProtocolBlock,
   TokenUsage,
   StreamCallbacks,
-  ProtocolBlockFilter,
-  UiConfirmOption,
-  UiConfirmQuestion,
-  UiConfirmPayload,
 } from './types'
 
 // ── Config Validator ────────────────────────────────────────────────────────
