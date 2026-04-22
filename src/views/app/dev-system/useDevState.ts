@@ -6,7 +6,7 @@
  * - AI 面板操作结果 → 自动刷新文件/树
  * - 统一 dirty 状态管理
  */
-import { ref, reactive, computed, shallowRef } from 'vue'
+import { ref, reactive, computed, shallowRef, triggerRef } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
 import { SparkNodeTree, type SparkNode } from '@spark-view/spark-component'
@@ -200,10 +200,8 @@ export function useDevState() {
   let activePageFilesLoadPromise: Promise<void> | null = null
   let activePageFilesLoadPageId = ''
   let activePageFilesLoadEpoch = 0
-  const pageRuleDocument = shallowRef<SparkNode[] | null>(null)
   const pageRuleTree = shallowRef<SparkNodeTree | null>(null)
   const pageDataTool = shallowRef<DataSetCrudTool | null>(null)
-  const pageDataDocument = shallowRef<IDataSetMetadata | null>(null)
   const pageScriptDocument = ref<string | null>(null)
   const pageStyleDocument = ref<string | null>(null)
   const pageDataSetError = ref<string | null>(null)
@@ -262,7 +260,7 @@ export function useDevState() {
   }
 
   function hasLivePageDataChangesAgainstEditFile(): boolean {
-    const liveMetadata = pageDataDocument.value ?? pageDataTool.value?.toJson() ?? null
+    const liveMetadata = pageDataTool.value?.toJson() ?? null
     if (liveMetadata === null) return false
     return hasDesignerProjectionChanges(liveMetadata, readComparablePageDataMetadata(editFiles['pagedata.json']))
   }
@@ -350,15 +348,13 @@ export function useDevState() {
 
   function clearPageDataBinding() {
     pageDataTool.value = null
-    pageDataDocument.value = null
     pageDataSetError.value = null
     recomputePageDataFileDirty()
   }
 
-  function syncPageDataDocumentFromTool(): IDataSetMetadata | null {
+  function syncLivePageDataFromTool(): IDataSetMetadata | null {
     const tool = pageDataTool.value
     if (!tool) {
-      pageDataDocument.value = null
       recomputePageDataFileDirty()
       return null
     }
@@ -368,7 +364,7 @@ export function useDevState() {
     }
 
     const nextValue = tool.toJson()
-    pageDataDocument.value = nextValue
+    triggerRef(pageDataTool)
     pageDataSetError.value = null
     recomputePageDataFileDirty()
     return nextValue
@@ -376,11 +372,6 @@ export function useDevState() {
 
   function ensureLivePageDataTool(): DataSetCrudTool | null {
     if (pageDataTool.value) return pageDataTool.value
-
-    if (pageDataDocument.value !== null) {
-      replaceLivePageData(pageDataDocument.value, { preserveHistory: false })
-      return pageDataTool.value
-    }
 
     const rawText = editFiles['pagedata.json'] ?? ''
     if (!rawText.trim()) return null
@@ -400,11 +391,10 @@ export function useDevState() {
         options?.preserveHistory === undefined ? undefined : { preserveHistory: options.preserveHistory },
       )
       pageDataTool.value = nextTool
-      syncPageDataDocumentFromTool()
+      syncLivePageDataFromTool()
       return true
     } catch (error) {
       pageDataTool.value = null
-      pageDataDocument.value = null
       pageDataSetError.value = error instanceof Error ? error.message : String(error)
       return false
     }
@@ -415,7 +405,7 @@ export function useDevState() {
     if (!tool) return false
 
     mutator(tool)
-    syncPageDataDocumentFromTool()
+    syncLivePageDataFromTool()
     return true
   }
 
@@ -424,7 +414,7 @@ export function useDevState() {
     if (!tool) return false
     const ok = tool.undo()
     if (!ok) return false
-    syncPageDataDocumentFromTool()
+    syncLivePageDataFromTool()
     return true
   }
 
@@ -433,12 +423,11 @@ export function useDevState() {
     if (!tool) return false
     const ok = tool.redo()
     if (!ok) return false
-    syncPageDataDocumentFromTool()
+    syncLivePageDataFromTool()
     return true
   }
 
   function clearRuleBinding() {
-    pageRuleDocument.value = null
     pageRuleTree.value = null
   }
 
@@ -496,7 +485,6 @@ export function useDevState() {
   function syncRuleDocumentFromTree(): SparkNode[] | null {
     const tree = pageRuleTree.value
     if (!tree) {
-      pageRuleDocument.value = null
       return null
     }
 
@@ -504,21 +492,11 @@ export function useDevState() {
     const ruleJson = Array.isArray(root.children)
       ? deepClone(root.children as SparkNode[])
       : []
-    pageRuleDocument.value = ruleJson
     return ruleJson
   }
 
   function ensureLiveRuleTree(): SparkNodeTree | null {
     if (pageRuleTree.value) return pageRuleTree.value
-
-    if (pageRuleDocument.value !== null) {
-      pageRuleTree.value = SparkNodeTree.fromJson({
-        type: 'page',
-        children: deepClone(pageRuleDocument.value),
-      })
-      syncRuleDocumentFromTree()
-      return pageRuleTree.value
-    }
 
     const rawText = editFiles['rule.json'] ?? ''
     if (!rawText.trim()) return null
@@ -552,7 +530,6 @@ export function useDevState() {
         fileDirty['rule.json'] = editFiles['rule.json'] !== savedFiles['rule.json']
       }
     } catch {
-      pageRuleDocument.value = null
       pageRuleTree.value = null
     }
   }
@@ -720,16 +697,8 @@ export function useDevState() {
     })
   }
 
-  function updatePageDataDocument(nextValue: Record<string, unknown>) {
-    const canonicalPageData = canonicalizePageDataValue(nextValue)
-    syncFileTextAndBindings('pagedata.json', canonicalPageData.text)
-    fileTextHistoryDraft['pagedata.json'] = null
-    applyCanonicalPageData(canonicalPageData)
-    commitFileTextHistory('pagedata.json', canonicalPageData.text)
-  }
-
   function syncLivePageDataToEditFile(): string | null {
-    const currentPageData = pageDataDocument.value ?? pageDataTool.value?.toJson() ?? null
+    const currentPageData = pageDataTool.value?.toJson() ?? null
     if (currentPageData === null) return null
 
     const canonicalPageData = canonicalizePageDataValue(currentPageData as unknown as Record<string, unknown>)
@@ -767,7 +736,7 @@ export function useDevState() {
       getDataSetTool: () => ensureLivePageDataTool(),
       onDataSetChanged(tool) {
         pageDataTool.value = tool
-        syncPageDataDocumentFromTool()
+        syncLivePageDataFromTool()
         syncLivePageDataToEditFile()
       },
       readScript: () => pageScriptDocument.value ?? editFiles['script.js'] ?? '',
@@ -1267,7 +1236,6 @@ export function useDevState() {
       applyCanonicalPageData(canonicalPageData)
     } catch (error) {
       pageDataTool.value = null
-      pageDataDocument.value = null
       pageDataSetError.value = error instanceof Error ? error.message : String(error)
       recomputePageDataFileDirty()
     }
@@ -2029,8 +1997,6 @@ export function useDevState() {
     fileSaving,
     fileLoadState,
     pageRuleTree,
-    pageRuleDocument,
-    pageDataDocument,
     pageDataTool,
     pageScriptDocument,
     pageStyleDocument,
@@ -2069,13 +2035,12 @@ export function useDevState() {
     restoreRemotePageVersion,
     createRemotePageVersion,
     deleteRemotePageVersion,
-    updatePageDataDocument,
     ensureLivePageDataTool,
     replaceLivePageData,
     mutateLivePageData,
     undoLivePageData,
     redoLivePageData,
-    syncPageDataDocumentFromTool,
+    syncLivePageDataFromTool,
     createLiveEditModelAdapter,
     goFileHistoryBack,
     goFileHistoryForward,

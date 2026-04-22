@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { SparkNode } from '@spark-view/spark-component'
 
 const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
   httpGet: vi.fn(),
@@ -25,6 +26,20 @@ vi.mock('@/services/api-paths', () => ({
 
 import { canonicalizePageDataJson } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES, useDevState } from '../src/views/app/dev-system/useDevState'
+
+function readLiveRuleChildren(state: ReturnType<typeof useDevState>) {
+  const root = state.pageRuleTree.value?.toJSON()
+  return Array.isArray(root?.children)
+    ? root.children.filter(
+        (child): child is SparkNode =>
+          typeof child === 'object' && child !== null && 'type' in child && typeof child.type === 'string',
+      )
+    : []
+}
+
+function readLivePageData(state: ReturnType<typeof useDevState>) {
+  return state.pageDataTool.value?.toJson() ?? null
+}
 
 function createPageDataText(name: string, compact = false): string {
   const payload = {
@@ -182,10 +197,11 @@ describe('useDevState pagedata local history', () => {
     state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
     state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
 
-    expect(state.pageRuleDocument.value?.[0]?.type).toBe('el-button')
+    expect(readLiveRuleChildren(state)[0]?.type).toBe('el-button')
     expect(state.goFileHistoryBack('rule.json')).toBe(true)
-    expect(state.editFiles['rule.json']).toBe(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
-    expect(state.pageRuleDocument.value?.[0]?.type).toBe('div')
+    const exportedRuleText = state.editFiles['rule.json'] ?? '[]'
+    expect(JSON.parse(exportedRuleText)[0]).toMatchObject({ type: 'div' })
+    expect(readLiveRuleChildren(state)[0]?.type).toBe('div')
   })
 
   it('keeps the live script document in sync when undoing local script history', () => {
@@ -254,14 +270,14 @@ describe('useDevState pagedata local history', () => {
     })).toBe(true)
 
     expect(state.pageDataTool.value?.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
-    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
-    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
     expect(state.editFiles['pagedata.json']).toBe(persistedText)
 
     expect(state.undoLivePageData()).toBe(true)
-    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(false)
+    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(false)
     expect(state.redoLivePageData()).toBe(true)
-    expect(state.pageDataDocument.value?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
   })
 
   it('saves the current live pagedata model when the designer changed only the in-memory model', async () => {
@@ -314,7 +330,7 @@ describe('useDevState pagedata local history', () => {
     expect(state.fileLoadState['pagedata.json']).toBe('idle')
     expect(state.fileDirty['pagedata.json']).toBe(false)
     expect(state.pageDataTool.value).toBeNull()
-    expect(state.pageDataDocument.value).toBeNull()
+    expect(readLivePageData(state)).toBeNull()
     expect(state.pageDataDesignerDirty.value).toBe(false)
     expect(state.getFileHistoryCount('pagedata.json')).toBe(0)
   })
@@ -325,7 +341,7 @@ describe('useDevState pagedata local history', () => {
     state.updatePageFile('rule.json', '[]\n')
     state.updatePageFile('pagedata.json', createPageDataText('Manual-Alpha', true))
 
-    const basePageData = cloneJson(state.pageDataDocument.value!)
+    const basePageData = cloneJson(readLivePageData(state)!)
     const manualOrders = basePageData.tables['Orders']!
     const manualPageData = {
       ...basePageData,

@@ -334,8 +334,7 @@ const relEditorPos = computed(() => {
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
 const projectedMetadata = computed<IDataSetMetadata | null>(() => {
-  // 以 DataSetCrudTool 为主数据源；pageDataDocument 仅用于驱动响应式刷新。
-  props.state.pageDataDocument.value
+  // 以 DataSetCrudTool 为唯一数据源；其 shallowRef 会在 useDevState 中被显式触发刷新。
   return props.state.pageDataTool.value?.toJson() ?? null
 })
 
@@ -369,7 +368,7 @@ function applyMutationWithHistory(
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
     mutator(tool)
-    props.state.syncPageDataDocumentFromTool()
+    props.state.syncLivePageDataFromTool()
   } catch (error) {
     pendingProjectionLayout.value = null
     throw error
@@ -402,7 +401,7 @@ function commitLayoutCheckpoint(): void {
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
   tool.updateTable({ tableName: anchor.tableName })
-  props.state.syncPageDataDocumentFromTool()
+  props.state.syncLivePageDataFromTool()
 }
 
 const canUndo = computed(() => {
@@ -541,7 +540,7 @@ function refreshFromLiveData(silent = false): void {
     return
   }
 
-  props.state.syncPageDataDocumentFromTool()
+  props.state.syncLivePageDataFromTool()
   resetSelectionState()
 }
 

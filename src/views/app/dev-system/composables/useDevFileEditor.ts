@@ -20,10 +20,6 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     state.updatePageFile(activeFile.value, value)
   }
 
-  function updateDocument(value: Record<string, unknown>) {
-    state.updatePageDataDocument(value)
-  }
-
   function undo() {
     state.goFileHistoryBack(activeFile.value)
   }
@@ -60,7 +56,6 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     canRedo,
     ensureLoaded,
     updateText,
-    updateDocument,
     undo,
     redo,
     save,
