@@ -57,8 +57,8 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true,
+          "autoLoad": false,
+          "autoRefresh": false,
           "aggregates": {
             "totalOrders": {
               "type": "count",
@@ -113,8 +113,8 @@
           ],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true,
+          "autoLoad": false,
+          "autoRefresh": false,
           "aggregates": {
             "totalOrders": {
               "type": "count",
@@ -174,8 +174,8 @@
           },
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true,
+          "autoLoad": false,
+          "autoRefresh": false,
           "aggregates": {
             "pendingOrders": {
               "type": "count",
@@ -183,27 +183,6 @@
               "label": "待处理订单数"
             }
           }
-        }
-      },
-      "api": {
-        "list": {
-          "url": "/orders/list",
-          "pagination": {
-            "pageParam": "page",
-            "sizeParam": "pageSize"
-          }
-        },
-        "create": {
-          "url": "/orders/create"
-        },
-        "retrieve": {
-          "url": "/orders/{id}"
-        },
-        "update": {
-          "url": "/orders/update"
-        },
-        "delete": {
-          "url": "/orders/delete"
         }
       },
       "crudConfig": {
@@ -589,33 +568,12 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true
+          "autoLoad": false,
+          "autoRefresh": false
         }
       },
       "resourceType": "static-data",
       "businessCategory": "reference",
-      "api": {
-        "list": {
-          "url": "/departments/list",
-          "pagination": {
-            "pageParam": "page",
-            "sizeParam": "pageSize"
-          }
-        },
-        "create": {
-          "url": "/departments/create"
-        },
-        "retrieve": {
-          "url": "/departments/{id}"
-        },
-        "update": {
-          "url": "/departments/update"
-        },
-        "delete": {
-          "url": "/departments/delete"
-        }
-      },
       "crudConfig": {
         "timeout": 5000,
         "validateData": true
@@ -695,33 +653,12 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true
+          "autoLoad": false,
+          "autoRefresh": false
         }
       },
       "resourceType": "static-data",
       "businessCategory": "child",
-      "api": {
-        "list": {
-          "url": "/employees/list",
-          "pagination": {
-            "pageParam": "page",
-            "sizeParam": "pageSize"
-          }
-        },
-        "create": {
-          "url": "/employees/create"
-        },
-        "retrieve": {
-          "url": "/employees/{id}"
-        },
-        "update": {
-          "url": "/employees/update"
-        },
-        "delete": {
-          "url": "/employees/delete"
-        }
-      },
       "crudConfig": {
         "timeout": 5000,
         "validateData": true
