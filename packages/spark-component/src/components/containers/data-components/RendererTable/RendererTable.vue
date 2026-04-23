@@ -446,6 +446,7 @@ const toolbarComponentProps = computed<Partial<RendererToolbarProps>>(() => {
   return mapNodeProps<RendererToolbarProps>({
     source: toolbarNode.value?.props,
     map: {
+      id: 'id',
       type: 'type',
       children: 'children',
       tail: 'tail',

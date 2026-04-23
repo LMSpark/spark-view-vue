@@ -24,6 +24,32 @@ import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '.
  */
 type DispatchFn = (...args: unknown[]) => unknown
 
+function buildNodeTreeActionSummary(action: string, data: unknown): string {
+  if (action === 'sparkNodeTree.listChildren') {
+    const count = Array.isArray(data) ? data.length : 0
+    return `${action} 完成（children=${count}）`
+  }
+
+  if (action === 'sparkNodeTree.getAllData') {
+    if (typeof data === 'object' && data !== null) {
+      const root = data as Record<string, unknown>
+      const childCount = Array.isArray(root['children']) ? root['children'].length : 0
+      const rootType = typeof root['type'] === 'string' ? root['type'] : 'unknown'
+      return `${action} 完成（root=${rootType}, children=${childCount}）`
+    }
+    return `${action} 完成`
+  }
+
+  if (action === 'sparkNodeTree.countNodes') {
+    const count = typeof data === 'number' ? data : Number.NaN
+    return Number.isFinite(count)
+      ? `${action} 完成（count=${count}）`
+      : `${action} 完成`
+  }
+
+  return `${action} 完成`
+}
+
 
 // ── 3. 参数验证逻辑 (Parameter Validation) ────────────────────────────────────────
 
@@ -97,8 +123,21 @@ function executeNodeTreeStillRow(
     }
     
     // 封装并返回成功摘要给调用方
-    return { ok: true, data, summary: `${row.action} 完成` }
+    return { ok: true, data, summary: buildNodeTreeActionSummary(row.action, data) }
   } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err)
+
+    // listChildren 的父节点未命中是最常见误用之一。
+    // 这里返回结构化错误，显式阻止模型把“节点未命中”误判为“页面为空”。
+    if (row.action === 'sparkNodeTree.listChildren' && /not found/i.test(errMsg)) {
+      return {
+        ok: false,
+        code: 'PARENT_NOT_FOUND',
+        msg: errMsg,
+        fix: 'parentComponentId 必须是真实节点 id（来自 listChildren/getNode/findByType 的返回值），不能传组件类型名。此错误不代表 rule.json 为空；请先调用 sparkNodeTree.listChildren({"parentComponentId":null}) 或 sparkNodeTree.findByType 获取真实 id 后重试。',
+      }
+    }
+
     const exampleText = Object.keys(row.example).length > 0
       ? `；示例: ${JSON.stringify(row.example)}`
       : ''
@@ -110,7 +149,7 @@ function executeNodeTreeStillRow(
     return {
       ok: false,
       code: 'EXECUTE_ERROR',
-      msg: err instanceof Error ? err.message : String(err),
+      msg: errMsg,
       fix: `正确参数格式: ${JSON.stringify(row.paramsSchema)}${exampleText}${rulesText}`,
     }
   }

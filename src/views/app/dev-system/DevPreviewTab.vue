@@ -57,9 +57,18 @@ import { createAuthHeaders } from '@/services/http'
 // DevPreviewTab 直接传 pageConfig（跳过加载器），但 DataSet 仍需要 HTTP 客户端
 // 来执行 api.list 等远程请求。这里构造一个最小 configLoader 仅暴露 getHttpClient()。
 const previewConfigLoader = (() => {
-  const client = createRequest({ baseURL: '/api', timeout: 30_000 })
+  const client = createRequest({ timeout: 30_000 })
   client.interceptors.request.use({
     onRequest: (config) => {
+      if (
+        typeof config.url === 'string'
+        && config.url.trim() !== ''
+        && !/^[a-z][a-z\d+\-.]*:/i.test(config.url)
+        && !config.url.startsWith('//')
+      ) {
+        const normalizedUrl = config.url.startsWith('/') ? config.url : `/${config.url}`
+        config.url = normalizedUrl.startsWith('/api/') ? normalizedUrl : `/api${normalizedUrl}`
+      }
       config.headers = { ...config.headers, ...createAuthHeaders() }
       return config
     },

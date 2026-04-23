@@ -14,6 +14,8 @@ export type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
  * 由列表、表格、树等容器读取，用于决定工具栏位置、间距、对齐与尾部区域。
  */
 export interface RendererToolbarConfigProps extends Record<string, unknown> {
+	/** 工具栏 DOM 标识。 */
+	id?: string
 	/** 工具栏停靠位置。 */
 	position?: ToolbarPosition
 	/** 工具栏附加 class。 */
@@ -52,6 +54,8 @@ export interface ToolbarNode extends SparkNode {
 export interface RendererToolbarProps {
 	/** 组件类型固定为 `r-toolbar`。 */
 	type?: 'r-toolbar'
+	/** 工具栏 DOM 标识。 */
+	id?: string
 	/** 工具栏动作节点列表。 */
 	children?: SparkNode[]
 	/** 尾部动作区 @componentRef r-tail */

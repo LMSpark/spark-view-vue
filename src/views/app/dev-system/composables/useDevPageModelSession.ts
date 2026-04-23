@@ -51,17 +51,43 @@ export function useDevPageModelSession(options: Options) {
 
   const disabled = computed(() => !state.activePageId.value)
 
+  function buildModelFactsSnapshot(): string {
+    const ruleTree = state.documents['rule.json'].model.value
+    const ruleRoot = ruleTree?.toJSON()
+    const ruleChildrenCount = Array.isArray(ruleRoot?.children) ? ruleRoot.children.length : null
+
+    const dataSetTool = state.documents['pagedata.json'].model.value
+    const tables = dataSetTool?.toJson().tables ?? {}
+    const tableCount = Object.keys(tables).length
+
+    const scriptLength = state.documents['script.js'].text.value.length
+    const styleLength = state.documents['style.css'].text.value.length
+
+    return [
+      '[页面模型事实快照]',
+      `pageId=${state.activePageId.value || 'unknown'}`,
+      `ruleChildrenCount=${ruleChildrenCount ?? 'unknown'}`,
+      `datasetTableCount=${tableCount}`,
+      `scriptLength=${scriptLength}`,
+      `styleLength=${styleLength}`,
+      '事实约束：除非 ruleChildrenCount=0 且后续工具核验 countNodes=1，否则禁止宣称 rule.json 为空。',
+    ].join('\n')
+  }
+
   function buildContinuationPrompt(prompt: string, historyMsgs: AiChatSendRequest['historyMsgs']): string {
     const hasBackendSession = sessionHost.getResumeSessionOptions().resumeSessionId !== undefined
     const previousMessages = historyMsgs.slice(0, -1).filter(message => message.role !== 'system')
+    const modelFacts = buildModelFactsSnapshot()
     if (hasBackendSession || previousMessages.length === 0) {
-      return prompt
+      return `${modelFacts}\n\n${prompt}`
     }
     const transcript = previousMessages
       .slice(-8)
       .map(message => `${message.role === 'assistant' ? 'AI' : '用户'}: ${message.content}`)
       .join('\n')
     return [
+      modelFacts,
+      '',
       '[全局对话延续]',
       `当前页面: ${state.activePageId.value}`,
       `当前焦点文件: ${options.activeFile.value ?? 'unknown'}`,

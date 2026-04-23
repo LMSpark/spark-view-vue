@@ -288,9 +288,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     busy.value = true
     aiBuffer.value = ''
     try {
-      if (!ready.value) {
-        await ensureContextLoaded?.()
-      }
+      await ensureContextLoaded?.()
       if (sessionHost.hasSessionMismatch(getSessionKey())) {
         await sessionHost.reset()
         ready.value = false
@@ -299,7 +297,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       configureSessionBackend({ getHeaders: createAuthHeaders })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await runStillsLoop(prompt, s, sessionHost.backend, {
-        maxRounds: 200,
+        maxRounds: 80,
         slidingWindow: 12,
         systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
         signal: runController.signal,
@@ -309,9 +307,15 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
         },
         ...sessionHost.getResumeSessionOptions(),
         tools: generateToolDefinitions({ compactDescriptions: true }),
-        // 在编辑会话中优先让 LLM 自修正，不要因短暂探索失败快速中止。
-        // 周期循环会通过 monitor followUp 提醒换路径；这里仅把硬中止阈值调高。
-        monitors: [createRepeatDetectionMonitor({ maxSameSignature: 12, maxConsecutiveErrors: 12 })],
+        // 编辑会话需要允许短暂探索，但应及时阻断“只查不写”的漫游。
+        monitors: [createRepeatDetectionMonitor({
+          maxSameSignature: 6,
+          maxConsecutiveErrors: 6,
+          maxCyclePeriod: 4,
+          cycleRepeatThreshold: 2,
+          maxReadOnlyActions: 36,
+          maxMissingComponentRetries: 2,
+        })],
         onTurnComplete(turn: DialogueTurn) {
           if (turn.toolBlock?.action && turn.stillsResult) {
             const r = turn.stillsResult

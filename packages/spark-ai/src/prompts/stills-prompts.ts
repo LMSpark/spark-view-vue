@@ -253,6 +253,9 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
   - 首轮可调用 session.describe 或 stills.capabilities 了解 edit-domain 目录；之后不要重复能力探测
   - 任何写动作之前，必须先调用 stills.actionSpec 获取目标动作的 paramsSchema / usageRules / failureModes
   - tool result 若返回错误或 warnings，先读 code / msg / fix，再重新查询 actionSpec 后用修正参数重试
+  - 若 catalog.guide 返回 NOT_FOUND（组件不存在），同一 type 禁止再次 guide 重试；必须先 catalog.query 选择可用替代组件
+  - 若 sparkNodeTree.listChildren/getNode 报“节点不存在”，禁止据此宣称 rule.json 为空；必须先用 listChildren(parentComponentId:null) 或 countNodes/getAllData 做根级核验
+  - 只有在 countNodes=1 且 listChildren(parentComponentId:null) 返回 0 个子节点时，才可认定 rule.json 为空；否则禁止输出“无页面结构/空页面”结论
 
   按目标文件选择动作：
   - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 queryComponentCatalog('*')，选定 type 后再 queryComponentGuide(type)

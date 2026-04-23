@@ -1,55 +1,521 @@
 [
   {
-    "type": "r-table",
-    "id": "ordersTable",
+    "type": "r-tabs",
+    "id": "mainTabs",
     "props": {
-      "id": "ordersTable",
-      "dataKey": "Orders@orderListView@rows",
-      "toolbar": {
-        "type": "r-toolbar",
+      "id": "mainTabs"
+    },
+    "children": [
+      {
+        "type": "r-tab-pane",
+        "id": "tabOrders",
         "props": {
-          "id": "ordersToolbar"
+          "id": "tabOrders",
+          "index": 0,
+          "name": "orders",
+          "label": "订单管理"
         },
         "children": [
           {
-            "type": "r-button",
+            "type": "r-table",
+            "id": "ordersTable",
             "props": {
-              "id": "btnRefresh",
-              "label": "刷新",
-              "template": "toolbar-default",
-              "icon": "Refresh",
-              "action": "refresh"
-            }
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "id": "btnAdd",
-              "label": "新增",
-              "template": "toolbar-primary",
-              "icon": "Plus",
-              "action": "append-row"
-            }
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "id": "btnDelete",
-              "label": "删除",
-              "template": "toolbar-danger",
-              "icon": "Delete",
-              "action": "delete-current"
-            }
+              "id": "ordersTable",
+              "dataKey": "Orders@orderListView@rows",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "ordersToolbar"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnRefresh",
+                      "label": "刷新",
+                      "template": "toolbar-default",
+                      "icon": "Refresh",
+                      "action": "refresh"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnAdd",
+                      "label": "新增",
+                      "template": "toolbar-primary",
+                      "icon": "Plus",
+                      "action": "append-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnDelete",
+                      "label": "删除",
+                      "template": "toolbar-danger",
+                      "icon": "Delete",
+                      "action": "delete-current"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnExport",
+                      "label": "导出",
+                      "template": "toolbar-default",
+                      "icon": "Download",
+                      "action": "export"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnImport",
+                      "label": "导入",
+                      "template": "toolbar-default",
+                      "icon": "Upload",
+                      "action": "import"
+                    }
+                  }
+                ]
+              },
+              "tableProps": {
+                "rowKey": "id",
+                "highlightCurrentRow": true,
+                "border": true,
+                "stripe": true
+              },
+              "actions": {
+                "type": "r-actions",
+                "props": {
+                  "width": 200,
+                  "fixed": "right",
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "查看",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "编辑",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "删除",
+                      "template": "text-danger",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "id": "colOrderNo",
+                "props": {
+                  "id": "colOrderNo",
+                  "field": "orderNo",
+                  "label": "订单号",
+                  "sortable": true,
+                  "width": 180
+                },
+                "children": []
+              },
+              {
+                "type": "r-date",
+                "id": "colOrderDate",
+                "props": {
+                  "id": "colOrderDate",
+                  "field": "orderDate",
+                  "label": "下单日期",
+                  "dateType": "date",
+                  "valueFormat": "YYYY-MM-DD",
+                  "sortable": true,
+                  "width": 140
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colCustomerId",
+                "props": {
+                  "id": "colCustomerId",
+                  "field": "customerId",
+                  "label": "客户ID",
+                  "width": 100
+                },
+                "children": []
+              },
+              {
+                "type": "display-tag",
+                "id": "colStatus",
+                "props": {
+                  "id": "colStatus",
+                  "field": "status",
+                  "label": "状态",
+                  "dynamicType": {
+                    "pending": "warning",
+                    "processing": "",
+                    "completed": "success",
+                    "cancelled": "danger"
+                  },
+                  "width": 100
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "id": "colTotalAmount",
+                "props": {
+                  "id": "colTotalAmount",
+                  "field": "totalAmount",
+                  "label": "总金额",
+                  "precision": 2,
+                  "sortable": true,
+                  "width": 130,
+                  "valueAlign": "right"
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colRemark",
+                "props": {
+                  "id": "colRemark",
+                  "field": "remark",
+                  "label": "备注",
+                  "width": 200
+                },
+                "children": []
+              }
+            ]
           }
         ]
       },
-      "tableProps": {
-        "rowKey": "id",
-        "highlightCurrentRow": true,
-        "border": true,
-        "stripe": true
+      {
+        "type": "r-tab-pane",
+        "id": "tabCustomers",
+        "props": {
+          "id": "tabCustomers",
+          "index": 1,
+          "name": "customers",
+          "label": "客户管理"
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "id": "customersTable",
+            "props": {
+              "id": "customersTable",
+              "dataKey": "Customers@rows",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "customersToolbar"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnCustRefresh",
+                      "label": "刷新",
+                      "template": "toolbar-default",
+                      "icon": "Refresh",
+                      "action": "refresh"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnCustAdd",
+                      "label": "新增",
+                      "template": "toolbar-primary",
+                      "icon": "Plus",
+                      "action": "append-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnCustDelete",
+                      "label": "删除",
+                      "template": "toolbar-danger",
+                      "icon": "Delete",
+                      "action": "delete-current"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnCustExport",
+                      "label": "导出",
+                      "template": "toolbar-default",
+                      "icon": "Download",
+                      "action": "export"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnCustImport",
+                      "label": "导入",
+                      "template": "toolbar-default",
+                      "icon": "Upload",
+                      "action": "import"
+                    }
+                  }
+                ]
+              },
+              "tableProps": {
+                "rowKey": "id",
+                "highlightCurrentRow": true,
+                "border": true,
+                "stripe": true
+              },
+              "actions": {
+                "type": "r-actions",
+                "props": {
+                  "width": 200,
+                  "fixed": "right",
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "查看",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "编辑",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "删除",
+                      "template": "text-danger",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "id": "colCustName",
+                "props": {
+                  "id": "colCustName",
+                  "field": "name",
+                  "label": "客户名称",
+                  "sortable": true,
+                  "width": 150
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colCustPhone",
+                "props": {
+                  "id": "colCustPhone",
+                  "field": "phone",
+                  "label": "联系电话",
+                  "width": 150
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colCustAddress",
+                "props": {
+                  "id": "colCustAddress",
+                  "field": "address",
+                  "label": "地址",
+                  "width": 250
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-tab-pane",
+        "id": "tabProducts",
+        "props": {
+          "id": "tabProducts",
+          "index": 2,
+          "name": "products",
+          "label": "产品管理"
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "id": "productsTable",
+            "props": {
+              "id": "productsTable",
+              "dataKey": "Products@rows",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "productsToolbar"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnProdRefresh",
+                      "label": "刷新",
+                      "template": "toolbar-default",
+                      "icon": "Refresh",
+                      "action": "refresh"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnProdAdd",
+                      "label": "新增",
+                      "template": "toolbar-primary",
+                      "icon": "Plus",
+                      "action": "append-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnProdDelete",
+                      "label": "删除",
+                      "template": "toolbar-danger",
+                      "icon": "Delete",
+                      "action": "delete-current"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnProdExport",
+                      "label": "导出",
+                      "template": "toolbar-default",
+                      "icon": "Download",
+                      "action": "export"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnProdImport",
+                      "label": "导入",
+                      "template": "toolbar-default",
+                      "icon": "Upload",
+                      "action": "import"
+                    }
+                  }
+                ]
+              },
+              "tableProps": {
+                "rowKey": "id",
+                "highlightCurrentRow": true,
+                "border": true,
+                "stripe": true
+              },
+              "actions": {
+                "type": "r-actions",
+                "props": {
+                  "width": 200,
+                  "fixed": "right",
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "查看",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "编辑",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "删除",
+                      "template": "text-danger",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "id": "colProdName",
+                "props": {
+                  "id": "colProdName",
+                  "field": "name",
+                  "label": "产品名称",
+                  "sortable": true,
+                  "width": 180
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colProdCategory",
+                "props": {
+                  "id": "colProdCategory",
+                  "field": "category",
+                  "label": "分类",
+                  "width": 120
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "id": "colProdPrice",
+                "props": {
+                  "id": "colProdPrice",
+                  "field": "price",
+                  "label": "价格",
+                  "precision": 2,
+                  "sortable": true,
+                  "width": 120,
+                  "valueAlign": "right"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
       }
-    },
-    "children": []
+    ]
   }
 ]
