@@ -52,6 +52,9 @@
           :sender="sender"
           :title="title"
           :placeholder="placeholder"
+          :stream-ai-chat-text="streamAiChatText"
+          :parse-token-usage="parseTokenUsage"
+          :upload-file="uploadFile"
           v-bind="externalToolLogs !== undefined ? { externalToolLogs } : {}"
           :compact="false"
           mode="multi"
@@ -84,8 +87,19 @@
 <script setup lang="ts">
 import { computed, ref, onBeforeUnmount, watch } from 'vue'
 import AiChatWidget from './AiChatWidget.vue'
-import { useAiPanelStore } from '@/composables/useAiPanelStore'
-import { readCache, writeCache, PANEL_LAYOUT_PREFIX } from '@/composables/aiSessionCache'
+import { useAiPanelStore } from '../../composables/useAiPanelStore'
+import { readCache, writeCache, PANEL_LAYOUT_PREFIX } from '../../composables/aiSessionCache'
+import type { FileAttachment, StreamAiChatText, TokenUsage } from '../../composables/useAiChat'
+
+const props = defineProps<{
+  streamAiChatText?: StreamAiChatText | undefined
+  parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
+  uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
+}>()
+
+const streamAiChatText = props.streamAiChatText
+const parseTokenUsage = props.parseTokenUsage
+const uploadFile = props.uploadFile
 
 const store = useAiPanelStore()
 const visible = store.visible

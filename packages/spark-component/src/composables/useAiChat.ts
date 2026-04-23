@@ -1,7 +1,4 @@
 import { ref, onBeforeUnmount } from 'vue'
-import { http } from '@/services/http'
-import { streamAiChatText, parseTokenUsage } from '@/services/ai-protocol'
-import type { TokenUsage } from '@/services/ai-protocol'
 import { readCache, writeCache } from './aiSessionCache'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -11,6 +8,14 @@ export interface FileAttachment {
   name: string
   size: number
   mimeType: string
+}
+
+export interface TokenUsage {
+  promptTokens?: number
+  completionTokens?: number
+  totalTokens?: number
+  promptCacheHitTokens?: number
+  promptCacheMissTokens?: number
 }
 
 export interface ChatMessage {
@@ -26,8 +31,6 @@ export interface ChatMessage {
   /** token 用量统计（流完成后填入） */
   usage?: TokenUsage
 }
-
-export type { TokenUsage }
 
 export type ChatMode = 'multi' | 'single'
 
@@ -81,11 +84,58 @@ export interface AiChatSendRequest {
 
 export type AiChatSender = (request: AiChatSendRequest) => Promise<void>
 
+export interface StreamAiChatTextRequest {
+  messages: Array<{ role: string; content: string }>
+  mode?: ChatMode
+  systemPrompt?: string
+  signal?: AbortSignal
+  onReasoning?: (reasoning: string) => void
+  onDelta?: (delta: string) => void
+  onUsage?: (usageRaw: Record<string, unknown>) => void
+}
+
+export type StreamAiChatText = (request: StreamAiChatTextRequest) => Promise<string>
+
+export interface UseAiChatOptions {
+  mode?: MaybeGetter<ChatMode>
+  systemPrompt?: MaybeGetter<string | undefined>
+  sender?: MaybeGetter<AiChatSender | undefined>
+  storageKey?: MaybeGetter<string | undefined>
+  pageId?: MaybeGetter<string | undefined>
+  sessionConfig?: MaybeGetter<AiSessionMetaConfig | undefined>
+  defaultRecoveryPolicy?: MaybeGetter<RecoveryPolicy | undefined>
+  defaultCollaborationPolicy?: MaybeGetter<CollaborationPolicy | undefined>
+  streamAiChatText?: StreamAiChatText | undefined
+  parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
+  uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
+}
+
 function resolveOption<T>(value: MaybeGetter<T> | undefined): T | undefined {
   if (typeof value === 'function') {
     return (value as (() => T))()
   }
   return value
+}
+
+function toFiniteNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function parseTokenUsageDefault(raw: Record<string, unknown>): TokenUsage {
+  const usage: TokenUsage = {}
+  const promptTokens = toFiniteNumber(raw['prompt_tokens'])
+  const completionTokens = toFiniteNumber(raw['completion_tokens'])
+  const totalTokens = toFiniteNumber(raw['total_tokens'])
+  const promptCacheHitTokens = toFiniteNumber(raw['prompt_cache_hit_tokens'])
+  const promptCacheMissTokens = toFiniteNumber(raw['prompt_cache_miss_tokens'])
+
+  if (promptTokens !== undefined) usage.promptTokens = promptTokens
+  if (completionTokens !== undefined) usage.completionTokens = completionTokens
+  if (totalTokens !== undefined) usage.totalTokens = totalTokens
+  if (promptCacheHitTokens !== undefined) usage.promptCacheHitTokens = promptCacheHitTokens
+  if (promptCacheMissTokens !== undefined) usage.promptCacheMissTokens = promptCacheMissTokens
+
+  return usage
 }
 
 function serializeSnapshot(snapshot: AiSessionSnapshot): string {
@@ -173,16 +223,7 @@ function restoreSnapshot(raw: string): AiSessionSnapshot | null {
 
 // ── Composable ───────────────────────────────────────────────────────────────
 
-export function useAiChat(options?: {
-  mode?: MaybeGetter<ChatMode>
-  systemPrompt?: MaybeGetter<string | undefined>
-  sender?: MaybeGetter<AiChatSender | undefined>
-  storageKey?: MaybeGetter<string | undefined>
-  pageId?: MaybeGetter<string | undefined>
-  sessionConfig?: MaybeGetter<AiSessionMetaConfig | undefined>
-  defaultRecoveryPolicy?: MaybeGetter<RecoveryPolicy | undefined>
-  defaultCollaborationPolicy?: MaybeGetter<CollaborationPolicy | undefined>
-}) {
+export function useAiChat(options?: UseAiChatOptions) {
   const getMode = () => resolveOption(options?.mode) ?? 'multi'
   const getSystemPrompt = () => resolveOption(options?.systemPrompt)
   const getSender = () => resolveOption(options?.sender)
@@ -195,6 +236,7 @@ export function useAiChat(options?: {
   const getSessionConfig = () => resolveOption(options?.sessionConfig) ?? {}
   const getDefaultRecoveryPolicy = () => resolveOption(options?.defaultRecoveryPolicy) ?? 'layered'
   const getDefaultCollaborationPolicy = () => resolveOption(options?.defaultCollaborationPolicy) ?? 'critical-confirm'
+  const getParseTokenUsage = () => options?.parseTokenUsage ?? parseTokenUsageDefault
 
   const initialSnapshot = (() => {
     const storageKey = getStorageKey()
@@ -331,12 +373,12 @@ export function useAiChat(options?: {
   }
 
   /** 当前活跃 SSE 流的 AbortController（用于取消在途请求） */
-  let _abortController: AbortController | null = null
+  let abortController: AbortController | null = null
 
   /** 组件卸载时中止活跃流 */
   onBeforeUnmount(() => {
-    _abortController?.abort()
-    _abortController = null
+    abortController?.abort()
+    abortController = null
   })
 
   // ── 发送文本消息（可携带附件） ────────────────────────────────────────────
@@ -400,7 +442,7 @@ export function useAiChat(options?: {
         }
       }
 
-      _abortController = new AbortController()
+      abortController = new AbortController()
       const onReasoning = (reasoning: string) => {
         reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
         syncPersistedSession()
@@ -410,7 +452,7 @@ export function useAiChat(options?: {
         syncPersistedSession()
       }
       const onUsage = (usageRaw: Record<string, unknown>) => {
-        reactiveMsg.usage = parseTokenUsage(usageRaw)
+        reactiveMsg.usage = getParseTokenUsage()(usageRaw)
         syncPersistedSession()
       }
 
@@ -418,22 +460,24 @@ export function useAiChat(options?: {
         await sender({
           historyMsgs,
           mode,
-          signal: _abortController.signal,
+          signal: abortController.signal,
+          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          onReasoning,
+          onDelta,
+          onUsage,
+        })
+      } else if (options?.streamAiChatText) {
+        await options.streamAiChatText({
+          messages: historyMsgs,
+          mode,
+          signal: abortController.signal,
           ...(systemPrompt !== undefined ? { systemPrompt } : {}),
           onReasoning,
           onDelta,
           onUsage,
         })
       } else {
-        await streamAiChatText({
-          messages: historyMsgs,
-          mode,
-          signal: _abortController.signal,
-          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
-          onReasoning,
-          onDelta,
-          onUsage,
-        })
+        throw new Error('[useAiChat] 缺少 sender 或 streamAiChatText 依赖。')
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : '请求失败'
@@ -442,7 +486,7 @@ export function useAiChat(options?: {
       appendToolLog({ type: 'error', tag: 'chat-error', text: msg })
       syncPersistedSession()
     } finally {
-      _abortController = null
+      abortController = null
       reactiveMsg.streaming = false
       isStreaming.value = false
       syncPersistedSession()
@@ -452,17 +496,18 @@ export function useAiChat(options?: {
   // ── 文件上传 ─────────────────────────────────────────────────────────────
 
   async function uploadFile(file: File): Promise<FileAttachment> {
-    const fd = new FormData()
-    fd.append('file', file)
-    return await http.post<FileAttachment>('/api/ai/upload', fd)
+    if (!options?.uploadFile) {
+      throw new Error('[useAiChat] 缺少 uploadFile 依赖。')
+    }
+    return await options.uploadFile(file)
   }
 
   // ── 清空会话 ─────────────────────────────────────────────────────────────
 
   function clear() {
     // 中止活跃 SSE 流，防止 orphaned 写入（流仍持有旧 reactiveMsg 引用）
-    _abortController?.abort()
-    _abortController = null
+    abortController?.abort()
+    abortController = null
     messages.value = []
     toolLogs.value = []
     error.value = null

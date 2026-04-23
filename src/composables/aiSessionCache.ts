@@ -24,17 +24,17 @@ export {
  */
 export async function setupAiCacheEventBus(): Promise<void> {
   // 延迟加载以避免循环依赖
-  const { useAiPanelStore } = await import('./useAiPanelStore')
+  const { useAiPanelStore } = await import('@spark-view/spark-component')
   const store = useAiPanelStore()
-  
+
   registerAiCacheEventHandler('snapshot:restore', (payload: { storageKey: string; size: number }) => {
     store.emit('snapshot:restore', payload)
   })
-  
+
   registerAiCacheEventHandler('snapshot:persist', (payload: { storageKey: string; size: number }) => {
     store.emit('snapshot:persist', payload)
   })
-  
+
   registerAiCacheEventHandler('snapshot:clear', (payload: { storageKey: string }) => {
     store.emit('snapshot:clear', payload)
   })

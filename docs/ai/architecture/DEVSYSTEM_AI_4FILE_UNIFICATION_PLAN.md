@@ -32,7 +32,7 @@ DevSystem 的 AI 体系必须统一到**页面级 4 文件编辑层**，以单�
 
 底层其实已经高度统一：
 
-- 聊天组件统一走 [useAiChat.ts](../../../src/composables/useAiChat.ts)
+- 聊天组件统一走 [useAiChat.ts](../../../packages/spark-component/src/composables/useAiChat.ts)
 - 会话后端统一走 [session-backend.ts](../../../packages/spark-ai/src/session-backend.ts)
 - SSE 协议统一走 `/api/ai/sessions/{sessionId}/turn/stream`
 - stills edit-domain 原生支持 4 文件状态，见 [edit-state.ts](../../../packages/spark-ai/src/stills/edit-state.ts)

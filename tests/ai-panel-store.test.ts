@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { useAiPanelStore, type AiSessionConfig } from '../src/composables/useAiPanelStore'
+import { useAiPanelStore, type AiSessionConfig } from '@spark-view/spark-component'
 
 function makeConfig(overrides: Partial<AiSessionConfig> = {}): AiSessionConfig {
   return {

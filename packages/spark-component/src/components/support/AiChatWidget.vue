@@ -21,9 +21,15 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { AiChatShell } from '@spark-view/spark-component'
-import { useAiChat } from '../composables/useAiChat'
-import type { ChatMode, FileAttachment, AiChatSender } from '../composables/useAiChat'
+import AiChatShell from './AiChatShell.vue'
+import { useAiChat } from '../../composables/useAiChat'
+import type {
+  ChatMode,
+  FileAttachment,
+  AiChatSender,
+  StreamAiChatText,
+  TokenUsage,
+} from '../../composables/useAiChat'
 
 const props = defineProps<{
   mode?: ChatMode
@@ -35,6 +41,9 @@ const props = defineProps<{
   storageKey?: string
   showToolLogs?: boolean
   externalToolLogs?: Array<{ type: 'info' | 'success' | 'error'; tag: string; text: string; timestamp?: string }>
+  streamAiChatText?: StreamAiChatText | undefined
+  parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
+  uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
 }>()
 
 const optionalShellProps = computed(() => ({
@@ -76,6 +85,9 @@ const {
   sender: () => props.sender,
   pageId: () => props.storageKey,
   storageKey: () => props.storageKey,
+  streamAiChatText: props.streamAiChatText,
+  parseTokenUsage: props.parseTokenUsage,
+  uploadFile: props.uploadFile,
 })
 
 const inputText = ref('')
@@ -156,8 +168,8 @@ async function handleFileChange(e: Event) {
     try {
       const attachment = await uploadFile(file)
       pendingFiles.value.push(attachment)
-    } catch {
-      // 上传失败静默跳过
+    } catch (err) {
+      console.error('[AiChatWidget] file upload failed', err)
     }
   }
   target.value = '' // 重置 input

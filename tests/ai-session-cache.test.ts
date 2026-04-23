@@ -11,7 +11,7 @@ import {
   ALL_AI_CACHE_PREFIXES,
   setupAiCacheEventBus,
 } from '../src/composables/aiSessionCache'
-import { useAiPanelStore } from '../src/composables/useAiPanelStore'
+import { useAiPanelStore } from '@spark-view/spark-component'
 
 describe('aiSessionCache', () => {
   beforeEach(async () => {

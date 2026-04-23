@@ -8,8 +8,7 @@
  *  - activePageId 变化时自动重置会话。
  */
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
-import type { AiSessionConfig } from '@/composables/useAiPanelStore'
-import type { AiChatSender, AiChatSendRequest } from '@/composables/useAiChat'
+import type { AiSessionConfig, AiChatSender, AiChatSendRequest } from '@spark-view/spark-component'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import { useUnifiedEditSession } from './useUnifiedEditSession'
 import type { DevState, PageFileName } from '../useDevState'

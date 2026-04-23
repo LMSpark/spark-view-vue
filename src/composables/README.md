@@ -4,7 +4,7 @@
 
 ## 当前内容
 
-- `useAiChat.ts`：AI 对话流、附件上传与会话状态封装。
+- AI 会话核心 composable（`useAiChat/useAiPanelStore/useAiSession`）已迁移到 `packages/spark-component/src/composables/`。
 - `useTenantRouter.ts`：租户作用域路由拼接与页面跳转辅助。
 - `useNotifications.ts`：通知/消息相关组合逻辑。
 - `useFloatingPanelOwner.ts`：浮层宿主归属管理。

@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-23T16:15:19.217Z",
-  "componentCount": 110,
+  "buildTime": "2026-04-23T16:43:52.943Z",
+  "componentCount": 111,
   "registry": {
     "containers": [
       "r-anchor",
@@ -1357,7 +1357,7 @@
         },
         {
           "name": "linkType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
@@ -1451,7 +1451,7 @@
         },
         {
           "name": "confirmButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
@@ -1459,7 +1459,7 @@
         },
         {
           "name": "cancelButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
@@ -1871,7 +1871,7 @@
         },
         {
           "name": "mode",
-          "type": "\"content\" | \"header\"",
+          "type": "\"header\" | \"content\"",
           "required": true,
           "description": "渲染模式：步骤头部或内容区",
           "schemaRef": "schema_00020"
@@ -2409,7 +2409,7 @@
       "props": [
         {
           "name": "avatarSize",
-          "type": "number | \"default\" | \"large\" | \"small\" | undefined",
+          "type": "number | \"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
@@ -2516,7 +2516,7 @@
         },
         {
           "name": "badgeType",
-          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
@@ -3006,7 +3006,7 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -3367,7 +3367,7 @@
         },
         {
           "name": "descriptionsSize",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -3649,7 +3649,7 @@
         },
         {
           "name": "itemType",
-          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
@@ -3663,7 +3663,7 @@
         },
         {
           "name": "itemSize",
-          "type": "\"normal\" | \"large\" | undefined",
+          "type": "\"large\" | \"normal\" | undefined",
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸",
@@ -4636,11 +4636,11 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
+          "name": "field",
+          "type": "string | undefined",
           "required": false,
-          "default": "false",
-          "description": "是否启用多选"
+          "default": "undefined",
+          "description": "字段绑定名"
         },
         {
           "name": "label",
@@ -4650,20 +4650,6 @@
           "description": "展示标签"
         },
         {
-          "name": "value",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
-        },
-        {
           "name": "width",
           "type": "number | undefined",
           "required": false,
@@ -4671,11 +4657,11 @@
           "description": "字段宽度"
         },
         {
-          "name": "field",
-          "type": "string | undefined",
+          "name": "value",
+          "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "直接传入的值"
         },
         {
           "name": "placeholder",
@@ -4683,6 +4669,20 @@
           "required": false,
           "default": "undefined",
           "description": "占位文案"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "name",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "组件名称"
         },
         {
           "name": "clearable",
@@ -5798,7 +5798,7 @@
         },
         {
           "name": "inputType",
-          "type": "\"textarea\" | \"text\" | undefined",
+          "type": "\"text\" | \"textarea\" | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
@@ -6255,11 +6255,11 @@
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
+          "name": "field",
+          "type": "string | undefined",
           "required": false,
-          "default": "false",
-          "description": "是否启用多选"
+          "default": "undefined",
+          "description": "字段绑定名"
         },
         {
           "name": "label",
@@ -6269,20 +6269,6 @@
           "description": "展示标签"
         },
         {
-          "name": "value",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
-        },
-        {
           "name": "width",
           "type": "number | undefined",
           "required": false,
@@ -6290,11 +6276,11 @@
           "description": "字段宽度"
         },
         {
-          "name": "field",
-          "type": "string | undefined",
+          "name": "value",
+          "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "直接传入的值"
         },
         {
           "name": "placeholder",
@@ -6302,6 +6288,20 @@
           "required": false,
           "default": "undefined",
           "description": "占位文案"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "name",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "组件名称"
         },
         {
           "name": "clearable",
@@ -6713,7 +6713,7 @@
       "props": [
         {
           "name": "size",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -8455,11 +8455,11 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
+          "name": "field",
+          "type": "string | undefined",
           "required": false,
-          "default": "false",
-          "description": "是否启用多选"
+          "default": "undefined",
+          "description": "字段绑定名"
         },
         {
           "name": "label",
@@ -8469,20 +8469,6 @@
           "description": "展示标签"
         },
         {
-          "name": "value",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
-        },
-        {
           "name": "width",
           "type": "number | undefined",
           "required": false,
@@ -8490,11 +8476,11 @@
           "description": "字段宽度"
         },
         {
-          "name": "field",
-          "type": "string | undefined",
+          "name": "value",
+          "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "直接传入的值"
         },
         {
           "name": "placeholder",
@@ -8502,6 +8488,20 @@
           "required": false,
           "default": "undefined",
           "description": "占位文案"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "name",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "组件名称"
         },
         {
           "name": "clearable",
@@ -8946,6 +8946,207 @@
         }
       ]
     },
+    "ai-chat-widget": {
+      "type": "ai-chat-widget",
+      "filePath": "packages/spark-component/src/components/support/AiChatWidget.vue",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"ai-chat-widget\" 使用。",
+      "props": [
+        {
+          "name": "mode",
+          "type": "ChatMode | undefined",
+          "required": false,
+          "schemaRef": "schema_00063"
+        },
+        {
+          "name": "systemPrompt",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "compact",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        {
+          "name": "sender",
+          "type": "AiChatSender | undefined",
+          "required": false
+        },
+        {
+          "name": "storageKey",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "showToolLogs",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        {
+          "name": "externalToolLogs",
+          "type": "{ type: \"success\" | \"info\" | \"error\"; tag: string; text: string; timestamp?: string; }[] | undefined",
+          "required": false
+        },
+        {
+          "name": "streamAiChatText",
+          "type": "StreamAiChatText | undefined",
+          "required": false
+        },
+        {
+          "name": "parseTokenUsage",
+          "type": "((usageRaw: Record<string, unknown>) => TokenUsage) | undefined",
+          "required": false
+        },
+        {
+          "name": "uploadFile",
+          "type": "((file: File) => Promise<FileAttachment>) | undefined",
+          "required": false
+        }
+      ]
+    },
+    "ai-launcher-button": {
+      "type": "ai-launcher-button",
+      "filePath": "packages/spark-component/src/components/support/AiLauncherButton.vue",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"ai-launcher-button\" 使用。",
+      "props": [
+        {
+          "name": "config",
+          "type": "AiSessionConfig | undefined",
+          "required": false,
+          "schemaRef": "schema_00064"
+        },
+        {
+          "name": "storageKey",
+          "type": "string | undefined",
+          "required": false,
+          "description": "持久化 key；多会话必须唯一。"
+        },
+        {
+          "name": "sender",
+          "type": "AiChatSender | undefined",
+          "required": false,
+          "description": "聊天发送器。"
+        },
+        {
+          "name": "sessionTitle",
+          "type": "string | undefined",
+          "required": false,
+          "description": "面板标题。"
+        },
+        {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false,
+          "description": "输入框 placeholder。"
+        },
+        {
+          "name": "externalToolLogs",
+          "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
+          "required": false,
+          "description": "外部工具日志流。"
+        },
+        {
+          "name": "beforeOpen",
+          "type": "(() => void | Promise<void>) | undefined",
+          "required": false,
+          "description": "打开前的准备钩子。"
+        },
+        {
+          "name": "systemPrompt",
+          "type": "string | undefined",
+          "required": false,
+          "description": "自定义 system prompt。"
+        },
+        {
+          "name": "toolGuide",
+          "type": "string | undefined",
+          "required": false,
+          "description": "工具使用指南文本。"
+        },
+        {
+          "name": "toolCatalog",
+          "type": "readonly AiToolSpec[] | undefined",
+          "required": false,
+          "description": "工具目录（function schema 列表）。"
+        },
+        {
+          "name": "toolInstances",
+          "type": "Record<string, AiToolHandler> | undefined",
+          "required": false,
+          "description": "工具实例（函数名 → 执行器）。"
+        },
+        {
+          "name": "fcLoop",
+          "type": "AiFcLoopConfig | undefined",
+          "required": false,
+          "description": "SSE + FC 循环配置。",
+          "schemaRef": "schema_00065"
+        },
+        {
+          "name": "feedback",
+          "type": "AiFeedbackConfig | undefined",
+          "required": false,
+          "description": "反馈机制配置。",
+          "schemaRef": "schema_00066"
+        },
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "default": "\"AI\""
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "required": false,
+          "default": "\"small\"",
+          "schemaRef": "schema_00035"
+        },
+        {
+          "name": "link",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "icon",
+          "type": "string | undefined",
+          "required": false,
+          "default": "\"ChatRound\""
+        },
+        {
+          "name": "iconSize",
+          "type": "number | undefined",
+          "required": false,
+          "default": "14"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
+        }
+      ]
+    },
+    "app-ai-panel": {
+      "type": "app-ai-panel",
+      "filePath": "packages/spark-component/src/components/support/AppAiPanel.vue",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"app-ai-panel\" 使用。",
+      "props": []
+    },
     "json-tree-editor": {
       "type": "json-tree-editor",
       "filePath": "packages/spark-component/src/components/support/JsonTreeEditor.vue",
@@ -9017,7 +9218,7 @@
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
-          "schemaRef": "schema_00063"
+          "schemaRef": "schema_00067"
         },
         {
           "name": "rootLabel",
@@ -9082,7 +9283,7 @@
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式",
-          "schemaRef": "schema_00064"
+          "schemaRef": "schema_00068"
         },
         {
           "name": "readOnly",
@@ -9147,7 +9348,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式",
-          "schemaRef": "schema_00065"
+          "schemaRef": "schema_00069"
         },
         {
           "name": "indentation",
@@ -9250,138 +9451,6 @@
         }
       ]
     },
-    "ai-launcher-button": {
-      "type": "ai-launcher-button",
-      "filePath": "src/components/AiLauncherButton.vue",
-      "category": "feature",
-      "description": "SPARK 组件，可在注册表中通过 type=\"ai-launcher-button\" 使用。",
-      "props": [
-        {
-          "name": "config",
-          "type": "AiSessionConfig | undefined",
-          "required": false,
-          "schemaRef": "schema_00066"
-        },
-        {
-          "name": "storageKey",
-          "type": "string | undefined",
-          "required": false,
-          "description": "持久化 key；多会话必须唯一。"
-        },
-        {
-          "name": "sender",
-          "type": "AiChatSender | undefined",
-          "required": false,
-          "description": "聊天发送器。"
-        },
-        {
-          "name": "sessionTitle",
-          "type": "string | undefined",
-          "required": false,
-          "description": "面板标题。"
-        },
-        {
-          "name": "placeholder",
-          "type": "string | undefined",
-          "required": false,
-          "description": "输入框 placeholder。"
-        },
-        {
-          "name": "externalToolLogs",
-          "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
-          "required": false,
-          "description": "外部工具日志流。"
-        },
-        {
-          "name": "beforeOpen",
-          "type": "(() => void | Promise<void>) | undefined",
-          "required": false,
-          "description": "打开前的准备钩子。"
-        },
-        {
-          "name": "systemPrompt",
-          "type": "string | undefined",
-          "required": false,
-          "description": "自定义 system prompt。"
-        },
-        {
-          "name": "toolGuide",
-          "type": "string | undefined",
-          "required": false,
-          "description": "工具使用指南文本。"
-        },
-        {
-          "name": "toolCatalog",
-          "type": "readonly AiToolSpec[] | undefined",
-          "required": false,
-          "description": "工具目录（function schema 列表）。"
-        },
-        {
-          "name": "toolInstances",
-          "type": "Record<string, AiToolHandler> | undefined",
-          "required": false,
-          "description": "工具实例（函数名 → 执行器）。"
-        },
-        {
-          "name": "fcLoop",
-          "type": "AiFcLoopConfig | undefined",
-          "required": false,
-          "description": "SSE + FC 循环配置。",
-          "schemaRef": "schema_00067"
-        },
-        {
-          "name": "feedback",
-          "type": "AiFeedbackConfig | undefined",
-          "required": false,
-          "description": "反馈机制配置。",
-          "schemaRef": "schema_00068"
-        },
-        {
-          "name": "label",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"AI\""
-        },
-        {
-          "name": "size",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
-          "required": false,
-          "default": "\"small\"",
-          "schemaRef": "schema_00035"
-        },
-        {
-          "name": "link",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "icon",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"ChatRound\""
-        },
-        {
-          "name": "iconSize",
-          "type": "number | undefined",
-          "required": false,
-          "default": "14"
-        },
-        {
-          "name": "disabled",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        }
-      ]
-    },
-    "app-ai-panel": {
-      "type": "app-ai-panel",
-      "filePath": "src/components/AppAiPanel.vue",
-      "category": "feature",
-      "description": "SPARK 组件，可在注册表中通过 type=\"app-ai-panel\" 使用。",
-      "props": []
-    },
     "capability-demo": {
       "type": "capability-demo",
       "filePath": "src/views/app/CapabilityDemo.vue",
@@ -9411,9 +9480,9 @@
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataSetError: ComputedRef<string | null>; pageDataDesignerDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getLiveModelAdapter: () => EditLiveModelAdapter; createLiveEditModelAdapter: () => EditLiveModelAdapter; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataSetError: ComputedRef<string | null>; pageDataDesignerDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\", \"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getLiveModelAdapter: () => EditLiveModelAdapter; createLiveEditModelAdapter: () => EditLiveModelAdapter; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
-          "schemaRef": "schema_00069"
+          "schemaRef": "schema_00070"
         }
       ]
     },
@@ -9761,7 +9830,7 @@
     },
     "schema_00016": {
       "kind": "enum",
-      "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+      "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
       "variants": [
         "undefined",
         "\"\"",
@@ -9769,8 +9838,8 @@
         "\"primary\"",
         "\"success\"",
         "\"warning\"",
-        "\"info\"",
-        "\"danger\""
+        "\"danger\"",
+        "\"info\""
       ]
     },
     "schema_00017": {
@@ -9809,10 +9878,10 @@
     },
     "schema_00020": {
       "kind": "enum",
-      "type": "\"content\" | \"header\"",
+      "type": "\"header\" | \"content\"",
       "variants": [
-        "\"content\"",
-        "\"header\""
+        "\"header\"",
+        "\"content\""
       ]
     },
     "schema_00021": {
@@ -9900,13 +9969,13 @@
     },
     "schema_00027": {
       "kind": "enum",
-      "type": "number | \"default\" | \"large\" | \"small\" | undefined",
+      "type": "number | \"default\" | \"small\" | \"large\" | undefined",
       "variants": [
         "undefined",
         "number",
         "\"default\"",
-        "\"large\"",
-        "\"small\""
+        "\"small\"",
+        "\"large\""
       ]
     },
     "schema_00028": {
@@ -9932,15 +10001,15 @@
     },
     "schema_00030": {
       "kind": "enum",
-      "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+      "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
       "variants": [
         "undefined",
         "\"\"",
         "\"primary\"",
         "\"success\"",
         "\"warning\"",
-        "\"info\"",
-        "\"danger\""
+        "\"danger\"",
+        "\"info\""
       ]
     },
     "schema_00031": {
@@ -9981,18 +10050,18 @@
         "\"\"",
         "\"success\"",
         "\"warning\"",
-        "\"info\"",
-        "\"danger\""
+        "\"danger\"",
+        "\"info\""
       ]
     },
     "schema_00035": {
       "kind": "enum",
-      "type": "\"default\" | \"large\" | \"small\" | undefined",
+      "type": "\"default\" | \"small\" | \"large\" | undefined",
       "variants": [
         "undefined",
         "\"default\"",
-        "\"large\"",
-        "\"small\""
+        "\"small\"",
+        "\"large\""
       ]
     },
     "schema_00036": {
@@ -10308,23 +10377,23 @@
     },
     "schema_00041": {
       "kind": "enum",
-      "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+      "type": "\"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
       "variants": [
         "undefined",
         "\"primary\"",
         "\"success\"",
         "\"warning\"",
-        "\"info\"",
-        "\"danger\""
+        "\"danger\"",
+        "\"info\""
       ]
     },
     "schema_00042": {
       "kind": "enum",
-      "type": "\"normal\" | \"large\" | undefined",
+      "type": "\"large\" | \"normal\" | undefined",
       "variants": [
         "undefined",
-        "\"normal\"",
-        "\"large\""
+        "\"large\"",
+        "\"normal\""
       ]
     },
     "schema_00043": {
@@ -10381,11 +10450,11 @@
     },
     "schema_00048": {
       "kind": "enum",
-      "type": "\"textarea\" | \"text\" | undefined",
+      "type": "\"text\" | \"textarea\" | undefined",
       "variants": [
         "undefined",
-        "\"textarea\"",
-        "\"text\""
+        "\"text\"",
+        "\"textarea\""
       ]
     },
     "schema_00049": {
@@ -10578,91 +10647,15 @@
       ]
     },
     "schema_00063": {
-      "kind": "object",
-      "type": "JsonTreePolicy",
-      "properties": {
-        "rootLabel": {
-          "name": "rootLabel",
-          "type": "string | undefined",
-          "required": false,
-          "description": "根节点显示标签。默认 '$'"
-        },
-        "isProtected": {
-          "name": "isProtected",
-          "type": "((path: JsonPath) => boolean) | undefined",
-          "required": false,
-          "description": "该路径是否受保护（不可删除）。默认全部可删除"
-        },
-        "canEditKey": {
-          "name": "canEditKey",
-          "type": "((path: JsonPath) => boolean) | undefined",
-          "required": false,
-          "description": "该路径的键是否可重命名。默认：对象属性可改，数组索引不可改"
-        },
-        "canEditType": {
-          "name": "canEditType",
-          "type": "((path: JsonPath) => boolean) | undefined",
-          "required": false,
-          "description": "该路径的类型是否可切换。默认：除根节点外均可"
-        },
-        "suggestChildKey": {
-          "name": "suggestChildKey",
-          "type": "((target: JsonObject, parentPath: JsonPath) => string) | undefined",
-          "required": false,
-          "description": "为目标对象建议新子键名"
-        },
-        "createDefaultArrayItem": {
-          "name": "createDefaultArrayItem",
-          "type": "((parentPath: JsonPath) => JsonValue) | undefined",
-          "required": false,
-          "description": "为数组添加子项时的默认值"
-        },
-        "createDefaultObjectValue": {
-          "name": "createDefaultObjectValue",
-          "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
-          "required": false,
-          "description": "为对象添加子项时的默认值"
-        },
-        "getValueOptions": {
-          "name": "getValueOptions",
-          "type": "((path: JsonPath) => string[] | undefined) | undefined",
-          "required": false,
-          "description": "返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum）"
-        },
-        "getValueLabels": {
-          "name": "getValueLabels",
-          "type": "((path: JsonPath) => { label: string; value: string; }[] | undefined) | undefined",
-          "required": false,
-          "description": "返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions"
-        },
-        "getAutoPopulate": {
-          "name": "getAutoPopulate",
-          "type": "((changedPath: JsonPath, newValue: JsonValue) => AutoPopulateEntry[] | undefined) | undefined",
-          "required": false,
-          "description": "值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖"
-        }
-      }
+      "kind": "enum",
+      "type": "ChatMode | undefined",
+      "variants": [
+        "undefined",
+        "\"single\"",
+        "\"multi\""
+      ]
     },
     "schema_00064": {
-      "kind": "enum",
-      "type": "SparkCodeLanguage | undefined",
-      "variants": [
-        "undefined",
-        "\"javascript\"",
-        "\"css\""
-      ]
-    },
-    "schema_00065": {
-      "kind": "enum",
-      "type": "SparkJsonEditorMode | undefined",
-      "variants": [
-        "undefined",
-        "\"text\"",
-        "\"table\"",
-        "\"tree\""
-      ]
-    },
-    "schema_00066": {
       "kind": "object",
       "type": "AiSessionConfig",
       "properties": {
@@ -10746,7 +10739,7 @@
         }
       }
     },
-    "schema_00067": {
+    "schema_00065": {
       "kind": "object",
       "type": "AiFcLoopConfig",
       "properties": {
@@ -10770,7 +10763,7 @@
         }
       }
     },
-    "schema_00068": {
+    "schema_00066": {
       "kind": "object",
       "type": "AiFeedbackConfig",
       "properties": {
@@ -10787,9 +10780,94 @@
         }
       }
     },
-    "schema_00069": {
+    "schema_00067": {
       "kind": "object",
-      "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataSetError: ComputedRef<string | null>; pageDataDesignerDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getLiveModelAdapter: () => EditLiveModelAdapter; createLiveEditModelAdapter: () => EditLiveModelAdapter; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+      "type": "JsonTreePolicy",
+      "properties": {
+        "rootLabel": {
+          "name": "rootLabel",
+          "type": "string | undefined",
+          "required": false,
+          "description": "根节点显示标签。默认 '$'"
+        },
+        "isProtected": {
+          "name": "isProtected",
+          "type": "((path: JsonPath) => boolean) | undefined",
+          "required": false,
+          "description": "该路径是否受保护（不可删除）。默认全部可删除"
+        },
+        "canEditKey": {
+          "name": "canEditKey",
+          "type": "((path: JsonPath) => boolean) | undefined",
+          "required": false,
+          "description": "该路径的键是否可重命名。默认：对象属性可改，数组索引不可改"
+        },
+        "canEditType": {
+          "name": "canEditType",
+          "type": "((path: JsonPath) => boolean) | undefined",
+          "required": false,
+          "description": "该路径的类型是否可切换。默认：除根节点外均可"
+        },
+        "suggestChildKey": {
+          "name": "suggestChildKey",
+          "type": "((target: JsonObject, parentPath: JsonPath) => string) | undefined",
+          "required": false,
+          "description": "为目标对象建议新子键名"
+        },
+        "createDefaultArrayItem": {
+          "name": "createDefaultArrayItem",
+          "type": "((parentPath: JsonPath) => JsonValue) | undefined",
+          "required": false,
+          "description": "为数组添加子项时的默认值"
+        },
+        "createDefaultObjectValue": {
+          "name": "createDefaultObjectValue",
+          "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
+          "required": false,
+          "description": "为对象添加子项时的默认值"
+        },
+        "getValueOptions": {
+          "name": "getValueOptions",
+          "type": "((path: JsonPath) => string[] | undefined) | undefined",
+          "required": false,
+          "description": "返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum）"
+        },
+        "getValueLabels": {
+          "name": "getValueLabels",
+          "type": "((path: JsonPath) => { label: string; value: string; }[] | undefined) | undefined",
+          "required": false,
+          "description": "返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions"
+        },
+        "getAutoPopulate": {
+          "name": "getAutoPopulate",
+          "type": "((changedPath: JsonPath, newValue: JsonValue) => AutoPopulateEntry[] | undefined) | undefined",
+          "required": false,
+          "description": "值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖"
+        }
+      }
+    },
+    "schema_00068": {
+      "kind": "enum",
+      "type": "SparkCodeLanguage | undefined",
+      "variants": [
+        "undefined",
+        "\"javascript\"",
+        "\"css\""
+      ]
+    },
+    "schema_00069": {
+      "kind": "enum",
+      "type": "SparkJsonEditorMode | undefined",
+      "variants": [
+        "undefined",
+        "\"text\"",
+        "\"tree\"",
+        "\"table\""
+      ]
+    },
+    "schema_00070": {
+      "kind": "object",
+      "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataSetError: ComputedRef<string | null>; pageDataDesignerDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\", \"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getLiveModelAdapter: () => EditLiveModelAdapter; createLiveEditModelAdapter: () => EditLiveModelAdapter; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
       "properties": {
         "treeData": {
           "name": "treeData",
@@ -10818,7 +10896,7 @@
         },
         "editForm": {
           "name": "editForm",
-          "type": "{ id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }",
+          "type": "{ id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }",
           "required": true
         },
         "hasContext": {
@@ -10888,7 +10966,7 @@
         },
         "autoSaveStatus": {
           "name": "autoSaveStatus",
-          "type": "Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">",
+          "type": "Ref<\"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\", \"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\">",
           "required": true
         },
         "hasAnyFileDirty": {
@@ -11941,7 +12019,7 @@
         },
         "prop_00124": {
           "name": "linkType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
@@ -12001,7 +12079,7 @@
         },
         "prop_00133": {
           "name": "confirmButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
@@ -12009,7 +12087,7 @@
         },
         "prop_00134": {
           "name": "cancelButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
@@ -12242,7 +12320,7 @@
         },
         "prop_00168": {
           "name": "mode",
-          "type": "\"content\" | \"header\"",
+          "type": "\"header\" | \"content\"",
           "required": true,
           "description": "渲染模式：步骤头部或内容区",
           "schemaRef": "schema_00020"
@@ -12552,7 +12630,7 @@
         },
         "prop_00217": {
           "name": "avatarSize",
-          "type": "number | \"default\" | \"large\" | \"small\" | undefined",
+          "type": "number | \"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
@@ -12639,7 +12717,7 @@
         },
         "prop_00230": {
           "name": "badgeType",
-          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
@@ -13017,7 +13095,7 @@
         },
         "prop_00287": {
           "name": "size",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -13244,7 +13322,7 @@
         },
         "prop_00321": {
           "name": "descriptionsSize",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -13428,7 +13506,7 @@
         },
         "prop_00349": {
           "name": "itemType",
-          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"primary\" | \"success\" | \"warning\" | \"danger\" | \"info\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
@@ -13442,7 +13520,7 @@
         },
         "prop_00351": {
           "name": "itemSize",
-          "type": "\"normal\" | \"large\" | undefined",
+          "type": "\"large\" | \"normal\" | undefined",
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸",
@@ -13823,11 +13901,11 @@
           "schemaRef": "schema_00047"
         },
         "prop_00410": {
-          "name": "multiple",
-          "type": "boolean | undefined",
+          "name": "field",
+          "type": "string | undefined",
           "required": false,
-          "default": "false",
-          "description": "是否启用多选"
+          "default": "undefined",
+          "description": "字段绑定名"
         },
         "prop_00411": {
           "name": "label",
@@ -13837,39 +13915,39 @@
           "description": "展示标签"
         },
         "prop_00412": {
-          "name": "value",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        "prop_00413": {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
-        },
-        "prop_00414": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "default": "undefined",
           "description": "字段宽度"
         },
-        "prop_00415": {
-          "name": "field",
-          "type": "string | undefined",
+        "prop_00413": {
+          "name": "value",
+          "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "直接传入的值"
         },
-        "prop_00416": {
+        "prop_00414": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "占位文案"
+        },
+        "prop_00415": {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        "prop_00416": {
+          "name": "name",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "组件名称"
         },
         "prop_00417": {
           "name": "clearable",
@@ -14176,7 +14254,7 @@
         },
         "prop_00461": {
           "name": "inputType",
-          "type": "\"textarea\" | \"text\" | undefined",
+          "type": "\"text\" | \"textarea\" | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
@@ -14832,364 +14910,410 @@
           "schemaRef": "schema_00060"
         },
         "prop_00562": {
+          "name": "mode",
+          "type": "ChatMode | undefined",
+          "required": false,
+          "schemaRef": "schema_00063"
+        },
+        "prop_00563": {
+          "name": "systemPrompt",
+          "type": "string | undefined",
+          "required": false
+        },
+        "prop_00564": {
+          "name": "sender",
+          "type": "AiChatSender | undefined",
+          "required": false
+        },
+        "prop_00565": {
+          "name": "storageKey",
+          "type": "string | undefined",
+          "required": false
+        },
+        "prop_00566": {
+          "name": "showToolLogs",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        "prop_00567": {
+          "name": "externalToolLogs",
+          "type": "{ type: \"success\" | \"info\" | \"error\"; tag: string; text: string; timestamp?: string; }[] | undefined",
+          "required": false
+        },
+        "prop_00568": {
+          "name": "streamAiChatText",
+          "type": "StreamAiChatText | undefined",
+          "required": false
+        },
+        "prop_00569": {
+          "name": "parseTokenUsage",
+          "type": "((usageRaw: Record<string, unknown>) => TokenUsage) | undefined",
+          "required": false
+        },
+        "prop_00570": {
+          "name": "uploadFile",
+          "type": "((file: File) => Promise<FileAttachment>) | undefined",
+          "required": false
+        },
+        "prop_00571": {
+          "name": "config",
+          "type": "AiSessionConfig | undefined",
+          "required": false,
+          "schemaRef": "schema_00064"
+        },
+        "prop_00572": {
+          "name": "storageKey",
+          "type": "string | undefined",
+          "required": false,
+          "description": "持久化 key；多会话必须唯一。"
+        },
+        "prop_00573": {
+          "name": "sender",
+          "type": "AiChatSender | undefined",
+          "required": false,
+          "description": "聊天发送器。"
+        },
+        "prop_00574": {
+          "name": "sessionTitle",
+          "type": "string | undefined",
+          "required": false,
+          "description": "面板标题。"
+        },
+        "prop_00575": {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false,
+          "description": "输入框 placeholder。"
+        },
+        "prop_00576": {
+          "name": "externalToolLogs",
+          "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
+          "required": false,
+          "description": "外部工具日志流。"
+        },
+        "prop_00577": {
+          "name": "beforeOpen",
+          "type": "(() => void | Promise<void>) | undefined",
+          "required": false,
+          "description": "打开前的准备钩子。"
+        },
+        "prop_00578": {
+          "name": "systemPrompt",
+          "type": "string | undefined",
+          "required": false,
+          "description": "自定义 system prompt。"
+        },
+        "prop_00579": {
+          "name": "toolGuide",
+          "type": "string | undefined",
+          "required": false,
+          "description": "工具使用指南文本。"
+        },
+        "prop_00580": {
+          "name": "toolCatalog",
+          "type": "readonly AiToolSpec[] | undefined",
+          "required": false,
+          "description": "工具目录（function schema 列表）。"
+        },
+        "prop_00581": {
+          "name": "toolInstances",
+          "type": "Record<string, AiToolHandler> | undefined",
+          "required": false,
+          "description": "工具实例（函数名 → 执行器）。"
+        },
+        "prop_00582": {
+          "name": "fcLoop",
+          "type": "AiFcLoopConfig | undefined",
+          "required": false,
+          "description": "SSE + FC 循环配置。",
+          "schemaRef": "schema_00065"
+        },
+        "prop_00583": {
+          "name": "feedback",
+          "type": "AiFeedbackConfig | undefined",
+          "required": false,
+          "description": "反馈机制配置。",
+          "schemaRef": "schema_00066"
+        },
+        "prop_00584": {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "default": "\"AI\""
+        },
+        "prop_00585": {
+          "name": "size",
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "required": false,
+          "default": "\"small\"",
+          "schemaRef": "schema_00035"
+        },
+        "prop_00586": {
+          "name": "link",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
+        },
+        "prop_00587": {
+          "name": "icon",
+          "type": "string | undefined",
+          "required": false,
+          "default": "\"ChatRound\""
+        },
+        "prop_00588": {
+          "name": "iconSize",
+          "type": "number | undefined",
+          "required": false,
+          "default": "14"
+        },
+        "prop_00589": {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
+        },
+        "prop_00590": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "字段绑定名，映射到 DataView 行字段"
         },
-        "prop_00563": {
+        "prop_00591": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "显示标签"
         },
-        "prop_00564": {
+        "prop_00592": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "description": "r-table 内列宽"
         },
-        "prop_00565": {
+        "prop_00593": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "JSON 字符串内容"
         },
-        "prop_00566": {
+        "prop_00594": {
           "name": "documentValue",
           "type": "JsonDocument | null | undefined",
           "required": false,
           "default": "null",
           "description": "已解析的 JSON 文档对象"
         },
-        "prop_00567": {
+        "prop_00595": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "default": "420",
           "description": "编辑器高度"
         },
-        "prop_00568": {
+        "prop_00596": {
           "name": "readOnly",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否只读"
         },
-        "prop_00569": {
+        "prop_00597": {
           "name": "schema",
           "type": "{ [key: string]: unknown; } | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
-        "prop_00570": {
+        "prop_00598": {
           "name": "filterPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\"",
           "description": "筛选框占位文本"
         },
-        "prop_00571": {
+        "prop_00599": {
           "name": "policy",
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
-          "schemaRef": "schema_00063"
+          "schemaRef": "schema_00067"
         },
-        "prop_00572": {
+        "prop_00600": {
           "name": "rootLabel",
           "type": "string | undefined",
           "required": false,
           "description": "根节点标签"
         },
-        "prop_00573": {
+        "prop_00601": {
           "name": "isProtected",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否受保护"
         },
-        "prop_00574": {
+        "prop_00602": {
           "name": "canEditKey",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否可编辑键名"
         },
-        "prop_00575": {
+        "prop_00603": {
           "name": "canEditType",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否可编辑类型"
         },
-        "prop_00576": {
+        "prop_00604": {
           "name": "suggestChildKey",
           "type": "((target: JsonObject, parentPath: JsonPath) => string) | undefined",
           "required": false,
           "description": "推荐子节点键名"
         },
-        "prop_00577": {
+        "prop_00605": {
           "name": "createDefaultArrayItem",
           "type": "((parentPath: JsonPath) => JsonValue) | undefined",
           "required": false,
           "description": "创建数组默认子项"
         },
-        "prop_00578": {
+        "prop_00606": {
           "name": "createDefaultObjectValue",
           "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
           "required": false,
           "description": "创建对象默认子值"
         },
-        "prop_00579": {
+        "prop_00607": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "编辑器内容"
         },
-        "prop_00580": {
+        "prop_00608": {
           "name": "language",
           "type": "SparkCodeLanguage | undefined",
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式",
-          "schemaRef": "schema_00064"
+          "schemaRef": "schema_00068"
         },
-        "prop_00581": {
+        "prop_00609": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "default": "360",
           "description": "编辑器高度"
         },
-        "prop_00582": {
+        "prop_00610": {
           "name": "tabSize",
           "type": "number | undefined",
           "required": false,
           "default": "2",
           "description": "Tab 缩进空格数"
         },
-        "prop_00583": {
+        "prop_00611": {
           "name": "lineWrapping",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否自动换行"
         },
-        "prop_00584": {
+        "prop_00612": {
           "name": "mode",
           "type": "SparkJsonEditorMode | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式",
-          "schemaRef": "schema_00065"
+          "schemaRef": "schema_00069"
         },
-        "prop_00585": {
+        "prop_00613": {
           "name": "indentation",
           "type": "string | number | undefined",
           "required": false,
           "default": "2",
           "description": "缩进空格数"
         },
-        "prop_00586": {
+        "prop_00614": {
           "name": "mainMenuBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示主菜单栏"
         },
-        "prop_00587": {
+        "prop_00615": {
           "name": "navigationBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示导航栏"
         },
-        "prop_00588": {
+        "prop_00616": {
           "name": "statusBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示状态栏"
         },
-        "prop_00589": {
+        "prop_00617": {
           "name": "askToFormat",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否提示格式化"
         },
-        "prop_00590": {
+        "prop_00618": {
           "name": "schema",
           "type": "SparkJsonSchema | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
-        "prop_00591": {
+        "prop_00619": {
           "name": "schemaDefinitions",
           "type": "SparkJsonSchema | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 定义引用"
         },
-        "prop_00592": {
+        "prop_00620": {
           "name": "enableSchemaValidation",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否启用 Schema 校验"
         },
-        "prop_00593": {
+        "prop_00621": {
           "name": "enableSchemaEnumRenderer",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否启用 Schema 枚举渲染"
         },
-        "prop_00594": {
+        "prop_00622": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "default": "'未注册的组件类型'",
           "description": "提示标题"
         },
-        "prop_00595": {
+        "prop_00623": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "default": "''",
           "description": "说明文本"
         },
-        "prop_00596": {
+        "prop_00624": {
           "name": "node",
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
           "schemaRef": "schema_00055"
         },
-        "prop_00597": {
-          "name": "config",
-          "type": "AiSessionConfig | undefined",
-          "required": false,
-          "schemaRef": "schema_00066"
-        },
-        "prop_00598": {
-          "name": "storageKey",
-          "type": "string | undefined",
-          "required": false,
-          "description": "持久化 key；多会话必须唯一。"
-        },
-        "prop_00599": {
-          "name": "sender",
-          "type": "AiChatSender | undefined",
-          "required": false,
-          "description": "聊天发送器。"
-        },
-        "prop_00600": {
-          "name": "sessionTitle",
-          "type": "string | undefined",
-          "required": false,
-          "description": "面板标题。"
-        },
-        "prop_00601": {
-          "name": "placeholder",
-          "type": "string | undefined",
-          "required": false,
-          "description": "输入框 placeholder。"
-        },
-        "prop_00602": {
-          "name": "externalToolLogs",
-          "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
-          "required": false,
-          "description": "外部工具日志流。"
-        },
-        "prop_00603": {
-          "name": "beforeOpen",
-          "type": "(() => void | Promise<void>) | undefined",
-          "required": false,
-          "description": "打开前的准备钩子。"
-        },
-        "prop_00604": {
-          "name": "systemPrompt",
-          "type": "string | undefined",
-          "required": false,
-          "description": "自定义 system prompt。"
-        },
-        "prop_00605": {
-          "name": "toolGuide",
-          "type": "string | undefined",
-          "required": false,
-          "description": "工具使用指南文本。"
-        },
-        "prop_00606": {
-          "name": "toolCatalog",
-          "type": "readonly AiToolSpec[] | undefined",
-          "required": false,
-          "description": "工具目录（function schema 列表）。"
-        },
-        "prop_00607": {
-          "name": "toolInstances",
-          "type": "Record<string, AiToolHandler> | undefined",
-          "required": false,
-          "description": "工具实例（函数名 → 执行器）。"
-        },
-        "prop_00608": {
-          "name": "fcLoop",
-          "type": "AiFcLoopConfig | undefined",
-          "required": false,
-          "description": "SSE + FC 循环配置。",
-          "schemaRef": "schema_00067"
-        },
-        "prop_00609": {
-          "name": "feedback",
-          "type": "AiFeedbackConfig | undefined",
-          "required": false,
-          "description": "反馈机制配置。",
-          "schemaRef": "schema_00068"
-        },
-        "prop_00610": {
-          "name": "label",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"AI\""
-        },
-        "prop_00611": {
-          "name": "size",
-          "type": "\"default\" | \"large\" | \"small\" | undefined",
-          "required": false,
-          "default": "\"small\"",
-          "schemaRef": "schema_00035"
-        },
-        "prop_00612": {
-          "name": "link",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        },
-        "prop_00613": {
-          "name": "icon",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"ChatRound\""
-        },
-        "prop_00614": {
-          "name": "iconSize",
-          "type": "number | undefined",
-          "required": false,
-          "default": "14"
-        },
-        "prop_00615": {
-          "name": "disabled",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        },
-        "prop_00616": {
+        "prop_00625": {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataSetError: ComputedRef<string | null>; pageDataDesignerDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getLiveModelAdapter: () => EditLiveModelAdapter; createLiveEditModelAdapter: () => EditLiveModelAdapter; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataSetError: ComputedRef<string | null>; pageDataDesignerDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\", \"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getLiveModelAdapter: () => EditLiveModelAdapter; createLiveEditModelAdapter: () => EditLiveModelAdapter; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"pagedata.json\" | \"rule.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
-          "schemaRef": "schema_00069"
+          "schemaRef": "schema_00070"
         }
       },
       "emits": {
@@ -15230,11 +15354,11 @@
           "type": "[value: string | number]"
         },
         "emit_00010": {
-          "name": "change",
+          "name": "close",
           "type": "[current: number]"
         },
         "emit_00011": {
-          "name": "close",
+          "name": "change",
           "type": "[current: number]"
         },
         "emit_00012": {
@@ -17104,8 +17228,8 @@
           "prop_00387"
         ],
         "emitRefs": [
-          "emit_00031",
-          "emit_00009"
+          "emit_00009",
+          "emit_00031"
         ]
       },
       "r-select": {
@@ -17577,21 +17701,33 @@
           "emit_00043"
         ]
       },
-      "json-tree-editor": {
-        "type": "json-tree-editor",
+      "ai-chat-widget": {
+        "type": "ai-chat-widget",
         "category": "feature",
-        "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
-        "filePath": "packages/spark-component/src/components/support/JsonTreeEditor.vue",
+        "description": "SPARK 包组件，可在 rule.json 中通过 type=\"ai-chat-widget\" 使用。",
+        "filePath": "packages/spark-component/src/components/support/AiChatWidget.vue",
         "propRefs": [
           "prop_00562",
           "prop_00563",
+          "prop_00556",
+          "prop_00557",
+          "prop_00558",
           "prop_00564",
           "prop_00565",
           "prop_00566",
           "prop_00567",
           "prop_00568",
           "prop_00569",
-          "prop_00570",
+          "prop_00570"
+        ],
+        "emitRefs": []
+      },
+      "ai-launcher-button": {
+        "type": "ai-launcher-button",
+        "category": "feature",
+        "description": "SPARK 包组件，可在 rule.json 中通过 type=\"ai-launcher-button\" 使用。",
+        "filePath": "packages/spark-component/src/components/support/AiLauncherButton.vue",
+        "propRefs": [
           "prop_00571",
           "prop_00572",
           "prop_00573",
@@ -17599,7 +17735,52 @@
           "prop_00575",
           "prop_00576",
           "prop_00577",
-          "prop_00578"
+          "prop_00578",
+          "prop_00579",
+          "prop_00580",
+          "prop_00581",
+          "prop_00582",
+          "prop_00583",
+          "prop_00584",
+          "prop_00585",
+          "prop_00586",
+          "prop_00587",
+          "prop_00588",
+          "prop_00589"
+        ],
+        "emitRefs": []
+      },
+      "app-ai-panel": {
+        "type": "app-ai-panel",
+        "category": "feature",
+        "description": "SPARK 包组件，可在 rule.json 中通过 type=\"app-ai-panel\" 使用。",
+        "filePath": "packages/spark-component/src/components/support/AppAiPanel.vue",
+        "propRefs": [],
+        "emitRefs": []
+      },
+      "json-tree-editor": {
+        "type": "json-tree-editor",
+        "category": "feature",
+        "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
+        "filePath": "packages/spark-component/src/components/support/JsonTreeEditor.vue",
+        "propRefs": [
+          "prop_00590",
+          "prop_00591",
+          "prop_00592",
+          "prop_00593",
+          "prop_00594",
+          "prop_00595",
+          "prop_00596",
+          "prop_00597",
+          "prop_00598",
+          "prop_00599",
+          "prop_00600",
+          "prop_00601",
+          "prop_00602",
+          "prop_00603",
+          "prop_00604",
+          "prop_00605",
+          "prop_00606"
         ],
         "emitRefs": [
           "emit_00018",
@@ -17612,12 +17793,12 @@
         "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
         "filePath": "packages/spark-component/src/components/support/SparkCodeEditor.vue",
         "propRefs": [
-          "prop_00579",
-          "prop_00580",
-          "prop_00568",
-          "prop_00581",
-          "prop_00582",
-          "prop_00583"
+          "prop_00607",
+          "prop_00608",
+          "prop_00596",
+          "prop_00609",
+          "prop_00610",
+          "prop_00611"
         ],
         "emitRefs": [
           "emit_00018"
@@ -17629,20 +17810,20 @@
         "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
         "filePath": "packages/spark-component/src/components/support/SparkJsonEditor.vue",
         "propRefs": [
-          "prop_00565",
-          "prop_00568",
-          "prop_00581",
-          "prop_00584",
-          "prop_00585",
-          "prop_00582",
-          "prop_00586",
-          "prop_00587",
-          "prop_00588",
-          "prop_00589",
-          "prop_00590",
-          "prop_00591",
-          "prop_00592",
-          "prop_00593"
+          "prop_00593",
+          "prop_00596",
+          "prop_00609",
+          "prop_00612",
+          "prop_00613",
+          "prop_00610",
+          "prop_00614",
+          "prop_00615",
+          "prop_00616",
+          "prop_00617",
+          "prop_00618",
+          "prop_00619",
+          "prop_00620",
+          "prop_00621"
         ],
         "emitRefs": [
           "emit_00018"
@@ -17654,46 +17835,10 @@
         "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
         "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
         "propRefs": [
-          "prop_00594",
-          "prop_00595",
-          "prop_00596"
+          "prop_00622",
+          "prop_00623",
+          "prop_00624"
         ],
-        "emitRefs": []
-      },
-      "ai-launcher-button": {
-        "type": "ai-launcher-button",
-        "category": "feature",
-        "description": "SPARK 组件，可在注册表中通过 type=\"ai-launcher-button\" 使用。",
-        "filePath": "src/components/AiLauncherButton.vue",
-        "propRefs": [
-          "prop_00597",
-          "prop_00598",
-          "prop_00599",
-          "prop_00600",
-          "prop_00601",
-          "prop_00602",
-          "prop_00603",
-          "prop_00604",
-          "prop_00605",
-          "prop_00606",
-          "prop_00607",
-          "prop_00608",
-          "prop_00609",
-          "prop_00610",
-          "prop_00611",
-          "prop_00612",
-          "prop_00613",
-          "prop_00614",
-          "prop_00615"
-        ],
-        "emitRefs": []
-      },
-      "app-ai-panel": {
-        "type": "app-ai-panel",
-        "category": "feature",
-        "description": "SPARK 组件，可在注册表中通过 type=\"app-ai-panel\" 使用。",
-        "filePath": "src/components/AppAiPanel.vue",
-        "propRefs": [],
         "emitRefs": []
       },
       "capability-demo": {
@@ -17726,7 +17871,7 @@
         "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-data-set-designer\" 引用。",
         "filePath": "src/views/app/dev-system/DevDataSetDesigner.vue",
         "propRefs": [
-          "prop_00616"
+          "prop_00625"
         ],
         "emitRefs": []
       },

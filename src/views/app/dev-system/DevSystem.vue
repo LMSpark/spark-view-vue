@@ -131,9 +131,8 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
-import AiLauncherButton from '@/components/AiLauncherButton.vue'
+import { AiLauncherButton, useAiPanelStore } from '@spark-view/spark-component'
 import NavIcon from '@/components/NavIcon.vue'
-import { useAiPanelStore } from '@/composables/useAiPanelStore'
 import { useDevPageModelSession } from './composables/useDevPageModelSession'
 
 const { router, tenantPath } = useTenantRouter()

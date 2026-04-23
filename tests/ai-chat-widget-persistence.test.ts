@@ -14,7 +14,7 @@ vi.mock('vue-markdown-render', () => ({
   }),
 }))
 
-import AiChatWidget from '../src/components/AiChatWidget.vue'
+import { AiChatWidget } from '@spark-view/spark-component'
 
 describe('AiChatWidget persistence', () => {
   beforeEach(() => {

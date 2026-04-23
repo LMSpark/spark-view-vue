@@ -6,7 +6,8 @@
     :disabled="disabled"
     @click="ai.toggle"
   >
-    <NavIcon v-if="icon" :name="icon" :size="iconSize" />
+    <el-icon v-if="isElIcon && normalizedIconName" :size="iconSize"><component :is="iconMap[normalizedIconName]" /></el-icon>
+    <span v-else-if="icon" class="ai-launcher-btn__emoji-icon">{{ icon }}</span>
     <span v-if="label" :class="{ 'ai-launcher-btn__label-with-icon': !!icon }">{{ label }}</span>
   </el-button>
 </template>
@@ -41,8 +42,8 @@
  * 同时提供 `config` 与摊平 props 时以 `config` 为准（避免双源歧义）。
  */
 import { computed, shallowRef, watch, type Ref, type ComputedRef } from 'vue'
-import NavIcon from '@/components/NavIcon.vue'
-import { useAiSession } from '@/composables/useAiSession'
+import * as Icons from '@element-plus/icons-vue'
+import { useAiSession } from '../../composables/useAiSession'
 import type {
   AiSessionConfig,
   AiSessionToolLog,
@@ -50,8 +51,8 @@ import type {
   AiToolHandler,
   AiFcLoopConfig,
   AiFeedbackConfig,
-} from '@/composables/useAiPanelStore'
-import type { AiChatSender } from '@/composables/useAiChat'
+} from '../../composables/useAiPanelStore'
+import type { AiChatSender } from '../../composables/useAiChat'
 
 interface Props {
   // ── 方式 1：整体配置（最高优先级） ──
@@ -103,6 +104,17 @@ const props = withDefaults(defineProps<Props>(), {
   icon: 'ChatRound',
   iconSize: 14,
   disabled: false,
+})
+
+const iconMap = Icons as Record<string, object>
+const normalizedIconName = computed(() => {
+  const name = props.icon?.trim()
+  if (!name) return undefined
+  return name
+})
+const isElIcon = computed(() => {
+  if (!normalizedIconName.value) return false
+  return normalizedIconName.value in iconMap
 })
 
 /**
@@ -166,5 +178,11 @@ void computed(() => stableConfig.value)
 <style scoped>
 .ai-launcher-btn__label-with-icon {
   margin-left: 4px;
+}
+
+.ai-launcher-btn__emoji-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 </style>

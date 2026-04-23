@@ -1,492 +1,55 @@
 [
   {
-    "type": "r-toolbar",
-    "id": "page-toolbar",
+    "type": "r-table",
+    "id": "ordersTable",
     "props": {
-      "id": "page-toolbar",
-      "gap": "8px",
-      "align": "center",
-      "style": {
-        "padding": "12px 16px",
-        "background": "#fff",
-        "borderBottom": "1px solid #e8e8e8",
-        "marginBottom": "16px",
-        "borderRadius": "8px"
-      }
-    },
-    "children": [
-      {
-        "type": "r-button",
-        "id": "btn-refresh",
-        "props": {
-          "id": "btn-refresh",
-          "label": "刷新",
-          "icon": "Refresh",
-          "template": "primary",
-          "action": "refresh"
-        },
-        "children": []
-      },
-      {
-        "type": "r-button",
-        "id": "btn-add-order",
-        "props": {
-          "id": "btn-add-order",
-          "label": "新增订单",
-          "icon": "Plus",
-          "template": "primary"
-        },
-        "children": []
-      },
-      {
-        "type": "r-button",
-        "id": "btn-export",
-        "props": {
-          "id": "btn-export",
-          "label": "导出",
-          "icon": "Download"
-        },
-        "children": []
-      },
-      {
-        "type": "r-button",
-        "id": "btn-dept",
-        "props": {
-          "id": "btn-dept",
-          "label": "部门管理",
-          "icon": "OfficeBuilding"
-        },
-        "children": []
-      },
-      {
-        "type": "r-button",
-        "id": "btn-employee",
-        "props": {
-          "id": "btn-employee",
-          "label": "人员管理",
-          "icon": "User"
-        },
-        "children": []
-      }
-    ]
-  },
-  {
-    "type": "r-section",
-    "id": "dashboard-header",
-    "props": {
-      "id": "dashboard-header",
-      "title": "订单管理系统仪表盘",
-      "description": "关键业务指标概览"
-    },
-    "children": [
-      {
-        "type": "r-space",
-        "id": "stat-cards-space",
-        "props": {
-          "id": "stat-cards-space",
-          "size": "large",
-          "wrap": true,
-          "fill": true,
-          "style": {
-            "gap": "20px"
-          }
-        },
-        "children": [
-          {
-            "type": "r-card",
-            "id": "card-total-orders",
-            "props": {
-              "id": "card-total-orders",
-              "header": "📦 总订单数",
-              "bodyClass": "stat-card stat-card-blue",
-              "shadow": "always",
-              "bodyStyle": {
-                "background": "rgba(255,255,255,0.85)",
-                "borderRadius": "0 0 12px 12px",
-                "padding": "16px 20px"
-              },
-              "width": 224,
-              "style": {
-                "width": "224px"
-              }
-            },
-            "children": [
-              {
-                "type": "display-statistic",
-                "props": {
-                  "id": "stat-total-orders",
-                  "dataKey": "Orders@default@summaryRow.totalOrders",
-                  "valueStyle": "color: #1890ff; font-size: 28px;",
-                  "prefix": "📦",
-                  "suffix": "单"
-                },
-                "children": [],
-                "id": "stat-total-orders"
-              }
-            ]
-          },
-          {
-            "type": "r-card",
-            "id": "card-total-amount",
-            "props": {
-              "id": "card-total-amount",
-              "header": "💰 总金额",
-              "bodyClass": "stat-card stat-card-green",
-              "shadow": "always",
-              "bodyStyle": {
-                "background": "rgba(255,255,255,0.85)",
-                "borderRadius": "0 0 12px 12px",
-                "padding": "16px 20px"
-              },
-              "width": 224,
-              "style": {
-                "width": "224px"
-              }
-            },
-            "children": [
-              {
-                "type": "display-statistic",
-                "props": {
-                  "id": "stat-total-amount",
-                  "dataKey": "Orders@default@summaryRow.totalAmount",
-                  "precision": 2,
-                  "valueStyle": "color: #52c41a; font-size: 28px;",
-                  "prefix": "💰",
-                  "suffix": "元"
-                },
-                "children": [],
-                "id": "stat-total-amount"
-              }
-            ]
-          },
-          {
-            "type": "r-card",
-            "id": "card-avg-amount",
-            "props": {
-              "id": "card-avg-amount",
-              "header": "📊 平均订单金额",
-              "bodyClass": "stat-card stat-card-purple",
-              "shadow": "always",
-              "bodyStyle": {
-                "background": "rgba(255,255,255,0.85)",
-                "borderRadius": "0 0 12px 12px",
-                "padding": "16px 20px"
-              },
-              "width": 224,
-              "style": {
-                "width": "224px"
-              }
-            },
-            "children": [
-              {
-                "type": "display-statistic",
-                "props": {
-                  "id": "stat-avg-amount",
-                  "dataKey": "Orders@default@summaryRow.avgAmount",
-                  "precision": 2,
-                  "valueStyle": "color: #722ed1; font-size: 28px;",
-                  "prefix": "📊",
-                  "suffix": "元"
-                },
-                "children": [],
-                "id": "stat-avg-amount"
-              }
-            ]
-          },
-          {
-            "type": "r-card",
-            "id": "card-pending-orders",
-            "props": {
-              "id": "card-pending-orders",
-              "header": "⏳ 待处理订单",
-              "bodyClass": "stat-card stat-card-orange",
-              "shadow": "always",
-              "bodyStyle": {
-                "background": "rgba(255,255,255,0.85)",
-                "borderRadius": "0 0 12px 12px",
-                "padding": "16px 20px"
-              },
-              "width": 224,
-              "style": {
-                "width": "224px"
-              }
-            },
-            "children": [
-              {
-                "type": "display-statistic",
-                "props": {
-                  "id": "stat-pending-orders",
-                  "dataKey": "Orders@pendingOrdersView@summaryRow.pendingOrders",
-                  "valueStyle": "color: #fa8c16; font-size: 28px;",
-                  "prefix": "⏳",
-                  "suffix": "单"
-                },
-                "children": [],
-                "id": "stat-pending-orders"
-              }
-            ]
-          },
-          {
-            "type": "r-card",
-            "id": "card-total-customers",
-            "props": {
-              "id": "card-total-customers",
-              "header": "👥 客户总数",
-              "bodyClass": "stat-card stat-card-cyan",
-              "shadow": "always",
-              "bodyStyle": {
-                "background": "rgba(255,255,255,0.85)",
-                "borderRadius": "0 0 12px 12px",
-                "padding": "16px 20px"
-              },
-              "width": 224,
-              "style": {
-                "width": "224px"
-              }
-            },
-            "children": [
-              {
-                "type": "display-statistic",
-                "props": {
-                  "id": "stat-total-customers",
-                  "dataKey": "Customers@default@summaryRow.totalCustomers",
-                  "valueStyle": "color: #13c2c2; font-size: 28px;",
-                  "prefix": "👥",
-                  "suffix": "个"
-                },
-                "children": [],
-                "id": "stat-total-customers"
-              }
-            ]
-          },
-          {
-            "type": "r-card",
-            "id": "card-total-products",
-            "props": {
-              "id": "card-total-products",
-              "header": "📋 产品总数",
-              "bodyClass": "stat-card stat-card-pink",
-              "shadow": "always",
-              "bodyStyle": {
-                "background": "rgba(255,255,255,0.85)",
-                "borderRadius": "0 0 12px 12px",
-                "padding": "16px 20px"
-              },
-              "width": 224,
-              "style": {
-                "width": "224px"
-              }
-            },
-            "children": [
-              {
-                "type": "display-statistic",
-                "props": {
-                  "id": "stat-total-products",
-                  "dataKey": "Products@default@summaryRow.totalProducts",
-                  "valueStyle": "color: #eb2f96; font-size: 28px;",
-                  "prefix": "📋",
-                  "suffix": "个"
-                },
-                "children": [],
-                "id": "stat-total-products"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "r-section",
-    "id": "order-table-section",
-    "props": {
-      "id": "order-table-section",
-      "title": "订单列表",
-      "description": "所有订单明细"
-    },
-    "children": [
-      {
-        "type": "r-table",
-        "id": "order-table",
-        "props": {
-          "id": "order-table",
-          "dataKey": "Orders@orderListView@rows",
-          "stripe": true,
-          "border": true,
-          "pageSize": 10,
-          "actions": {
-            "type": "r-actions",
-            "props": {
-              "id": "order-actions",
-              "width": 180,
-              "align": "center",
-              "fixed": "right"
-            },
-            "children": [
-              {
-                "type": "r-button",
-                "id": "action-view",
-                "props": {
-                  "id": "action-view",
-                  "label": "查看",
-                  "size": "small",
-                  "template": "link",
-                  "action": "view-row"
-                }
-              },
-              {
-                "type": "r-button",
-                "id": "action-edit",
-                "props": {
-                  "id": "action-edit",
-                  "label": "编辑",
-                  "size": "small",
-                  "template": "link",
-                  "action": "edit-row"
-                }
-              },
-              {
-                "type": "r-button",
-                "id": "action-delete",
-                "props": {
-                  "id": "action-delete",
-                  "label": "删除",
-                  "size": "small",
-                  "template": "link",
-                  "action": "delete-row",
-                  "permAction": "delete",
-                  "permDeniedBehavior": "disable"
-                }
-              }
-            ]
-          }
-        },
-        "children": [
-          {
-            "type": "r-text",
-            "props": {
-              "id": "col-orderNo",
-              "field": "orderNo",
-              "label": "订单号"
-            },
-            "children": [],
-            "id": "col-orderNo"
-          },
-          {
-            "type": "r-date",
-            "props": {
-              "id": "col-orderDate",
-              "field": "orderDate",
-              "label": "下单日期"
-            },
-            "children": [],
-            "id": "col-orderDate"
-          },
-          {
-            "type": "r-text",
-            "props": {
-              "id": "col-customerId",
-              "field": "customerId",
-              "label": "客户ID"
-            },
-            "children": [],
-            "id": "col-customerId"
-          },
-          {
-            "type": "r-select",
-            "props": {
-              "id": "col-status",
-              "field": "status",
-              "label": "状态",
-              "optionKey": "OrderStatusOptions"
-            },
-            "children": [],
-            "id": "col-status"
-          },
-          {
-            "type": "r-number",
-            "props": {
-              "id": "col-totalAmount",
-              "field": "totalAmount",
-              "label": "总金额",
-              "precision": 2
-            },
-            "children": [],
-            "id": "col-totalAmount"
-          },
-          {
-            "type": "r-text",
-            "props": {
-              "id": "col-remark",
-              "field": "remark",
-              "label": "备注"
-            },
-            "children": [],
-            "id": "col-remark"
-          }
-        ]
-      },
-      {
+      "id": "ordersTable",
+      "dataKey": "Orders@orderListView@rows",
+      "toolbar": {
         "type": "r-toolbar",
-        "id": "order-table-bottom-toolbar",
         "props": {
-          "id": "order-table-bottom-toolbar",
-          "gap": "8px",
-          "align": "center",
-          "style": {
-            "padding": "8px 0",
-            "marginTop": "12px"
-          }
+          "id": "ordersToolbar"
         },
         "children": [
-          {
-            "type": "r-input",
-            "id": "bottom-toolbar-search",
-            "props": {
-              "id": "bottom-toolbar-search",
-              "placeholder": "搜索订单号/客户...",
-              "style": {
-                "width": "240px"
-              },
-              "prefixIcon": "Search",
-              "clearable": true
-            }
-          },
           {
             "type": "r-button",
-            "id": "bottom-toolbar-refresh",
             "props": {
-              "id": "bottom-toolbar-refresh",
+              "id": "btnRefresh",
               "label": "刷新",
+              "template": "toolbar-default",
               "icon": "Refresh",
-              "size": "small",
-              "template": "primary",
               "action": "refresh"
             }
           },
           {
             "type": "r-button",
-            "id": "bottom-toolbar-add",
             "props": {
-              "id": "bottom-toolbar-add",
-              "label": "新增订单",
+              "id": "btnAdd",
+              "label": "新增",
+              "template": "toolbar-primary",
               "icon": "Plus",
-              "size": "small",
-              "template": "primary"
+              "action": "append-row"
             }
           },
           {
             "type": "r-button",
-            "id": "bottom-toolbar-export",
             "props": {
-              "id": "bottom-toolbar-export",
-              "label": "导出",
-              "icon": "Download",
-              "size": "small"
+              "id": "btnDelete",
+              "label": "删除",
+              "template": "toolbar-danger",
+              "icon": "Delete",
+              "action": "delete-current"
             }
           }
         ]
+      },
+      "tableProps": {
+        "rowKey": "id",
+        "highlightCurrentRow": true,
+        "border": true,
+        "stripe": true
       }
-    ]
+    },
+    "children": []
   }
 ]
