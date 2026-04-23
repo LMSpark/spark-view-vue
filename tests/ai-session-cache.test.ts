@@ -9,12 +9,15 @@ import {
   SESSION_SNAPSHOT_PREFIX,
   PANEL_LAYOUT_PREFIX,
   ALL_AI_CACHE_PREFIXES,
+  setupAiCacheEventBus,
 } from '../src/composables/aiSessionCache'
 import { useAiPanelStore } from '../src/composables/useAiPanelStore'
 
 describe('aiSessionCache', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear()
+    // 初始化缓存事件总线，使 spark-component 的事件可以转发到 useAiPanelStore
+    await setupAiCacheEventBus()
   })
 
   it('readCache returns null for missing key (no event)', () => {
