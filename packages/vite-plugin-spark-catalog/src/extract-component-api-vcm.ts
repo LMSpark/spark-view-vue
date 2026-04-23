@@ -39,9 +39,12 @@ type SupportedCheckerOptions = Pick<MetaCheckerOptions, 'rawType' | 'schema' | '
 export type VcmCheckerOptions = Partial<SupportedCheckerOptions>
 
 const DEFAULT_CHECKER_OPTIONS: SupportedCheckerOptions = {
-  // 默认走 typeObject 路径，不依赖 VCM schema 展开。
+  // 默认同时启用 rawType + schema：
+  // - rawType: 追溯工作区声明文件、字符串字面量 union 等
+  // - schema: 展开结构化 prop 类型（如 ActionsNode / ToolbarNode）供 catalog 落盘
+  // convertSchema 仍按扁平规则过滤 noise（单层 object / 仅字面量 enum）
   rawType: true,
-  schema: false,
+  schema: true,
   noDeclarations: false,
 }
 
@@ -413,8 +416,26 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined): PropSchema | 
   }
 
   if (vcmSchema.kind === 'enum' && vcmSchema.schema !== undefined) {
+    // 情形 1：XxxNode | undefined —— 仅含一个 object variant 时，提升该 object 为 prop schema，
+    //        让 AI 直接拿到结构节点（如 ActionsNode { type, props, children }）的一层展开。
+    const objectVariants = vcmSchema.schema.filter(
+      (variant): variant is Extract<PropertyMetaSchema, { kind: 'object' }> =>
+        typeof variant !== 'string' && variant.kind === 'object',
+    )
+    const nonUndefinedStringVariants = vcmSchema.schema.filter(
+      (variant) => typeof variant === 'string' && variant !== 'undefined',
+    )
+    if (objectVariants.length === 1 && nonUndefinedStringVariants.length === 0) {
+      return convertSchema(objectVariants[0])
+    }
+
+    // 情形 2：普通 enum —— 仅在包含字符串字面量时保留，避免把 `string | undefined` 等
+    //        原始类型 union 污染目录（此类 prop 本就无 schema 价值，交给 type 字符串即可）。
     const variants = uniqueSchemaTypes(vcmSchema.schema)
-    if (variants.length > 0) {
+    const hasLiteralVariant = variants.some(
+      (variant) => /^".*"$/.test(variant) || /^'.*'$/.test(variant),
+    )
+    if (hasLiteralVariant && variants.length > 0) {
       return { kind: 'enum', type: vcmSchema.type, variants }
     }
   }

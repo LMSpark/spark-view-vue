@@ -40,12 +40,46 @@
           "name": "remark",
           "label": "备注",
           "type": "string"
+        },
+        {
+          "name": "employeeId",
+          "type": "number",
+          "label": "业务员ID",
+          "allowDBNull": true
         }
       ],
       "views": {
         "default": {
           "tableName": "Orders",
           "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true,
+          "aggregates": {
+            "totalOrders": {
+              "type": "count",
+              "field": "id",
+              "label": "总订单数"
+            },
+            "totalAmount": {
+              "type": "sum",
+              "field": "totalAmount",
+              "label": "总金额"
+            },
+            "avgAmount": {
+              "type": "avg",
+              "field": "totalAmount",
+              "label": "平均订单金额"
+            }
+          }
+        },
+        "orderListView": {
+          "tableName": "Orders",
+          "viewId": "orderListView",
           "page": 1,
           "pageSize": 20,
           "rows": [
@@ -78,19 +112,103 @@
             }
           ],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true,
+          "aggregates": {
+            "totalOrders": {
+              "type": "count",
+              "field": "id",
+              "label": "总订单数"
+            },
+            "totalAmount": {
+              "type": "sum",
+              "field": "totalAmount",
+              "label": "总金额"
+            },
+            "avgAmount": {
+              "type": "avg",
+              "field": "totalAmount",
+              "label": "平均订单金额"
+            }
+          }
         },
-        "orderListView": {
+        "pendingOrdersView": {
           "tableName": "Orders",
-          "viewId": "orderListView",
+          "viewId": "pendingOrdersView",
           "page": 1,
           "pageSize": 20,
-          "rows": [],
+          "rows": [
+            {
+              "id": 1,
+              "orderNo": "ORD20240001",
+              "orderDate": "2024-05-01",
+              "customerId": 1,
+              "status": "pending",
+              "totalAmount": 1500,
+              "remark": "加急订单"
+            },
+            {
+              "id": 2,
+              "orderNo": "ORD20240002",
+              "orderDate": "2024-05-02",
+              "customerId": 2,
+              "status": "processing",
+              "totalAmount": 2300.5,
+              "remark": ""
+            },
+            {
+              "id": 3,
+              "orderNo": "ORD20240003",
+              "orderDate": "2024-05-03",
+              "customerId": 3,
+              "status": "completed",
+              "totalAmount": 980,
+              "remark": "客户自提"
+            }
+          ],
+          "filterExpression": {
+            "field": "status",
+            "op": "==",
+            "value": "pending"
+          },
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
           "autoLoad": true,
-          "autoRefresh": true
+          "autoRefresh": true,
+          "aggregates": {
+            "pendingOrders": {
+              "type": "count",
+              "field": "id",
+              "label": "待处理订单数"
+            }
+          }
         }
+      },
+      "api": {
+        "list": {
+          "url": "/orders/list",
+          "pagination": {
+            "pageParam": "page",
+            "sizeParam": "pageSize"
+          }
+        },
+        "create": {
+          "url": "/orders/create"
+        },
+        "retrieve": {
+          "url": "/orders/{id}"
+        },
+        "update": {
+          "url": "/orders/update"
+        },
+        "delete": {
+          "url": "/orders/delete"
+        }
+      },
+      "crudConfig": {
+        "timeout": 5000,
+        "validateData": true
       }
     },
     "OrderItems": {
@@ -135,43 +253,7 @@
           "viewId": "default",
           "page": 1,
           "pageSize": 20,
-          "rows": [
-            {
-              "id": 1,
-              "orderId": 1,
-              "productId": 101,
-              "quantity": 2,
-              "unitPrice": 500
-            },
-            {
-              "id": 2,
-              "orderId": 1,
-              "productId": 102,
-              "quantity": 1,
-              "unitPrice": 300
-            },
-            {
-              "id": 3,
-              "orderId": 2,
-              "productId": 103,
-              "quantity": 3,
-              "unitPrice": 200
-            },
-            {
-              "id": 4,
-              "orderId": 2,
-              "productId": 104,
-              "quantity": 2,
-              "unitPrice": 450
-            },
-            {
-              "id": 5,
-              "orderId": 3,
-              "productId": 105,
-              "quantity": 1,
-              "unitPrice": 980
-            }
-          ],
+          "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true
         }
@@ -229,7 +311,14 @@
             }
           ],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "autoSelectFirst": true,
+          "aggregates": {
+            "totalCustomers": {
+              "type": "count",
+              "field": "id",
+              "label": "客户总数"
+            }
+          }
         }
       }
     },
@@ -297,7 +386,14 @@
             }
           ],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "autoSelectFirst": true,
+          "aggregates": {
+            "totalProducts": {
+              "type": "count",
+              "field": "id",
+              "label": "产品总数"
+            }
+          }
         }
       }
     },
@@ -416,6 +512,220 @@
           "autoSelectFirst": true
         }
       }
+    },
+    "Departments": {
+      "tableName": "Departments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "部门名称",
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "name": "manager",
+          "type": "string",
+          "label": "负责人",
+          "maxLength": 50
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "label": "联系电话",
+          "maxLength": 20
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "label": "邮箱",
+          "maxLength": 100
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "label": "办公地址",
+          "maxLength": 200
+        },
+        {
+          "name": "parentId",
+          "type": "number",
+          "label": "上级部门ID",
+          "allowDBNull": true,
+          "defaultValue": 0
+        },
+        {
+          "name": "sortOrder",
+          "type": "number",
+          "label": "排序",
+          "defaultValue": 0
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "defaultValue": "active"
+        },
+        {
+          "name": "remark",
+          "type": "string",
+          "label": "备注",
+          "maxLength": 500
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Departments",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "reference",
+      "api": {
+        "list": {
+          "url": "/departments/list",
+          "pagination": {
+            "pageParam": "page",
+            "sizeParam": "pageSize"
+          }
+        },
+        "create": {
+          "url": "/departments/create"
+        },
+        "retrieve": {
+          "url": "/departments/{id}"
+        },
+        "update": {
+          "url": "/departments/update"
+        },
+        "delete": {
+          "url": "/departments/delete"
+        }
+      },
+      "crudConfig": {
+        "timeout": 5000,
+        "validateData": true
+      }
+    },
+    "Employees": {
+      "tableName": "Employees",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "姓名",
+          "required": true,
+          "maxLength": 50
+        },
+        {
+          "name": "gender",
+          "type": "string",
+          "label": "性别",
+          "maxLength": 10
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "label": "手机号",
+          "maxLength": 20
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "label": "邮箱",
+          "maxLength": 100
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "label": "职位",
+          "maxLength": 100
+        },
+        {
+          "name": "departmentId",
+          "type": "number",
+          "label": "所属部门ID",
+          "allowDBNull": true
+        },
+        {
+          "name": "entryDate",
+          "type": "date",
+          "label": "入职日期"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "defaultValue": "active"
+        },
+        {
+          "name": "remark",
+          "type": "string",
+          "label": "备注",
+          "maxLength": 500
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Employees",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "child",
+      "api": {
+        "list": {
+          "url": "/employees/list",
+          "pagination": {
+            "pageParam": "page",
+            "sizeParam": "pageSize"
+          }
+        },
+        "create": {
+          "url": "/employees/create"
+        },
+        "retrieve": {
+          "url": "/employees/{id}"
+        },
+        "update": {
+          "url": "/employees/update"
+        },
+        "delete": {
+          "url": "/employees/delete"
+        }
+      },
+      "crudConfig": {
+        "timeout": 5000,
+        "validateData": true
+      }
     }
   },
   "tableRelations": [
@@ -432,6 +742,20 @@
       "parentField": "id",
       "childField": "customerId",
       "relationName": "客户-联系人"
+    },
+    {
+      "parentTable": "Departments",
+      "childTable": "Employees",
+      "parentField": "id",
+      "childField": "departmentId",
+      "relationName": "部门-人员"
+    },
+    {
+      "parentTable": "Employees",
+      "childTable": "Orders",
+      "parentField": "id",
+      "childField": "employeeId",
+      "relationName": "员工-订单"
     }
   ],
   "viewDependencies": [
@@ -444,6 +768,18 @@
     {
       "parentTable": "Customers",
       "childTable": "Contacts",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Departments",
+      "childTable": "Employees",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Employees",
+      "childTable": "Orders",
       "dependencyType": "currentRow",
       "autoLoad": true
     }
@@ -474,6 +810,14 @@
       "Contacts": {
         "x": 680,
         "y": 320
+      },
+      "Departments": {
+        "x": 40,
+        "y": 600
+      },
+      "Employees": {
+        "x": 360,
+        "y": 600
       }
     }
   }

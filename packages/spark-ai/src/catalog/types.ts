@@ -132,6 +132,11 @@ export interface PropEntry {
   default?: string
   description?: string
   schemaRef?: string
+  /**
+   * 语义标签：该 prop 期望绑定的子组件 type（kebab-case）。
+   * 来源于 JSDoc `@componentRef xxx`；与 schemaRef 互补（结构由 schemaRef 提供）。
+   */
+  componentRef?: string
   schema?: PropSchema
 }
 

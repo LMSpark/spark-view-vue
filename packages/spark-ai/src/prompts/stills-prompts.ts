@@ -264,6 +264,15 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
         ① 优先调用 sparkNodeTree.findByType({ type: 'r-tabs' }) 按类型一步拿到真实 id
         ② 或调用 sparkNodeTree.listChildren({parentComponentId:null}) 逐层遍历，
            从每个节点的 id 或 props.id 字段读取真实 id，再调用 getNode / setProps / removeNode
+    ⚠ DataKey 详细约束（rule 编辑必须遵守）：
+      • 只允许 @ 语法：table@field、table@viewId@field、#scope@table@field、#scope@table@viewId@field
+      • field 只允许：rows / currentRow / selectedRows / summaryRow / selectionSummaryRow；允许字段路径后缀，如 stats@currentRow.totalUsers
+      • 省略 viewId 时默认 default；若页面已存在特定 view，优先复用 table@viewId@field 的现有写法
+      • rows 用于列表/表格容器；currentRow 用于详情区/主从联动；selectedRows 用于批量选择；summaryRow / selectionSummaryRow 用于统计展示
+      • dataKey 绑定的是 DataView / 行上下文，不是任意列名；列组件、表单字段通常在容器上下文中使用 field，不要写成 Users@name 或 Orders@amount 这类非法 dataKey
+      • r-table / r-form / r-detail / r-tree 这类自解析容器消费 dataKey；其子字段节点优先用 field / label，而不是重复写 dataKey
+      • 旧点号格式一律禁止：dataset.tables.Users.rows、dataset.tables.Orders.views.grid.rows 都不是合法 DataKey
+      • 若不确定应绑定哪个 table / viewId / field，先调用 sparkNodeTree.collectDataKeys 或读取同类节点，复用当前页面现有模式
   - 修改 pagedata.json：使用 datasetTool.*；完成数据阶段后执行 dataset.export
   - 修改 script.js：使用 textModel.readScript / textModel.writeScript
   - 修改 style.css：使用 textModel.readStyle / textModel.writeStyle

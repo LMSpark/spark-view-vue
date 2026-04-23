@@ -185,4 +185,68 @@ describe('useRuleEditSession run isolation', () => {
 
     wrapper.unmount()
   })
+
+  it('treats datasetTool writes as live-model writes and resyncs the live dataset tool after the run', async () => {
+    const onDataSetChanged = vi.fn()
+    const liveDataSetTool = { id: 'live-dataset-tool' } as never
+    const onStatus = vi.fn()
+    let api: ReturnType<typeof useRuleEditSession> | null = null
+
+    const Host = defineComponent({
+      setup() {
+        const liveModelAdapter = {
+          getNodeTree: () => null,
+          getDataSetTool: () => liveDataSetTool,
+          onDataSetChanged,
+          readScript: () => '',
+          writeScript: vi.fn(),
+          readStyle: () => '',
+          writeStyle: vi.fn(),
+        }
+
+        api = useRuleEditSession({
+          getSessionKey: () => 'orders-page',
+          getLiveModelAdapter: () => liveModelAdapter,
+          sessionHost: createSessionHost(),
+          onStatus,
+        })
+
+        return () => h('div')
+      },
+    })
+
+    const wrapper = mount(Host)
+    expect(api).not.toBeNull()
+
+    const runPromise = api!.runLlm('全部表增加最后修改人')
+    await flushPromises()
+    expect(shared.runs).toHaveLength(1)
+
+    shared.runs[0]!.resolve({
+      turns: [
+        {
+          round: 1,
+          timestamp: new Date().toISOString(),
+          phase: 'stills-execute',
+          toolBlock: { action: 'datasetTool.createColumn' },
+          stillsResult: { ok: true, summary: 'datasetTool.createColumn 完成' },
+        },
+      ],
+      rounds: 1,
+      aborted: false,
+      exportCompleted: true,
+      sessionId: 'dataset-run',
+    })
+
+    await flushPromises()
+    await expect(runPromise).resolves.toBeUndefined()
+
+    expect(onDataSetChanged).toHaveBeenCalledWith(liveDataSetTool)
+    expect(api!.dirty.value).toBe(true)
+    expect(api!.log.value.at(-1)?.tag).toBe('✅ 已同步')
+    expect(api!.log.value.at(-1)?.text).toContain('1 次写操作')
+    expect(onStatus).toHaveBeenCalledWith('✅ 模型级编辑完成 (1 轮)', 'success')
+
+    wrapper.unmount()
+  })
 })

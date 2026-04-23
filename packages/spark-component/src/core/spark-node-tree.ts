@@ -412,6 +412,15 @@ export class SparkNodeTree {
     this._history.push(this._root)
   }
 
+  /**
+   * 替换当前根节点并将变更提交到历史（可 undo/redo）。
+   * 用于“文本整体替换”等粗粒度写操作，保留既有历史栈。
+   */
+  replaceRoot(newRoot: SparkNode): void {
+    const next = normalizeRootParams({ root: newRoot }, 'replaceRoot')
+    this._commitWrite(next.root, 'replaceRoot')
+  }
+
   // ─── 内部历史管理 ──────────────────────────────────────────────
 
   /**

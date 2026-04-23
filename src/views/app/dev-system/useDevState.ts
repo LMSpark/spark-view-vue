@@ -1,21 +1,31 @@
 /**
- * DevSystem 全局共享状态 — 跨面板的响应式数据中心
+ * DevSystem 全局共享状态 — 跨面板的响应式数据中心。
  *
- * 设计原则：
- * - 站点树选中节点 → 驱动工作区所有面板
- * - AI 面板操作结果 → 自动刷新文件/树
- * - 统一 dirty 状态管理
+ * SSOT 设计：
+ * - 页面 4 文件（rule / pagedata / script / style）的真源是 `documents` 注册表。
+ *   每个文件封装为 PageFileDocument，以域模型为真源、text 为派生投影，
+ *   undo/redo 委托给 SparkNodeTree / DataSetCrudTool / SnapshotHistory<string>。
+ * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件注册表合一暴露。
+ * - 页面模型 AI 编辑统一走 EditLiveModelAdapter；Adapter 从 documents 读写，
+ *   保证手工编辑与 AI 编辑共享同一模型、同一 undo 链。
  */
-import { ref, reactive, computed, shallowRef, triggerRef } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
-import { SparkNodeTree, type SparkNode } from '@spark-view/spark-component'
 import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
-import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
+import { DataSetCrudTool } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
-import { canonicalizePageDataJson, canonicalizePageDataValue } from './policies/pageDataJsonSchema'
-import { loadTextHistory, saveTextHistory, clearTextHistoryStorage } from './composables/textHistoryStore'
-import { hasDesignerProjectionChanges } from './composables/designerProjection'
+import {
+  PAGE_FILE_NAMES,
+  createPageDocuments,
+  forEachDocument,
+  type PageDocumentRegistry,
+  type PageFileName,
+} from './documents'
+
+export { PAGE_FILE_NAMES }
+export type { PageFileName }
+export type { PageFileDocument } from './documents'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -25,16 +35,6 @@ export interface StatusMessage {
   text: string
   type: 'success' | 'warning' | 'error' | 'info'
   time: string
-}
-
-interface PageEditTransaction {
-  id: number
-  pageId: string
-  source: 'ai' | 'manual'
-  files: PageFileName[]
-  before: Partial<Record<PageFileName, string>>
-  after: Partial<Record<PageFileName, string>>
-  createdAt: number
 }
 
 export interface DevEditForm {
@@ -69,57 +69,13 @@ export interface BackendPageVersionSummary {
   modifiedBy: string | null
 }
 
-export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
-export type PageFileName = typeof PAGE_FILE_NAMES[number]
 export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
-function tryCanonicalizePageDataText(rawText: string): string {
-  if (!rawText.trim()) return rawText
-
-  try {
-    return canonicalizePageDataJson(rawText).text
-  } catch {
-    return rawText
-  }
-}
-
-type CanonicalPageData = ReturnType<typeof canonicalizePageDataValue>
-type PageFileLoadState = 'idle' | 'loading' | 'loaded'
-
-function parseRuleDocument(rawText: string): SparkNode[] {
-  if (!rawText.trim()) {
-    throw new Error('缺少 rule.json')
-  }
-
-  const parsedRule = JSON.parse(rawText) as unknown
-  const ruleJson = Array.isArray(parsedRule)
-    ? parsedRule
-    : (
-        typeof parsedRule === 'object'
-        && parsedRule !== null
-        && Array.isArray((parsedRule as Record<string, unknown>)['children'])
-      )
-        ? (parsedRule as Record<string, unknown>)['children'] as unknown[]
-        : null
-
-  if (!Array.isArray(ruleJson)) {
-    throw new Error('rule.json 必须是数组或含 children 的根对象')
-  }
-
-  return ruleJson as SparkNode[]
-}
-
-function serializeRuleDocument(ruleJson: SparkNode[]): string {
-  return `${JSON.stringify(ruleJson, null, 2)}\n`
-}
-
 function parseOptionalNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value
-  }
+  if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string') {
     const parsed = Number(value)
     return Number.isFinite(parsed) ? parsed : null
@@ -128,7 +84,7 @@ function parseOptionalNumber(value: unknown): number | null {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 共享状态工厂 — 每个 DevSystem 实例一份
+// 共享状态工厂
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
@@ -179,58 +135,20 @@ export function useDevState() {
     placeholder: '', defaultValue: '', paramName: '',
   })
 
-  // ── 页面配置文件 ──
-  const activePageId = ref('')  // 当前正在编辑的页面 ID（独立于树节点）
-  const editFiles = reactive<Record<string, string>>({
-    'rule.json': '', 'pagedata.json': '', 'script.js': '', 'style.css': '',
-  })
-  const savedFiles = reactive<Record<string, string>>({
-    'rule.json': '', 'pagedata.json': '', 'script.js': '', 'style.css': '',
-  })
-  const fileDirty = reactive<Record<string, boolean>>({
-    'rule.json': false, 'pagedata.json': false, 'script.js': false, 'style.css': false,
-  })
+  // ── 页面文件 SSOT 注册表 ──
+  const activePageId = ref('')
+  const documents: PageDocumentRegistry = createPageDocuments()
   const fileSaving = ref(false)
-  const fileLoadState = reactive<Record<PageFileName, PageFileLoadState>>({
-    'rule.json': 'idle',
-    'pagedata.json': 'idle',
-    'script.js': 'idle',
-    'style.css': 'idle',
-  })
+
   let activePageFilesLoadPromise: Promise<void> | null = null
   let activePageFilesLoadPageId = ''
   let activePageFilesLoadEpoch = 0
-  const pageRuleTree = shallowRef<SparkNodeTree | null>(null)
-  const pageDataTool = shallowRef<DataSetCrudTool | null>(null)
-  const pageScriptDocument = ref<string | null>(null)
-  const pageStyleDocument = ref<string | null>(null)
-  const pageDataSetError = ref<string | null>(null)
-  const fileTextHistory = reactive<Record<PageFileName, string[]>>({
-    'rule.json': [],
-    'pagedata.json': [],
-    'script.js': [],
-    'style.css': [],
-  })
-  const fileTextHistoryCursor = reactive<Record<PageFileName, number>>({
-    'rule.json': -1,
-    'pagedata.json': -1,
-    'script.js': -1,
-    'style.css': -1,
-  })
-  const fileTextHistoryDraft = reactive<Record<PageFileName, string | null>>({
-    'rule.json': null,
-    'pagedata.json': null,
-    'script.js': null,
-    'style.css': null,
-  })
-  const fileTextLastSnapshotAt = reactive<Record<PageFileName, number>>({
-    'rule.json': 0,
-    'pagedata.json': 0,
-    'script.js': 0,
-    'style.css': 0,
-  })
-  const FILE_TEXT_SNAPSHOT_LIMIT = 100
-  const LOCAL_SNAPSHOT_MIN_INTERVAL_MS = 5000
+
+  function invalidateActivePageFilesLoad(): void {
+    activePageFilesLoadPromise = null
+    activePageFilesLoadPageId = ''
+    activePageFilesLoadEpoch += 1
+  }
 
   // ── 空导航状态 ──
   const navEmpty = ref(false)
@@ -242,52 +160,117 @@ export function useDevState() {
   const statusMessages = ref<StatusMessage[]>([])
   const linkProbeLoading = ref(false)
   const linkProbeInfo = ref<{ embeddable: boolean; reason: string } | null>(null)
-  const pageEditTransactions = reactive<Record<string, PageEditTransaction[]>>({})
-  const pageEditTransactionCursor = reactive<Record<string, number>>({})
-  let nextPageEditTransactionId = 1
-
-  // ── AI 面板 ──
-  const aiPanelVisible = ref(false)
-
-  function readComparablePageDataMetadata(content: string | undefined): IDataSetMetadata | null {
-    if (typeof content !== 'string' || content.trim().length === 0) return null
-
-    try {
-      return DataSetCrudTool.fromJson(content).toJson()
-    } catch {
-      return null
-    }
-  }
-
-  function hasLivePageDataChangesAgainstEditFile(): boolean {
-    const liveMetadata = pageDataTool.value?.toJson() ?? null
-    if (liveMetadata === null) return false
-    return hasDesignerProjectionChanges(liveMetadata, readComparablePageDataMetadata(editFiles['pagedata.json']))
-  }
-
-  const pageDataDesignerDirty = computed(() => hasLivePageDataChangesAgainstEditFile())
 
   // ── 自动保存 ──
   const autoSaveStatus = ref<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle')
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
-  // ── 计算属性 ──
-  const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
+  // ═══════════════════════════════════════════════════════════
+  // 计算属性
+  // ═══════════════════════════════════════════════════════════
+
+  const hasAnyFileDirty = computed(() => PAGE_FILE_NAMES.some((n) => documents[n].isDirty.value))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
-  function recomputePageDataFileDirty() {
-    fileDirty['pagedata.json'] = editFiles['pagedata.json'] !== savedFiles['pagedata.json'] || hasLivePageDataChangesAgainstEditFile()
+  /**
+   * pagedata 设计器是否存在尚未保存到服务端的改动。保留此命名以维持模板兼容，
+   * 语义上等价于 `documents['pagedata.json'].isDirty`。
+   */
+  const pageDataDesignerDirty = computed(() => documents['pagedata.json'].isDirty.value)
+
+  /**
+   * 当前 pagedata 解析/重建错误消息。保留此命名以维持模板兼容。
+   */
+  const pageDataSetError = computed(() => documents['pagedata.json'].parseError.value)
+
+  // ═══════════════════════════════════════════════════════════
+  // Live Model Adapter（单例 per page）
+  // ═══════════════════════════════════════════════════════════
+
+  let liveModelAdapterPageId = ''
+  let liveModelAdapter: EditLiveModelAdapter | null = null
+  let fallbackDataSetToolPageId = ''
+  let fallbackDataSetTool: DataSetCrudTool | null = null
+
+  function getOrCreateFallbackDataSetTool(): DataSetCrudTool {
+    if (fallbackDataSetTool && fallbackDataSetToolPageId === activePageId.value) {
+      return fallbackDataSetTool
+    }
+
+    fallbackDataSetTool = DataSetCrudTool.fromJson({
+      dataSetName: activePageId.value || 'PageDataSet',
+      tables: {},
+    })
+    fallbackDataSetToolPageId = activePageId.value
+    return fallbackDataSetTool
   }
+
+  function buildLiveModelAdapter(): EditLiveModelAdapter {
+    const ruleDoc = documents['rule.json']
+    const pageDataDoc = documents['pagedata.json']
+    const scriptDoc = documents['script.js']
+    const styleDoc = documents['style.css']
+
+    return {
+      getNodeTree: () => ruleDoc.model.value,
+      onNodeTreeChanged(nodeTree) {
+        ruleDoc.replaceModel(nodeTree)
+      },
+      getDataSetTool: () => pageDataDoc.model.value ?? getOrCreateFallbackDataSetTool(),
+      onDataSetChanged(tool) {
+        fallbackDataSetTool = tool
+        fallbackDataSetToolPageId = activePageId.value
+        pageDataDoc.replaceModel(tool)
+      },
+      readScript: () => scriptDoc.text.value,
+      writeScript(content) {
+        scriptDoc.setText(content)
+      },
+      readStyle: () => styleDoc.text.value,
+      writeStyle(content) {
+        styleDoc.setText(content)
+      },
+    }
+  }
+
+  /**
+   * 获取当前 pageId 对应的长寿单例 EditLiveModelAdapter。
+   * 同一 pageId 生命周期内返回同一实例；pageId 切换时自动换新。
+   */
+  function getLiveModelAdapter(): EditLiveModelAdapter {
+    if (liveModelAdapter && liveModelAdapterPageId === activePageId.value) {
+      return liveModelAdapter
+    }
+    liveModelAdapter = buildLiveModelAdapter()
+    liveModelAdapterPageId = activePageId.value
+    return liveModelAdapter
+  }
+
+  /**
+   * 兼容旧命名，转发到 `getLiveModelAdapter`。保留以便 AI 相关 composable 无需改签。
+   */
+  function createLiveEditModelAdapter(): EditLiveModelAdapter {
+    return getLiveModelAdapter()
+  }
+
+  function invalidateLiveModelAdapter(): void {
+    liveModelAdapter = null
+    liveModelAdapterPageId = ''
+    fallbackDataSetTool = null
+    fallbackDataSetToolPageId = ''
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 工具：地址 / 持久化 pageId
+  // ═══════════════════════════════════════════════════════════
 
   function normalizePageIdFromPath(path: string | undefined | null): string {
     return path ? path.replace(/^\/+/, '').trim() : ''
   }
 
   function buildActivePageStorageKey(): string {
-    if (typeof window === 'undefined') {
-      return 'dev-system:active-page'
-    }
+    if (typeof window === 'undefined') return 'dev-system:active-page'
     return `dev-system:active-page:${window.location.pathname}`
   }
 
@@ -304,13 +287,10 @@ export function useDevState() {
     if (typeof window === 'undefined') return
     const key = buildActivePageStorageKey()
     try {
-      if (pageId) {
-        window.localStorage.setItem(key, pageId)
-      } else {
-        window.localStorage.removeItem(key)
-      }
+      if (pageId) window.localStorage.setItem(key, pageId)
+      else window.localStorage.removeItem(key)
     } catch {
-      // Ignore storage failures to keep editor flow available.
+      // ignore storage failures
     }
   }
 
@@ -331,430 +311,49 @@ export function useDevState() {
     return null
   }
 
-  function resolveFileTextHistoryIndex(name: PageFileName, rawText?: string): number {
-    const comparableText = name === 'pagedata.json'
-      ? tryCanonicalizePageDataText(rawText ?? editFiles[name] ?? '')
-      : (rawText ?? editFiles[name] ?? '')
-    return fileTextHistory[name].findIndex((entry) => entry === comparableText)
-  }
-
-  function nowSnapshotTimestamp(): number {
-    return Date.now()
-  }
-
-  function hasSnapshotIntervalElapsed(lastSnapshotAt: number, now = nowSnapshotTimestamp()): boolean {
-    return lastSnapshotAt <= 0 || now - lastSnapshotAt >= LOCAL_SNAPSHOT_MIN_INTERVAL_MS
-  }
-
-  function clearPageDataBinding() {
-    pageDataTool.value = null
-    pageDataSetError.value = null
-    recomputePageDataFileDirty()
-  }
-
-  function syncLivePageDataFromTool(): IDataSetMetadata | null {
-    const tool = pageDataTool.value
-    if (!tool) {
-      recomputePageDataFileDirty()
-      return null
-    }
-
-    if (activePageId.value) {
-      tool.dataSet.pageId = activePageId.value
-    }
-
-    const nextValue = tool.toJson()
-    triggerRef(pageDataTool)
-    pageDataSetError.value = null
-    recomputePageDataFileDirty()
-    return nextValue
-  }
-
-  function ensureLivePageDataTool(): DataSetCrudTool | null {
-    if (pageDataTool.value) return pageDataTool.value
-
-    const rawText = editFiles['pagedata.json'] ?? ''
-    if (!rawText.trim()) return null
-
-    replaceLivePageData(rawText, { preserveHistory: false })
-    return pageDataTool.value
-  }
-
-  function replaceLivePageData(
-    snapshot: IDataSetMetadata | Record<string, unknown> | string,
-    options?: { preserveHistory?: boolean },
-  ): boolean {
-    try {
-      const nextTool = DataSetCrudTool.reconcileFromJson(
-        snapshot,
-        pageDataTool.value ?? undefined,
-        options?.preserveHistory === undefined ? undefined : { preserveHistory: options.preserveHistory },
-      )
-      pageDataTool.value = nextTool
-      syncLivePageDataFromTool()
-      return true
-    } catch (error) {
-      pageDataTool.value = null
-      pageDataSetError.value = error instanceof Error ? error.message : String(error)
-      return false
-    }
-  }
-
-  function mutateLivePageData(mutator: (tool: DataSetCrudTool) => void): boolean {
-    const tool = ensureLivePageDataTool()
-    if (!tool) return false
-
-    mutator(tool)
-    syncLivePageDataFromTool()
-    return true
-  }
-
-  function undoLivePageData(): boolean {
-    const tool = ensureLivePageDataTool()
-    if (!tool) return false
-    const ok = tool.undo()
-    if (!ok) return false
-    syncLivePageDataFromTool()
-    return true
-  }
-
-  function redoLivePageData(): boolean {
-    const tool = ensureLivePageDataTool()
-    if (!tool) return false
-    const ok = tool.redo()
-    if (!ok) return false
-    syncLivePageDataFromTool()
-    return true
-  }
-
-  function clearRuleBinding() {
-    pageRuleTree.value = null
-  }
-
-  function clearScriptBinding() {
-    pageScriptDocument.value = null
-  }
-
-  function clearStyleBinding() {
-    pageStyleDocument.value = null
-  }
-
-  function invalidateActivePageFilesLoad() {
-    activePageFilesLoadPromise = null
-    activePageFilesLoadPageId = ''
-    activePageFilesLoadEpoch += 1
-  }
-
-  function clearFileBinding(name: PageFileName) {
-    if (name === 'pagedata.json') {
-      clearPageDataBinding()
-      return
-    }
-
-    if (name === 'rule.json') {
-      clearRuleBinding()
-      return
-    }
-
-    if (name === 'script.js') {
-      clearScriptBinding()
-      return
-    }
-
-    clearStyleBinding()
-  }
-
-  function resetPageFileRuntimeState(name: PageFileName) {
-    editFiles[name] = ''
-    savedFiles[name] = ''
-    fileDirty[name] = false
-    fileTextHistory[name] = []
-    fileTextHistoryCursor[name] = -1
-    fileTextHistoryDraft[name] = null
-    fileTextLastSnapshotAt[name] = 0
-    fileLoadState[name] = 'idle'
-    clearFileBinding(name)
-  }
-
-  function markPageFileNeedsReload(name: PageFileName) {
-    invalidateActivePageFilesLoad()
-    fileLoadState[name] = 'idle'
-    clearFileBinding(name)
-  }
-
-  function syncRuleDocumentFromTree(): SparkNode[] | null {
-    const tree = pageRuleTree.value
-    if (!tree) {
-      return null
-    }
-
-    const root = tree.toJSON()
-    const ruleJson = Array.isArray(root.children)
-      ? deepClone(root.children as SparkNode[])
-      : []
-    return ruleJson
-  }
-
-  function ensureLiveRuleTree(): SparkNodeTree | null {
-    if (pageRuleTree.value) return pageRuleTree.value
-
-    const rawText = editFiles['rule.json'] ?? ''
-    if (!rawText.trim()) return null
-
-    syncRuleBinding(rawText)
-    return pageRuleTree.value
-  }
-
-  function syncRuleBinding(rawText: string) {
-    if (!rawText.trim()) {
-      clearRuleBinding()
-      return
-    }
-
-    try {
-      const parsedRule = parseRuleDocument(rawText)
-      const nextRoot: SparkNode = { type: 'page', children: parsedRule }
-      const normalizedRoot = SparkNodeTree.fromJson(nextRoot).toJSON()
-      if (pageRuleTree.value) {
-        pageRuleTree.value.loadRoot(normalizedRoot)
-      } else {
-        pageRuleTree.value = SparkNodeTree.fromJson(normalizedRoot)
-      }
-      const normalizedRule = syncRuleDocumentFromTree()
-      if (normalizedRule !== null) {
-        const normalizedText = serializeRuleDocument(normalizedRule)
-        editFiles['rule.json'] = normalizedText
-        if (fileLoadState['rule.json'] === 'loading') {
-          savedFiles['rule.json'] = normalizedText
-        }
-        fileDirty['rule.json'] = editFiles['rule.json'] !== savedFiles['rule.json']
-      }
-    } catch {
-      pageRuleTree.value = null
-    }
-  }
-
-  function syncScriptBinding(rawText: string) {
-    pageScriptDocument.value = rawText
-  }
-
-  function syncStyleBinding(rawText: string) {
-    pageStyleDocument.value = rawText
-  }
-
-  function setActivePageContext(pageId: string, forceReset = false): boolean {
-    if (!pageId) {
-      clearFiles()
-      return false
-    }
-
-    if (!isBackendConfigPage(pageId)) {
-      clearFiles()
-      return false
-    }
-
-    const shouldReset = forceReset || activePageId.value !== pageId
-
-    if (shouldReset) {
-      invalidateActivePageFilesLoad()
-      for (const name of PAGE_FILE_NAMES) {
-        resetPageFileRuntimeState(name)
-      }
-    }
-
-    activePageId.value = pageId
-    persistActivePageId(pageId)
-
-    return true
-  }
-
-  function ensurePageEditTransactionState(pageId: string): { history: PageEditTransaction[]; cursor: number } {
-    pageEditTransactions[pageId] ??= []
-    pageEditTransactionCursor[pageId] ??= -1
-    return {
-      history: pageEditTransactions[pageId],
-      cursor: pageEditTransactionCursor[pageId],
-    }
-  }
-
-  function commitFileTextHistory(name: PageFileName, text: string): boolean {
-    const currentEntries = fileTextHistory[name]
-    const currentIndex = fileTextHistoryCursor[name]
-    const currentText = currentIndex >= 0 ? currentEntries[currentIndex] : undefined
-    if (currentText === text) {
-      return false
-    }
-
-    // Truncate future entries immediately on branch (cursor not at end)
-    // e.g. A0→A1→A2→A3, undo to A2, edit → A3 discarded right away
-    if (currentIndex >= 0 && currentIndex < currentEntries.length - 1) {
-      const truncated = currentEntries.slice(0, currentIndex + 1)
-      fileTextHistory[name] = truncated
-      const pageId = activePageId.value
-      if (pageId) saveTextHistory(pageId, name, truncated)
-    }
-
-    const now = nowSnapshotTimestamp()
-    if (!hasSnapshotIntervalElapsed(fileTextLastSnapshotAt[name], now)) {
-      return false
-    }
-
-    let nextEntries = [...fileTextHistory[name], text]
-
-    if (nextEntries.length > FILE_TEXT_SNAPSHOT_LIMIT) {
-      nextEntries = nextEntries.slice(nextEntries.length - FILE_TEXT_SNAPSHOT_LIMIT)
-    }
-
-    fileTextHistory[name] = nextEntries
-    fileTextHistoryCursor[name] = nextEntries.length - 1
-    fileTextHistoryDraft[name] = null
-    fileTextLastSnapshotAt[name] = now
-    const pageId = activePageId.value
-    if (pageId) saveTextHistory(pageId, name, nextEntries)
-    return true
-  }
-
-  function getFileHistoryBackTargetIndex(name: PageFileName): number {
-    const historyCount = fileTextHistory[name].length
-    if (historyCount === 0) return -1
-
-    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
-    if (activeIndex === -1) {
-      const baseIndex = fileTextHistoryCursor[name]
-      if (baseIndex >= 0 && baseIndex < historyCount) {
-        return baseIndex
-      }
-      return historyCount - 1
-    }
-
-    if (activeIndex <= 0) {
-      return -1
-    }
-
-    return activeIndex - 1
-  }
-
-  function getFileHistoryForwardTarget(name: PageFileName): { kind: 'none' } | { kind: 'draft' } | { kind: 'history'; index: number } {
-    const historyCount = fileTextHistory[name].length
-    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
-    if (historyCount === 0 || activeIndex === -1) {
-      return { kind: 'none' }
-    }
-
-    const baseIndex = fileTextHistoryCursor[name]
-    const draftText = fileTextHistoryDraft[name]
-
-    if (draftText !== null && baseIndex >= 0) {
-      if (activeIndex < baseIndex) {
-        return { kind: 'history', index: activeIndex + 1 }
-      }
-
-      if (activeIndex === baseIndex) {
-        return { kind: 'draft' }
-      }
-
-      return { kind: 'none' }
-    }
-
-    if (activeIndex < historyCount - 1) {
-      return { kind: 'history', index: activeIndex + 1 }
-    }
-
-    return { kind: 'none' }
-  }
-
-  function getFileHistoryCount(name: PageFileName): number {
-    return fileTextHistory[name].length
-  }
-
-  function getFileSnapshotCount(name: PageFileName): number {
-    const entries = fileTextHistory[name]
-    if (entries.length === 0) return 0
-    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
-    if (activeIndex <= 0) {
-      // Not found in history or at index 0 → check if current text differs from any entry (unsaved edit)
-      if (activeIndex === -1 && entries.length > 0) {
-        // Current text is an unsaved edit on top of history → can undo back to cursor
-        const cursor = fileTextHistoryCursor[name]
-        return cursor >= 0 ? cursor + 1 : entries.length
-      }
-      return 0
-    }
-    return activeIndex
-  }
-
-  function canFileHistoryBack(name: PageFileName): boolean {
-    return getFileHistoryBackTargetIndex(name) >= 0
-  }
-
-  function canFileHistoryForward(name: PageFileName): boolean {
-    return getFileHistoryForwardTarget(name).kind !== 'none'
-  }
-
-  function applyCanonicalPageData(canonicalPageData: CanonicalPageData) {
-    replaceLivePageData(canonicalPageData.value as unknown as IDataSetMetadata, {
-      preserveHistory: pageDataTool.value !== null,
-    })
-  }
-
-  function syncLivePageDataToEditFile(): string | null {
-    const currentPageData = pageDataTool.value?.toJson() ?? null
-    if (currentPageData === null) return null
-
-    const canonicalPageData = canonicalizePageDataValue(currentPageData as unknown as Record<string, unknown>)
-    syncFileTextAndBindings('pagedata.json', canonicalPageData.text)
-    fileLoadState['pagedata.json'] = 'loaded'
-    fileTextHistoryDraft['pagedata.json'] = null
-    commitFileTextHistory('pagedata.json', canonicalPageData.text)
-    return canonicalPageData.text
-  }
-
-  function syncLiveRuleToEditFile(): string | null {
-    const ruleJson = syncRuleDocumentFromTree()
-    if (ruleJson === null) return null
-
-    const content = serializeRuleDocument(ruleJson)
-    syncFileTextAndBindings('rule.json', content)
-    fileLoadState['rule.json'] = 'loaded'
-    fileTextHistoryDraft['rule.json'] = null
-    commitFileTextHistory('rule.json', content)
-    return content
-  }
-
-  function applyFileHistoryText(name: PageFileName, index: number, text: string): void {
-    fileTextHistoryCursor[name] = index
-    syncFileTextAndBindings(name, text)
-  }
-
-  function createLiveEditModelAdapter(): EditLiveModelAdapter {
-    return {
-      getNodeTree: () => ensureLiveRuleTree(),
-      onNodeTreeChanged(nodeTree) {
-        pageRuleTree.value = nodeTree
-        syncLiveRuleToEditFile()
-      },
-      getDataSetTool: () => ensureLivePageDataTool(),
-      onDataSetChanged(tool) {
-        pageDataTool.value = tool
-        syncLivePageDataFromTool()
-        syncLivePageDataToEditFile()
-      },
-      readScript: () => pageScriptDocument.value ?? editFiles['script.js'] ?? '',
-      writeScript(content) {
-        updatePageFile('script.js', content)
-      },
-      readStyle: () => pageStyleDocument.value ?? editFiles['style.css'] ?? '',
-      writeStyle(content) {
-        updatePageFile('style.css', content)
-      },
-    }
-  }
-
   function isBackendConfigPage(pageId: string): boolean {
     const pageMeta = pageList.value.find((page) => String(page['pageId'] ?? '') === pageId)
     if (!pageMeta) return true
     return String(pageMeta['pageType'] ?? 'config') !== 'system-page'
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // 页面上下文切换
+  // ═══════════════════════════════════════════════════════════
+
+  function resetAllDocuments(): void {
+    forEachDocument(documents, (_name, doc) => doc.reset())
+  }
+
+  function setActivePageContext(pageId: string, forceReset = false): boolean {
+    if (!pageId || !isBackendConfigPage(pageId)) {
+      clearFiles()
+      return false
+    }
+
+    const shouldReset = forceReset || activePageId.value !== pageId
+    if (shouldReset) {
+      invalidateActivePageFilesLoad()
+      resetAllDocuments()
+      invalidateLiveModelAdapter()
+    }
+
+    activePageId.value = pageId
+    persistActivePageId(pageId)
+    return true
+  }
+
+  function clearFiles(): void {
+    invalidateActivePageFilesLoad()
+    activePageId.value = ''
+    persistActivePageId('')
+    resetAllDocuments()
+    invalidateLiveModelAdapter()
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 导航树工具
+  // ═══════════════════════════════════════════════════════════
 
   function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
     if (!node) return false
@@ -803,17 +402,16 @@ export function useDevState() {
     return DEFAULT_ICON_BY_KIND[kind]
   }
 
-  function syncPageFilesForNode(node: NavNode, forceReload: boolean) {
+  function syncPageFilesForNode(node: NavNode, forceReload: boolean): void {
     const pageId = normalizePageIdFromPath(node.path)
     if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
       setActivePageContext(pageId, forceReload || activePageId.value !== pageId)
       return
     }
-
     clearFiles()
   }
 
-  function syncIconByNodeKind(nextKind: NavNodeKind, previousKind: NavNodeKind) {
+  function syncIconByNodeKind(nextKind: NavNodeKind, previousKind: NavNodeKind): void {
     const previousDefault = defaultIconByKind(previousKind)
     const nextDefault = defaultIconByKind(nextKind)
     if (!editForm.icon || editForm.icon === previousDefault) {
@@ -823,11 +421,9 @@ export function useDevState() {
 
   function applyNodeKindToNode(node: NavNode, parentPlacement?: string): NavNode {
     const cloned = deepClone(node)
-    // 父容器是工具栏/用户菜单且节点无 nodeKind → system-action
     if (cloned.nodeKind === undefined && (parentPlacement === 'toolbar' || parentPlacement === 'user-menu')) {
       cloned.nodeKind = 'system-action'
     }
-    // nodeKind 若仍缺失，保持 undefined → 后端写回时会报错，便于发现数据问题
     if (cloned.nodeKind === 'sub-page') {
       cloned.hidden = true
       delete cloned.path
@@ -848,7 +444,7 @@ export function useDevState() {
     return cloned
   }
 
-  function applyNodeKindPreset(kind: NavNodeKind) {
+  function applyNodeKindPreset(kind: NavNodeKind): void {
     const previousKind = editForm.nodeKind
     editForm.nodeKind = kind
     syncIconByNodeKind(kind, previousKind)
@@ -888,7 +484,6 @@ export function useDevState() {
       editForm.hidden = false
       editForm.path = ''
       editForm.redirect = ''
-      // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
       editForm.refId = ''
       return
@@ -913,7 +508,7 @@ export function useDevState() {
   // 状态消息
   // ═══════════════════════════════════════════════════════════
 
-  function addStatus(text: string, type: StatusMessage['type'] = 'info') {
+  function addStatus(text: string, type: StatusMessage['type'] = 'info'): void {
     const now = new Date()
     const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
     statusMessages.value.unshift({ text, type, time })
@@ -939,20 +534,17 @@ export function useDevState() {
       children: (config.children ?? []).map(node => applyNodeKindToNode(node)),
     }
     const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
-    if (homePath) {
-      root.homePath = homePath
-    }
+    if (homePath) root.homePath = homePath
     return root
   }
 
-  async function loadNavConfig(options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null }) {
+  async function loadNavConfig(options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null }): Promise<void> {
     const preservedSelectedNodeId = options?.preserveSelectedNodeId ?? selectedNode.value?.id ?? null
     const preservedActivePageId = options?.preserveActivePageId?.trim() ?? ''
     navLoading.value = true
     try {
       const config = await http.get<{ childPlacement?: string; children?: NavNode[]; homePath?: string }>(getNavApi())
       const migratedRoot = buildMigratedNavRoot(config)
-
       const normalizedChildren = migratedRoot.children
 
       if (normalizedChildren.length > 0) {
@@ -1005,7 +597,6 @@ export function useDevState() {
       return
     }
 
-    // 默认选中第一行
     const firstNode = treeData.value[0]
     if (firstNode) {
       selectedNode.value = firstNode
@@ -1014,7 +605,7 @@ export function useDevState() {
     }
   }
 
-  async function loadPages() {
+  async function loadPages(): Promise<void> {
     try {
       pageList.value = await http.get<Array<Record<string, unknown>>>(`${getPageApi()}/__list`)
     } catch { /* ignore */ }
@@ -1029,69 +620,27 @@ export function useDevState() {
     }
   }
 
-  function normalizePageFileText(name: PageFileName, text: string): string {
-    return name === 'pagedata.json' ? tryCanonicalizePageDataText(text) : text
-  }
-
-  function restorePageFileHistoryFromStorage(pageId: string, name: PageFileName, loadedText: string): void {
-    const comparableText = loadedText
-    const stored = loadTextHistory(pageId, name)
-
-    if (stored.length > 0 && stored[stored.length - 1] === comparableText) {
-      fileTextHistory[name] = stored
-      fileTextHistoryCursor[name] = stored.length - 1
-      return
-    }
-
-    clearTextHistoryStorage(pageId, name)
-    if (comparableText) {
-      fileTextHistory[name] = [comparableText]
-      fileTextHistoryCursor[name] = 0
-      saveTextHistory(pageId, name, [comparableText])
-      return
-    }
-
-    fileTextHistory[name] = []
-    fileTextHistoryCursor[name] = -1
-  }
-
-  function applyLoadedPageFileSnapshot(pageId: string, name: PageFileName, loadedText: string): void {
-    savedFiles[name] = loadedText
-    syncFileTextAndBindings(name, loadedText)
-    fileDirty[name] = false
-
-    restorePageFileHistoryFromStorage(pageId, name, loadedText)
-
-    fileTextHistoryDraft[name] = null
-    fileTextLastSnapshotAt[name] = loadedText ? nowSnapshotTimestamp() : 0
-    fileLoadState[name] = 'loaded'
-  }
-
   function areAllActivePageFilesLoaded(): boolean {
-    return PAGE_FILE_NAMES.every((entry) => fileLoadState[entry] === 'loaded')
+    return PAGE_FILE_NAMES.every((entry) => documents[entry].loadState.value === 'loaded')
   }
 
-  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }) {
+  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
     const pageId = activePageId.value
-    if (!pageId) {
-      return
-    }
+    if (!pageId) return
 
     if (activePageFilesLoadPromise && activePageFilesLoadPageId === pageId) {
       return activePageFilesLoadPromise
     }
 
-    if (!options?.forceReload && areAllActivePageFilesLoaded()) {
-      return
-    }
+    if (!options?.forceReload && areAllActivePageFilesLoaded()) return
 
-    if (!options?.forceReload && PAGE_FILE_NAMES.some((entry) => fileDirty[entry])) {
+    if (!options?.forceReload && PAGE_FILE_NAMES.some((entry) => documents[entry].isDirty.value)) {
+      // Respect local dirty edits: mark any non-loading idle docs as loaded so UI progresses.
       for (const entry of PAGE_FILE_NAMES) {
-        if (fileDirty[entry] || fileLoadState[entry] === 'loading') {
-          continue
-        }
-        if (fileLoadState[entry] !== 'idle' || savedFiles[entry] || editFiles[entry]) {
-          fileLoadState[entry] = 'loaded'
+        const doc = documents[entry]
+        if (doc.loadState.value !== 'loading' && !doc.isDirty.value && doc.loadState.value === 'idle') {
+          // Leave idle empty docs as idle — only promote if they have any content.
+          if (doc.text.value || doc.savedText.value) doc.loadState.value = 'loaded'
         }
       }
       return
@@ -1101,31 +650,28 @@ export function useDevState() {
     activePageFilesLoadPageId = pageId
 
     for (const entry of PAGE_FILE_NAMES) {
-      if (!options?.forceReload && fileDirty[entry]) {
-        fileLoadState[entry] = 'loaded'
+      const doc = documents[entry]
+      if (!options?.forceReload && doc.isDirty.value) {
+        doc.loadState.value = 'loaded'
         continue
       }
-      fileLoadState[entry] = 'loading'
+      doc.loadState.value = 'loading'
     }
 
     const loadPromise = (async () => {
       const loadedSnapshots = await Promise.all(
-        PAGE_FILE_NAMES.map(async (entry) => {
-          const remoteContent = await fetchRemotePageFileContent(pageId, entry)
-          return [entry, normalizePageFileText(entry, remoteContent)] as const
-        }),
+        PAGE_FILE_NAMES.map(async (entry) => [entry, await fetchRemotePageFileContent(pageId, entry)] as const),
       )
 
-      if (activePageFilesLoadEpoch !== loadEpoch || activePageId.value !== pageId) {
-        return
-      }
+      if (activePageFilesLoadEpoch !== loadEpoch || activePageId.value !== pageId) return
 
       for (const [entry, loadedText] of loadedSnapshots) {
-        if (!options?.forceReload && fileDirty[entry]) {
-          fileLoadState[entry] = 'loaded'
+        const doc = documents[entry]
+        if (!options?.forceReload && doc.isDirty.value) {
+          doc.loadState.value = 'loaded'
           continue
         }
-        applyLoadedPageFileSnapshot(pageId, entry, loadedText)
+        doc.loadFromText(loadedText, { markSaved: true })
       }
     })().finally(() => {
       if (activePageFilesLoadEpoch === loadEpoch && activePageFilesLoadPageId === pageId) {
@@ -1138,24 +684,18 @@ export function useDevState() {
     return loadPromise
   }
 
-  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }) {
+  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }): Promise<void> {
     void name
     await ensureActivePageFilesLoaded(options)
   }
 
-  function clearFiles() {
-    invalidateActivePageFilesLoad()
-    activePageId.value = ''
-    persistActivePageId('')
-    for (const name of PAGE_FILE_NAMES) {
-      resetPageFileRuntimeState(name)
-    }
-  }
+  // ═══════════════════════════════════════════════════════════
+  // 后端版本 API
+  // ═══════════════════════════════════════════════════════════
 
   async function listRemotePageVersions(filename: PageFileName): Promise<BackendPageVersionSummary[]> {
     const pageId = activePageId.value
     if (!pageId) return []
-
     try {
       const result = await http.get<Array<Record<string, unknown>>>(
         `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions`,
@@ -1177,13 +717,13 @@ export function useDevState() {
   async function restoreRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
-
     try {
       await http.post<Record<string, unknown>>(
         `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}/__restore`,
         {},
       )
-      markPageFileNeedsReload(filename)
+      invalidateActivePageFilesLoad()
+      documents[filename].reset()
       addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
@@ -1195,7 +735,6 @@ export function useDevState() {
   async function createRemotePageVersion(filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
-
     try {
       await http.post<Record<string, unknown>>(
         `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions`,
@@ -1212,11 +751,8 @@ export function useDevState() {
   async function deleteRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
-
     try {
-      await http.delete(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}`,
-      )
+      await http.delete(`${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}`)
       addStatus(`${filename} 版本 v${version} 已删除`, 'success')
       return true
     } catch (e) {
@@ -1225,226 +761,11 @@ export function useDevState() {
     }
   }
 
-  function syncPageDataBinding(rawText: string) {
-    if (!rawText.trim()) {
-      clearPageDataBinding()
-      return
-    }
-
-    try {
-      const canonicalPageData = canonicalizePageDataJson(rawText)
-      applyCanonicalPageData(canonicalPageData)
-    } catch (error) {
-      pageDataTool.value = null
-      pageDataSetError.value = error instanceof Error ? error.message : String(error)
-      recomputePageDataFileDirty()
-    }
-  }
-
-  function syncFileTextAndBindings(name: PageFileName, text: string): void {
-    editFiles[name] = text
-
-    if (name === 'pagedata.json') {
-      recomputePageDataFileDirty()
-      syncPageDataBinding(text)
-      return
-    }
-
-    fileDirty[name] = text !== savedFiles[name]
-    if (name === 'rule.json') {
-      syncRuleBinding(text)
-      return
-    }
-
-    if (name === 'script.js') {
-      syncScriptBinding(text)
-      return
-    }
-
-    syncStyleBinding(text)
-  }
-
-  function updatePageFile(name: PageFileName, value: string) {
-    if (name === 'pagedata.json') {
-      const canonical = tryCanonicalizePageDataText(value)
-      syncFileTextAndBindings(name, canonical)
-      fileLoadState[name] = 'loaded'
-      fileTextHistoryDraft[name] = null
-      commitFileTextHistory(name, canonical)
-      return
-    }
-
-    syncFileTextAndBindings(name, value)
-    fileLoadState[name] = 'loaded'
-    fileTextHistoryDraft[name] = null
-    commitFileTextHistory(name, value)
-  }
-
-  function applyPageFiles(files: Partial<Record<PageFileName, string>>, options?: { recordTransaction?: boolean; source?: 'ai' | 'manual' }) {
-    const pageId = activePageId.value
-    const changedNames = PAGE_FILE_NAMES.filter((name) => files[name] !== undefined && files[name] !== editFiles[name])
-    const transactionSource = options?.source ?? 'ai'
-    const shouldRecordTransaction = options?.recordTransaction ?? transactionSource === 'ai'
-
-    if (pageId && shouldRecordTransaction && changedNames.length > 0) {
-      const { history, cursor } = ensurePageEditTransactionState(pageId)
-      if (cursor < history.length - 1) {
-        history.splice(cursor + 1)
-      }
-
-      const transaction: PageEditTransaction = {
-        id: nextPageEditTransactionId++,
-        pageId,
-        source: transactionSource,
-        files: changedNames,
-        before: Object.fromEntries(changedNames.map((name) => [name, editFiles[name]])) as Partial<Record<PageFileName, string>>,
-        after: Object.fromEntries(changedNames.map((name) => [name, files[name] ?? ''])) as Partial<Record<PageFileName, string>>,
-        createdAt: nowSnapshotTimestamp(),
-      }
-
-      history.push(transaction)
-      pageEditTransactionCursor[pageId] = history.length - 1
-    }
-
-    for (const name of changedNames) {
-      updatePageFile(name, files[name] ?? '')
-    }
-  }
-
-  function canPageEditTransactionBack(pageId = activePageId.value): boolean {
-    if (!pageId) return false
-    const { cursor } = ensurePageEditTransactionState(pageId)
-    return cursor >= 0
-  }
-
-  function canPageEditTransactionForward(pageId = activePageId.value): boolean {
-    if (!pageId) return false
-    const { history, cursor } = ensurePageEditTransactionState(pageId)
-    return cursor < history.length - 1
-  }
-
-  function getPageEditTransactionCount(pageId = activePageId.value): number {
-    if (!pageId) return 0
-    const { cursor } = ensurePageEditTransactionState(pageId)
-    return cursor + 1
-  }
-
-  function undoPageEditTransaction(pageId = activePageId.value): boolean {
-    if (!pageId) return false
-    const { history, cursor } = ensurePageEditTransactionState(pageId)
-    if (cursor < 0) return false
-    const transaction = history[cursor]
-    if (!transaction) return false
-
-    for (const name of transaction.files) {
-      const previous = transaction.before[name]
-      if (previous !== undefined) {
-        updatePageFile(name, previous)
-      }
-    }
-
-    pageEditTransactionCursor[pageId] = cursor - 1
-    addStatus(`已撤销 AI 页面事务：${transaction.files.join(', ')}`, 'success')
-    return true
-  }
-
-  function redoPageEditTransaction(pageId = activePageId.value): boolean {
-    if (!pageId) return false
-    const { history, cursor } = ensurePageEditTransactionState(pageId)
-    const nextIndex = cursor + 1
-    const transaction = history[nextIndex]
-    if (!transaction) return false
-
-    for (const name of transaction.files) {
-      const next = transaction.after[name]
-      if (next !== undefined) {
-        updatePageFile(name, next)
-      }
-    }
-
-    pageEditTransactionCursor[pageId] = nextIndex
-    addStatus(`已重做 AI 页面事务：${transaction.files.join(', ')}`, 'success')
-    return true
-  }
-
-  function goFileHistoryBack(name: PageFileName): boolean {
-    const nextIndex = getFileHistoryBackTargetIndex(name)
-    if (nextIndex < 0) return false
-
-    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
-    const nextText = fileTextHistory[name][nextIndex]
-    if (nextText === undefined) return false
-
-    if (activeIndex === -1) {
-      fileTextHistoryDraft[name] = editFiles[name] ?? ''
-    }
-
-    applyFileHistoryText(name, nextIndex, nextText)
-    addStatus(`已撤销 ${name} 本地修改，等待保存`, 'success')
-    return true
-  }
-
-  function goFileHistoryForward(name: PageFileName): boolean {
-    const forwardTarget = getFileHistoryForwardTarget(name)
-
-    if (forwardTarget.kind === 'draft' && fileTextHistoryDraft[name] !== null) {
-      const draftText = fileTextHistoryDraft[name]
-      fileTextHistoryDraft[name] = null
-      syncFileTextAndBindings(name, draftText)
-      addStatus(`已重做 ${name} 本地修改，等待保存`, 'success')
-      return true
-    }
-
-    if (forwardTarget.kind !== 'history') return false
-
-    const nextText = fileTextHistory[name][forwardTarget.index]
-    if (nextText === undefined) return false
-
-    applyFileHistoryText(name, forwardTarget.index, nextText)
-    addStatus(`已重做 ${name} 本地修改，等待保存`, 'success')
-    return true
-  }
-
-  function onLinkUrlChanged() {
-    markNavDirty()
-    linkProbeInfo.value = null
-  }
-
-  async function probeLinkTarget() {
-    const url = editForm.path.trim()
-    if (!url) {
-      addStatus('请先输入超链接地址', 'warning')
-      return
-    }
-
-    linkProbeLoading.value = true
-    try {
-      const result = await http.post<Record<string, unknown>>(`${getNavApi()}/link-probe`, { url })
-      const embeddable = Boolean(result['embeddable'])
-      const reason = String(result['reason'] ?? '')
-
-      editForm.linkTarget = embeddable ? 'iframe' : 'new-tab'
-      linkProbeInfo.value = { embeddable, reason }
-      markNavDirty()
-
-      addStatus(
-        embeddable
-          ? '链接检测通过：已标记为 iframe 渲染'
-          : '链接检测提示禁止嵌入：已标记为新标签打开',
-        embeddable ? 'success' : 'warning',
-      )
-    } catch (e) {
-      addStatus(`链接检测失败: ${String(e)}`, 'warning')
-    } finally {
-      linkProbeLoading.value = false
-    }
-  }
-
   // ═══════════════════════════════════════════════════════════
-  // 节点 ↔ 表单 同步
+  // 节点表单
   // ═══════════════════════════════════════════════════════════
 
-  function loadNodeToForm(node: NavNode) {
+  function loadNodeToForm(node: NavNode): void {
     editForm.id = node.id
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
@@ -1462,9 +783,7 @@ export function useDevState() {
     editForm.disabled = node.disabled ?? false
     editForm.permissionMode = node.permissionMode ?? 'masked'
 
-    if (!editForm.icon) {
-      editForm.icon = defaultIconByKind(editForm.nodeKind)
-    }
+    if (!editForm.icon) editForm.icon = defaultIconByKind(editForm.nodeKind)
 
     if (node.context !== undefined) {
       hasContext.value = true
@@ -1475,10 +794,7 @@ export function useDevState() {
         contextConfig.paramName = ''
       } else if (typeof node.context === 'object') {
         const cfg = node.context as {
-          source?: unknown
-          placeholder?: string
-          defaultValue?: unknown
-          paramName?: string
+          source?: unknown; placeholder?: string; defaultValue?: unknown; paramName?: string
         }
         contextItems.value = Array.isArray(cfg.source)
           ? (cfg.source as NavContextItem[]).map(i => ({ id: String(i.id), title: i.title }))
@@ -1498,7 +814,7 @@ export function useDevState() {
     linkProbeInfo.value = null
   }
 
-  function applyNavChanges() {
+  function applyNavChanges(): void {
     if (!selectedNode.value) return
     const node = selectedNode.value
     if (isSystemRootDirectory(node)) {
@@ -1522,7 +838,6 @@ export function useDevState() {
       editForm.linkTarget = 'iframe'
     } else if (editForm.nodeKind === 'link') {
       editForm.redirect = ''
-      // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'ref') {
       editForm.path = ''
@@ -1570,7 +885,6 @@ export function useDevState() {
       }
     }
 
-    // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
       'icon', 'description', 'path', 'redirect', 'linkTarget',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
@@ -1586,23 +900,23 @@ export function useDevState() {
     navDirty.value = false
   }
 
-  function markNavDirty() {
+  function markNavDirty(): void {
     navDirty.value = true
     scheduleAutoSave()
   }
 
-  function scheduleAutoSave() {
+  function scheduleAutoSave(): void {
     if (autoSaveTimer) clearTimeout(autoSaveTimer)
     autoSaveStatus.value = 'pending'
     autoSaveTimer = setTimeout(() => { void doAutoSave() }, AUTO_SAVE_DELAY)
   }
 
-  function cancelAutoSave() {
+  function cancelAutoSave(): void {
     if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null }
     if (autoSaveStatus.value === 'pending') autoSaveStatus.value = 'idle'
   }
 
-  async function doAutoSave() {
+  async function doAutoSave(): Promise<void> {
     autoSaveTimer = null
     if (!navDirty.value) { autoSaveStatus.value = 'idle'; return }
     if (!selectedNode.value) { autoSaveStatus.value = 'idle'; return }
@@ -1624,7 +938,7 @@ export function useDevState() {
   // 保存
   // ═══════════════════════════════════════════════════════════
 
-  async function saveNavConfig() {
+  async function saveNavConfig(): Promise<void> {
     if (navDirty.value) applyNavChanges()
     navSaving.value = true
     const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
@@ -1640,10 +954,7 @@ export function useDevState() {
     }
   }
 
-  // ── 节点级即时保存（RESTful CRUD）──
-
-  /** 即时调用 PUT /api/navigation/nodes/{id} 保存表单变更 */
-  async function saveNodeChanges() {
+  async function saveNodeChanges(): Promise<void> {
     applyNavChanges()
     if (!selectedNode.value) return
     const node = selectedNode.value
@@ -1666,8 +977,7 @@ export function useDevState() {
     }
   }
 
-  /** 从页面总览直接选中某页面进行编辑（不依赖树节点） */
-  function selectPage(pageId: string) {
+  function selectPage(pageId: string): void {
     if (!isBackendConfigPage(pageId)) {
       clearFiles()
       addStatus(`页面 ${pageId} 为 vue-component，不提供后端配置文件编辑`, 'warning')
@@ -1676,46 +986,14 @@ export function useDevState() {
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
-  function finalizePageFileSaved(name: PageFileName, content: string): void {
-    savedFiles[name] = content
-    fileDirty[name] = false
-  }
-
-  function preparePageFileContentForSave(name: PageFileName, pageId: string): string {
-    let content = editFiles[name] ?? ''
-
-    if (name === 'rule.json') {
-      content = syncLiveRuleToEditFile() ?? content
-    }
-
-    if (name !== 'pagedata.json') {
-      return content
-    }
-
-    if (pageDataDesignerDirty.value) {
-      content = syncLivePageDataToEditFile() ?? content
-    }
-
-    if (!content.trim()) {
-      clearPageDataBinding()
-      return content
-    }
-
-    const canonicalPageData = canonicalizePageDataJson(content)
-    canonicalPageData.tool.dataSet.pageId = pageId
-    applyCanonicalPageData(canonicalPageData)
-    content = canonicalPageData.text
-    editFiles[name] = content
-    return content
-  }
-
-  async function savePageFile(name: PageFileName) {
+  async function savePageFile(name: PageFileName): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
 
     fileSaving.value = true
     try {
-      const content = preparePageFileContentForSave(name, pageId)
+      const doc = documents[name]
+      const content = doc.text.value
 
       await http.put<Record<string, unknown>>(
         `${getPageApi()}/${encodeURIComponent(pageId)}/${name}`,
@@ -1723,8 +1001,7 @@ export function useDevState() {
         { headers: { 'Content-Type': 'text/plain' } },
       )
 
-      finalizePageFileSaved(name, content)
-
+      doc.markSaved()
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
     } catch (e) {
@@ -1744,20 +1021,13 @@ export function useDevState() {
 
   async function saveAllDirtyPageFiles(): Promise<void> {
     for (const name of PAGE_FILE_NAMES) {
-      if (fileDirty[name]) {
-        await savePageFile(name)
-      }
+      if (documents[name].isDirty.value) await savePageFile(name)
     }
   }
 
   async function flushDirtyScopes(): Promise<void> {
-    if (navDirty.value) {
-      await saveCurrentNavScope()
-    }
-
-    if (hasAnyFileDirty.value) {
-      await saveAllDirtyPageFiles()
-    }
+    if (navDirty.value) await saveCurrentNavScope()
+    if (hasAnyFileDirty.value) await saveAllDirtyPageFiles()
   }
 
   async function ensureCurrentNavScopePersistedWhenClean(): Promise<void> {
@@ -1766,7 +1036,7 @@ export function useDevState() {
     }
   }
 
-  async function saveAll() {
+  async function saveAll(): Promise<void> {
     await flushDirtyScopes()
     await ensureCurrentNavScopePersistedWhenClean()
   }
@@ -1775,7 +1045,7 @@ export function useDevState() {
   // 节点选中
   // ═══════════════════════════════════════════════════════════
 
-  function selectNode(node: NavNode) {
+  function selectNode(node: NavNode): void {
     cancelAutoSave()
     if (navDirty.value && selectedNode.value) void saveNodeChanges()
     selectedNode.value = node
@@ -1792,29 +1062,67 @@ export function useDevState() {
     clearFiles()
   }
 
-  function handlePathChange(val: string) {
+  function handlePathChange(val: string): void {
     markNavDirty()
     syncActivePageContextByPath(val)
   }
 
-  function handleNodeKindChange(kind: NavNodeKind) {
+  function handleNodeKindChange(kind: NavNodeKind): void {
     if (kind === 'module' && !canUseModuleNodeKind(selectedNode.value)) {
       addStatus('页面下不能创建模块', 'warning')
       const fallbackKind = selectedNode.value?.nodeKind ?? 'page'
       applyNodeKindPreset(fallbackKind)
       return
     }
-
     applyNodeKindPreset(kind)
     markNavDirty()
     syncActivePageContextByPath(editForm.path)
   }
 
   // ═══════════════════════════════════════════════════════════
+  // 链接探测
+  // ═══════════════════════════════════════════════════════════
+
+  function onLinkUrlChanged(): void {
+    markNavDirty()
+    linkProbeInfo.value = null
+  }
+
+  async function probeLinkTarget(): Promise<void> {
+    const url = editForm.path.trim()
+    if (!url) {
+      addStatus('请先输入超链接地址', 'warning')
+      return
+    }
+
+    linkProbeLoading.value = true
+    try {
+      const result = await http.post<Record<string, unknown>>(`${getNavApi()}/link-probe`, { url })
+      const embeddable = Boolean(result['embeddable'])
+      const reason = String(result['reason'] ?? '')
+
+      editForm.linkTarget = embeddable ? 'iframe' : 'new-tab'
+      linkProbeInfo.value = { embeddable, reason }
+      markNavDirty()
+
+      addStatus(
+        embeddable
+          ? '链接检测通过：已标记为 iframe 渲染'
+          : '链接检测提示禁止嵌入：已标记为新标签打开',
+        embeddable ? 'success' : 'warning',
+      )
+    } catch (e) {
+      addStatus(`链接检测失败: ${String(e)}`, 'warning')
+    } finally {
+      linkProbeLoading.value = false
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // 树增删
   // ═══════════════════════════════════════════════════════════
 
-  function addRootNode() {
+  function addRootNode(): void {
     const id = crypto.randomUUID()
     const node: NavNode = {
       id,
@@ -1862,7 +1170,7 @@ export function useDevState() {
     }
   }
 
-  async function restoreReservedRootGroup(placement: 'toolbar' | 'user-menu') {
+  async function restoreReservedRootGroup(placement: 'toolbar' | 'user-menu'): Promise<void> {
     if (hasReservedRootGroup(placement)) {
       addStatus(`${placement} 已存在，无需恢复`, 'info')
       return
@@ -1880,7 +1188,7 @@ export function useDevState() {
     }
   }
 
-  function addChildNode(parent: NavNode) {
+  function addChildNode(parent: NavNode): void {
     const id = crypto.randomUUID()
     const node: NavNode = {
       id,
@@ -1896,7 +1204,7 @@ export function useDevState() {
     )
   }
 
-  function removeNodeFromTree(node: { parent: { data: NavNode } }, data: NavNode) {
+  function removeNodeFromTree(node: { parent: { data: NavNode } }, data: NavNode): void {
     if (isSystemRootDirectory(data)) {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
@@ -1914,7 +1222,6 @@ export function useDevState() {
       selectedNode.value = null
       clearFiles()
     }
-    // 即时持久化
     void http.delete(`${getNavApi()}/nodes/${encodeURIComponent(data.id)}`).then(
       () => addStatus(
         isRootReserved
@@ -1926,7 +1233,7 @@ export function useDevState() {
     )
   }
 
-  function resetToDemo() {
+  function resetToDemo(): void {
     treeData.value = deepClone(demoNavRoot.children)
     navEmpty.value = false
     selectedNode.value = null
@@ -1939,13 +1246,13 @@ export function useDevState() {
   // 上下文编辑
   // ═══════════════════════════════════════════════════════════
 
-  function toggleContext(val: boolean) {
+  function toggleContext(val: boolean): void {
     if (val && contextItems.value.length === 0) contextItems.value.push({ id: '', title: '' })
     markNavDirty()
   }
-  function addContextItem() { contextItems.value.push({ id: '', title: '' }); markNavDirty() }
-  function removeContextItem(idx: number) { contextItems.value.splice(idx, 1); markNavDirty() }
-  function fillDemoContext() {
+  function addContextItem(): void { contextItems.value.push({ id: '', title: '' }); markNavDirty() }
+  function removeContextItem(idx: number): void { contextItems.value.splice(idx, 1); markNavDirty() }
+  function fillDemoContext(): void {
     hasContext.value = true
     contextItems.value = DEMO_CONTEXT_ITEMS.map(item => ({ ...item }))
     contextConfig.placeholder = DEMO_CONTEXT_CONFIG.placeholder
@@ -1955,10 +1262,6 @@ export function useDevState() {
     addStatus('已填充模块上下文演示数据', 'info')
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // 新建页面
-  // ═══════════════════════════════════════════════════════════
-
   // ── 工具 ──
   function deepClone<T>(obj: T): T { return JSON.parse(JSON.stringify(obj)) as T }
 
@@ -1966,7 +1269,7 @@ export function useDevState() {
   // 初始化
   // ═══════════════════════════════════════════════════════════
 
-  async function initialize() {
+  async function initialize(): Promise<void> {
     const persistedActivePageId = readPersistedActivePageId()
     await Promise.all([
       loadNavConfig({ preserveActivePageId: persistedActivePageId }),
@@ -1990,17 +1293,13 @@ export function useDevState() {
 
     // 空导航状态
     navEmpty,
-    // 文件编辑
+
+    // 页面 4 文件
     activePageId,
-    editFiles,
-    fileDirty,
+    documents,
     fileSaving,
-    fileLoadState,
-    pageRuleTree,
-    pageDataTool,
-    pageScriptDocument,
-    pageStyleDocument,
     pageDataSetError,
+    pageDataDesignerDirty,
 
     // 页面列表
     pageList,
@@ -2009,20 +1308,15 @@ export function useDevState() {
     statusMessages,
     linkProbeLoading,
     linkProbeInfo,
-    aiPanelVisible,
-    pageDataDesignerDirty,
     autoSaveStatus,
 
     // 计算属性
     hasAnyFileDirty,
     hasAnyDirty,
-    getPageEditTransactionCount,
-    getFileSnapshotCount,
-    getFileHistoryCount,
-    canPageEditTransactionBack,
-    canPageEditTransactionForward,
-    canFileHistoryBack,
-    canFileHistoryForward,
+
+    // AI Adapter
+    getLiveModelAdapter,
+    createLiveEditModelAdapter, // alias retained for composables
 
     // 方法
     addStatus,
@@ -2035,19 +1329,6 @@ export function useDevState() {
     restoreRemotePageVersion,
     createRemotePageVersion,
     deleteRemotePageVersion,
-    ensureLivePageDataTool,
-    replaceLivePageData,
-    mutateLivePageData,
-    undoLivePageData,
-    redoLivePageData,
-    syncLivePageDataFromTool,
-    createLiveEditModelAdapter,
-    goFileHistoryBack,
-    goFileHistoryForward,
-    undoPageEditTransaction,
-    redoPageEditTransaction,
-    applyPageFiles,
-    updatePageFile,
     savePageFile,
     onLinkUrlChanged,
     probeLinkTarget,

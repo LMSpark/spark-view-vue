@@ -11,9 +11,11 @@
         <el-button size="small" @click="switchToPreview" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
-        <el-button size="small" :type="aiPanelVisible ? 'primary' : ''" @click="aiPanelVisible = !aiPanelVisible">
-          <NavIcon name="ChatRound" :size="14" /> AI 面板
-        </el-button>
+        <AiLauncherButton
+          :config="pageModelSession.config"
+          :disabled="pageModelSession.disabled.value"
+          label="AI 面板"
+        />
         <el-button
           v-if="state.hasAnyDirty.value"
           size="small"
@@ -45,7 +47,7 @@
           </el-tab-pane>
           <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname" :disabled="!state.activePageId.value">
             <template #label>
-              <span :class="{ 'tab-dirty': state.fileDirty[fname] }">
+              <span :class="{ 'tab-dirty': state.documents[fname].isDirty.value }">
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
               </span>
             </template>
@@ -88,12 +90,7 @@
         </div>
       </div>
 
-      <!-- 右栏：AI 面板 -->
-      <Transition name="ai-panel-slide">
-        <div v-if="aiPanelVisible" class="dev-body__ai">
-          <DevFloatingAiPanel :state="state" :active-file="currentWorkspaceFile" :inline="true" />
-        </div>
-      </Transition>
+      <!-- 中栏右侧预留：右栏 AI 面板已上移至 APP 层（AppAiPanel drawer） -->
 
     </div>
 
@@ -108,6 +105,13 @@
         </template>
       </div>
       <div class="status-right">
+        <AiLauncherButton
+          :config="pageModelSession.config"
+          :disabled="pageModelSession.disabled.value"
+          :link="true"
+          label="AI"
+          :icon-size="13"
+        />
         <span class="status-count"><NavIcon name="Tickets" :size="13" /> {{ state.pageList.value.length }} 页面</span>
       </div>
     </div>
@@ -119,7 +123,7 @@
 /**
  * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
  */
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { PAGE_FILE_NAMES, useDevState } from './useDevState'
 import type { DevWorkspaceTab, PageFileName } from './useDevState'
@@ -127,21 +131,37 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
-import DevFloatingAiPanel from './components/DevFloatingAiPanel.vue'
+import AiLauncherButton from '@/components/AiLauncherButton.vue'
 import NavIcon from '@/components/NavIcon.vue'
+import { useAiPanelStore } from '@/composables/useAiPanelStore'
+import { useDevPageModelSession } from './composables/useDevPageModelSession'
 
 const { router, tenantPath } = useTenantRouter()
 const state = useDevState()
-
-// AI 面板开关
-const aiPanelVisible = ref(true)
+const aiPanelStore = useAiPanelStore()
 
 // 工作区 Tab
 const workTab = ref<DevWorkspaceTab>('props')
 const previewRefreshToken = ref(0)
+// 记录最近一次进入的页面文件页签，用于在「实时预览 / 节点属性」期间保持
+// AI 面板上下文（不再回落到「请切到页面文件」占位）。
+const lastPageFile = ref<PageFileName>('rule.json')
 const currentWorkspaceFile = computed<PageFileName | null>(() => {
   return isPageFileName(workTab.value) ? workTab.value : null
 })
+// AI 面板使用的 activeFile：在页面文件页签时跟随当前页签；在 preview/props 页签时
+// 沿用最近一次的页面文件，让 AI 仍可继续编辑模型。
+const aiPanelActiveFile = computed<PageFileName | null>(() => {
+  if (currentWorkspaceFile.value) return currentWorkspaceFile.value
+  return state.activePageId.value ? lastPageFile.value : null
+})
+
+watch(currentWorkspaceFile, (file) => {
+  if (file) lastPageFile.value = file
+})
+
+// DevSystem 场景下的「页面模型级编辑」会话：产出标准 AiSessionConfig，交给通用 AiLauncherButton 解析。
+const pageModelSession = useDevPageModelSession({ state, activeFile: aiPanelActiveFile })
 
 const canPreviewCurrentPage = computed(() => Boolean(state.editForm.path || state.activePageId.value))
 
@@ -186,8 +206,21 @@ function saveAll() {
   void state.saveAll()
 }
 
+function handleGlobalShortcut(event: KeyboardEvent) {
+  if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.key.toLowerCase() !== 'a') return
+  event.preventDefault()
+  aiPanelStore.toggle()
+}
+
 // 初始化
-onMounted(() => { void state.initialize() })
+onMounted(() => {
+  void state.initialize()
+  window.addEventListener('keydown', handleGlobalShortcut)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleGlobalShortcut)
+})
 </script>
 
 <style scoped>
@@ -315,37 +348,6 @@ onMounted(() => { void state.initialize() })
   align-items: center;
   gap: 4px;
   color: var(--el-text-color-secondary);
-}
-
-
-/* 右栏：AI 面板 */
-.dev-body__ai {
-  width: 380px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 12px;
-  background: var(--el-bg-color);
-  overflow: hidden;
-}
-
-/* AI 面板滑入动画 */
-.ai-panel-slide-enter-active,
-.ai-panel-slide-leave-active {
-  transition: width 0.22s ease, opacity 0.22s ease;
-  overflow: hidden;
-}
-.ai-panel-slide-enter-from,
-.ai-panel-slide-leave-to {
-  width: 0;
-  opacity: 0;
-}
-.ai-panel-slide-enter-to,
-.ai-panel-slide-leave-from {
-  width: 380px;
-  opacity: 1;
 }
 
 /* ═══ 底部状态栏 ═══ */

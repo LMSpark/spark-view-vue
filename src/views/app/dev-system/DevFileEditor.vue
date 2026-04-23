@@ -4,9 +4,6 @@
       <div class="file-header">
         <div class="file-header__meta">
           <span class="file-page-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
-          <el-tag v-if="editor.snapshotCount.value > 0" size="small" type="info" effect="plain">
-            可撤销 {{ editor.snapshotCount.value }} 步
-          </el-tag>
           <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger" effect="dark">DataSet 解析失败</el-tag>
         </div>
         <div class="file-header__actions">
@@ -67,7 +64,7 @@
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
         <el-tab-pane v-for="f in PAGE_FILE_NAMES" :key="f" :name="f">
           <template #label>
-            <span class="file-tab-label" :class="{ 'file-dirty': state.fileDirty[f] }">
+            <span class="file-tab-label" :class="{ 'file-dirty': state.documents[f].isDirty.value }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
             </span>
           </template>
@@ -83,7 +80,7 @@
           />
           <el-input
             v-else
-            :model-value="state.editFiles[resolvedActiveFile]"
+            :model-value="editor.text.value"
             type="textarea"
             resize="none"
             class="code-input code-input--pagedata-text"
@@ -95,7 +92,7 @@
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
             type="json-tree-editor"
-            :value="state.editFiles[resolvedActiveFile] ?? ''"
+            :value="editor.text.value"
             :policy="rulePolicy"
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
@@ -104,7 +101,7 @@
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
-            :value="state.editFiles[resolvedActiveFile] ?? ''"
+            :value="editor.text.value"
             :language="resolveCodeLanguage(resolvedActiveFile)"
             class="code-input code-input--code"
             height="100%"
@@ -112,7 +109,7 @@
           />
           <el-input
             v-else
-            :model-value="state.editFiles[resolvedActiveFile]"
+            :model-value="editor.text.value"
             type="textarea"
             :autosize="{ minRows: 30, maxRows: 60 }"
             class="code-input"

@@ -43,6 +43,13 @@
             :items="nav.regionItems.value.header"
           />
         </template>
+        <template #actions>
+          <el-tooltip v-if="hasAiChatAction" content="AI 对话" placement="bottom" :show-after="300">
+            <button class="header-btn" :class="{ 'header-btn--active': aiPanelStore.visible.value }" @click="aiPanelStore.toggle()">
+              <el-icon :size="18"><ChatDotRound /></el-icon>
+            </button>
+          </el-tooltip>
+        </template>
       </AppHeader>
     </template>
 
@@ -121,6 +128,9 @@
 
   <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
   <AppPageUiHost />
+
+  <!-- APP 层全局 AI 面板 -->
+  <AppAiPanel />
   </template>
 </template>
 
@@ -140,6 +150,9 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
+import AppAiPanel from '@/components/AppAiPanel.vue'
+import { useAiPanelStore } from '@/composables/useAiPanelStore'
+import { ChatDotRound } from '@element-plus/icons-vue'
 import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { createAuthHeaders } from '@/services/http'
@@ -168,6 +181,10 @@ const sidebarCollapsed = ref(false)
 const headerFirst = ref(false)
 const showFooter = ref(true)
 const showConfigurator = ref(false)
+const aiPanelStore = useAiPanelStore()
+const hasAiChatAction = computed(() =>
+  nav.regionItems.value.toolbar.some(item => item.path === 'ai-chat')
+)
 
 const { mode, setMode } = useTabPages()
 useColorScheme()
@@ -420,6 +437,9 @@ watch(isLoginPage, (isLogin, wasLogin) => {
 /* ── 用户菜单命令 ── */
 function handleUserCommand(command: string) {
   switch (command) {
+    case 'ai-chat':
+      aiPanelStore.toggle()
+      break
     case 'profile':
       // TODO: 个人中心页面
       break

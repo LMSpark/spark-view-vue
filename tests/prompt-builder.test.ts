@@ -235,4 +235,12 @@ describe('提示词内容完整性', () => {
     expect(STILLS_EDIT_RUNTIME_PROMPT).not.toContain('蓝图编排')
     expect(STILLS_EDIT_RUNTIME_PROMPT).not.toContain('blueprint.create')
   })
+
+  it('STILLS_EDIT_RUNTIME_PROMPT 包含 DataKey 详细契约', () => {
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('DataKey 详细约束')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('table@field、table@viewId@field、#scope@table@field、#scope@table@viewId@field')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('rows / currentRow / selectedRows / summaryRow / selectionSummaryRow')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('旧点号格式一律禁止')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('sparkNodeTree.collectDataKeys')
+  })
 })

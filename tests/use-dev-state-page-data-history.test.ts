@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SparkNode } from '@spark-view/spark-component'
 
 const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
   httpGet: vi.fn(),
@@ -7,16 +6,8 @@ const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
   httpPut: vi.fn(),
 }))
 
-function cloneJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T
-}
-
 vi.mock('@/services/http', () => ({
-  http: {
-    get: httpGet,
-    post: httpPost,
-    put: httpPut,
-  },
+  http: { get: httpGet, post: httpPost, put: httpPut },
 }))
 
 vi.mock('@/services/api-paths', () => ({
@@ -26,20 +17,6 @@ vi.mock('@/services/api-paths', () => ({
 
 import { canonicalizePageDataJson } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES, useDevState } from '../src/views/app/dev-system/useDevState'
-
-function readLiveRuleChildren(state: ReturnType<typeof useDevState>) {
-  const root = state.pageRuleTree.value?.toJSON()
-  return Array.isArray(root?.children)
-    ? root.children.filter(
-        (child): child is SparkNode =>
-          typeof child === 'object' && child !== null && 'type' in child && typeof child.type === 'string',
-      )
-    : []
-}
-
-function readLivePageData(state: ReturnType<typeof useDevState>) {
-  return state.pageDataTool.value?.toJson() ?? null
-}
 
 function createPageDataText(name: string, compact = false): string {
   const payload = {
@@ -59,16 +36,11 @@ function createPageDataText(name: string, compact = false): string {
       },
     },
   }
-
-  return compact
-    ? JSON.stringify(payload)
-    : `${JSON.stringify(payload, null, 2)}\n`
+  return compact ? JSON.stringify(payload) : `${JSON.stringify(payload, null, 2)}\n`
 }
 
-describe('useDevState pagedata local history', () => {
+describe('useDevState documents SSOT', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-04-05T00:00:00Z'))
     localStorage.clear()
     httpGet.mockReset()
     httpPost.mockReset()
@@ -79,449 +51,244 @@ describe('useDevState pagedata local history', () => {
     vi.useRealTimers()
   })
 
-  it('captures loaded pagedata into local history so the first edit can undo without saving', async () => {
-    const initialPageDataText = createPageDataText('Alpha', true)
-
+  it('loading pagedata from remote parses into a clean model', async () => {
+    const initial = createPageDataText('Alpha', true)
     httpGet.mockImplementation(async (url: string) => {
-      if (url.endsWith('/pagedata.json')) {
-        return { content: initialPageDataText, currentVersion: 3 }
-      }
-
-      const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
-      if (requestedFile) {
-        return { content: '' }
-      }
-
+      if (url.endsWith('/pagedata.json')) return { content: initial }
+      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
 
     const state = useDevState()
     state.selectPage('orders-page')
-    await state.loadPageFile('pagedata.json')
+    await state.ensureActivePageFilesLoaded()
 
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
-    expect(state.canFileHistoryBack('pagedata.json')).toBe(false)
-    expect(state.fileDirty['pagedata.json']).toBe(false)
-
-    const editedPageDataText = createPageDataText('Beta', true)
-    state.updatePageFile('pagedata.json', editedPageDataText)
-
-    // Still 1 snapshot (interval not elapsed), but current text diverged → can undo
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
-    expect(state.canFileHistoryBack('pagedata.json')).toBe(true)
-    expect(state.goFileHistoryBack('pagedata.json')).toBe(true)
-    expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(initialPageDataText).text)
-    expect(state.goFileHistoryForward('pagedata.json')).toBe(true)
-    expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(editedPageDataText).text)
+    const doc = state.documents['pagedata.json']
+    expect(doc.loadState.value).toBe('loaded')
+    expect(doc.isDirty.value).toBe(false)
+    expect(doc.model.value).not.toBeNull()
+    expect(doc.canUndo.value).toBe(false)
+    expect(doc.text.value).toBe(canonicalizePageDataJson(initial).text)
   })
 
-  it('does not overwrite dirty pagedata during passive reload attempts', async () => {
-    const remoteInitial = createPageDataText('Remote-Initial', true)
-    const remoteLatest = createPageDataText('Remote-Latest', true)
-    let pagedataFetchCount = 0
+  it('editing pagedata text reparses model, makes doc dirty and enables undo', async () => {
+    const initial = createPageDataText('Alpha', true)
+    const next = createPageDataText('Beta', true)
 
     httpGet.mockImplementation(async (url: string) => {
-      if (url.endsWith('/pagedata.json')) {
-        pagedataFetchCount += 1
-        return { content: pagedataFetchCount === 1 ? remoteInitial : remoteLatest }
-      }
-
-      const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
-      if (requestedFile) {
-        return { content: '' }
-      }
-
+      if (url.endsWith('/pagedata.json')) return { content: initial }
+      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
 
     const state = useDevState()
     state.selectPage('orders-page')
-    await state.loadPageFile('pagedata.json')
+    await state.ensureActivePageFilesLoaded()
 
-    const localDraft = createPageDataText('Local-Draft', true)
-    state.updatePageFile('pagedata.json', localDraft)
-    expect(state.fileDirty['pagedata.json']).toBe(true)
+    const doc = state.documents['pagedata.json']
+    doc.setText(next)
 
-    // Simulate an external reload hint while local draft is still dirty.
-    state.fileLoadState['pagedata.json'] = 'idle'
-    await state.loadPageFile('pagedata.json')
+    expect(doc.isDirty.value).toBe(true)
+    expect(doc.canUndo.value).toBe(true)
+    expect(doc.text.value).toBe(canonicalizePageDataJson(next).text)
 
-    expect(pagedataFetchCount).toBe(1)
-    expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(localDraft).text)
+    expect(doc.undo()).toBe(true)
+    expect(doc.text.value).toBe(canonicalizePageDataJson(initial).text)
+    expect(doc.isDirty.value).toBe(false)
+
+    expect(doc.redo()).toBe(true)
+    expect(doc.text.value).toBe(canonicalizePageDataJson(next).text)
   })
 
-  it('loads all page files once and reuses them across later file access', async () => {
-    const fetchCountByFile = Object.fromEntries(PAGE_FILE_NAMES.map((name) => [name, 0])) as Record<string, number>
-
+  it('ensureActivePageFilesLoaded loads each file exactly once', async () => {
+    const fetchCount: Record<string, number> = {}
     httpGet.mockImplementation(async (url: string) => {
-      const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
-      if (!requestedFile) {
-        throw new Error(`unexpected GET ${url}`)
-      }
-
-      fetchCountByFile[requestedFile] = (fetchCountByFile[requestedFile] ?? 0) + 1
-
-      if (requestedFile === 'pagedata.json') {
-        return { content: createPageDataText('Shared-Load', true) }
-      }
-
-      if (requestedFile === 'rule.json') {
-        return { content: '[]\n' }
-      }
-
+      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (!name) throw new Error(`unexpected GET ${url}`)
+      fetchCount[name] = (fetchCount[name] ?? 0) + 1
+      if (name === 'pagedata.json') return { content: createPageDataText('Shared', true) }
+      if (name === 'rule.json') return { content: '[]\n' }
       return { content: '' }
     })
 
     const state = useDevState()
     state.selectPage('orders-page')
-
     await state.ensureActivePageFilesLoaded()
-    await state.loadPageFile('pagedata.json')
-    await state.loadPageFile('rule.json')
+    await state.ensureActivePageFilesLoaded()
 
-    expect(fetchCountByFile).toEqual({
+    expect(fetchCount).toEqual({
       'rule.json': 1,
       'pagedata.json': 1,
       'script.js': 1,
       'style.css': 1,
     })
-    expect(state.fileLoadState['rule.json']).toBe('loaded')
-    expect(state.fileLoadState['pagedata.json']).toBe('loaded')
-    expect(state.editFiles['pagedata.json']).toContain('Shared-Load')
+    for (const name of PAGE_FILE_NAMES) {
+      expect(state.documents[name].loadState.value).toBe('loaded')
+    }
   })
 
-  it('keeps the live rule model in sync when undoing local rule history', () => {
+  it('rule.json setText + undo reflects in the live SparkNodeTree', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
+    const doc = state.documents['rule.json']
 
-    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
-    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
+    doc.setText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    doc.setText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
 
-    expect(readLiveRuleChildren(state)[0]?.type).toBe('el-button')
-    expect(state.goFileHistoryBack('rule.json')).toBe(true)
-    const exportedRuleText = state.editFiles['rule.json'] ?? '[]'
-    expect(JSON.parse(exportedRuleText)[0]).toMatchObject({ type: 'div' })
-    expect(readLiveRuleChildren(state)[0]?.type).toBe('div')
+    const treeNow = doc.model.value!.toJSON()
+    expect((treeNow.children?.[0] as { type?: string }).type).toBe('el-button')
+
+    expect(doc.undo()).toBe(true)
+    const treeUndo = doc.model.value!.toJSON()
+    expect((treeUndo.children?.[0] as { type?: string }).type).toBe('div')
+    expect(JSON.parse(doc.text.value)[0]).toMatchObject({ type: 'div' })
   })
 
-  it('keeps the live script document in sync when undoing local script history', () => {
+  it('script.js undo stays in sync with the live model', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
-    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    const doc = state.documents['script.js']
 
-    state.updatePageFile('script.js', 'console.log("alpha")\n')
-    state.updatePageFile('script.js', 'console.log("beta")\n')
+    doc.setText('console.log("alpha")\n')
+    doc.setText('console.log("beta")\n')
 
-    expect(state.pageScriptDocument.value).toBe('console.log("beta")\n')
-    expect(state.goFileHistoryBack('script.js')).toBe(true)
-    expect(state.editFiles['script.js']).toBe('console.log("alpha")\n')
-    expect(state.pageScriptDocument.value).toBe('console.log("alpha")\n')
+    expect(doc.model.value).toBe('console.log("beta")\n')
+    expect(doc.undo()).toBe(true)
+    expect(doc.model.value).toBe('console.log("alpha")\n')
+    expect(doc.text.value).toBe('console.log("alpha")\n')
   })
 
-  it('keeps the live style document in sync when undoing local style history', () => {
+  it('style.css undo stays in sync with the live model', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
-    state.updatePageFile('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    const doc = state.documents['style.css']
 
-    state.updatePageFile('style.css', '.page { color: red; }\n')
-    state.updatePageFile('style.css', '.page { color: blue; }\n')
+    doc.setText('.page { color: red; }\n')
+    doc.setText('.page { color: blue; }\n')
 
-    expect(state.pageStyleDocument.value).toBe('.page { color: blue; }\n')
-    expect(state.goFileHistoryBack('style.css')).toBe(true)
-    expect(state.editFiles['style.css']).toBe('.page { color: red; }\n')
-    expect(state.pageStyleDocument.value).toBe('.page { color: red; }\n')
+    expect(doc.model.value).toBe('.page { color: blue; }\n')
+    expect(doc.undo()).toBe(true)
+    expect(doc.model.value).toBe('.page { color: red; }\n')
+    expect(doc.text.value).toBe('.page { color: red; }\n')
   })
 
-  it('does not append local history on save because save only uploads to backend', async () => {
+  it('savePageFile uploads current text and clears dirty without touching history', async () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
+    const doc = state.documents['pagedata.json']
+    doc.setText(createPageDataText('Gamma', true))
 
-    const editedPageDataText = createPageDataText('Gamma', true)
-    state.updatePageFile('pagedata.json', editedPageDataText)
+    expect(doc.isDirty.value).toBe(true)
+    const canUndoBefore = doc.canUndo.value
 
-    const historyCountBeforeSave = state.getFileHistoryCount('pagedata.json')
     httpPut.mockResolvedValue({ ok: true })
+    httpGet.mockResolvedValue([])
 
     await state.savePageFile('pagedata.json')
 
     expect(httpPut).toHaveBeenCalledWith(
       '/api/pages-config/orders-page/pagedata.json',
-      canonicalizePageDataJson(editedPageDataText).text,
+      doc.text.value,
       { headers: { 'Content-Type': 'text/plain' } },
     )
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(historyCountBeforeSave)
-    expect(state.fileDirty['pagedata.json']).toBe(false)
+    expect(doc.isDirty.value).toBe(false)
+    expect(doc.canUndo.value).toBe(canUndoBefore)
   })
 
-  it('uses the shared live pagedata document as the source before exporting text', () => {
+  it('designer-level mutate reflects in text and is undoable', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
-    state.updatePageFile('rule.json', '[]\n')
+    const doc = state.documents['pagedata.json']
+    doc.setText(createPageDataText('Live', true))
 
-    const initialPageDataText = createPageDataText('Live-Alpha', true)
-    state.updatePageFile('pagedata.json', initialPageDataText)
-    const persistedText = state.editFiles['pagedata.json']
+    const ok = doc.mutate((tool) => {
+      tool.createColumn({ tableName: 'Orders', column: { name: 'status', type: 'string' } })
+    })
+    expect(ok).toBe(true)
 
-    expect(state.mutateLivePageData((tool) => {
-      tool.createColumn({
-        tableName: 'Orders',
-        column: { name: 'status', type: 'string' },
-      })
-    })).toBe(true)
+    expect(doc.text.value).toContain('status')
+    expect(doc.model.value!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
 
-    expect(state.pageDataTool.value?.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
-    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
-    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
-    expect(state.editFiles['pagedata.json']).toBe(persistedText)
+    expect(doc.undo()).toBe(true)
+    expect(doc.model.value!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeUndefined()
 
-    expect(state.undoLivePageData()).toBe(true)
-    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(false)
-    expect(state.redoLivePageData()).toBe(true)
-    expect(readLivePageData(state)?.tables['Orders']?.columns.some(column => column.name === 'status')).toBe(true)
+    expect(doc.redo()).toBe(true)
+    expect(doc.model.value!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
   })
 
-  it('saves the current live pagedata model when the designer changed only the in-memory model', async () => {
+  it('page switch resets all documents', () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
-    state.updatePageFile('rule.json', '[]\n')
-    state.updatePageFile('pagedata.json', createPageDataText('Save-Live-Alpha', true))
-
-    expect(state.mutateLivePageData((tool) => {
-      tool.createColumn({
-        tableName: 'Orders',
-        column: { name: 'status', type: 'string' },
-      })
-    })).toBe(true)
-
-    expect(state.pageDataDesignerDirty.value).toBe(true)
-    httpPut.mockResolvedValue({ ok: true })
-
-    await state.savePageFile('pagedata.json')
-
-    expect(httpPut).toHaveBeenCalledTimes(1)
-    expect(httpPut.mock.calls[0]?.[0]).toBe('/api/pages-config/orders-page/pagedata.json')
-    expect(String(httpPut.mock.calls[0]?.[1] ?? '')).toContain('status')
-    expect(state.editFiles['pagedata.json']).toContain('status')
-    expect(state.fileDirty['pagedata.json']).toBe(false)
-    expect(state.pageDataDesignerDirty.value).toBe(false)
-  })
-
-  it('reinitializes pagedata runtime state when switching to another page', () => {
-    const state = useDevState()
-
     state.selectPage('orders-page')
-    state.updatePageFile('pagedata.json', createPageDataText('Cross-Page-Alpha', true))
+    state.documents['pagedata.json'].setText(createPageDataText('PageA', true))
+    state.documents['script.js'].setText('// a\n')
 
-    expect(state.mutateLivePageData((tool) => {
-      tool.createColumn({
-        tableName: 'Orders',
-        column: { name: 'status', type: 'string' },
-      })
-    })).toBe(true)
-
-    expect(state.pageDataTool.value?.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
-    expect(state.pageDataDesignerDirty.value).toBe(true)
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
+    expect(state.documents['pagedata.json'].model.value).not.toBeNull()
+    expect(state.documents['script.js'].model.value).not.toBeNull()
 
     state.selectPage('orders-page-v2')
 
     expect(state.activePageId.value).toBe('orders-page-v2')
-    expect(state.editFiles['pagedata.json']).toBe('')
-    expect(state.fileLoadState['pagedata.json']).toBe('idle')
-    expect(state.fileDirty['pagedata.json']).toBe(false)
-    expect(state.pageDataTool.value).toBeNull()
-    expect(readLivePageData(state)).toBeNull()
-    expect(state.pageDataDesignerDirty.value).toBe(false)
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(0)
+    for (const name of PAGE_FILE_NAMES) {
+      const doc = state.documents[name]
+      expect(doc.model.value).toBeNull()
+      expect(doc.isDirty.value).toBe(false)
+      expect(doc.loadState.value).toBe('idle')
+      expect(doc.savedText.value).toBe('')
+    }
   })
 
-  it('does not record manual page-model patches into the AI transaction stack', () => {
-    const state = useDevState()
-    state.activePageId.value = 'orders-page'
-    state.updatePageFile('rule.json', '[]\n')
-    state.updatePageFile('pagedata.json', createPageDataText('Manual-Alpha', true))
-
-    const basePageData = cloneJson(readLivePageData(state)!)
-    const manualOrders = basePageData.tables['Orders']!
-    const manualPageData = {
-      ...basePageData,
-      tables: {
-        ...basePageData.tables,
-        Orders: {
-          ...manualOrders,
-          columns: [
-            ...manualOrders.columns,
-            { name: 'status', type: 'string' },
-          ],
-        },
-      },
-    }
-
-    state.applyPageFiles(
-      { 'pagedata.json': canonicalizePageDataJson(JSON.stringify(manualPageData)).text },
-      { source: 'manual' },
-    )
-
-    expect(state.editFiles['pagedata.json']).toContain('status')
-    expect(state.getPageEditTransactionCount()).toBe(0)
-    expect(state.canPageEditTransactionBack()).toBe(false)
-
-    const aiOrders = manualPageData.tables['Orders']!
-    const aiPageData = {
-      ...manualPageData,
-      tables: {
-        ...manualPageData.tables,
-        Orders: {
-          ...aiOrders,
-          columns: [
-            ...aiOrders.columns,
-            { name: 'memo', type: 'string' },
-          ],
-        },
-      },
-    }
-
-    state.applyPageFiles(
-      { 'pagedata.json': canonicalizePageDataJson(JSON.stringify(aiPageData)).text },
-      { source: 'ai' },
-    )
-
-    expect(state.getPageEditTransactionCount()).toBe(1)
-    expect(state.canPageEditTransactionBack()).toBe(true)
-  })
-
-  it('tracks non-pagedata files with local undo redo history and restores clean state at the loaded baseline', async () => {
-    const initialRuleText = '{\n  "name": "alpha"\n}\n'
-    const updatedRuleText = '{\n  "name": "beta"\n}\n'
-    const latestRuleText = '{\n  "name": "gamma"\n}\n'
-
+  it('rule load followed by undo to baseline keeps the document clean', async () => {
+    const initial = '[]\n'
     httpGet.mockImplementation(async (url: string) => {
-      if (url.endsWith('/rule.json')) {
-        return { content: initialRuleText }
-      }
-
-      const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
-      if (requestedFile) {
-        return { content: '' }
-      }
-
+      if (url.endsWith('/rule.json')) return { content: initial }
+      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
 
     const state = useDevState()
     state.selectPage('orders-page')
-    await state.loadPageFile('rule.json')
+    await state.ensureActivePageFilesLoaded()
 
-    expect(state.getFileHistoryCount('rule.json')).toBe(1)
-    expect(state.canFileHistoryBack('rule.json')).toBe(false)
+    const doc = state.documents['rule.json']
+    expect(doc.isDirty.value).toBe(false)
+    expect(doc.canUndo.value).toBe(false)
 
-    state.updatePageFile('rule.json', updatedRuleText)
-    state.updatePageFile('rule.json', latestRuleText)
+    doc.setText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    expect(doc.isDirty.value).toBe(true)
+    expect(doc.canUndo.value).toBe(true)
 
-    expect(state.getFileHistoryCount('rule.json')).toBe(1)
-    expect(state.canFileHistoryBack('rule.json')).toBe(true)
-    expect(state.goFileHistoryBack('rule.json')).toBe(true)
-    expect(state.editFiles['rule.json']).toBe(initialRuleText)
-    expect(state.fileDirty['rule.json']).toBe(false)
-
-    expect(state.goFileHistoryForward('rule.json')).toBe(true)
-    expect(state.editFiles['rule.json']).toBe(latestRuleText)
-    expect(state.fileDirty['rule.json']).toBe(true)
+    expect(doc.undo()).toBe(true)
+    expect(doc.isDirty.value).toBe(false)
+    expect(doc.canUndo.value).toBe(false)
+    expect(doc.text.value).toBe(initial)
   })
 
-  it('commits a new pagedata snapshot only after the minimum interval elapses', () => {
+  it('pageDataDesignerDirty mirrors pagedata document dirty flag', () => {
+    const state = useDevState()
+    state.activePageId.value = 'orders-page'
+    expect(state.pageDataDesignerDirty.value).toBe(false)
+    state.documents['pagedata.json'].setText(createPageDataText('Dirty', true))
+    expect(state.pageDataDesignerDirty.value).toBe(true)
+  })
+
+  it('live model adapter provides a stable blank DataSet tool for empty pagedata', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
 
-    state.updatePageFile('pagedata.json', createPageDataText('Snapshot-1', true))
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
+    const adapter = state.getLiveModelAdapter()
+    const first = adapter.getDataSetTool?.()
+    const second = adapter.getDataSetTool?.()
 
-    state.updatePageFile('pagedata.json', createPageDataText('Snapshot-2', true))
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
-
-    vi.advanceTimersByTime(5001)
-    state.updatePageFile('pagedata.json', createPageDataText('Snapshot-3', true))
-
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(2)
-  })
-
-  it('commits a new text snapshot only after the minimum interval elapses', () => {
-    const state = useDevState()
-    state.activePageId.value = 'orders-page'
-
-    state.updatePageFile('script.js', 'console.log("snapshot-1")\n')
-    expect(state.getFileHistoryCount('script.js')).toBe(1)
-
-    state.updatePageFile('script.js', 'console.log("snapshot-2")\n')
-    expect(state.getFileHistoryCount('script.js')).toBe(1)
-
-    vi.advanceTimersByTime(5001)
-    state.updatePageFile('script.js', 'console.log("snapshot-3")\n')
-
-    expect(state.getFileHistoryCount('script.js')).toBe(2)
-    expect(state.goFileHistoryBack('script.js')).toBe(true)
-    expect(state.editFiles['script.js']).toBe('console.log("snapshot-1")\n')
-  })
-
-  it('does not append non-pagedata local history on save because save only persists the current snapshot', async () => {
-    const state = useDevState()
-    state.activePageId.value = 'orders-page'
-
-    state.updatePageFile('script.js', 'console.log("alpha")\n')
-    const historyCountBeforeSave = state.getFileHistoryCount('script.js')
-
-    httpPut.mockResolvedValue({ ok: true })
-
-    await state.savePageFile('script.js')
-
-    expect(httpPut).toHaveBeenCalledWith(
-      '/api/pages-config/orders-page/script.js',
-      'console.log("alpha")\n',
-      { headers: { 'Content-Type': 'text/plain' } },
-    )
-    expect(state.getFileHistoryCount('script.js')).toBe(historyCountBeforeSave)
-    expect(state.fileDirty['script.js']).toBe(false)
-  })
-
-  it('reuses pagedata snapshots cyclically after reaching the local snapshot limit', () => {
-    const state = useDevState()
-    state.activePageId.value = 'orders-page'
-
-    for (let index = 1; index <= 101; index += 1) {
-      if (index > 1) {
-        vi.advanceTimersByTime(5001)
-      }
-      state.updatePageFile('pagedata.json', createPageDataText(`Snapshot-${index}`, true))
-    }
-
-    expect(state.getFileHistoryCount('pagedata.json')).toBe(100)
-
-    for (let step = 0; step < 99; step += 1) {
-      expect(state.goFileHistoryBack('pagedata.json')).toBe(true)
-    }
-
-    expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(createPageDataText('Snapshot-2', true)).text)
-    expect(state.goFileHistoryBack('pagedata.json')).toBe(false)
-  })
-
-  it('reuses text snapshots cyclically after reaching the local snapshot limit', () => {
-    const state = useDevState()
-    state.activePageId.value = 'orders-page'
-
-    for (let index = 1; index <= 101; index += 1) {
-      if (index > 1) {
-        vi.advanceTimersByTime(5001)
-      }
-      state.updatePageFile('script.js', `console.log("snapshot-${index}")\n`)
-    }
-
-    expect(state.getFileHistoryCount('script.js')).toBe(100)
-
-    for (let step = 0; step < 99; step += 1) {
-      expect(state.goFileHistoryBack('script.js')).toBe(true)
-    }
-
-    expect(state.editFiles['script.js']).toBe('console.log("snapshot-2")\n')
-    expect(state.goFileHistoryBack('script.js')).toBe(false)
+    expect(first).not.toBeNull()
+    expect(second).toBe(first)
+    expect(first?.toJson()).toEqual({
+      dataSetName: 'orders-page',
+      schemaVersion: 2,
+      tables: {},
+    })
+    expect(state.documents['pagedata.json'].model.value).toBeNull()
   })
 })

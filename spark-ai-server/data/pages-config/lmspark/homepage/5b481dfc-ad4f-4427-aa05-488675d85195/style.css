@@ -1,22 +1,199 @@
-[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .order-management-page {
-  background-color: #f5f7fa;
+/* 统计卡片基础样式 */
+.stat-card {
+  border-radius: 12px;
+  padding: 4px;
+  width: 224px !important;
+  min-width: 224px;
+  max-width: 224px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-section {
-  margin-top: 20px;
-  background: white;
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+
+/* 卡片容器等宽排列 - 适中卡片间距 */
+#stat-cards-space {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+}
+
+#stat-cards-space > .r-card,
+#stat-cards-space > .ant-card {
+  flex: 0 0 224px;
+  width: 224px !important;
+  min-width: 224px;
+  max-width: 224px;
+}
+
+/* 蓝色卡片 - 总订单数 */
+.stat-card-blue {
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+  border-left: 4px solid #1890ff;
+}
+
+.stat-card-blue .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid rgba(24,144,255,0.2);
+  color: #0050b3;
+  font-weight: 600;
+}
+
+/* 绿色卡片 - 总金额 */
+.stat-card-green {
+  background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+  border-left: 4px solid #52c41a;
+}
+
+.stat-card-green .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid rgba(82,196,26,0.2);
+  color: #237804;
+  font-weight: 600;
+}
+
+/* 紫色卡片 - 平均订单金额 */
+.stat-card-purple {
+  background: linear-gradient(135deg, #f9f0ff 0%, #efdbff 100%);
+  border-left: 4px solid #722ed1;
+}
+
+.stat-card-purple .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid rgba(114,46,209,0.2);
+  color: #391085;
+  font-weight: 600;
+}
+
+/* 橙色卡片 - 待处理订单 */
+.stat-card-orange {
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+  border-left: 4px solid #fa8c16;
+}
+
+.stat-card-orange .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid rgba(250,140,22,0.2);
+  color: #ad4e00;
+  font-weight: 600;
+}
+
+/* 青色卡片 - 客户总数 */
+.stat-card-cyan {
+  background: linear-gradient(135deg, #e6fffb 0%, #b5f5ec 100%);
+  border-left: 4px solid #13c2c2;
+}
+
+.stat-card-cyan .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid rgba(19,194,194,0.2);
+  color: #006262;
+  font-weight: 600;
+}
+
+/* 粉色卡片 - 产品总数 */
+.stat-card-pink {
+  background: linear-gradient(135deg, #fff0f6 0%, #ffd6e7 100%);
+  border-left: 4px solid #eb2f96;
+}
+
+.stat-card-pink .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid rgba(235,47,150,0.2);
+  color: #9e1068;
+  font-weight: 600;
+}
+
+/* 卡片内容区域 */
+.stat-card .ant-card-body {
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 0 0 12px 12px;
+  backdrop-filter: blur(4px);
+}
+
+/* 统计数值动画 */
+.display-statistic-value {
+  transition: all 0.5s ease;
+}
+
+/* 仪表盘标题区 */
+#dashboard-header {
+  margin-bottom: 24px;
+}
+
+#dashboard-header .r-section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+#dashboard-header .r-section-description {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-top: 4px;
+}
+
+/* 订单表格区域 */
+#order-table-section {
+  margin-top: 32px;
+}
+
+#order-table-section .r-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 16px;
+}
+
+/* ========== 工具栏样式 ========== */
+#page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 16px;
   border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
-[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-table {
-  margin-bottom: 0;
+#page-toolbar .r-button,
+#page-toolbar .ant-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 4px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-tabs {
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+#page-toolbar .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
+}
+
+#page-toolbar .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+#page-toolbar .ant-btn-default {
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  color: #333;
+}
+
+#page-toolbar .ant-btn-default:hover {
+  background: #e8e8e8;
+  border-color: #bdbdbd;
 }

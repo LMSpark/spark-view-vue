@@ -334,8 +334,8 @@ const relEditorPos = computed(() => {
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
 const projectedMetadata = computed<IDataSetMetadata | null>(() => {
-  // 以 DataSetCrudTool 为唯一数据源；其 shallowRef 会在 useDevState 中被显式触发刷新。
-  return props.state.pageDataTool.value?.toJson() ?? null
+  // 以 DataSetCrudTool 为唯一数据源；pagedata 文档的 shallowRef 在 mutate/undo/redo 时会被显式触发刷新。
+  return props.state.documents['pagedata.json'].model.value?.toJson() ?? null
 })
 
 const tables = computed<DesignerTable[]>(() => {
@@ -362,13 +362,14 @@ function applyMutationWithHistory(
   mutator: (tool: DataSetCrudTool) => void,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
-  const tool = props.state.ensureLivePageDataTool()
-  if (!tool) return
-  syncLayoutToTool(tool)
+  const pageDataDoc = props.state.documents['pagedata.json']
+  if (!pageDataDoc.model.value) return
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
-    mutator(tool)
-    props.state.syncLivePageDataFromTool()
+    pageDataDoc.mutate((tool) => {
+      syncLayoutToTool(tool)
+      mutator(tool)
+    })
   } catch (error) {
     pendingProjectionLayout.value = null
     throw error
@@ -376,14 +377,14 @@ function applyMutationWithHistory(
 }
 
 function undo() {
-  const ok = props.state.undoLivePageData()
+  const ok = props.state.documents['pagedata.json'].undo()
   if (!ok) return
   editingRel.value = null
   selectedTableId.value = null
 }
 
 function redo() {
-  const ok = props.state.redoLivePageData()
+  const ok = props.state.documents['pagedata.json'].redo()
   if (!ok) return
   resetSelectionState()
 }
@@ -394,23 +395,25 @@ function resetSelectionState(): void {
 }
 
 function commitLayoutCheckpoint(): void {
-  const tool = props.state.ensureLivePageDataTool()
+  const pageDataDoc = props.state.documents['pagedata.json']
+  const tool = pageDataDoc.model.value
   if (!tool) return
-  syncLayoutToTool(tool)
   const anchor = tables.value[0]
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
-  tool.updateTable({ tableName: anchor.tableName })
-  props.state.syncLivePageDataFromTool()
+  pageDataDoc.mutate((t) => {
+    syncLayoutToTool(t)
+    t.updateTable({ tableName: anchor.tableName })
+  })
 }
 
 const canUndo = computed(() => {
   projectedMetadata.value
-  return props.state.pageDataTool.value?.canUndo ?? false
+  return props.state.documents['pagedata.json'].canUndo.value
 })
 const canRedo = computed(() => {
   projectedMetadata.value
-  return props.state.pageDataTool.value?.canRedo ?? false
+  return props.state.documents['pagedata.json'].canRedo.value
 })
 
 watch(
@@ -532,7 +535,7 @@ function resetDesignerRuntimeState(): void {
 // ═══ 直接对接 DataSetCrudTool live model ═══
 
 function refreshFromLiveData(silent = false): void {
-  const tool = props.state.ensureLivePageDataTool()
+  const tool = props.state.documents['pagedata.json'].model.value
   if (!tool) {
     if (!silent) {
       ElMessage.warning('当前页面尚未初始化 DataSet 模型')
@@ -540,7 +543,6 @@ function refreshFromLiveData(silent = false): void {
     return
   }
 
-  props.state.syncLivePageDataFromTool()
   resetSelectionState()
 }
 

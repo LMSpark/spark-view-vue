@@ -117,4 +117,43 @@ describe('AiChatWidget persistence', () => {
     expect(restored.find('.streaming-cursor').exists()).toBe(false)
     expect(restored.text()).not.toContain('思考中...')
   })
+
+  it('allows typing the next prompt while streaming but does not send concurrently', async () => {
+    let release!: () => void
+    const sender = vi.fn(async (request) => {
+      request.onDelta?.('处理中...')
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      request.onDelta?.('完成')
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-streaming-input',
+      },
+    })
+
+    const textarea = wrapper.find('.chat-textarea')
+    await textarea.setValue('第一条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(sender).toHaveBeenCalledTimes(1)
+    expect(textarea.attributes('disabled')).toBeUndefined()
+    expect(textarea.attributes('placeholder')).toContain('AI 编辑中')
+
+    await textarea.setValue('第二条')
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('第二条')
+
+    await textarea.trigger('keydown.enter')
+    await flushPromises()
+    expect(sender).toHaveBeenCalledTimes(1)
+
+    release()
+    await flushPromises()
+
+    expect((wrapper.find('.chat-textarea').element as HTMLTextAreaElement).value).toBe('第二条')
+  })
 })

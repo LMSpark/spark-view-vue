@@ -1,25 +1,392 @@
 {
-  "users": [
-    {
-      "id": 1,
-      "name": "张三",
-      "age": 28,
-      "createTime": "2024-01-15",
-      "selectDate": "2024-06-01"
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "users": {
+      "tableName": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "id"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "name"
+        },
+        {
+          "name": "age",
+          "type": "number",
+          "label": "age"
+        },
+        {
+          "name": "createTime",
+          "type": "string",
+          "label": "createTime"
+        },
+        {
+          "name": "selectDate",
+          "type": "string",
+          "label": "selectDate"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "users",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "name": "张三",
+              "age": 28,
+              "createTime": "2024-01-15",
+              "selectDate": "2024-06-01"
+            },
+            {
+              "id": 2,
+              "name": "李四",
+              "age": 32,
+              "createTime": "2024-02-20",
+              "selectDate": "2024-07-15"
+            },
+            {
+              "id": 3,
+              "name": "王五",
+              "age": 25,
+              "createTime": "2024-03-10",
+              "selectDate": "2024-08-20"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true
+        }
+      }
     },
-    {
-      "id": 2,
-      "name": "李四",
-      "age": 32,
-      "createTime": "2024-02-20",
-      "selectDate": "2024-07-15"
+    "user_resumes": {
+      "tableName": "user_resumes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "简历ID",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "userId",
+          "type": "number",
+          "label": "用户ID",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "label": "简历标题",
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "label": "个人简介",
+          "maxLength": 1000
+        },
+        {
+          "name": "workExperience",
+          "type": "string",
+          "label": "工作经历",
+          "maxLength": 2000
+        },
+        {
+          "name": "educationBackground",
+          "type": "string",
+          "label": "教育背景",
+          "maxLength": 1000
+        },
+        {
+          "name": "skills",
+          "type": "string",
+          "label": "技能特长",
+          "maxLength": 500
+        },
+        {
+          "name": "certificates",
+          "type": "string",
+          "label": "证书资质",
+          "maxLength": 500
+        },
+        {
+          "name": "projects",
+          "type": "string",
+          "label": "项目经验",
+          "maxLength": 2000
+        },
+        {
+          "name": "languageSkills",
+          "type": "string",
+          "label": "语言能力",
+          "maxLength": 200
+        },
+        {
+          "name": "expectedSalary",
+          "type": "number",
+          "label": "期望薪资"
+        },
+        {
+          "name": "expectedPosition",
+          "type": "string",
+          "label": "期望职位",
+          "maxLength": 100
+        },
+        {
+          "name": "expectedCity",
+          "type": "string",
+          "label": "期望城市",
+          "maxLength": 50
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "简历状态",
+          "maxLength": 20
+        },
+        {
+          "name": "createTime",
+          "type": "string",
+          "label": "创建时间"
+        },
+        {
+          "name": "updateTime",
+          "type": "string",
+          "label": "更新时间"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "user_resumes",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "userId": 1,
+              "title": "张三的简历",
+              "summary": "5年Java开发经验",
+              "expectedPosition": "高级Java工程师",
+              "expectedCity": "北京",
+              "expectedSalary": 25000,
+              "status": "active"
+            },
+            {
+              "id": 2,
+              "userId": 2,
+              "title": "李四的简历",
+              "summary": "3年前端开发经验",
+              "expectedPosition": "前端开发工程师",
+              "expectedCity": "上海",
+              "expectedSalary": 20000,
+              "status": "active"
+            },
+            {
+              "id": 3,
+              "userId": 3,
+              "title": "王五的简历",
+              "summary": "2年测试工程师经验",
+              "expectedPosition": "测试工程师",
+              "expectedCity": "深圳",
+              "expectedSalary": 15000,
+              "status": "active"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "child",
+      "api": {},
+      "crudConfig": {}
     },
-    {
-      "id": 3,
-      "name": "王五",
-      "age": 25,
-      "createTime": "2024-03-10",
-      "selectDate": "2024-08-20"
+    "education_dict": {
+      "tableName": "education_dict",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "label": "学籍代码",
+          "required": true,
+          "maxLength": 20
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "学籍名称",
+          "required": true,
+          "maxLength": 50
+        },
+        {
+          "name": "level",
+          "type": "string",
+          "label": "学历层次",
+          "maxLength": 20
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "label": "描述",
+          "maxLength": 200
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "maxLength": 10
+        },
+        {
+          "name": "sortOrder",
+          "type": "number",
+          "label": "排序序号"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "education_dict",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "code": "BACHELOR",
+              "name": "本科",
+              "level": "本科",
+              "description": "本科学历",
+              "status": "active",
+              "sortOrder": 1
+            },
+            {
+              "id": 2,
+              "code": "MASTER",
+              "name": "硕士",
+              "level": "研究生",
+              "description": "硕士研究生学历",
+              "status": "active",
+              "sortOrder": 2
+            },
+            {
+              "id": 3,
+              "code": "DOCTOR",
+              "name": "博士",
+              "level": "研究生",
+              "description": "博士研究生学历",
+              "status": "active",
+              "sortOrder": 3
+            },
+            {
+              "id": 4,
+              "code": "ASSOCIATE",
+              "name": "大专",
+              "level": "专科",
+              "description": "大专学历",
+              "status": "active",
+              "sortOrder": 4
+            },
+            {
+              "id": 5,
+              "code": "HIGH_SCHOOL",
+              "name": "高中",
+              "level": "中等教育",
+              "description": "高中学历",
+              "status": "active",
+              "sortOrder": 5
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "dictionary",
+      "businessCategory": "reference",
+      "api": {
+        "list": {
+          "url": "/api/education-dict",
+          "method": "GET",
+          "pagination": {
+            "pageParam": "page",
+            "sizeParam": "size"
+          }
+        },
+        "create": {
+          "url": "/api/education-dict",
+          "method": "POST"
+        },
+        "retrieve": {
+          "url": "/api/education-dict/{id}",
+          "method": "GET"
+        },
+        "update": {
+          "url": "/api/education-dict/{id}",
+          "method": "PUT"
+        },
+        "delete": {
+          "url": "/api/education-dict/{id}",
+          "method": "DELETE"
+        }
+      },
+      "crudConfig": {
+        "timeout": 30000,
+        "retryCount": 3,
+        "validateData": true
+      }
     }
-  ]
+  },
+  "tableRelations": [
+    {
+      "parentTable": "users",
+      "childTable": "user_resumes",
+      "parentField": "id",
+      "childField": "userId",
+      "relationName": "user_resumes_relation"
+    }
+  ],
+  "viewDependencies": [
+    {
+      "parentTable": "users",
+      "childTable": "user_resumes",
+      "dependencyType": "allRows",
+      "autoLoad": true
+    }
+  ],
+  "pageId": "renderer-demo",
+  "layout": {
+    "tablePositions": {
+      "users": {
+        "x": 50,
+        "y": 50
+      },
+      "user_resumes": {
+        "x": 407,
+        "y": 78
+      },
+      "education_dict": {
+        "x": 724,
+        "y": 134
+      }
+    }
+  }
 }

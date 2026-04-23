@@ -85,10 +85,10 @@ async function ensureAllFilesLoaded() {
 }
 
 function buildPreviewConfig(): Omit<PageConfig, 'pageId'> | null {
-  const ruleText = props.state.editFiles['rule.json'] ?? ''
-  const dataText = props.state.editFiles['pagedata.json'] ?? ''
-  const scriptText = props.state.editFiles['script.js'] ?? ''
-  const cssText = props.state.editFiles['style.css'] ?? ''
+  const ruleText = props.state.documents['rule.json'].text.value
+  const dataText = props.state.documents['pagedata.json'].text.value
+  const scriptText = props.state.documents['script.js'].text.value
+  const cssText = props.state.documents['style.css'].text.value
 
   if (!ruleText.trim() && !dataText.trim()) return null
 

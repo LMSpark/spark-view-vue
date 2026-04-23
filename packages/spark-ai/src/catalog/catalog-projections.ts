@@ -146,6 +146,114 @@ export interface ComponentConfigGuide {
    * LLM 在提交配置前应逐条对照，验证生成的 SparkNode 是否满足约束。
    */
   failFastChecks: string[]
+  /** 由 props.schemaRef=component:* 推导出的子组件说明（用于补齐容器组合链路） */
+  subComponentGuides?: Array<{
+    type: string
+    fromProps: string[]
+    resolved: boolean
+    category?: string
+    description?: string
+    requiredProps?: string[]
+    optionalPropsPreview?: string[]
+    fix?: string
+  }>
+}
+
+function parseComponentRef(schemaRef?: string): string | null {
+  if (typeof schemaRef !== 'string') return null
+  if (!schemaRef.startsWith('component:')) return null
+  const refType = schemaRef.slice('component:'.length).trim()
+  return refType.length > 0 ? refType : null
+}
+
+function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: string; fromProps: string[] }> {
+  const refs = new Map<string, Set<string>>()
+  for (const prop of entry.props) {
+    // 首选：prop.componentRef（VCM schema 展开后 @componentRef 作为独立语义标签）
+    // 兜底：prop.schemaRef 的旧 `component:xxx` 形式（无结构 schema 时使用）
+    const refType = prop.componentRef ?? parseComponentRef(prop.schemaRef)
+    if (refType === null) continue
+    const normalized = refType.trim()
+    if (normalized.length === 0) continue
+    if (!refs.has(normalized)) refs.set(normalized, new Set<string>())
+    refs.get(normalized)?.add(prop.name)
+  }
+
+  return [...refs.entries()].map(([type, fromProps]) => ({
+    type,
+    fromProps: [...fromProps].sort((a, b) => a.localeCompare(b)),
+  }))
+}
+
+function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedComponentEntry): Array<{
+  type: string
+  fromProps: string[]
+  resolved: boolean
+  category?: string
+  description?: string
+  requiredProps?: string[]
+  optionalPropsPreview?: string[]
+  fix?: string
+}> {
+  const refs = collectSubComponentRefs(entry)
+  return refs.map((ref) => {
+    // 首选：从父 prop 类型反推出的结构节点 schema（ActionsNode/ToolbarNode/FilterNode …）。
+    // 这正是 AI 在 rule.json 中要写入的 JSON 形状，优先级最高。
+    const inlineSchema = resolveInlineStructureSchema(catalog, entry, ref.fromProps)
+    if (inlineSchema !== undefined) {
+      const properties = Object.values(inlineSchema.properties)
+      return {
+        type: ref.type,
+        fromProps: ref.fromProps,
+        resolved: true,
+        category: 'inline-structure',
+        description: `结构由 props 类型反推：${inlineSchema.type}（直接按字段配置即可）`,
+        requiredProps: properties.filter((p) => p.required === true).map((p) => p.name),
+        optionalPropsPreview: properties.filter((p) => p.required !== true).map((p) => p.name).slice(0, 12),
+      }
+    }
+
+    // 兜底：无内联结构时，回落到独立 catalog 条目（例如缺少 XxxNode 类型声明时）。
+    const subSpec = projectComponentSpec(catalog, ref.type)
+    if (subSpec !== null) {
+      return {
+        type: ref.type,
+        fromProps: ref.fromProps,
+        resolved: true,
+        category: subSpec.category ?? 'feature',
+        description: subSpec.description,
+        requiredProps: subSpec.props.filter((p) => p.required).map((p) => p.name),
+        optionalPropsPreview: subSpec.props.filter((p) => !p.required).map((p) => p.name).slice(0, 8),
+      }
+    }
+
+    return {
+      type: ref.type,
+      fromProps: ref.fromProps,
+      resolved: false,
+      fix: `确认 ${ref.type} 是否在 component-catalog 中注册，或在 prop 类型上提供可被 VCM 展开的结构类型（如 XxxNode）。`,
+    }
+  })
+}
+
+/**
+ * 解析某个 prop（按名称列表择一）对应的内联结构 schema。
+ *
+ * 仅在 pool 条目为 `kind: 'object'` 时返回——用于 `@componentRef` 指向的子组件
+ * 没有独立 catalog 条目、但父 prop 类型已被 VCM 展开的场景。
+ */
+function resolveInlineStructureSchema(
+  catalog: ComponentCatalog,
+  entry: HydratedComponentEntry,
+  propNames: string[],
+): Extract<PropSchema, { kind: 'object' }> | undefined {
+  for (const name of propNames) {
+    const prop = entry.props.find((p) => p.name === name)
+    if (prop === undefined) continue
+    const schema = resolvePropSchema(catalog, prop)
+    if (schema?.kind === 'object') return schema
+  }
+  return undefined
 }
 
 /**
@@ -737,6 +845,8 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
 
   const category = inferCategory(entry)
   const rootFieldPaths = flattenRootFieldPaths(entry.rootFields ?? [])
+  const subComponentGuides = buildSubComponentGuides(catalog, entry)
+  const unresolvedSubComponentGuides = subComponentGuides.filter((item) => !item.resolved)
 
   // 生成"最低起步配置"：仅包含必填 props，容器类附加空 children 数组
   const minimalConfig = {
@@ -750,6 +860,7 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
     `组件 type 必须精确匹配: ${entry.type}`,
     ...requiredProps.map((prop) => `必填 props 未传: ${prop.name}`),
     ...rootFieldPaths.map((path) => `rootFields 路径应可解析: ${path}`),
+    ...unresolvedSubComponentGuides.map((item) => `子组件引用未解析: ${item.type}（来源 props: ${item.fromProps.join(', ')}）`),
     ...(eventGuide.length > 0
       ? ['事件绑定仅允许使用 emits 列表中的事件名，不允许拼写猜测。']
       : ['该组件无 emits 事件声明，不应绑定 on.* 事件。']),
@@ -774,6 +885,7 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
       : {}),
     ...(entry.rootFields !== undefined && entry.rootFields.length > 0 ? { rootFieldGuide: entry.rootFields } : {}),
     ...(rootFieldPaths.length > 0 ? { rootFieldPaths } : {}),
+    ...(subComponentGuides.length > 0 ? { subComponentGuides } : {}),
     minimalConfig,
     failFastChecks,
   }

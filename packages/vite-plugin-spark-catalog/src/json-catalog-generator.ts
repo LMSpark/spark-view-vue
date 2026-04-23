@@ -515,20 +515,32 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
       ...(prop.description !== undefined ? { description: prop.description } : {}),
     }
 
-    // @componentRef 优先：prop 有 componentRef 标签时，用组件引用覆盖 schema
-    // 因为 VCM 对复杂类型只能生成 enum 字符串变体，不如组件引用有用
+    // 语义标签：@componentRef 始终以独立字段落盘，不再与结构 schema 互斥。
     if (prop.__componentRef !== undefined) {
-      compacted.schemaRef = `component:${prop.__componentRef}`
-    } else if (prop.__enumVariants !== undefined && prop.__enumVariants.length > 0) {
-      // 命名枚举类型（如 InlineAlign、InlineJustify）：自动提升为共享 enum schema
-      const enumType = prop.type.replace(/\s*\|\s*undefined\s*$/, '').trim()
-      const enumSchema: PropSchema = { kind: 'enum', type: enumType, variants: prop.__enumVariants }
-      compacted.schemaRef = resolveSchemaRef(schemaPool, enumSchema)
-    } else if (prop.schema !== undefined) {
+      compacted.componentRef = prop.__componentRef
+    }
+
+    // 结构 schema 优先级：
+    // 1) VCM 抽取出的真实结构（object/array）——首选；
+    // 2) rawType 提取的命名字面量 enum（InlineAlign 等）；
+    // 3) 兜底：仅当上述两类都缺失且存在 @componentRef 时，写 `component:xxx` 旧形式引用，
+    //    供消费层递归展开目标组件 props。
+    let schemaResolved = false
+    if (prop.schema !== undefined) {
       const isExternalObjectSchema = prop.schema.kind === 'object' && prop.__schemaOwner === 'external'
       if (!isExternalObjectSchema && shouldRetainSchema(prop.schema)) {
         compacted.schemaRef = resolveSchemaRef(schemaPool, prop.schema, prop.__schemaIdentityKey)
+        schemaResolved = true
       }
+    }
+    if (!schemaResolved && prop.__enumVariants !== undefined && prop.__enumVariants.length > 0) {
+      const enumType = prop.type.replace(/\s*\|\s*undefined\s*$/, '').trim()
+      const enumSchema: PropSchema = { kind: 'enum', type: enumType, variants: prop.__enumVariants }
+      compacted.schemaRef = resolveSchemaRef(schemaPool, enumSchema)
+      schemaResolved = true
+    }
+    if (!schemaResolved && prop.__componentRef !== undefined) {
+      compacted.schemaRef = `component:${prop.__componentRef}`
     }
 
     result.push(compacted)

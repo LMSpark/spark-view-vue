@@ -9,6 +9,7 @@ export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 export { default as SparkCodeEditor } from './support/SparkCodeEditor.vue'
 export { default as SparkJsonEditor } from './support/SparkJsonEditor.vue'
 export { default as JsonTreeEditor } from './support/JsonTreeEditor.vue'
+export { default as AiChatShell } from './support/AiChatShell.vue'
 export * from './support/jsonTreeEditor.js'
 
 // ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────

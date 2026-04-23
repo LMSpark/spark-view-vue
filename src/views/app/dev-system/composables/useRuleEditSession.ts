@@ -54,6 +54,21 @@ export const TOOL_WRITE_ACTIONS = [
 
 export const TOOL_WRITE_SET = new Set<string>(TOOL_WRITE_ACTIONS)
 
+function isDatasetWriteAction(action: string): boolean {
+  if (!action.startsWith('datasetTool.')) return false
+  return !(
+    action === 'datasetTool.export'
+    || action === 'datasetTool.historyCursor'
+    || action.startsWith('datasetTool.can')
+    || action.startsWith('datasetTool.get')
+    || action.startsWith('datasetTool.list')
+  )
+}
+
+function isToolWriteAction(action: string): boolean {
+  return TOOL_WRITE_SET.has(action) || isDatasetWriteAction(action)
+}
+
 export const TOOL_PARAM_EXAMPLES: Record<string, string> = {
   'sparkNodeTree.getNode': JSON.stringify({ componentId: 'root' }, null, 2),
   'sparkNodeTree.getLocation': JSON.stringify({ componentId: 'root' }, null, 2),
@@ -306,6 +321,24 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
               pushLog('error', `✗ ${turn.toolBlock.action}`, r.msg ?? '失败')
             }
           }
+          // Real-time projection: notify live model adapter on every successful
+          // write so the 4 file tabs reflect AI edits immediately (rather than
+          // only after the full runStillsLoop completes).
+          const action = turn.toolBlock?.action
+          if (
+            turn.phase === 'stills-execute'
+            && action !== undefined
+            && turn.stillsResult?.ok
+          ) {
+            const adapter = getLiveModelAdapter()
+            if (TOOL_WRITE_SET.has(action)) {
+              const liveNodeTree = adapter.getNodeTree?.()
+              if (liveNodeTree) adapter.onNodeTreeChanged?.(liveNodeTree)
+            } else if (isDatasetWriteAction(action)) {
+              const liveDataSetTool = adapter.getDataSetTool?.()
+              if (liveDataSetTool) adapter.onDataSetChanged?.(liveDataSetTool)
+            }
+          }
         },
       })
       if (runController.signal.aborted || activeRunId !== runId) {
@@ -313,10 +346,32 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       }
       sessionHost.setBackendSessionId(result.sessionId)
       if (result.aborted) throw new Error(`Stills 中止: ${result.abortReason}`)
-      const writeCount = result.turns.filter((turn) => {
+      const writeActions = result.turns.flatMap((turn) => {
         const action = turn.toolBlock?.action
-        return turn.phase === 'stills-execute' && action !== undefined && TOOL_WRITE_SET.has(action) && turn.stillsResult?.ok
-      }).length
+        return turn.phase === 'stills-execute' && action !== undefined && isToolWriteAction(action) && turn.stillsResult?.ok
+          ? [action]
+          : []
+      })
+      const writeCount = writeActions.length
+      const hasNodeTreeWrites = writeActions.some(action => TOOL_WRITE_SET.has(action))
+      const hasDataSetWrites = writeActions.some(action => isDatasetWriteAction(action))
+
+      if (hasNodeTreeWrites || hasDataSetWrites) {
+        const liveModelAdapter = getLiveModelAdapter()
+        if (hasNodeTreeWrites) {
+          const liveNodeTree = liveModelAdapter.getNodeTree?.()
+          if (liveNodeTree) {
+            liveModelAdapter.onNodeTreeChanged?.(liveNodeTree)
+          }
+        }
+        if (hasDataSetWrites) {
+          const liveDataSetTool = liveModelAdapter.getDataSetTool?.()
+          if (liveDataSetTool) {
+            liveModelAdapter.onDataSetChanged?.(liveDataSetTool)
+          }
+        }
+      }
+
       dirty.value = writeCount > 0
       if (writeCount > 0) {
         pushLog('success', '✅ 已同步', `已直接写入当前页面 live model (${result.rounds} 轮, ${writeCount} 次写操作)`)

@@ -33,7 +33,11 @@ export interface RTableProps
    * 说明：不再依赖 attrs 隐式透传，统一通过该入口传递 rowKey/treeProps/highlightCurrentRow 等底层参数。
    */
   tableProps?: Record<string, unknown>
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /**
+    * 结构化工具栏
+   * 提示词模板：默认动作 append-row / refresh / delete-current。
+    * @componentRef r-toolbar
+   */
   toolbar?: ToolbarNode
   /** 行操作列宽度（历史兼容字段，优先级低于 r-actions.props.width） */
   rowActionsWidth?: string | number
@@ -41,8 +45,17 @@ export interface RTableProps
   rowActionsAlign?: ActionsAlign
   /** 行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed） */
   rowActionsFixed?: ActionsFixed
-  /** 结构化筛选区 @componentRef r-filter */
+  /**
+   * 结构化筛选区
+   * 提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。
+   * @componentRef r-filter
+   */
   filter?: FilterNode
-  /** 结构化行动作 */
+  /**
+   * 结构化行动作
+   * 提示词模板：默认动作 message-row / delete-row。
+   * 权限要求：写操作按钮必须声明 permAction(create/delete/edit)，并建议 permDeniedBehavior='disable'。
+   * @componentRef r-actions
+   */
   actions?: ActionsNode
 }
