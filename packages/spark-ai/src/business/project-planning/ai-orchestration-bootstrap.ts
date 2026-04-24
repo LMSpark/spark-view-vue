@@ -9,6 +9,7 @@ import {
   type OrchestratorConfigFactoryOptions,
 } from './orchestrator-config-factory'
 import type { SessionBackend, OrchestratorResult } from '../../core/session/session-contracts'
+import type { IStillSession } from '../../core/stills/types'
 import { SessionBackendImpl } from '../../core/session/session-backend'
 import {
   DEFAULT_ORCHESTRATION_SCENARIO,
@@ -20,6 +21,7 @@ export interface BootstrapOptions extends Omit<OrchestratorConfigFactoryOptions,
   backend: SessionBackend
   systemPrompt: string
   userPrompt?: string
+  session?: IStillSession
 }
 
 export function createSessionBackend(
@@ -75,12 +77,13 @@ export async function startAiOrchestration(options: BootstrapOptions): Promise<O
   const {
     backend,
     userPrompt = '',
+    session,
   } = options
 
-  const session = createStillsSession()
+  const runtimeSession = session ?? createStillsSession()
   const configOptions = buildConfigOptions(options)
   const config = createOrchestratorConfig(configOptions)
-  const result = await runStillsLoop(userPrompt, session, backend, config)
+  const result = await runStillsLoop(userPrompt, runtimeSession, backend, config)
 
   return result
 }

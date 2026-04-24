@@ -129,6 +129,42 @@ describe('useDevState documents SSOT', () => {
     }
   })
 
+  it('ensureActivePageFilesLoaded fails fast and preserves existing documents when remote fetch fails', async () => {
+    httpGet.mockImplementation(async (url: string) => {
+      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (!name) throw new Error(`unexpected GET ${url}`)
+      if (name === 'pagedata.json') return { content: createPageDataText('Stable', true) }
+      if (name === 'rule.json') return { content: '[]\n' }
+      return { content: '' }
+    })
+
+    const state = useDevState()
+    state.selectPage('orders-page')
+    await state.ensureActivePageFilesLoaded()
+
+    const ruleDoc = state.documents['rule.json']
+    const pagedataDoc = state.documents['pagedata.json']
+    const previousRuleText = ruleDoc.text.value
+    const previousPageDataText = pagedataDoc.text.value
+
+    httpGet.mockImplementation(async (url: string) => {
+      if (url.endsWith('/rule.json')) throw new Error('network-down')
+      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (!name) throw new Error(`unexpected GET ${url}`)
+      if (name === 'pagedata.json') return { content: createPageDataText('Mutated', true) }
+      return { content: '' }
+    })
+
+    await expect(state.ensureActivePageFilesLoaded({ forceReload: true })).rejects.toThrow(
+      '读取页面文件失败: orders-page/rule.json',
+    )
+
+    expect(ruleDoc.text.value).toBe(previousRuleText)
+    expect(pagedataDoc.text.value).toBe(previousPageDataText)
+    expect(ruleDoc.loadState.value).toBe('loaded')
+    expect(pagedataDoc.loadState.value).toBe('loaded')
+  })
+
   it('rule.json setText + undo reflects in the live SparkNodeTree', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'

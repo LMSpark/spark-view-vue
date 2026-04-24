@@ -149,13 +149,34 @@
                 "children": []
               },
               {
-                "type": "r-text",
+                "type": "r-select",
                 "id": "colCustomerId",
                 "props": {
                   "id": "colCustomerId",
                   "field": "customerId",
-                  "label": "客户ID",
-                  "width": 100
+                  "label": "客户名称",
+                  "optionKey": "Customers@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "id",
+                  "readonly": true,
+                  "width": 120,
+                  "placeholder": "请选择客户"
+                },
+                "children": []
+              },
+              {
+                "type": "r-select",
+                "id": "colEmployeeId",
+                "props": {
+                  "id": "colEmployeeId",
+                  "field": "employeeId",
+                  "label": "业务人",
+                  "optionKey": "Employees@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "id",
+                  "readonly": true,
+                  "width": 120,
+                  "placeholder": "请选择业务人"
                 },
                 "children": []
               },

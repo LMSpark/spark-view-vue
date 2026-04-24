@@ -3,11 +3,9 @@
  *
  * 单一责任：管理编辑会话的生命周期（phase: idle → editing → saved）。
  *
- * 不直接定义具体操作 — 具体操作下沉到各 FC 子模块：
+ * 不直接定义具体操作 — 具体操作下沉到各函数调用子模块：
  * - edit-lifecycle-stills.ts:   生命周期（bootstrap）
  * - edit-file-stills.ts:        文件读写（catalog-driven）
- * - edit-diff-stills.ts:        差异观测
- * - edit-export-stills.ts:      导出检查点
  * - edit-nodeTree-stills.ts:    页面规则操作（catalog-driven）
  * - edit-dataset-stills.ts:     数据集 CRUD 操作（catalog-driven）
  *
@@ -21,22 +19,18 @@ import type {
 import { createEditState, type EditDomainState } from './edit-state'
 import { EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
 import { EDIT_FILE_STILLS } from './tools/edit-file-stills'
-import { EDIT_DIFF_STILLS } from './edit-diff-stills'
-import { EDIT_EXPORT_STILLS } from './edit-export-stills'
 import { EDIT_NODE_TREE_STILLS } from './tools/edit-nodeTree-stills'
 import { EDIT_DATASET_STILLS } from './tools/edit-dataset-stills'
 
 // ═══════════════════════════════════════════════════════════
-// FC 工具清单
+// 函数调用工具清单
 //
-// domain 直接聚合所有 FC 常量组，不经过 manifest 中间层。
+// domain 直接聚合所有函数调用常量组，不经过 manifest 中间层。
 // ═══════════════════════════════════════════════════════════
 
 export const EDIT_STILLS: StillDefinition[] = [
   ...EDIT_LIFECYCLE_STILLS,
   ...EDIT_FILE_STILLS,
-  ...EDIT_DIFF_STILLS,
-  ...EDIT_EXPORT_STILLS,
   ...EDIT_NODE_TREE_STILLS,
   ...EDIT_DATASET_STILLS,
 ]

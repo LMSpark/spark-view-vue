@@ -6,7 +6,7 @@ import {
 } from './edit-flow-prompts'
 
 /**
- * FC 模式协议基座（L1+L2）。
+ * 函数调用模式协议基座（L1+L2）。
  */
 export const STILLS_PROTOCOL_BASE = `
 ══ L1: 协议层 ══
@@ -145,7 +145,7 @@ export const STILLS_DATASET_DOMAIN = `
   - stills.actionSpec：查询单动作完整规格（paramsSchema / usageRules / failureModes / example）
 
   执行规则：
-  - 提示词只规定“先查再做”，不预设具体 FC 名。
+  - 提示词只规定“先查再做”，不预设具体函数名。
   - 任何写操作前，先从 capabilities 选动作，再用 actionSpec 拉取该动作的完整参数规范。
   - 动作名、参数字段、参数类型、可选/必填、失败码，全部以查询结果为准。
   - 不允许凭记忆拼动作名，不允许猜参数格式。
@@ -169,7 +169,7 @@ export const STILLS_DATASET_DOMAIN = `
   执行时若对动作选择、参数格式、校验规则或边界条件不确定：
   1) 先查 stills.capabilities
   2) 再查 stills.actionSpec（按目标动作名）
-  3) 依据返回规格执行对应 FC
+  3) 依据返回规格执行对应函数调用动作
 
   actionSpec 返回完整规格：paramsSchema / usageRules / failureModes / example。
   先查再执行，禁止猜测参数格式。
@@ -218,7 +218,7 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
 
 ══ Edit Domain: 动作纪律 ══
 
-  - 当前会话仅允许 edit domain 动作：edit.* / textModel.* / datasetTool.* / sparkNodeTree.* / dataset.export
+  - 当前会话仅允许 edit domain 动作：edit.* / textModel.* / datasetTool.* / sparkNodeTree.*
   - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
   - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
   - 首轮可调用 session.describe 或 stills.capabilities 了解 edit-domain 目录；之后不要重复能力探测
@@ -247,7 +247,7 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
       • r-table / r-form / r-detail / r-tree 这类自解析容器消费 dataKey；其子字段节点优先用 field / label，而不是重复写 dataKey
       • 旧点号格式一律禁止：dataset.tables.Users.rows、dataset.tables.Orders.views.grid.rows 都不是合法 DataKey
       • 若不确定应绑定哪个 table / viewId / field，先调用 sparkNodeTree.collectDataKeys 或读取同类节点，复用当前页面现有模式
-  - 修改 pagedata.json：使用 datasetTool.*；完成数据阶段后执行 dataset.export
+  - 修改 pagedata.json：使用 datasetTool.*
   - 修改 script.js：使用 textModel.readScript / textModel.writeScript
   - 修改 style.css：使用 textModel.readStyle / textModel.writeStyle
 

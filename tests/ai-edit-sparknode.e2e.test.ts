@@ -12,6 +12,7 @@ import {
   registerEditStills,
   createSession,
   executeStill,
+  getActiveNodeTree,
   getEditState,
   runStillsLoop,
   SessionBackendImpl,
@@ -141,6 +142,20 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
       },
     })
 
+    liveTree.loadRoot({
+      type: 'page',
+      children: [
+        {
+          id: 'root-table',
+          type: 'r-table',
+          props: { dataKey: 'Departments@default' },
+          children: [],
+        },
+      ],
+    })
+    script = 'export default {}\n'
+    style = '.page {}\n'
+
     const seededBootstrap = executeStill('edit.bootstrap', {
       ruleJson: [
         {
@@ -210,7 +225,7 @@ ${AUTONOMOUS_GUARDRAILS}
     console.info(`[E2E] AI 最终回复：${lastAiTurn?.aiText ?? ''}`)
 
     const state = getEditState(session)
-    const ruleNodes = state.nodeTree?.toJSON()?.children ?? []
+    const ruleNodes = getActiveNodeTree(state)?.toJSON()?.children ?? []
     const conversation = await backend.getConversation(result.sessionId)
     const conversationReadable = toReadableConversation(conversation)
 
@@ -310,6 +325,20 @@ ${AUTONOMOUS_GUARDRAILS}
       },
     })
 
+    liveTree.loadRoot({
+      type: 'page',
+      children: [
+        {
+          id: 'root-table',
+          type: 'r-table',
+          props: { dataKey: 'Departments@default' },
+          children: [],
+        },
+      ],
+    })
+    script = 'export default {}\n'
+    style = '.page {}\n'
+
     const seededBootstrap = executeStill('edit.bootstrap', {
       ruleJson: [
         {
@@ -375,7 +404,7 @@ ${AUTONOMOUS_GUARDRAILS}
     console.info(`[E2E-Full] AI 最终回复：${lastAiTurn?.aiText ?? ''}`)
 
     const state = getEditState(session)
-    const ruleNodes = state.nodeTree?.toJSON()?.children ?? []
+    const ruleNodes = getActiveNodeTree(state)?.toJSON()?.children ?? []
     const conversation = await backend.getConversation(result.sessionId)
     const conversationReadable = toReadableConversation(conversation)
 

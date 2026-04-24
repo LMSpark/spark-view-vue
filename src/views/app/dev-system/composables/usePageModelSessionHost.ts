@@ -2,7 +2,6 @@ import { shallowRef } from 'vue'
 import type { ShallowRef } from 'vue'
 import {
   bindLiveModelAdapter,
-  captureBaselineSnapshot,
   clearRegistry,
   clearDomains,
   registerEditStills,
@@ -60,7 +59,6 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     const nextSession = createStillSession()
     const editState = getEditState(nextSession)
     bindLiveModelAdapter(editState, getLiveModelAdapter())
-    captureBaselineSnapshot(editState)
 
     session.value = nextSession
     sessionKey = nextSessionKey

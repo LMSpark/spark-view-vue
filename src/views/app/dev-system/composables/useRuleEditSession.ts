@@ -19,6 +19,7 @@ import {
   getEditState,
   type IStillSession,
   type DialogueTurn,
+  type StillResult,
 } from '@spark-view/spark-ai'
 import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
 import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
@@ -134,6 +135,11 @@ export interface RuleEditRunHooks {
   signal?: AbortSignal
 }
 
+interface RuleEditBootstrapOptions {
+  silent?: boolean
+  skipContextLoad?: boolean
+}
+
 export function useRuleEditSession(options: RuleEditSessionOptions) {
   const { getSessionKey, getLiveModelAdapter, ensureContextLoaded, onStatus } = options
   const ownsSessionHost = options.sessionHost === undefined
@@ -238,6 +244,62 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     }
   }
 
+  function formatStillFailure(result: Extract<StillResult, { ok: false }>): string {
+    return `${result.msg}\n修复建议: ${result.fix}`
+  }
+
+  async function bootstrap(bootstrapOptions?: RuleEditBootstrapOptions): Promise<void> {
+    if (!bootstrapOptions?.skipContextLoad) {
+      await ensureContextLoaded?.()
+    }
+    if (sessionHost.hasSessionMismatch(getSessionKey())) {
+      await sessionHost.reset()
+      ready.value = false
+    }
+
+    const session = ensureSession()
+    const adapter = getLiveModelAdapter()
+    const liveTree = adapter.getNodeTree?.()
+    const liveDataSetTool = adapter.getDataSetTool?.()
+    const readScript = adapter.readScript
+    const readStyle = adapter.readStyle
+
+    if (!liveTree) {
+      throw new Error('edit.bootstrap 失败：缺少 live SparkNodeTree，必须先加载当前页面 rule.json')
+    }
+    if (!liveDataSetTool) {
+      throw new Error('edit.bootstrap 失败：缺少 live DataSetCrudTool，必须先加载当前页面 pagedata.json')
+    }
+    if (!readScript) {
+      throw new Error('edit.bootstrap 失败：缺少 live script.js 读取器')
+    }
+    if (!readStyle) {
+      throw new Error('edit.bootstrap 失败：缺少 live style.css 读取器')
+    }
+
+    void liveTree.toJSON()
+    void liveDataSetTool.toJson()
+    void readScript()
+    void readStyle()
+
+    const result = executeStill('edit.bootstrap', {}, session, 'bootstrap-live-model')
+
+    if (!result.ok) {
+      const message = formatStillFailure(result)
+      if (!bootstrapOptions?.silent) {
+        pushLog('error', 'edit.bootstrap', message)
+      }
+      throw new Error(message)
+    }
+
+    nodeTree.value = getActiveNodeTree(getEditState(session))
+    ready.value = true
+    dirty.value = false
+    if (!bootstrapOptions?.silent) {
+      pushLog('info', 'edit.bootstrap', result.summary)
+    }
+  }
+
   // ── Public API ──────────────────────────────────────────────────────────────
 
   /** Execute a single sparkNodeTree.* tool directly (manual/tool mode). */
@@ -285,15 +347,12 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     busy.value = true
     aiBuffer.value = ''
     try {
-      await ensureContextLoaded?.()
-      if (sessionHost.hasSessionMismatch(getSessionKey())) {
-        await sessionHost.reset()
-        ready.value = false
-      }
-      ensureSession()
+      await bootstrap({ silent: true })
+      const session = ensureSession()
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await startIterateSession({
         backend: sessionHost.backend,
+        session,
         userPrompt: prompt,
         systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
         maxRounds: 80,
@@ -344,8 +403,16 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       if (runController.signal.aborted || activeRunId !== runId) {
         return
       }
+      if (result.aborted) {
+        sessionHost.setBackendSessionId(result.sessionId)
+        throw new Error(`Stills 中止: ${result.abortReason}`)
+      }
+      const toolTurnCount = result.turns.filter((turn) => turn.phase === 'stills-execute').length
+      if (toolTurnCount === 0) {
+        sessionHost.setBackendSessionId(null)
+        throw new Error('本轮未触发任何工具调用，已丢弃后端会话。请重试；若持续复现，请重置当前页面模型会话。')
+      }
       sessionHost.setBackendSessionId(result.sessionId)
-      if (result.aborted) throw new Error(`Stills 中止: ${result.abortReason}`)
       const writeActions = result.turns.flatMap((turn) => {
         const action = turn.toolBlock?.action
         return turn.phase === 'stills-execute' && action !== undefined && isToolWriteAction(action) && turn.stillsResult?.ok
@@ -355,6 +422,10 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       const writeCount = writeActions.length
       const hasNodeTreeWrites = writeActions.some(action => TOOL_WRITE_SET.has(action))
       const hasDataSetWrites = writeActions.some(action => isDatasetWriteAction(action))
+      if (writeCount === 0) {
+        sessionHost.setBackendSessionId(null)
+        throw new Error('本轮仅执行了只读工具，未对当前页面 live model 产生写入。已丢弃后端会话，请重试。')
+      }
 
       if (hasNodeTreeWrites || hasDataSetWrites) {
         const liveModelAdapter = getLiveModelAdapter()
@@ -373,11 +444,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       }
 
       dirty.value = writeCount > 0
-      if (writeCount > 0) {
-        pushLog('success', '✅ 已同步', `已直接写入当前页面 live model (${result.rounds} 轮, ${writeCount} 次写操作)`)
-      } else {
-        pushLog('info', `${result.rounds} 轮完成`, '未检测到写操作')
-      }
+      pushLog('success', '✅ 已同步', `已直接写入当前页面 live model (${result.rounds} 轮, ${writeCount} 次写操作)`)
       onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
     } catch (err) {
       if (runController.signal.aborted || activeRunId !== runId) {
@@ -436,5 +503,5 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     }
   })
 
-  return { ready, dirty, busy, aiBuffer, log, nodeTree, execTool, runLlm, reset, loadRuleDocument, loadRuleJson }
+  return { ready, dirty, busy, aiBuffer, log, nodeTree, bootstrap, execTool, runLlm, reset, loadRuleDocument, loadRuleJson }
 }

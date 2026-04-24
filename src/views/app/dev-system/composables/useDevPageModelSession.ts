@@ -91,7 +91,7 @@ export function useDevPageModelSession(options: Options) {
       '[全局对话延续]',
       `当前页面: ${state.activePageId.value}`,
       `当前焦点文件: ${options.activeFile.value ?? 'unknown'}`,
-      '以下是最近对话摘录；当前真实读写只以当前页面 live model 为准，AI 不维护独立模型副本。',
+      '以下仅保留最近用户需求；AI 旧结论不得覆盖当前 live model 事实。',
       transcript,
       '',
       '[本轮用户需求]',
@@ -128,6 +128,8 @@ export function useDevPageModelSession(options: Options) {
   const sender: AiChatSender = async (request) => {
     const prompt = [...request.historyMsgs].reverse().find(message => message.role === 'user')?.content.trim() ?? ''
     if (!prompt) return
+    await state.ensureActivePageFilesLoaded()
+    await editSession.bootstrap({ silent: true, skipContextLoad: true })
     request.onDelta?.('已接收需求，正在执行页面模型级编辑...\n')
     await runEditSessionChat(request, buildContinuationPrompt(prompt, request.historyMsgs))
   }
@@ -140,6 +142,7 @@ export function useDevPageModelSession(options: Options) {
     externalToolLogs: editSession.log,
     beforeOpen: async () => {
       await state.ensureActivePageFilesLoaded()
+      await editSession.bootstrap({ silent: true, skipContextLoad: true })
     },
   }
 

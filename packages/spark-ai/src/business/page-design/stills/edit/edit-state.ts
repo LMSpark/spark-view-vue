@@ -30,10 +30,6 @@ export interface EditLiveModelAdapter {
 }
 
 export interface EditDomainState extends DomainState<null, EditPhase> {
-  nodeTree: SparkNodeTree | null
-  datasetEdit: DataSetCrudTool | null
-  script: string
-  style: string
   baselineSnapshot: EditModelSnapshot | null
   liveModelAdapter: EditLiveModelAdapter | null
 }
@@ -50,10 +46,6 @@ export function createEditState(): EditDomainState {
   return {
     data: null,
     phase: 'idle',
-    nodeTree: null,
-    datasetEdit: null,
-    script: '',
-    style: '',
     baselineSnapshot: null,
     liveModelAdapter: null,
   }
@@ -64,16 +56,14 @@ export function getActiveNodeTree(state: EditDomainState): SparkNodeTree | null 
 }
 
 export function notifyNodeTreeChanged(state: EditDomainState, nodeTree: SparkNodeTree): void {
-  state.nodeTree = nodeTree
   state.liveModelAdapter?.onNodeTreeChanged?.(nodeTree)
 }
 
 export function getActiveDataSetTool(state: EditDomainState): DataSetCrudTool | null {
-  return state.liveModelAdapter?.getDataSetTool?.() ?? state.datasetEdit
+  return state.liveModelAdapter?.getDataSetTool?.() ?? null
 }
 
 export function notifyDataSetChanged(state: EditDomainState, tool: DataSetCrudTool): void {
-  state.datasetEdit = tool
   state.liveModelAdapter?.onDataSetChanged?.(tool)
 }
 
@@ -92,7 +82,6 @@ export function writeActiveScript(state: EditDomainState, content: string): void
     throw new Error('writeActiveScript 失败：缺少 live text model 读写器（EditLiveModelAdapter.readScript/writeScript）')
   }
   writer(content)
-  state.script = reader()
 }
 
 export function readActiveStyle(state: EditDomainState): string {
@@ -110,15 +99,10 @@ export function writeActiveStyle(state: EditDomainState, content: string): void 
     throw new Error('writeActiveStyle 失败：缺少 live text model 读写器（EditLiveModelAdapter.readStyle/writeStyle）')
   }
   writer(content)
-  state.style = reader()
 }
 
 export function bindLiveModelAdapter(state: EditDomainState, adapter: EditLiveModelAdapter): void {
   state.liveModelAdapter = adapter
-  state.nodeTree = adapter.getNodeTree?.() ?? null
-  state.datasetEdit = adapter.getDataSetTool?.() ?? null
-  state.script = adapter.readScript?.() ?? ''
-  state.style = adapter.readStyle?.() ?? ''
 }
 
 export function createCurrentEditModel(state: EditDomainState): EditModel {

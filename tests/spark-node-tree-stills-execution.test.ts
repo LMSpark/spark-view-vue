@@ -10,12 +10,16 @@ import {
   type IStillSession,
   type StillResult,
 } from '../packages/spark-ai/src/stills'
-import { SparkNodeTree } from '../packages/spark-component/src/index'
-import { DataSetCrudTool } from '../packages/spark-data/src/index'
+import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
+import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog'
 
 let session: IStillSession
 let seq = 0
+let liveTree: SparkNodeTree
+let liveDataSet: DataSetCrudTool
+let script = ''
+let style = ''
 
 function exec(action: string, params: unknown = {}): StillResult {
   seq += 1
@@ -35,10 +39,10 @@ beforeEach(() => {
   registerEditStills()
   session = createSession()
   seq = 0
-  const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
-  const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
-  let script = ''
-  let style = ''
+  liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
+  liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
+  script = ''
+  style = ''
   bindLiveModelAdapter(getEditState(session), {
     getNodeTree: () => liveTree,
     getDataSetTool: () => liveDataSet,
@@ -53,9 +57,21 @@ beforeEach(() => {
   })
 })
 
+function seedLiveModel(params: {
+  ruleJson: SparkNode[]
+  pageDataJson: IDataSetMetadata
+  scriptJs: string
+  styleCss: string
+}): void {
+  liveTree.loadRoot({ type: 'page', children: params.ruleJson })
+  liveDataSet.replaceFromJson(params.pageDataJson, { commitHistory: false })
+  script = params.scriptJs
+  style = params.styleCss
+}
+
 describe('sparkNodeTree stills execution coverage', () => {
   it('includes catalog example in EXECUTE_ERROR fix for addNode', () => {
-    const init = exec('edit.bootstrap', {
+    const bootstrapPayload = {
       ruleJson: [
         {
           type: 'r-table',
@@ -67,7 +83,10 @@ describe('sparkNodeTree stills execution coverage', () => {
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
       scriptJs: 'export default {}\n',
       styleCss: '.page {}\n',
-    })
+    }
+    seedLiveModel(bootstrapPayload)
+
+    const init = exec('edit.bootstrap', bootstrapPayload)
     expect(init.ok).toBe(true)
 
     const failedAdd = exec('sparkNodeTree.addNode', {
@@ -90,7 +109,7 @@ describe('sparkNodeTree stills execution coverage', () => {
   it('executes all sparkNodeTree actions in one editing session', () => {
     const executedActions = new Set<string>()
 
-    const init = exec('edit.bootstrap', {
+    const bootstrapPayload = {
       ruleJson: [
         {
           type: 'r-table',
@@ -121,7 +140,10 @@ describe('sparkNodeTree stills execution coverage', () => {
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
       scriptJs: 'export default {}\n',
       styleCss: '.page {}\n',
-    })
+    }
+    seedLiveModel(bootstrapPayload)
+
+    const init = exec('edit.bootstrap', bootstrapPayload)
     expect(init.ok).toBe(true)
 
     const getNode = exec('sparkNodeTree.getNode', { componentId: 'root-table' })

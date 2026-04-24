@@ -13,7 +13,6 @@ import { ref, reactive, computed } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
 import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
-import { DataSetCrudTool } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   PAGE_FILE_NAMES,
@@ -190,21 +189,6 @@ export function useDevState() {
 
   let liveModelAdapterPageId = ''
   let liveModelAdapter: EditLiveModelAdapter | null = null
-  let fallbackDataSetToolPageId = ''
-  let fallbackDataSetTool: DataSetCrudTool | null = null
-
-  function getOrCreateFallbackDataSetTool(): DataSetCrudTool {
-    if (fallbackDataSetTool && fallbackDataSetToolPageId === activePageId.value) {
-      return fallbackDataSetTool
-    }
-
-    fallbackDataSetTool = DataSetCrudTool.fromJson({
-      dataSetName: activePageId.value || 'PageDataSet',
-      tables: {},
-    })
-    fallbackDataSetToolPageId = activePageId.value
-    return fallbackDataSetTool
-  }
 
   function buildLiveModelAdapter(): EditLiveModelAdapter {
     const ruleDoc = documents['rule.json']
@@ -217,10 +201,8 @@ export function useDevState() {
       onNodeTreeChanged(nodeTree) {
         ruleDoc.replaceModel(nodeTree)
       },
-      getDataSetTool: () => pageDataDoc.model.value ?? getOrCreateFallbackDataSetTool(),
+      getDataSetTool: () => pageDataDoc.model.value,
       onDataSetChanged(tool) {
-        fallbackDataSetTool = tool
-        fallbackDataSetToolPageId = activePageId.value
         pageDataDoc.replaceModel(tool)
       },
       readScript: () => scriptDoc.text.value,
@@ -257,8 +239,6 @@ export function useDevState() {
   function invalidateLiveModelAdapter(): void {
     liveModelAdapter = null
     liveModelAdapterPageId = ''
-    fallbackDataSetTool = null
-    fallbackDataSetToolPageId = ''
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -402,10 +382,11 @@ export function useDevState() {
     return DEFAULT_ICON_BY_KIND[kind]
   }
 
-  function syncPageFilesForNode(node: NavNode, forceReload: boolean): void {
+  async function syncPageFilesForNode(node: NavNode, forceReload: boolean): Promise<void> {
     const pageId = normalizePageIdFromPath(node.path)
     if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
       setActivePageContext(pageId, forceReload || activePageId.value !== pageId)
+      await ensureActivePageFilesLoaded({ forceReload })
       return
     }
     clearFiles()
@@ -569,7 +550,7 @@ export function useDevState() {
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
-        syncPageFilesForNode(matchedNode, false)
+        await syncPageFilesForNode(matchedNode, false)
         return
       }
     }
@@ -579,7 +560,7 @@ export function useDevState() {
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
-        syncPageFilesForNode(matchedNode, true)
+        await syncPageFilesForNode(matchedNode, true)
         return
       }
 
@@ -601,7 +582,7 @@ export function useDevState() {
     if (firstNode) {
       selectedNode.value = firstNode
       loadNodeToForm(firstNode)
-      syncPageFilesForNode(firstNode, true)
+      await syncPageFilesForNode(firstNode, true)
     }
   }
 
@@ -615,8 +596,9 @@ export function useDevState() {
     try {
       const data = await http.get<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${name}`)
       return typeof data['content'] === 'string' ? data['content'] : ''
-    } catch {
-      return ''
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
     }
   }
 
@@ -648,6 +630,9 @@ export function useDevState() {
 
     const loadEpoch = activePageFilesLoadEpoch
     activePageFilesLoadPageId = pageId
+    const previousLoadStates = new Map<PageFileName, 'idle' | 'loading' | 'loaded'>(
+      PAGE_FILE_NAMES.map(entry => [entry, documents[entry].loadState.value]),
+    )
 
     for (const entry of PAGE_FILE_NAMES) {
       const doc = documents[entry]
@@ -659,9 +644,19 @@ export function useDevState() {
     }
 
     const loadPromise = (async () => {
-      const loadedSnapshots = await Promise.all(
-        PAGE_FILE_NAMES.map(async (entry) => [entry, await fetchRemotePageFileContent(pageId, entry)] as const),
-      )
+      let loadedSnapshots: ReadonlyArray<readonly [PageFileName, string]>
+      try {
+        loadedSnapshots = await Promise.all(
+          PAGE_FILE_NAMES.map(async (entry) => [entry, await fetchRemotePageFileContent(pageId, entry)] as const),
+        )
+      } catch (error) {
+        if (activePageFilesLoadEpoch === loadEpoch && activePageId.value === pageId) {
+          for (const entry of PAGE_FILE_NAMES) {
+            documents[entry].loadState.value = previousLoadStates.get(entry) ?? 'idle'
+          }
+        }
+        throw error
+      }
 
       if (activePageFilesLoadEpoch !== loadEpoch || activePageId.value !== pageId) return
 
@@ -1045,12 +1040,16 @@ export function useDevState() {
   // 节点选中
   // ═══════════════════════════════════════════════════════════
 
-  function selectNode(node: NavNode): void {
+  async function selectNode(node: NavNode): Promise<void> {
     cancelAutoSave()
     if (navDirty.value && selectedNode.value) void saveNodeChanges()
     selectedNode.value = node
     loadNodeToForm(node)
-    syncPageFilesForNode(node, true)
+    try {
+      await syncPageFilesForNode(node, true)
+    } catch (error) {
+      addStatus(error instanceof Error ? error.message : String(error), 'error')
+    }
   }
 
   function syncActivePageContextByPath(path: string): void {

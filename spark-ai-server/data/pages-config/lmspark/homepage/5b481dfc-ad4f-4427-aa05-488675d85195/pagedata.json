@@ -57,8 +57,6 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": false,
-          "autoRefresh": false,
           "aggregates": {
             "totalOrders": {
               "type": "count",
@@ -90,7 +88,8 @@
               "customerId": 1,
               "status": "pending",
               "totalAmount": 1500,
-              "remark": "加急订单"
+              "remark": "加急订单",
+              "employeeId": 1
             },
             {
               "id": 2,
@@ -99,7 +98,8 @@
               "customerId": 2,
               "status": "processing",
               "totalAmount": 2300.5,
-              "remark": ""
+              "remark": "",
+              "employeeId": 2
             },
             {
               "id": 3,
@@ -108,13 +108,12 @@
               "customerId": 3,
               "status": "completed",
               "totalAmount": 980,
-              "remark": "客户自提"
+              "remark": "客户自提",
+              "employeeId": 3
             }
           ],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": false,
-          "autoRefresh": false,
           "aggregates": {
             "totalOrders": {
               "type": "count",
@@ -174,8 +173,6 @@
           },
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": false,
-          "autoRefresh": false,
           "aggregates": {
             "pendingOrders": {
               "type": "count",
@@ -567,9 +564,7 @@
           "pageSize": 20,
           "rows": [],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true,
-          "autoLoad": false,
-          "autoRefresh": false
+          "autoSelectFirst": true
         }
       },
       "resourceType": "static-data",
@@ -650,11 +645,40 @@
           "viewId": "default",
           "page": 1,
           "pageSize": 20,
-          "rows": [],
+          "rows": [
+            {
+              "id": 1,
+              "name": "张伟",
+              "gender": "男",
+              "phone": "13900001111",
+              "position": "销售经理",
+              "departmentId": 1,
+              "entryDate": "2023-01-15",
+              "status": "active"
+            },
+            {
+              "id": 2,
+              "name": "李娜",
+              "gender": "女",
+              "phone": "13900002222",
+              "position": "销售代表",
+              "departmentId": 1,
+              "entryDate": "2023-03-20",
+              "status": "active"
+            },
+            {
+              "id": 3,
+              "name": "王强",
+              "gender": "男",
+              "phone": "13900003333",
+              "position": "销售代表",
+              "departmentId": 1,
+              "entryDate": "2023-06-10",
+              "status": "active"
+            }
+          ],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true,
-          "autoLoad": false,
-          "autoRefresh": false
+          "autoSelectFirst": true
         }
       },
       "resourceType": "static-data",

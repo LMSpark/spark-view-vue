@@ -1,103 +1,96 @@
 /**
  * Edit — Lifecycle Stills
  *
- * 编辑会话的生命周期入口。
- * 负责把输入的 4 个文件物化为编辑会话状态。
+ * 编辑会话生命周期入口（edit.bootstrap）。
+ *
+ * 说明：
+ * 1) 当前架构下 UI 与 AI 共用同一份 live model；
+ * 2) 因此 bootstrap 不再承担“宿主快照 vs live model”二次比对；
+ * 3) 当前页面事实由前置文件加载和后续函数调用工具直接向 LLM 汇报。
+ * 4) 术语约定：tool = 一个模型实例 + N 个函数入口。
  */
 
 import type {
   StillResult,
   StillDefinition,
 } from '../../../../core/stills/types'
-import type { SparkNode } from '@spark-view/spark-component'
-import type { IDataSetMetadata } from '@spark-view/spark-data'
-import { EditModel } from './edit-model'
 import type { EditDomainState } from './edit-state'
 import { getActiveDataSetTool, getActiveNodeTree, getEditState } from './edit-state'
 import { EDIT_BOOTSTRAP_ACTION } from '../../../../core/stills/action-names'
 
-// ── Bootstrap Payload ────────────────────────────────────────
+export type EditInitParams = unknown
 
-export interface EditBootstrapPayload {
-  ruleJson: SparkNode[]
-  pageDataJson: IDataSetMetadata
-  scriptJs: string
-  styleCss: string
-}
-
-export type EditInitParams = EditBootstrapPayload
+// ─────────────────────────────────────────────────────────────────────────────
+// 功能分区一：输入校验
+// 目标：兼容旧调用方仍传对象，但 bootstrap 本身不再依赖 payload 内容。
+// ─────────────────────────────────────────────────────────────────────────────
 
 function validateEditBootstrapPayload(params: unknown): string | null {
-  const payload = params as Record<string, unknown>
-  if (!Array.isArray(payload['ruleJson'])) return '缺少 ruleJson（SparkNode[]）'
-  if (typeof payload['pageDataJson'] !== 'object' || payload['pageDataJson'] === null) {
-    return '缺少 pageDataJson（IDataSetMetadata）'
-  }
-  if (typeof payload['scriptJs'] !== 'string') return '缺少 scriptJs'
-  if (typeof payload['styleCss'] !== 'string') return '缺少 styleCss'
+  if (params === undefined || params === null) return null
+  if (typeof params !== 'object') return 'edit.bootstrap 参数必须是对象或留空'
   return null
 }
 
-function bootstrapEditSession(state: EditDomainState, payload: EditBootstrapPayload): void {
-  const liveTree = getActiveNodeTree(state)
-  if (!liveTree) {
-    throw new Error('edit.bootstrap 失败：缺少 live SparkNodeTree，必须先绑定 EditLiveModelAdapter.getNodeTree')
+// ─────────────────────────────────────────────────────────────────────────────
+// 功能分区二：会话引导（bootstrap 主流程）
+// 目标：
+// 1) 校验 live adapter 能力齐全；
+// 2) 确认当前页面 4 文件都可从 live adapter 读取；
+// 3) 进入 editing phase。
+// 注意：
+// - 不修改 live tree/data/script/style 内容；
+// - 不在 bootstrap 内重复构造“第二份事实快照”。
+// ─────────────────────────────────────────────────────────────────────────────
+
+function bootstrapEditSession(state: EditDomainState): void {
+  // 1) nodeTree tool 必须存在（即模型实例 + 对应函数入口）。
+  const nodeTreeTool = getActiveNodeTree(state)
+  if (!nodeTreeTool) {
+    throw new Error('edit.bootstrap 失败：缺少 nodeTree tool 实例（EditLiveModelAdapter.getNodeTree）')
   }
 
-  const liveTool = getActiveDataSetTool(state)
-  if (!liveTool) {
-    throw new Error('edit.bootstrap 失败：缺少 live DataSetCrudTool，必须先绑定 EditLiveModelAdapter.getDataSetTool')
+  // 2) dataset tool 必须存在（即模型实例 + 对应函数入口）。
+  const dataSetTool = getActiveDataSetTool(state)
+  if (!dataSetTool) {
+    throw new Error('edit.bootstrap 失败：缺少 dataset tool 实例（EditLiveModelAdapter.getDataSetTool）')
   }
 
-  const writeScript = state.liveModelAdapter?.writeScript
+  // 3) script/style 读取器必须存在。
   const readScript = state.liveModelAdapter?.readScript
-  if (!writeScript || !readScript) {
-    throw new Error('edit.bootstrap 失败：缺少 live text model（EditLiveModelAdapter.readScript/writeScript）')
+  if (!readScript) {
+    throw new Error('edit.bootstrap 失败：缺少 script 读取器（EditLiveModelAdapter.readScript）')
   }
 
-  const writeStyle = state.liveModelAdapter?.writeStyle
   const readStyle = state.liveModelAdapter?.readStyle
-  if (!writeStyle || !readStyle) {
-    throw new Error('edit.bootstrap 失败：缺少 live text model（EditLiveModelAdapter.readStyle/writeStyle）')
+  if (!readStyle) {
+    throw new Error('edit.bootstrap 失败：缺少 style 读取器（EditLiveModelAdapter.readStyle）')
   }
 
-  liveTree.loadRoot({ type: 'page', children: payload.ruleJson })
-  state.nodeTree = liveTree
-  // DataSetTool 必须复用 live adapter 返回的同一实例。
-  state.datasetEdit = liveTool
-  writeScript(payload.scriptJs)
-  writeStyle(payload.styleCss)
-  state.script = readScript()
-  state.style = readStyle()
-  state.baselineSnapshot = new EditModel(
-    state.nodeTree,
-    liveTool,
-    state.script,
-    state.style,
-  ).snapshot
+  // 4) 探测一次函数调用，确保适配器能力可用。
+  void nodeTreeTool.toJSON()
+  void dataSetTool.toJson()
+  void readScript()
+  void readStyle()
+
+  // 5) 建立编辑会话状态：仅推进 phase。
   state.phase = 'editing'
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Still 定义导出
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const editInit: StillDefinition<EditInitParams, undefined> = {
   action: EDIT_BOOTSTRAP_ACTION,
   type: 'request',
-  description: '引导编辑会话：将 4 个文件内容同步到 live SparkNodeTree / live DataSetCrudTool 与 script/style',
-  paramsSchema: {
-    ruleJson: 'SparkNode[] — 解析后的规则数组',
-    pageDataJson: 'IDataSetMetadata — 解析后的 DataSet 元数据',
-    scriptJs: 'string — script.js 原始文本',
-    styleCss: 'string — style.css 原始文本',
-  },
-  example: {
-    ruleJson: [{ type: 'el-table', props: { dataKey: 'Users@rows' } }],
-    pageDataJson: { dataSetName: 'DS', tables: {} },
-    scriptJs: '',
-    styleCss: '',
-  },
+  description: '引导编辑会话：仅校验 tool（模型实例 + N 个函数入口）可用，并进入 editing phase',
+  paramsSchema: {},
+  example: {},
   validate: validateEditBootstrapPayload,
   execute: (session, params): StillResult<undefined> => {
-    bootstrapEditSession(getEditState(session), params)
-    return { ok: true, data: undefined, summary: '编辑会话已初始化' }
+    void params
+    bootstrapEditSession(getEditState(session))
+    return { ok: true, data: undefined, summary: '编辑会话已完成 tool 引导（模型实例 + N 个函数入口），进入 editing 状态' }
   },
 }
 

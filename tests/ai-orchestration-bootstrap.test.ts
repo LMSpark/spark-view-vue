@@ -148,4 +148,24 @@ describe('ai-orchestration-bootstrap', () => {
       }),
     )
   })
+
+  it('reuses provided stills session instead of creating a new one', async () => {
+    const backend = { id: 'backend' } as never
+    const externalSession = { session: 'external-live-session' } as never
+
+    await startAiOrchestration({
+      backend,
+      session: externalSession,
+      userPrompt: 'edit prompt',
+      systemPrompt: 'system prompt',
+    })
+
+    expect(shared.createSession).not.toHaveBeenCalled()
+    expect(shared.runStillsLoop).toHaveBeenCalledWith(
+      'edit prompt',
+      externalSession,
+      backend,
+      expect.any(Object),
+    )
+  })
 })

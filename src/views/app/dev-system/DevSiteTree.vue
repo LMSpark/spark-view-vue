@@ -140,8 +140,8 @@ function filterNode(value: string, data: NavNode) {
     (data.path?.toLowerCase().includes(v) ?? false)
 }
 
-function handleNodeClick(data: NavNode) {
-  state.selectNode(data)
+async function handleNodeClick(data: NavNode) {
+  await state.selectNode(data)
 }
 
 function allowNodeDrag(data: NavNode): boolean {
