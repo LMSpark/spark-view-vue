@@ -121,8 +121,72 @@ async function handleDeleteSelectedUser() {
   }
 }
 
+/**
+ * 刷新所有数据（重新加载数据集）
+ */
+async function handleRefreshData() {
+  try {
+    await $refreshData();
+    selectedUser = null;
+    $page.showMessage('✅ 数据已刷新', 'success');
+    console.log('🔄 所有数据已重新加载');
+  } catch (error) {
+    console.error('刷新数据失败:', error);
+    $page.showMessage('刷新数据失败', 'error');
+  }
+}
+
+/**
+ * 重置数据到初始状态
+ */
+async function handleResetData() {
+  try {
+    const dataSet = $dataSet;
+    const usersView      = dataSet.getView('Users',      'default');
+    const ordersView     = dataSet.getView('Orders',     'default');
+    const orderItemsView = dataSet.getView('OrderItems', 'default');
+
+    // 重置 Users
+    usersView.replaceRows([
+      { id: 1,  name: '张三', email: 'zhangsan@example.com' },
+      { id: 2,  name: '李四', email: 'lisi@example.com' },
+      { id: 3,  name: '王五', email: 'wangwu@example.com' },
+      { id: 4,  name: '赵六', email: 'zhaoliu@example.com' },
+      { id: 5,  name: '孙七', email: 'sunqi@example.com' },
+    ]);
+
+    // 重置 Orders
+    ordersView.replaceRows([
+      { id: 1,  userId: 1, orderNo: 'ORD-2024-001', amount: 299.00 },
+      { id: 2,  userId: 1, orderNo: 'ORD-2024-002', amount: 159.00 },
+      { id: 3,  userId: 2, orderNo: 'ORD-2024-003', amount: 899.00 },
+      { id: 4,  userId: 2, orderNo: 'ORD-2024-004', amount: 450.00 },
+      { id: 5,  userId: 3, orderNo: 'ORD-2024-005', amount: 1200.00 },
+      { id: 6,  userId: 3, orderNo: 'ORD-2024-006', amount: 680.00 },
+      { id: 7,  userId: 4, orderNo: 'ORD-2024-007', amount: 350.00 },
+      { id: 8,  userId: 5, orderNo: 'ORD-2024-008', amount: 780.00 },
+    ]);
+
+    // 重置 OrderItems
+    orderItemsView.replaceRows([
+      { id: 1,  orderId: 1, productName: '笔记本电脑',   quantity: 1, price: 299.00 },
+      { id: 2,  orderId: 2, productName: '无线鼠标',     quantity: 2, price: 79.50  },
+      { id: 3,  orderId: 3, productName: '机械键盘',     quantity: 1, price: 899.00 },
+      { id: 4,  orderId: 4, productName: '显示器',       quantity: 1, price: 450.00 },
+      { id: 5,  orderId: 5, productName: '服务器',       quantity: 1, price: 1200.00 },
+      { id: 6,  orderId: 6, productName: '路由器',       quantity: 2, price: 340.00 },
+      { id: 7,  orderId: 7, productName: '移动硬盘',     quantity: 1, price: 350.00 },
+      { id: 8,  orderId: 8, productName: '耳机',         quantity: 2, price: 390.00 },
+    ]);
+
+    selectedUser = null;
+    $page.showMessage('✅ 数据已重置为初始状态', 'success');
+    console.log('↩️ 所有数据已重置');
+  } catch (error) {
+    console.error('重置数据失败:', error);
+    $page.showMessage('重置数据失败', 'error');
+  }
+}
+
 // 页面脚本加载完成
 console.log('📦 cascade-demo 脚本已加载（低代码模式）');
-
-
-

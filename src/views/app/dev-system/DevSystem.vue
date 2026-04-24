@@ -12,9 +12,11 @@
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
         <AiLauncherButton
-          :config="pageModelSession.config"
-          :disabled="pageModelSession.disabled.value"
+          :config="ai.config"
+          :disabled="ai.disabled.value"
+          shortcut="ctrl+shift+a"
           label="AI 面板"
+          v-on="aiEvents"
         />
         <el-button
           v-if="state.hasAnyDirty.value"
@@ -106,8 +108,8 @@
       </div>
       <div class="status-right">
         <AiLauncherButton
-          :config="pageModelSession.config"
-          :disabled="pageModelSession.disabled.value"
+          :config="ai.config"
+          :disabled="ai.disabled.value"
           :link="true"
           label="AI"
           :icon-size="13"
@@ -123,46 +125,29 @@
 /**
  * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
  */
-import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useTenantRouter } from '@/composables/useTenantRouter'
-import { PAGE_FILE_NAMES, useDevState } from './useDevState'
-import type { DevWorkspaceTab, PageFileName } from './useDevState'
+import { onMounted } from 'vue'
+import { PAGE_FILE_NAMES, type PageFileName } from './useDevState'
+import { useDevSystem } from './useDevSystem'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
-import { AiLauncherButton, useAiPanelStore } from '@spark-view/spark-component'
+import { AiLauncherButton } from '@spark-view/spark-component'
 import NavIcon from '@/components/NavIcon.vue'
-import { useDevPageModelSession } from './ai-session'
 
-const { router, tenantPath } = useTenantRouter()
-const state = useDevState()
-const aiPanelStore = useAiPanelStore()
-
-// 工作区 Tab
-const workTab = ref<DevWorkspaceTab>('props')
-const previewRefreshToken = ref(0)
-// 记录最近一次进入的页面文件页签，用于在「实时预览 / 节点属性」期间保持
-// AI 面板上下文（不再回落到「请切到页面文件」占位）。
-const lastPageFile = ref<PageFileName>('rule.json')
-const currentWorkspaceFile = computed<PageFileName | null>(() => {
-  return isPageFileName(workTab.value) ? workTab.value : null
-})
-// AI 面板使用的 activeFile：在页面文件页签时跟随当前页签；在 preview/props 页签时
-// 沿用最近一次的页面文件，让 AI 仍可继续编辑模型。
-const aiPanelActiveFile = computed<PageFileName | null>(() => {
-  if (currentWorkspaceFile.value) return currentWorkspaceFile.value
-  return state.activePageId.value ? lastPageFile.value : null
-})
-
-watch(currentWorkspaceFile, (file) => {
-  if (file) lastPageFile.value = file
-})
-
-// DevSystem 场景下的「页面模型级编辑」会话：产出标准 AiSessionConfig，交给通用 AiLauncherButton 解析。
-const pageModelSession = useDevPageModelSession({ state, activeFile: aiPanelActiveFile })
-
-const canPreviewCurrentPage = computed(() => Boolean(state.editForm.path || state.activePageId.value))
+const {
+  state,
+  ai,
+  aiEvents,
+  workTab,
+  previewRefreshToken,
+  currentWorkspaceFile,
+  canPreviewCurrentPage,
+  previewPage,
+  switchToPreview,
+  saveAll,
+  isWorkspaceTabDirty,
+} = useDevSystem()
 
 const FILE_ICON_MAP: Record<PageFileName, string> = {
   'rule.json': 'Crop',
@@ -171,75 +156,12 @@ const FILE_ICON_MAP: Record<PageFileName, string> = {
   'style.css': 'Brush',
 }
 
-const AI_PANEL_SHORTCUT_KEY = 'a'
-
-function isPageFileName(value: string): value is PageFileName {
-  return PAGE_FILE_NAMES.includes(value as PageFileName)
-}
-
 function fileIcon(name: PageFileName): string {
   return FILE_ICON_MAP[name]
 }
 
-function isWorkspaceTabDirty(name: PageFileName): boolean {
-  return state.isDocumentDirty(name)
-}
-
-watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
-  if (nextId && nextId !== prevId) {
-    workTab.value = 'props'
-  }
-})
-
-// activePageId 清空时切回节点属性（取消关联 / 选中非配置节点）
-watch(() => state.activePageId.value, (nextPageId) => {
-  const hasSelectedNode = state.selectedNode.value !== null
-  if (nextPageId && !hasSelectedNode) {
-    workTab.value = 'rule.json'
-    return
-  }
-  if (!nextPageId && hasSelectedNode) {
-    workTab.value = 'props'
-  }
-})
-
-function previewPage(pageId: string) {
-  void router.push(tenantPath(`/${pageId}`))
-}
-
-function switchToPreview() {
-  if (!canPreviewCurrentPage.value) return
-  workTab.value = 'preview'
-  previewRefreshToken.value++
-}
-
-function saveAll() {
-  if (!state.hasAnyDirty.value) return
-  void state.saveAll()
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  if (target.isContentEditable) return true
-  const tagName = target.tagName
-  return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT'
-}
-
-function handleGlobalShortcut(event: KeyboardEvent) {
-  if (isEditableTarget(event.target)) return
-  if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.key.toLowerCase() !== AI_PANEL_SHORTCUT_KEY) return
-  event.preventDefault()
-  aiPanelStore.toggle()
-}
-
-// 初始化
 onMounted(() => {
   void state.initialize()
-  window.addEventListener('keydown', handleGlobalShortcut)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleGlobalShortcut)
 })
 </script>
 

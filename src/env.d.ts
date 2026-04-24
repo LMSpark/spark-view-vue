@@ -123,3 +123,4 @@ declare module 'virtual:spark-skill-catalog' {
 
   export default skillCatalog
 }
+

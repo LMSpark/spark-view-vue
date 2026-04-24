@@ -3,15 +3,27 @@
  *
  * 职责边界：
  *  - 管理 sharedSessionHost + usePageModelEditSession。
- *  - 产出标准 {@link AiSessionConfig}，由业务组件传给 `useAiSession` 或直接调用
- *    `aiPanelStore.open(config)` 接入全局 AI 面板。
+ *  - 产出标准 {@link AiSessionConfig}，由业务组件以 `:config` 传入
+ *    {@link AiLauncherButton}，或直接调用 `aiPanelStore.open(config)` 接入全局 AI 面板。
+ *  - 会话过程中的 tool 调用 / FC 轮次 / 消息生命周期，均经 `useAiPanelStore().emit`
+ *    往总线上出；AiLauncherButton 作为中继把它们映射为 Vue emits，供消费层
+ *    完全声明式参与。
  *  - activePageId 变化时自动重置会话。
  */
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
-import type { AiSessionConfig, AiChatSender, AiChatSendRequest } from '@spark-view/spark-component'
+import {
+  findLatestUserPrompt,
+  pickRecentConversation,
+  streamWithFallback,
+  toSafeText,
+  useAiPanelStore,
+  type AiSessionConfig,
+  type AiChatSendRequest,
+} from '@spark-view/spark-component'
+import type { DialogueTurn } from '@spark-view/spark-ai'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import { usePageModelEditSession } from './usePageModelEditSession'
-import type { DevState, PageFileName } from '../useDevState'
+import type { DevState, PageFileName } from './useDevState'
 
 // ═══════════════════════════════════════════════════════════
 // 类型定义
@@ -24,36 +36,11 @@ interface Options {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 纯工具函数（与会话状态无关）
+// 业务入口
 // ═══════════════════════════════════════════════════════════
-
-/**
- * 将未知类型内容收敛为安全字符串。
- *
- * 目的：
- * - 避免直接把 unknown/any 传入模板字符串或返回值，触发 no-unsafe-return / no-unsafe-assignment。
- * - 保证 Prompt 组装链路始终得到 string。
- */
-function toSafeText(value: unknown): string {
-  return typeof value === 'string' ? value : ''
-}
-
-/**
- * 获取最近 N 条非 system 消息（不包含当前最后一条用户输入）。
- *
- * 规则：
- * - 先去掉最后一条（当前轮用户输入），避免重复拼接。
- * - 过滤 system，保留用户与助手的可读上下文。
- */
-function pickRecentConversation(
-  historyMsgs: AiChatSendRequest['historyMsgs'],
-  maxCount: number,
-): AiChatSendRequest['historyMsgs'] {
-  return historyMsgs
-    .slice(0, -1)
-    .filter((message) => message.role !== 'system')
-    .slice(-maxCount)
-}
+// 通用 sender 助手（toSafeText / findLatestUserPrompt / pickRecentConversation /
+// streamWithFallback）已下沉到 @spark-view/spark-component；本文件仅保留业务特有
+// 的 prompt 拼接逻辑。
 
 export function useDevPageModelSession(options: Options) {
   // ═════════════════════════════════════════════════════════
@@ -61,6 +48,7 @@ export function useDevPageModelSession(options: Options) {
   // ═════════════════════════════════════════════════════════
 
   const { state } = options
+  const panelStore = useAiPanelStore()
 
   // pageId 级宿主：负责 stills 会话、后端 session、跨页重置。
   const sessionHost = usePageModelSessionHost({
@@ -75,12 +63,6 @@ export function useDevPageModelSession(options: Options) {
     sessionHost,
     ensureContextLoaded: async () => {
       await state.ensureActivePageFilesLoaded()
-    },
-    onStatus: (message, statusType) => {
-      state.addStatus(
-        message,
-        statusType === 'success' ? 'success' : statusType === 'warning' ? 'warning' : 'error',
-      )
     },
   })
 
@@ -163,107 +145,101 @@ export function useDevPageModelSession(options: Options) {
     ].join('\n')
   }
 
-  /**
-   * 从对话历史中反向查找最近一条用户输入。
-   *
-   * 返回约束：
-   * - 始终返回 string。
-   * - 非字符串内容会被安全收敛为空串，避免不安全返回。
-   */
-  function findLatestUserPrompt(historyMsgs: AiChatSendRequest['historyMsgs']): string {
-    for (let index = historyMsgs.length - 1; index >= 0; index -= 1) {
-      const message = historyMsgs[index]
-      if (message?.role === 'user') {
-        return toSafeText(message.content).trim()
-      }
-    }
-    return ''
-  }
 
   // ═════════════════════════════════════════════════════════
-  // 会话执行层
+  // 事件转发：stills 的 DialogueTurn → AiPanelStore 总线
+  // AiLauncherButton 作为中继再把它们转为 Vue emits 交给 DevSystem。
   // ═════════════════════════════════════════════════════════
 
-  /**
-   * 确保页面模型与编辑会话已就绪。
-   *
-   * 流程：
-   * 1) 先拉齐 4 文件到内存模型。
-   * 2) 再静默 bootstrap（skipContextLoad 避免重复加载）。
-   */
-  async function ensurePageModelReady(): Promise<void> {
-    await state.ensureActivePageFilesLoaded()
-    await editSession.bootstrap({ silent: true, skipContextLoad: true })
-  }
-
-  /**
-   * 执行一次模型级会话调用。
-   *
-   * 处理细节：
-   * - 若流式 delta 已输出，则不再重复回放最后日志。
-   * - 若无 delta，则回退到最新日志作为兜底输出（非静默）。
-   * - 若最新日志是 error，直接抛错给上层 sender。
-   */
-  async function runEditSessionChat(request: AiChatSendRequest, prompt: string): Promise<void> {
-    let streamed = false
-    await editSession.runLlm(prompt, {
-      ...(request.signal ? { signal: request.signal } : {}),
-      skipBootstrap: true,
-      onDelta: (delta) => {
-        streamed = true
-        request.onDelta?.(delta)
-      },
-      onReasoning: (reasoning) => {
-        request.onReasoning?.(reasoning)
-      },
-    })
-    if (request.signal?.aborted === true) return
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- streamed 在 onDelta 闭包中被异步置 true，eslint 不追踪此路径
-    if (streamed) return
-    const latest = editSession.log.value.at(-1)
-    if (latest === undefined) {
-      request.onDelta?.('模型级编辑已执行完成。')
-      return
+  function emitTurnAsToolEvent(turn: DialogueTurn): void {
+    const action = turn.toolBlock?.action
+    const result = turn.stillsResult
+    if (!action || !result) return
+    const callId = turn.toolBlock?.id
+    const base = {
+      toolName: action,
+      args: turn.toolBlock?.params,
+      round: turn.round,
+      ...(callId !== undefined ? { callId } : {}),
     }
-    if (latest.type === 'error') {
-      throw new Error(`${latest.tag}: ${latest.text}`)
+    panelStore.emit('tool:call', base)
+    if (result.ok) {
+      panelStore.emit('tool:result', {
+        ...base,
+        result: result.data ?? result.summary ?? null,
+        durationMs: turn.elapsed ?? 0,
+      })
+    } else {
+      panelStore.emit('tool:error', {
+        ...base,
+        error: new Error(result.msg ?? `${action} 失败`),
+      })
     }
-    request.onDelta?.(`${latest.tag}: ${latest.text}`)
   }
 
   // ═════════════════════════════════════════════════════════
   // 对外导出层（AiSessionConfig）
   // ═════════════════════════════════════════════════════════
 
-  /**
-   * 标准 AI 发送函数：
-   * - 提取本轮用户输入
-   * - 保证模型就绪
-   * - 组装延续 prompt 后执行 runLlm
-   */
-  const sender: AiChatSender = async (request) => {
-    const prompt = findLatestUserPrompt(request.historyMsgs)
-    if (!prompt) return
-    await ensurePageModelReady()
-    request.onDelta?.('已接收需求，正在执行页面模型级编辑...\n')
-    await runEditSessionChat(request, buildContinuationPrompt(prompt, request.historyMsgs))
-  }
-
-  /**
-   * 暴露给 AI 面板的统一配置。
-   *
-   * 关键点：
-   * - storageKey 按 pageId 隔离，避免跨页面串历史。
-   * - beforeOpen 先做就绪检查，确保面板打开即可执行。
-   */
   const config: AiSessionConfig = {
     storageKey: () => `devsystem-ai-chat:${state.activePageId.value}`,
     title: '页面模型级编辑',
     placeholder: '支持多轮对话；会通过 stills tool 层执行 4 文件模型级编辑',
-    sender,
     externalToolLogs: editSession.log,
     beforeOpen: async () => {
-      await ensurePageModelReady()
+      await state.ensureActivePageFilesLoaded()
+      await editSession.bootstrap({ silent: true, skipContextLoad: true })
+    },
+    /**
+     * 标准 AI 发送函数（直接内联到 config）：
+     *  1) 提取本轮用户输入；
+     *  2) 确保页面模型就绪；
+     *  3) 走 streamWithFallback 执行 runLlm，并把 turn / run / 消息级事件 emit 到
+     *     AiPanelStore 总线，AiLauncherButton 消费其中继。
+     */
+    sender: async (request: AiChatSendRequest) => {
+      const prompt = findLatestUserPrompt(request.historyMsgs)
+      if (!prompt) return
+      const messageId = `devsystem-${Date.now()}`
+      panelStore.emit('message:send', { messageId, content: prompt })
+
+      await state.ensureActivePageFilesLoaded()
+      await editSession.bootstrap({ silent: true, skipContextLoad: true })
+      request.onDelta?.('已接收需求，正在执行页面模型级编辑...\n')
+
+      let aggregated = ''
+      try {
+        await streamWithFallback(request, {
+          runLoop: async (pushDelta) => {
+            await editSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs), {
+              ...(request.signal ? { signal: request.signal } : {}),
+              skipBootstrap: true,
+              onDelta: (delta) => {
+                aggregated += delta
+                panelStore.emit('message:delta', { messageId, delta })
+                pushDelta(delta)
+              },
+              onReasoning: (reasoning) => {
+                request.onReasoning?.(reasoning)
+              },
+              onToolTurn: emitTurnAsToolEvent,
+              onRunComplete: ({ rounds, writeCount }) => {
+                panelStore.emit('fc:round:end', { round: rounds, calls: writeCount })
+              },
+            })
+          },
+          getFallbackMessage: () => {
+            const latest = editSession.log.value.at(-1)
+            if (!latest) return null
+            return { text: `${latest.tag}: ${latest.text}`, isError: latest.type === 'error' }
+          },
+          defaultDeltaOnEmpty: '模型级编辑已执行完成。',
+        })
+        panelStore.emit('message:complete', { messageId, content: aggregated })
+      } catch (error) {
+        panelStore.emit('message:error', { messageId, error })
+        throw error
+      }
     },
   }
 

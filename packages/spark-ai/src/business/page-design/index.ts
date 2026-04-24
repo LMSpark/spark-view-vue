@@ -18,3 +18,26 @@ export {
   type PageCacheHandle,
 } from './page-cache'
 
+export {
+  createPageModelSessionBackend,
+  createPageModelSessionHost,
+  type PageModelStillsSession,
+  type PageModelSessionHostRuntime,
+  type PageModelSessionHostState,
+  type PageModelSessionHostController,
+  type CreatePageModelSessionHostOptions,
+} from './page-model-session-host'
+
+export {
+  createPageModelEditSession,
+  type PageModelEditLogEntry,
+  type PageModelEditSessionState,
+  type StartPageModelIterateSessionOptions,
+  type PageModelEditSessionRuntime,
+  type PageModelEditSessionOptions,
+  type PageModelEditRunHooks,
+  type PageModelEditRunOptions,
+  type PageModelEditBootstrapOptions,
+  type PageModelEditSessionController,
+} from './page-model-edit-session'
+

@@ -1,0 +1,137 @@
+/**
+ * usePageModelEditSession
+ *
+ * Tool layer for page-model stills-based editing.
+ * Owns: stills session lifecycle, bootstrap, tool execution, LLM loop, SSE events, export.
+ * Does NOT own: UI state (mode, requestText), emit calls (passed as callbacks).
+ *
+ * LLM-driven edits go through this composable.
+ */
+
+import { onUnmounted, ref, shallowRef } from 'vue'
+import * as SparkAiRuntime from '@spark-view/spark-ai'
+import {
+  getActiveNodeTree,
+  executeStill,
+  startIterateSession,
+  generateToolDefinitions,
+  functionNameToAction,
+  STILLS_EDIT_RUNTIME_PROMPT,
+  getEditState,
+  type DialogueTurn,
+  type EditToolHost,
+} from '@spark-view/spark-ai'
+import {
+  createPageModelEditSession,
+  type PageModelEditLogEntry,
+} from '@spark-view/spark-ai'
+import type { SparkNodeTree } from '@spark-view/spark-component'
+import type { PageModelSessionHost } from './usePageModelSessionHost'
+
+// ── Log entry type ─────────────────────────────────────────────────────────────
+
+export type LogEntry = PageModelEditLogEntry
+
+// ── Composable ────────────────────────────────────────────────────────────────
+
+export interface PageModelEditSessionOptions {
+  /** Returns the current page-scoped session key, usually pageId. */
+  getSessionKey: () => string
+  /** Returns the single live tool host shared with manual editing. */
+  getEditToolHost: () => EditToolHost
+  /** Optional shared page-model session host. */
+  sessionHost?: PageModelSessionHost
+  /** Ensures page context files are loaded before first bootstrap. */
+  ensureContextLoaded?: () => Promise<void>
+}
+
+export interface PageModelEditRunHooks {
+  onDelta?: (delta: string) => void
+  onReasoning?: (reasoning: string) => void
+  /**
+   * 每完成一个 stills-execute turn 回调；供 sender 转发为 AiPanelStore 事件。
+   * 仅在 runLlm 主路径产生的 turn 才会触发。
+   */
+  onToolTurn?: (turn: DialogueTurn) => void
+  /** runLlm 成功结束（通过只读/未调工具的 fail-fast 校验后）触发。 */
+  onRunComplete?: (payload: { rounds: number; writeCount: number }) => void
+  signal?: AbortSignal
+}
+
+interface PageModelEditRunOptions extends PageModelEditRunHooks {
+  /**
+   * 已由外层完成 bootstrap 时可置 true，避免重复加载上下文。
+   * 默认 false。
+   */
+  skipBootstrap?: boolean
+}
+
+interface PageModelEditBootstrapOptions {
+  silent?: boolean
+  skipContextLoad?: boolean
+}
+
+export function usePageModelEditSession(options: PageModelEditSessionOptions) {
+  const runtimePredicates = {
+    ...((SparkAiRuntime as { isEditWriteAction?: (value: string) => boolean }).isEditWriteAction
+      ? { isEditWriteAction: (SparkAiRuntime as { isEditWriteAction: (value: string) => boolean }).isEditWriteAction }
+      : {}),
+    ...((SparkAiRuntime as { isEditNodeTreeWriteAction?: (value: string) => boolean }).isEditNodeTreeWriteAction
+      ? { isEditNodeTreeWriteAction: (SparkAiRuntime as { isEditNodeTreeWriteAction: (value: string) => boolean }).isEditNodeTreeWriteAction }
+      : {}),
+    ...((SparkAiRuntime as { isEditDataSetWriteAction?: (value: string) => boolean }).isEditDataSetWriteAction
+      ? { isEditDataSetWriteAction: (SparkAiRuntime as { isEditDataSetWriteAction: (value: string) => boolean }).isEditDataSetWriteAction }
+      : {}),
+  }
+
+  const controller = createPageModelEditSession({
+    getSessionKey: options.getSessionKey,
+    getEditToolHost: options.getEditToolHost,
+    ...(options.sessionHost ? { sessionHost: options.sessionHost } : {}),
+    ...(options.ensureContextLoaded ? { ensureContextLoaded: options.ensureContextLoaded } : {}),
+    runtime: {
+      executeStill,
+      startIterateSession,
+      generateToolDefinitions,
+      functionNameToAction,
+      STILLS_EDIT_RUNTIME_PROMPT,
+      getEditState,
+      getActiveNodeTree,
+      ...runtimePredicates,
+    },
+  })
+
+  const initialState = controller.getState()
+  const ready = ref(initialState.ready)
+  const dirty = ref(initialState.dirty)
+  const busy = ref(initialState.busy)
+  const aiBuffer = ref(initialState.aiBuffer)
+  const log = ref<LogEntry[]>(initialState.log)
+  const nodeTree = shallowRef<SparkNodeTree | null>(initialState.nodeTree)
+
+  const unsubscribe = controller.subscribe((state) => {
+    ready.value = state.ready
+    dirty.value = state.dirty
+    busy.value = state.busy
+    aiBuffer.value = state.aiBuffer
+    log.value = state.log
+    nodeTree.value = state.nodeTree
+  })
+
+  onUnmounted(() => {
+    unsubscribe()
+    controller.dispose()
+  })
+
+  return {
+    ready,
+    dirty,
+    busy,
+    aiBuffer,
+    log,
+    nodeTree,
+    bootstrap: (bootstrapOptions?: PageModelEditBootstrapOptions) => controller.bootstrap(bootstrapOptions),
+    runLlm: (prompt: string, hooks?: PageModelEditRunOptions) => controller.runLlm(prompt, hooks),
+    reset: () => controller.reset(),
+  }
+}

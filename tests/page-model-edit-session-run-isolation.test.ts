@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, shallowRef } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
-import type { PageModelSessionHost } from '../src/views/app/dev-system/ai-session'
+import type { PageModelSessionHost } from '../src/views/app/dev-system/page-model-session'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
 
@@ -61,7 +61,7 @@ import {
   getEditState,
   registerEditStills,
 } from '@spark-view/spark-ai'
-import { usePageModelEditSession } from '../src/views/app/dev-system/ai-session'
+import { usePageModelEditSession } from '../src/views/app/dev-system/page-model-session'
 
 function createRuleEditHarness(options?: {
   onDataSetChanged?: (tool: DataSetCrudTool) => void
@@ -129,7 +129,6 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
-          onStatus: vi.fn(),
         })
 
         return () => h('div')
@@ -223,7 +222,6 @@ describe('usePageModelEditSession run isolation', () => {
   it('fails fast and drops backend resume session when the model only runs read-only tools', async () => {
     const harness = createRuleEditHarness()
     const sessionHost = harness.sessionHost
-    const onStatus = vi.fn()
     let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
@@ -232,7 +230,6 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost,
-          onStatus,
         })
 
         return () => h('div')
@@ -267,10 +264,6 @@ describe('usePageModelEditSession run isolation', () => {
     expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith(null)
     expect(api!.log.value.at(-1)?.tag).toBe('编辑失败')
     expect(api!.log.value.at(-1)?.text).toContain('未对当前页面模型产生写入')
-    expect(onStatus).toHaveBeenCalledWith(
-      expect.stringContaining('未对当前页面模型产生写入'),
-      'error',
-    )
 
     wrapper.unmount()
   })
@@ -279,7 +272,7 @@ describe('usePageModelEditSession run isolation', () => {
     const onDataSetChanged = vi.fn()
     const harness = createRuleEditHarness({ onDataSetChanged })
     const liveDataSetTool = harness.liveDataSetTool
-    const onStatus = vi.fn()
+    const onRunComplete = vi.fn()
     let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
@@ -288,7 +281,6 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
-          onStatus,
         })
 
         return () => h('div')
@@ -298,7 +290,7 @@ describe('usePageModelEditSession run isolation', () => {
     const wrapper = mount(Host)
     expect(api).not.toBeNull()
 
-    const runPromise = api!.runLlm('全部表增加最后修改人')
+    const runPromise = api!.runLlm('全部表增加最后修改人', { onRunComplete })
     await flushPromises()
     expect(shared.runs).toHaveLength(1)
 
@@ -325,7 +317,7 @@ describe('usePageModelEditSession run isolation', () => {
     expect(api!.dirty.value).toBe(true)
     expect(api!.log.value.at(-1)?.tag).toBe('✅ 已同步')
     expect(api!.log.value.at(-1)?.text).toContain('1 次写操作')
-    expect(onStatus).toHaveBeenCalledWith('✅ 模型级编辑完成 (1 轮)', 'success')
+    expect(onRunComplete).toHaveBeenCalledWith({ rounds: 1, writeCount: 1 })
 
     wrapper.unmount()
   })
@@ -333,7 +325,6 @@ describe('usePageModelEditSession run isolation', () => {
   it('fails fast and drops backend resume session when the model returns no tool calls', async () => {
     const harness = createRuleEditHarness()
     const sessionHost = harness.sessionHost
-    const onStatus = vi.fn()
     let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
@@ -342,7 +333,6 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost,
-          onStatus,
         })
 
         return () => h('div')
@@ -376,10 +366,6 @@ describe('usePageModelEditSession run isolation', () => {
     expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith(null)
     expect(api!.log.value.at(-1)?.tag).toBe('编辑失败')
     expect(api!.log.value.at(-1)?.text).toContain('本轮未触发任何工具调用')
-    expect(onStatus).toHaveBeenCalledWith(
-      expect.stringContaining('本轮未触发任何工具调用'),
-      'error',
-    )
 
     wrapper.unmount()
   })

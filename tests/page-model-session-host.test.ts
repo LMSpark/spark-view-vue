@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { clearDomains, clearRegistry } from '../packages/spark-ai/src/stills'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
-import { usePageModelSessionHost } from '../src/views/app/dev-system/ai-session'
+import { usePageModelSessionHost } from '../src/views/app/dev-system/page-model-session'
 
 describe('usePageModelSessionHost', () => {
   beforeEach(() => {

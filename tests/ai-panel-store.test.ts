@@ -114,6 +114,26 @@ describe('useAiPanelStore', () => {
     expect(store.visible.value).toBe(true)
   })
 
+  it('sync() reruns beforeOpen and keeps the panel visible for context switching', async () => {
+    const store = useAiPanelStore()
+    const pageId = ref('page-1')
+    const beforeOpen = vi.fn(async () => {})
+    const descriptor = makeConfig({
+      storageKey: () => `devsystem-ai-chat:${pageId.value}`,
+      beforeOpen,
+    })
+    await store.open(descriptor)
+    expect(store.visible.value).toBe(true)
+    expect(store.storageKey.value).toBe('devsystem-ai-chat:page-1')
+
+    pageId.value = 'page-2'
+    await store.sync(descriptor)
+
+    expect(beforeOpen).toHaveBeenCalledTimes(2)
+    expect(store.visible.value).toBe(true)
+    expect(store.storageKey.value).toBe('devsystem-ai-chat:page-2')
+  })
+
   it('toggle() flips visibility without descriptor (empty-state allowed)', () => {
     const store = useAiPanelStore()
     expect(store.hasConfig.value).toBe(false)
@@ -187,6 +207,20 @@ describe('useAiPanelStore events', () => {
     await store.open(cfg)
     expect(openSpy).toHaveBeenCalledWith({ config: cfg })
     expect(openedSpy).toHaveBeenCalledWith({ config: cfg })
+  })
+
+  it('emits sync / synced on sync()', async () => {
+    const store = useAiPanelStore()
+    const syncSpy = vi.fn()
+    const syncedSpy = vi.fn()
+    store.on('sync', syncSpy)
+    store.on('synced', syncedSpy)
+    const a = makeConfig({ storageKey: 'key-a' })
+    const b = makeConfig({ storageKey: 'key-b' })
+    await store.open(a)
+    await store.sync(b)
+    expect(syncSpy).toHaveBeenCalledWith({ previousConfig: a, config: b })
+    expect(syncedSpy).toHaveBeenCalledWith({ previousConfig: a, config: b })
   })
 
   it('emits close / closed on close()', async () => {

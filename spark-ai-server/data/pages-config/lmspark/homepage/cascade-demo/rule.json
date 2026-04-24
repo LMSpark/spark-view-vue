@@ -1,7 +1,10 @@
 [
   {
     "type": "div",
-    "class": "cascade-demo-container",
+    "id": "div__0_0",
+    "props": {
+      "id": "div__0_0"
+    },
     "children": [
       {
         "type": "div",
@@ -11,12 +14,86 @@
             "type": "h2",
             "children": [
               "级联操作演示 (Cascade Demo)"
-            ]
+            ],
+            "id": "h2__0_0_0_0",
+            "props": {
+              "id": "h2__0_0_0_0"
+            }
           },
           {
             "type": "p",
             "children": [
               "演示 cascadeUpdate 和 cascadeDelete 功能"
+            ],
+            "id": "p__0_0_0_1",
+            "props": {
+              "id": "p__0_0_0_1"
+            }
+          }
+        ],
+        "id": "div__0_0_0",
+        "props": {
+          "id": "div__0_0_0"
+        }
+      },
+      {
+        "type": "r-toolbar",
+        "id": "r-toolbar__0_0_1",
+        "props": {
+          "id": "r-toolbar__0_0_1",
+          "gap": "10px",
+          "style": {
+            "marginBottom": "20px"
+          }
+        },
+        "children": [
+          {
+            "type": "el-button",
+            "props": {
+              "type": "primary",
+              "size": "small",
+              "id": "el-toolbar-btn-refresh"
+            },
+            "on": {
+              "click": "handleRefreshData"
+            },
+            "children": [
+              "🔄 刷新数据"
+            ]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "default",
+              "size": "small",
+              "id": "el-toolbar-btn-reset"
+            },
+            "on": {
+              "click": "handleResetData"
+            },
+            "children": [
+              "↩️ 重置数据"
+            ]
+          },
+          {
+            "type": "r-tail",
+            "props": {
+              "id": "r-tail__0_0_1"
+            },
+            "children": [
+              {
+                "type": "span",
+                "props": {
+                  "id": "span-toolbar-status",
+                  "style": {
+                    "color": "#909399",
+                    "fontSize": "13px"
+                  }
+                },
+                "children": [
+                  "💡 选中用户后可使用下方操作按钮测试级联功能"
+                ]
+              }
             ]
           }
         ]
@@ -29,7 +106,11 @@
             "type": "h3",
             "children": [
               "用户表 (Users)"
-            ]
+            ],
+            "id": "h3__0_0_1_0",
+            "props": {
+              "id": "h3__0_0_1_0"
+            }
           },
           {
             "type": "div",
@@ -41,20 +122,23 @@
                 "type": "el-button",
                 "props": {
                   "type": "primary",
-                  "size": "small"
+                  "size": "small",
+                  "id": "el-button__0_0_1_1_0"
                 },
                 "on": {
                   "click": "handleAddUser"
                 },
                 "children": [
                   "➕ 添加用户"
-                ]
+                ],
+                "id": "el-button__0_0_1_1_0"
               },
               {
                 "type": "el-button",
                 "props": {
                   "type": "warning",
-                  "size": "small"
+                  "size": "small",
+                  "id": "el-button__0_0_1_1_1"
                 },
                 "style": {
                   "marginLeft": "10px"
@@ -64,13 +148,15 @@
                 },
                 "children": [
                   "✏️ 批量修改ID (测试级联更新)"
-                ]
+                ],
+                "id": "el-button__0_0_1_1_1"
               },
               {
                 "type": "el-button",
                 "props": {
                   "type": "danger",
-                  "size": "small"
+                  "size": "small",
+                  "id": "el-button__0_0_1_1_2"
                 },
                 "style": {
                   "marginLeft": "10px"
@@ -80,9 +166,14 @@
                 },
                 "children": [
                   "🗑️ 删除选中用户 (测试级联删除)"
-                ]
+                ],
+                "id": "el-button__0_0_1_1_2"
               }
-            ]
+            ],
+            "id": "div__0_0_1_1",
+            "props": {
+              "id": "div__0_0_1_1"
+            }
           },
           {
             "type": "r-table",
@@ -90,7 +181,8 @@
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true
+              "highlightCurrentRow": true,
+              "id": "r-table__0_0_1_2"
             },
             "on": {
               "current-change": "handleUserRowChange"
@@ -101,27 +193,41 @@
                 "field": "id",
                 "props": {
                   "label": "用户ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_1_2_0"
+                },
+                "children": [],
+                "id": "r-text__0_0_1_2_0"
               },
               {
                 "type": "r-text",
                 "field": "name",
                 "props": {
                   "label": "姓名",
-                  "width": 150
-                }
+                  "width": 150,
+                  "id": "r-text__0_0_1_2_1"
+                },
+                "children": [],
+                "id": "r-text__0_0_1_2_1"
               },
               {
                 "type": "r-text",
                 "field": "email",
                 "props": {
-                  "label": "邮箱"
-                }
+                  "label": "邮箱",
+                  "id": "r-text__0_0_1_2_2"
+                },
+                "children": [],
+                "id": "r-text__0_0_1_2_2"
               }
-            ]
+            ],
+            "id": "r-table__0_0_1_2"
           }
-        ]
+        ],
+        "id": "div__0_0_1",
+        "props": {
+          "id": "div__0_0_1"
+        }
       },
       {
         "type": "div",
@@ -131,7 +237,11 @@
             "type": "h3",
             "children": [
               "订单表 (Orders) - 级联更新/删除目标"
-            ]
+            ],
+            "id": "h3__0_0_2_0",
+            "props": {
+              "id": "h3__0_0_2_0"
+            }
           },
           {
             "type": "r-table",
@@ -139,7 +249,8 @@
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true
+              "highlightCurrentRow": true,
+              "id": "r-table__0_0_2_1"
             },
             "children": [
               {
@@ -147,35 +258,52 @@
                 "field": "id",
                 "props": {
                   "label": "订单ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_2_1_0"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_0"
               },
               {
                 "type": "r-text",
                 "field": "userId",
                 "props": {
                   "label": "用户ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_2_1_1"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_1"
               },
               {
                 "type": "r-text",
                 "field": "orderNo",
                 "props": {
                   "label": "订单号",
-                  "width": 150
-                }
+                  "width": 150,
+                  "id": "r-text__0_0_2_1_2"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_2"
               },
               {
                 "type": "r-text",
                 "field": "amount",
                 "props": {
-                  "label": "金额"
-                }
+                  "label": "金额",
+                  "id": "r-text__0_0_2_1_3"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_3"
               }
-            ]
+            ],
+            "id": "r-table__0_0_2_1"
           }
-        ]
+        ],
+        "id": "div__0_0_2",
+        "props": {
+          "id": "div__0_0_2"
+        }
       },
       {
         "type": "div",
@@ -185,14 +313,19 @@
             "type": "h3",
             "children": [
               "订单明细表 (OrderItems) - 级联删除目标"
-            ]
+            ],
+            "id": "h3__0_0_3_0",
+            "props": {
+              "id": "h3__0_0_3_0"
+            }
           },
           {
             "type": "r-table",
             "dataKey": "OrderItems@rows",
             "props": {
               "border": true,
-              "stripe": true
+              "stripe": true,
+              "id": "r-table__0_0_3_1"
             },
             "children": [
               {
@@ -200,43 +333,63 @@
                 "field": "id",
                 "props": {
                   "label": "明细ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_3_1_0"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_0"
               },
               {
                 "type": "r-text",
                 "field": "orderId",
                 "props": {
                   "label": "订单ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_3_1_1"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_1"
               },
               {
                 "type": "r-text",
                 "field": "productName",
                 "props": {
-                  "label": "产品名称"
-                }
+                  "label": "产品名称",
+                  "id": "r-text__0_0_3_1_2"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_2"
               },
               {
                 "type": "r-text",
                 "field": "quantity",
                 "props": {
                   "label": "数量",
-                  "width": 80
-                }
+                  "width": 80,
+                  "id": "r-text__0_0_3_1_3"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_3"
               },
               {
                 "type": "r-text",
                 "field": "price",
                 "props": {
                   "label": "单价",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_3_1_4"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_4"
               }
-            ]
+            ],
+            "id": "r-table__0_0_3_1"
           }
-        ]
+        ],
+        "id": "div__0_0_3",
+        "props": {
+          "id": "div__0_0_3"
+        }
       },
       {
         "type": "div",
@@ -247,7 +400,8 @@
             "props": {
               "title": "使用说明",
               "type": "info",
-              "showIcon": true
+              "showIcon": true,
+              "id": "el-alert__0_0_4_0"
             },
             "children": [
               {
@@ -255,22 +409,46 @@
                 "children": [
                   "1. 点击表格行选中用户（行会高亮显示）",
                   {
-                    "type": "br"
+                    "type": "br",
+                    "children": [],
+                    "id": "br__0_0_4_0_0_1",
+                    "props": {
+                      "id": "br__0_0_4_0_0_1"
+                    }
                   },
                   "2. 点击「批量修改ID」测试级联更新：所有用户ID增加指定值，订单的userId自动同步",
                   {
-                    "type": "br"
+                    "type": "br",
+                    "children": [],
+                    "id": "br__0_0_4_0_0_3",
+                    "props": {
+                      "id": "br__0_0_4_0_0_3"
+                    }
                   },
                   "3. 点击「删除选中用户」测试级联删除：递归删除该用户的所有订单和订单明细",
                   {
-                    "type": "br"
+                    "type": "br",
+                    "children": [],
+                    "id": "br__0_0_4_0_0_5",
+                    "props": {
+                      "id": "br__0_0_4_0_0_5"
+                    }
                   },
                   "4. 打开控制台查看详细的级联操作日志"
-                ]
+                ],
+                "id": "div__0_0_4_0_0",
+                "props": {
+                  "id": "div__0_0_4_0_0"
+                }
               }
-            ]
+            ],
+            "id": "el-alert__0_0_4_0"
           }
-        ]
+        ],
+        "id": "div__0_0_4",
+        "props": {
+          "id": "div__0_0_4"
+        }
       }
     ]
   }

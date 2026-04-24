@@ -12,7 +12,8 @@ export { useAiChat } from '../composables/useAiChat'
 export type { UseAiChatOptions, StreamAiChatTextRequest, StreamAiChatText, FileAttachment, TokenUsage, ChatMessage, ChatMode, RecoveryPolicy, CollaborationPolicy, ToolLogEntry, AiSessionMetaConfig, AiSessionPolicies, AiSessionSnapshot, AiChatSendRequest, AiChatSender } from '../composables/useAiChat'
 export { useAiPanelStore } from '../composables/useAiPanelStore'
 export type { AiSessionToolLog, AiToolSpec, AiToolInvocationContext, AiToolHandler, AiFcLoopConfig, AiFeedbackConfig, AiSessionEventMap, AiSessionEventName, AiSessionEventHandler, AiSessionHooks, AiSessionConfig } from '../composables/useAiPanelStore'
-export { useAiSession } from '../composables/useAiSession'
+export { toSafeText, findLatestUserPrompt, pickRecentConversation, streamWithFallback } from '../composables/useAiSenderHelpers'
+export type { StreamWithFallbackOptions } from '../composables/useAiSenderHelpers'
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'

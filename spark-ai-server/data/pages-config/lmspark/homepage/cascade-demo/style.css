@@ -71,3 +71,20 @@
 [data-page="cascade-demo"] .el-alert .el-alert__content {
   line-height: 1.8;
 }
+
+/* 工具栏样式 */
+[data-page="cascade-demo"] .r-toolbar {
+  background: #f9fafb;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ebeef5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+[data-page="cascade-demo"] .r-toolbar .r-tail {
+  color: #909399;
+  font-size: 13px;
+}

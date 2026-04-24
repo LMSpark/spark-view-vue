@@ -1,0 +1,137 @@
+/**
+ * useDevSystem — DevSystem 单入口编排器。
+ *
+ * 设计意图：
+ *  - 消费层（DevSystem.vue）只需 `const dev = useDevSystem()` 一次 use。
+ *  - 内部统一编排：路由能力、dev 全局状态、AI 会话配置、工作区 Tab 状态。
+ *  - UI 相关 watch（选中节点/页面切换联动 workTab）内聚在这里，
+ *    消费层不再持有 workTab / previewRefreshToken / aiPanelActiveFile 等中间 ref。
+ */
+import { computed, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useTenantRouter } from '@/composables/useTenantRouter'
+import { PAGE_FILE_NAMES, useDevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
+import { useDevPageModelSession } from './page-model-session'
+
+function isPageFileName(value: string): value is PageFileName {
+  return PAGE_FILE_NAMES.includes(value as PageFileName)
+}
+
+function describeError(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return typeof error === 'string' ? error : JSON.stringify(error)
+}
+
+export function useDevSystem() {
+  const { router, tenantPath } = useTenantRouter()
+  const state = useDevState()
+
+  // ─── 工作区 Tab 状态 ───────────────────────────────────
+  const workTab = ref<DevWorkspaceTab>('props')
+  const previewRefreshToken = ref(0)
+  const lastPageFile = ref<PageFileName>('rule.json')
+
+  const currentWorkspaceFile = computed<PageFileName | null>(() =>
+    isPageFileName(workTab.value) ? workTab.value : null,
+  )
+
+  // AI 面板的 activeFile：在页面文件页签跟随 workTab；切到 preview/props 时
+  // 沿用最近一次的页面文件，避免 AI 上下文回落占位。
+  const aiPanelActiveFile = computed<PageFileName | null>(() => {
+    if (currentWorkspaceFile.value) return currentWorkspaceFile.value
+    return state.activePageId.value ? lastPageFile.value : null
+  })
+
+  watch(currentWorkspaceFile, (file) => {
+    if (file) lastPageFile.value = file
+  })
+
+  // ─── AI 会话（页面模型级编辑）─────────────────────────
+  const ai = useDevPageModelSession({ state, activeFile: aiPanelActiveFile })
+
+  // ─── 派生能力 ──────────────────────────────────────────
+  const canPreviewCurrentPage = computed(
+    () => Boolean(state.editForm.path || state.activePageId.value),
+  )
+
+  // 选中节点时自动切到节点属性页签
+  watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
+    if (nextId && nextId !== prevId) {
+      workTab.value = 'props'
+    }
+  })
+
+  // activePageId 切换时的默认页签联动
+  watch(() => state.activePageId.value, (nextPageId) => {
+    const hasSelectedNode = state.selectedNode.value !== null
+    if (nextPageId && !hasSelectedNode) {
+      workTab.value = 'rule.json'
+      return
+    }
+    if (!nextPageId && hasSelectedNode) {
+      workTab.value = 'props'
+    }
+  })
+
+  // ─── 动作方法 ──────────────────────────────────────────
+  function previewPage(pageId: string) {
+    void router.push(tenantPath(`/${pageId}`))
+  }
+
+  function switchToPreview() {
+    if (!canPreviewCurrentPage.value) return
+    workTab.value = 'preview'
+    previewRefreshToken.value++
+  }
+
+  function saveAll() {
+    if (!state.hasAnyDirty.value) return
+    void state.saveAll()
+  }
+
+  function isWorkspaceTabDirty(name: PageFileName): boolean {
+    return state.isDocumentDirty(name)
+  }
+
+  // ─── AI 事件 → 状态栏 / 消息投影 ───────────────────────
+  // 把原本散落在消费层的 6 个 handler 内聚到编排器，消费层通过 `v-on="aiEvents"`
+  // 一次性绑定，不再需要声明 onAiXxx 函数。
+  const aiEvents = {
+    'tool-call': (payload: { toolName: string; round: number }) => {
+      state.addStatus(`AI 调用工具 [${payload.toolName}] · 第 ${payload.round} 轮`, 'success')
+    },
+    'tool-error': (payload: { toolName: string; error: unknown }) => {
+      state.addStatus(`AI 工具 [${payload.toolName}] 失败：${describeError(payload.error)}`, 'error')
+    },
+    'fc-round-end': (payload: { round: number; calls: number }) => {
+      state.addStatus(`✅ 模型级编辑完成（${payload.round} 轮 · ${payload.calls} 次写入）`, 'success')
+    },
+    'message-error': (payload: { error: unknown }) => {
+      ElMessage.error(`AI 消息失败：${describeError(payload.error)}`)
+    },
+    'shortcut-trigger': () => {
+      console.info('[DevSystem] AI 快捷键触发', { pageId: state.activePageId.value })
+    },
+    'snapshot-restore': (payload: { storageKey: string; size: number }) => {
+      if (payload.size > 0) {
+        state.addStatus(`AI 会话已恢复 ${payload.size} 条历史（${payload.storageKey}）`, 'success')
+      }
+    },
+  }
+
+  return {
+    state,
+    ai,
+    aiEvents,
+    workTab,
+    previewRefreshToken,
+    currentWorkspaceFile,
+    canPreviewCurrentPage,
+    previewPage,
+    switchToPreview,
+    saveAll,
+    isWorkspaceTabDirty,
+  }
+}
+
+export type DevSystemCtx = ReturnType<typeof useDevSystem>

@@ -41,6 +41,10 @@ import {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
+  isEditTextModelWriteAction,
   type EditDomainState,
   type EditToolHost,
 } from '../business/page-design/stills'
@@ -96,4 +100,8 @@ export {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
+  isEditTextModelWriteAction,
 }

@@ -87,6 +87,10 @@ export interface AiSessionEventMap {
   'open': { config: AiSessionConfig }
   /** 面板已可见（beforeOpen 已结束，无论成功失败）。 */
   'opened': { config: AiSessionConfig }
+  /** 当前 config 被显式重同步；用于已打开面板切换业务上下文。 */
+  'sync': { previousConfig: AiSessionConfig | null; config: AiSessionConfig }
+  /** config 重同步完成（beforeOpen 已结束）。 */
+  'synced': { previousConfig: AiSessionConfig | null; config: AiSessionConfig }
   /** 面板即将关闭（visible 仍为 true）。 */
   'close': { config: AiSessionConfig | null }
   /** 面板已关闭。 */
@@ -252,16 +256,28 @@ function emit<K extends AiSessionEventName>(event: K, payload: AiSessionEventMap
   }
 }
 
-async function open(config: AiSessionConfig): Promise<void> {
-  configRef.value = config
-  emit('open', { config })
+async function runBeforeOpen(config: AiSessionConfig): Promise<void> {
   try {
     await config.beforeOpen?.()
   } catch {
-    // 打开钩子失败不阻止面板显示；错误由 sender/状态通道上报。
+    // 打开/同步钩子失败不阻止面板显示；错误由 sender/状态通道上报。
   }
+}
+
+async function open(config: AiSessionConfig): Promise<void> {
+  configRef.value = config
+  emit('open', { config })
+  await runBeforeOpen(config)
   visible.value = true
   emit('opened', { config })
+}
+
+async function sync(config: AiSessionConfig): Promise<void> {
+  const previousConfig = configRef.value
+  configRef.value = config
+  emit('sync', { previousConfig, config })
+  await runBeforeOpen(config)
+  emit('synced', { previousConfig, config })
 }
 
 function close(): void {
@@ -316,6 +332,7 @@ export function useAiPanelStore() {
     feedback,
     // 操作
     open,
+    sync,
     close,
     toggle,
     disposeIf,

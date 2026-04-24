@@ -119,6 +119,10 @@ export {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
+  isEditTextModelWriteAction,
 } from './stills'
 export type {
   DomainState,
@@ -224,7 +228,24 @@ export {
 // ── Business Domains（业务域）───────────────────────────────────────────────
 export {
   PAGE_DESIGN_DOMAIN,
+  createPageModelSessionBackend,
+  createPageModelSessionHost,
+  createPageModelEditSession,
   type PageDesignBusinessContext,
+  type PageModelStillsSession,
+  type PageModelSessionHostRuntime,
+  type PageModelSessionHostState,
+  type PageModelSessionHostController,
+  type CreatePageModelSessionHostOptions,
+  type PageModelEditLogEntry,
+  type PageModelEditSessionState,
+  type StartPageModelIterateSessionOptions,
+  type PageModelEditSessionRuntime,
+  type PageModelEditSessionOptions,
+  type PageModelEditRunHooks,
+  type PageModelEditRunOptions,
+  type PageModelEditBootstrapOptions,
+  type PageModelEditSessionController,
 } from './business/page-design'
 
 export {

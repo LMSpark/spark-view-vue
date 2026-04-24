@@ -2,6 +2,12 @@ export { editDomain, EDIT_STILLS } from './edit/edit-domain'
 export { editInit, EDIT_LIFECYCLE_STILLS } from './edit/edit-lifecycle-stills'
 export { getEditState } from './edit/edit-lifecycle-stills'
 export {
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
+  isEditTextModelWriteAction,
+} from './edit/edit-write-actions'
+export {
   getActiveNodeTree,
   notifyNodeTreeChanged,
   getActiveDataSetTool,

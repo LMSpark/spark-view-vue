@@ -1,42 +1,112 @@
 [
   {
     "type": "div",
-    "class": "dataset-demo",
+    "id": "div__0_0",
+    "props": {
+      "id": "div__0_0"
+    },
     "children": [
       {
         "type": "h1",
         "children": [
           "DataSet 主从表演示"
-        ]
+        ],
+        "id": "h1__0_0_0",
+        "props": {
+          "id": "h1__0_0_0"
+        }
       },
       {
         "type": "el-alert",
         "props": {
           "type": "info",
           "closable": false,
-          "showIcon": true
+          "showIcon": true,
+          "id": "el-alert__0_0_1"
         },
         "children": [
           "0 代码主从联动：点击用户行过滤订单，再点击订单行过滤订单明细。"
-        ]
+        ],
+        "id": "el-alert__0_0_1"
       },
       {
         "type": "div",
-        "class": "section",
+        "id": "div__0_0_2",
+        "props": {
+          "id": "div__0_0_2"
+        },
         "children": [
           {
             "type": "h2",
             "children": [
               "用户列表（父表 - 自动加载）"
-            ]
+            ],
+            "id": "h2__0_0_2_0",
+            "props": {
+              "id": "h2__0_0_2_0"
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "Users@rows",
+            "id": "r-table__0_0_2_1",
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true
+              "highlightCurrentRow": true,
+              "id": "r-table__0_0_2_1",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {},
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "icon-refresh",
+                      "action": "refresh",
+                      "label": "刷新"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "icon-add",
+                      "action": "append-row",
+                      "label": "新增用户"
+                    }
+                  }
+                ]
+              },
+              "dataKey": "Users@rows",
+              "actions": {
+                "type": "r-actions",
+                "props": {},
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "查看",
+                      "action": "view-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "编辑",
+                      "action": "edit-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "删除",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
             },
             "children": [
               {
@@ -44,31 +114,43 @@
                 "field": "id",
                 "props": {
                   "label": "用户ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_2_1_0"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_0"
               },
               {
                 "type": "r-text",
                 "field": "name",
                 "props": {
                   "label": "姓名",
-                  "width": 120
-                }
+                  "width": 120,
+                  "id": "r-text__0_0_2_1_1"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_1"
               },
               {
                 "type": "r-text",
                 "field": "email",
                 "props": {
-                  "label": "邮箱"
-                }
+                  "label": "邮箱",
+                  "id": "r-text__0_0_2_1_2"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_2"
               },
               {
                 "type": "r-text",
                 "field": "status",
                 "props": {
                   "label": "状态",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_2_1_3"
+                },
+                "children": [],
+                "id": "r-text__0_0_2_1_3"
               }
             ]
           }
@@ -76,7 +158,10 @@
       },
       {
         "type": "div",
-        "class": "section",
+        "id": "div__0_0_3",
+        "props": {
+          "id": "div__0_0_3"
+        },
         "children": [
           {
             "type": "div",
@@ -86,17 +171,79 @@
                 "type": "h2",
                 "children": [
                   "订单列表（子表 - 根据选中用户过滤）"
-                ]
+                ],
+                "id": "h2__0_0_3_0_0",
+                "props": {
+                  "id": "h2__0_0_3_0_0"
+                }
               }
-            ]
+            ],
+            "id": "div__0_0_3_0",
+            "props": {
+              "id": "div__0_0_3_0"
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "Orders@rows",
+            "id": "r-table__0_0_3_1",
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true
+              "highlightCurrentRow": true,
+              "id": "r-table__0_0_3_1",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {},
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "icon-refresh",
+                      "action": "refresh",
+                      "label": "刷新"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "icon-add",
+                      "action": "append-row",
+                      "label": "新增订单"
+                    }
+                  }
+                ]
+              },
+              "dataKey": "Orders@rows",
+              "actions": {
+                "type": "r-actions",
+                "props": {},
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "查看",
+                      "action": "view-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "编辑",
+                      "action": "edit-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "删除",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
             },
             "children": [
               {
@@ -104,31 +251,43 @@
                 "field": "orderNo",
                 "props": {
                   "label": "订单号",
-                  "width": 120
-                }
+                  "width": 120,
+                  "id": "r-text__0_0_3_1_0"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_0"
               },
               {
                 "type": "r-text",
                 "field": "amount",
                 "props": {
                   "label": "金额",
-                  "width": 120
-                }
+                  "width": 120,
+                  "id": "r-text__0_0_3_1_1"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_1"
               },
               {
                 "type": "r-text",
                 "field": "status",
                 "props": {
                   "label": "状态",
-                  "width": 120
-                }
+                  "width": 120,
+                  "id": "r-text__0_0_3_1_2"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_2"
               },
               {
                 "type": "r-text",
                 "field": "date",
                 "props": {
-                  "label": "日期"
-                }
+                  "label": "日期",
+                  "id": "r-text__0_0_3_1_3"
+                },
+                "children": [],
+                "id": "r-text__0_0_3_1_3"
               }
             ]
           }
@@ -136,7 +295,10 @@
       },
       {
         "type": "div",
-        "class": "section",
+        "id": "div__0_0_4",
+        "props": {
+          "id": "div__0_0_4"
+        },
         "children": [
           {
             "type": "div",
@@ -146,16 +308,70 @@
                 "type": "h2",
                 "children": [
                   "订单明细（孙表 - 根据当前订单过滤）"
-                ]
+                ],
+                "id": "h2__0_0_4_0_0",
+                "props": {
+                  "id": "h2__0_0_4_0_0"
+                }
               }
-            ]
+            ],
+            "id": "div__0_0_4_0",
+            "props": {
+              "id": "div__0_0_4_0"
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "OrderItems@rows",
+            "id": "r-table__0_0_4_1",
             "props": {
               "border": true,
-              "stripe": true
+              "stripe": true,
+              "id": "r-table__0_0_4_1",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {},
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "icon-refresh",
+                      "action": "refresh",
+                      "label": "刷新"
+                    }
+                  }
+                ]
+              },
+              "dataKey": "OrderItems@rows",
+              "actions": {
+                "type": "r-actions",
+                "props": {},
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "查看",
+                      "action": "view-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "编辑",
+                      "action": "edit-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "template": "text",
+                      "label": "删除",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
             },
             "children": [
               {
@@ -163,31 +379,43 @@
                 "field": "orderId",
                 "props": {
                   "label": "订单ID",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_4_1_0"
+                },
+                "children": [],
+                "id": "r-text__0_0_4_1_0"
               },
               {
                 "type": "r-text",
                 "field": "productName",
                 "props": {
-                  "label": "商品名称"
-                }
+                  "label": "商品名称",
+                  "id": "r-text__0_0_4_1_1"
+                },
+                "children": [],
+                "id": "r-text__0_0_4_1_1"
               },
               {
                 "type": "r-text",
                 "field": "quantity",
                 "props": {
                   "label": "数量",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_4_1_2"
+                },
+                "children": [],
+                "id": "r-text__0_0_4_1_2"
               },
               {
                 "type": "r-text",
                 "field": "price",
                 "props": {
                   "label": "单价",
-                  "width": 100
-                }
+                  "width": 100,
+                  "id": "r-text__0_0_4_1_3"
+                },
+                "children": [],
+                "id": "r-text__0_0_4_1_3"
               }
             ]
           }

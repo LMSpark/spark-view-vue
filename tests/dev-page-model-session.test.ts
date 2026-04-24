@@ -18,7 +18,7 @@ const shared = vi.hoisted(() => {
   }
 })
 
-vi.mock('../src/views/app/dev-system/composables/usePageModelSessionHost', () => ({
+vi.mock('../src/views/app/dev-system/usePageModelSessionHost', () => ({
   usePageModelSessionHost: () => ({
     backend: {} as never,
     session: shallowRef(null),
@@ -31,8 +31,8 @@ vi.mock('../src/views/app/dev-system/composables/usePageModelSessionHost', () =>
   }),
 }))
 
-vi.mock('../src/views/app/dev-system/composables/useUnifiedEditSession', () => ({
-  useUnifiedEditSession: () => ({
+vi.mock('../src/views/app/dev-system/usePageModelEditSession', () => ({
+  usePageModelEditSession: () => ({
     bootstrap: shared.bootstrap,
     runLlm: shared.runLlm,
     reset: shared.reset,
@@ -40,7 +40,7 @@ vi.mock('../src/views/app/dev-system/composables/useUnifiedEditSession', () => (
   }),
 }))
 
-import { useDevPageModelSession } from '../src/views/app/dev-system/ai-session'
+import { useDevPageModelSession } from '../src/views/app/dev-system/page-model-session'
 
 function createState(): {
   state: DevState
