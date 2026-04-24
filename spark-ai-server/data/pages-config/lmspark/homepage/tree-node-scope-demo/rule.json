@@ -1,1 +1,91 @@
-[{"type":"h2","children":["⚠️ AI 生成失败"]},{"type":"p","children":["响应解析失败，LLM 未返回标准 JSON"]},{"type":"p","children":["请检查控制台日志或 application.yml 配置"]}]
+[
+  {
+    "type": "r-section",
+    "id": "section-demo",
+    "props": {
+      "id": "section-demo",
+      "title": "Tree 组件演示",
+      "description": "展示 r-tree 树形组件的完整功能，支持勾选、过滤、拖拽、节点点击等交互",
+      "className": "tree-demo-container"
+    },
+    "children": [
+      {
+        "type": "r-tree",
+        "id": "tree-demo",
+        "props": {
+          "id": "tree-demo",
+          "dataKey": "TreeData@rows",
+          "showCheckbox": true,
+          "defaultExpandAll": true,
+          "nodeKey": "id",
+          "props": {
+            "label": "name",
+            "children": "children"
+          },
+          "filterable": true,
+          "highlightCurrent": true,
+          "draggable": true,
+          "allowDrop": true,
+          "allowDrag": true,
+          "onNodeClick": "handleNodeClick",
+          "onNodeExpand": "handleNodeExpand",
+          "onNodeCollapse": "handleNodeCollapse",
+          "treeProps": {
+            "nodeKey": "id",
+            "props": {
+              "label": "name",
+              "children": "children"
+            },
+            "highlightCurrent": true,
+            "defaultExpandAll": true,
+            "filterNodeMethod": "filterNode"
+          }
+        },
+        "children": [
+          {
+            "type": "tree-node-summary",
+            "props": {
+              "id": "tree-summary",
+              "fields": [
+                {
+                  "field": "name",
+                  "label": "名称"
+                },
+                {
+                  "field": "type",
+                  "label": "类型"
+                },
+                {
+                  "field": "status",
+                  "label": "状态"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "type": "r-button",
+        "id": "btn-get-current",
+        "props": {
+          "id": "btn-get-current",
+          "text": "获取当前选中节点",
+          "action": "getCurrentNode",
+          "buttonType": "primary",
+          "plain": true
+        }
+      },
+      {
+        "type": "r-button",
+        "id": "btn-get-checked",
+        "props": {
+          "id": "btn-get-checked",
+          "text": "获取勾选节点",
+          "action": "getCheckedNodes",
+          "buttonType": "success",
+          "plain": true
+        }
+      }
+    ]
+  }
+]

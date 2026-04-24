@@ -1,111 +1,44 @@
-let _pageState = {};
+// Tree Demo Page Script
+// 树组件演示页面的交互逻辑
 
-function __init__() {
-  const view = $dataSet?.getView('TreeData', 'default');
-  if (!view) return;
-  
-  view.events.on('currentRowChanged', (currentRow) => {
-    if (currentRow) {
-      $page.showMessage({
-        message: `选中节点: ${currentRow.name} (ID: ${currentRow.id})`,
-        type: 'info',
-        duration: 2000
-      });
+// 获取当前选中节点
+function getCurrentNode() {
+  const tree = spark.ref('tree-demo');
+  if (tree) {
+    const node = tree.getCurrentNode();
+    if (node) {
+      ElMessage.info(`当前选中: ${node.name}（类型: ${node.type}，状态: ${node.status}）`);
+    } else {
+      ElMessage.warning('未选中任何节点');
     }
-  });
-}
-
-function handleNodeClick(nodeData, node, treeNode) {
-  const view = $dataSet?.getView('TreeData', 'default');
-  if (view && nodeData) {
-    view.selection.setCurrentRowById(nodeData.id, 'tree-node-click');
   }
 }
 
-function handleNodeExpand(nodeData, node, treeNode) {
-  $page.showMessage({
-    message: `展开节点: ${nodeData.name}`,
-    type: 'success',
-    duration: 1500
-  });
-}
-
-function handleNodeCollapse(nodeData, node, treeNode) {
-  $page.showMessage({
-    message: `折叠节点: ${nodeData.name}`,
-    type: 'warning',
-    duration: 1500
-  });
-}
-
-function RenderRefreshButton(props) {
-  return h('button', {
-    style: {
-      padding: '8px 16px',
-      backgroundColor: '#409eff',
-      color: 'white',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '14px'
-    },
-    onClick: () => {
-      $refreshData();
-      $page.showMessage({ message: '数据已刷新', type: 'success', duration: 1500 });
+// 获取勾选节点
+function getCheckedNodes() {
+  const tree = spark.ref('tree-demo');
+  if (tree) {
+    const nodes = tree.getCheckedNodes();
+    if (nodes.length > 0) {
+      const names = nodes.map(n => n.name).join(', ');
+      ElMessage.info(`勾选节点 (${nodes.length}个): ${names}`);
+    } else {
+      ElMessage.warning('未勾选任何节点');
     }
-  }, '刷新数据');
+  }
 }
 
-function RenderTreeToolbar(props) {
-  return h('div', {
-    style: {
-      display: 'flex',
-      gap: '10px',
-      marginBottom: '10px'
-    }
-  }, [
-    h('button', {
-      style: {
-        padding: '6px 12px',
-        backgroundColor: '#67c23a',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '12px'
-      },
-      onClick: () => {
-        $page.showMessage({ message: '添加节点功能待实现', type: 'info', duration: 1500 });
-      }
-    }, '添加节点'),
-    h('button', {
-      style: {
-        padding: '6px 12px',
-        backgroundColor: '#f56c6c',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '12px'
-      },
-      onClick: () => {
-        const view = $dataSet?.getView('TreeData', 'default');
-        if (view?.currentRow) {
-          $page.showConfirm({
-            title: '确认删除',
-            message: `确定删除节点“${view.currentRow.name}”吗？`,
-            confirmButtonText: '删除',
-            cancelButtonText: '取消',
-            type: 'warning',
-            onConfirm: () => {
-              view.deleteRowById(view.currentRow.id);
-              $page.showMessage({ message: '节点已删除', type: 'success', duration: 1500 });
-            }
-          });
-        } else {
-          $page.showMessage({ message: '请先选择一个节点', type: 'warning', duration: 1500 });
-        }
-      }
-    }, '删除节点')
-  ]);
+// 节点点击事件
+function handleNodeClick(data) {
+  ElMessage.info(`点击节点: ${data.name}`);
+}
+
+// 节点展开事件
+function handleNodeExpand(data) {
+  console.log('展开节点:', data.name);
+}
+
+// 节点折叠事件
+function handleNodeCollapse(data) {
+  console.log('折叠节点:', data.name);
 }
