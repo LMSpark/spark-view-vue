@@ -21,7 +21,7 @@ import {
   type DialogueTurn,
   type StillResult,
   type EditToolHost,
-} from '../ai-bridge'
+} from '@spark-view/spark-ai'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
@@ -408,4 +408,3 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
 
   return { ready, dirty, busy, aiBuffer, log, nodeTree, bootstrap, runLlm, reset }
 }
-

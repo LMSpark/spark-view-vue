@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { clearDomains, clearRegistry } from '../packages/spark-ai/src/stills'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
-import { usePageModelSessionHost } from '../src/views/app/dev-system/composables/usePageModelSessionHost'
+import { usePageModelSessionHost } from '../src/views/app/dev-system/ai-session'
 
 describe('usePageModelSessionHost', () => {
   beforeEach(() => {
@@ -24,11 +24,11 @@ describe('usePageModelSessionHost', () => {
         getNodeTree: () => liveTree,
         getDataSetTool: () => liveDataSet,
         readScript: () => script,
-        writeScript(content) {
+        writeScript(content: string) {
           script = content
         },
         readStyle: () => style,
-        writeStyle(content) {
+        writeStyle(content: string) {
           style = content
         },
       }),

@@ -1,6 +1,6 @@
 // rule.json JSON Schema — 描述 SparkNode[] 配置数组的结构
 
-import { DEV_TYPES } from '../ai-bridge'
+import { DEV_TYPES } from '@spark-view/spark-ai'
 
 type JsonSchemaNode = Record<string, unknown>
 

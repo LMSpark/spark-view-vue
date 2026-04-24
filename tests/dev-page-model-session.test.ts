@@ -40,7 +40,7 @@ vi.mock('../src/views/app/dev-system/composables/useUnifiedEditSession', () => (
   }),
 }))
 
-import { useDevPageModelSession } from '../src/views/app/dev-system/composables/useDevPageModelSession'
+import { useDevPageModelSession } from '../src/views/app/dev-system/ai-session'
 
 function createState(): {
   state: DevState

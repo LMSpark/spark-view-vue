@@ -133,7 +133,7 @@ import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
 import { AiLauncherButton, useAiPanelStore } from '@spark-view/spark-component'
 import NavIcon from '@/components/NavIcon.vue'
-import { useDevPageModelSession } from './composables/useDevPageModelSession'
+import { useDevPageModelSession } from './ai-session'
 
 const { router, tenantPath } = useTenantRouter()
 const state = useDevState()

@@ -103,7 +103,7 @@ export function useDevPageModelSession(options: Options) {
    * 生成模型事实快照，作为每轮 Prompt 的强约束前缀。
    *
    * 注意：
-   * - 这里仅输出“当前实时模型事实”，不输出历史推断。
+   * - 这里仅输出"当前实时模型事实"，不输出历史推断。
    * - 该快照用于抑制 AI 在多轮中复用陈旧结论。
    */
   function buildModelFactsSnapshot(): string {
@@ -133,8 +133,8 @@ export function useDevPageModelSession(options: Options) {
    * 组装本轮延续 Prompt。
    *
    * 分支策略：
-   * - 若后端有可恢复会话，或无历史消息：只拼接“事实快照 + 本轮用户需求”。
-   * - 否则追加近几轮 transcript，但明确声明“历史结论不可覆盖当前事实”。
+   * - 若后端有可恢复会话，或无历史消息：只拼接"事实快照 + 本轮用户需求"。
+   * - 否则追加近几轮 transcript，但明确声明"历史结论不可覆盖当前事实"。
    */
   function buildContinuationPrompt(prompt: string, historyMsgs: AiChatSendRequest['historyMsgs']): string {
     const hasBackendSession = sessionHost.getResumeSessionOptions().resumeSessionId !== undefined

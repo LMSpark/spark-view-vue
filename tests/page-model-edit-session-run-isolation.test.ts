@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, shallowRef } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
-import type { PageModelSessionHost } from '../src/views/app/dev-system/composables/usePageModelSessionHost'
+import type { PageModelSessionHost } from '../src/views/app/dev-system/ai-session'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
 
@@ -61,7 +61,7 @@ import {
   getEditState,
   registerEditStills,
 } from '@spark-view/spark-ai'
-import { usePageModelEditSession } from '../src/views/app/dev-system/composables/usePageModelEditSession'
+import { usePageModelEditSession } from '../src/views/app/dev-system/ai-session'
 
 function createRuleEditHarness(options?: {
   onDataSetChanged?: (tool: DataSetCrudTool) => void

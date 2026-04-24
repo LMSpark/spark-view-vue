@@ -12,7 +12,7 @@
 import { ref, reactive, computed } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
-import type { EditToolHost } from './ai-bridge'
+import type { EditToolHost } from '@spark-view/spark-ai'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   PAGE_FILE_NAMES,
