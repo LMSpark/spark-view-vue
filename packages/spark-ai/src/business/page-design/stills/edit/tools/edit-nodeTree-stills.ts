@@ -13,7 +13,7 @@
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
 
 import type { IStillSession, StillDefinition, StillResult } from '../../../../../core/stills/types'
-import { getActiveNodeTree, getEditState, notifyNodeTreeChanged } from '../edit-state'
+import { getActiveNodeTree, getEditState, notifyNodeTreeChanged } from '../edit-lifecycle-stills'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../../spark-node-tree-tool-catalog'
 import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '../../../../../core/stills/llm-params-validator'
 

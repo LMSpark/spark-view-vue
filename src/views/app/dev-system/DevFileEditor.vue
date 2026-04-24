@@ -4,7 +4,7 @@
       <div class="file-header">
         <div class="file-header__meta">
           <span class="file-page-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
-          <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger" effect="dark">DataSet 解析失败</el-tag>
+          <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataError.value" size="small" type="danger" effect="dark">DataSet 解析失败</el-tag>
         </div>
         <div class="file-header__actions">
           <el-button-group class="action-group">
@@ -39,7 +39,7 @@
           <span v-if="resolvedActiveFile === 'pagedata.json'" class="action-divider" />
           <el-button-group v-if="resolvedActiveFile === 'pagedata.json'" class="action-group">
             <el-tooltip content="结构合法时进入 DataSet 可视化设计器" placement="bottom" :show-after="600">
-              <el-button size="small" :type="pageDataViewMode === 'visual' ? 'primary' : 'default'" :disabled="Boolean(state.pageDataSetError.value)" @click="setPageDataViewMode('visual')">
+              <el-button size="small" :type="pageDataViewMode === 'visual' ? 'primary' : 'default'" :disabled="Boolean(state.pageDataError.value)" @click="setPageDataViewMode('visual')">
                 <NavIcon name="Coin" :size="14" /> 可视化
               </el-button>
             </el-tooltip>
@@ -64,7 +64,7 @@
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
         <el-tab-pane v-for="f in PAGE_FILE_NAMES" :key="f" :name="f">
           <template #label>
-            <span class="file-tab-label" :class="{ 'file-dirty': state.documents[f].isDirty.value }">
+            <span class="file-tab-label" :class="{ 'file-dirty': state.isDocumentDirty(f) }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
             </span>
           </template>
@@ -202,7 +202,7 @@ watch([resolvedActiveFile, () => props.state.activePageId.value], () => {
   resetPageDataViewMode()
 }, { immediate: true })
 
-watch(() => props.state.pageDataSetError.value, (nextError) => {
+watch(() => props.state.pageDataError.value, (nextError) => {
   if (resolvedActiveFile.value !== 'pagedata.json') return
   if (nextError) {
     pageDataViewMode.value = 'text'
@@ -232,7 +232,7 @@ function fileIcon(name: string): string {
 
 function resetPageDataViewMode() {
   pageDataViewModePinned.value = false
-  pageDataViewMode.value = props.state.pageDataSetError.value ? 'text' : 'visual'
+  pageDataViewMode.value = props.state.pageDataError.value ? 'text' : 'visual'
 }
 
 function setPageDataViewMode(mode: 'visual' | 'text') {

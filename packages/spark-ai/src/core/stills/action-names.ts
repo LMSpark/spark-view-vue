@@ -78,8 +78,3 @@ export const TEXT_MODEL_READ_STYLE_ACTION = 'textModel.readStyle'
 export const TEXT_MODEL_WRITE_STYLE_ACTION = 'textModel.writeStyle'
 
 export const EDIT_BOOTSTRAP_ACTION = 'edit.bootstrap'
-export const EDIT_CHANGED_LINES_ACTION = 'edit.changedLines'
-export const EDIT_EXPORT_FILES_ACTION = 'edit.exportFiles'
-
-// dataset (edit-domain proxy actions)
-export const DATASET_CHANGED_LINES_ACTION = 'dataset.changedLines'

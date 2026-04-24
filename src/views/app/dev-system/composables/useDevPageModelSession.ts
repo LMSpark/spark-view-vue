@@ -23,13 +23,13 @@ export function useDevPageModelSession(options: Options) {
   const { state } = options
 
   const sessionHost = usePageModelSessionHost({
-    getLiveModelAdapter: () => state.getLiveModelAdapter(),
+    getEditToolHost: () => state.getEditToolHost(),
     getSessionKey: () => state.activePageId.value,
   })
 
   const editSession = useUnifiedEditSession({
     getSessionKey: () => state.activePageId.value,
-    getLiveModelAdapter: () => state.getLiveModelAdapter(),
+    getEditToolHost: () => state.getEditToolHost(),
     sessionHost,
     ensureContextLoaded: async () => {
       await state.ensureActivePageFilesLoaded()
@@ -91,12 +91,27 @@ export function useDevPageModelSession(options: Options) {
       '[全局对话延续]',
       `当前页面: ${state.activePageId.value}`,
       `当前焦点文件: ${options.activeFile.value ?? 'unknown'}`,
-      '以下仅保留最近用户需求；AI 旧结论不得覆盖当前 live model 事实。',
+      '以下仅保留最近用户需求；AI 旧结论不得覆盖当前页面模型事实。',
       transcript,
       '',
       '[本轮用户需求]',
       prompt,
     ].join('\n')
+  }
+
+  function findLatestUserPrompt(historyMsgs: AiChatSendRequest['historyMsgs']): string {
+    for (let index = historyMsgs.length - 1; index >= 0; index -= 1) {
+      const message = historyMsgs[index]
+      if (message?.role === 'user') {
+        return message.content.trim()
+      }
+    }
+    return ''
+  }
+
+  async function ensurePageModelReady(): Promise<void> {
+    await state.ensureActivePageFilesLoaded()
+    await editSession.bootstrap({ silent: true, skipContextLoad: true })
   }
 
   async function runEditSessionChat(request: AiChatSendRequest, prompt: string): Promise<void> {
@@ -126,10 +141,9 @@ export function useDevPageModelSession(options: Options) {
   }
 
   const sender: AiChatSender = async (request) => {
-    const prompt = [...request.historyMsgs].reverse().find(message => message.role === 'user')?.content.trim() ?? ''
+    const prompt = findLatestUserPrompt(request.historyMsgs)
     if (!prompt) return
-    await state.ensureActivePageFilesLoaded()
-    await editSession.bootstrap({ silent: true, skipContextLoad: true })
+    await ensurePageModelReady()
     request.onDelta?.('已接收需求，正在执行页面模型级编辑...\n')
     await runEditSessionChat(request, buildContinuationPrompt(prompt, request.historyMsgs))
   }
@@ -141,8 +155,7 @@ export function useDevPageModelSession(options: Options) {
     sender,
     externalToolLogs: editSession.log,
     beforeOpen: async () => {
-      await state.ensureActivePageFilesLoaded()
-      await editSession.bootstrap({ silent: true, skipContextLoad: true })
+      await ensurePageModelReady()
     },
   }
 

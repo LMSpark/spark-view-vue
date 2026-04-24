@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createPageDocuments } from '../src/views/app/dev-system/documents'
+import { createPageDocuments } from '../src/views/app/dev-system/page-file-documents'
+
+function isDocumentDirty(doc: { text: { value: string }; savedText: { value: string } }): boolean {
+  return doc.text.value !== doc.savedText.value
+}
 
 function makePageDataText(label: string): string {
   return JSON.stringify({
@@ -21,21 +25,21 @@ describe('PageFileDocument primitives', () => {
       const doc = docs['script.js']
 
       doc.loadFromText('// v1\n')
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
       expect(doc.canUndo.value).toBe(false)
       expect(doc.text.value).toBe('// v1\n')
 
       doc.setText('// v2\n')
-      expect(doc.isDirty.value).toBe(true)
+      expect(isDocumentDirty(doc)).toBe(true)
       expect(doc.canUndo.value).toBe(true)
 
       expect(doc.undo()).toBe(true)
       expect(doc.text.value).toBe('// v1\n')
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
 
       doc.setText('// v3\n')
       doc.markSaved()
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
     })
 
     it('reset clears history and state', () => {
@@ -57,12 +61,12 @@ describe('PageFileDocument primitives', () => {
 
       doc.loadFromText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
       expect(doc.model.value).not.toBeNull()
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
 
       doc.setText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
       const current = doc.model.value!.toJSON()
       expect((current.children?.[0] as { type?: string }).type).toBe('el-button')
-      expect(doc.isDirty.value).toBe(true)
+      expect(isDocumentDirty(doc)).toBe(true)
 
       expect(doc.undo()).toBe(true)
       const undone = doc.model.value!.toJSON()
@@ -97,11 +101,11 @@ describe('PageFileDocument primitives', () => {
       doc.loadFromText(makePageDataText('Alpha'))
       expect(doc.model.value).not.toBeNull()
       expect(doc.text.value).toContain('Items')
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
 
       doc.setText(makePageDataText('Beta'))
       expect(doc.text.value).toContain('Beta')
-      expect(doc.isDirty.value).toBe(true)
+      expect(isDocumentDirty(doc)).toBe(true)
     })
 
     it('mutate commits to history and is undoable', () => {
@@ -125,7 +129,7 @@ describe('PageFileDocument primitives', () => {
       doc.loadFromText('')
       expect(doc.model.value).toBeNull()
       expect(doc.loadState.value).toBe('loaded')
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
     })
   })
 })

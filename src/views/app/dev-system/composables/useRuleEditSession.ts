@@ -22,7 +22,7 @@ import {
   type StillResult,
 } from '@spark-view/spark-ai'
 import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
-import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
+import type { EditToolHost } from '@spark-view/spark-ai'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
 
@@ -119,8 +119,8 @@ type StillsSession = IStillSession
 export interface RuleEditSessionOptions {
   /** Returns the current page-scoped session key, usually pageId. */
   getSessionKey: () => string
-  /** Returns the single live model adapter shared with manual editing. */
-  getLiveModelAdapter: () => EditLiveModelAdapter
+  /** Returns the single live tool host shared with manual editing. */
+  getEditToolHost: () => EditToolHost
   /** Optional shared page-model session host. */
   sessionHost?: PageModelSessionHost
   /** Ensures page context files are loaded before first bootstrap. */
@@ -141,11 +141,11 @@ interface RuleEditBootstrapOptions {
 }
 
 export function useRuleEditSession(options: RuleEditSessionOptions) {
-  const { getSessionKey, getLiveModelAdapter, ensureContextLoaded, onStatus } = options
+  const { getSessionKey, getEditToolHost, ensureContextLoaded, onStatus } = options
   const ownsSessionHost = options.sessionHost === undefined
 
   const sessionHost = options.sessionHost ?? usePageModelSessionHost({
-    getLiveModelAdapter,
+    getEditToolHost,
     getSessionKey,
   })
 
@@ -181,7 +181,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     dirty.value = false
     nodeTree.value = getActiveNodeTree(getEditState(ensured.session))
     if (ensured.bootstrapped) {
-      pushLog('info', 'session-ready', '编辑会话已挂接到当前页面 live model；后续读写仅通过 FC 工具执行')
+      pushLog('info', 'session-ready', '编辑会话已挂接到当前页面模型；后续读写仅通过 FC 工具执行')
     }
     return ensured.session
   }
@@ -248,7 +248,27 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     return `${result.msg}\n修复建议: ${result.fix}`
   }
 
-  async function bootstrap(bootstrapOptions?: RuleEditBootstrapOptions): Promise<void> {
+  function syncPageModelProjection(actions: readonly string[]): void {
+    const hasNodeTreeWrites = actions.some(action => TOOL_WRITE_SET.has(action))
+    const hasDataSetWrites = actions.some(action => isDatasetWriteAction(action))
+    if (!hasNodeTreeWrites && !hasDataSetWrites) return
+
+    const toolHost = getEditToolHost()
+    if (hasNodeTreeWrites) {
+      const liveNodeTree = toolHost.getNodeTree?.()
+      if (liveNodeTree) {
+        toolHost.onNodeTreeChanged?.(liveNodeTree)
+      }
+    }
+    if (hasDataSetWrites) {
+      const liveDataSetTool = toolHost.getDataSetTool?.()
+      if (liveDataSetTool) {
+        toolHost.onDataSetChanged?.(liveDataSetTool)
+      }
+    }
+  }
+
+  async function bootstrap(bootstrapOptions?: RuleEditBootstrapOptions): Promise<StillsSession> {
     if (!bootstrapOptions?.skipContextLoad) {
       await ensureContextLoaded?.()
     }
@@ -258,11 +278,11 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     }
 
     const session = ensureSession()
-    const adapter = getLiveModelAdapter()
-    const liveTree = adapter.getNodeTree?.()
-    const liveDataSetTool = adapter.getDataSetTool?.()
-    const readScript = adapter.readScript
-    const readStyle = adapter.readStyle
+    const toolHost = getEditToolHost()
+    const liveTree = toolHost.getNodeTree?.()
+    const liveDataSetTool = toolHost.getDataSetTool?.()
+    const readScript = toolHost.readScript
+    const readStyle = toolHost.readStyle
 
     if (!liveTree) {
       throw new Error('edit.bootstrap 失败：缺少 live SparkNodeTree，必须先加载当前页面 rule.json')
@@ -282,7 +302,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     void readScript()
     void readStyle()
 
-    const result = executeStill('edit.bootstrap', {}, session, 'bootstrap-live-model')
+    const result = executeStill('edit.bootstrap', {}, session, 'bootstrap-page-model')
 
     if (!result.ok) {
       const message = formatStillFailure(result)
@@ -298,6 +318,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     if (!bootstrapOptions?.silent) {
       pushLog('info', 'edit.bootstrap', result.summary)
     }
+    return session
   }
 
   // ── Public API ──────────────────────────────────────────────────────────────
@@ -347,8 +368,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     busy.value = true
     aiBuffer.value = ''
     try {
-      await bootstrap({ silent: true })
-      const session = ensureSession()
+      const session = await bootstrap({ silent: true })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await startIterateSession({
         backend: sessionHost.backend,
@@ -381,7 +401,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
               pushLog('error', `✗ ${turn.toolBlock.action}`, r.msg ?? '失败')
             }
           }
-          // Real-time projection: notify live model adapter on every successful
+          // Real-time projection: notify live tool host on every successful
           // write so the 4 file tabs reflect AI edits immediately，而不是只在整轮编排结束后刷新。
           const action = turn.toolBlock?.action
           if (
@@ -389,14 +409,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
             && action !== undefined
             && turn.stillsResult?.ok
           ) {
-            const adapter = getLiveModelAdapter()
-            if (TOOL_WRITE_SET.has(action)) {
-              const liveNodeTree = adapter.getNodeTree?.()
-              if (liveNodeTree) adapter.onNodeTreeChanged?.(liveNodeTree)
-            } else if (isDatasetWriteAction(action)) {
-              const liveDataSetTool = adapter.getDataSetTool?.()
-              if (liveDataSetTool) adapter.onDataSetChanged?.(liveDataSetTool)
-            }
+            syncPageModelProjection([action])
           }
         },
       })
@@ -420,31 +433,15 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
           : []
       })
       const writeCount = writeActions.length
-      const hasNodeTreeWrites = writeActions.some(action => TOOL_WRITE_SET.has(action))
-      const hasDataSetWrites = writeActions.some(action => isDatasetWriteAction(action))
       if (writeCount === 0) {
         sessionHost.setBackendSessionId(null)
-        throw new Error('本轮仅执行了只读工具，未对当前页面 live model 产生写入。已丢弃后端会话，请重试。')
+        throw new Error('本轮仅执行了只读工具，未对当前页面模型产生写入。已丢弃后端会话，请重试。')
       }
 
-      if (hasNodeTreeWrites || hasDataSetWrites) {
-        const liveModelAdapter = getLiveModelAdapter()
-        if (hasNodeTreeWrites) {
-          const liveNodeTree = liveModelAdapter.getNodeTree?.()
-          if (liveNodeTree) {
-            liveModelAdapter.onNodeTreeChanged?.(liveNodeTree)
-          }
-        }
-        if (hasDataSetWrites) {
-          const liveDataSetTool = liveModelAdapter.getDataSetTool?.()
-          if (liveDataSetTool) {
-            liveModelAdapter.onDataSetChanged?.(liveDataSetTool)
-          }
-        }
-      }
+      syncPageModelProjection(writeActions)
 
       dirty.value = writeCount > 0
-      pushLog('success', '✅ 已同步', `已直接写入当前页面 live model (${result.rounds} 轮, ${writeCount} 次写操作)`)
+      pushLog('success', '✅ 已同步', `已直接写入当前页面模型 (${result.rounds} 轮, ${writeCount} 次写操作)`)
       onStatus(`✅ 模型级编辑完成 (${result.rounds} 轮)`, 'success')
     } catch (err) {
       if (runController.signal.aborted || activeRunId !== runId) {

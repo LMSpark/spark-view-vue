@@ -11,7 +11,7 @@ describe('usePageModelSessionHost', () => {
     clearRegistry()
   })
 
-  it('keeps the same session while the session key is unchanged even if live model content changes', () => {
+  it('keeps the same session while the session key is unchanged even if page-model content changes', () => {
     const pageId = ref('orders-page')
     const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
     const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'OrdersDS', tables: {} })
@@ -20,7 +20,7 @@ describe('usePageModelSessionHost', () => {
 
     const host = usePageModelSessionHost({
       getSessionKey: () => pageId.value,
-      getLiveModelAdapter: () => ({
+      getEditToolHost: () => ({
         getNodeTree: () => liveTree,
         getDataSetTool: () => liveDataSet,
         readScript: () => script,

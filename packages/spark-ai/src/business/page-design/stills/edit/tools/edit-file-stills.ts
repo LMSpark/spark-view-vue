@@ -12,7 +12,7 @@ import {
   writeActiveScript,
   readActiveStyle,
   writeActiveStyle,
-} from '../edit-state'
+} from '../edit-lifecycle-stills'
 import {
   TEXT_MODEL_READ_SCRIPT_ACTION,
   TEXT_MODEL_WRITE_SCRIPT_ACTION,
@@ -80,17 +80,17 @@ const FILE_CATALOG: readonly FileDescriptor[] = [
 function ensureTextModelReadable(session: IStillSession, key: EditFileKey): string | null {
   const state = getEditState(session)
   if (key === 'script') {
-    return typeof state.liveModelAdapter?.readScript === 'function' ? null : '缺少 live text model: readScript'
+    return typeof state.toolHost?.readScript === 'function' ? null : '缺少 live text model: readScript'
   }
-  return typeof state.liveModelAdapter?.readStyle === 'function' ? null : '缺少 live text model: readStyle'
+  return typeof state.toolHost?.readStyle === 'function' ? null : '缺少 live text model: readStyle'
 }
 
 function ensureTextModelWritable(session: IStillSession, key: EditFileKey): string | null {
   const state = getEditState(session)
   if (key === 'script') {
-    return typeof state.liveModelAdapter?.writeScript === 'function' ? null : '缺少 live text model: writeScript'
+    return typeof state.toolHost?.writeScript === 'function' ? null : '缺少 live text model: writeScript'
   }
-  return typeof state.liveModelAdapter?.writeStyle === 'function' ? null : '缺少 live text model: writeStyle'
+  return typeof state.toolHost?.writeStyle === 'function' ? null : '缺少 live text model: writeStyle'
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -121,8 +121,7 @@ function validateEditFileWriteParams(params: unknown): string | null {
 /**
  * 读取编辑态中的文件全文。
  *
- * edit-state 已把 script/style 直接保存在 state 上，
- * 这里按 key 透传，避免外层 still 直接接触状态字段名。
+ * script/style 由宿主工具提供，这里按 key 透传。
  */
 function readEditFileContent(session: IStillSession, key: EditFileKey): string {
   const state = getEditState(session)
@@ -170,7 +169,7 @@ function createReadStill(desc: FileDescriptor, action: string): StillDefinition 
           ok: false,
           code: 'NO_TEXT_MODEL',
           msg: readableError,
-          fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditLiveModelAdapter.read*/write*',
+          fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*',
         }
       }
       return {
@@ -201,7 +200,7 @@ function createWriteStill(desc: FileDescriptor, action: string): StillDefinition
           ok: false,
           code: 'NO_TEXT_MODEL',
           msg: writableError,
-          fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditLiveModelAdapter.read*/write*',
+          fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*',
         }
       }
       writeEditFileContent(session, desc.key, params.content)

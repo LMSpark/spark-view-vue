@@ -36,7 +36,7 @@ import {
   isNonEmptyString,
   buildExecutionTraceSummary,
 } from '../core/stills/meta-common-utils'
-import { getActiveDataSetTool, getEditState } from '../business/page-design/stills/edit/edit-state'
+import { getActiveDataSetTool, getEditState } from '../business/page-design/stills/edit/edit-lifecycle-stills'
 import { getDomain } from '../core/stills/domain'
 import {
   projectComponentDirectory,

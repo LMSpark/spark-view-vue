@@ -9,14 +9,14 @@ import {
   getEditState,
   createSessionBackend,
   type SessionBackend,
-  type EditLiveModelAdapter,
+  type EditToolHost,
 } from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
 
 type StillsSession = ReturnType<typeof createStillSession>
 
 interface UsePageModelSessionHostOptions {
-  getLiveModelAdapter: () => EditLiveModelAdapter
+  getEditToolHost: () => EditToolHost
   getSessionKey: () => string
 }
 
@@ -32,7 +32,7 @@ export interface PageModelSessionHost {
 }
 
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions) {
-  const { getLiveModelAdapter, getSessionKey } = options
+  const { getEditToolHost, getSessionKey } = options
 
   const backend = createSessionBackend('/api/ai/sessions', {
     getHeaders: createAuthHeaders,
@@ -41,16 +41,36 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
   let backendSessionId: string | null = null
   let sessionKey = ''
 
+  function clearLocalSessionState(): string | null {
+    const previousBackendSessionId = backendSessionId
+    session.value = null
+    backendSessionId = null
+    sessionKey = ''
+    return previousBackendSessionId
+  }
+
+  function disposeBackendSession(previousBackendSessionId: string | null): void {
+    if (!previousBackendSessionId) return
+    void backend.destroySession(previousBackendSessionId)
+  }
+
+  async function disposeBackendSessionSafely(previousBackendSessionId: string | null): Promise<void> {
+    if (!previousBackendSessionId) return
+    try {
+      await backend.destroySession(previousBackendSessionId)
+    } catch {
+      // ignore destroy failures during context refresh
+    }
+  }
+
   function ensureSession(): { session: StillsSession; bootstrapped: boolean } {
     const nextSessionKey = getSessionKey()
     if (session.value && sessionKey === nextSessionKey) {
       return { session: session.value, bootstrapped: false }
     }
 
-    if (backendSessionId) {
-      void backend.destroySession(backendSessionId)
-      backendSessionId = null
-    }
+    const previousBackendSessionId = clearLocalSessionState()
+    disposeBackendSession(previousBackendSessionId)
 
     clearRegistry()
     clearDomains()
@@ -58,7 +78,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
 
     const nextSession = createStillSession()
     const editState = getEditState(nextSession)
-    bindLiveModelAdapter(editState, getLiveModelAdapter())
+    bindLiveModelAdapter(editState, getEditToolHost())
 
     session.value = nextSession
     sessionKey = nextSessionKey
@@ -66,32 +86,16 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
   }
 
   async function reset(): Promise<void> {
-    const previousBackendSessionId = backendSessionId
-    session.value = null
-    backendSessionId = null
-    sessionKey = ''
-
-    if (previousBackendSessionId) {
-      try {
-        await backend.destroySession(previousBackendSessionId)
-      } catch {
-        // ignore destroy failures during context refresh
-      }
-    }
+    const previousBackendSessionId = clearLocalSessionState()
+    await disposeBackendSessionSafely(previousBackendSessionId)
 
     clearRegistry()
     clearDomains()
   }
 
   function resetSync(): void {
-    const previousBackendSessionId = backendSessionId
-    session.value = null
-    backendSessionId = null
-    sessionKey = ''
-
-    if (previousBackendSessionId) {
-      void backend.destroySession(previousBackendSessionId)
-    }
+    const previousBackendSessionId = clearLocalSessionState()
+    disposeBackendSession(previousBackendSessionId)
 
     clearRegistry()
     clearDomains()

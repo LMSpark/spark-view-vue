@@ -6,7 +6,7 @@
  */
 
 import type { IStillSession, StillDefinition, StillResult } from '../../../../../core/stills/types'
-import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-state'
+import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-lifecycle-stills'
 import { EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,

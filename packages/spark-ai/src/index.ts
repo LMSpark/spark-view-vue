@@ -119,8 +119,6 @@ export {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
-  captureBaselineSnapshot,
-  createCurrentEditModel,
 } from './stills'
 export type {
   DomainState,
@@ -135,7 +133,7 @@ export type {
   DomainProvider,
   PostValidationWarning,
   EditDomainState,
-  EditLiveModelAdapter,
+  EditToolHost,
 } from './stills'
 
 // ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────

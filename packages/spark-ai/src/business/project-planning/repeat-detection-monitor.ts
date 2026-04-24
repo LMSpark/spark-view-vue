@@ -75,10 +75,6 @@ function isReadOnlyAction(action: string): boolean {
     return action.startsWith('textModel.read')
   }
 
-  if (action === 'edit.changedLines' || action === 'dataset.changedLines') {
-    return true
-  }
-
   if (isDatasetReadAction(action)) {
     return true
   }

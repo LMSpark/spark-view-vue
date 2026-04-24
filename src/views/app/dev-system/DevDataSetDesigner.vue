@@ -204,7 +204,7 @@
               <div v-if="propsExpandedTables.has(table.id)" class="ds-card__props">
                 <div class="ds-prop-row">
                   <label>资源类型</label>
-                  <el-select :model-value="table.resourceType" size="small" clearable placeholder="-" @update:modelValue="handleTableSemanticChange(table, { resourceType: $event ?? undefined })" @mousedown.stop>
+                  <el-select :model-value="table.resourceType" size="small" clearable placeholder="-" @update:modelValue="handleTableSemanticChange(table, { resourceType: $event ?? null })" @mousedown.stop>
                     <el-option label="数据库表" value="database-table" />
                     <el-option label="数据库视图" value="database-view" />
                     <el-option label="第三方 API" value="third-party-api" />
@@ -215,7 +215,7 @@
                 </div>
                 <div class="ds-prop-row">
                   <label>业务角色</label>
-                  <el-select :model-value="table.businessCategory" size="small" clearable placeholder="-" @update:modelValue="handleTableSemanticChange(table, { businessCategory: $event ?? undefined })" @mousedown.stop>
+                  <el-select :model-value="table.businessCategory" size="small" clearable placeholder="-" @update:modelValue="handleTableSemanticChange(table, { businessCategory: $event ?? null })" @mousedown.stop>
                     <el-option label="主表" value="master" />
                     <el-option label="从表" value="child" />
                     <el-option label="引用表" value="reference" />
@@ -291,7 +291,14 @@ import {
 } from './composables/designerProjection'
 import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import type { DataColumn, TableRelation, ITableMetadata, IDataSetMetadata } from '@spark-view/spark-data'
+import type {
+  CrudApi,
+  DataColumn,
+  TableRelation,
+  IDataSetMetadata,
+  TableBusinessCategory,
+  TableResourceType,
+} from '@spark-view/spark-data'
 
 /**
  * 设计器列 — DataColumn + 画布唯一标识
@@ -333,9 +340,17 @@ const relEditorPos = computed(() => {
 // ═══ Undo / Redo（DataSetCrudTool 历史栈）═══
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
+function getPageDataDocument() {
+  return props.state.documents['pagedata.json']
+}
+
+function buildColumnIdMap(table: DesignerTable): Record<string, string> {
+  return Object.fromEntries(table.columns.map((column) => [column.name, column.id]))
+}
+
 const projectedMetadata = computed<IDataSetMetadata | null>(() => {
   // 以 DataSetCrudTool 为唯一数据源；pagedata 文档的 shallowRef 在 mutate/undo/redo 时会被显式触发刷新。
-  return props.state.documents['pagedata.json'].model.value?.toJson() ?? null
+  return getPageDataDocument().model.value?.toJson() ?? null
 })
 
 const tables = computed<DesignerTable[]>(() => {
@@ -362,7 +377,7 @@ function applyMutationWithHistory(
   mutator: (tool: DataSetCrudTool) => void,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
-  const pageDataDoc = props.state.documents['pagedata.json']
+  const pageDataDoc = getPageDataDocument()
   if (!pageDataDoc.model.value) return
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
@@ -376,15 +391,21 @@ function applyMutationWithHistory(
   }
 }
 
+function applyHistoryMutation(
+  mutator: (tool: DataSetCrudTool) => void,
+  layoutForNewTable?: LayoutForNewTable,
+): void {
+  applyMutationWithHistory(mutator, layoutForNewTable)
+}
+
 function undo() {
-  const ok = props.state.documents['pagedata.json'].undo()
+  const ok = getPageDataDocument().undo()
   if (!ok) return
-  editingRel.value = null
-  selectedTableId.value = null
+  resetSelectionState()
 }
 
 function redo() {
-  const ok = props.state.documents['pagedata.json'].redo()
+  const ok = getPageDataDocument().redo()
   if (!ok) return
   resetSelectionState()
 }
@@ -395,7 +416,7 @@ function resetSelectionState(): void {
 }
 
 function commitLayoutCheckpoint(): void {
-  const pageDataDoc = props.state.documents['pagedata.json']
+  const pageDataDoc = getPageDataDocument()
   const tool = pageDataDoc.model.value
   if (!tool) return
   const anchor = tables.value[0]
@@ -409,11 +430,11 @@ function commitLayoutCheckpoint(): void {
 
 const canUndo = computed(() => {
   projectedMetadata.value
-  return props.state.documents['pagedata.json'].canUndo.value
+  return getPageDataDocument().canUndo.value
 })
 const canRedo = computed(() => {
   projectedMetadata.value
-  return props.state.documents['pagedata.json'].canRedo.value
+  return getPageDataDocument().canRedo.value
 })
 
 watch(
@@ -532,10 +553,10 @@ function resetDesignerRuntimeState(): void {
   pendingProjectionLayout.value = null
 }
 
-// ═══ 直接对接 DataSetCrudTool live model ═══
+// ═══ 直接对接 DataSetCrudTool 页面模型 ═══
 
 function refreshFromLiveData(silent = false): void {
-  const tool = props.state.documents['pagedata.json'].model.value
+  const tool = getPageDataDocument().model.value
   if (!tool) {
     if (!silent) {
       ElMessage.warning('当前页面尚未初始化 DataSet 模型')
@@ -617,6 +638,10 @@ function projectDesignerFromMetadata(
   tableUiState.value = reconcileDesignerTableUiState(metadata, tables.value, generateId, layoutForNewTable)
 }
 
+function snapshotRelations(): DesignerRelation[] {
+  return [...relations.value]
+}
+
 // ═══ 表操作 ═══
 
 function generateId(): string {
@@ -626,7 +651,7 @@ function generateId(): string {
 function addTable() {
   const tableCount = tables.value.length
   const tableName = `table_${tableCount + 1}`
-  applyMutationWithHistory((tool) => {
+  applyHistoryMutation((tool) => {
     tool.createTable({
       tableName,
       columns: [{ name: 'id', label: 'ID', type: 'number', isPrimaryKey: true }],
@@ -641,17 +666,12 @@ function addTable() {
 async function removeTable(idx: number) {
   const table = tables.value[idx]
   if (!table) return
-  try {
-    await ElMessageBox.confirm(
-      `确定删除表「${table.tableName}」及其关联关系？`,
-      '删除表',
-      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
-    )
-  } catch { return }
+  if (!await confirmDangerAction(`确定删除表「${table.tableName}」及其关联关系？`, '删除表', '删除')) return
   const tableId = table.id
   const name = table.tableName
-  applyMutationWithHistory((tool) => {
-    deleteTableWithRelationFallback(tool, name, [...relations.value])
+  const relationSnapshot = snapshotRelations()
+  applyHistoryMutation((tool) => {
+    deleteTableWithRelationFallback(tool, name, relationSnapshot)
   })
   if (selectedTableId.value === tableId) {
     resetSelectionState()
@@ -659,7 +679,7 @@ async function removeTable(idx: number) {
 }
 
 function addColumn(table: DesignerTable) {
-  applyMutationWithHistory((tool) => {
+  applyHistoryMutation((tool) => {
     tool.createColumn({
       tableName: table.tableName,
       column: {
@@ -684,61 +704,116 @@ function applyMutationWithFeedback(action: () => void, failureTitle: string): vo
   }
 }
 
+async function confirmDangerAction(message: string, title: string, confirmButtonText: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(message, title, {
+      type: 'warning',
+      confirmButtonText,
+      cancelButtonText: '取消',
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+function applyHistoryMutationWithFeedback(
+  mutator: (tool: DataSetCrudTool) => void,
+  failureTitle: string,
+  layoutForNewTable?: LayoutForNewTable,
+): void {
+  applyMutationWithFeedback(() => {
+    applyHistoryMutation(mutator, layoutForNewTable)
+  }, failureTitle)
+}
+
+type TableUpdatePayload = {
+  resourceType?: TableResourceType | null
+  businessCategory?: TableBusinessCategory | null
+  resourceId?: string | null
+  api?: CrudApi | string | boolean
+}
+
+function updateTableWithFeedback(
+  table: DesignerTable,
+  updates: TableUpdatePayload,
+  failureTitle: string,
+): void {
+  applyHistoryMutationWithFeedback((tool) => {
+    const params: { tableName: string } & TableUpdatePayload = { tableName: table.tableName }
+    if (updates.resourceType !== undefined) params.resourceType = updates.resourceType
+    if (updates.businessCategory !== undefined) params.businessCategory = updates.businessCategory
+    if (updates.resourceId !== undefined) params.resourceId = updates.resourceId
+    if (updates.api !== undefined) params.api = updates.api
+    tool.updateTable(params)
+  }, failureTitle)
+}
+
+function updateColumnWithFeedback(
+  table: DesignerTable,
+  columnName: string,
+  updates: Partial<DataColumn>,
+  failureTitle: string,
+): void {
+  applyHistoryMutationWithFeedback((tool) => {
+    tool.updateColumn({ tableName: table.tableName, columnName, updates })
+  }, failureTitle)
+}
+
+function renameColumnWithFeedback(
+  table: DesignerTable,
+  columnName: string,
+  newColumnName: string,
+  failureTitle: string,
+): void {
+  applyHistoryMutationWithFeedback((tool) => {
+    tool.renameColumn({ tableName: table.tableName, columnName, newColumnName })
+  }, failureTitle)
+}
+
+function deleteColumnWithFeedback(
+  table: DesignerTable,
+  columnName: string,
+  failureTitle: string,
+): void {
+  applyHistoryMutationWithFeedback((tool) => {
+    tool.deleteColumn({ tableName: table.tableName, columnName })
+  }, failureTitle)
+}
+
 function handleTableNameInputChange(table: DesignerTable, event: Event): void {
   const nextName = readInputValue(event).trim()
   if (!nextName || nextName === table.tableName) return
-  applyMutationWithFeedback(() => {
-    applyMutationWithHistory((tool) => {
-      tool.renameTable({ tableName: table.tableName, newTableName: nextName })
-    })
+  applyHistoryMutationWithFeedback((tool) => {
+    tool.renameTable({ tableName: table.tableName, newTableName: nextName })
   }, '表名更新失败')
 }
 
 function handleTableSemanticChange(
   table: DesignerTable,
-  updates: Partial<Pick<ITableMetadata, 'resourceType' | 'businessCategory'>>,
+  updates: TableUpdatePayload,
 ): void {
-  applyMutationWithFeedback(() => {
-    applyMutationWithHistory((tool) => {
-      tool.updateTable({ tableName: table.tableName, ...updates })
-    })
-  }, '表属性更新失败')
+  updateTableWithFeedback(table, updates, '表属性更新失败')
 }
 
 function handleTableResourceIdInputChange(table: DesignerTable, event: Event): void {
   const value = readInputValue(event).trim()
-  applyMutationWithFeedback(() => {
-    applyMutationWithHistory((tool) => {
-      tool.updateTable({ tableName: table.tableName, resourceId: value || null })
-    })
-  }, '资源 ID 更新失败')
+  updateTableWithFeedback(table, { resourceId: value || null }, '资源 ID 更新失败')
 }
 
 function handleTableApiInputChange(table: DesignerTable, event: Event): void {
   const value = readInputValue(event).trim()
-  applyMutationWithFeedback(() => {
-    applyMutationWithHistory((tool) => {
-      tool.updateTable({ tableName: table.tableName, api: value || false })
-    })
-  }, 'API 更新失败')
+  updateTableWithFeedback(table, { api: value || false }, 'API 更新失败')
 }
 
 function handleColumnFieldChange(table: DesignerTable, column: DesignerColumn, updates: Partial<DataColumn>): void {
-  applyMutationWithFeedback(() => {
-    applyMutationWithHistory((tool) => {
-      tool.updateColumn({ tableName: table.tableName, columnName: column.name, updates })
-    })
-  }, '字段更新失败')
+  updateColumnWithFeedback(table, column.name, updates, '字段更新失败')
 }
 
 function handleColumnNameInputChange(table: DesignerTable, column: DesignerColumn, event: Event): void {
   const nextName = readInputValue(event).trim()
   if (!nextName || nextName === column.name) return
-  applyMutationWithFeedback(() => {
-    applyMutationWithHistory((tool) => {
-      tool.renameColumn({ tableName: table.tableName, columnName: column.name, newColumnName: nextName })
-    })
-  }, '字段名更新失败')
+  renameColumnWithFeedback(table, column.name, nextName, '字段名更新失败')
 }
 
 function handleColumnLabelInputChange(table: DesignerTable, column: DesignerColumn, event: Event): void {
@@ -755,9 +830,7 @@ function handleColumnTypeChange(table: DesignerTable, column: DesignerColumn, ne
 function removeColumn(table: DesignerTable, idx: number) {
   const column = table.columns[idx]
   if (!column) return
-  applyMutationWithHistory((tool) => {
-    tool.deleteColumn({ tableName: table.tableName, columnName: column.name })
-  })
+  deleteColumnWithFeedback(table, column.name, '字段删除失败')
 }
 
 // ═══ 关联操作 ═══
@@ -769,7 +842,7 @@ async function addRelation() {
   }
   const parentTable = tables.value[0]!.tableName
   const childTable = tables.value[1]!.tableName
-  applyMutationWithHistory((tool) => {
+  applyHistoryMutation((tool) => {
     tool.createRelation({
       parentTable,
       childTable,
@@ -786,12 +859,32 @@ function getTableByName(name: string | undefined): DesignerTable | undefined {
   return tables.value.find((t) => t.tableName === name)
 }
 
+function getTableById(id: string): DesignerTable | undefined {
+  return tables.value.find((t) => t.id === id)
+}
+
+function upsertTableUiPosition(table: DesignerTable, x: number, y: number): void {
+  tableUiState.value = {
+    ...tableUiState.value,
+    [table.tableName]: {
+      id: table.id,
+      columnIds: tableUiState.value[table.tableName]?.columnIds ?? buildColumnIdMap(table),
+      x,
+      y,
+    },
+  }
+}
+
+function deleteRelationBySelector(selector: ReturnType<typeof buildRelationSelector>): void {
+  applyHistoryMutation((tool) => {
+    tool.deleteRelation(selector)
+  })
+}
+
 function removeRelation(idx: number) {
   const rel = relations.value[idx]
   if (!rel) return
-  applyMutationWithHistory((tool) => {
-    tool.deleteRelation(buildRelationSelector(rel))
-  })
+  deleteRelationBySelector(buildRelationSelector(rel))
   if (editingRel.value?.sourceIndex === idx) editingRel.value = null
 }
 
@@ -808,7 +901,7 @@ function editRelation(idx: number) {
 function applyRelationEdit() {
   if (!editingRel.value) return
   const { sourceSelector, draft } = editingRel.value
-  applyMutationWithHistory((tool) => {
+  applyHistoryMutation((tool) => {
     tool.updateRelation({
       selector: sourceSelector,
       updates: normalizeRelation(draft),
@@ -819,20 +912,12 @@ function applyRelationEdit() {
 
 async function deleteEditingRelation() {
   if (!editingRel.value) return
-  try {
-    await ElMessageBox.confirm(
-      '确定删除该关联关系？',
-      '删除关联',
-      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
-    )
-  } catch { return }
+  if (!await confirmDangerAction('确定删除该关联关系？', '删除关联', '删除')) return
   const idx = editingRel.value.sourceIndex
   const rel = relations.value[idx]
   editingRel.value = null
   if (!rel) return
-  applyMutationWithHistory((tool) => {
-    tool.deleteRelation(buildRelationSelector(rel))
-  })
+  deleteRelationBySelector(buildRelationSelector(rel))
 }
 
 function toggleSchema(tableId: string) {
@@ -854,16 +939,15 @@ function toggleSetItem(source: Set<string>, item: string): Set<string> {
 }
 
 async function clearAll() {
-  try {
-    await ElMessageBox.confirm(
-      `确定清空所有 ${tables.value.length} 个表和 ${relations.value.length} 个关联？此操作可通过 Ctrl+Z 撤销。`,
-      '清空画布',
-      { type: 'warning', confirmButtonText: '清空', cancelButtonText: '取消' },
-    )
-  } catch { return }
-  applyMutationWithHistory((tool) => {
+  if (!await confirmDangerAction(
+    `确定清空所有 ${tables.value.length} 个表和 ${relations.value.length} 个关联？此操作可通过 Ctrl+Z 撤销。`,
+    '清空画布',
+    '清空',
+  )) return
+  const relationSnapshot = snapshotRelations()
+  applyHistoryMutation((tool) => {
     for (const name of tables.value.map(table => table.tableName)) {
-      deleteTableWithRelationFallback(tool, name, [...relations.value])
+      deleteTableWithRelationFallback(tool, name, relationSnapshot)
     }
   })
   resetSelectionState()
@@ -875,7 +959,7 @@ function autoLayout() {
   tables.value.forEach((table, i) => {
     nextUiState[table.tableName] = {
       id: nextUiState[table.tableName]?.id ?? table.id,
-      columnIds: nextUiState[table.tableName]?.columnIds ?? Object.fromEntries(table.columns.map((column) => [column.name, column.id])),
+      columnIds: nextUiState[table.tableName]?.columnIds ?? buildColumnIdMap(table),
       x: 40 + (i % cols) * 320,
       y: 40 + Math.floor(i / cols) * 280,
     }
@@ -898,46 +982,45 @@ function onCardMouseDown(e: MouseEvent, table: DesignerTable) {
     origY: table.y,
   }
   selectedTableId.value = table.id
-  document.addEventListener('mousemove', onDocMouseMove)
-  document.addEventListener('mouseup', onDocMouseUp)
+  attachDragListeners()
   e.preventDefault()
 }
 
+function attachDragListeners(): void {
+  document.addEventListener('mousemove', onDocMouseMove)
+  document.addEventListener('mouseup', onDocMouseUp)
+}
+
+function detachDragListeners(): void {
+  document.removeEventListener('mousemove', onDocMouseMove)
+  document.removeEventListener('mouseup', onDocMouseUp)
+}
+
 function onDocMouseMove(e: MouseEvent) {
-  if (!dragState.value) return
-  const dx = e.clientX - dragState.value.startX
-  const dy = e.clientY - dragState.value.startY
-  const table = tables.value.find((t) => t.id === dragState.value!.tableId)
+  const drag = dragState.value
+  if (!drag) return
+  const dx = e.clientX - drag.startX
+  const dy = e.clientY - drag.startY
+  const table = getTableById(drag.tableId)
   if (table) {
-    tableUiState.value = {
-      ...tableUiState.value,
-      [table.tableName]: {
-        id: table.id,
-        columnIds: tableUiState.value[table.tableName]?.columnIds ?? Object.fromEntries(table.columns.map((column) => [column.name, column.id])),
-        x: Math.max(0, dragState.value.origX + dx),
-        y: Math.max(0, dragState.value.origY + dy),
-      },
-    }
+    upsertTableUiPosition(table, Math.max(0, drag.origX + dx), Math.max(0, drag.origY + dy))
   }
 }
 
 function onDocMouseUp() {
-  if (dragState.value) {
-    const table = tables.value.find((t) => t.id === dragState.value!.tableId)
-    const moved = Boolean(table)
-      && (table!.x !== dragState.value.origX || table!.y !== dragState.value.origY)
-    if (moved) {
+  const drag = dragState.value
+  if (drag) {
+    const table = getTableById(drag.tableId)
+    if (table && (table.x !== drag.origX || table.y !== drag.origY)) {
       commitLayoutCheckpoint()
     }
   }
   dragState.value = null
-  document.removeEventListener('mousemove', onDocMouseMove)
-  document.removeEventListener('mouseup', onDocMouseUp)
+  detachDragListeners()
 }
 
 onUnmounted(() => {
-  document.removeEventListener('mousemove', onDocMouseMove)
-  document.removeEventListener('mouseup', onDocMouseUp)
+  detachDragListeners()
   document.removeEventListener('keydown', onKeydown)
 })
 

@@ -6,7 +6,7 @@
 export const EDIT_FLOW_1001_DATA_FIRST_POLICY = `【数据优先（模型级）】
 - 数据优先是硬约束：先完成 DataSet 模型，再考虑 UI/脚本。
 - 在数据阶段完成前，不得调用 sparkNodeTree.* / textModel.writeScript / textModel.writeStyle。
-- 数据阶段收敛后，必须先调用 dataset.export，再进入页面结构与脚本阶段。`
+- 数据阶段收敛后，直接进入页面结构与脚本阶段。`
 
 /**
  * 1002 — Data-First Minimal Sequence
@@ -15,5 +15,4 @@ export const EDIT_FLOW_1001_DATA_FIRST_POLICY = `【数据优先（模型级）�
  */
 export const EDIT_FLOW_1002_DATA_FIRST_SEQUENCE = `【最小执行序列】
 1) datasetTool.*（可多次）
-2) dataset.changedLines
-3) dataset.export`
+2) sparkNodeTree.* / textModel.write*`

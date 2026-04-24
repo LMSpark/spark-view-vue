@@ -25,6 +25,17 @@ function exec(action: string, params: unknown = {}): StillResult {
   return executeStill(action, params, session, `edit-${seq}`)
 }
 
+function expectActionUnavailable(action: string, params: unknown = {}): void {
+  const result = exec(action, params)
+  expect(result.ok).toBe(false)
+}
+
+const DISABLED_EDIT_ACTIONS = [
+  'edit.changedLines',
+  'edit.exportFiles',
+  'dataset.export',
+] as const
+
 beforeEach(() => {
   clearDomains()
   clearRegistry()
@@ -65,14 +76,9 @@ function seedLiveModel(params: {
 
 describe('edit domain fine-grained flow', () => {
   it('disables changedLines/export actions in edit domain', () => {
-    const result = exec('edit.changedLines')
-    expect(result.ok).toBe(false)
-
-    const exportFiles = exec('edit.exportFiles')
-    expect(exportFiles.ok).toBe(false)
-
-    const exportDataset = exec('dataset.export')
-    expect(exportDataset.ok).toBe(false)
+    for (const action of DISABLED_EDIT_ACTIONS) {
+      expectActionUnavailable(action)
+    }
   })
 
   it('uses top-level id as the sparkNodeTree componentId standard', () => {
@@ -203,14 +209,9 @@ describe('edit domain fine-grained flow', () => {
       expect(blockedRawExport.code).toBe('INVALID_PARAMS')
     }
 
-    const editExport = exec('edit.exportFiles')
-    expect(editExport.ok).toBe(false)
-
-    const datasetChanged = exec('dataset.changedLines')
-    expect(datasetChanged.ok).toBe(false)
-
-    const datasetExported = exec('dataset.export')
-    expect(datasetExported.ok).toBe(false)
+    expectActionUnavailable('edit.exportFiles')
+    expectActionUnavailable('dataset.changedLines')
+    expectActionUnavailable('dataset.export')
 
     const addColumn = exec('datasetTool.createColumn', {
       tableName: 'Users',

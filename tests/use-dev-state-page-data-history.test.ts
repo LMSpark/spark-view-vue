@@ -66,7 +66,7 @@ describe('useDevState documents SSOT', () => {
 
     const doc = state.documents['pagedata.json']
     expect(doc.loadState.value).toBe('loaded')
-    expect(doc.isDirty.value).toBe(false)
+    expect(isDocumentDirty(doc)).toBe(false)
     expect(doc.model.value).not.toBeNull()
     expect(doc.canUndo.value).toBe(false)
     expect(doc.text.value).toBe(canonicalizePageDataJson(initial).text)
@@ -90,13 +90,13 @@ describe('useDevState documents SSOT', () => {
     const doc = state.documents['pagedata.json']
     doc.setText(next)
 
-    expect(doc.isDirty.value).toBe(true)
+    expect(isDocumentDirty(doc)).toBe(true)
     expect(doc.canUndo.value).toBe(true)
     expect(doc.text.value).toBe(canonicalizePageDataJson(next).text)
 
     expect(doc.undo()).toBe(true)
     expect(doc.text.value).toBe(canonicalizePageDataJson(initial).text)
-    expect(doc.isDirty.value).toBe(false)
+    expect(isDocumentDirty(doc)).toBe(false)
 
     expect(doc.redo()).toBe(true)
     expect(doc.text.value).toBe(canonicalizePageDataJson(next).text)
@@ -182,7 +182,7 @@ describe('useDevState documents SSOT', () => {
     expect(JSON.parse(doc.text.value)[0]).toMatchObject({ type: 'div' })
   })
 
-  it('script.js undo stays in sync with the live model', () => {
+  it('script.js undo stays in sync with the page model', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
     const doc = state.documents['script.js']
@@ -196,7 +196,7 @@ describe('useDevState documents SSOT', () => {
     expect(doc.text.value).toBe('console.log("alpha")\n')
   })
 
-  it('style.css undo stays in sync with the live model', () => {
+  it('style.css undo stays in sync with the page model', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
     const doc = state.documents['style.css']
@@ -216,7 +216,7 @@ describe('useDevState documents SSOT', () => {
     const doc = state.documents['pagedata.json']
     doc.setText(createPageDataText('Gamma', true))
 
-    expect(doc.isDirty.value).toBe(true)
+    expect(isDocumentDirty(doc)).toBe(true)
     const canUndoBefore = doc.canUndo.value
 
     httpPut.mockResolvedValue({ ok: true })
@@ -229,7 +229,7 @@ describe('useDevState documents SSOT', () => {
       doc.text.value,
       { headers: { 'Content-Type': 'text/plain' } },
     )
-    expect(doc.isDirty.value).toBe(false)
+    expect(isDocumentDirty(doc)).toBe(false)
     expect(doc.canUndo.value).toBe(canUndoBefore)
   })
 
@@ -269,7 +269,7 @@ describe('useDevState documents SSOT', () => {
     for (const name of PAGE_FILE_NAMES) {
       const doc = state.documents[name]
       expect(doc.model.value).toBeNull()
-      expect(doc.isDirty.value).toBe(false)
+      expect(isDocumentDirty(doc)).toBe(false)
       expect(doc.loadState.value).toBe('idle')
       expect(doc.savedText.value).toBe('')
     }
@@ -289,42 +289,41 @@ describe('useDevState documents SSOT', () => {
     await state.ensureActivePageFilesLoaded()
 
     const doc = state.documents['rule.json']
-    expect(doc.isDirty.value).toBe(false)
+    expect(isDocumentDirty(doc)).toBe(false)
     expect(doc.canUndo.value).toBe(false)
 
     doc.setText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
-    expect(doc.isDirty.value).toBe(true)
+    expect(isDocumentDirty(doc)).toBe(true)
     expect(doc.canUndo.value).toBe(true)
 
     expect(doc.undo()).toBe(true)
-    expect(doc.isDirty.value).toBe(false)
+    expect(isDocumentDirty(doc)).toBe(false)
     expect(doc.canUndo.value).toBe(false)
     expect(doc.text.value).toBe(initial)
   })
 
-  it('pageDataDesignerDirty mirrors pagedata document dirty flag', () => {
+  it('pageDataDirty mirrors pagedata document dirty flag', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
-    expect(state.pageDataDesignerDirty.value).toBe(false)
+    expect(state.pageDataDirty.value).toBe(false)
     state.documents['pagedata.json'].setText(createPageDataText('Dirty', true))
-    expect(state.pageDataDesignerDirty.value).toBe(true)
+    expect(state.pageDataDirty.value).toBe(true)
   })
 
-  it('live model adapter provides a stable blank DataSet tool for empty pagedata', () => {
+  it('edit tool host returns null for empty pagedata', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
 
-    const adapter = state.getLiveModelAdapter()
-    const first = adapter.getDataSetTool?.()
-    const second = adapter.getDataSetTool?.()
+    const toolHost = state.getEditToolHost()
+    const first = toolHost.getDataSetTool?.()
+    const second = toolHost.getDataSetTool?.()
 
-    expect(first).not.toBeNull()
+    expect(first).toBeNull()
     expect(second).toBe(first)
-    expect(first?.toJson()).toEqual({
-      dataSetName: 'orders-page',
-      schemaVersion: 2,
-      tables: {},
-    })
     expect(state.documents['pagedata.json'].model.value).toBeNull()
   })
 })
+
+function isDocumentDirty(doc: { text: { value: string }; savedText: { value: string } }): boolean {
+  return doc.text.value !== doc.savedText.value
+}

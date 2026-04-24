@@ -6,13 +6,13 @@
  *   每个文件封装为 PageFileDocument，以域模型为真源、text 为派生投影，
  *   undo/redo 委托给 SparkNodeTree / DataSetCrudTool / SnapshotHistory<string>。
  * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件注册表合一暴露。
- * - 页面模型 AI 编辑统一走 EditLiveModelAdapter；Adapter 从 documents 读写，
+ * - 页面模型 AI 编辑统一走 EditToolHost；该 host 从 documents 读写，
  *   保证手工编辑与 AI 编辑共享同一模型、同一 undo 链。
  */
 import { ref, reactive, computed } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
-import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
+import type { EditToolHost } from '@spark-view/spark-ai'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   PAGE_FILE_NAMES,
@@ -20,11 +20,11 @@ import {
   forEachDocument,
   type PageDocumentRegistry,
   type PageFileName,
-} from './documents'
+} from './page-file-documents'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
-export type { PageFileDocument } from './documents'
+export type { PageFileDocument } from './page-file-documents'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -165,32 +165,29 @@ export function useDevState() {
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
+  function isDocumentDirty(name: PageFileName): boolean {
+    const doc = documents[name]
+    return doc.text.value !== doc.savedText.value
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 计算属性
   // ═══════════════════════════════════════════════════════════
 
-  const hasAnyFileDirty = computed(() => PAGE_FILE_NAMES.some((n) => documents[n].isDirty.value))
+  const hasAnyFileDirty = computed(() => PAGE_FILE_NAMES.some((n) => isDocumentDirty(n)))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
-  /**
-   * pagedata 设计器是否存在尚未保存到服务端的改动。保留此命名以维持模板兼容，
-   * 语义上等价于 `documents['pagedata.json'].isDirty`。
-   */
-  const pageDataDesignerDirty = computed(() => documents['pagedata.json'].isDirty.value)
-
-  /**
-   * 当前 pagedata 解析/重建错误消息。保留此命名以维持模板兼容。
-   */
-  const pageDataSetError = computed(() => documents['pagedata.json'].parseError.value)
+  const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
+  const pageDataError = computed(() => documents['pagedata.json'].parseError.value)
 
   // ═══════════════════════════════════════════════════════════
-  // Live Model Adapter（单例 per page）
+  // Edit Tool Host（单例 per page）
   // ═══════════════════════════════════════════════════════════
 
-  let liveModelAdapterPageId = ''
-  let liveModelAdapter: EditLiveModelAdapter | null = null
+  let toolHostPageId = ''
+  let toolHost: EditToolHost | null = null
 
-  function buildLiveModelAdapter(): EditLiveModelAdapter {
+  function buildEditToolHost(): EditToolHost {
     const ruleDoc = documents['rule.json']
     const pageDataDoc = documents['pagedata.json']
     const scriptDoc = documents['script.js']
@@ -217,28 +214,21 @@ export function useDevState() {
   }
 
   /**
-   * 获取当前 pageId 对应的长寿单例 EditLiveModelAdapter。
+  * 获取当前 pageId 对应的长寿单例 EditToolHost。
    * 同一 pageId 生命周期内返回同一实例；pageId 切换时自动换新。
    */
-  function getLiveModelAdapter(): EditLiveModelAdapter {
-    if (liveModelAdapter && liveModelAdapterPageId === activePageId.value) {
-      return liveModelAdapter
+  function getEditToolHost(): EditToolHost {
+    if (toolHost && toolHostPageId === activePageId.value) {
+      return toolHost
     }
-    liveModelAdapter = buildLiveModelAdapter()
-    liveModelAdapterPageId = activePageId.value
-    return liveModelAdapter
+    toolHost = buildEditToolHost()
+    toolHostPageId = activePageId.value
+    return toolHost
   }
 
-  /**
-   * 兼容旧命名，转发到 `getLiveModelAdapter`。保留以便 AI 相关 composable 无需改签。
-   */
-  function createLiveEditModelAdapter(): EditLiveModelAdapter {
-    return getLiveModelAdapter()
-  }
-
-  function invalidateLiveModelAdapter(): void {
-    liveModelAdapter = null
-    liveModelAdapterPageId = ''
+  function invalidateEditToolHost(): void {
+    toolHost = null
+    toolHostPageId = ''
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -315,7 +305,7 @@ export function useDevState() {
     if (shouldReset) {
       invalidateActivePageFilesLoad()
       resetAllDocuments()
-      invalidateLiveModelAdapter()
+      invalidateEditToolHost()
     }
 
     activePageId.value = pageId
@@ -328,7 +318,7 @@ export function useDevState() {
     activePageId.value = ''
     persistActivePageId('')
     resetAllDocuments()
-    invalidateLiveModelAdapter()
+    invalidateEditToolHost()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -616,11 +606,11 @@ export function useDevState() {
 
     if (!options?.forceReload && areAllActivePageFilesLoaded()) return
 
-    if (!options?.forceReload && PAGE_FILE_NAMES.some((entry) => documents[entry].isDirty.value)) {
+    if (!options?.forceReload && PAGE_FILE_NAMES.some((entry) => isDocumentDirty(entry))) {
       // Respect local dirty edits: mark any non-loading idle docs as loaded so UI progresses.
       for (const entry of PAGE_FILE_NAMES) {
         const doc = documents[entry]
-        if (doc.loadState.value !== 'loading' && !doc.isDirty.value && doc.loadState.value === 'idle') {
+        if (doc.loadState.value !== 'loading' && !isDocumentDirty(entry) && doc.loadState.value === 'idle') {
           // Leave idle empty docs as idle — only promote if they have any content.
           if (doc.text.value || doc.savedText.value) doc.loadState.value = 'loaded'
         }
@@ -636,7 +626,7 @@ export function useDevState() {
 
     for (const entry of PAGE_FILE_NAMES) {
       const doc = documents[entry]
-      if (!options?.forceReload && doc.isDirty.value) {
+      if (!options?.forceReload && isDocumentDirty(entry)) {
         doc.loadState.value = 'loaded'
         continue
       }
@@ -662,7 +652,7 @@ export function useDevState() {
 
       for (const [entry, loadedText] of loadedSnapshots) {
         const doc = documents[entry]
-        if (!options?.forceReload && doc.isDirty.value) {
+        if (!options?.forceReload && isDocumentDirty(entry)) {
           doc.loadState.value = 'loaded'
           continue
         }
@@ -1016,7 +1006,7 @@ export function useDevState() {
 
   async function saveAllDirtyPageFiles(): Promise<void> {
     for (const name of PAGE_FILE_NAMES) {
-      if (documents[name].isDirty.value) await savePageFile(name)
+      if (isDocumentDirty(name)) await savePageFile(name)
     }
   }
 
@@ -1297,8 +1287,8 @@ export function useDevState() {
     activePageId,
     documents,
     fileSaving,
-    pageDataSetError,
-    pageDataDesignerDirty,
+    pageDataError,
+    pageDataDirty,
 
     // 页面列表
     pageList,
@@ -1312,10 +1302,10 @@ export function useDevState() {
     // 计算属性
     hasAnyFileDirty,
     hasAnyDirty,
+    isDocumentDirty,
 
-    // AI Adapter
-    getLiveModelAdapter,
-    createLiveEditModelAdapter, // alias retained for composables
+    // AI Tool Host
+    getEditToolHost,
 
     // 方法
     addStatus,

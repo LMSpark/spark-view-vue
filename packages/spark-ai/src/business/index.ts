@@ -84,8 +84,6 @@ export {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
-  captureBaselineSnapshot,
-  createCurrentEditModel,
 } from '../stills'
 
 export type {
@@ -101,6 +99,6 @@ export type {
   DomainProvider,
   PostValidationWarning,
   EditDomainState,
-  EditLiveModelAdapter,
+  EditToolHost,
 } from '../stills'
 

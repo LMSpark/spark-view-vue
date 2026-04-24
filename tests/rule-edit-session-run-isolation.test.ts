@@ -57,7 +57,7 @@ import {
   clearDomains,
   clearRegistry,
   createSession,
-  type EditLiveModelAdapter,
+  type EditToolHost,
   getEditState,
   registerEditStills,
 } from '@spark-view/spark-ai'
@@ -66,7 +66,7 @@ import { useRuleEditSession } from '../src/views/app/dev-system/composables/useR
 function createRuleEditHarness(options?: {
   onDataSetChanged?: (tool: DataSetCrudTool) => void
 }): {
-  liveModelAdapter: EditLiveModelAdapter
+  editToolHost: EditToolHost
   liveDataSetTool: DataSetCrudTool
   sessionHost: PageModelSessionHost
 } {
@@ -80,7 +80,7 @@ function createRuleEditHarness(options?: {
   let script = ''
   let style = ''
 
-  const liveModelAdapter: EditLiveModelAdapter = {
+  const editToolHost: EditToolHost = {
     getNodeTree: () => liveTree,
     getDataSetTool: () => liveDataSet,
     readScript: () => script,
@@ -94,10 +94,10 @@ function createRuleEditHarness(options?: {
     ...(options?.onDataSetChanged ? { onDataSetChanged: options.onDataSetChanged } : {}),
   }
 
-  bindLiveModelAdapter(getEditState(session), liveModelAdapter)
+  bindLiveModelAdapter(getEditState(session), editToolHost)
 
   return {
-    liveModelAdapter,
+    editToolHost,
     liveDataSetTool: liveDataSet,
     sessionHost: {
       backend: {} as PageModelSessionHost['backend'],
@@ -127,7 +127,7 @@ describe('useRuleEditSession run isolation', () => {
       setup() {
         api = useRuleEditSession({
           getSessionKey: () => 'orders-page',
-          getLiveModelAdapter: () => harness.liveModelAdapter,
+          getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
           onStatus: vi.fn(),
         })
@@ -230,7 +230,7 @@ describe('useRuleEditSession run isolation', () => {
       setup() {
         api = useRuleEditSession({
           getSessionKey: () => 'orders-page',
-          getLiveModelAdapter: () => harness.liveModelAdapter,
+          getEditToolHost: () => harness.editToolHost,
           sessionHost,
           onStatus,
         })
@@ -266,16 +266,16 @@ describe('useRuleEditSession run isolation', () => {
 
     expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith(null)
     expect(api!.log.value.at(-1)?.tag).toBe('编辑失败')
-    expect(api!.log.value.at(-1)?.text).toContain('未对当前页面 live model 产生写入')
+    expect(api!.log.value.at(-1)?.text).toContain('未对当前页面模型产生写入')
     expect(onStatus).toHaveBeenCalledWith(
-      expect.stringContaining('未对当前页面 live model 产生写入'),
+      expect.stringContaining('未对当前页面模型产生写入'),
       'error',
     )
 
     wrapper.unmount()
   })
 
-  it('treats datasetTool writes as live-model writes and resyncs the live dataset tool after the run', async () => {
+  it('treats datasetTool writes as page-model writes and resyncs the page dataset tool after the run', async () => {
     const onDataSetChanged = vi.fn()
     const harness = createRuleEditHarness({ onDataSetChanged })
     const liveDataSetTool = harness.liveDataSetTool
@@ -286,7 +286,7 @@ describe('useRuleEditSession run isolation', () => {
       setup() {
         api = useRuleEditSession({
           getSessionKey: () => 'orders-page',
-          getLiveModelAdapter: () => harness.liveModelAdapter,
+          getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
           onStatus,
         })
@@ -340,7 +340,7 @@ describe('useRuleEditSession run isolation', () => {
       setup() {
         api = useRuleEditSession({
           getSessionKey: () => 'orders-page',
-          getLiveModelAdapter: () => harness.liveModelAdapter,
+          getEditToolHost: () => harness.editToolHost,
           sessionHost,
           onStatus,
         })

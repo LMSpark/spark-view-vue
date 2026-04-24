@@ -41,10 +41,8 @@ import {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
-  captureBaselineSnapshot,
-  createCurrentEditModel,
   type EditDomainState,
-  type EditLiveModelAdapter,
+  type EditToolHost,
 } from '../business/page-design/stills'
 
 const metaStills = [
@@ -72,7 +70,7 @@ export type {
   BlueprintPhase,
   BlueprintExecutionMode,
   EditDomainState,
-  EditLiveModelAdapter,
+  EditToolHost,
 }
 
 export { noGuard, requireBlueprint, readSessionBlueprint, writeSessionBlueprint }
@@ -98,6 +96,4 @@ export {
   getEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
-  captureBaselineSnapshot,
-  createCurrentEditModel,
 }

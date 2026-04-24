@@ -9,14 +9,14 @@
  * - edit-nodeTree-stills.ts:    页面规则操作（catalog-driven）
  * - edit-dataset-stills.ts:     数据集 CRUD 操作（catalog-driven）
  *
- * 状态定义在 edit-state.ts，守卫定义在 edit-guard.ts，所有子模块共享，无循环依赖。
+ * 宿主能力绑定定义在 edit-lifecycle-stills.ts，守卫定义在 edit-guard.ts，所有子模块共享，无循环依赖。
  */
 
 import type {
   DomainProvider,
   StillDefinition,
 } from '../../../../core/stills/types'
-import { createEditState, type EditDomainState } from './edit-state'
+import { createEditState, type EditDomainState } from './edit-lifecycle-stills'
 import { EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
 import { EDIT_FILE_STILLS } from './tools/edit-file-stills'
 import { EDIT_NODE_TREE_STILLS } from './tools/edit-nodeTree-stills'

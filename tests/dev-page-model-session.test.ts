@@ -80,7 +80,7 @@ function createState(): {
     activePageId: ref('orders-page'),
     documents,
     ensureActivePageFilesLoaded,
-    getLiveModelAdapter: vi.fn(() => ({})),
+    getEditToolHost: vi.fn(() => ({})),
     addStatus: vi.fn(),
   } as unknown as DevState
 
@@ -145,7 +145,7 @@ describe('useDevPageModelSession', () => {
     scope.stop()
   })
 
-  it('bootstraps the live edit session when the AI panel opens', async () => {
+  it('bootstraps the page-model edit session when the AI panel opens', async () => {
     const { state, ensureActivePageFilesLoadedMock } = createState()
     const scope = effectScope()
     const activeFile = ref<PageFileName | null>('rule.json')

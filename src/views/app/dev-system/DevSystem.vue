@@ -47,7 +47,7 @@
           </el-tab-pane>
           <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname" :disabled="!state.activePageId.value">
             <template #label>
-              <span :class="{ 'tab-dirty': state.documents[fname].isDirty.value }">
+              <span :class="{ 'tab-dirty': state.isDocumentDirty(fname) }">
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
               </span>
             </template>
@@ -73,7 +73,7 @@
             <template v-if="state.activePageId.value">
               <span class="footer-info"><NavIcon name="Tickets" :size="13" /> {{ state.activePageId.value }}</span>
               <el-tag v-if="state.hasAnyFileDirty.value" type="warning" size="small">文件已修改</el-tag>
-              <el-tag v-if="currentWorkspaceFile === 'pagedata.json' && state.pageDataSetError.value" type="danger" size="small">{{ state.pageDataSetError.value }}</el-tag>
+              <el-tag v-if="currentWorkspaceFile === 'pagedata.json' && state.pageDataError.value" type="danger" size="small">{{ state.pageDataError.value }}</el-tag>
             </template>
           </div>
           <div class="workspace-footer__right">

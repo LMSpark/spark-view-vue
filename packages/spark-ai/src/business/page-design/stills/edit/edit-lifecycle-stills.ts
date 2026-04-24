@@ -11,14 +11,113 @@
  */
 
 import type {
+  IStillSession,
+  DomainState,
   StillResult,
   StillDefinition,
 } from '../../../../core/stills/types'
-import type { EditDomainState } from './edit-state'
-import { getActiveDataSetTool, getActiveNodeTree, getEditState } from './edit-state'
+import { getDomainState } from '../../../../core/stills/types'
+import type { SparkNodeTree } from '@spark-view/spark-component'
+import type { DataSetCrudTool } from '@spark-view/spark-data'
 import { EDIT_BOOTSTRAP_ACTION } from '../../../../core/stills/action-names'
 
 export type EditInitParams = unknown
+
+export type EditPhase = 'idle' | 'editing' | 'saved'
+
+export interface EditToolHost {
+  getNodeTree?: () => SparkNodeTree | null
+  onNodeTreeChanged?: (nodeTree: SparkNodeTree) => void
+  getDataSetTool?: () => DataSetCrudTool | null
+  onDataSetChanged?: (tool: DataSetCrudTool) => void
+  readScript?: () => string
+  writeScript?: (content: string) => void
+  readStyle?: () => string
+  writeStyle?: (content: string) => void
+}
+
+export interface EditDomainState extends DomainState<null, EditPhase> {
+  toolHost: EditToolHost | null
+}
+
+function assertPresent<T>(value: T | null | undefined, message: string): T {
+  if (value === null || value === undefined) {
+    throw new Error(message)
+  }
+  return value
+}
+
+export function getEditState(session: IStillSession): EditDomainState {
+  return getDomainState<EditDomainState>(session, 'edit')
+}
+
+export function createEditState(): EditDomainState {
+  return {
+    data: null,
+    phase: 'idle',
+    toolHost: null,
+  }
+}
+
+export function getActiveNodeTree(state: EditDomainState): SparkNodeTree | null {
+  return state.toolHost?.getNodeTree?.() ?? null
+}
+
+export function notifyNodeTreeChanged(state: EditDomainState, nodeTree: SparkNodeTree): void {
+  state.toolHost?.onNodeTreeChanged?.(nodeTree)
+}
+
+export function getActiveDataSetTool(state: EditDomainState): DataSetCrudTool | null {
+  return state.toolHost?.getDataSetTool?.() ?? null
+}
+
+export function notifyDataSetChanged(state: EditDomainState, tool: DataSetCrudTool): void {
+  state.toolHost?.onDataSetChanged?.(tool)
+}
+
+export function readActiveScript(state: EditDomainState): string {
+  const reader = assertPresent(
+    state.toolHost?.readScript,
+    'readActiveScript 失败：缺少 live text model 读取器（EditToolHost.readScript）',
+  )
+  return reader()
+}
+
+export function writeActiveScript(state: EditDomainState, content: string): void {
+  const writer = assertPresent(
+    state.toolHost?.writeScript,
+    'writeActiveScript 失败：缺少 live text model 读写器（EditToolHost.readScript/writeScript）',
+  )
+  void assertPresent(
+    state.toolHost?.readScript,
+    'writeActiveScript 失败：缺少 live text model 读写器（EditToolHost.readScript/writeScript）',
+  )
+  writer(content)
+}
+
+export function readActiveStyle(state: EditDomainState): string {
+  const reader = assertPresent(
+    state.toolHost?.readStyle,
+    'readActiveStyle 失败：缺少 live text model 读取器（EditToolHost.readStyle）',
+  )
+  return reader()
+}
+
+export function writeActiveStyle(state: EditDomainState, content: string): void {
+  const writer = assertPresent(
+    state.toolHost?.writeStyle,
+    'writeActiveStyle 失败：缺少 live text model 读写器（EditToolHost.readStyle/writeStyle）',
+  )
+  void assertPresent(
+    state.toolHost?.readStyle,
+    'writeActiveStyle 失败：缺少 live text model 读写器（EditToolHost.readStyle/writeStyle）',
+  )
+  writer(content)
+}
+
+export function bindLiveModelAdapter(state: EditDomainState, host: EditToolHost): void {
+  state.toolHost = host
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 功能分区一：输入校验
@@ -44,27 +143,27 @@ function validateEditBootstrapPayload(params: unknown): string | null {
 
 function bootstrapEditSession(state: EditDomainState): void {
   // 1) nodeTree tool 必须存在（即模型实例 + 对应函数入口）。
-  const nodeTreeTool = getActiveNodeTree(state)
-  if (!nodeTreeTool) {
-    throw new Error('edit.bootstrap 失败：缺少 nodeTree tool 实例（EditLiveModelAdapter.getNodeTree）')
-  }
+  const nodeTreeTool = assertPresent(
+    getActiveNodeTree(state),
+    'edit.bootstrap 失败：缺少 nodeTree tool 实例（EditToolHost.getNodeTree）',
+  )
 
   // 2) dataset tool 必须存在（即模型实例 + 对应函数入口）。
-  const dataSetTool = getActiveDataSetTool(state)
-  if (!dataSetTool) {
-    throw new Error('edit.bootstrap 失败：缺少 dataset tool 实例（EditLiveModelAdapter.getDataSetTool）')
-  }
+  const dataSetTool = assertPresent(
+    getActiveDataSetTool(state),
+    'edit.bootstrap 失败：缺少 dataset tool 实例（EditToolHost.getDataSetTool）',
+  )
 
   // 3) script/style 读取器必须存在。
-  const readScript = state.liveModelAdapter?.readScript
-  if (!readScript) {
-    throw new Error('edit.bootstrap 失败：缺少 script 读取器（EditLiveModelAdapter.readScript）')
-  }
+  const readScript = assertPresent(
+    state.toolHost?.readScript,
+    'edit.bootstrap 失败：缺少 script 读取器（EditToolHost.readScript）',
+  )
 
-  const readStyle = state.liveModelAdapter?.readStyle
-  if (!readStyle) {
-    throw new Error('edit.bootstrap 失败：缺少 style 读取器（EditLiveModelAdapter.readStyle）')
-  }
+  const readStyle = assertPresent(
+    state.toolHost?.readStyle,
+    'edit.bootstrap 失败：缺少 style 读取器（EditToolHost.readStyle）',
+  )
 
   // 4) 探测一次函数调用，确保适配器能力可用。
   void nodeTreeTool.toJSON()

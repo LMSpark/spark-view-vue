@@ -9,7 +9,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
   const doc = computed(() => state.documents[activeFile.value])
 
   const isReady = computed(() => doc.value.loadState.value === 'loaded')
-  const isDirty = computed(() => doc.value.isDirty.value)
+  const isDirty = computed(() => state.isDocumentDirty(activeFile.value))
   const canUndo = computed(() => doc.value.canUndo.value)
   const canRedo = computed(() => doc.value.canRedo.value)
   const text = computed(() => doc.value.text.value)
