@@ -10,7 +10,7 @@ import {
   createSessionBackend,
   type SessionBackend,
   type EditToolHost,
-} from '../ai-bridge'
+} from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
 
 type StillsSession = ReturnType<typeof createStillSession>

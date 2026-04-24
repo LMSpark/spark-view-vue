@@ -21,7 +21,7 @@ import {
   type DialogueTurn,
   type StillResult,
   type EditToolHost,
-} from '../ai-bridge'
+} from '@spark-view/spark-ai'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
