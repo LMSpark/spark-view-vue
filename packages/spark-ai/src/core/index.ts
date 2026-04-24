@@ -29,6 +29,21 @@ export type {
 // 2) Session Runtime
 export { SessionBackendImpl } from './session/session-backend'
 
+// Session Monitors & Policies
+export {
+  createRepeatDetectionMonitor,
+  type RepeatDetectionConfig,
+} from './session/repeat-detection-monitor'
+export {
+  createDefaultFollowUpPolicy,
+  DefaultFollowUpPolicy,
+  formatWarningsAsFollowUp,
+  buildInlineActionSpec,
+  buildErrorFollowUp,
+  toParamsSignature,
+  countConsecutiveSameFailedSignature,
+} from './session/default-follow-up-policy'
+
 // 4) Orchestration
 export {
   runStillsLoop,

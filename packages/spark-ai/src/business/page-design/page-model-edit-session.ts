@@ -4,11 +4,11 @@ import { runStillsLoop } from '../../core/orchestration/session-orchestrator'
 import { generateToolDefinitions, functionNameToAction } from '../../core/fc-schema'
 import { STILLS_EDIT_RUNTIME_PROMPT } from '../../core/stills/stills-prompts'
 import type { IStillSession, StillResult } from '../../core/stills/types'
-import { createDefaultFollowUpPolicy } from '../project-planning/business-follow-up-policy'
+import { createDefaultFollowUpPolicy } from '../../core/session/default-follow-up-policy'
 import {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from '../project-planning/repeat-detection-monitor'
+} from '../../core/session/repeat-detection-monitor'
 import { executeStill } from '../../stills'
 import {
   getActiveNodeTree,
