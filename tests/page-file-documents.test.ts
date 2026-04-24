@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPageDocuments } from '../src/views/app/dev-system/page-file-documents'
-
-function isDocumentDirty(doc: { text: { value: string }; savedText: { value: string } }): boolean {
-  return doc.text.value !== doc.savedText.value
-}
+import { createPageDocuments, isPageFileDocumentDirty } from '../src/views/app/dev-system/page-file-documents'
 
 function makePageDataText(label: string): string {
   return JSON.stringify({
@@ -25,21 +21,29 @@ describe('PageFileDocument primitives', () => {
       const doc = docs['script.js']
 
       doc.loadFromText('// v1\n')
-      expect(isDocumentDirty(doc)).toBe(false)
+      expect(isPageFileDocumentDirty(doc)).toBe(false)
       expect(doc.canUndo.value).toBe(false)
       expect(doc.text.value).toBe('// v1\n')
 
       doc.setText('// v2\n')
-      expect(isDocumentDirty(doc)).toBe(true)
+      expect(isPageFileDocumentDirty(doc)).toBe(true)
       expect(doc.canUndo.value).toBe(true)
 
       expect(doc.undo()).toBe(true)
       expect(doc.text.value).toBe('// v1\n')
-      expect(isDocumentDirty(doc)).toBe(false)
+      expect(isPageFileDocumentDirty(doc)).toBe(false)
 
       doc.setText('// v3\n')
       doc.markSaved()
-      expect(isDocumentDirty(doc)).toBe(false)
+      expect(isPageFileDocumentDirty(doc)).toBe(false)
+    })
+
+    it('fails fast when calling mutate on text document', () => {
+      const docs = createPageDocuments()
+      const doc = docs['script.js']
+      doc.loadFromText('// v1\n')
+
+      expect(() => doc.mutate(() => {})).toThrow('script.js 不支持 mutate；请使用 setText')
     })
 
     it('reset clears history and state', () => {
@@ -61,12 +65,12 @@ describe('PageFileDocument primitives', () => {
 
       doc.loadFromText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
       expect(doc.model.value).not.toBeNull()
-      expect(isDocumentDirty(doc)).toBe(false)
+      expect(isPageFileDocumentDirty(doc)).toBe(false)
 
       doc.setText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
       const current = doc.model.value!.toJSON()
       expect((current.children?.[0] as { type?: string }).type).toBe('el-button')
-      expect(isDocumentDirty(doc)).toBe(true)
+      expect(isPageFileDocumentDirty(doc)).toBe(true)
 
       expect(doc.undo()).toBe(true)
       const undone = doc.model.value!.toJSON()
@@ -101,11 +105,11 @@ describe('PageFileDocument primitives', () => {
       doc.loadFromText(makePageDataText('Alpha'))
       expect(doc.model.value).not.toBeNull()
       expect(doc.text.value).toContain('Items')
-      expect(isDocumentDirty(doc)).toBe(false)
+      expect(isPageFileDocumentDirty(doc)).toBe(false)
 
       doc.setText(makePageDataText('Beta'))
       expect(doc.text.value).toContain('Beta')
-      expect(isDocumentDirty(doc)).toBe(true)
+      expect(isPageFileDocumentDirty(doc)).toBe(true)
     })
 
     it('mutate commits to history and is undoable', () => {
@@ -129,7 +133,7 @@ describe('PageFileDocument primitives', () => {
       doc.loadFromText('')
       expect(doc.model.value).toBeNull()
       expect(doc.loadState.value).toBe('loaded')
-      expect(isDocumentDirty(doc)).toBe(false)
+      expect(isPageFileDocumentDirty(doc)).toBe(false)
     })
   })
 })

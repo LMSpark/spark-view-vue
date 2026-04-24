@@ -18,6 +18,7 @@ import {
   PAGE_FILE_NAMES,
   createPageDocuments,
   forEachDocument,
+  isPageFileDocumentDirty,
   type PageDocumentRegistry,
   type PageFileName,
 } from './page-file-documents'
@@ -166,8 +167,7 @@ export function useDevState() {
   const AUTO_SAVE_DELAY = 800
 
   function isDocumentDirty(name: PageFileName): boolean {
-    const doc = documents[name]
-    return doc.text.value !== doc.savedText.value
+    return isPageFileDocumentDirty(documents[name])
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -599,18 +599,20 @@ export function useDevState() {
   async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
+    const forceReload = options?.forceReload === true
+    const isFileDirty = (name: PageFileName) => isDocumentDirty(name)
 
     if (activePageFilesLoadPromise && activePageFilesLoadPageId === pageId) {
       return activePageFilesLoadPromise
     }
 
-    if (!options?.forceReload && areAllActivePageFilesLoaded()) return
+    if (!forceReload && areAllActivePageFilesLoaded()) return
 
-    if (!options?.forceReload && PAGE_FILE_NAMES.some((entry) => isDocumentDirty(entry))) {
+    if (!forceReload && PAGE_FILE_NAMES.some((entry) => isFileDirty(entry))) {
       // Respect local dirty edits: mark any non-loading idle docs as loaded so UI progresses.
       for (const entry of PAGE_FILE_NAMES) {
         const doc = documents[entry]
-        if (doc.loadState.value !== 'loading' && !isDocumentDirty(entry) && doc.loadState.value === 'idle') {
+        if (doc.loadState.value !== 'loading' && !isFileDirty(entry) && doc.loadState.value === 'idle') {
           // Leave idle empty docs as idle — only promote if they have any content.
           if (doc.text.value || doc.savedText.value) doc.loadState.value = 'loaded'
         }
@@ -626,7 +628,7 @@ export function useDevState() {
 
     for (const entry of PAGE_FILE_NAMES) {
       const doc = documents[entry]
-      if (!options?.forceReload && isDocumentDirty(entry)) {
+      if (!forceReload && isFileDirty(entry)) {
         doc.loadState.value = 'loaded'
         continue
       }
@@ -652,7 +654,7 @@ export function useDevState() {
 
       for (const [entry, loadedText] of loadedSnapshots) {
         const doc = documents[entry]
-        if (!options?.forceReload && isDocumentDirty(entry)) {
+        if (!forceReload && isFileDirty(entry)) {
           doc.loadState.value = 'loaded'
           continue
         }

@@ -47,7 +47,7 @@
           </el-tab-pane>
           <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname" :disabled="!state.activePageId.value">
             <template #label>
-              <span :class="{ 'tab-dirty': state.isDocumentDirty(fname) }">
+              <span :class="{ 'tab-dirty': isWorkspaceTabDirty(fname) }">
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
               </span>
             </template>
@@ -164,16 +164,25 @@ const pageModelSession = useDevPageModelSession({ state, activeFile: aiPanelActi
 
 const canPreviewCurrentPage = computed(() => Boolean(state.editForm.path || state.activePageId.value))
 
+const FILE_ICON_MAP: Record<PageFileName, string> = {
+  'rule.json': 'Crop',
+  'pagedata.json': 'Coin',
+  'script.js': 'Lightning',
+  'style.css': 'Brush',
+}
+
+const AI_PANEL_SHORTCUT_KEY = 'a'
+
 function isPageFileName(value: string): value is PageFileName {
   return PAGE_FILE_NAMES.includes(value as PageFileName)
 }
 
-function fileIcon(name: string) {
-  if (name === 'rule.json') return 'Crop'
-  if (name === 'pagedata.json') return 'Coin'
-  if (name === 'script.js') return 'Lightning'
-  if (name === 'style.css') return 'Brush'
-  return 'Document'
+function fileIcon(name: PageFileName): string {
+  return FILE_ICON_MAP[name]
+}
+
+function isWorkspaceTabDirty(name: PageFileName): boolean {
+  return state.isDocumentDirty(name)
 }
 
 watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
@@ -183,11 +192,13 @@ watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
 })
 
 // activePageId 清空时切回节点属性（取消关联 / 选中非配置节点）
-watch(() => state.activePageId.value, (newId) => {
-  if (newId && !state.selectedNode.value) {
+watch(() => state.activePageId.value, (nextPageId) => {
+  const hasSelectedNode = state.selectedNode.value !== null
+  if (nextPageId && !hasSelectedNode) {
     workTab.value = 'rule.json'
+    return
   }
-  if (!newId && state.selectedNode.value) {
+  if (!nextPageId && hasSelectedNode) {
     workTab.value = 'props'
   }
 })
@@ -197,16 +208,26 @@ function previewPage(pageId: string) {
 }
 
 function switchToPreview() {
+  if (!canPreviewCurrentPage.value) return
   workTab.value = 'preview'
   previewRefreshToken.value++
 }
 
 function saveAll() {
+  if (!state.hasAnyDirty.value) return
   void state.saveAll()
 }
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.isContentEditable) return true
+  const tagName = target.tagName
+  return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT'
+}
+
 function handleGlobalShortcut(event: KeyboardEvent) {
-  if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.key.toLowerCase() !== 'a') return
+  if (isEditableTarget(event.target)) return
+  if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.key.toLowerCase() !== AI_PANEL_SHORTCUT_KEY) return
   event.preventDefault()
   aiPanelStore.toggle()
 }

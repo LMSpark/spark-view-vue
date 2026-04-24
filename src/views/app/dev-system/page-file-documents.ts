@@ -45,6 +45,12 @@ export interface PageFileDocument<TModel = unknown> {
   replaceModel(next: TModel | null): void
 }
 
+export function isPageFileDocumentDirty(
+  doc: Pick<PageFileDocument, 'text' | 'savedText'>,
+): boolean {
+  return doc.text.value !== doc.savedText.value
+}
+
 interface PageDocumentModelMap {
   'rule.json': SparkNodeTree
   'pagedata.json': DataSetCrudTool
@@ -68,6 +74,12 @@ interface ModelDocumentFactoryOptions<TModel> {
   canRedo: (model: TModel) => boolean
   undo: (model: TModel) => boolean
   redo: (model: TModel) => boolean
+}
+
+interface IngestTextOptions {
+  preserveHistory: boolean
+  onErrorResetModel: boolean
+  markSaved: boolean
 }
 
 function createModelBackedDocument<TModel>(
@@ -107,7 +119,8 @@ function createModelBackedDocument<TModel>(
     parseError.value = null
   }
 
-  function ingestText(rawText: string, preserveHistory: boolean, onErrorResetModel: boolean, shouldMarkSaved: boolean): void {
+  function ingestText(rawText: string, ingestOptions: IngestTextOptions): void {
+    const { preserveHistory, onErrorResetModel, markSaved: shouldMarkSaved } = ingestOptions
     try {
       const parsed = options.parseFromText(rawText, getCurrentModel(), preserveHistory)
       applyParsedResult(parsed)
@@ -126,11 +139,19 @@ function createModelBackedDocument<TModel>(
 
   function loadFromText(rawText: string, loadOptions?: LoadFromTextOptions): void {
     const shouldMarkSaved = loadOptions?.markSaved ?? true
-    ingestText(rawText, false, true, shouldMarkSaved)
+    ingestText(rawText, {
+      preserveHistory: false,
+      onErrorResetModel: true,
+      markSaved: shouldMarkSaved,
+    })
   }
 
   function setText(rawText: string): void {
-    ingestText(rawText, getCurrentModel() !== null, false, false)
+    ingestText(rawText, {
+      preserveHistory: getCurrentModel() !== null,
+      onErrorResetModel: false,
+      markSaved: false,
+    })
   }
 
   function mutate(fn: (currentModel: TModel) => void): boolean {
@@ -328,7 +349,7 @@ function createTextDocument(name: 'script.js' | 'style.css'): PageFileDocument<s
 
   function mutate(fn: (current: string) => void): boolean {
     void fn
-    return false
+    throw new Error(`${name} 不支持 mutate；请使用 setText`)
   }
 
   function undo(): boolean {
@@ -363,7 +384,10 @@ function createTextDocument(name: 'script.js' | 'style.css'): PageFileDocument<s
       reset()
       return
     }
-    pushSnapshot(next)
+    history.clear()
+    history.push(next)
+    setLoadedText(next)
+    parseError.value = null
     loadState.value = 'loaded'
   }
 

@@ -2,7 +2,6 @@
   <transition name="app-ai-panel-fade">
     <div
       v-if="visible"
-      ref="panelEl"
       class="app-ai-panel"
       :class="{ 'is-dragging': dragging, 'is-resizing': resizing }"
       :style="panelStyle"
@@ -163,8 +162,6 @@ const y = ref(initial.y)
 const width = ref(initial.width)
 const height = ref(initial.height)
 const maximized = ref(!!initial.maximized)
-const panelEl = ref<HTMLDivElement | null>(null)
-
 function persist() {
   try {
     writeCache(

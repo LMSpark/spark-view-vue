@@ -94,7 +94,6 @@
         <component
           v-if="isSparkRendererRoute"
           :is="Component"
-          ref="activeSparkRendererHost"
           :key="route.path"
         />
         <component v-else :is="Component" :key="route.path" />
@@ -103,7 +102,6 @@
         <component
           v-if="!contextGuard && isSparkRendererRoute"
           :is="Component"
-          ref="activeSparkRendererHost"
           :key="route.fullPath"
         />
         <component v-else-if="!contextGuard" :is="Component" :key="route.fullPath" />
@@ -188,10 +186,6 @@ const { mode, setMode } = useTabPages()
 useColorScheme()
 let _stopSseDebugScreenshot: (() => void) | null = null
 let _stopSseDebugRoute: (() => void) | null = null
-
-interface ReloadableRouteComponent {
-  reload?: () => Promise<void> | void
-}
 
 interface AppContextGuardState {
   title: string
@@ -301,7 +295,6 @@ const nav = useNavigation(_navRoot, {
 })
 const pageUiService = appPageUiService
 sparkProvide(APP_SERVICES, { pageService: pageUiService })
-const activeSparkRendererHost = ref<ReloadableRouteComponent | null>(null)
 const isSparkRendererRoute = computed(() => {
   const routeType = route.meta['type']
   return routeType === 'config-page' || routeType === 'cross-project-ref'
