@@ -125,7 +125,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
-import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
+import { clearAllPageCache, getPageCacheStats } from '@/services/page-cache-handle'
 import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────
@@ -222,7 +222,7 @@ async function handleClearAllFrontend() {
       '清除前端缓存',
       { type: 'warning', confirmButtonText: '清除', cancelButtonText: '取消' },
     )
-    const stats = clearAllCache()
+    const stats = clearAllPageCache()
     ElMessage.success(`已清除 ${stats.size} 条缓存`)
     loadFrontendCache()
   } catch {
@@ -284,7 +284,7 @@ onMounted(() => {
 })
 
 // 暴露给外部使用（getCacheStats 来自 spark-app）
-void getCacheStats
+void getPageCacheStats
 </script>
 
 <style scoped>

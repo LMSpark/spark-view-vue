@@ -9,7 +9,7 @@
  * 不关心蓝图内容或数据表结构（域知识由 still 层负责）。
  */
 
-import type { MonitorContext, SessionMonitor } from '../session-orchestrator'
+import type { MonitorContext, SessionMonitor } from '../../session-contracts'
 import {
   DATATABLE_CREATE_ACTION,
   DATATABLE_ADD_COLUMNS_ACTION,

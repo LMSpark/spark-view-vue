@@ -5,13 +5,13 @@
  * 本文件自包含 catalog → StillDefinition 的投影逻辑。
  */
 
-import type { IStillSession, StillDefinition, StillResult } from '../types'
+import type { IStillSession, StillDefinition, StillResult } from '../../types'
 import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-state'
-import { EDIT_BOOTSTRAP_ACTION } from '../action-names'
+import { EDIT_BOOTSTRAP_ACTION } from '../../action-names'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   validateDataSetCrudToolStillParams,
-} from '../dataset-crud-tool-stills-catalog'
+} from '../../dataset-crud-tool-stills-catalog'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 类型与静态索引

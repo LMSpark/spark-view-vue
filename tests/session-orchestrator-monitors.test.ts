@@ -25,18 +25,20 @@ import {
 import {
   createTerminalActionsMonitor,
 } from '../packages/spark-ai/src/runtime/monitors/terminal-actions-monitor'
-import type {
-  MonitorContext,
-  DialogueTurn,
-  SessionBackend,
-  LlmResponse,
-} from '../packages/spark-ai/src/runtime/session-orchestrator'
 import {
   runStillsLoop,
   formatWarningsAsFollowUp,
 } from '../packages/spark-ai/src/runtime/session-orchestrator'
-import { actionToFunctionName, dispatchToolCall } from '../packages/spark-ai/src/tool-calling'
-import type { ToolCall, FcDispatchResult } from '../packages/spark-ai/src/tool-calling'
+import { actionToFunctionName } from '../packages/spark-ai/src/fc-schema'
+import { dispatchToolCall } from '../packages/spark-ai/src/fc-dispatcher'
+import type {
+  ToolCall,
+  FcDispatchResult,
+  MonitorContext,
+  DialogueTurn,
+  SessionBackend,
+  LlmResponse,
+} from '../packages/spark-ai/src/session-contracts'
 
 // ═══════════════════════════════════════════════════════════
 // Helpers

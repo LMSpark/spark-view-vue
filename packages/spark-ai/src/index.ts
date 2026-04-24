@@ -23,16 +23,14 @@ export type {
 } from './validation/config-validator'
 
 // ── Navigation Auto-Register ─────────────────────────────────────────────────
-export { registerPageNavigation, configureNavRegister } from './runtime/nav-register'
-export type { NavRegistrationOptions, NavRegistrationResult } from './runtime/nav-register'
+export { createNavRegister } from './runtime/nav-register'
+export type { NavRegister, NavRegistrationOptions, NavRegistrationResult } from './runtime/nav-register'
 
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {
-  setConfigLoader,
-  clearPageCache,
-  clearAllCache,
-  getCacheStats,
+  createPageCache,
 } from './runtime/page-cache'
+export type { PageCacheHandle } from './runtime/page-cache'
 
 // ── AI Component Catalog ─────────────────────────────────────────────────────
 // 单一 SSoT JSON + 消费端投影
@@ -95,6 +93,7 @@ export {
 export {
   buildPageSystemPrompt,
   getSystemPrompt,
+  registerPromptMode,
   detectRelevantSkillTypes,
 } from './prompts/prompt-builder'
 export type {
@@ -153,38 +152,43 @@ export type {
   SessionMonitor,
   OrchestratorConfig,
   OrchestratorResult,
-} from './runtime/session-orchestrator'
-
-// ── Session Backend（会话后端 HTTP 客户端）────────────────────────────────────
-export {
-  SessionBackendImpl,
-  configureSessionBackend,
-} from './session-backend'
-
-// ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
-export {
-  actionToFunctionName,
-  functionNameToAction,
-  stillToToolDefinition,
-  generateToolDefinitions,
-  dispatchToolCall,
-  dispatchToolCalls,
-  formatToolResultContent,
-  buildAssistantToolCallMessage,
-  buildToolResultMessage,
-} from './tool-calling'
-export type {
   ToolCall,
   ToolResult,
   FcDispatchResult,
   ToolDefinition,
   JsonSchema,
   JsonSchemaProperty,
-} from './tool-calling'
+} from './session-contracts'
+
+// ── Session Backend（会话后端 HTTP 客户端）────────────────────────────────────
+export {
+  SessionBackendImpl,
+} from './session-backend'
+
+// ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
+export {
+  actionToFunctionName,
+  functionNameToAction,
+  loadFcCatalog,
+  stillToToolDefinition,
+  generateToolDefinitions,
+} from './fc-schema'
+export type {
+  FcCatalogToolEntry,
+  FcCatalogJson,
+} from './fc-schema'
+export {
+  dispatchToolCall,
+  dispatchToolCalls,
+  formatToolResultContent,
+  buildAssistantToolCallMessage,
+  buildToolResultMessage,
+} from './fc-dispatcher'
 
 // ── Monitors（可插拔编排监控器）──────────────────────────────────────────────
 export {
   createRepeatDetectionMonitor,
   createBlueprintOrchestrationMonitor,
   createTerminalActionsMonitor,
+  createExportCompletionMonitor,
 } from './runtime/monitors'

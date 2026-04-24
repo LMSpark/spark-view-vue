@@ -168,6 +168,12 @@ export {
   getNavTree,
   getNavHomePath,
 } from './navigation/nav-access'
+export {
+  setPageCacheHandle,
+  getPageCacheHandle,
+  clearAllPageCache,
+  getPageCacheStats,
+} from './navigation/page-cache-access'
 
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'

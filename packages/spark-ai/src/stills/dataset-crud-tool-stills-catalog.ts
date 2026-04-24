@@ -15,10 +15,6 @@
  *   - dataSet / dataSetName 属于运行时上下文；
  *   - toJson 语义与 datasetTool.export 重合，统一折叠到 datasetTool.export。
  */
-import {
-  TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
-  TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
-} from '@spark-view/spark-data'
 import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from './llm-params-validator'
 import {
   DATASET_EXPORT_ACTION,
@@ -132,6 +128,22 @@ const ROW_ID_PARAM = 'string | number — 主键值'
 const PARENT_TABLE_PARAM = 'string — 父表名'
 const CHILD_TABLE_PARAM = 'string — 子表名'
 const RESOURCE_ID_PARAM = 'string? — 资源 ID'
+
+// 保持与 spark-data/src/types.ts 的推荐值一致，避免依赖 dist 类型出口漂移。
+const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES = [
+  'database-table',
+  'database-view',
+  'third-party-api',
+  'static-data',
+  'dictionary',
+  'logical-view',
+] as const
+
+const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES = [
+  'master',
+  'child',
+  'reference',
+] as const
 
 const RESOURCE_TYPE_SCHEMA = {
   kind: 'enum',

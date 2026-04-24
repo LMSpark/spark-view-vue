@@ -14,24 +14,15 @@
 import { createRequest } from '@spark-view/spark-utils'
 import type { NavNode } from '@spark-view/spark-utils'
 
-// ─── 内部 HTTP 客户端（与 ai-loop 独立，避免循环依赖） ────────────────────
+export interface NavRegister {
+  registerPageNavigation(pageId: string, options?: NavRegistrationOptions): Promise<NavRegistrationResult>
+}
 
-const http = createRequest({ timeout: 15_000 })
-
-/** 动态导航 API 基础路径解析器（由应用层注入） */
-let _getNavApiUrl: (() => string) | null = null
-
-// ─── 配置 ────────────────────────────────────────────────────────────────────
-
-/**
- * 配置导航注册模块的 HTTP 信息。
- * 由应用层在启动阶段注入，无需调用方自行拼接请求头或路径。
- */
-export function configureNavRegister(options: {
+export function createNavRegister(options: {
   getNavApiUrl: () => string
   getHeaders?: () => Record<string, string>
-}): void {
-  _getNavApiUrl = options.getNavApiUrl
+}): NavRegister {
+  const http = createRequest({ timeout: 15_000 })
   if (options.getHeaders) {
     const getHeaders = options.getHeaders
     http.interceptors.request.use({
@@ -41,11 +32,41 @@ export function configureNavRegister(options: {
       },
     })
   }
-}
 
-function getNavApiUrl(): string {
-  if (_getNavApiUrl) return _getNavApiUrl()
-  return '/api/navigation'
+  async function registerPageNavigation(
+    pageId: string,
+    navOptions?: NavRegistrationOptions,
+  ): Promise<NavRegistrationResult> {
+    const title = navOptions?.title ?? formatTitle(pageId)
+    const description = navOptions?.prompt
+      ? navOptions.prompt.slice(0, 60)
+      : undefined
+
+    const node: NavNode = {
+      id: pageId,
+      nodeKind: 'page',
+      title,
+      icon: navOptions?.icon ?? 'Document',
+      path: `/${pageId}`,
+      ...(description !== undefined && { description }),
+    }
+
+    try {
+      await http.post(`${options.getNavApiUrl()}/nodes`, {
+        node,
+        parentId: navOptions?.parentId ?? null,
+      })
+      return { success: true, alreadyExists: false }
+    } catch (err: unknown) {
+      if (isDuplicateNodeError(err)) {
+        return { success: true, alreadyExists: true }
+      }
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, alreadyExists: false, error: message }
+    }
+  }
+
+  return { registerPageNavigation }
 }
 
 // ─── 类型定义 ────────────────────────────────────────────────────────────────
@@ -70,49 +91,6 @@ export interface NavRegistrationResult {
   alreadyExists: boolean
   /** 错误信息（仅 success=false 时有值） */
   error?: string
-}
-
-// ─── 核心函数 ────────────────────────────────────────────────────────────────
-
-/**
- * 将 AI 生成的页面注册到导航树。
- *
- * - 构建 NavNode 兼容对象并 POST 到导航 API
- * - 后端检测到 id 重复时返回 400，此处视为 alreadyExists（非错误）
- * - 网络/服务器错误返回 success=false + error 信息
- */
-export async function registerPageNavigation(
-  pageId: string,
-  options?: NavRegistrationOptions,
-): Promise<NavRegistrationResult> {
-  const title = options?.title ?? formatTitle(pageId)
-  const description = options?.prompt
-    ? options.prompt.slice(0, 60)
-    : undefined
-
-  const node: NavNode = {
-    id: pageId,
-    nodeKind: 'page',
-    title,
-    icon: options?.icon ?? 'Document',
-    path: `/${pageId}`,
-    ...(description !== undefined && { description }),
-  }
-
-  try {
-    await http.post(`${getNavApiUrl()}/nodes`, {
-      node,
-      parentId: options?.parentId ?? null,
-    })
-    return { success: true, alreadyExists: false }
-  } catch (err: unknown) {
-    // 后端对重复 id 返回 400 + { error: "节点 id 已存在: xxx" }
-    if (isDuplicateNodeError(err)) {
-      return { success: true, alreadyExists: true }
-    }
-    const message = err instanceof Error ? err.message : String(err)
-    return { success: false, alreadyExists: false, error: message }
-  }
 }
 
 // ─── 工具函数 ────────────────────────────────────────────────────────────────

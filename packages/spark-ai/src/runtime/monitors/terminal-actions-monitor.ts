@@ -9,7 +9,7 @@
  * 本监控器只看编排信号：蓝图完成 + 缺少终局动作 → 提醒。
  */
 
-import type { MonitorContext, SessionMonitor } from '../session-orchestrator'
+import type { MonitorContext, SessionMonitor } from '../../session-contracts'
 import { readSessionBlueprint } from '../../stills/types'
 import { DATASET_VALIDATE_ACTION, DATASET_EXPORT_ACTION } from '../../stills/action-names'
 

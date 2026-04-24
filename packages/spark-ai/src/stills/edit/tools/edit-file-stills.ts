@@ -5,7 +5,7 @@
  * catalog + 状态读写 + still 包装全部自包含，无外部子模块依赖。
  */
 
-import type { IStillSession, StillDefinition, StillResult } from '../types'
+import type { IStillSession, StillDefinition, StillResult } from '../../types'
 import {
   getEditState,
   readActiveScript,
@@ -18,7 +18,7 @@ import {
   TEXT_MODEL_WRITE_SCRIPT_ACTION,
   TEXT_MODEL_READ_STYLE_ACTION,
   TEXT_MODEL_WRITE_STYLE_ACTION,
-} from '../action-names'
+} from '../../action-names'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 类型与文件目录

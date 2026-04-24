@@ -40,7 +40,10 @@ export interface BuildPagePromptOptions {
 }
 
 /** 提示词模式 */
-export type PromptMode = 'page' | 'stills' | 'stills-blueprint'
+export type PromptMode = string
+
+type PromptFactory = (options?: BuildPagePromptOptions) => string
+const PROMPT_MODE_REGISTRY = new Map<PromptMode, PromptFactory>()
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Skill 类型关键词检测
@@ -159,19 +162,29 @@ export function buildPageSystemPrompt(options?: BuildPagePromptOptions): string 
   return prompt
 }
 
+export function registerPromptMode(mode: PromptMode, factory: PromptFactory): void {
+  if (!mode || mode.trim().length === 0) {
+    throw new Error('registerPromptMode 失败：mode 不能为空')
+  }
+  PROMPT_MODE_REGISTRY.set(mode, factory)
+}
+
+function getPromptFactory(mode: PromptMode): PromptFactory {
+  const factory = PROMPT_MODE_REGISTRY.get(mode)
+  if (!factory) {
+    throw new Error(`未知 PromptMode: ${mode}`)
+  }
+  return factory
+}
+
 /**
  * 根据模式返回对应的系统提示词。
  * 统一入口，供 ai-loop 等消费方使用。
  */
 export function getSystemPrompt(mode: PromptMode, options?: BuildPagePromptOptions): string {
-  switch (mode) {
-    case 'page':
-      return buildPageSystemPrompt(options)
-    case 'stills':
-      return STILLS_RUNTIME_PROMPT
-    case 'stills-blueprint':
-      return STILLS_BLUEPRINT_PROMPT
-    default:
-      return buildPageSystemPrompt(options)
-  }
+  return getPromptFactory(mode)(options)
 }
+
+registerPromptMode('page', (options) => buildPageSystemPrompt(options))
+registerPromptMode('stills', () => STILLS_RUNTIME_PROMPT)
+registerPromptMode('stills-blueprint', () => STILLS_BLUEPRINT_PROMPT)

@@ -12,10 +12,10 @@
 
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
 
-import type { IStillSession, StillDefinition, StillResult } from '../types'
+import type { IStillSession, StillDefinition, StillResult } from '../../types'
 import { getActiveNodeTree, getEditState, notifyNodeTreeChanged } from '../edit-state'
-import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../spark-node-tree-tool-catalog'
-import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '../llm-params-validator'
+import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../../spark-node-tree-tool-catalog'
+import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '../../llm-params-validator'
 
 // ── 2. 类型定义 (Type Definitions) ────────────────────────────────────────────────
 

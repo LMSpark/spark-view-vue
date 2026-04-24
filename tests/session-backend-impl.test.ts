@@ -15,7 +15,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
   SessionBackendImpl,
-  configureSessionBackend,
   type SessionBackend,
   type LlmResponse,
 } from '@spark-view/spark-ai'
@@ -77,10 +76,10 @@ describe('SessionBackendImpl', () => {
   })
 })
 
-describe('configureSessionBackend', () => {
-  it('should accept getHeaders option', () => {
+describe('SessionBackendImpl options', () => {
+  it('should accept getHeaders option in constructor', () => {
     expect(() => {
-      configureSessionBackend({
+      new SessionBackendImpl('http://localhost:8080', {
         getHeaders: () => ({
           'Authorization': 'Bearer test-token',
           'X-Custom': 'value',
@@ -89,9 +88,11 @@ describe('configureSessionBackend', () => {
     }).not.toThrow()
   })
 
-  it('should accept empty options', () => {
+  it('should accept onSseEvent option in constructor', () => {
     expect(() => {
-      configureSessionBackend({})
+      new SessionBackendImpl('http://localhost:8080', {
+        onSseEvent: () => {},
+      })
     }).not.toThrow()
   })
 })

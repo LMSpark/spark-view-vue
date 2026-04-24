@@ -5,7 +5,7 @@ import {
   clearRegistry,
   registerEditStills,
 } from '../packages/spark-ai/src/stills'
-import { functionNameToAction, generateToolDefinitions } from '../packages/spark-ai/src/tool-calling'
+import { functionNameToAction, generateToolDefinitions } from '../packages/spark-ai/src/fc-schema'
 
 beforeEach(() => {
   clearDomains()

@@ -16,153 +16,26 @@
  * 分层：
  *   Backend（会话存储 + 滑动窗口 + LLM 调用）
  *     → Orchestrator（本模块，循环 + 终止 + followUp 注入）
- *       → tool-calling（FC 调度 + 响应格式化）
+ *       → fc-schema/fc-dispatcher（FC schema 生成 + 调度 + 响应格式化）
  *         → dispatcher（still 执行）
  *           → 域 stills（业务逻辑 + postValidate）
  */
 
-import type { IStillSession, StillResult, PostValidationWarning, ExecutionBlueprint } from '../stills/types'
-import { readSessionBlueprint } from '../stills/types'
-import { DATASET_EXPORT_ACTION } from '../stills/action-names'
+import type { IStillSession, StillResult, PostValidationWarning } from '../stills/types'
 import { getStill } from '../stills/dispatcher'
-import type { ToolCall, FcDispatchResult, ToolDefinition } from '../tool-calling'
-import { dispatchToolCall, generateToolDefinitions } from '../tool-calling'
-
-// ═══════════════════════════════════════════════════════════
-// Types — 对话轮次
-// ═══════════════════════════════════════════════════════════
-
-/** 单轮对话的结构化记录 */
-export interface DialogueTurn {
-  round: number
-  timestamp: string
-  phase: 'ai-response' | 'stills-execute'
-  aiText?: string | undefined
-  aiReasoning?: string | undefined
-  toolBlock?: {
-    action: string
-    id: string
-    params: unknown
-  } | undefined
-  stillsResult?: StillTurnResult | undefined
-  elapsed?: number | undefined
-}
-
-/** still 执行结果的平坦记录（非判别联合，纯 DTO） */
-export interface StillTurnResult {
-  ok: boolean
-  data?: unknown
-  code?: string | undefined
-  msg?: string | undefined
-  fix?: string | undefined
-  summary?: string | undefined
-  warnings?: PostValidationWarning[] | undefined
-}
-
-// ═══════════════════════════════════════════════════════════
-// Types — 后端通信层
-// ═══════════════════════════════════════════════════════════
-
-/** 后端 LLM 回复 */
-export interface LlmResponse {
-  text: string
-  reasoning?: string
-  /** Function Calling 模式：LLM 返回的工具调用（与 text 互斥或共存） */
-  toolCalls?: ToolCall[]
-}
-
-export interface SessionBackendSseEvent {
-  sessionId: string
-  type: string
-  data: string
-}
-
-/**
- * 后端会话客户端接口（依赖反转：编排器不知道后端在哪）。
- *
- * 实现者负责 HTTP 调用后端 Stills 会话端点。
- * 编排器只依赖此抽象。
- *
- * ⚠️ 实现者须在本地维护 sessionId 集合：
- * - createSession 成功后追加 sessionId
- * - destroySession 成功后移除 sessionId
- * - 切换用户时调用 destroyAllSessions()，将本地集合发给后端批量销毁
- */
-export interface SessionBackend {
-  /** 创建会话（附带 tool definitions），返回 sessionId */
-  createSession(systemPrompt: string, userPrompt: string, windowSize: number, tools?: ToolDefinition[], signal?: AbortSignal): Promise<string>
-  /** 调用 LLM 获取下一轮回复（后端自动管理对话历史 + 滑动窗口） */
-  executeTurn(sessionId: string, options?: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void }): Promise<LlmResponse | null>
-  /** 向会话追加消息（assistant + tool results） */
-  appendMessages(sessionId: string, messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }>, signal?: AbortSignal): Promise<void>
-  /** 获取完整对话记录（供 self-check 等后处理使用） */
-  getConversation(sessionId: string): Promise<Array<{ role: string; content: string }>>
-  /** 销毁单个会话 */
-  destroySession(sessionId: string): Promise<void>
-  /** 销毁当前客户端创建的所有会话（切换用户时调用） */
-  destroyAllSessions(): Promise<void>
-}
-
-// ═══════════════════════════════════════════════════════════
-// Types — 监控器
-// ═══════════════════════════════════════════════════════════
-
-/** 监控器上下文（每轮 still 执行后传递给监控器） */
-export interface MonitorContext {
-  session: IStillSession
-  currentTurn: DialogueTurn
-  allTurns: DialogueTurn[]
-  round: number
-  params: unknown
-  result: StillResult
-}
-
-/**
- * 可插拔监控器接口
- *
- * 编排器只依赖此抽象，不依赖具体监控器实现（D 原则）。
- * 新增监控器无需修改编排器（O 原则）。
- * 每个监控器只关心一个编排关注点（S 原则）。
- */
-export interface SessionMonitor {
-  name: string
-  /** 每轮 still 执行后调用，返回需注入对话的 followUp 指令 */
-  afterStillExecution(ctx: MonitorContext): string[]
-  /** 是否应终止循环（可选） */
-  shouldAbort?(ctx: MonitorContext): { abort: boolean; reason?: string }
-}
-
-// ═══════════════════════════════════════════════════════════
-// Types — 编排器配置与结果
-// ═══════════════════════════════════════════════════════════
-
-export interface OrchestratorConfig {
-  maxRounds: number
-  /** 滑动窗口大小（传给后端 createSession） */
-  slidingWindow: number
-  systemPrompt: string
-  /** 可选：续用后端既有 sessionId，启用多轮连续会话 */
-  resumeSessionId?: string
-  /** 可选：显式指定本轮允许暴露给 LLM 的 tools；省略时导出全部已注册 stills。 */
-  tools?: ToolDefinition[]
-  signal?: AbortSignal
-  onSseEvent?: (event: SessionBackendSseEvent) => void
-  monitors?: SessionMonitor[]
-  onRoundStart?: (round: number) => void
-  onTurnComplete?: (turn: DialogueTurn) => void
-  onRoundComplete?: (turn: DialogueTurn) => void
-  /** 覆盖工具分发函数（测试用，默认 dispatchToolCall） */
-  dispatchFc?: (toolCall: ToolCall, session: IStillSession) => FcDispatchResult
-}
-
-export interface OrchestratorResult {
-  turns: DialogueTurn[]
-  rounds: number
-  aborted: boolean
-  abortReason?: string | undefined
-  exportCompleted: boolean
-  sessionId: string
-}
+import type {
+  DialogueTurn,
+  StillTurnResult,
+  ToolCall,
+  SessionBackend,
+  MonitorContext,
+  SessionMonitor,
+  OrchestratorConfig,
+  OrchestratorResult,
+} from '../session-contracts'
+import { dispatchToolCall } from '../fc-dispatcher'
+import { generateToolDefinitions } from '../fc-schema'
+import { createExportCompletionMonitor } from './monitors/export-completion-monitor'
 
 // 后端 appendMessages 所用消息结构。
 // 统一为 FC 场景下 assistant/tool 双角色消息体，便于后续复用与维护。
@@ -176,12 +49,6 @@ type BackendMessage = {
 // ═══════════════════════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════════════════════
-
-/** 蓝图是否有未完成的 checkpoint */
-function hasPendingBlueprintWork(blueprint: ExecutionBlueprint | null): boolean {
-  if (blueprint === null) return false
-  return blueprint.checkpoints.some(cp => cp.status !== 'done')
-}
 
 /**
  * 将 postValidate 产出的 warnings 格式化为 followUp 指令。
@@ -345,6 +212,7 @@ function injectFollowUpIntoToolResult(content: string, followUpInstructions: str
 function checkAbortByMonitors(monitors: SessionMonitor[], monitorCtx: MonitorContext): {
   abort: boolean
   reason?: string
+  sourceMonitor?: string
 } {
   for (const monitor of monitors) {
     if (monitor.shouldAbort === undefined) continue
@@ -354,6 +222,7 @@ function checkAbortByMonitors(monitors: SessionMonitor[], monitorCtx: MonitorCon
         return {
           abort: true,
           reason: abortResult.reason ?? monitor.name,
+          sourceMonitor: monitor.name,
         }
       }
     } catch { /* monitor failure must not break the loop */ }
@@ -406,9 +275,10 @@ export async function runStillsLoop(
   const dispatch = config.dispatchFc ?? dispatchToolCall
   let round = 0
   let exportCompleted = false
+  let completed = false
   let aborted = false
   let abortReason = ''
-  const monitors = config.monitors ?? []
+  const monitors = config.monitors ?? [createExportCompletionMonitor()]
 
   try {
     // ───────────────────────────────────────────────────────────────────────
@@ -518,18 +388,19 @@ export async function runStillsLoop(
         // 检查监控器终止（每个 tool 执行后即时检查）。
         const monitorAbort = checkAbortByMonitors(monitors, monitorCtx)
         if (monitorAbort.abort) {
-          aborted = true
-          abortReason = monitorAbort.reason ?? ''
+          if (monitorAbort.sourceMonitor === 'export-completion') {
+            exportCompleted = true
+            completed = true
+          } else {
+            aborted = true
+            abortReason = monitorAbort.reason ?? ''
+          }
         }
-        if (aborted) break
+        if (aborted || completed) break
 
-        // 检查 export 完成
-        if (result.ok && action === DATASET_EXPORT_ACTION) {
-          exportCompleted = true
-        }
       }
 
-      if (aborted) break
+      if (aborted || completed) break
 
       // ── Step 4: 向后端追加消息（assistant + tool results） ──
       await backend.appendMessages(sessionId, messages, config.signal)
@@ -539,11 +410,6 @@ export async function runStillsLoop(
         if (lastTurn) config.onRoundComplete?.(lastTurn)
       }
 
-      // ── Step 5: 终止条件 ──
-      // 终止判定为“export 完成 + 蓝图无待办 checkpoint”，避免提前停在半完成状态。
-      if (exportCompleted && !hasPendingBlueprintWork(readSessionBlueprint(session))) {
-        break
-      }
     }
   } finally {
     // 会话由调用者决定何时 destroy

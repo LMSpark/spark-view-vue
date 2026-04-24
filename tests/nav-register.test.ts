@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import {
-  registerPageNavigation,
-  configureNavRegister,
+  createNavRegister,
 } from '@spark-view/spark-ai'
 
 // ─── Mock createRequest ──────────────────────────────────────────────────────
@@ -27,15 +26,16 @@ vi.mock('@spark-view/spark-utils', async () => {
 })
 
 describe('nav-register', () => {
+  const navRegister = createNavRegister({ getNavApiUrl: () => '/api/test/navigation' })
+
   beforeEach(() => {
     mockPost.mockReset()
-    configureNavRegister({ getNavApiUrl: () => '/api/test/navigation' })
   })
 
   it('registers a new page node successfully', async () => {
     mockPost.mockResolvedValue({ success: true, node: { id: 'order-list' } })
 
-    const result = await registerPageNavigation('order-list', {
+    const result = await navRegister.registerPageNavigation('order-list', {
       title: '订单列表',
       prompt: '创建一个订单列表页面',
     })
@@ -68,7 +68,7 @@ describe('nav-register', () => {
     })
     mockPost.mockRejectedValue(error)
 
-    const result = await registerPageNavigation('order-list')
+    const result = await navRegister.registerPageNavigation('order-list')
 
     expect(result.success).toBe(true)
     expect(result.alreadyExists).toBe(true)
@@ -78,7 +78,7 @@ describe('nav-register', () => {
   it('returns failure with error message on network error', async () => {
     mockPost.mockRejectedValue(new Error('Network timeout'))
 
-    const result = await registerPageNavigation('new-page')
+    const result = await navRegister.registerPageNavigation('new-page')
 
     expect(result.success).toBe(false)
     expect(result.alreadyExists).toBe(false)
@@ -88,7 +88,7 @@ describe('nav-register', () => {
   it('formats pageId to title when no title provided', async () => {
     mockPost.mockResolvedValue({ success: true })
 
-    await registerPageNavigation('user-management')
+    await navRegister.registerPageNavigation('user-management')
 
     const [, body] = mockPost.mock.calls[0] as [string, Record<string, unknown>]
     const node = body['node'] as Record<string, unknown>
@@ -99,7 +99,7 @@ describe('nav-register', () => {
     mockPost.mockResolvedValue({ success: true })
     const longPrompt = '这是一段超过六十个字符的描述文本。' + '补充更多内容以确保超过截断阈值。再多加点冗余文本来测试。'
 
-    await registerPageNavigation('test-page', {
+    await navRegister.registerPageNavigation('test-page', {
       prompt: longPrompt,
     })
 

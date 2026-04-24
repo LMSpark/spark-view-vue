@@ -151,7 +151,7 @@ import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { ChatDotRound } from '@element-plus/icons-vue'
-import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
+import { clearAllPageCache, getPageCacheStats } from '@/services/page-cache-handle'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { createAuthHeaders } from '@/services/http'
 import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
@@ -413,7 +413,7 @@ onMounted(() => {
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
-  w['__sparkDev'] = { reloadNavigation, clearAllCache, getCacheStats, refreshRoutes }
+  w['__sparkDev'] = { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes }
 })
 
 onUnmounted(() => {
@@ -459,7 +459,7 @@ function handleUserCommand(command: string) {
     }
     case 'logout':
       logout()
-      clearAllCache()
+      clearAllPageCache()
       window.location.replace(router.resolve('/login').href)
       break
     default:

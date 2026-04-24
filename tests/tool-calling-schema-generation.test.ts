@@ -10,7 +10,7 @@ import {
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
 } from '../packages/spark-data/src'
 import { getStill } from '../packages/spark-ai/src/stills/dispatcher'
-import { functionNameToAction, generateToolDefinitions, stillToToolDefinition } from '../packages/spark-ai/src/tool-calling'
+import { functionNameToAction, generateToolDefinitions, stillToToolDefinition } from '../packages/spark-ai/src/fc-schema'
 
 beforeEach(() => {
   clearDomains()

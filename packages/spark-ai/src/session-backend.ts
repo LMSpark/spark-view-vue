@@ -5,23 +5,15 @@
  */
 
 import { createFetchClient, createRequest, Logger } from '@spark-view/spark-utils'
-import type { SessionBackend, LlmResponse, SessionBackendSseEvent } from './runtime/session-orchestrator'
-import type { ToolCall, ToolDefinition } from './tool-calling'
+import type {
+  SessionBackend,
+  LlmResponse,
+  SessionBackendSseEvent,
+  ToolCall,
+  ToolDefinition,
+} from './session-contracts'
 
 const log = Logger('SessionBackend')
-
-let _getHeaders: (() => Record<string, string>) | null = null
-let _onSseEvent: ((event: { sessionId: string; type: string; data: string }) => void) | null = null
-
-export function configureSessionBackend(options: {
-  getHeaders?: () => Record<string, string>
-  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
-}): void {
-  if (options.getHeaders) {
-    _getHeaders = options.getHeaders
-  }
-  _onSseEvent = options.onSseEvent ?? null
-}
 
 /**
  * 提取后端错误的可读摘要，避免上层只拿到“Network Error/null”这类弱信息。
@@ -77,14 +69,24 @@ export class SessionBackendImpl implements SessionBackend {
   private sseClient = createFetchClient({ timeout: 300_000 })
   private sessionIds = new Set<string>()
   private baseUrl: string
+  private readonly getHeaders: (() => Record<string, string>) | null
+  private readonly onSseEvent: ((event: { sessionId: string; type: string; data: string }) => void) | null
 
-  constructor(baseUrl = '/api/ai/sessions') {
+  constructor(
+    baseUrl = '/api/ai/sessions',
+    options: {
+      getHeaders?: () => Record<string, string>
+      onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
+    } = {},
+  ) {
     this.baseUrl = baseUrl
+    this.getHeaders = options.getHeaders ?? null
+    this.onSseEvent = options.onSseEvent ?? null
 
     this.http.interceptors.request.use({
       onRequest: (config) => {
-        if (_getHeaders) {
-          config.headers = { ...config.headers, ..._getHeaders() }
+        if (this.getHeaders) {
+          config.headers = { ...config.headers, ...this.getHeaders() }
         }
         return config
       },
@@ -161,14 +163,14 @@ export class SessionBackendImpl implements SessionBackend {
     sessionId: string,
     options: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void } = {},
   ): Promise<LlmResponse> {
-    const headers: Record<string, string> = _getHeaders ? _getHeaders() : {}
+    const headers: Record<string, string> = this.getHeaders ? this.getHeaders() : {}
     const events = await this.sseClient.streamSSE({
       url: `${this.baseUrl}/${sessionId}/turn/stream`,
       method: 'POST',
       headers,
       ...(options.signal ? { signal: options.signal } : {}),
     })
-    const onSseEvent = options.onSseEvent ?? _onSseEvent
+    const onSseEvent = options.onSseEvent ?? this.onSseEvent
 
     let finalResult: LlmResponse | null = null
     let streamError = ''

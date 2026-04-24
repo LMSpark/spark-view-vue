@@ -5,7 +5,7 @@
  * 只负责导出与阶段推进，不承载差异统计定义或模型查询目录。
  */
 
-import type { StillDefinition, StillResult } from './types'
+import type { StillDefinition, StillResult } from '../types'
 import {
   getActiveDataSetTool,
   getActiveNodeTree,
@@ -19,7 +19,7 @@ import { collectEditChangedLines } from './edit-diff-stills'
 import {
   EDIT_EXPORT_FILES_ACTION,
   DATASET_EXPORT_ACTION,
-} from './action-names'
+} from '../action-names'
 
 // ── Export Result Types ──────────────────────────────────────
 

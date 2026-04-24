@@ -8,12 +8,13 @@ import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import { SparkPageConfig, type ConfigLoaderOptions } from '@spark-view/spark-page-config'
 import { createSparkPlugin, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
-import { setConfigLoader } from '@spark-view/spark-ai'
+import { createPageCache } from '@spark-view/spark-ai'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
 import { setDynamicRouter } from './navigation/nav-access'
+import { setPageCacheHandle } from './navigation/page-cache-access'
 import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
 import { toError } from '@spark-view/spark-utils'
 
@@ -328,9 +329,9 @@ export async function start(options: StartOptions): Promise<void> {
       router.removeRoute('spark-bootstrap-root')
       router.removeRoute('spark-bootstrap-login')
 
-      // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
+      // 注入到全局访问模块：导航访问 + 缓存管理（AI 热重载需要）
       setDynamicRouter(dynamicRouter)
-      setConfigLoader(configLoader)
+      setPageCacheHandle(createPageCache(configLoader))
     }
 
     // 6. 执行 Bootstrap 流程

@@ -111,10 +111,10 @@ export type { BlueprintDomainState, BlueprintPhase }
 
 // ═══════════════════════════════════════════════════════════
 
-import { editDomain } from './edit-domain'
-export { editDomain, EDIT_STILLS } from './edit-domain'
-export { editInit, EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
-export { getEditState } from './edit-state'
+import { editDomain } from './edit/edit-domain'
+export { editDomain, EDIT_STILLS } from './edit/edit-domain'
+export { editInit, EDIT_LIFECYCLE_STILLS } from './edit/edit-lifecycle-stills'
+export { getEditState } from './edit/edit-state'
 export {
   getActiveNodeTree,
   notifyNodeTreeChanged,
@@ -127,13 +127,13 @@ export {
   bindLiveModelAdapter,
   createCurrentEditModel,
   captureBaselineSnapshot,
-} from './edit-state'
-export type { EditDomainState, EditPhase, EditLiveModelAdapter } from './edit-state'
-export { EDIT_FILE_STILLS } from './TooLs/edit-file-stills'
-export { EDIT_DIFF_STILLS } from './edit-diff-stills'
-export { EDIT_EXPORT_STILLS } from './edit-export-stills'
-export { EDIT_NODE_TREE_STILLS } from './TooLs/edit-nodeTree-stills'
-export { EDIT_DATASET_STILLS } from './TooLs/edit-dataset-stills'
+} from './edit/edit-state'
+export type { EditDomainState, EditPhase, EditLiveModelAdapter } from './edit/edit-state'
+export { EDIT_FILE_STILLS } from './edit/tools/edit-file-stills'
+export { EDIT_DIFF_STILLS } from './edit/edit-diff-stills'
+export { EDIT_EXPORT_STILLS } from './edit/edit-export-stills'
+export { EDIT_NODE_TREE_STILLS } from './edit/tools/edit-nodeTree-stills'
+export { EDIT_DATASET_STILLS } from './edit/tools/edit-dataset-stills'
 
 // ═══════════════════════════════════════════════════════════
 // Register All

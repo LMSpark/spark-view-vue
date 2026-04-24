@@ -28,7 +28,7 @@ import type {
 } from './types'
 import { noGuard, readSessionBlueprint } from './types'
 import { getAllStills, getStill } from './dispatcher'
-import { getActiveDataSetTool, getEditState } from './edit-state'
+import { getActiveDataSetTool, getEditState } from './edit/edit-state'
 import { getDomain } from './domain'
 import {
   projectComponentDirectory,
@@ -47,7 +47,7 @@ import {
   CATALOG_QUERY_ACTION,
   CATALOG_GUIDE_ACTION,
 } from './action-names'
-import { functionNameToAction } from '../tool-calling'
+import { functionNameToAction } from '../fc-schema'
 
 // =========================================================
 // 二、静态目录依赖与内部类型定义

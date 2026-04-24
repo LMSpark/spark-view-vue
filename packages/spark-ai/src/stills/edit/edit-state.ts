@@ -5,8 +5,8 @@
  * 仅负责状态类型、session 访问器和初始 state 工厂。
  */
 
-import type { IStillSession, DomainState } from './types'
-import { getDomainState } from './types'
+import type { IStillSession, DomainState } from '../types'
+import { getDomainState } from '../types'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type { EditModelSnapshot } from './edit-model'

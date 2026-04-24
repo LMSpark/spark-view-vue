@@ -13,11 +13,11 @@ import {
   createSession,
   executeStill,
 } from '../packages/spark-ai/src/stills/index'
-import { getEditState } from '../packages/spark-ai/src/stills/edit-state'
+import { getEditState } from '../packages/spark-ai/src/stills/edit/edit-state'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
 import { runStillsLoop } from '../packages/spark-ai/src/runtime/session-orchestrator'
-import { SessionBackendImpl, configureSessionBackend } from '../packages/spark-ai/src/session-backend'
+import { SessionBackendImpl } from '../packages/spark-ai/src/session-backend'
 
 const BASE_URL = process.env['AI_BACKEND_URL']?.replace(/\/+$/, '') || 'http://localhost:8080'
 const AUTH_TENANT_ID = process.env['AI_TENANT_ID'] || 'lmspark'
@@ -121,21 +121,6 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     await login()
     console.info(`[E2E] 🔑 已获取 Token`)
 
-    // 配置前端 SessionBackend
-    configureSessionBackend({
-      getHeaders: () => ({
-        Authorization: `Bearer ${authToken}`,
-        'X-Tenant-Id': AUTH_TENANT_ID,
-      }),
-      onSseEvent: (e) => {
-        if (e.type === 'tool_calls') {
-          console.info(`   [LLM 动作发出] ${e.data}`)
-        } else if (e.type === 'message') {
-          console.info(`   [LLM 推理] ${e.data}`)
-        }
-      }
-    })
-
     // 创建业务前端状态
     registerEditStills()
     const session = createSession()
@@ -183,7 +168,19 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     }, session, 'seed-create-table')
     expect(seededCreateTable.ok).toBe(true)
 
-    const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`)
+    const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`, {
+      getHeaders: () => ({
+        Authorization: `Bearer ${authToken}`,
+        'X-Tenant-Id': AUTH_TENANT_ID,
+      }),
+      onSseEvent: (e) => {
+        if (e.type === 'tool_calls') {
+          console.info(`   [LLM 动作发出] ${e.data}`)
+        } else if (e.type === 'message') {
+          console.info(`   [LLM 推理] ${e.data}`)
+        }
+      },
+    })
 
     const prompt = `当前会话已经完成 edit.bootstrap，4 个文件已进入同一编辑会话。
 任务目标：在 root-table 下新增一个 r-text 子节点，节点为
@@ -294,20 +291,6 @@ ${AUTONOMOUS_GUARDRAILS}
     await login()
     console.info('[E2E-Full] 🔑 已获取 Token')
 
-    configureSessionBackend({
-      getHeaders: () => ({
-        Authorization: `Bearer ${authToken}`,
-        'X-Tenant-Id': AUTH_TENANT_ID,
-      }),
-      onSseEvent: (e) => {
-        if (e.type === 'tool_calls') {
-          console.info(`   [LLM 动作发出] ${e.data}`)
-        } else if (e.type === 'message') {
-          console.info(`   [LLM 推理] ${e.data}`)
-        }
-      },
-    })
-
     registerEditStills()
     const session = createSession()
     const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
@@ -354,7 +337,19 @@ ${AUTONOMOUS_GUARDRAILS}
     }, session, 'seed-create-table-fullflow')
     expect(seededCreateTable.ok).toBe(true)
 
-    const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`)
+    const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`, {
+      getHeaders: () => ({
+        Authorization: `Bearer ${authToken}`,
+        'X-Tenant-Id': AUTH_TENANT_ID,
+      }),
+      onSseEvent: (e) => {
+        if (e.type === 'tool_calls') {
+          console.info(`   [LLM 动作发出] ${e.data}`)
+        } else if (e.type === 'message') {
+          console.info(`   [LLM 推理] ${e.data}`)
+        }
+      },
+    })
 
     const prompt = `当前会话已经完成 edit.bootstrap，4 个文件已进入同一编辑会话。
   任务目标（最终状态约束）：

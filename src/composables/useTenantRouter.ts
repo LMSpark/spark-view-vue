@@ -1,5 +1,5 @@
 import { useRoute, useRouter } from 'vue-router'
-import { setConfigLoader } from '@spark-view/spark-ai'
+import { initPageCacheHandle } from '@/services/page-cache-handle'
 
 /**
  * 租户路由工具 composable
@@ -46,7 +46,7 @@ export function useTenantRouter() {
 
     const routeProps = configRoute.props['default'] as Record<string, unknown> | undefined
     const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
-    if (configLoader) setConfigLoader(configLoader)
+    if (configLoader) initPageCacheHandle(configLoader)
 
     router.addRoute({
       path: tenantPrefixed,

@@ -9,7 +9,7 @@
  * 不关心具体是什么 action —— 纯编排层决策。
  */
 
-import type { MonitorContext, SessionMonitor } from '../session-orchestrator'
+import type { MonitorContext, SessionMonitor } from '../../session-contracts'
 
 interface RepeatDetectionConfig {
   /** 同签名最大允许次数（默认 3） */

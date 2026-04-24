@@ -9,12 +9,12 @@ import type {
   IDataSetMetadata,
   StillResult,
   StillDefinition,
-} from './types'
+} from '../types'
 import type { SparkNode } from '@spark-view/spark-component'
 import { EditModel } from './edit-model'
 import type { EditDomainState } from './edit-state'
 import { getActiveDataSetTool, getActiveNodeTree, getEditState } from './edit-state'
-import { EDIT_BOOTSTRAP_ACTION } from './action-names'
+import { EDIT_BOOTSTRAP_ACTION } from '../action-names'
 
 // ── Bootstrap Payload ────────────────────────────────────────
 

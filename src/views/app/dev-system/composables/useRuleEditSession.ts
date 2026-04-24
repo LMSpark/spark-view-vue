@@ -13,7 +13,6 @@ import {
   getActiveNodeTree,
   executeStill,
   runStillsLoop,
-  configureSessionBackend,
   createRepeatDetectionMonitor,
   generateToolDefinitions,
   functionNameToAction,
@@ -24,7 +23,6 @@ import {
 } from '@spark-view/spark-ai'
 import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
 import type { EditLiveModelAdapter } from '@spark-view/spark-ai'
-import { createAuthHeaders } from '@/services/http'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
 
@@ -294,7 +292,6 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
         ready.value = false
       }
       const s = ensureSession()
-      configureSessionBackend({ getHeaders: createAuthHeaders })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await runStillsLoop(prompt, s, sessionHost.backend, {
         maxRounds: 80,
@@ -398,7 +395,6 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       if (activeRunId === runId) {
         busy.value = false
       }
-      configureSessionBackend({ getHeaders: createAuthHeaders })
     }
   }
 

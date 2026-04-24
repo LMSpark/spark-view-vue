@@ -11,6 +11,7 @@ import {
   SessionBackendImpl,
   type EditLiveModelAdapter,
 } from '@spark-view/spark-ai'
+import { createAuthHeaders } from '@/services/http'
 
 type StillsSession = ReturnType<typeof createStillSession>
 
@@ -33,7 +34,9 @@ export interface PageModelSessionHost {
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions) {
   const { getLiveModelAdapter, getSessionKey } = options
 
-  const backend = new SessionBackendImpl()
+  const backend = new SessionBackendImpl('/api/ai/sessions', {
+    getHeaders: createAuthHeaders,
+  })
   const session = shallowRef<StillsSession | null>(null)
   let backendSessionId: string | null = null
   let sessionKey = ''

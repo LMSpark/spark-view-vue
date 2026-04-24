@@ -33,7 +33,6 @@ const shared = vi.hoisted(() => {
   return {
     runs,
     runStillsLoop,
-    configureSessionBackend: vi.fn(),
     createRepeatDetectionMonitor: vi.fn(() => ({
       name: 'repeat-detection',
       afterStillExecution: () => [],
@@ -54,7 +53,6 @@ vi.mock('@spark-view/spark-ai', async (importOriginal) => {
   return {
     ...actual,
     runStillsLoop: shared.runStillsLoop,
-    configureSessionBackend: shared.configureSessionBackend,
     createRepeatDetectionMonitor: shared.createRepeatDetectionMonitor,
     generateToolDefinitions: shared.generateToolDefinitions,
     getEditState: shared.getEditState,
@@ -81,7 +79,6 @@ describe('useRuleEditSession run isolation', () => {
   beforeEach(() => {
     shared.runs.length = 0
     shared.runStillsLoop.mockClear()
-    shared.configureSessionBackend.mockClear()
     shared.createRepeatDetectionMonitor.mockClear()
     shared.generateToolDefinitions.mockClear()
     shared.getEditState.mockClear()

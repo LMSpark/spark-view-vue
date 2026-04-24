@@ -5,7 +5,7 @@
  * 只负责返回变更统计，不承载导出或模型查询。
  */
 
-import type { StillDefinition, StillResult } from './types'
+import type { StillDefinition, StillResult } from '../types'
 import {
   getActiveDataSetTool,
   getActiveNodeTree,
@@ -18,7 +18,7 @@ import { EditModel } from './edit-model'
 import {
   EDIT_CHANGED_LINES_ACTION,
   DATASET_CHANGED_LINES_ACTION,
-} from './action-names'
+} from '../action-names'
 
 // ── Changed Lines ────────────────────────────────────────────
 
