@@ -37,19 +37,8 @@ const TOOL_WRITE_SET = new Set<string>([
   'sparkNodeTree.removeNodes',
 ])
 
-function isDatasetWriteAction(action: string): boolean {
-  if (!action.startsWith('datasetTool.')) return false
-  return !(
-    action === 'datasetTool.export'
-    || action === 'datasetTool.historyCursor'
-    || action.startsWith('datasetTool.can')
-    || action.startsWith('datasetTool.get')
-    || action.startsWith('datasetTool.list')
-  )
-}
-
 function isToolWriteAction(action: string): boolean {
-  return TOOL_WRITE_SET.has(action) || isDatasetWriteAction(action)
+  return TOOL_WRITE_SET.has(action)
 }
 
 // ── Log entry type ─────────────────────────────────────────────────────────────
@@ -206,21 +195,12 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
 
   function syncPageModelProjection(actions: readonly string[]): void {
     const hasNodeTreeWrites = actions.some(action => TOOL_WRITE_SET.has(action))
-    const hasDataSetWrites = actions.some(action => isDatasetWriteAction(action))
-    if (!hasNodeTreeWrites && !hasDataSetWrites) return
+    if (!hasNodeTreeWrites) return
 
     const toolHost = getEditToolHost()
-    if (hasNodeTreeWrites) {
-      const liveNodeTree = toolHost.getNodeTree?.()
-      if (liveNodeTree) {
-        toolHost.onNodeTreeChanged?.(liveNodeTree)
-      }
-    }
-    if (hasDataSetWrites) {
-      const liveDataSetTool = toolHost.getDataSetTool?.()
-      if (liveDataSetTool) {
-        toolHost.onDataSetChanged?.(liveDataSetTool)
-      }
+    const liveNodeTree = toolHost.getNodeTree?.()
+    if (liveNodeTree) {
+      toolHost.onNodeTreeChanged?.(liveNodeTree)
     }
   }
 
@@ -236,15 +216,11 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     const session = ensureSession()
     const toolHost = getEditToolHost()
     const liveTree = toolHost.getNodeTree?.()
-    const liveDataSetTool = toolHost.getDataSetTool?.()
     const readScript = toolHost.readScript
     const readStyle = toolHost.readStyle
 
     if (!liveTree) {
       throw new Error('edit.bootstrap 失败：缺少 live SparkNodeTree，必须先加载当前页面 rule.json')
-    }
-    if (!liveDataSetTool) {
-      throw new Error('edit.bootstrap 失败：缺少 live DataSetCrudTool，必须先加载当前页面 pagedata.json')
     }
     if (!readScript) {
       throw new Error('edit.bootstrap 失败：缺少 live script.js 读取器')
@@ -254,7 +230,6 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     }
 
     void liveTree.toJSON()
-    void liveDataSetTool.toJson()
     void readScript()
     void readStyle()
 
