@@ -4,9 +4,15 @@
     <div class="preview-toolbar">
       <div class="preview-toolbar__left">
         <el-switch
+          v-model="livePreview"
+          active-text="实时预览"
+          inactive-text="手动"
+          size="small"
+        />
+        <el-switch
           v-model="autoRefresh"
           active-text="切Tab刷新"
-          inactive-text="手动"
+          inactive-text="—"
           size="small"
         />
       </div>
@@ -43,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, watch, onMounted } from 'vue'
+import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import { compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
@@ -83,6 +89,7 @@ const props = defineProps<{
 }>()
 
 const autoRefresh = ref(true)
+const livePreview = ref(true)
 const renderKey = ref(0)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
@@ -127,6 +134,36 @@ async function refresh() {
 // 外部 refreshToken 变化时触发刷新（切 Tab 驱动）
 watch(() => props.refreshToken, () => {
   if (autoRefresh.value) void refresh()
+})
+
+// 监听 4 个文档文本变化，debounce 500ms 实时重建预览（不需要重新拉服务器）
+const _docTexts = computed(() => [
+  props.state.documents['rule.json'].text.value,
+  props.state.documents['pagedata.json'].text.value,
+  props.state.documents['script.js'].text.value,
+  props.state.documents['style.css'].text.value,
+])
+let _liveTimer: ReturnType<typeof setTimeout> | null = null
+watch(_docTexts, () => {
+  if (!livePreview.value) return
+  if (_liveTimer !== null) clearTimeout(_liveTimer)
+  _liveTimer = setTimeout(() => {
+    _liveTimer = null
+    if (loading.value) return // 正在手动刷新中，跳过
+    try {
+      const cfg = buildPreviewConfig()
+      if (cfg !== null) {
+        previewConfig.value = cfg
+        renderKey.value++
+      }
+    } catch (err) {
+      parseError.value = err instanceof Error ? err.message : String(err)
+      previewConfig.value = null
+    }
+  }, 500)
+})
+onBeforeUnmount(() => {
+  if (_liveTimer !== null) clearTimeout(_liveTimer)
 })
 
 onMounted(() => { void refresh() })
