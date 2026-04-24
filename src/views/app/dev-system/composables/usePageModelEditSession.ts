@@ -5,7 +5,7 @@
  * Owns: stills session lifecycle, bootstrap, tool execution, LLM loop, SSE events, export.
  * Does NOT own: UI state (mode, requestText), emit calls (passed as callbacks).
  *
- * Both manual tool invocations and LLM-driven edits go through this composable.
+ * LLM-driven edits go through this composable.
  */
 
 import { ref, shallowRef, onUnmounted } from 'vue'
@@ -22,24 +22,11 @@ import {
   type StillResult,
   type EditToolHost,
 } from '../ai-bridge'
-import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
+import type { SparkNodeTree } from '@spark-view/spark-component'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
 
-// ── Catalog constants (exported for template use) ─────────────────────────────
-
-export const TOOL_READ_ACTIONS = [
-  'sparkNodeTree.getNode',
-  'sparkNodeTree.getLocation',
-  'sparkNodeTree.hasNode',
-  'sparkNodeTree.getParent',
-  'sparkNodeTree.listChildren',
-  'sparkNodeTree.countNodes',
-  'sparkNodeTree.collectDataKeys',
-  'sparkNodeTree.collectHandlerNames',
-] as const
-
-export const TOOL_WRITE_ACTIONS = [
+const TOOL_WRITE_SET = new Set<string>([
   'sparkNodeTree.addNode',
   'sparkNodeTree.addNodes',
   'sparkNodeTree.setProps',
@@ -48,9 +35,7 @@ export const TOOL_WRITE_ACTIONS = [
   'sparkNodeTree.replaceNodes',
   'sparkNodeTree.removeNode',
   'sparkNodeTree.removeNodes',
-] as const
-
-export const TOOL_WRITE_SET = new Set<string>(TOOL_WRITE_ACTIONS)
+])
 
 function isDatasetWriteAction(action: string): boolean {
   if (!action.startsWith('datasetTool.')) return false
@@ -65,43 +50,6 @@ function isDatasetWriteAction(action: string): boolean {
 
 function isToolWriteAction(action: string): boolean {
   return TOOL_WRITE_SET.has(action) || isDatasetWriteAction(action)
-}
-
-export const TOOL_PARAM_EXAMPLES: Record<string, string> = {
-  'sparkNodeTree.getNode': JSON.stringify({ componentId: 'root' }, null, 2),
-  'sparkNodeTree.getLocation': JSON.stringify({ componentId: 'root' }, null, 2),
-  'sparkNodeTree.hasNode': JSON.stringify({ componentId: 'root' }, null, 2),
-  'sparkNodeTree.getParent': JSON.stringify({ componentId: 'root' }, null, 2),
-  'sparkNodeTree.listChildren': JSON.stringify({ parentComponentId: null }, null, 2),
-  'sparkNodeTree.countNodes': JSON.stringify({}, null, 2),
-  'sparkNodeTree.collectDataKeys': JSON.stringify({}, null, 2),
-  'sparkNodeTree.collectHandlerNames': JSON.stringify({}, null, 2),
-  'sparkNodeTree.addNode': JSON.stringify(
-    { parentComponentId: null, node: { type: 'r-button', id: 'my-btn', props: { label: '按钮' } } },
-    null, 2
-  ),
-  'sparkNodeTree.addNodes': JSON.stringify(
-    { parentComponentId: null, nodes: [{ type: 'r-button', id: 'btn-a', props: { label: 'A' } }] },
-    null, 2
-  ),
-  'sparkNodeTree.setProps': JSON.stringify(
-    { componentId: 'root', props: { key: 'value' }, merge: true },
-    null, 2
-  ),
-  'sparkNodeTree.setPropsBatch': JSON.stringify(
-    { items: [{ componentId: 'root', props: { key: 'value' }, merge: true }] },
-    null, 2
-  ),
-  'sparkNodeTree.replaceNode': JSON.stringify(
-    { componentId: 'root', node: { type: 'r-button', id: 'root', props: {} } },
-    null, 2
-  ),
-  'sparkNodeTree.replaceNodes': JSON.stringify(
-    { items: [{ componentId: 'root', node: { type: 'r-button', id: 'root', props: {} } }] },
-    null, 2
-  ),
-  'sparkNodeTree.removeNode': JSON.stringify({ componentId: 'target-id' }, null, 2),
-  'sparkNodeTree.removeNodes': JSON.stringify({ componentIds: ['target-id'] }, null, 2),
 }
 
 // ── Log entry type ─────────────────────────────────────────────────────────────
@@ -331,40 +279,6 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
 
   // ── Public API ──────────────────────────────────────────────────────────────
 
-  /** Execute a single sparkNodeTree.* tool directly (manual/tool mode). */
-  function execTool(action: string, paramsJson: string): void {
-    busy.value = true
-    try {
-      let params: unknown
-      try {
-        params = JSON.parse(paramsJson || '{}')
-      } catch {
-        pushLog('error', '参数错误', '参数不是合法 JSON，请检查输入')
-        return
-      }
-      const s = ensureSession()
-      const result = executeStill(action, params as Record<string, unknown>, s, 'manual')
-      if (result.ok) {
-        pushLog(
-          'success',
-          `✓ ${action}`,
-          result.summary
-            ? `${result.summary}\n\n${JSON.stringify(result.data, null, 2)}`
-            : JSON.stringify(result.data, null, 2),
-        )
-        if (TOOL_WRITE_SET.has(action)) {
-          dirty.value = true
-        }
-      } else {
-        pushLog('error', `✗ ${action}`, `${result.msg}${result.fix ? `\n修复建议: ${result.fix}` : ''}`)
-      }
-    } catch (err) {
-      pushLog('error', '异常', err instanceof Error ? err.message : String(err))
-    } finally {
-      busy.value = false
-    }
-  }
-
   /** Run the LLM orchestration loop for a given prompt (edit/chat mode). */
   async function runLlm(prompt: string, hooks?: PageModelEditRunOptions): Promise<void> {
     const runId = ++activeRunId
@@ -485,24 +399,6 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     busy.value = false
   }
 
-  function loadRuleDocument(ruleJson: SparkNode[]): void {
-    const tree = nodeTree.value
-    if (!tree) return
-    tree.loadRoot({ type: 'page', children: ruleJson })
-  }
-
-  /** Sync externally edited rule JSON text into the session's SparkNodeTree (loadRoot). */
-  function loadRuleJson(ruleJsonText: string): void {
-    let parsed: SparkNode[]
-    try {
-      const raw = JSON.parse(ruleJsonText) as unknown
-      parsed = Array.isArray(raw) ? (raw as SparkNode[]) : []
-    } catch {
-      return
-    }
-    loadRuleDocument(parsed)
-  }
-
   onUnmounted(() => {
     abortActiveRun()
     if (ownsSessionHost) {
@@ -510,6 +406,6 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     }
   })
 
-  return { ready, dirty, busy, aiBuffer, log, nodeTree, bootstrap, execTool, runLlm, reset, loadRuleDocument, loadRuleJson }
+  return { ready, dirty, busy, aiBuffer, log, nodeTree, bootstrap, runLlm, reset }
 }
 
