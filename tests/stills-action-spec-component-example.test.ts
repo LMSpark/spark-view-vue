@@ -8,7 +8,7 @@ import {
   type IStillSession,
   type StillResult,
 } from '../packages/spark-ai/src/stills'
-import { actionToFunctionName } from '../packages/spark-ai/src/fc-schema'
+import { actionToFunctionName } from '../packages/spark-ai/src/core/fc-schema'
 
 let session: IStillSession
 

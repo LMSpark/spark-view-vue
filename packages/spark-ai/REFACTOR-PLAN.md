@@ -41,7 +41,7 @@
 src/session-contracts.ts                       ← 契约类型 SSoT
 src/fc-schema.ts                               ← 名转换 + Still→JSON Schema + loadFcCatalog 注入点
 src/fc-dispatcher.ts                           ← dispatchToolCall / formatToolResultContent
-src/runtime/monitors/export-completion-monitor.ts  ← exportCompleted + 蓝图完成逻辑迁移于此
+src/business/project-planning/export-completion-monitor.ts  ← exportSeen + 蓝图完成逻辑迁移于此
 stills/edit/                                   ← 新子目录（聚合 Edit 域）
 stills/edit/tools/                             ← 原 TooLs/ 整体搬入
 ```
@@ -76,7 +76,7 @@ stills/TooLs/              ← 整体搬入 stills/edit/tools/
 | `src/runtime/page-cache.ts` | 改为 `createPageCache(loader: ConfigLoaderRef): PageCacheHandle` 工厂；删模块级 `let _configLoader` |
 | `src/runtime/nav-register.ts` | 改为 `createNavRegister(options): NavRegisterHandle` 工厂；删模块级 `let _getNavApiUrl` |
 | `src/prompts/prompt-builder.ts` | 注册表驱动：`const _modeRegistry = new Map<string, PromptFactory>()`；`registerPromptMode(mode, factory)`；`getSystemPrompt` 查 Map，未命中 throw；三种内置模式在模块初始化时自注册 |
-| `src/runtime/session-orchestrator.ts` | 删 `DATASET_EXPORT_ACTION` import 和硬编码；删 `hasPendingBlueprintWork()`；`exportCompleted` 变量改由 Monitor 通过 `shouldAbort` 的 metadata 回传（或 `OrchestratorResult.exportCompleted` 由 Monitor 标记） |
+| `src/runtime/session-orchestrator.ts` | 删 `DATASET_EXPORT_ACTION` import 和硬编码；删 `hasPendingBlueprintWork()`；导出完成信号改由 Monitor 通过 `shouldAbort` 的 metadata 回传（或 `OrchestratorResult.completed` 由 Monitor 标记） |
 | `src/runtime/monitors/index.ts` | 追加导出 `createExportCompletionMonitor` |
 | `stills/index.ts` | 更新 edit 域全部 import 路径为 `./edit/*` |
 | `src/index.ts` | 删 `configureSessionBackend`；`setConfigLoader` → `createPageCache`；`configureNavRegister` → `createNavRegister`；`ToolCall` 等 FC 类型改从 `session-contracts` re-export |

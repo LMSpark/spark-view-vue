@@ -5,26 +5,26 @@ import type { PageModelSessionHost } from '../src/views/app/dev-system/composabl
 
 const shared = vi.hoisted(() => {
   const runs: Array<{
-    config: Record<string, unknown>
+    options: Record<string, unknown>
     resolve: (value: {
       turns: Array<Record<string, unknown>>
       rounds: number
       aborted: boolean
-      exportCompleted: boolean
+      completed: boolean
       sessionId: string
     }) => void
   }> = []
 
-  const runStillsLoop = vi.fn((_prompt, _session, _backend, config) => {
+  const startIterateSession = vi.fn((options) => {
     return new Promise<{
       turns: Array<Record<string, unknown>>
       rounds: number
       aborted: boolean
-      exportCompleted: boolean
+      completed: boolean
       sessionId: string
     }>((resolve) => {
       runs.push({
-        config: config as Record<string, unknown>,
+        options: options as Record<string, unknown>,
         resolve,
       })
     })
@@ -32,12 +32,7 @@ const shared = vi.hoisted(() => {
 
   return {
     runs,
-    runStillsLoop,
-    createRepeatDetectionMonitor: vi.fn(() => ({
-      name: 'repeat-detection',
-      afterStillExecution: () => [],
-      shouldAbort: () => ({ abort: false }),
-    })),
+    startIterateSession,
     generateToolDefinitions: vi.fn(() => []),
     getEditState: vi.fn(() => ({})),
     getActiveNodeTree: vi.fn(() => null),
@@ -52,8 +47,7 @@ vi.mock('@spark-view/spark-ai', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@spark-view/spark-ai')>()
   return {
     ...actual,
-    runStillsLoop: shared.runStillsLoop,
-    createRepeatDetectionMonitor: shared.createRepeatDetectionMonitor,
+    startIterateSession: shared.startIterateSession,
     generateToolDefinitions: shared.generateToolDefinitions,
     getEditState: shared.getEditState,
     getActiveNodeTree: shared.getActiveNodeTree,
@@ -78,8 +72,7 @@ function createSessionHost(): PageModelSessionHost {
 describe('useRuleEditSession run isolation', () => {
   beforeEach(() => {
     shared.runs.length = 0
-    shared.runStillsLoop.mockClear()
-    shared.createRepeatDetectionMonitor.mockClear()
+    shared.startIterateSession.mockClear()
     shared.generateToolDefinitions.mockClear()
     shared.getEditState.mockClear()
     shared.getActiveNodeTree.mockClear()
@@ -116,8 +109,16 @@ describe('useRuleEditSession run isolation', () => {
     expect(shared.runs).toHaveLength(1)
 
     const firstRun = shared.runs[0]!
-    const firstOnSseEvent = firstRun.config['onSseEvent'] as ((event: { sessionId: string; type: string; data: string }) => void) | undefined
-    const firstSignal = firstRun.config['signal'] as AbortSignal
+    const firstOnSseEvent = firstRun.options['onSseEvent'] as ((event: { sessionId: string; type: string; data: string }) => void) | undefined
+    const firstSignal = firstRun.options['signal'] as AbortSignal
+    expect(firstRun.options['repeatDetection']).toEqual({
+      maxSameSignature: 6,
+      maxConsecutiveErrors: 6,
+      maxCyclePeriod: 4,
+      cycleRepeatThreshold: 2,
+      maxReadOnlyActions: 36,
+      maxMissingComponentRetries: 2,
+    })
 
     firstOnSseEvent?.({ sessionId: 'old-run', type: 'delta', data: 'before-reset' })
     expect(api!.aiBuffer.value).toBe('before-reset')
@@ -140,7 +141,7 @@ describe('useRuleEditSession run isolation', () => {
       turns: [],
       rounds: 1,
       aborted: false,
-      exportCompleted: false,
+      completed: false,
       sessionId: 'old-run',
     })
     await expect(firstRunPromise).resolves.toBeUndefined()
@@ -150,7 +151,7 @@ describe('useRuleEditSession run isolation', () => {
     expect(shared.runs).toHaveLength(2)
 
     const secondRun = shared.runs[1]!
-    const secondOnSseEvent = secondRun.config['onSseEvent'] as ((event: { sessionId: string; type: string; data: string }) => void) | undefined
+    const secondOnSseEvent = secondRun.options['onSseEvent'] as ((event: { sessionId: string; type: string; data: string }) => void) | undefined
 
     secondOnSseEvent?.({ sessionId: 'new-run', type: 'delta', data: 'fresh-output' })
     secondOnSseEvent?.({
@@ -174,7 +175,7 @@ describe('useRuleEditSession run isolation', () => {
       ],
       rounds: 1,
       aborted: false,
-      exportCompleted: false,
+      completed: false,
       sessionId: 'new-run',
     })
     await flushPromises()
@@ -231,7 +232,7 @@ describe('useRuleEditSession run isolation', () => {
       ],
       rounds: 1,
       aborted: false,
-      exportCompleted: true,
+      completed: true,
       sessionId: 'dataset-run',
     })
 

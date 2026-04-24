@@ -12,8 +12,7 @@ import { ref, shallowRef, onUnmounted } from 'vue'
 import {
   getActiveNodeTree,
   executeStill,
-  runStillsLoop,
-  createRepeatDetectionMonitor,
+  startIterateSession,
   generateToolDefinitions,
   functionNameToAction,
   STILLS_EDIT_RUNTIME_PROMPT,
@@ -291,12 +290,14 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
         await sessionHost.reset()
         ready.value = false
       }
-      const s = ensureSession()
+      ensureSession()
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
-      const result = await runStillsLoop(prompt, s, sessionHost.backend, {
+      const result = await startIterateSession({
+        backend: sessionHost.backend,
+        userPrompt: prompt,
+        systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
         maxRounds: 80,
         slidingWindow: 12,
-        systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
         signal: runController.signal,
         onSseEvent(event) {
           if (activeRunId !== runId || runController.signal.aborted) return
@@ -304,15 +305,14 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
         },
         ...sessionHost.getResumeSessionOptions(),
         tools: generateToolDefinitions({ compactDescriptions: true }),
-        // 编辑会话需要允许短暂探索，但应及时阻断“只查不写”的漫游。
-        monitors: [createRepeatDetectionMonitor({
+        repeatDetection: {
           maxSameSignature: 6,
           maxConsecutiveErrors: 6,
           maxCyclePeriod: 4,
           cycleRepeatThreshold: 2,
           maxReadOnlyActions: 36,
           maxMissingComponentRetries: 2,
-        })],
+        },
         onTurnComplete(turn: DialogueTurn) {
           if (turn.toolBlock?.action && turn.stillsResult) {
             const r = turn.stillsResult
@@ -323,8 +323,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
             }
           }
           // Real-time projection: notify live model adapter on every successful
-          // write so the 4 file tabs reflect AI edits immediately (rather than
-          // only after the full runStillsLoop completes).
+          // write so the 4 file tabs reflect AI edits immediately，而不是只在整轮编排结束后刷新。
           const action = turn.toolBlock?.action
           if (
             turn.phase === 'stills-execute'

@@ -12,7 +12,7 @@ import {
 } from '../packages/spark-ai/src/stills'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
-import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../packages/spark-ai/src/stills/spark-node-tree-tool-catalog'
+import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog'
 
 let session: IStillSession
 let seq = 0
@@ -154,6 +154,18 @@ describe('sparkNodeTree stills execution coverage', () => {
     executedActions.add('sparkNodeTree.countNodes')
     const nodeCount = expectOk<number>(countNodes)
     expect(nodeCount).toBeGreaterThan(0)
+
+    const getAllData = exec('sparkNodeTree.getAllData')
+    executedActions.add('sparkNodeTree.getAllData')
+    const allData = expectOk<{ type: string; children?: unknown[] }>(getAllData)
+    expect(allData.type).toBe('page')
+    expect(Array.isArray(allData.children)).toBe(true)
+
+    const findByType = exec('sparkNodeTree.findByType', { type: 'r-text' })
+    executedActions.add('sparkNodeTree.findByType')
+    const findByTypeResult = expectOk<{ total: number; matches: unknown[] }>(findByType)
+    expect(findByTypeResult.total).toBeGreaterThan(0)
+    expect(findByTypeResult.matches.length).toBeGreaterThan(0)
 
     const collectDataKeys = exec('sparkNodeTree.collectDataKeys')
     executedActions.add('sparkNodeTree.collectDataKeys')

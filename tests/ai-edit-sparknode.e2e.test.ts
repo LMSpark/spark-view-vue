@@ -12,12 +12,12 @@ import {
   registerEditStills,
   createSession,
   executeStill,
-} from '../packages/spark-ai/src/stills/index'
-import { getEditState } from '../packages/spark-ai/src/stills/edit/edit-state'
+  getEditState,
+  runStillsLoop,
+  SessionBackendImpl,
+} from '@spark-view/spark-ai'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
-import { runStillsLoop } from '../packages/spark-ai/src/runtime/session-orchestrator'
-import { SessionBackendImpl } from '../packages/spark-ai/src/session-backend'
 
 const BASE_URL = process.env['AI_BACKEND_URL']?.replace(/\/+$/, '') || 'http://localhost:8080'
 const AUTH_TENANT_ID = process.env['AI_TENANT_ID'] || 'lmspark'

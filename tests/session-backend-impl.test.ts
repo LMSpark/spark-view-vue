@@ -14,6 +14,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
+  createSessionBackend,
   SessionBackendImpl,
   type SessionBackend,
   type LlmResponse,
@@ -77,6 +78,16 @@ describe('SessionBackendImpl', () => {
 })
 
 describe('SessionBackendImpl options', () => {
+  it('createSessionBackend should expose a SessionBackend-compatible instance', () => {
+    const backend = createSessionBackend('http://localhost:8080', {
+      getHeaders: () => ({ Authorization: 'Bearer test-token' }),
+    })
+
+    expect(backend).toBeInstanceOf(SessionBackendImpl)
+    expect(typeof backend.createSession).toBe('function')
+    expect(typeof backend.executeTurn).toBe('function')
+  })
+
   it('should accept getHeaders option in constructor', () => {
     expect(() => {
       new SessionBackendImpl('http://localhost:8080', {

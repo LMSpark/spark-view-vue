@@ -11,7 +11,7 @@ import {
   getDataSetCrudToolStillCapabilityRow,
   getDataSetCrudToolStillParameterRow,
   validateDataSetCrudToolStillParams,
-} from '../packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog'
+} from '../packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog'
 
 describe('dataset tool protocol contract', () => {
   it('keeps action table and capability table aligned', () => {

@@ -4,8 +4,9 @@ import {
   clearDomains,
   clearRegistry,
   registerEditStills,
-} from '../packages/spark-ai/src/stills'
-import { functionNameToAction, generateToolDefinitions } from '../packages/spark-ai/src/fc-schema'
+  functionNameToAction,
+  generateToolDefinitions,
+} from '@spark-view/spark-ai'
 
 beforeEach(() => {
   clearDomains()

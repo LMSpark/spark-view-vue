@@ -14,23 +14,19 @@ import {
   clearDomains,
   createSession,
   executeStill,
-} from '../packages/spark-ai/src/stills'
-import type { IStillSession, StillResult, PostValidationWarning } from '../packages/spark-ai/src/stills'
-import {
   createRepeatDetectionMonitor,
-} from '../packages/spark-ai/src/runtime/monitors/repeat-detection-monitor'
-import {
   createBlueprintOrchestrationMonitor,
-} from '../packages/spark-ai/src/runtime/monitors/blueprint-orchestration-monitor'
-import {
   createTerminalActionsMonitor,
-} from '../packages/spark-ai/src/runtime/monitors/terminal-actions-monitor'
-import {
+  createExportCompletionMonitor,
   runStillsLoop,
   formatWarningsAsFollowUp,
-} from '../packages/spark-ai/src/runtime/session-orchestrator'
-import { actionToFunctionName } from '../packages/spark-ai/src/fc-schema'
-import { dispatchToolCall } from '../packages/spark-ai/src/fc-dispatcher'
+  createDefaultFollowUpPolicy,
+  actionToFunctionName,
+  dispatchToolCall,
+  type IStillSession,
+  type StillResult,
+  type PostValidationWarning,
+} from '@spark-view/spark-ai'
 import type {
   ToolCall,
   FcDispatchResult,
@@ -38,7 +34,7 @@ import type {
   DialogueTurn,
   SessionBackend,
   LlmResponse,
-} from '../packages/spark-ai/src/session-contracts'
+} from '@spark-view/spark-ai'
 
 // ═══════════════════════════════════════════════════════════
 // Helpers
@@ -609,6 +605,7 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
     })
 
     expect(result.aborted).toBe(true)
@@ -629,6 +626,7 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
     })
 
     expect(result.rounds).toBe(2)
@@ -653,6 +651,7 @@ describe('runStillsLoop', () => {
       maxRounds: 3,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
     })
 
     expect(result.rounds).toBe(3)
@@ -674,6 +673,7 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
       monitors: [monitor],
     })
 
@@ -691,6 +691,7 @@ describe('runStillsLoop', () => {
       maxRounds: 5,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
     })
 
     // FC mode: pure text = conversation end (no reminder needed)
@@ -730,6 +731,7 @@ describe('runStillsLoop', () => {
       maxRounds: 5,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
       signal: controller.signal,
       onSseEvent(event) {
         sseSpy.push(event)
@@ -805,6 +807,7 @@ describe('runStillsLoop', () => {
       maxRounds: 5,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
       dispatchFc: mockDispatchFc,
     })
 
@@ -864,10 +867,12 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
+      followUpPolicy: createDefaultFollowUpPolicy(),
       dispatchFc: mockDispatchFc,
+      monitors: [createExportCompletionMonitor()],
     })
 
-    expect(result.exportCompleted).toBe(true)
+    expect(result.completed).toBe(true)
     expect(result.rounds).toBe(1) // terminated after export
     expect(result.aborted).toBe(false)
   })

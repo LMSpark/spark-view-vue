@@ -8,7 +8,8 @@ import {
   registerEditStills,
   createSession as createStillSession,
   getEditState,
-  SessionBackendImpl,
+  createSessionBackend,
+  type SessionBackend,
   type EditLiveModelAdapter,
 } from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
@@ -21,7 +22,7 @@ interface UsePageModelSessionHostOptions {
 }
 
 export interface PageModelSessionHost {
-  backend: SessionBackendImpl
+  backend: SessionBackend
   session: ShallowRef<StillsSession | null>
   ensureSession: () => { session: StillsSession; bootstrapped: boolean }
   reset: () => Promise<void>
@@ -34,7 +35,7 @@ export interface PageModelSessionHost {
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions) {
   const { getLiveModelAdapter, getSessionKey } = options
 
-  const backend = new SessionBackendImpl('/api/ai/sessions', {
+  const backend = createSessionBackend('/api/ai/sessions', {
     getHeaders: createAuthHeaders,
   })
   const session = shallowRef<StillsSession | null>(null)

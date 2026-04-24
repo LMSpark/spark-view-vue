@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   formatLlmParamValidationIssues,
-  validateDataSetCrudToolStillParams,
   validateLlmDeserializedParams,
-} from '../packages/spark-ai/src/stills'
+} from '../packages/spark-ai/src/core/stills/llm-params-validator'
+import { validateDataSetCrudToolStillParams } from '../packages/spark-ai/src/business/page-design/stills'
 
 describe('validateLlmDeserializedParams', () => {
   it('rejects non-object root params', () => {

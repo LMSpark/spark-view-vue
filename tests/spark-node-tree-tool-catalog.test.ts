@@ -5,7 +5,7 @@ import {
   getSparkNodeTreeToolParameterRow,
   SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE,
   SPARK_NODE_TREE_TOOL_PARAMETER_TABLE,
-} from '../packages/spark-ai/src/stills/spark-node-tree-tool-catalog'
+} from '../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog'
 
 describe('SparkNodeTree tool catalog', () => {
   it('应提供完整的 catalog-only 参数表与能力表', () => {

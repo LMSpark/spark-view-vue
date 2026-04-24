@@ -23,13 +23,21 @@ import type {
   StillDefinition,
   StillResult,
   IStillSession,
+} from '../core/stills/types'
+import type {
   ExecutionBlueprint,
   BlueprintExecutionMode,
-} from './types'
-import { noGuard, readSessionBlueprint } from './types'
-import { getAllStills, getStill } from './dispatcher'
-import { getActiveDataSetTool, getEditState } from './edit/edit-state'
-import { getDomain } from './domain'
+} from '../business/project-planning/stills/blueprint-types'
+import { noGuard } from '../core/stills/types'
+import { readSessionBlueprint } from '../business/project-planning/stills/blueprint-session'
+import { getAllStills, getStill } from '../core/stills/dispatcher'
+import {
+  missingParam,
+  isNonEmptyString,
+  buildExecutionTraceSummary,
+} from '../core/stills/meta-common-utils'
+import { getActiveDataSetTool, getEditState } from '../business/page-design/stills/edit/edit-state'
+import { getDomain } from '../core/stills/domain'
 import {
   projectComponentDirectory,
   projectComponentSpec,
@@ -46,8 +54,8 @@ import {
   SESSION_DESCRIBE_ACTION,
   CATALOG_QUERY_ACTION,
   CATALOG_GUIDE_ACTION,
-} from './action-names'
-import { functionNameToAction } from '../fc-schema'
+} from '../core/stills/action-names'
+import { functionNameToAction } from '../core/fc-schema'
 
 // =========================================================
 // 二、静态目录依赖与内部类型定义
@@ -67,54 +75,36 @@ import { functionNameToAction } from '../fc-schema'
  */
 const STATIC_COMPONENT_CATALOG: ComponentCatalog = componentCatalogJson as ComponentCatalog
 
-/**
- * 单个 still 动作在目录列表中的摘要形态。
- *
- * 只保留 LLM 调用时最常查阅的字段，完整规格请用 stills.actionSpec 精查。
- */
+/** 单个 still 动作在目录列表中的摘要形态。 */
 interface ActionCatalogItem {
-  /** still 动作唯一名称，如 datatable.create。 */
   action: string
-  /** 动作类型，如 request / describe。 */
   type: string
-  /** 动作一句话说明。 */
   description: string
-  /** 可选：执行前置条件说明（guard）。 */
   guard?: string
-  /** 可选：使用规则要点列表。 */
   rules?: string[]
-  /** 可选：可能返回的失败码列表，用于错误处理。 */
   failureCodes?: string[]
-  /** 可选：参数格式，key→描述。 */
   params?: Record<string, unknown>
-  /** 可选：最小调用示例。 */
   example?: Record<string, unknown>
 }
 
-/**
- * 执行蓝图的精简摘要，用于 session.describe 中展示蓝图进度。
- *
- * 只暴露 LLM 推断"下一步"所需的关键信息，完整蓝图结构由 blueprint.selfCheck 提供。
- */
+/** 执行蓝图的精简摘要。 */
 interface BlueprintSummary {
-  /** 用户原始目标描述。 */
   userGoal: string
-  /** 当前正在推进的 checkpoint id。 */
   currentCheckpointId: string
-  /** 当前 checkpoint 标题，无则为 null。 */
   currentCheckpointTitle: string | null
-  /** 当前 checkpoint 的计划动作列表（按序）。 */
   currentCheckpointPlannedActions: string[]
-  /** 当前 checkpoint 所依赖的其他 checkpoint id 列表。 */
   currentCheckpointDependsOn: string[]
-  /** 当前 checkpoint 建议执行模式（如 subagent）。 */
   currentExecutionMode: BlueprintExecutionMode | null
-  /** 蓝图中 checkpoint 总数。 */
   totalCheckpoints: number
-  /** 已完成（status === 'done'）的 checkpoint 数量。 */
   completedCheckpoints: number
-  /** 蓝图中尚未解决的开放问题列表。 */
   openQuestions: string[]
+}
+
+/** session.describe 中的域摘要形态。 */
+interface DomainStateSummary {
+  phase: string
+  initialized: boolean
+  roleHint?: string
 }
 
 /**
@@ -151,33 +141,9 @@ interface CatalogGuideParams {
   type: string
 }
 
-/**
- * session.describe 中对单个域的摘要视图。
- *
- * 只保留会话级监控最关心的三项信息：当前 phase、是否已初始化、以及该域的职责提示。
- */
-interface DomainStateSummary {
-  /** 域当前阶段，例如 idle / ready / error。 */
-  phase: string
-  /** 该域是否已有可用数据。 */
-  initialized: boolean
-  /** 可选：域职责提示，用于给 LLM 补足角色边界。 */
-  roleHint?: string
-}
-
 // =========================================================
 // 三、基础工具函数与通用判定
 // =========================================================
-
-/** 生成"缺少参数"标准错误文案，用于 validate 返回值。 */
-function missingParam(name: string): string {
-  return `缺少 ${name} 参数`
-}
-
-/** 判断值是否为非空字符串（类型守卫），用于参数存在性检查。 */
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0
-}
 
 /** 将 catalog.query 的 category 参数映射到 registry key。 */
 function resolveCatalogRegistryKey(category: string): keyof StillsCatalogRegistry | null {
@@ -195,12 +161,7 @@ function resolveCatalogRegistryKey(category: string): keyof StillsCatalogRegistr
   }
 }
 
-/**
- * 判断某个域是否已经挂载了有效数据。
- *
- * session.describe 需要把 phase 与“是否真的初始化完成”区分开，
- * 因此这里不能只看 phase，还需要检查 data 是否存在。
- */
+/** 判断某个域是否已经挂载了有效数据。 */
 function hasDomainData(domainState: SessionDomainState<string>): boolean {
   return 'data' in domainState && domainState.data !== null
 }
@@ -209,13 +170,7 @@ function hasDomainData(domainState: SessionDomainState<string>): boolean {
 // 四、动作目录构建
 // =========================================================
 
-/**
- * 从全局 still 注册表构建目录摘要列表。
- *
- * 只将 LLM 常用字段投影出来，规避暴露内部实现细节（如 execute 函数）。
- * 可选字段（guard / rules / failureCodes / params / example）仅在有值时输出，
- * 保持输出精简，降低 LLM 上下文占用。
- */
+/** 从全局 still 注册表构建目录摘要列表。 */
 function buildActionCatalog(): ActionCatalogItem[] {
   const actions: ActionCatalogItem[] = []
 
@@ -267,18 +222,10 @@ function getEffectiveDatasetSnapshot(session: IStillSession): IDataSetMetadata |
   return null
 }
 
-/**
- * 把执行蓝图（ExecutionBlueprint）压缩为摘要视图。
- *
- * 摘要只保留 LLM 推断当前状态所需的最少字段，
- * 不包含每个 checkpoint 的完整动作列表，完整蓝图请用 blueprint.selfCheck。
- *
- * @returns 摘要对象，蓝图为 null 时返回 null。
- */
+/** 把执行蓝图压缩为摘要视图。 */
 function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintSummary | null {
   if (blueprint === null) return null
 
-  // 在 checkpoints 列表中定位当前 checkpoint，用于提取 title、plannedActions 等字段。
   const currentCheckpoint = blueprint.checkpoints.find(
     (checkpoint) => checkpoint.id === blueprint.currentCheckpointId,
   )
@@ -296,13 +243,7 @@ function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintS
   }
 }
 
-/**
- * 汇总会话中所有域的运行状态，并同时收集角色提示。
- *
- * 这是 session.describe 的核心聚合步骤之一：
- * - roles 用于拼接顶层 role 文案；
- * - domainsSummary 用于按域返回 phase / initialized / roleHint。
- */
+/** 汇总会话中所有域的运行状态及角色提示。 */
 function buildDomainsSummary(session: IStillSession): {
   roles: string[]
   domainsSummary: Record<string, DomainStateSummary>
@@ -322,28 +263,6 @@ function buildDomainsSummary(session: IStillSession): {
   }
 
   return { roles, domainsSummary }
-}
-
-/**
- * 汇总 patchLog 中各动作的执行次数。
- *
- * session.describe 不是逐条返回 patchLog 明细，而是把它压缩成聚合计数，
- * 便于 LLM 快速判断“最近都执行过哪些动作、频率如何”。
- */
-function buildExecutionTraceSummary(session: IStillSession): {
-  totalActions: number
-  actionCounts: Record<string, number>
-} {
-  const actionCounts: Record<string, number> = {}
-
-  for (const entry of session.patchLog) {
-    actionCounts[entry.action] = (actionCounts[entry.action] ?? 0) + 1
-  }
-
-  return {
-    totalActions: session.patchLog.length,
-    actionCounts,
-  }
 }
 
 /**

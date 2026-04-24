@@ -12,7 +12,7 @@ export type {
 } from './types'
 
 // ── Config Validator ────────────────────────────────────────────────────────
-export { validateGeneratedConfig } from './validation/config-validator'
+export { validateGeneratedConfig } from './business/project-planning/validation/config-validator'
 export type {
   GeneratedPageFiles,
   ConfigValidationCategory,
@@ -20,17 +20,17 @@ export type {
   ConfigValidationIssue,
   ConfigValidationSummary,
   ConfigValidationReport,
-} from './validation/config-validator'
+} from './business/project-planning/validation/config-validator'
 
 // ── Navigation Auto-Register ─────────────────────────────────────────────────
-export { createNavRegister } from './runtime/nav-register'
-export type { NavRegister, NavRegistrationOptions, NavRegistrationResult } from './runtime/nav-register'
+export { createNavRegister } from './business/project-planning/nav-register'
+export type { NavRegister, NavRegistrationOptions, NavRegistrationResult } from './business/project-planning/nav-register'
 
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {
   createPageCache,
-} from './runtime/page-cache'
-export type { PageCacheHandle } from './runtime/page-cache'
+} from './business/page-design/page-cache'
+export type { PageCacheHandle } from './business/page-design/page-cache'
 
 // ── AI Component Catalog ─────────────────────────────────────────────────────
 // 单一 SSoT JSON + 消费端投影
@@ -75,33 +75,33 @@ export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRE
 export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'
 
 // ── Shared Constants ─────────────────────────────────────────────────────────
-export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared-constants'
+export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './business/project-planning/validation/shared-constants'
 
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
-export { NAV_PLANNER_SYSTEM_PROMPT } from './prompts/nav-planner-prompt'
+export { NAV_PLANNER_SYSTEM_PROMPT } from './business/project-planning/nav-planner-prompt'
 
 // ── System Prompts（提示词前端 SSoT）────────────────────────────────────────
 
-export { PAGE_SYSTEM_PROMPT } from './prompts/page-system-prompt'
+export { PAGE_SYSTEM_PROMPT } from './business/project-planning/prompts/page-system-prompt'
 export {
   STILLS_PROTOCOL_BASE,
   STILLS_DATASET_DOMAIN,
   STILLS_RUNTIME_PROMPT,
   STILLS_EDIT_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
-} from './prompts/stills-prompts'
+} from './business/project-planning/prompts/stills-prompts'
 export {
   buildPageSystemPrompt,
   getSystemPrompt,
   registerPromptMode,
   detectRelevantSkillTypes,
-} from './prompts/prompt-builder'
+} from './business/project-planning/prompts/prompt-builder'
 export type {
   PromptBuildContext,
   ISkillMetadataProvider,
   BuildPagePromptOptions,
   PromptMode,
-} from './prompts/prompt-builder'
+} from './business/project-planning/prompts/prompt-builder'
 
 // ── Stills（动作引擎）────────────────────────────────────────────────────────
 export {
@@ -141,8 +141,7 @@ export type {
 // ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────
 export {
   runStillsLoop,
-  formatWarningsAsFollowUp,
-} from './runtime/session-orchestrator'
+} from './core/orchestration/session-orchestrator'
 export type {
   DialogueTurn,
   StillTurnResult,
@@ -150,6 +149,8 @@ export type {
   SessionBackend,
   MonitorContext,
   SessionMonitor,
+  FollowUpBuildContext,
+  FollowUpPolicy,
   OrchestratorConfig,
   OrchestratorResult,
   ToolCall,
@@ -158,12 +159,12 @@ export type {
   ToolDefinition,
   JsonSchema,
   JsonSchemaProperty,
-} from './session-contracts'
+} from './core/session/session-contracts'
 
 // ── Session Backend（会话后端 HTTP 客户端）────────────────────────────────────
 export {
   SessionBackendImpl,
-} from './session-backend'
+} from './core/session/session-backend'
 
 // ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
 export {
@@ -172,18 +173,18 @@ export {
   loadFcCatalog,
   stillToToolDefinition,
   generateToolDefinitions,
-} from './fc-schema'
+} from './core/fc-schema'
 export type {
   FcCatalogToolEntry,
   FcCatalogJson,
-} from './fc-schema'
+} from './core/fc-schema'
 export {
   dispatchToolCall,
   dispatchToolCalls,
   formatToolResultContent,
   buildAssistantToolCallMessage,
   buildToolResultMessage,
-} from './fc-dispatcher'
+} from './core/fc-dispatcher'
 
 // ── Monitors（可插拔编排监控器）──────────────────────────────────────────────
 export {
@@ -191,4 +192,46 @@ export {
   createBlueprintOrchestrationMonitor,
   createTerminalActionsMonitor,
   createExportCompletionMonitor,
-} from './runtime/monitors'
+  createMonitorsForScenario,
+  createDefaultMonitors,
+  type OrchestrationScenario,
+} from './business/project-planning'
+
+// ── Business Orchestration（业务层编排配置工厂）─────────────────────────────
+export {
+  formatWarningsAsFollowUp,
+  DefaultFollowUpPolicy,
+  createDefaultFollowUpPolicy,
+  formatWarningsAsFollowUpBusiness,
+  BusinessFollowUpPolicy,
+  createBusinessFollowUpPolicy,
+  createOrchestratorConfig,
+  createGenerateConfig,
+  createIterateConfig,
+  createDebugConfig,
+  type OrchestratorConfigFactoryOptions,
+  type RepeatDetectionConfig,
+} from './business/project-planning'
+
+// ── Bootstrap（应用层一键启动入口）─────────────────────────────────────────
+export {
+  createSessionBackend,
+  startAiOrchestration,
+  startGenerateSession,
+  startIterateSession,
+  startDebugSession,
+  type BootstrapOptions,
+} from './business/project-planning'
+
+// ── Business Domains（业务域）───────────────────────────────────────────────
+export {
+  PAGE_DESIGN_DOMAIN,
+  type PageDesignBusinessContext,
+} from './business/page-design'
+
+export {
+  PROJECT_PLANNING_DOMAIN,
+  type ProjectPlanningBusinessContext,
+} from './business/project-planning'
+
+
