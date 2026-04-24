@@ -61,7 +61,7 @@ import {
   getEditState,
   registerEditStills,
 } from '@spark-view/spark-ai'
-import { useRuleEditSession } from '../src/views/app/dev-system/composables/useRuleEditSession'
+import { usePageModelEditSession } from '../src/views/app/dev-system/composables/usePageModelEditSession'
 
 function createRuleEditHarness(options?: {
   onDataSetChanged?: (tool: DataSetCrudTool) => void
@@ -112,7 +112,7 @@ function createRuleEditHarness(options?: {
   }
 }
 
-describe('useRuleEditSession run isolation', () => {
+describe('usePageModelEditSession run isolation', () => {
   beforeEach(() => {
     shared.runs.length = 0
     shared.startIterateSession.mockClear()
@@ -120,12 +120,12 @@ describe('useRuleEditSession run isolation', () => {
   })
 
   it('ignores stale SSE events after reset aborts the active run', async () => {
-    let api: ReturnType<typeof useRuleEditSession> | null = null
+    let api: ReturnType<typeof usePageModelEditSession> | null = null
     const harness = createRuleEditHarness()
 
     const Host = defineComponent({
       setup() {
-        api = useRuleEditSession({
+        api = usePageModelEditSession({
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
@@ -224,11 +224,11 @@ describe('useRuleEditSession run isolation', () => {
     const harness = createRuleEditHarness()
     const sessionHost = harness.sessionHost
     const onStatus = vi.fn()
-    let api: ReturnType<typeof useRuleEditSession> | null = null
+    let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
       setup() {
-        api = useRuleEditSession({
+        api = usePageModelEditSession({
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost,
@@ -280,11 +280,11 @@ describe('useRuleEditSession run isolation', () => {
     const harness = createRuleEditHarness({ onDataSetChanged })
     const liveDataSetTool = harness.liveDataSetTool
     const onStatus = vi.fn()
-    let api: ReturnType<typeof useRuleEditSession> | null = null
+    let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
       setup() {
-        api = useRuleEditSession({
+        api = usePageModelEditSession({
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
@@ -334,11 +334,11 @@ describe('useRuleEditSession run isolation', () => {
     const harness = createRuleEditHarness()
     const sessionHost = harness.sessionHost
     const onStatus = vi.fn()
-    let api: ReturnType<typeof useRuleEditSession> | null = null
+    let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
       setup() {
-        api = useRuleEditSession({
+        api = usePageModelEditSession({
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost,

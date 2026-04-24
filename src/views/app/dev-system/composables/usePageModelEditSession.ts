@@ -1,7 +1,7 @@
 /**
- * useRuleEditSession
+ * usePageModelEditSession
  *
- * Tool layer for rule.json stills-based editing.
+ * Tool layer for page-model stills-based editing.
  * Owns: stills session lifecycle, bootstrap, tool execution, LLM loop, SSE events, export.
  * Does NOT own: UI state (mode, requestText), emit calls (passed as callbacks).
  *
@@ -20,9 +20,9 @@ import {
   type IStillSession,
   type DialogueTurn,
   type StillResult,
-} from '@spark-view/spark-ai'
+  type EditToolHost,
+} from '../ai-bridge'
 import type { SparkNode, SparkNodeTree } from '@spark-view/spark-component'
-import type { EditToolHost } from '@spark-view/spark-ai'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
 
@@ -116,7 +116,7 @@ export interface LogEntry {
 
 type StillsSession = IStillSession
 
-export interface RuleEditSessionOptions {
+export interface PageModelEditSessionOptions {
   /** Returns the current page-scoped session key, usually pageId. */
   getSessionKey: () => string
   /** Returns the single live tool host shared with manual editing. */
@@ -129,18 +129,26 @@ export interface RuleEditSessionOptions {
   onStatus: (msg: string, type: 'success' | 'warning' | 'error') => void
 }
 
-export interface RuleEditRunHooks {
+export interface PageModelEditRunHooks {
   onDelta?: (delta: string) => void
   onReasoning?: (reasoning: string) => void
   signal?: AbortSignal
 }
 
-interface RuleEditBootstrapOptions {
+interface PageModelEditRunOptions extends PageModelEditRunHooks {
+  /**
+   * 已由外层完成 bootstrap 时可置 true，避免重复加载上下文。
+   * 默认 false。
+   */
+  skipBootstrap?: boolean
+}
+
+interface PageModelEditBootstrapOptions {
   silent?: boolean
   skipContextLoad?: boolean
 }
 
-export function useRuleEditSession(options: RuleEditSessionOptions) {
+export function usePageModelEditSession(options: PageModelEditSessionOptions) {
   const { getSessionKey, getEditToolHost, ensureContextLoaded, onStatus } = options
   const ownsSessionHost = options.sessionHost === undefined
 
@@ -207,7 +215,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     runAbortController = null
   }
 
-  function onSseEvent(event: { sessionId: string; type: string; data: string }, hooks?: RuleEditRunHooks) {
+  function onSseEvent(event: { sessionId: string; type: string; data: string }, hooks?: PageModelEditRunHooks) {
     if (event.type === 'delta') {
       aiBuffer.value += event.data
       hooks?.onDelta?.(event.data)
@@ -268,7 +276,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     }
   }
 
-  async function bootstrap(bootstrapOptions?: RuleEditBootstrapOptions): Promise<StillsSession> {
+  async function bootstrap(bootstrapOptions?: PageModelEditBootstrapOptions): Promise<StillsSession> {
     if (!bootstrapOptions?.skipContextLoad) {
       await ensureContextLoaded?.()
     }
@@ -358,7 +366,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
   }
 
   /** Run the LLM orchestration loop for a given prompt (edit/chat mode). */
-  async function runLlm(prompt: string, hooks?: RuleEditRunHooks): Promise<void> {
+  async function runLlm(prompt: string, hooks?: PageModelEditRunOptions): Promise<void> {
     const runId = ++activeRunId
     const runController = new AbortController()
     abortActiveRun()
@@ -368,7 +376,9 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     busy.value = true
     aiBuffer.value = ''
     try {
-      const session = await bootstrap({ silent: true })
+      const session = hooks?.skipBootstrap === true
+        ? ensureSession()
+        : await bootstrap({ silent: true })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await startIterateSession({
         backend: sessionHost.backend,
@@ -502,3 +512,4 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
 
   return { ready, dirty, busy, aiBuffer, log, nodeTree, bootstrap, execTool, runLlm, reset, loadRuleDocument, loadRuleJson }
 }
+

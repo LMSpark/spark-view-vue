@@ -5,7 +5,7 @@
 import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
 import type { AutoPopulateEntry } from '@spark-view/spark-component'
 import { ensureUniqueObjectKey } from '@spark-view/spark-component'
-import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from '@spark-view/spark-ai'
+import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from '../ai-bridge'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────
 //
