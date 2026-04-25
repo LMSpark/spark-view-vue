@@ -1,15 +1,20 @@
 /**
  * CrudResult 类型守卫与工具函数。
  *
- * builtin-actions.ts 和 page/actions/action-executor.ts 共享。
+ * builtin-action-handler.ts 和 page/actions/action-executor.ts 共享。
  */
 import type { CrudResult, IDataRow } from '@spark-view/spark-data'
+
+/** 运行时 CrudResult 形状检测用中间类型（仅供 isCrudResult 内部收窄使用） */
+interface CrudResultShape {
+  success: unknown
+}
 
 export function isCrudResult<T>(value: unknown): value is CrudResult<T> {
   return value !== null
     && typeof value === 'object'
     && 'success' in value
-    && typeof (value as { success?: unknown }).success === 'boolean'
+    && typeof (value as CrudResultShape).success === 'boolean'
 }
 
 export function isCrudSuccess<T>(value: boolean | IDataRow | CrudResult<T>): boolean {
