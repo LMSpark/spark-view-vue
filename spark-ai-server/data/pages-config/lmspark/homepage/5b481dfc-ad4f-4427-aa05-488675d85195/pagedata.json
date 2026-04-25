@@ -288,6 +288,7 @@
           ],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
+          "autoLoad": true,
           "aggregates": {
             "totalCustomers": {
               "type": "count",
@@ -678,7 +679,14 @@
             }
           ],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "autoSelectFirst": true,
+          "aggregates": {
+            "totalEmployees": {
+              "type": "count",
+              "field": "id",
+              "label": "员工总数"
+            }
+          }
         }
       },
       "resourceType": "static-data",

@@ -1,23 +1,164 @@
 /* 页面基础样式 */
 .page-container {
   padding: 20px;
-  background: #f5f7fa;
+  background: #f0f2f5;
   min-height: 100vh;
 }
 
 /* 统计卡片区域 */
 .statistics-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
+/* 卡片容器 - 美化 */
+.r-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+}
+
+.r-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+/* 卡片头部装饰条 - 不同颜色区分 */
+.r-card[data-card="totalOrders"]::before,
+#cardTotalOrders::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #409eff, #79bbff);
+}
+
+.r-card[data-card="totalAmount"]::before,
+#cardTotalAmount::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #67c23a, #95d475);
+}
+
+.r-card[data-card="avgAmount"]::before,
+#cardAvgAmount::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #e6a23c, #f4d19e);
+}
+
+.r-card[data-card="pendingOrders"]::before,
+#cardPendingOrders::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f56c6c, #f89898);
+}
+
+.r-card[data-card="totalCustomers"]::before,
+#cardTotalCustomers::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #9b59b6, #c39bd3);
+}
+
+/* 卡片头部 */
+.r-card .el-card__header {
+  padding: 16px 20px 8px;
+  border-bottom: none;
+  font-size: 14px;
+  color: #909399;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* 卡片内容区 */
+.r-card .el-card__body {
+  padding: 8px 20px 20px;
+}
+
+/* 统计数值 */
+.r-number {
+  display: block;
+}
+
+.r-number .stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #303133;
+  line-height: 1.3;
+  transition: color 0.3s;
+}
+
+/* 各卡片数值颜色 - 与顶部装饰条呼应 */
+#cardTotalOrders .r-number .stat-value {
+  color: #409eff;
+}
+
+#cardTotalAmount .r-number .stat-value {
+  color: #67c23a;
+}
+
+#cardAvgAmount .r-number .stat-value {
+  color: #e6a23c;
+}
+
+#cardPendingOrders .r-number .stat-value {
+  color: #f56c6c;
+}
+
+#cardTotalCustomers .r-number .stat-value {
+  color: #9b59b6;
+}
+
+/* 数值后缀/单位样式 */
+.r-number .stat-unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: #c0c4cc;
+  margin-left: 4px;
+}
+
+/* 旧统计卡片样式（兼容） */
 .stat-card {
   flex: 1;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
 
 .stat-card .stat-value {
@@ -32,29 +173,45 @@
   color: #909399;
 }
 
+/* 统计卡片数值样式 */
+.stats-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #409eff;
+  line-height: 1.2;
+}
+
+.stats-card-value.green {
+  color: #67c23a;
+}
+
+.stats-card-value.orange {
+  color: #e6a23c;
+}
+
 /* 表格容器 */
 .table-container {
   background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 /* 标签页样式 */
 .tabs-container {
   background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  margin-bottom: 20px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 24px;
 }
 
 /* 详情卡片 */
 .detail-card {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   margin-top: 16px;
 }
 

@@ -1,5 +1,177 @@
 [
   {
+    "type": "r-space",
+    "id": "statsRow",
+    "props": {
+      "id": "statsRow",
+      "direction": "horizontal",
+      "size": 24,
+      "fill": true,
+      "alignment": "stretch"
+    },
+    "children": [
+      {
+        "type": "r-card",
+        "id": "cardTotalOrders",
+        "props": {
+          "id": "cardTotalOrders",
+          "header": "总订单数",
+          "shadow": "always",
+          "dataKey": "Orders@orderListView@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "id": "numTotalOrders",
+            "props": {
+              "id": "numTotalOrders",
+              "field": "totalOrders",
+              "precision": 0,
+              "label": "总订单数"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "id": "cardTotalAmount",
+        "props": {
+          "id": "cardTotalAmount",
+          "header": "总金额",
+          "shadow": "always",
+          "dataKey": "Orders@orderListView@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "id": "numTotalAmount",
+            "props": {
+              "id": "numTotalAmount",
+              "field": "totalAmount",
+              "precision": 2,
+              "label": "总金额"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "id": "cardAvgAmount",
+        "props": {
+          "id": "cardAvgAmount",
+          "header": "平均金额",
+          "shadow": "always",
+          "dataKey": "Orders@orderListView@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "id": "numAvgAmount",
+            "props": {
+              "id": "numAvgAmount",
+              "field": "avgAmount",
+              "precision": 2,
+              "label": "平均金额"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "id": "cardPendingOrders",
+        "props": {
+          "id": "cardPendingOrders",
+          "header": "待处理订单",
+          "shadow": "always",
+          "dataKey": "Orders@pendingOrdersView@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "id": "numPendingOrders",
+            "props": {
+              "id": "numPendingOrders",
+              "field": "pendingOrders",
+              "precision": 0,
+              "label": "待处理订单"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "id": "cardTotalCustomers",
+        "props": {
+          "id": "cardTotalCustomers",
+          "header": "客户总数",
+          "shadow": "always",
+          "dataKey": "Customers@default@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "id": "numTotalCustomers",
+            "props": {
+              "id": "numTotalCustomers",
+              "field": "totalCustomers",
+              "precision": 0,
+              "label": "客户总数"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "id": "cardTotalProducts",
+        "props": {
+          "id": "cardTotalProducts",
+          "header": "产品总数",
+          "shadow": "always",
+          "dataKey": "Products@default@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "props": {
+              "id": "numTotalProducts",
+              "field": "totalProducts",
+              "precision": 0,
+              "label": "产品总数"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "id": "cardTotalEmployees",
+        "props": {
+          "id": "cardTotalEmployees",
+          "header": "员工总数",
+          "shadow": "always",
+          "dataKey": "Employees@default@summaryRow"
+        },
+        "children": [
+          {
+            "type": "r-number",
+            "props": {
+              "id": "numTotalEmployees",
+              "field": "totalEmployees",
+              "precision": 0,
+              "label": "员工总数"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
     "type": "r-tabs",
     "id": "mainTabs",
     "props": {
