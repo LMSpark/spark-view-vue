@@ -193,12 +193,17 @@ export interface OpenAction extends ActionDescriptorBase {
  * 运行时守卫仅做结构判定（`action` 为 string）；
  * 具体动作名合法性由 TypeScript 联合类型与执行分支共同约束。
  */
+/** isActionDescriptor 内部用于收窄 unknown 对象的最小形状 */
+interface ActionDescriptorShape {
+  action: unknown
+}
+
 export function isActionDescriptor(value: unknown): value is ActionDescriptor {
   return (
     value !== null &&
     typeof value === 'object' &&
     !Array.isArray(value) &&
-    typeof (value as Record<string, unknown>)['action'] === 'string'
+    typeof (value as ActionDescriptorShape).action === 'string'
   )
 }
 
