@@ -64,9 +64,9 @@ export interface SparkNodeProps {
    */
   children?: SparkNodeChildren
   /**
-   * 底层宿主组件透传属性。
+   * @internal 内部属性：底层宿主组件透传属性。
    *
-   * 用于替代隐式属性透传，要求调用方显式声明并传入。
+   * 由框架运行时消费，用于替代隐式属性透传；业务配置侧不应直接声明。
    */
   hostProps?: Record<string, unknown>
 }
