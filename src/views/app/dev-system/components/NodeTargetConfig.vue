@@ -4,58 +4,59 @@
 
     <!-- 目标选择器（system-page / system-action / page） -->
     <el-form-item v-if="flags.showTargetSelector.value" label="目标" class="fi fi--wide">
-      <el-select
-        v-model="targetValue"
-        filterable
-        allow-create
-        clearable
-        :placeholder="targetPlaceholder"
-      >
-        <template v-if="flags.isSystemPageNode.value">
-          <el-option-group label="路由">
+      <div class="target-select-row">
+        <el-select
+          v-model="targetValue"
+          filterable
+          allow-create
+          clearable
+          :placeholder="targetPlaceholder"
+          class="target-select-row__select"
+        >
+          <template v-if="flags.isSystemPageNode.value">
+            <el-option-group label="路由">
+              <el-option
+                v-for="opt in systemRouteTargetOptions"
+                :key="opt.value"
+                :value="opt.value"
+                :label="opt.label"
+              />
+            </el-option-group>
+          </template>
+          <template v-else-if="flags.isSystemActionNode.value">
             <el-option
-              v-for="opt in systemRouteTargetOptions"
+              v-for="opt in actionTargetOptions"
               :key="opt.value"
               :value="opt.value"
               :label="opt.label"
             />
-          </el-option-group>
-        </template>
-        <template v-else-if="flags.isSystemActionNode.value">
-          <el-option
-            v-for="opt in actionTargetOptions"
-            :key="opt.value"
-            :value="opt.value"
-            :label="opt.label"
-          />
-        </template>
-        <template v-else>
-          <el-option
-            v-for="opt in pageTargetOptions"
-            :key="opt.value"
-            :value="opt.value"
-            :label="opt.label"
-          />
-        </template>
-      </el-select>
-    </el-form-item>
-
-    <!-- 路径有效性提示 -->
-    <el-form-item v-if="flags.showPathStatus.value && pathStatus" label="" label-width="0" class="path-status-item">
-      <div style="display: flex; align-items: center; gap: 8px">
-        <el-tag :type="pathStatus.type" size="small" disable-transitions>
-          <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
-        </el-tag>
+          </template>
+          <template v-else>
+            <el-option
+              v-for="opt in pageTargetOptions"
+              :key="opt.value"
+              :value="opt.value"
+              :label="opt.label"
+            />
+          </template>
+        </el-select>
         <el-button
-          v-if="pathStatus.type === 'danger' && canCreatePageForPath"
+          v-if="showCreatePageAction"
           size="small"
           type="primary"
           :loading="creatingPage"
           @click="createPageFromPath"
         >
-          <NavIcon name="Plus" :size="12" /> 创建页面
+          <NavIcon name="Plus" :size="12" /> 新建
         </el-button>
       </div>
+    </el-form-item>
+
+    <!-- 路径有效性提示 -->
+    <el-form-item v-if="flags.showPathStatus.value && pathStatus" label="" label-width="0" class="path-status-item">
+      <el-tag :type="pathStatus.type" size="small" disable-transitions>
+        <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
+      </el-tag>
     </el-form-item>
     <el-form-item v-if="flags.isDirectoryNode.value" label="" label-width="0" class="path-status-item">
       <el-tag type="info" size="small" disable-transitions>
@@ -377,6 +378,25 @@ const pathStatus = computed(() => {
   return { type: 'danger' as const, icon: 'CircleCloseFilled', text: `配置页面不存在：${pageId}（需先创建）` }
 })
 
+function normalizeConfigPageId(value: string | undefined): string {
+  return (value ?? '').trim().replace(/^\/+/, '')
+}
+
+function hasConfigPage(pageId: string): boolean {
+  return props.state.pageList.value.some(
+    (page: Record<string, unknown>) => String(page['pageId'] ?? '') === pageId,
+  )
+}
+
+const showCreatePageAction = computed(() => flags.isPageNode.value)
+const explicitTargetPageId = computed(() => normalizeConfigPageId(props.state.editForm.path))
+const fallbackNodePageId = computed(() => normalizeConfigPageId(props.state.editForm.id))
+const createPageCandidateId = computed(() => {
+  const explicitPageId = explicitTargetPageId.value
+  if (explicitPageId && !hasConfigPage(explicitPageId)) return explicitPageId
+  return fallbackNodePageId.value
+})
+
 // ── 跨工程引用：工程选择 → 页面选择 ──
 
 interface SelectOption {
@@ -541,27 +561,37 @@ const refStatus = computed(() => {
 
 const creatingPage = ref(false)
 
-const canCreatePageForPath = computed(() => {
-  if (!flags.isPageNode.value) return false
-  const path = props.state.editForm.path
-  if (!path) return false
-  const pageId = path.replace(/^\/+/, '')
-  return pageId.length > 0
-})
-
 async function createPageFromPath() {
-  const path = props.state.editForm.path
-  if (!path) return
+  if (!showCreatePageAction.value) return
 
-  const pageId = path.replace(/^\/+/, '')
-  const nodeTitle = props.state.editForm.title || pageId
+  const pageId = createPageCandidateId.value
+  if (!pageId) {
+    props.state.addStatus('请先填写节点 ID，或在目标中输入要新建的页面路径', 'warning')
+    return
+  }
+  if (hasConfigPage(pageId)) {
+    props.state.addStatus(`页面 ${pageId} 已存在，请修改目标路径或节点 ID 后再新建`, 'warning')
+    return
+  }
+
+  const targetPath = `/${pageId}`
+  const nodeTitle = props.state.editForm.title.trim() || pageId
+  const nodeIcon = props.state.editForm.icon.trim() || 'Document'
 
   creatingPage.value = true
   try {
-    await http.post(`${getPageApi()}/__create`, { pageId, title: nodeTitle, icon: 'Document' })
-    // 创建后重新加载页面列表
+    await http.post(`${getPageApi()}/__create`, { pageId, title: nodeTitle, icon: nodeIcon })
     await props.state.loadPages()
-    props.state.addStatus(`页面 ${pageId} 创建成功`, 'success')
+    props.state.editForm.path = targetPath
+    props.state.handlePathChange(targetPath)
+    await props.state.saveNodeChanges()
+
+    if (props.state.navDirty.value) {
+      props.state.addStatus(`页面 ${pageId} 已创建，但导航目标保存失败`, 'warning')
+      return
+    }
+
+    props.state.addStatus(`页面 ${pageId} 创建成功并已绑定到当前节点`, 'success')
   } catch (error) {
     props.state.addStatus(`页面创建失败: ${String(error)}`, 'error')
   } finally {
@@ -571,6 +601,18 @@ async function createPageFromPath() {
 </script>
 
 <style scoped>
+.target-select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.target-select-row__select {
+  flex: 1;
+  min-width: 0;
+}
+
 .link-url-row {
   display: flex;
   gap: 8px;
