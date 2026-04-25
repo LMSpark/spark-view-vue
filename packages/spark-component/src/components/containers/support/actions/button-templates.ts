@@ -9,6 +9,8 @@
  * 容器可额外注入 buttonSize/text 等默认值（行操作自动 small+text）。
  */
 
+import type { BuiltinActionName } from '../../../../page/actions/index.js'
+
 // ── 模板属性类型 ──────────────────────────────────────────────────────────
 
 export interface ButtonTemplateProps {
@@ -65,7 +67,7 @@ interface ActionDefaults {
   icon?: string
 }
 
-const ACTION_TEMPLATE_MAP: Record<string, ActionDefaults> = {
+const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
   'append-row':          { template: 'primary', label: '新增', icon: 'Plus' },
   'prompt-append':       { template: 'primary', label: '新增', icon: 'Plus' },
   'prompt-edit':         { template: 'success', label: '编辑', icon: 'Edit' },
@@ -106,7 +108,7 @@ export interface ResolvedButtonStyle {
  * @param explicitProps - 用户在 rule.json 中显式写的 props
  */
 export function resolveButtonStyle(
-  action: string | undefined,
+  action: BuiltinActionName | undefined,
   template: string | undefined,
   explicitProps: {
     buttonType?: string
@@ -181,13 +183,13 @@ function applyTemplate(target: ResolvedButtonStyle, template: ButtonTemplateProp
 /**
  * 获取 action 的默认 label（容器 disabled 计算时也需要读取）。
  */
-export function getActionDefaultLabel(action: string): string {
-  return ACTION_TEMPLATE_MAP[action]?.label ?? '执行'
+export function getActionDefaultLabel(action: BuiltinActionName): string {
+  return ACTION_TEMPLATE_MAP[action].label
 }
 
 /**
  * 判断是否为已知 action 名。
  */
-export function isKnownAction(action: string): boolean {
+export function isKnownAction(action: string): action is BuiltinActionName {
   return action in ACTION_TEMPLATE_MAP
 }

@@ -349,6 +349,9 @@ export interface SparkFileFieldProps<TValue = string>
   separator?: string
 }
 
+/** 文件上传/浏览动作地址（例如上传接口 URL 或 '#'） */
+export type SparkFileUploadAction = string
+
 /**
  * 文件上传/浏览切换动作语义。
  *
@@ -360,7 +363,7 @@ export interface SparkFileUploadActionProps extends SparkReadonlyActionTextProps
    *
    * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。
    */
-  action?: string
+  action?: SparkFileUploadAction
 }
 
 /**

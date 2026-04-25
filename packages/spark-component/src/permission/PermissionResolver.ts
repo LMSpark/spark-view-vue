@@ -21,8 +21,18 @@ export interface PermissionActionContext {
   permissionMode?: NavPermissionMode | undefined
 }
 
+export type PermissionActionName =
+  | 'create'
+  | 'import'
+  | 'export'
+  | 'create-child'
+  | 'delete'
+  | 'edit'
+
+export type PermissionAction = PermissionActionName | (string & {})
+
 interface ResolvedPermAction {
-  action?: string
+  action?: PermissionAction
   inferred: boolean
 }
 
