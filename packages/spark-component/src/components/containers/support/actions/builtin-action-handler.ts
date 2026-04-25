@@ -11,7 +11,7 @@ import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../crud-result-helpers.js'
 import { getBuiltinActionName, getBuiltinActionLabel } from '../../../../page/actions/index.js'
-import type { BuiltinActionScope } from './builtin-action-types'
+import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 import {
   readString,
   readBoolean,

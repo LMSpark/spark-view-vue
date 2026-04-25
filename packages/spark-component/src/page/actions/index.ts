@@ -35,4 +35,4 @@ export {
   isBuiltinAction,
   getBuiltinActionLabel,
 } from './builtin-action-meta'
-export type { BuiltinActionName } from './builtin-action-meta'
+export type { BuiltinActionName, BuiltinActionScope } from './builtin-action-meta'

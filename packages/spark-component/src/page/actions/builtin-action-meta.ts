@@ -6,7 +6,15 @@
  * - 组件容器层只做适配与执行，不再重复维护动作名清单。
  */
 
+import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../core/types'
+
+// ── 执行作用域 ────────────────────────────────────────────────────────────
+
+export interface BuiltinActionScope {
+  row?: IDataRow
+  index?: number
+}
 
 interface BuiltinActionMeta {
   label: string

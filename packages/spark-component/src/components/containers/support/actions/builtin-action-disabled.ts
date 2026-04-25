@@ -9,7 +9,7 @@ import type { SparkNode } from '../../../internal'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../../support/beforeRender.js'
 import { extractModelPermission } from '../../../../permission/index.js'
 import { getBuiltinActionName } from '../../../../page/actions/index.js'
-import type { BuiltinActionScope } from './builtin-action-types'
+import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 import {
   getActionProps,
   readBoolean,

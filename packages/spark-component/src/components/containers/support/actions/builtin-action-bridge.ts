@@ -5,7 +5,7 @@ import type { SparkNode } from '../../../internal'
 import { createBuiltinActionHandler } from './builtin-action-handler'
 import { isBuiltinActionDisabled } from './builtin-action-disabled'
 import { hasRemoteListApi } from './builtin-action-helpers'
-import type { BuiltinActionScope } from './builtin-action-types'
+import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 
 interface BuiltinActionBridgeOptions {
   getView: () => DataView | null | undefined
