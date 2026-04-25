@@ -5,7 +5,6 @@ import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
@@ -490,21 +489,6 @@ function createInlineDataSet(tableName: string, rows: IDataRow[]): IDataSet {
   })
 }
 
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-toolbar': 'toolbar',
-  'r-actions': 'actions',
-  'r-filter': 'filter',
-  'r-editor': 'editor',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
-
-function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
-  if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
-  const { children: _, ...rest } = props
-  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
-}
-
 function mountRendererTableWithView(
   view: DataView,
   props: Record<string, unknown> = {},
@@ -513,7 +497,7 @@ function mountRendererTableWithView(
   const mountOptions = {
     view,
     field: 'rows',
-    props: liftTestChildProps('r-table', props),
+    props,
   } as {
     view: DataView
     field: 'rows'
@@ -541,7 +525,7 @@ async function mountRendererTreeWithView(
   const mountOptions = {
     view,
     field: 'rows',
-    props: liftTestChildProps('r-tree', props),
+    props,
   } as {
     view: DataView
     field: 'rows'
@@ -1509,13 +1493,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const toolbarDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: toolbarDataSet,
-      props: liftTestChildProps('r-table', {
+      props: {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
           { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
         ],
-      }),
+      },
       global: {
         config: {
           warnHandler: silentWarnHandler,
@@ -1548,7 +1532,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const rowActionDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: rowActionDataSet,
-      props: liftTestChildProps('r-table', {
+      props: {
         dataKey: 'Users@rows',
         children: [
           {
@@ -1556,7 +1540,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
             children: [{ type: 'row-button' }],
           },
         ],
-      }),
+      },
       global: {
         config: {
           warnHandler: silentWarnHandler,
@@ -2093,13 +2077,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const { RendererTree } = await import('@spark-view/spark-component')
     const wrapper = mount(RendererTree as any, {
-      props: liftTestChildProps('r-tree', {
+      props: {
         data: [{ id: 'node-1', label: '节点 1' }],
         children: [
           { type: 'r-toolbar', props: { position: 'right' }, children: [{ type: 'tree-toolbar' }] },
           { type: 'node-button', props: { on: { click: nodeActionSpy } } },
         ],
-      }),
+      },
       global: {
         stubs: {
           'el-tree': ElTreeStub,
@@ -2180,10 +2164,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const slotDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: slotDataSet,
-      props: liftTestChildProps('r-table', {
+      props: {
         dataKey: 'Users@rows',
         children: [{ type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] }],
-      }),
+      },
       slots: {
         'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
           class: 'biz-row-action',
@@ -2575,7 +2559,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
-      props: liftTestChildProps('r-table', {
+      props: {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', children: [
@@ -2587,7 +2571,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { type: 'plain-row' },
           ] },
         ],
-      }),
+      },
       global: {
         stubs: {
           'el-table': ElTableStub,
