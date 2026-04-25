@@ -28,8 +28,8 @@ export function useFormDetailContainer(
 ) {
   const effectiveDataKey = computed(() => props.dataKey)
 
-  // r-toolbar 子节点已由绑定层提升为 props.toolbar，
-  // 此处 children 仅包含内容子节点；文本子节点仍合法，因此先保留原始 children，
+  // 工具栏优先通过 props.toolbar 输入；
+  // 此处 children 作为内容区输入；文本子节点仍合法，因此先保留原始 children，
   // 交给 getSparkNodeChildren() 在布局层按需收窄为结构节点。
   const contentChildren = computed(() => props.children ?? [])
 

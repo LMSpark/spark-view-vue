@@ -46,7 +46,7 @@ const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)
 const align = computed<InlineAlign>(() => props.align ?? 'center')
 const justify = computed<InlineJustify>(() => props.justify ?? 'start')
 
-// r-tail 子节点已由绑定层提升为 props.tail
+// 尾区节点通过 props.tail 输入。
 const contentChildren = computed(() => props.children ?? [])
 
 // 主区：常规子节点。

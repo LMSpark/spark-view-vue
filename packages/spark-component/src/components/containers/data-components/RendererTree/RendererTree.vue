@@ -85,7 +85,7 @@
  */
 import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
@@ -104,10 +104,8 @@ import { createActionCapability } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
-import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { PAGE_SERVICE } from '../../../internal'
-import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -116,6 +114,12 @@ const treePropsValue = computed<Record<string, unknown>>(() => ({ ...(props.tree
 const {
   effectiveDataKey,
   nodeContentChildren,
+  toolbarConfigs,
+  toolbarPositionValue,
+  toolbarClassValue,
+  dockedNodeActions,
+  nodeActionClassValue,
+  permissionDeniedBehaviorValue,
   hasNodeActions,
   editorConfigs,
   editorPositionValue,
@@ -153,11 +157,11 @@ const treeIdField = computed(() =>
 )
 
 const {
-  toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
+  visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-  toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.class),
+  toolbar: toolbarConfigs,
+  toolbarPosition: toolbarPositionValue,
+  toolbarClass: toolbarClassValue,
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -165,10 +169,10 @@ const {
 const {
   getScopedActionConfigs: getScopedNodeActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
+  actionConfigs: dockedNodeActions,
   actionPosition: computed(() => 'right'),
-  actionClass: computed(() => props.actions?.props?.class),
-  permissionDeniedBehavior: computed(() => (props.actions?.props?.permDeniedBehavior as PermissionDeniedBehavior | undefined) ?? 'hide'),
+  actionClass: nodeActionClassValue,
+  permissionDeniedBehavior: permissionDeniedBehaviorValue,
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

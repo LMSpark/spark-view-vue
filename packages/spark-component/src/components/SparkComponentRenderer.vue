@@ -181,7 +181,7 @@ const currentRendererComponent = currentInstance?.type ?? null
 
 /**
  * children 归一：
- * 1. 保留 SparkNode 子节点（已提升为容器 props 的子节点不在此列）。
+ * 1. 保留 SparkNode 子节点（结构化区域节点通常由容器显式消费，不会进入该列表）。
  * 2. 保留字符串和数字字面量，供统一 slot / fallback 路径直接渲染成文本节点。
  */
 function normalizeRenderableChildren(children: SparkNodeChildren | undefined): RenderableChild[] {

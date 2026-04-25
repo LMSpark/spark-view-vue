@@ -40,7 +40,7 @@
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
  * @notes children 内放 r-* 字段组件（只读模式展示）
- * @notes dock='toolbar' 声明工具栏节点
+ * @notes 工具栏通过结构化 `toolbar` 区域声明
  */
 /**
  * RendererDetail - 详情展示容器组件

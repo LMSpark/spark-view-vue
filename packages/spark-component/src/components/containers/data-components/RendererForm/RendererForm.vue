@@ -38,7 +38,7 @@
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
  * @notes children 内放 r-* 字段组件用于编辑 currentRow
- * @notes dock='toolbar' 声明工具栏节点
+ * @notes 工具栏通过结构化 `toolbar` 区域声明
  */
 /**
  * RendererForm - 表单容器组件

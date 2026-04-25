@@ -52,9 +52,9 @@
 <script setup lang="ts">
 /**
  * @skill r-drawer
- * @description 抽屉容器，支持 header/footer dock 和网格主体布局。
+ * @description 抽屉容器，支持结构化 header/footer 区域和网格主体布局。
  * @category container
- * @notes dock='header' 声明头部动作区；dock='footer' 声明底部动作区
+ * @notes 头部动作区与底部区域通过结构化 `header` / `footer` 声明
  */
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
@@ -83,7 +83,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
-// 子节点类型已由绑定层从 children 提升为 props（header / footer）
+// 头/尾区域优先通过 props.header / props.footer 输入。
 const contentChildren = computed(() => props.children ?? [])
 
 const headerClassValue = computed(() => String(props.header?.props?.class ?? ''))

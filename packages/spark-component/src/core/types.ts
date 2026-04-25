@@ -75,8 +75,8 @@ export type SparkCapabilityContext = ICapabilityContext
  * 停靠区域（toolbar / actions / filter / header / footer / editor / tail）
  * 在规范形态下通过结构化 props 表达，例如
  * `props: { toolbar: { type: 'r-toolbar', children: [...] } }`。
- * 页面绑定层当前也兼容等价的 wrapper 子节点输入（如 `r-toolbar` / `r-actions`），
- * 但会在构建阶段提升为 `props.toolbar / props.actions / ...`；运行时容器直接消费这些 props。
+ * 页面绑定层也兼容等价的 wrapper 子节点输入（如 `r-toolbar` / `r-actions`）；
+ * 运行时容器优先消费结构化 props，并在需要时从 children 做回退读取。
  *
  * @example
  * ```jsonc

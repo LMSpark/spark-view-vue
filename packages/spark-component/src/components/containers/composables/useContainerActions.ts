@@ -52,7 +52,7 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   const rawActionConfigs = computed(() => options.actionConfigs.value ?? [])
   const actionPositionValue = computed<LateralActionPosition>(() => options.actionPosition.value ?? 'right')
   const actionClassValue = computed(() => options.actionClass.value ?? '')
-  const permissionDeniedBehaviorValue = computed<PermissionDeniedBehavior>(() => options.permissionDeniedBehavior?.value ?? 'hide')
+  const permissionDeniedBehaviorValue = computed<PermissionDeniedBehavior>(() => options.permissionDeniedBehavior?.value ?? 'disable')
 
   const showActionsLeft = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'left')
   const showActionsRight = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'right')

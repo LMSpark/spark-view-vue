@@ -144,8 +144,8 @@
  * 2. 模板驱动：保留默认 slot，允许直接手写 el-table-column。
  *
  * 结构约定：
- * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
- * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
+ * - 工具栏/筛选区/行操作优先使用结构化 props（toolbar/filter/actions）。
+ * - 运行时保留对 children 中结构节点的兼容读取，并在内容区过滤这些结构节点。
  */
 import { computed, nextTick, ref, watch, useAttrs, useSlots, type CSSProperties } from 'vue'
 import {
@@ -408,7 +408,7 @@ useContainerDataSourceEffects({
 
 sparkProvide(HOST_FIELD_MODE, 'table')
 
-// ── 工具栏区：读取提升后的 props.toolbar，并向工具栏子树提供内置动作宿主能力 ──
+// ── 工具栏区：读取结构化 toolbar 配置，并向工具栏子树提供内置动作宿主能力 ──
 
 const {
   toolbarPositionValue,
@@ -563,7 +563,7 @@ const {
   actionConfigs: computed(() => getSparkNodeChildren(actionsNode.value?.children)),
   actionPosition: computed(() => childProp<LateralActionPosition>(actionsNode.value, 'position') ?? 'right'),
   actionClass: computed(() => childProp<string>(actionsNode.value, 'class') ?? ''),
-  permissionDeniedBehavior: computed(() => childProp<PermissionDeniedBehavior>(actionsNode.value, 'permDeniedBehavior') ?? 'hide'),
+  permissionDeniedBehavior: computed(() => childProp<PermissionDeniedBehavior>(actionsNode.value, 'permDeniedBehavior') ?? 'disable'),
   modelPermission,
   dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({

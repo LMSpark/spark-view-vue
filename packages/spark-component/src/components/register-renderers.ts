@@ -80,29 +80,28 @@ import SparkJsonEditor from './support/SparkJsonEditor.vue'
 // ═══════════════════════════════════════════════════════════════════════════════
 
 type RegisteredComponent = Parameters<typeof Spark.register>[1]
-type RegistrationMeta = Record<string, unknown>
-type RegistrationEntry = readonly [string, RegisteredComponent] | readonly [string, RegisteredComponent, RegistrationMeta]
+type RegistrationEntry = readonly [string, RegisteredComponent]
 
 /** 同步注册：核心 + Passthrough */
 const CORE_COMPONENTS: RegistrationEntry[] = [
-  // 数据容器（区域子组件通过自身 meta.liftAs 声明角色，容器无需枚举子类型）
+  // 数据容器
   ['r-table', RendererTable],
   ['r-form', RendererForm],
   ['r-detail', RendererDetail],
   ['r-tree', RendererTree],
   ['r-list', RendererList],
   ['r-row-fragment', RendererRowFragment],
-  // 区域子组件（meta.liftAs 声明提升后的 prop 名，绑定层据此将其提升为容器 props）
-  ['r-actions', RendererHostScope, { liftAs: 'actions' }],
-  ['r-filter', RendererFilter, { liftAs: 'filter' }],
-  ['r-editor', RendererEditor, { liftAs: 'editor' }],
-  ['r-header', RendererHeader, { liftAs: 'header' }],
-  ['r-footer', RendererFooter, { liftAs: 'footer' }],
-  ['r-tail', RendererTail, { liftAs: 'tail' }],
+  // 区域子组件
+  ['r-actions', RendererHostScope],
+  ['r-filter', RendererFilter],
+  ['r-editor', RendererEditor],
+  ['r-header', RendererHeader],
+  ['r-footer', RendererFooter],
+  ['r-tail', RendererTail],
   // 核心非数据容器
   ['r-section', RendererSection],
   ['r-block', RendererSection],
-  ['r-toolbar', RendererToolbar, { liftAs: 'toolbar' }],
+  ['r-toolbar', RendererToolbar],
   ['r-menu', RendererToolbar],
   ['r-tabs', RendererTabs],
   ['r-tab-pane', RendererTabPane],
@@ -212,10 +211,9 @@ const EXTENDED_COMPONENTS: ReadonlyArray<readonly [string, RegisteredComponent]>
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function registerAllRenderers(): void {
-  // Core — 核心 + Passthrough（含可选 meta）
-  for (const entry of CORE_COMPONENTS) {
-    const [type, component, meta] = entry
-    Spark.register(type, component, meta)
+  // Core — 核心 + Passthrough
+  for (const [type, component] of CORE_COMPONENTS) {
+    Spark.register(type, component)
   }
 
   // Extended — classic 路径下同步注册

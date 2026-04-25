@@ -53,7 +53,7 @@ const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
-// 子节点类型已由绑定层从 children 提升为 props（toolbar）
+// 工具栏优先通过 props.toolbar 输入；children 作为步骤项输入。
 const contentChildren = computed(() => props.children ?? [])
 
 const stepConfigs = computed(() =>

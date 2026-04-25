@@ -56,7 +56,7 @@ const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
-// r-toolbar 子节点已由绑定层提升为 props.toolbar
+// 工具栏优先通过 props.toolbar 输入。
 const contentChildren = computed(() => props.children ?? [])
 
 const itemConfigs = computed(() =>

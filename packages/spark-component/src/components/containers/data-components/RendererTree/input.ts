@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
 import type { ActionsNode } from '../../support/RendererActions.types'
+import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
@@ -20,9 +21,14 @@ interface RendererTreeInputOptions {
 export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const effectiveDataKey = computed(() => options.props.dataKey)
 
-  // 子节点类型已由绑定层从 children 提升为 props（toolbar / actions / editor），
-  // 此处 children 仅包含内容子节点。
-  const contentChildren = computed(() => options.props.children ?? [])
+  // 优先消费结构化 props.toolbar / props.actions / props.editor；
+  // 兼容旧配置：若未提升，仍可从 children 中回退提取结构节点。
+  const allChildNodes = computed(() => getSparkNodeChildren(options.props.children))
+  const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-actions', 'r-editor'])
+  const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
+  const toolbarNode = computed(() => options.props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
+  const actionsNode = computed(() => options.props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
+  const editorNode = computed(() => options.props.editor ?? allChildNodes.value.find(child => child.type === 'r-editor'))
 
   const nodeContentChildren = computed<SparkNode[]>(() => {
     const nodes: SparkNode[] = []
@@ -32,13 +38,36 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     }
     return nodes
   })
-  const dockedNodeActions = computed(() => getSparkNodeChildren(options.props.actions?.children))
+  const dockedNodeActions = computed(() => getSparkNodeChildren(actionsNode.value?.children))
   const hasNodeActions = computed(() => dockedNodeActions.value.length > 0)
-  const editorConfigs = computed(() => getSparkNodeChildren(options.props.editor?.children))
-  const editorPositionValue = computed<ToolbarPosition>(() => options.props.editor?.props?.position ?? 'right')
-  const editorClassValue = computed(() => options.props.editor?.props?.class ?? '')
+  const toolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
+  const toolbarPositionValue = computed<ToolbarPosition>(() => {
+    const position = toolbarNode.value?.props?.['position']
+    return position === 'top' || position === 'bottom' || position === 'left' || position === 'right' ? position : 'top'
+  })
+  const toolbarClassValue = computed<string | undefined>(() => {
+    const className = toolbarNode.value?.props?.['class']
+    return typeof className === 'string' ? className : undefined
+  })
+  const nodeActionClassValue = computed<string>(() => {
+    const className = actionsNode.value?.props?.['class']
+    return typeof className === 'string' ? className : ''
+  })
+  const permissionDeniedBehaviorValue = computed<PermissionDeniedBehavior>(() => {
+    const behavior = actionsNode.value?.props?.['permDeniedBehavior']
+    return behavior === 'hide' || behavior === 'disable' ? behavior : 'disable'
+  })
+  const editorConfigs = computed(() => getSparkNodeChildren(editorNode.value?.children))
+  const editorPositionValue = computed<ToolbarPosition>(() => {
+    const position = editorNode.value?.props?.['position']
+    return position === 'top' || position === 'bottom' || position === 'left' || position === 'right' ? position : 'right'
+  })
+  const editorClassValue = computed<string>(() => {
+    const className = editorNode.value?.props?.['class']
+    return typeof className === 'string' ? className : ''
+  })
   const editorStyleValue = computed<Record<string, string>>(() => {
-    const width = options.props.editor?.props?.width
+    const width = editorNode.value?.props?.['width']
     if (typeof width === 'number' && Number.isFinite(width)) {
       return {
         width: `${width}px`,
@@ -59,6 +88,12 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   return {
     effectiveDataKey,
     nodeContentChildren,
+    toolbarConfigs,
+    toolbarPositionValue,
+    toolbarClassValue,
+    dockedNodeActions,
+    nodeActionClassValue,
+    permissionDeniedBehaviorValue,
     hasNodeActions,
     editorConfigs,
     editorPositionValue,

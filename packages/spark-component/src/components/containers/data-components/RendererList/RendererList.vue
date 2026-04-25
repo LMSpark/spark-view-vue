@@ -93,7 +93,7 @@
  * @binding datakey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @notes dock='toolbar' 声明工具栏节点；dock='actions' 声明列表项操作
+ * @notes 使用结构化 `toolbar` / `actions` 区域声明工具栏与列表项操作
  */
 import { computed, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
@@ -134,9 +134,13 @@ const props = withDefaults(defineProps<RListProps>(), {
 const listPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.listProps ?? {}) }))
 const slots = useSlots()
 
-// r-toolbar / r-actions 子节点已由绑定层提升为 props，
-// 此处 children 仅包含内容子节点。
-const contentChildren = computed(() => props.children ?? [])
+// 优先消费结构化 props.toolbar / props.actions；
+// 兼容旧配置：若未走结构化输入，仍可从 children 中回退提取 r-toolbar / r-actions。
+const allChildNodes = computed(() => getSparkNodeChildren(props.children))
+const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-actions'])
+const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
+const toolbarNode = computed(() => props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
+const actionsNode = computed(() => props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
 
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
@@ -171,9 +175,17 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-  toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.class),
+  toolbar: computed(() => getSparkNodeChildren(toolbarNode.value?.children)),
+  toolbarPosition: computed(() => {
+    const position = toolbarNode.value?.props?.['position']
+    return (position === 'top' || position === 'bottom' || position === 'left' || position === 'right')
+      ? position as ToolbarPosition
+      : undefined
+  }),
+  toolbarClass: computed(() => {
+    const className = toolbarNode.value?.props?.['class']
+    return typeof className === 'string' ? className : undefined
+  }),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -185,10 +197,19 @@ const {
   showActionsRight: showItemActionsRight,
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
-  actionPosition: computed(() => props.actions?.props?.position ?? 'right'),
-  actionClass: computed(() => String(props.actions?.props?.class ?? '')),
-  permissionDeniedBehavior: computed(() => (props.actions?.props?.permDeniedBehavior as PermissionDeniedBehavior | undefined) ?? 'hide'),
+  actionConfigs: computed(() => getSparkNodeChildren(actionsNode.value?.children)),
+  actionPosition: computed(() => {
+    const position = actionsNode.value?.props?.['position']
+    return position === 'left' || position === 'right' ? position : 'right'
+  }),
+  actionClass: computed(() => {
+    const className = actionsNode.value?.props?.['class']
+    return typeof className === 'string' ? className : ''
+  }),
+  permissionDeniedBehavior: computed(() => {
+    const behavior = actionsNode.value?.props?.['permDeniedBehavior']
+    return behavior === 'hide' || behavior === 'disable' ? behavior as PermissionDeniedBehavior : 'disable'
+  }),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

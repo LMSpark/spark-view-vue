@@ -15,7 +15,7 @@ export interface RendererFooterConfigProps extends Record<string, unknown> {
 /**
  * `r-footer` 结构化节点。
  *
- * 作为 dock 型子节点挂在容器下，由绑定层提升为容器的 `footer` 属性。
+ * 作为结构化子节点挂在容器下，容器可通过 `footer` 配置读取。
  */
 export interface FooterNode extends SparkNode {
   /** 节点类型固定为 `r-footer`。 */

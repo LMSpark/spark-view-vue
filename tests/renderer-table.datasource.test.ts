@@ -2292,7 +2292,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
   })
 
-  it('should not render row-action slot when all structured row actions are hidden by permission', () => {
+  it('should keep row-action slot visible and disable denied actions by default', () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
@@ -2323,9 +2323,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    expect(wrapper.find('.spark-action-stub[data-type="delete-row"]').exists()).toBe(false)
-    expect(wrapper.find('.biz-row-action').exists()).toBe(false)
-    expect(wrapper.find('.renderer-table-row-actions').exists()).toBe(false)
+    const deniedAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
+    expect(deniedAction.exists()).toBe(true)
+    expect((deniedAction.element as HTMLButtonElement).disabled).toBe(true)
+    expect(wrapper.find('.biz-row-action').exists()).toBe(true)
+    expect(wrapper.find('.renderer-table-row-actions').exists()).toBe(true)
   })
 
   it('should default config-driven raw table columns to sortable when they bind a field', () => {
@@ -2686,7 +2688,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="tree-node-content"]').exists()).toBe(true)
   })
 
-  it('should disable toolbar actions by model permission and still hide row actions by instance permission', async () => {
+  it('should disable toolbar and row actions when denied by permission', async () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const permissionView = permissionDataSet.getView('Users', 'default')!
     ;(permissionView as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: false, allowExport: true }
@@ -2722,7 +2724,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((deniedCreate.element as HTMLButtonElement).disabled).toBe(true)
     expect(allowedExport.exists()).toBe(true)
     expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
-    expect(wrapper.find('.spark-action-stub[data-type="delete-row"]').exists()).toBe(false)
+    const deniedRowAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
+    expect(deniedRowAction.exists()).toBe(true)
+    expect((deniedRowAction.element as HTMLButtonElement).disabled).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="plain-row"]').exists()).toBe(true)
   })
 
@@ -2885,7 +2889,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
   })
 
-  it('should disable tree toolbar actions by model permission and still hide node actions by instance permission', async () => {
+  it('should disable tree toolbar and node actions when denied by permission', async () => {
     const DeniedTreeStub = defineComponent({
       setup(_, { slots }) {
         return () => h('div', { class: 'el-tree-stub denied' }, slots['default']?.({
@@ -2941,8 +2945,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((deniedImport.element as HTMLButtonElement).disabled).toBe(true)
     expect(allowedExport.exists()).toBe(true)
     expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
-    expect(wrapper.find('.spark-action-stub[data-type="create-child-node"]').exists()).toBe(false)
-    expect(wrapper.find('.spark-action-stub[data-type="delete-node"]').exists()).toBe(false)
+    const deniedCreateChild = wrapper.find('.spark-action-stub[data-type="create-child-node"]')
+    const deniedDeleteNode = wrapper.find('.spark-action-stub[data-type="delete-node"]')
+    expect(deniedCreateChild.exists()).toBe(true)
+    expect((deniedCreateChild.element as HTMLButtonElement).disabled).toBe(true)
+    expect(deniedDeleteNode.exists()).toBe(true)
+    expect((deniedDeleteNode.element as HTMLButtonElement).disabled).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="plain-node"]').exists()).toBe(true)
   })
 

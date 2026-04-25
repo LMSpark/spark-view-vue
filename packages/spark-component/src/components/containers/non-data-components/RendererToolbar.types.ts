@@ -35,7 +35,7 @@ export interface RendererToolbarConfigProps extends Record<string, unknown> {
 /**
  * `r-toolbar` 结构化节点。
  *
- * 作为 dock 型子节点挂在容器下，由绑定层提升为容器的 `toolbar` 属性。
+ * 作为结构化子节点挂在容器下，容器可通过 `toolbar` 配置读取。
  */
 export interface ToolbarNode extends SparkNode {
 	/** 节点类型固定为 `r-toolbar`。 */

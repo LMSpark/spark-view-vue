@@ -89,8 +89,8 @@
  * @skill r-section
  * @description 分区容器（别名 r-block），支持可选卡片化包装以及标题/描述/折叠/头部操作区。
  * @category container
- * @notes dock='header' 声明头部操作区
  * @notes r-block 是此组件的别名，功能完全一致
+ * @notes 头部操作区通过结构化 `header` 区域声明
  */
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
@@ -124,7 +124,7 @@ const props = withDefaults(defineProps<RSectionProps>(), {
 const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
-// 子节点类型已由绑定层从 children 提升为 props（header）
+// 头部区域优先通过 props.header 输入。
 const contentChildren = computed(() => props.children ?? [])
 
 const headerClassValue = computed(() => String(props.header?.props?.class ?? ''))

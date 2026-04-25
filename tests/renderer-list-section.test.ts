@@ -89,9 +89,9 @@ describe('RendererList and RendererSection container integration', () => {
     expect(wrapper.findAll('.biz-list-item')).toHaveLength(2)
     expect(wrapper.findAll('.biz-list-item')[1]?.attributes('data-row-id')).toBe('2')
     const renderedItemActions = wrapper.findAll('.spark-action-stub[data-type="list-item-delete"]')
-    expect(renderedItemActions).toHaveLength(1)
+    expect(renderedItemActions).toHaveLength(2)
     const slotItemActions = wrapper.findAll('.biz-item-action')
-    expect(slotItemActions).toHaveLength(1)
+    expect(slotItemActions).toHaveLength(2)
     expect(slotItemActions[0]?.attributes('data-row-id')).toBe('1')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('grid-template-columns: repeat(24, minmax(0, 1fr));')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('gap: 12px;')
@@ -100,7 +100,7 @@ describe('RendererList and RendererSection container integration', () => {
     await nextTick()
   })
 
-  it('should not render item-actions slot when structured item action is hidden by row permission', () => {
+  it('should not render item-actions slot when permDeniedBehavior is explicitly hide', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'ListPermDS',
       tables: {
@@ -127,7 +127,7 @@ describe('RendererList and RendererSection container integration', () => {
         dataKey: 'Users@rows',
         actions: {
           type: 'r-actions',
-          props: { position: 'left' },
+          props: { position: 'left', permDeniedBehavior: 'hide' },
           children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }],
         },
       },

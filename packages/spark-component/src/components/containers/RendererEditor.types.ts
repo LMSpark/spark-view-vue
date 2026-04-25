@@ -18,7 +18,7 @@ export interface RendererEditorConfigProps extends Record<string, unknown> {
 /**
  * `r-editor` 结构化节点。
  *
- * 作为 dock 型子节点挂在树等容器下，由绑定层提升为容器的 `editor` 属性。
+ * 作为结构化子节点挂在树等容器下，容器可通过 `editor` 配置读取。
  */
 export interface EditorNode extends SparkNode {
   /** 节点类型固定为 `r-editor`。 */
