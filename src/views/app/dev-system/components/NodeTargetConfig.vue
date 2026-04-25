@@ -42,9 +42,20 @@
 
     <!-- 路径有效性提示 -->
     <el-form-item v-if="flags.showPathStatus.value && pathStatus" label="" label-width="0" class="path-status-item">
-      <el-tag :type="pathStatus.type" size="small" disable-transitions>
-        <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
-      </el-tag>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <el-tag :type="pathStatus.type" size="small" disable-transitions>
+          <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
+        </el-tag>
+        <el-button
+          v-if="pathStatus.type === 'danger' && canCreatePageForPath"
+          size="small"
+          type="primary"
+          :loading="creatingPage"
+          @click="createPageFromPath"
+        >
+          <NavIcon name="Plus" :size="12" /> 创建页面
+        </el-button>
+      </div>
     </el-form-item>
     <el-form-item v-if="flags.isDirectoryNode.value" label="" label-width="0" class="path-status-item">
       <el-tag type="info" size="small" disable-transitions>
@@ -84,7 +95,7 @@
 
     <!-- 重定向（目录/模块节点） -->
     <el-form-item v-if="flags.isDirectoryNode.value" label="重定向" class="fi fi--wide">
-      <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @change="state.markNavDirty" />
+      <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @input="state.markNavDirty" />
     </el-form-item>
 
     <!-- 父页面（子页面节点） -->
@@ -142,7 +153,7 @@ import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
-import { getProjectApi } from '@/services/api-paths'
+import { getPageApi, getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 
@@ -525,6 +536,38 @@ const refStatus = computed(() => {
   }
   return { type: 'info' as const, icon: 'InfoFilled', text: '保存后可验证引用状态' }
 })
+
+// ── 快速创建页面 ──
+
+const creatingPage = ref(false)
+
+const canCreatePageForPath = computed(() => {
+  if (!flags.isPageNode.value) return false
+  const path = props.state.editForm.path
+  if (!path) return false
+  const pageId = path.replace(/^\/+/, '')
+  return pageId.length > 0
+})
+
+async function createPageFromPath() {
+  const path = props.state.editForm.path
+  if (!path) return
+
+  const pageId = path.replace(/^\/+/, '')
+  const nodeTitle = props.state.editForm.title || pageId
+
+  creatingPage.value = true
+  try {
+    await http.post(`${getPageApi()}/__create`, { pageId, title: nodeTitle, icon: 'Document' })
+    // 创建后重新加载页面列表
+    await props.state.loadPages()
+    props.state.addStatus(`页面 ${pageId} 创建成功`, 'success')
+  } catch (error) {
+    props.state.addStatus(`页面创建失败: ${String(error)}`, 'error')
+  } finally {
+    creatingPage.value = false
+  }
+}
 </script>
 
 <style scoped>
