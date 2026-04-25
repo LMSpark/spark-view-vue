@@ -1,7 +1,7 @@
 import type { SparkNodeProps, SparkOptionFieldProps } from '../../shared-types'
 
 /** 分段控件候选项 */
-export type SegmentedOption = string | number | { label: string; value: string | number; disabled?: boolean }
+export type SegmentedOption = string | number | { label: SparkText; value: SparkText | number; disabled?: boolean }
 
 export interface RSegmentedProps
   extends SparkNodeProps,

@@ -16,5 +16,5 @@ export interface REntityPickerProps
   /** 是否允许对实体候选项执行搜索。 */
   searchable?: boolean
   /** 实体类型名称，用于驱动选择器语义或远端查询。 */
-  entityName?: string
+  entityName?: SparkText
 }

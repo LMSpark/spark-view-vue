@@ -5,13 +5,13 @@ export interface RButtonProps extends SparkNodeProps {
   /** CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行 */
   action?: BuiltinActionName
   /** 样式模板名（如 'primary', 'toolbar-danger', 'icon-add'） */
-  template?: string
+  template?: SparkText
   /** 按钮文本 */
-  label?: string
+  label?: SparkText
   /** 按钮类型 */
-  buttonType?: string
+  buttonType?: SparkText
   /** 按钮尺寸 */
-  buttonSize?: string
+  buttonSize?: SparkText
   /** 是否朴素按钮 */
   plain?: boolean
   /** 是否文本按钮 */
@@ -27,11 +27,11 @@ export interface RButtonProps extends SparkNodeProps {
   /** 是否加载中 */
   loading?: boolean
   /** 图标名称 */
-  icon?: string
+  icon?: SparkText
   /** 中文按钮文案是否自动插空格 */
   autoInsertSpace?: boolean
   /** 自定义颜色 */
-  color?: string
+  color?: SparkText
   /** 深色主题 */
   dark?: boolean
 }

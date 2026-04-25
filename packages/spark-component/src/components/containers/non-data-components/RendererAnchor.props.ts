@@ -2,7 +2,7 @@ import type { SparkNodeProps } from '../../shared-types'
 
 export interface RAnchorProps extends SparkNodeProps {
   /** 滚动容器选择器 */
-  container?: string
+  container?: SparkText
   /** 偏移量 */
   offset?: number
   /** 边界值 */

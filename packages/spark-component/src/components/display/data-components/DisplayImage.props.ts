@@ -2,17 +2,17 @@ import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
 export interface RDisplayImageProps extends SparkNodeProps, SparkDataDisplayProps<string> {
   /** 图片 URL（静态传入）。 */
-  src?: string
+  src?: SparkText
   /** 图片适应模式 */
   fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
   /** 替代文本 */
-  alt?: string
+  alt?: SparkText
   /** 是否懒加载 */
   lazy?: boolean
   /** 预览图列表（静态传入） */
-  previewSrcList?: string[]
+  previewSrcList?: SparkText[]
   /** 预览图字段名（从当前行读取数组） */
-  previewField?: string
+  previewField?: SparkText
   /** 初始预览索引 */
   initialIndex?: number
   /** 预览层级 */
@@ -24,7 +24,7 @@ export interface RDisplayImageProps extends SparkNodeProps, SparkDataDisplayProp
   /** ESC 关闭预览 */
   closeOnPressEscape?: boolean
   /** 图片宽度 */
-  width?: string | number
+  width?: SparkText | number
   /** 图片高度 */
-  height?: string | number
+  height?: SparkText | number
 }

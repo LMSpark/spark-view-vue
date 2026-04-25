@@ -2,5 +2,5 @@ import type { SparkNodeProps, SparkTitleContentContainerProps } from '../../shar
 
 export interface RPageHeaderProps extends SparkNodeProps, SparkTitleContentContainerProps {
   /** 图标名称 */
-  icon?: string
+  icon?: SparkText
 }

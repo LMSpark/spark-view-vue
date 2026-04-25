@@ -6,15 +6,15 @@ export interface RAvatarProps extends SparkNodeProps, SparkDataDisplayProps<stri
   /** 头像形状 */
   shape?: 'circle' | 'square'
   /** 图片地址 */
-  src?: string
+  src?: SparkText
   /** 响应式图像集合 */
-  srcSet?: string
+  srcSet?: SparkText
   /** 图片替代文本 */
-  alt?: string
+  alt?: SparkText
   /** 图片填充方式 */
   fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
   /** 文本头像内容 */
-  text?: string
+  text?: SparkText
   /** 图标名称 */
-  icon?: string
+  icon?: SparkText
 }

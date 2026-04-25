@@ -2,17 +2,17 @@ import type { SparkNodeProps } from '../../shared-types'
 
 export interface RTreeNodeSummaryProps extends SparkNodeProps {
   /** 名称字段名 */
-  nameField?: string
+  nameField?: SparkText
   /** 类型字段名 */
-  typeField?: string
+  typeField?: SparkText
   /** 状态字段名 */
-  statusField?: string
+  statusField?: SparkText
   /** 负责人字段名 */
-  ownerField?: string
+  ownerField?: SparkText
   /** 元信息字段名 */
-  metaField?: string
+  metaField?: SparkText
   /** 扩展字段名 */
-  extraField?: string
+  extraField?: SparkText
   /** 是否展示类型 */
   showType?: boolean
   /** 是否展示状态 */

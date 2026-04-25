@@ -29,13 +29,13 @@ export interface RListProps
   /** 列表项间距 */
   gap?: number | string
   /** 最小项宽度 */
-  minItemWidth?: string
+  minItemWidth?: SparkText
   /** 行唯一键字段 */
-  rowKey?: string
+  rowKey?: SparkText
   /** 空数据提示文案 */
-  emptyText?: string
+  emptyText?: SparkText
   /** 列表项 CSS 类名 */
-  itemClass?: string
+  itemClass?: SparkText
   /** 列表项行内样式 */
   itemStyle?: CSSProperties
   /** 使用卡片包裹 */

@@ -2,11 +2,11 @@ import type { SparkNodeProps } from '../../shared-types'
 
 export interface RCardProps extends SparkNodeProps {
   /** 卡片头部文本 */
-  header?: string
+  header?: SparkText
   /** 阴影显示策略 */
   shadow?: 'always' | 'hover' | 'never'
   /** 卡片主体样式 */
   bodyStyle?: Record<string, unknown> | string
   /** 卡片主体 class */
-  bodyClass?: string
+  bodyClass?: SparkText
 }

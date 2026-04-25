@@ -5,13 +5,13 @@ export interface RDisplayCountdownProps extends SparkNodeProps {
   /** 目标时间（时间戳或 Date） */
   value?: number | Date
   /** 格式化字符串，如 HH:mm:ss */
-  format?: string
+  format?: SparkText
   /** 前缀文本 */
-  prefix?: string
+  prefix?: SparkText
   /** 后缀文本 */
-  suffix?: string
+  suffix?: SparkText
   /** 标题 */
-  title?: string
+  title?: SparkText
   /** 值样式 */
   valueStyle?: CSSProperties
 }

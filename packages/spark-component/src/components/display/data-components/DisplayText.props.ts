@@ -2,19 +2,19 @@ import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
 export interface RTextDisplayProps extends SparkNodeProps, SparkDataDisplayProps<unknown> {
   /** 包裹标签名，如 span/div */
-  tag?: string
+  tag?: SparkText
   /** 前缀 */
-  prefix?: string
+  prefix?: SparkText
   /** 后缀 */
-  suffix?: string
+  suffix?: SparkText
   /** 格式化方式 */
   format?: 'number' | 'currency' | 'percent' | 'date'
   /** 小数精度 */
   precision?: number
   /** 空值占位文本 */
-  placeholder?: string
+  placeholder?: SparkText
   /** 文本 class */
-  textClass?: string
+  textClass?: SparkText
   /** 文本样式 */
   textStyle?: Record<string, unknown> | string
 }

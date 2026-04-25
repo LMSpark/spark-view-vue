@@ -10,5 +10,5 @@ export interface RDateProps
   /** 日期选择器模式。 */
   dateType?: DatePickerType
   /** 提交值时使用的格式化模板。 */
-  valueFormat?: string
+  valueFormat?: SparkText
 }

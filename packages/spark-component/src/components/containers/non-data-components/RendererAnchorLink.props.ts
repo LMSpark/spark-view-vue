@@ -2,7 +2,7 @@ import type { SparkNodeProps } from '../../shared-types'
 
 export interface RAnchorLinkProps extends SparkNodeProps {
   /** 锚点链接 */
-  href?: string
+  href?: SparkText
   /** 链接标题 */
-  title?: string
+  title?: SparkText
 }

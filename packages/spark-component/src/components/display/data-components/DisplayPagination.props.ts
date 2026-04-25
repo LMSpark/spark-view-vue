@@ -12,7 +12,7 @@ total?: number
   /** 页码按钮数量 */
   pagerCount?: number
   /** 布局模板 */
-  layout?: string
+  layout?: SparkText
   /** 是否显示背景 */
   background?: boolean
   /** 是否小尺寸 */

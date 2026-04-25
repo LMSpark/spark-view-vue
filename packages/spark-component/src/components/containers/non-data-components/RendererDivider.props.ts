@@ -8,5 +8,5 @@ export interface RDividerProps extends SparkNodeProps {
   /** 文本位置（横向模式） */
   contentPosition?: 'left' | 'center' | 'right'
   /** 分割线文本 */
-  content?: string
+  content?: SparkText
 }

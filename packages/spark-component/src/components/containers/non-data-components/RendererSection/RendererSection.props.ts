@@ -5,9 +5,9 @@ export interface RSectionProps extends SparkNodeProps, SparkGridLayoutProps {
   /** 结构化头部 @componentRef r-header */
   header?: HeaderNode
   /** 分区标题 */
-  title?: string
+  title?: SparkText
   /** 分区描述 */
-  description?: string
+  description?: SparkText
   /** 是否可折叠 */
   collapsible?: boolean
   /** 默认折叠 */
@@ -19,15 +19,15 @@ export interface RSectionProps extends SparkNodeProps, SparkGridLayoutProps {
   /** 卡片阴影模式 */
   cardShadow?: 'always' | 'hover' | 'never'
   /** 内容区 CSS 类名 */
-  bodyClass?: string
+  bodyClass?: SparkText
   /** 展开文案 */
-  expandText?: string
+  expandText?: SparkText
   /** 收起文案 */
-  collapseText?: string
+  collapseText?: SparkText
   /** 显示切换图标 */
   showToggleIcon?: boolean
   /** 展开图标文案 */
-  expandIconText?: string
+  expandIconText?: SparkText
   /** 收起图标文案 */
-  collapseIconText?: string
+  collapseIconText?: SparkText
 }

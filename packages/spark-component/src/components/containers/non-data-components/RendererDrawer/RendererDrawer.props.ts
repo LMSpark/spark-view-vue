@@ -15,9 +15,9 @@ export interface RDrawerProps
   /** 结构化底部 @componentRef r-footer */
   footer?: FooterNode
   /** 抽屉标题 */
-  title?: string
+  title?: SparkText
   /** 控制显隐 */
   value?: boolean
   /** 内容区 CSS 类名 */
-  bodyClass?: string
+  bodyClass?: SparkText
 }

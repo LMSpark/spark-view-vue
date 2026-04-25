@@ -4,7 +4,7 @@ export type TagType = 'success' | 'info' | 'warning' | 'danger'
 
 export interface RTagProps extends SparkNodeProps, SparkDataDisplayProps<string> {
   /** 显式内容，优先级高于 value/field */
-  content?: string
+  content?: SparkText
   /** 标签类型 */
   tagType?: '' | TagType
   /** 动态类型映射（按值命中） */
@@ -18,7 +18,7 @@ export interface RTagProps extends SparkNodeProps, SparkDataDisplayProps<string>
   /** 是否圆角 */
   round?: boolean
   /** 自定义颜色 */
-  color?: string
+  color?: SparkText
   /** 尺寸 */
   size?: 'large' | 'default' | 'small'
   /** 视觉效果 */

@@ -22,7 +22,7 @@ export interface RTableProps
   /** 过滤面板初始是否折叠。 */
   filterDefaultCollapsed?: boolean
   /** 过滤面板自适应最小宽度。 */
-  filterAutoFitMinWidth?: string
+  filterAutoFitMinWidth?: SparkText
   /** 单个过滤项默认占据的栅格列数。 */
   filterItemSpan?: number
   /** 过滤面板操作区占据的栅格列数。 */
@@ -40,7 +40,7 @@ export interface RTableProps
    */
   toolbar?: ToolbarNode
   /** 行操作列宽度（历史兼容字段，优先级低于 r-actions.props.width） */
-  rowActionsWidth?: string | number
+  rowActionsWidth?: SparkText | number
   /** 行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align） */
   rowActionsAlign?: ActionsAlign
   /** 行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed） */

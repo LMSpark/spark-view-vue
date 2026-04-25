@@ -25,11 +25,11 @@ export interface RTreeProps
   /** 结构化编辑区 @componentRef r-editor */
   editor?: EditorNode
   /** 节点主键字段名，默认取 treeConfig.idField */
-  nodeKey?: string
+  nodeKey?: SparkText
   /** 当前选中节点 ID */
-  currentKey?: string | number | null
+  currentKey?: SparkText | number | null
   /** 初始化展开并定位到目标节点 ID */
-  expandToKey?: string | number | null
+  expandToKey?: SparkText | number | null
   /** 初始化自动展开到指定层级（根节点为第 1 层） */
   expandLevel?: number
   /** 节点点击回调 */

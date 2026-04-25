@@ -2,7 +2,7 @@ import type { SparkNodeProps } from '../../shared-types'
 
 export interface RDescriptionsItemProps extends SparkNodeProps {
   /** 描述项标签文本 */
-  label?: string
+  label?: SparkText
   /** 该项占据的列数 */
   span?: number
   /** 标签对齐方式 */
@@ -10,13 +10,13 @@ export interface RDescriptionsItemProps extends SparkNodeProps {
   /** 内容对齐方式 */
   contentAlign?: 'left' | 'center' | 'right'
   /** 标签自定义 class */
-  labelClassName?: string
+  labelClassName?: SparkText
   /** 内容自定义 class */
-  className?: string
+  className?: SparkText
   /** 显式内容文本 */
-  content?: string
+  content?: SparkText
   /** 显式展示值 */
   value?: unknown
   /** 数据字段绑定键 */
-  field?: string
+  field?: SparkText
 }

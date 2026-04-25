@@ -2,13 +2,13 @@ import type { SparkNodeProps } from '../../shared-types'
 
 export interface TourStep {
   /** CSS 选择器或元素引用（运行时解析） */
-  target?: string | HTMLElement | null
+  target?: SparkText | HTMLElement | null
   /** 步骤标题 */
-  title?: string
+  title?: SparkText
   /** 步骤描述 */
-  description?: string
+  description?: SparkText
   /** 弹出位置 */
-  placement?: string
+  placement?: SparkText
   /** 是否显示遮罩 */
   mask?: boolean
   /** 是否显示箭头 */
@@ -21,7 +21,7 @@ export interface RTourProps extends SparkNodeProps {
   /** 是否显示 */
   open?: boolean
   /** 弹出位置（默认） */
-  placement?: string
+  placement?: SparkText
   /** 是否显示箭头 */
   showArrow?: boolean
   /** 是否显示遮罩 */

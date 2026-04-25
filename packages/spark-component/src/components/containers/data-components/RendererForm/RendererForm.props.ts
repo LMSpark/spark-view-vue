@@ -20,7 +20,7 @@ export interface RFormProps
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 表单标签宽度 */
-  labelWidth?: string
+  labelWidth?: SparkText
   /** 透传给 el-form 的显式属性 */
   formProps?: Record<string, unknown>
 }

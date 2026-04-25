@@ -2,15 +2,15 @@ import type { SparkFloatingLayerContainerProps, SparkNodeProps } from '../../sha
 
 export interface DropdownItem {
   /** 菜单项文本 */
-  label: string
+  label: SparkText
   /** 菜单命令值 */
-  command?: string
+  command?: SparkText
   /** 是否禁用 */
   disabled?: boolean
   /** 是否显示分割线 */
   divided?: boolean
   /** 图标名称 */
-  icon?: string
+  icon?: SparkText
 }
 
 export interface RDropdownProps extends SparkNodeProps, SparkFloatingLayerContainerProps {

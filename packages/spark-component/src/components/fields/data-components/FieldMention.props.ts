@@ -21,22 +21,22 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
    */
   mentionTriggers?: Array<{
     /** 触发字符，必须是单个字符。 */
-    prefix: string
+    prefix: SparkText
     /** 选中后写回文本的分隔符。 */
-    split?: string
+    split?: SparkText
     /**
      * 额外回写宿主字段。
      *
      * 选中候选项后，会把 `options.valueField` 对应的候选项值写入当前宿主数据行的这个字段。
      * 这用于“输入框里保留可读文本，但额外持久化选项 ID”这一类场景。
      */
-    writebackField?: string
+    writebackField?: SparkText
     /** 是否启用本地候选项过滤。 */
     searchable?: boolean
     /** 候选项来源与字段映射。 */
     options?: {
       /** 候选项数据源，例如 `Users@rows`。 */
-      dataKey?: string
+      dataKey?: SparkText
       /**
        * 候选项值字段。
        *
@@ -44,11 +44,11 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
        * 用户选中候选项后，这个值会进入宿主输入框文本；
        * 但这不是对候选项数据源的“回写”，候选项表本身不会因此被修改。
        */
-      valueField?: string
+      valueField?: SparkText
       /** 候选项显示字段。 */
-      labelField?: string
+      labelField?: SparkText
       /** 候选项禁用字段。 */
-      disabledField?: string
+      disabledField?: SparkText
     }
   }>
 
@@ -63,13 +63,13 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
    */
   options?: Array<{
     /** 展示值（必填） */
-    value: string
+    value: SparkText
     /** 展示标签 */
-    label?: string
+    label?: SparkText
     /** 当前候选项是否禁用 */
     disabled?: boolean
     /** @internal 供 trigger.writebackField 使用的持久化值，例如选项 ID。 */
-    persistedValue?: string | number | boolean
+    persistedValue?: SparkText | number | boolean
   }>
 
   /** 候选浮层位置 */
@@ -81,7 +81,7 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
   /** 是否整词匹配 */
   whole?: boolean
   /** 自定义整词判断 */
-  checkIsWhole?: (pattern: string, prefix: string) => boolean
+  checkIsWhole?: (pattern: SparkText, prefix: SparkText) => boolean
   /** 是否加载态 */
   loading?: boolean
   /** 输入框类型 */

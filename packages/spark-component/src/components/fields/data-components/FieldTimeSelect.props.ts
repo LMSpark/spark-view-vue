@@ -2,13 +2,13 @@ import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types
 
 export interface RTimeSelectProps extends SparkNodeProps, SparkFieldSemanticProps<string> {
   /** 可选时间段的起始时间。 */
-  start?: string
+  start?: SparkText
   /** 可选时间段的结束时间。 */
-  end?: string
+  end?: SparkText
   /** 相邻时间选项之间的步长。 */
-  step?: string
+  step?: SparkText
   /** 可选择的最小时间。 */
-  minTime?: string
+  minTime?: SparkText
   /** 可选择的最大时间。 */
-  maxTime?: string
+  maxTime?: SparkText
 }
