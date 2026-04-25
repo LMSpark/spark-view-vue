@@ -25,20 +25,7 @@
     <div v-show="!resolvedCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
         <RendererHostScope type="r-filter-panel-scope" :field-mode="'form'" :variant="'field'">
-          <RendererFieldScope
-            type="r-field-scope"
-            :model="resolvedFilterModel"
-            :configs="resolvedConfigs"
-            :grid-columns="resolvedGridColumns"
-            :grid-gap="resolvedGridGap"
-            :grid-auto-rows="resolvedGridAutoRows"
-            :auto-fit-min-width="resolvedAutoFitMinWidth"
-            :default-col-span="resolvedItemSpan"
-            :auto-fill-last-row="true"
-            label-position="left"
-            label-width="80px"
-            compact
-          />
+          <SparkComponentRenderer :config="fieldScopeConfig" />
         </RendererHostScope>
       </div>
       <div class="renderer-table-filters__actions" :style="resolvedActionsStyle">
@@ -74,7 +61,6 @@ import type { SparkNode } from '../internal'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkComponent } from '../internal'
 import { PAGE_PERMISSION_MODE } from '../../permission'
 import RendererHostScope from './support/RendererHostScope.vue'
-import RendererFieldScope from './support/RendererFieldScope.vue'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
@@ -152,6 +138,23 @@ const resolvedActionsStyle = computed<Record<string, string>>(() => {
     width: `${widthPercent}%`,
   }
 })
+
+const fieldScopeConfig = computed<SparkNode>(() => ({
+  type: 'r-field-scope',
+  props: {
+    model: resolvedFilterModel.value,
+    configs: resolvedConfigs.value,
+    gridColumns: resolvedGridColumns.value,
+    gridGap: resolvedGridGap.value,
+    gridAutoRows: resolvedGridAutoRows.value,
+    autoFitMinWidth: resolvedAutoFitMinWidth.value,
+    defaultColSpan: resolvedItemSpan.value,
+    autoFillLastRow: true,
+    labelPosition: 'left',
+    labelWidth: '80px',
+    compact: true,
+  },
+}))
 
 const { sparkProvide } = useSparkComponent({ type: props.type })
 if (isPanelMode.value) {

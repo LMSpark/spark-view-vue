@@ -100,9 +100,12 @@ export const Spark = {
    * 支持直接组件对象和动态导入函数两种方式。
    * 路径字符串请使用 `Spark.createRegister()` 注册。
    *
+   * 框架能力支持动态 loader（`() => import(...)`），但当前生产代码路径主要使用同步注册。
+   * 如需运行时动态注册组件，可传递 loader 函数；实际的动态加载由 `defineAsyncComponent` 处理。
+   *
    * @example
-   * Spark.register('user-grid', UserGrid)
-   * Spark.register('user-grid', () => import('./UserGrid.vue'))
+   * Spark.register('user-grid', UserGrid)                                // 同步注册
+   * Spark.register('user-grid', () => import('./UserGrid.vue'))       // 动态 loader（框架能力，非当前路径）
    */
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- documents accepted types even though ComponentLoader ⊆ unknown
   register(type: string, component: unknown | ComponentLoader, meta?: Record<string, unknown>): void {
@@ -112,7 +115,19 @@ export const Spark = {
   /**
    * 批量注册组件
    *
+   * 框架支持多种注册策略：
+   * 1. 同步注册 — `Spark.registerAll({ 'type': Component, ... })` — 当前主要路径
+   * 2. Glob 路径字符串 — `Spark.registerAll({ 'type': './path' }, import.meta.glob(...))`
+   * 3. 动态 loader — `Spark.registerAll({ 'type': () => import(...) })` — 框架能力，不在当前代码路径中
+   *
    * @example
+   * // 同步批量注册（当前路径）
+   * Spark.registerAll({
+   *   'user-grid': UserGrid,
+   *   'user-row': UserRow
+   * })
+   *
+   * // Glob 路径注册
    * Spark.registerAll({
    *   'user-grid': './UserGrid.vue',
    *   'user-row': './UserRow.vue'

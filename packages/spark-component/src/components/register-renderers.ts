@@ -1,8 +1,14 @@
 /**
  * 一键注册所有内置 Renderer 容器 + 字段组件到 SPARK 注册表。
  *
- * 架构：
- *   Core      — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough
+ * 【注册策略】
+ * 框架支持多条注册路径：
+ *   1. 同步注册 — 本文件执行 registerAllRenderers() 方式 ← **当前生产路径**
+ *   2. 动态 loader — Spark.register('type', () => import(...)) 方式 ← 框架能力，未在此处使用
+ *   3. 自动扫描 — virtual:spark-components 插件自动生成 import.meta.glob 结果
+ *
+ * 架构说明：
+ *   Core      — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough（同步注册）
  *   Extended  — 扩展组件：在 classic 注册路径中同步挂载（避免与 smart 自动注册产生无效动态导入告警）
  *
  * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
@@ -21,6 +27,7 @@ import {
 // ── 命名区域 ──
 import {
   RendererFilter, RendererEditor, RendererHeader, RendererFooter, RendererTail,
+  RendererFieldScope,
 } from './containers/index.js'
 import RendererHostScope from './containers/support/RendererHostScope.vue'
 
@@ -82,7 +89,13 @@ import SparkJsonEditor from './support/SparkJsonEditor.vue'
 type RegisteredComponent = Parameters<typeof Spark.register>[1]
 type RegistrationEntry = readonly [string, RegisteredComponent]
 
-/** 同步注册：核心 + Passthrough */
+/**
+ * 同步注册清单：核心组件集合
+ *
+ * 这些组件在启动时直接导入并注册，不使用动态 loader 路径。
+ * 框架支持 loader 能力（Spark.register('type', () => import(...))），
+ * 但当前生产代码主要使用同步注册以确保首屏性能。
+ */
 const CORE_COMPONENTS: RegistrationEntry[] = [
   // 数据容器
   ['r-table', RendererTable],
@@ -93,6 +106,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-row-fragment', RendererRowFragment],
   // 区域子组件
   ['r-actions', RendererHostScope],
+  ['r-field-scope', RendererFieldScope],
   ['r-filter', RendererFilter],
   ['r-editor', RendererEditor],
   ['r-header', RendererHeader],
