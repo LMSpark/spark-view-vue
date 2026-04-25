@@ -1,0 +1,37 @@
+/* 财务凭证录入系统 - 页面样式 */
+
+/* 凭证录入表单 */
+#form__voucher {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 分录表格区域 */
+#table__details {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 凭证查询列表 */
+#table__voucherList {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 状态标签样式 */
+[field="status"] .r-tag--draft {
+  color: #909399;
+}
+[field="status"] .r-tag--approved {
+  color: #67c23a;
+}
+[field="status"] .r-tag--posted {
+  color: #409eff;
+}

@@ -1,0 +1,380 @@
+[
+  {
+    "type": "r-tabs",
+    "id": "r-tabs__main",
+    "props": {
+      "id": "r-tabs__main"
+    },
+    "children": [
+      {
+        "type": "r-tab-pane",
+        "props": {
+          "label": "凭证录入",
+          "name": "entry",
+          "id": "tab__entry"
+        },
+        "children": [
+          {
+            "type": "r-form",
+            "props": {
+              "id": "form__voucher",
+              "labelWidth": "100px",
+              "dataKey": "Vouchers@currentRow",
+              "gridColumns": 24,
+              "gridGap": "12px"
+            },
+            "children": [
+              {
+                "type": "r-date",
+                "props": {
+                  "id": "field__date",
+                  "field": "voucherDate",
+                  "label": "凭证日期",
+                  "dateType": "date",
+                  "valueFormat": "YYYY-MM-DD",
+                  "gridColumn": "span 6"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "field__voucherNo",
+                  "field": "voucherNo",
+                  "label": "凭证编号",
+                  "gridColumn": "span 6"
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "id": "field__status",
+                  "field": "status",
+                  "label": "状态",
+                  "options": [
+                    {
+                      "label": "草稿",
+                      "value": "草稿"
+                    },
+                    {
+                      "label": "已审核",
+                      "value": "已审核"
+                    },
+                    {
+                      "label": "已过账",
+                      "value": "已过账"
+                    }
+                  ],
+                  "optionLabelField": "label",
+                  "optionValueField": "value",
+                  "gridColumn": "span 6"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "field__attachments",
+                  "field": "attachmentCount",
+                  "label": "附件数",
+                  "gridColumn": "span 6"
+                }
+              },
+              {
+                "type": "r-textarea",
+                "props": {
+                  "id": "field__summary",
+                  "field": "summary",
+                  "label": "摘要",
+                  "autosize": {
+                    "minRows": 2,
+                    "maxRows": 4
+                  },
+                  "gridColumn": "span 24"
+                }
+              }
+            ]
+          },
+          {
+            "type": "r-table",
+            "props": {
+              "id": "table__details",
+              "dataKey": "VoucherItems@rows",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "toolbar__details"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__addDetail",
+                      "label": "新增分录",
+                      "template": "primary",
+                      "action": "append-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__delDetail",
+                      "label": "删除分录",
+                      "template": "toolbar-danger",
+                      "action": "delete-current"
+                    }
+                  }
+                ]
+              },
+              "actions": {
+                "type": "r-actions",
+                "props": {
+                  "id": "actions__details"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__deleteDetailRow",
+                      "label": "删除",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "r-select",
+                "props": {
+                  "id": "col__accountCode",
+                  "field": "accountCode",
+                  "label": "会计科目",
+                  "width": 180,
+                  "optionKey": "Accounts@rows",
+                  "optionLabelField": "accountName",
+                  "optionValueField": "accountCode",
+                  "filterable": true
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__accountName",
+                  "field": "accountName",
+                  "label": "科目名称",
+                  "width": 180
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "id": "col__direction",
+                  "field": "direction",
+                  "label": "方向",
+                  "width": 100,
+                  "options": [
+                    {
+                      "label": "借",
+                      "value": "借"
+                    },
+                    {
+                      "label": "贷",
+                      "value": "贷"
+                    }
+                  ],
+                  "optionLabelField": "label",
+                  "optionValueField": "value"
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "id": "col__amount",
+                  "field": "amount",
+                  "label": "金额",
+                  "width": 150
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__detailSummary",
+                  "field": "summary",
+                  "label": "分录摘要",
+                  "width": 200
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-tab-pane",
+        "props": {
+          "label": "凭证查询",
+          "name": "query",
+          "id": "tab__query"
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "props": {
+              "id": "table__voucherList",
+              "dataKey": "Vouchers@rows",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "toolbar__voucherList"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__refresh",
+                      "label": "刷新",
+                      "template": "primary",
+                      "action": "refresh"
+                    }
+                  }
+                ]
+              },
+              "filter": {
+                "type": "r-filter",
+                "props": {
+                  "id": "filter__voucherList"
+                },
+                "children": [
+                  {
+                    "type": "r-date",
+                    "props": {
+                      "id": "filter__dateRange",
+                      "field": "voucherDate",
+                      "label": "凭证日期",
+                      "dateType": "daterange",
+                      "valueFormat": "YYYY-MM-DD",
+                      "startPlaceholder": "开始日期",
+                      "endPlaceholder": "结束日期"
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "id": "filter__voucherNo",
+                      "field": "voucherNo",
+                      "label": "凭证编号"
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "props": {
+                      "id": "filter__status",
+                      "field": "status",
+                      "label": "状态",
+                      "options": [
+                        {
+                          "label": "草稿",
+                          "value": "草稿"
+                        },
+                        {
+                          "label": "已审核",
+                          "value": "已审核"
+                        },
+                        {
+                          "label": "已过账",
+                          "value": "已过账"
+                        }
+                      ],
+                      "optionLabelField": "label",
+                      "optionValueField": "value"
+                    }
+                  }
+                ]
+              },
+              "actions": {
+                "type": "r-actions",
+                "props": {
+                  "id": "actions__voucherList"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__viewVoucher",
+                      "label": "查看",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__deleteVoucher",
+                      "label": "删除",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__voucherDate",
+                  "field": "voucherDate",
+                  "label": "凭证日期",
+                  "width": 120,
+                  "sortable": true
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__voucherNo",
+                  "field": "voucherNo",
+                  "label": "凭证编号",
+                  "width": 120,
+                  "sortable": true
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__summary",
+                  "field": "summary",
+                  "label": "摘要",
+                  "width": 250
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__status",
+                  "field": "status",
+                  "label": "状态",
+                  "width": 100
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__attachmentCount",
+                  "field": "attachmentCount",
+                  "label": "附件",
+                  "width": 80
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__createdBy",
+                  "field": "createdBy",
+                  "label": "制单人",
+                  "width": 100
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
