@@ -20,7 +20,7 @@ import {
   isModelActionAllowed as _isModelActionAllowed,
   isRowActionAllowed as _isRowActionAllowed,
 } from './PermissionResolver'
-import type { PermissionActionContext } from './PermissionResolver'
+import type { PermissionAction, PermissionActionContext } from './PermissionResolver'
 import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
 
 export interface UsePermissionReturn {
@@ -28,7 +28,7 @@ export interface UsePermissionReturn {
   readonly permissionMode: NavPermissionMode | undefined
 
   /** 判断动作是否被权限允许 */
-  isPermitted(action: string | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean
+  isPermitted(action: PermissionAction | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean
 
   /** 判断模型级动作（create/import/export）是否允许 */
   isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined): boolean

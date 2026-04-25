@@ -45,5 +45,5 @@ export { usePermission } from './usePermission'
 
 // ── 类型 ──
 export type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
-export type { PermissionActionContext } from './PermissionResolver'
+export type { PermissionAction, PermissionActionContext, PermissionActionName } from './PermissionResolver'
 export type { UsePermissionReturn } from './usePermission'

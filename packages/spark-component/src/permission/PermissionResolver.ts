@@ -79,7 +79,7 @@ function hasOwnContext<T extends object, K extends PropertyKey>(value: T, key: K
  * 未注册的自定义动作默认放行。
  */
 export function isPermittedAction(
-  action: string | undefined,
+  action: PermissionAction | undefined,
   context: PermissionActionContext,
 ): boolean {
   if (action === undefined) return true
@@ -124,12 +124,12 @@ export function resolveFieldPermissionState(
 // ── SparkNode 动作分类 + 判断 ──
 
 /** 是否为模型级权限动作（create/import/export/create-child） */
-export function isModelScopedPermAction(action: string | undefined): boolean {
+export function isModelScopedPermAction(action: PermissionAction | undefined): boolean {
   return action === 'create' || action === 'import' || action === 'export' || action === 'create-child'
 }
 
 /** 是否为行级权限动作（edit/delete/create-child） */
-export function isRowScopedPermAction(action: string | undefined): boolean {
+export function isRowScopedPermAction(action: PermissionAction | undefined): boolean {
   return action === 'edit' || action === 'delete' || action === 'create-child'
 }
 

@@ -32,7 +32,7 @@ interface UploadBrowseFieldStateOptions {
     currentValue: string
   }) => Promise<IPageSelectedFile[]>
   uploadFiles: (options: {
-    action: string
+    action: NonNullable<SparkFileUploadActionProps['action']>
     accept: string
     multiple: boolean
     fieldName: string
