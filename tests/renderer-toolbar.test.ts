@@ -2,20 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererToolbar } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
-
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-tail': 'tail',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
-
-function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
-  if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
-  const { children: _, ...rest } = props
-  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
-}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -35,15 +21,15 @@ const SparkActionStub = defineComponent({
 describe('RendererToolbar integration', () => {
   it('should render default and tail children in separate horizontal lanes', () => {
     const wrapper = mount(RendererToolbar as any, {
-      props: liftTestChildProps('r-toolbar', {
+      props: {
         gap: 10,
         zoneGap: 24,
         children: [
           { type: 'action-a' },
           { type: 'action-b' },
-          { type: 'r-tail', children: [{ type: 'action-tail' }] },
         ],
-      }),
+        tail: { type: 'r-tail', children: [{ type: 'action-tail' }] },
+      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -73,12 +59,12 @@ describe('RendererToolbar integration', () => {
 
   it('should apply classes from r-tail child props', () => {
     const wrapper = mount(RendererToolbar as any, {
-      props: liftTestChildProps('r-toolbar', {
+      props: {
         children: [
           { type: 'main-action' },
-          { type: 'r-tail', props: { class: 'toolbar-tail-custom' }, children: [{ type: 'tail-action' }] },
         ],
-      }),
+        tail: { type: 'r-tail', props: { class: 'toolbar-tail-custom' }, children: [{ type: 'tail-action' }] },
+      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,

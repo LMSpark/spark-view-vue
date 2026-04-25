@@ -2,20 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
-
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-toolbar': 'toolbar',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
-
-function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
-  if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
-  const { children: _, ...rest } = props
-  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
-}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -78,10 +64,10 @@ describe('RendererTabs and RendererCollapse integration', () => {
   it('should render tabs panes with toolbar children and pane grid body', () => {
     const onTabChange = vi.fn()
     const wrapper = mount(RendererTabs as any, {
-      props: liftTestChildProps('r-tabs', {
+      props: {
         onTabChange,
+        toolbar: { type: 'r-toolbar', children: [{ type: 'tabs-toolbar-action' }] },
         children: [
-          { type: 'r-toolbar', children: [{ type: 'tabs-toolbar-action' }] },
           {
             type: 'r-tab-pane',
             props: { label: '基本信息', name: 'base', gridGap: 16 },
@@ -96,7 +82,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
             children: [],
           },
         ],
-      }),
+      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -173,10 +159,10 @@ describe('RendererTabs and RendererCollapse integration', () => {
   it('should render collapse items with toolbar children and item grid body', () => {
     const onChange = vi.fn()
     const wrapper = mount(RendererCollapse as any, {
-      props: liftTestChildProps('r-collapse', {
+      props: {
         onChange,
+        toolbar: { type: 'r-toolbar', children: [{ type: 'collapse-toolbar-action' }] },
         children: [
-          { type: 'r-toolbar', children: [{ type: 'collapse-toolbar-action' }] },
           {
             type: 'r-collapse-item',
             props: { title: '分组一', name: 'one', gridGap: 12 },
@@ -191,7 +177,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
             children: [],
           },
         ],
-      }),
+      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,

@@ -4,14 +4,7 @@ import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, registerAllRenderers, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
-
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-toolbar': 'toolbar',
-  'r-actions': 'actions',
-  'r-editor': 'editor',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
+import { buildPageChildren } from '../packages/spark-component/src/page/binding/build-page-children'
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
@@ -70,7 +63,7 @@ describe('SparkNode runtime contract', () => {
     expect(wrapper.find('.sparknode-runtime-child').exists()).toBe(true)
   })
 
-  it('lifts matching child types to props and keeps other content in children', () => {
+  it('keeps structural wrapper nodes in children during page binding', () => {
     const node: SparkNode = {
       type: 'r-tree',
       children: [
@@ -85,23 +78,28 @@ describe('SparkNode runtime contract', () => {
       ],
     }
 
-    const lifted = liftChildProps(node, testGetLiftAs)
+    const [built] = buildPageChildren(
+      [node as unknown as import('@spark-view/spark-page-config').RuleConfig],
+      {
+        callFunc: () => undefined,
+        actionCtx: {} as Parameters<typeof buildPageChildren>[1]['actionCtx'],
+      },
+    )
+    expect(built).toBeDefined()
+    if (!built) throw new Error('buildPageChildren should return the bound node')
 
-    // Lifted child nodes become props
-    expect(lifted.props?.['editor']).toBeDefined()
-    expect(lifted.props?.['toolbar']).toBeDefined()
-    expect((lifted.props?.['editor'] as SparkNode).children).toHaveLength(1)
-    expect((lifted.props?.['editor'] as SparkNode).children?.[0]).toEqual(
+    expect(built.props?.['editor']).toBeUndefined()
+    expect(built.props?.['toolbar']).toBeUndefined()
+    expect(built.children).toHaveLength(3)
+    expect((built.children?.[0] as SparkNode).children).toHaveLength(1)
+    expect(((built.children?.[0] as SparkNode).children ?? [])[0]).toEqual(
       expect.objectContaining({ type: 'r-form' }),
     )
-    expect((lifted.props?.['toolbar'] as SparkNode).children).toHaveLength(1)
-    expect((lifted.props?.['toolbar'] as SparkNode).children?.[0]).toEqual(
+    expect((built.children?.[1] as SparkNode).children).toHaveLength(1)
+    expect(((built.children?.[1] as SparkNode).children ?? [])[0]).toEqual(
       expect.objectContaining({ type: 'builtin-action' }),
     )
-
-    // Non-liftable content preserved in children
-    expect(lifted.children).toHaveLength(1)
-    expect(lifted.children?.[0]).toEqual(
+    expect(built.children?.[2]).toEqual(
       expect.objectContaining({ type: 'r-tree-node-summary' }),
     )
   })

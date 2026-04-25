@@ -59,7 +59,7 @@
  * ```
  */
 import {
-  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, inject,
+  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
@@ -81,8 +81,6 @@ import { buildPageContext } from '../context/buildPageContext'
 import { buildPageChildren } from '../binding'
 import type { PageContext } from '../context/types'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
-import { SPARK_REGISTRY_KEY } from '../../system/keys.js'
-import type { ComponentRegistry } from '../../core/types'
 
 const logger = Logger('SparkPageRenderer')
 
@@ -212,18 +210,6 @@ const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, a
 const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
-
-// 子类型提升查询：从注册表 meta.liftAs 读取子组件自声明的区域角色
-const sparkRegistry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
-const _liftAsCache = new Map<string, string | null>()
-function getChildLiftAs(childType: string): string | undefined {
-  const cached = _liftAsCache.get(childType)
-  if (cached !== undefined) return cached ?? undefined
-  const def = sparkRegistry?.get(childType)
-  const liftAs = def?.meta?.['liftAs'] as string | undefined
-  _liftAsCache.set(childType, liftAs ?? null)
-  return liftAs
-}
 
 // PAGE_SERVICE
 const pageService = buildPageService(router, {
@@ -417,7 +403,6 @@ function rebuildChildren(): void {
   children.value = buildPageChildren(ruleNodes as unknown as import('@spark-view/spark-page-config').RuleConfig[], {
     callFunc: callPageFunction,
     actionCtx,
-    getLiftAs: getChildLiftAs,
   })
 }
 

@@ -2,22 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, defineCapability, useSparkComponent } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
-
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-header': 'header',
-  'r-footer': 'footer',
-  'r-toolbar': 'toolbar',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
-
-function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
-  if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
-  const { children: _, ...rest } = props
-  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
-}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -88,17 +72,17 @@ const ElStepStub = defineComponent({
 describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   it('should render dialog header/footer actions and body grid', () => {
     const wrapper = mount(RendererDialog as any, {
-      props: liftTestChildProps('r-dialog', {
+      props: {
         title: '编辑用户',
         value: true,
         gridGap: 12,
+        header: { type: 'r-header', children: [{ type: 'dialog-header-action' }] },
+        footer: { type: 'r-footer', children: [{ type: 'dialog-footer-action' }] },
         children: [
-          { type: 'r-header', children: [{ type: 'dialog-header-action' }] },
-          { type: 'r-footer', children: [{ type: 'dialog-footer-action' }] },
           { type: 'child-a', props: { colSpan: 8 } },
           { type: 'child-b', props: { colSpan: 16 } },
         ],
-      }),
+      },
       slots: {
         footer: ({ title }: Record<string, unknown>) => h('button', {
           class: 'biz-dialog-footer',
@@ -149,10 +133,10 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   it('should render steps toolbar children and switch active step content', async () => {
     const onStepChange = vi.fn()
     const wrapper = mount(RendererSteps as any, {
-      props: liftTestChildProps('r-steps', {
+      props: {
         onStepChange,
+        toolbar: { type: 'r-toolbar', children: [{ type: 'steps-toolbar-action' }] },
         children: [
-          { type: 'r-toolbar', children: [{ type: 'steps-toolbar-action' }] },
           {
             type: 'r-step',
             props: { title: '步骤一', name: 'step1', gridGap: 16 },
@@ -168,7 +152,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
             ],
           },
         ],
-      }),
+      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,

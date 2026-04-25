@@ -4,22 +4,6 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererList, RendererSection, Spark, defineCapability, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
-import type { SparkNode } from '@spark-view/spark-component'
-
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-toolbar': 'toolbar',
-  'r-actions': 'actions',
-  'r-header': 'header',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
-
-function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
-  if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
-  const { children: _, ...rest } = props
-  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
-}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -72,15 +56,13 @@ describe('RendererList and RendererSection container integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
-      props: liftTestChildProps('r-list', {
+      props: {
         dataKey: 'Users@rows',
         gridGap: 12,
         itemColSpan: 12,
-        children: [
-          { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'list-toolbar-action' }] },
-          { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
-        ],
-      }),
+        toolbar: { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'list-toolbar-action' }] },
+        actions: { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
+      },
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
           class: 'biz-list-item',
@@ -247,13 +229,13 @@ describe('RendererList and RendererSection container integration', () => {
 
   it('should allow section header slot and default slot scopes to control collapse state', async () => {
     const wrapper = mount(RendererSection as any, {
-      props: liftTestChildProps('r-section', {
+      props: {
         title: '基础信息',
         description: 'desc',
         collapsible: true,
         defaultCollapsed: true,
-        children: [{ type: 'r-header', children: [{ type: 'section-header-action' }] }],
-      }),
+        header: { type: 'r-header', children: [{ type: 'section-header-action' }] },
+      },
       slots: {
         'header-actions': ({ collapsed, toggleCollapsed }: Record<string, unknown>) => h('button', {
           class: 'biz-section-header-action',

@@ -3,20 +3,6 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
-import type { SparkNode } from '@spark-view/spark-component'
-
-const TEST_LIFT_AS_MAP: Record<string, string> = {
-  'r-toolbar': 'toolbar',
-}
-const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
-
-function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
-  if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
-  const { children: _, ...rest } = props
-  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
-}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -99,10 +85,10 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
-      props: liftTestChildProps('r-form', {
+      props: {
         dataKey: 'Users@currentRow',
-        children: [{ type: 'r-toolbar', children: [{ type: 'form-toolbar-action' }] }],
-      }),
+        toolbar: { type: 'r-toolbar', children: [{ type: 'form-toolbar-action' }] },
+      },
       slots: {
         default: ({ model }: Record<string, unknown>) => h('div', {
           class: 'biz-form-template',
@@ -237,10 +223,10 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererDetail as any, {
       dataSet: ds,
-      props: liftTestChildProps('r-detail', {
+      props: {
         dataKey: 'Users@currentRow',
-        children: [{ type: 'r-toolbar', children: [{ type: 'detail-toolbar-action' }] }],
-      }),
+        toolbar: { type: 'r-toolbar', children: [{ type: 'detail-toolbar-action' }] },
+      },
       slots: {
         default: ({ row }: Record<string, unknown>) => h('div', {
           class: 'biz-detail-template',
