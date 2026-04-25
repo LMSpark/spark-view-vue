@@ -3,8 +3,8 @@ import type { ComputedRef, Slots } from 'vue'
 import type { SparkNode } from '../../internal'
 import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
 import { usePermission } from '../../../permission/index.js'
+import { isBuiltinAction } from '../../../page/actions'
 import { isActionDisplayed } from '../support/actions/action-visibility'
-import { isBuiltinAction } from '../support/actions/builtin-action-meta'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
 type ListenerMap = Record<string, unknown>

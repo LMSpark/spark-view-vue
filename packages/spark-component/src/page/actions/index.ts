@@ -26,3 +26,13 @@ export { isActionDescriptor } from './action-descriptor'
 export { executeActionDescriptor } from './action-executor'
 export type { ActionExecutionOptions } from './action-executor'
 export { extractActionExecutionControl } from './action-control'
+
+export {
+  BUILTIN_ACTION_META,
+  isBuiltinActionName,
+  getBuiltinActionLabelByName,
+  getBuiltinActionName,
+  isBuiltinAction,
+  getBuiltinActionLabel,
+} from './builtin-action-meta'
+export type { BuiltinActionName } from './builtin-action-meta'

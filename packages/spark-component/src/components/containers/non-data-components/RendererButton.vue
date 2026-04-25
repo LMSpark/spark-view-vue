@@ -47,7 +47,7 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
-import { isBuiltinAction } from '../support/actions/builtin-action-meta'
+import { isBuiltinAction } from '../../../page/actions'
 import { resolveButtonStyle } from '../support/actions/button-templates'
 import type { RButtonProps } from './RendererButton.props'
 

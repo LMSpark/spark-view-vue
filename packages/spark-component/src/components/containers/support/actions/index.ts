@@ -4,11 +4,13 @@ export {
   getBuiltinActionName,
   getBuiltinActionLabel,
   isBuiltinAction,
-} from './builtin-action-meta.js'
+} from '../../../../page/actions/index.js'
 export type {
   BuiltinActionName,
+} from '../../../../page/actions/index.js'
+export type {
   BuiltinActionScope,
-} from './builtin-action-meta.js'
+} from './builtin-action-types.js'
 
 export {
   asRecord,

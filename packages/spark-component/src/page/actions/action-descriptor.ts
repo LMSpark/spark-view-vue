@@ -1,7 +1,7 @@
 /**
  * Action Descriptor — 声明式行为描述符
  *
- * rule.json 中的 `on` 事件 / 区域子节点（如 `r-toolbar` / `r-actions`）均可使用 action descriptor，
+ * rule.json 中的 `on` 事件 / 区域子节点（如 `r-toolbar` / `r-actions`）均可使用 ActionDescriptor，
  * 替代 script.js 中的函数调用，实现 **配置驱动、零脚本** 的交互逻辑。
  *
  * @example
@@ -34,7 +34,7 @@ import type { CancellableControl } from '../../internal/cancellable-control'
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
 /**
- * Action Descriptor 判别联合
+ * ActionDescriptor 判别联合
  *
  * 通过 `action` 字段区分具体行为类型。
  * 所有描述符均可携带 `then` 实现链式执行。
@@ -53,9 +53,24 @@ export type ActionDescriptor =
   | SetFieldAction
   | OpenAction
 
+/** ActionDescriptor 的统一动作名集合。 */
+export type ActionDescriptorActionName =
+  | 'script'
+  | 'show-message'
+  | 'confirm'
+  | 'alert'
+  | 'navigate'
+  | 'append-row'
+  | 'delete-current'
+  | 'delete-selected'
+  | 'refresh'
+  | 'patch-current'
+  | 'set-field'
+  | 'open'
+
 interface ActionDescriptorBase {
-  /** 动作类型标识 */
-  action: string
+  /** 动作类型标识（必须命中 ActionDescriptorActionName） */
+  action: ActionDescriptorActionName
   /** 链式：当前动作完成后执行下一个 */
   then?: ActionDescriptor
   /**
@@ -172,9 +187,11 @@ export interface OpenAction extends ActionDescriptorBase {
 // ── 类型守卫 ──────────────────────────────────────────────────────────────
 
 /**
- * 判断值是否为 action descriptor 对象
+ * 判断值是否为 ActionDescriptor 形态对象
  *
- * 在 normalizeRuleEvents 中用于区分字符串函数名和声明式动作。
+ * 用于在绑定层区分字符串函数名与声明式动作对象。
+ * 运行时守卫仅做结构判定（`action` 为 string）；
+ * 具体动作名合法性由 TypeScript 联合类型与执行分支共同约束。
  */
 export function isActionDescriptor(value: unknown): value is ActionDescriptor {
   return (

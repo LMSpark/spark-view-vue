@@ -1,20 +1,18 @@
 /**
- * 内置声明式动作系统 — 动作元数据与识别
+ * Builtin Action 元数据（page/actions 真源）
  *
- * 动作名映射、类型守卫、标签解析。
+ * 说明：
+ * - 这里定义“内建动作名”与默认展示文案；
+ * - 组件容器层只做适配与执行，不再重复维护动作名清单。
  */
 
-import type { IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '../../../internal'
-import { readString, getActionProps } from './builtin-action-helpers'
-
-// ── 类型定义 ──────────────────────────────────────────────────────────────
+import type { SparkNode } from '../../core/types'
 
 interface BuiltinActionMeta {
   label: string
 }
 
-const BUILTIN_ACTION_META = {
+export const BUILTIN_ACTION_META = {
   'append-row': { label: '新增' },
   'prompt-append': { label: '新增' },
   'prompt-edit': { label: '编辑' },
@@ -35,17 +33,26 @@ const BUILTIN_ACTION_META = {
 
 export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
 
-const BUILTIN_ACTION_META_RECORD: Record<BuiltinActionName, BuiltinActionMeta> = BUILTIN_ACTION_META
-
-export interface BuiltinActionScope {
-  row?: IDataRow
-  index?: number
+export function isBuiltinActionName(value: string): value is BuiltinActionName {
+  return value in BUILTIN_ACTION_META
 }
 
-// ── 动作名校验 ────────────────────────────────────────────────────────────
+export function getBuiltinActionLabelByName(name: BuiltinActionName): string {
+  return BUILTIN_ACTION_META[name].label
+}
 
-function isBuiltinActionName(value: string): value is BuiltinActionName {
-  return value in BUILTIN_ACTION_META
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+}
+
+function readString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
+}
+
+function getActionProps(action: SparkNode): Record<string, unknown> {
+  return asRecord(action.props) ?? {}
 }
 
 export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
@@ -59,8 +66,6 @@ export function isBuiltinAction(action: SparkNode): boolean {
   return getBuiltinActionName(action) !== null
 }
 
-// ── 标签映射 ──────────────────────────────────────────────────────────────
-
 export function getBuiltinActionLabel(action: SparkNode): string {
   const propsMap = getActionProps(action)
   const explicit = readString(propsMap['label'])
@@ -68,5 +73,5 @@ export function getBuiltinActionLabel(action: SparkNode): string {
 
   const actionName = getBuiltinActionName(action)
   if (!actionName) return '执行'
-  return BUILTIN_ACTION_META_RECORD[actionName].label
+  return getBuiltinActionLabelByName(actionName)
 }

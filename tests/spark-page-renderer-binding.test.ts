@@ -148,7 +148,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(readLabel()).toBe('更新后标题')
   })
 
-  it('maps non-builtin r-button action strings to page script clicks for backward compat', async () => {
+  it('does not map non-builtin r-button action strings to page script clicks', async () => {
     const callFunc = vi.fn<(functionName: string, ...args: unknown[]) => unknown>()
     const children = buildPageChildren([
       {
@@ -175,9 +175,8 @@ describe('SparkPageRenderer root props aggregation', () => {
     const createButtonProps = children[0]?.props as Record<string, unknown>
     const refreshButtonProps = children[1]?.props as Record<string, unknown>
 
-    expect(typeof createButtonProps['onClick']).toBe('function')
-    await (createButtonProps['onClick'] as (...args: unknown[]) => unknown)('evt')
-    expect(callFunc).toHaveBeenCalledWith('newVoucher', 'evt')
+    expect(createButtonProps['onClick']).toBeUndefined()
+    expect(callFunc).not.toHaveBeenCalled()
     expect(refreshButtonProps['onClick']).toBeUndefined()
   })
 })

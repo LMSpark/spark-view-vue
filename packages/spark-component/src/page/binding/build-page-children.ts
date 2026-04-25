@@ -17,7 +17,6 @@ import type { RuleConfig } from '@spark-view/spark-page-config'
 import { SPARK_NODE_STRUCT_KEYS, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeRuleEvents, normalizeOnProps } from './bind-normalize.js'
-import { getBuiltinActionName } from '../../components/containers/support/actions/builtin-action-meta.js'
 
 // ── 导出类型 ───────────────────────────────────────────────────────────────
 
@@ -62,27 +61,6 @@ export function buildPageChildren(
    */
   function isSparkChild(value: unknown): value is SparkNodeChildren[number] {
     return typeof value === 'string' || typeof value === 'number' || isSparkNode(value)
-  }
-
-  function hasExplicitClickHandler(propsObj: Record<string, unknown>): boolean {
-    const onMap = propsObj['on']
-    if (onMap !== null && typeof onMap === 'object' && !Array.isArray(onMap)) {
-      if (typeof (onMap as Record<string, unknown>)['click'] === 'function') return true
-    }
-    return typeof propsObj['onClick'] === 'function'
-  }
-
-  function bindLegacyButtonAction(nodeType: string, propsObj: Record<string, unknown>): void {
-    if (nodeType !== 'r-button') return
-    if (hasExplicitClickHandler(propsObj)) return
-
-    const actionName = typeof propsObj['action'] === 'string' ? propsObj['action'].trim() : ''
-    if (!actionName) return
-
-    const actionNode: SparkNode = { type: nodeType, props: propsObj }
-    if (getBuiltinActionName(actionNode) !== null) return
-
-    propsObj['onClick'] = (...args: unknown[]) => callFunc(actionName, ...args)
   }
 
   // ── 局部归并辅助 ───────────────────────────────────────────────────────
@@ -180,9 +158,6 @@ export function buildPageChildren(
 
       propsObj[key] = bindValue(value)
     }
-
-    // 兼容历史写法：r-button 上的非内建 action 字符串视为脚本点击函数。
-    bindLegacyButtonAction(cloned.type, propsObj)
 
     // children 保持结构位置，不在绑定层做额外结构提升；这里只做递归绑定与类型收敛。
     if (Array.isArray(current['children'])) {
