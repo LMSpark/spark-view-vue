@@ -44,11 +44,21 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
 }
 
 export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>) {
+  function shouldAutoLoad(view: DataView): boolean {
+    if (typeof view.requestData !== 'function') return false
+    if (view.autoLoad === false) return false
+
+    const dataTable = view.dataTable
+    if (!dataTable?.api?.list) return false
+    if (dataTable.resourceType === 'static-data') return false
+
+    return true
+  }
+
   function tryAutoLoad(source: TSource | null): void {
     if (source === null) return
     const maybeView = source as DataView
-    if (typeof maybeView.requestData !== 'function') return
-    if (!maybeView.dataTable?.api) return
+    if (!shouldAutoLoad(maybeView)) return
 
     void maybeView.requestData().catch((error: unknown) => {
       options.logger.error(`${options.logPrefix}: requestData() 失败`, error)

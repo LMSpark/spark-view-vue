@@ -5,8 +5,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageConfig } from '@spark-view/spark-page-config'
+import { buildPageChildren } from '../packages/spark-component/src/page/binding'
+import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 
 describe('SparkPageRenderer root props aggregation', () => {
+  function createActionContext(callFunc: (name: string, ...args: unknown[]) => unknown): ActionExecutionContext {
+    return {
+      getDataSet: () => null,
+      getPageService: () => null,
+      getRouter: () => null,
+      callFunc,
+    }
+  }
+
   function createPageConfig(label: string): PageConfig {
     return {
       pageId: 'test-page',
@@ -135,5 +146,38 @@ describe('SparkPageRenderer root props aggregation', () => {
     await flushPromises()
 
     expect(readLabel()).toBe('更新后标题')
+  })
+
+  it('maps non-builtin r-button action strings to page script clicks for backward compat', async () => {
+    const callFunc = vi.fn<(functionName: string, ...args: unknown[]) => unknown>()
+    const children = buildPageChildren([
+      {
+        type: 'r-button',
+        props: {
+          id: 'btn__new',
+          label: '新增凭证',
+          action: 'newVoucher',
+        },
+      },
+      {
+        type: 'r-button',
+        props: {
+          id: 'btn__refresh',
+          label: '刷新',
+          action: 'refresh',
+        },
+      },
+    ] as never, {
+      callFunc,
+      actionCtx: createActionContext(callFunc),
+    })
+
+    const createButtonProps = children[0]?.props as Record<string, unknown>
+    const refreshButtonProps = children[1]?.props as Record<string, unknown>
+
+    expect(typeof createButtonProps['onClick']).toBe('function')
+    await (createButtonProps['onClick'] as (...args: unknown[]) => unknown)('evt')
+    expect(callFunc).toHaveBeenCalledWith('newVoucher', 'evt')
+    expect(refreshButtonProps['onClick']).toBeUndefined()
   })
 })

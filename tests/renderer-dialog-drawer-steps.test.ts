@@ -1,7 +1,18 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, defineCapability, useSparkComponent } from '@spark-view/spark-component'
+import RendererStepItem from '../packages/spark-component/src/components/containers/non-data-components/RendererStepItem.vue'
+import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
+import { createRendererDialogZeroCode } from '../packages/spark-component/src/components/containers/non-data-components/RendererDialog/zero-code'
+import { createRendererDrawerZeroCode } from '../packages/spark-component/src/components/containers/non-data-components/RendererDrawer/zero-code'
+
+function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
+  const props = config['props']
+  return props !== null && props !== undefined && typeof props === 'object' && !Array.isArray(props)
+    ? props as Record<string, unknown>
+    : {}
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -11,10 +22,39 @@ const SparkActionStub = defineComponent({
     },
   },
   setup(props) {
-    return () => h('button', {
-      class: 'spark-action-stub',
-      'data-type': (props.config as Record<string, unknown>)['type'] as string,
-    }, (props.config as Record<string, unknown>)['type'] as string)
+    return () => {
+      const config = props.config as Record<string, unknown>
+      const type = String(config['type'] ?? '')
+      const propsMap = readConfigProps(config)
+
+      if (type === 'r-toolbar') {
+        const children = Array.isArray(propsMap['children'])
+          ? propsMap['children']
+          : (Array.isArray(config['children']) ? config['children'] : [])
+        return h(RendererToolbar as any, {
+          ...propsMap,
+          children,
+        })
+      }
+
+      if (type === 'r-step') {
+        const componentProps = { ...propsMap }
+        const runtimeDefaultSlot = componentProps['$defaultSlot']
+        delete componentProps['$defaultSlot']
+        const children = Array.isArray(componentProps['children'])
+          ? componentProps['children']
+          : (Array.isArray(config['children']) ? config['children'] : [])
+        return h(RendererStepItem as any, {
+          ...componentProps,
+          children,
+        }, typeof runtimeDefaultSlot === 'function' ? { default: runtimeDefaultSlot as () => unknown } : undefined)
+      }
+
+      return h('button', {
+        class: 'spark-action-stub',
+        'data-type': type,
+      }, type)
+    }
   },
 })
 
@@ -70,6 +110,52 @@ const ElStepStub = defineComponent({
 })
 
 describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
+  it('should keep drawer visibility in sync when API opens without external prop writeback', () => {
+    const emit = vi.fn<(event: 'update:value', value: boolean) => void>()
+    const visibleValue = ref(false)
+    const { drawerApi, handleModelUpdate } = createRendererDrawerZeroCode({
+      emit,
+      visibleValue,
+      onOpen: undefined,
+      onClose: undefined,
+      onOpened: undefined,
+      onClosed: undefined,
+    })
+
+    drawerApi.open()
+    expect(visibleValue.value).toBe(true)
+    expect(drawerApi.isVisible()).toBe(true)
+
+    handleModelUpdate(false)
+    expect(visibleValue.value).toBe(false)
+
+    drawerApi.toggle()
+    expect(visibleValue.value).toBe(true)
+  })
+
+  it('should keep dialog visibility in sync when API opens without external prop writeback', () => {
+    const emit = vi.fn<(event: 'update:value', value: boolean) => void>()
+    const visibleValue = ref(false)
+    const { dialogApi, handleModelUpdate } = createRendererDialogZeroCode({
+      emit,
+      visibleValue,
+      onOpen: undefined,
+      onClose: undefined,
+      onOpened: undefined,
+      onClosed: undefined,
+    })
+
+    dialogApi.open()
+    expect(visibleValue.value).toBe(true)
+    expect(dialogApi.isVisible()).toBe(true)
+
+    handleModelUpdate(false)
+    expect(visibleValue.value).toBe(false)
+
+    dialogApi.toggle()
+    expect(visibleValue.value).toBe(true)
+  })
+
   it('should render dialog header/footer actions and body grid', () => {
     const wrapper = mount(RendererDialog as any, {
       props: {

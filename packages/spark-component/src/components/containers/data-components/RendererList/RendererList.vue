@@ -22,7 +22,7 @@
               @click="handleItemClick(row, index, $event)"
             >
               <div
-                v-if="showItemActionsLeftValue"
+                v-if="showItemActionsLeftValue && hasVisibleItemActions(row, index)"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
                 <RendererHostScope
@@ -31,7 +31,11 @@
                   :row="row"
                   child-key-prefix="r-list-item-action-left"
                 />
-                <slot name="item-actions" v-bind="getItemActionSlotScope(row, index)" />
+                <slot
+                  v-if="shouldRenderItemActionSlot(row, index)"
+                  name="item-actions"
+                  v-bind="getItemActionSlotScope(row, index)"
+                />
               </div>
 
               <div :class="itemClass" :style="itemStyle">
@@ -56,7 +60,7 @@
               </div>
 
               <div
-                v-if="showItemActionsRightValue"
+                v-if="showItemActionsRightValue && hasVisibleItemActions(row, index)"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
                 <RendererHostScope
@@ -65,7 +69,11 @@
                   :row="row"
                   child-key-prefix="r-list-item-action-right"
                 />
-                <slot name="item-actions" v-bind="getItemActionSlotScope(row, index)" />
+                <slot
+                  v-if="shouldRenderItemActionSlot(row, index)"
+                  name="item-actions"
+                  v-bind="getItemActionSlotScope(row, index)"
+                />
               </div>
             </div>
           </div>
@@ -301,6 +309,15 @@ function getItemActionSlotScope(row: IDataRow, index: number) {
     row,
     index,
   })
+}
+
+function hasVisibleItemActions(row: IDataRow, index: number): boolean {
+  return getScopedItemActions({ row, index }).length > 0
+}
+
+function shouldRenderItemActionSlot(row: IDataRow, index: number): boolean {
+  // item-actions 插槽不允许绕过结构化动作可见性。
+  return hasVisibleItemActions(row, index)
 }
 
 async function handleItemClick(row: IDataRow, index: number, event: Event) {

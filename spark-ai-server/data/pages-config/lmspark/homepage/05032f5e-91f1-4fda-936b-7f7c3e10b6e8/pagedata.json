@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "Voucher": {
+      "tableName": "Voucher",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "凭证ID",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "voucherNo",
+          "type": "string",
+          "label": "凭证号"
+        },
+        {
+          "name": "date",
+          "type": "date",
+          "label": "日期",
+          "defaultValue": "2024-01-01"
+        },
+        {
+          "name": "attachmentCount",
+          "type": "number",
+          "label": "附件数",
+          "defaultValue": 0
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "label": "摘要"
+        },
+        {
+          "name": "debitTotal",
+          "type": "number",
+          "label": "借方合计",
+          "defaultValue": 0
+        },
+        {
+          "name": "creditTotal",
+          "type": "number",
+          "label": "贷方合计",
+          "defaultValue": 0
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "defaultValue": "草稿"
+        },
+        {
+          "name": "isSystem",
+          "type": "boolean",
+          "label": "系统录入",
+          "defaultValue": false
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Voucher",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "voucherNo": "记-001",
+              "date": "2024-01-05",
+              "attachmentCount": 2,
+              "summary": "购买办公用品",
+              "debitTotal": 5000,
+              "creditTotal": 5000,
+              "status": "已审核",
+              "isSystem": false
+            },
+            {
+              "id": 2,
+              "voucherNo": "记-002",
+              "date": "2024-01-10",
+              "attachmentCount": 1,
+              "summary": "支付差旅费",
+              "debitTotal": 3200,
+              "creditTotal": 3200,
+              "status": "已审核",
+              "isSystem": false
+            },
+            {
+              "id": 3,
+              "voucherNo": "记-003",
+              "date": "2024-01-15",
+              "attachmentCount": 0,
+              "summary": "收到货款",
+              "debitTotal": 12000,
+              "creditTotal": 12000,
+              "status": "草稿",
+              "isSystem": false
+            }
+          ],
+          "filterExpression": {
+            "field": "isSystem",
+            "op": "==",
+            "value": false
+          },
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        },
+        "draft": {
+          "tableName": "Voucher",
+          "viewId": "draft",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 3,
+              "voucherNo": "记-003",
+              "date": "2024-01-15",
+              "attachmentCount": 0,
+              "summary": "收到货款",
+              "debitTotal": 12000,
+              "creditTotal": 12000,
+              "status": "草稿",
+              "isSystem": false
+            }
+          ],
+          "filterExpression": {
+            "type": "and",
+            "children": [
+              {
+                "field": "status",
+                "op": "==",
+                "value": "草稿"
+              },
+              {
+                "field": "isSystem",
+                "op": "==",
+                "value": false
+              }
+            ]
+          },
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        },
+        "audited": {
+          "tableName": "Voucher",
+          "viewId": "audited",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "voucherNo": "记-001",
+              "date": "2024-01-05",
+              "attachmentCount": 2,
+              "summary": "购买办公用品",
+              "debitTotal": 5000,
+              "creditTotal": 5000,
+              "status": "已审核",
+              "isSystem": false
+            },
+            {
+              "id": 2,
+              "voucherNo": "记-002",
+              "date": "2024-01-10",
+              "attachmentCount": 1,
+              "summary": "支付差旅费",
+              "debitTotal": 3200,
+              "creditTotal": 3200,
+              "status": "已审核",
+              "isSystem": false
+            }
+          ],
+          "filterExpression": {
+            "type": "and",
+            "children": [
+              {
+                "field": "status",
+                "op": "==",
+                "value": "已审核"
+              },
+              {
+                "field": "isSystem",
+                "op": "==",
+                "value": false
+              }
+            ]
+          },
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        },
+        "all": {
+          "tableName": "Voucher",
+          "viewId": "all",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "voucherNo": "记-001",
+              "date": "2024-01-05",
+              "attachmentCount": 2,
+              "summary": "购买办公用品",
+              "debitTotal": 5000,
+              "creditTotal": 5000,
+              "status": "已审核",
+              "isSystem": false
+            },
+            {
+              "id": 2,
+              "voucherNo": "记-002",
+              "date": "2024-01-10",
+              "attachmentCount": 1,
+              "summary": "支付差旅费",
+              "debitTotal": 3200,
+              "creditTotal": 3200,
+              "status": "已审核",
+              "isSystem": false
+            },
+            {
+              "id": 3,
+              "voucherNo": "记-003",
+              "date": "2024-01-15",
+              "attachmentCount": 0,
+              "summary": "收到货款",
+              "debitTotal": 12000,
+              "creditTotal": 12000,
+              "status": "草稿",
+              "isSystem": false
+            }
+          ],
+          "filterExpression": {
+            "field": "isSystem",
+            "op": "==",
+            "value": false
+          },
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "master",
+      "crudConfig": {
+        "timeout": 10000
+      }
+    },
+    "Entries": {
+      "tableName": "Entries",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "分录ID",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "voucherId",
+          "type": "number",
+          "label": "凭证ID"
+        },
+        {
+          "name": "accountCode",
+          "type": "string",
+          "label": "科目编码"
+        },
+        {
+          "name": "accountName",
+          "type": "string",
+          "label": "科目名称"
+        },
+        {
+          "name": "debitAmount",
+          "type": "number",
+          "label": "借方金额",
+          "defaultValue": 0
+        },
+        {
+          "name": "creditAmount",
+          "type": "number",
+          "label": "贷方金额",
+          "defaultValue": 0
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "label": "摘要"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Entries",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "voucherId": 1,
+              "accountCode": "660201",
+              "accountName": "管理费用-办公费",
+              "debitAmount": 5000,
+              "creditAmount": 0,
+              "summary": "购买办公桌椅"
+            },
+            {
+              "id": 2,
+              "voucherId": 1,
+              "accountCode": "100201",
+              "accountName": "银行存款-工行",
+              "debitAmount": 0,
+              "creditAmount": 5000,
+              "summary": "购买办公桌椅"
+            },
+            {
+              "id": 3,
+              "voucherId": 2,
+              "accountCode": "660203",
+              "accountName": "管理费用-差旅费",
+              "debitAmount": 3200,
+              "creditAmount": 0,
+              "summary": "北京出差"
+            },
+            {
+              "id": 4,
+              "voucherId": 2,
+              "accountCode": "100201",
+              "accountName": "银行存款-工行",
+              "debitAmount": 0,
+              "creditAmount": 3200,
+              "summary": "北京出差"
+            },
+            {
+              "id": 5,
+              "voucherId": 3,
+              "accountCode": "100201",
+              "accountName": "银行存款-工行",
+              "debitAmount": 12000,
+              "creditAmount": 0,
+              "summary": "收到A公司货款"
+            },
+            {
+              "id": 6,
+              "voucherId": 3,
+              "accountCode": "112200",
+              "accountName": "应收账款-A公司",
+              "debitAmount": 0,
+              "creditAmount": 12000,
+              "summary": "收到A公司货款"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "aggregates": {
+            "debitAmount": {
+              "type": "sum",
+              "field": "debitAmount",
+              "label": "借方合计"
+            },
+            "creditAmount": {
+              "type": "sum",
+              "field": "creditAmount",
+              "label": "贷方合计"
+            }
+          }
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "child",
+      "crudConfig": {
+        "timeout": 10000
+      }
+    }
+  },
+  "tableRelations": [
+    {
+      "parentTable": "Voucher",
+      "childTable": "Entries",
+      "parentField": "id",
+      "childField": "voucherId",
+      "relationName": "VoucherEntries"
+    }
+  ],
+  "viewDependencies": [
+    {
+      "parentTable": "Voucher",
+      "childTable": "Entries",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    }
+  ]
+}

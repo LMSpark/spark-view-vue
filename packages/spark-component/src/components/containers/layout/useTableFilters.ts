@@ -23,10 +23,18 @@ interface FilterCapableView {
   refresh?: () => Promise<void> | void
   filterExpression?: FilterExpression
   dataTable?: {
+    resourceType?: string
     api?: {
       list?: unknown
     }
   }
+}
+
+function shouldSyncFilterToView(view: DataView): boolean {
+  const dataTable = (view as unknown as FilterCapableView).dataTable
+  if (dataTable?.api?.list === undefined) return false
+  if (dataTable.resourceType === 'static-data') return false
+  return true
 }
 
 function isSameFilterExpression(
@@ -229,11 +237,16 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     return { type: 'and', children: conditions }
   })
 
+  const hasFilterConfigs = computed(() => filterConfigs.value.length > 0)
+
   async function applyFilterToView(
     view: DataView,
     expr: FilterExpression | undefined,
     refreshRemote: boolean,
   ): Promise<void> {
+    if (!hasFilterConfigs.value) return
+    if (!shouldSyncFilterToView(view)) return
+
     const candidate = view as unknown as FilterCapableView
     if (typeof candidate.setFilter !== 'function') return
     if (isSameFilterExpression(candidate.filterExpression, expr)) return
@@ -275,7 +288,8 @@ export function useTableFilters(options: UseTableFiltersOptions) {
 
   const filteredRows = computed(() => {
     const rows = options.dataView.value?.rows ?? []
-    if (options.dataView.value?.dataTable?.api?.list) return rows
+    if (!hasFilterConfigs.value) return rows
+    if (options.dataView.value && shouldSyncFilterToView(options.dataView.value)) return rows
     const expr = filterExpression.value
     return expr ? rows.filter(row => matchesExpression(row, expr)) : rows
   })
@@ -296,7 +310,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
       filterModel[key] = undefined
     }
     const view = options.dataView.value
-    if (!view) return
+    if (!view || !hasFilterConfigs.value) return
     try {
       await applyFilterToView(view, undefined, true)
     } catch (error) {

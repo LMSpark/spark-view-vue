@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { ComputedRef, Slots } from 'vue'
 import type { SparkNode } from '../../internal'
 import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
@@ -20,8 +20,28 @@ interface UseContainerToolbarOptions {
   slots?: Slots
 }
 
+type DataSourceEventName = 'currentRowChanged' | 'selectedRowsChanged' | 'rowsChanged'
+
+interface DataSourceEventBus {
+  on(event: DataSourceEventName, handler: () => void): void
+  off(event: DataSourceEventName, handler: () => void): void
+}
+
+function resolveDataSourceEventBus(dataSource: IDataSource | null | undefined): DataSourceEventBus | null {
+  const candidate = dataSource as { events?: unknown } | null | undefined
+  const events = candidate?.events
+  if (events === null || events === undefined || typeof events !== 'object') return null
+
+  const on = (events as { on?: unknown }).on
+  const off = (events as { off?: unknown }).off
+  if (typeof on !== 'function' || typeof off !== 'function') return null
+
+  return events as DataSourceEventBus
+}
+
 export function useContainerToolbar(options: UseContainerToolbarOptions) {
   const perm = usePermission()
+  const dataSourceChangeVersion = ref(0)
   const toolbarConfigs = computed(() =>
     options.toolbar.value ?? []
   )
@@ -30,6 +50,29 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
   )
   const toolbarClassValue = computed(() =>
     options.toolbarClass.value ?? 'renderer-toolbar-default'
+  )
+
+  watch(
+    () => options.dataSource?.value,
+    (dataSource, _prev, onCleanup) => {
+      const events = resolveDataSourceEventBus(dataSource ?? null)
+      if (!events) return
+
+      const handleDataSourceChange = () => {
+        dataSourceChangeVersion.value += 1
+      }
+
+      events.on('currentRowChanged', handleDataSourceChange)
+      events.on('selectedRowsChanged', handleDataSourceChange)
+      events.on('rowsChanged', handleDataSourceChange)
+
+      onCleanup(() => {
+        events.off('currentRowChanged', handleDataSourceChange)
+        events.off('selectedRowsChanged', handleDataSourceChange)
+        events.off('rowsChanged', handleDataSourceChange)
+      })
+    },
+    { immediate: true },
   )
 
   function wrapPermissionGuardedHandler(handler: unknown, allowed: boolean): unknown {
@@ -70,7 +113,10 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
   }
 
   const visibleToolbarConfigs = computed(() =>
-    toolbarConfigs.value
+    {
+      const _dataSourceChangeVersion = dataSourceChangeVersion.value
+
+      return toolbarConfigs.value
       .map(action => {
         const dataSource = options.dataSource?.value ?? null
         const patched = isBuiltinAction(action)
@@ -110,6 +156,7 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
         )
       })
       .filter((action): action is SparkNode => action !== null)
+    }
   )
 
   const hasToolbar = computed(() => visibleToolbarConfigs.value.length > 0)

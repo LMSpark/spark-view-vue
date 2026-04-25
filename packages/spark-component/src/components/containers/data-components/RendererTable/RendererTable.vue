@@ -2,32 +2,13 @@
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
     <RendererHostScope v-if="showToolbar" type="r-table-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
-      <RendererToolbar
-        type="r-toolbar"
-        :class="['renderer-table-toolbar', toolbarClassValue]"
-        v-bind="toolbarComponentProps"
-        :children="visibleToolbarConfigs"
-      />
+      <SparkComponentRenderer :config="toolbarRendererConfig!" />
     </RendererHostScope>
 
     <!-- 过滤区 -->
-    <RendererFilter
+    <SparkComponentRenderer
       v-if="hasFilters"
-      :class="filterClassValue"
-      :model="filterModel"
-      :configs="filterConfigs"
-      :active-count="activeFilterCount"
-      :collapsible="filterCollapsibleValue"
-      :collapsed="filtersCollapsed"
-      :grid-columns="filterGridColumnsValue"
-      :grid-gap="filterGridGapValue"
-      :grid-auto-rows="filterGridAutoRowsValue"
-      :auto-fit-min-width="filterAutoFitMinWidthValue"
-      :item-span="filterItemSpanValue"
-      :action-span="filterActionSpanValue"
-      :search-action="handleFilterSearch"
-      :reset-action="handleFilterReset"
-      :toggle-collapsed-action="toggleFiltersCollapsed"
+      :config="filterRendererConfig!"
     />
 
     <!-- 表格主体 -->
@@ -51,7 +32,7 @@
         -->
         <!-- 行操作列（左） -->
         <el-table-column
-          v-if="showRowActionsLeftValue"
+          v-if="showRowActionsLeftVisible"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
@@ -64,7 +45,11 @@
                 :action-host="getScopedRowActionCapability(scope)"
                 child-key-prefix="r-table-row-action"
               />
-              <slot name="row-actions" v-bind="getScopedRowActionSlotScope(scope)" />
+              <slot
+                v-if="shouldRenderRowActionSlot(scope)"
+                name="row-actions"
+                v-bind="getScopedRowActionSlotScope(scope)"
+              />
             </div>
           </template>
         </el-table-column>
@@ -109,7 +94,7 @@
 
         <!-- 行操作列（右） -->
         <el-table-column
-          v-if="showRowActionsRightValue"
+          v-if="showRowActionsRightVisible"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
@@ -122,7 +107,11 @@
                 :action-host="getScopedRowActionCapability(scope)"
                 child-key-prefix="r-table-row-action"
               />
-              <slot name="row-actions" v-bind="getScopedRowActionSlotScope(scope)" />
+              <slot
+                v-if="shouldRenderRowActionSlot(scope)"
+                name="row-actions"
+                v-bind="getScopedRowActionSlotScope(scope)"
+              />
             </div>
           </template>
         </el-table-column>
@@ -168,16 +157,12 @@ import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
-import { mapNodeProps } from '../../support'
 import { useContainerActions, type LateralActionPosition } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../support/slotScopeFactories'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
-import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
-import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
 import type { ActionsAlign, ActionsFixed, PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
@@ -438,28 +423,18 @@ const {
   dataSource: resolvedView,
 })
 
-/**
- * 工具栏属性逐项对接：
- * 仅允许 RendererToolbar 已声明的 props 进入运行时，禁止结构化透传整包 childMeta。
- */
-const toolbarComponentProps = computed<Partial<RendererToolbarProps>>(() => {
-  return mapNodeProps<RendererToolbarProps>({
-    source: toolbarNode.value?.props,
-    map: {
-      id: 'id',
-      type: 'type',
-      children: 'children',
-      tail: 'tail',
-      gap: 'gap',
-      zoneGap: 'zoneGap',
-      align: 'align',
-      justify: 'justify',
+const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
+  if (!showToolbar.value) return undefined
+
+  return {
+    type: 'r-toolbar',
+    ...(toolbarNode.value?.id !== undefined ? { id: toolbarNode.value.id } : {}),
+    props: {
+      ...(toolbarNode.value?.props ?? {}),
+      class: ['renderer-table-toolbar', toolbarClassValue.value],
     },
-    ignoreSourceKeys: ['position', 'class'],
-    context: 'RendererTable.toolbar',
-    unknownPolicy: 'error',
-    logger,
-  })
+    children: visibleToolbarConfigs.value,
+  }
 })
 
 // ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
@@ -506,6 +481,33 @@ const {
   filteredRows,
 })
 
+const filterRendererConfig = computed<SparkNode | undefined>(() => {
+  if (!hasFilters.value) return undefined
+
+  return {
+    type: 'r-filter',
+    ...(filterNode.value?.id !== undefined ? { id: filterNode.value.id } : {}),
+    props: {
+      ...(filterNode.value?.props ?? {}),
+      class: filterClassValue.value,
+      model: filterModel,
+      configs: filterConfigs.value,
+      activeCount: activeFilterCount.value,
+      collapsible: filterCollapsibleValue.value,
+      collapsed: filtersCollapsed.value,
+      gridColumns: filterGridColumnsValue.value,
+      gridGap: filterGridGapValue.value,
+      gridAutoRows: filterGridAutoRowsValue.value,
+      autoFitMinWidth: filterAutoFitMinWidthValue.value,
+      itemSpan: filterItemSpanValue.value,
+      actionSpan: filterActionSpanValue.value,
+      searchAction: handleFilterSearch,
+      resetAction: handleFilterReset,
+      toggleCollapsedAction: toggleFiltersCollapsed,
+    },
+  }
+})
+
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
 
 const nativeTableRef = ref<NativeTableLike | null>(null)
@@ -545,6 +547,7 @@ const toolbarActionHost = createActionCapability({
     return isBuiltinActionDisabled(action)
   },
   execute(action) {
+    if (isBuiltinActionDisabled(action)) return
     handleBuiltinToolbarAction(action)
   },
 })
@@ -579,7 +582,24 @@ const {
   actionPosition: rowActionsPositionValue,
   showActionsLeft: showRowActionsLeft,
   showActionsRight: showRowActionsRight,
+  allowSlotOnlyColumn: false,
 })
+
+const hasVisibleRowActionsInRows = computed(() => {
+  const rows = tableData.value
+  if (!Array.isArray(rows) || rows.length === 0) return false
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index]
+    if (row === undefined) continue
+    if (getScopedRowActions({ row, index }).length > 0) return true
+  }
+
+  return false
+})
+
+const showRowActionsLeftVisible = computed(() => showRowActionsLeftValue.value && hasVisibleRowActionsInRows.value)
+const showRowActionsRightVisible = computed(() => showRowActionsRightValue.value && hasVisibleRowActionsInRows.value)
 
 const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
   const align = childCompatProp<ActionsAlign>(actionsNode.value, 'align')
@@ -670,6 +690,7 @@ function getScopedRowActionCapability(scope: Record<string, unknown>) {
       return isBuiltinActionDisabled(action, { row, index })
     },
     execute(action) {
+      if (isBuiltinActionDisabled(action, { row, index })) return
       handleBuiltinRowAction(action, row, index)
     },
   })
@@ -679,6 +700,11 @@ function getScopedRowActionSlotScope(scope: Record<string, unknown>): object {
   // 给 row-actions 命名插槽提供与内置动作同源的上下文，避免业务插槽与内置行为语义漂移。
   const { row, index } = resolveRowActionScope(scope)
   return getRowActionSlotScope(row, index)
+}
+
+function shouldRenderRowActionSlot(scope: Record<string, unknown>): boolean {
+  // row-actions 插槽不允许绕过结构化动作可见性；当前行无可见动作时不渲染插槽。
+  return getScopedRowActionConfigs(scope).length > 0
 }
 
 // ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────

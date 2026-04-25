@@ -91,13 +91,68 @@ describe('RendererList and RendererSection container integration', () => {
     const renderedItemActions = wrapper.findAll('.spark-action-stub[data-type="list-item-delete"]')
     expect(renderedItemActions).toHaveLength(1)
     const slotItemActions = wrapper.findAll('.biz-item-action')
-    expect(slotItemActions).toHaveLength(2)
-    expect(slotItemActions[1]?.attributes('data-row-id')).toBe('2')
+    expect(slotItemActions).toHaveLength(1)
+    expect(slotItemActions[0]?.attributes('data-row-id')).toBe('1')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('grid-template-columns: repeat(24, minmax(0, 1fr));')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('gap: 12px;')
     expect(wrapper.find('.renderer-list-cell').attributes('style')).toContain('grid-column: span 12 / span 12;')
 
     await nextTick()
+  })
+
+  it('should not render item-actions slot when structured item action is hidden by row permission', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ListPermDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          views: {
+            default: {
+              rows: [
+                { id: 1, name: 'Alice', _perm: { allowDelete: false } },
+              ],
+            },
+          },
+        },
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererList as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        actions: {
+          type: 'r-actions',
+          props: { position: 'left' },
+          children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }],
+        },
+      },
+      slots: {
+        default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
+          class: 'biz-list-item',
+          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-index': String(rowIndex ?? ''),
+        }, 'biz-list-item'),
+        'item-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
+          class: 'biz-item-action',
+          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-index': String(rowIndex ?? ''),
+        }, 'biz-item-action'),
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-card': ElCardStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.spark-action-stub[data-type="list-item-delete"]').exists()).toBe(false)
+    expect(wrapper.find('.biz-item-action').exists()).toBe(false)
   })
 
   it('should expose r-table-aligned list api for current row and row mutations', async () => {

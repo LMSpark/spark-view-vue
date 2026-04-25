@@ -10,26 +10,17 @@
 
     <div class="renderer-steps-main">
       <el-steps v-bind="hostProps" :active="activeStepIndex">
-        <RendererStepItem
+        <SparkComponentRenderer
           v-for="(step, index) in stepConfigs"
           :key="getStepKey(step, index)"
-          :index="index"
-          mode="header"
-          :type="step.type"
-          v-bind="getStepComponentProps(step)"
-          @activate="activateStep"
+          :config="createStepRendererConfig(step, index, 'header')"
         />
       </el-steps>
 
-      <RendererStepItem
+      <SparkComponentRenderer
         v-if="activeStep"
-        :index="activeStepIndex"
-        mode="content"
-        :type="activeStep.type"
-        v-bind="getStepComponentProps(activeStep)"
-      >
-        <slot v-if="!hasStepChildren(activeStep)" v-bind="getStepSlotScope(activeStep, activeStepIndex)" />
-      </RendererStepItem>
+        :config="createStepRendererConfig(activeStep, activeStepIndex, 'content')"
+      />
     </div>
   </div>
 </template>
@@ -41,11 +32,10 @@
  * @category container
  * @notes children 内放 r-step
  */
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import RendererStepItem from '../RendererStepItem.vue'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
@@ -58,6 +48,8 @@ const props = withDefaults(defineProps<RStepsProps>(), {
 const emit = defineEmits<{
   'update:value': [value: string | number]
 }>()
+
+const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
@@ -111,6 +103,21 @@ function getStepComponentProps(step: SparkNode): Record<string, unknown> {
     ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(step.children !== undefined ? { children: step.children } : {}),
     ...(step.props ?? {}),
+  }
+}
+
+function createStepRendererConfig(step: SparkNode, index: number, mode: 'header' | 'content'): SparkNode {
+  return {
+    type: 'r-step',
+    props: {
+      ...getStepComponentProps(step),
+      index,
+      mode,
+      ...(mode === 'header' ? { onActivate: activateStep } : {}),
+      ...(mode === 'content' && !hasStepChildren(step)
+        ? { $defaultSlot: () => slots['default']?.(getStepSlotScope(step, index)) }
+        : {}),
+    },
   }
 }
 

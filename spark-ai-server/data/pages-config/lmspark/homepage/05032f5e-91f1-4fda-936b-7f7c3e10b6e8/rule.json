@@ -1,0 +1,665 @@
+[
+  {
+    "type": "r-tabs",
+    "id": "tabs__main",
+    "props": {
+      "id": "tabs__main",
+      "value": "list"
+    },
+    "children": [
+      {
+        "type": "r-tab-pane",
+        "props": {
+          "index": 0,
+          "name": "list",
+          "label": "凭证列表",
+          "lazy": false
+        },
+        "children": [
+          {
+            "type": "r-card",
+            "props": {
+              "id": "card__toolbar",
+              "header": "凭证管理"
+            },
+            "children": [
+              {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "toolbar__main"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__new",
+                      "label": "新增凭证",
+                      "action": "newVoucher",
+                      "template": "primary"
+                    },
+                    "children": []
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__save",
+                      "label": "保存",
+                      "action": "saveVoucher",
+                      "template": "primary"
+                    },
+                    "children": []
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__audit",
+                      "label": "审核",
+                      "action": "auditVoucher"
+                    },
+                    "children": []
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__print",
+                      "label": "打印",
+                      "action": "printVoucher"
+                    },
+                    "children": []
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__export",
+                      "label": "导出",
+                      "action": "exportVoucher"
+                    },
+                    "children": []
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__delete",
+                      "label": "删除",
+                      "action": "deleteVoucher",
+                      "template": "danger"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-tabs",
+            "props": {
+              "id": "tabs__voucherList",
+              "value": "all",
+              "onTabChange": "onVoucherTabChange"
+            },
+            "children": [
+              {
+                "type": "r-tab-pane",
+                "props": {
+                  "index": 0,
+                  "name": "all",
+                  "label": "全部",
+                  "lazy": false
+                },
+                "children": [
+                  {
+                    "type": "r-table",
+                    "props": {
+                      "id": "table__voucherAll",
+                      "dataKey": "Voucher@all@rows",
+                      "tableProps": {
+                        "highlightCurrentRow": true,
+                        "rowKey": "id"
+                      },
+                      "onCurrentChange": "onVoucherChange"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__voucherNo",
+                          "field": "voucherNo",
+                          "label": "凭证号",
+                          "width": 120
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__date",
+                          "field": "date",
+                          "label": "日期",
+                          "width": 120
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__voucherSummary",
+                          "field": "summary",
+                          "label": "摘要",
+                          "width": 200
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "id": "col__debitTotal",
+                          "field": "debitTotal",
+                          "label": "借方合计",
+                          "width": 120,
+                          "precision": 2
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "id": "col__creditTotal",
+                          "field": "creditTotal",
+                          "label": "贷方合计",
+                          "width": 120,
+                          "precision": 2
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__status",
+                          "field": "status",
+                          "label": "状态",
+                          "width": 80
+                        },
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-tab-pane",
+                "props": {
+                  "index": 1,
+                  "name": "draft",
+                  "label": "草稿",
+                  "lazy": true
+                },
+                "children": [
+                  {
+                    "type": "r-table",
+                    "props": {
+                      "id": "table__voucherDraft",
+                      "dataKey": "Voucher@draft@rows",
+                      "tableProps": {
+                        "highlightCurrentRow": true,
+                        "rowKey": "id"
+                      },
+                      "onCurrentChange": "onVoucherChange"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__voucherNo2",
+                          "field": "voucherNo",
+                          "label": "凭证号",
+                          "width": 120
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__date2",
+                          "field": "date",
+                          "label": "日期",
+                          "width": 120
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__voucherSummary2",
+                          "field": "summary",
+                          "label": "摘要",
+                          "width": 200
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "id": "col__debitTotal2",
+                          "field": "debitTotal",
+                          "label": "借方合计",
+                          "width": 120,
+                          "precision": 2
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "id": "col__creditTotal2",
+                          "field": "creditTotal",
+                          "label": "贷方合计",
+                          "width": 120,
+                          "precision": 2
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__status2",
+                          "field": "status",
+                          "label": "状态",
+                          "width": 80
+                        },
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-tab-pane",
+                "props": {
+                  "index": 2,
+                  "name": "audited",
+                  "label": "已审核",
+                  "lazy": true
+                },
+                "children": [
+                  {
+                    "type": "r-table",
+                    "props": {
+                      "id": "table__voucherAudited",
+                      "dataKey": "Voucher@audited@rows",
+                      "tableProps": {
+                        "highlightCurrentRow": true,
+                        "rowKey": "id"
+                      },
+                      "onCurrentChange": "onVoucherChange"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__voucherNo3",
+                          "field": "voucherNo",
+                          "label": "凭证号",
+                          "width": 120
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__date3",
+                          "field": "date",
+                          "label": "日期",
+                          "width": 120
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__voucherSummary3",
+                          "field": "summary",
+                          "label": "摘要",
+                          "width": 200
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "id": "col__debitTotal3",
+                          "field": "debitTotal",
+                          "label": "借方合计",
+                          "width": 120,
+                          "precision": 2
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "id": "col__creditTotal3",
+                          "field": "creditTotal",
+                          "label": "贷方合计",
+                          "width": 120,
+                          "precision": 2
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "id": "col__status3",
+                          "field": "status",
+                          "label": "状态",
+                          "width": 80
+                        },
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "r-drawer",
+    "id": "drawer__voucherEntry",
+    "props": {
+      "id": "drawer__voucherEntry",
+      "title": "凭证录入",
+      "value": false,
+      "width": "60%"
+    },
+    "children": [
+      {
+        "type": "r-card",
+        "props": {
+          "id": "card__form",
+          "header": "凭证信息"
+        },
+        "children": [
+          {
+            "type": "r-form",
+            "props": {
+              "id": "form__voucher",
+              "dataKey": "Voucher@currentRow",
+              "labelWidth": "80px"
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "txt__voucherNo",
+                  "field": "voucherNo",
+                  "label": "凭证号",
+                  "readonly": true,
+                  "width": 200
+                },
+                "children": []
+              },
+              {
+                "type": "r-date",
+                "props": {
+                  "id": "date__voucherDate",
+                  "field": "date",
+                  "label": "日期",
+                  "dateType": "date",
+                  "valueFormat": "YYYY-MM-DD",
+                  "width": 200
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "id": "num__attachments",
+                  "field": "attachmentCount",
+                  "label": "附件数",
+                  "width": 120,
+                  "min": 0
+                },
+                "children": []
+              },
+              {
+                "type": "r-textarea",
+                "props": {
+                  "id": "textarea__summary",
+                  "field": "summary",
+                  "label": "摘要",
+                  "autosize": {
+                    "minRows": 2,
+                    "maxRows": 4
+                  },
+                  "rows": 2
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "props": {
+          "id": "card__entries",
+          "header": "分录明细"
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "props": {
+              "id": "table__entries",
+              "dataKey": "Entries@default@rows",
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "gap": "8px"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__addEntry",
+                      "label": "新增分录",
+                      "action": "append-row",
+                      "template": "primary"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__copyEntry",
+                      "label": "复制分录",
+                      "action": "copyEntry"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__removeEntry",
+                      "label": "删除分录",
+                      "action": "delete-current",
+                      "template": "danger"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btn__clearEntries",
+                      "label": "清空分录",
+                      "action": "clearEntries"
+                    }
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "id": "col__entrySummary",
+                  "field": "summary",
+                  "label": "摘要",
+                  "width": 200
+                },
+                "children": []
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "id": "col__account",
+                  "field": "accountCode",
+                  "label": "科目",
+                  "width": 150,
+                  "options": [
+                    {
+                      "label": "银行存款",
+                      "value": "1001"
+                    },
+                    {
+                      "label": "应收账款",
+                      "value": "1122"
+                    },
+                    {
+                      "label": "主营业务收入",
+                      "value": "6001"
+                    },
+                    {
+                      "label": "管理费用",
+                      "value": "6602"
+                    },
+                    {
+                      "label": "销售费用",
+                      "value": "6601"
+                    },
+                    {
+                      "label": "财务费用",
+                      "value": "6603"
+                    },
+                    {
+                      "label": "应交税费",
+                      "value": "2221"
+                    },
+                    {
+                      "label": "应付账款",
+                      "value": "2202"
+                    },
+                    {
+                      "label": "其他应收款",
+                      "value": "1221"
+                    },
+                    {
+                      "label": "固定资产",
+                      "value": "1601"
+                    }
+                  ],
+                  "optionLabelField": "label",
+                  "optionValueField": "value"
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "id": "col__debit",
+                  "field": "debitAmount",
+                  "label": "借方金额",
+                  "width": 150,
+                  "precision": 2
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "id": "col__credit",
+                  "field": "creditAmount",
+                  "label": "贷方金额",
+                  "width": 150,
+                  "precision": 2
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-card",
+        "props": {
+          "id": "card__summary",
+          "header": "合计"
+        },
+        "children": [
+          {
+            "type": "r-detail",
+            "props": {
+              "id": "detail__summary",
+              "dataKey": "Entries@summaryRow"
+            },
+            "children": [
+              {
+                "type": "r-number",
+                "props": {
+                  "id": "sum__debit",
+                  "field": "debitAmount",
+                  "label": "借方合计",
+                  "width": 200,
+                  "precision": 2
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "id": "sum__credit",
+                  "field": "creditAmount",
+                  "label": "贷方合计",
+                  "width": 200,
+                  "precision": 2
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-footer",
+        "props": {
+          "style": {
+            "display": "flex",
+            "justifyContent": "flex-end",
+            "gap": "8px",
+            "padding": "12px 0"
+          }
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "id": "btn__drawerSave",
+              "label": "保存",
+              "action": "saveVoucher",
+              "template": "primary"
+            },
+            "children": []
+          },
+          {
+            "type": "r-button",
+            "props": {
+              "id": "btn__drawerCancel",
+              "label": "取消",
+              "action": "closeDrawer"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

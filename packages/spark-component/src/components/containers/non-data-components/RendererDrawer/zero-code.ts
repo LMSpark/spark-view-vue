@@ -15,15 +15,18 @@ interface RendererDrawerZeroCodeOptions {
 export function createRendererDrawerZeroCode(options: RendererDrawerZeroCodeOptions) {
   const drawerApi: RendererDrawerApi = {
     open() {
+      options.visibleValue.value = true
       options.emit('update:value', true)
     },
     close() {
+      options.visibleValue.value = false
       options.emit('update:value', false)
     },
     isVisible() {
       return options.visibleValue.value
     },
     toggle() {
+      options.visibleValue.value = !options.visibleValue.value
       options.emit('update:value', !options.visibleValue.value)
     },
   }
@@ -31,6 +34,7 @@ export function createRendererDrawerZeroCode(options: RendererDrawerZeroCodeOpti
   return {
     drawerApi,
     handleModelUpdate(value: boolean) {
+      options.visibleValue.value = value
       options.emit('update:value', value)
     },
     handleOpen() {

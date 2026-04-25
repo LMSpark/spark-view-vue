@@ -6,6 +6,8 @@ import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import type { SparkNode } from '@spark-view/spark-component'
+import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
+import RendererFilter from '../packages/spark-component/src/components/containers/RendererFilter.vue'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']
@@ -56,6 +58,87 @@ const SparkActionStub = defineComponent({
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
       const type = String(config['type'] ?? '')
+
+      if (type === 'r-toolbar') {
+        return h(RendererToolbar as any, {
+          ...propsMap,
+          children: Array.isArray(config['children']) ? config['children'] : [],
+        })
+      }
+
+      if (type === 'r-filter') {
+        const resolvedConfigs = Array.isArray(propsMap['configs'])
+          ? propsMap['configs'] as Array<Record<string, unknown>>
+          : []
+        const resolvedModel = (propsMap['model'] as Record<string, unknown> | undefined) ?? {}
+        const resolvedCollapsed = propsMap['collapsed'] === true
+        const resolvedActiveCount = Number(propsMap['activeCount'] ?? 0)
+        const resolvedCollapsible = propsMap['collapsible'] === true
+        return h('div', { class: 'renderer-table-filters' }, [
+          ...(resolvedCollapsible
+            ? [
+                h('div', { class: 'renderer-table-filters__header' }, [
+                  h('div', { class: 'renderer-table-filters__heading' }, [
+                    h('span', { class: 'renderer-table-filters__title' }, '筛选条件'),
+                    ...(resolvedActiveCount > 0
+                      ? [h('span', { class: 'el-tag-stub renderer-table-filters__count' }, `${resolvedActiveCount} 项筛选`)]
+                      : []),
+                  ]),
+                  h('button', {
+                    type: 'button',
+                    class: ['renderer-table-filters__toggle', resolvedCollapsed ? 'is-collapsed' : ''],
+                    'aria-expanded': String(!resolvedCollapsed),
+                    onClick: () => {
+                      const toggleCollapsedAction = propsMap['toggleCollapsedAction']
+                      if (typeof toggleCollapsedAction === 'function') {
+                        void toggleCollapsedAction()
+                      }
+                    },
+                  }, [
+                    h('span', { class: 'renderer-table-filters__toggle-icon', 'aria-hidden': 'true' }, '>'),
+                    h('span', { class: 'renderer-table-filters__toggle-text' }, resolvedCollapsed ? '展开筛选' : '收起筛选'),
+                  ]),
+                ]),
+              ]
+            : []),
+          h('div', {
+            class: 'renderer-table-filters__content',
+            style: resolvedCollapsed ? { display: 'none' } : {},
+          }, [
+            h('div', { class: 'renderer-table-filters__body' }, [
+              h(RendererFieldScopeStub as any, {
+                model: resolvedModel,
+                configs: resolvedConfigs,
+                autoFitMinWidth: String(propsMap['autoFitMinWidth'] ?? ''),
+                defaultColSpan: Number(propsMap['itemSpan'] ?? 24),
+              }),
+            ]),
+            h('div', { class: 'renderer-table-filters__actions' }, [
+              h('button', {
+                type: 'button',
+                class: 'el-button-stub el-button-stub--primary',
+                onClick: () => {
+                  const searchAction = propsMap['searchAction']
+                  if (typeof searchAction === 'function') {
+                    void searchAction()
+                  }
+                },
+              }, '查询'),
+              h('button', {
+                type: 'button',
+                class: 'el-button-stub',
+                onClick: () => {
+                  const resetAction = propsMap['resetAction']
+                  if (typeof resetAction === 'function') {
+                    void resetAction()
+                  }
+                },
+              }, '重置'),
+            ]),
+          ]),
+        ])
+      }
+
       const isButtonLike = type === 'r-button' || type === 'el-button'
 
       return h('button', {
@@ -326,6 +409,18 @@ const SparkColumnRendererStub = defineComponent({
         'r-date': TableDateFieldStub,
         'r-column-group': TableColumnGroupStub,
       }
+
+      if (type === 'r-toolbar') {
+        return h(RendererToolbar as any, {
+          ...readConfigProps(config),
+          children: Array.isArray(config['children']) ? config['children'] : [],
+        })
+      }
+
+      if (type === 'r-filter') {
+        return h(RendererFilter as any, readConfigProps(config))
+      }
+
       const component = componentMap[type]
       if (component) {
         return h(component as never, {
@@ -2166,7 +2261,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: slotDataSet,
       props: {
         dataKey: 'Users@rows',
-        children: [{ type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] }],
+        children: [
+          { type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] },
+          { type: 'r-actions', children: [{ type: 'biz-row-action-config' }] },
+        ],
       },
       slots: {
         'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
@@ -2192,6 +2290,42 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="biz-toolbar"]').exists()).toBe(true)
     expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
     expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+  })
+
+  it('should not render row-action slot when all structured row actions are hidden by permission', () => {
+    const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: permissionDataSet,
+      props: {
+        dataKey: 'Users@rows',
+        children: [
+          {
+            type: 'r-actions',
+            children: [
+              { type: 'delete-row', props: { permAction: 'delete' } },
+            ],
+          },
+        ],
+      },
+      slots: {
+        'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
+          class: 'biz-row-action',
+          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-index': String(rowIndex ?? ''),
+        }, 'biz-row-action'),
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnDeniedStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.spark-action-stub[data-type="delete-row"]').exists()).toBe(false)
+    expect(wrapper.find('.biz-row-action').exists()).toBe(false)
+    expect(wrapper.find('.renderer-table-row-actions').exists()).toBe(false)
   })
 
   it('should default config-driven raw table columns to sortable when they bind a field', () => {
@@ -2590,6 +2724,165 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="delete-row"]').exists()).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="plain-row"]').exists()).toBe(true)
+  })
+
+  it('should update toolbar permission state when current row changes', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Toolbar-CurrentRow-Perm',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' as const }],
+          views: {
+            default: {
+              rows: [
+                { id: 1, _perm: { allowDelete: false } },
+                { id: 2, _perm: { allowDelete: true } },
+              ] as IDataRow[],
+            },
+          },
+        },
+      },
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    dv.setCurrentRowById(1)
+
+    const wrapper = mountRendererTableWithView(dv, {
+      children: [
+        {
+          type: 'r-toolbar',
+          children: [
+            { type: 'delete-current', props: { permAction: 'delete' } },
+          ],
+        },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnDeniedStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const actionButton = () => wrapper.find('.spark-action-stub[data-type="delete-current"]')
+
+    expect(actionButton().exists()).toBe(true)
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
+
+    dv.setCurrentRowById(2)
+    await flushPromises()
+    await nextTick()
+
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('should infer delete permission for delete-current without explicit permAction', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Toolbar-DeleteCurrent-Infer-Perm',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' as const }],
+          views: {
+            default: {
+              rows: [
+                { id: 1, _perm: { allowDelete: false } },
+                { id: 2, _perm: { allowDelete: true } },
+              ] as IDataRow[],
+            },
+          },
+        },
+      },
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    dv.setCurrentRowById(1)
+
+    const wrapper = mountRendererTableWithView(dv, {
+      children: [
+        {
+          type: 'r-toolbar',
+          children: [
+            { type: 'delete-current', props: { action: 'delete-current' } },
+          ],
+        },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnDeniedStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const actionButton = () => wrapper.find('.spark-action-stub[data-type="delete-current"]')
+
+    expect(actionButton().exists()).toBe(true)
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
+
+    dv.setCurrentRowById(2)
+    await flushPromises()
+    await nextTick()
+
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('should keep delete-current enabled when inferred permission has no row _perm snapshot', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Toolbar-DeleteCurrent-Infer-NoPermSnapshot',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' as const }],
+          views: {
+            default: {
+              rows: [
+                { id: 1 },
+                { id: 2 },
+              ] as IDataRow[],
+            },
+          },
+        },
+      },
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    dv.setCurrentRowById(1)
+
+    const wrapper = mountRendererTableWithView(dv, {
+      children: [
+        {
+          type: 'r-toolbar',
+          children: [
+            { type: 'delete-current', props: { action: 'delete-current' } },
+          ],
+        },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnDeniedStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const actionButton = () => wrapper.find('.spark-action-stub[data-type="delete-current"]')
+
+    expect(actionButton().exists()).toBe(true)
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
+
+    dv.setCurrentRowById(2)
+    await flushPromises()
+    await nextTick()
+
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
   })
 
   it('should disable tree toolbar actions by model permission and still hide node actions by instance permission', async () => {

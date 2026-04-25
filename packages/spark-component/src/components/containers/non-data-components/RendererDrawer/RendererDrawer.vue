@@ -64,6 +64,7 @@ import { useContainerGrid } from '../../layout/useContainerGrid'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
+import { useMirroredValue } from '../state'
 
 const props = withDefaults(defineProps<RDrawerProps>(), {
   type: 'r-drawer',
@@ -99,7 +100,7 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const visibleValue = computed(() => props.value ?? false)
+const visibleValue = useMirroredValue(computed(() => props.value ?? false))
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)

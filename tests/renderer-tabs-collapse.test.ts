@@ -2,6 +2,16 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
+import RendererTabPane from '../packages/spark-component/src/components/containers/non-data-components/RendererTabPane.vue'
+import RendererCollapseItem from '../packages/spark-component/src/components/containers/non-data-components/RendererCollapseItem.vue'
+import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
+
+function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
+  const props = config['props']
+  return props !== null && props !== undefined && typeof props === 'object' && !Array.isArray(props)
+    ? props as Record<string, unknown>
+    : {}
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -11,10 +21,52 @@ const SparkActionStub = defineComponent({
     },
   },
   setup(props) {
-    return () => h('button', {
-      class: 'spark-action-stub',
-      'data-type': (props.config as Record<string, unknown>)['type'] as string,
-    }, (props.config as Record<string, unknown>)['type'] as string)
+    return () => {
+      const config = props.config as Record<string, unknown>
+      const type = String(config['type'] ?? '')
+      const propsMap = readConfigProps(config)
+
+      if (type === 'r-toolbar') {
+        const children = Array.isArray(propsMap['children'])
+          ? propsMap['children']
+          : (Array.isArray(config['children']) ? config['children'] : [])
+        return h(RendererToolbar as any, {
+          ...propsMap,
+          children,
+        })
+      }
+
+      if (type === 'r-tab-pane') {
+        const componentProps = { ...propsMap }
+        const runtimeDefaultSlot = componentProps['$defaultSlot']
+        delete componentProps['$defaultSlot']
+        const children = Array.isArray(componentProps['children'])
+          ? componentProps['children']
+          : (Array.isArray(config['children']) ? config['children'] : [])
+        return h(RendererTabPane as any, {
+          ...componentProps,
+          children,
+        }, typeof runtimeDefaultSlot === 'function' ? { default: runtimeDefaultSlot as () => unknown } : undefined)
+      }
+
+      if (type === 'r-collapse-item') {
+        const componentProps = { ...propsMap }
+        const runtimeDefaultSlot = componentProps['$defaultSlot']
+        delete componentProps['$defaultSlot']
+        const children = Array.isArray(componentProps['children'])
+          ? componentProps['children']
+          : (Array.isArray(config['children']) ? config['children'] : [])
+        return h(RendererCollapseItem as any, {
+          ...componentProps,
+          children,
+        }, typeof runtimeDefaultSlot === 'function' ? { default: runtimeDefaultSlot as () => unknown } : undefined)
+      }
+
+      return h('button', {
+        class: 'spark-action-stub',
+        'data-type': type,
+      }, type)
+    }
   },
 })
 

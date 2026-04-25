@@ -15,15 +15,18 @@ interface RendererDialogZeroCodeOptions {
 export function createRendererDialogZeroCode(options: RendererDialogZeroCodeOptions) {
   const dialogApi: RendererDialogApi = {
     open() {
+      options.visibleValue.value = true
       options.emit('update:value', true)
     },
     close() {
+      options.visibleValue.value = false
       options.emit('update:value', false)
     },
     isVisible() {
       return options.visibleValue.value
     },
     toggle() {
+      options.visibleValue.value = !options.visibleValue.value
       options.emit('update:value', !options.visibleValue.value)
     },
   }
@@ -31,6 +34,7 @@ export function createRendererDialogZeroCode(options: RendererDialogZeroCodeOpti
   return {
     dialogApi,
     handleModelUpdate(value: boolean) {
+      options.visibleValue.value = value
       options.emit('update:value', value)
     },
     handleOpen() {

@@ -17,15 +17,11 @@
         @tab-change="handleTabChange"
       >
         <template v-if="paneConfigs.length">
-          <RendererTabPane
+          <SparkComponentRenderer
             v-for="(pane, index) in paneConfigs"
             :key="getPaneKey(pane, index)"
-            :index="index"
-            :type="pane.type"
-            v-bind="getPaneComponentProps(pane)"
-          >
-            <slot v-if="!hasPaneChildren(pane)" v-bind="getPaneSlotScope(pane, index)" />
-          </RendererTabPane>
+            :config="createPaneRendererConfig(pane, index)"
+          />
         </template>
         <slot v-else />
       </el-tabs>
@@ -40,11 +36,10 @@
  * @category container
  * @notes children 内放 r-tab-pane，每个 tab-pane 内可嵌套任意组件
  */
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import RendererTabPane from '../RendererTabPane.vue'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
@@ -58,6 +53,8 @@ const props = withDefaults(defineProps<RTabsProps>(), {
 const emit = defineEmits<{
   'update:value': [value: string | number]
 }>()
+
+const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
@@ -124,6 +121,19 @@ function getPaneComponentProps(pane: SparkNode): Record<string, unknown> {
     ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(pane.children !== undefined ? { children: pane.children } : {}),
     ...(pane.props ?? {}),
+  }
+}
+
+function createPaneRendererConfig(pane: SparkNode, index: number): SparkNode {
+  return {
+    type: 'r-tab-pane',
+    props: {
+      ...getPaneComponentProps(pane),
+      index,
+      ...(!hasPaneChildren(pane)
+        ? { $defaultSlot: () => slots['default']?.(getPaneSlotScope(pane, index)) }
+        : {}),
+    },
   }
 }
 

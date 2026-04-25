@@ -5,8 +5,9 @@
     v-bind="registryComponentProps"
     :is="registryComponent"
   >
-    <template v-if="shouldRenderRegistryChildrenViaSlot" #default>
+    <template v-if="shouldRenderRegistryChildrenViaSlot || hasRuntimeDefaultSlot" #default>
       <RecursiveChildrenBlock :children="renderableChildren" />
+      <RuntimeDefaultSlotBlock v-if="hasRuntimeDefaultSlot" :render="runtimeDefaultSlotResolved" />
     </template>
   </component>
 
@@ -16,8 +17,9 @@
     :is="externalComponent"
     v-bind="externalComponentProps"
   >
-    <template v-if="hasRenderableChildren">
+    <template v-if="hasRenderableChildren || hasRuntimeDefaultSlot">
       <RecursiveChildrenBlock :children="renderableChildren" />
+      <RuntimeDefaultSlotBlock v-if="hasRuntimeDefaultSlot" :render="runtimeDefaultSlotResolved" />
     </template>
   </component>
 
@@ -126,6 +128,7 @@ type RenderableChild = SparkNode | string | number
 type RecursiveChildrenList = RenderableChild[]
 type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'external' | 'fallback'
+type RuntimeDefaultSlot = (() => unknown) | undefined
 type ParentCapabilityContext = SparkCapabilityContext | null
 type HostTypeConstraintState = {
   matched: boolean
@@ -232,6 +235,19 @@ const RecursiveChildrenBlock = defineComponent({
   setup(props) {
     // 本地小组件本身不持有业务上下文，只负责把子节点重新路由回渲染器入口。
     return () => props.children.map(renderRecursiveChild)
+  },
+})
+
+const RuntimeDefaultSlotBlock = defineComponent({
+  name: 'RuntimeDefaultSlotBlock',
+  props: {
+    render: {
+      type: Function as PropType<() => unknown>,
+      required: true,
+    },
+  },
+  setup(props) {
+    return () => props.render()
   },
 })
 
@@ -632,6 +648,14 @@ const renderableChildren = computed<RenderableChild[]>(() =>
 
 // 模板里是否需要继续挂 RecursiveChildrenBlock。
 const hasRenderableChildren = computed(() => renderableChildren.value.length > 0)
+
+const runtimeDefaultSlot = computed<RuntimeDefaultSlot>(() => {
+  const candidate = effectiveNode.value.props?.['$defaultSlot']
+  return typeof candidate === 'function' ? candidate as () => unknown : undefined
+})
+
+const hasRuntimeDefaultSlot = computed(() => runtimeDefaultSlot.value !== undefined)
+const runtimeDefaultSlotResolved = computed(() => runtimeDefaultSlot.value ?? (() => null))
 
 // childrenMode 是 registry 对 renderer 的显式协议，优先级高于组件 props 声明推断。
 const registryChildrenMode = computed<ComponentChildrenMode>(() =>

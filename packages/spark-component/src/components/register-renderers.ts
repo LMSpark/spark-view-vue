@@ -26,8 +26,8 @@ import RendererHostScope from './containers/support/RendererHostScope.vue'
 
 // ── 非数据容器 + 布局 + Passthrough ──
 import {
-  RendererSection, RendererToolbar, RendererTabs, RendererCollapse,
-  RendererDialog, RendererDrawer, RendererSteps, RendererButton, RendererLink,
+  RendererSection, RendererToolbar, RendererTabs, RendererTabPane, RendererCollapse,
+  RendererCollapseItem, RendererDialog, RendererDrawer, RendererSteps, RendererStepItem, RendererButton, RendererLink,
   RendererCard, RendererSpace, RendererDivider, RendererDropdown,
   RendererTooltip, RendererPopover, RendererPopconfirm, RendererPageHeader,
   RendererTour, RendererAnchor, RendererAnchorLink,
@@ -105,10 +105,13 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-toolbar', RendererToolbar, { liftAs: 'toolbar' }],
   ['r-menu', RendererToolbar],
   ['r-tabs', RendererTabs],
+  ['r-tab-pane', RendererTabPane],
   ['r-collapse', RendererCollapse],
+  ['r-collapse-item', RendererCollapseItem],
   ['r-dialog', RendererDialog],
   ['r-drawer', RendererDrawer],
   ['r-steps', RendererSteps],
+  ['r-step', RendererStepItem],
   ['r-button', RendererButton],
   ['r-link', RendererLink],
   // 核心布局

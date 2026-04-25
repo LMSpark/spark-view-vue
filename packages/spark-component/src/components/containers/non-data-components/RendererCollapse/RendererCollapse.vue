@@ -16,15 +16,11 @@
         @change="handleChange"
       >
         <template v-if="itemConfigs.length">
-          <RendererCollapseItem
+          <SparkComponentRenderer
             v-for="(item, index) in itemConfigs"
             :key="getItemKey(item, index)"
-            :index="index"
-            :type="item.type"
-            v-bind="getItemComponentProps(item)"
-          >
-            <slot v-if="!hasItemChildren(item)" v-bind="getItemSlotScope(item, index)" />
-          </RendererCollapseItem>
+            :config="createItemRendererConfig(item, index)"
+          />
         </template>
         <slot v-else />
       </el-collapse>
@@ -39,11 +35,10 @@
  * @category container
  * @notes children 内放 r-collapse-item
  */
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import RendererCollapseItem from '../RendererCollapseItem.vue'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'
@@ -56,6 +51,8 @@ const props = withDefaults(defineProps<RCollapseProps>(), {
 const emit = defineEmits<{
   'update:value': [value: CollapseValue]
 }>()
+
+const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
@@ -118,6 +115,19 @@ function getItemComponentProps(item: SparkNode): Record<string, unknown> {
     ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(item.children !== undefined ? { children: item.children } : {}),
     ...(item.props ?? {}),
+  }
+}
+
+function createItemRendererConfig(item: SparkNode, index: number): SparkNode {
+  return {
+    type: 'r-collapse-item',
+    props: {
+      ...getItemComponentProps(item),
+      index,
+      ...(!hasItemChildren(item)
+        ? { $defaultSlot: () => slots['default']?.(getItemSlotScope(item, index)) }
+        : {}),
+    },
   }
 }
 
