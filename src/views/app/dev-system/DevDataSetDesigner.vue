@@ -164,7 +164,7 @@
               v-for="(table, idx) in tables"
               :key="table.id"
               class="ds-card"
-              :class="{ 'ds-card--selected': selectedTableId === table.id, 'ds-card--dragging': dragState?.tableId === table.id }"
+              :class="{ 'ds-card--selected': selectedTableId === table.id, 'ds-card--dragging': isDraggingTable(table.id) }"
               :style="{ left: table.x + 'px', top: table.y + 'px' }"
             >
               <!-- 表头（拖拽手柄） -->
@@ -984,6 +984,11 @@ function onCardMouseDown(e: MouseEvent, table: DesignerTable) {
   selectedTableId.value = table.id
   attachDragListeners()
   e.preventDefault()
+}
+
+function isDraggingTable(tableId: string): boolean {
+  const drag = dragState.value
+  return drag !== null && drag.tableId === tableId
 }
 
 function attachDragListeners(): void {

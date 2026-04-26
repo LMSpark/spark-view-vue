@@ -79,11 +79,65 @@ export interface UseSparkComponentOptions {
   parentContext?: SparkCapabilityContext
 }
 
+interface SparkHostResolverOptions<T extends string = string> {
+  hostTypes?: readonly T[]
+}
+
+interface ResolvedSparkHost<T extends string = string> {
+  hostType: T | null
+  parentContext: SparkCapabilityContext | null
+}
+
 export type SparkNodeInput = {
   type: string
   props?: Record<string, unknown> | undefined
   children?: SparkNode['children'] | undefined
   id?: string | undefined
+}
+
+function normalizeHostType<T extends string>(
+  type: string,
+  options: SparkHostResolverOptions<T>,
+): T | null {
+  if (options.hostTypes === undefined) {
+    return type as T
+  }
+
+  return options.hostTypes.includes(type as T) ? (type as T) : null
+}
+
+export function resolveSparkHost<T extends string = string>(
+  hostType: string | null,
+  parentContext: SparkCapabilityContext | null,
+  options: SparkHostResolverOptions<T> = {},
+): ResolvedSparkHost<T> {
+  let currentType = hostType
+  let currentContext = parentContext
+
+  while (currentType !== null) {
+    const normalizedType = normalizeHostType(currentType, options)
+    if (normalizedType !== null) {
+      return {
+        hostType: normalizedType,
+        parentContext: currentContext,
+      }
+    }
+
+    currentContext = currentContext?.parent ?? null
+    currentType = typeof currentContext?.type === 'string' ? currentContext.type : null
+  }
+
+  return {
+    hostType: null,
+    parentContext: null,
+  }
+}
+
+export function useSparkHostScope(
+  type: string,
+  options?: UseSparkComponentOptions,
+): UseSparkComponentReturn {
+  return useSparkComponent({ type }, options)
 }
 
 // ===== 运行时局部状态 =====

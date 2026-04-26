@@ -18,6 +18,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 import {
   ACTION_CAPABILITY,
   DATA_ROW,
+  HOST_FIELD_MODE,
   HOST_VARIANT,
   SparkComponentRenderer,
   createActionCapability,
@@ -33,6 +34,7 @@ const props = withDefaults(defineProps<{
   row?: IDataRow | undefined
   actionCapability?: SparkActionCapability | undefined
   hostVariant?: string | undefined
+  fieldMode?: string | undefined
   children?: SparkNode[]
 }>(), {
   type: 'r-host-data-scope',
@@ -45,6 +47,7 @@ const rowMirror = shallowReactive<IDataRow>({})
 let hasProvidedRow = false
 let hasProvidedActionCapability = false
 let hasProvidedHostVariant = false
+let hasProvidedFieldMode = false
 
 function resolveInputRow(): IDataRow | undefined {
   return props.row
@@ -97,6 +100,22 @@ watch(
     }
     sparkProvide(HOST_VARIANT, variant)
     hasProvidedHostVariant = true
+  },
+  { immediate: true },
+)
+
+watch(
+  () => props.fieldMode,
+  (mode) => {
+    if (mode === undefined || mode === '') {
+      if (hasProvidedFieldMode) {
+        sparkRemove(HOST_FIELD_MODE)
+        hasProvidedFieldMode = false
+      }
+      return
+    }
+    sparkProvide(HOST_FIELD_MODE, mode)
+    hasProvidedFieldMode = true
   },
   { immediate: true },
 )

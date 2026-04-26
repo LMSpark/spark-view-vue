@@ -144,7 +144,6 @@ export interface IAppServicesCapability {
 }
 
 export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
-export const LOGGER = defineCapability<LoggerApi>('spark:capability:logger')
 
 export type PageMessageType = 'success' | 'error' | 'warning' | 'info'
 export type PageDialogResult = 'confirm' | 'cancel' | 'close'
@@ -240,8 +239,6 @@ export interface IThemeCapability {
   toggle(): void
 }
 
-export const THEME = defineCapability<IThemeCapability>('spark:capability:theme')
-
 export interface IModuleContextItem {
   id: string | number
   title: string
@@ -255,7 +252,5 @@ export interface IModuleContext {
 
 export interface CapabilityTypeMap {
   'spark:capability:app-services': IAppServicesCapability
-  'spark:capability:logger': LoggerApi
   'spark:capability:page-service': IPageServiceCapability
-  'spark:capability:theme': IThemeCapability
 }

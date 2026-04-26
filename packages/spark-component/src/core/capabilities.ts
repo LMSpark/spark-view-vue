@@ -20,9 +20,6 @@ export {
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
-  ACTION_CAPABILITY,
-  HOST_FIELD_MODE,
-  HOST_VARIANT,
 } from './capability-keys.js'
 
 export type {

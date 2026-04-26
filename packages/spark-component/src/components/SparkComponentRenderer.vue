@@ -83,7 +83,7 @@ import {
 import type { PropType } from 'vue'
 import type { IDataRow, IDataSource } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
-import { resolveSparkHost } from '../core/useSparkHost.js'
+import { resolveSparkHost } from '../core/useSparkComponent.js'
 import {
   nodeId,
   isSparkNode,

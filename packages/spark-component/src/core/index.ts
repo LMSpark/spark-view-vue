@@ -8,7 +8,7 @@
  */
 
 export { useSparkComponent, useSparkConsume, useSparkPageComponent, resolvePlaceholderProps } from './useSparkComponent.js'
-export { useSparkHostScope } from './useSparkHost.js'
+export { useSparkHostScope } from './useSparkComponent.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,
@@ -17,7 +17,7 @@ export type {
   SparkNodeInput,
 } from './useSparkComponent.js'
 export type {
-} from './useSparkHost.js'
+} from './useSparkComponent.js'
 
 export type {
   CapabilityName,
@@ -69,9 +69,7 @@ export {
   sparkRemove,
   sparkConsume,
   APP_SERVICES,
-  LOGGER,
   PAGE_SERVICE,
-  THEME,
 } from './capability-system.js'
 
 export type {
