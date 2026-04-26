@@ -1,9 +1,16 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <RendererHostScope v-if="showToolbar" type="r-table-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
-      <SparkComponentRenderer :config="toolbarRendererConfig!" />
-    </RendererHostScope>
+    <template v-if="showToolbar">
+      <RendererHostScope
+        type="r-table-toolbar-scope"
+        :variant="'toolbar'"
+        :action-host="toolbarActionHost"
+        :row="resolvedView?.currentRow ?? undefined"
+      >
+        <SparkComponentRenderer :config="toolbarRendererConfig!" />
+      </RendererHostScope>
+    </template>
 
     <!-- 过滤区 -->
     <SparkComponentRenderer
@@ -41,14 +48,10 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
+                :field-mode="'table'"
                 :variant="'row-action'"
                 :action-host="getScopedRowActionCapability(scope)"
                 child-key-prefix="r-table-row-action"
-              />
-              <slot
-                v-if="shouldRenderRowActionSlot(scope)"
-                name="row-actions"
-                v-bind="getScopedRowActionSlotScope(scope)"
               />
             </div>
           </template>
@@ -103,14 +106,10 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
+                :field-mode="'table'"
                 :variant="'row-action'"
                 :action-host="getScopedRowActionCapability(scope)"
                 child-key-prefix="r-table-row-action"
-              />
-              <slot
-                v-if="shouldRenderRowActionSlot(scope)"
-                name="row-actions"
-                v-bind="getScopedRowActionSlotScope(scope)"
               />
             </div>
           </template>
@@ -129,7 +128,6 @@
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @consumes PAGE_SERVICE
- * @consumes MODULE_CONTEXT
  * @notes children 仅放 r-* 字段组件做列，禁止直接声明底层列节点
  * @notes 结构化区域使用 props.toolbar / props.filter / props.actions，不再使用 dock 分流
  * @notes highlightCurrentRow 必须显式声明才生效
@@ -147,11 +145,11 @@
  * - 工具栏/筛选区/行操作优先使用结构化 props（toolbar/filter/actions）。
  * - 运行时保留对 children 中结构节点的兼容读取，并在内容区过滤这些结构节点。
  */
-import { computed, nextTick, ref, watch, useAttrs, useSlots, type CSSProperties } from 'vue'
+import { computed, nextTick, ref, watch, useAttrs, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
-  PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT, PAGE_SERVICE, HOST_FIELD_MODE,
+  PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE, HOST_FIELD_MODE, createActionCapability,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -159,15 +157,11 @@ import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
 import { useContainerActions, type LateralActionPosition } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import { createRowActionSlotScope } from '../../support/slotScopeFactories'
-import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import type { FilterNode } from '../../RendererFilter.types'
 import type { ActionsAlign, ActionsFixed, PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
-import { createActionCapability } from '../../../internal'
 
 // ── 基础工具：通用读取与列投影辅助 ────────────────────────────────────────
 
@@ -184,7 +178,6 @@ const allChildNodes = computed(() => getSparkNodeChildren(props.children))
 const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
 const renderedContentChildNodes = computed(() => contentChildNodes.value.map(normalizeDefaultSortableTableNode))
 
-const slots = useSlots()
 const attrs = useAttrs()
 
 function readLegacyNumberLikeAttr(name: string): string | number | undefined {
@@ -390,7 +383,6 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
-const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
@@ -552,10 +544,9 @@ const toolbarActionHost = createActionCapability({
   },
 })
 
-// ── 行操作区：结构化 actions + row-actions 命名插槽共同组成行操作列 ─────
+// ── 行操作区：仅使用结构化 r-actions 组装行操作列 ───────────────────────
 
 const {
-  actionPositionValue: rowActionsPositionValue,
   showActionsLeft: showRowActionsLeft,
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
@@ -573,18 +564,6 @@ const {
   }),
 })
 
-const {
-  showActionsLeftValue: showRowActionsLeftValue,
-  showActionsRightValue: showRowActionsRightValue,
-} = useContainerSlots({
-  slots,
-  actionSlotName: 'row-actions',
-  actionPosition: rowActionsPositionValue,
-  showActionsLeft: showRowActionsLeft,
-  showActionsRight: showRowActionsRight,
-  allowSlotOnlyColumn: false,
-})
-
 const hasVisibleRowActionsInRows = computed(() => {
   const rows = tableData.value
   if (!Array.isArray(rows) || rows.length === 0) return false
@@ -598,8 +577,8 @@ const hasVisibleRowActionsInRows = computed(() => {
   return false
 })
 
-const showRowActionsLeftVisible = computed(() => showRowActionsLeftValue.value && hasVisibleRowActionsInRows.value)
-const showRowActionsRightVisible = computed(() => showRowActionsRightValue.value && hasVisibleRowActionsInRows.value)
+const showRowActionsLeftVisible = computed(() => showRowActionsLeft.value && hasVisibleRowActionsInRows.value)
+const showRowActionsRightVisible = computed(() => showRowActionsRight.value && hasVisibleRowActionsInRows.value)
 
 const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
   const align = childCompatProp<ActionsAlign>(actionsNode.value, 'align')
@@ -652,17 +631,6 @@ const rowActionColumnAttrs = computed(() => {
   }
 })
 
-/** 为 row-actions 命名插槽构造统一上下文，确保模板插槽与内置动作拿到同一套作用域。 */
-function getRowActionSlotScope(row: IDataRow, index: number) {
-  return createRowActionSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-    moduleContext: moduleContext.value,
-    row,
-    index,
-  })
-}
-
 function resolveRowActionScope(scope: Record<string, unknown>) {
   // 从 el-table 默认 slot scope 提取 row / $index。
   // 这里采用 fail-safe 默认值，保证作用域函数在测试桩与真实环境下都可执行。
@@ -694,17 +662,6 @@ function getScopedRowActionCapability(scope: Record<string, unknown>) {
       handleBuiltinRowAction(action, row, index)
     },
   })
-}
-
-function getScopedRowActionSlotScope(scope: Record<string, unknown>): object {
-  // 给 row-actions 命名插槽提供与内置动作同源的上下文，避免业务插槽与内置行为语义漂移。
-  const { row, index } = resolveRowActionScope(scope)
-  return getRowActionSlotScope(row, index)
-}
-
-function shouldRenderRowActionSlot(scope: Record<string, unknown>): boolean {
-  // row-actions 插槽不允许绕过结构化动作可见性；当前行无可见动作时不渲染插槽。
-  return getScopedRowActionConfigs(scope).length > 0
 }
 
 // ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────

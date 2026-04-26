@@ -42,7 +42,7 @@ export { createBaseCrudMethods } from './base-crud-methods.js'
 export { mapNodeProps } from './map-node-props.js'
 export type { MapNodePropsOptions } from './map-node-props.js'
 
-export { createToolbarSlotScope, createRowActionSlotScope, createCurrentRowSlotScope } from './slotScopeFactories.js'
+export { createToolbarSlotScope, createRowSlotScope, createCurrentRowSlotScope } from './slotScopeFactories.js'
 export { resolveSlotScopeRow } from './rowScopeResolver.js'
 
 export * from './actions/index.js'

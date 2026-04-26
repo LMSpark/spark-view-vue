@@ -69,11 +69,6 @@ describe('RendererList and RendererSection container integration', () => {
           'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
           'data-row-index': String(rowIndex ?? ''),
         }, 'biz-list-item'),
-        'item-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
-          class: 'biz-item-action',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
-          'data-row-index': String(rowIndex ?? ''),
-        }, 'biz-item-action'),
       },
       global: {
         stubs: {
@@ -90,9 +85,6 @@ describe('RendererList and RendererSection container integration', () => {
     expect(wrapper.findAll('.biz-list-item')[1]?.attributes('data-row-id')).toBe('2')
     const renderedItemActions = wrapper.findAll('.spark-action-stub[data-type="list-item-delete"]')
     expect(renderedItemActions).toHaveLength(2)
-    const slotItemActions = wrapper.findAll('.biz-item-action')
-    expect(slotItemActions).toHaveLength(2)
-    expect(slotItemActions[0]?.attributes('data-row-id')).toBe('1')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('grid-template-columns: repeat(24, minmax(0, 1fr));')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('gap: 12px;')
     expect(wrapper.find('.renderer-list-cell').attributes('style')).toContain('grid-column: span 12 / span 12;')
@@ -100,7 +92,7 @@ describe('RendererList and RendererSection container integration', () => {
     await nextTick()
   })
 
-  it('should not render item-actions slot when permDeniedBehavior is explicitly hide', () => {
+  it('should not render structured item actions when permDeniedBehavior is explicitly hide', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'ListPermDS',
       tables: {
@@ -137,11 +129,6 @@ describe('RendererList and RendererSection container integration', () => {
           'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
           'data-row-index': String(rowIndex ?? ''),
         }, 'biz-list-item'),
-        'item-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
-          class: 'biz-item-action',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
-          'data-row-index': String(rowIndex ?? ''),
-        }, 'biz-item-action'),
       },
       global: {
         stubs: {
@@ -152,7 +139,7 @@ describe('RendererList and RendererSection container integration', () => {
     })
 
     expect(wrapper.find('.spark-action-stub[data-type="list-item-delete"]').exists()).toBe(false)
-    expect(wrapper.find('.biz-item-action').exists()).toBe(false)
+    expect(wrapper.find('.renderer-list-item-actions').exists()).toBe(false)
   })
 
   it('should expose r-table-aligned list api for current row and row mutations', async () => {

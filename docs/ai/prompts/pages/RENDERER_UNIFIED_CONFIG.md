@@ -1011,7 +1011,6 @@ function RenderStatusTag() {
 | useContainerToolbar | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — | ✅ | — |
 | useContainerActions | ✅ | — | — | ✅ | ✅ | — | — | ✅ | ✅ | — | ✅ |
 | useContainerGrid | — | ✅ | ✅ | — | ✅ | — | — | ✅ | ✅ | — | ✅ |
-| useContainerSlots | ✅ | — | — | ✅ | ✅ | — | — | ✅ | ✅ | — | ✅ |
 | useFormDetailContainer | — | ✅ | ✅ | — | — | — | — | — | — | — | — |
 | useContainerContextData | — | ✅ | ✅ | — | — | — | — | — | — | — | — |
 | useTableFilters | ✅ | — | — | — | — | — | — | — | — | — | — |

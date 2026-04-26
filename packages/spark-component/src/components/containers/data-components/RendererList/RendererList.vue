@@ -31,11 +31,6 @@
                   :row="row"
                   child-key-prefix="r-list-item-action-left"
                 />
-                <slot
-                  v-if="shouldRenderItemActionSlot(row, index)"
-                  name="item-actions"
-                  v-bind="getItemActionSlotScope(row, index)"
-                />
               </div>
 
               <div :class="itemClass" :style="itemStyle">
@@ -69,11 +64,6 @@
                   :row="row"
                   child-key-prefix="r-list-item-action-right"
                 />
-                <slot
-                  v-if="shouldRenderItemActionSlot(row, index)"
-                  name="item-actions"
-                  v-bind="getItemActionSlotScope(row, index)"
-                />
               </div>
             </div>
           </div>
@@ -97,20 +87,26 @@
  */
 import { computed, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import {
+  useSparkPageComponent,
+  SparkComponentRenderer,
+  getSparkNodeChildren,
+  nodeId,
+  PAGE_DATASET,
+  DATA_SOURCE,
+  MODULE_CONTEXT,
+  type SparkNode,
+} from '../../../internal'
 import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
 import type { RendererListApi } from './types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useContainerActions } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import { createRowActionSlotScope, createToolbarSlotScope } from '../../support/slotScopeFactories'
+import { createRowSlotScope, createToolbarSlotScope } from '../../support/slotScopeFactories'
 import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { createRendererListZeroCode } from './zero-code'
@@ -219,16 +215,8 @@ const {
   }),
 })
 
-const {
-  showActionsLeftValue: showItemActionsLeftValue,
-  showActionsRightValue: showItemActionsRightValue,
-} = useContainerSlots({
-  slots,
-  actionSlotName: 'item-actions',
-  actionPosition: itemActionsPositionValue,
-  showActionsLeft: showItemActionsLeft,
-  showActionsRight: showItemActionsRight,
-})
+const showItemActionsLeftValue = showItemActionsLeft
+const showItemActionsRightValue = showItemActionsRight
 
 const {
   gridChildren: itemContentChildren,
@@ -313,17 +301,7 @@ function getItemKey(row: IDataRow, index: number): string | number {
 }
 
 function getRowSlotScope(row: IDataRow, index: number) {
-  return createRowActionSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-    moduleContext: moduleContext.value,
-    row,
-    index,
-  })
-}
-
-function getItemActionSlotScope(row: IDataRow, index: number) {
-  return createRowActionSlotScope({
+  return createRowSlotScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
     moduleContext: moduleContext.value,
@@ -334,11 +312,6 @@ function getItemActionSlotScope(row: IDataRow, index: number) {
 
 function hasVisibleItemActions(row: IDataRow, index: number): boolean {
   return getScopedItemActions({ row, index }).length > 0
-}
-
-function shouldRenderItemActionSlot(row: IDataRow, index: number): boolean {
-  // item-actions 插槽不允许绕过结构化动作可见性。
-  return hasVisibleItemActions(row, index)
 }
 
 async function handleItemClick(row: IDataRow, index: number, event: Event) {

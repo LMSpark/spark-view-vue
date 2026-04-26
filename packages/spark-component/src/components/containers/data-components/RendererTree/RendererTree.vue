@@ -84,11 +84,19 @@
  * 内部通过 useSparkPageComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。
  */
 import { computed, ref } from 'vue'
-import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
+import {
+  useSparkPageComponent,
+  SparkComponentRenderer,
+  nodeId,
+  PAGE_DATASET,
+  DATA_SOURCE,
+  MODULE_CONTEXT,
+  PAGE_SERVICE,
+  createActionCapability,
+  type SparkNode,
+} from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
@@ -100,12 +108,10 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { useContainerActions } from '../../composables/useContainerActions'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { createActionCapability } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
-import { PAGE_SERVICE } from '../../../internal'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',

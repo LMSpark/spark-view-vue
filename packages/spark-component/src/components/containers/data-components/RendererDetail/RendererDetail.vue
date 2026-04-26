@@ -45,16 +45,18 @@
 /**
  * RendererDetail - 详情展示容器组件
  */
-import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
-import { nodeId } from '../../../internal'
+import {
+  SparkComponentRenderer,
+  nodeId,
+  createActionCapability,
+  type SparkNode,
+} from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
-import type { SparkNode } from '../../../internal'
-import { createActionCapability } from '../../../internal'
 
 const props = withDefaults(defineProps<RDetailProps>(), {
   type: 'r-detail',

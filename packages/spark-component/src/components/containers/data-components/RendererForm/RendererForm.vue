@@ -44,14 +44,17 @@
  * RendererForm - 表单容器组件
  */
 import { computed, ref } from 'vue'
-import { SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
+import {
+  SparkComponentRenderer,
+  nodeId,
+  createActionCapability,
+  type SparkNode,
+} from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
-import { createActionCapability } from '../../../internal'
 
 const props = withDefaults(defineProps<RFormProps>(), {
   type: 'r-form',

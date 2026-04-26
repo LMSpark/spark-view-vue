@@ -18,6 +18,7 @@ function withBaseScope<TSource, TExtra extends Record<string, unknown>>(
   return {
     dataSource: base.dataSource,
     modelPermission: base.modelPermission,
+    moduleContext: base.moduleContext,
     ...extra,
   }
 }
@@ -31,7 +32,7 @@ export function createToolbarSlotScope<TSource>(
   return withBaseScope(base, extra)
 }
 
-export function createRowActionSlotScope<TSource>(params: {
+export function createRowSlotScope<TSource>(params: {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined

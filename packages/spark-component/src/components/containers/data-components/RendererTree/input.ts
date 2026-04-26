@@ -1,7 +1,6 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
-import type { ActionsNode } from '../../support/RendererActions.types'
-import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
+import type { ActionsNode, PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'

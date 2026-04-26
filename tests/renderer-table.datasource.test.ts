@@ -429,7 +429,7 @@ const SparkColumnRendererStub = defineComponent({
           ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
         })
       }
-      // 非列组件回退为 action stub（toolbar / row-actions 等）
+      // 非列组件回退为 action stub（toolbar / structured actions 等）
       const propsMap = readConfigProps(config)
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
@@ -1582,7 +1582,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(api.getRows().map(row => row['id'])).toEqual([1])
   })
 
-  it('should render table toolbar from children and scoped row actions', async () => {
+  it('should render table toolbar from children and structured row actions', async () => {
     const rowActionSpy = vi.fn()
 
     const toolbarDataSet = createInlineDataSet('Users', [{ id: 1 }])
@@ -2255,23 +2255,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(refreshSpy).toHaveBeenCalledOnce()
   })
 
-  it('should allow row-action slots and render toolbar children', () => {
-    const slotDataSet = createInlineDataSet('Users', [{ id: 1 }])
+  it('should render structured row actions and toolbar children', () => {
+    const actionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
-      dataSet: slotDataSet,
+      dataSet: actionDataSet,
       props: {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] },
           { type: 'r-actions', children: [{ type: 'biz-row-action-config' }] },
         ],
-      },
-      slots: {
-        'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
-          class: 'biz-row-action',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
-          'data-row-index': String(rowIndex ?? ''),
-        }, 'biz-row-action'),
       },
       global: {
         components: {
@@ -2288,11 +2281,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     expect(wrapper.find('.spark-action-stub[data-type="biz-toolbar"]').exists()).toBe(true)
-    expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
-    expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+    expect(wrapper.find('.spark-action-stub[data-type="biz-row-action-config"]').exists()).toBe(true)
   })
 
-  it('should keep row-action slot visible and disable denied actions by default', () => {
+  it('should disable denied structured row actions by default', () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
@@ -2307,13 +2299,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
           },
         ],
       },
-      slots: {
-        'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
-          class: 'biz-row-action',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
-          'data-row-index': String(rowIndex ?? ''),
-        }, 'biz-row-action'),
-      },
       global: {
         stubs: {
           'el-table': ElTableStub,
@@ -2326,7 +2311,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const deniedAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
     expect(deniedAction.exists()).toBe(true)
     expect((deniedAction.element as HTMLButtonElement).disabled).toBe(true)
-    expect(wrapper.find('.biz-row-action').exists()).toBe(true)
     expect(wrapper.find('.renderer-table-row-actions').exists()).toBe(true)
   })
 
