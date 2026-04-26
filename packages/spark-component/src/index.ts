@@ -85,7 +85,6 @@ export {
   CSS_SCOPE,
   ACTION_CAPABILITY,
   HOST_FIELD_MODE,
-  HOST_VARIANT,
   DEFAULT_PROVIDER_KEYS,
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
@@ -118,7 +117,6 @@ export type {
   ModuleContextCapability,
   PageCssScopeCapability,
   SparkActionCapability,
-  HostVariant,
 } from './core/index.js'
 export type {
   RendererTableApi,

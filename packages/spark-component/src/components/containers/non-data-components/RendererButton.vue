@@ -42,7 +42,6 @@ import {
   ACTION_CAPABILITY,
   DATA_ROW,
   DATA_SOURCE,
-  HOST_VARIANT,
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
@@ -110,13 +109,6 @@ const resolved = computed(() => {
   if (props.circle !== undefined) explicit['circle'] = props.circle
   if (props.icon !== undefined) explicit['icon'] = props.icon
   if (props.label !== undefined) explicit['label'] = props.label
-  // 动态读取宿主变体能力，确保响应上层语义变化
-  if (hasBuiltinAction.value) {
-    if (sparkConsume(HOST_VARIANT) === 'row-action') {
-      if (explicit['buttonSize'] === undefined) explicit['buttonSize'] = 'small'
-      if (explicit['text'] === undefined) explicit['text'] = true
-    }
-  }
   return resolveButtonStyle(props.action, props.template, explicit)
 })
 

@@ -43,10 +43,6 @@ export interface PageCssScopeCapability {
   inject(css: string): void
 }
 
-/** 宿主变体标识联合类型 */
-export type HostVariant = 'toolbar' | 'row-action' | 'field'
-export type OpenHostVariant = HostVariant | (string & {})
-
 /** 动作执行能力接口 */
 export interface SparkActionCapability {
   isDisabled(action: SparkNode): boolean
@@ -64,7 +60,6 @@ declare module './capability-system.js' {
     'spark:capability:permission-mode': NavPermissionMode
     'spark:capability:action-host': SparkActionCapability
     'spark:capability:host-field-mode': string
-    'spark:capability:host-variant': OpenHostVariant
   }
 }
 
@@ -77,4 +72,3 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
 
 export const ACTION_CAPABILITY = defineCapability<SparkActionCapability>('spark:capability:action-host')
 export const HOST_FIELD_MODE = defineCapability<string>('spark:capability:host-field-mode')
-export const HOST_VARIANT = defineCapability<OpenHostVariant>('spark:capability:host-variant')

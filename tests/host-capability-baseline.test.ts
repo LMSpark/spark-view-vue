@@ -3,9 +3,9 @@
  *
  * 核心行为：
  * 1. 默认键集合沿 ctx.parent 链找 provider，跳过无相关能力的中间节点
- * 2. fieldMode / variant 通过能力键读取
+ * 2. fieldMode 通过能力键读取
  * 3. RendererHostScope 有 row prop 时注入 DATA_ROW，无 row 时不覆盖父层
- * 4. variant === 'row-action' 时通过 HOST_VARIANT 分支
+ * 4. 动作能力通过 ACTION_CAPABILITY 独立提供
  */
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
@@ -15,7 +15,6 @@ import {
   ACTION_CAPABILITY,
   DEFAULT_PROVIDER_KEYS,
   HOST_FIELD_MODE,
-  HOST_VARIANT,
   SPARK_REGISTRY_KEY,
   useSparkComponent,
   useSparkConsume,
@@ -43,7 +42,6 @@ describe('findNearestCapabilityProviderByKeys(DEFAULT_PROVIDER_KEYS) — 上下�
     // mid 不声明相关能力键
 
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, mid)
-    leaf.capabilities.set(HOST_VARIANT, 'leaf-variant')
 
     const found = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
     // 应找到 root，而不是 leaf 自身（mid 无相关键被跳过）
@@ -109,10 +107,10 @@ describe('provider 查询三段式语义', () => {
   it('通过能力键集合查最近 provider', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     const section = createSparkCapabilityContext({ id: 'section', type: 'r-section' }, root)
-    section.capabilities.set(HOST_VARIANT, 'field')
+    section.capabilities.set(HOST_FIELD_MODE, 'detail')
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-text' }, section)
 
-    expect(findNearestCapabilityProviderByKeys(leaf, [ACTION_CAPABILITY, HOST_VARIANT])?.id).toBe('section')
+    expect(findNearestCapabilityProviderByKeys(leaf, [ACTION_CAPABILITY, HOST_FIELD_MODE])?.id).toBe('section')
   })
 
   it('DEFAULT_PROVIDER_KEYS 可直接作为默认 provider 查询集合', () => {
@@ -142,11 +140,10 @@ describe('provider 查询三段式语义', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     root.capabilities.set(HOST_FIELD_MODE, 'page')
     const table = createSparkCapabilityContext({ id: 'table', type: 'r-table' }, root)
-    table.capabilities.set(HOST_VARIANT, 'row-action')
+    table.capabilities.set(HOST_FIELD_MODE, 'table')
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-button' }, table)
 
-    expect(findNearestCapabilityProvider(leaf, HOST_VARIANT)?.id).toBe('table')
-    expect(findNearestCapabilityProvider(leaf, HOST_FIELD_MODE)?.id).toBe('root')
+    expect(findNearestCapabilityProvider(leaf, HOST_FIELD_MODE)?.id).toBe('table')
   })
 
   it('基于 provider context 查能力（本地/链式）', () => {
@@ -158,13 +155,12 @@ describe('provider 查询三段式语义', () => {
     }))
 
     const section = createSparkCapabilityContext({ id: 'section', type: 'r-section' }, root)
-    section.capabilities.set(HOST_VARIANT, 'field')
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, section)
 
     const provider = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
-    expect(provider?.id).toBe('section')
-    expect(consumeCapabilityFromProvider(provider, HOST_VARIANT, { localOnly: true })).toBe('field')
-    expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY, { localOnly: true })).toBeNull()
+    expect(provider?.id).toBe('root')
+    expect(consumeCapabilityFromProvider(provider, HOST_FIELD_MODE, { localOnly: true })).toBe('detail')
+    expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY, { localOnly: true })).not.toBeNull()
     expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY)).not.toBeNull()
 
   })
@@ -382,42 +378,16 @@ describe('RendererHostScope DATA_ROW 注入', () => {
 })
 
 // ═══════════════════════════════════════════════════════
-// 5. variant 字符串消费行为
-// 4. variant 字符串消费行为
+// 5. 动作能力独立提供
 // ═══════════════════════════════════════════════════════
 
-describe('variant 消费行为', () => {
-  it('HOST_VARIANT 能力可正常传递和读取', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-
-    const table = createSparkCapabilityContext({ id: 'table', type: 'r-table' }, root)
-    table.capabilities.set(HOST_VARIANT, 'row-action')
-
-    const button = createSparkCapabilityContext({ id: 'btn', type: 'r-button' }, table)
-
-    expect(consumeSparkCapability(button, HOST_VARIANT)).toBe('row-action')
-  })
-
-  it('provider 有 HOST_VARIANT 时可用于样式分支判断', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-
-    const toolbar = createSparkCapabilityContext({ id: 'toolbar', type: 'r-toolbar' }, root)
-    toolbar.capabilities.set(HOST_VARIANT, 'toolbar')
-
-    const btn = createSparkCapabilityContext({ id: 'btn', type: 'r-button' }, toolbar)
-
-    const variant = consumeSparkCapability(btn, HOST_VARIANT)
-    expect(variant).toBe('toolbar')
-    expect(variant !== 'row-action').toBe(true)
-  })
-
+describe('动作能力行为', () => {
   it('动作能力通过 ACTION_CAPABILITY 独立提供', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
 
     let executed = false
     const container = createSparkCapabilityContext({ id: 'container', type: 'r-table' }, root)
     container.capabilities.set(HOST_FIELD_MODE, 'table')
-    container.capabilities.set(HOST_VARIANT, 'row-action')
     container.capabilities.set(ACTION_CAPABILITY, createActionCapability({
       isDisabled: () => false,
       execute: () => { executed = true },

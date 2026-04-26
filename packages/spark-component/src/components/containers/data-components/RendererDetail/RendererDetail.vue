@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-detail-toolbar-scope" :row="detailData" :action-capability="toolbarActionCapability" host-variant="toolbar">
+    <RendererHostScope v-if="showToolbar" type="r-detail-toolbar-scope" :row="detailData" :action-capability="toolbarActionCapability">
       <div :class="['renderer-detail-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
           v-for="(action, index) in visibleToolbarConfigs"

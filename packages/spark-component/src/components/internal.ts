@@ -41,7 +41,6 @@ export {
   DATA_ROW,
   ACTION_CAPABILITY,
   HOST_FIELD_MODE,
-  HOST_VARIANT,
   DEFAULT_PROVIDER_KEYS,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
@@ -71,7 +70,6 @@ export type {
   PageComponentApiEntry,
   ModuleContextCapability,
   SparkActionCapability,
-  HostVariant,
 } from '../core/index.js'
 
 // ── 事件控制 ──

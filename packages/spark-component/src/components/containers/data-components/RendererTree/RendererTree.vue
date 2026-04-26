@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :row="resolvedDataRow ?? undefined" :action-capability="toolbarActionCapability" host-variant="toolbar">
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :row="resolvedDataRow ?? undefined" :action-capability="toolbarActionCapability">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -47,7 +47,6 @@
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
                   :action-capability="nodeActionCapability"
-                  host-variant="row-action"
                 />
               </span>
             </span>

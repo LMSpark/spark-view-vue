@@ -40,7 +40,7 @@ type RuntimeInstance = ReturnType<typeof getCurrentInstance>
  *   - `nearestCapabilityProvider(key)` — 按能力键查最近 provider context
  *   - `nearestCapabilityProviderByKeys(keys)` — 按能力键集合查最近 provider context
  *
- * 容器通过 sparkProvide(HOST_FIELD_MODE / HOST_VARIANT, ...) 直接提供能力键。
+ * 容器通过 sparkProvide(HOST_FIELD_MODE, ...) 直接提供字段渲染语义能力键。
  * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。
  */
 export interface UseSparkComponentReturn {

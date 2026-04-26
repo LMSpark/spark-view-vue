@@ -104,7 +104,6 @@ export {
   CSS_SCOPE,
   ACTION_CAPABILITY,
   HOST_FIELD_MODE,
-  HOST_VARIANT,
 } from './capability-keys.js'
 
 export {
@@ -122,6 +121,4 @@ export type {
   ModuleContextCapability,
   PageCssScopeCapability,
   SparkActionCapability,
-  HostVariant,
-  OpenHostVariant,
 } from './capability-keys.js'

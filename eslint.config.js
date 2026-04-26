@@ -69,7 +69,6 @@ export default [
               'THEME',
               'ACTION_CAPABILITY',
               'HOST_FIELD_MODE',
-              'HOST_VARIANT',
               'PAGE_DATASET',
               'DATA_SOURCE',
               'DATA_ROW',

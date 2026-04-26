@@ -6,7 +6,6 @@
         type="r-table-toolbar-scope"
         :row="resolvedDataRow ?? undefined"
         :action-capability="toolbarActionCapability"
-        host-variant="toolbar"
       >
         <SparkComponentRenderer :config="toolbarRendererConfig!" />
       </RendererHostScope>
@@ -49,7 +48,6 @@
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
                 :action-capability="rowActionCapability"
-                host-variant="row-action"
               />
             </div>
           </template>
@@ -105,7 +103,6 @@
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
                 :action-capability="rowActionCapability"
-                host-variant="row-action"
               />
             </div>
           </template>

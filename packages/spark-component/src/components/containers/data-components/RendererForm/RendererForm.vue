@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :row="formModel" :action-capability="toolbarActionCapability" host-variant="toolbar">
+    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :row="formModel" :action-capability="toolbarActionCapability">
       <div :class="['renderer-form-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
