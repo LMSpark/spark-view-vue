@@ -519,9 +519,8 @@ function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEnt
 
 /**
  * 解析属性的 PropSchema，按以下优先级尝试：
- * 1. prop.schema（属性直接内联声明的 schema，优先级最高）；
- * 2. catalog.schemaPool[prop.schemaRef]（通过 schemaRef 从全局 schema 池中查取）；
- * 3. 均不存在则返回 undefined。
+ * 1. catalog.schemaPool[prop.schemaRef]（通过 schemaRef 从全局 schema 池中查取）；
+ * 2. 均不存在则返回 undefined。
  *
  * @param catalog 全局组件目录（需包含 schemaPool）
  * @param prop    待解析的属性记录
@@ -532,7 +531,6 @@ function resolvePropSchema(
   prop: PropEntry,
   visited: Set<string> = new Set(),
 ): PropSchema | undefined {
-  if (prop.schema !== undefined) return prop.schema
   if (prop.schemaRef === undefined) return undefined
 
   // "component:X" 引用：从 catalog.components[X].props 递归展开为 object schema
@@ -567,16 +565,14 @@ function resolvePropSchema(
  * 批量解析事件的 payload schema 列表。
  *
  * 解析策略：
- * 1. emit.schema（已内联的 schema 数组）非空时直接返回；
- * 2. emit.schemaRefs 存在时，从 catalog.schemaPool 批量查取，过滤掉未命中的引用；
- * 3. 均不满足则返回 undefined。
+ * 1. emit.schemaRefs 存在时，从 catalog.schemaPool 批量查取，过滤掉未命中的引用；
+ * 2. 均不满足则返回 undefined。
  *
  * @param catalog 全局组件目录（需包含 schemaPool）
  * @param emit    待解析的事件记录
  * @returns       解析得到的 PropSchema 数组；若不存在则返回 undefined
  */
 function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSchema[] | undefined {
-  if (emit.schema !== undefined && emit.schema.length > 0) return emit.schema
   if (emit.schemaRefs === undefined || emit.schemaRefs.length === 0) return undefined
 
   const schemas = emit.schemaRefs.map((ref) => catalog.schemaPool?.[ref]).filter(isNotUndefined)

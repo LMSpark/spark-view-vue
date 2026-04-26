@@ -70,11 +70,15 @@ const currentNode = computed<SparkNode>(() => ({
 
 const hasBuiltinAction = computed(() => isBuiltinAction(currentNode.value))
 
+function resolveActionHost() {
+  return sparkConsume(ACTION_CAPABILITY)
+}
+
 // @spark-design: 动态查询最近宿主，确保响应 Host 能力变化（如行操作禁用状态更新）
 // nearestHost 在 Host 能力改变时需要重新查询，不能缓存
 const hostActionDisabled = computed(() => {
   if (!hasBuiltinAction.value) return false
-  const actionHost = sparkConsume(ACTION_CAPABILITY)
+  const actionHost = resolveActionHost()
   return actionHost !== null ? actionHost.isDisabled(currentNode.value) : false
 })
 
@@ -137,7 +141,7 @@ const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() =>
 async function handleClick(event: MouseEvent): Promise<void> {
   if (hasBuiltinAction.value) {
     const actionNode = resolveActionNodeWithDataCapabilities()
-    const actionHost = sparkConsume(ACTION_CAPABILITY)
+    const actionHost = resolveActionHost()
     if (actionHost === null) return
     actionHost.execute(actionNode)
     return

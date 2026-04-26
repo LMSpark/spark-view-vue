@@ -412,11 +412,13 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined): PropSchema | 
       if (propMeta.description !== '') childSchema.description = propMeta.description
 
       // 递归处理嵌套 schema（如 ActionsNode.props 中的 RendererActionsConfigProps）
-      const nestedPropSchema = convertSchema(propMeta.schema) as PropSchema
-      // 暂存完整的嵌套 schema，供后续处理时转换为 schemaRef
-      childSchema.__nestedSchema = nestedPropSchema
+      const nestedPropSchema = convertSchema(propMeta.schema)
+      if (nestedPropSchema !== undefined) {
+        // 暂存完整的嵌套 schema，供后续处理时转换为 schemaRef
+        childSchema.__nestedSchema = nestedPropSchema
+      }
       // 如果是 object schema，记录到收集器以供共池化处理
-      if (nestedPropSchema.kind === 'object') {
+      if (nestedPropSchema?.kind === 'object') {
         nestedSchemaCollector.add(propMeta.type, nestedPropSchema)
       }
       properties[key] = childSchema

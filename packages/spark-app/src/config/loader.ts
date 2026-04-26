@@ -232,7 +232,6 @@ export class ConfigLoader {
    */
   private applyEnvironmentOverrides(config: AppFullConfig): AppFullConfig {
     const env = import.meta.env
-    const auditRemoteLogsEnabled = env['VITE_AUDIT_REMOTE_LOGS'] === 'true'
 
     // 根据环境调整配置
     if (env['PROD']) {
@@ -246,9 +245,6 @@ export class ConfigLoader {
       config.config.enableMock = config.config.enableMock ?? true
       config.config.logLevel = 'debug'
     }
-
-    // 保留读取，便于上层按环境显式调用 configureRemoteLogger。
-    void auditRemoteLogsEnabled
 
     // 支持环境变量覆盖 API 地址
     if (typeof env['VITE_API_BASE_URL'] === 'string' && env['VITE_API_BASE_URL'] !== '') {

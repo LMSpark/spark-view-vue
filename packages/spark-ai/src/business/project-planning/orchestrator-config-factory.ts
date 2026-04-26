@@ -52,8 +52,6 @@ export function createOrchestratorConfig(
     maxRounds = 20,
     slidingWindow = 10,
     systemPrompt,
-    backend,
-    userPrompt,
     resumeSessionId,
     tools,
     signal,
@@ -65,9 +63,6 @@ export function createOrchestratorConfig(
     useBusinessFollowUpPolicy = true,
     repeatDetection,
   } = options
-
-  void backend
-  void userPrompt
 
   const monitorOptions: OrchestrationMonitorFactoryOptions | undefined = repeatDetection === undefined
     ? undefined

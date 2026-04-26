@@ -14,7 +14,7 @@
  */
 
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, basename } from 'node:path'
 import { globSync } from 'glob'
 import { getOrCreateChecker, extractComponentApiVcm } from './extract-component-api-vcm'
@@ -35,11 +35,8 @@ import type {
   PropSchema,
   PropSchemaProperty,
   CatalogBindingDescriptor,
-  ComponentContractRefs,
-  GovernanceContract,
   CatalogCanonicalModel,
   CatalogCanonicalComponent,
-  PropsInterfaceRef,
 } from './component-catalog-schema'
 import { auditCatalog, logAuditReport } from './catalog-quality-audit'
 import type { AuditReport, AuditOptions } from './catalog-quality-audit'
@@ -140,13 +137,6 @@ interface CanonicalDictionaryContext {
  */
 const STRUCTURAL_PROP_NAMES = new Set(['type', 'id', 'children'])
 
-/** CRUD 容器常见事件名，用于自动推导事件契约。 */
-const CRUD_EVENT_PROP_NAMES = ['onAddRow', 'onEditRow', 'onRemoveRow'] as const
-/** 表格/列表行交互事件名，用于自动推导事件契约。 */
-const ROW_EVENT_PROP_NAMES = ['onRowClick', 'onSelectionChange', 'onCurrentChange'] as const
-/** 弹窗类组件可见性生命周期事件名。 */
-const VISIBILITY_EVENT_PROP_NAMES = ['onOpen', 'onClose', 'onOpened', 'onClosed'] as const
-
 /**
  * 低信息量枚举变体。
  *
@@ -189,60 +179,6 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
   'CSSProperties',
   'CSSStyleDeclaration',
 ])
-
-/**
- * 治理契约字典。
- *
- * 契约层的目标不是替代组件明细，而是把跨组件重复出现的结构上升为“规则层事实”，
- * 便于 AI、审核器和后续工具统一理解某类组件的共性能力。
- */
-const GOVERNANCE_CONTRACTS: Record<string, GovernanceContract> = {
-  'spark:props:component-base': {
-    layer: 'props',
-    description: '组件基础属性契约（统一 type / id 语义）',
-    members: ['type', 'id'],
-  },
-  'spark:props:children': {
-    layer: 'props',
-    description: '子节点契约（统一 children 结构语义）',
-    members: ['children'],
-  },
-  'spark:props:table-model': {
-    layer: 'props',
-    description: 'DataKey 模型契约（统一 dataKey 数据绑定入口）',
-    members: ['dataKey'],
-  },
-  'spark:events:crud': {
-    layer: 'events',
-    description: '数据容器 CRUD 事件契约',
-    members: [...CRUD_EVENT_PROP_NAMES],
-  },
-  'spark:events:row-interaction': {
-    layer: 'events',
-    description: '行交互事件契约',
-    members: [...ROW_EVENT_PROP_NAMES],
-  },
-  'spark:events:visibility': {
-    layer: 'events',
-    description: '可见性生命周期事件契约',
-    members: [...VISIBILITY_EVENT_PROP_NAMES],
-  },
-  'spark:api:base-container': {
-    layer: 'api',
-    description: '基础数据容器 API 契约（Table/Form/Detail/List）',
-    members: ['getDataSource', 'getCurrentRow', 'refresh', 'addRow', 'editRowById', 'removeRow'],
-  },
-  'spark:api:base-crud': {
-    layer: 'api',
-    description: '基础 CRUD API 契约（Tree 等扩展容器）',
-    members: ['getDataSource', 'addRow', 'editRowById', 'removeRow'],
-  },
-  'spark:api:visibility': {
-    layer: 'api',
-    description: '可见性容器 API 契约（Dialog/Drawer）',
-    members: ['open', 'close', 'isVisible', 'toggle'],
-  },
-}
 
 /**
  * 顶层目录约束。
@@ -317,55 +253,6 @@ function pushUnique(target: string[], value: string): void {
 }
 
 // ── 5. 命名规范与组件特征推断 (Naming & Inference) ───────────────────────────────
-
-/**
- * 从组件 type（kebab-case）推导期望的 Props 接口名。
- *
- * 规则：`r-xxx-yyy` → `RXxxYyyProps`
- */
-function deriveExpectedPropsName(componentType: string): string {
-  const pascal = componentType
-    .replace(/^r-/, '')
-    .split('-')
-    .map(seg => seg.charAt(0).toUpperCase() + seg.slice(1))
-    .join('')
-  return `R${pascal}Props`
-}
-
-/**
- * 检测组件是否有匹配命名规范的 `.props.ts` 文件。
- *
- * 检查逻辑：
- * 1. .vue 文件所在目录下查找 `*.props.ts`
- * 2. 读文件内容匹配 `export interface {ExpectedName}`
- */
-function detectPropsInterface(
-  root: string,
-  vueRelativePath: string,
-  componentType: string,
-): PropsInterfaceRef | undefined {
-  const expectedName = deriveExpectedPropsName(componentType)
-  const vueAbsPath = resolve(root, vueRelativePath)
-  const vueDir = dirname(vueAbsPath)
-  const vueName = basename(vueAbsPath, '.vue')
-  const propsFile = resolve(vueDir, `${vueName}.props.ts`)
-
-  if (!existsSync(propsFile)) return undefined
-
-  const content = readFileSync(propsFile, 'utf-8')
-  const hasExport = content.includes(`export interface ${expectedName}`)
-  if (!hasExport) return undefined
-
-  const relPropsPath = normalizePath(
-    propsFile.slice(resolve(root).length + 1),
-  )
-
-  return {
-    name: expectedName,
-    file: relPropsPath,
-    exported: true,
-  }
-}
 
 /**
  * 推断组件所属分类。
@@ -479,15 +366,30 @@ function resolveSchemaRef(
   schema: PropSchema,
   identityKey?: string,
 ): string {
-  const dedupeKey = identityKey !== undefined
-    ? `identity:${identityKey}`
-    : `schema:${stableStringify(schema)}`
+  const schemaKey = `schema:${stableStringify(schema)}`
+  const normalizedIdentityKey = identityKey?.trim()
+  const identityDedupeKey = normalizedIdentityKey && normalizedIdentityKey.length > 0
+    ? `identity:${normalizedIdentityKey}`
+    : undefined
 
-  const existing = context.index.get(dedupeKey)
-  if (existing !== undefined) return existing
+  if (identityDedupeKey !== undefined) {
+    const byIdentity = context.index.get(identityDedupeKey)
+    if (byIdentity !== undefined) return byIdentity
+  }
+
+  const bySchema = context.index.get(schemaKey)
+  if (bySchema !== undefined) {
+    if (identityDedupeKey !== undefined) {
+      context.index.set(identityDedupeKey, bySchema)
+    }
+    return bySchema
+  }
 
   const ref = allocSchemaKey(context)
-  context.index.set(dedupeKey, ref)
+  context.index.set(schemaKey, ref)
+  if (identityDedupeKey !== undefined) {
+    context.index.set(identityDedupeKey, ref)
+  }
   context.pool[ref] = schema
   return ref
 }
@@ -701,85 +603,7 @@ function createCatalogFilePayload(catalog: ComponentCatalog): unknown {
   return payload
 }
 
-// ── 7. 治理契约推断 (Governance Contracts) ────────────────────────────────────────
-
-/** 判断名称集合里是否命中任一候选项。 */
-function hasAny(names: Set<string>, expected: readonly string[]): boolean {
-  return expected.some((name) => names.has(name))
-}
-
-/**
- * 根据组件类型推断 API 层治理契约。
- *
- * 这里是显式白名单，不做模糊推理，目的是保证契约含义稳定可控。
- */
-function inferApiContracts(type: string): string[] {
-  const result: string[] = []
-  if (type === 'r-table' || type === 'r-form' || type === 'r-detail' || type === 'r-list') {
-    result.push('spark:api:base-container')
-  }
-  if (type === 'r-tree') {
-    result.push('spark:api:base-crud')
-  }
-  if (type === 'r-dialog' || type === 'r-drawer') {
-    result.push('spark:api:visibility')
-  }
-  return result
-}
-
-/**
- * 从原始 props 推断组件引用到的治理契约。
- *
- * 返回的是契约 ref 集合，而不是直接内联契约定义，真正定义统一由 GOVERNANCE_CONTRACTS 提供。
- */
-function inferContracts(type: string, rawProps: PropEntryWithMeta[]): ComponentContractRefs | undefined {
-  const names = new Set(rawProps.map((prop) => prop.name))
-
-  const propContracts: string[] = []
-  const eventContracts: string[] = []
-  const apiContracts = inferApiContracts(type)
-
-  if (names.has('type') || names.has('id')) propContracts.push('spark:props:component-base')
-  if (names.has('children')) propContracts.push('spark:props:children')
-  if (names.has('dataKey')) propContracts.push('spark:props:table-model')
-
-  if (hasAny(names, CRUD_EVENT_PROP_NAMES)) eventContracts.push('spark:events:crud')
-  if (hasAny(names, ROW_EVENT_PROP_NAMES)) eventContracts.push('spark:events:row-interaction')
-  if (hasAny(names, VISIBILITY_EVENT_PROP_NAMES)) eventContracts.push('spark:events:visibility')
-
-  const contracts: ComponentContractRefs = {
-    ...(propContracts.length > 0 ? { props: propContracts } : {}),
-    ...(eventContracts.length > 0 ? { events: eventContracts } : {}),
-    ...(apiContracts.length > 0 ? { api: apiContracts } : {}),
-  }
-
-  return Object.keys(contracts).length > 0 ? contracts : undefined
-}
-
-/**
- * 从所有组件条目里收集真正被使用到的治理契约定义。
- *
- * 最终只把被引用的契约写入顶层 governance.contracts，避免输出未使用的规则模板。
- */
-function collectGovernanceFromComponents(components: Record<string, ComponentEntry>) {
-  const usedContractIds = new Set<string>()
-
-  for (const component of Object.values(components)) {
-    for (const id of component.contracts?.props ?? []) usedContractIds.add(id)
-    for (const id of component.contracts?.events ?? []) usedContractIds.add(id)
-    for (const id of component.contracts?.api ?? []) usedContractIds.add(id)
-  }
-
-  const contracts: Record<string, GovernanceContract> = {}
-  for (const id of usedContractIds) {
-    const def = GOVERNANCE_CONTRACTS[id]
-    if (def !== undefined) contracts[id] = def
-  }
-
-  return Object.keys(contracts).length > 0 ? { contracts } : undefined
-}
-
-// ── 8. 组件扫描与目录构建 (Scanner & Builder) ─────────────────────────────────────
+// ── 7. 组件扫描与目录构建 (Scanner & Builder) ─────────────────────────────────────
 
 /**
  * 扫描输入文件并构建完整目录模型。
@@ -833,13 +657,6 @@ function buildSortedComponents(
     const props = compactProps(rawProps, schemaPool)
     const emits = compactEmits(vcmApi.emits, schemaPool)
     const binding = inferBinding(props)
-    const contracts = inferContracts(type, rawProps)
-    const propsInterface = detectPropsInterface(root, file, type)
-
-    // 这两个推导结果当前保留为构建期信息入口，暂未改变现有产物结构，故不改写现有行为。
-    void contracts
-    void propsInterface
-
     const entry: ComponentEntry = {
       type,
       filePath: normalizedFilePath,
@@ -877,7 +694,12 @@ function buildSortedComponents(
   const nestedSchemas = nestedSchemaCollector.getAll()
   for (const record of nestedSchemas) {
     // 使用类型名称作为 identity key，以便生成稳定的 schema ref
-    resolveSchemaRef(schemaPool, normalizeNestedSchema(schemaPool, record.schema), record.typeName)
+    const identityKey = record.typeName.trim()
+    resolveSchemaRef(
+      schemaPool,
+      normalizeNestedSchema(schemaPool, record.schema),
+      identityKey.length > 0 ? identityKey : undefined,
+    )
   }
   // 清空收集器，为下一次调用做准备
   nestedSchemaCollector.clear()
@@ -897,7 +719,7 @@ function buildSortedComponents(
   }
 }
 
-// ── 9. 顶层生成入口 (Public Entry) ─────────────────────────────────────────────────
+// ── 8. 顶层生成入口 (Public Entry) ─────────────────────────────────────────────────
 
 /**
  * 生成组件 JSON 目录并按需执行质量审计。
@@ -905,7 +727,7 @@ function buildSortedComponents(
  * 顶层流程：
  * 1. 按模式扫描目标 Vue 文件；
  * 2. 构建组件目录运行态模型；
- * 3. 补齐 governance / constraints / canonical 等顶层信息；
+ * 3. 补齐 constraints / canonical 等顶层信息；
  * 4. 生成瘦身后的落盘 payload 并写入标准路径；
  * 5. 若配置了 audit，则输出质量审计报告。
  */
@@ -932,8 +754,6 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     canonical,
   } = buildSortedComponents(root, files, includeGlobalProps, tsconfigPath, vcmCheckerOptions)
 
-  const governance = collectGovernanceFromComponents(components)
-
   // 运行态 catalog 保留完整字段，供审计和调用方继续加工。
   const catalog: ComponentCatalog = {
     version: '2.0.0',
@@ -946,7 +766,6 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     constraints: DEFAULT_CONSTRAINTS,
     canonical,
     bindingDescriptors,
-    ...(governance !== undefined ? { governance } : {}),
   }
 
   // 真正写盘前统一做 payload 瘦身，避免把内部辅助字段直接暴露给目录消费者。
@@ -956,18 +775,6 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   writeFileSync(outPath, JSON.stringify(filePayload, null, 2), 'utf-8')
   cleanupLegacyCatalogOutputs(outPath)
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
-
-  // 补充输出 props 接口命名规范统计，帮助逐步推进组件库约束收敛。
-  const entries = Object.values(components)
-  const withInterface = entries.filter(e => e.propsInterface !== undefined)
-  if (withInterface.length > 0) {
-    const interfaceNames = withInterface
-      .map(entry => entry.propsInterface?.name)
-      .filter((name): name is string => name !== undefined)
-    logger.info(
-      `🏷️  Props 命名规范：${withInterface.length}/${entries.length} 组件已声明（${interfaceNames.join(', ')}）`,
-    )
-  }
 
   // 质量审计属于后置能力：目录本身先生成，再决定是否做结构质量分析。
   let auditReport: AuditReport | undefined

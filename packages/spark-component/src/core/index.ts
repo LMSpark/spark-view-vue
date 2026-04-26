@@ -106,7 +106,6 @@ export {
 } from './capability-keys.js'
 
 export {
-  DEFAULT_PROVIDER_KEYS,
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
   consumeCapabilityFromProvider,

@@ -377,9 +377,9 @@ export function createPageModelEditSession(
       throw new Error('edit.bootstrap 失败：缺少 live style.css 读取器')
     }
 
-    void liveTree.toJSON()
-    void readScript()
-    void readStyle()
+    liveTree.toJSON()
+    readScript()
+    readStyle()
 
     const result = runtime.executeStill('edit.bootstrap', {}, session, 'bootstrap-page-model')
 

@@ -17,15 +17,24 @@ export interface NestedSchemaRecord {
 class NestedSchemaCollector {
   private schemas: Map<string, PropSchema> = new Map()
 
+  private normalizeTypeName(typeName: string): string {
+    return typeName
+      .split('|')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0 && part !== 'undefined' && part !== 'null')
+      .join(' | ')
+  }
+
   /**
    * 记录一个嵌套 schema 类型
    * @param typeName 类型名
    * @param schema PropSchema
    */
   add(typeName: string, schema: PropSchema): void {
+    const normalizedTypeName = this.normalizeTypeName(typeName)
     // 使用 typeName 作为 key 去重，同一个类型只需要记录一次
-    if (!this.schemas.has(typeName)) {
-      this.schemas.set(typeName, schema)
+    if (!this.schemas.has(normalizedTypeName)) {
+      this.schemas.set(normalizedTypeName, schema)
     }
   }
 
@@ -33,11 +42,7 @@ class NestedSchemaCollector {
    * 获取所有已收集的嵌套 schema 记录
    */
   getAll(): NestedSchemaRecord[] {
-    const records: NestedSchemaRecord[] = []
-    for (const [typeName, schema] of this.schemas) {
-      records.push({ typeName, schema })
-    }
-    return records
+    return [...this.schemas.entries()].map(([typeName, schema]) => ({ typeName, schema }))
   }
 
   /**
@@ -47,12 +52,6 @@ class NestedSchemaCollector {
     this.schemas.clear()
   }
 
-  /**
-   * 获取已收集的 schema 数量
-   */
-  size(): number {
-    return this.schemas.size
-  }
 }
 
 // 全局单例收集器

@@ -114,8 +114,6 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
 
   const visibleToolbarConfigs = computed(() =>
     {
-      const _dataSourceChangeVersion = dataSourceChangeVersion.value
-
       return toolbarConfigs.value
       .map(action => {
         const dataSource = options.dataSource?.value ?? null

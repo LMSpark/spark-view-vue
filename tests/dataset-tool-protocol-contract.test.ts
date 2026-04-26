@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import { DataSetCrudTool } from '../packages/spark-data/src/dataset-crud-tool'
 import {
   TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,

@@ -13,7 +13,6 @@ import { defineComponent, h } from 'vue'
 import {
   Spark,
   ACTION_CAPABILITY,
-  DEFAULT_PROVIDER_KEYS,
   SPARK_REGISTRY_KEY,
   useSparkComponent,
   useSparkConsume,
@@ -32,13 +31,13 @@ import { consumeSparkCapability, createSparkCapabilityContext } from '../package
 // 1. 默认键集合 provider 查询 — 纯上下文层测试
 // ═══════════════════════════════════════════════════════
 
-describe('findNearestCapabilityProviderByKeys(DEFAULT_PROVIDER_KEYS) — 上下文链逐层查找', () => {
+describe('findNearestCapabilityProviderByKeys([]) — 上下文链逐层查找', () => {
   it('默认键集合为空时返回 null', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, root)
 
-    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)).toBeNull()
-    expect(findNearestCapabilityProviderByKeys(root, DEFAULT_PROVIDER_KEYS)).toBeNull()
+    expect(findNearestCapabilityProviderByKeys(leaf, [])).toBeNull()
+    expect(findNearestCapabilityProviderByKeys(root, [])).toBeNull()
   })
 })
 
@@ -54,7 +53,7 @@ describe('provider 查询三段式语义', () => {
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-button' }, actionOnly)
 
     expect(findNearestCapabilityProvider(leaf, ACTION_CAPABILITY)?.id).toBe('action-only')
-    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)).toBeNull()
+    expect(findNearestCapabilityProviderByKeys(leaf, [])).toBeNull()
   })
 
   it('通过能力键集合查最近 provider', () => {

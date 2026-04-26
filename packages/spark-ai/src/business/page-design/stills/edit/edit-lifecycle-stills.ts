@@ -88,7 +88,7 @@ export function writeActiveScript(state: EditDomainState, content: string): void
     state.toolHost?.writeScript,
     'writeActiveScript 失败：缺少 live text model 读写器（EditToolHost.readScript/writeScript）',
   )
-  void assertPresent(
+  assertPresent(
     state.toolHost?.readScript,
     'writeActiveScript 失败：缺少 live text model 读写器（EditToolHost.readScript/writeScript）',
   )
@@ -108,7 +108,7 @@ export function writeActiveStyle(state: EditDomainState, content: string): void 
     state.toolHost?.writeStyle,
     'writeActiveStyle 失败：缺少 live text model 读写器（EditToolHost.readStyle/writeStyle）',
   )
-  void assertPresent(
+  assertPresent(
     state.toolHost?.readStyle,
     'writeActiveStyle 失败：缺少 live text model 读写器（EditToolHost.readStyle/writeStyle）',
   )
@@ -166,10 +166,10 @@ function bootstrapEditSession(state: EditDomainState): void {
   )
 
   // 4) 探测一次函数调用，确保适配器能力可用。
-  void nodeTreeTool.toJSON()
-  void dataSetTool.toJson()
-  void readScript()
-  void readStyle()
+  nodeTreeTool.toJSON()
+  dataSetTool.toJson()
+  readScript()
+  readStyle()
 
   // 5) 建立编辑会话状态：仅推进 phase。
   state.phase = 'editing'
@@ -186,8 +186,7 @@ export const editInit: StillDefinition<EditInitParams, undefined> = {
   paramsSchema: {},
   example: {},
   validate: validateEditBootstrapPayload,
-  execute: (session, params): StillResult<undefined> => {
-    void params
+  execute: (session, _params): StillResult<undefined> => {
     bootstrapEditSession(getEditState(session))
     return { ok: true, data: undefined, summary: '编辑会话已完成 tool 引导（模型实例 + N 个函数入口），进入 editing 状态' }
   },

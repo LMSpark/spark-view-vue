@@ -7,11 +7,12 @@
 
 <script setup lang="ts">
 /**
- * 行数据 host 载体：为子树 provide DATA_ROW 能力。
+ * 作用域 host 载体：为子树提供行数据与动作能力。
  *
  * 主要职责：
  * 1. 按 row 有条件地 provide DATA_ROW（通过 rowMirror 同步，防止引用替换）。
- * 2. 渲染 children 子节点（也可用 slot 替代）。
+ * 2. 按 actionCapability 有条件地 provide ACTION_CAPABILITY。
+ * 3. 渲染 children 子节点（也可用 slot 替代）。
  */
 import { shallowReactive, watch } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'

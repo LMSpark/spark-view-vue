@@ -5,8 +5,6 @@ import type {
 import {
   consumeSparkCapability,
 } from './capability-system.js'
-import {
-} from './capability-keys.js'
 import type {
   SparkActionCapability,
 } from './capability-keys.js'
@@ -33,8 +31,6 @@ export type {
 // 1. 能力键：CapabilityKey 本身就是查询入口
 // 2. provider context：本地声明该能力键的 context
 // 3. 能力：挂在 provider context 上的 capability value
-
-export const DEFAULT_PROVIDER_KEYS = [] as const
 
 function hasLocalCapability<T>(ctx: ICapabilityContext, key: CapabilityKey<T>): boolean {
   return ctx.capabilities.has(key)

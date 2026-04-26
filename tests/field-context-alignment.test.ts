@@ -232,7 +232,7 @@ describe('useFieldContext attrs 集成传递', () => {
   })
 })
 
-describe('字段 provider 解析会考虑中间层', () => {
+describe('字段宿主推导会考虑中间层', () => {
   const ProviderContextProbe = defineComponent({
     name: 'ProviderContextProbe',
     setup() {
@@ -251,7 +251,7 @@ describe('字段 provider 解析会考虑中间层', () => {
     })
   }
 
-  it('会跳过结构层插入的中间节点，继承最近 provider fieldMode', () => {
+  it('会跳过结构层插入的中间节点，继承最近宿主语义', () => {
     const SlotBridge = createIntermediateBridge('r-slot')
 
     const wrapper = mountFieldInContext({
@@ -265,7 +265,7 @@ describe('字段 provider 解析会考虑中间层', () => {
     expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('table')
   })
 
-  it('中间作用域节点不改写 provider fieldMode', () => {
+  it('中间作用域节点不改写最近宿主语义', () => {
     const FieldScopeBridge = createIntermediateBridge('r-field-scope')
 
     const wrapper = mountFieldInContext({
@@ -279,7 +279,7 @@ describe('字段 provider 解析会考虑中间层', () => {
     expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('table')
   })
 
-  it('会跨越多层中间组件解析到最近 provider fieldMode', () => {
+  it('会跨越多层中间组件解析到最近宿主语义', () => {
     const DataScopeBridge = createIntermediateBridge('r-data-scope')
     const ListItemBridge = createIntermediateBridge('r-list-item', DataScopeBridge)
 
@@ -294,7 +294,7 @@ describe('字段 provider 解析会考虑中间层', () => {
     expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('detail')
   })
 
-  it('字段 provider 解析不能污染页面注册表中的真实组件 type', () => {
+  it('字段宿主推导不能污染页面注册表中的真实组件 type', () => {
     const registry = createPageComponentRegistry()
     const plugin = Spark.createPlugin({ registry: Spark.createRegistry() })
 
