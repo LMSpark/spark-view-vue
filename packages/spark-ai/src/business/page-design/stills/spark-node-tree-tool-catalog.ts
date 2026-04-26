@@ -269,19 +269,6 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'sparkNodeTree.collectDataKeys',
-    target: 'tree',
-    coreMethod: 'collectDataKeys',
-    description: '收集当前组件实例子树 props.dataKey 中出现的全部唯一 dataKey。',
-    paramsSchema: NO_PARAMS,
-    resultSchema: {
-      dataKeys: 'Set<string> — 唯一 dataKey 集合',
-    },
-    example: NO_PARAMS,
-    usageRules: [INSTANCE_RULE, CATALOG_ONLY_RULE],
-    failureModes: [],
-  }),
-  defineDescribeRow({
     action: 'sparkNodeTree.collectHandlerNames',
     target: 'tree',
     coreMethod: 'collectHandlerNames',

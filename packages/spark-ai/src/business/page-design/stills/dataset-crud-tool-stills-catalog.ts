@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DataSetCrudTool → Future Stills Catalog
  *
  * 目标：
@@ -247,7 +247,7 @@ const AGGREGATE_ITEM_SCHEMA = {
   kind: 'object',
   required: ['type'],
   properties: {
-    type: '"sum" | "count" | "avg" | "min" | "max" | "join"',
+    type: '"sum" | "count" | "avg" | "min" | "max" | "join" — 不只有求和；按场景选择计数/平均/极值/字符串拼接',
     field: 'string? — 源字段名；省略时默认与聚合输出键同名',
     label: 'string? — UI 展示标题',
     separator: 'string? — join 聚合分隔符，仅 type="join" 时有效',
@@ -257,7 +257,7 @@ const AGGREGATE_ITEM_SCHEMA = {
 const AGGREGATES_SCHEMA = {
   kind: 'object',
   additionalProperties: AGGREGATE_ITEM_SCHEMA,
-  note: '对象键是聚合输出字段名，例如 totalAmount 或 statusList。',
+  note: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 summaryRow / selectionSummaryRow 是运行时派生结果。',
 } as const
 
 const VIEW_METADATA_SCHEMA = {
@@ -279,7 +279,7 @@ const VIEW_METADATA_SCHEMA = {
     sortExpression: 'SortField[]? — 例如 [{ field: "createdAt", direction: "desc" }]',
     aggregates: AGGREGATES_SCHEMA,
   },
-  note: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。',
+  note: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，汇总结果可通过 Table@summaryRow / Table@selectionSummaryRow（或 Table@viewId@summaryRow）这类 DataKey 被 UI 引用。',
 } as const
 
 const CRUD_HTTP_ENDPOINT_SCHEMA = {
@@ -1040,6 +1040,8 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
+      '若该视图配置了 aggregates，运行时汇总结果位于 view.summaryRow / view.selectionSummaryRow。',
+      'UI 侧引用聚合结果时，优先使用 DataKey：TableName@summaryRow、TableName@selectionSummaryRow、TableName@viewId@summaryRow，或继续追加字段路径如 Orders@summaryRow.totalAmount。',
       '不存在时返回 undefined，而不是抛错。',
       CATALOG_ONLY_RULE,
     ],
@@ -1062,13 +1064,24 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Users',
       viewId: 'grid',
-      config: { pageSize: 50 },
+      config: {
+        pageSize: 50,
+        aggregates: {
+          rowCount: { type: 'count', field: 'id', label: '行数' },
+          totalScore: { type: 'sum', field: 'score', label: '总分' },
+          avgScore: { type: 'avg', field: 'score', label: '平均分' },
+          minScore: { type: 'min', field: 'score', label: '最低分' },
+          maxScore: { type: 'max', field: 'score', label: '最高分' },
+          nameList: { type: 'join', field: 'name', separator: ' / ', label: '姓名列表' },
+        },
+      },
     },
     validation: { requiredKeys: ['tableName', 'viewId'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_LIFECYCLE_RULE,
       STATIC_ROWS_ONLY_RULE,
+      '如需配置聚合，请在 config.aggregates 中声明输出键 -> 聚合配置；这是对象映射（Record/Map-like），不是数组；不要把 summaryRow 当作可直接写入 rows 的静态字段。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
@@ -1096,7 +1109,18 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Users',
       viewId: 'grid',
-      updates: { page: 3, pageSize: 50 },
+      updates: {
+        page: 3,
+        pageSize: 50,
+        aggregates: {
+          rowCount: { type: 'count', field: 'id', label: '行数' },
+          totalScore: { type: 'sum', field: 'score', label: '总分' },
+          avgScore: { type: 'avg', field: 'score', label: '平均分' },
+          minScore: { type: 'min', field: 'score', label: '最低分' },
+          maxScore: { type: 'max', field: 'score', label: '最高分' },
+          selectedNames: { type: 'join', field: 'name', separator: ' / ', label: '姓名列表' },
+        },
+      },
     },
     validation: { requiredKeys: ['tableName', 'updates'] },
     usageRules: [
@@ -1104,6 +1128,8 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       STATIC_ROWS_ONLY_RULE,
       '如果 updates.rows 存在，会先 replaceRows，再 applyViewConfig。',
+      '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 summaryRow / selectionSummaryRow 上的字段名。',
+      '聚合配置生效后，UI 侧可用 TableName@summaryRow、TableName@selectionSummaryRow、TableName@viewId@summaryRow，或字段路径 TableName@summaryRow.totalScore 进行绑定。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
@@ -1711,6 +1737,369 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     ],
     currentStillAction: DEPENDENCY_REMOVE_ACTION,
   }),
+  defineDescribeRow({
+    action: 'datasetTool.listAggregates',
+    target: 'view',
+    crudToolMethod: 'listAggregates',
+    description: '列出指定视图当前的全部聚合配置',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+    },
+    resultSchema: {
+      aggregates: 'Record<string, AggregateColumnConfig> — 聚合配置浅拷贝，键为聚合输出字段名',
+    },
+    example: {
+      tableName: 'Orders',
+      viewId: 'default',
+    },
+    validation: { requiredKeys: ['tableName'] },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      '聚合配置按 viewId 隔离：同一 table 在不同视图可维护不同 aggregates，不会互相覆盖。',
+      'aggregates 是 MAP 结构：{ [key]: config }；key 是输出字段名，运行时聚合值按 summaryRow[key] / selectionSummaryRow[key] 读取。',
+      '返回值是配置态快照，不含运行时计算结果（summaryRow / selectionSummaryRow）。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_VIEW',
+        when: '目标视图不存在',
+        fix: '先执行 datasetTool.listViews 确认视图存在。',
+      },
+    ],
+  }),
+  defineDescribeRow({
+    action: 'datasetTool.getAggregate',
+    target: 'view',
+    crudToolMethod: 'getAggregate',
+    description: '获取指定视图中单条聚合配置',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      key: 'string — 聚合输出字段名（即 aggregates 对象的键）',
+    },
+    resultSchema: {
+      aggregate: 'AggregateColumnConfig | undefined — 命中的聚合配置；不存在时为 undefined',
+    },
+    example: {
+      tableName: 'Orders',
+      key: 'totalAmount',
+    },
+    validation: { requiredKeys: ['tableName', 'key'] },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      '不存在时返回 undefined，而不是抛错。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_VIEW',
+        when: '目标视图不存在',
+        fix: '先执行 datasetTool.listViews 确认视图存在。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.addAggregate',
+    target: 'view',
+    crudToolMethod: 'addAggregate',
+    description: '向指定视图新增一条聚合配置',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      key: 'string — 聚合输出字段名，视图内唯一',
+      config: AGGREGATE_ITEM_SCHEMA,
+    },
+    resultSchema: {
+      added: 'void — 写入成功后无返回值',
+    },
+    example: {
+      tableName: 'Orders',
+      key: 'totalAmount',
+      config: { type: 'sum', field: 'amount', label: '合计金额' },
+    },
+    validation: { requiredKeys: ['tableName', 'key', 'config'] },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      JSON_OBJECT_RULE,
+      '视图聚合新增步骤：先选 viewId（不传即 default）→ 指定 key（输出字段名）→ 设 config.type（sum/count/avg/min/max/join）与 field。',
+      'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取仍用 summaryRow.totalAmount。',
+      '新增后在容器侧从 summaryRow[key]（全量）或 selectionSummaryRow[key]（选中集）读取聚合结果。',
+      'key 已存在时抛错，改用 datasetTool.updateAggregate。',
+      'config.field 省略时默认与 key 同名，该字段必须在列定义中存在。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'AGGREGATE_KEY_EXISTS',
+        when: 'key 已存在于当前视图聚合配置',
+        fix: '改用 datasetTool.updateAggregate，或先执行 datasetTool.removeAggregate。',
+      },
+      {
+        code: 'UNKNOWN_FIELD',
+        when: 'config.field（或 key）不在列定义中',
+        fix: '先执行 datasetTool.listColumns 确认字段存在，或补充正确 field 值。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.updateAggregate',
+    target: 'view',
+    crudToolMethod: 'updateAggregate',
+    description: '更新指定视图中一条已有聚合配置（浅合并 updates）',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      key: 'string — 聚合输出字段名',
+      updates: {
+        kind: 'object',
+        optional: {
+          type: '"sum" | "count" | "avg" | "min" | "max" | "join"',
+          field: 'string? — 新源字段名',
+          label: 'string? — 新 UI 标题',
+          separator: 'string? — join 分隔符',
+        },
+      },
+    },
+    resultSchema: {
+      updated: 'void — 写入成功后无返回值',
+    },
+    example: {
+      tableName: 'Orders',
+      key: 'totalAmount',
+      updates: { label: '订单合计' },
+    },
+    validation: { requiredKeys: ['tableName', 'key', 'updates'] },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      JSON_OBJECT_RULE,
+      '可通过 updates.type 在 sum/count/avg/min/max/join 间切换；join 类型可同时传 updates.separator。',
+      '若修改 updates.field，只会改变聚合来源，不会改变结果引用 key；读取仍使用 summaryRow[key]。',
+      'key 不存在时抛错，改用 datasetTool.addAggregate。',
+      '只传需要修改的字段；未传字段保留原值。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'AGGREGATE_KEY_NOT_FOUND',
+        when: 'key 不存在于当前视图聚合配置',
+        fix: '先执行 datasetTool.listAggregates，或改用 datasetTool.addAggregate 新增。',
+      },
+      {
+        code: 'UNKNOWN_FIELD',
+        when: 'updates.field 不在列定义中',
+        fix: '先执行 datasetTool.listColumns 确认字段存在。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.removeAggregate',
+    target: 'view',
+    crudToolMethod: 'removeAggregate',
+    description: '删除指定视图中一条聚合配置',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      key: 'string — 聚合输出字段名',
+    },
+    resultSchema: {
+      removed: 'void — 删除成功后无返回值',
+    },
+    example: {
+      tableName: 'Orders',
+      key: 'totalAmount',
+    },
+    validation: { requiredKeys: ['tableName', 'key'] },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      'key 不存在时抛错。',
+      '删除后对应 summaryRow / selectionSummaryRow 字段会立即消失。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'AGGREGATE_KEY_NOT_FOUND',
+        when: 'key 不存在于当前视图聚合配置',
+        fix: '先执行 datasetTool.listAggregates 确认 key 存在。',
+      },
+    ],
+  }),
+  defineDescribeRow({
+    action: 'datasetTool.getComputeExpression',
+    target: 'column',
+    crudToolMethod: 'getComputeExpression',
+    description: '获取指定列的计算表达式字符串',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      columnName: COLUMN_NAME_PARAM,
+    },
+    resultSchema: {
+      expression: 'string | undefined — 当前计算表达式；未配置时为 undefined',
+    },
+    example: {
+      tableName: 'Orders',
+      columnName: 'totalAmount',
+    },
+    validation: { requiredKeys: ['tableName', 'columnName'] },
+    usageRules: [
+      '未配置计算表达式时返回 undefined，而不是抛错。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_TABLE',
+        when: '目标表不存在',
+        fix: '先执行 datasetTool.listTables 确认表存在。',
+      },
+      {
+        code: 'UNKNOWN_COLUMN',
+        when: '目标列不存在',
+        fix: '先执行 datasetTool.listColumns 确认列存在。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.setComputeExpression',
+    target: 'column',
+    crudToolMethod: 'setComputeExpression',
+    description: '设置（或替换）指定列的计算表达式；设置后自动重编译并对现有行立即重算',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      columnName: COLUMN_NAME_PARAM,
+      expression: {
+        type: 'string',
+        maxLength: 2048,
+        description: '计算表达式字符串',
+        syntax: {
+          fieldRef: "直接写字段名（无需任何前缀）。行对象通过 with(__row) 解构，字段直接可见。例：price * qty / status === 'active' ? 1 : 0",
+          ctxRef: "ctx.<key> — 引用外部上下文变量，需先调用 DataView.setComputedContext({ key: value }) 注入。例：amount * ctx.taxRate",
+          childAgg: {
+            note: '子表聚合函数；需父子表已通过 datasetTool.createRelation 建立 TableRelation，否则子行为空',
+            childRef: "'子表名' 或 '子表名@视图ID'；省略视图 ID 时取 default 视图",
+            functions: [
+              '$sum(childRef, field) → number（无行时返回 0）',
+              '$count(childRef) → number',
+              '$avg(childRef, field) → number（无行时返回 0）',
+              '$min(childRef, field) → number | undefined',
+              '$max(childRef, field) → number | undefined',
+              '$list(childRef, field) → unknown[]',
+              "$join(childRef, field, sep?) → string；sep 默认 ', '",
+            ],
+            examples: [
+              "$sum('Items', 'lineTotal')  — 汇总子订单行金额",
+              "$count('Items')  — 统计子行数量",
+              "$avg('Items', 'lineTotal')  — 子行金额平均值",
+              "$min('Items', 'lineTotal')  — 子行金额最小值",
+              "$max('Items', 'lineTotal')  — 子行金额最大值",
+              "$list('Items', 'sku')  — 收集子行 SKU 列表",
+              "$join('Tags', 'name', ' / ')  — 拼接标签名",
+              "$sum('Items@filtered', 'amount')  — 使用 Items 表的 filtered 视图",
+            ],
+          },
+          singleVsBlock: {
+            single: '不含 return 关键字 → 整体视为单一表达式，自动 return。例：price * qty',
+            block: '含 return 关键字 → 视为函数体，每条分支须显式 return。例：if (qty > 0) { return price * qty } else { return 0 }',
+            multiStatementExample: 'const tax = amount * 0.13\nreturn amount + tax',
+          },
+          errorHandling: '运行期求值失败时列值写 undefined，不中断其他行；编译期语法错误在调用时立即抛出',
+        },
+      },
+    },
+    resultSchema: {
+      table: 'DataTable — 更新后的数据表实例',
+    },
+    example: {
+      simple: {
+        tableName: 'Orders',
+        columnName: 'totalAmount',
+        expression: 'quantity * unitPrice',
+      },
+      withCtx: {
+        tableName: 'Orders',
+        columnName: 'taxAmount',
+        expression: 'totalAmount * ctx.taxRate',
+        note: '需先调用 DataView.setComputedContext({ taxRate: 0.13 })',
+      },
+      childAggCount: {
+        tableName: 'Orders',
+        columnName: 'itemCount',
+        expression: "$count('Items')",
+        note: 'Orders → Items 关系须已建立',
+      },
+      childAggSum: {
+        tableName: 'Orders',
+        columnName: 'subTotal',
+        expression: "$sum('Items', 'lineTotal')",
+      },
+      multiStatement: {
+        tableName: 'Products',
+        columnName: 'discountedPrice',
+        expression: "if (stock > 100) { return price * 0.9 } else { return price }",
+      },
+    },
+    validation: { requiredKeys: ['tableName', 'columnName', 'expression'] },
+    usageRules: [
+      '行字段直接写字段名（无需前缀）；外部变量写 ctx.<key>；子表聚合写 $sum/$count/$avg/$min/$max/$list/$join。',
+      '不含 return → 整体自动 return；含 return → 函数体模式，所有分支须显式 return。',
+      '$avg/$sum/$count 在空子表时返回 0；$min/$max 在空子表时返回 undefined；$list 返回数组；$join 返回字符串。',
+      '子表聚合依赖 TableRelation；无关系时子行数组为空，$sum/$avg/$count 返回 0/$join 返回空字符串。',
+      '设置后自动触发 DataTable 刷新链：计算列重编译 → 现有行立即重算 → 聚合行同步更新。',
+      '要移除表达式，改用 datasetTool.clearComputeExpression。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_TABLE',
+        when: '目标表不存在',
+        fix: '先执行 datasetTool.listTables 确认表存在。',
+      },
+      {
+        code: 'UNKNOWN_COLUMN',
+        when: '目标列不存在',
+        fix: '先执行 datasetTool.listColumns 确认列存在。',
+      },
+      {
+        code: 'EXPRESSION_COMPILE_ERROR',
+        when: '表达式字符串语法错误（括号不匹配、超出 2048 字符等）',
+        fix: '检查括号匹配、字段名拼写、子表名格式；多语句体须确保每条路径都有 return。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.clearComputeExpression',
+    target: 'column',
+    crudToolMethod: 'clearComputeExpression',
+    description: '移除指定列的计算表达式，恢复为普通列（值保留，但不再重算）',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      columnName: COLUMN_NAME_PARAM,
+    },
+    resultSchema: {
+      table: 'DataTable — 更新后的数据表实例',
+    },
+    example: {
+      tableName: 'Orders',
+      columnName: 'totalAmount',
+    },
+    validation: { requiredKeys: ['tableName', 'columnName'] },
+    usageRules: [
+      '移除表达式后列变为普通列，现有行的列值保留最后一次计算结果，不再自动重算。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_TABLE',
+        when: '目标表不存在',
+        fix: '先执行 datasetTool.listTables 确认表存在。',
+      },
+      {
+        code: 'UNKNOWN_COLUMN',
+        when: '目标列不存在',
+        fix: '先执行 datasetTool.listColumns 确认列存在。',
+      },
+    ],
+  }),
 ] as const satisfies readonly DatasetCrudToolStillParameterRow[]
 
 /**
@@ -1731,11 +2120,7 @@ export function getDataSetCrudToolStillCapabilityRow(action: string): DatasetCru
   return DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE.find(row => row.action === action)
 }
 
-/**
- * 通用入口：对 LLM 反序列化后的 datasetTool.* 参数做结构校验。
- *
- * 这里不依赖 stills runtime，只消费 catalog 中的 paramsSchema，适合在真正 dispatch 之前做 fail-fast 验证。
- */
+/** 校验 LLM 提交的 datasetTool 动作参数；通过返回 null，失败返回错误描述字符串。 */
 export function validateDataSetCrudToolStillParams(action: string, params: unknown): string | null {
   const row = getDataSetCrudToolStillParameterRow(action)
   if (row === undefined) {

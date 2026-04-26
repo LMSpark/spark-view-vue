@@ -6,6 +6,7 @@
  */
 
 import type { IStillSession, StillDefinition, StillResult } from '../../../../../core/stills/types'
+import { parseDataKey } from '@spark-view/spark-data'
 import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-lifecycle-stills'
 import { EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
 import {
@@ -96,6 +97,131 @@ function validateDatasetStillRow(
     return '数据优先流程已启用，禁止使用 datasetTool.export，请改用 dataset.export'
   }
   return validateDataSetCrudToolStillParams(row.action, params ?? {})
+}
+
+type NodeTreeDataKeyValidationIssue = {
+  dataKey: string
+  code: 'INVALID_DATAKEY' | 'UNSUPPORTED_SCOPE' | 'UNKNOWN_TABLE' | 'UNKNOWN_VIEW' | 'UNKNOWN_FIELD_PATH'
+  detail: string
+}
+
+type SparkNodeTreeLike = {
+  getAllData(): unknown
+}
+
+function collectDataKeysFromNode(node: unknown, out: Set<string>): void {
+  if (typeof node !== 'object' || node === null) return
+  const record = node as Record<string, unknown>
+
+  const props = record['props']
+  if (typeof props === 'object' && props !== null) {
+    const dataKey = (props as Record<string, unknown>)['dataKey']
+    if (typeof dataKey === 'string' && dataKey.trim().length > 0) {
+      out.add(dataKey.trim())
+    }
+  }
+
+  const children = record['children']
+  if (!Array.isArray(children)) return
+  for (const child of children) {
+    collectDataKeysFromNode(child, out)
+  }
+}
+
+function buildDataKeyValidationMessage(issues: NodeTreeDataKeyValidationIssue[]): string {
+  const preview = issues
+    .slice(0, 8)
+    .map((item) => `[${item.code}] ${item.dataKey} -> ${item.detail}`)
+    .join('；')
+  const suffix = issues.length > 8 ? `；其余 ${issues.length - 8} 项请分批修复` : ''
+  return `DataKey 分段校验失败（${issues.length} 项）：${preview}${suffix}`
+}
+
+/**
+ * 对当前 nodeTree 中全部 props.dataKey 执行“分段存在性”校验。
+ *
+ * 校验项：
+ * 1. 语法可被 parseDataKey 解析；
+ * 2. 禁止跨页 scope（编辑态只校验当前页面 DataSet）；
+ * 3. table/view 必须真实存在；
+ * 4. fieldPath 首段必须是列名或聚合输出键。
+ */
+export function validateNodeTreeDataKeysByDatasetEdit(
+  session: IStillSession,
+  nodeTree: SparkNodeTreeLike,
+): string | null {
+  const state = getEditState(session)
+  const tool = getActiveDataSetTool(state)
+  if (!tool) {
+    return `datasetEdit 未初始化，无法校验 dataKey；请先执行 ${EDIT_BOOTSTRAP_ACTION}`
+  }
+
+  const root = nodeTree.getAllData()
+  const dataKeys = new Set<string>()
+  collectDataKeysFromNode(root, dataKeys)
+  if (dataKeys.size === 0) return null
+
+  const tableNames = new Set(tool.listTables().map((table) => table.tableName))
+  const issues: NodeTreeDataKeyValidationIssue[] = []
+
+  for (const dataKey of dataKeys) {
+    const descriptor = parseDataKey(dataKey)
+    if (!descriptor) {
+      issues.push({
+        dataKey,
+        code: 'INVALID_DATAKEY',
+        detail: '语法无效，无法解析为 table@view@field（或合法简写）',
+      })
+      continue
+    }
+
+    if (descriptor.crossPage === true || descriptor.scope !== undefined) {
+      issues.push({
+        dataKey,
+        code: 'UNSUPPORTED_SCOPE',
+        detail: `编辑态仅校验当前页面 DataSet，暂不接受跨页 scope: #${descriptor.scope ?? ''}`,
+      })
+      continue
+    }
+
+    if (!tableNames.has(descriptor.tableName)) {
+      issues.push({
+        dataKey,
+        code: 'UNKNOWN_TABLE',
+        detail: `table 不存在: ${descriptor.tableName}`,
+      })
+      continue
+    }
+
+    const view = tool.getView({ tableName: descriptor.tableName, viewId: descriptor.viewId })
+    if (!view) {
+      issues.push({
+        dataKey,
+        code: 'UNKNOWN_VIEW',
+        detail: `view 不存在: ${descriptor.tableName}@${descriptor.viewId}`,
+      })
+      continue
+    }
+
+    if (descriptor.fieldPath !== undefined) {
+      const rootField = descriptor.fieldPath.split('.')[0]?.trim()
+      if (!rootField) continue
+
+      const column = tool.getColumn({ tableName: descriptor.tableName, columnName: rootField })
+      if (column) continue
+
+      const aggregateKeys = new Set(Object.keys(view.listAggregates()))
+      if (aggregateKeys.has(rootField)) continue
+
+      issues.push({
+        dataKey,
+        code: 'UNKNOWN_FIELD_PATH',
+        detail: `fieldPath 首段不存在: ${rootField}（既不是列，也不是聚合输出键）`,
+      })
+    }
+  }
+
+  return issues.length === 0 ? null : buildDataKeyValidationMessage(issues)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

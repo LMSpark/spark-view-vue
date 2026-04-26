@@ -16,6 +16,7 @@ import type { IStillSession, StillDefinition, StillResult } from '../../../../..
 import { getActiveNodeTree, getEditState, notifyNodeTreeChanged } from '../edit-lifecycle-stills'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../../spark-node-tree-tool-catalog'
 import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '../../../../../core/stills/llm-params-validator'
+import { validateNodeTreeDataKeysByDatasetEdit } from './edit-dataset-stills'
 
 // ── 2. 类型定义 (Type Definitions) ────────────────────────────────────────────────
 
@@ -119,6 +120,19 @@ function executeNodeTreeStillRow(
     const data = fn.call(tree, params ?? {})
 
     if (row.type === 'request') {
+      const dataKeyValidationError = validateNodeTreeDataKeysByDatasetEdit(session, tree)
+      if (dataKeyValidationError !== null) {
+        if (tree.canUndo) {
+          tree.undo()
+        }
+        return {
+          ok: false,
+          code: 'DATAKEY_SEGMENT_INVALID',
+          msg: dataKeyValidationError,
+          fix: '请修复本次修改引入的 dataKey，确保每一段都通过 datasetEdit 校验（table/view/fieldPath）。',
+        }
+      }
+
       notifyNodeTreeChanged(state, tree)
     }
     
