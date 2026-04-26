@@ -6,7 +6,6 @@ import {
   consumeSparkCapability,
 } from './capability-system.js'
 import {
-  HOST_FIELD_MODE,
 } from './capability-keys.js'
 import type {
   SparkActionCapability,
@@ -35,7 +34,7 @@ export type {
 // 2. provider context：本地声明该能力键的 context
 // 3. 能力：挂在 provider context 上的 capability value
 
-export const DEFAULT_PROVIDER_KEYS = [HOST_FIELD_MODE] as const
+export const DEFAULT_PROVIDER_KEYS = [] as const
 
 function hasLocalCapability<T>(ctx: ICapabilityContext, key: CapabilityKey<T>): boolean {
   return ctx.capabilities.has(key)

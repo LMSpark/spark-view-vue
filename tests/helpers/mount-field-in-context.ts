@@ -4,7 +4,6 @@ import { defineComponent, h } from 'vue'
 import {
   DATA_ROW,
   DATA_SOURCE,
-  HOST_FIELD_MODE,
   PAGE_SERVICE,
   PAGE_DATASET,
   SPARK_REGISTRY_KEY,
@@ -32,13 +31,6 @@ interface SparkTestSystem {
   rootContext: SparkCapabilityContext
 }
 
-function resolveFieldModeByHostType(type: string): string {
-  if (type === 'r-table') return 'table'
-  if (type === 'r-form' || type === 'r-field-scope') return 'form'
-  if (type === 'r-tree') return 'tree'
-  return 'detail'
-}
-
 function createTestSystem(): SparkTestSystem {
   return Spark.createSystem()
 }
@@ -52,7 +44,6 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
     setup() {
       const hostType = options.hostType ?? 'r-form'
       const { sparkProvide } = useSparkComponent({ type: hostType } as SparkNode, { parentContext: rootContext })
-      sparkProvide(HOST_FIELD_MODE, resolveFieldModeByHostType(hostType))
       sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {

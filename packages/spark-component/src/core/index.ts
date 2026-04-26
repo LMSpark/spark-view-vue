@@ -103,7 +103,6 @@ export {
   MODULE_CONTEXT,
   CSS_SCOPE,
   ACTION_CAPABILITY,
-  HOST_FIELD_MODE,
 } from './capability-keys.js'
 
 export {

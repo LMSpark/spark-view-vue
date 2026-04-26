@@ -3,7 +3,7 @@ import { useSparkPageComponent } from '../../internal'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '../../internal'
-import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT, HOST_FIELD_MODE } from '../../internal'
+import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
@@ -60,7 +60,6 @@ export function useFormDetailContainer(
   const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
 
   const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
-  sparkProvide(HOST_FIELD_MODE, containerType === 'r-form' ? 'form' : 'detail')
   const pageDataSet = sparkConsume(PAGE_DATASET)
   const pageService = sparkConsume(PAGE_SERVICE)
   const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))

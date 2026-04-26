@@ -2,8 +2,8 @@
  * Provider / Capability 链路基线测试
  *
  * 核心行为：
- * 1. 默认键集合沿 ctx.parent 链找 provider，跳过无相关能力的中间节点
- * 2. fieldMode 通过能力键读取
+ * 1. 默认键集合为空，不再承载 host 专用能力查询
+ * 2. 显式能力键查询与本地/链式消费仍可正常工作
  * 3. RendererHostScope 有 row prop 时注入 DATA_ROW，无 row 时不覆盖父层
  * 4. 动作能力通过 ACTION_CAPABILITY 独立提供
  */
@@ -14,7 +14,6 @@ import {
   Spark,
   ACTION_CAPABILITY,
   DEFAULT_PROVIDER_KEYS,
-  HOST_FIELD_MODE,
   SPARK_REGISTRY_KEY,
   useSparkComponent,
   useSparkConsume,
@@ -34,64 +33,18 @@ import { consumeSparkCapability, createSparkCapabilityContext } from '../package
 // ═══════════════════════════════════════════════════════
 
 describe('findNearestCapabilityProviderByKeys(DEFAULT_PROVIDER_KEYS) — 上下文链逐层查找', () => {
-  it('从 ctx.parent 开始查找，跳过自身', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.capabilities.set(HOST_FIELD_MODE, 'form')
-
-    const mid = createSparkCapabilityContext({ id: 'mid', type: 'section' }, root)
-    // mid 不声明相关能力键
-
-    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, mid)
-
-    const found = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
-    // 应找到 root，而不是 leaf 自身（mid 无相关键被跳过）
-    expect(found).not.toBeNull()
-    // root 没有更高层 provider
-    expect(findNearestCapabilityProviderByKeys(found!, DEFAULT_PROVIDER_KEYS)).toBeNull()
-    expect(consumeSparkCapability<string>(leaf, HOST_FIELD_MODE)).toBe('form')
-  })
-
-  it('中间节点有相关键时返回最近一层', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.capabilities.set(HOST_FIELD_MODE, 'form')
-
-    const mid = createSparkCapabilityContext({ id: 'mid', type: 'table' }, root)
-    mid.capabilities.set(HOST_FIELD_MODE, 'table')
-
-    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, mid)
-
-    const found = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
-    // 返回 mid（最近），mid 的父层 root 也可作为 provider
-    expect(findNearestCapabilityProviderByKeys(found!, DEFAULT_PROVIDER_KEYS)).not.toBeNull()
-    expect(consumeSparkCapability<string>(leaf, HOST_FIELD_MODE)).toBe('table')
-  })
-
-  it('无 provider 时返回 null', () => {
+  it('默认键集合为空时返回 null', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, root)
 
     expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)).toBeNull()
-  })
-
-  it('根节点无 parent 时返回 null', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     expect(findNearestCapabilityProviderByKeys(root, DEFAULT_PROVIDER_KEYS)).toBeNull()
-  })
-
-  it('DEFAULT_PROVIDER_KEYS 可作为默认 provider 查询集合工作', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.capabilities.set(HOST_FIELD_MODE, 'form')
-    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, root)
-
-    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)?.id).toBe('root')
   })
 })
 
 describe('provider 查询三段式语义', () => {
-  it('默认键集合查询不把普通能力 provider 误判为目标 provider', () => {
+  it('默认键集合为空时不会误判普通能力 provider', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.capabilities.set(HOST_FIELD_MODE, 'page')
-
     const actionOnly = createSparkCapabilityContext({ id: 'action-only', type: 'r-container' }, root)
     actionOnly.capabilities.set(ACTION_CAPABILITY, createActionCapability({
       isDisabled: () => false,
@@ -101,54 +54,35 @@ describe('provider 查询三段式语义', () => {
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-button' }, actionOnly)
 
     expect(findNearestCapabilityProvider(leaf, ACTION_CAPABILITY)?.id).toBe('action-only')
-    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)?.id).toBe('root')
+    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)).toBeNull()
   })
 
   it('通过能力键集合查最近 provider', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     const section = createSparkCapabilityContext({ id: 'section', type: 'r-section' }, root)
-    section.capabilities.set(HOST_FIELD_MODE, 'detail')
+    section.capabilities.set(ACTION_CAPABILITY, createActionCapability({
+      isDisabled: () => false,
+      execute: () => undefined,
+    }))
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-text' }, section)
 
-    expect(findNearestCapabilityProviderByKeys(leaf, [ACTION_CAPABILITY, HOST_FIELD_MODE])?.id).toBe('section')
-  })
-
-  it('DEFAULT_PROVIDER_KEYS 可直接作为默认 provider 查询集合', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    const form = createSparkCapabilityContext({ id: 'form', type: 'r-form' }, root)
-    form.capabilities.set(HOST_FIELD_MODE, 'form')
-    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, form)
-
-    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)?.id).toBe('form')
+    expect(findNearestCapabilityProviderByKeys(leaf, [ACTION_CAPABILITY])?.id).toBe('section')
   })
 
   it('通过能力键查询最近 provider context', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     const provider = createSparkCapabilityContext({ id: 'provider', type: 'r-form' }, root)
-    provider.capabilities.set(HOST_FIELD_MODE, 'form')
     provider.capabilities.set(ACTION_CAPABILITY, createActionCapability({
       isDisabled: () => false,
       execute: () => undefined,
     }))
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, provider)
 
-    expect(findNearestCapabilityProvider(leaf, HOST_FIELD_MODE)?.id).toBe('provider')
     expect(findNearestCapabilityProvider(leaf, ACTION_CAPABILITY)?.id).toBe('provider')
-  })
-
-  it('通过单个能力键查 provider', () => {
-    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.capabilities.set(HOST_FIELD_MODE, 'page')
-    const table = createSparkCapabilityContext({ id: 'table', type: 'r-table' }, root)
-    table.capabilities.set(HOST_FIELD_MODE, 'table')
-    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-button' }, table)
-
-    expect(findNearestCapabilityProvider(leaf, HOST_FIELD_MODE)?.id).toBe('table')
   })
 
   it('基于 provider context 查能力（本地/链式）', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.capabilities.set(HOST_FIELD_MODE, 'detail')
     root.capabilities.set(ACTION_CAPABILITY, createActionCapability({
       isDisabled: () => false,
       execute: () => undefined,
@@ -157,12 +91,10 @@ describe('provider 查询三段式语义', () => {
     const section = createSparkCapabilityContext({ id: 'section', type: 'r-section' }, root)
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, section)
 
-    const provider = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
+    const provider = findNearestCapabilityProviderByKeys(leaf, [ACTION_CAPABILITY])
     expect(provider?.id).toBe('root')
-    expect(consumeCapabilityFromProvider(provider, HOST_FIELD_MODE, { localOnly: true })).toBe('detail')
     expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY, { localOnly: true })).not.toBeNull()
     expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY)).not.toBeNull()
-
   })
 })
 
@@ -175,13 +107,13 @@ describe('Vue 组件内 provider 能力链路', () => {
     return Spark.createSystem()
   }
 
-  it('子组件通过 HOST_FIELD_MODE 读到容器声明的字段语义', () => {
-    let childFieldMode: string | undefined
+  it('子组件通过 ACTION_CAPABILITY 读到容器声明的能力', () => {
+    let canExecuteAction = false
 
     const Child = defineComponent({
       setup() {
         const { sparkConsume } = useSparkComponent({ type: 'r-button' } as SparkNode)
-        childFieldMode = sparkConsume(HOST_FIELD_MODE) ?? undefined
+        canExecuteAction = sparkConsume(ACTION_CAPABILITY) !== null
         return () => h('span', 'child')
       },
     })
@@ -189,7 +121,10 @@ describe('Vue 组件内 provider 能力链路', () => {
     const Container = defineComponent({
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'r-form' } as SparkNode)
-        sparkProvide(HOST_FIELD_MODE, 'form')
+        sparkProvide(ACTION_CAPABILITY, createActionCapability({
+          isDisabled: () => false,
+          execute: () => undefined,
+        }))
         return () => h(Child)
       },
     })
@@ -206,16 +141,16 @@ describe('Vue 组件内 provider 能力链路', () => {
       global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry } },
     })
 
-    expect(childFieldMode).toBe('form')
+    expect(canExecuteAction).toBe(true)
   })
 
   it('中间层无 provider 能力时跳过，子组件读到更远的 provider', () => {
-    let childFieldMode: string | undefined
+    let hasActionCapability = false
 
     const Leaf = defineComponent({
       setup() {
         const { sparkConsume } = useSparkComponent({ type: 'r-text' } as SparkNode)
-        childFieldMode = sparkConsume(HOST_FIELD_MODE) ?? undefined
+        hasActionCapability = sparkConsume(ACTION_CAPABILITY) !== null
         return () => h('span', 'leaf')
       },
     })
@@ -230,8 +165,11 @@ describe('Vue 组件内 provider 能力链路', () => {
 
     const Container = defineComponent({
       setup() {
-        const { sparkProvide } = useSparkComponent({ type: 'r-table' } as SparkNode)
-        sparkProvide(HOST_FIELD_MODE, 'table')
+        const { sparkProvide } = useSparkComponent({ type: 'r-container' } as SparkNode)
+        sparkProvide(ACTION_CAPABILITY, createActionCapability({
+          isDisabled: () => false,
+          execute: () => undefined,
+        }))
         return () => h(MiddleNoProvider)
       },
     })
@@ -248,16 +186,16 @@ describe('Vue 组件内 provider 能力链路', () => {
       global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry } },
     })
 
-    expect(childFieldMode).toBe('table')
+    expect(hasActionCapability).toBe(true)
   })
 
-  it('useSparkConsume 也能通过 HOST_FIELD_MODE 读取最近 provider 语义', () => {
-    let consumedFieldMode: string | undefined
+  it('useSparkConsume 也能读取最近 ACTION_CAPABILITY', () => {
+    let consumedActionCapability: SparkActionCapability | null = null
 
     const Consumer = defineComponent({
       setup() {
         const { sparkConsume } = useSparkConsume()
-        consumedFieldMode = sparkConsume(HOST_FIELD_MODE) ?? undefined
+        consumedActionCapability = sparkConsume(ACTION_CAPABILITY)
         return () => h('span', 'consumer')
       },
     })
@@ -265,7 +203,10 @@ describe('Vue 组件内 provider 能力链路', () => {
     const Container = defineComponent({
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'r-detail' } as SparkNode)
-        sparkProvide(HOST_FIELD_MODE, 'detail')
+        sparkProvide(ACTION_CAPABILITY, createActionCapability({
+          isDisabled: () => false,
+          execute: () => undefined,
+        }))
         return () => h(Consumer)
       },
     })
@@ -282,7 +223,7 @@ describe('Vue 组件内 provider 能力链路', () => {
       global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry } },
     })
 
-    expect(consumedFieldMode).toBe('detail')
+    expect(consumedActionCapability).not.toBeNull()
   })
 })
 
@@ -387,7 +328,6 @@ describe('动作能力行为', () => {
 
     let executed = false
     const container = createSparkCapabilityContext({ id: 'container', type: 'r-table' }, root)
-    container.capabilities.set(HOST_FIELD_MODE, 'table')
     container.capabilities.set(ACTION_CAPABILITY, createActionCapability({
       isDisabled: () => false,
       execute: () => { executed = true },

@@ -142,7 +142,7 @@ import { computed, nextTick, ref, watch, useAttrs, type CSSProperties } from 'vu
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
-  PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE, HOST_FIELD_MODE,
+  PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -390,8 +390,6 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererTable',
 })
-
-sparkProvide(HOST_FIELD_MODE, 'table')
 
 // ── 工具栏区：读取结构化 toolbar 配置，并向工具栏子树提供内置动作宿主能力 ──
 

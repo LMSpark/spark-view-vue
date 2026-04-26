@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
-import { Spark, PAGE_COMPONENT_REGISTRY, HOST_FIELD_MODE, FieldText, useSparkHostScope } from '@spark-view/spark-component'
+import { Spark, PAGE_COMPONENT_REGISTRY, FieldText, useSparkHostScope } from '@spark-view/spark-component'
 import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
 import { useResolvedFieldContext } from '../packages/spark-component/src/components/fields/context/useResolvedFieldContext'
@@ -339,8 +339,7 @@ describe('字段 provider 解析会考虑中间层', () => {
     const NativeTableWrapper = defineComponent({
       name: 'NativeTableWrapper',
       setup() {
-        const hostScope = useSparkHostScope('r-table')
-        hostScope.sparkProvide(HOST_FIELD_MODE, 'table')
+        useSparkHostScope('r-table')
         return () => h(ElTableStub, null, {
           default: () => h(FieldText as never, {
             type: 'r-text',

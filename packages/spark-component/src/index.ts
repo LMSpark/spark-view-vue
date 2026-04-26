@@ -84,7 +84,6 @@ export {
   MODULE_CONTEXT,
   CSS_SCOPE,
   ACTION_CAPABILITY,
-  HOST_FIELD_MODE,
   DEFAULT_PROVIDER_KEYS,
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,

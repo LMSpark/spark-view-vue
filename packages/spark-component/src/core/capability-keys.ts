@@ -59,7 +59,6 @@ declare module './capability-system.js' {
     'spark:capability:css-scope': PageCssScopeCapability
     'spark:capability:permission-mode': NavPermissionMode
     'spark:capability:action-host': SparkActionCapability
-    'spark:capability:host-field-mode': string
   }
 }
 
@@ -71,4 +70,3 @@ export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:mod
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
 
 export const ACTION_CAPABILITY = defineCapability<SparkActionCapability>('spark:capability:action-host')
-export const HOST_FIELD_MODE = defineCapability<string>('spark:capability:host-field-mode')
