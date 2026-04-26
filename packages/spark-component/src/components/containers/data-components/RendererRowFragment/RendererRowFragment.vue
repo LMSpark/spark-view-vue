@@ -18,7 +18,6 @@
       <RendererHostScope
         type="r-data-scope"
         :row="resolvedDataInput"
-        :row-scope="rowScope"
         :children="[child]"
       />
     </div>
@@ -27,7 +26,6 @@
     <RendererHostScope
       type="r-data-scope"
       :row="resolvedDataInput"
-      :row-scope="rowScope"
       :children="resolvedChildren"
     />
   </template>

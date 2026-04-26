@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :row="resolvedDataRow ?? undefined">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -28,13 +28,11 @@
                 type="r-data-scope"
                 :children="nodeContentChildren"
                 :row="(slotProps?.data as IDataRow) ?? {}"
-                :field-mode="'tree'"
               />
               <RendererHostScope
                 v-else
                 type="r-data-scope"
                 :row="(slotProps?.data as IDataRow) ?? {}"
-                :field-mode="'tree'"
               >
                 <slot :node="slotProps?.node" :data="slotProps?.data">
                   <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
@@ -48,9 +46,6 @@
                   :children="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
-                  :variant="'row-action'"
-                  :action-host="getNodeActionCapability(((slotProps?.data as IDataRow) ?? {}), 0)"
-                  child-key-prefix="r-tree-node-action"
                 />
               </span>
             </span>
@@ -92,7 +87,6 @@ import {
   DATA_SOURCE,
   MODULE_CONTEXT,
   PAGE_SERVICE,
-  createActionCapability,
   type SparkNode,
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
@@ -140,7 +134,7 @@ const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
-const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
@@ -205,10 +199,6 @@ const {
   handleNodeExpand,
   handleNodeCollapse,
   handleNodeDrop,
-  isBuiltinNodeActionDisabled,
-  isBuiltinToolbarActionDisabled,
-  handleBuiltinToolbarAction,
-  handleBuiltinNodeAction,
 }: {
   treeApi: RendererTreeApi
   getNodeKey: (data: unknown) => string | number | null
@@ -217,10 +207,6 @@ const {
   handleNodeExpand: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeCollapse: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeDrop: (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => Promise<void>
-  isBuiltinNodeActionDisabled: (action: SparkNode, row: IDataRow, index: number) => boolean
-  isBuiltinToolbarActionDisabled: (action: SparkNode) => boolean
-  handleBuiltinToolbarAction: (action: SparkNode) => void
-  handleBuiltinNodeAction: (action: SparkNode, row: IDataRow, index: number) => void
 } = createRendererTreeZeroCode({
   props,
   resolvedView,
@@ -248,26 +234,6 @@ const {
 })
 
 registerApi(treeApi)
-
-const toolbarActionHost = createActionCapability({
-  isDisabled(action) {
-    return isBuiltinToolbarActionDisabled(action)
-  },
-  execute(action) {
-    handleBuiltinToolbarAction(action)
-  },
-})
-
-function getNodeActionCapability(row: IDataRow, index: number) {
-  return createActionCapability({
-    isDisabled(action) {
-      return isBuiltinNodeActionDisabled(action, row, index)
-    },
-    execute(action) {
-      handleBuiltinNodeAction(action, row, index)
-    },
-  })
-}
 
 function getNodeActionConfigs(row: IDataRow): SparkNode[] {
   return getScopedNodeActions({ row, index: 0 })

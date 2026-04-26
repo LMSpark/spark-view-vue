@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { DataView, IDataSet, IModelPermission } from '@spark-view/spark-data'
-import { resolveViewFromDataKey } from '../../../core/data-key-resolver.js'
+import type { DataView, IDataRow, IDataSet, IModelPermission } from '@spark-view/spark-data'
+import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver.js'
 import { extractModelPermission, type ModelPermissionSource } from '../../../permission/index.js'
 
 interface LoggerLike {
@@ -24,12 +24,27 @@ interface UseContainerDataSourceEffectsOptions<TSource> {
 }
 
 export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>) {
+  function pickRowFromSource(source: unknown): IDataRow | null {
+    if (source === null || source === undefined || typeof source !== 'object') return null
+    const currentRow = (source as { currentRow?: unknown }).currentRow
+    if (currentRow === null || currentRow === undefined || typeof currentRow !== 'object' || Array.isArray(currentRow)) return null
+    return currentRow as IDataRow
+  }
+
+  const resolvedDataRow = computed<IDataRow | null>(() => {
+    const provided = options.externalDataSource?.value
+    if (provided !== undefined) return pickRowFromSource(provided)
+
+    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, options.pageDataSet)
+    return capabilities.dataRow
+  })
+
   const resolvedDataSource = computed<TSource | null>(() => {
     const provided = options.externalDataSource?.value
     if (provided !== undefined) return provided
 
-    const view = resolveViewFromDataKey(options.dataKey.value, options.pageDataSet)
-    if (view) return options.mapView(view)
+    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, options.pageDataSet)
+    if (capabilities.dataSource) return options.mapView(capabilities.dataSource)
     return null
   })
 
@@ -39,6 +54,7 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
 
   return {
     resolvedDataSource,
+    resolvedDataRow,
     modelPermission,
   }
 }

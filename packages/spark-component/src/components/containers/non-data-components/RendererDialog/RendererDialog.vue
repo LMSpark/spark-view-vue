@@ -22,7 +22,7 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-dialog-field-scope" :field-mode="'detail'">
+    <RendererHostScope type="r-dialog-field-scope">
       <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"

@@ -24,7 +24,7 @@
 
     <div v-show="!resolvedCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
-        <RendererHostScope type="r-filter-panel-scope" :field-mode="'form'" :variant="'field'">
+        <RendererHostScope type="r-filter-panel-scope">
           <SparkComponentRenderer :config="fieldScopeConfig" />
         </RendererHostScope>
       </div>

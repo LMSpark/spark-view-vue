@@ -210,7 +210,7 @@ export function validateNodeTreeDataKeysByDatasetEdit(
       const column = tool.getColumn({ tableName: descriptor.tableName, columnName: rootField })
       if (column) continue
 
-      const aggregateKeys = new Set(Object.keys(view.listAggregates()))
+      const aggregateKeys = new Set(Object.keys(view.aggregates))
       if (aggregateKeys.has(rootField)) continue
 
       issues.push({

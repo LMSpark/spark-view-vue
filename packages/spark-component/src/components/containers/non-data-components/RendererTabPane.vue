@@ -6,7 +6,7 @@
     :lazy="paneLazy"
     :closable="paneClosable"
   >
-    <RendererHostScope type="r-tab-pane-field-scope" :field-mode="'detail'">
+    <RendererHostScope type="r-tab-pane-field-scope">
       <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
         <div
           v-for="(child, index) in paneChildren"

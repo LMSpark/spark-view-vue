@@ -4,9 +4,7 @@
     <template v-if="showToolbar">
       <RendererHostScope
         type="r-table-toolbar-scope"
-        :variant="'toolbar'"
-        :action-host="toolbarActionHost"
-        :row="resolvedView?.currentRow ?? undefined"
+        :row="resolvedDataRow ?? undefined"
       >
         <SparkComponentRenderer :config="toolbarRendererConfig!" />
       </RendererHostScope>
@@ -48,10 +46,6 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
-                :field-mode="'table'"
-                :variant="'row-action'"
-                :action-host="getScopedRowActionCapability(scope)"
-                child-key-prefix="r-table-row-action"
               />
             </div>
           </template>
@@ -106,10 +100,6 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
-                :field-mode="'table'"
-                :variant="'row-action'"
-                :action-host="getScopedRowActionCapability(scope)"
-                child-key-prefix="r-table-row-action"
               />
             </div>
           </template>
@@ -149,7 +139,7 @@ import { computed, nextTick, ref, watch, useAttrs, type CSSProperties } from 'vu
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
-  PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE, HOST_FIELD_MODE, createActionCapability,
+  PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE, HOST_FIELD_MODE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -384,7 +374,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
-const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
@@ -507,9 +497,6 @@ const nativeTableRef = ref<NativeTableLike | null>(null)
 const {
   dispatch,
   tableApi,
-  isBuiltinActionDisabled,
-  handleBuiltinToolbarAction,
-  handleBuiltinRowAction,
 } = createRendererTableZeroCode({
   props,
   resolvedView,
@@ -533,16 +520,6 @@ watch(
     nativeTableRef.value?.setCurrentRow?.(row ?? null)
   },
 )
-
-const toolbarActionHost = createActionCapability({
-  isDisabled(action) {
-    return isBuiltinActionDisabled(action)
-  },
-  execute(action) {
-    if (isBuiltinActionDisabled(action)) return
-    handleBuiltinToolbarAction(action)
-  },
-})
 
 // ── 行操作区：仅使用结构化 r-actions 组装行操作列 ───────────────────────
 
@@ -648,20 +625,6 @@ function getScopedRowActionConfigs(scope: Record<string, unknown>): SparkNode[] 
 
 function getScopedRowActionRow(scope: Record<string, unknown>): IDataRow {
   return resolveRowActionScope(scope).row
-}
-
-function getScopedRowActionCapability(scope: Record<string, unknown>) {
-  // 行动作能力对象：统一封装禁用态判断和执行入口，供 RendererHostScope 透传给按钮子树。
-  const { row, index } = resolveRowActionScope(scope)
-  return createActionCapability({
-    isDisabled(action) {
-      return isBuiltinActionDisabled(action, { row, index })
-    },
-    execute(action) {
-      if (isBuiltinActionDisabled(action, { row, index })) return
-      handleBuiltinRowAction(action, row, index)
-    },
-  })
 }
 
 // ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────

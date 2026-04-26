@@ -4,7 +4,7 @@
     :title="itemTitle"
     :disabled="itemDisabled"
   >
-    <RendererHostScope type="r-collapse-item-field-scope" :field-mode="'detail'">
+    <RendererHostScope type="r-collapse-item-field-scope">
       <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
         <div
           v-for="(child, index) in itemChildren"

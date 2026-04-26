@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
-import { resolveViewFromDataKey } from '../packages/spark-component/src/core/data-key-resolver'
+import {
+  resolveDataCapabilitiesFromDataKey,
+  resolveViewFromDataKey,
+} from '../packages/spark-component/src/core/data-key-resolver'
 
 describe('spark-component dataKey resolver', () => {
   function createDataSet() {
@@ -35,6 +38,26 @@ describe('spark-component dataKey resolver', () => {
     const view = resolveViewFromDataKey('Users@currentRow', dataSet)
 
     expect(view).toBe(dataSet.getView('Users', 'default'))
+  })
+
+  it('resolves rows key as dataSource capability and current row capability', () => {
+    const dataSet = createDataSet()
+    const view = dataSet.getView('Users', 'default')
+    view?.selection.setCurrentRow(view.rows[0] ?? null)
+    const caps = resolveDataCapabilitiesFromDataKey('Users@rows', dataSet)
+
+    expect(caps.dataSource).toBe(view)
+    expect(caps.dataRow).toMatchObject({ id: 1, name: 'Alice' })
+  })
+
+  it('resolves value key as row capability while preserving source', () => {
+    const dataSet = createDataSet()
+    const view = dataSet.getView('Users', 'default')
+    view?.selection.setCurrentRow(view.rows[0] ?? null)
+    const caps = resolveDataCapabilitiesFromDataKey('Users@currentRow', dataSet)
+
+    expect(caps.dataSource).toBe(view)
+    expect(caps.dataRow).toMatchObject({ id: 1, name: 'Alice' })
   })
 
   it('returns null for missing dataset, empty key, or invalid keys', () => {

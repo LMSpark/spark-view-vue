@@ -58,6 +58,18 @@ export interface DataKeyDescriptor {
   crossPage?: boolean
 }
 
+/** DataKey 字段值中的标量类型（用于 fieldPath 提取结果） */
+export type DataKeyScalar = string | number | boolean | bigint | symbol | null | undefined
+
+/** DataKey 字段值中的对象类型（用于 fieldPath 提取结果） */
+export type DataKeyObject = Record<string, unknown>
+
+/** DataKey 字段值（用于 kind='value' 场景） */
+export type DataKeyValue = IDataRow | IDataRow[] | DataKeyObject | unknown[] | DataKeyScalar
+
+/** DataKey 解析结果值（含 rows → DataView 场景） */
+export type DataKeyResolvedValue = SparkDataView | DataKeyValue
+
 // ===== 常量 =====
 
 /** DataKey 分隔符 */
@@ -220,7 +232,7 @@ function _resolveCore(
   descriptor: DataKeyDescriptor,
   dataSet: IDataSet,
   rowsAsView: boolean
-): unknown {
+): DataKeyResolvedValue {
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) return undefined
 
@@ -241,7 +253,7 @@ function _resolveCore(
   // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
   // field='rows' + rowsAsView=true → value 是 DataView 实例，不应作为行对象取字段路径
   if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !('viewId' in value)) {
-    return extractFieldPath(value, descriptor.fieldPath)
+    return extractFieldPath(value, descriptor.fieldPath) as DataKeyValue
   }
 
   return value
@@ -259,7 +271,7 @@ function _resolveCore(
 export function resolveDataKey(
   descriptor: DataKeyDescriptor,
   dataSet: IDataSet
-): unknown {
+): DataKeyResolvedValue {
   return _resolveCore(descriptor, dataSet, false)
 }
 
@@ -274,7 +286,7 @@ export function resolveDataKey(
 function resolveDataKeyAsSource(
   descriptor: DataKeyDescriptor,
   dataSet: IDataSet
-): unknown {
+): DataKeyResolvedValue {
   return _resolveCore(descriptor, dataSet, true)
 }
 
@@ -323,7 +335,7 @@ export function getViewFromRawKey(
  */
 export type DataKeyBinding =
   | { kind: 'view'; source: IDataSource }
-  | { kind: 'value'; value: unknown }
+  | { kind: 'value'; value: DataKeyValue }
 
 /**
  * 解析 DataKey 为渲染绑定描述符（渲染层入口）
@@ -349,7 +361,7 @@ export function resolveDataKeyBinding(
   if (dk.field === 'rows') return { kind: 'view', source: view }
 
   // 其他字段 → 取原始值后按需提取 fieldPath
-  let value: unknown
+  let value: IDataRow | IDataRow[] | null | undefined
   switch (dk.field) {
     case 'currentRow':          value = view.currentRow; break
     case 'selectedRows':        value = view.selectedRows; break
@@ -359,11 +371,19 @@ export function resolveDataKeyBinding(
   }
 
   // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
-  if (dk.fieldPath !== undefined && value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)) {
-    value = extractFieldPath(value, dk.fieldPath)
+  const fieldPathCandidate: unknown = value
+  if (
+    dk.fieldPath !== undefined
+    && fieldPathCandidate !== null
+    && fieldPathCandidate !== undefined
+    && typeof fieldPathCandidate === 'object'
+    && !Array.isArray(fieldPathCandidate)
+  ) {
+    const fieldPathValue = extractFieldPath(fieldPathCandidate, dk.fieldPath) as DataKeyValue
+    return { kind: 'value', value: fieldPathValue }
   }
 
-  return { kind: 'value', value }
+  return { kind: 'value', value: value as DataKeyValue }
 }
 
 /**

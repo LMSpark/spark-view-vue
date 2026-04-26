@@ -8,7 +8,7 @@
     @click="emit('activate', index)"
   />
 
-  <RendererHostScope v-else type="r-step-item-field-scope" :field-mode="'detail'">
+  <RendererHostScope v-else type="r-step-item-field-scope">
     <div :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
       <div
         v-for="(child, index) in stepChildren"

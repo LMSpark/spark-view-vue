@@ -27,7 +27,7 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-section-field-scope" :field-mode="'detail'">
+    <RendererHostScope type="r-section-field-scope">
       <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <RendererHostScope type="r-section-field-scope" :field-mode="'detail'">
+    <RendererHostScope type="r-section-field-scope">
       <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"

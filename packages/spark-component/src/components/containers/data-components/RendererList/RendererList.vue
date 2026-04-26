@@ -1,12 +1,14 @@
 <template>
   <div :class="['renderer-list-layout', `renderer-list-layout--${toolbarPositionValue}`]">
-    <div v-if="showToolbar" :class="['renderer-list-toolbar', toolbarClassValue]">
-      <SparkComponentRenderer
-        v-for="(action, index) in visibleToolbarConfigs"
-        :key="nodeId(action) ?? `r-list-toolbar-${index}`"
-        :config="action"
-      />
-    </div>
+    <RendererHostScope v-if="showToolbar" type="r-list-toolbar-scope" :row="resolvedDataRow ?? undefined">
+      <div :class="['renderer-list-toolbar', toolbarClassValue]">
+        <SparkComponentRenderer
+          v-for="(action, index) in visibleToolbarConfigs"
+          :key="nodeId(action) ?? `r-list-toolbar-${index}`"
+          :config="action"
+        />
+      </div>
+    </RendererHostScope>
 
     <div class="renderer-list-main">
       <div class="renderer-list" :style="listStyle" v-bind="listPropsValue">
@@ -29,12 +31,11 @@
                   type="r-list-item-action-scope"
                   :children="getScopedItemActions({ row, index })"
                   :row="row"
-                  child-key-prefix="r-list-item-action-left"
                 />
               </div>
 
               <div :class="itemClass" :style="itemStyle">
-                <RendererHostScope type="r-list-item" :row="row" :field-mode="'detail'">
+                <RendererHostScope type="r-list-item" :row="row">
                   <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
                     <div class="renderer-list-item-body" :style="itemContentGridStyle">
                       <div
@@ -62,7 +63,6 @@
                   type="r-list-item-action-scope"
                   :children="getScopedItemActions({ row, index })"
                   :row="row"
-                  child-key-prefix="r-list-item-action-right"
                 />
               </div>
             </div>
@@ -148,7 +148,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
-const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
