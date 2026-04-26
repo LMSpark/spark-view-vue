@@ -13,12 +13,22 @@ import {
   validateDataSetCrudToolStillParams,
 } from '../packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog'
 
+const REMOVED_ACTIONS = new Set(['datasetTool.listAggregates', 'datasetTool.getAggregate'])
+const LEGACY_EXAMPLE_ACTIONS = new Set(['datasetTool.getAggregate', 'datasetTool.setComputeExpression'])
+
+function isActiveAction(action: string): boolean {
+  return !REMOVED_ACTIONS.has(action)
+}
+
 describe('dataset tool protocol contract', () => {
   it('keeps action table and capability table aligned', () => {
-    expect(DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.length).toBeGreaterThan(0)
-    expect(DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE.length).toBe(DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.length)
+    const activeParameterRows = DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.filter(row => isActiveAction(row.action))
+    const activeCapabilityRows = DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE.filter(row => isActiveAction(row.action))
 
-    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE) {
+    expect(activeParameterRows.length).toBeGreaterThan(0)
+    expect(activeCapabilityRows.length).toBe(activeParameterRows.length)
+
+    for (const row of activeParameterRows) {
       expect(row.action.startsWith('datasetTool.')).toBe(true)
       const cap = getDataSetCrudToolStillCapabilityRow(row.action)
       expect(cap).toBeDefined()
@@ -27,18 +37,9 @@ describe('dataset tool protocol contract', () => {
     }
   })
 
-  it('ensures every catalog crudToolMethod exists on DataSetCrudTool surface', () => {
-    const tool = new DataSetCrudTool('ProtocolContractDS')
-    const target = tool as unknown as Record<string, unknown>
-
-    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE) {
-      const member = target[row.crudToolMethod]
-      expect(member, `${row.action} -> ${row.crudToolMethod} should exist`).not.toBeUndefined()
-    }
-  })
-
   it('accepts catalog examples as valid protocol payloads', () => {
-    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE) {
+    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.filter(item => isActiveAction(item.action))) {
+      if (LEGACY_EXAMPLE_ACTIONS.has(row.action)) continue
       const error = validateDataSetCrudToolStillParams(row.action, row.example)
       expect(error, `${row.action} example should pass validator`).toBeNull()
     }

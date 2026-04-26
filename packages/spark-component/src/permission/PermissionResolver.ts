@@ -135,8 +135,10 @@ export function isRowScopedPermAction(action: PermissionAction | undefined): boo
 
 /** 判断 SparkNode 的模型级动作（create/import/export）是否被权限允许 */
 export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined, permissionMode?: NavPermissionMode): boolean {
-  const permAction = resolveNodePermAction(action).action
+  const resolvedPermAction = resolveNodePermAction(action)
+  const permAction = resolvedPermAction.action
   if (!isModelScopedPermAction(permAction)) return true
+  if (resolvedPermAction.inferred && modelPerm === undefined) return true
   return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm, permissionMode } : { permissionMode })
 }
 

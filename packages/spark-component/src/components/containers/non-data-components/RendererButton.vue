@@ -40,6 +40,8 @@ import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
 import {
   ACTION_CAPABILITY,
+  DATA_ROW,
+  DATA_SOURCE,
   HOST_VARIANT,
   SparkComponentRenderer,
   getSparkNodeChildren,
@@ -78,6 +80,24 @@ const hostActionDisabled = computed(() => {
 })
 
 const effectiveDisabled = computed(() => isDisabled.value || hostActionDisabled.value)
+
+function resolveActionNodeWithDataCapabilities(): SparkNode {
+  const dataSource = sparkConsume(DATA_SOURCE)
+  const dataRow = sparkConsume(DATA_ROW)
+
+  if (dataSource === null && dataRow === null) {
+    return currentNode.value
+  }
+
+  return {
+    ...currentNode.value,
+    props: {
+      ...(currentNode.value.props ?? {}),
+      ...(dataSource !== null ? { dataSource } : {}),
+      ...(dataRow !== null ? { row: dataRow } : {}),
+    },
+  }
+}
 
 const resolved = computed(() => {
   const explicit: Record<string, unknown> = {}
@@ -124,9 +144,10 @@ const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() =>
 
 async function handleClick(event: MouseEvent): Promise<void> {
   if (hasBuiltinAction.value) {
+    const actionNode = resolveActionNodeWithDataCapabilities()
     const actionHost = sparkConsume(ACTION_CAPABILITY)
     if (actionHost === null) return
-    actionHost.execute(currentNode.value)
+    actionHost.execute(actionNode)
     return
   }
 

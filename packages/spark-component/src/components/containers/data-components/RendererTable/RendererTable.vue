@@ -5,6 +5,8 @@
       <RendererHostScope
         type="r-table-toolbar-scope"
         :row="resolvedDataRow ?? undefined"
+        :action-capability="toolbarActionCapability"
+        host-variant="toolbar"
       >
         <SparkComponentRenderer :config="toolbarRendererConfig!" />
       </RendererHostScope>
@@ -46,6 +48,8 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
+                :action-capability="rowActionCapability"
+                host-variant="row-action"
               />
             </div>
           </template>
@@ -100,6 +104,8 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
+                :action-capability="rowActionCapability"
+                host-variant="row-action"
               />
             </div>
           </template>
@@ -289,13 +295,13 @@ function resolveRowFragmentClass(node: SparkNode): string | undefined {
 }
 
 function createScopedRowFragmentConfig(node: SparkNode, scope: Record<string, unknown>): SparkNode {
-  // 关键桥接：把当前行 scope 注入为 rowScope。
+  // 关键桥接：把当前行直接注入 data。
   // RowFragment -> RendererHostScope -> DATA_ROW 将沿此通道完成上下文传递。
   return {
     ...node,
     props: {
       ...(node.props ?? {}),
-      rowScope: scope,
+      data: (scope['row'] as IDataRow | undefined) ?? undefined,
     },
   }
 }
@@ -497,6 +503,9 @@ const nativeTableRef = ref<NativeTableLike | null>(null)
 const {
   dispatch,
   tableApi,
+  handleBuiltinToolbarAction,
+  handleBuiltinRowAction,
+  isBuiltinActionDisabled,
 } = createRendererTableZeroCode({
   props,
   resolvedView,
@@ -511,6 +520,35 @@ const {
 })
 
 registerApi(tableApi)
+
+const toolbarActionCapability = {
+  isDisabled(action: SparkNode): boolean {
+    return isBuiltinActionDisabled(action)
+  },
+  execute(action: SparkNode): void {
+    handleBuiltinToolbarAction(action)
+  },
+}
+
+const rowActionCapability = {
+  isDisabled(action: SparkNode): boolean {
+    const row = action.props?.['row'] as IDataRow | undefined
+    const index = action.props?.['rowIndex']
+    return isBuiltinActionDisabled(action, {
+      ...(row !== undefined ? { row } : {}),
+      ...(typeof index === 'number' ? { index } : {}),
+    })
+  },
+  execute(action: SparkNode): void {
+    const row = action.props?.['row'] as IDataRow | undefined
+    const index = action.props?.['rowIndex']
+    if (!row) {
+      handleBuiltinToolbarAction(action)
+      return
+    }
+    handleBuiltinRowAction(action, row, typeof index === 'number' ? index : 0)
+  },
+}
 
 // DataView → el-table 当前行单向同步
 watch(

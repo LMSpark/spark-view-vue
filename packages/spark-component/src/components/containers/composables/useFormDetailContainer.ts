@@ -3,7 +3,7 @@ import { useSparkPageComponent } from '../../internal'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '../../internal'
-import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../internal'
+import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT, HOST_FIELD_MODE } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
@@ -20,6 +20,23 @@ interface FormDetailContainerProps extends SparkNode {
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
+}
+
+type DataSourceEventName = 'currentRowChanged' | 'selectedRowsChanged' | 'rowsChanged'
+
+interface DataSourceEventBus {
+  on(event: DataSourceEventName, handler: () => void): void
+  off(event: DataSourceEventName, handler: () => void): void
+}
+
+function resolveDataSourceEventBus(dataSource: IDataSource | null): DataSourceEventBus | null {
+  if (!dataSource) return null
+  const events = (dataSource as { events?: unknown }).events
+  if (events === null || events === undefined || typeof events !== 'object') return null
+  const on = (events as { on?: unknown }).on
+  const off = (events as { off?: unknown }).off
+  if (typeof on !== 'function' || typeof off !== 'function') return null
+  return events as DataSourceEventBus
 }
 
 export function useFormDetailContainer(
@@ -43,6 +60,7 @@ export function useFormDetailContainer(
   const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
 
   const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
+  sparkProvide(HOST_FIELD_MODE, containerType === 'r-form' ? 'form' : 'detail')
   const pageDataSet = sparkConsume(PAGE_DATASET)
   const pageService = sparkConsume(PAGE_SERVICE)
   const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
@@ -72,6 +90,27 @@ export function useFormDetailContainer(
       prevRow = row
 
       syncReactiveRow(contextData, row)
+    },
+    { immediate: true },
+  )
+
+  watch(
+    resolvedSource,
+    (source, _prev, onCleanup) => {
+      const events = resolveDataSourceEventBus(source)
+      if (!events) return
+
+      const syncCurrentRow = () => {
+        syncReactiveRow(contextData, source?.currentRow)
+      }
+
+      events.on('currentRowChanged', syncCurrentRow)
+      events.on('rowsChanged', syncCurrentRow)
+
+      onCleanup(() => {
+        events.off('currentRowChanged', syncCurrentRow)
+        events.off('rowsChanged', syncCurrentRow)
+      })
     },
     { immediate: true },
   )

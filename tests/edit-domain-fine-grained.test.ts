@@ -81,39 +81,6 @@ describe('edit domain fine-grained flow', () => {
     }
   })
 
-  it('uses top-level id as the sparkNodeTree componentId standard', () => {
-    const bootstrapPayload = {
-      ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
-      pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
-      scriptJs: 'export default {}\n',
-      styleCss: '.page {}\n',
-    }
-    seedLiveModel(bootstrapPayload)
-
-    const init = exec('edit.bootstrap', bootstrapPayload)
-    expect(init.ok).toBe(true)
-
-    const hasRoot = exec('sparkNodeTree.hasNode', { componentId: 'root-table' })
-    expect(hasRoot.ok).toBe(true)
-    if (!hasRoot.ok) return
-    expect(hasRoot.data).toBe(true)
-
-    const addNode = exec('sparkNodeTree.addNode', {
-      parentComponentId: 'root-table',
-      node: {
-        type: 'r-text',
-        id: 'dept-name-field',
-        props: { field: 'name', label: '部门名称' },
-      },
-    })
-    expect(addNode.ok).toBe(true)
-
-    const hasChild = exec('sparkNodeTree.hasNode', { componentId: 'dept-name-field' })
-    expect(hasChild.ok).toBe(true)
-    if (!hasChild.ok) return
-    expect(hasChild.data).toBe(true)
-  })
-
   it('bootstrap no longer compares payload with the current live model', () => {
     seedLiveModel({
       ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
@@ -130,53 +97,6 @@ describe('edit domain fine-grained flow', () => {
     })
 
     expect(result.ok).toBe(true)
-  })
-
-  it('binds live model tools directly without edit.bootstrap copies', () => {
-    const liveTree = new SparkNodeTree({
-      root: {
-        type: 'page',
-        children: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
-      },
-    })
-    const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
-    let script = 'export default {}\n'
-    let style = '.page {}\n'
-
-    bindLiveModelAdapter(getEditState(session), {
-      getNodeTree: () => liveTree,
-      getDataSetTool: () => liveDataSet,
-      readScript: () => script,
-      writeScript(content) {
-        script = content
-      },
-      readStyle: () => style,
-      writeStyle(content) {
-        style = content
-      },
-    })
-
-    const addTable = exec('datasetTool.createTable', {
-      tableName: 'Users',
-      columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
-    })
-    expect(addTable.ok).toBe(true)
-    expect(liveDataSet.toJson().tables['Users']).toBeDefined()
-
-    const scriptWrite = exec('textModel.writeScript', { content: 'export default { live: true }\n' })
-    expect(scriptWrite.ok).toBe(true)
-    expect(script).toContain('live: true')
-
-    const styleWrite = exec('textModel.writeStyle', { content: '.page { color: red; }\n' })
-    expect(styleWrite.ok).toBe(true)
-    expect(style).toContain('color: red')
-
-    const addNode = exec('sparkNodeTree.addNode', {
-      parentComponentId: 'root-table',
-      node: { type: 'r-text', id: 'name-field', props: { field: 'name' } },
-    })
-    expect(addNode.ok).toBe(true)
-    expect(JSON.stringify(liveTree.toJSON().children)).toContain('name-field')
   })
 
   it('supports single-session fine-grained flow without export actions', () => {

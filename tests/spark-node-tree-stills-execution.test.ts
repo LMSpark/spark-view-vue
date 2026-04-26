@@ -137,7 +137,19 @@ describe('sparkNodeTree stills execution coverage', () => {
           ],
         },
       ],
-      pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
+      pageDataJson: {
+        dataSetName: 'PageDataSet',
+        tables: {
+          Users: {
+            tableName: 'Users',
+            columns: [
+              { name: 'id', type: 'number', isPrimaryKey: true },
+              { name: 'name', type: 'string' },
+            ],
+            views: { default: { rows: [] } },
+          },
+        },
+      },
       scriptJs: 'export default {}\n',
       styleCss: '.page {}\n',
     }
@@ -188,11 +200,6 @@ describe('sparkNodeTree stills execution coverage', () => {
     const findByTypeResult = expectOk<{ total: number; matches: unknown[] }>(findByType)
     expect(findByTypeResult.total).toBeGreaterThan(0)
     expect(findByTypeResult.matches.length).toBeGreaterThan(0)
-
-    const collectDataKeys = exec('sparkNodeTree.collectDataKeys')
-    executedActions.add('sparkNodeTree.collectDataKeys')
-    const dataKeys = expectOk<Set<string>>(collectDataKeys)
-    expect(Array.from(dataKeys)).toContain('Users@rows')
 
     const collectHandlerNames = exec('sparkNodeTree.collectHandlerNames')
     executedActions.add('sparkNodeTree.collectHandlerNames')

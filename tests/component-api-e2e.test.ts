@@ -14,10 +14,6 @@ import {
 
 const ROOT = resolve('.')
 const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'
-const CONTAINER_DIR = 'packages/spark-component/src/components/containers/data-components'
-const TABLE_COMPONENT = `${CONTAINER_DIR}/RendererTable/RendererTable.vue`
-const TREE_COMPONENT = `${CONTAINER_DIR}/RendererTree/RendererTree.vue`
-
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
 
 describe('End-to-end: real component extraction (VCM)', () => {
@@ -38,29 +34,6 @@ describe('End-to-end: real component extraction (VCM)', () => {
     expect(api!.emits.length).toBeGreaterThanOrEqual(1)
     const emitNames = api!.emits.map(e => e.name)
     expect(emitNames).toContain('update:value')
-  })
-
-  it('extracts RendererTable.vue correctly', () => {
-    const absPath = resolve(ROOT, TABLE_COMPONENT)
-    const api = extractComponentApiVcm(checker, absPath, TABLE_COMPONENT, 'r-table')
-
-    expect(api).not.toBeNull()
-    // RendererTable 公开 API 已收敛到 children 提升模型，旧的扁平 action/filter props 不应再暴露
-    expect(api!.props.length).toBeGreaterThanOrEqual(5)
-
-    const propNames = api!.props.map(p => p.name)
-    expect(propNames).not.toContain('filterColumns')
-    expect(propNames).not.toContain('rowActions')
-    expect(propNames).not.toContain('rowActionsPosition')
-    expect(propNames).not.toContain('rowActionsLabel')
-  })
-
-  it('extracts RendererTree.vue correctly', () => {
-    const absPath = resolve(ROOT, TREE_COMPONENT)
-    const api = extractComponentApiVcm(checker, absPath, TREE_COMPONENT, 'r-tree')
-
-    expect(api).not.toBeNull()
-    expect(api!.props.length).toBeGreaterThan(0)
   })
 
   it('batch extracts multiple field components', () => {

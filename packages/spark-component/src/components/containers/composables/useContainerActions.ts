@@ -6,6 +6,7 @@ import { usePermission } from '../../../permission/index.js'
 import { isBuiltinAction } from '../../../page/actions'
 import { isActionDisplayed } from '../support/actions/action-visibility'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
+import { resolveCurrentRowPath } from '../../support/row-selection-path'
 import type { PermissionDeniedBehavior } from '../support/RendererActions.types'
 
 export type LateralActionPosition = 'left' | 'right'
@@ -68,13 +69,14 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   function getScopedActionConfigs(scope: TScope): ScopedSparkNode[] {
     const resolved = options.resolveScope(scope)
     const dataSource = options.dataSource?.value ?? null
+    const activeRow = resolveCurrentRowPath(resolved.row ?? null, dataSource)
     const scopedActions: Array<ScopedSparkNode | null> = rawActionConfigs.value
       .map(action => {
         const patchedAction = isBuiltinAction(action)
           ? (() => {
               const state = resolveNodeBeforeRender(action, {
-                row: resolved.row ?? null,
-                data: resolved.scopedProps['data'] ?? resolved.row ?? null,
+                row: activeRow,
+                data: resolved.scopedProps['data'] ?? activeRow,
                 index: typeof resolved.scopedProps['rowIndex'] === 'number'
                   ? resolved.scopedProps['rowIndex']
                   : undefined,
@@ -98,8 +100,9 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
 
         if (!isActionDisplayed(patchedAction)) return null
 
+        const permissionRow = activeRow ?? undefined
         const permissionAllowed = perm.isModelActionAllowed(patchedAction, options.modelPermission.value)
-          && perm.isRowActionAllowed(patchedAction, resolved.row)
+          && perm.isRowActionAllowed(patchedAction, permissionRow)
 
         if (!permissionAllowed && permissionDeniedBehaviorValue.value === 'hide') {
           return null

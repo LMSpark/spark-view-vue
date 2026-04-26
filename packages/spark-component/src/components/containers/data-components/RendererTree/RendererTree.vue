@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :row="resolvedDataRow ?? undefined">
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :row="resolvedDataRow ?? undefined" :action-capability="toolbarActionCapability" host-variant="toolbar">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -46,6 +46,8 @@
                   :children="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
+                  :action-capability="nodeActionCapability"
+                  host-variant="row-action"
                 />
               </span>
             </span>
@@ -199,6 +201,10 @@ const {
   handleNodeExpand,
   handleNodeCollapse,
   handleNodeDrop,
+  handleBuiltinToolbarAction,
+  handleBuiltinNodeAction,
+  isBuiltinToolbarActionDisabled,
+  isBuiltinNodeActionDisabled,
 }: {
   treeApi: RendererTreeApi
   getNodeKey: (data: unknown) => string | number | null
@@ -207,6 +213,10 @@ const {
   handleNodeExpand: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeCollapse: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeDrop: (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => Promise<void>
+  handleBuiltinToolbarAction: (action: SparkNode) => void
+  handleBuiltinNodeAction: (action: SparkNode, row: IDataRow, index: number) => void
+  isBuiltinToolbarActionDisabled: (action: SparkNode) => boolean
+  isBuiltinNodeActionDisabled: (action: SparkNode, row: IDataRow, index: number) => boolean
 } = createRendererTreeZeroCode({
   props,
   resolvedView,
@@ -234,6 +244,33 @@ const {
 })
 
 registerApi(treeApi)
+
+const toolbarActionCapability = {
+  isDisabled(action: SparkNode): boolean {
+    return isBuiltinToolbarActionDisabled(action)
+  },
+  execute(action: SparkNode): void {
+    handleBuiltinToolbarAction(action)
+  },
+}
+
+const nodeActionCapability = {
+  isDisabled(action: SparkNode): boolean {
+    const row = action.props?.['row'] as IDataRow | undefined
+    const index = action.props?.['rowIndex']
+    if (!row) return isBuiltinToolbarActionDisabled(action)
+    return isBuiltinNodeActionDisabled(action, row, typeof index === 'number' ? index : 0)
+  },
+  execute(action: SparkNode): void {
+    const row = action.props?.['row'] as IDataRow | undefined
+    const index = action.props?.['rowIndex']
+    if (!row) {
+      handleBuiltinToolbarAction(action)
+      return
+    }
+    handleBuiltinNodeAction(action, row, typeof index === 'number' ? index : 0)
+  },
+}
 
 function getNodeActionConfigs(row: IDataRow): SparkNode[] {
   return getScopedNodeActions({ row, index: 0 })

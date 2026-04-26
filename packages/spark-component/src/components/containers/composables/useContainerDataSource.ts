@@ -62,11 +62,9 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
 export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>) {
   function shouldAutoLoad(view: DataView): boolean {
     if (typeof view.requestData !== 'function') return false
-    if (view.autoLoad === false) return false
 
     const dataTable = view.dataTable
     if (!dataTable?.api?.list) return false
-    if (dataTable.resourceType === 'static-data') return false
 
     return true
   }

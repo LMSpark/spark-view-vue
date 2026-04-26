@@ -23,34 +23,87 @@ import type {
   OpenAction,
 } from './action-descriptor'
 
+import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../core/capability-system.js'
 import { extractActionExecutionControl } from './action-control'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
-import { resolveViewFromDataKey } from '../../core/data-key-resolver.js'
 
 // ── 视图查找辅助 ──────────────────────────────────────────────────────────
 
+interface ResolvedActionDataCapabilities {
+  dataSource: DataView | null
+  currentRow: IDataRow | null
+  selectedRows: IDataRow[]
+}
+
+function isRowLike(value: unknown): value is IDataRow {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+function resolveSelectedRows(dataSource: DataView | null): IDataRow[] {
+  if (!dataSource || !Array.isArray(dataSource.selectedRows)) return []
+  return dataSource.selectedRows.filter(isRowLike)
+}
+
 /**
- * 从 dataKey 解析目标 DataView
- *
- * - 有 dataKey → 解析到具体视图
- * - 无 dataKey → 取 DataSet 中第一个表的 default 视图
+ * 动作执行前统一解析数据能力：DataView、currentRow、selectedRows。
  */
-function resolveView(dataKey: string | undefined, ctx: ActionExecutionContext): DataView | null {
+function resolveActionDataCapabilities(dataKey: string | undefined, ctx: ActionExecutionContext): ResolvedActionDataCapabilities {
   const ds = ctx.getDataSet()
-  if (!ds) return null
+  if (!ds) {
+    return {
+      dataSource: null,
+      currentRow: null,
+      selectedRows: [],
+    }
+  }
 
   if (dataKey) {
-    return resolveViewFromDataKey(dataKey, ds)
+    const binding = resolveDataKeyBinding(dataKey, ds)
+    if (!binding) {
+      return {
+        dataSource: null,
+        currentRow: null,
+        selectedRows: [],
+      }
+    }
+
+    if (binding.kind === 'view') {
+      const dataSource = binding.source as DataView
+      return {
+        dataSource,
+        currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
+        selectedRows: resolveSelectedRows(dataSource),
+      }
+    }
+
+    const dataSource = getViewFromRawKey(dataKey, ds) ?? null
+    return {
+      dataSource,
+      currentRow: isRowLike(binding.value)
+        ? binding.value
+        : (isRowLike(dataSource?.currentRow) ? dataSource.currentRow : null),
+      selectedRows: resolveSelectedRows(dataSource),
+    }
   }
 
-  // 无 dataKey: 取第一个表的 default 视图
+  // 无 dataKey：回退到 DataSet 中第一个表的 default 视图
   for (const tableName of Object.keys(ds.tables)) {
-    const view = ds.getView(tableName, 'default')
-    if (view) return view
+    const dataSource = ds.getView(tableName, 'default')
+    if (!dataSource) continue
+    return {
+      dataSource,
+      currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
+      selectedRows: resolveSelectedRows(dataSource),
+    }
   }
-  return null
+
+  return {
+    dataSource: null,
+    currentRow: null,
+    selectedRows: [],
+  }
 }
 
 export interface ActionExecutionOptions {
@@ -217,7 +270,7 @@ function executeNavigate(desc: NavigateAction, ctx: ActionExecutionContext, even
     const rowFromEvent = (eventRow !== null && eventRow !== undefined && typeof eventRow === 'object' && !Array.isArray(eventRow))
       ? eventRow as IDataRow
       : null
-    const fallbackRow = resolveView(undefined, ctx)?.currentRow ?? null
+    const fallbackRow = resolveActionDataCapabilities(undefined, ctx).currentRow
     path = interpolatePath(path, rowFromEvent ?? fallbackRow)
   }
 
@@ -225,17 +278,17 @@ function executeNavigate(desc: NavigateAction, ctx: ActionExecutionContext, even
 }
 
 async function executeAppendRow(desc: AppendRowAction, ctx: ActionExecutionContext): Promise<void> {
-  const view = resolveView(desc.dataKey, ctx)
-  if (!view) return
+  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) return
 
   const idField = desc.idField ?? 'id'
   const payload: Record<string, unknown> = { ...(desc.payload ?? {}) }
   if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
-    payload[idField] = inferNextRowId(view, idField)
+    payload[idField] = inferNextRowId(dataSource, idField)
   }
 
   const ps = ctx.getPageService()
-  const result = await view.addRow(payload as IDataRow)
+  const result = await dataSource.addRow(payload as IDataRow)
   if (ps) {
     ps.showMessage(
       isCrudResult(result) && !result.success ? getCrudErrorMessage(result, '新增失败') : '新增成功',
@@ -245,11 +298,10 @@ async function executeAppendRow(desc: AppendRowAction, ctx: ActionExecutionConte
 }
 
 async function executeDeleteCurrent(desc: DeleteCurrentAction, ctx: ActionExecutionContext): Promise<void> {
-  const view = resolveView(desc.dataKey, ctx)
-  if (!view) return
+  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) return
 
-  const row = view.currentRow
-  if (!row) {
+  if (!currentRow) {
     const ps = ctx.getPageService()
     if (ps) ps.showMessage('请先选择当前行', 'warning')
     return
@@ -264,9 +316,9 @@ async function executeDeleteCurrent(desc: DeleteCurrentAction, ctx: ActionExecut
   }
 
   const idField = desc.idField ?? 'id'
-  const id = resolveRowId(row, idField)
+  const id = resolveRowId(currentRow, idField)
   if (id !== null) {
-    const deleted = await view.removeRow(id)
+    const deleted = await dataSource.removeRow(id)
     const ps = ctx.getPageService()
     if (ps) {
       const deleteMessage = isCrudResult(deleted)
@@ -281,10 +333,9 @@ async function executeDeleteCurrent(desc: DeleteCurrentAction, ctx: ActionExecut
 }
 
 async function executeDeleteSelected(desc: DeleteSelectedAction, ctx: ActionExecutionContext): Promise<void> {
-  const view = resolveView(desc.dataKey, ctx)
-  if (!view) return
+  const { dataSource, selectedRows } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) return
 
-  const selectedRows: IDataRow[] = Array.isArray(view.selectedRows) ? view.selectedRows : []
   if (selectedRows.length === 0) {
     const ps = ctx.getPageService()
     if (ps) ps.showMessage('请先勾选记录', 'warning')
@@ -304,7 +355,7 @@ async function executeDeleteSelected(desc: DeleteSelectedAction, ctx: ActionExec
   for (const row of [...selectedRows]) {
     const id = resolveRowId(row, idField)
     if (id === null) continue
-    const deleted = await view.removeRow(id)
+    const deleted = await dataSource.removeRow(id)
     if (isCrudSuccess(deleted)) removed++
   }
 
@@ -315,33 +366,32 @@ async function executeDeleteSelected(desc: DeleteSelectedAction, ctx: ActionExec
 }
 
 async function executeRefresh(desc: RefreshAction, ctx: ActionExecutionContext): Promise<void> {
-  const view = resolveView(desc.dataKey, ctx)
-  if (!view) return
+  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) return
 
-  if (!view.dataTable?.api?.list) {
+  if (!dataSource.dataTable?.api?.list) {
     const ps = ctx.getPageService()
     if (ps) ps.showMessage('当前数据为内联数据，无需刷新', 'warning')
     return
   }
 
-  await view.refresh()
+  await dataSource.refresh()
   const ps = ctx.getPageService()
   if (ps) ps.showMessage('刷新完成', 'success')
 }
 
 async function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutionContext): Promise<void> {
-  const view = resolveView(desc.dataKey, ctx)
-  if (!view) return
+  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) return
 
-  const row = view.currentRow
-  if (!row) {
+  if (!currentRow) {
     const ps = ctx.getPageService()
     if (ps) ps.showMessage('请先选择当前行', 'warning')
     return
   }
 
   const idField = desc.idField ?? 'id'
-  const id = resolveRowId(row, idField)
+  const id = resolveRowId(currentRow, idField)
   if (id === null) return
 
   const patch: Record<string, unknown> = { ...(desc.patch ?? {}) }
@@ -351,7 +401,7 @@ async function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutio
 
   if (Object.keys(patch).length > 0) {
     const ps = ctx.getPageService()
-    const result = await view.editRowById(id, patch)
+    const result = await dataSource.editRowById(id, patch)
     if (ps) {
       const updateMessage = isCrudResult(result)
         ? (result.success ? '更新成功' : getCrudErrorMessage(result, '更新失败'))
@@ -365,17 +415,16 @@ async function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutio
 }
 
 async function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): Promise<void> {
-  const view = resolveView(desc.dataKey, ctx)
-  if (!view) return
+  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) return
 
-  const row = view.currentRow
-  if (!row) return
+  if (!currentRow) return
 
   const idField = desc.idField ?? 'id'
-  const id = resolveRowId(row, idField)
+  const id = resolveRowId(currentRow, idField)
   if (id === null) return
 
-  await view.editRowById(id, { [desc.field]: desc.value })
+  await dataSource.editRowById(id, { [desc.field]: desc.value })
 }
 
 function executeOpen(desc: OpenAction): void {

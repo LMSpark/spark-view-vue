@@ -16,10 +16,14 @@
 import { shallowReactive, watch } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import {
+  ACTION_CAPABILITY,
   DATA_ROW,
+  HOST_VARIANT,
   SparkComponentRenderer,
+  createActionCapability,
   nodeId,
   useSparkComponent,
+  type SparkActionCapability,
   type SparkNode,
 } from '../../internal'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
@@ -27,6 +31,8 @@ import { syncReactiveRow } from '../../support/row-mirror-sync'
 const props = withDefaults(defineProps<{
   type?: string
   row?: IDataRow | undefined
+  actionCapability?: SparkActionCapability | undefined
+  hostVariant?: string | undefined
   children?: SparkNode[]
 }>(), {
   type: 'r-host-data-scope',
@@ -37,6 +43,8 @@ const { sparkProvide, sparkRemove } = useSparkComponent({ type: props.type })
 
 const rowMirror = shallowReactive<IDataRow>({})
 let hasProvidedRow = false
+let hasProvidedActionCapability = false
+let hasProvidedHostVariant = false
 
 function resolveInputRow(): IDataRow | undefined {
   return props.row
@@ -57,6 +65,38 @@ watch(
       hasProvidedRow = true
     }
     syncReactiveRow(rowMirror, newRow)
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  () => props.actionCapability,
+  (capability) => {
+    if (!capability) {
+      if (hasProvidedActionCapability) {
+        sparkRemove(ACTION_CAPABILITY)
+        hasProvidedActionCapability = false
+      }
+      return
+    }
+    sparkProvide(ACTION_CAPABILITY, createActionCapability(capability))
+    hasProvidedActionCapability = true
+  },
+  { immediate: true },
+)
+
+watch(
+  () => props.hostVariant,
+  (variant) => {
+    if (variant === undefined || variant === '') {
+      if (hasProvidedHostVariant) {
+        sparkRemove(HOST_VARIANT)
+        hasProvidedHostVariant = false
+      }
+      return
+    }
+    sparkProvide(HOST_VARIANT, variant)
+    hasProvidedHostVariant = true
   },
   { immediate: true },
 )

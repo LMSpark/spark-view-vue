@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :row="formModel">
+    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :row="formModel" :action-capability="toolbarActionCapability" host-variant="toolbar">
       <div :class="['renderer-form-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -47,11 +47,11 @@ import { computed, ref } from 'vue'
 import {
   SparkComponentRenderer,
   nodeId,
+  type SparkNode,
 } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
 
 const props = withDefaults(defineProps<RFormProps>(), {
@@ -93,8 +93,8 @@ const {
 const nativeFormRef = ref<unknown>(null)
 const {
   formApi,
-}: {
-  formApi: RendererFormApi
+  handleBuiltinToolbarAction,
+  isBuiltinActionDisabled,
 } = createRendererFormZeroCode({
   props,
   resolvedView,
@@ -105,6 +105,15 @@ const {
 })
 
 registerApi(formApi)
+
+const toolbarActionCapability = {
+  isDisabled(action: SparkNode): boolean {
+    return isBuiltinActionDisabled(action)
+  },
+  execute(action: SparkNode): void {
+    handleBuiltinToolbarAction(action)
+  },
+}
 </script>
 
 <style scoped>
