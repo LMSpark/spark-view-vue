@@ -115,7 +115,7 @@ function createStepRendererConfig(step: SparkNode, index: number, mode: 'header'
       mode,
       ...(mode === 'header' ? { onActivate: activateStep } : {}),
       ...(mode === 'content' && !hasStepChildren(step)
-        ? { $defaultSlot: () => slots['default']?.(getStepSlotScope(step, index)) }
+        ? { $defaultSlot: () => slots['default']?.(getStepScope(step, index)) }
         : {}),
     },
   }
@@ -140,7 +140,7 @@ const {
 
 registerApi(stepsApi)
 
-function getStepSlotScope(step: SparkNode, index: number) {
+function getStepScope(step: SparkNode, index: number) {
   return {
     step,
     stepIndex: index,

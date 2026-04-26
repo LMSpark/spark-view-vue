@@ -17,7 +17,7 @@
             :key="nodeId(action) ?? `r-drawer-header-${index}`"
             :config="action"
           />
-          <slot name="header-actions" v-bind="getHeaderSlotScope()" />
+          <slot name="header-actions" v-bind="getHeaderScope()" />
         </div>
       </div>
     </template>
@@ -32,7 +32,7 @@
         >
           <SparkComponentRenderer :config="child" />
         </div>
-        <slot v-bind="getDefaultSlotScope()" />
+        <slot v-bind="getDefaultScope()" />
       </div>
     </RendererHostScope>
 
@@ -43,7 +43,7 @@
           :key="nodeId(action) ?? `r-drawer-footer-${index}`"
           :config="action"
         />
-        <slot name="footer" v-bind="getFooterSlotScope()" />
+        <slot name="footer" v-bind="getFooterScope()" />
       </div>
     </template>
   </el-drawer>
@@ -137,7 +137,7 @@ const {
 registerApi(drawerApi)
 
 
-function getHeaderSlotScope() {
+function getHeaderScope() {
   return {
     title: resolvedTitle.value,
     visible: visibleValue.value,
@@ -145,7 +145,7 @@ function getHeaderSlotScope() {
   }
 }
 
-function getDefaultSlotScope() {
+function getDefaultScope() {
   return {
     title: resolvedTitle.value,
     visible: visibleValue.value,
@@ -153,7 +153,7 @@ function getDefaultSlotScope() {
   }
 }
 
-function getFooterSlotScope() {
+function getFooterScope() {
   return {
     title: resolvedTitle.value,
     visible: visibleValue.value,

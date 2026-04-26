@@ -131,7 +131,7 @@ function createPaneRendererConfig(pane: SparkNode, index: number): SparkNode {
       ...getPaneComponentProps(pane),
       index,
       ...(!hasPaneChildren(pane)
-        ? { $defaultSlot: () => slots['default']?.(getPaneSlotScope(pane, index)) }
+        ? { $defaultSlot: () => slots['default']?.(getPaneScope(pane, index)) }
         : {}),
     },
   }
@@ -141,7 +141,7 @@ function handleTabClick(pane: TabsClickEvent, event: Event): void {
   props.onTabClick?.(pane, event)
 }
 
-function getPaneSlotScope(pane: SparkNode, index: number) {
+function getPaneScope(pane: SparkNode, index: number) {
   return {
     pane,
     paneIndex: index,

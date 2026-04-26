@@ -1,7 +1,7 @@
 <template>
   <!--
     行片段仅负责作用域转发：
-    - 上游若传 slotScope，则交由 RendererHostScope 解析 DATA_ROW；
+    - 上游若传 rowScope，则交由 RendererHostScope 解析 DATA_ROW；
     - 上游若传 data，则直接作为 DATA_ROW。
     
     支持栅格布局（类似 FieldScope）：
@@ -18,7 +18,7 @@
       <RendererHostScope
         type="r-data-scope"
         :row="resolvedDataInput"
-        :slot-scope="props.slotScope"
+        :row-scope="rowScope"
         :children="[child]"
       />
     </div>
@@ -27,7 +27,7 @@
     <RendererHostScope
       type="r-data-scope"
       :row="resolvedDataInput"
-      :slot-scope="props.slotScope"
+      :row-scope="rowScope"
       :children="resolvedChildren"
     />
   </template>
@@ -78,10 +78,12 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
 // 冻结空对象作为"无数据"语义，避免子字段因 undefined 而崩溃，同时防止意外写入。
 const EMPTY_DATA_ROW = Object.freeze({}) as IDataRow
 
-// data 有值时直传；仅 slotScope 场景交由 HostScope 内部解析；两者都缺省时回退空行。
+const rowScope = computed<Record<string, unknown> | undefined>(() => props.rowScope)
+
+// data 有值时直传；仅 rowScope 场景交由 HostScope 内部解析；两者都缺省时回退空行。
 const resolvedDataInput = computed<IDataRow | undefined>(() => {
   if (props.data !== undefined) return props.data
-  if (props.slotScope !== undefined) return undefined
+  if (rowScope.value !== undefined) return undefined
   return EMPTY_DATA_ROW
 })
 </script>

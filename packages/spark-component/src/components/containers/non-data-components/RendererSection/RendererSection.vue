@@ -12,7 +12,7 @@
             :key="nodeId(action) ?? `r-section-action-${index}`"
             :config="action"
           />
-          <slot name="header-actions" v-bind="getHeaderSlotScope()" />
+          <slot name="header-actions" v-bind="getHeaderScope()" />
           <button
             v-if="collapsible"
             type="button"
@@ -37,7 +37,7 @@
         >
           <SparkComponentRenderer :config="child" />
         </div>
-        <slot v-bind="getDefaultSlotScope()" />
+        <slot v-bind="getDefaultScope()" />
       </div>
     </RendererHostScope>
   </el-card>
@@ -54,7 +54,7 @@
           :key="nodeId(action) ?? `r-section-action-${index}`"
           :config="action"
         />
-        <slot name="header-actions" v-bind="getHeaderSlotScope()" />
+        <slot name="header-actions" v-bind="getHeaderScope()" />
         <button
           v-if="collapsible"
           type="button"
@@ -78,7 +78,7 @@
         >
           <SparkComponentRenderer :config="child" />
         </div>
-        <slot v-bind="getDefaultSlotScope()" />
+        <slot v-bind="getDefaultScope()" />
       </div>
     </RendererHostScope>
   </div>
@@ -156,7 +156,7 @@ const { sectionApi, handleHeaderClick, toggleCollapsed }: {
 registerApi(sectionApi)
 
 
-function getHeaderSlotScope() {
+function getHeaderScope() {
   return {
     title: props.title,
     description: props.description,
@@ -165,7 +165,7 @@ function getHeaderSlotScope() {
   }
 }
 
-function getDefaultSlotScope() {
+function getDefaultScope() {
   return {
     title: props.title,
     description: props.description,

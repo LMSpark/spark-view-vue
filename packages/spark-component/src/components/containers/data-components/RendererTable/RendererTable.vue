@@ -299,13 +299,13 @@ function resolveRowFragmentClass(node: SparkNode): string | undefined {
 }
 
 function createScopedRowFragmentConfig(node: SparkNode, scope: Record<string, unknown>): SparkNode {
-  // 关键桥接：把当前行 scope 注入为 slotScope。
+  // 关键桥接：把当前行 scope 注入为 rowScope。
   // RowFragment -> RendererHostScope -> DATA_ROW 将沿此通道完成上下文传递。
   return {
     ...node,
     props: {
       ...(node.props ?? {}),
-      slotScope: scope,
+      rowScope: scope,
     },
   }
 }

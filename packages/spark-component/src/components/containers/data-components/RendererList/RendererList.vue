@@ -47,7 +47,7 @@
                       </div>
                       <slot
                         v-if="!itemContentChildren.length"
-                        v-bind="getRowSlotScope(row, index)"
+                        v-bind="getRowScope(row, index)"
                       />
                     </div>
                   </component>
@@ -69,7 +69,7 @@
           </div>
         </template>
         <div v-else-if="emptyText" class="renderer-list-empty">{{ emptyText }}</div>
-        <slot v-else v-bind="getDefaultSlotScope()" />
+        <slot v-else v-bind="getDefaultScope()" />
       </div>
     </div>
   </div>
@@ -106,7 +106,7 @@ import { useContainerDataSource, useContainerDataSourceEffects } from '../../com
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import { createRowSlotScope, createToolbarSlotScope } from '../../support/slotScopeFactories'
+import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
 import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { createRendererListZeroCode } from './zero-code'
@@ -300,8 +300,8 @@ function getItemKey(row: IDataRow, index: number): string | number {
   return `${props.rowKey}-${index}`
 }
 
-function getRowSlotScope(row: IDataRow, index: number) {
-  return createRowSlotScope({
+function getRowScope(row: IDataRow, index: number) {
+  return createRowScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
     moduleContext: moduleContext.value,
@@ -318,8 +318,8 @@ async function handleItemClick(row: IDataRow, index: number, event: Event) {
   await dispatch('item-click', row, index, event)
 }
 
-function getDefaultSlotScope() {
-  return createToolbarSlotScope({
+function getDefaultScope() {
+  return createToolbarScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
     moduleContext: moduleContext.value,

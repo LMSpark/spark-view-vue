@@ -10,7 +10,7 @@ import { useContainerDataSource, useContainerDataSourceEffects } from './useCont
 import { useContainerModuleContext } from './useContainerModuleContext'
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
-import { createCurrentRowSlotScope } from '../support/slotScopeFactories'
+import { createCurrentRowScope } from '../support/scopeFactories'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
 
 interface FormDetailContainerProps extends SparkNode {
@@ -89,8 +89,8 @@ export function useFormDetailContainer(
     dataSource: computed(() => resolvedView.value),
   })
 
-  function getDefaultSlotScope() {
-    return createCurrentRowSlotScope({
+  function getDefaultScope() {
+    return createCurrentRowScope({
       dataSource: resolvedView.value,
       modelPermission: modelPermission.value,
       moduleContext: moduleContext.value,
@@ -112,6 +112,6 @@ export function useFormDetailContainer(
     toolbarClassValue,
     visibleToolbarConfigs,
     showToolbar,
-    getDefaultSlotScope,
+    getDefaultScope,
   }
 }

@@ -112,8 +112,8 @@ export interface RendererRowFragmentProps {
   compact?: boolean
   /** 当前数据行。 */
   data?: IDataRow
-  /** 上游插槽作用域（运行时透传）。 */
-  slotScope?: Record<string, unknown>
+  /** 上游行作用域（运行时透传）。 */
+  rowScope?: Record<string, unknown>
   /** 片段字段节点列表。 */
   children?: SparkNode[]
 }

@@ -22,7 +22,7 @@
             >
               <SparkComponentRenderer :config="child" />
             </div>
-            <slot v-bind="getDefaultSlotScope()" />
+            <slot v-bind="getDefaultScope()" />
           </div>
         </RendererHostScope>
       </div>
@@ -85,7 +85,7 @@ const {
   toolbarClassValue,
   visibleToolbarConfigs,
   showToolbar,
-  getDefaultSlotScope,
+  getDefaultScope,
   contextData: detailData,
 } = useFormDetailContainer({
   type: props.type,

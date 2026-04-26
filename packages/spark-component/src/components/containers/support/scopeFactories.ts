@@ -3,7 +3,7 @@ import type { IModuleContext } from '../../internal'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 
-export interface BaseSlotScope<TSource> {
+export interface BaseScopeContext<TSource> {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined
@@ -11,10 +11,10 @@ export interface BaseSlotScope<TSource> {
 
 // ── 作用域构建辅助函数 ───────────────────────────────────────────────────────
 
-function withBaseScope<TSource, TExtra extends Record<string, unknown>>(
-  base: BaseSlotScope<TSource>,
+function withBaseScopeContext<TSource, TExtra extends Record<string, unknown>>(
+  base: BaseScopeContext<TSource>,
   extra: TExtra,
-): BaseSlotScope<TSource> & TExtra {
+): BaseScopeContext<TSource> & TExtra {
   return {
     dataSource: base.dataSource,
     modelPermission: base.modelPermission,
@@ -23,16 +23,16 @@ function withBaseScope<TSource, TExtra extends Record<string, unknown>>(
   }
 }
 
-// ── 插槽作用域工厂 ───────────────────────────────────────────────────────────
+// ── 作用域工厂 ───────────────────────────────────────────────────────────────
 
-export function createToolbarSlotScope<TSource>(
-  base: BaseSlotScope<TSource>,
+export function createToolbarScope<TSource>(
+  base: BaseScopeContext<TSource>,
   extra: Record<string, unknown>,
 ) {
-  return withBaseScope(base, extra)
+  return withBaseScopeContext(base, extra)
 }
 
-export function createRowSlotScope<TSource>(params: {
+export function createRowScope<TSource>(params: {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined
@@ -40,21 +40,21 @@ export function createRowSlotScope<TSource>(params: {
   index: number
   extra?: Record<string, unknown>
 }) {
-  return withBaseScope(params, {
+  return withBaseScopeContext(params, {
     row: params.row,
     rowIndex: params.index,
     ...(params.extra ?? {}),
   })
 }
 
-export function createCurrentRowSlotScope<TSource>(params: {
+export function createCurrentRowScope<TSource>(params: {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined
   row: IDataRow
   model?: IDataRow
 }) {
-  return withBaseScope(params, {
+  return withBaseScopeContext(params, {
     row: params.row,
     model: params.model ?? params.row,
   })

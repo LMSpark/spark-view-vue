@@ -125,13 +125,13 @@ function createItemRendererConfig(item: SparkNode, index: number): SparkNode {
       ...getItemComponentProps(item),
       index,
       ...(!hasItemChildren(item)
-        ? { $defaultSlot: () => slots['default']?.(getItemSlotScope(item, index)) }
+        ? { $defaultSlot: () => slots['default']?.(getItemScope(item, index)) }
         : {}),
     },
   }
 }
 
-function getItemSlotScope(item: SparkNode, index: number) {
+function getItemScope(item: SparkNode, index: number) {
   return {
     item,
     itemIndex: index,
