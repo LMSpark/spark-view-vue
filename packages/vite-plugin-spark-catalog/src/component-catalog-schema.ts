@@ -256,8 +256,15 @@ export interface PropSchemaProperty {
   type: string
   required?: boolean
   description?: string
+  /** 嵌套 schema 池引用 key（用于递归展开如 RendererActionsConfigProps 等配置类型） */
+  schemaRef?: string
+  /**
+   * @internal 临时字段 — 仅在生成阶段使用
+   * 暂存需要递归提取到 schemaPool 的嵌套 schema
+   * 最终 JSON 中不会包含此字段，会被替换为 schemaRef
+   */
+  __nestedSchema?: PropSchema
 }
-
 /**
  * 扁平类型 Schema（非递归）
  *

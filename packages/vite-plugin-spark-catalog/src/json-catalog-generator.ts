@@ -33,6 +33,7 @@ import type {
   PropEntry,
   EmitEntry,
   PropSchema,
+  PropSchemaProperty,
   CatalogBindingDescriptor,
   ComponentContractRefs,
   GovernanceContract,
@@ -43,6 +44,7 @@ import type {
 import { auditCatalog, logAuditReport } from './catalog-quality-audit'
 import type { AuditReport, AuditOptions } from './catalog-quality-audit'
 
+import { nestedSchemaCollector } from './nested-schema-collector'
 // ── 2. 常量与生成约束 (Constants & Policies) ───────────────────────────────────────
 
 /** 统一日志前缀，方便从构建日志里快速筛出目录生成阶段输出。 */
@@ -490,6 +492,44 @@ function resolveSchemaRef(
   return ref
 }
 
+function normalizeNestedSchemaProperty(
+  context: SchemaPoolContext,
+  property: PropSchemaProperty,
+  fallbackIdentityKey: string,
+): PropSchemaProperty {
+  const normalizedProperty: PropSchemaProperty = { ...property }
+  const nestedSchema = property.__nestedSchema
+
+  if (nestedSchema === undefined) {
+    return normalizedProperty
+  }
+
+  const normalizedNestedSchema = normalizeNestedSchema(context, nestedSchema)
+  normalizedProperty.schemaRef = resolveSchemaRef(
+    context,
+    normalizedNestedSchema,
+    property.type || fallbackIdentityKey,
+  )
+  delete normalizedProperty.__nestedSchema
+  return normalizedProperty
+}
+
+function normalizeNestedSchema(context: SchemaPoolContext, schema: PropSchema): PropSchema {
+  if (schema.kind !== 'object') {
+    return schema
+  }
+
+  return {
+    ...schema,
+    properties: Object.fromEntries(
+      Object.entries(schema.properties).map(([propertyName, property]) => [
+        propertyName,
+        normalizeNestedSchemaProperty(context, property, propertyName),
+      ]),
+    ),
+  }
+}
+
 // ── 6. 组件条目压缩与 canonical 建模 (Compaction & Canonical Model) ───────────────
 
 /**
@@ -527,9 +567,10 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
     //    供消费层递归展开目标组件 props。
     let schemaResolved = false
     if (prop.schema !== undefined) {
+      const normalizedSchema = normalizeNestedSchema(schemaPool, prop.schema)
       const isExternalObjectSchema = prop.schema.kind === 'object' && prop.__schemaOwner === 'external'
-      if (!isExternalObjectSchema && shouldRetainSchema(prop.schema)) {
-        compacted.schemaRef = resolveSchemaRef(schemaPool, prop.schema, prop.__schemaIdentityKey)
+      if (!isExternalObjectSchema && shouldRetainSchema(normalizedSchema)) {
+        compacted.schemaRef = resolveSchemaRef(schemaPool, normalizedSchema, prop.__schemaIdentityKey)
         schemaResolved = true
       }
     }
@@ -542,7 +583,6 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
     if (!schemaResolved && prop.__componentRef !== undefined) {
       compacted.schemaRef = `component:${prop.__componentRef}`
     }
-
     result.push(compacted)
   }
 
@@ -554,6 +594,7 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
  *
  * 与 props 类似，事件 payload 的复杂类型也会提升为共享 schema 引用，避免每个组件重复展开。
  */
+
 function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): EmitEntry[] {
   const result: EmitEntry[] = []
 
@@ -830,6 +871,16 @@ function buildSortedComponents(
   registry.fields.sort()
   registry.groups.sort()
   registry.meta.sort()
+
+  // 递归处理所有嵌套 schema（如 ActionsNode.props 中的 RendererActionsConfigProps）
+  // 这些在 convertSchema 过程中被识别出来，需要提取为独立的 schema 池条目
+  const nestedSchemas = nestedSchemaCollector.getAll()
+  for (const record of nestedSchemas) {
+    // 使用类型名称作为 identity key，以便生成稳定的 schema ref
+    resolveSchemaRef(schemaPool, normalizeNestedSchema(schemaPool, record.schema), record.typeName)
+  }
+  // 清空收集器，为下一次调用做准备
+  nestedSchemaCollector.clear()
 
   return {
     components,

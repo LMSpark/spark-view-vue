@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-26T14:04:45.351Z",
+  "buildTime": "2026-04-26T15:18:09.535Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -99,7 +99,7 @@
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
@@ -107,7 +107,7 @@
           "required": false,
           "default": "\"left\"",
           "description": "值对齐",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "detailProps",
@@ -255,7 +255,7 @@
           "type": "ActionsNode | undefined",
           "required": false,
           "description": "结构化列表项动作",
-          "schemaRef": "schema_00003"
+          "schemaRef": "schema_00004"
         },
         {
           "name": "columns",
@@ -319,7 +319,7 @@
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式",
-          "schemaRef": "schema_00004"
+          "schemaRef": "schema_00006"
         },
         {
           "name": "itemColSpan",
@@ -454,14 +454,14 @@
           "type": "ActionsAlign | undefined",
           "required": false,
           "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）",
-          "schemaRef": "schema_00005"
+          "schemaRef": "schema_00007"
         },
         {
           "name": "rowActionsFixed",
           "type": "ActionsFixed | undefined",
           "required": false,
           "description": "行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed）",
-          "schemaRef": "schema_00006"
+          "schemaRef": "schema_00008"
         },
         {
           "name": "filter",
@@ -469,7 +469,7 @@
           "required": false,
           "description": "结构化筛选区\r\n提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。",
           "componentRef": "r-filter",
-          "schemaRef": "schema_00007"
+          "schemaRef": "schema_00009"
         },
         {
           "name": "actions",
@@ -477,7 +477,7 @@
           "required": false,
           "description": "结构化行动作\r\n提示词模板：默认动作 message-row / delete-row。\r\n权限要求：写操作按钮必须声明 permAction(create/delete/edit)，并建议 permDeniedBehavior='disable'。",
           "componentRef": "r-actions",
-          "schemaRef": "schema_00003"
+          "schemaRef": "schema_00004"
         },
         {
           "name": "dataKey",
@@ -542,7 +542,7 @@
           "type": "ActionsNode | undefined",
           "required": false,
           "description": "结构化节点动作",
-          "schemaRef": "schema_00003"
+          "schemaRef": "schema_00004"
         },
         {
           "name": "editor",
@@ -550,7 +550,7 @@
           "required": false,
           "description": "结构化编辑区",
           "componentRef": "r-editor",
-          "schemaRef": "schema_00008"
+          "schemaRef": "schema_00011"
         },
         {
           "name": "nodeKey",
@@ -672,7 +672,7 @@
           "required": false,
           "default": "\"vertical\"",
           "description": "排列方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         {
           "name": "anchorType",
@@ -680,7 +680,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "锚点类型（避免与 SparkNode.type 冲突）",
-          "schemaRef": "schema_00010"
+          "schemaRef": "schema_00014"
         }
       ]
     },
@@ -715,7 +715,7 @@
           "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | undefined",
           "required": false,
           "description": "CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行",
-          "schemaRef": "schema_00011"
+          "schemaRef": "schema_00015"
         },
         {
           "name": "template",
@@ -831,7 +831,7 @@
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略",
-          "schemaRef": "schema_00004"
+          "schemaRef": "schema_00006"
         },
         {
           "name": "bodyStyle",
@@ -955,7 +955,7 @@
           "required": false,
           "description": "结构化头部",
           "componentRef": "r-header",
-          "schemaRef": "schema_00012"
+          "schemaRef": "schema_00016"
         },
         {
           "name": "footer",
@@ -963,7 +963,7 @@
           "required": false,
           "description": "结构化底部",
           "componentRef": "r-footer",
-          "schemaRef": "schema_00013"
+          "schemaRef": "schema_00018"
         },
         {
           "name": "title",
@@ -1045,7 +1045,7 @@
           "required": false,
           "default": "\"horizontal\"",
           "description": "分割方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         {
           "name": "borderStyle",
@@ -1053,7 +1053,7 @@
           "required": false,
           "default": "\"solid\"",
           "description": "边框样式",
-          "schemaRef": "schema_00014"
+          "schemaRef": "schema_00020"
         },
         {
           "name": "contentPosition",
@@ -1061,7 +1061,7 @@
           "required": false,
           "default": "\"center\"",
           "description": "文本位置（横向模式）",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "content",
@@ -1083,7 +1083,7 @@
           "required": false,
           "description": "结构化头部",
           "componentRef": "r-header",
-          "schemaRef": "schema_00012"
+          "schemaRef": "schema_00016"
         },
         {
           "name": "footer",
@@ -1091,7 +1091,7 @@
           "required": false,
           "description": "结构化底部",
           "componentRef": "r-footer",
-          "schemaRef": "schema_00013"
+          "schemaRef": "schema_00018"
         },
         {
           "name": "title",
@@ -1179,7 +1179,7 @@
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式",
-          "schemaRef": "schema_00015"
+          "schemaRef": "schema_00021"
         },
         {
           "name": "hideOnClick",
@@ -1226,7 +1226,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         },
         {
           "name": "offset",
@@ -1278,7 +1278,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
-          "schemaRef": "schema_00017"
+          "schemaRef": "schema_00023"
         },
         {
           "name": "underline",
@@ -1299,7 +1299,7 @@
           "required": false,
           "default": "\"_self\"",
           "description": "跳转目标",
-          "schemaRef": "schema_00018"
+          "schemaRef": "schema_00024"
         }
       ]
     },
@@ -1360,7 +1360,7 @@
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
-          "schemaRef": "schema_00017"
+          "schemaRef": "schema_00023"
         },
         {
           "name": "cancelButtonType",
@@ -1368,7 +1368,7 @@
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
-          "schemaRef": "schema_00017"
+          "schemaRef": "schema_00023"
         },
         {
           "name": "icon",
@@ -1430,7 +1430,7 @@
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。",
-          "schemaRef": "schema_00019"
+          "schemaRef": "schema_00025"
         },
         {
           "name": "placement",
@@ -1445,7 +1445,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         },
         {
           "name": "offset",
@@ -1504,7 +1504,7 @@
           "required": false,
           "description": "结构化头部",
           "componentRef": "r-header",
-          "schemaRef": "schema_00012"
+          "schemaRef": "schema_00016"
         },
         {
           "name": "title",
@@ -1554,7 +1554,7 @@
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式",
-          "schemaRef": "schema_00004"
+          "schemaRef": "schema_00006"
         },
         {
           "name": "bodyClass",
@@ -1633,7 +1633,7 @@
           "required": false,
           "default": "\"horizontal\"",
           "description": "主轴方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         {
           "name": "size",
@@ -1662,7 +1662,7 @@
           "required": false,
           "default": "\"center\"",
           "description": "交叉轴对齐方式",
-          "schemaRef": "schema_00020"
+          "schemaRef": "schema_00026"
         }
       ]
     },
@@ -1755,7 +1755,7 @@
           "type": "\"content\" | \"header\"",
           "required": true,
           "description": "渲染模式：步骤头部或内容区",
-          "schemaRef": "schema_00021"
+          "schemaRef": "schema_00027"
         }
       ]
     },
@@ -1919,7 +1919,7 @@
           "required": false,
           "description": "尾部动作区（通常放次要按钮）",
           "componentRef": "r-tail",
-          "schemaRef": "schema_00022"
+          "schemaRef": "schema_00028"
         },
         {
           "name": "gap",
@@ -1938,14 +1938,14 @@
           "type": "InlineAlign | undefined",
           "required": false,
           "description": "交叉轴对齐",
-          "schemaRef": "schema_00023"
+          "schemaRef": "schema_00030"
         },
         {
           "name": "justify",
           "type": "InlineJustify | undefined",
           "required": false,
           "description": "主轴分布",
-          "schemaRef": "schema_00024"
+          "schemaRef": "schema_00031"
         }
       ]
     },
@@ -1988,7 +1988,7 @@
           "required": false,
           "default": "\"dark\"",
           "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         },
         {
           "name": "offset",
@@ -2067,7 +2067,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "引导类型",
-          "schemaRef": "schema_00025"
+          "schemaRef": "schema_00032"
         },
         {
           "name": "closeOnPressEscape",
@@ -2095,7 +2095,7 @@
           "type": "ToolbarPosition | undefined",
           "required": false,
           "description": "工具栏位置",
-          "schemaRef": "schema_00026"
+          "schemaRef": "schema_00033"
         },
         {
           "name": "width",
@@ -2116,7 +2116,7 @@
           "type": "IDataRow | undefined",
           "required": false,
           "description": "筛选条件绑定的数据行",
-          "schemaRef": "schema_00027"
+          "schemaRef": "schema_00034"
         },
         {
           "name": "configs",
@@ -2264,7 +2264,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
-          "schemaRef": "schema_00028"
+          "schemaRef": "schema_00036"
         },
         {
           "name": "shape",
@@ -2272,7 +2272,7 @@
           "required": false,
           "default": "\"circle\"",
           "description": "头像形状",
-          "schemaRef": "schema_00029"
+          "schemaRef": "schema_00037"
         },
         {
           "name": "src",
@@ -2298,7 +2298,7 @@
           "required": false,
           "default": "\"cover\"",
           "description": "图片填充方式",
-          "schemaRef": "schema_00030"
+          "schemaRef": "schema_00038"
         },
         {
           "name": "text",
@@ -2365,7 +2365,7 @@
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
-          "schemaRef": "schema_00031"
+          "schemaRef": "schema_00039"
         },
         {
           "name": "showZero",
@@ -2430,7 +2430,7 @@
           "required": false,
           "default": "\"cover\"",
           "description": "图片适应模式",
-          "schemaRef": "schema_00030"
+          "schemaRef": "schema_00038"
         },
         {
           "name": "alt",
@@ -2605,7 +2605,7 @@
           "required": false,
           "default": "\"line\"",
           "description": "进度条类型",
-          "schemaRef": "schema_00032"
+          "schemaRef": "schema_00040"
         },
         {
           "name": "strokeWidth",
@@ -2626,7 +2626,7 @@
           "type": "\"success\" | \"warning\" | \"exception\" | undefined",
           "required": false,
           "description": "状态",
-          "schemaRef": "schema_00033"
+          "schemaRef": "schema_00041"
         },
         {
           "name": "indeterminate",
@@ -2667,7 +2667,7 @@
           "required": false,
           "default": "\"round\"",
           "description": "线帽样式",
-          "schemaRef": "schema_00034"
+          "schemaRef": "schema_00042"
         },
         {
           "name": "formatText",
@@ -2777,7 +2777,7 @@
           "type": "\"\" | TagType | undefined",
           "required": false,
           "description": "标签类型",
-          "schemaRef": "schema_00035"
+          "schemaRef": "schema_00043"
         },
         {
           "name": "dynamicType",
@@ -2825,7 +2825,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         },
         {
           "name": "effect",
@@ -2833,7 +2833,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "视觉效果",
-          "schemaRef": "schema_00037"
+          "schemaRef": "schema_00045"
         },
         {
           "name": "value",
@@ -2879,7 +2879,7 @@
           "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
           "description": "格式化方式",
-          "schemaRef": "schema_00038"
+          "schemaRef": "schema_00046"
         },
         {
           "name": "precision",
@@ -2945,7 +2945,7 @@
           "required": false,
           "default": "\"info\"",
           "description": "提示类型",
-          "schemaRef": "schema_00039"
+          "schemaRef": "schema_00047"
         },
         {
           "name": "closable",
@@ -2980,7 +2980,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "主题效果",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         }
       ]
     },
@@ -3043,7 +3043,7 @@
           "type": "Date | undefined",
           "required": false,
           "description": "当前日期",
-          "schemaRef": "schema_00040"
+          "schemaRef": "schema_00048"
         },
         {
           "name": "range",
@@ -3136,7 +3136,7 @@
           "required": false,
           "default": "\"horizontal\"",
           "description": "排列方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         {
           "name": "descriptionsSize",
@@ -3144,7 +3144,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         }
       ]
     },
@@ -3172,14 +3172,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "标签对齐方式",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "contentAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "内容对齐方式",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "labelClassName",
@@ -3277,7 +3277,7 @@
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型",
-          "schemaRef": "schema_00039"
+          "schemaRef": "schema_00047"
         },
         {
           "name": "title",
@@ -3371,11 +3371,11 @@
         },
         {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "时间戳位置",
-          "schemaRef": "schema_00041"
+          "schemaRef": "schema_00049"
         },
         {
           "name": "itemType",
@@ -3383,7 +3383,7 @@
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
-          "schemaRef": "schema_00042"
+          "schemaRef": "schema_00050"
         },
         {
           "name": "color",
@@ -3397,7 +3397,7 @@
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸",
-          "schemaRef": "schema_00043"
+          "schemaRef": "schema_00051"
         },
         {
           "name": "hollow",
@@ -3502,14 +3502,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -3540,7 +3540,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -3574,7 +3574,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -3657,14 +3657,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -3695,7 +3695,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -3816,14 +3816,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -3854,7 +3854,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -3881,7 +3881,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -3960,14 +3960,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -3998,7 +3998,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -4119,14 +4119,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -4157,7 +4157,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -4172,7 +4172,7 @@
           "type": "DatePickerType | undefined",
           "required": false,
           "description": "日期选择器模式。",
-          "schemaRef": "schema_00047"
+          "schemaRef": "schema_00055"
         },
         {
           "name": "valueFormat",
@@ -4262,14 +4262,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -4300,14 +4300,14 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "filterMode",
           "type": "\"range\" | undefined",
           "required": false,
           "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。",
-          "schemaRef": "schema_00048"
+          "schemaRef": "schema_00056"
         }
       ]
     },
@@ -4393,7 +4393,7 @@
           "required": false,
           "default": "'auto'",
           "description": "主值持久化模式",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -4498,7 +4498,7 @@
           "required": false,
           "default": "\"auto\"",
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -4580,14 +4580,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -4618,7 +4618,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -4748,14 +4748,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -4786,7 +4786,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "buttonText",
@@ -4891,14 +4891,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -4929,7 +4929,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "buttonText",
@@ -5013,14 +5013,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -5051,7 +5051,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "rows",
@@ -5092,7 +5092,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -5174,14 +5174,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -5212,7 +5212,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -5328,14 +5328,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -5366,7 +5366,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "buttonText",
@@ -5405,11 +5405,11 @@
         },
         {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "候选浮层位置",
-          "schemaRef": "schema_00041"
+          "schemaRef": "schema_00049"
         },
         {
           "name": "showArrow",
@@ -5448,7 +5448,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
-          "schemaRef": "schema_00049"
+          "schemaRef": "schema_00057"
         },
         {
           "name": "width",
@@ -5503,14 +5503,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -5541,7 +5541,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "rows",
@@ -5596,7 +5596,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -5678,14 +5678,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -5716,7 +5716,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -5815,14 +5815,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -5853,7 +5853,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "min",
@@ -5872,7 +5872,7 @@
           "type": "\"range\" | undefined",
           "required": false,
           "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。",
-          "schemaRef": "schema_00048"
+          "schemaRef": "schema_00056"
         }
       ]
     },
@@ -5958,7 +5958,7 @@
           "required": false,
           "default": "'auto'",
           "description": "主值持久化模式",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -6048,7 +6048,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -6127,14 +6127,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -6165,7 +6165,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -6272,14 +6272,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -6310,7 +6310,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "max",
@@ -6333,7 +6333,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         },
         {
           "name": "block",
@@ -6359,7 +6359,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -6432,14 +6432,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -6470,7 +6470,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -6527,7 +6527,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -6609,14 +6609,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -6647,7 +6647,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -6754,14 +6754,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -6792,7 +6792,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "min",
@@ -6883,14 +6883,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -6921,7 +6921,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -6984,14 +6984,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7022,7 +7022,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -7106,14 +7106,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7144,7 +7144,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "rows",
@@ -7258,14 +7258,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7296,7 +7296,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -7394,14 +7394,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7432,7 +7432,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         }
       ]
     },
@@ -7462,7 +7462,7 @@
           "required": false,
           "default": "\"original\"",
           "description": "目标面板排序策略。",
-          "schemaRef": "schema_00051"
+          "schemaRef": "schema_00059"
         },
         {
           "name": "optionKey",
@@ -7481,7 +7481,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -7561,14 +7561,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7599,7 +7599,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -7670,7 +7670,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -7753,14 +7753,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7791,7 +7791,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "options",
@@ -7865,7 +7865,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "上传列表展示样式。",
-          "schemaRef": "schema_00053"
+          "schemaRef": "schema_00061"
         },
         {
           "name": "accept",
@@ -7935,14 +7935,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         {
           "name": "headerCellClassName",
@@ -7973,7 +7973,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "buttonText",
@@ -8080,7 +8080,7 @@
           "required": false,
           "default": "'auto'",
           "description": "主值持久化模式",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         {
           "name": "textSeparator",
@@ -8188,7 +8188,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "表格列排序能力",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         {
           "name": "filterable",
@@ -8207,21 +8207,21 @@
           "type": "boolean | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "固定列方向",
-          "schemaRef": "schema_00054"
+          "schemaRef": "schema_00062"
         },
         {
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "列对齐",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "表头对齐",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         {
           "name": "mergedChildren",
@@ -8270,14 +8270,14 @@
           "type": "TextAlign | undefined",
           "required": false,
           "description": "标题对齐（table/detail）",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "值对齐（table/detail）",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         {
           "name": "headerCellClassName",
@@ -8401,14 +8401,14 @@
           "type": "SparkNode",
           "required": true,
           "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。",
-          "schemaRef": "schema_00056"
+          "schemaRef": "schema_00064"
         },
         {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
-          "schemaRef": "schema_00057"
+          "schemaRef": "schema_00065"
         }
       ]
     },
@@ -8422,13 +8422,13 @@
           "name": "messages",
           "type": "ChatMessageLike[]",
           "required": true,
-          "schemaRef": "schema_00058"
+          "schemaRef": "schema_00066"
         },
         {
           "name": "pendingFiles",
           "type": "FileAttachment[]",
           "required": true,
-          "schemaRef": "schema_00059"
+          "schemaRef": "schema_00067"
         },
         {
           "name": "inputText",
@@ -8474,13 +8474,13 @@
           "name": "recoveryPolicy",
           "type": "RecoveryPolicyLike | undefined",
           "required": false,
-          "schemaRef": "schema_00060"
+          "schemaRef": "schema_00068"
         },
         {
           "name": "collaborationPolicy",
           "type": "CollaborationPolicyLike | undefined",
           "required": false,
-          "schemaRef": "schema_00061"
+          "schemaRef": "schema_00069"
         }
       ]
     },
@@ -8494,7 +8494,7 @@
           "name": "mode",
           "type": "ChatMode | undefined",
           "required": false,
-          "schemaRef": "schema_00064"
+          "schemaRef": "schema_00072"
         },
         {
           "name": "systemPrompt",
@@ -8563,7 +8563,7 @@
           "name": "config",
           "type": "AiSessionConfig | undefined",
           "required": false,
-          "schemaRef": "schema_00065"
+          "schemaRef": "schema_00073"
         },
         {
           "name": "storageKey",
@@ -8630,14 +8630,14 @@
           "type": "AiFcLoopConfig | undefined",
           "required": false,
           "description": "SSE + FC 循环配置。",
-          "schemaRef": "schema_00066"
+          "schemaRef": "schema_00076"
         },
         {
           "name": "feedback",
           "type": "AiFeedbackConfig | undefined",
           "required": false,
           "description": "反馈配置。",
-          "schemaRef": "schema_00067"
+          "schemaRef": "schema_00077"
         },
         {
           "name": "label",
@@ -8650,7 +8650,7 @@
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"small\"",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         },
         {
           "name": "link",
@@ -8778,7 +8778,7 @@
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
-          "schemaRef": "schema_00084"
+          "schemaRef": "schema_00094"
         },
         {
           "name": "rootLabel",
@@ -8843,7 +8843,7 @@
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式",
-          "schemaRef": "schema_00085"
+          "schemaRef": "schema_00095"
         },
         {
           "name": "readOnly",
@@ -8908,7 +8908,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式",
-          "schemaRef": "schema_00086"
+          "schemaRef": "schema_00096"
         },
         {
           "name": "indentation",
@@ -9007,7 +9007,7 @@
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
-          "schemaRef": "schema_00056"
+          "schemaRef": "schema_00064"
         }
       ]
     },
@@ -9042,7 +9042,7 @@
           "name": "state",
           "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
-          "schemaRef": "schema_00087"
+          "schemaRef": "schema_00097"
         }
       ]
     },
@@ -9132,7 +9132,8 @@
           "name": "props",
           "type": "RendererToolbarConfigProps | undefined",
           "required": false,
-          "description": "工具栏结构化配置。"
+          "description": "工具栏结构化配置。",
+          "schemaRef": "schema_00002"
         },
         "children": {
           "name": "children",
@@ -9149,6 +9150,64 @@
       }
     },
     "schema_00002": {
+      "kind": "object",
+      "type": "RendererToolbarConfigProps",
+      "properties": {
+        "id": {
+          "name": "id",
+          "type": "string | undefined",
+          "required": false,
+          "description": "工具栏 DOM 标识。"
+        },
+        "position": {
+          "name": "position",
+          "type": "ToolbarPosition | undefined",
+          "required": false,
+          "description": "工具栏停靠位置。",
+          "schemaRef": "schema_00100"
+        },
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "工具栏附加 class。"
+        },
+        "gap": {
+          "name": "gap",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "主区内元素间距。"
+        },
+        "zoneGap": {
+          "name": "zoneGap",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "主区与尾区间距。"
+        },
+        "align": {
+          "name": "align",
+          "type": "InlineAlign | undefined",
+          "required": false,
+          "description": "工具栏交叉轴对齐方式。",
+          "schemaRef": "schema_00101"
+        },
+        "justify": {
+          "name": "justify",
+          "type": "InlineJustify | undefined",
+          "required": false,
+          "description": "工具栏主轴分布方式。",
+          "schemaRef": "schema_00102"
+        },
+        "tail": {
+          "name": "tail",
+          "type": "TailNode | undefined",
+          "required": false,
+          "description": "尾部动作区",
+          "schemaRef": "schema_00098"
+        }
+      }
+    },
+    "schema_00003": {
       "kind": "enum",
       "type": "\"left\" | \"center\" | \"right\" | undefined",
       "variants": [
@@ -9158,7 +9217,7 @@
         "\"right\""
       ]
     },
-    "schema_00003": {
+    "schema_00004": {
       "kind": "object",
       "type": "ActionsNode",
       "properties": {
@@ -9172,7 +9231,8 @@
           "name": "props",
           "type": "RendererActionsConfigProps | undefined",
           "required": false,
-          "description": "动作区结构化配置。"
+          "description": "动作区结构化配置。",
+          "schemaRef": "schema_00005"
         },
         "children": {
           "name": "children",
@@ -9188,7 +9248,59 @@
         }
       }
     },
-    "schema_00004": {
+    "schema_00005": {
+      "kind": "object",
+      "type": "RendererActionsConfigProps",
+      "properties": {
+        "position": {
+          "name": "position",
+          "type": "ActionsPosition | undefined",
+          "required": false,
+          "description": "动作区停靠位置。",
+          "schemaRef": "schema_00103"
+        },
+        "label": {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "description": "动作区标题。"
+        },
+        "width": {
+          "name": "width",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "动作区宽度。"
+        },
+        "align": {
+          "name": "align",
+          "type": "ActionsAlign | undefined",
+          "required": false,
+          "description": "动作区内容对齐方式。",
+          "schemaRef": "schema_00104"
+        },
+        "fixed": {
+          "name": "fixed",
+          "type": "ActionsFixed | undefined",
+          "required": false,
+          "description": "动作区固定策略。",
+          "schemaRef": "schema_00105"
+        },
+        "permDeniedBehavior": {
+          "name": "permDeniedBehavior",
+          "type": "PermissionDeniedBehavior | undefined",
+          "required": false,
+          "description": "带 permAction 的动作在权限不足时的呈现策略。",
+          "schemaRef": "schema_00106"
+        },
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "动作区附加 class。"
+        }
+      }
+    },
+    "schema_00006": {
       "kind": "enum",
       "type": "\"hover\" | \"always\" | \"never\" | undefined",
       "variants": [
@@ -9198,7 +9310,7 @@
         "\"never\""
       ]
     },
-    "schema_00005": {
+    "schema_00007": {
       "kind": "enum",
       "type": "ActionsAlign | undefined",
       "variants": [
@@ -9208,7 +9320,7 @@
         "\"right\""
       ]
     },
-    "schema_00006": {
+    "schema_00008": {
       "kind": "enum",
       "type": "ActionsFixed | undefined",
       "variants": [
@@ -9219,7 +9331,7 @@
         "\"right\""
       ]
     },
-    "schema_00007": {
+    "schema_00009": {
       "kind": "object",
       "type": "FilterNode",
       "properties": {
@@ -9233,7 +9345,8 @@
           "name": "props",
           "type": "RendererFilterConfigProps | undefined",
           "required": false,
-          "description": "筛选区结构化配置。"
+          "description": "筛选区结构化配置。",
+          "schemaRef": "schema_00010"
         },
         "children": {
           "name": "children",
@@ -9249,7 +9362,73 @@
         }
       }
     },
-    "schema_00008": {
+    "schema_00010": {
+      "kind": "object",
+      "type": "RendererFilterConfigProps",
+      "properties": {
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "筛选区附加 class。"
+        },
+        "columns": {
+          "name": "columns",
+          "type": "(string | FilterItemConfig)[] | undefined",
+          "required": false,
+          "description": "筛选列配置。"
+        },
+        "collapsible": {
+          "name": "collapsible",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "是否允许折叠。"
+        },
+        "defaultCollapsed": {
+          "name": "defaultCollapsed",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "初始是否折叠。"
+        },
+        "autoFitMinWidth": {
+          "name": "autoFitMinWidth",
+          "type": "string | undefined",
+          "required": false,
+          "description": "自适应最小宽度。"
+        },
+        "itemSpan": {
+          "name": "itemSpan",
+          "type": "number | undefined",
+          "required": false,
+          "description": "每个筛选项占据的栅格列数。"
+        },
+        "actionSpan": {
+          "name": "actionSpan",
+          "type": "number | undefined",
+          "required": false,
+          "description": "操作区占据的栅格列数，默认跟随 itemSpan。"
+        },
+        "gridColumns": {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "required": false,
+          "description": "CSS Grid 列数。"
+        },
+        "gridGap": {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "栅格间距。"
+        },
+        "gridAutoRows": {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "required": false,
+          "description": "栅格行高。"
+        }
+      }
+    },
+    "schema_00011": {
       "kind": "object",
       "type": "EditorNode",
       "properties": {
@@ -9263,7 +9442,8 @@
           "name": "props",
           "type": "RendererEditorConfigProps | undefined",
           "required": false,
-          "description": "编辑区结构化配置。"
+          "description": "编辑区结构化配置。",
+          "schemaRef": "schema_00012"
         },
         "children": {
           "name": "children",
@@ -9279,7 +9459,32 @@
         }
       }
     },
-    "schema_00009": {
+    "schema_00012": {
+      "kind": "object",
+      "type": "RendererEditorConfigProps",
+      "properties": {
+        "position": {
+          "name": "position",
+          "type": "ToolbarPosition | undefined",
+          "required": false,
+          "description": "编辑区停靠位置。",
+          "schemaRef": "schema_00100"
+        },
+        "width": {
+          "name": "width",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "编辑区宽度。"
+        },
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "编辑区附加 class。"
+        }
+      }
+    },
+    "schema_00013": {
       "kind": "enum",
       "type": "\"horizontal\" | \"vertical\" | undefined",
       "variants": [
@@ -9288,7 +9493,7 @@
         "\"vertical\""
       ]
     },
-    "schema_00010": {
+    "schema_00014": {
       "kind": "enum",
       "type": "\"default\" | \"underline\" | undefined",
       "variants": [
@@ -9297,7 +9502,7 @@
         "\"underline\""
       ]
     },
-    "schema_00011": {
+    "schema_00015": {
       "kind": "enum",
       "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | undefined",
       "variants": [
@@ -9320,7 +9525,7 @@
         "\"message-current\""
       ]
     },
-    "schema_00012": {
+    "schema_00016": {
       "kind": "object",
       "type": "HeaderNode",
       "properties": {
@@ -9334,7 +9539,8 @@
           "name": "props",
           "type": "RendererHeaderConfigProps | undefined",
           "required": false,
-          "description": "头部区域结构化配置。"
+          "description": "头部区域结构化配置。",
+          "schemaRef": "schema_00017"
         },
         "children": {
           "name": "children",
@@ -9350,7 +9556,25 @@
         }
       }
     },
-    "schema_00013": {
+    "schema_00017": {
+      "kind": "object",
+      "type": "RendererHeaderConfigProps",
+      "properties": {
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "头部区域附加 class。"
+        },
+        "width": {
+          "name": "width",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "头部区域宽度。"
+        }
+      }
+    },
+    "schema_00018": {
       "kind": "object",
       "type": "FooterNode",
       "properties": {
@@ -9364,7 +9588,8 @@
           "name": "props",
           "type": "RendererFooterConfigProps | undefined",
           "required": false,
-          "description": "底部区域结构化配置。"
+          "description": "底部区域结构化配置。",
+          "schemaRef": "schema_00019"
         },
         "children": {
           "name": "children",
@@ -9380,7 +9605,25 @@
         }
       }
     },
-    "schema_00014": {
+    "schema_00019": {
+      "kind": "object",
+      "type": "RendererFooterConfigProps",
+      "properties": {
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "底部区域附加 class。"
+        },
+        "width": {
+          "name": "width",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "底部区域宽度。"
+        }
+      }
+    },
+    "schema_00020": {
       "kind": "enum",
       "type": "\"none\" | \"dashed\" | \"dotted\" | \"double\" | \"solid\" | undefined",
       "variants": [
@@ -9392,7 +9635,7 @@
         "\"solid\""
       ]
     },
-    "schema_00015": {
+    "schema_00021": {
       "kind": "enum",
       "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
       "variants": [
@@ -9402,7 +9645,7 @@
         "\"contextmenu\""
       ]
     },
-    "schema_00016": {
+    "schema_00022": {
       "kind": "enum",
       "type": "\"dark\" | \"light\" | undefined",
       "variants": [
@@ -9411,7 +9654,7 @@
         "\"light\""
       ]
     },
-    "schema_00017": {
+    "schema_00023": {
       "kind": "enum",
       "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
       "variants": [
@@ -9425,7 +9668,7 @@
         "\"danger\""
       ]
     },
-    "schema_00018": {
+    "schema_00024": {
       "kind": "enum",
       "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\" | undefined",
       "variants": [
@@ -9436,7 +9679,7 @@
         "\"_top\""
       ]
     },
-    "schema_00019": {
+    "schema_00025": {
       "kind": "enum",
       "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
       "variants": [
@@ -9447,7 +9690,7 @@
         "\"focus\""
       ]
     },
-    "schema_00020": {
+    "schema_00026": {
       "kind": "enum",
       "type": "\"center\" | \"stretch\" | \"flex-end\" | \"flex-start\" | \"baseline\" | undefined",
       "variants": [
@@ -9459,7 +9702,7 @@
         "\"baseline\""
       ]
     },
-    "schema_00021": {
+    "schema_00027": {
       "kind": "enum",
       "type": "\"content\" | \"header\"",
       "variants": [
@@ -9467,7 +9710,7 @@
         "\"header\""
       ]
     },
-    "schema_00022": {
+    "schema_00028": {
       "kind": "object",
       "type": "TailNode",
       "properties": {
@@ -9481,7 +9724,8 @@
           "name": "props",
           "type": "RendererTailConfigProps | undefined",
           "required": false,
-          "description": "尾部区域结构化配置。"
+          "description": "尾部区域结构化配置。",
+          "schemaRef": "schema_00029"
         },
         "children": {
           "name": "children",
@@ -9497,29 +9741,47 @@
         }
       }
     },
-    "schema_00023": {
+    "schema_00029": {
+      "kind": "object",
+      "type": "RendererTailConfigProps",
+      "properties": {
+        "class": {
+          "name": "class",
+          "type": "string | undefined",
+          "required": false,
+          "description": "尾部区域附加 class。"
+        },
+        "width": {
+          "name": "width",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "尾部区域宽度。"
+        }
+      }
+    },
+    "schema_00030": {
       "kind": "enum",
       "type": "InlineAlign | undefined",
       "variants": [
         "undefined",
         "\"center\"",
-        "\"stretch\"",
+        "\"start\"",
         "\"end\"",
-        "\"start\""
+        "\"stretch\""
       ]
     },
-    "schema_00024": {
+    "schema_00031": {
       "kind": "enum",
       "type": "InlineJustify | undefined",
       "variants": [
         "undefined",
         "\"center\"",
-        "\"space-between\"",
+        "\"start\"",
         "\"end\"",
-        "\"start\""
+        "\"space-between\""
       ]
     },
-    "schema_00025": {
+    "schema_00032": {
       "kind": "enum",
       "type": "\"default\" | \"primary\" | undefined",
       "variants": [
@@ -9528,29 +9790,66 @@
         "\"primary\""
       ]
     },
-    "schema_00026": {
+    "schema_00033": {
       "kind": "enum",
       "type": "ToolbarPosition | undefined",
       "variants": [
         "undefined",
         "\"left\"",
         "\"right\"",
-        "\"bottom\"",
-        "\"top\""
+        "\"top\"",
+        "\"bottom\""
       ]
     },
-    "schema_00027": {
+    "schema_00034": {
       "kind": "object",
       "type": "IDataRow",
       "properties": {
         "_perm": {
           "name": "_perm",
           "type": "IInstancePermission | undefined",
+          "required": false,
+          "schemaRef": "schema_00035"
+        }
+      }
+    },
+    "schema_00035": {
+      "kind": "object",
+      "type": "IInstancePermission",
+      "properties": {
+        "allowCreateChild": {
+          "name": "allowCreateChild",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        "allowDelete": {
+          "name": "allowDelete",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        "editableFields": {
+          "name": "editableFields",
+          "type": "string[] | undefined",
+          "required": false
+        },
+        "hiddenFields": {
+          "name": "hiddenFields",
+          "type": "string[] | undefined",
+          "required": false
+        },
+        "maskedFields": {
+          "name": "maskedFields",
+          "type": "string[] | undefined",
+          "required": false
+        },
+        "permissionToken": {
+          "name": "permissionToken",
+          "type": "string | undefined",
           "required": false
         }
       }
     },
-    "schema_00028": {
+    "schema_00036": {
       "kind": "enum",
       "type": "number | \"default\" | \"large\" | \"small\" | undefined",
       "variants": [
@@ -9561,7 +9860,7 @@
         "\"small\""
       ]
     },
-    "schema_00029": {
+    "schema_00037": {
       "kind": "enum",
       "type": "\"square\" | \"circle\" | undefined",
       "variants": [
@@ -9570,7 +9869,7 @@
         "\"circle\""
       ]
     },
-    "schema_00030": {
+    "schema_00038": {
       "kind": "enum",
       "type": "\"fill\" | \"none\" | \"contain\" | \"cover\" | \"scale-down\" | undefined",
       "variants": [
@@ -9582,7 +9881,7 @@
         "\"scale-down\""
       ]
     },
-    "schema_00031": {
+    "schema_00039": {
       "kind": "enum",
       "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
       "variants": [
@@ -9595,7 +9894,7 @@
         "\"danger\""
       ]
     },
-    "schema_00032": {
+    "schema_00040": {
       "kind": "enum",
       "type": "\"circle\" | \"line\" | \"dashboard\" | undefined",
       "variants": [
@@ -9605,7 +9904,7 @@
         "\"dashboard\""
       ]
     },
-    "schema_00033": {
+    "schema_00041": {
       "kind": "enum",
       "type": "\"success\" | \"warning\" | \"exception\" | undefined",
       "variants": [
@@ -9615,7 +9914,7 @@
         "\"exception\""
       ]
     },
-    "schema_00034": {
+    "schema_00042": {
       "kind": "enum",
       "type": "\"round\" | \"butt\" | \"square\" | undefined",
       "variants": [
@@ -9625,7 +9924,7 @@
         "\"square\""
       ]
     },
-    "schema_00035": {
+    "schema_00043": {
       "kind": "enum",
       "type": "\"\" | TagType | undefined",
       "variants": [
@@ -9637,7 +9936,7 @@
         "\"danger\""
       ]
     },
-    "schema_00036": {
+    "schema_00044": {
       "kind": "enum",
       "type": "\"default\" | \"large\" | \"small\" | undefined",
       "variants": [
@@ -9647,7 +9946,7 @@
         "\"small\""
       ]
     },
-    "schema_00037": {
+    "schema_00045": {
       "kind": "enum",
       "type": "\"dark\" | \"light\" | \"plain\" | undefined",
       "variants": [
@@ -9657,7 +9956,7 @@
         "\"plain\""
       ]
     },
-    "schema_00038": {
+    "schema_00046": {
       "kind": "enum",
       "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
       "variants": [
@@ -9668,7 +9967,7 @@
         "\"date\""
       ]
     },
-    "schema_00039": {
+    "schema_00047": {
       "kind": "enum",
       "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
       "variants": [
@@ -9679,7 +9978,7 @@
         "\"error\""
       ]
     },
-    "schema_00040": {
+    "schema_00048": {
       "kind": "object",
       "type": "Date",
       "properties": {
@@ -9949,16 +10248,16 @@
         }
       }
     },
-    "schema_00041": {
+    "schema_00049": {
       "kind": "enum",
-      "type": "\"bottom\" | \"top\" | undefined",
+      "type": "\"top\" | \"bottom\" | undefined",
       "variants": [
         "undefined",
-        "\"bottom\"",
-        "\"top\""
+        "\"top\"",
+        "\"bottom\""
       ]
     },
-    "schema_00042": {
+    "schema_00050": {
       "kind": "enum",
       "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
       "variants": [
@@ -9970,7 +10269,7 @@
         "\"danger\""
       ]
     },
-    "schema_00043": {
+    "schema_00051": {
       "kind": "enum",
       "type": "\"normal\" | \"large\" | undefined",
       "variants": [
@@ -9979,7 +10278,7 @@
         "\"large\""
       ]
     },
-    "schema_00044": {
+    "schema_00052": {
       "kind": "enum",
       "type": "boolean | \"custom\" | undefined",
       "variants": [
@@ -9989,7 +10288,7 @@
         "\"custom\""
       ]
     },
-    "schema_00045": {
+    "schema_00053": {
       "kind": "enum",
       "type": "SparkOptionValueMode | undefined",
       "variants": [
@@ -9999,14 +10298,14 @@
         "\"separated-string\""
       ]
     },
-    "schema_00046": {
+    "schema_00054": {
       "kind": "array",
       "type": "MultiValue",
       "itemTypes": [
         "string | number | boolean"
       ]
     },
-    "schema_00047": {
+    "schema_00055": {
       "kind": "enum",
       "type": "DatePickerType | undefined",
       "variants": [
@@ -10023,7 +10322,7 @@
         "\"yearrange\""
       ]
     },
-    "schema_00048": {
+    "schema_00056": {
       "kind": "enum",
       "type": "\"range\" | undefined",
       "variants": [
@@ -10031,7 +10330,7 @@
         "\"range\""
       ]
     },
-    "schema_00049": {
+    "schema_00057": {
       "kind": "enum",
       "type": "\"textarea\" | \"text\" | undefined",
       "variants": [
@@ -10040,7 +10339,7 @@
         "\"text\""
       ]
     },
-    "schema_00050": {
+    "schema_00058": {
       "kind": "object",
       "type": "{ value: string; label?: string; disabled?: boolean; persistedValue?: string | number | boolean; }",
       "properties": {
@@ -10069,7 +10368,7 @@
         }
       }
     },
-    "schema_00051": {
+    "schema_00059": {
       "kind": "enum",
       "type": "\"push\" | \"unshift\" | \"original\" | undefined",
       "variants": [
@@ -10079,14 +10378,14 @@
         "\"original\""
       ]
     },
-    "schema_00052": {
+    "schema_00060": {
       "kind": "array",
       "type": "TransferValue",
       "itemTypes": [
         "string | number"
       ]
     },
-    "schema_00053": {
+    "schema_00061": {
       "kind": "enum",
       "type": "\"text\" | \"picture\" | \"picture-card\" | undefined",
       "variants": [
@@ -10096,7 +10395,7 @@
         "\"picture-card\""
       ]
     },
-    "schema_00054": {
+    "schema_00062": {
       "kind": "enum",
       "type": "boolean | \"left\" | \"right\" | undefined",
       "variants": [
@@ -10107,7 +10406,7 @@
         "\"right\""
       ]
     },
-    "schema_00055": {
+    "schema_00063": {
       "kind": "enum",
       "type": "TextAlign | undefined",
       "variants": [
@@ -10117,7 +10416,7 @@
         "\"right\""
       ]
     },
-    "schema_00056": {
+    "schema_00064": {
       "kind": "object",
       "type": "SparkNode",
       "properties": {
@@ -10147,7 +10446,7 @@
         }
       }
     },
-    "schema_00057": {
+    "schema_00065": {
       "kind": "object",
       "type": "ICapabilityContext",
       "properties": {
@@ -10173,21 +10472,21 @@
         }
       }
     },
-    "schema_00058": {
+    "schema_00066": {
       "kind": "array",
       "type": "ChatMessageLike[]",
       "itemTypes": [
         "ChatMessageLike"
       ]
     },
-    "schema_00059": {
+    "schema_00067": {
       "kind": "array",
       "type": "FileAttachment[]",
       "itemTypes": [
         "FileAttachment"
       ]
     },
-    "schema_00060": {
+    "schema_00068": {
       "kind": "enum",
       "type": "RecoveryPolicyLike | undefined",
       "variants": [
@@ -10197,7 +10496,7 @@
         "\"layered\""
       ]
     },
-    "schema_00061": {
+    "schema_00069": {
       "kind": "enum",
       "type": "CollaborationPolicyLike | undefined",
       "variants": [
@@ -10209,7 +10508,7 @@
         "\"human-takeover\""
       ]
     },
-    "schema_00062": {
+    "schema_00070": {
       "kind": "enum",
       "type": "RecoveryPolicyLike",
       "variants": [
@@ -10218,7 +10517,7 @@
         "\"layered\""
       ]
     },
-    "schema_00063": {
+    "schema_00071": {
       "kind": "enum",
       "type": "CollaborationPolicyLike",
       "variants": [
@@ -10229,7 +10528,7 @@
         "\"human-takeover\""
       ]
     },
-    "schema_00064": {
+    "schema_00072": {
       "kind": "enum",
       "type": "ChatMode | undefined",
       "variants": [
@@ -10238,7 +10537,7 @@
         "\"multi\""
       ]
     },
-    "schema_00065": {
+    "schema_00073": {
       "kind": "object",
       "type": "AiSessionConfig",
       "properties": {
@@ -10306,13 +10605,15 @@
           "name": "fcLoop",
           "type": "AiFcLoopConfig | undefined",
           "required": false,
-          "description": "SSE + Function-Call 循环配置。"
+          "description": "SSE + Function-Call 循环配置。",
+          "schemaRef": "schema_00074"
         },
         "feedback": {
           "name": "feedback",
           "type": "AiFeedbackConfig | undefined",
           "required": false,
-          "description": "反馈机制（文本 + 点赞点踩）。"
+          "description": "反馈机制（文本 + 点赞点踩）。",
+          "schemaRef": "schema_00075"
         },
         "hooks": {
           "name": "hooks",
@@ -10322,7 +10623,7 @@
         }
       }
     },
-    "schema_00066": {
+    "schema_00074": {
       "kind": "object",
       "type": "AiFcLoopConfig",
       "properties": {
@@ -10346,7 +10647,7 @@
         }
       }
     },
-    "schema_00067": {
+    "schema_00075": {
       "kind": "object",
       "type": "AiFeedbackConfig",
       "properties": {
@@ -10363,18 +10664,60 @@
         }
       }
     },
-    "schema_00068": {
+    "schema_00076": {
+      "kind": "object",
+      "type": "AiFcLoopConfig",
+      "properties": {
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "是否启用本地 FC 循环（业务 sender 自行实现时读取本字段）。"
+        },
+        "maxRounds": {
+          "name": "maxRounds",
+          "type": "number | undefined",
+          "required": false,
+          "description": "单次 sender 调用内允许的最大工具往返轮数。"
+        },
+        "endpoint": {
+          "name": "endpoint",
+          "type": "string | undefined",
+          "required": false,
+          "description": "自定义后端端点（默认走 /api/ai/chat/stream）。"
+        }
+      }
+    },
+    "schema_00077": {
+      "kind": "object",
+      "type": "AiFeedbackConfig",
+      "properties": {
+        "value": {
+          "name": "value",
+          "type": "Ref<string, string> | undefined",
+          "required": false,
+          "description": "绑定到 UI 文本框的 ref。"
+        },
+        "onSubmit": {
+          "name": "onSubmit",
+          "type": "((text: string, target?: { messageId?: string; rating?: \"up\" | \"down\"; } | undefined) => void | Promise<void>) | undefined",
+          "required": false
+        }
+      }
+    },
+    "schema_00078": {
       "kind": "object",
       "type": "{ config: AiSessionConfig; }",
       "properties": {
         "config": {
           "name": "config",
           "type": "AiSessionConfig",
-          "required": true
+          "required": true,
+          "schemaRef": "schema_00099"
         }
       }
     },
-    "schema_00069": {
+    "schema_00079": {
       "kind": "object",
       "type": "{ config: AiSessionConfig | null; }",
       "properties": {
@@ -10385,14 +10728,15 @@
         }
       }
     },
-    "schema_00070": {
+    "schema_00080": {
       "kind": "object",
       "type": "{ config: AiSessionConfig; cancel: () => void; }",
       "properties": {
         "config": {
           "name": "config",
           "type": "AiSessionConfig",
-          "required": true
+          "required": true,
+          "schemaRef": "schema_00099"
         },
         "cancel": {
           "name": "cancel",
@@ -10401,7 +10745,7 @@
         }
       }
     },
-    "schema_00071": {
+    "schema_00081": {
       "kind": "object",
       "type": "{ previousConfig: AiSessionConfig | null; config: AiSessionConfig; }",
       "properties": {
@@ -10417,7 +10761,7 @@
         }
       }
     },
-    "schema_00072": {
+    "schema_00082": {
       "kind": "object",
       "type": "{ messageId: string; content: string; }",
       "properties": {
@@ -10433,7 +10777,7 @@
         }
       }
     },
-    "schema_00073": {
+    "schema_00083": {
       "kind": "object",
       "type": "{ messageId: string; delta: string; }",
       "properties": {
@@ -10449,7 +10793,7 @@
         }
       }
     },
-    "schema_00074": {
+    "schema_00084": {
       "kind": "object",
       "type": "{ messageId: string; content: string; usage?: Record<string, unknown>; }",
       "properties": {
@@ -10470,7 +10814,7 @@
         }
       }
     },
-    "schema_00075": {
+    "schema_00085": {
       "kind": "object",
       "type": "{ messageId?: string; error: unknown; }",
       "properties": {
@@ -10486,7 +10830,7 @@
         }
       }
     },
-    "schema_00076": {
+    "schema_00086": {
       "kind": "object",
       "type": "{ toolName: string; args: unknown; round: number; callId?: string; }",
       "properties": {
@@ -10512,7 +10856,7 @@
         }
       }
     },
-    "schema_00077": {
+    "schema_00087": {
       "kind": "object",
       "type": "{ toolName: string; args: unknown; result: unknown; round: number; callId?: string; durationMs: number; }",
       "properties": {
@@ -10548,7 +10892,7 @@
         }
       }
     },
-    "schema_00078": {
+    "schema_00088": {
       "kind": "object",
       "type": "{ toolName: string; args: unknown; error: unknown; round: number; callId?: string; }",
       "properties": {
@@ -10579,7 +10923,7 @@
         }
       }
     },
-    "schema_00079": {
+    "schema_00089": {
       "kind": "object",
       "type": "{ round: number; }",
       "properties": {
@@ -10590,7 +10934,7 @@
         }
       }
     },
-    "schema_00080": {
+    "schema_00090": {
       "kind": "object",
       "type": "{ round: number; calls: number; }",
       "properties": {
@@ -10606,7 +10950,7 @@
         }
       }
     },
-    "schema_00081": {
+    "schema_00091": {
       "kind": "object",
       "type": "{ storageKey: string; size: number; }",
       "properties": {
@@ -10622,7 +10966,7 @@
         }
       }
     },
-    "schema_00082": {
+    "schema_00092": {
       "kind": "object",
       "type": "{ storageKey: string; }",
       "properties": {
@@ -10633,7 +10977,7 @@
         }
       }
     },
-    "schema_00083": {
+    "schema_00093": {
       "kind": "object",
       "type": "{ text: string; messageId?: string; rating?: \"up\" | \"down\"; }",
       "properties": {
@@ -10650,11 +10994,12 @@
         "rating": {
           "name": "rating",
           "type": "\"up\" | \"down\" | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "schema_00107"
         }
       }
     },
-    "schema_00084": {
+    "schema_00094": {
       "kind": "object",
       "type": "JsonTreePolicy",
       "properties": {
@@ -10720,7 +11065,7 @@
         }
       }
     },
-    "schema_00085": {
+    "schema_00095": {
       "kind": "enum",
       "type": "SparkCodeLanguage | undefined",
       "variants": [
@@ -10729,7 +11074,7 @@
         "\"css\""
       ]
     },
-    "schema_00086": {
+    "schema_00096": {
       "kind": "enum",
       "type": "SparkJsonEditorMode | undefined",
       "variants": [
@@ -10739,7 +11084,7 @@
         "\"tree\""
       ]
     },
-    "schema_00087": {
+    "schema_00097": {
       "kind": "object",
       "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
       "properties": {
@@ -11039,6 +11384,204 @@
           "required": true
         }
       }
+    },
+    "schema_00098": {
+      "kind": "object",
+      "type": "TailNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-tail\"",
+          "required": true,
+          "description": "节点类型固定为 `r-tail`。"
+        },
+        "props": {
+          "name": "props",
+          "type": "RendererTailConfigProps | undefined",
+          "required": false,
+          "description": "尾部区域结构化配置。",
+          "schemaRef": "schema_00029"
+        },
+        "children": {
+          "name": "children",
+          "type": "SparkNode[] | undefined",
+          "required": false,
+          "description": "尾部内容节点列表。"
+        },
+        "id": {
+          "name": "id",
+          "type": "string | undefined",
+          "required": false,
+          "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+        }
+      }
+    },
+    "schema_00099": {
+      "kind": "object",
+      "type": "AiSessionConfig",
+      "properties": {
+        "storageKey": {
+          "name": "storageKey",
+          "type": "MaybeRefOrGetter<string>",
+          "required": true,
+          "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。"
+        },
+        "sender": {
+          "name": "sender",
+          "type": "AiChatSender",
+          "required": true,
+          "description": "聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。"
+        },
+        "title": {
+          "name": "title",
+          "type": "MaybeRefOrGetter<string> | undefined",
+          "required": false,
+          "description": "面板标题。"
+        },
+        "placeholder": {
+          "name": "placeholder",
+          "type": "MaybeRefOrGetter<string> | undefined",
+          "required": false,
+          "description": "输入框 placeholder。"
+        },
+        "externalToolLogs": {
+          "name": "externalToolLogs",
+          "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
+          "required": false,
+          "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。"
+        },
+        "beforeOpen": {
+          "name": "beforeOpen",
+          "type": "(() => void | Promise<void>) | undefined",
+          "required": false,
+          "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
+        },
+        "systemPrompt": {
+          "name": "systemPrompt",
+          "type": "MaybeRefOrGetter<string> | undefined",
+          "required": false,
+          "description": "自定义 system prompt。sender 可读取并随请求下发。"
+        },
+        "toolGuide": {
+          "name": "toolGuide",
+          "type": "MaybeRefOrGetter<string> | undefined",
+          "required": false,
+          "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。"
+        },
+        "toolCatalog": {
+          "name": "toolCatalog",
+          "type": "MaybeRefOrGetter<readonly AiToolSpec[]> | undefined",
+          "required": false,
+          "description": "工具目录（function schema 列表）。"
+        },
+        "toolInstances": {
+          "name": "toolInstances",
+          "type": "Record<string, AiToolHandler> | undefined",
+          "required": false,
+          "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。"
+        },
+        "fcLoop": {
+          "name": "fcLoop",
+          "type": "AiFcLoopConfig | undefined",
+          "required": false,
+          "description": "SSE + Function-Call 循环配置。",
+          "schemaRef": "schema_00074"
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "AiFeedbackConfig | undefined",
+          "required": false,
+          "description": "反馈机制（文本 + 点赞点踩）。",
+          "schemaRef": "schema_00075"
+        },
+        "hooks": {
+          "name": "hooks",
+          "type": "AiSessionHooks | undefined",
+          "required": false,
+          "description": "声明式生命周期 hooks（事件名即字段名）。"
+        }
+      }
+    },
+    "schema_00100": {
+      "kind": "enum",
+      "type": "ToolbarPosition | undefined",
+      "variants": [
+        "undefined",
+        "\"left\"",
+        "\"right\"",
+        "\"top\"",
+        "\"bottom\""
+      ]
+    },
+    "schema_00101": {
+      "kind": "enum",
+      "type": "InlineAlign | undefined",
+      "variants": [
+        "undefined",
+        "\"center\"",
+        "\"start\"",
+        "\"end\"",
+        "\"stretch\""
+      ]
+    },
+    "schema_00102": {
+      "kind": "enum",
+      "type": "InlineJustify | undefined",
+      "variants": [
+        "undefined",
+        "\"center\"",
+        "\"start\"",
+        "\"end\"",
+        "\"space-between\""
+      ]
+    },
+    "schema_00103": {
+      "kind": "enum",
+      "type": "ActionsPosition | undefined",
+      "variants": [
+        "undefined",
+        "\"left\"",
+        "\"right\""
+      ]
+    },
+    "schema_00104": {
+      "kind": "enum",
+      "type": "ActionsAlign | undefined",
+      "variants": [
+        "undefined",
+        "\"left\"",
+        "\"center\"",
+        "\"right\""
+      ]
+    },
+    "schema_00105": {
+      "kind": "enum",
+      "type": "ActionsFixed | undefined",
+      "variants": [
+        "undefined",
+        "false",
+        "true",
+        "\"left\"",
+        "\"right\""
+      ]
+    },
+    "schema_00106": {
+      "kind": "enum",
+      "type": "PermissionDeniedBehavior | undefined",
+      "variants": [
+        "undefined",
+        "\"hide\"",
+        "\"disable\""
+      ]
+    },
+    "schema_00107": {
+      "kind": "enum",
+      "type": "\"up\" | \"down\" | undefined",
+      "variants": [
+        "undefined",
+        "\"up\"",
+        "\"down\""
+      ]
     }
   },
   "constraints": {
@@ -11099,7 +11642,7 @@
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00003": {
           "name": "valueAlign",
@@ -11107,7 +11650,7 @@
           "required": false,
           "default": "\"left\"",
           "description": "值对齐",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00004": {
           "name": "detailProps",
@@ -11178,7 +11721,7 @@
           "type": "ActionsNode | undefined",
           "required": false,
           "description": "结构化列表项动作",
-          "schemaRef": "schema_00003"
+          "schemaRef": "schema_00004"
         },
         "prop_00015": {
           "name": "columns",
@@ -11242,7 +11785,7 @@
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式",
-          "schemaRef": "schema_00004"
+          "schemaRef": "schema_00006"
         },
         "prop_00024": {
           "name": "itemColSpan",
@@ -11324,14 +11867,14 @@
           "type": "ActionsAlign | undefined",
           "required": false,
           "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）",
-          "schemaRef": "schema_00005"
+          "schemaRef": "schema_00007"
         },
         "prop_00037": {
           "name": "rowActionsFixed",
           "type": "ActionsFixed | undefined",
           "required": false,
           "description": "行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed）",
-          "schemaRef": "schema_00006"
+          "schemaRef": "schema_00008"
         },
         "prop_00038": {
           "name": "filter",
@@ -11339,7 +11882,7 @@
           "required": false,
           "description": "结构化筛选区\r\n提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。",
           "componentRef": "r-filter",
-          "schemaRef": "schema_00007"
+          "schemaRef": "schema_00009"
         },
         "prop_00039": {
           "name": "actions",
@@ -11347,7 +11890,7 @@
           "required": false,
           "description": "结构化行动作\r\n提示词模板：默认动作 message-row / delete-row。\r\n权限要求：写操作按钮必须声明 permAction(create/delete/edit)，并建议 permDeniedBehavior='disable'。",
           "componentRef": "r-actions",
-          "schemaRef": "schema_00003"
+          "schemaRef": "schema_00004"
         },
         "prop_00040": {
           "name": "onRowClick",
@@ -11372,7 +11915,7 @@
           "type": "ActionsNode | undefined",
           "required": false,
           "description": "结构化节点动作",
-          "schemaRef": "schema_00003"
+          "schemaRef": "schema_00004"
         },
         "prop_00044": {
           "name": "editor",
@@ -11380,7 +11923,7 @@
           "required": false,
           "description": "结构化编辑区",
           "componentRef": "r-editor",
-          "schemaRef": "schema_00008"
+          "schemaRef": "schema_00011"
         },
         "prop_00045": {
           "name": "nodeKey",
@@ -11470,7 +12013,7 @@
           "required": false,
           "default": "\"vertical\"",
           "description": "排列方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         "prop_00059": {
           "name": "anchorType",
@@ -11478,7 +12021,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "锚点类型（避免与 SparkNode.type 冲突）",
-          "schemaRef": "schema_00010"
+          "schemaRef": "schema_00014"
         },
         "prop_00060": {
           "name": "href",
@@ -11497,7 +12040,7 @@
           "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | undefined",
           "required": false,
           "description": "CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行",
-          "schemaRef": "schema_00011"
+          "schemaRef": "schema_00015"
         },
         "prop_00063": {
           "name": "template",
@@ -11605,7 +12148,7 @@
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略",
-          "schemaRef": "schema_00004"
+          "schemaRef": "schema_00006"
         },
         "prop_00080": {
           "name": "bodyStyle",
@@ -11697,7 +12240,7 @@
           "required": false,
           "description": "结构化头部",
           "componentRef": "r-header",
-          "schemaRef": "schema_00012"
+          "schemaRef": "schema_00016"
         },
         "prop_00095": {
           "name": "footer",
@@ -11705,7 +12248,7 @@
           "required": false,
           "description": "结构化底部",
           "componentRef": "r-footer",
-          "schemaRef": "schema_00013"
+          "schemaRef": "schema_00018"
         },
         "prop_00096": {
           "name": "title",
@@ -11758,7 +12301,7 @@
           "required": false,
           "default": "\"horizontal\"",
           "description": "分割方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         "prop_00104": {
           "name": "borderStyle",
@@ -11766,7 +12309,7 @@
           "required": false,
           "default": "\"solid\"",
           "description": "边框样式",
-          "schemaRef": "schema_00014"
+          "schemaRef": "schema_00020"
         },
         "prop_00105": {
           "name": "contentPosition",
@@ -11774,7 +12317,7 @@
           "required": false,
           "default": "\"center\"",
           "description": "文本位置（横向模式）",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00106": {
           "name": "content",
@@ -11801,7 +12344,7 @@
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式",
-          "schemaRef": "schema_00015"
+          "schemaRef": "schema_00021"
         },
         "prop_00110": {
           "name": "hideOnClick",
@@ -11848,7 +12391,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         },
         "prop_00117": {
           "name": "offset",
@@ -11892,7 +12435,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
-          "schemaRef": "schema_00017"
+          "schemaRef": "schema_00023"
         },
         "prop_00124": {
           "name": "underline",
@@ -11913,7 +12456,7 @@
           "required": false,
           "default": "\"_self\"",
           "description": "跳转目标",
-          "schemaRef": "schema_00018"
+          "schemaRef": "schema_00024"
         },
         "prop_00127": {
           "name": "title",
@@ -11952,7 +12495,7 @@
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
-          "schemaRef": "schema_00017"
+          "schemaRef": "schema_00023"
         },
         "prop_00133": {
           "name": "cancelButtonType",
@@ -11960,7 +12503,7 @@
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
-          "schemaRef": "schema_00017"
+          "schemaRef": "schema_00023"
         },
         "prop_00134": {
           "name": "iconColor",
@@ -12008,7 +12551,7 @@
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。",
-          "schemaRef": "schema_00019"
+          "schemaRef": "schema_00025"
         },
         "prop_00141": {
           "name": "showArrow",
@@ -12071,7 +12614,7 @@
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式",
-          "schemaRef": "schema_00004"
+          "schemaRef": "schema_00006"
         },
         "prop_00150": {
           "name": "expandText",
@@ -12114,7 +12657,7 @@
           "required": false,
           "default": "\"horizontal\"",
           "description": "主轴方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         "prop_00156": {
           "name": "size",
@@ -12143,7 +12686,7 @@
           "required": false,
           "default": "\"center\"",
           "description": "交叉轴对齐方式",
-          "schemaRef": "schema_00020"
+          "schemaRef": "schema_00026"
         },
         "prop_00160": {
           "name": "name",
@@ -12192,7 +12735,7 @@
           "type": "\"content\" | \"header\"",
           "required": true,
           "description": "渲染模式：步骤头部或内容区",
-          "schemaRef": "schema_00021"
+          "schemaRef": "schema_00027"
         },
         "prop_00168": {
           "name": "value",
@@ -12272,7 +12815,7 @@
           "required": false,
           "description": "尾部动作区（通常放次要按钮）",
           "componentRef": "r-tail",
-          "schemaRef": "schema_00022"
+          "schemaRef": "schema_00028"
         },
         "prop_00181": {
           "name": "gap",
@@ -12291,14 +12834,14 @@
           "type": "InlineAlign | undefined",
           "required": false,
           "description": "交叉轴对齐",
-          "schemaRef": "schema_00023"
+          "schemaRef": "schema_00030"
         },
         "prop_00184": {
           "name": "justify",
           "type": "InlineJustify | undefined",
           "required": false,
           "description": "主轴分布",
-          "schemaRef": "schema_00024"
+          "schemaRef": "schema_00031"
         },
         "prop_00185": {
           "name": "content",
@@ -12326,7 +12869,7 @@
           "required": false,
           "default": "\"dark\"",
           "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         },
         "prop_00189": {
           "name": "steps",
@@ -12366,7 +12909,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "引导类型",
-          "schemaRef": "schema_00025"
+          "schemaRef": "schema_00032"
         },
         "prop_00195": {
           "name": "closeOnPressEscape",
@@ -12386,7 +12929,7 @@
           "type": "ToolbarPosition | undefined",
           "required": false,
           "description": "工具栏位置",
-          "schemaRef": "schema_00026"
+          "schemaRef": "schema_00033"
         },
         "prop_00198": {
           "name": "width",
@@ -12399,7 +12942,7 @@
           "type": "IDataRow | undefined",
           "required": false,
           "description": "筛选条件绑定的数据行",
-          "schemaRef": "schema_00027"
+          "schemaRef": "schema_00034"
         },
         "prop_00200": {
           "name": "configs",
@@ -12503,7 +13046,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
-          "schemaRef": "schema_00028"
+          "schemaRef": "schema_00036"
         },
         "prop_00217": {
           "name": "shape",
@@ -12511,7 +13054,7 @@
           "required": false,
           "default": "\"circle\"",
           "description": "头像形状",
-          "schemaRef": "schema_00029"
+          "schemaRef": "schema_00037"
         },
         "prop_00218": {
           "name": "src",
@@ -12537,7 +13080,7 @@
           "required": false,
           "default": "\"cover\"",
           "description": "图片填充方式",
-          "schemaRef": "schema_00030"
+          "schemaRef": "schema_00038"
         },
         "prop_00222": {
           "name": "text",
@@ -12590,7 +13133,7 @@
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
-          "schemaRef": "schema_00031"
+          "schemaRef": "schema_00039"
         },
         "prop_00230": {
           "name": "showZero",
@@ -12641,7 +13184,7 @@
           "required": false,
           "default": "\"cover\"",
           "description": "图片适应模式",
-          "schemaRef": "schema_00030"
+          "schemaRef": "schema_00038"
         },
         "prop_00238": {
           "name": "alt",
@@ -12788,7 +13331,7 @@
           "required": false,
           "default": "\"line\"",
           "description": "进度条类型",
-          "schemaRef": "schema_00032"
+          "schemaRef": "schema_00040"
         },
         "prop_00260": {
           "name": "strokeWidth",
@@ -12809,7 +13352,7 @@
           "type": "\"success\" | \"warning\" | \"exception\" | undefined",
           "required": false,
           "description": "状态",
-          "schemaRef": "schema_00033"
+          "schemaRef": "schema_00041"
         },
         "prop_00263": {
           "name": "indeterminate",
@@ -12850,7 +13393,7 @@
           "required": false,
           "default": "\"round\"",
           "description": "线帽样式",
-          "schemaRef": "schema_00034"
+          "schemaRef": "schema_00042"
         },
         "prop_00269": {
           "name": "formatText",
@@ -12926,7 +13469,7 @@
           "type": "\"\" | TagType | undefined",
           "required": false,
           "description": "标签类型",
-          "schemaRef": "schema_00035"
+          "schemaRef": "schema_00043"
         },
         "prop_00281": {
           "name": "dynamicType",
@@ -12968,7 +13511,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         },
         "prop_00287": {
           "name": "effect",
@@ -12976,7 +13519,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "视觉效果",
-          "schemaRef": "schema_00037"
+          "schemaRef": "schema_00045"
         },
         "prop_00288": {
           "name": "tag",
@@ -12990,7 +13533,7 @@
           "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
           "description": "格式化方式",
-          "schemaRef": "schema_00038"
+          "schemaRef": "schema_00046"
         },
         "prop_00290": {
           "name": "precision",
@@ -13042,7 +13585,7 @@
           "required": false,
           "default": "\"info\"",
           "description": "提示类型",
-          "schemaRef": "schema_00039"
+          "schemaRef": "schema_00047"
         },
         "prop_00298": {
           "name": "closable",
@@ -13077,7 +13620,7 @@
           "required": false,
           "default": "\"light\"",
           "description": "主题效果",
-          "schemaRef": "schema_00016"
+          "schemaRef": "schema_00022"
         },
         "prop_00303": {
           "name": "separator",
@@ -13116,7 +13659,7 @@
           "type": "Date | undefined",
           "required": false,
           "description": "当前日期",
-          "schemaRef": "schema_00040"
+          "schemaRef": "schema_00048"
         },
         "prop_00309": {
           "name": "range",
@@ -13187,7 +13730,7 @@
           "required": false,
           "default": "\"horizontal\"",
           "description": "排列方向",
-          "schemaRef": "schema_00009"
+          "schemaRef": "schema_00013"
         },
         "prop_00320": {
           "name": "descriptionsSize",
@@ -13195,7 +13738,7 @@
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         },
         "prop_00321": {
           "name": "label",
@@ -13215,14 +13758,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "标签对齐方式",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00324": {
           "name": "contentAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "内容对齐方式",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00325": {
           "name": "labelClassName",
@@ -13296,7 +13839,7 @@
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型",
-          "schemaRef": "schema_00039"
+          "schemaRef": "schema_00047"
         },
         "prop_00337": {
           "name": "title",
@@ -13367,11 +13910,11 @@
         },
         "prop_00347": {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "时间戳位置",
-          "schemaRef": "schema_00041"
+          "schemaRef": "schema_00049"
         },
         "prop_00348": {
           "name": "itemType",
@@ -13379,7 +13922,7 @@
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
-          "schemaRef": "schema_00042"
+          "schemaRef": "schema_00050"
         },
         "prop_00349": {
           "name": "color",
@@ -13393,7 +13936,7 @@
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸",
-          "schemaRef": "schema_00043"
+          "schemaRef": "schema_00051"
         },
         "prop_00351": {
           "name": "hollow",
@@ -13490,14 +14033,14 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00366": {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
-          "schemaRef": "schema_00002"
+          "schemaRef": "schema_00003"
         },
         "prop_00367": {
           "name": "headerCellClassName",
@@ -13528,7 +14071,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         "prop_00372": {
           "name": "emitPath",
@@ -13554,7 +14097,7 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         "prop_00376": {
           "name": "textSeparator",
@@ -13714,7 +14257,7 @@
           "type": "DatePickerType | undefined",
           "required": false,
           "description": "日期选择器模式。",
-          "schemaRef": "schema_00047"
+          "schemaRef": "schema_00055"
         },
         "prop_00401": {
           "name": "valueFormat",
@@ -13767,7 +14310,7 @@
           "type": "\"range\" | undefined",
           "required": false,
           "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。",
-          "schemaRef": "schema_00048"
+          "schemaRef": "schema_00056"
         },
         "prop_00409": {
           "name": "multiple",
@@ -13845,7 +14388,7 @@
           "required": false,
           "default": "'auto'",
           "description": "主值持久化模式",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         "prop_00420": {
           "name": "textSeparator",
@@ -13930,7 +14473,7 @@
           "required": false,
           "default": "\"auto\"",
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
-          "schemaRef": "schema_00045"
+          "schemaRef": "schema_00053"
         },
         "prop_00432": {
           "name": "value",
@@ -14084,11 +14627,11 @@
         },
         "prop_00454": {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "候选浮层位置",
-          "schemaRef": "schema_00041"
+          "schemaRef": "schema_00049"
         },
         "prop_00455": {
           "name": "showArrow",
@@ -14127,7 +14670,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
-          "schemaRef": "schema_00049"
+          "schemaRef": "schema_00057"
         },
         "prop_00461": {
           "name": "rows",
@@ -14409,7 +14952,7 @@
           "required": false,
           "default": "\"original\"",
           "description": "目标面板排序策略。",
-          "schemaRef": "schema_00051"
+          "schemaRef": "schema_00059"
         },
         "prop_00503": {
           "name": "value",
@@ -14464,7 +15007,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "上传列表展示样式。",
-          "schemaRef": "schema_00053"
+          "schemaRef": "schema_00061"
         },
         "prop_00511": {
           "name": "buttonText",
@@ -14508,7 +15051,7 @@
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "表格列排序能力",
-          "schemaRef": "schema_00044"
+          "schemaRef": "schema_00052"
         },
         "prop_00518": {
           "name": "filterable",
@@ -14527,21 +15070,21 @@
           "type": "boolean | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "固定列方向",
-          "schemaRef": "schema_00054"
+          "schemaRef": "schema_00062"
         },
         "prop_00521": {
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "列对齐",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         "prop_00522": {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "表头对齐",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         "prop_00523": {
           "name": "mergedChildren",
@@ -14590,14 +15133,14 @@
           "type": "TextAlign | undefined",
           "required": false,
           "description": "标题对齐（table/detail）",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         "prop_00531": {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "值对齐（table/detail）",
-          "schemaRef": "schema_00055"
+          "schemaRef": "schema_00063"
         },
         "prop_00532": {
           "name": "headerCellClassName",
@@ -14705,26 +15248,26 @@
           "type": "SparkNode",
           "required": true,
           "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。",
-          "schemaRef": "schema_00056"
+          "schemaRef": "schema_00064"
         },
         "prop_00548": {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
-          "schemaRef": "schema_00057"
+          "schemaRef": "schema_00065"
         },
         "prop_00549": {
           "name": "messages",
           "type": "ChatMessageLike[]",
           "required": true,
-          "schemaRef": "schema_00058"
+          "schemaRef": "schema_00066"
         },
         "prop_00550": {
           "name": "pendingFiles",
           "type": "FileAttachment[]",
           "required": true,
-          "schemaRef": "schema_00059"
+          "schemaRef": "schema_00067"
         },
         "prop_00551": {
           "name": "inputText",
@@ -14770,19 +15313,19 @@
           "name": "recoveryPolicy",
           "type": "RecoveryPolicyLike | undefined",
           "required": false,
-          "schemaRef": "schema_00060"
+          "schemaRef": "schema_00068"
         },
         "prop_00560": {
           "name": "collaborationPolicy",
           "type": "CollaborationPolicyLike | undefined",
           "required": false,
-          "schemaRef": "schema_00061"
+          "schemaRef": "schema_00069"
         },
         "prop_00561": {
           "name": "mode",
           "type": "ChatMode | undefined",
           "required": false,
-          "schemaRef": "schema_00064"
+          "schemaRef": "schema_00072"
         },
         "prop_00562": {
           "name": "systemPrompt",
@@ -14828,7 +15371,7 @@
           "name": "config",
           "type": "AiSessionConfig | undefined",
           "required": false,
-          "schemaRef": "schema_00065"
+          "schemaRef": "schema_00073"
         },
         "prop_00571": {
           "name": "storageKey",
@@ -14895,14 +15438,14 @@
           "type": "AiFcLoopConfig | undefined",
           "required": false,
           "description": "SSE + FC 循环配置。",
-          "schemaRef": "schema_00066"
+          "schemaRef": "schema_00076"
         },
         "prop_00582": {
           "name": "feedback",
           "type": "AiFeedbackConfig | undefined",
           "required": false,
           "description": "反馈配置。",
-          "schemaRef": "schema_00067"
+          "schemaRef": "schema_00077"
         },
         "prop_00583": {
           "name": "label",
@@ -14915,7 +15458,7 @@
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"small\"",
-          "schemaRef": "schema_00036"
+          "schemaRef": "schema_00044"
         },
         "prop_00585": {
           "name": "link",
@@ -15012,7 +15555,7 @@
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
-          "schemaRef": "schema_00084"
+          "schemaRef": "schema_00094"
         },
         "prop_00600": {
           "name": "rootLabel",
@@ -15069,7 +15612,7 @@
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式",
-          "schemaRef": "schema_00085"
+          "schemaRef": "schema_00095"
         },
         "prop_00609": {
           "name": "height",
@@ -15098,7 +15641,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式",
-          "schemaRef": "schema_00086"
+          "schemaRef": "schema_00096"
         },
         "prop_00613": {
           "name": "indentation",
@@ -15182,13 +15725,13 @@
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
-          "schemaRef": "schema_00056"
+          "schemaRef": "schema_00064"
         },
         "prop_00625": {
           "name": "state",
           "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
-          "schemaRef": "schema_00087"
+          "schemaRef": "schema_00097"
         }
       },
       "emits": {
@@ -15276,7 +15819,7 @@
           "name": "update:value",
           "type": "[value: MultiValue]",
           "schemaRefs": [
-            "schema_00046"
+            "schema_00054"
           ]
         },
         "emit_00022": {
@@ -15303,7 +15846,7 @@
           "name": "select",
           "type": "[option: { value: string; label?: string; disabled?: boolean; persistedValue?: string | number | boolean; }, prefix: string]",
           "schemaRefs": [
-            "schema_00050"
+            "schema_00058"
           ]
         },
         "emit_00028": {
@@ -15334,7 +15877,7 @@
           "name": "update:value",
           "type": "[value: TransferValue]",
           "schemaRefs": [
-            "schema_00052"
+            "schema_00060"
           ]
         },
         "emit_00035": {
@@ -15369,28 +15912,28 @@
           "name": "update:recoveryPolicy",
           "type": "[value: RecoveryPolicyLike]",
           "schemaRefs": [
-            "schema_00062"
+            "schema_00070"
           ]
         },
         "emit_00043": {
           "name": "update:collaborationPolicy",
           "type": "[value: CollaborationPolicyLike]",
           "schemaRefs": [
-            "schema_00063"
+            "schema_00071"
           ]
         },
         "emit_00044": {
           "name": "open",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00068"
+            "schema_00078"
           ]
         },
         "emit_00045": {
           "name": "close",
           "type": "[payload: { config: AiSessionConfig | null; }]",
           "schemaRefs": [
-            "schema_00069"
+            "schema_00079"
           ]
         },
         "emit_00046": {
@@ -15405,133 +15948,133 @@
           "name": "before-open",
           "type": "[payload: { config: AiSessionConfig; cancel: () => void; }]",
           "schemaRefs": [
-            "schema_00070"
+            "schema_00080"
           ]
         },
         "emit_00049": {
           "name": "opened",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00068"
+            "schema_00078"
           ]
         },
         "emit_00050": {
           "name": "sync",
           "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00071"
+            "schema_00081"
           ]
         },
         "emit_00051": {
           "name": "synced",
           "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00071"
+            "schema_00081"
           ]
         },
         "emit_00052": {
           "name": "closed",
           "type": "[payload: { config: AiSessionConfig | null; }]",
           "schemaRefs": [
-            "schema_00069"
+            "schema_00079"
           ]
         },
         "emit_00053": {
           "name": "dispose",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00068"
+            "schema_00078"
           ]
         },
         "emit_00054": {
           "name": "message-send",
           "type": "[payload: { messageId: string; content: string; }]",
           "schemaRefs": [
-            "schema_00072"
+            "schema_00082"
           ]
         },
         "emit_00055": {
           "name": "message-delta",
           "type": "[payload: { messageId: string; delta: string; }]",
           "schemaRefs": [
-            "schema_00073"
+            "schema_00083"
           ]
         },
         "emit_00056": {
           "name": "message-complete",
           "type": "[payload: { messageId: string; content: string; usage?: Record<string, unknown>; }]",
           "schemaRefs": [
-            "schema_00074"
+            "schema_00084"
           ]
         },
         "emit_00057": {
           "name": "message-error",
           "type": "[payload: { messageId?: string; error: unknown; }]",
           "schemaRefs": [
-            "schema_00075"
+            "schema_00085"
           ]
         },
         "emit_00058": {
           "name": "tool-call",
           "type": "[payload: { toolName: string; args: unknown; round: number; callId?: string; }]",
           "schemaRefs": [
-            "schema_00076"
+            "schema_00086"
           ]
         },
         "emit_00059": {
           "name": "tool-result",
           "type": "[payload: { toolName: string; args: unknown; result: unknown; round: number; callId?: string; durationMs: number; }]",
           "schemaRefs": [
-            "schema_00077"
+            "schema_00087"
           ]
         },
         "emit_00060": {
           "name": "tool-error",
           "type": "[payload: { toolName: string; args: unknown; error: unknown; round: number; callId?: string; }]",
           "schemaRefs": [
-            "schema_00078"
+            "schema_00088"
           ]
         },
         "emit_00061": {
           "name": "fc-round-start",
           "type": "[payload: { round: number; }]",
           "schemaRefs": [
-            "schema_00079"
+            "schema_00089"
           ]
         },
         "emit_00062": {
           "name": "fc-round-end",
           "type": "[payload: { round: number; calls: number; }]",
           "schemaRefs": [
-            "schema_00080"
+            "schema_00090"
           ]
         },
         "emit_00063": {
           "name": "snapshot-restore",
           "type": "[payload: { storageKey: string; size: number; }]",
           "schemaRefs": [
-            "schema_00081"
+            "schema_00091"
           ]
         },
         "emit_00064": {
           "name": "snapshot-persist",
           "type": "[payload: { storageKey: string; size: number; }]",
           "schemaRefs": [
-            "schema_00081"
+            "schema_00091"
           ]
         },
         "emit_00065": {
           "name": "snapshot-clear",
           "type": "[payload: { storageKey: string; }]",
           "schemaRefs": [
-            "schema_00082"
+            "schema_00092"
           ]
         },
         "emit_00066": {
           "name": "feedback-submit",
           "type": "[payload: { text: string; messageId?: string; rating?: \"up\" | \"down\"; }]",
           "schemaRefs": [
-            "schema_00083"
+            "schema_00093"
           ]
         },
         "emit_00067": {
