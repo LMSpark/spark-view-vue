@@ -11,7 +11,7 @@
 - `pagedata.json` 是页面数据的**序列化格式**，不是运行时直接编辑边界。
 - `DataSet` 是 `DataSetCrudTool` 内部持有和维护的**模型实例**，不是 DevSystem UI 直接操作的主入口。
 - `DevDataSetDesigner`、`pagedata.json` 文本编辑、AI stills 编辑，都应该收敛到 `DataSetCrudTool`。
-- 如果修改了 `DataSetCrudTool` 的公开编辑能力，且希望 AI 也能使用，必须同步更新 `packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog.ts`。
+- 如果修改了 `DataSetCrudTool` 的公开编辑能力，且希望 AI 也能使用，必须同步更新 `packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog.ts`。
 
 ## 先把几个对象分清楚
 
@@ -151,7 +151,7 @@ AI 真正走的是下面这条链：
 
 ```mermaid
 flowchart TD
-    A[LLM / tool calling] --> B[queryCapabilities / queryActionSpec]
+  A[LLM / tool calling] --> B[stills.capabilities / stills.actionSpec]
     B --> C[dataset-crud-tool-stills-catalog.ts]
     C --> D[edit-dataset-stills.ts]
     D --> E[crudToolMethod 动态分发]
@@ -193,8 +193,8 @@ flowchart LR
 如果只改了 A，不改 B，就会出现下面的问题：
 
 - UI 可用，但 AI 不可用。
-- 运行时方法存在，但 `queryCapabilities` 看不到。
-- `queryActionSpec` 不知道参数怎么传。
+- 运行时方法存在，但 `stills.capabilities` 看不到。
+- `stills.actionSpec` 不知道参数怎么传。
 - LLM 无法稳定生成正确调用。
 
 ## 当前代码中的职责映射
@@ -221,11 +221,11 @@ flowchart LR
 
 ### spark-ai
 
-- `packages/spark-ai/src/stills/edit-domain.ts`
+- `packages/spark-ai/src/business/page-design/stills/edit/edit-domain.ts`
   - `edit.bootstrap` 时构造 `state.datasetEdit = DataSetCrudTool.fromJson(...)`
-- `packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog.ts`
+- `packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog.ts`
   - AI 能力目录事实源
-- `packages/spark-ai/src/stills/edit-dataset-stills.ts`
+- `packages/spark-ai/src/business/page-design/stills/edit/tools/edit-dataset-stills.ts`
   - 根据目录表动态分发到 `DataSetCrudTool`
 - `packages/spark-ai/src/stills/meta-methods.ts`
   - 把目录表暴露为 `stills.capabilities` / `stills.actionSpec` 等元查询能力
@@ -245,7 +245,7 @@ flowchart LR
 
 只要 AI 需要使用该方法，就必须同步更新：
 
-- `packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog.ts`
+- `packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog.ts`
 
 通常要补的内容包括：
 
@@ -285,7 +285,7 @@ flowchart LR
 | DevSystem UI 是否已经通过工具层调用它？ | 不允许 UI 直接改投影状态绕过它 |
 | `pagedata.json` 文本链路是否仍然会回到工具层？ | 应该始终回到 `DataSetCrudTool.fromJson()/toJson()` |
 | AI 的 `datasetTool.*` 是否需要新增动作？ | 需要时同步 stills catalog |
-| `queryCapabilities` / `queryActionSpec` 能否看到这个动作？ | 看不到就说明目录没同步 |
+| `stills.capabilities` / `stills.actionSpec` 能否看到这个动作？ | 看不到就说明目录没同步 |
 
 ## 最终约束
 

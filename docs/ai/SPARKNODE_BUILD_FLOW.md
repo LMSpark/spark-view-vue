@@ -47,8 +47,8 @@
 
 ### 第 1 步：查询组件列表
 
-**调用入口**：`queryComponentCatalog('*')` 或 `stills.actionSpec { action: 'SparkNode.containers' }`  
-**响应来源**：`catalog-projections.ts → projectFcDirectory()`  
+**调用入口**：`queryComponentCatalog('*')` 或 `catalog.query({})`  
+**响应来源**：`catalog-projections.ts → projectComponentDirectory()`  
 **响应结构**：`FcDirectoryPayload`  
 **包含内容**：
 
@@ -59,7 +59,7 @@
 这一步的目的是让 LLM 知道"能选什么组件"，不暴露 props 细节，减少 Token 消耗。
 
 **关键源码**：
-- 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectFcDirectory`）
+- 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectComponentDirectory`）
 - 事实源：[packages/spark-ai/src/catalog/component-catalog.json](../../../packages/spark-ai/src/catalog/component-catalog.json)
 - 查询分发：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery` / `catalogGuide`）
 
@@ -79,8 +79,8 @@ A = 'r-table'
 
 ### 第 3 步：查询 A 的配置规格
 
-**调用入口**：`queryComponentCatalog('r-table')` 或 `stills.actionSpec { action: 'r-table' }`  
-**响应来源**：`catalog-projections.ts → projectFcConfigGuide() / projectFcSpec()`  
+**调用入口**：`queryComponentGuide('r-table')` 或 `catalog.guide({ type: 'r-table' })`  
+**响应来源**：`catalog-projections.ts → projectComponentConfigGuide() / projectComponentSpec()`  
 **响应结构**：`FcComponentConfigGuide` / `FcComponentSpec`  
 **包含内容**：
 
@@ -93,11 +93,9 @@ A = 'r-table'
 
 这一步的目的是让 LLM 知道"这个组件怎么配"，给出完整约束以防止幻觉。**这仍然属于组件目录层，不是能力层。**
 
-还有另一个入口 `stills.actionSpec { action: 'SparkNode.containers' }`，它返回的是按 catalog 自动投影的"组件知识条目"，内容更结构化，适合 LLM 理解容器/字段两大分类的全局规则。
-
 **关键源码**：
-- 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectFcSpec`、`projectFcConfigGuide`、`projectHydratedComponent`）
-- 组件知识投影层：[packages/spark-ai/src/stills/spark-node-component-catalog.ts](../../../packages/spark-ai/src/stills/spark-node-component-catalog.ts)
+- 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectComponentSpec`、`projectComponentConfigGuide`、`projectHydratedComponent`）
+- 查询入口：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery`、`catalogGuide`、`queryComponentCatalog`、`queryComponentGuide`）
 
 ---
 
@@ -138,8 +136,8 @@ const B: SparkNode = {
 ### 第 5 步：调用 SparkNodeTree FC 写入树
 
 **调用入口**：通过 Stills 系统执行 `sparkNodeTree.addNode` / `sparkNodeTree.addNodes` 等动作  
-**执行桥接**：[packages/spark-ai/src/stills/edit-nodeTree-stills.ts](../../../packages/spark-ai/src/stills/edit-nodeTree-stills.ts)（`EDIT_NODE_TREE_STILLS`）  
-**Catalog 来源**：[packages/spark-ai/src/stills/spark-node-tree-tool-catalog.ts](../../../packages/spark-ai/src/stills/spark-node-tree-tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）  
+**执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts)（`EDIT_NODE_TREE_STILLS`）  
+**Catalog 来源**：[packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）  
 **底层 API**：[packages/spark-component/src/core/spark-node-tree.ts](../../../packages/spark-component/src/core/spark-node-tree.ts)（`SparkNodeTree` 类）
 
 典型写入调用示例：
@@ -219,14 +217,9 @@ const B: SparkNode = {
 component-catalog.json   ←──── json-catalog-generator.ts（构建期生成）
         │
         ├── catalog-projections.ts
-        │       ├── projectFcDirectory()   ─→ 第 1 步：组件列表
-        │       ├── projectFcSpec()        ─→ 第 3 步：组件规格
-        │       └── projectFcConfigGuide() ─→ 第 3 步：配置指南
-        │
-        └── spark-node-component-catalog.ts
-                └── SPARK_NODE_COMPONENT_ENTRIES
-                        ├── SparkNode.containers ─→ stills.actionSpec 知识条目
-                        └── SparkNode.fields     ─→ stills.actionSpec 知识条目
+        │       ├── projectComponentDirectory()   ─→ 第 1 步：组件列表
+        │       ├── projectComponentSpec()        ─→ 第 3 步：组件规格
+        │       └── projectComponentConfigGuide() ─→ 第 3 步：配置指南
 
 spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
         │
@@ -240,8 +233,11 @@ meta-methods.ts
         ├── catalog.guide()         ─→ 单组件配置指南入口
         └── stills.actionSpec()     ─→ 动作规格查询入口
 
-tool-calling.ts
+core/fc-schema.ts
         └── generateToolDefinitions() ─→ LLM FC 工具注册入口
+
+business/page-design/fc-dispatcher.ts
+        └── dispatchToolCall() ─→ 本地 still 执行分发入口
 ```
 
 ---
@@ -301,11 +297,10 @@ Step 4: sparkNodeTree.addNode / sparkNodeTree.addNodes
 | 组件目录事实源 | `packages/spark-ai/src/catalog/component-catalog.json` |
 | 目录投影层（纯函数） | `packages/spark-ai/src/catalog/catalog-projections.ts` |
 | 目录类型定义 | `packages/spark-ai/src/catalog/types.ts` |
-| 组件知识条目（LLM 可查） | `packages/spark-ai/src/stills/spark-node-component-catalog.ts` |
 | SparkNode 树 API 本体 | `packages/spark-component/src/core/spark-node-tree.ts` |
 | FC 参数类型 | `packages/spark-component/src/core/spark-node-tree.ts`（行 ~1-200） |
-| FC Catalog 表 | `packages/spark-ai/src/stills/spark-node-tree-tool-catalog.ts` |
-| FC 执行桥接 | `packages/spark-ai/src/stills/edit-nodeTree-stills.ts` |
+| FC Catalog 表 | `packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts` |
+| FC 执行桥接 | `packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts` |
 | 元动作（组件目录查询） | `packages/spark-ai/src/stills/meta-methods.ts` |
-| LLM FC 工具注册与分发 | `packages/spark-ai/src/tool-calling.ts` |
+| LLM FC 工具注册与分发 | `packages/spark-ai/src/core/fc-schema.ts` / `packages/spark-ai/src/business/page-design/fc-dispatcher.ts` |
 | 目录生成器（构建期） | `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` |
