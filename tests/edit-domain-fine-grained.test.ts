@@ -6,6 +6,7 @@ import {
   createSession,
   executeStill,
   getEditState,
+  isEditDataSetWriteAction,
   registerEditStills,
   type IStillSession,
   type StillResult,
@@ -34,6 +35,11 @@ const DISABLED_EDIT_ACTIONS = [
   'edit.changedLines',
   'edit.exportFiles',
   'dataset.export',
+  'datasetTool.listAggregates',
+  'datasetTool.getAggregate',
+  'datasetTool.addAggregate',
+  'datasetTool.updateAggregate',
+  'datasetTool.removeAggregate',
 ] as const
 
 beforeEach(() => {
@@ -79,6 +85,13 @@ describe('edit domain fine-grained flow', () => {
     for (const action of DISABLED_EDIT_ACTIONS) {
       expectActionUnavailable(action)
     }
+  })
+
+  it('does not classify hidden aggregate dataset actions as edit writes', () => {
+    expect(isEditDataSetWriteAction('datasetTool.addAggregate')).toBe(false)
+    expect(isEditDataSetWriteAction('datasetTool.updateAggregate')).toBe(false)
+    expect(isEditDataSetWriteAction('datasetTool.removeAggregate')).toBe(false)
+    expect(isEditDataSetWriteAction('datasetTool.updateView')).toBe(true)
   })
 
   it('bootstrap no longer compares payload with the current live model', () => {
@@ -147,6 +160,22 @@ describe('edit domain fine-grained flow', () => {
 
     expect(liveDataSet.toJson().tables['Users']).toBeDefined()
     expect(script).toContain('okAfterDatasetChange')
+  })
+
+  it('rejects script writes that use unavailable page runtime APIs', () => {
+    script = 'function __init__() { console.log("ready") }\n'
+
+    const result = exec('textModel.writeScript', {
+      content: 'function __init__() { const rows = $page.getTableRows("Orders") }\n',
+    })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.code).toBe('INVALID_SCRIPT_RUNTIME_API')
+      expect(result.fix).toContain('$dataSet')
+      expect(result.fix).toContain('$components.getApi')
+    }
+    expect(script).toBe('function __init__() { console.log("ready") }\n')
   })
 
   it('deleteRelation single-signature regression (zero backward-compat)', () => {

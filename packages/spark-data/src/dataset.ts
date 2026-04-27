@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, DependencyType, FilterExpression, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, DependencyType, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView as SparkDataView } from './data-view'
@@ -181,16 +181,6 @@ function expandRelations(
 
     const childField = tr?.childField
 
-    // 自动生成 filterExpression
-    let filterExpression: FilterExpression | undefined
-    if (childField) {
-      filterExpression = {
-        field: childField,
-        op: '==',
-        value: { func: 'FIELD', args: [parentField] },
-      }
-    }
-
     return {
       parentTable: vd.parentTable,
       childTable: vd.childTable,
@@ -199,7 +189,6 @@ function expandRelations(
       parentField,
       childField,
       dependencyType,
-      filterExpression,
       autoLoad: vd.autoLoad,
       cascadeUpdate: tr?.cascadeUpdate,
       cascadeDelete: tr?.cascadeDelete,

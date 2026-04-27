@@ -211,10 +211,27 @@ export class CrudService {
       const requestConfig = this.buildRequestConfig(config)
       const mergedQueryParams = { ...(resolvedEndpoint.params ?? {}), ...queryParams }
 
-      const result = await this.http.get<T>(resolvedEndpoint.url, mergedQueryParams, {
-        ...requestConfig,
-        headers: { ...resolvedEndpoint.headers, ...requestConfig?.headers }
-      })
+      let result: T
+      switch (endpoint.method ?? 'POST') {
+        case 'GET':
+          result = await this.http.get<T>(resolvedEndpoint.url, mergedQueryParams, {
+            ...requestConfig,
+            headers: { ...resolvedEndpoint.headers, ...requestConfig?.headers }
+          })
+          break
+        case 'POST':
+          result = await this.http.post<T>(resolvedEndpoint.url, { query: mergedQueryParams }, {
+            ...requestConfig,
+            headers: { ...resolvedEndpoint.headers, ...requestConfig?.headers }
+          })
+          break
+        case 'PUT':
+        case 'PATCH':
+        case 'DELETE':
+          throw new Error(`List API only supports GET or POST, got ${endpoint.method}`)
+        default:
+          throw new Error(`List API only supports GET or POST, got ${endpoint.method}`)
+      }
 
       this.logger.info('列表查询成功', { params, count: this.getResultCount(result) })
       return { success: true, data: result }

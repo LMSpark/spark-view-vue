@@ -33,10 +33,10 @@
 
     <div class="chat-messages-shell">
       <div class="chat-region-toolbar">
-        <span class="chat-region-title">诊断流 ({{ diagnosticItems.length }})</span>
+        <span class="chat-region-title">会话 ({{ diagnosticItems.length }})</span>
         <div class="chat-region-actions">
           <span v-if="copyStatus !== 'idle'" :class="['copy-status', `copy-status--${copyStatus}`]">{{ copyStatusText }}</span>
-          <button class="mini-icon-btn" title="复制诊断 HTML" :disabled="diagnosticItems.length === 0" @click="copyDiagnosticsHtml">
+          <button class="mini-icon-btn" title="复制结构化诊断数据" :disabled="diagnosticItems.length === 0" @click="copyDiagnosticsData">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
               <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16h13c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z" />
             </svg>
@@ -162,6 +162,19 @@
     </div>
 
     <div class="chat-input-area">
+      <div v-if="draftActions.length > 0" class="draft-action-row">
+        <button
+          v-for="action in draftActions"
+          :key="action.id"
+          class="draft-action-btn"
+          :disabled="isStreaming || draftLoadingId === action.id"
+          @click="emit('triggerDraftAction', action.id)"
+        >
+          <span v-if="action.icon" class="draft-action-btn__icon">{{ action.icon }}</span>
+          <span>{{ action.label }}</span>
+        </button>
+      </div>
+
       <div v-if="pendingFiles.length > 0" class="pending-files">
         <span v-for="(f, i) in pendingFiles" :key="f.fileId" class="pending-file-tag">
           📎 {{ f.name }}
@@ -263,6 +276,12 @@ interface FcCallLike {
   reportedAt?: string
 }
 
+interface DraftActionLike {
+  id: string
+  label: string
+  icon?: string
+}
+
 interface ClarificationOption {
   id: string
   label: string
@@ -289,6 +308,7 @@ interface DiagnosticItem {
   timestamp: string
   sortTime: number
   kind: 'message' | 'sse' | 'sse-text' | 'log' | 'clarification'
+  source: 'human' | 'assistant' | 'sse' | 'tool-log' | 'clarification'
   kindLabel: string
   title: string
   subtitle?: string
@@ -302,6 +322,71 @@ interface SseTextSegment {
   type: string
   sessionId?: string
   chunks: string[]
+}
+
+interface StructuredDiagnosticItem {
+  id: string
+  timestamp: string
+  source: DiagnosticItem['source']
+  kind: DiagnosticItem['kind']
+  label: string
+  title: string
+  payload: string
+  subtitle?: string
+  clarification?: ClarificationPayload
+}
+
+interface StructuredFcCallRecord {
+  id: string
+  timestamp: string
+  toolName: string
+  args: unknown
+  round: number
+  status: 'success' | 'error'
+  callId?: string
+  result?: unknown
+  error?: string
+  durationMs?: number
+  reportStatus?: 'pending' | 'reported' | 'failed'
+  reportId?: string
+  reportError?: string
+  reportedAt?: string
+}
+
+interface StructuredToolLogRecord {
+  timestamp: string
+  type: 'success' | 'info' | 'error'
+  tag: string
+  title: string
+  text: string
+}
+
+interface StructuredSseEventRecord {
+  id: string
+  timestamp: string
+  type: string
+  data: string
+  sessionId?: string
+}
+
+interface StructuredDiagnosticsSnapshot {
+  version: 1
+  generatedAt: string
+  pageId: string
+  counts: {
+    totalTimelineItems: number
+    humanInputs: number
+    assistantMessages: number
+    sseEvents: number
+    sseTextSegments: number
+    toolLogs: number
+    clarifications: number
+    fcCalls: number
+  }
+  timeline: StructuredDiagnosticItem[]
+  toolLogs: StructuredToolLogRecord[]
+  sseEvents: StructuredSseEventRecord[]
+  fcCalls: StructuredFcCallRecord[]
 }
 
 const props = defineProps<{
@@ -319,6 +404,8 @@ const props = defineProps<{
   sseEvents?: SseEventLike[]
   fcCalls?: FcCallLike[]
   pageId?: string | undefined
+  draftActions?: readonly DraftActionLike[]
+  draftLoadingId?: string | null
   recoveryPolicy?: RecoveryPolicyLike
   collaborationPolicy?: CollaborationPolicyLike
 }>()
@@ -334,8 +421,12 @@ const emit = defineEmits<{
   (e: 'removePendingFile', index: number): void
   (e: 'update:recoveryPolicy', value: RecoveryPolicyLike): void
   (e: 'update:collaborationPolicy', value: CollaborationPolicyLike): void
+  (e: 'triggerDraftAction', actionId: string): void
 }>(
 )
+
+const draftActions = computed(() => props.draftActions ?? [])
+const draftLoadingId = computed(() => props.draftLoadingId ?? null)
 
 type RecoveryPolicyLike = 'layered' | 'manual' | 'strict'
 type CollaborationPolicyLike = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
@@ -392,41 +483,21 @@ const selectedFcPayload = computed(() => {
 const diagnosticItems = computed<DiagnosticItem[]>(() => {
   const items: Array<DiagnosticItem & { order: number }> = []
   let order = 0
+  const humanInputTexts = collectHumanInputTexts(props.messages)
 
   for (const message of props.messages) {
     const timestamp = toIsoTimestamp(message.timestamp)
+    const isHumanInput = message.role === 'user'
     items.push({
       id: `message:${message.id}`,
       timestamp,
       sortTime: toSortTime(timestamp),
       kind: 'message',
-      kindLabel: message.role === 'user' ? '用户' : '助手',
-      title: message.role === 'user' ? '用户消息' : (message.streaming === true ? 'AI 响应中' : 'AI 响应'),
+      source: isHumanInput ? 'human' : 'assistant',
+      kindLabel: isHumanInput ? '人工输入' : '助手',
+      title: isHumanInput ? '用户消息' : (message.streaming === true ? 'AI 响应中' : 'AI 响应'),
       payload: formatMessagePayload(message),
       openByDefault: message.streaming === true || message.role === 'user',
-      order: order++,
-    })
-  }
-
-  for (const sseTextItem of buildSseTextDiagnosticItems(props.sseEvents ?? [], props.pageId)) {
-    items.push({
-      ...sseTextItem,
-      order: order++,
-    })
-  }
-
-  for (const event of props.sseEvents ?? []) {
-    if (SSE_TEXT_EVENT_TYPES.has(event.type)) continue
-    items.push({
-      id: `sse:${event.id}`,
-      timestamp: event.timestamp,
-      sortTime: toSortTime(event.timestamp),
-      kind: 'sse',
-      kindLabel: 'SSE事件',
-      title: `SSE ${formatSseTypeLabel(event.type)}`,
-      ...(event.sessionId !== undefined ? { subtitle: event.sessionId } : {}),
-      payload: event.data || '(empty)',
-      openByDefault: true,
       order: order++,
     })
   }
@@ -439,6 +510,7 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
       timestamp: call.timestamp,
       sortTime: toSortTime(call.timestamp),
       kind: 'clarification',
+      source: 'clarification',
       kindLabel: '反问',
       title: clarification.title,
       ...(call.callId !== undefined ? { subtitle: call.callId } : {}),
@@ -450,12 +522,16 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
   }
 
   for (const log of props.toolLogs ?? []) {
+    if (log.type !== 'error') continue
+    if (isRawSseToolLog(log)) continue
+    if (isDuplicateHumanInputLog(log, humanInputTexts)) continue
     const timestamp = toIsoTimestamp(log.timestamp)
     items.push({
       id: `log:${order}:${log.tag}`,
       timestamp,
       sortTime: toSortTime(timestamp),
       kind: 'log',
+      source: 'tool-log',
       kindLabel: formatLogTypeLabel(log.type),
       title: formatDiagnosticLogTitle(log.tag),
       ...(formatDiagnosticLogTitle(log.tag) !== log.tag ? { subtitle: log.tag } : {}),
@@ -468,8 +544,33 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
   return items.sort((left, right) => left.sortTime - right.sortTime || left.order - right.order)
 })
 
+function collectHumanInputTexts(messages: readonly ChatMessageLike[]): Set<string> {
+  const texts = new Set<string>()
+  for (const message of messages) {
+    if (message.role === 'user') texts.add(normalizeDiagnosticText(message.content))
+  }
+  return texts
+}
+
+function normalizeDiagnosticText(value: string): string {
+  return value.trim().replace(/\r\n?/g, '\n')
+}
+
+function isDuplicateHumanInputLog(log: ToolLogLike, humanInputTexts: ReadonlySet<string>): boolean {
+  return log.tag === '人工输入' && humanInputTexts.has(normalizeDiagnosticText(log.text))
+}
+
+function isRawSseToolLog(log: ToolLogLike): boolean {
+  return log.tag.startsWith('SSE ') || log.tag === 'SSE 错误'
+}
+
 function normalizeDiagnosticPageId(pageId: string | undefined): string {
   return typeof pageId === 'string' && pageId.trim() !== '' ? pageId : 'global'
+}
+
+function isVisibleSseEvent(event: SseEventLike): boolean {
+  const data = event.data.trim()
+  return data !== '' && !(event.type === 'done' && data === '{}')
 }
 
 function buildSseTextDiagnosticItems(events: SseEventLike[], pageId: string | undefined): DiagnosticItem[] {
@@ -499,6 +600,7 @@ function buildSseTextDiagnosticItems(events: SseEventLike[], pageId: string | un
     timestamp: segment.timestamp,
     sortTime: toSortTime(segment.timestamp),
     kind: 'sse-text',
+    source: 'sse',
     kindLabel: 'SSE文本',
     title: `SSE ${formatSseTypeLabel(segment.type)} (${segment.chunks.length}片)`,
     subtitle: formatSseTextSubtitle(normalizedPageId, segment.sessionId),
@@ -587,6 +689,7 @@ const ACTION_TITLE_MAP: Record<string, string> = {
   'dataset.validate': '校验数据集',
   'dataset.reset': '重置数据集',
   'fc-error-report': 'FC 错误回传',
+  '人工输入': '人工输入',
   '开始 LLM 编辑': '开始 LLM 编辑',
   '未写入': '未写入',
   '编辑失败': '编辑失败',
@@ -808,53 +911,95 @@ function stringifyPayload(value: unknown): string {
   }
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
+function toStructuredDiagnosticItem(item: DiagnosticItem): StructuredDiagnosticItem {
+  return {
+    id: item.id,
+    timestamp: item.timestamp,
+    source: item.source,
+    kind: item.kind,
+    label: item.kindLabel,
+    title: item.title,
+    payload: item.payload,
+    ...(item.subtitle !== undefined ? { subtitle: item.subtitle } : {}),
+    ...(item.clarification !== undefined ? { clarification: item.clarification } : {}),
+  }
 }
 
-function buildDiagnosticsHtml(): string {
-  const body = diagnosticItems.value.map((item) => {
-    const subtitle = item.subtitle !== undefined ? ` <small>${escapeHtml(item.subtitle)}</small>` : ''
-    if (item.clarification !== undefined) {
-      return [
-        `<article class="spark-ai-diagnostic spark-ai-diagnostic--${item.kind}">`,
-        `<header><time>${escapeHtml(item.timestamp)}</time> <strong>${escapeHtml(item.kindLabel)}</strong> ${escapeHtml(item.title)}${subtitle}</header>`,
-        buildClarificationHtml(item.clarification),
-        '</article>',
-      ].join('')
-    }
-    return [
-      `<article class="spark-ai-diagnostic spark-ai-diagnostic--${item.kind}">`,
-      `<header><time>${escapeHtml(item.timestamp)}</time> <strong>${escapeHtml(item.kindLabel)}</strong> ${escapeHtml(item.title)}${subtitle}</header>`,
-      `<pre>${escapeHtml(item.payload)}</pre>`,
-      '</article>',
-    ].join('')
-  }).join('\n')
-  return `<section class="spark-ai-diagnostics">\n${body}\n</section>`
+function toStructuredFcCallRecord(call: FcCallLike): StructuredFcCallRecord {
+  return {
+    id: call.id,
+    timestamp: call.timestamp,
+    toolName: call.toolName,
+    args: call.args,
+    round: call.round,
+    status: call.status,
+    ...(call.callId !== undefined ? { callId: call.callId } : {}),
+    ...(call.result !== undefined ? { result: call.result } : {}),
+    ...(call.error !== undefined ? { error: call.error } : {}),
+    ...(call.durationMs !== undefined ? { durationMs: call.durationMs } : {}),
+    ...(call.reportStatus !== undefined ? { reportStatus: call.reportStatus } : {}),
+    ...(call.reportId !== undefined ? { reportId: call.reportId } : {}),
+    ...(call.reportError !== undefined ? { reportError: call.reportError } : {}),
+    ...(call.reportedAt !== undefined ? { reportedAt: call.reportedAt } : {}),
+  }
 }
 
-function buildClarificationHtml(payload: ClarificationPayload): string {
-  const reason = payload.reason !== undefined ? `<p>${escapeHtml(payload.reason)}</p>` : ''
-  const questions = payload.questions.map((question) => {
-    const options = question.options.map((option) => {
-      const recommended = isRecommendedOption(question, option) ? ' <strong>推荐</strong>' : ''
-      const description = option.description !== undefined ? `<small>${escapeHtml(option.description)}</small>` : ''
-      return `<li data-option-id="${escapeHtml(option.id)}"><span>${escapeHtml(option.label)}</span>${recommended}${description}</li>`
-    }).join('')
-    return `<section><h4>${escapeHtml(question.prompt)}</h4><ol>${options}</ol></section>`
-  }).join('')
-  return `<div class="spark-ai-clarification">${reason}${questions}</div>`
+function toStructuredToolLogRecord(log: ToolLogLike): StructuredToolLogRecord {
+  const title = formatDiagnosticLogTitle(log.tag)
+  return {
+    timestamp: toIsoTimestamp(log.timestamp),
+    type: log.type,
+    tag: log.tag,
+    title,
+    text: log.text,
+  }
 }
 
-async function copyDiagnosticsHtml(): Promise<void> {
+function toStructuredSseEventRecord(event: SseEventLike): StructuredSseEventRecord {
+  return {
+    id: event.id,
+    timestamp: event.timestamp,
+    type: event.type,
+    data: event.data,
+    ...(event.sessionId !== undefined ? { sessionId: event.sessionId } : {}),
+  }
+}
+
+function buildDiagnosticsData(): StructuredDiagnosticsSnapshot {
+  const items = diagnosticItems.value
+  const humanInputTexts = collectHumanInputTexts(props.messages)
+  const toolLogs = (props.toolLogs ?? [])
+    .filter((log) => !isRawSseToolLog(log) && !isDuplicateHumanInputLog(log, humanInputTexts))
+    .map(toStructuredToolLogRecord)
+  const fcCalls = (props.fcCalls ?? []).map(toStructuredFcCallRecord)
+  const visibleSseEvents = (props.sseEvents ?? []).filter(isVisibleSseEvent)
+  const sseEvents = visibleSseEvents.map(toStructuredSseEventRecord)
+  const sseTextSegments = buildSseTextDiagnosticItems(visibleSseEvents, props.pageId)
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    pageId: normalizeDiagnosticPageId(props.pageId),
+    counts: {
+      totalTimelineItems: items.length,
+      humanInputs: items.filter((item) => item.source === 'human').length,
+      assistantMessages: items.filter((item) => item.source === 'assistant').length,
+      sseEvents: sseEvents.length,
+      sseTextSegments: sseTextSegments.length,
+      toolLogs: toolLogs.length,
+      clarifications: items.filter((item) => item.kind === 'clarification').length,
+      fcCalls: fcCalls.length,
+    },
+    timeline: items.map(toStructuredDiagnosticItem),
+    toolLogs,
+    sseEvents,
+    fcCalls,
+  }
+}
+
+async function copyDiagnosticsData(): Promise<void> {
   if (diagnosticItems.value.length === 0) return
   try {
-    await navigator.clipboard.writeText(buildDiagnosticsHtml())
+    await navigator.clipboard.writeText(JSON.stringify(buildDiagnosticsData(), null, 2))
     markCopyStatus('copied')
   } catch {
     markCopyStatus('failed')
@@ -980,6 +1125,11 @@ watch(
 .clarification-answered { color: #67c23a; font-size: 12px; font-weight: 600; }
 .chat-error { padding: 8px 16px; background: #fef0f0; color: #f56c6c; font-size: 13px; border-top: 1px solid #fbc4c4; }
 .chat-input-area { border-top: 1px solid #e4e7ed; padding: 8px 12px; background: #fafafa; }
+.draft-action-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.draft-action-btn { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px solid #dcdfe6; border-radius: 6px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; }
+.draft-action-btn:hover:not(:disabled) { border-color: #409eff; color: #409eff; background: #ecf5ff; }
+.draft-action-btn:disabled { opacity: 0.58; cursor: not-allowed; }
+.draft-action-btn__icon { font-size: 12px; line-height: 1; }
 .pending-files { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
 .pending-file-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: 12px; background: #ecf5ff; color: #409eff; border-radius: 4px; }
 .remove-file { background: none; border: none; cursor: pointer; font-size: 14px; color: #909399; padding: 0 2px; line-height: 1; }

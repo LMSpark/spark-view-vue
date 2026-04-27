@@ -8,7 +8,7 @@
 import type { IStillSession, StillDefinition, StillResult } from '../../../../../core/stills/types'
 import { parseDataKey } from '@spark-view/spark-data'
 import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-lifecycle-stills'
-import { DATASET_EXPORT_ACTION, EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
+import { EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   validateDataSetCrudToolStillParams,
@@ -44,6 +44,18 @@ const noArgActions = new Set(
 )
 
 const LEGACY_DATASET_EXPORT_ACTION = 'datasetTool.export'
+
+const LEGACY_DATASET_AGGREGATE_ACTIONS = new Set([
+  'datasetTool.listAggregates',
+  'datasetTool.getAggregate',
+  'datasetTool.addAggregate',
+  'datasetTool.updateAggregate',
+  'datasetTool.removeAggregate',
+])
+
+function isEditDatasetStillActionEnabled(action: string): boolean {
+  return action !== LEGACY_DATASET_EXPORT_ACTION && !LEGACY_DATASET_AGGREGATE_ACTIONS.has(action)
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 参数分发与结果清洗
@@ -86,17 +98,15 @@ function stripLayoutField(data: unknown): unknown {
  *
  * 这里除了复用 catalog 提供的 schema 校验外，还补充编辑模式特有约束：
  * - 禁止调用 datasetTool.export
- * - 必须改走统一的 dataset.export
  *
- * 原因是编辑态的数据优先链路要求导出动作保持统一出口，
- * 便于编排器识别“已导出”状态并继续后续流程。
+ * 原因是编辑态直接操作 live model，不再通过“导出动作”把结果回写给宿主。
  */
 function validateDatasetStillRow(
   row: (typeof DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE)[number],
   params: unknown,
 ): string | null {
   if (row.action === 'datasetTool.export') {
-    return '数据优先流程已启用，禁止使用 datasetTool.export，请改用 dataset.export'
+    return '编辑模式直接操作 live DataSet，禁止使用 datasetTool.export；请改用 datasetTool.describe/listTables/getTable 等当前态读取动作'
   }
   return validateDataSetCrudToolStillParams(row.action, params ?? {})
 }
@@ -258,10 +268,16 @@ function executeDatasetStillRow(
 
   try {
     const member = (tool as unknown as Record<string, unknown>)[row.crudToolMethod]
-    const rawData =
-      typeof member === 'function'
-        ? (member as DispatchFn).call(tool, ...resolveDispatchArgs(row.action, params))
-        : member
+    if (typeof member !== 'function') {
+      return {
+        ok: false,
+        code: 'METHOD_NOT_FOUND',
+        msg: `datasetTool 动作 ${row.action} 指向的 DataSetCrudTool.${row.crudToolMethod} 不存在`,
+        fix: '请改用当前已注册且有实现的 datasetTool 动作；视图聚合配置请使用 datasetTool.updateView。',
+      }
+    }
+
+    const rawData = (member as DispatchFn).call(tool, ...resolveDispatchArgs(row.action, params))
     const data = stripLayoutField(rawData)
 
     if (row.type === 'request') {
@@ -308,23 +324,34 @@ const datasetExportRow = DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.find(
   (row) => row.action === LEGACY_DATASET_EXPORT_ACTION,
 )
 
+const BLOCKED_LEGACY_DATASET_EXPORT_STILL: StillDefinition | null = datasetExportRow === undefined
+  ? null
+  : {
+    action: LEGACY_DATASET_EXPORT_ACTION,
+    type: 'describe',
+    description: '已禁用：编辑模式不通过导出动作回写 pagedata.json',
+    paramsSchema: {},
+    resultSchema: {},
+    example: {},
+    usageRules: [
+      '编辑模式直接操作 live DataSet，禁止调用 datasetTool.export。',
+      '如需读取当前态，请调用 datasetTool.describe、datasetTool.listTables 或 datasetTool.getTable。',
+    ],
+    validate: () => '编辑模式直接操作 live DataSet，禁止使用 datasetTool.export；请改用当前态读取动作',
+    execute: (): StillResult => ({
+      ok: false,
+      code: 'INVALID_PARAMS',
+      msg: '编辑模式禁止使用 datasetTool.export',
+      fix: '请改用 datasetTool.describe、datasetTool.listTables 或 datasetTool.getTable 读取当前态。',
+    }),
+  }
+
 export const EDIT_DATASET_STILLS_EFFECTIVE: StillDefinition[] = (
-  datasetExportRow === undefined
-    ? EDIT_DATASET_STILLS_RAW.filter((still) => still.action !== LEGACY_DATASET_EXPORT_ACTION)
+  BLOCKED_LEGACY_DATASET_EXPORT_STILL === null
+    ? EDIT_DATASET_STILLS_RAW.filter((still) => isEditDatasetStillActionEnabled(still.action))
     : [
-      ...EDIT_DATASET_STILLS_RAW.filter((still) => still.action !== LEGACY_DATASET_EXPORT_ACTION),
-      {
-        action: DATASET_EXPORT_ACTION,
-        type: datasetExportRow.type,
-        description: '导出当前 DataSet 元数据快照（edit 模式统一出口）',
-        paramsSchema: datasetExportRow.paramsSchema,
-        resultSchema: datasetExportRow.resultSchema,
-        example: datasetExportRow.example,
-        usageRules: datasetExportRow.usageRules,
-        failureModes: datasetExportRow.failureModes,
-        validate: (params: unknown) => validateDataSetCrudToolStillParams(datasetExportRow.action, params ?? {}),
-        execute: (session: IStillSession, params: unknown) => executeDatasetStillRow(session, datasetExportRow, params),
-      } as StillDefinition,
+      ...EDIT_DATASET_STILLS_RAW.filter((still) => isEditDatasetStillActionEnabled(still.action)),
+      BLOCKED_LEGACY_DATASET_EXPORT_STILL,
     ]
 )
 

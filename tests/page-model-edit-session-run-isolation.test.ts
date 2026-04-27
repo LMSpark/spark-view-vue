@@ -119,6 +119,47 @@ describe('usePageModelEditSession run isolation', () => {
     shared.generateToolDefinitions.mockClear()
   })
 
+  it('records original human input in the edit log', async () => {
+    const harness = createRuleEditHarness()
+    let api: ReturnType<typeof usePageModelEditSession> | null = null
+
+    const Host = defineComponent({
+      setup() {
+        api = usePageModelEditSession({
+          getSessionKey: () => 'orders-page',
+          getEditToolHost: () => harness.editToolHost,
+          sessionHost: harness.sessionHost,
+        })
+
+        return () => h('div')
+      },
+    })
+
+    const wrapper = mount(Host)
+    expect(api).not.toBeNull()
+
+    const runPromise = api!.runLlm('[系统拼接上下文]\n用户: 增加统计卡片', {
+      originalUserInput: '增加统计卡片',
+    })
+    await flushPromises()
+
+    expect(api!.log.value).toEqual(expect.arrayContaining([
+      expect.objectContaining({ tag: '人工输入', text: '增加统计卡片' }),
+      expect.objectContaining({ tag: '开始 LLM 编辑', text: '已生成本轮上下文 prompt，准备调用模型' }),
+    ]))
+
+    shared.runs[0]!.resolve({
+      turns: [],
+      rounds: 1,
+      aborted: false,
+      completed: false,
+      sessionId: 'human-input-log-session',
+    })
+    await expect(runPromise).resolves.toBeUndefined()
+
+    wrapper.unmount()
+  })
+
   it('ignores stale SSE events after reset aborts the active run', async () => {
     let api: ReturnType<typeof usePageModelEditSession> | null = null
     const harness = createRuleEditHarness()
@@ -195,6 +236,7 @@ describe('usePageModelEditSession run isolation', () => {
     })
 
     expect(api!.aiBuffer.value).toBe('')
+    expect(api!.log.value.some((item) => item.tag.startsWith('SSE '))).toBe(false)
     expect(api!.log.value.at(-1)?.tag).toBe('LLM 响应')
     expect(api!.log.value.at(-1)?.text).toBe('fresh-output')
 

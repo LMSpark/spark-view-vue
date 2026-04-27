@@ -148,6 +148,105 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(readLabel()).toBe('更新后标题')
   })
 
+  it('reports async __init__ errors through runtime diagnostics', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/pages/test',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+        },
+      ],
+    })
+
+    await router.push('/pages/test')
+    await router.isReady()
+
+    const onRuntimeError = vi.fn()
+
+    mount(SparkPageRenderer, {
+      props: {
+        pageConfig: {
+          ...createPageConfig('初始化'),
+          script: "async function __init__() { throw new Error('ASYNC_INIT_FAIL') }",
+        },
+        pageId: 'test-page',
+        onRuntimeError,
+      },
+      global: {
+        plugins: [Spark.createPlugin(), router],
+      },
+      slots: {
+        content: () => h('div', { class: 'page-content' }, 'ready'),
+      },
+    })
+
+    await flushPromises()
+    await flushPromises()
+
+    expect(onRuntimeError).toHaveBeenCalledWith(expect.objectContaining({
+      phase: 'init',
+      pageId: 'test-page',
+      message: expect.stringContaining('ASYNC_INIT_FAIL'),
+    }))
+  })
+
+  it('reports page script event handler errors through runtime diagnostics', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/pages/test',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+        },
+      ],
+    })
+
+    await router.push('/pages/test')
+    await router.isReady()
+
+    let boundClick: (() => unknown) | undefined
+    const onRuntimeError = vi.fn()
+
+    mount(SparkPageRenderer, {
+      props: {
+        pageConfig: {
+          ...createPageConfig('点击'),
+          rule: [
+            {
+              type: 'r-button',
+              props: {
+                onClick: 'explode',
+              },
+            },
+          ],
+          script: "function explode() { throw new Error('SCRIPT_CLICK_FAIL') }",
+        },
+        pageId: 'test-page',
+        onRuntimeError,
+      },
+      global: {
+        plugins: [Spark.createPlugin(), router],
+      },
+      slots: {
+        content: ({ children }: { children: Array<{ props?: Record<string, unknown> }> }) => {
+          boundClick = children[0]?.props?.['onClick'] as (() => unknown) | undefined
+          return h('button', { class: 'script-button' }, 'run')
+        },
+      },
+    })
+
+    await flushPromises()
+
+    expect(boundClick).toBeTypeOf('function')
+    expect(() => boundClick?.()).toThrow('SCRIPT_CLICK_FAIL')
+    expect(onRuntimeError).toHaveBeenCalledWith(expect.objectContaining({
+      phase: 'script-function',
+      pageId: 'test-page',
+      message: expect.stringContaining('SCRIPT_CLICK_FAIL'),
+    }))
+  })
+
   it('does not map non-builtin r-button action strings to page script clicks', async () => {
     const callFunc = vi.fn<(functionName: string, ...args: unknown[]) => unknown>()
     const children = buildPageChildren([

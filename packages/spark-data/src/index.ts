@@ -77,8 +77,8 @@ export type {
 
   // 视图配置
   IViewMetadata,
+  FilterFieldRef,
   FilterExpression,
-  FilterFunctionCall,
   FilterOperator,
   FilterValueExpression,
   SortExpression,

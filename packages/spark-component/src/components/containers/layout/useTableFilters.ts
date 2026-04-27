@@ -8,6 +8,10 @@ interface LoggerLike {
   error(message: string, error?: unknown): void
 }
 
+interface ViewColumnLike {
+  name: string
+}
+
 interface UseTableFiltersOptions {
   filterChildren: ComputedRef<SparkNode[]>
   dataView: ComputedRef<DataView | null>
@@ -19,6 +23,9 @@ interface UseTableFiltersOptions {
 }
 
 interface FilterCapableView {
+  rows?: Array<Record<string, unknown>>
+  columns?: readonly ViewColumnLike[]
+  getColumn?: (name: string) => ViewColumnLike | undefined
   setFilter?: (expr: FilterExpression | undefined) => Promise<void> | void
   refresh?: () => Promise<void> | void
   filterExpression?: FilterExpression
@@ -28,6 +35,28 @@ interface FilterCapableView {
       list?: unknown
     }
   }
+}
+
+interface InputFilterDescriptor {
+  kind: 'input'
+  config: SparkNode
+  field: string | undefined
+}
+
+interface ResidentFieldRefFilterDescriptor {
+  kind: 'field-ref'
+  field: string
+  op: FilterOperator
+  refField: string
+}
+
+type FilterDescriptor = InputFilterDescriptor | ResidentFieldRefFilterDescriptor
+
+function isViewColumnLike(value: unknown): value is ViewColumnLike {
+  return value !== null
+    && typeof value === 'object'
+    && 'name' in value
+    && typeof (value as { name?: unknown }).name === 'string'
 }
 
 function shouldRefreshFilterView(view: DataView): boolean {
@@ -62,6 +91,15 @@ function getNodeField(config: SparkNode): string | undefined {
   return typeof f === 'string' ? f : undefined
 }
 
+function getNodeFilterValueRefField(config: SparkNode): string | undefined {
+  const value = nodeInputProp(config, 'filterValueRefField')
+  if (value === undefined) return undefined
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error('RendererTable: filterValueRefField 必须是非空字符串')
+  }
+  return value.trim()
+}
+
 function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
   if (Array.isArray(value)) return
   throw new Error('RendererTable: r-filter children 必须是数组节点配置')
@@ -83,6 +121,74 @@ function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator 
     default:
       return '=='
   }
+}
+
+function hasViewField(view: DataView | null, fieldName: string): boolean {
+  if (!view) return true
+
+  const candidate = view as unknown as FilterCapableView
+  if (typeof candidate.getColumn === 'function') {
+    return candidate.getColumn(fieldName) !== undefined
+  }
+
+  if (Array.isArray(candidate.columns) && candidate.columns.every(isViewColumnLike) && candidate.columns.length > 0) {
+    return candidate.columns.some(column => column.name === fieldName)
+  }
+
+  if (Array.isArray(candidate.rows) && candidate.rows.length > 0) {
+    return candidate.rows.some(row => fieldName in row)
+  }
+
+  return false
+}
+
+function assertViewFieldExists(view: DataView | null, fieldName: string, source: string): void {
+  if (hasViewField(view, fieldName)) return
+  throw new Error(`RendererTable: ${source} 引用了不存在的字段 "${fieldName}"`)
+}
+
+function createResidentFieldRefDescriptor(
+  config: SparkNode,
+  view: DataView | null,
+): ResidentFieldRefFilterDescriptor | undefined {
+  const refField = getNodeFilterValueRefField(config)
+  if (refField === undefined) return undefined
+
+  const field = getNodeField(config)
+  if (!field) {
+    throw new Error('RendererTable: 配置 filterValueRefField 的筛选节点必须声明 field')
+  }
+
+  assertViewFieldExists(view, field, '过滤字段')
+  assertViewFieldExists(view, refField, 'filterValueRefField')
+
+  return {
+    kind: 'field-ref',
+    field,
+    op: inferFilterOperator(config, undefined),
+    refField,
+  }
+}
+
+function describeFilterNode(config: SparkNode, view: DataView | null): FilterDescriptor {
+  const residentFieldRef = createResidentFieldRefDescriptor(config, view)
+  if (residentFieldRef) return residentFieldRef
+
+  return {
+    kind: 'input',
+    config,
+    field: getNodeField(config),
+  }
+}
+
+function isInputFilterDescriptor(descriptor: FilterDescriptor): descriptor is InputFilterDescriptor {
+  return descriptor.kind === 'input'
+}
+
+function isResidentFieldRefDescriptor(
+  descriptor: FilterDescriptor,
+): descriptor is ResidentFieldRefFilterDescriptor {
+  return descriptor.kind === 'field-ref'
 }
 
 function buildCondition(config: SparkNode, value: unknown): FilterExpression | undefined {
@@ -112,10 +218,33 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     options.filterGridAutoRows.value ?? 'minmax(32px, auto)'
   )
 
-  const filterConfigs = computed(() => {
+  const allFilterNodes = computed(() => {
     const nodes = options.filterChildren.value
     assertFilterNodesArray(nodes)
     return nodes
+  })
+
+  const filterDescriptors = computed(() => {
+    return allFilterNodes.value.map(config => describeFilterNode(config, options.dataView.value))
+  })
+
+  const filterConfigs = computed(() => {
+    return filterDescriptors.value
+      .filter(isInputFilterDescriptor)
+      .map(descriptor => descriptor.config)
+  })
+
+  const residentFieldRefConditions = computed<FilterExpression[]>(() => {
+    return filterDescriptors.value
+      .filter(isResidentFieldRefDescriptor)
+      .map(descriptor => ({
+        field: descriptor.field,
+        op: descriptor.op,
+        value: {
+          kind: 'field',
+          field: descriptor.refField,
+        } as FilterValueExpression,
+      }))
   })
 
   watch(filterConfigs, (configs) => {
@@ -133,26 +262,33 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   }, { immediate: true })
 
   const filterExpression = computed<FilterExpression | undefined>(() => {
-    const conditions = filterConfigs.value
-      .map(config => {
-        const field = getNodeField(config)
-        return buildCondition(config, typeof field === 'string' ? filterModel[field] : undefined)
-      })
-      .filter((expr): expr is FilterExpression => expr !== undefined)
+    const conditions = [
+      ...residentFieldRefConditions.value,
+      ...filterDescriptors.value
+        .filter(isInputFilterDescriptor)
+        .map(descriptor => {
+          return buildCondition(
+            descriptor.config,
+            typeof descriptor.field === 'string' ? filterModel[descriptor.field] : undefined,
+          )
+        })
+        .filter((expr): expr is FilterExpression => expr !== undefined),
+    ]
 
     if (conditions.length === 0) return undefined
     if (conditions.length === 1) return conditions[0]
     return { type: 'and', children: conditions }
   })
 
-  const hasFilterConfigs = computed(() => filterConfigs.value.length > 0)
+  const hasRenderableFilters = computed(() => filterConfigs.value.length > 0)
+  const hasAnyFilterNodes = computed(() => allFilterNodes.value.length > 0)
 
   async function applyFilterToView(
     view: DataView,
     expr: FilterExpression | undefined,
     refreshRemote: boolean,
   ): Promise<void> {
-    if (!hasFilterConfigs.value) return
+    if (!hasAnyFilterNodes.value) return
 
     const candidate = view as unknown as FilterCapableView
     if (typeof candidate.setFilter !== 'function') return
@@ -199,9 +335,9 @@ export function useTableFilters(options: UseTableFiltersOptions) {
 
   const activeFilterCount = computed(() => {
     let count = 0
-    for (const config of filterConfigs.value) {
-      const field = getNodeField(config)
-      if (typeof field === 'string' && !isEmptyFilterValue(filterModel[field])) {
+    for (const descriptor of filterDescriptors.value) {
+      if (!isInputFilterDescriptor(descriptor)) continue
+      if (typeof descriptor.field === 'string' && !isEmptyFilterValue(filterModel[descriptor.field])) {
         count++
       }
     }
@@ -213,9 +349,9 @@ export function useTableFilters(options: UseTableFiltersOptions) {
       filterModel[key] = undefined
     }
     const view = options.dataView.value
-    if (!view || !hasFilterConfigs.value) return
+    if (!view || !hasAnyFilterNodes.value) return
     try {
-      await applyFilterToView(view, undefined, true)
+      await applyFilterToView(view, filterExpression.value, true)
     } catch (error) {
       options.logger.error('RendererTable: 重置过滤失败', error)
     }
@@ -230,7 +366,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     filterGridAutoRowsValue,
     filterExpression,
     filteredRows,
-    hasFilters: computed(() => filterConfigs.value.length > 0),
+    hasFilters: hasRenderableFilters,
     activeFilterCount,
     resetFilters,
   }

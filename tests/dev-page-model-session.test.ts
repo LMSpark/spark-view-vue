@@ -206,10 +206,12 @@ describe('useDevPageModelSession', () => {
     expect(prompt).toContain('恢复策略=strict')
     expect(prompt).toContain('协作策略=plan-confirm')
     expect(options['toolMode']).toBe('describe-only')
+    expect(options['originalUserInput']).toBe('先给计划')
     expect(options['repeatDetection']).toMatchObject({
       maxSameSignature: 3,
       maxConsecutiveErrors: 3,
-      maxReadOnlyActions: 10,
+      maxReadOnlyActions: 8,
+      abortOnReadOnlyLimit: true,
     })
 
     scope.stop()

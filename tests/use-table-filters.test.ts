@@ -5,6 +5,8 @@ import { useTableFilters } from '../packages/spark-component/src/components/cont
 
 interface FilterViewLike {
   rows: IDataRow[]
+  columns?: Array<{ name: string }>
+  getColumn?: (name: string) => unknown
   filterExpression?: FilterExpression
   setFilter?: (expr: FilterExpression | undefined) => Promise<void>
   refresh?: () => Promise<void>
@@ -16,14 +18,22 @@ interface FilterViewLike {
 
 function createView(options?: {
   rows?: IDataRow[]
+  columns?: Array<{ name: string }>
   filterExpression?: FilterExpression
   api?: CrudApi
   resourceType?: TableResourceType
 }) {
   const setFilter = vi.fn<(expr: FilterExpression | undefined) => Promise<void>>().mockResolvedValue()
   const refresh = vi.fn<() => Promise<void>>().mockResolvedValue()
+  const columnMap = new Map((options?.columns ?? []).map(column => [column.name, column]))
   const view: FilterViewLike = {
     rows: options?.rows ?? [],
+    ...(options?.columns !== undefined
+      ? {
+          columns: options.columns,
+          getColumn: (name: string) => columnMap.get(name),
+        }
+      : {}),
     ...(options?.filterExpression !== undefined ? { filterExpression: options.filterExpression } : {}),
     setFilter,
     refresh,
@@ -167,5 +177,132 @@ describe('useTableFilters', () => {
     })
     expect(refresh).toHaveBeenCalledTimes(1)
     scope.stop()
+  })
+
+  it('结构化 ref 常驻条件会同步到 DataView 且不进入过滤条输入模型', async () => {
+    const { view, setFilter } = createView({
+      rows: [{ id: 1, total: 20, minTotal: 10 }],
+      columns: [
+        { name: 'id' },
+        { name: 'total' },
+        { name: 'minTotal' },
+      ],
+      resourceType: 'static-data',
+    })
+
+    const filterChildren = [
+      {
+        type: 'r-select',
+        props: {
+          field: 'total',
+          filterOperator: '>=',
+          filterValueRefField: 'minTotal',
+        },
+        children: [],
+      },
+    ]
+
+    const { scope, api } = await mountTableFilters(view, filterChildren)
+
+    expect(setFilter).toHaveBeenCalledWith({
+      field: 'total',
+      op: '>=',
+      value: { kind: 'field', field: 'minTotal' },
+    })
+    expect(api.filterConfigs.value).toEqual([])
+    expect(api.hasFilters.value).toBe(false)
+    expect('total' in api.filterModel).toBe(false)
+    expect(api.activeFilterCount.value).toBe(0)
+    scope.stop()
+  })
+
+  it('重置时保留结构化 ref 常驻条件，仅清空用户输入过滤', async () => {
+    const { view, setFilter } = createView({
+      rows: [{ id: 1, total: 20, minTotal: 10, status: '草稿' }],
+      columns: [
+        { name: 'id' },
+        { name: 'total' },
+        { name: 'minTotal' },
+        { name: 'status' },
+      ],
+      resourceType: 'static-data',
+    })
+
+    const filterChildren = [
+      {
+        type: 'r-select',
+        props: {
+          field: 'total',
+          filterOperator: '>=',
+          filterValueRefField: 'minTotal',
+        },
+        children: [],
+      },
+      {
+        type: 'r-select',
+        props: {
+          field: 'status',
+          filterOperator: '==',
+        },
+        children: [],
+      },
+    ]
+
+    const { scope, api } = await mountTableFilters(view, filterChildren)
+    api.filterModel['status'] = '草稿'
+
+    await nextTick()
+    await Promise.resolve()
+
+    expect(setFilter).toHaveBeenLastCalledWith({
+      type: 'and',
+      children: [
+        {
+          field: 'total',
+          op: '>=',
+          value: { kind: 'field', field: 'minTotal' },
+        },
+        {
+          field: 'status',
+          op: '==',
+          value: '草稿',
+        },
+      ],
+    })
+
+    await api.resetFilters()
+
+    expect(setFilter).toHaveBeenLastCalledWith({
+      field: 'total',
+      op: '>=',
+      value: { kind: 'field', field: 'minTotal' },
+    })
+    expect(api.activeFilterCount.value).toBe(0)
+    scope.stop()
+  })
+
+  it('filterValueRefField 引用不存在字段时会在前端 fail-fast', async () => {
+    const { view } = createView({
+      rows: [{ id: 1, total: 20 }],
+      columns: [
+        { name: 'id' },
+        { name: 'total' },
+      ],
+      resourceType: 'static-data',
+    })
+
+    const filterChildren = [
+      {
+        type: 'r-select',
+        props: {
+          field: 'total',
+          filterOperator: '>=',
+          filterValueRefField: 'missingField',
+        },
+        children: [],
+      },
+    ]
+
+    await expect(mountTableFilters(view, filterChildren)).rejects.toThrow('不存在的字段')
   })
 })

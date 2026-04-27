@@ -199,6 +199,11 @@ function parseTokenUsageDefault(raw: Record<string, unknown>): TokenUsage {
   return usage
 }
 
+function isEmptySseMonitorEvent(entry: AiSseEventInput): boolean {
+  const data = entry.data.trim()
+  return data === '' || (entry.type === 'done' && data === '{}')
+}
+
 function serializeSnapshot(snapshot: AiSessionSnapshot): string {
   return JSON.stringify({
     ...snapshot,
@@ -401,12 +406,16 @@ export function useAiChat(options?: UseAiChatOptions) {
   const collaborationPolicy = ref<CollaborationPolicy>(initialSnapshot.policies.collaboration)
   const isStreaming = ref(false)
   const error = ref<string | null>(null)
+  const PERSIST_DEBOUNCE_MS = 80
+  const TYPEWRITER_INTERVAL_MS = 16
+  const TYPEWRITER_CHARS_PER_TICK = 4
+  let persistTimer: ReturnType<typeof setTimeout> | undefined
+  let typewriterTimer: ReturnType<typeof setTimeout> | undefined
+  let typewriterQueue = ''
+  let typewriterTarget: ChatMessage | null = null
 
-  function syncPersistedSession() {
-    const storageKey = getStorageKey()
-    if (!storageKey) return
-
-    const snapshot: AiSessionSnapshot = {
+  function buildSessionSnapshot(): AiSessionSnapshot {
+    return {
       version: 2,
       pageId: getPageId(),
       mode: getMode(),
@@ -423,16 +432,92 @@ export function useAiChat(options?: UseAiChatOptions) {
       },
       updatedAt: new Date().toISOString(),
     }
+  }
 
-    session.value = snapshot
+  function writeSessionSnapshot(snapshot: AiSessionSnapshot): void {
+    const storageKey = getStorageKey()
+    if (!storageKey) return
 
     try {
-      // 即使 messages/toolLogs 都为空，也要持久化：policies、config、updatedAt
-      // 仍需保留。只有显式切换 pageId 或调用清理 API 时才删除缓存。
       writeCache(storageKey, serializeSnapshot(snapshot))
     } catch {
       // ignore persistence errors in chat UI
     }
+  }
+
+  function flushPersistedSession(snapshot: AiSessionSnapshot = buildSessionSnapshot()): void {
+    if (persistTimer !== undefined) {
+      clearTimeout(persistTimer)
+      persistTimer = undefined
+    }
+    session.value = snapshot
+    writeSessionSnapshot(snapshot)
+  }
+
+  function schedulePersistedSession(delayMs = PERSIST_DEBOUNCE_MS): void {
+    if (isStreaming.value) {
+      return
+    }
+    if (persistTimer !== undefined) return
+    persistTimer = setTimeout(() => {
+      persistTimer = undefined
+      flushPersistedSession()
+    }, delayMs)
+  }
+
+  function syncPersistedSession(persistOptions?: { flush?: boolean; delayMs?: number }) {
+    const snapshot = buildSessionSnapshot()
+    session.value = snapshot
+
+    if (persistOptions?.flush === true) {
+      flushPersistedSession(snapshot)
+      return
+    }
+
+    schedulePersistedSession(persistOptions?.delayMs)
+  }
+
+  function clearTypewriterTimer(): void {
+    if (typewriterTimer === undefined) return
+    clearTimeout(typewriterTimer)
+    typewriterTimer = undefined
+  }
+
+  function drainTypewriterQueue(): void {
+    typewriterTimer = undefined
+    if (typewriterTarget === null || typewriterQueue === '') return
+
+    const chunk = typewriterQueue.slice(0, TYPEWRITER_CHARS_PER_TICK)
+    typewriterQueue = typewriterQueue.slice(chunk.length)
+    typewriterTarget.content += chunk
+    syncPersistedSession()
+
+    if (typewriterQueue !== '') {
+      typewriterTimer = setTimeout(drainTypewriterQueue, TYPEWRITER_INTERVAL_MS)
+    }
+  }
+
+  function enqueueAssistantDelta(target: ChatMessage, delta: string): void {
+    if (delta === '') return
+    typewriterTarget = target
+    typewriterQueue += delta
+    typewriterTimer ??= setTimeout(drainTypewriterQueue, TYPEWRITER_INTERVAL_MS)
+  }
+
+  function flushAssistantTypewriter(): void {
+    clearTypewriterTimer()
+    if (typewriterTarget !== null && typewriterQueue !== '') {
+      typewriterTarget.content += typewriterQueue
+      typewriterQueue = ''
+      syncPersistedSession()
+    }
+    typewriterTarget = null
+  }
+
+  function cancelAssistantTypewriter(): void {
+    clearTypewriterTimer()
+    typewriterQueue = ''
+    typewriterTarget = null
   }
 
   function appendToolLog(entry: Omit<ToolLogEntry, 'timestamp'>): void {
@@ -441,6 +526,8 @@ export function useAiChat(options?: UseAiChatOptions) {
   }
 
   function appendSseEvent(entry: AiSseEventInput): void {
+    if (isEmptySseMonitorEvent(entry)) return
+
     const next: AiSseEventEntry = {
       id: crypto.randomUUID(),
       timestamp: entry.timestamp ?? new Date().toISOString(),
@@ -526,6 +613,8 @@ export function useAiChat(options?: UseAiChatOptions) {
 
   /** 组件卸载时中止活跃流 */
   onBeforeUnmount(() => {
+    flushAssistantTypewriter()
+    flushPersistedSession()
     abortController?.abort()
     abortController = null
   })
@@ -542,6 +631,7 @@ export function useAiChat(options?: UseAiChatOptions) {
     const sender = getSender()
 
     error.value = null
+    isStreaming.value = true
 
     // 添加用户消息
     const userMsg: ChatMessage = {
@@ -566,7 +656,6 @@ export function useAiChat(options?: UseAiChatOptions) {
     syncPersistedSession()
     // 从 reactive 数组取回 proxy 引用，确保后续属性修改触发 Vue 响应式更新
     const reactiveMsg = messages.value[messages.value.length - 1] as ChatMessage
-    isStreaming.value = true
 
     try {
       // 多轮模式：把所有历史（除最后一条助手占位）发给后端
@@ -597,8 +686,7 @@ export function useAiChat(options?: UseAiChatOptions) {
         syncPersistedSession()
       }
       const onDelta = (delta: string) => {
-        reactiveMsg.content += delta
-        syncPersistedSession()
+        enqueueAssistantDelta(reactiveMsg, delta)
       }
       const onUsage = (usageRaw: Record<string, unknown>) => {
         reactiveMsg.usage = getParseTokenUsage()(usageRaw)
@@ -641,16 +729,19 @@ export function useAiChat(options?: UseAiChatOptions) {
         throw new Error('[useAiChat] 缺少 sender 或 streamAiChatText 依赖。')
       }
     } catch (e) {
+      cancelAssistantTypewriter()
       const msg = e instanceof Error ? e.message : '请求失败'
       error.value = msg
       reactiveMsg.content = `⚠️ ${msg}`
       appendToolLog({ type: 'error', tag: 'chat-error', text: msg })
       syncPersistedSession()
     } finally {
+      flushAssistantTypewriter()
       abortController = null
       reactiveMsg.streaming = false
       isStreaming.value = false
-      syncPersistedSession()
+      // 每轮会话结束后立即落盘，确保关闭面板前已持久化本轮完整结果。
+      syncPersistedSession({ flush: true })
     }
   }
 
@@ -669,17 +760,18 @@ export function useAiChat(options?: UseAiChatOptions) {
     // 中止活跃 SSE 流，防止 orphaned 写入（流仍持有旧 reactiveMsg 引用）
     abortController?.abort()
     abortController = null
+    cancelAssistantTypewriter()
     messages.value = []
     sseEvents.value = []
     error.value = null
     isStreaming.value = false
-    syncPersistedSession()
+    syncPersistedSession({ flush: true })
   }
 
   function clearToolLogs() {
     toolLogs.value = []
     fcCalls.value = []
-    syncPersistedSession()
+    syncPersistedSession({ flush: true })
   }
 
   function clear() {

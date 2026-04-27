@@ -71,6 +71,17 @@ export interface AiFeedbackConfig {
   ) => void | Promise<void>
 }
 
+/** 草稿按钮配置：提供诊断文本、前缀提示词的异步 builder。 */
+export interface AiDraftActionConfig {
+  readonly id: string
+  readonly label: string
+  readonly icon?: string
+  /** 异步 builder：返回草稿文本，前缀来自此字段。 */
+  readonly prefix?: string
+  /** 异步 builder 函数，返回诊断内容文本。 */
+  readonly builder: () => Promise<string>
+}
+
 // ── 事件机制 ────────────────────────────────────────────────────────────────
 
 /**
@@ -174,6 +185,8 @@ export interface AiSessionConfig {
   readonly fcLoop?: AiFcLoopConfig
   /** 反馈机制（文本 + 点赞点踩）。 */
   readonly feedback?: AiFeedbackConfig
+  /** 人工触发的诊断草稿按钮。 */
+  readonly draftActions?: MaybeRefOrGetter<readonly AiDraftActionConfig[]>
   /** 声明式生命周期 hooks（事件名即字段名）。 */
   readonly hooks?: AiSessionHooks
 }
@@ -219,6 +232,10 @@ const toolInstances = computed<Record<string, AiToolHandler> | undefined>(() => 
 })
 const fcLoop = computed<AiFcLoopConfig | undefined>(() => configRef.value?.fcLoop)
 const feedback = computed<AiFeedbackConfig | undefined>(() => configRef.value?.feedback)
+const draftActions = computed<readonly AiDraftActionConfig[] | undefined>(() => {
+  const v = configRef.value?.draftActions
+  return v !== undefined ? toValue(v) : undefined
+})
 
 // ── 事件总线 ────────────────────────────────────────────────────────────────
 
@@ -345,6 +362,7 @@ export function useAiPanelStore() {
     toolInstances,
     fcLoop,
     feedback,
+    draftActions,
     // 操作
     open,
     sync,

@@ -303,6 +303,29 @@ describe('repeat-detection-monitor', () => {
     expect(lastFollowUp[0]).toContain('系统执行节奏提醒')
   })
 
+  it('can abort after too many read-only actions when configured', () => {
+    const monitor = createRepeatDetectionMonitor({
+      maxReadOnlyActions: 2,
+      abortOnReadOnlyLimit: true,
+      maxSameSignature: 99,
+    })
+    const actions = ['catalog.query', 'catalog.guide']
+    let abort: { abort: boolean; reason?: string; outcome?: 'aborted' | 'completed' } = { abort: false }
+
+    for (let i = 0; i < actions.length; i++) {
+      const ctx = makeCtx({
+        currentTurn: makeTurn({ toolBlock: { action: actions[i]!, id: `ro${i}`, params: { i } } }),
+        params: { i },
+        result: okResult(),
+      })
+      monitor.afterStillExecution(ctx)
+      abort = monitor.shouldAbort!(ctx)
+    }
+
+    expect(abort.abort).toBe(true)
+    expect(abort.reason).toContain('只读工具调用')
+  })
+
   it('injects followUp on period-3 action cycle instead of aborting', () => {
     const monitor = createRepeatDetectionMonitor({ maxCyclePeriod: 3, cycleRepeatThreshold: 3 })
     const actions = ['A', 'B', 'C']

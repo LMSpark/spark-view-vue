@@ -10,6 +10,7 @@ export interface RepeatDetectionConfig {
   maxSameSignature?: number
   maxConsecutiveErrors?: number
   maxReadOnlyActions?: number
+  abortOnReadOnlyLimit?: boolean
   maxMissingComponentRetries?: number
   maxCyclePeriod?: number
   cycleRepeatThreshold?: number
@@ -104,6 +105,7 @@ export function createRepeatDetectionMonitor(
   const maxSame = cfg?.maxSameSignature ?? 3
   const maxErrors = cfg?.maxConsecutiveErrors ?? 3
   const maxReadOnlyActions = cfg?.maxReadOnlyActions
+  const abortOnReadOnlyLimit = cfg?.abortOnReadOnlyLimit ?? false
   const maxMissingComponentRetries = cfg?.maxMissingComponentRetries ?? 2
   const maxCyclePeriod = cfg?.maxCyclePeriod ?? 3
   const cycleRepeatThreshold = cfg?.cycleRepeatThreshold ?? 3
@@ -218,6 +220,17 @@ export function createRepeatDetectionMonitor(
         return {
           abort: true,
           reason: `连续 ${consecutiveErrorCount} 次执行失败，LLM 无法自我修正`,
+        }
+      }
+      if (
+        abortOnReadOnlyLimit
+        && maxReadOnlyActions !== undefined
+        && maxReadOnlyActions > 0
+        && consecutiveReadOnlyCount >= maxReadOnlyActions
+      ) {
+        return {
+          abort: true,
+          reason: `连续 ${consecutiveReadOnlyCount} 次只读工具调用仍未写入，已停止本轮以避免编辑会话长时间卡住`,
         }
       }
 

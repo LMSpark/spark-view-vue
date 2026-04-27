@@ -126,6 +126,71 @@ describe('DataView.requestData orchestration', () => {
     pSpy.mockRestore(); cSpy.mockRestore()
   })
 
+  it('POST list endpoints should merge relation constraints into remote filter AST', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'OrchRemoteFilterAST',
+      tables: {
+        Parents: {
+          tableName: 'Parents',
+          columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
+          views: { default: { rows: [] } },
+        },
+        Children: {
+          tableName: 'Children',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'parentId', type: 'number' },
+            { name: 'amount', type: 'number' },
+            { name: 'threshold', type: 'number' },
+          ],
+          views: {
+            default: {
+              rows: [],
+              filterExpression: {
+                field: 'amount',
+                op: '>=',
+                value: { kind: 'field', field: 'threshold' },
+              },
+            },
+          },
+          api: { list: { url: '/test/children/query', method: 'POST' } },
+        },
+      },
+      tableRelations: [
+        { parentTable: 'Parents', childTable: 'Children', parentField: 'id', childField: 'parentId' },
+      ],
+      viewDependencies: [
+        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows' },
+      ],
+    })
+
+    const pView = ds.getView('Parents', 'default')!
+    const cView = ds.getView('Children', 'default')!
+
+    pView.rows.splice(0, pView.rows.length, { id: 11 }, { id: 12 })
+    pView.requestState = RequestState.Loaded
+
+    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
+      expect(params).toBeDefined()
+      expect(params.page).toBe(1)
+      expect(params.pageSize).toBe(20)
+      expect(params.filter).toEqual({
+        type: 'and',
+        children: [
+          { field: 'parentId', op: 'in', value: [11, 12] },
+          { field: 'amount', op: '>=', value: { kind: 'field', field: 'threshold' } },
+        ],
+      })
+      cView.requestState = RequestState.Loaded
+      return { success: true, data: [] } as any
+    })
+
+    await cView.requestData()
+
+    expect(cSpy).toHaveBeenCalledOnce()
+    cSpy.mockRestore()
+  })
+
   it('step 4.4: triggers children BR after successful load (3-level cascade)', async () => {
     // 三层级联：A → B → C
     // 调用 A.requestData()

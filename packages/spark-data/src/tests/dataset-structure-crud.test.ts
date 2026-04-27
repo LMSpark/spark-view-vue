@@ -104,6 +104,7 @@ describe('DataSet structure CRUD', () => {
     expect(parentRelations).toHaveLength(1)
     expect(parentRelations[0]?.parentField).toBe('code')
     expect(parentRelations[0]?.childField).toBe('orderCode')
+    expect(parentRelations[0]).not.toHaveProperty('filterExpression')
   })
 
   it('updateDependency should rebuild resolved dependency metadata', () => {
@@ -121,5 +122,6 @@ describe('DataSet structure CRUD', () => {
     expect(parentRelations).toHaveLength(1)
     expect(parentRelations[0]?.dependencyType).toBe('selectedRows')
     expect(parentRelations[0]?.autoLoad).toBe(false)
+    expect(parentRelations[0]).not.toHaveProperty('filterExpression')
   })
 })

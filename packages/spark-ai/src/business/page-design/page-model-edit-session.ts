@@ -56,6 +56,7 @@ export interface PageModelEditLogEntry {
   type: 'info' | 'success' | 'error'
   tag: string
   text: string
+  timestamp: string
 }
 
 export interface PageModelEditSessionState {
@@ -113,6 +114,8 @@ export interface PageModelEditRunHooks {
 }
 
 export interface PageModelEditRunOptions extends PageModelEditRunHooks {
+  /** 原始人工输入；用于诊断日志，不包含系统拼接的上下文 prompt。 */
+  originalUserInput?: string
   skipBootstrap?: boolean
   maxRounds?: number
   toolMode?: 'all' | 'describe-only'
@@ -180,6 +183,17 @@ function isDataSetWriteAction(runtime: PageModelEditSessionRuntime, action: stri
     : action.startsWith('datasetTool.') && isToolWriteAction(runtime, action)
 }
 
+function isEmptySseMonitorEvent(event: { type: string; data: string }): boolean {
+  const data = event.data.trim()
+  return data === '' || (event.type === 'done' && data === '{}')
+}
+
+function formatHumanInputForLog(input: string): string {
+  const trimmed = input.trim()
+  const maxLength = 20000
+  return trimmed.length <= maxLength ? trimmed : `${trimmed.slice(0, maxLength)}\n...<truncated>`
+}
+
 export function createPageModelEditSession(
   options: PageModelEditSessionOptions,
 ): PageModelEditSessionController {
@@ -242,7 +256,7 @@ export function createPageModelEditSession(
         return
       }
     }
-    nextLog.push({ type, tag, text })
+    nextLog.push({ type, tag, text, timestamp: new Date().toISOString() })
     if (nextLog.length > LOG_LIMIT) {
       nextLog.splice(0, nextLog.length - LOG_LIMIT)
     }
@@ -286,21 +300,20 @@ export function createPageModelEditSession(
   function onSseEvent(event: { sessionId: string; type: string; data: string }, hooks?: PageModelEditRunHooks): void {
     hooks?.onSseEvent?.(event)
 
+    if (isEmptySseMonitorEvent(event)) return
+
     if (event.type === 'delta') {
       patchState({ aiBuffer: state.aiBuffer + event.data })
       hooks?.onDelta?.(event.data)
-      pushLog('info', 'SSE delta', event.data, { merge: true })
       return
     }
 
     if (event.type === 'reasoning') {
       hooks?.onReasoning?.(event.data)
-      pushLog('info', 'SSE reasoning', event.data, { merge: true })
       return
     }
 
     if (event.type === 'result') {
-      pushLog('success', 'SSE result', event.data)
       try {
         const parsed = JSON.parse(event.data) as {
           toolCalls?: Array<{ function?: { name?: string } }>
@@ -326,12 +339,9 @@ export function createPageModelEditSession(
     }
 
     if (event.type === 'error') {
-      pushLog('error', 'SSE 错误', event.data)
       patchState({ aiBuffer: '' })
       return
     }
-
-    pushLog('info', `SSE ${event.type}`, event.data || '(empty)')
   }
 
   function formatStillFailure(result: Extract<StillResult, { ok: false }>): string {
@@ -425,7 +435,8 @@ export function createPageModelEditSession(
       const session = hooks?.skipBootstrap === true
         ? ensureSession()
         : await bootstrap({ silent: true })
-      pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
+      pushLog('info', '人工输入', formatHumanInputForLog(hooks?.originalUserInput ?? prompt))
+      pushLog('info', '开始 LLM 编辑', '已生成本轮上下文 prompt，准备调用模型')
       const repeatDetection: RepeatDetectionConfig = {
         maxSameSignature: 6,
         maxConsecutiveErrors: 6,

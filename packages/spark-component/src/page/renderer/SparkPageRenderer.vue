@@ -59,7 +59,7 @@
  * ```
  */
 import {
-  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
+  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, onErrorCaptured,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
@@ -83,6 +83,15 @@ import type { PageContext } from '../context/types'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 
 const logger = Logger('SparkPageRenderer')
+
+type PageRuntimeErrorPhase = 'load' | 'script-compile' | 'init' | 'script-function' | 'render'
+
+interface PageRuntimeErrorPayload {
+  phase: PageRuntimeErrorPhase
+  message: string
+  pageId: string
+  at: string
+}
 
 type RenderFunction = (props?: Record<string, unknown>) => unknown
 type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
@@ -196,6 +205,8 @@ interface Props extends Omit<SparkNode, 'type'> {
   afterLoad?: (config: PageConfig) => void | Promise<void>
   /** 错误处理函数 */
   onError?: (error: Error) => void
+  /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */
+  onRuntimeError?: (payload: PageRuntimeErrorPayload) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -261,6 +272,51 @@ const actionCtx = {
   getRouter: () => router,
   callFunc: callPageFunction,
 }
+const reportedRuntimeErrorObjects = new WeakSet<object>()
+
+function formatRuntimeError(errorLike: unknown): string {
+  if (errorLike instanceof Error) return errorLike.stack ?? errorLike.message
+  if (typeof errorLike === 'string') return errorLike
+  try {
+    return JSON.stringify(errorLike, null, 2)
+  } catch {
+    return String(errorLike)
+  }
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  if ((typeof value !== 'object' && typeof value !== 'function') || value === null) return false
+  return typeof (value as { then?: unknown }).then === 'function'
+}
+
+function isObjectLike(value: unknown): value is object {
+  return (typeof value === 'object' || typeof value === 'function') && value !== null
+}
+
+function markRuntimeErrorReported(errorLike: unknown): void {
+  if (isObjectLike(errorLike)) reportedRuntimeErrorObjects.add(errorLike)
+}
+
+function wasRuntimeErrorReported(errorLike: unknown): boolean {
+  return isObjectLike(errorLike) && reportedRuntimeErrorObjects.has(errorLike)
+}
+
+function reportRuntimeError(phase: PageRuntimeErrorPhase, pageId: string, errorLike: unknown): void {
+  markRuntimeErrorReported(errorLike)
+  const message = formatRuntimeError(errorLike)
+  props.onRuntimeError?.({
+    phase,
+    message,
+    pageId,
+    at: new Date().toISOString(),
+  })
+}
+
+onErrorCaptured((capturedError, _instance, info) => {
+  if (wasRuntimeErrorReported(capturedError)) return
+  const suffix = info ? `\n\n[vueInfo]\n${info}` : ''
+  reportRuntimeError('render', currentPageId.value || props.pageId || props.pageConfig?.pageId || 'unknown', `${formatRuntimeError(capturedError)}${suffix}`)
+})
 
 // ==================== 脚本编译 ====================
 
@@ -271,13 +327,30 @@ function executeScript(pageId: string, scriptText: string): void {
     logger.info('📜 脚本编译成功', { pageId, functions: Object.keys(pageFunctions.value) })
   } catch (e) {
     logger.error('脚本编译失败', { pageId, error: e })
+    reportRuntimeError('script-compile', pageId, e)
     pageFunctions.value = {}
   }
 }
 
 function callPageFunction(functionName: string, ...args: unknown[]): unknown {
   const fn = pageFunctions.value[functionName]
-  if (typeof fn === 'function') return fn(...args)
+  if (typeof fn === 'function') {
+    try {
+      const result = fn(...args)
+      if (isPromiseLike(result)) {
+        return Promise.resolve(result).catch((e: unknown) => {
+          logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
+          reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
+          throw e
+        })
+      }
+      return result
+    } catch (e) {
+      logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
+      reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
+      throw e
+    }
+  }
   if (import.meta.env.DEV) {
     logger.warn(`[SparkPageRenderer] 事件函数未定义: ${functionName}`)
   }
@@ -367,7 +440,10 @@ async function loadConfig(): Promise<void> {
     applyNodeProps(targetPageId, nodeProps)
     if (isStale()) return
     if (props.afterLoad) await props.afterLoad(nodeProps)
-  }, props.onError)
+  }, (error) => {
+    reportRuntimeError('load', targetPageId, error)
+    props.onError?.(error)
+  })
 
   _inFlightPageId = null
 
@@ -378,10 +454,12 @@ async function loadConfig(): Promise<void> {
     const init = pageFunctions.value['__init__']
     if (typeof init === 'function') {
       try {
-        init()
+        const initResult = init()
+        if (isPromiseLike(initResult)) await initResult
         logger.info('✅ __init__ 执行成功')
       } catch (e) {
         logger.error('__init__ 执行失败', { error: e })
+        reportRuntimeError('init', currentPageId.value || targetPageId, e)
       }
     }
     pds.dataSet?.triggerAutoLoad()

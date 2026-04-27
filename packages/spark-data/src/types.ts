@@ -689,10 +689,10 @@ export type FilterOperator =
   | 'between' | 'not between'
   | 'startsWith' | 'endsWith' | 'contains'
 
-/** 过滤值函数调用 */
-export interface FilterFunctionCall {
-  func: string
-  args: FilterValueExpression[]
+/** 过滤字段引用（当前行字段） */
+export interface FilterFieldRef {
+  kind: 'field'
+  field: string
 }
 
 /** 过滤值表达式 */
@@ -701,7 +701,7 @@ export type FilterValueExpression =
   | number
   | boolean
   | null
-  | FilterFunctionCall
+  | FilterFieldRef
   | FilterValueExpression[]
 
 /** 过滤表达式 */
@@ -797,7 +797,7 @@ export interface ViewDependency {
 // ═══════════════════════════════════════════
 
 /**
- * 展开后的内部关系格式 — TableRelation + ViewDependency 合并 + filterExpression 自动生成。
+ * 展开后的内部关系格式 — TableRelation + ViewDependency 合并后的字段绑定结果。
  *
  * @internal 仅供 spark-data 内部消费（CascadeDelegate / DataView / ComputedColumnDelegate）。
  * 外部配置使用 `TableRelation` + `ViewDependency`。
@@ -809,15 +809,10 @@ export interface DataRelation {
   childViewId?: string
   /** 父表中用于匹配的字段（默认取父视图 primaryKey，通常为 'id'） */
   parentField?: string
-  /** 子表中用于匹配的字段——简写模式必填；完整模式不填时从 filterExpression.field 推断 */
+  /** 子表中用于匹配的字段（简写模式必填） */
   childField?: string
   /** 依赖类型（默认 'currentRow'） */
   dependencyType?: DependencyType
-  /**
-   * 过滤表达式——完整模式手动指定；简写模式可省略，系统根据 childField/parentField 自动生成。
-   * 规范化后此字段一定存在（DataSet 构造函数保证）。
-   */
-  filterExpression?: FilterExpression
   cascadeUpdate?: boolean
   cascadeDelete?: boolean
   /** 父变化时是否自动级联加载子视图（默认 true——仅 `false` 时跳过） */

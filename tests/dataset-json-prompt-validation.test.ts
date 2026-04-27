@@ -13,12 +13,18 @@
  * 它属于仓库级 AI 质量门，不属于 packages/spark-data 的运行时职责。
  */
 
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect } from 'vitest'
 import { DataSet } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 
 /** 读取行字段（绕过 noPropertyAccessFromIndexSignature） */
 const f = (row: IDataRow | undefined | null, field: string): unknown => row?.[field]
+
+const flushDataViewDebouncers = () => new Promise<void>(resolve => setTimeout(resolve, 32))
+
+afterEach(async () => {
+  await flushDataViewDebouncers()
+})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 共享工具

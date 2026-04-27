@@ -1,109 +1,333 @@
-/* 请假管理系统 - 页面样式 */
+/* ========================================
+   请假管理系统 - 美化版样式
+   ======================================== */
 
-/* 页面标题区 */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+/* ---------- 全局基调 ---------- */
+body {
+  background: #f0f2f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.page-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #303133;
+/* ---------- 统计卡片网格 ---------- */
+/* 覆盖 section 的 24 列网格，让卡片真正 4 列并排 */
+.renderer-section-body.stats-card-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 20px !important;
+  margin-bottom: 24px;
 }
 
-/* 状态标签 */
-.status-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
+/* 让每个 grid-item 占满分配的列 */
+.renderer-section-body.stats-card-grid > .renderer-section-grid-item {
+  grid-area: auto !important;
+  min-width: 0;
+}
+
+.stats-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px !important;
+  padding: 20px 24px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none !important;
+  cursor: default;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 12px 12px 0 0;
+}
+
+.stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 待审批 - 橙色系 */
+.stats-card-pending {
+  background: linear-gradient(135deg, #fff7e6 0%, #fff 60%);
+}
+.stats-card-pending::before { background: linear-gradient(90deg, #faad14, #ffc53d); }
+.stats-card-pending .stats-number {
+  color: #d48806;
+}
+
+/* 已通过 - 绿色系 */
+.stats-card-approved {
+  background: linear-gradient(135deg, #f6ffed 0%, #fff 60%);
+}
+.stats-card-approved::before { background: linear-gradient(90deg, #52c41a, #73d13d); }
+.stats-card-approved .stats-number {
+  color: #389e0d;
+}
+
+/* 已拒绝 - 红色系 */
+.stats-card-rejected {
+  background: linear-gradient(135deg, #fff1f0 0%, #fff 60%);
+}
+.stats-card-rejected::before { background: linear-gradient(90deg, #ff4d4f, #ff7875); }
+.stats-card-rejected .stats-number {
+  color: #cf1322;
+}
+
+/* 本月总计 - 蓝色系 */
+.stats-card-total {
+  background: linear-gradient(135deg, #e6f7ff 0%, #fff 60%);
+}
+.stats-card-total::before { background: linear-gradient(90deg, #1890ff, #40a9ff); }
+.stats-card-total .stats-number {
+  color: #096dd9;
+}
+
+/* 统计数字 */
+.stats-number {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  line-height: 1.2;
+  display: block;
+  margin-top: 4px;
+  transition: all 0.3s ease;
+}
+
+/* 隐藏卡片内多余的冒号标签 */
+.stats-card .field-label {
+  display: none !important;
+}
+
+/* 卡片头部标题美化 */
+.el-card__header {
+  font-size: 14px;
+  font-weight: 600;
+  color: #595959;
+  padding: 12px 20px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  background: transparent;
+}
+
+/* ---------- 表格美化 ---------- */
+.el-table {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.el-table th.el-table__cell {
+  background: linear-gradient(180deg, #fafafa, #f0f2f5) !important;
+  font-weight: 600;
+  color: #262626;
+  font-size: 13px;
+  padding: 12px 8px !important;
+}
+
+.el-table .el-table__row {
+  transition: background 0.2s ease;
+}
+
+.el-table .el-table__row:hover > td {
+  background: #e6f7ff !important;
+}
+
+.el-table .el-table__row--striped td {
+  background: #fafafa;
+}
+
+.el-table td.el-table__cell {
+  padding: 10px 8px !important;
+  font-size: 13px;
+}
+
+/* 表格操作列按钮美化 */
+.el-table .el-button--text {
   font-size: 12px;
+  padding: 4px 8px !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.el-table .el-button--text:hover {
+  background: rgba(64, 158, 255, 0.08);
+  transform: scale(1.05);
+}
+
+/* ---------- 筛选区美化 ---------- */
+.renderer-table-filters {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.renderer-table-filters__header {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.renderer-table-filters__title {
+  font-weight: 600;
+  color: #262626;
+  font-size: 14px;
+}
+
+.renderer-table-filters__toggle {
+  border: none;
+  background: transparent;
+  color: #409eff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.renderer-table-filters__toggle:hover {
+  background: rgba(64, 158, 255, 0.06);
+}
+
+.renderer-table-filters__body {
+  padding: 16px 20px;
+}
+
+/* ---------- 工具栏美化 ---------- */
+.renderer-toolbar {
+  padding: 12px 0;
+}
+
+.renderer-toolbar .el-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.renderer-toolbar .el-button--primary {
+  box-shadow: 0 2px 6px rgba(64, 158, 255, 0.25);
+}
+
+.renderer-toolbar .el-button--primary:hover {
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+/* 刷新按钮用默认样式而非 primary */
+.renderer-toolbar .el-button--default {
+  color: #595959;
+  border-color: #d9d9d9;
+}
+
+.renderer-toolbar .el-button--default:hover {
+  color: #409eff;
+  border-color: #409eff;
+  background: #fff;
+}
+
+/* ---------- 弹窗美化 ---------- */
+.el-dialog {
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+.el-dialog__header {
+  padding: 20px 24px 12px !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.el-dialog__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.el-dialog__body {
+  padding: 24px !important;
+}
+
+.el-dialog__footer {
+  padding: 12px 24px 20px !important;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 弹窗底部按钮 */
+.el-dialog__footer .el-button {
+  border-radius: 8px;
+  padding: 8px 20px;
   font-weight: 500;
 }
 
-.status-tag.pending {
-  background: #fdf6ec;
-  color: #e6a23c;
-  border: 1px solid #faecd8;
+/* ---------- 表单美化 ---------- */
+.el-form-item {
+  margin-bottom: 20px;
 }
 
-.status-tag.approved {
-  background: #f0f9eb;
-  color: #67c23a;
-  border: 1px solid #e1f3d8;
+.el-form-item__label {
+  font-weight: 500;
+  color: #595959;
 }
 
-.status-tag.rejected {
-  background: #fef0f0;
-  color: #f56c6c;
-  border: 1px solid #fde2e2;
-}
-
-.status-tag.cancelled {
-  background: #f4f4f5;
-  color: #909399;
-  border: 1px solid #e9e9eb;
-}
-
-/* 操作按钮组 */
-.action-btns {
-  display: flex;
-  gap: 8px;
-}
-
-/* 弹窗表单 */
-.form-dialog {
-  min-width: 500px;
-}
-
-.form-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.form-row > * {
-  flex: 1;
-}
-
-/* 统计卡片区 */
-.stats-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  flex: 1;
-  background: #fff;
-  border: 1px solid #ebeef5;
+.el-input__inner,
+.el-textarea__inner,
+.el-select .el-input__inner {
   border-radius: 8px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  transition: all 0.25s ease;
 }
 
-.stat-card .stat-label {
-  font-size: 13px;
-  color: #909399;
-  margin-bottom: 4px;
+.el-input__inner:focus,
+.el-textarea__inner:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.12);
 }
 
-.stat-card .stat-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
+/* ---------- 审批弹窗只读字段 ---------- */
+.el-form-item.is-readonly .el-input__inner {
+  background: #fafafa;
+  border-color: #e8e8e8;
+  color: #595959;
 }
 
-.stat-card .stat-value.pending {
-  color: #e6a23c;
+/* ---------- 标签美化 ---------- */
+.el-tag {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0 10px;
+  height: 26px;
+  line-height: 24px;
 }
 
-.stat-card .stat-value.approved {
-  color: #67c23a;
+/* ---------- 动画 ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.stat-card .stat-value.rejected {
-  color: #f56c6c;
+.stats-card {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+.stats-card:nth-child(1) { animation-delay: 0.05s; }
+.stats-card:nth-child(2) { animation-delay: 0.1s; }
+.stats-card:nth-child(3) { animation-delay: 0.15s; }
+.stats-card:nth-child(4) { animation-delay: 0.2s; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1200px) {
+  .renderer-section-body.stats-card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .renderer-section-body.stats-card-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

@@ -1,7 +1,7 @@
 <template>
   <transition name="app-ai-panel-fade">
     <div
-      v-if="visible"
+      v-show="visible"
       class="app-ai-panel"
       :class="{ 'is-dragging': dragging, 'is-resizing': resizing }"
       :style="panelStyle"
@@ -56,6 +56,7 @@
           :parse-token-usage="parseTokenUsage"
           :upload-file="uploadFile"
           :report-fc-error="fcErrorReporter"
+          :draft-actions="draftActions"
           v-bind="externalToolLogProps"
           :compact="false"
           mode="multi"
@@ -111,6 +112,7 @@ const placeholder = store.placeholder
 const externalToolLogs = store.externalToolLogs
 const clearExternalToolLogs = store.clearExternalToolLogs
 const fcErrorReporter = store.fcErrorReporter
+const draftActions = store.draftActions
 const sender = store.sender
 
 const externalToolLogProps = computed(() => {

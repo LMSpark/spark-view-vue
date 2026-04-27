@@ -71,7 +71,6 @@
             :align="resolveRowFragmentAlign(child)"
             :header-align="resolveRowFragmentHeaderAlign(child)"
             :class-name="resolveRowFragmentClass(child)"
-            resizable
           >
             <template #default="scope">
               <!--
@@ -359,13 +358,23 @@ const baseElTableProps = computed<Record<string, unknown>>(() => {
     rowActionsWidth: _rowActionsWidth,
     rowActionsAlign: _rowActionsAlign,
     rowActionsFixed: _rowActionsFixed,
+    resize: _resize,
     ...tableProps
   } = raw
 
+  const resizeAlias = _resize === true || _resize === false ? _resize : undefined
+  const explicitResizable = tableProps['resizable']
+  const resolvedResizable = resizeAlias
+    ?? (explicitResizable === true || explicitResizable === false ? explicitResizable : true)
+
+  const resolvedBorder = resolvedResizable === true
+    ? true
+    : (tableProps['border'] ?? true)
+
   return {
-    border: true,
-    resizable: true,
     ...tableProps,
+    border: resolvedBorder,
+    resizable: resolvedResizable,
   }
 })
 const effectiveDataKey = computed(() => props.dataKey)
@@ -627,7 +636,7 @@ const rowActionColumnAttrs = computed(() => {
   const label = childCompatProp<string>(actionsNode.value, 'label') ?? '操作'
   const width = childCompatProp<number | string>(actionsNode.value, 'width')
     ?? legacyRowActionsWidth.value
-    ?? 160
+    ?? 220
   const align = rowActionsAlignValue.value
   const headerAlign = rowActionsHeaderAlignValue.value
   const fixed = rowActionsFixedValue.value
@@ -637,7 +646,6 @@ const rowActionColumnAttrs = computed(() => {
     ...(align !== undefined ? { align } : {}),
     headerAlign,
     ...(fixed !== undefined ? { fixed } : {}),
-    resizable: true,
   }
 })
 

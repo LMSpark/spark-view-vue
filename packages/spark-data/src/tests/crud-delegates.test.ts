@@ -276,6 +276,50 @@ describe('M5: CrudService shared HTTP client', () => {
     expect(firstGetCall).toBeDefined()
     expect(firstGetCall?.[0]).toBe('/tenants/tenant-from-page/projects/project-from-page/navigation/nodes')
   })
+
+  it('CrudService.list should POST query envelope for POST list endpoints', async () => {
+    const mockClient = {
+      get: vi.fn(),
+      post: vi.fn().mockResolvedValue({ rows: [{ id: 1 }], total: 1, page: 2, pageSize: 5 }),
+      put: vi.fn(),
+      delete: vi.fn(),
+      request: vi.fn(),
+      requestFull: vi.fn(),
+      patch: vi.fn(),
+    }
+
+    const service = new CrudService({
+      list: { url: '/api/filter-expression-cases/query', method: 'POST' },
+    }, mockClient as any)
+
+    const filter = {
+      type: 'and' as const,
+      children: [
+        { field: 'status', op: '==', value: 'open' },
+        { field: 'amount', op: '>=', value: { kind: 'field' as const, field: 'threshold' } },
+      ],
+    }
+
+    const result = await service.list({
+      page: 2,
+      pageSize: 5,
+      sort: 'priority:desc',
+      filter,
+    })
+
+    expect(result.success).toBe(true)
+    expect(mockClient.post).toHaveBeenCalledOnce()
+    expect(mockClient.post.mock.calls[0]?.[0]).toBe('/api/filter-expression-cases/query')
+    expect(mockClient.post.mock.calls[0]?.[1]).toEqual({
+      query: {
+        page: 2,
+        pageSize: 5,
+        sort: 'priority:desc',
+        filter,
+      },
+    })
+    expect(mockClient.get).not.toHaveBeenCalled()
+  })
 })
 
 // ============================================================

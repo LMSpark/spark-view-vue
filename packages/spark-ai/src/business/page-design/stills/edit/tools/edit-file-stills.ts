@@ -29,7 +29,7 @@ import {
  *
  * 这里不包含 rule.json / pagedata.json：
  * - rule.json 走 nodeTree 相关 still；
- * - pagedata.json 走 datasetTool.* / dataset.export 链路。
+ * - pagedata.json 走 datasetTool.* 链路。
  *
  * 本模块只负责 script.js 与 style.css 这两类“全文本”文件。
  */
@@ -118,6 +118,56 @@ function validateEditFileWriteParams(params: unknown): string | null {
   return typeof payload['content'] === 'string' ? null : '缺少 content（string）'
 }
 
+interface ScriptApiViolationRule {
+  pattern: RegExp
+  api: string
+  fix: string
+}
+
+const FORBIDDEN_SCRIPT_API_RULES: readonly ScriptApiViolationRule[] = [
+  {
+    pattern: /\$page\.(?:getDataSet|getTableRows|getTableData|getViewData)\s*\(/,
+    api: '$page 数据读取伪 API',
+    fix: '使用 $dataSet?.getView("TableName", "default")?.rows 读取 DataView 行数据。',
+  },
+  {
+    pattern: /\$page\.(?:setFieldValue|getFieldValue|setFormData|getFormData|clearForm)\s*\(/,
+    api: '$page 表单/字段伪 API',
+    fix: '使用 $components.getApi("component-id") 获取表单组件 API，再调用 getFormData/setFieldValue/resetFields。',
+  },
+  {
+    pattern: /\$page\.(?:createRow|updateRow|deleteRow|refreshTable)\s*\(/,
+    api: '$page CRUD/表格伪 API',
+    fix: '使用 $dataSet?.getView(...).appendRow/updateRowById/deleteRowById，或 $components.getApi("table-id")?.refresh()。',
+  },
+  {
+    pattern: /\$page\.showDialog\s*\(\s*['"`]|\$page\.hideDialog\s*\(/,
+    api: '$page 组件弹窗伪 API',
+    fix: '使用 $components.getApi("dialog-id")?.open() / close() 控制 r-dialog。',
+  },
+  {
+    pattern: /\$page\.confirm\s*\(/,
+    api: '$page.confirm 伪 API',
+    fix: '使用 await $page.showConfirm(message, title, options) 并根据 boolean 返回值继续处理。',
+  },
+  {
+    pattern: /\.setSummaryRow\s*\(/,
+    api: 'DataView.setSummaryRow 伪 API',
+    fix: 'DataView.summaryRow 由 aggregates 自动计算；不要在 script.js 中手动 setSummaryRow。',
+  },
+]
+
+function validateScriptRuntimeContract(content: string): StillResult<undefined> | null {
+  const violation = FORBIDDEN_SCRIPT_API_RULES.find((rule) => rule.pattern.test(content))
+  if (violation === undefined) return null
+  return {
+    ok: false,
+    code: 'INVALID_SCRIPT_RUNTIME_API',
+    msg: `script.js 使用了不可用的运行时 API：${violation.api}`,
+    fix: `${violation.fix} $page 仅用于 showMessage/showConfirm/showPrompt/showAlert/showLoading/navigate 等页面服务；数据入口是 $dataSet，组件入口是 $components.getApi。`,
+  }
+}
+
 /**
  * 读取编辑态中的文件全文。
  *
@@ -202,6 +252,10 @@ function createWriteStill(desc: FileDescriptor, action: string): StillDefinition
           msg: writableError,
           fix: '请先执行 edit.bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*',
         }
+      }
+      if (desc.key === 'script') {
+        const scriptContractError = validateScriptRuntimeContract(params.content)
+        if (scriptContractError !== null) return scriptContractError
       }
       writeEditFileContent(session, desc.key, params.content)
       return { ok: true, data: undefined, summary: `${desc.label} 已更新` }

@@ -245,4 +245,14 @@ describe('提示词内容完整性', () => {
     expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('旧点号格式一律禁止')
     expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('sparkNodeTree.collectDataKeys')
   })
+
+  it('STILLS_EDIT_RUNTIME_PROMPT 包含 script.js 沙箱 API 契约', () => {
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('script.js 沙箱运行时契约')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('$page 只用于页面服务')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('$dataSet?.getView')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('$components.getApi')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('$page.getTableRows')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('$page.getTableData')
+    expect(STILLS_EDIT_RUNTIME_PROMPT).toContain('禁止 medium')
+  })
 })

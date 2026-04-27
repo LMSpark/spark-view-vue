@@ -7,7 +7,7 @@
  */
 
 import type {
-  IDataRow, IViewMetadata, FilterExpression, FilterFunctionCall, FilterOperator, FilterValueExpression, SortExpression,
+  IDataRow, IViewMetadata, FilterExpression, FilterFieldRef, FilterOperator, FilterValueExpression, SortExpression,
   QueryParams, DataColumn, DataRelation,
   CrudResult, CrudOperationConfig,
   IDataSource,
@@ -71,26 +71,32 @@ interface DataViewEventMap extends Record<string, any[]> {
 /** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
 const ROWS_CHANGED_DEBOUNCE_MS = 16
 
-const FILTER_PLACEHOLDER_RE = /\$\[([^\]]+)\]/g
-const PURE_FILTER_PLACEHOLDER_RE = /^\$\[([^\]]+)\]$/
+const LEGACY_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$\[/
+const LEGACY_PARENT_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$parent\[/
 
-function isFilterFunctionCall(value: FilterValueExpression): value is FilterFunctionCall {
+function isFilterFieldRef(value: unknown): value is FilterFieldRef {
   return value !== null
     && typeof value === 'object'
-    && !Array.isArray(value)
-    && typeof (value as { func?: unknown }).func === 'string'
-    && Array.isArray((value as { args?: unknown }).args)
+    && 'kind' in value
+    && 'field' in value
+    && (value as { kind?: unknown }).kind === 'field'
+    && typeof (value as { field?: unknown }).field === 'string'
 }
 
-function resolveFilterPlaceholderString(value: string, row: IDataRow): unknown {
-  const pureMatch = PURE_FILTER_PLACEHOLDER_RE.exec(value)
-  const pureField = pureMatch?.[1]
-  if (pureField !== undefined) return row[pureField]
-  if (!value.includes('$[')) return value
-  return value.replace(FILTER_PLACEHOLDER_RE, (_, fieldName: string) => {
-    const resolved = row[fieldName]
-    return resolved === null || resolved === undefined ? '' : String(resolved)
-  })
+function resolveFilterFieldRef(fieldName: string, row: IDataRow): unknown {
+  if (!(fieldName in row)) {
+    throw new Error(`过滤值表达式引用了不存在的字段 "${fieldName}"`)
+  }
+  return row[fieldName]
+}
+
+function assertNoLegacyFilterPlaceholderString(value: string): void {
+  if (LEGACY_PARENT_FILTER_PLACEHOLDER_TOKEN_RE.test(value)) {
+    throw new Error('过滤值中的 "$parent[...]" 协议已移除，请改用 DataRelation.parentField / childField')
+  }
+  if (LEGACY_FILTER_PLACEHOLDER_TOKEN_RE.test(value)) {
+    throw new Error('过滤值占位字符串协议已移除，请改用结构化字段引用 { kind: "field", field: "..." }')
+  }
 }
 
 function compareFilterScalar(left: unknown, right: unknown): number {
@@ -308,6 +314,8 @@ export class DataView implements IDataSource {
 
   /** DataSet 初始化后是否自动加载数据（默认 false） */
   autoLoad = false
+  /** autoLoad 是否来自显式视图配置，而不是类默认值。 */
+  autoLoadConfigured = false
 
   /** 设置分页/排序/过滤后是否自动 refresh()（默认 false） */
   autoRefresh = false
@@ -325,27 +333,141 @@ export class DataView implements IDataSource {
     return clonedRows
   }
 
-  private _resolveFilterValueExpression(value: FilterValueExpression, row: IDataRow): unknown {
-    if (typeof value === 'string') return resolveFilterPlaceholderString(value, row)
-    if (Array.isArray(value)) return value.map(item => this._resolveFilterValueExpression(item, row))
-    if (isFilterFunctionCall(value)) return this._evaluateFilterFunction(value, row)
-    return value
+  private _getAvailableLocalFilterFields(): ReadonlySet<string> {
+    const fields = new Set<string>()
+
+    if (this._columnMap) {
+      for (const fieldName of this._columnMap.keys()) fields.add(fieldName)
+    }
+
+    const rows = this._getStaticLocalFilterSourceRows()
+    for (const row of rows) {
+      for (const fieldName of Object.keys(row)) fields.add(fieldName)
+    }
+
+    return fields
   }
 
-  private _evaluateFilterFunction(call: FilterFunctionCall, row: IDataRow): unknown {
-    const funcName = call.func.trim().toUpperCase()
-
-    switch (funcName) {
-      case 'FIELD': {
-        const fieldRef = this._resolveFilterValueExpression(call.args[0] ?? null, row)
-        if (typeof fieldRef !== 'string' || fieldRef.trim().length === 0) {
-          throw new Error(`Filter FIELD() 需要非空字段名 [${this.tableName}@${this.viewId}]`)
-        }
-        return row[fieldRef]
-      }
-      default:
-        throw new Error(`暂不支持的过滤值函数 "${call.func}" [${this.tableName}@${this.viewId}]`)
+  private _validateFilterValueExpression(
+    value: FilterValueExpression,
+    availableFields?: ReadonlySet<string>,
+  ): void {
+    if (typeof value === 'string') {
+      assertNoLegacyFilterPlaceholderString(value)
+      return
     }
+
+    if (Array.isArray(value)) {
+      value.forEach(item => this._validateFilterValueExpression(item, availableFields))
+      return
+    }
+
+    if (isFilterFieldRef(value)) {
+      const fieldName = value.field.trim()
+      if (fieldName === '') {
+        throw new Error(`过滤字段引用不能为空 [${this.tableName}@${this.viewId}]`)
+      }
+      if (availableFields !== undefined && availableFields.size > 0 && !availableFields.has(fieldName)) {
+        throw new Error(`过滤值表达式引用了不存在的字段 "${fieldName}"`)
+      }
+      return
+    }
+
+    if (value === null || typeof value === 'number' || typeof value === 'boolean') return
+
+    throw new Error(`非法过滤值表达式 [${this.tableName}@${this.viewId}]`)
+  }
+
+  private _validateFilterExpressionNode(
+    expr: FilterExpression,
+    availableFields?: ReadonlySet<string>,
+  ): void {
+    if ('type' in expr) {
+      if (expr.type === 'and' || expr.type === 'or' || expr.type === '!and' || expr.type === '!or') {
+        expr.children.forEach(child => this._validateFilterExpressionNode(child, availableFields))
+        return
+      }
+      const conditionExpr = expr as Extract<FilterExpression, { type: '!condition' }>
+      if (conditionExpr.field.trim() === '') {
+        throw new Error(`过滤条件字段不能为空 [${this.tableName}@${this.viewId}]`)
+      }
+      this._validateFilterValueExpression(conditionExpr.value, availableFields)
+      return
+    }
+
+    if (expr.field.trim() === '') {
+      throw new Error(`过滤条件字段不能为空 [${this.tableName}@${this.viewId}]`)
+    }
+    this._validateFilterValueExpression(expr.value, availableFields)
+  }
+
+  private _validateFilterExpression(expr: FilterExpression): void {
+    const availableFields = this._shouldApplyStaticLocalFilter()
+      ? this._getAvailableLocalFilterFields()
+      : undefined
+
+    this._validateFilterExpressionNode(expr, availableFields)
+  }
+
+  private _shouldUseRemotePostQuery(): boolean {
+    const listEndpoint = this._dataTable?.api?.list
+    return listEndpoint !== undefined && listEndpoint.method !== 'GET'
+  }
+
+  private _buildRemoteRelationFilter(
+    resolvedParents: Array<{ rel: DataRelation; pView: DataView; rows: readonly IDataRow[] }>,
+  ): FilterExpression | undefined {
+    const relationConditions: FilterExpression[] = []
+
+    for (const { rel, pView, rows: parentRows } of resolvedParents) {
+      if (parentRows.length === 0) continue
+
+      const parentKey = typeof rel.parentField === 'string' ? rel.parentField : pView.primaryKey
+      const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
+
+      const values = Array.from(new Set(parentRows.map(row => {
+        if (!(parentKey in row)) {
+          throw new Error(`远端关系过滤引用了不存在的父字段 "${parentKey}" [${this.tableName}@${this.viewId}]`)
+        }
+        return row[parentKey]
+      })))
+
+      if (values.some(value => value === undefined)) {
+        throw new Error(`远端关系过滤字段 "${parentKey}" 解析为 undefined [${this.tableName}@${this.viewId}]`)
+      }
+
+      relationConditions.push(
+        values.length > 1
+          ? { field: childKey, op: 'in', value: values as FilterValueExpression[] }
+          : { field: childKey, op: '==', value: values[0] as Exclude<FilterValueExpression, FilterValueExpression[]> },
+      )
+    }
+
+    if (relationConditions.length === 0) return undefined
+    if (relationConditions.length === 1) return relationConditions[0]
+    return { type: 'and', children: relationConditions }
+  }
+
+  private _mergeRemoteFilters(
+    relationFilter: FilterExpression | undefined,
+    userFilter: FilterExpression | undefined,
+  ): FilterExpression | undefined {
+    if (!relationFilter) return userFilter
+    if (!userFilter) return relationFilter
+    return {
+      type: 'and',
+      children: [relationFilter, userFilter],
+    }
+  }
+
+  private _resolveFilterValueExpression(value: FilterValueExpression, row: IDataRow): unknown {
+    if (typeof value === 'string') {
+      assertNoLegacyFilterPlaceholderString(value)
+      return value
+    }
+    if (Array.isArray(value)) return value.map(item => this._resolveFilterValueExpression(item, row))
+    if (isFilterFieldRef(value)) return resolveFilterFieldRef(value.field, row)
+    return value
   }
 
   private _matchesFilterCondition(
@@ -939,31 +1061,29 @@ export class DataView implements IDataSource {
         resolvedParents.push({ rel, pView, rows: parentRows })
       }
 
-      // 按各关系的 filterExpression 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
+      // 按各关系的 parentField/childField 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
       const params: QueryParams = {}
-      for (const { rel, pView, rows: parentRows } of resolvedParents) {
-        if (!parentRows.length) continue
-        const expr = rel.filterExpression
-        if (!expr) continue
+      if (this._shouldUseRemotePostQuery()) {
+        const mergedFilter = this._mergeRemoteFilters(
+          this._buildRemoteRelationFilter(resolvedParents),
+          this.filterExpression,
+        )
+        if (mergedFilter !== undefined) params.filter = mergedFilter
+      } else {
+        for (const { rel, pView, rows: parentRows } of resolvedParents) {
+          if (!parentRows.length) continue
 
-        let parentKey: string | undefined
-        if (typeof rel.parentField === 'string') {
-          parentKey = rel.parentField
-        } else {
-          // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
-          parentKey = pView.primaryKey
-        }
+          let parentKey: string | undefined
+          if (typeof rel.parentField === 'string') {
+            parentKey = rel.parentField
+          } else {
+            // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
+            parentKey = pView.primaryKey
+          }
 
-        const values = parentRows.map(r => r[parentKey])
+          const values = parentRows.map(r => r[parentKey])
 
-        let childKey: string
-        if (typeof rel.childField === 'string') childKey = rel.childField
-        else if ('field' in expr) childKey = expr.field
-        else childKey = parentKey
-
-        if ('op' in expr && 'field' in expr) {
-          params[childKey] = expr.op === 'in' ? values : values[0]
-        } else {
+          const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
           params[childKey] = values[0]
         }
       }
@@ -972,7 +1092,7 @@ export class DataView implements IDataSource {
       params.page = this.page
       params.pageSize = this.pageSize
       if (this.sortExpression !== undefined) params.sort = this._serializeSort(this.sortExpression)
-      if (this.filterExpression !== undefined) params.filter = this.filterExpression
+      if (!this._shouldUseRemotePostQuery() && this.filterExpression !== undefined) params.filter = this.filterExpression
 
       try {
         const result = await this.loadFromServer(params)
@@ -1414,6 +1534,7 @@ export class DataView implements IDataSource {
     if (filter === undefined) {
       delete this.filterExpression
     } else {
+      this._validateFilterExpression(filter)
       this.filterExpression = filter
     }
     this.page = 1
@@ -1524,12 +1645,18 @@ export class DataView implements IDataSource {
 
   /** 将 IViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。 */
   applyViewConfig(vc: Partial<IViewMetadata>): void {
-    if (vc.filterExpression !== undefined) this.filterExpression = vc.filterExpression
+    if (vc.filterExpression !== undefined) {
+      this._validateFilterExpression(vc.filterExpression)
+      this.filterExpression = vc.filterExpression
+    }
     if (vc.sortExpression !== undefined) this.sortExpression = vc.sortExpression
     if (vc.autoCurrentFirst !== undefined) this.autoCurrentFirst = vc.autoCurrentFirst
     if (vc.autoSelectFirst !== undefined) this.autoSelectFirst = vc.autoSelectFirst
     if (vc.treeConfig !== undefined) this.treeConfig = vc.treeConfig
-    if (vc.autoLoad !== undefined) this.autoLoad = vc.autoLoad
+    if (vc.autoLoad !== undefined) {
+      this.autoLoad = vc.autoLoad
+      this.autoLoadConfigured = true
+    }
     if (vc.autoRefresh !== undefined) this.autoRefresh = vc.autoRefresh
     if (vc.commitMode !== undefined) this.commitMode = vc.commitMode
     if (vc.valueField !== undefined) this.valueField = vc.valueField

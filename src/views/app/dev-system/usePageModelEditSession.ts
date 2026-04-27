@@ -61,6 +61,8 @@ export interface PageModelEditRunHooks {
 }
 
 interface PageModelEditRunOptions extends PageModelEditRunHooks {
+  /** 原始人工输入；用于诊断日志，不包含系统拼接的上下文 prompt。 */
+  originalUserInput?: string
   /**
    * 已由外层完成 bootstrap 时可置 true，避免重复加载上下文。
    * 默认 false。

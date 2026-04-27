@@ -5,6 +5,7 @@ import { useContainerDataSourceEffects } from '../packages/spark-component/src/c
 
 interface AutoLoadViewLike {
   autoLoad?: boolean
+  autoLoadConfigured?: boolean
   requestData: () => Promise<void>
   dataTable?: {
     api?: CrudApi
@@ -25,6 +26,7 @@ function createSource(options?: {
   const source: AutoLoadViewLike = {
     requestData,
     ...(options?.autoLoad !== undefined ? { autoLoad: options.autoLoad } : {}),
+    ...(options?.autoLoad !== undefined ? { autoLoadConfigured: true } : {}),
     dataTable,
   }
   return { source, requestData }

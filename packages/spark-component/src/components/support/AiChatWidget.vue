@@ -9,6 +9,8 @@
     :sse-events="sseEvents"
     :fc-calls="fcCalls"
     :page-id="pageId"
+    :draft-actions="draftActions"
+    :draft-loading-id="draftLoadingActionId"
     v-bind="shellProps"
     @update:input-text="inputText = $event"
     @send="handleSend"
@@ -20,6 +22,7 @@
     @remove-pending-file="removePendingFile"
     @update:recovery-policy="setRecoveryPolicy"
     @update:collaboration-policy="setCollaborationPolicy"
+    @trigger-draft-action="handleTriggerDraftAction"
   />
   <input ref="fileInputRef" type="file" multiple class="hidden-file-input" @change="handleFileChange" />
 </template>
@@ -28,6 +31,7 @@
 import { computed, ref } from 'vue'
 import AiChatShell from './AiChatShell.vue'
 import { useAiChat } from '../../composables/useAiChat'
+import type { AiDraftActionConfig } from '../../composables/useAiPanelStore'
 import type {
   ChatMode,
   FileAttachment,
@@ -53,6 +57,7 @@ const props = defineProps<{
   streamAiChatText?: StreamAiChatText | undefined
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
+  draftActions?: readonly AiDraftActionConfig[] | undefined
 }>()
 
 const optionalShellProps = computed(() => ({
@@ -86,6 +91,7 @@ const {
   clear,
   clearMessages,
   clearToolLogs,
+  appendToolLog,
   toolLogs,
   sseEvents,
   fcCalls,
@@ -109,6 +115,8 @@ const inputText = ref('')
 const pendingFiles = ref<FileAttachment[]>([])
 const isRecording = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const draftLoadingActionId = ref<string | null>(null)
+const draftActions = computed(() => props.draftActions ?? [])
 
 // ── 语音识别（Web Speech API，浏览器兼容处理） ──────────────────────────
 
@@ -226,6 +234,37 @@ function handleClearToolLogs() {
   clearToolLogs()
   if (props.externalToolLogs !== undefined) {
     props.clearExternalToolLogs?.()
+  }
+}
+
+function mergeDraftToInput(content: string): void {
+  const trimmed = content.trim()
+  if (trimmed === '') return
+  if (inputText.value.trim() === '') {
+    inputText.value = trimmed
+    return
+  }
+  inputText.value = `${inputText.value.trimEnd()}\n\n${trimmed}`
+}
+
+async function handleTriggerDraftAction(actionId: string): Promise<void> {
+  if (draftLoadingActionId.value !== null) return
+  const action = draftActions.value.find((item) => item.id === actionId)
+  if (action === undefined) {
+    throw new Error(`草稿动作不存在: ${actionId}`)
+  }
+
+  draftLoadingActionId.value = action.id
+  try {
+    const content = await action.builder()
+    const payload = action.prefix ? `${action.prefix}\n${content}` : content
+    mergeDraftToInput(payload)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    appendToolLog({ type: 'error', tag: 'draft-action', text: `${action.label}: ${message}` })
+    console.error('[AiChatWidget] draft action failed', { actionId: action.id, error })
+  } finally {
+    draftLoadingActionId.value = null
   }
 }
 </script>

@@ -247,6 +247,13 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
       • 若不确定应绑定哪个 table / viewId / field，先调用 sparkNodeTree.collectDataKeys 或读取同类节点，复用当前页面现有模式
   - 修改 pagedata.json：使用 datasetTool.*
   - 修改 script.js：使用 textModel.readScript / textModel.writeScript
+    ⚠ script.js 沙箱运行时契约（写入前必须遵守）：
+      • $page 只用于页面服务：showMessage / showConfirm / showPrompt / showAlert / showLoading / navigate
+      • 数据入口是 $dataSet：使用 $dataSet?.getView('TableName', 'default')，读取 view.rows / view.currentRow，写入 view.appendRow / view.updateRowById / view.deleteRowById
+      • 组件入口是 $components.getApi('component-id')：dialogApi.open()/close()，formApi.getFormData()/setFieldValue()/resetFields()，tableApi.getRows()/query()/refresh()
+      • 禁止伪造 $page 数据/组件 API：$page.getDataSet、$page.getTableRows、$page.getTableData、$page.getViewData、$page.setFieldValue、$page.getFieldValue、$page.setFormData、$page.getFormData、$page.clearForm、$page.createRow、$page.updateRow、$page.deleteRow、$page.refreshTable、$page.showDialog('id')、$page.hideDialog('id')、$page.confirm
+      • DataView 没有 getRows()/setSummaryRow()；rows 是属性，summaryRow 由 aggregates 自动计算
+      • Element Plus table size 只允许 default / small / large，禁止 medium
   - 修改 style.css：使用 textModel.readStyle / textModel.writeStyle
 
   执行目标：

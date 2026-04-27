@@ -62,6 +62,11 @@ export interface DevContextConfig {
   paramName: string
 }
 
+export interface DevPreviewDiagnosticsProvider {
+  getPageTextDraft: () => string | Promise<string>
+  getJsErrorDraft: () => string | Promise<string>
+}
+
 export interface BackendPageVersionSummary {
   version: number
   createdAt: string
@@ -165,9 +170,31 @@ export function useDevState() {
   const autoSaveStatus = ref<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle')
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
+  let previewDiagnosticsProvider: DevPreviewDiagnosticsProvider | null = null
 
   function isDocumentDirty(name: PageFileName): boolean {
     return isPageFileDocumentDirty(documents[name])
+  }
+
+  function setPreviewDiagnosticsProvider(provider: DevPreviewDiagnosticsProvider | null): void {
+    previewDiagnosticsProvider = provider
+  }
+
+  function requirePreviewDiagnosticsProvider(): DevPreviewDiagnosticsProvider {
+    if (previewDiagnosticsProvider === null) {
+      throw new Error('预览诊断能力未就绪：请先打开预览页并刷新后重试。')
+    }
+    return previewDiagnosticsProvider
+  }
+
+  async function buildPreviewPageTextDraft(): Promise<string> {
+    const provider = requirePreviewDiagnosticsProvider()
+    return await provider.getPageTextDraft()
+  }
+
+  async function buildPreviewJsErrorDraft(): Promise<string> {
+    const provider = requirePreviewDiagnosticsProvider()
+    return await provider.getJsErrorDraft()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1308,6 +1335,9 @@ export function useDevState() {
 
     // AI Tool Host
     getEditToolHost,
+    setPreviewDiagnosticsProvider,
+    buildPreviewPageTextDraft,
+    buildPreviewJsErrorDraft,
 
     // 方法
     addStatus,

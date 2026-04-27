@@ -176,7 +176,8 @@ export function useDevPageModelSession(options: Options) {
           maxConsecutiveErrors: 3,
           maxCyclePeriod: 3,
           cycleRepeatThreshold: 2,
-          maxReadOnlyActions: 10,
+          maxReadOnlyActions: 8,
+          abortOnReadOnlyLimit: true,
           maxMissingComponentRetries: 1,
         }
       case 'layered':
@@ -186,7 +187,8 @@ export function useDevPageModelSession(options: Options) {
           maxConsecutiveErrors: 6,
           maxCyclePeriod: 4,
           cycleRepeatThreshold: 2,
-          maxReadOnlyActions: 20,
+          maxReadOnlyActions: 12,
+          abortOnReadOnlyLimit: true,
           maxMissingComponentRetries: 2,
         }
     }
@@ -288,6 +290,22 @@ export function useDevPageModelSession(options: Options) {
     pageId: () => state.activePageId.value,
     title: '页面模型级编辑',
     placeholder: '支持多轮对话；会通过 stills tool 层执行 4 文件模型级编辑',
+    draftActions: [
+      {
+        id: 'preview-page-text',
+        label: '发送页面文本',
+        icon: 'TXT',
+        prefix: '请基于以下页面可见文本与 HTML 片段进行分析，必要时修改 style.css。',
+        builder: async () => await state.buildPreviewPageTextDraft(),
+      },
+      {
+        id: 'preview-js-error',
+        label: '发送 JS 错误',
+        icon: 'ERR',
+        prefix: '请基于以下 JS 错误快照分析并给出 script.js 修复方案。',
+        builder: async () => await state.buildPreviewJsErrorDraft(),
+      },
+    ],
     externalToolLogs: editSession.log,
     clearExternalToolLogs: () => editSession.clearLog(),
     fcErrorReporter: reportFcError,
@@ -325,6 +343,7 @@ export function useDevPageModelSession(options: Options) {
         await streamWithFallback(request, {
           runLoop: async (pushDelta) => {
             await editSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs, policies), {
+              originalUserInput: prompt,
               ...(request.signal ? { signal: request.signal } : {}),
               skipBootstrap: true,
               repeatDetection: buildRecoveryRepeatDetection(policies?.recovery),

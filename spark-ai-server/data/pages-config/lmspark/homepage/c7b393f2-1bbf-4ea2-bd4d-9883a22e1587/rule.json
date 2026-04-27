@@ -4,8 +4,8 @@
     "id": "stats-section",
     "props": {
       "id": "stats-section",
-      "title": "请假概览",
-      "description": "查看请假数据统计",
+      "title": "📊 请假概览",
+      "description": "实时统计 · 一目了然",
       "useCard": true,
       "bordered": false,
       "bodyClass": "stats-card-grid"
@@ -23,13 +23,14 @@
         "children": [
           {
             "type": "r-text",
+            "id": "stats-pending-count",
             "props": {
               "id": "stats-pending-count",
-              "field": "pendingCount",
               "value": "-",
-              "label": "",
-              "valueClassName": "stats-number"
-            }
+              "valueClassName": "stats-number",
+              "label": "待审批"
+            },
+            "children": []
           }
         ]
       },
@@ -45,13 +46,14 @@
         "children": [
           {
             "type": "r-text",
+            "id": "stats-approved-count",
             "props": {
               "id": "stats-approved-count",
-              "field": "approvedCount",
               "value": "-",
-              "label": "",
-              "valueClassName": "stats-number"
-            }
+              "valueClassName": "stats-number",
+              "label": "本月通过"
+            },
+            "children": []
           }
         ]
       },
@@ -67,13 +69,14 @@
         "children": [
           {
             "type": "r-text",
+            "id": "stats-rejected-count",
             "props": {
               "id": "stats-rejected-count",
-              "field": "rejectedCount",
               "value": "-",
-              "label": "",
-              "valueClassName": "stats-number"
-            }
+              "valueClassName": "stats-number",
+              "label": "本月拒绝"
+            },
+            "children": []
           }
         ]
       },
@@ -89,13 +92,14 @@
         "children": [
           {
             "type": "r-text",
+            "id": "stats-total-count",
             "props": {
               "id": "stats-total-count",
-              "field": "totalCount",
               "value": "-",
-              "label": "",
-              "valueClassName": "stats-number"
-            }
+              "valueClassName": "stats-number",
+              "label": "本月合计"
+            },
+            "children": []
           }
         ]
       }
@@ -109,7 +113,10 @@
       "dataKey": "LeaveRequests@rows",
       "tableProps": {
         "rowKey": "id",
-        "highlightCurrentRow": true
+        "highlightCurrentRow": true,
+        "stripe": true,
+        "border": true,
+        "size": "default"
       },
       "filterCollapsible": true,
       "filterDefaultCollapsed": true
@@ -152,7 +159,9 @@
               ],
               "optionLabelField": "label",
               "optionValueField": "value"
-            }
+            },
+            "children": [],
+            "id": "filter-status"
           },
           {
             "type": "r-text",
@@ -162,7 +171,9 @@
               "label": "部门",
               "placeholder": "请输入部门",
               "clearable": true
-            }
+            },
+            "children": [],
+            "id": "filter-department"
           },
           {
             "type": "r-date",
@@ -175,9 +186,12 @@
               "endPlaceholder": "结束日期",
               "rangeSeparator": "至",
               "filterMode": "range"
-            }
+            },
+            "children": [],
+            "id": "filter-date-range"
           }
-        ]
+        ],
+        "id": "leave-filter"
       },
       {
         "type": "r-toolbar",
@@ -193,7 +207,9 @@
               "action": "append-row",
               "template": "primary",
               "icon": "Plus"
-            }
+            },
+            "children": [],
+            "id": "btn-add"
           },
           {
             "type": "r-button",
@@ -203,29 +219,36 @@
               "action": "refresh",
               "template": "default",
               "icon": "Refresh"
-            }
+            },
+            "children": [],
+            "id": "btn-refresh"
           }
-        ]
+        ],
+        "id": "leave-toolbar"
       },
       {
         "type": "r-text",
+        "id": "col-employeeName",
         "props": {
           "id": "col-employeeName",
           "field": "employeeName",
           "label": "申请人",
           "sortable": true,
           "width": 120
-        }
+        },
+        "children": []
       },
       {
         "type": "r-text",
+        "id": "col-department",
         "props": {
           "id": "col-department",
           "field": "department",
           "label": "部门",
           "sortable": true,
           "width": 120
-        }
+        },
+        "children": []
       },
       {
         "type": "r-select",
@@ -244,33 +267,39 @@
       },
       {
         "type": "r-date",
+        "id": "col-startDate",
         "props": {
           "id": "col-startDate",
           "field": "startDate",
           "label": "开始日期",
           "width": 120,
           "readonly": true
-        }
+        },
+        "children": []
       },
       {
         "type": "r-date",
+        "id": "col-endDate",
         "props": {
           "id": "col-endDate",
           "field": "endDate",
           "label": "结束日期",
           "width": 120,
           "readonly": true
-        }
+        },
+        "children": []
       },
       {
         "type": "r-number",
+        "id": "col-totalDays",
         "props": {
           "id": "col-totalDays",
           "field": "totalDays",
           "label": "天数",
           "width": 80,
           "sortable": true
-        }
+        },
+        "children": []
       },
       {
         "type": "display-tag",
@@ -287,16 +316,19 @@
             "cancelled": "info"
           },
           "size": "small"
-        }
+        },
+        "children": []
       },
       {
         "type": "r-text",
+        "id": "col-approver",
         "props": {
           "id": "col-approver",
           "field": "approver",
           "label": "审批人",
           "width": 100
-        }
+        },
+        "children": []
       },
       {
         "type": "r-date",
@@ -308,14 +340,15 @@
           "width": 160,
           "readonly": true,
           "format": "YYYY-MM-DD HH:mm"
-        }
+        },
+        "children": []
       },
       {
         "type": "r-actions",
         "id": "leave-actions",
         "props": {
           "id": "leave-actions",
-          "width": 200,
+          "width": 400,
           "align": "center",
           "fixed": "right"
         },
@@ -328,7 +361,8 @@
               "label": "查看",
               "action": "onActionViewClick",
               "template": "text"
-            }
+            },
+            "children": []
           },
           {
             "type": "r-button",
@@ -349,7 +383,9 @@
               "label": "编辑",
               "action": "prompt-edit",
               "template": "text"
-            }
+            },
+            "children": [],
+            "id": "action-edit"
           },
           {
             "type": "r-button",
@@ -359,7 +395,9 @@
               "action": "delete-row",
               "template": "text",
               "color": "#F56C6C"
-            }
+            },
+            "children": [],
+            "id": "action-delete"
           }
         ]
       }
@@ -394,7 +432,9 @@
               "placeholder": "请输入申请人姓名",
               "required": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "form-employeeName"
           },
           {
             "type": "r-text",
@@ -404,7 +444,9 @@
               "label": "部门",
               "placeholder": "请输入部门",
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "form-department"
           },
           {
             "type": "r-select",
@@ -418,7 +460,9 @@
               "placeholder": "请选择假期类型",
               "required": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "form-leaveTypeId"
           },
           {
             "type": "r-date",
@@ -430,7 +474,9 @@
               "placeholder": "请选择开始日期",
               "required": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "form-startDate"
           },
           {
             "type": "r-date",
@@ -442,7 +488,9 @@
               "placeholder": "请选择结束日期",
               "required": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "form-endDate"
           },
           {
             "type": "r-number",
@@ -455,7 +503,9 @@
               "min": 0.5,
               "precision": 1,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "form-totalDays"
           },
           {
             "type": "r-textarea",
@@ -466,9 +516,12 @@
               "placeholder": "请输入请假原因",
               "rows": 3,
               "width": 400
-            }
+            },
+            "children": [],
+            "id": "form-reason"
           }
-        ]
+        ],
+        "id": "leave-form"
       },
       {
         "type": "r-footer",
@@ -483,7 +536,9 @@
               "label": "取消",
               "action": "clear-rows",
               "template": "default"
-            }
+            },
+            "children": [],
+            "id": "form-btn-cancel"
           },
           {
             "type": "r-button",
@@ -492,9 +547,12 @@
               "label": "提交",
               "action": "submit-current-form",
               "template": "primary"
-            }
+            },
+            "children": [],
+            "id": "form-btn-submit"
           }
-        ]
+        ],
+        "id": "leave-form-footer"
       }
     ]
   },
@@ -527,7 +585,9 @@
               "label": "申请人",
               "readonly": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "aprv-employeeName"
           },
           {
             "type": "r-text",
@@ -537,7 +597,9 @@
               "label": "部门",
               "readonly": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "aprv-department"
           },
           {
             "type": "r-text",
@@ -547,7 +609,9 @@
               "label": "假期类型",
               "readonly": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "aprv-leaveType"
           },
           {
             "type": "r-date",
@@ -557,7 +621,9 @@
               "label": "开始日期",
               "readonly": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "aprv-startDate"
           },
           {
             "type": "r-date",
@@ -567,7 +633,9 @@
               "label": "结束日期",
               "readonly": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "aprv-endDate"
           },
           {
             "type": "r-number",
@@ -577,7 +645,9 @@
               "label": "天数",
               "readonly": true,
               "width": 200
-            }
+            },
+            "children": [],
+            "id": "aprv-totalDays"
           },
           {
             "type": "r-textarea",
@@ -588,7 +658,9 @@
               "readonly": true,
               "rows": 2,
               "width": 400
-            }
+            },
+            "children": [],
+            "id": "aprv-reason"
           },
           {
             "type": "r-textarea",
@@ -600,7 +672,8 @@
               "placeholder": "请输入审批意见",
               "rows": 3,
               "width": 400
-            }
+            },
+            "children": []
           }
         ]
       },
@@ -620,7 +693,8 @@
               "action": "onAprvBtnRejectClick",
               "template": "default",
               "color": "#F56C6C"
-            }
+            },
+            "children": []
           },
           {
             "type": "r-button",
@@ -630,7 +704,8 @@
               "label": "通过",
               "action": "onAprvBtnApproveClick",
               "template": "primary"
-            }
+            },
+            "children": []
           }
         ]
       }
