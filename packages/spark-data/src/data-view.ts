@@ -7,7 +7,7 @@
  */
 
 import type {
-  IDataRow, IViewMetadata, FilterExpression, SortExpression,
+  IDataRow, IViewMetadata, FilterExpression, FilterFunctionCall, FilterOperator, FilterValueExpression, SortExpression,
   QueryParams, DataColumn, DataRelation,
   CrudResult, CrudOperationConfig,
   IDataSource,
@@ -71,6 +71,50 @@ interface DataViewEventMap extends Record<string, any[]> {
 /** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
 const ROWS_CHANGED_DEBOUNCE_MS = 16
 
+const FILTER_PLACEHOLDER_RE = /\$\[([^\]]+)\]/g
+const PURE_FILTER_PLACEHOLDER_RE = /^\$\[([^\]]+)\]$/
+
+function isFilterFunctionCall(value: FilterValueExpression): value is FilterFunctionCall {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && typeof (value as { func?: unknown }).func === 'string'
+    && Array.isArray((value as { args?: unknown }).args)
+}
+
+function resolveFilterPlaceholderString(value: string, row: IDataRow): unknown {
+  const pureMatch = PURE_FILTER_PLACEHOLDER_RE.exec(value)
+  const pureField = pureMatch?.[1]
+  if (pureField !== undefined) return row[pureField]
+  if (!value.includes('$[')) return value
+  return value.replace(FILTER_PLACEHOLDER_RE, (_, fieldName: string) => {
+    const resolved = row[fieldName]
+    return resolved === null || resolved === undefined ? '' : String(resolved)
+  })
+}
+
+function compareFilterScalar(left: unknown, right: unknown): number {
+  if (typeof left === 'number' && typeof right === 'number') return left - right
+  return String(left ?? '').localeCompare(String(right ?? ''))
+}
+
+function includesFilterValue(container: unknown, needle: unknown): boolean {
+  if (Array.isArray(container)) return container.includes(needle)
+  return String(container ?? '').includes(String(needle ?? ''))
+}
+
+function startsWithFilterValue(container: unknown, needle: unknown): boolean {
+  return String(container ?? '').startsWith(String(needle ?? ''))
+}
+
+function endsWithFilterValue(container: unknown, needle: unknown): boolean {
+  return String(container ?? '').endsWith(String(needle ?? ''))
+}
+
+function getArrayFilterValue(value: unknown): unknown[] | null {
+  return Array.isArray(value) ? value : null
+}
+
 // ─────────────────────────────────────────────
 // DataView 类
 // ─────────────────────────────────────────────
@@ -101,6 +145,9 @@ export class DataView implements IDataSource {
     if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
     this._computedDelegate.invalidateCache()
     this._computedDelegate.syncFromConfig()
+    if (this._shouldApplyStaticLocalFilter() && this.filterExpression !== undefined && this.rows.length > 0) {
+      this._syncStaticLocalFilterRows()
+    }
   }
 
   tableName: string
@@ -264,6 +311,135 @@ export class DataView implements IDataSource {
 
   /** 设置分页/排序/过滤后是否自动 refresh()（默认 false） */
   autoRefresh = false
+
+  private _shouldApplyStaticLocalFilter(): boolean {
+    const table = this._dataTable
+    if (!table) return false
+    return table.resourceType === 'static-data' || table.api?.list === undefined
+  }
+
+  private _getStaticLocalFilterSourceRows(): IDataRow[] {
+    const sourceRows = this._dataTable?.rows ?? this.rows
+    const clonedRows = sourceRows.map(row => ({ ...row }))
+    if (clonedRows.length > 0) this._applyComputedColumns(clonedRows)
+    return clonedRows
+  }
+
+  private _resolveFilterValueExpression(value: FilterValueExpression, row: IDataRow): unknown {
+    if (typeof value === 'string') return resolveFilterPlaceholderString(value, row)
+    if (Array.isArray(value)) return value.map(item => this._resolveFilterValueExpression(item, row))
+    if (isFilterFunctionCall(value)) return this._evaluateFilterFunction(value, row)
+    return value
+  }
+
+  private _evaluateFilterFunction(call: FilterFunctionCall, row: IDataRow): unknown {
+    const funcName = call.func.trim().toUpperCase()
+
+    switch (funcName) {
+      case 'FIELD': {
+        const fieldRef = this._resolveFilterValueExpression(call.args[0] ?? null, row)
+        if (typeof fieldRef !== 'string' || fieldRef.trim().length === 0) {
+          throw new Error(`Filter FIELD() 需要非空字段名 [${this.tableName}@${this.viewId}]`)
+        }
+        return row[fieldRef]
+      }
+      default:
+        throw new Error(`暂不支持的过滤值函数 "${call.func}" [${this.tableName}@${this.viewId}]`)
+    }
+  }
+
+  private _matchesFilterCondition(
+    row: IDataRow,
+    expr: Extract<FilterExpression, { field: string; op: FilterOperator }>,
+  ): boolean {
+    const rowValue = row[expr.field]
+    const resolvedValue = this._resolveFilterValueExpression(expr.value, row)
+    const arrayValue = getArrayFilterValue(resolvedValue)
+
+    switch (expr.op) {
+      case '==': return rowValue === resolvedValue
+      case '!=': return rowValue !== resolvedValue
+      case '>': return compareFilterScalar(rowValue, resolvedValue) > 0
+      case '>=': return compareFilterScalar(rowValue, resolvedValue) >= 0
+      case '<': return compareFilterScalar(rowValue, resolvedValue) < 0
+      case '<=': return compareFilterScalar(rowValue, resolvedValue) <= 0
+      case 'in':
+        return arrayValue !== null
+          ? (Array.isArray(rowValue)
+            ? rowValue.some(item => arrayValue.includes(item))
+            : arrayValue.includes(rowValue))
+          : false
+      case 'not in':
+        return arrayValue !== null
+          ? (Array.isArray(rowValue)
+            ? rowValue.every(item => !arrayValue.includes(item))
+            : !arrayValue.includes(rowValue))
+          : true
+      case 'like':
+      case 'contains':
+        return includesFilterValue(rowValue, resolvedValue)
+      case 'not like':
+        return !includesFilterValue(rowValue, resolvedValue)
+      case 'startsWith':
+        return startsWithFilterValue(rowValue, resolvedValue)
+      case 'endsWith':
+        return endsWithFilterValue(rowValue, resolvedValue)
+      case 'is null':
+        return rowValue === null || rowValue === undefined || rowValue === ''
+      case 'is not null':
+        return rowValue !== null && rowValue !== undefined && rowValue !== ''
+      case 'between':
+        return arrayValue !== null
+          && arrayValue.length >= 2
+          && compareFilterScalar(rowValue, arrayValue[0]) >= 0
+          && compareFilterScalar(rowValue, arrayValue[1]) <= 0
+      case 'not between':
+        return arrayValue !== null
+          && arrayValue.length >= 2
+          && (compareFilterScalar(rowValue, arrayValue[0]) < 0 || compareFilterScalar(rowValue, arrayValue[1]) > 0)
+      default:
+        throw new Error(`未知过滤操作符 "${String(expr.op)}" [${this.tableName}@${this.viewId}]`)
+    }
+  }
+
+  private _matchesFilterExpression(row: IDataRow, expr: FilterExpression): boolean {
+    if ('type' in expr) {
+      switch (expr.type) {
+        case '!condition':
+          return !this._matchesFilterCondition(row, expr)
+        case 'and':
+          return expr.children.every(child => this._matchesFilterExpression(row, child))
+        case 'or':
+          return expr.children.some(child => this._matchesFilterExpression(row, child))
+        case '!and':
+          return !expr.children.every(child => this._matchesFilterExpression(row, child))
+        case '!or':
+          return !expr.children.some(child => this._matchesFilterExpression(row, child))
+        default:
+          throw new Error(`未知过滤表达式节点 [${this.tableName}@${this.viewId}]`)
+      }
+    }
+
+    if ('field' in expr && 'op' in expr) {
+      return this._matchesFilterCondition(row, expr)
+    }
+
+    throw new Error(`未知过滤表达式节点 [${this.tableName}@${this.viewId}]`)
+  }
+
+  private _syncStaticLocalFilterRows(): void {
+    if (!this._shouldApplyStaticLocalFilter()) return
+
+    const sourceRows = this._getStaticLocalFilterSourceRows()
+    const filterExpression = this.filterExpression
+    const nextRows = filterExpression === undefined
+      ? sourceRows
+      : sourceRows.filter(row => this._matchesFilterExpression(row, filterExpression))
+
+    this.localMutationDelegate.replaceRows(nextRows)
+    this.syncTreeManagerFromRows()
+    this.total = nextRows.length
+  }
 
   /**
    * 增删改提交模式（默认 `'immediate'`）。
@@ -1241,6 +1417,10 @@ export class DataView implements IDataSource {
       this.filterExpression = filter
     }
     this.page = 1
+    if (this._shouldApplyStaticLocalFilter()) {
+      this._syncStaticLocalFilterRows()
+      return
+    }
     if (this.autoRefresh) await this.refresh()
   }
 
@@ -1358,6 +1538,9 @@ export class DataView implements IDataSource {
     if (vc.aggregates !== undefined) (this as { aggregates: Record<string, AggregateColumnConfig> }).aggregates = vc.aggregates
     this.page = vc.page ?? 1
     this.pageSize = vc.pageSize ?? 20
+    if (vc.filterExpression !== undefined && this._shouldApplyStaticLocalFilter()) {
+      this._syncStaticLocalFilterRows()
+    }
   }
 
   configure(config: Partial<IViewMetadata>): void {

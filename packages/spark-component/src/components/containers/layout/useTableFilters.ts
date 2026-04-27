@@ -2,7 +2,7 @@ import { computed, reactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../../internal'
 import { nodeInputProp } from '../../internal'
-import type { DataView, FilterExpression, FilterOperator, IDataRow } from '@spark-view/spark-data'
+import type { DataView, FilterExpression, FilterOperator, FilterValueExpression } from '@spark-view/spark-data'
 
 interface LoggerLike {
   error(message: string, error?: unknown): void
@@ -30,7 +30,7 @@ interface FilterCapableView {
   }
 }
 
-function shouldSyncFilterToView(view: DataView): boolean {
+function shouldRefreshFilterView(view: DataView): boolean {
   const dataTable = (view as unknown as FilterCapableView).dataTable
   if (dataTable?.api?.list === undefined) return false
   if (dataTable.resourceType === 'static-data') return false
@@ -92,100 +92,8 @@ function buildCondition(config: SparkNode, value: unknown): FilterExpression | u
   return {
     field,
     op: inferFilterOperator(config, value),
-    value,
+    value: value as FilterValueExpression,
   }
-}
-
-function compareScalar(left: unknown, right: unknown): number {
-  if (typeof left === 'number' && typeof right === 'number') return left - right
-  return String(left ?? '').localeCompare(String(right ?? ''))
-}
-
-function includesValue(container: unknown, needle: unknown): boolean {
-  if (Array.isArray(container)) return container.includes(needle)
-  return String(container ?? '').includes(String(needle ?? ''))
-}
-
-function startsWithValue(container: unknown, needle: unknown): boolean {
-  return String(container ?? '').startsWith(String(needle ?? ''))
-}
-
-function endsWithValue(container: unknown, needle: unknown): boolean {
-  return String(container ?? '').endsWith(String(needle ?? ''))
-}
-
-function getArrayFilterValue(value: unknown): unknown[] | null {
-  return Array.isArray(value) ? value : null
-}
-
-function matchesCondition(row: IDataRow, expr: Extract<FilterExpression, { field: string; op: FilterOperator }>): boolean {
-  const rowValue = row[expr.field]
-  const arrayValue = getArrayFilterValue(expr.value)
-  switch (expr.op) {
-    case '==': return rowValue === expr.value
-    case '!=': return rowValue !== expr.value
-    case '>': return compareScalar(rowValue, expr.value) > 0
-    case '>=': return compareScalar(rowValue, expr.value) >= 0
-    case '<': return compareScalar(rowValue, expr.value) < 0
-    case '<=': return compareScalar(rowValue, expr.value) <= 0
-    case 'in':
-      return arrayValue !== null
-        ? (Array.isArray(rowValue)
-          ? rowValue.some(item => arrayValue.includes(item))
-          : arrayValue.includes(rowValue))
-        : false
-    case 'not in':
-      return arrayValue !== null
-        ? (Array.isArray(rowValue)
-          ? rowValue.every(item => !arrayValue.includes(item))
-          : !arrayValue.includes(rowValue))
-        : true
-    case 'like':
-    case 'contains':
-      return includesValue(rowValue, expr.value)
-    case 'not like':
-      return !includesValue(rowValue, expr.value)
-    case 'startsWith':
-      return startsWithValue(rowValue, expr.value)
-    case 'endsWith':
-      return endsWithValue(rowValue, expr.value)
-    case 'is null':
-      return rowValue === null || rowValue === undefined || rowValue === ''
-    case 'is not null':
-      return rowValue !== null && rowValue !== undefined && rowValue !== ''
-    case 'between':
-      return arrayValue !== null
-        && arrayValue.length >= 2
-        && compareScalar(rowValue, arrayValue[0]) >= 0
-        && compareScalar(rowValue, arrayValue[1]) <= 0
-    case 'not between':
-      return arrayValue !== null
-        && arrayValue.length >= 2
-        && (compareScalar(rowValue, arrayValue[0]) < 0 || compareScalar(rowValue, arrayValue[1]) > 0)
-    default:
-      return true
-  }
-}
-
-function matchesExpression(row: IDataRow, expr: FilterExpression): boolean {
-  if ('field' in expr && 'op' in expr) {
-    return matchesCondition(row, expr)
-  }
-  if ('type' in expr) {
-    switch (expr.type) {
-      case 'and':
-        return expr.children.every(child => matchesExpression(row, child))
-      case 'or':
-        return expr.children.some(child => matchesExpression(row, child))
-      case '!and':
-        return !expr.children.every(child => matchesExpression(row, child))
-      case '!or':
-        return !expr.children.some(child => matchesExpression(row, child))
-      default:
-        return true
-    }
-  }
-  return true
 }
 
 export function useTableFilters(options: UseTableFiltersOptions) {
@@ -245,7 +153,6 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     refreshRemote: boolean,
   ): Promise<void> {
     if (!hasFilterConfigs.value) return
-    if (!shouldSyncFilterToView(view)) return
 
     const candidate = view as unknown as FilterCapableView
     if (typeof candidate.setFilter !== 'function') return
@@ -255,7 +162,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
 
     if (
       refreshRemote
-      && candidate.dataTable?.api?.list !== undefined
+      && shouldRefreshFilterView(view)
       && typeof candidate.refresh === 'function'
     ) {
       await candidate.refresh()
@@ -287,11 +194,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   }, { deep: true })
 
   const filteredRows = computed(() => {
-    const rows = options.dataView.value?.rows ?? []
-    if (!hasFilterConfigs.value) return rows
-    if (options.dataView.value && shouldSyncFilterToView(options.dataView.value)) return rows
-    const expr = filterExpression.value
-    return expr ? rows.filter(row => matchesExpression(row, expr)) : rows
+    return options.dataView.value?.rows ?? []
   })
 
   const activeFilterCount = computed(() => {

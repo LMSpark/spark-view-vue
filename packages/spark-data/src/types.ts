@@ -689,13 +689,27 @@ export type FilterOperator =
   | 'between' | 'not between'
   | 'startsWith' | 'endsWith' | 'contains'
 
+/** 过滤值函数调用 */
+export interface FilterFunctionCall {
+  func: string
+  args: FilterValueExpression[]
+}
+
+/** 过滤值表达式 */
+export type FilterValueExpression =
+  | string
+  | number
+  | boolean
+  | null
+  | FilterFunctionCall
+  | FilterValueExpression[]
+
 /** 过滤表达式 */
 export type FilterExpression =
-  | { field: string; op: FilterOperator; value: unknown }
+  | { field: string; op: FilterOperator; value: FilterValueExpression }
   | { type: 'and' | 'or'; children: FilterExpression[] }
-  | { type: '!condition'; field: string; op: FilterOperator; value: unknown }
+  | { type: '!condition'; field: string; op: FilterOperator; value: FilterValueExpression }
   | { type: '!and' | '!or'; children: FilterExpression[] }
-  | { func: string; args: unknown[] }
 
 // ===== 关系类型 =====
 

@@ -90,7 +90,7 @@ describe('useTableFilters', () => {
     scope.stop()
   })
 
-  it('static-data 视图仅做本地过滤，不触发 setFilter 或 refresh', async () => {
+  it('static-data 视图同步 filterExpression 到 DataView，但不触发 refresh', async () => {
     const { view, setFilter, refresh } = createView({
       rows: [
         { id: 1, status: '草稿', summary: '待处理' },
@@ -122,8 +122,11 @@ describe('useTableFilters', () => {
     await nextTick()
     await Promise.resolve()
 
-    expect(api.filteredRows.value).toEqual([{ id: 1, status: '草稿', summary: '待处理' }])
-    expect(setFilter).not.toHaveBeenCalled()
+    expect(setFilter).toHaveBeenCalledWith({
+      field: 'status',
+      op: '==',
+      value: '草稿',
+    })
     expect(refresh).not.toHaveBeenCalled()
     scope.stop()
   })
