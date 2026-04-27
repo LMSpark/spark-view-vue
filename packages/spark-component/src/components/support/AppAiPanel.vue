@@ -48,13 +48,15 @@
           v-if="sender && storageKey"
           :key="storageKey"
           :storage-key="storageKey"
+          :page-id="pageId"
           :sender="sender"
           :title="title"
           :placeholder="placeholder"
           :stream-ai-chat-text="streamAiChatText"
           :parse-token-usage="parseTokenUsage"
           :upload-file="uploadFile"
-          v-bind="externalToolLogs !== undefined ? { externalToolLogs } : {}"
+          :report-fc-error="fcErrorReporter"
+          v-bind="externalToolLogProps"
           :compact="false"
           mode="multi"
         />
@@ -103,10 +105,21 @@ const uploadFile = props.uploadFile
 const store = useAiPanelStore()
 const visible = store.visible
 const storageKey = store.storageKey
+const pageId = store.pageId
 const title = store.title
 const placeholder = store.placeholder
 const externalToolLogs = store.externalToolLogs
+const clearExternalToolLogs = store.clearExternalToolLogs
+const fcErrorReporter = store.fcErrorReporter
 const sender = store.sender
+
+const externalToolLogProps = computed(() => {
+  if (externalToolLogs.value === undefined) return {}
+  return {
+    externalToolLogs: externalToolLogs.value,
+    ...(clearExternalToolLogs.value !== undefined ? { clearExternalToolLogs: clearExternalToolLogs.value } : {}),
+  }
+})
 
 // ────────────────── 位置 / 尺寸（localStorage 持久化） ──────────────────
 const STORAGE_KEY = `${PANEL_LAYOUT_PREFIX}layout`

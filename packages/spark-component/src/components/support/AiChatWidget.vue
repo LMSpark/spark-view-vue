@@ -6,10 +6,15 @@
     :is-streaming="isStreaming"
     :is-recording="isRecording"
     :error="error"
+    :sse-events="sseEvents"
+    :fc-calls="fcCalls"
+    :page-id="pageId"
     v-bind="shellProps"
     @update:input-text="inputText = $event"
     @send="handleSend"
     @clear="handleClear"
+    @clear-messages="handleClearMessages"
+    @clear-tool-logs="handleClearToolLogs"
     @trigger-file-input="triggerFileInput"
     @toggle-voice="toggleVoice"
     @remove-pending-file="removePendingFile"
@@ -27,6 +32,7 @@ import type {
   ChatMode,
   FileAttachment,
   AiChatSender,
+  AiFcErrorReporter,
   StreamAiChatText,
   TokenUsage,
 } from '../../composables/useAiChat'
@@ -39,8 +45,11 @@ const props = defineProps<{
   compact?: boolean
   sender?: AiChatSender
   storageKey?: string
+  pageId?: string
   showToolLogs?: boolean
   externalToolLogs?: Array<{ type: 'info' | 'success' | 'error'; tag: string; text: string; timestamp?: string }>
+  clearExternalToolLogs?: (() => void) | undefined
+  reportFcError?: AiFcErrorReporter | undefined
   streamAiChatText?: StreamAiChatText | undefined
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
@@ -62,6 +71,7 @@ const toolLogProps = computed(() => {
   if (!props.showToolLogs && !hasExternal) return {}
   return {
     toolLogs: hasExternal ? (props.externalToolLogs ?? []) : toolLogs.value,
+    canClearToolLogs: !hasExternal || props.clearExternalToolLogs !== undefined,
     recoveryPolicy: recoveryPolicy.value,
     collaborationPolicy: collaborationPolicy.value,
   }
@@ -74,7 +84,11 @@ const {
   send,
   uploadFile,
   clear,
+  clearMessages,
+  clearToolLogs,
   toolLogs,
+  sseEvents,
+  fcCalls,
   recoveryPolicy,
   collaborationPolicy,
   setRecoveryPolicy,
@@ -83,11 +97,12 @@ const {
   mode: () => props.mode ?? 'multi',
   systemPrompt: () => props.systemPrompt,
   sender: () => props.sender,
-  pageId: () => props.storageKey,
+  pageId: () => props.pageId ?? props.storageKey,
   storageKey: () => props.storageKey,
   streamAiChatText: props.streamAiChatText,
   parseTokenUsage: props.parseTokenUsage,
   uploadFile: props.uploadFile,
+  reportFcError: () => props.reportFcError,
 })
 
 const inputText = ref('')
@@ -196,8 +211,22 @@ async function handleSend() {
 
 function handleClear() {
   clear()
+  props.clearExternalToolLogs?.()
   pendingFiles.value = []
   inputText.value = ''
+}
+
+function handleClearMessages() {
+  clearMessages()
+  pendingFiles.value = []
+  inputText.value = ''
+}
+
+function handleClearToolLogs() {
+  clearToolLogs()
+  if (props.externalToolLogs !== undefined) {
+    props.clearExternalToolLogs?.()
+  }
 }
 </script>
 

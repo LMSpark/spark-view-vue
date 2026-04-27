@@ -53,7 +53,8 @@ describe('SparkNodeTree', () => {
     expect(tree.countNodes()).toBe(4)
     expect([...tree.collectDataKeys()]).toEqual(['Users@rows'])
     expect([...tree.collectHandlerNames()]).toEqual(['handleToolbarClick'])
-    expect(tree.root).toBe(root)
+    expect(tree.root).toEqual(root)
+    expect(tree.root).not.toBe(root)
   })
 
   it('getAllData 应等价于 toJSON（返回当前根引用）', () => {
@@ -218,6 +219,38 @@ describe('SparkNodeTree', () => {
     expect(children.map((child) => child.id)).toEqual(['refresh-action', 'export-action'])
   })
 
+  it('moveNode 应移动已有节点并只返回位置摘要', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+
+    const result = tree.moveNode({
+      componentId: 'name-column',
+      parentComponentId: 'toolbar',
+      index: 0,
+    })
+
+    const toolbarChildren = tree.listChildren({ parentComponentId: 'toolbar' })
+      .filter((child): child is SparkNode => typeof child !== 'string')
+
+    expect(result).toEqual({
+      componentId: 'name-column',
+      fromParentComponentId: 'table',
+      toParentComponentId: 'toolbar',
+      previousIndex: 0,
+      index: 0,
+    })
+    expect(JSON.stringify(result)).not.toContain('el-table-column')
+    expect(toolbarChildren.map((child) => child.id)).toEqual(['name-column'])
+    expect(tree.listChildren({ parentComponentId: 'table' })).toEqual([])
+  })
+
+  it('moveNode 应拒绝移动根节点和移入自身后代', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+
+    expect(() => tree.moveNode({ componentId: 'root', parentComponentId: null })).toThrow(/root node/i)
+    expect(() => tree.moveNode({ componentId: 'table', parentComponentId: 'name-column' })).toThrow(/descendant/i)
+    expect(tree.historyCursor).toBe(0)
+  })
+
   it('setProps 应支持 merge 与 replace', () => {
     const root = createSparkNodeTree()
     const tree = new SparkNodeTree({ root })
@@ -231,7 +264,6 @@ describe('SparkNodeTree', () => {
     expect(merged.node.props).toEqual({
       dataKey: 'Users@rows',
       border: true,
-      id: 'table',
       stripe: true,
     })
 
@@ -501,7 +533,7 @@ describe('SparkNodeTree — undo / redo', () => {
     expect(tree.historyCursor).toBe(1)
   })
 
-  it('所有 4 种写操作均自动记录历史', () => {
+  it('所有 5 种写操作均自动记录历史', () => {
     const tree = new SparkNodeTree({ root: createSparkNodeTree() })
 
     tree.addNode({ parentComponentId: 'toolbar', node: { type: 'r-text', id: 'x' } })
@@ -510,8 +542,10 @@ describe('SparkNodeTree — undo / redo', () => {
     expect(tree.historyCursor).toBe(2)
     tree.replaceNode({ componentId: 'x', node: { type: 'r-text', id: 'x', props: {} } })
     expect(tree.historyCursor).toBe(3)
-    tree.removeNode({ componentId: 'x' })
+    tree.moveNode({ componentId: 'x', parentComponentId: null })
     expect(tree.historyCursor).toBe(4)
+    tree.removeNode({ componentId: 'x' })
+    expect(tree.historyCursor).toBe(5)
 
     // 全部可 undo
     expect(tree.canUndo).toBe(true)

@@ -229,6 +229,31 @@ describe('sparkNodeTree stills execution coverage', () => {
     const addNodesResult = expectOk<{ indexes: number[] }>(addNodes)
     expect(addNodesResult.indexes.length).toBe(2)
 
+    const moveNode = exec('sparkNodeTree.moveNode', {
+      componentId: 'extra-3',
+      parentComponentId: 'root-table',
+      index: 1,
+    })
+    executedActions.add('sparkNodeTree.moveNode')
+    const moveNodeResult = expectOk<{
+      componentId: string
+      fromParentComponentId: string | null
+      toParentComponentId: string | null
+      previousIndex: number
+      index: number
+    }>(moveNode)
+    expect(moveNodeResult).toMatchObject({
+      componentId: 'extra-3',
+      fromParentComponentId: 'root-table',
+      toParentComponentId: 'root-table',
+      previousIndex: 4,
+      index: 1,
+    })
+    expect(JSON.stringify(moveNodeResult)).not.toContain('r-text')
+    const movedChildren = liveTree.listChildren({ parentComponentId: 'root-table' })
+      .filter((child): child is SparkNode => typeof child !== 'string')
+    expect(movedChildren.map((child) => child.id).indexOf('extra-3')).toBe(1)
+
     const setProps = exec('sparkNodeTree.setProps', {
       componentId: 'root-table',
       props: { border: true },

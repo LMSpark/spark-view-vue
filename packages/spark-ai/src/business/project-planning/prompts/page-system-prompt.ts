@@ -170,6 +170,7 @@ SparkNode 严格对齐 Vue h(type, props, children) 三段式，每个节点只�
 
 SparkNode 操作概念（理解组件树结构）：
 - addNode(parentId, node) — 向父节点插入子节点
+- moveNode(nodeId, parentId, index?) — 移动已有节点到目标父节点/位置
 - setProps(nodeId, props, merge?) — 写入/合并节点属性
 - removeNode(nodeId) — 删除节点
 - replaceNode(nodeId, newNode) — 替换节点

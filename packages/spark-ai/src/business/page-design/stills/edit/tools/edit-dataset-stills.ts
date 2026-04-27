@@ -8,7 +8,7 @@
 import type { IStillSession, StillDefinition, StillResult } from '../../../../../core/stills/types'
 import { parseDataKey } from '@spark-view/spark-data'
 import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-lifecycle-stills'
-import { EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
+import { DATASET_EXPORT_ACTION, EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   validateDataSetCrudToolStillParams,
@@ -42,6 +42,8 @@ const noArgActions = new Set(
     .filter((row) => Object.keys(row.paramsSchema).length === 0)
     .map((row) => row.action)
 )
+
+const LEGACY_DATASET_EXPORT_ACTION = 'datasetTool.export'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 参数分发与结果清洗
@@ -289,7 +291,7 @@ function executeDatasetStillRow(
  * 2. execute / validate 只做编辑态补充，不重复描述业务结构；
  * 3. 新增 datasetTool.* 动作时，只需更新 catalog 即可自动注册。
  */
-export const EDIT_DATASET_STILLS: StillDefinition[] = DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.map((row) => ({
+const EDIT_DATASET_STILLS_RAW: StillDefinition[] = DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.map((row) => ({
   action: row.action,
   type: row.type,
   description: row.description,
@@ -301,4 +303,30 @@ export const EDIT_DATASET_STILLS: StillDefinition[] = DATASET_CRUD_TOOL_STILLS_P
   validate: (params: unknown) => validateDatasetStillRow(row, params),
   execute: (session: IStillSession, params: unknown) => executeDatasetStillRow(session, row, params),
 } as StillDefinition))
+
+const datasetExportRow = DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.find(
+  (row) => row.action === LEGACY_DATASET_EXPORT_ACTION,
+)
+
+export const EDIT_DATASET_STILLS_EFFECTIVE: StillDefinition[] = (
+  datasetExportRow === undefined
+    ? EDIT_DATASET_STILLS_RAW.filter((still) => still.action !== LEGACY_DATASET_EXPORT_ACTION)
+    : [
+      ...EDIT_DATASET_STILLS_RAW.filter((still) => still.action !== LEGACY_DATASET_EXPORT_ACTION),
+      {
+        action: DATASET_EXPORT_ACTION,
+        type: datasetExportRow.type,
+        description: '导出当前 DataSet 元数据快照（edit 模式统一出口）',
+        paramsSchema: datasetExportRow.paramsSchema,
+        resultSchema: datasetExportRow.resultSchema,
+        example: datasetExportRow.example,
+        usageRules: datasetExportRow.usageRules,
+        failureModes: datasetExportRow.failureModes,
+        validate: (params: unknown) => validateDataSetCrudToolStillParams(datasetExportRow.action, params ?? {}),
+        execute: (session: IStillSession, params: unknown) => executeDatasetStillRow(session, datasetExportRow, params),
+      } as StillDefinition,
+    ]
+)
+
+export const EDIT_DATASET_STILLS: StillDefinition[] = EDIT_DATASET_STILLS_EFFECTIVE
 

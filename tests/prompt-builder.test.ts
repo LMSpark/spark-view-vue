@@ -211,6 +211,8 @@ describe('提示词内容完整性', () => {
     // L5 按需查询
     expect(STILLS_RUNTIME_PROMPT).toContain('L5: 按需查询')
     expect(STILLS_RUNTIME_PROMPT).toContain('actionSpec')
+    expect(STILLS_RUNTIME_PROMPT).toContain('interaction.ask')
+    expect(STILLS_RUNTIME_PROMPT).toContain('recommendedOptionIds')
     // 业务逻辑
     expect(STILLS_RUNTIME_PROMPT).toContain('蓝图编排')
     expect(STILLS_RUNTIME_PROMPT).toContain('效率纪律')

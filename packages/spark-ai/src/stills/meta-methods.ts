@@ -54,6 +54,9 @@ import {
   SESSION_DESCRIBE_ACTION,
   CATALOG_QUERY_ACTION,
   CATALOG_GUIDE_ACTION,
+  QUERY_COMPONENT_CATALOG_ACTION,
+  QUERY_COMPONENT_GUIDE_ACTION,
+  INTERACTION_ASK_ACTION,
 } from '../core/stills/action-names'
 import { functionNameToAction } from '../core/fc-schema'
 
@@ -128,7 +131,11 @@ interface ActionSpecParams {
  */
 interface CatalogQueryParams {
   /** 可选：按分类过滤（container | field | group | meta）。 */
-  category?: string
+  category?: unknown
+  /** 兼容旧入口：组件 type 或 *。 */
+  type?: unknown
+  /** 兼容旧入口：组件 type、分类或 *。 */
+  componentType?: unknown
 }
 
 /**
@@ -138,7 +145,30 @@ interface CatalogQueryParams {
  */
 interface CatalogGuideParams {
   /** 必填：精确匹配的组件 type，如 "r-table"。 */
-  type: string
+  type?: unknown
+  /** 兼容旧入口：精确匹配的组件 type，如 "r-table"。 */
+  componentType?: unknown
+}
+
+interface InteractionAskOption {
+  id: string
+  label: string
+  value?: unknown
+  description?: string
+}
+
+interface InteractionAskQuestion {
+  id: string
+  prompt: string
+  type: 'single' | 'multi'
+  options: InteractionAskOption[]
+  recommendedOptionIds: string[]
+}
+
+interface InteractionAskParams {
+  title: string
+  reason?: string
+  questions: InteractionAskQuestion[]
 }
 
 // =========================================================
@@ -158,6 +188,85 @@ function resolveCatalogRegistryKey(category: string): keyof StillsCatalogRegistr
       return 'meta'
     default:
       return null
+  }
+}
+
+function normalizeCatalogCategoryName(category: string): string | null {
+  const normalized = category.trim()
+  if (normalized.length === 0) return null
+  if (normalized === '*') return '*'
+  if (normalized === 'layout' || normalized === 'layouts') return 'container'
+  return normalized
+}
+
+function normalizeCatalogQueryCategories(categoryParam: unknown): string[] | null {
+  if (categoryParam === undefined) return []
+  if (typeof categoryParam === 'string') {
+    const category = normalizeCatalogCategoryName(categoryParam)
+    if (category === '*') return []
+    return category === null ? null : [category]
+  }
+  if (Array.isArray(categoryParam)) {
+    const categories: string[] = []
+    for (const item of categoryParam) {
+      const normalized = normalizeCatalogQueryCategories(item)
+      if (normalized === null) return null
+      categories.push(...normalized)
+    }
+    return categories
+  }
+  if (typeof categoryParam === 'object' && categoryParam !== null && 'category' in categoryParam) {
+    return normalizeCatalogQueryCategories((categoryParam as Record<string, unknown>)['category'])
+  }
+  return null
+}
+
+function normalizeCatalogText(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+function normalizeCatalogGuideType(params: unknown): string | null {
+  const direct = normalizeCatalogText(params)
+  if (direct !== null) return direct
+  if (!isRecord(params)) return null
+  return normalizeCatalogText(params['type']) ?? normalizeCatalogText(params['componentType'])
+}
+
+function normalizeCatalogQueryRequest(params: unknown): { categoryParam: unknown; componentType: string | null } | null {
+  if (params === undefined || params === null) {
+    return { categoryParam: undefined, componentType: null }
+  }
+  if (typeof params === 'string') {
+    return { categoryParam: undefined, componentType: normalizeCatalogText(params) }
+  }
+  if (Array.isArray(params)) {
+    return { categoryParam: params, componentType: null }
+  }
+  if (!isRecord(params)) return null
+
+  const componentType = normalizeCatalogText(params['componentType']) ?? normalizeCatalogText(params['type'])
+  if (componentType !== null) {
+    return { categoryParam: undefined, componentType }
+  }
+  return { categoryParam: params['category'], componentType: null }
+}
+
+function buildCatalogGuideResult(type: string): StillResult {
+  const guide = projectComponentConfigGuide(STATIC_COMPONENT_CATALOG, type)
+  if (guide === null) {
+    return {
+      ok: false,
+      code: 'NOT_FOUND',
+      msg: `组件 "${type}" 不在目录中`,
+      fix: '请先用 queryComponentCatalog({ componentType: "*" }) 或 catalog.query 查看可用组件列表，确认 type 后再调用 queryComponentGuide({ type }) 或 catalog.guide',
+    }
+  }
+  return {
+    ok: true,
+    data: guide,
+    summary: `${type} 配置指南：${guide.requiredProps.length} 必填属性，${guide.optionalProps.length} 可选属性`,
   }
 }
 
@@ -362,8 +471,139 @@ function buildStaticComponentsDirectorySummary() {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function validateInteractionAskParams(params: InteractionAskParams): string | null {
+  if (!isRecord(params)) return 'interaction.ask 参数必须是对象'
+  if (!isNonEmptyString(params.title)) return missingParam('title')
+  if (!Array.isArray(params.questions) || params.questions.length === 0) return 'questions 必须是非空数组'
+
+  for (const [questionIndex, question] of params.questions.entries()) {
+    const prefix = `questions[${questionIndex}]`
+    if (!isRecord(question)) return `${prefix} 必须是对象`
+    const rawQuestion: Record<string, unknown> = question
+    const questionType = rawQuestion['type']
+    const rawOptions = rawQuestion['options']
+    const rawRecommendedOptionIds = rawQuestion['recommendedOptionIds']
+    if (!isNonEmptyString(rawQuestion['id'])) return `${prefix}.id 必须是非空字符串`
+    if (!isNonEmptyString(rawQuestion['prompt'])) return `${prefix}.prompt 必须是非空字符串`
+    if (questionType !== 'single' && questionType !== 'multi') return `${prefix}.type 必须是 single 或 multi`
+    if (!Array.isArray(rawOptions) || rawOptions.length < 2) return `${prefix}.options 至少提供 2 个备选项`
+    if (!Array.isArray(rawRecommendedOptionIds) || rawRecommendedOptionIds.length === 0) return `${prefix}.recommendedOptionIds 必须提供推荐选项`
+    if (questionType === 'single' && rawRecommendedOptionIds.length !== 1) return `${prefix}.recommendedOptionIds 单选题必须且只能推荐 1 个选项`
+
+    const optionIds = new Set<string>()
+    for (const [optionIndex, option] of rawOptions.entries()) {
+      const optionPrefix = `${prefix}.options[${optionIndex}]`
+      if (!isRecord(option)) return `${optionPrefix} 必须是对象`
+      const optionId = option['id']
+      if (!isNonEmptyString(optionId)) return `${optionPrefix}.id 必须是非空字符串`
+      if (!isNonEmptyString(option['label'])) return `${optionPrefix}.label 必须是非空字符串`
+      if (optionIds.has(optionId)) return `${prefix}.options 存在重复 id: ${optionId}`
+      optionIds.add(optionId)
+    }
+
+    for (const recommendedId of rawRecommendedOptionIds) {
+      if (!isNonEmptyString(recommendedId)) return `${prefix}.recommendedOptionIds 只能包含非空字符串`
+      if (!optionIds.has(recommendedId)) return `${prefix}.recommendedOptionIds 包含不存在的选项: ${recommendedId}`
+    }
+  }
+
+  return null
+}
+
 // =========================================================
-// 八、stills.capabilities — 动作目录枚举
+// 八、interaction.ask — LLM 反问请求
+// =========================================================
+
+export const interactionAsk: StillDefinition<InteractionAskParams, InteractionAskParams> = {
+  action: INTERACTION_ASK_ACTION,
+  type: 'describe',
+  description: '向用户发起结构化反问；必须提供完整备选项与推荐选项，前端会渲染为可点击回答',
+  guard: noGuard,
+  usageRules: [
+    '仅当关键业务事实无法从当前上下文或只读动作判定时调用。',
+    '每个问题必须提供完整备选项；如存在开放场景，应提供“其他/自定义”选项。',
+    '每个问题必须提供 recommendedOptionIds；推荐项只能来自 options[].id。',
+    '调用后停止继续写入或尝试，等待用户点击选项回答。',
+  ],
+  paramsSchema: {
+    kind: 'object',
+    properties: {
+      title: 'string — 反问主题，简短说明本次需要确认什么',
+      questions: {
+        kind: 'array',
+        note: '问题列表；为保证点击即回答，优先一次只问 1 个关键问题',
+        items: {
+          kind: 'object',
+          properties: {
+            id: 'string — 问题稳定 id，如 scope、layout、fields',
+            prompt: 'string — 面向用户的问题文本',
+            type: { kind: 'enum', enum: ['single', 'multi'], note: 'single=单选；multi=多选' },
+            options: {
+              kind: 'array',
+              note: '完整备选项，至少 2 项；需要开放输入时提供 other/custom 选项',
+              items: {
+                kind: 'object',
+                properties: {
+                  id: 'string — 选项稳定 id',
+                  label: 'string — 展示给用户的选项名称',
+                },
+                optional: {
+                  value: 'string — 选项值；未提供时使用 id',
+                  description: 'string? — 选项说明或适用场景',
+                },
+              },
+            },
+            recommendedOptionIds: {
+              kind: 'array',
+              note: '推荐选项 id；single 必须 1 个，multi 可多个',
+              items: 'string — options[].id 中的值',
+            },
+          },
+        },
+      },
+    },
+    optional: {
+      reason: 'string? — 为什么需要用户确认；写清缺失事实，不要泛泛描述',
+    },
+  },
+  resultSchema: {
+    title: 'string',
+    reason: 'string?',
+    questions: 'Array<{ id; prompt; type; options; recommendedOptionIds }>',
+  },
+  example: {
+    title: '确认订单管理页面范围',
+    reason: '当前需求未说明订单状态和售后是否纳入本页，继续生成会影响表结构与页面布局。',
+    questions: [
+      {
+        id: 'order-scope',
+        prompt: '订单管理页面本次应覆盖哪个业务范围？',
+        type: 'single',
+        options: [
+          { id: 'basic', label: '基础订单列表', value: 'basic', description: '只包含订单查询、状态展示和详情查看' },
+          { id: 'workflow', label: '订单处理流程', value: 'workflow', description: '包含接单、发货、完成等流程动作' },
+          { id: 'after-sales', label: '订单与售后联动', value: 'after-sales', description: '包含退款、退货、售后状态' },
+          { id: 'analytics', label: '订单看板与统计', value: 'analytics', description: '突出汇总指标和趋势分析' },
+          { id: 'custom', label: '其他/自定义', value: 'custom', description: '由用户补充具体范围' },
+        ],
+        recommendedOptionIds: ['workflow'],
+      },
+    ],
+  },
+  validate: validateInteractionAskParams,
+  execute: (_session, params): StillResult<InteractionAskParams> => ({
+    ok: true,
+    data: params,
+    summary: `等待用户回答反问：${params.title}（${params.questions.length} 题）`,
+  }),
+}
+
+// =========================================================
+// 九、stills.capabilities — 动作目录枚举
 // =========================================================
 
 /**
@@ -405,7 +645,7 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
 }
 
 // =========================================================
-// 九、stills.actionSpec — 动作规格精查
+// 十、stills.actionSpec — 动作规格精查
 // =========================================================
 
 /**
@@ -474,7 +714,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
 }
 
 // =========================================================
-// 十、session.describe — 会话全局状态汇总
+// 十一、session.describe — 会话全局状态汇总
 // =========================================================
 
 /**
@@ -564,16 +804,40 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
 export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
   action: CATALOG_QUERY_ACTION,
   type: 'describe',
-  description: '组件目录：无参数返回全量列表；指定 category 返回分类列表。按 type 查配置指南请用 catalog.guide。',
+  description: '组件目录：无参数或 * 返回全量列表；指定 category 返回分类列表；兼容 type/componentType 查询单组件指南。',
   guard: noGuard,
-  paramsSchema: { category: '可选，container|field|group|meta' },
+  paramsSchema: {
+    kind: 'object',
+    optional: {
+      category: 'container | field | group | meta | layout | layouts | * — 分类或全量目录',
+      type: 'string? — 兼容旧调用：组件 type，如 r-table；传 * 返回全量目录',
+      componentType: 'string? — 兼容 queryComponentCatalog：组件 type、分类或 *',
+    },
+  },
   example: { category: 'field' },
   validate: () => null,
   execute: (session: IStillSession, params: CatalogQueryParams): StillResult => {
-    const queryCategory = isNonEmptyString(params.category) ? params.category : null
+    const normalizedRequest = normalizeCatalogQueryRequest(params)
 
-    if (params.category !== undefined && queryCategory === null) {
-      return { ok: false, code: 'INVALID_PARAMS', msg: 'category 必须是非空字符串', fix: '仅支持 container | field | group | meta' }
+    if (normalizedRequest === null) {
+      return {
+        ok: false,
+        code: 'INVALID_PARAMS',
+        msg: 'catalog.query 参数必须是对象、字符串、字符串数组或空值',
+        fix: '传 {} 或 { category:"container" }；旧调用可传 { componentType:"*" } 或 { componentType:"r-table" }',
+      }
+    }
+
+    const categoryParam = normalizedRequest.categoryParam
+    const queryCategories = normalizeCatalogQueryCategories(categoryParam)
+
+    if (queryCategories === null || (Array.isArray(categoryParam) && queryCategories.length === 0)) {
+      return {
+        ok: false,
+        code: 'INVALID_PARAMS',
+        msg: 'category 必须是非空字符串，或非空字符串数组',
+        fix: '仅支持 container | field | group | meta；多分类可传 category:["container","field"]',
+      }
     }
 
     if (session.catalog === null) {
@@ -587,22 +851,89 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
 
     const catalog = session.catalog
 
+    if (normalizedRequest.componentType !== null) {
+      const componentType = normalizedRequest.componentType
+      const normalizedCategory = normalizeCatalogCategoryName(componentType)
+      if (normalizedCategory === '*') {
+        const list = Object.entries(catalog.components).map(([type, e]) => ({
+          type,
+          category: e.category,
+          description: e.description,
+        }))
+        return {
+          ok: true,
+          data: { total: list.length, components: list },
+          summary: `共 ${list.length} 个可用组件`,
+        }
+      }
+      if (normalizedCategory !== null) {
+        const registryKey = resolveCatalogRegistryKey(normalizedCategory)
+        if (registryKey !== null) {
+          const types = catalog.registry[registryKey]
+          const list = types.map((t) => ({
+            type: t,
+            description: catalog.components[t]?.description ?? '',
+          }))
+          return {
+            ok: true,
+            data: { category: normalizedCategory, count: list.length, components: list },
+            summary: `${normalizedCategory}: ${list.length} 组件`,
+          }
+        }
+      }
+      if (catalog.components[componentType] !== undefined) {
+        return buildCatalogGuideResult(componentType)
+      }
+      return {
+        ok: false,
+        code: 'INVALID_CATEGORY',
+        msg: `非法 category/type: ${componentType}`,
+        fix: '传 * 查全量；传 container | field | group | meta 查分类；传真实组件 type（如 r-table）查配置指南。',
+      }
+    }
+
     // 模式 1：按 category 过滤，返回该分类的组件类型列表（轻量）。
-    if (queryCategory !== null) {
-      const registryKey = resolveCatalogRegistryKey(queryCategory)
-      if (registryKey === null) {
-        return { ok: false, code: 'INVALID_CATEGORY', msg: `非法 category: ${queryCategory}`, fix: '仅支持 container | field | group | meta' }
+    if (queryCategories.length > 0) {
+      const normalizedCategories = [...new Set(queryCategories)]
+      const groups: Array<{ category: string; count: number; components: Array<{ type: string; description: string }> }> = []
+
+      for (const category of normalizedCategories) {
+        const registryKey = resolveCatalogRegistryKey(category)
+        if (registryKey === null) {
+          return {
+            ok: false,
+            code: 'INVALID_CATEGORY',
+            msg: `非法 category: ${category}`,
+            fix: '仅支持 container | field | group | meta',
+          }
+        }
+
+        const types = catalog.registry[registryKey]
+        const list = types.map((t) => ({
+          type: t,
+          description: catalog.components[t]?.description ?? '',
+        }))
+        groups.push({ category, count: list.length, components: list })
       }
 
-      const types = catalog.registry[registryKey]
-      const list = types.map((t) => ({
-        type: t,
-        description: catalog.components[t]?.description ?? '',
-      }))
+      const only = groups[0]
+      if (groups.length === 1 && only !== undefined) {
+        return {
+          ok: true,
+          data: { category: only.category, count: only.count, components: only.components },
+          summary: `${only.category}: ${only.count} 组件`,
+        }
+      }
+
+      const mergedCount = groups.reduce((sum, item) => sum + item.count, 0)
       return {
         ok: true,
-        data: { category: queryCategory, count: list.length, components: list },
-        summary: `${queryCategory}: ${list.length} 组件`,
+        data: {
+          categories: groups.map((item) => item.category),
+          count: mergedCount,
+          groups,
+        },
+        summary: `categories(${groups.map((item) => item.category).join(',')}): ${mergedCount} 组件`,
       }
     }
 
@@ -646,28 +977,68 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
 export const catalogGuide: StillDefinition<CatalogGuideParams, unknown> = {
   action: CATALOG_GUIDE_ACTION,
   type: 'describe',
-  description: '单组件配置指南：返回指定 type 的 props 分组、最小示例与 fail-fast 自检清单。',
+  description: '单组件配置指南：返回指定 type/componentType 的 props 分组、最小示例与 fail-fast 自检清单。',
   guard: noGuard,
-  paramsSchema: { type: '必填，组件类型，如 "r-table"' },
+  paramsSchema: {
+    kind: 'object',
+    properties: {
+      type: 'string — 组件类型，如 "r-table"',
+    },
+    optional: {
+      componentType: 'string? — 兼容旧调用的组件类型字段，如 "r-table"',
+    },
+  },
   example: { type: 'r-table' },
   validate: (params) => {
-    if (!isNonEmptyString(params.type)) return missingParam('type')
+    if (normalizeCatalogGuideType(params) === null) return missingParam('type')
     return null
   },
   execute: (_session: IStillSession, params: CatalogGuideParams): StillResult => {
-    const guide = projectComponentConfigGuide(STATIC_COMPONENT_CATALOG, params.type)
-    if (guide === null) {
-      return {
-        ok: false,
-        code: 'NOT_FOUND',
-        msg: `组件 "${params.type}" 不在目录中`,
-        fix: '请先用 catalog.query 查看可用组件列表，确认 type 后再调用 catalog.guide',
-      }
-    }
-    return {
-      ok: true,
-      data: guide,
-      summary: `${params.type} 配置指南：${guide.requiredProps.length} 必填属性，${guide.optionalProps.length} 可选属性`,
-    }
+    const type = normalizeCatalogGuideType(params)
+    return type === null
+      ? { ok: false, code: 'INVALID_PARAMS', msg: missingParam('type'), fix: '请传 { type:"r-table" } 或 { componentType:"r-table" }' }
+      : buildCatalogGuideResult(type)
+  },
+}
+
+export const queryComponentCatalog: StillDefinition<CatalogQueryParams, unknown> = {
+  action: QUERY_COMPONENT_CATALOG_ACTION,
+  type: 'describe',
+  description: '兼容 FC 入口：查询组件目录或单组件配置。componentType="*" 返回全量，componentType=分类返回分类，componentType=组件 type 返回配置指南。',
+  guard: noGuard,
+  paramsSchema: {
+    kind: 'object',
+    optional: {
+      componentType: 'string? — * | container | field | group | meta | 组件 type（如 r-table）',
+      category: 'string? — container | field | group | meta | layout | layouts | *',
+      type: 'string? — 组件 type 或分类，兼容旧调用',
+    },
+  },
+  example: { componentType: '*' },
+  validate: () => null,
+  execute: (session, params) => catalogQuery.execute(session, params),
+}
+
+export const queryComponentGuide: StillDefinition<CatalogGuideParams, unknown> = {
+  action: QUERY_COMPONENT_GUIDE_ACTION,
+  type: 'describe',
+  description: '兼容 FC 入口：查询单组件配置指南，等价于 catalog.guide。支持 type 或 componentType。',
+  guard: noGuard,
+  paramsSchema: {
+    kind: 'object',
+    properties: {
+      type: 'string — 组件类型，如 "r-table"',
+    },
+    optional: {
+      componentType: 'string? — 兼容旧调用的组件类型字段，如 "r-table"',
+    },
+  },
+  example: { type: 'r-table' },
+  validate: catalogGuide.validate,
+  execute: (_session, params) => {
+    const type = normalizeCatalogGuideType(params)
+    return type === null
+      ? { ok: false, code: 'INVALID_PARAMS', msg: missingParam('type'), fix: '请传 { type:"r-table" } 或 { componentType:"r-table" }' }
+      : buildCatalogGuideResult(type)
   },
 }

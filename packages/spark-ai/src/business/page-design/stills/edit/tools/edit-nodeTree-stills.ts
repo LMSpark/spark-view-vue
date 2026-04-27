@@ -48,6 +48,17 @@ function buildNodeTreeActionSummary(action: string, data: unknown): string {
       : `${action} 完成`
   }
 
+  if (action === 'sparkNodeTree.moveNode' && typeof data === 'object' && data !== null) {
+    const result = data as Record<string, unknown>
+    const componentId = typeof result['componentId'] === 'string' ? result['componentId'] : 'unknown'
+    const fromParent = typeof result['fromParentComponentId'] === 'string' ? result['fromParentComponentId'] : 'root'
+    const toParent = typeof result['toParentComponentId'] === 'string' ? result['toParentComponentId'] : 'root'
+    const index = typeof result['index'] === 'number' ? result['index'] : Number.NaN
+    return Number.isFinite(index)
+      ? `${action} 完成（${componentId}: ${fromParent} → ${toParent}, index=${index}）`
+      : `${action} 完成（${componentId}: ${fromParent} → ${toParent}）`
+  }
+
   return `${action} 完成`
 }
 

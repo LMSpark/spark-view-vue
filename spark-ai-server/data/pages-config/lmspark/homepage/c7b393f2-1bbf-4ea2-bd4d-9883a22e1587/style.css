@@ -1,0 +1,109 @@
+/* 请假管理系统 - 页面样式 */
+
+/* 页面标题区 */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #303133;
+}
+
+/* 状态标签 */
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-tag.pending {
+  background: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #faecd8;
+}
+
+.status-tag.approved {
+  background: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+}
+
+.status-tag.rejected {
+  background: #fef0f0;
+  color: #f56c6c;
+  border: 1px solid #fde2e2;
+}
+
+.status-tag.cancelled {
+  background: #f4f4f5;
+  color: #909399;
+  border: 1px solid #e9e9eb;
+}
+
+/* 操作按钮组 */
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+/* 弹窗表单 */
+.form-dialog {
+  min-width: 500px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-row > * {
+  flex: 1;
+}
+
+/* 统计卡片区 */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.stat-card .stat-label {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 4px;
+}
+
+.stat-card .stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-card .stat-value.pending {
+  color: #e6a23c;
+}
+
+.stat-card .stat-value.approved {
+  color: #67c23a;
+}
+
+.stat-card .stat-value.rejected {
+  color: #f56c6c;
+}

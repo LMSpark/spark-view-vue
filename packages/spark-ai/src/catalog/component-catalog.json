@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-26T20:20:31.219Z",
+  "buildTime": "2026-04-27T05:02:17.016Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -8469,18 +8469,6 @@
           "name": "toolLogs",
           "type": "ToolLogLike[] | undefined",
           "required": false
-        },
-        {
-          "name": "recoveryPolicy",
-          "type": "RecoveryPolicyLike | undefined",
-          "required": false,
-          "schemaRef": "schema_00483"
-        },
-        {
-          "name": "collaborationPolicy",
-          "type": "CollaborationPolicyLike | undefined",
-          "required": false,
-          "schemaRef": "schema_00484"
         }
       ]
     },
@@ -8494,7 +8482,7 @@
           "name": "mode",
           "type": "ChatMode | undefined",
           "required": false,
-          "schemaRef": "schema_00487"
+          "schemaRef": "schema_00483"
         },
         {
           "name": "systemPrompt",
@@ -8563,7 +8551,7 @@
           "name": "config",
           "type": "AiSessionConfig | undefined",
           "required": false,
-          "schemaRef": "schema_00490"
+          "schemaRef": "schema_00486"
         },
         {
           "name": "storageKey",
@@ -8630,14 +8618,14 @@
           "type": "AiFcLoopConfig | undefined",
           "required": false,
           "description": "SSE + FC 循环配置。",
-          "schemaRef": "schema_00488"
+          "schemaRef": "schema_00484"
         },
         {
           "name": "feedback",
           "type": "AiFeedbackConfig | undefined",
           "required": false,
           "description": "反馈配置。",
-          "schemaRef": "schema_00489"
+          "schemaRef": "schema_00485"
         },
         {
           "name": "label",
@@ -8778,7 +8766,7 @@
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
-          "schemaRef": "schema_00507"
+          "schemaRef": "schema_00503"
         },
         {
           "name": "rootLabel",
@@ -8843,7 +8831,7 @@
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式",
-          "schemaRef": "schema_00508"
+          "schemaRef": "schema_00504"
         },
         {
           "name": "readOnly",
@@ -8908,7 +8896,7 @@
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式",
-          "schemaRef": "schema_00509"
+          "schemaRef": "schema_00505"
         },
         {
           "name": "indentation",
@@ -9042,7 +9030,7 @@
           "name": "state",
           "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
-          "schemaRef": "schema_00510"
+          "schemaRef": "schema_00506"
         }
       ]
     },
@@ -26305,48 +26293,6 @@
     },
     "schema_00483": {
       "kind": "enum",
-      "type": "RecoveryPolicyLike | undefined",
-      "variants": [
-        "undefined",
-        "\"strict\"",
-        "\"manual\"",
-        "\"layered\""
-      ]
-    },
-    "schema_00484": {
-      "kind": "enum",
-      "type": "CollaborationPolicyLike | undefined",
-      "variants": [
-        "undefined",
-        "\"auto\"",
-        "\"critical-confirm\"",
-        "\"plan-confirm\"",
-        "\"step-confirm\"",
-        "\"human-takeover\""
-      ]
-    },
-    "schema_00485": {
-      "kind": "enum",
-      "type": "RecoveryPolicyLike",
-      "variants": [
-        "\"strict\"",
-        "\"manual\"",
-        "\"layered\""
-      ]
-    },
-    "schema_00486": {
-      "kind": "enum",
-      "type": "CollaborationPolicyLike",
-      "variants": [
-        "\"auto\"",
-        "\"critical-confirm\"",
-        "\"plan-confirm\"",
-        "\"step-confirm\"",
-        "\"human-takeover\""
-      ]
-    },
-    "schema_00487": {
-      "kind": "enum",
       "type": "ChatMode | undefined",
       "variants": [
         "undefined",
@@ -26354,7 +26300,7 @@
         "\"multi\""
       ]
     },
-    "schema_00488": {
+    "schema_00484": {
       "kind": "object",
       "type": "AiFcLoopConfig",
       "properties": {
@@ -26378,7 +26324,7 @@
         }
       }
     },
-    "schema_00489": {
+    "schema_00485": {
       "kind": "object",
       "type": "AiFeedbackConfig",
       "properties": {
@@ -26395,7 +26341,7 @@
         }
       }
     },
-    "schema_00490": {
+    "schema_00486": {
       "kind": "object",
       "type": "AiSessionConfig",
       "properties": {
@@ -26464,14 +26410,14 @@
           "type": "AiFcLoopConfig | undefined",
           "required": false,
           "description": "SSE + Function-Call 循环配置。",
-          "schemaRef": "schema_00488"
+          "schemaRef": "schema_00484"
         },
         "feedback": {
           "name": "feedback",
           "type": "AiFeedbackConfig | undefined",
           "required": false,
           "description": "反馈机制（文本 + 点赞点踩）。",
-          "schemaRef": "schema_00489"
+          "schemaRef": "schema_00485"
         },
         "hooks": {
           "name": "hooks",
@@ -26481,7 +26427,7 @@
         }
       }
     },
-    "schema_00491": {
+    "schema_00487": {
       "kind": "object",
       "type": "{ config: AiSessionConfig; }",
       "properties": {
@@ -26617,7 +26563,7 @@
         }
       }
     },
-    "schema_00492": {
+    "schema_00488": {
       "kind": "object",
       "type": "{ config: AiSessionConfig | null; }",
       "properties": {
@@ -26628,7 +26574,7 @@
         }
       }
     },
-    "schema_00493": {
+    "schema_00489": {
       "kind": "object",
       "type": "{ config: AiSessionConfig; cancel: () => void; }",
       "properties": {
@@ -26769,7 +26715,7 @@
         }
       }
     },
-    "schema_00494": {
+    "schema_00490": {
       "kind": "object",
       "type": "{ previousConfig: AiSessionConfig | null; config: AiSessionConfig; }",
       "properties": {
@@ -26785,7 +26731,7 @@
         }
       }
     },
-    "schema_00495": {
+    "schema_00491": {
       "kind": "object",
       "type": "{ messageId: string; content: string; }",
       "properties": {
@@ -26801,7 +26747,7 @@
         }
       }
     },
-    "schema_00496": {
+    "schema_00492": {
       "kind": "object",
       "type": "{ messageId: string; delta: string; }",
       "properties": {
@@ -26817,7 +26763,7 @@
         }
       }
     },
-    "schema_00497": {
+    "schema_00493": {
       "kind": "object",
       "type": "{ messageId: string; content: string; usage?: Record<string, unknown>; }",
       "properties": {
@@ -26838,7 +26784,7 @@
         }
       }
     },
-    "schema_00498": {
+    "schema_00494": {
       "kind": "object",
       "type": "{ messageId?: string; error: unknown; }",
       "properties": {
@@ -26854,7 +26800,7 @@
         }
       }
     },
-    "schema_00499": {
+    "schema_00495": {
       "kind": "object",
       "type": "{ toolName: string; args: unknown; round: number; callId?: string; }",
       "properties": {
@@ -26880,7 +26826,7 @@
         }
       }
     },
-    "schema_00500": {
+    "schema_00496": {
       "kind": "object",
       "type": "{ toolName: string; args: unknown; result: unknown; round: number; callId?: string; durationMs: number; }",
       "properties": {
@@ -26916,7 +26862,7 @@
         }
       }
     },
-    "schema_00501": {
+    "schema_00497": {
       "kind": "object",
       "type": "{ toolName: string; args: unknown; error: unknown; round: number; callId?: string; }",
       "properties": {
@@ -26947,7 +26893,7 @@
         }
       }
     },
-    "schema_00502": {
+    "schema_00498": {
       "kind": "object",
       "type": "{ round: number; }",
       "properties": {
@@ -26958,7 +26904,7 @@
         }
       }
     },
-    "schema_00503": {
+    "schema_00499": {
       "kind": "object",
       "type": "{ round: number; calls: number; }",
       "properties": {
@@ -26974,7 +26920,7 @@
         }
       }
     },
-    "schema_00504": {
+    "schema_00500": {
       "kind": "object",
       "type": "{ storageKey: string; size: number; }",
       "properties": {
@@ -26990,7 +26936,7 @@
         }
       }
     },
-    "schema_00505": {
+    "schema_00501": {
       "kind": "object",
       "type": "{ storageKey: string; }",
       "properties": {
@@ -27001,7 +26947,7 @@
         }
       }
     },
-    "schema_00506": {
+    "schema_00502": {
       "kind": "object",
       "type": "{ text: string; messageId?: string; rating?: \"up\" | \"down\"; }",
       "properties": {
@@ -27031,7 +26977,7 @@
         }
       }
     },
-    "schema_00507": {
+    "schema_00503": {
       "kind": "object",
       "type": "JsonTreePolicy",
       "properties": {
@@ -27097,7 +27043,7 @@
         }
       }
     },
-    "schema_00508": {
+    "schema_00504": {
       "kind": "enum",
       "type": "SparkCodeLanguage | undefined",
       "variants": [
@@ -27106,7 +27052,7 @@
         "\"css\""
       ]
     },
-    "schema_00509": {
+    "schema_00505": {
       "kind": "enum",
       "type": "SparkJsonEditorMode | undefined",
       "variants": [
@@ -27116,7 +27062,7 @@
         "\"tree\""
       ]
     },
-    "schema_00510": {
+    "schema_00506": {
       "kind": "object",
       "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
       "properties": {
@@ -31144,428 +31090,416 @@
           "required": false
         },
         "prop_00559": {
-          "name": "recoveryPolicy",
-          "type": "RecoveryPolicyLike | undefined",
+          "name": "mode",
+          "type": "ChatMode | undefined",
           "required": false,
           "schemaRef": "schema_00483"
         },
         "prop_00560": {
-          "name": "collaborationPolicy",
-          "type": "CollaborationPolicyLike | undefined",
-          "required": false,
-          "schemaRef": "schema_00484"
-        },
-        "prop_00561": {
-          "name": "mode",
-          "type": "ChatMode | undefined",
-          "required": false,
-          "schemaRef": "schema_00487"
-        },
-        "prop_00562": {
           "name": "systemPrompt",
           "type": "string | undefined",
           "required": false
         },
-        "prop_00563": {
+        "prop_00561": {
           "name": "sender",
           "type": "AiChatSender | undefined",
           "required": false
         },
-        "prop_00564": {
+        "prop_00562": {
           "name": "storageKey",
           "type": "string | undefined",
           "required": false
         },
-        "prop_00565": {
+        "prop_00563": {
           "name": "showToolLogs",
           "type": "boolean | undefined",
           "required": false
         },
-        "prop_00566": {
+        "prop_00564": {
           "name": "externalToolLogs",
           "type": "{ type: \"success\" | \"info\" | \"error\"; tag: string; text: string; timestamp?: string; }[] | undefined",
           "required": false
         },
-        "prop_00567": {
+        "prop_00565": {
           "name": "streamAiChatText",
           "type": "StreamAiChatText | undefined",
           "required": false
         },
-        "prop_00568": {
+        "prop_00566": {
           "name": "parseTokenUsage",
           "type": "((usageRaw: Record<string, unknown>) => TokenUsage) | undefined",
           "required": false
         },
-        "prop_00569": {
+        "prop_00567": {
           "name": "uploadFile",
           "type": "((file: File) => Promise<FileAttachment>) | undefined",
           "required": false
         },
-        "prop_00570": {
+        "prop_00568": {
           "name": "config",
           "type": "AiSessionConfig | undefined",
           "required": false,
-          "schemaRef": "schema_00490"
+          "schemaRef": "schema_00486"
         },
-        "prop_00571": {
+        "prop_00569": {
           "name": "storageKey",
           "type": "string | undefined",
           "required": false,
           "description": "持久化 key；多会话必须唯一。"
         },
-        "prop_00572": {
+        "prop_00570": {
           "name": "sender",
           "type": "AiChatSender | undefined",
           "required": false,
           "description": "聊天发送器。"
         },
-        "prop_00573": {
+        "prop_00571": {
           "name": "sessionTitle",
           "type": "string | undefined",
           "required": false,
           "description": "面板标题。"
         },
-        "prop_00574": {
+        "prop_00572": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "description": "输入框 placeholder。"
         },
-        "prop_00575": {
+        "prop_00573": {
           "name": "externalToolLogs",
           "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | undefined",
           "required": false,
           "description": "外部工具日志流。"
         },
-        "prop_00576": {
+        "prop_00574": {
           "name": "beforeOpen",
           "type": "(() => void | Promise<void>) | undefined",
           "required": false,
           "description": "打开前的准备钩子（按钮会在此期间显示 loading）。"
         },
-        "prop_00577": {
+        "prop_00575": {
           "name": "systemPrompt",
           "type": "string | undefined",
           "required": false,
           "description": "自定义 system prompt。"
         },
-        "prop_00578": {
+        "prop_00576": {
           "name": "toolGuide",
           "type": "string | undefined",
           "required": false,
           "description": "工具使用指南文本。"
         },
-        "prop_00579": {
+        "prop_00577": {
           "name": "toolCatalog",
           "type": "readonly AiToolSpec[] | undefined",
           "required": false,
           "description": "工具目录。"
         },
-        "prop_00580": {
+        "prop_00578": {
           "name": "toolInstances",
           "type": "Record<string, AiToolHandler> | undefined",
           "required": false,
           "description": "工具实例（函数名 → 执行器）。"
         },
-        "prop_00581": {
+        "prop_00579": {
           "name": "fcLoop",
           "type": "AiFcLoopConfig | undefined",
           "required": false,
           "description": "SSE + FC 循环配置。",
-          "schemaRef": "schema_00488"
+          "schemaRef": "schema_00484"
         },
-        "prop_00582": {
+        "prop_00580": {
           "name": "feedback",
           "type": "AiFeedbackConfig | undefined",
           "required": false,
           "description": "反馈配置。",
-          "schemaRef": "schema_00489"
+          "schemaRef": "schema_00485"
         },
-        "prop_00583": {
+        "prop_00581": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "default": "\"AI\""
         },
-        "prop_00584": {
+        "prop_00582": {
           "name": "size",
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"small\"",
           "schemaRef": "schema_00459"
         },
-        "prop_00585": {
+        "prop_00583": {
           "name": "link",
           "type": "boolean | undefined",
           "required": false,
           "default": "false"
         },
-        "prop_00586": {
+        "prop_00584": {
           "name": "icon",
           "type": "string | undefined",
           "required": false,
           "default": "\"ChatRound\""
         },
-        "prop_00587": {
+        "prop_00585": {
           "name": "iconSize",
           "type": "number | undefined",
           "required": false,
           "default": "14"
         },
-        "prop_00588": {
+        "prop_00586": {
           "name": "disabled",
           "type": "boolean | undefined",
           "required": false,
           "default": "false"
         },
-        "prop_00589": {
+        "prop_00587": {
           "name": "shortcut",
           "type": "string | undefined",
           "required": false,
           "description": "全局快捷键，例如 `\"ctrl+shift+a\"` / `\"meta+k\"`。\r\n支持修饰符：`ctrl` / `meta` / `shift` / `alt`，键名使用小写（`a` / `k` / `escape` 等）。\r\n在输入框 / 可编辑元素中按下时会被忽略，避免劫持用户输入。\r\n快捷键触发行为与点击完全一致（toggle）。"
         },
-        "prop_00590": {
+        "prop_00588": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "字段绑定名，映射到 DataView 行字段"
         },
-        "prop_00591": {
+        "prop_00589": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "显示标签"
         },
-        "prop_00592": {
+        "prop_00590": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "description": "r-table 内列宽"
         },
-        "prop_00593": {
+        "prop_00591": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "JSON 字符串内容"
         },
-        "prop_00594": {
+        "prop_00592": {
           "name": "documentValue",
           "type": "JsonDocument | null | undefined",
           "required": false,
           "default": "null",
           "description": "已解析的 JSON 文档对象"
         },
-        "prop_00595": {
+        "prop_00593": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "default": "420",
           "description": "编辑器高度"
         },
-        "prop_00596": {
+        "prop_00594": {
           "name": "readOnly",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否只读"
         },
-        "prop_00597": {
+        "prop_00595": {
           "name": "schema",
           "type": "{ [key: string]: unknown; } | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
-        "prop_00598": {
+        "prop_00596": {
           "name": "filterPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\"",
           "description": "筛选框占位文本"
         },
-        "prop_00599": {
+        "prop_00597": {
           "name": "policy",
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
-          "schemaRef": "schema_00507"
+          "schemaRef": "schema_00503"
         },
-        "prop_00600": {
+        "prop_00598": {
           "name": "rootLabel",
           "type": "string | undefined",
           "required": false,
           "description": "根节点标签"
         },
-        "prop_00601": {
+        "prop_00599": {
           "name": "isProtected",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否受保护"
         },
-        "prop_00602": {
+        "prop_00600": {
           "name": "canEditKey",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否可编辑键名"
         },
-        "prop_00603": {
+        "prop_00601": {
           "name": "canEditType",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否可编辑类型"
         },
-        "prop_00604": {
+        "prop_00602": {
           "name": "suggestChildKey",
           "type": "((target: JsonObject, parentPath: JsonPath) => string) | undefined",
           "required": false,
           "description": "推荐子节点键名"
         },
-        "prop_00605": {
+        "prop_00603": {
           "name": "createDefaultArrayItem",
           "type": "((parentPath: JsonPath) => JsonValue) | undefined",
           "required": false,
           "description": "创建数组默认子项"
         },
-        "prop_00606": {
+        "prop_00604": {
           "name": "createDefaultObjectValue",
           "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
           "required": false,
           "description": "创建对象默认子值"
         },
-        "prop_00607": {
+        "prop_00605": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "编辑器内容"
         },
-        "prop_00608": {
+        "prop_00606": {
           "name": "language",
           "type": "SparkCodeLanguage | undefined",
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式",
-          "schemaRef": "schema_00508"
+          "schemaRef": "schema_00504"
         },
-        "prop_00609": {
+        "prop_00607": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "default": "360",
           "description": "编辑器高度"
         },
-        "prop_00610": {
+        "prop_00608": {
           "name": "tabSize",
           "type": "number | undefined",
           "required": false,
           "default": "2",
           "description": "Tab 缩进空格数"
         },
-        "prop_00611": {
+        "prop_00609": {
           "name": "lineWrapping",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否自动换行"
         },
-        "prop_00612": {
+        "prop_00610": {
           "name": "mode",
           "type": "SparkJsonEditorMode | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式",
-          "schemaRef": "schema_00509"
+          "schemaRef": "schema_00505"
         },
-        "prop_00613": {
+        "prop_00611": {
           "name": "indentation",
           "type": "string | number | undefined",
           "required": false,
           "default": "2",
           "description": "缩进空格数"
         },
-        "prop_00614": {
+        "prop_00612": {
           "name": "mainMenuBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示主菜单栏"
         },
-        "prop_00615": {
+        "prop_00613": {
           "name": "navigationBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示导航栏"
         },
-        "prop_00616": {
+        "prop_00614": {
           "name": "statusBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示状态栏"
         },
-        "prop_00617": {
+        "prop_00615": {
           "name": "askToFormat",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否提示格式化"
         },
-        "prop_00618": {
+        "prop_00616": {
           "name": "schema",
           "type": "SparkJsonSchema | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
-        "prop_00619": {
+        "prop_00617": {
           "name": "schemaDefinitions",
           "type": "SparkJsonSchema | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 定义引用"
         },
-        "prop_00620": {
+        "prop_00618": {
           "name": "enableSchemaValidation",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否启用 Schema 校验"
         },
-        "prop_00621": {
+        "prop_00619": {
           "name": "enableSchemaEnumRenderer",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否启用 Schema 枚举渲染"
         },
-        "prop_00622": {
+        "prop_00620": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "default": "'未注册的组件类型'",
           "description": "提示标题"
         },
-        "prop_00623": {
+        "prop_00621": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "default": "''",
           "description": "说明文本"
         },
-        "prop_00624": {
+        "prop_00622": {
           "name": "node",
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
           "schemaRef": "schema_00479"
         },
-        "prop_00625": {
+        "prop_00623": {
           "name": "state",
           "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
-          "schemaRef": "schema_00510"
+          "schemaRef": "schema_00506"
         }
       },
       "emits": {
@@ -31727,47 +31661,41 @@
           "type": "[]"
         },
         "emit_00038": {
-          "name": "triggerFileInput",
+          "name": "clearMessages",
           "type": "[]"
         },
         "emit_00039": {
-          "name": "toggleVoice",
+          "name": "clearToolLogs",
           "type": "[]"
         },
         "emit_00040": {
+          "name": "triggerFileInput",
+          "type": "[]"
+        },
+        "emit_00041": {
+          "name": "toggleVoice",
+          "type": "[]"
+        },
+        "emit_00042": {
           "name": "update:inputText",
           "type": "[value: string]"
         },
-        "emit_00041": {
+        "emit_00043": {
           "name": "removePendingFile",
           "type": "[index: number]"
-        },
-        "emit_00042": {
-          "name": "update:recoveryPolicy",
-          "type": "[value: RecoveryPolicyLike]",
-          "schemaRefs": [
-            "schema_00485"
-          ]
-        },
-        "emit_00043": {
-          "name": "update:collaborationPolicy",
-          "type": "[value: CollaborationPolicyLike]",
-          "schemaRefs": [
-            "schema_00486"
-          ]
         },
         "emit_00044": {
           "name": "open",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00491"
+            "schema_00487"
           ]
         },
         "emit_00045": {
           "name": "close",
           "type": "[payload: { config: AiSessionConfig | null; }]",
           "schemaRefs": [
-            "schema_00492"
+            "schema_00488"
           ]
         },
         "emit_00046": {
@@ -31782,133 +31710,133 @@
           "name": "before-open",
           "type": "[payload: { config: AiSessionConfig; cancel: () => void; }]",
           "schemaRefs": [
-            "schema_00493"
+            "schema_00489"
           ]
         },
         "emit_00049": {
           "name": "opened",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00491"
+            "schema_00487"
           ]
         },
         "emit_00050": {
           "name": "sync",
           "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00494"
+            "schema_00490"
           ]
         },
         "emit_00051": {
           "name": "synced",
           "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00494"
+            "schema_00490"
           ]
         },
         "emit_00052": {
           "name": "closed",
           "type": "[payload: { config: AiSessionConfig | null; }]",
           "schemaRefs": [
-            "schema_00492"
+            "schema_00488"
           ]
         },
         "emit_00053": {
           "name": "dispose",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00491"
+            "schema_00487"
           ]
         },
         "emit_00054": {
           "name": "message-send",
           "type": "[payload: { messageId: string; content: string; }]",
           "schemaRefs": [
-            "schema_00495"
+            "schema_00491"
           ]
         },
         "emit_00055": {
           "name": "message-delta",
           "type": "[payload: { messageId: string; delta: string; }]",
           "schemaRefs": [
-            "schema_00496"
+            "schema_00492"
           ]
         },
         "emit_00056": {
           "name": "message-complete",
           "type": "[payload: { messageId: string; content: string; usage?: Record<string, unknown>; }]",
           "schemaRefs": [
-            "schema_00497"
+            "schema_00493"
           ]
         },
         "emit_00057": {
           "name": "message-error",
           "type": "[payload: { messageId?: string; error: unknown; }]",
           "schemaRefs": [
-            "schema_00498"
+            "schema_00494"
           ]
         },
         "emit_00058": {
           "name": "tool-call",
           "type": "[payload: { toolName: string; args: unknown; round: number; callId?: string; }]",
           "schemaRefs": [
-            "schema_00499"
+            "schema_00495"
           ]
         },
         "emit_00059": {
           "name": "tool-result",
           "type": "[payload: { toolName: string; args: unknown; result: unknown; round: number; callId?: string; durationMs: number; }]",
           "schemaRefs": [
-            "schema_00500"
+            "schema_00496"
           ]
         },
         "emit_00060": {
           "name": "tool-error",
           "type": "[payload: { toolName: string; args: unknown; error: unknown; round: number; callId?: string; }]",
           "schemaRefs": [
-            "schema_00501"
+            "schema_00497"
           ]
         },
         "emit_00061": {
           "name": "fc-round-start",
           "type": "[payload: { round: number; }]",
           "schemaRefs": [
-            "schema_00502"
+            "schema_00498"
           ]
         },
         "emit_00062": {
           "name": "fc-round-end",
           "type": "[payload: { round: number; calls: number; }]",
           "schemaRefs": [
-            "schema_00503"
+            "schema_00499"
           ]
         },
         "emit_00063": {
           "name": "snapshot-restore",
           "type": "[payload: { storageKey: string; size: number; }]",
           "schemaRefs": [
-            "schema_00504"
+            "schema_00500"
           ]
         },
         "emit_00064": {
           "name": "snapshot-persist",
           "type": "[payload: { storageKey: string; size: number; }]",
           "schemaRefs": [
-            "schema_00504"
+            "schema_00500"
           ]
         },
         "emit_00065": {
           "name": "snapshot-clear",
           "type": "[payload: { storageKey: string; }]",
           "schemaRefs": [
-            "schema_00505"
+            "schema_00501"
           ]
         },
         "emit_00066": {
           "name": "feedback-submit",
           "type": "[payload: { text: string; messageId?: string; rating?: \"up\" | \"down\"; }]",
           "schemaRefs": [
-            "schema_00506"
+            "schema_00502"
           ]
         },
         "emit_00067": {
@@ -34015,9 +33943,7 @@
           "prop_00555",
           "prop_00556",
           "prop_00557",
-          "prop_00558",
-          "prop_00559",
-          "prop_00560"
+          "prop_00558"
         ],
         "emitRefs": [
           "emit_00036",
@@ -34036,18 +33962,18 @@
         "description": "SPARK 包组件，可在 rule.json 中通过 type=\"ai-chat-widget\" 使用。",
         "filePath": "packages/spark-component/src/components/support/AiChatWidget.vue",
         "propRefs": [
-          "prop_00561",
-          "prop_00562",
+          "prop_00559",
+          "prop_00560",
           "prop_00555",
           "prop_00556",
           "prop_00557",
+          "prop_00561",
+          "prop_00562",
           "prop_00563",
           "prop_00564",
           "prop_00565",
           "prop_00566",
-          "prop_00567",
-          "prop_00568",
-          "prop_00569"
+          "prop_00567"
         ],
         "emitRefs": []
       },
@@ -34057,6 +33983,8 @@
         "description": "SPARK 包组件，可在 rule.json 中通过 type=\"ai-launcher-button\" 使用。",
         "filePath": "packages/spark-component/src/components/support/AiLauncherButton.vue",
         "propRefs": [
+          "prop_00568",
+          "prop_00569",
           "prop_00570",
           "prop_00571",
           "prop_00572",
@@ -34074,9 +34002,7 @@
           "prop_00584",
           "prop_00585",
           "prop_00586",
-          "prop_00587",
-          "prop_00588",
-          "prop_00589"
+          "prop_00587"
         ],
         "emitRefs": [
           "emit_00044",
@@ -34110,9 +34036,9 @@
         "description": "SPARK 包组件，可在 rule.json 中通过 type=\"app-ai-panel\" 使用。",
         "filePath": "packages/spark-component/src/components/support/AppAiPanel.vue",
         "propRefs": [
-          "prop_00567",
-          "prop_00568",
-          "prop_00569"
+          "prop_00565",
+          "prop_00566",
+          "prop_00567"
         ],
         "emitRefs": []
       },
@@ -34122,6 +34048,8 @@
         "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
         "filePath": "packages/spark-component/src/components/support/JsonTreeEditor.vue",
         "propRefs": [
+          "prop_00588",
+          "prop_00589",
           "prop_00590",
           "prop_00591",
           "prop_00592",
@@ -34136,9 +34064,7 @@
           "prop_00601",
           "prop_00602",
           "prop_00603",
-          "prop_00604",
-          "prop_00605",
-          "prop_00606"
+          "prop_00604"
         ],
         "emitRefs": [
           "emit_00018",
@@ -34151,12 +34077,12 @@
         "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
         "filePath": "packages/spark-component/src/components/support/SparkCodeEditor.vue",
         "propRefs": [
+          "prop_00605",
+          "prop_00606",
+          "prop_00594",
           "prop_00607",
           "prop_00608",
-          "prop_00596",
-          "prop_00609",
-          "prop_00610",
-          "prop_00611"
+          "prop_00609"
         ],
         "emitRefs": [
           "emit_00018"
@@ -34168,20 +34094,20 @@
         "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
         "filePath": "packages/spark-component/src/components/support/SparkJsonEditor.vue",
         "propRefs": [
-          "prop_00593",
-          "prop_00596",
-          "prop_00609",
+          "prop_00591",
+          "prop_00594",
+          "prop_00607",
+          "prop_00610",
+          "prop_00611",
+          "prop_00608",
           "prop_00612",
           "prop_00613",
-          "prop_00610",
           "prop_00614",
           "prop_00615",
           "prop_00616",
           "prop_00617",
           "prop_00618",
-          "prop_00619",
-          "prop_00620",
-          "prop_00621"
+          "prop_00619"
         ],
         "emitRefs": [
           "emit_00018"
@@ -34193,9 +34119,9 @@
         "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
         "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
         "propRefs": [
-          "prop_00622",
-          "prop_00623",
-          "prop_00624"
+          "prop_00620",
+          "prop_00621",
+          "prop_00622"
         ],
         "emitRefs": []
       },
@@ -34229,7 +34155,7 @@
         "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-data-set-designer\" 引用。",
         "filePath": "src/views/app/dev-system/DevDataSetDesigner.vue",
         "propRefs": [
-          "prop_00625"
+          "prop_00623"
         ],
         "emitRefs": []
       },

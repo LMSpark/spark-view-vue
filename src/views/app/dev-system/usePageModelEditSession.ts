@@ -20,6 +20,7 @@ import {
   getEditState,
   type DialogueTurn,
   type EditToolHost,
+  type RepeatDetectionConfig,
 } from '@spark-view/spark-ai'
 import {
   createPageModelEditSession,
@@ -48,12 +49,13 @@ export interface PageModelEditSessionOptions {
 export interface PageModelEditRunHooks {
   onDelta?: (delta: string) => void
   onReasoning?: (reasoning: string) => void
+  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
   /**
    * 每完成一个 stills-execute turn 回调；供 sender 转发为 AiPanelStore 事件。
    * 仅在 runLlm 主路径产生的 turn 才会触发。
    */
   onToolTurn?: (turn: DialogueTurn) => void
-  /** runLlm 成功结束（通过只读/未调工具的 fail-fast 校验后）触发。 */
+  /** runLlm 成功结束后触发；纯对话或只读工具轮次的 writeCount 为 0。 */
   onRunComplete?: (payload: { rounds: number; writeCount: number }) => void
   signal?: AbortSignal
 }
@@ -64,6 +66,9 @@ interface PageModelEditRunOptions extends PageModelEditRunHooks {
    * 默认 false。
    */
   skipBootstrap?: boolean
+  maxRounds?: number
+  toolMode?: 'all' | 'describe-only'
+  repeatDetection?: RepeatDetectionConfig
 }
 
 interface PageModelEditBootstrapOptions {
@@ -132,6 +137,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     nodeTree,
     bootstrap: (bootstrapOptions?: PageModelEditBootstrapOptions) => controller.bootstrap(bootstrapOptions),
     runLlm: (prompt: string, hooks?: PageModelEditRunOptions) => controller.runLlm(prompt, hooks),
+    clearLog: () => controller.clearLog(),
     reset: () => controller.reset(),
   }
 }

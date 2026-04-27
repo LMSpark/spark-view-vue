@@ -67,6 +67,14 @@ export interface SparkNodeTreeAddNodesParams extends SparkNodeTreeChildrenParams
 }
 
 /**
+ * 移动已有节点时使用的参数。
+ */
+export interface SparkNodeTreeMoveParams extends SparkNodeTreeChildrenParams {
+  componentId: string
+  index?: number
+}
+
+/**
  * 设置节点 props 时使用的参数。
  */
 export interface SparkNodeTreeSetPropsParams extends SparkNodeTreeLookupParams {
@@ -151,6 +159,17 @@ export interface SparkNodeAddResult {
 export interface SparkNodeAddNodesResult {
   nodes: SparkNode[]
   indexes: number[]
+}
+
+/**
+ * moveNode 的返回结果。
+ */
+export interface SparkNodeMoveResult {
+  componentId: string
+  fromParentComponentId: string | null
+  toParentComponentId: string | null
+  previousIndex: number
+  index: number
 }
 
 /**
@@ -268,7 +287,7 @@ export interface SparkNodeFindByTypeResult {
  * 当前公开能力大致可分为四类：
  * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。
  * 2. 子树统计：countNodes / collectDataKeys / collectHandlerNames。
- * 3. 节点写入：addNode / addNodes / replaceNode / replaceNodes / removeNode / removeNodes。
+ * 3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。
  * 4. 属性写入：setProps / setPropsBatch。
  *
  * 设计目标：
@@ -566,6 +585,18 @@ export class SparkNodeTree {
   }
 
   /**
+   * 把已有节点移动到当前组件实例或指定子组件的 children 中。
+   *
+   * 返回值只包含移动摘要，不回传完整节点子树，避免 FC 结果膨胀。
+   */
+  moveNode(params: SparkNodeTreeMoveParams): SparkNodeMoveResult {
+    const next = normalizeMoveParams(params)
+    const operation = applyMoveNode(this._root, next)
+    this._commitWrite(operation.nextRoot, 'moveNode')
+    return operation.result
+  }
+
+  /**
    * 设置目标节点的 props。
    *
    * - merge !== false 时，采用浅合并语义
@@ -785,6 +816,26 @@ function normalizeAddNodesParams(params: SparkNodeTreeAddNodesParams): SparkNode
 
   return {
     nodes: requireNonEmptySparkNodeArray(next.nodes, 'addNodes.nodes'),
+    ...(parentComponentId !== undefined ? { parentComponentId } : {}),
+    ...(next.index !== undefined ? { index: next.index } : {}),
+  }
+}
+
+/**
+ * 归一化 moveNode 输入参数。
+ */
+function normalizeMoveParams(params: SparkNodeTreeMoveParams): SparkNodeTreeMoveParams {
+  const next = requireObjectArg(params, 'moveNode.params')
+  if (next.index !== undefined) {
+    assertNonNegativeInteger(next.index, 'moveNode.index')
+  }
+
+  const parentComponentId = next.parentComponentId === undefined
+    ? undefined
+    : normalizeOptionalNodeId(next.parentComponentId, 'moveNode.parentComponentId')
+
+  return {
+    componentId: requireNonEmptyString(next.componentId, 'moveNode.componentId'),
     ...(parentComponentId !== undefined ? { parentComponentId } : {}),
     ...(next.index !== undefined ? { index: next.index } : {}),
   }
@@ -1101,8 +1152,6 @@ function resolveParentNode(root: SparkNode, parentId: string | null | undefined)
 }
 
 /**
- * 对 addNode 做一次不可变写入，返回新 root 与动作结果。
-/**
  * 递归收集类型匹配的所有节点，结果按深度优先顺序追加到 out 数组。
  */
 function findByTypeRecursive(
@@ -1293,6 +1342,44 @@ function applyAddNode(
   return {
     nextRoot: next,
     result,
+  }
+}
+
+/**
+ * 对 moveNode 做一次不可变写入。
+ */
+function applyMoveNode(
+  root: SparkNode,
+  params: SparkNodeTreeMoveParams,
+): { nextRoot: SparkNode; result: SparkNodeMoveResult } {
+  const location = requireLocation(root, params.componentId)
+  if (location.parent === null) {
+    throw new Error('Cannot move root node')
+  }
+
+  if (params.parentComponentId !== null && params.parentComponentId !== undefined) {
+    if (findLocationRecursive(location.node, params.parentComponentId, null, -1, 0) !== null) {
+      throw new Error('Cannot move node into itself or descendant')
+    }
+    requireLocation(root, params.parentComponentId)
+  }
+
+  const removed = applyRemoveNode(root, { componentId: params.componentId })
+  const added = applyAddNode(removed.nextRoot, {
+    node: removed.result.removed,
+    ...(params.parentComponentId !== undefined ? { parentComponentId: params.parentComponentId } : {}),
+    ...(params.index !== undefined ? { index: params.index } : {}),
+  })
+
+  return {
+    nextRoot: added.nextRoot,
+    result: {
+      componentId: params.componentId,
+      fromParentComponentId: readNodeId(location.parent) ?? null,
+      toParentComponentId: params.parentComponentId ?? null,
+      previousIndex: location.index,
+      index: added.result.index,
+    },
   }
 }
 

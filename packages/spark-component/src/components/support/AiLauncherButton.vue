@@ -57,7 +57,7 @@ import {
   type AiFcLoopConfig,
   type AiFeedbackConfig,
 } from '../../composables/useAiPanelStore'
-import type { AiChatSender } from '../../composables/useAiChat'
+import type { AiChatSender, AiFcErrorReporter } from '../../composables/useAiChat'
 
 // ── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -75,6 +75,10 @@ interface Props {
   placeholder?: string
   /** 外部工具日志流。 */
   externalToolLogs?: Ref<AiSessionToolLog[]>
+  /** 清空外部工具日志。 */
+  clearExternalToolLogs?: () => void
+  /** FC 调用失败时的诊断回传器。 */
+  fcErrorReporter?: AiFcErrorReporter
   /** 打开前的准备钩子（按钮会在此期间显示 loading）。 */
   beforeOpen?: () => void | Promise<void>
   /** 自定义 system prompt。 */
@@ -173,6 +177,8 @@ function createFlatConfig(): AiSessionConfig {
     ...(props.sessionTitle !== undefined ? { title: () => props.sessionTitle ?? '' } : {}),
     ...(props.placeholder !== undefined ? { placeholder: () => props.placeholder ?? '' } : {}),
     ...(props.externalToolLogs ? { externalToolLogs: props.externalToolLogs } : {}),
+    ...(props.clearExternalToolLogs ? { clearExternalToolLogs: props.clearExternalToolLogs } : {}),
+    ...(props.fcErrorReporter ? { fcErrorReporter: props.fcErrorReporter } : {}),
     ...(props.beforeOpen ? { beforeOpen: props.beforeOpen } : {}),
     ...(props.systemPrompt !== undefined ? { systemPrompt: () => props.systemPrompt ?? '' } : {}),
     ...(props.toolGuide !== undefined ? { toolGuide: () => props.toolGuide ?? '' } : {}),

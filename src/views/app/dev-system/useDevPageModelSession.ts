@@ -19,8 +19,13 @@ import {
   useAiPanelStore,
   type AiSessionConfig,
   type AiChatSendRequest,
+  type AiSessionPolicies,
+  type AiFcCallRecord,
+  type CollaborationPolicy,
+  type RecoveryPolicy,
 } from '@spark-view/spark-component'
 import type { DialogueTurn } from '@spark-view/spark-ai'
+import { reportAiFcError } from '@/services/ai-fc-error-monitor'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import { usePageModelEditSession } from './usePageModelEditSession'
 import type { DevState, PageFileName } from './useDevState'
@@ -65,6 +70,20 @@ export function useDevPageModelSession(options: Options) {
       await state.ensureActivePageFilesLoaded()
     },
   })
+
+  function getStorageKey(): string {
+    return `devsystem-ai-chat:${state.activePageId.value}`
+  }
+
+  function reportFcError(record: AiFcCallRecord) {
+    return reportAiFcError(record, {
+      source: 'dev-page-model-session',
+      ...(state.activePageId.value ? { pageId: state.activePageId.value } : {}),
+      ...(options.activeFile.value !== null ? { activeFile: options.activeFile.value } : {}),
+      storageKey: getStorageKey(),
+      sessionKey: state.activePageId.value || 'unknown',
+    })
+  }
 
   // 页面切换时，强制重置会话宿主和编辑状态，防止跨页面上下文污染。
   watch(() => state.activePageId.value, (pageId, previousPageId) => {
@@ -118,12 +137,72 @@ export function useDevPageModelSession(options: Options) {
    * - 若后端有可恢复会话，或无历史消息：只拼接"事实快照 + 本轮用户需求"。
    * - 否则追加近几轮 transcript，但明确声明"历史结论不可覆盖当前事实"。
    */
-  function buildContinuationPrompt(prompt: string, historyMsgs: AiChatSendRequest['historyMsgs']): string {
+  function buildPolicyPrompt(policies: AiSessionPolicies | undefined): string {
+    const recovery = policies?.recovery ?? 'layered'
+    const collaboration = policies?.collaboration ?? 'critical-confirm'
+    const recoveryText: Record<RecoveryPolicy, string> = {
+      layered: '分层恢复：允许模型根据工具反馈换路径继续，但连续只读只作为节奏提醒，不硬中止。',
+      manual: '手动恢复：遇到不确定、失败或目录漫游时，优先说明当前状态并等待用户补充，不要自行长时间重试。',
+      strict: '严格恢复：减少试错，重复失败或同参重复时更快停止并暴露原因。',
+    }
+    const collaborationText: Record<CollaborationPolicy, string> = {
+      auto: '自动执行：允许直接执行必要写入。',
+      'critical-confirm': '关键确认：新增/更新可直接执行；删除、批量替换、清空或覆盖式写入前先说明风险并等待用户确认。',
+      'plan-confirm': '计划确认：本轮只做读取、分析和方案说明，不执行写入。',
+      'step-confirm': '逐步执行：本轮只推进一个小步骤，完成后停下汇报，等待下一条指令。',
+      'human-takeover': '人工接管：AI 不执行页面模型写入，只保留上下文供人工操作后继续。',
+    }
+    return [
+      '[人机协同策略]',
+      `恢复策略=${recovery}；${recoveryText[recovery]}`,
+      `协作策略=${collaboration}；${collaborationText[collaboration]}`,
+    ].join('\n')
+  }
+
+  function buildRecoveryRepeatDetection(policy: RecoveryPolicy | undefined) {
+    switch (policy ?? 'layered') {
+      case 'manual':
+        return {
+          maxSameSignature: 12,
+          maxConsecutiveErrors: 12,
+          maxCyclePeriod: 4,
+          cycleRepeatThreshold: 3,
+          maxReadOnlyActions: 0,
+          maxMissingComponentRetries: 4,
+        }
+      case 'strict':
+        return {
+          maxSameSignature: 3,
+          maxConsecutiveErrors: 3,
+          maxCyclePeriod: 3,
+          cycleRepeatThreshold: 2,
+          maxReadOnlyActions: 10,
+          maxMissingComponentRetries: 1,
+        }
+      case 'layered':
+      default:
+        return {
+          maxSameSignature: 6,
+          maxConsecutiveErrors: 6,
+          maxCyclePeriod: 4,
+          cycleRepeatThreshold: 2,
+          maxReadOnlyActions: 20,
+          maxMissingComponentRetries: 2,
+        }
+    }
+  }
+
+  function buildContinuationPrompt(
+    prompt: string,
+    historyMsgs: AiChatSendRequest['historyMsgs'],
+    policies: AiSessionPolicies | undefined,
+  ): string {
     const hasBackendSession = sessionHost.getResumeSessionOptions().resumeSessionId !== undefined
     const previousMessages = pickRecentConversation(historyMsgs, 8)
     const modelFacts = buildModelFactsSnapshot()
+    const policyPrompt = buildPolicyPrompt(policies)
     if (hasBackendSession || previousMessages.length === 0) {
-      return `${modelFacts}\n\n${prompt}`
+      return `${modelFacts}\n\n${policyPrompt}\n\n${prompt}`
     }
     const transcript = previousMessages
       .map((message) => {
@@ -133,6 +212,8 @@ export function useDevPageModelSession(options: Options) {
       .join('\n')
     return [
       modelFacts,
+      '',
+      policyPrompt,
       '',
       '[全局对话延续]',
       `当前页面: ${state.activePageId.value}`,
@@ -151,11 +232,12 @@ export function useDevPageModelSession(options: Options) {
   // AiLauncherButton 作为中继再把它们转为 Vue emits 交给 DevSystem。
   // ═════════════════════════════════════════════════════════
 
-  function emitTurnAsToolEvent(turn: DialogueTurn): void {
+  function emitTurnAsToolEvent(turn: DialogueTurn, request: AiChatSendRequest): void {
     const action = turn.toolBlock?.action
     const result = turn.stillsResult
     if (!action || !result) return
     const callId = turn.toolBlock?.id
+    const timestamp = turn.timestamp
     const base = {
       toolName: action,
       args: turn.toolBlock?.params,
@@ -164,12 +246,32 @@ export function useDevPageModelSession(options: Options) {
     }
     panelStore.emit('tool:call', base)
     if (result.ok) {
+      request.onFcCall?.({
+        toolName: action,
+        args: turn.toolBlock?.params,
+        round: turn.round,
+        ...(callId !== undefined ? { callId } : {}),
+        status: 'success',
+        result: result.data ?? result.summary ?? null,
+        durationMs: turn.elapsed ?? 0,
+        timestamp,
+      })
       panelStore.emit('tool:result', {
         ...base,
         result: result.data ?? result.summary ?? null,
         durationMs: turn.elapsed ?? 0,
       })
     } else {
+      request.onFcCall?.({
+        toolName: action,
+        args: turn.toolBlock?.params,
+        round: turn.round,
+        ...(callId !== undefined ? { callId } : {}),
+        status: 'error',
+        error: result.msg ?? `${action} 失败`,
+        result,
+        timestamp,
+      })
       panelStore.emit('tool:error', {
         ...base,
         error: new Error(result.msg ?? `${action} 失败`),
@@ -182,10 +284,13 @@ export function useDevPageModelSession(options: Options) {
   // ═════════════════════════════════════════════════════════
 
   const config: AiSessionConfig = {
-    storageKey: () => `devsystem-ai-chat:${state.activePageId.value}`,
+    storageKey: getStorageKey,
+    pageId: () => state.activePageId.value,
     title: '页面模型级编辑',
     placeholder: '支持多轮对话；会通过 stills tool 层执行 4 文件模型级编辑',
     externalToolLogs: editSession.log,
+    clearExternalToolLogs: () => editSession.clearLog(),
+    fcErrorReporter: reportFcError,
     beforeOpen: async () => {
       await state.ensureActivePageFilesLoaded()
       await editSession.bootstrap({ silent: true, skipContextLoad: true })
@@ -200,20 +305,32 @@ export function useDevPageModelSession(options: Options) {
     sender: async (request: AiChatSendRequest) => {
       const prompt = findLatestUserPrompt(request.historyMsgs)
       if (!prompt) return
+      const policies = request.policies
       const messageId = `devsystem-${Date.now()}`
       panelStore.emit('message:send', { messageId, content: prompt })
 
       await state.ensureActivePageFilesLoaded()
       await editSession.bootstrap({ silent: true, skipContextLoad: true })
+      if (policies?.collaboration === 'human-takeover') {
+        const takeoverText = '已切换为人工接管：AI 不执行页面模型写入。你可以手动调整 4 个文件后继续发下一条指令。'
+        panelStore.emit('message:delta', { messageId, delta: takeoverText })
+        request.onDelta?.(takeoverText)
+        panelStore.emit('message:complete', { messageId, content: takeoverText })
+        return
+      }
       request.onDelta?.('已接收需求，正在执行页面模型级编辑...\n')
 
       let aggregated = ''
       try {
         await streamWithFallback(request, {
           runLoop: async (pushDelta) => {
-            await editSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs), {
+            await editSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs, policies), {
               ...(request.signal ? { signal: request.signal } : {}),
               skipBootstrap: true,
+              repeatDetection: buildRecoveryRepeatDetection(policies?.recovery),
+              ...(policies?.collaboration === 'plan-confirm' ? { toolMode: 'describe-only' as const } : {}),
+              ...(policies?.collaboration === 'step-confirm' ? { maxRounds: 1 } : {}),
+              ...(request.onSseEvent !== undefined ? { onSseEvent: request.onSseEvent } : {}),
               onDelta: (delta) => {
                 aggregated += delta
                 panelStore.emit('message:delta', { messageId, delta })
@@ -222,7 +339,7 @@ export function useDevPageModelSession(options: Options) {
               onReasoning: (reasoning) => {
                 request.onReasoning?.(reasoning)
               },
-              onToolTurn: emitTurnAsToolEvent,
+              onToolTurn: (turn) => emitTurnAsToolEvent(turn, request),
               onRunComplete: ({ rounds, writeCount }) => {
                 panelStore.emit('fc:round:end', { round: rounds, calls: writeCount })
               },

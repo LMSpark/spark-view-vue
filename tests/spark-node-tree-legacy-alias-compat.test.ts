@@ -120,6 +120,8 @@ describe('sparkNodeTree legacy alias compatibility', () => {
         { type: 'r-text', id: 'legacy-c', props: { field: 'title', label: '职位' } },
       ],
     }), 'parentId')
+    expectInvalidAlias(exec('sparkNodeTree.moveNode', { nodeId: 'name-field', parentComponentId: 'root-table' }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.moveNode', { componentId: 'name-field', parentId: 'root-table' }), 'parentId')
     expectInvalidAlias(exec('sparkNodeTree.setProps', {
       nodeId: 'name-field',
       props: { class: 'legacy-a' },

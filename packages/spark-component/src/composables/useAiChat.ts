@@ -44,6 +44,61 @@ export interface ToolLogEntry {
   timestamp: string
 }
 
+export interface AiSseEventEntry {
+  id: string
+  timestamp: string
+  sessionId?: string
+  type: string
+  data: string
+}
+
+export interface AiSseEventInput {
+  timestamp?: string
+  sessionId?: string
+  type: string
+  data: string
+}
+
+export interface AiFcCallRecord {
+  id: string
+  timestamp: string
+  toolName: string
+  args: unknown
+  round: number
+  callId?: string
+  status: 'success' | 'error'
+  result?: unknown
+  error?: string
+  durationMs?: number
+  reportStatus?: AiFcErrorReportStatus
+  reportId?: string
+  reportError?: string
+  reportedAt?: string
+}
+
+export interface AiFcCallInput {
+  timestamp?: string
+  toolName: string
+  args: unknown
+  round: number
+  callId?: string
+  status: 'success' | 'error'
+  result?: unknown
+  error?: unknown
+  durationMs?: number
+}
+
+export type AiFcErrorReportStatus = 'pending' | 'reported' | 'failed'
+
+export interface AiFcErrorReportResult {
+  reportId?: string
+  serverTimestamp?: number
+}
+
+export type AiFcErrorReporter = (
+  record: AiFcCallRecord,
+) => Promise<AiFcErrorReportResult | void>
+
 export interface AiSessionMetaConfig {
   title?: string
   toolInstance?: string
@@ -65,6 +120,8 @@ export interface AiSessionSnapshot {
   mode: ChatMode
   messages: ChatMessage[]
   toolLogs: ToolLogEntry[]
+  sseEvents: AiSseEventEntry[]
+  fcCalls: AiFcCallRecord[]
   config: AiSessionMetaConfig
   policies: AiSessionPolicies
   updatedAt: string
@@ -75,11 +132,14 @@ type MaybeGetter<T> = T | (() => T)
 export interface AiChatSendRequest {
   historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
   mode: ChatMode
+  policies?: AiSessionPolicies
   systemPrompt?: string
   signal?: AbortSignal
   onReasoning?: (reasoning: string) => void
   onDelta?: (delta: string) => void
   onUsage?: (usageRaw: Record<string, unknown>) => void
+  onSseEvent?: (event: AiSseEventInput) => void
+  onFcCall?: (record: AiFcCallInput) => void
 }
 
 export type AiChatSender = (request: AiChatSendRequest) => Promise<void>
@@ -108,6 +168,7 @@ export interface UseAiChatOptions {
   streamAiChatText?: StreamAiChatText | undefined
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
+  reportFcError?: MaybeGetter<AiFcErrorReporter | undefined>
 }
 
 function resolveOption<T>(value: MaybeGetter<T> | undefined): T | undefined {
@@ -189,6 +250,8 @@ function restoreSnapshot(raw: string): AiSessionSnapshot | null {
     mode?: ChatMode
     messages?: Array<Omit<ChatMessage, 'timestamp'> & { timestamp: string }>
     toolLogs?: ToolLogEntry[]
+    sseEvents?: AiSseEventEntry[]
+    fcCalls?: AiFcCallRecord[]
     config?: AiSessionMetaConfig
     policies?: Partial<AiSessionPolicies>
     updatedAt?: string
@@ -212,6 +275,8 @@ function restoreSnapshot(raw: string): AiSessionSnapshot | null {
     mode: parsed.mode === 'single' ? 'single' : 'multi',
     messages,
     toolLogs: Array.isArray(parsed.toolLogs) ? parsed.toolLogs : [],
+    sseEvents: Array.isArray(parsed.sseEvents) ? parsed.sseEvents : [],
+    fcCalls: Array.isArray(parsed.fcCalls) ? parsed.fcCalls : [],
     config: parsed.config ?? {},
     policies: {
       recovery: parsed.policies?.recovery ?? 'layered',
@@ -237,6 +302,7 @@ export function useAiChat(options?: UseAiChatOptions) {
   const getDefaultRecoveryPolicy = () => resolveOption(options?.defaultRecoveryPolicy) ?? 'layered'
   const getDefaultCollaborationPolicy = () => resolveOption(options?.defaultCollaborationPolicy) ?? 'critical-confirm'
   const getParseTokenUsage = () => options?.parseTokenUsage ?? parseTokenUsageDefault
+  const getReportFcError = () => resolveOption(options?.reportFcError)
 
   const initialSnapshot = (() => {
     const storageKey = getStorageKey()
@@ -247,6 +313,8 @@ export function useAiChat(options?: UseAiChatOptions) {
         mode: getMode(),
         messages: [],
         toolLogs: [],
+        sseEvents: [],
+        fcCalls: [],
         config: getSessionConfig(),
         policies: {
           recovery: getDefaultRecoveryPolicy(),
@@ -265,6 +333,8 @@ export function useAiChat(options?: UseAiChatOptions) {
           mode: getMode(),
           messages: [],
           toolLogs: [],
+          sseEvents: [],
+          fcCalls: [],
           config: getSessionConfig(),
           policies: {
             recovery: getDefaultRecoveryPolicy(),
@@ -283,6 +353,8 @@ export function useAiChat(options?: UseAiChatOptions) {
           mode: getMode(),
           messages,
           toolLogs: [],
+          sseEvents: [],
+          fcCalls: [],
           config: getSessionConfig(),
           policies: {
             recovery: getDefaultRecoveryPolicy(),
@@ -308,6 +380,8 @@ export function useAiChat(options?: UseAiChatOptions) {
         mode: getMode(),
         messages: [],
         toolLogs: [],
+        sseEvents: [],
+        fcCalls: [],
         config: getSessionConfig(),
         policies: {
           recovery: getDefaultRecoveryPolicy(),
@@ -321,6 +395,8 @@ export function useAiChat(options?: UseAiChatOptions) {
   const session = ref<AiSessionSnapshot>(initialSnapshot)
   const messages = ref<ChatMessage[]>(initialSnapshot.messages)
   const toolLogs = ref<ToolLogEntry[]>(initialSnapshot.toolLogs)
+  const sseEvents = ref<AiSseEventEntry[]>(initialSnapshot.sseEvents)
+  const fcCalls = ref<AiFcCallRecord[]>(initialSnapshot.fcCalls)
   const recoveryPolicy = ref<RecoveryPolicy>(initialSnapshot.policies.recovery)
   const collaborationPolicy = ref<CollaborationPolicy>(initialSnapshot.policies.collaboration)
   const isStreaming = ref(false)
@@ -336,6 +412,8 @@ export function useAiChat(options?: UseAiChatOptions) {
       mode: getMode(),
       messages: messages.value,
       toolLogs: toolLogs.value,
+      sseEvents: sseEvents.value,
+      fcCalls: fcCalls.value,
       config: {
         ...getSessionConfig(),
       },
@@ -360,6 +438,77 @@ export function useAiChat(options?: UseAiChatOptions) {
   function appendToolLog(entry: Omit<ToolLogEntry, 'timestamp'>): void {
     toolLogs.value.push({ ...entry, timestamp: new Date().toISOString() })
     syncPersistedSession()
+  }
+
+  function appendSseEvent(entry: AiSseEventInput): void {
+    const next: AiSseEventEntry = {
+      id: crypto.randomUUID(),
+      timestamp: entry.timestamp ?? new Date().toISOString(),
+      type: entry.type,
+      data: entry.data,
+      ...(entry.sessionId !== undefined ? { sessionId: entry.sessionId } : {}),
+    }
+    sseEvents.value.push(next)
+    syncPersistedSession()
+  }
+
+  function safeStringify(value: unknown): string {
+    try {
+      return JSON.stringify(value)
+    } catch {
+      return String(value)
+    }
+  }
+
+  function normalizeFcError(fcError: unknown): string | undefined {
+    if (fcError === undefined) return undefined
+    if (fcError instanceof Error) return fcError.message
+    return typeof fcError === 'string' ? fcError : safeStringify(fcError)
+  }
+
+  async function reportFcCallError(record: AiFcCallRecord): Promise<void> {
+    const reporter = getReportFcError()
+    if (reporter === undefined) return
+
+    record.reportStatus = 'pending'
+    syncPersistedSession()
+
+    try {
+      const result = await reporter(record)
+      record.reportStatus = 'reported'
+      record.reportedAt = new Date().toISOString()
+      if (result?.reportId !== undefined) {
+        record.reportId = result.reportId
+      }
+      syncPersistedSession()
+    } catch (reportError) {
+      const message = normalizeFcError(reportError) ?? 'FC 错误回传失败'
+      record.reportStatus = 'failed'
+      record.reportError = message
+      appendToolLog({ type: 'error', tag: 'fc-error-report', text: message })
+      syncPersistedSession()
+    }
+  }
+
+  function appendFcCall(entry: AiFcCallInput): void {
+    const fcError = normalizeFcError(entry.error)
+    const next: AiFcCallRecord = {
+      id: crypto.randomUUID(),
+      timestamp: entry.timestamp ?? new Date().toISOString(),
+      toolName: entry.toolName,
+      args: entry.args,
+      round: entry.round,
+      status: entry.status,
+      ...(entry.callId !== undefined ? { callId: entry.callId } : {}),
+      ...(entry.result !== undefined ? { result: entry.result } : {}),
+      ...(fcError !== undefined ? { error: fcError } : {}),
+      ...(entry.durationMs !== undefined ? { durationMs: entry.durationMs } : {}),
+    }
+    fcCalls.value.push(next)
+    syncPersistedSession()
+    if (next.status === 'error') {
+      void reportFcCallError(next)
+    }
   }
 
   function setRecoveryPolicy(policy: RecoveryPolicy): void {
@@ -455,16 +604,28 @@ export function useAiChat(options?: UseAiChatOptions) {
         reactiveMsg.usage = getParseTokenUsage()(usageRaw)
         syncPersistedSession()
       }
+      const onSseEvent = (event: AiSseEventInput) => {
+        appendSseEvent(event)
+      }
+      const onFcCall = (record: AiFcCallInput) => {
+        appendFcCall(record)
+      }
 
       if (sender !== undefined) {
         await sender({
           historyMsgs,
           mode,
+          policies: {
+            recovery: recoveryPolicy.value,
+            collaboration: collaborationPolicy.value,
+          },
           signal: abortController.signal,
           ...(systemPrompt !== undefined ? { systemPrompt } : {}),
           onReasoning,
           onDelta,
           onUsage,
+          onSseEvent,
+          onFcCall,
         })
       } else if (options?.streamAiChatText) {
         await options.streamAiChatText({
@@ -504,30 +665,47 @@ export function useAiChat(options?: UseAiChatOptions) {
 
   // ── 清空会话 ─────────────────────────────────────────────────────────────
 
-  function clear() {
+  function clearMessages() {
     // 中止活跃 SSE 流，防止 orphaned 写入（流仍持有旧 reactiveMsg 引用）
     abortController?.abort()
     abortController = null
     messages.value = []
-    toolLogs.value = []
+    sseEvents.value = []
     error.value = null
     isStreaming.value = false
     syncPersistedSession()
   }
 
+  function clearToolLogs() {
+    toolLogs.value = []
+    fcCalls.value = []
+    syncPersistedSession()
+  }
+
+  function clear() {
+    clearMessages()
+    clearToolLogs()
+  }
+
   return {
     session,
     toolLogs,
+    sseEvents,
+    fcCalls,
     recoveryPolicy,
     collaborationPolicy,
     messages,
     isStreaming,
     error,
     appendToolLog,
+    appendSseEvent,
+    appendFcCall,
     setRecoveryPolicy,
     setCollaborationPolicy,
     send,
     uploadFile,
+    clearMessages,
+    clearToolLogs,
     clear,
   }
 }

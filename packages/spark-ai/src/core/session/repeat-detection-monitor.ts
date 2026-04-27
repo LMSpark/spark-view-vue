@@ -44,6 +44,7 @@ function detectActionCycle(
 const NODE_TREE_WRITE_ACTIONS = new Set([
   'sparkNodeTree.addNode',
   'sparkNodeTree.addNodes',
+  'sparkNodeTree.moveNode',
   'sparkNodeTree.setProps',
   'sparkNodeTree.setPropsBatch',
   'sparkNodeTree.replaceNode',
@@ -53,6 +54,7 @@ const NODE_TREE_WRITE_ACTIONS = new Set([
 ])
 
 function isDatasetReadAction(action: string): boolean {
+  if (action === 'dataset.export') return true
   if (!action.startsWith('datasetTool.')) return false
   return (
     action === 'datasetTool.export'
@@ -64,6 +66,10 @@ function isDatasetReadAction(action: string): boolean {
 }
 
 function isReadOnlyAction(action: string): boolean {
+  if (action === 'queryComponentCatalog' || action === 'queryComponentGuide') {
+    return true
+  }
+
   if (action.startsWith('catalog.') || action.startsWith('session.') || action.startsWith('stills.')) {
     return true
   }
@@ -85,7 +91,8 @@ function isReadOnlyAction(action: string): boolean {
 
 function extractCatalogGuideType(params: unknown): string | null {
   if (typeof params !== 'object' || params === null) return null
-  const candidate = (params as Record<string, unknown>)['type']
+  const record = params as Record<string, unknown>
+  const candidate = record['type'] ?? record['componentType']
   if (typeof candidate !== 'string') return null
   const normalized = candidate.trim()
   return normalized.length > 0 ? normalized : null
@@ -111,10 +118,11 @@ export function createRepeatDetectionMonitor(
   const actionWindowMaxSize = maxCyclePeriod * cycleRepeatThreshold
   let lastCycleSignature = ''
   const missingComponentTypeCounts = new Map<string, number>()
+  let datasetExportMigrationNudged = false
 
   function buildCycleFollowUp(cycleActions: string[]): string {
     const cycleText = cycleActions.join(' → ')
-    return `[系统循环修复提醒]\n检测到动作进入周期循环：${cycleText}。\n不要重复原动作序列，请立即改用另一条路径继续：\n1) 先调用 catalog.query（可带 category）重新确认可用组件清单；\n2) 对不存在的组件 type 不再重复 catalog.guide 盲试；\n3) 若是节点写动作失败，先用 sparkNodeTree.findByType 或 listChildren/getNode 拿到真实 id，再执行写入。`
+    return `[系统循环修复提醒]\n检测到动作进入周期循环：${cycleText}。\n不要重复原动作序列，请立即改用另一条路径继续：\n1) 先调用 queryComponentCatalog({ componentType: "*" }) 或 catalog.query 重新确认可用组件清单；\n2) 对不存在的组件 type 不再重复 queryComponentGuide/catalog.guide 盲试；\n3) 若是节点写动作失败，先用 sparkNodeTree.findByType 或 listChildren/getNode 拿到真实 id，再执行写入。`
   }
 
   return {
@@ -144,17 +152,28 @@ export function createRepeatDetectionMonitor(
         consecutiveReadOnlyCount = 0
       }
 
-      if (action === 'catalog.guide' && !result.ok && result.code === 'NOT_FOUND') {
+      if ((action === 'catalog.guide' || action === 'queryComponentGuide') && !result.ok && result.code === 'NOT_FOUND') {
         const missingType = extractCatalogGuideType(ctx.params)
         if (missingType) {
           const count = (missingComponentTypeCounts.get(missingType) ?? 0) + 1
           missingComponentTypeCounts.set(missingType, count)
           if (count >= maxMissingComponentRetries) {
             return [
-              `[系统组件替换提醒]\n组件 type "${missingType}" 已连续 ${count} 次查询失败（NOT_FOUND）。\n禁止继续对该 type 重复调用 catalog.guide。\n请先 catalog.query 重新选择可用组件，再继续后续写动作。`,
+              `[系统组件替换提醒]\n组件 type "${missingType}" 已连续 ${count} 次查询失败（NOT_FOUND）。\n禁止继续对该 type 重复调用 queryComponentGuide/catalog.guide。\n请先 queryComponentCatalog({ componentType: "*" }) 或 catalog.query 重新选择可用组件，再继续后续写动作。`,
             ]
           }
         }
+      }
+
+      if (
+        action === 'datasetTool.export'
+        && !result.ok
+        && datasetExportMigrationNudged === false
+      ) {
+        datasetExportMigrationNudged = true
+        return [
+          '[系统动作迁移提醒]\ndatasetTool.export 在当前数据优先流程中已禁用。\n请立即改用 dataset.export（参数为 {}），不要继续重试 datasetTool.export。',
+        ]
       }
 
       actionWindow.push(action)
@@ -166,6 +185,7 @@ export function createRepeatDetectionMonitor(
         maxReadOnlyActions !== undefined
         && maxReadOnlyActions > 0
         && consecutiveReadOnlyCount >= maxReadOnlyActions
+        && consecutiveReadOnlyCount % maxReadOnlyActions === 0
         && lastReadOnlyNudgeAt !== consecutiveReadOnlyCount
       ) {
         lastReadOnlyNudgeAt = consecutiveReadOnlyCount
@@ -198,17 +218,6 @@ export function createRepeatDetectionMonitor(
         return {
           abort: true,
           reason: `连续 ${consecutiveErrorCount} 次执行失败，LLM 无法自我修正`,
-        }
-      }
-
-      if (
-        maxReadOnlyActions !== undefined
-        && maxReadOnlyActions > 0
-        && consecutiveReadOnlyCount >= maxReadOnlyActions * 2
-      ) {
-        return {
-          abort: true,
-          reason: `连续 ${consecutiveReadOnlyCount} 次只读动作未进入写入，疑似目录探测漫游`,
         }
       }
 

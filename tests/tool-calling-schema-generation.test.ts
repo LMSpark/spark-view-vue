@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   clearDomains,
   clearRegistry,
+  createSession,
+  executeStill,
   registerEditStills,
 } from '../packages/spark-ai/src/stills'
 import {
@@ -83,5 +85,68 @@ describe('tool-calling schema generation', () => {
     expect(actions).not.toContain('blueprint.revise')
     expect(actions).not.toContain('blueprint.advance')
     expect(actions.every(action => !action.startsWith('blueprint.'))).toBe(true)
+  })
+
+  it('exposes interaction.ask and validates recommended options', () => {
+    const actions = generateToolDefinitions().map(tool => functionNameToAction(tool.function.name))
+    expect(actions).toContain('interaction.ask')
+
+    const still = getStill('interaction.ask')
+    expect(still).toBeDefined()
+    if (still === undefined) return
+
+    const definition = stillToToolDefinition(still)
+    expect(definition.function.parameters.required ?? []).toEqual(expect.arrayContaining(['title', 'questions']))
+
+    const session = createSession()
+    const invalid = executeStill('interaction.ask', {
+      title: '确认范围',
+      questions: [
+        {
+          id: 'scope',
+          prompt: '选择范围',
+          type: 'single',
+          options: [
+            { id: 'basic', label: '基础' },
+            { id: 'workflow', label: '流程' },
+          ],
+          recommendedOptionIds: ['missing'],
+        },
+      ],
+    }, session, 'ask-invalid')
+    expect(invalid.ok).toBe(false)
+    if (!invalid.ok) {
+      expect(invalid.msg).toContain('不存在的选项')
+    }
+
+    const valid = executeStill('interaction.ask', {
+      title: '确认范围',
+      questions: [
+        {
+          id: 'scope',
+          prompt: '选择范围',
+          type: 'single',
+          options: [
+            { id: 'basic', label: '基础' },
+            { id: 'workflow', label: '流程' },
+          ],
+          recommendedOptionIds: ['workflow'],
+        },
+      ],
+    }, session, 'ask-valid')
+    expect(valid.ok).toBe(true)
+    if (valid.ok) {
+      const payload = valid.data as { questions: Array<{ recommendedOptionIds: string[] }> }
+      expect(payload.questions[0]?.recommendedOptionIds).toEqual(['workflow'])
+    }
+  })
+
+  it('exposes legacy component query FC names used by prompts', () => {
+    const functionNames = generateToolDefinitions().map(tool => tool.function.name)
+    expect(functionNames).toContain('queryComponentCatalog')
+    expect(functionNames).toContain('queryComponentGuide')
+
+    expect(functionNameToAction('queryComponentCatalog')).toBe('queryComponentCatalog')
+    expect(functionNameToAction('queryComponentGuide')).toBe('queryComponentGuide')
   })
 })

@@ -284,6 +284,25 @@ describe('repeat-detection-monitor', () => {
     }
   })
 
+  it('nudges but does not abort after many read-only actions', () => {
+    const monitor = createRepeatDetectionMonitor({ maxReadOnlyActions: 2, maxSameSignature: 99 })
+    const actions = ['catalog.query', 'catalog.guide', 'dataset.export', 'sparkNodeTree.countNodes']
+    let lastFollowUp: string[] = []
+
+    for (let i = 0; i < actions.length; i++) {
+      const ctx = makeCtx({
+        currentTurn: makeTurn({ toolBlock: { action: actions[i]!, id: `r${i}`, params: { i } } }),
+        params: { i },
+        result: okResult(),
+      })
+      lastFollowUp = monitor.afterStillExecution(ctx)
+      expect(monitor.shouldAbort!(ctx).abort).toBe(false)
+    }
+
+    expect(lastFollowUp).toHaveLength(1)
+    expect(lastFollowUp[0]).toContain('系统执行节奏提醒')
+  })
+
   it('injects followUp on period-3 action cycle instead of aborting', () => {
     const monitor = createRepeatDetectionMonitor({ maxCyclePeriod: 3, cycleRepeatThreshold: 3 })
     const actions = ['A', 'B', 'C']

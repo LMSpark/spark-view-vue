@@ -19,6 +19,14 @@ function execGuide(params: unknown): StillResult {
   return executeStill('catalog.guide', params, session, 'catalog-guide-strict')
 }
 
+function execLegacyCatalog(params: unknown): StillResult {
+  return executeStill('queryComponentCatalog', params, session, 'query-component-catalog-strict')
+}
+
+function execLegacyGuide(params: unknown): StillResult {
+  return executeStill('queryComponentGuide', params, session, 'query-component-guide-strict')
+}
+
 beforeEach(() => {
   clearDomains()
   clearRegistry()
@@ -44,6 +52,29 @@ describe('catalog.query — Component Directory', () => {
 
     const data = result.data as Record<string, unknown>
     expect(data['category']).toBe('field')
+  })
+
+  it('normalizes wrapped layout category to container', () => {
+    const result = execQuery({ category: { category: 'layout' } })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const data = result.data as Record<string, unknown>
+    expect(data['category']).toBe('container')
+    expect(typeof data['count']).toBe('number')
+  })
+
+  it('supports legacy queryComponentCatalog full list and component guide params', () => {
+    const full = execLegacyCatalog({ componentType: '*' })
+    expect(full.ok).toBe(true)
+    if (!full.ok) return
+    expect((full.data as Record<string, unknown>)['total']).toBeTypeOf('number')
+
+    const guide = execLegacyCatalog({ componentType: 'r-table' })
+    expect(guide.ok).toBe(true)
+    if (!guide.ok) return
+    expect((guide.data as Record<string, unknown>)['type']).toBe('r-table')
+    expect(Array.isArray((guide.data as Record<string, unknown>)['optionalProps'])).toBe(true)
   })
 
   it('fails fast when session catalog is missing', () => {
@@ -84,5 +115,15 @@ describe('catalog.guide — Component Config Guide', () => {
     if (result.ok) return
 
     expect(result.code).toBe('INVALID_PARAMS')
+  })
+
+  it('supports legacy queryComponentGuide componentType params', () => {
+    const result = execLegacyGuide({ componentType: 'r-table' })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const data = result.data as Record<string, unknown>
+    expect(data['type']).toBe('r-table')
+    expect(Array.isArray(data['failFastChecks'])).toBe(true)
   })
 })

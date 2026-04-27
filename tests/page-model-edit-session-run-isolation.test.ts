@@ -150,7 +150,7 @@ describe('usePageModelEditSession run isolation', () => {
       maxConsecutiveErrors: 6,
       maxCyclePeriod: 4,
       cycleRepeatThreshold: 2,
-      maxReadOnlyActions: 36,
+      maxReadOnlyActions: 20,
       maxMissingComponentRetries: 2,
     })
 
@@ -219,9 +219,10 @@ describe('usePageModelEditSession run isolation', () => {
     wrapper.unmount()
   })
 
-  it('fails fast and drops backend resume session when the model only runs read-only tools', async () => {
+  it('keeps backend resume session when the model only runs read-only tools', async () => {
     const harness = createRuleEditHarness()
     const sessionHost = harness.sessionHost
+    const onRunComplete = vi.fn()
     let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
@@ -239,7 +240,7 @@ describe('usePageModelEditSession run isolation', () => {
     const wrapper = mount(Host)
     expect(api).not.toBeNull()
 
-    const runPromise = api!.runLlm('订单管理加入业务人、客户显示客户名称')
+    const runPromise = api!.runLlm('订单管理加入业务人、客户显示客户名称', { onRunComplete })
     await flushPromises()
     expect(shared.runs).toHaveLength(1)
 
@@ -259,11 +260,13 @@ describe('usePageModelEditSession run isolation', () => {
       sessionId: 'read-only-session',
     })
 
-    await expect(runPromise).rejects.toThrow('本轮仅执行了只读工具')
+    await expect(runPromise).resolves.toBeUndefined()
 
-    expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith(null)
-    expect(api!.log.value.at(-1)?.tag).toBe('编辑失败')
-    expect(api!.log.value.at(-1)?.text).toContain('未对当前页面模型产生写入')
+    expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith('read-only-session')
+    expect(api!.dirty.value).toBe(false)
+    expect(api!.log.value.at(-1)?.tag).toBe('未写入')
+    expect(api!.log.value.at(-1)?.text).toContain('只读工具')
+    expect(onRunComplete).toHaveBeenCalledWith({ rounds: 1, writeCount: 0 })
 
     wrapper.unmount()
   })
@@ -322,9 +325,10 @@ describe('usePageModelEditSession run isolation', () => {
     wrapper.unmount()
   })
 
-  it('fails fast and drops backend resume session when the model returns no tool calls', async () => {
+  it('keeps backend resume session when the model returns no tool calls', async () => {
     const harness = createRuleEditHarness()
     const sessionHost = harness.sessionHost
+    const onRunComplete = vi.fn()
     let api: ReturnType<typeof usePageModelEditSession> | null = null
 
     const Host = defineComponent({
@@ -342,7 +346,7 @@ describe('usePageModelEditSession run isolation', () => {
     const wrapper = mount(Host)
     expect(api).not.toBeNull()
 
-    const runPromise = api!.runLlm('看看当前页面结构')
+    const runPromise = api!.runLlm('看看当前页面结构', { onRunComplete })
     await flushPromises()
     expect(shared.runs).toHaveLength(1)
 
@@ -358,14 +362,16 @@ describe('usePageModelEditSession run isolation', () => {
       rounds: 1,
       aborted: false,
       completed: false,
-      sessionId: 'bad-resume-session',
+      sessionId: 'text-only-session',
     })
 
-    await expect(runPromise).rejects.toThrow('本轮未触发任何工具调用')
+    await expect(runPromise).resolves.toBeUndefined()
 
-    expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith(null)
-    expect(api!.log.value.at(-1)?.tag).toBe('编辑失败')
-    expect(api!.log.value.at(-1)?.text).toContain('本轮未触发任何工具调用')
+    expect(sessionHost.setBackendSessionId).toHaveBeenCalledWith('text-only-session')
+    expect(api!.dirty.value).toBe(false)
+    expect(api!.log.value.at(-1)?.tag).toBe('未写入')
+    expect(api!.log.value.at(-1)?.text).toContain('未执行工具')
+    expect(onRunComplete).toHaveBeenCalledWith({ rounds: 1, writeCount: 0 })
 
     wrapper.unmount()
   })

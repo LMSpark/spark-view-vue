@@ -9,7 +9,7 @@ export { registerAiCacheEventHandler, readCache, writeCache, removeCache, listCa
 export { SESSION_SNAPSHOT_PREFIX, PANEL_LAYOUT_PREFIX, ALL_AI_CACHE_PREFIXES } from '../composables/aiSessionCache'
 export type { AiCacheEntry } from '../composables/aiSessionCache'
 export { useAiChat } from '../composables/useAiChat'
-export type { UseAiChatOptions, StreamAiChatTextRequest, StreamAiChatText, FileAttachment, TokenUsage, ChatMessage, ChatMode, RecoveryPolicy, CollaborationPolicy, ToolLogEntry, AiSessionMetaConfig, AiSessionPolicies, AiSessionSnapshot, AiChatSendRequest, AiChatSender } from '../composables/useAiChat'
+export type { UseAiChatOptions, StreamAiChatTextRequest, StreamAiChatText, FileAttachment, TokenUsage, ChatMessage, ChatMode, RecoveryPolicy, CollaborationPolicy, ToolLogEntry, AiSseEventEntry, AiSseEventInput, AiFcCallRecord, AiFcCallInput, AiFcErrorReportStatus, AiFcErrorReportResult, AiFcErrorReporter, AiSessionMetaConfig, AiSessionPolicies, AiSessionSnapshot, AiChatSendRequest, AiChatSender } from '../composables/useAiChat'
 export { useAiPanelStore } from '../composables/useAiPanelStore'
 export type { AiSessionToolLog, AiToolSpec, AiToolInvocationContext, AiToolHandler, AiFcLoopConfig, AiFeedbackConfig, AiSessionEventMap, AiSessionEventName, AiSessionEventHandler, AiSessionHooks, AiSessionConfig } from '../composables/useAiPanelStore'
 export { toSafeText, findLatestUserPrompt, pickRecentConversation, streamWithFallback } from '../composables/useAiSenderHelpers'

@@ -405,6 +405,68 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
+    action: 'sparkNodeTree.moveNode',
+    target: 'children',
+    coreMethod: 'moveNode',
+    description: '把已有节点移动到新的父节点或兄弟位置。用于调整布局顺序或容器归属，避免 removeNode + addNode 重建已有子树造成大块文本输出。',
+    paramsSchema: {
+      kind: 'object',
+      required: ['componentId'],
+      properties: {
+        componentId: COMPONENT_ID_PARAM,
+      },
+      optional: {
+        parentComponentId: PARENT_COMPONENT_ID_PARAM,
+        index: INDEX_PARAM,
+      },
+      note: 'componentId 是要移动的现有节点；parentComponentId 是目标父节点，省略/null 表示当前绑定组件实例；index 是目标父节点 children 中的最终插入位置。',
+    },
+    resultSchema: {
+      componentId: 'string — 被移动节点 id',
+      fromParentComponentId: 'string | null — 移动前父节点 id；null 表示当前绑定组件实例',
+      toParentComponentId: 'string | null — 移动后父节点 id；null 表示当前绑定组件实例',
+      previousIndex: 'number — 移动前在原父节点 children 中的索引',
+      index: 'number — 移动后在目标父节点 children 中的索引',
+    },
+    example: {
+      componentId: 'name-column',
+      parentComponentId: 'table',
+      index: 0,
+    },
+    usageRules: [
+      INSTANCE_RULE,
+      SCALAR_PARENT_COMPONENT_RULE,
+      NAMED_PARAM_RULE,
+      INSTANCE_WRITE_RULE,
+      '调整已有节点位置时优先使用 moveNode，不要用 removeNode + addNode 复制完整子树。',
+      'moveNode 返回移动摘要，不返回完整 SparkNode 子树，避免上下文膨胀。',
+      '不能移动根节点，也不能把节点移动到自身或其后代节点下面。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'NODE_NOT_FOUND',
+        when: 'componentId 未命中现有节点',
+        fix: '先通过 sparkNodeTree.getNode 或 sparkNodeTree.findByType 获取真实 componentId。',
+      },
+      {
+        code: 'PARENT_NOT_FOUND',
+        when: 'parentComponentId 未命中现有节点',
+        fix: '先确认目标父节点存在，或省略 parentComponentId 移动到当前绑定组件实例。',
+      },
+      {
+        code: 'CANNOT_MOVE_ROOT',
+        when: '尝试移动当前绑定 root 节点',
+        fix: '只能移动 root 的子节点；如需整体替换 root，请使用 replaceRoot 类能力。',
+      },
+      {
+        code: 'CANNOT_MOVE_INTO_DESCENDANT',
+        when: '目标父节点是被移动节点自身或其后代',
+        fix: '选择被移动节点外部的父节点作为 parentComponentId。',
+      },
+    ],
+  }),
+  defineRequestRow({
     action: 'sparkNodeTree.setProps',
     target: 'props',
     coreMethod: 'setProps',

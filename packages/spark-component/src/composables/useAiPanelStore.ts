@@ -16,7 +16,7 @@
  *   基础设施职责：消费 config，完成持久化、响应式透传、生命周期管理。
  */
 import { computed, ref, shallowRef, toValue, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue'
-import type { AiChatSender } from './useAiChat'
+import type { AiChatSender, AiFcErrorReporter } from './useAiChat'
 
 /** 工具调用日志（透传给 AiChatWidget 的 externalToolLogs）。 */
 export interface AiSessionToolLog {
@@ -144,6 +144,8 @@ export type AiSessionHooks = {
 export interface AiSessionConfig {
   /** 持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。 */
   readonly storageKey: MaybeRefOrGetter<string>
+  /** 业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。 */
+  readonly pageId?: MaybeRefOrGetter<string | undefined>
   /** 聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。 */
   readonly sender: AiChatSender
   /** 面板标题。 */
@@ -152,6 +154,10 @@ export interface AiSessionConfig {
   readonly placeholder?: MaybeRefOrGetter<string>
   /** 外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。 */
   readonly externalToolLogs?: Ref<AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]>
+  /** 清空外部工具日志。若未提供，面板只清空自身内部日志。 */
+  readonly clearExternalToolLogs?: () => void
+  /** FC 调用失败时的诊断回传器。 */
+  readonly fcErrorReporter?: AiFcErrorReporter
   /** 打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。 */
   readonly beforeOpen?: () => void | Promise<void>
 
@@ -180,12 +186,18 @@ const visible = ref(false)
 const configRef = shallowRef<AiSessionConfig | null>(null)
 
 const storageKey = computed(() => toValue(configRef.value?.storageKey ?? DEFAULT_STORAGE_KEY))
+const pageId = computed(() => {
+  const rawPageId = configRef.value?.pageId !== undefined ? toValue(configRef.value.pageId) : undefined
+  return typeof rawPageId === 'string' && rawPageId.trim() !== '' ? rawPageId : storageKey.value
+})
 const title = computed(() => toValue(configRef.value?.title ?? DEFAULT_TITLE))
 const placeholder = computed(() => toValue(configRef.value?.placeholder ?? DEFAULT_PLACEHOLDER))
 const externalToolLogs = computed<AiSessionToolLog[] | undefined>(() => {
   const logs = configRef.value?.externalToolLogs
   return logs ? logs.value : undefined
 })
+const clearExternalToolLogs = computed<(() => void) | undefined>(() => configRef.value?.clearExternalToolLogs)
+const fcErrorReporter = computed<AiFcErrorReporter | undefined>(() => configRef.value?.fcErrorReporter)
 const sender = computed(() => configRef.value?.sender)
 const hasConfig = computed(() => configRef.value !== null)
 
@@ -318,9 +330,12 @@ export function useAiPanelStore() {
   return {
     visible,
     storageKey,
+    pageId,
     title,
     placeholder,
     externalToolLogs,
+    clearExternalToolLogs,
+    fcErrorReporter,
     sender,
     hasConfig,
     // 全配置对外 getter

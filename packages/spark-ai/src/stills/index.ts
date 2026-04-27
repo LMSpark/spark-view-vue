@@ -23,6 +23,9 @@ import {
   sessionDescribe,
   catalogQuery,
   catalogGuide,
+  queryComponentCatalog,
+  queryComponentGuide,
+  interactionAsk,
 } from './meta-methods'
 import {
   blueprintDomain,
@@ -55,6 +58,9 @@ const metaStills = [
   sessionDescribe,
   catalogQuery,
   catalogGuide,
+  queryComponentCatalog,
+  queryComponentGuide,
+  interactionAsk,
 ] as const
 
 export { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill }
@@ -84,7 +90,7 @@ export function createSession(options?: CreateSessionOptions): IStillSession {
 }
 
 export { registerDomain, getDomain, clearDomains }
-export { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery, catalogGuide }
+export { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery, catalogGuide, queryComponentCatalog, queryComponentGuide, interactionAsk }
 
 export function registerAllStills(): void {
   registerDomain(blueprintDomain)

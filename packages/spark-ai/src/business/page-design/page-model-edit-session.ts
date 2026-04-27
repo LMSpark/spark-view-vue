@@ -27,6 +27,7 @@ import {
 const FALLBACK_TOOL_WRITE_SET = new Set<string>([
   'sparkNodeTree.addNode',
   'sparkNodeTree.addNodes',
+  'sparkNodeTree.moveNode',
   'sparkNodeTree.setProps',
   'sparkNodeTree.setPropsBatch',
   'sparkNodeTree.replaceNode',
@@ -105,6 +106,7 @@ export interface PageModelEditSessionOptions {
 export interface PageModelEditRunHooks {
   onDelta?: (delta: string) => void
   onReasoning?: (reasoning: string) => void
+  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
   onToolTurn?: (turn: DialogueTurn) => void
   onRunComplete?: (payload: { rounds: number; writeCount: number }) => void
   signal?: AbortSignal
@@ -112,6 +114,9 @@ export interface PageModelEditRunHooks {
 
 export interface PageModelEditRunOptions extends PageModelEditRunHooks {
   skipBootstrap?: boolean
+  maxRounds?: number
+  toolMode?: 'all' | 'describe-only'
+  repeatDetection?: RepeatDetectionConfig
 }
 
 export interface PageModelEditBootstrapOptions {
@@ -124,6 +129,7 @@ export interface PageModelEditSessionController {
   subscribe: (listener: (state: Readonly<PageModelEditSessionState>) => void) => () => void
   bootstrap: (options?: PageModelEditBootstrapOptions) => Promise<PageModelStillsSession>
   runLlm: (prompt: string, hooks?: PageModelEditRunOptions) => Promise<void>
+  clearLog: () => void
   reset: () => void
   dispose: () => void
 }
@@ -278,6 +284,8 @@ export function createPageModelEditSession(
   }
 
   function onSseEvent(event: { sessionId: string; type: string; data: string }, hooks?: PageModelEditRunHooks): void {
+    hooks?.onSseEvent?.(event)
+
     if (event.type === 'delta') {
       patchState({ aiBuffer: state.aiBuffer + event.data })
       hooks?.onDelta?.(event.data)
@@ -418,12 +426,21 @@ export function createPageModelEditSession(
         ? ensureSession()
         : await bootstrap({ silent: true })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
+      const repeatDetection: RepeatDetectionConfig = {
+        maxSameSignature: 6,
+        maxConsecutiveErrors: 6,
+        maxCyclePeriod: 4,
+        cycleRepeatThreshold: 2,
+        maxReadOnlyActions: 20,
+        maxMissingComponentRetries: 2,
+        ...hooks?.repeatDetection,
+      }
       const result = await runtime.startIterateSession({
         backend: sessionHost.backend,
         session,
         userPrompt: prompt,
         systemPrompt: runtime.STILLS_EDIT_RUNTIME_PROMPT,
-        maxRounds: 80,
+        maxRounds: hooks?.maxRounds ?? 80,
         slidingWindow: 12,
         signal: runController.signal,
         onSseEvent(event) {
@@ -431,15 +448,11 @@ export function createPageModelEditSession(
           onSseEvent(event, hooks)
         },
         ...sessionHost.getResumeSessionOptions(),
-        tools: runtime.generateToolDefinitions({ compactDescriptions: true }),
-        repeatDetection: {
-          maxSameSignature: 6,
-          maxConsecutiveErrors: 6,
-          maxCyclePeriod: 4,
-          cycleRepeatThreshold: 2,
-          maxReadOnlyActions: 36,
-          maxMissingComponentRetries: 2,
-        },
+        tools: runtime.generateToolDefinitions({
+          compactDescriptions: true,
+          ...(hooks?.toolMode === 'describe-only' ? { types: ['describe'] } : {}),
+        }),
+        repeatDetection,
         onTurnComplete(turn: DialogueTurn) {
           if (turn.toolBlock?.action && turn.stillsResult) {
             const stillsResult = turn.stillsResult
@@ -474,13 +487,8 @@ export function createPageModelEditSession(
         sessionHost.setBackendSessionId(result.sessionId)
         throw new Error(`Stills 中止: ${result.abortReason}`)
       }
-      const toolTurnCount = result.turns.filter((turn) => turn.phase === 'stills-execute').length
-      if (toolTurnCount === 0) {
-        sessionHost.setBackendSessionId(null)
-        throw new Error('本轮未触发任何工具调用，已丢弃后端会话。请重试；若持续复现，请重置当前页面模型会话。')
-      }
-
       sessionHost.setBackendSessionId(result.sessionId)
+      const toolTurnCount = result.turns.filter((turn) => turn.phase === 'stills-execute').length
       const writeActions = result.turns.flatMap((turn) => {
         const action = turn.toolBlock?.action
         return turn.phase === 'stills-execute' && action !== undefined && isToolWriteAction(runtime, action) && turn.stillsResult?.ok
@@ -489,8 +497,12 @@ export function createPageModelEditSession(
       })
       const writeCount = writeActions.length
       if (writeCount === 0) {
-        sessionHost.setBackendSessionId(null)
-        throw new Error('本轮仅执行了只读工具，未对当前页面模型产生写入。已丢弃后端会话，请重试。')
+        const message = toolTurnCount === 0
+          ? `本轮未执行工具，已保留会话上下文 (${result.rounds} 轮)，可继续补充指令。`
+          : `本轮执行 ${toolTurnCount} 次只读工具，未写入当前页面模型；已保留会话上下文，可继续对话或手动接管。`
+        pushLog('info', '未写入', message)
+        hooks?.onRunComplete?.({ rounds: result.rounds, writeCount })
+        return
       }
 
       syncPageModelProjection(writeActions)
@@ -530,6 +542,10 @@ export function createPageModelEditSession(
     })
   }
 
+  function clearLog(): void {
+    patchState({ log: [] })
+  }
+
   function dispose(): void {
     abortActiveRun()
     if (ownsSessionHost) {
@@ -550,6 +566,7 @@ export function createPageModelEditSession(
     bootstrap,
     runLlm,
     reset,
+    clearLog,
     dispose,
   }
 }

@@ -296,7 +296,7 @@ function buildContainersEntry(): SparkNodeComponentEntry {
         '先从 _组件列表 中选择目标组件 type。',
         '再通过 queryComponentGuide(type) 查阅该组件完整 props / emits / binding 规格。',
         '根据规格构造 SparkNode：{ type, props, children? }。',
-        '最后调用 SparkNodeTree.addNode / addNodes / replaceNode 等 FC，把该 SparkNode 写入当前子树。',
+        '最后调用 SparkNodeTree.addNode / addNodes / moveNode / replaceNode 等 FC，把该 SparkNode 写入当前子树。',
       ],
       ...buildComponentGuideMap(componentTypes),
     },
@@ -304,7 +304,7 @@ function buildContainersEntry(): SparkNodeComponentEntry {
       '组件列表以 component-catalog.json 为唯一事实源；新增/删除组件应先改生成链，而不是手改本文件。',
       '使用组件前，必须先确认组件 type 存在，再查询单组件 props 规格。',
       '构造 SparkNode 时，children 是否需要传入取决于组件自身语义；不要默认给所有组件都加 children。',
-      '把节点放入树中时，应通过 SparkNodeTree FC 完成，而不是直接手改整棵 SparkNode JSON。',
+      '把节点放入树中时，应通过 SparkNodeTree FC 完成，而不是直接手改整棵 SparkNode JSON；移动已有节点优先用 moveNode，不要 remove + add 重写子树。',
     ],
     failureModes: [
       {

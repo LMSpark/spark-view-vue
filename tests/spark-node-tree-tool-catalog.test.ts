@@ -58,6 +58,7 @@ describe('SparkNodeTree tool catalog', () => {
   it('catalog 应包含批量节点动作，且不暴露历史版本动作', () => {
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.getAllData')?.coreMethod).toBe('getAllData')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.addNodes')?.coreMethod).toBe('addNodes')
+    expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.moveNode')?.coreMethod).toBe('moveNode')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.setPropsBatch')?.coreMethod).toBe('setPropsBatch')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.replaceNodes')?.coreMethod).toBe('replaceNodes')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.removeNodes')?.coreMethod).toBe('removeNodes')
@@ -71,5 +72,22 @@ describe('SparkNodeTree tool catalog', () => {
     const row = getSparkNodeTreeToolParameterRow('sparkNodeTree.findByType')
     const usageRules = row?.usageRules ?? []
     expect(usageRules.some(rule => rule.includes('真实 componentId'))).toBe(true)
+  })
+
+  it('moveNode 应声明小结果并阻止 remove/add 重建子树', () => {
+    const row = getSparkNodeTreeToolParameterRow('sparkNodeTree.moveNode')
+    expect(row?.paramsSchema).toMatchObject({
+      kind: 'object',
+      required: ['componentId'],
+    })
+    expect(row?.resultSchema).toMatchObject({
+      componentId: expect.any(String),
+      fromParentComponentId: expect.any(String),
+      toParentComponentId: expect.any(String),
+      previousIndex: expect.any(String),
+      index: expect.any(String),
+    })
+    expect(row?.resultSchema).not.toHaveProperty('node')
+    expect(row?.usageRules.some(rule => rule.includes('不要用 removeNode + addNode'))).toBe(true)
   })
 })

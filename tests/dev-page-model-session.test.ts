@@ -18,6 +18,12 @@ const shared = vi.hoisted(() => {
   }
 })
 
+const reportAiFcErrorMock = vi.hoisted(() => vi.fn(async () => ({ reportId: 'report-dev-1' })))
+
+vi.mock('../src/services/ai-fc-error-monitor', () => ({
+  reportAiFcError: reportAiFcErrorMock,
+}))
+
 vi.mock('../src/views/app/dev-system/usePageModelSessionHost', () => ({
   usePageModelSessionHost: () => ({
     backend: {} as never,
@@ -98,6 +104,7 @@ describe('useDevPageModelSession', () => {
     shared.resetSync.mockClear()
     shared.getResumeSessionOptions.mockClear()
     shared.getResumeSessionOptions.mockReturnValue({})
+    reportAiFcErrorMock.mockClear()
   })
 
   afterEach(() => {
@@ -167,6 +174,154 @@ describe('useDevPageModelSession', () => {
       throw new Error('expected ensureActivePageFilesLoaded and bootstrap invocation order')
     }
     expect(ensureCallOrder).toBeLessThan(bootstrapCallOrder)
+
+    scope.stop()
+  })
+
+  it('applies panel policies to the page-model edit run', async () => {
+    const { state } = createState()
+    const scope = effectScope()
+    const activeFile = ref<PageFileName | null>('rule.json')
+    let sessionConfig: ReturnType<typeof useDevPageModelSession> | null = null
+
+    scope.run(() => {
+      sessionConfig = useDevPageModelSession({ state, activeFile })
+    })
+
+    await sessionConfig!.config.sender({
+      historyMsgs: [{ role: 'user', content: '先给计划' }],
+      mode: 'multi',
+      policies: { recovery: 'strict', collaboration: 'plan-confirm' },
+      onDelta: vi.fn(),
+    })
+
+    const firstRunArgs = shared.runLlm.mock.calls[0]
+    if (!firstRunArgs) {
+      throw new Error('expected runLlm to be called once')
+    }
+    const prompt = (firstRunArgs as unknown[])[0]
+    const options = (firstRunArgs as unknown[])[1] as Record<string, unknown>
+
+    expect(prompt).toContain('[人机协同策略]')
+    expect(prompt).toContain('恢复策略=strict')
+    expect(prompt).toContain('协作策略=plan-confirm')
+    expect(options['toolMode']).toBe('describe-only')
+    expect(options['repeatDetection']).toMatchObject({
+      maxSameSignature: 3,
+      maxConsecutiveErrors: 3,
+      maxReadOnlyActions: 10,
+    })
+
+    scope.stop()
+  })
+
+  it('does not run the model when collaboration policy is human takeover', async () => {
+    const { state } = createState()
+    const scope = effectScope()
+    const activeFile = ref<PageFileName | null>('rule.json')
+    let sessionConfig: ReturnType<typeof useDevPageModelSession> | null = null
+    const onDelta = vi.fn()
+
+    scope.run(() => {
+      sessionConfig = useDevPageModelSession({ state, activeFile })
+    })
+
+    await sessionConfig!.config.sender({
+      historyMsgs: [{ role: 'user', content: '我来手动改' }],
+      mode: 'multi',
+      policies: { recovery: 'manual', collaboration: 'human-takeover' },
+      onDelta,
+    })
+
+    expect(shared.runLlm).not.toHaveBeenCalled()
+    expect(onDelta).toHaveBeenCalledWith(expect.stringContaining('人工接管'))
+
+    scope.stop()
+  })
+
+  it('forwards raw SSE and completed FC calls to request diagnostics', async () => {
+    const { state } = createState()
+    const scope = effectScope()
+    const activeFile = ref<PageFileName | null>('rule.json')
+    let sessionConfig: ReturnType<typeof useDevPageModelSession> | null = null
+    const onSseEvent = vi.fn()
+    const onFcCall = vi.fn()
+
+    scope.run(() => {
+      sessionConfig = useDevPageModelSession({ state, activeFile })
+    })
+
+    await sessionConfig!.config.sender({
+      historyMsgs: [{ role: 'user', content: '读取组件目录' }],
+      mode: 'multi',
+      onDelta: vi.fn(),
+      onSseEvent,
+      onFcCall,
+    })
+
+    const firstRunArgs = shared.runLlm.mock.calls[0]
+    if (!firstRunArgs) {
+      throw new Error('expected runLlm to be called once')
+    }
+    const options = (firstRunArgs as unknown[])[1] as {
+      onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
+      onToolTurn?: (turn: unknown) => void
+    }
+
+    options.onSseEvent?.({ sessionId: 'sse-session', type: 'delta', data: 'raw delta' })
+    options.onToolTurn?.({
+      round: 3,
+      timestamp: '2026-04-27T02:30:00.000Z',
+      phase: 'stills-execute',
+      toolBlock: { action: 'catalog.query', id: 'call-7', params: { category: 'layout' } },
+      stillsResult: { ok: true, data: { count: 5 }, summary: 'container: 5 组件' },
+      elapsed: 18,
+    })
+
+    expect(onSseEvent).toHaveBeenCalledWith({ sessionId: 'sse-session', type: 'delta', data: 'raw delta' })
+    expect(onFcCall).toHaveBeenCalledWith(expect.objectContaining({
+      toolName: 'catalog.query',
+      args: { category: 'layout' },
+      round: 3,
+      callId: 'call-7',
+      status: 'success',
+      result: { count: 5 },
+      durationMs: 18,
+      timestamp: '2026-04-27T02:30:00.000Z',
+    }))
+
+    scope.stop()
+  })
+
+  it('wires FC error reporter with active page context', async () => {
+    const { state } = createState()
+    const scope = effectScope()
+    const activeFile = ref<PageFileName | null>('pagedata.json')
+    let sessionConfig: ReturnType<typeof useDevPageModelSession> | null = null
+
+    scope.run(() => {
+      sessionConfig = useDevPageModelSession({ state, activeFile })
+    })
+
+    await sessionConfig!.config.fcErrorReporter?.({
+      id: 'fc-1',
+      timestamp: '2026-04-27T03:00:00.000Z',
+      toolName: 'catalog.query',
+      args: { category: 'bad' },
+      round: 1,
+      status: 'error',
+      error: 'INVALID_CATEGORY',
+    })
+
+    expect(reportAiFcErrorMock).toHaveBeenCalledWith(expect.objectContaining({
+      toolName: 'catalog.query',
+      status: 'error',
+    }), expect.objectContaining({
+      source: 'dev-page-model-session',
+      pageId: 'orders-page',
+      activeFile: 'pagedata.json',
+      storageKey: 'devsystem-ai-chat:orders-page',
+    }))
 
     scope.stop()
   })
