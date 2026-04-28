@@ -1,24 +1,6 @@
 import type { StillDefinition } from './stills/types'
 import { getAllStills } from './stills/dispatcher'
-import type { JsonSchema, JsonSchemaProperty, ToolDefinition } from './session/session-contracts'
-
-export interface FcCatalogToolEntry {
-  action: string
-  functionName: string
-  description: string
-  schema: JsonSchema
-}
-
-export interface FcCatalogJson {
-  version: 1
-  tools: FcCatalogToolEntry[]
-}
-
-let _fcCatalog: FcCatalogJson | null = null
-
-export function loadFcCatalog(catalog: FcCatalogJson | null): void {
-  _fcCatalog = catalog
-}
+import type { JsonSchemaProperty, ToolDefinition } from './session/session-contracts'
 
 export function actionToFunctionName(action: string): string {
   return action.replace(/\./g, '_')
@@ -38,7 +20,8 @@ export function functionNameToAction(name: string, registry?: ReadonlyMap<string
   return name
 }
 
-// TODO(VCM): 迁移到构建期后，删除运行时类型推断分支。
+// FC tool definitions are derived directly from still definitions (SSoT).
+// String/object descriptors in `paramsSchema` are converted to JSON Schema below.
 function inferPropertySchema(raw: string): { prop: JsonSchemaProperty; required: boolean } {
   const dashIdx = raw.indexOf('—')
   const typePart = dashIdx > 0 ? raw.slice(0, dashIdx).trim() : raw.trim()
@@ -232,20 +215,6 @@ export function stillToToolDefinition(still: StillDefinition): ToolDefinition {
   }
 }
 
-function getPrebuiltToolDefinition(action: string): ToolDefinition | null {
-  if (!_fcCatalog) return null
-  const item = _fcCatalog.tools.find(tool => tool.action === action)
-  if (!item) return null
-  return {
-    type: 'function',
-    function: {
-      name: item.functionName,
-      description: item.description,
-      parameters: item.schema,
-    },
-  }
-}
-
 export function generateToolDefinitions(
   filter?: {
     types?: Array<'request' | 'describe'>
@@ -264,8 +233,7 @@ export function generateToolDefinitions(
       continue
     }
 
-    const prebuilt = getPrebuiltToolDefinition(still.action)
-    const definition = prebuilt ?? stillToToolDefinition(still)
+    const definition = stillToToolDefinition(still)
 
     tools.push(
       filter?.compactDescriptions

@@ -54,12 +54,6 @@ export const CORE_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
     ],
   tooling: [
       {
-        key: 'tooling.fc.catalog',
-        target: 'core/fc-schema.ts#loadFcCatalog',
-        configureWith: 'loadFcCatalog(FcCatalogJson | null)',
-        description: '注入预计算 FC catalog，替代运行时 schema 推断。',
-      },
-      {
         key: 'tooling.fc.definition-filter',
         target: 'core/fc-schema.ts#generateToolDefinitions',
         configureWith: 'filter(types/actions/compactDescriptions)',

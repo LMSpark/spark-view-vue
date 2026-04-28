@@ -89,7 +89,7 @@ export {
   STILLS_RUNTIME_PROMPT,
   STILLS_EDIT_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
-} from './business/project-planning/prompts/stills-prompts'
+} from './core/stills/stills-prompts'
 export {
   buildPageSystemPrompt,
   getSystemPrompt,
@@ -172,13 +172,8 @@ export {
 export {
   actionToFunctionName,
   functionNameToAction,
-  loadFcCatalog,
   stillToToolDefinition,
   generateToolDefinitions,
-} from './core/fc-schema'
-export type {
-  FcCatalogToolEntry,
-  FcCatalogJson,
 } from './core/fc-schema'
 export {
   dispatchToolCall,
@@ -204,6 +199,10 @@ export {
   formatWarningsAsFollowUp,
   DefaultFollowUpPolicy,
   createDefaultFollowUpPolicy,
+} from './core/session/default-follow-up-policy'
+
+// ── Business Orchestration（业务层编排配置工厂）─────────────────────────────
+export {
   formatWarningsAsFollowUpBusiness,
   BusinessFollowUpPolicy,
   createBusinessFollowUpPolicy,
@@ -252,5 +251,4 @@ export {
   PROJECT_PLANNING_DOMAIN,
   type ProjectPlanningBusinessContext,
 } from './business/project-planning'
-
 

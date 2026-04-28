@@ -53,13 +53,8 @@ export {
 export {
   actionToFunctionName,
   functionNameToAction,
-  loadFcCatalog,
   stillToToolDefinition,
   generateToolDefinitions,
-} from './fc-schema'
-export type {
-  FcCatalogToolEntry,
-  FcCatalogJson,
 } from './fc-schema'
 
 export {

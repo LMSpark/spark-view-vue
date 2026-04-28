@@ -15,7 +15,6 @@ This document is the single reference for configurable paths across the AI lifec
 		- session.backend.headers -> core/session/session-backend.ts#SessionBackendImpl -> options.getHeaders
 		- session.backend.sse-event-hook -> core/session/session-backend.ts#SessionBackendImpl -> options.onSseEvent
 	- tooling
-		- tooling.fc.catalog -> core/fc-schema.ts#loadFcCatalog -> loadFcCatalog(FcCatalogJson | null)
 		- tooling.fc.definition-filter -> core/fc-schema.ts#generateToolDefinitions -> filter(types/actions/compactDescriptions)
 	- orchestration
 		- orchestration.max-rounds -> core/session/session-contracts.ts#OrchestratorConfig.maxRounds -> runStillsLoop(config.maxRounds)
