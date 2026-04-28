@@ -283,8 +283,13 @@ try {
 
     console.log('\n🔨 构建 Vite 前端...')
     const buildMode = resolveBuildMode()
-    console.log(`🧩 组件注册模式: ${buildMode}（构建模式与运行时注册路径强关联）`)
-    run(`npx cross-env BUILD_MODE=${buildMode} vite build`, { cwd: ROOT_DIR })
+    run('node scripts/build-frontend.mjs', {
+      cwd: ROOT_DIR,
+      env: {
+        ...process.env,
+        BUILD_MODE: buildMode,
+      },
+    })
     console.log('✅ Vite 前端构建完成')
   }
 

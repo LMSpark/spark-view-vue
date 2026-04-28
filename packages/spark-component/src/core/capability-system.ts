@@ -8,6 +8,11 @@
  */
 
 import type { LoggerApi } from '@spark-view/spark-utils'
+import type { IEventEmitter } from '@spark-view/spark-data'
+import { createEventEmitter } from '@spark-view/spark-data'
+
+export type { IEventEmitter }
+export { createEventEmitter }
 
 export type CapabilityKey<T> = symbol & { readonly __capabilityType?: T }
 export type CapabilityName = CapabilityKey<unknown>
@@ -18,14 +23,6 @@ export interface ICapabilityContext {
   type: string
   parent?: ICapabilityContext
   capabilities: Map<CapabilityName, unknown>
-}
-
-export interface IEventEmitter<TEventMap extends Record<string, unknown[]> = Record<string, unknown[]>> {
-  on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
-  off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
-  emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
-  removeAllListeners<K extends string & keyof TEventMap>(event?: K): void
-  listenerCount<K extends string & keyof TEventMap>(event?: K): number
 }
 
 export function defineCapability<T>(name: string): CapabilityKey<T> {
@@ -88,45 +85,6 @@ export function getSparkCapabilityProvider(
   name: CapabilityKey<unknown>,
 ): unknown {
   return context.capabilities.get(name)
-}
-
-export function createEventEmitter<TEventMap extends Record<string, unknown[]> = Record<string, unknown[]>>(): IEventEmitter<TEventMap> {
-  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
-  return {
-    on(event, handler) {
-      let handlers = listeners.get(event)
-      if (!handlers) {
-        handlers = new Set()
-        listeners.set(event, handlers)
-      }
-      handlers.add(handler as (...args: unknown[]) => void)
-    },
-    off(event, handler) {
-      listeners.get(event)?.delete(handler as (...args: unknown[]) => void)
-    },
-    emit(event, ...args) {
-      const handlers = listeners.get(event)
-      if (handlers) {
-        for (const h of handlers) {
-          try {
-            h(...args)
-          } catch (e) {
-            if (import.meta.env.DEV) console.error(`[EventEmitter] Error in handler for '${event}':`, e)
-          }
-        }
-      }
-    },
-    removeAllListeners(event?: string) {
-      if (event !== undefined) listeners.delete(event)
-      else listeners.clear()
-    },
-    listenerCount(event?: string) {
-      if (event !== undefined) return listeners.get(event)?.size ?? 0
-      let total = 0
-      for (const s of listeners.values()) total += s.size
-      return total
-    },
-  }
 }
 
 export interface IAppServicesCapability {
@@ -212,7 +170,7 @@ export interface IPageSelectEntitiesOptions {
   options?: IPageSelectorOption[]
 }
 
-export interface IPageSelectedEntity extends IPageSelectorOption {}
+export type IPageSelectedEntity = IPageSelectorOption
 
 export interface IPageServiceCapability {
   showMessage(message: string, type?: PageMessageType): void

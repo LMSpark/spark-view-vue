@@ -118,3 +118,8 @@ export {
 
 export { extractColumnRules, isColumnRequired } from './column-validation'
 export type { ColumnValidationRule, ValidationRuleType } from './column-validation'
+
+// ===== 事件发射器（spark-data 是 SSoT；spark-component 等下游 re-export） =====
+
+export { createEventEmitter } from './core/event-emitter'
+export type { IEventEmitter } from './types'

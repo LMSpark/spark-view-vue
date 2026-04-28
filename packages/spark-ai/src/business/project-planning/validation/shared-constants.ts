@@ -1,14 +1,7 @@
 // ── 跨模块共享常量（config-validator 等校验逻辑复用）─────────────────────
 
 /**
- * DataKey 格式校验正则
- *
- * 匹配 2 段或 3 段 @-分隔格式 + 可选 #scope 前缀 + 可选 .fieldPath 后缀。
- * 合法 field: rows | currentRow | selectedRows | summaryRow | selectionSummaryRow
- */
-export const DATAKEY_RE = /^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$/
 
-/**
  * HTML 原生标签白名单（组件类型校验时排除这些标签）
  *
  * 单一来源：校验逻辑共用同一集合。

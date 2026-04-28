@@ -54,7 +54,7 @@ function createBaseSession(options?: CreateSessionOptions): IStillSession {
 }
 
 /** 创建会话：初始化框架字段 + 每个已注册域的 state */
-export function createSession(options?: CreateSessionOptions): IStillSession {
+export function createBareSession(options?: CreateSessionOptions): IStillSession {
   const session = createBaseSession(options)
 
   for (const [name, domain] of _domains) {

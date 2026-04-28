@@ -251,7 +251,15 @@ export async function runStillsLoop(
         const { action, result, toolResult } = dispatched
 
         lastResult = result
-        try { lastParams = JSON.parse(tc.function.arguments) } catch { lastParams = {} }
+        // fail-fast：tool 参数 JSON 解析失败 = LLM 协议层错误，必须暴露给上层处理。
+        // 旧实现 catch 后回填空对象会让畸形参数继续流入下游 monitors / followUp 计算，掩盖根因。
+        try {
+          lastParams = JSON.parse(tc.function.arguments)
+        } catch (err) {
+          throw new Error(
+            `tool arguments JSON 解析失败 (action=${dispatched.action}, toolCallId=${tc.id}): ${(err as Error).message}`,
+          )
+        }
 
         // 记录每个 tool call 的执行轮次
         const turn: DialogueTurn = {

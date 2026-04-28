@@ -23,6 +23,10 @@ export const PANEL_LAYOUT_PREFIX = 'app-ai-panel:'
 /** 所有会话相关缓存前缀集合；用于"全部清除"默认扫描范围。 */
 export const ALL_AI_CACHE_PREFIXES = [SESSION_SNAPSHOT_PREFIX, PANEL_LAYOUT_PREFIX] as const
 
+import { Logger } from '@spark-view/spark-utils'
+
+const logger = Logger('AiSessionCache')
+
 // ── 类型 ────────────────────────────────────────────────────────────────────
 
 export interface AiCacheEntry {
@@ -47,7 +51,8 @@ function safeParseMeta(raw: string): { updatedAt?: string; pageId?: string } {
     if (typeof parsed.updatedAt === 'string') out.updatedAt = parsed.updatedAt
     if (typeof parsed.pageId === 'string') out.pageId = parsed.pageId
     return out
-  } catch {
+  } catch (err) {
+    logger.warn('AI 会话缓存元数据解析失败（已忽略损坏项）', { error: (err as Error).message })
     return {}
   }
 }

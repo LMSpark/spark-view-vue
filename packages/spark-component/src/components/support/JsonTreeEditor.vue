@@ -188,6 +188,7 @@
  * @category internal
  */
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { deepClone } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import {
@@ -501,7 +502,7 @@ function syncDocument(rawText: string): void {
 }
 
 function syncDocumentValue(value: JsonDocument): void {
-  const nextDocument = cloneDocument(value)
+  const nextDocument = deepClone(value)
   const nextText = serializeJsonDocument(nextDocument)
   if (lastEmittedValue !== null && nextText === lastEmittedValue) {
     lastEmittedValue = null
@@ -690,14 +691,10 @@ function mutateModel(
   const nextText = serializeJsonDocument(nextDocument)
   parseError.value = null
   lastEmittedValue = nextText
-  emit('update:documentValue', cloneDocument(nextDocument))
+  emit('update:documentValue', deepClone(nextDocument))
   emit('update:value', nextText)
   // 字段模式：通过能力链回写 DATA_ROW[field]
   void handleControlledChange(nextText)
-}
-
-function cloneDocument(value: JsonDocument): JsonDocument {
-  return JSON.parse(JSON.stringify(value)) as JsonDocument
 }
 
 // ── 类型标签 ──────────────────────────────────────────────────

@@ -6,6 +6,7 @@
  */
 
 import type { IStillSession, StillDefinition, StillResult } from '../../../../../core/stills/types'
+import type { SparkNodeTree } from '@spark-view/spark-component'
 import { parseDataKey } from '@spark-view/spark-data'
 import { getActiveDataSetTool, getEditState, notifyDataSetChanged } from '../edit-lifecycle-stills'
 import { EDIT_BOOTSTRAP_ACTION } from '../../../../../core/stills/action-names'
@@ -111,29 +112,6 @@ type NodeTreeDataKeyValidationIssue = {
   detail: string
 }
 
-type SparkNodeTreeLike = {
-  getAllData(): unknown
-}
-
-function collectDataKeysFromNode(node: unknown, out: Set<string>): void {
-  if (typeof node !== 'object' || node === null) return
-  const record = node as Record<string, unknown>
-
-  const props = record['props']
-  if (typeof props === 'object' && props !== null) {
-    const dataKey = (props as Record<string, unknown>)['dataKey']
-    if (typeof dataKey === 'string' && dataKey.trim().length > 0) {
-      out.add(dataKey.trim())
-    }
-  }
-
-  const children = record['children']
-  if (!Array.isArray(children)) return
-  for (const child of children) {
-    collectDataKeysFromNode(child, out)
-  }
-}
-
 function buildDataKeyValidationMessage(issues: NodeTreeDataKeyValidationIssue[]): string {
   const preview = issues
     .slice(0, 8)
@@ -154,7 +132,7 @@ function buildDataKeyValidationMessage(issues: NodeTreeDataKeyValidationIssue[])
  */
 export function validateNodeTreeDataKeysByDatasetEdit(
   session: IStillSession,
-  nodeTree: SparkNodeTreeLike,
+  nodeTree: SparkNodeTree,
 ): string | null {
   const state = getEditState(session)
   const tool = getActiveDataSetTool(state)
@@ -162,9 +140,7 @@ export function validateNodeTreeDataKeysByDatasetEdit(
     return `datasetEdit 未初始化，无法校验 dataKey；请先执行 ${EDIT_BOOTSTRAP_ACTION}`
   }
 
-  const root = nodeTree.getAllData()
-  const dataKeys = new Set<string>()
-  collectDataKeysFromNode(root, dataKeys)
+  const dataKeys = nodeTree.collectDataKeys()
   if (dataKeys.size === 0) return null
 
   const tableNames = new Set(tool.listTables().map((table) => table.tableName))

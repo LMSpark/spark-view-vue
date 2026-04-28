@@ -35,10 +35,6 @@ export default defineConfig({
         dir: 'dist',
         // .vue 文件输出为 PageRenderer.vue.js（与 index.js 中 import './PageRenderer.vue' 匹配）
         entryFileNames: '[name].js',
-        // 禁止 banner/footer 注释，保持纯净输出
-        generatedCode: {
-          constBindings: true,
-        },
       },
     },
   },

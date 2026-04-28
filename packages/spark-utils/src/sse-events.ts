@@ -86,6 +86,9 @@ let _retryCount = 0
 const _MAX_RETRIES = 5
 let _sseUrl = '/api/events'
 
+/** 累计收到的畸形 SSE 事件数（作为可观测性计数器，由诊断工具读取）。 */
+let _malformedEventCount = 0
+
 /**
  * 配置 SSE 端点 URL（在建立连接前调用）。
  * 默认值为 '/api/events'。
@@ -138,7 +141,14 @@ function _addEsListener(es: EventSource, eventType: string): void {
           cb(data)
         }
       }
-    } catch { /* ignore malformed events */ }
+    } catch (err) {
+      _malformedEventCount += 1
+      console.warn('[SSE] 丢弃畸形事件', {
+        eventType,
+        totalMalformed: _malformedEventCount,
+        error: (err as Error).message,
+      })
+    }
   }) as EventListener)
 }
 

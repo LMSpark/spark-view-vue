@@ -137,7 +137,6 @@ export interface PropEntry {
    * 来源于 JSDoc `@componentRef xxx`；与 schemaRef 互补（结构由 schemaRef 提供）。
    */
   componentRef?: string
-  schema?: PropSchema
 }
 
 export type PropSchema =
@@ -160,8 +159,6 @@ export interface EmitEntry {
   type?: string
   description?: string
   schemaRefs?: string[]
-  schema?: PropSchema[]
-  payload?: Array<{ name: string; type: string }>
 }
 
 

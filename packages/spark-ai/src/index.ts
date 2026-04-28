@@ -75,7 +75,7 @@ export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRE
 export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'
 
 // ── Shared Constants ─────────────────────────────────────────────────────────
-export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './business/project-planning/validation/shared-constants'
+export { HTML_TYPES, VALID_TYPE_PREFIXES } from './business/project-planning/validation/shared-constants'
 
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
 export { NAV_PLANNER_SYSTEM_PROMPT } from './business/project-planning/nav-planner-prompt'

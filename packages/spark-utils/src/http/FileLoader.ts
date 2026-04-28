@@ -610,7 +610,13 @@ export class FileLoader {
             storage.removeItem(key)
             cleaned++
           }
-        } catch { /* 损坏的缓存直接删除 */ storage.removeItem(key) }
+        } catch (err) {
+          logger.warn('缓存项损坏，已从本地存储驱逐', {
+            key,
+            error: toErrorMessage(err),
+          })
+          storage.removeItem(key)
+        }
       }
     }
 

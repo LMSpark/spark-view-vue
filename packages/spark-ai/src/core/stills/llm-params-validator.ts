@@ -11,8 +11,8 @@
  * ────────
  * 1. 叶子 schema 是"面向 LLM 的可读描述字符串"，而非完整类型系统。
  *    校验采用保守启发式，只拦明显错误，不过度解释描述文本。
- * 2. 对象/数组使用显式 DSL（kind: 'object' | 'array'）以支持递归嵌套。
- *    简写对象（{ field: 'desc' }）会被自动提升，保持 catalog 可读性。
+ * 2. 对象/数组/枚举的 IR 与归一化逻辑统一在 `./schema-ir` 维护，
+ *    本模块只消费它们，不再重复声明类型守卫与规则表。
  * 3. 通配键（<keyName>）和 additionalProperties 用于"键名动态、值类型固定"场景。
  * 4. 校验结果按 path 定位问题，方便 LLM 定点修复，而非整体拒绝。
  *
@@ -20,66 +20,35 @@
  * ────────
  *  一、公共类型定义           — 对外导出的 schema 与结果接口
  *  二、内部类型与规则常量      — 模块私有的推断规则与上下文类型
- *  三、基础工具函数            — 类型守卫 / 文本规则辅助
- *  四、Schema 归一化与问题收集  — schema 标准化与 issue 追加
- *  五、叶子规则推断与基础值校验  — 描述型叶子到类型期望的映射
- *  六、对象/数组节点校验        — 递归主逻辑（含通配键、additionalProperties）
- *  七、入口辅助               — root 层必填合并与 oneOf 检查
- *  八、对外入口与输出格式化    — 公开 API 函数
+ *  三、叶子规则推断与基础值校验  — 描述型叶子到类型期望的映射
+ *  四、对象/数组节点校验        — 递归主逻辑（含通配键、additionalProperties）
+ *  五、入口辅助               — root 层必填合并与 oneOf 检查
+ *  六、对外入口与输出格式化    — 公开 API 函数
  */
+
+import {
+  type ArrayItemKind,
+  type LlmParamArraySchema,
+  type LlmParamEnumSchema,
+  type LlmParamObjectSchema,
+  isArraySchema,
+  isEnumSchema,
+  isObjectSchema,
+  isPlainRecord,
+  isWildcardKey,
+  normalizeSchemaNode,
+  parseLeafDescription,
+} from './schema-ir'
 
 // =========================================================
 // 一、公共类型定义（对外可见）
 // =========================================================
 
-/**
- * 显式对象 schema 节点。
- *
- * - required            : 必传字段名列表，不在列表中的字段皆视为可选。
- * - properties          : 必传字段的 schema 定义（key → schema）。
- * - optional            : 可选字段的 schema 定义；值存在时才递归校验，不存在不报错。
- * - additionalProperties: 声明范围外的额外字段统一走此 schema 递归校验；
- *                         设置时未声明字段合法，不设置且层不允许未知键时报错。
- * - note                : 附加说明文本，仅供 LLM 参考，不参与校验逻辑。
- */
-export interface LlmParamObjectSchema {
-  kind: 'object'
-  required?: readonly string[]
-  properties?: Record<string, unknown>
-  optional?: Record<string, unknown>
-  additionalProperties?: unknown
-  note?: string
-}
-
-/**
- * 显式数组 schema 节点。
- *
- * - items: 数组元素的统一 schema；若省略则只校验是否为数组，不校验元素内容。
- * - note : 附加说明文本，不参与校验逻辑。
- */
-export interface LlmParamArraySchema {
-  kind: 'array'
-  items?: unknown
-  note?: string
-}
-
-/**
- * 开放枚举 schema 节点。
- *
- * - enum     : 推荐值字典；当 openEnded = false 时同时作为硬校验集合。
- * - type     : 基础类型，当前常用 string，也可扩展到 number。
- * - nullable : 是否允许传 null。
- * - openEnded: 是否允许传入 enum 之外的同类型自定义值。
- * - note     : 附加说明文本，仅供 LLM 参考，不参与校验逻辑。
- */
-export interface LlmParamEnumSchema {
-  kind: 'enum'
-  enum: ReadonlyArray<string | number>
-  type?: 'string' | 'number'
-  nullable?: boolean
-  openEnded?: boolean
-  note?: string
-}
+export type {
+  LlmParamObjectSchema,
+  LlmParamArraySchema,
+  LlmParamEnumSchema,
+} from './schema-ir'
 
 /**
  * 单条校验问题。
@@ -127,45 +96,8 @@ type ValidationContext = {
   allowUnknownKeys: boolean
 }
 
-/**
- * 叶子描述能推断出的所有基础类型，包含特殊值 'unknown'。
- *
- * 'unknown' 仅表示 schema 显式声明为 unknown；
- * 不再作为“无法推断时的默认兜底放行”。
- */
-type ExpectedKind = 'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'
-
-/**
- * 单条"描述 → 类型"推断规则。
- *
- * - description: 规则的中文说明（与规则本体同源，减少注释漂移风险）。
- * - kind       : 命中后推断的目标类型。
- * - predicate  : 对归一化（toLowerCase）后的描述字符串判断是否命中。
- */
-type KindRule = {
-  description: string
-  kind: Exclude<ExpectedKind, 'unknown'>
-  predicate: (normalized: string) => boolean
-}
-
-/**
- * 单条"描述 → 数组元素类型"推断规则，用于 primitive array 场景（string[] / number[] / boolean[]）。
- *
- * - description: 规则中文说明。
- * - itemKind   : 命中后期望的数组元素类型。
- * - predicate  : 对归一化描述字符串判断是否命中。
- */
-type ArrayItemKindRule = {
-  description: string
-  itemKind: 'string' | 'number' | 'boolean'
-  predicate: (normalized: string) => boolean
-}
-
 /** primitive 类型的三元联合，用于固定迭代顺序避免输出抖动。 */
 type PrimitiveKind = 'string' | 'number' | 'boolean'
-
-/** 通配键正则：匹配 <任意字符> 形式的 schema 键，如 <customViewId>。 */
-const WILDCARD_KEY_PATTERN = /^<.+>$/u
 
 /** 嵌套对象/数组层始终使用严格上下文（禁止未知键）。 */
 const NESTED_CONTEXT: ValidationContext = { allowUnknownKeys: false }
@@ -179,73 +111,9 @@ const NESTED_CONTEXT: ValidationContext = { allowUnknownKeys: false }
 const OMITTED_FIELD_HINTS = ['应省略', '不要传函数'] as const
 
 /**
- * 描述 → 期望类型的推断规则表。
- *
- * 规则按优先级排列：array / object 在前，防止后续 primitive 分支误判。
- * 规则之间不互斥，一条描述可同时命中多条（如 string|number 混合描述）。
- */
-const EXPECTED_KIND_RULES: readonly KindRule[] = [
-  {
-    description: '命中数组特征（[] 或 array<...>）',
-    kind: 'array',
-    predicate: normalized => normalized.includes('[]') || normalized.includes('array<'),
-  },
-  {
-    description: '命中对象特征（record / 对象 / FilterExpression / { 开头）',
-    kind: 'object',
-    predicate: normalized =>
-      normalized.includes('record<')
-      || normalized.includes('对象')
-      || normalized.includes('filterexpression')
-      || normalized.startsWith('{'),
-  },
-  {
-    description: '命中字符串特征（string 或字面量引号）',
-    kind: 'string',
-    predicate: normalized => normalized.includes('string') || normalized.includes('"'),
-  },
-  {
-    description: '命中数字特征（number）',
-    kind: 'number',
-    predicate: normalized => normalized.includes('number'),
-  },
-  {
-    description: '命中布尔特征（boolean）',
-    kind: 'boolean',
-    predicate: normalized => normalized.includes('boolean'),
-  },
-]
-
-/**
- * 描述 → 数组元素类型的推断规则表。
- *
- * 仅针对"基础类型数组"（string[] / number[] / boolean[]）做推断，
- * 复杂元素类型（对象数组）由 items schema 的递归校验处理。
- */
-const ARRAY_ITEM_KIND_RULES: readonly ArrayItemKindRule[] = [
-  {
-    description: '数组元素应为字符串（string[]）',
-    itemKind: 'string',
-    predicate: normalized => normalized.includes('string[]'),
-  },
-  {
-    description: '数组元素应为数字（number[]）',
-    itemKind: 'number',
-    predicate: normalized => normalized.includes('number[]'),
-  },
-  {
-    description: '数组元素应为布尔值（boolean[]）',
-    itemKind: 'boolean',
-    predicate: normalized => normalized.includes('boolean[]'),
-  },
-]
-
-/**
  * 数组元素类型不匹配时的错误文案映射。
- *
- * 与 ARRAY_ITEM_KIND_RULES 配合使用，避免在循环中重复拼接条件分支。
  */
-const ARRAY_ITEM_KIND_MISMATCH_MESSAGE: Readonly<Record<ArrayItemKindRule['itemKind'], string>> = {
+const ARRAY_ITEM_KIND_MISMATCH_MESSAGE: Readonly<Record<PrimitiveKind, string>> = {
   string: '应为字符串',
   number: '应为数字',
   boolean: '应为布尔值',
@@ -261,9 +129,6 @@ const PRIMITIVE_KIND_ORDER: readonly PrimitiveKind[] = ['string', 'number', 'boo
 
 /**
  * primitive 类型的运行时判断函数映射。
- *
- * 与 PRIMITIVE_KIND_ORDER 配合，统一管理每种 primitive 的判断逻辑，
- * 便于后续扩展（如新增 bigint 支持）时只改此处。
  */
 const PRIMITIVE_KIND_CHECKERS: Readonly<Record<PrimitiveKind, (value: unknown) => boolean>> = {
   string: value => typeof value === 'string',
@@ -272,134 +137,38 @@ const PRIMITIVE_KIND_CHECKERS: Readonly<Record<PrimitiveKind, (value: unknown) =
 }
 
 // =========================================================
-// 三、基础工具函数（类型守卫 / 文本规则辅助）
+// 三、问题收集辅助
 // =========================================================
-
-/**
- * 判断 schema 键名是否为通配键（<keyName> 形式）。
- *
- * 通配键用于"对象键名动态、但值的结构固定"场景，
- * 如 `<customViewId>` 表示任意视图 id 对应的 schema 结构。
- */
-function isWildcardKey(key: string): boolean {
-  return WILDCARD_KEY_PATTERN.test(key)
-}
-
-/**
- * 类型守卫：判断值是否为普通对象（非 null、非数组）。
- *
- * 用于区分 JSON 对象与其他类型，JSON 数组、null、primitive 均不满足。
- */
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-/**
- * 类型守卫：判断值是否为显式对象 schema 节点（kind === 'object'）。
- *
- * 用于区分"显式 DSL"与"简写对象"，简写对象由 normalizeSchemaNode 提升后才满足此判断。
- */
-function isObjectSchema(value: unknown): value is LlmParamObjectSchema {
-  return isPlainRecord(value) && value['kind'] === 'object'
-}
-
-/** 类型守卫：判断值是否为显式数组 schema 节点（kind === 'array'）。 */
-function isArraySchema(value: unknown): value is LlmParamArraySchema {
-  return isPlainRecord(value) && value['kind'] === 'array'
-}
-
-/** 类型守卫：判断值是否为显式开放枚举 schema 节点（kind === 'enum'）。 */
-function isEnumSchema(value: unknown): value is LlmParamEnumSchema {
-  return isPlainRecord(value) && value['kind'] === 'enum' && Array.isArray(value['enum'])
-}
-
-// =========================================================
-// 四、Schema 归一化与问题收集
-// =========================================================
-
-/**
- * 将任意 schema 节点归一化为标准形态。
- *
- * 兼容四种写法：
- *  1. 叶子字符串：直接返回，表示"面向 LLM 的描述字符串"，由叶子校验函数处理。
- *  2. 显式 DSL：{ kind: 'object' | 'array', ... } 直接返回，不再包装。
- *  3. 简写对象：{ fieldA: 'desc', ... } → 自动提升为 object schema（properties = 原对象）。
- *     这让 catalog 维护者可以用更紧凑的格式书写浅层 schema。
- *  4. 其他（null / 数字等无法识别的值）：返回 'unknown'，校验器放行。
- */
-function normalizeSchemaNode(schema: unknown): unknown {
-  if (typeof schema === 'string') return schema
-  if (isObjectSchema(schema) || isArraySchema(schema) || isEnumSchema(schema)) return schema
-  if (isPlainRecord(schema)) {
-    return {
-      kind: 'object',
-      properties: schema,
-    } satisfies LlmParamObjectSchema
-  }
-  return 'unknown'
-}
 
 /**
  * 向问题列表追加一条问题。
  *
  * 统一通过此函数追加，方便后续在此插入截断、去重或日志逻辑。
+ * 类型守卫（isPlainRecord / isObjectSchema / isArraySchema / isEnumSchema /
+ * isWildcardKey）与 normalizeSchemaNode 由 ./schema-ir 单一持有，本模块仅消费。
  */
 function pushIssue(issues: LlmParamValidationIssue[], path: string, message: string): void {
   issues.push({ path, message })
 }
 
 // =========================================================
-// 五、叶子规则推断与基础值校验
+// 四、叶子值基础校验
 // =========================================================
-
-/**
- * 从叶子描述字符串推断出期望的基础类型集合。
- *
- * 推断策略（严格模式）：
- *  1. 若描述含 'unknown' → 直接返回 {unknown}，校验器放行该字段。
- *  2. 遍历 EXPECTED_KIND_RULES，命中则加入期望集合（多条可同时命中）。
- *  3. 若无命中 → 返回空集合，由调用方按“schema 描述不合法”报错。
- *
- * 设计原则：参数 schema 是 SSoT，描述必须表达明确类型；不再做猜测式兜底。
- */
-function inferExpectedKinds(description: string): Set<'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'> {
-  const normalized = description.toLowerCase()
-  const expected = new Set<ExpectedKind>()
-
-  // 快速路径：明确声明 unknown 的字段直接放行。
-  if (normalized.includes('unknown')) {
-    expected.add('unknown')
-    return expected
-  }
-
-  // 逐条规则匹配，把描述文本映射到基础类型集合。
-  for (const rule of EXPECTED_KIND_RULES) {
-    if (rule.predicate(normalized)) {
-      expected.add(rule.kind)
-    }
-  }
-
-  return expected
-}
 
 /**
  * 对 primitive 类型的数组元素做基础类型校验（string[] / number[] / boolean[]）。
  *
  * 只做类型兜底，不做深层语义判断（如数值范围、字符串格式等），
  * 这类语义约束应由更上层调用方自行处理。
- * 若描述未命中任何元素类型规则则跳过（视为放行）。
+ * 元素类型由 parseLeafDescription 解析得到，本函数仅按 itemKind 做 typeof 判断。
  */
 function validatePrimitiveArrayItems(
   value: unknown[],
-  description: string,
+  itemKind: ArrayItemKind | undefined,
   path: string,
   issues: LlmParamValidationIssue[],
 ): void {
-  const normalized = description.toLowerCase()
-  const matchedRule = ARRAY_ITEM_KIND_RULES.find(rule => rule.predicate(normalized))
-  if (matchedRule === undefined) return
-
-  const { itemKind } = matchedRule
+  if (itemKind === undefined) return
   const mismatchMessage = ARRAY_ITEM_KIND_MISMATCH_MESSAGE[itemKind]
 
   for (const [index, item] of value.entries()) {
@@ -415,11 +184,11 @@ function validatePrimitiveArrayItems(
  *
  * 本函数只处理"描述型叶子"能表达的有限约束：
  *  1. 禁传字段检查（运行时字段 / 函数字段）。
- *  2. null 允许性（描述中含 'null' 则允许传 null）。
- *  3. 基础类型检查（通过 inferExpectedKinds 推断后验证）。
+ *  2. null 允许性（parsed.allowsNull）。
+ *  3. 基础类型检查（parsed.expectedKinds + parsed.arrayItemKind）。
  *
- * 复杂嵌套结构（对象/数组）交给 object/array schema 节点处理；
- * 当描述同时命中 array 特征时，会进一步调用 validatePrimitiveArrayItems。
+ * 描述解析统一委托 `parseLeafDescription`（schema-ir 单一事实源），
+ * 复杂嵌套结构（对象/数组）交给 object/array schema 节点处理。
  */
 function validateLeafSchema(
   value: unknown,
@@ -435,14 +204,16 @@ function validateLeafSchema(
     return
   }
 
-  // null 处理：描述中含 'null' 则允许传 null，否则报错。
+  const parsed = parseLeafDescription(description)
+
+  // null 处理：parsed.allowsNull 为 true 则放行，否则报错。
   if (value === null) {
-    if (description.toLowerCase().includes('null')) return
+    if (parsed.allowsNull) return
     pushIssue(issues, path, '不能为 null')
     return
   }
 
-  const expected = inferExpectedKinds(description)
+  const expected = parsed.expectedKinds
   // 'unknown' 仅代表 schema 显式声明 unknown，放行所有值。
   if (expected.has('unknown')) return
 
@@ -458,7 +229,7 @@ function validateLeafSchema(
       return
     }
     // 进一步尝试 primitive 元素类型校验（string[] / number[] / boolean[]）。
-    validatePrimitiveArrayItems(value, description, path, issues)
+    validatePrimitiveArrayItems(value, parsed.arrayItemKind, path, issues)
     return
   }
 

@@ -14,9 +14,7 @@ import {
   registerDomain,
   getDomain,
   clearDomains,
-  type CreateSessionOptions,
 } from '../core/stills/domain'
-import { createStillsSession } from '../catalog/stills-session'
 import {
   stillsCapabilities,
   stillsActionSpec,
@@ -81,9 +79,7 @@ export type {
 
 export { noGuard, requireBlueprint, readSessionBlueprint, writeSessionBlueprint }
 
-export function createSession(options?: CreateSessionOptions): IStillSession {
-  return createStillsSession(options)
-}
+export { createSession } from '../catalog/stills-session'
 
 export { registerDomain, getDomain, clearDomains }
 export { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery, catalogGuide, interactionAsk }

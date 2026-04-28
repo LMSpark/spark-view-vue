@@ -25,6 +25,10 @@ export { toErrorMessage, toError } from './error-utils'
 
 export { SANDBOX_BLOCKED_KEYS, createSafeProxy } from './sandbox'
 
+// ==================== 克隆工具 ====================
+
+export { deepClone } from './clone'
+
 // ==================== SSE 事件总线 ====================
 export {
   ServerEventType,

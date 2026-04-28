@@ -3,7 +3,7 @@
  */
 
 import { runStillsLoop } from '../../core/orchestration/session-orchestrator'
-import { createStillsSession } from '../../catalog/stills-session'
+import { createSession } from '../../catalog/stills-session'
 import {
   createOrchestratorConfig,
   type OrchestratorConfigFactoryOptions,
@@ -80,7 +80,7 @@ export async function startAiOrchestration(options: BootstrapOptions): Promise<O
     session,
   } = options
 
-  const runtimeSession = session ?? createStillsSession()
+  const runtimeSession = session ?? createSession()
   const configOptions = buildConfigOptions(options)
   const config = createOrchestratorConfig(configOptions)
   const result = await runStillsLoop(userPrompt, runtimeSession, backend, config)

@@ -1,3 +1,5 @@
+import { deepClone } from '@spark-view/spark-utils'
+
 import type { IDataSet, IDataSetMetadata } from './types'
 
 const DEFAULT_HISTORY_NAMESPACE = 'spark:data-history'
@@ -62,10 +64,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
-}
-
-function cloneJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T
 }
 
 function compareEntriesByNewest(left: DataSetHistorySnapshot, right: DataSetHistorySnapshot): number {
@@ -226,8 +224,8 @@ function writeEnvelope(key: string, adapter: DataSetHistoryStorageAdapter, envel
 
 function toSnapshot(dataSetOrSnapshot: IDataSet | IDataSetMetadata): IDataSetMetadata {
   return 'toJson' in dataSetOrSnapshot
-    ? cloneJson(dataSetOrSnapshot.toJson())
-    : cloneJson(dataSetOrSnapshot)
+    ? deepClone(dataSetOrSnapshot.toJson())
+    : deepClone(dataSetOrSnapshot)
 }
 
 function getLatestVersion(entries: DataSetHistorySnapshot[]): number {
@@ -352,7 +350,7 @@ export function commitDataSetSnapshot(
     ...(options?.label ? { label: options.label } : {}),
     ...(options?.summary ? { summary: options.summary } : {}),
     snapshot,
-    ...(options?.sourceData ? { sourceData: cloneJson(options.sourceData) } : {}),
+    ...(options?.sourceData ? { sourceData: deepClone(options.sourceData) } : {}),
   }
 
   writeEnvelope(key, adapter, appendEntryToEnvelope(workingEnvelope, entry))

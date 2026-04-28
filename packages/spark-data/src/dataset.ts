@@ -11,6 +11,9 @@ import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
+import { deepClone, Logger } from '@spark-view/spark-utils'
+
+const dsLogger = Logger('DataSet')
 import {
   commitDataSetSnapshot,
   getDataSetSnapshot,
@@ -523,9 +526,7 @@ export class DataSet implements IDataSet {
       const defaultView = table.getView('default')
       if (defaultView?.autoLoad && defaultView.requestState === RequestState.Idle) {
         defaultView.requestData().catch((err: unknown) => {
-          if (import.meta.env.DEV) {
-            console.warn(`[DataSet] autoLoad 请求失败: ${table.tableName}`, err)
-          }
+          dsLogger.warn(`autoLoad 请求失败: ${table.tableName}`, err)
         })
       }
     }
@@ -698,7 +699,7 @@ export class DataSet implements IDataSet {
       ...(options?.label ? { label: options.label } : {}),
       ...(options?.summary ? { summary: options.summary } : {}),
       snapshot: this.toJson(),
-      ...(options?.sourceData ? { sourceData: JSON.parse(JSON.stringify(options.sourceData)) as Record<string, unknown> } : {}),
+      ...(options?.sourceData ? { sourceData: deepClone(options.sourceData) } : {}),
     }
   }
 

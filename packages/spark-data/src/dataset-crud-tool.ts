@@ -1,5 +1,5 @@
 import { DataSet } from './dataset'
-import { SnapshotHistory } from '@spark-view/spark-utils'
+import { SnapshotHistory, deepClone } from '@spark-view/spark-utils'
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'
 import type {
@@ -388,7 +388,7 @@ export class DataSetCrudTool {
     if (!newColumnName) throw new Error('renameColumn: newColumnName 不能为空')
     if (columnName === newColumnName) return this.getTableOrThrow(tableName)
 
-    const snapshot = JSON.parse(JSON.stringify(this.toJson())) as IDataSetMetadata
+    const snapshot = deepClone(this.toJson())
     const table = snapshot.tables[tableName]
     if (!table) throw new Error(`renameColumn: table ${tableName} 不存在`)
     if (table.columns.some((column) => column.name === newColumnName)) {
@@ -565,7 +565,7 @@ export class DataSetCrudTool {
     if (!newTableName) throw new Error('renameTable: newTableName 不能为空')
     if (tableName === newTableName) return this.getTableOrThrow(tableName)
 
-    const snapshot = JSON.parse(JSON.stringify(this.toJson())) as IDataSetMetadata
+    const snapshot = deepClone(this.toJson())
     const table = snapshot.tables[tableName]
     if (!table) throw new Error(`renameTable: table ${tableName} 不存在`)
     if (snapshot.tables[newTableName]) {

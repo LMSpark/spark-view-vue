@@ -26,7 +26,7 @@ const shared = vi.hoisted(() => {
   }
 })
 
-vi.mock('../packages/spark-ai/src/core/stills/domain', () => ({
+vi.mock('../packages/spark-ai/src/catalog/stills-session', () => ({
   createSession: shared.createSession,
 }))
 

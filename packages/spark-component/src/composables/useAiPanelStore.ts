@@ -16,7 +16,10 @@
  *   基础设施职责：消费 config，完成持久化、响应式透传、生命周期管理。
  */
 import { computed, ref, shallowRef, toValue, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue'
+import { Logger } from '@spark-view/spark-utils'
 import type { AiChatSender, AiFcErrorReporter } from './useAiChat'
+
+const logger = Logger('AiPanel')
 
 /** 工具调用日志（透传给 AiChatWidget 的 externalToolLogs）。 */
 export interface AiSessionToolLog {
@@ -269,8 +272,8 @@ function emit<K extends AiSessionEventName>(event: K, payload: AiSessionEventMap
     try {
       hook(payload)
     } catch (err) {
-      // 通知式 handler 不应中断主流程；写到 console 以便定位。
-      console.error(`[AiPanel] hook "${event}" threw`, err)
+      // 通知式 handler 不应中断主流程；写入 logger 以便诊断。
+      logger.error(`hook "${event}" threw`, err)
     }
   }
   // 命令式订阅
@@ -280,7 +283,7 @@ function emit<K extends AiSessionEventName>(event: K, payload: AiSessionEventMap
     try {
       h(payload)
     } catch (err) {
-      console.error(`[AiPanel] listener for "${event}" threw`, err)
+      logger.error(`listener for "${event}" threw`, err)
     }
   }
 }

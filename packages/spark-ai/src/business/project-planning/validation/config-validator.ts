@@ -63,7 +63,8 @@ type ValidationInputs = {
 
 type RenderContext = 'table' | 'form' | 'detail' | 'list' | 'tree'
 
-import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES, CONTAINER_CONTEXT_MAP, NON_FIELD_R_TYPES } from './shared-constants'
+import { HTML_TYPES, VALID_TYPE_PREFIXES, CONTAINER_CONTEXT_MAP, NON_FIELD_R_TYPES } from './shared-constants'
+import { parseDataKey } from '@spark-view/spark-data'
 
 const EMPTY_SUMMARY: ConfigValidationSummary = {
   total: 0,
@@ -161,15 +162,6 @@ function isLikelyComponentType(typeName: string): boolean {
   if (HTML_TYPES.has(typeName)) return true
   if (VALID_TYPE_PREFIXES.some(prefix => typeName.startsWith(prefix))) return true
   return /^[a-z][a-z0-9-]*$/u.test(typeName) && typeName.includes('-')
-}
-
-function parseDataKeyTable(dataKey: string): { tableName: string | null; crossPage: boolean } | null {
-  if (!DATAKEY_RE.test(dataKey)) return null
-  const parts = dataKey.split('@')
-  if (parts[0]?.startsWith('#')) {
-    return { tableName: parts[1] ?? null, crossPage: true }
-  }
-  return { tableName: parts[0] ?? null, crossPage: false }
 }
 
 function addIfNonEmpty(target: Set<string>, value: unknown): void {
@@ -408,9 +400,9 @@ function validateNodeTypeAndContainer(
   const dataKey = node['dataKey']
   if (typeof dataKey !== 'string') return
 
-  const parsed = parseDataKeyTable(dataKey)
+  const parsed = parseDataKey(dataKey)
   const tableName = parsed?.tableName
-  if (tableName === null || tableName === undefined) return
+  if (tableName === undefined) return
 
   context.tableDataKeys.set(tableName, path)
   const props = asRecord(node['props'])
@@ -427,7 +419,7 @@ function validateNodeDataKey(
   const dataKey = node['dataKey']
   if (typeof dataKey !== 'string') return
 
-  const parsed = parseDataKeyTable(dataKey)
+  const parsed = parseDataKey(dataKey)
   if (!parsed) {
     pushIssue(
       context.issues,
@@ -440,7 +432,7 @@ function validateNodeDataKey(
     return
   }
 
-  if (!parsed.crossPage && parsed.tableName !== null && context.tableNames.size > 0 && !context.tableNames.has(parsed.tableName)) {
+  if (!parsed.crossPage && context.tableNames.size > 0 && !context.tableNames.has(parsed.tableName)) {
     pushIssue(
       context.issues,
       'dataKey',
@@ -451,7 +443,7 @@ function validateNodeDataKey(
     )
   }
 
-  if (parsed.tableName !== null && dataKey.includes('@currentRow')) {
+  if (dataKey.includes('@currentRow')) {
     context.tablesUsingCurrentRow.add(parsed.tableName)
   }
 }

@@ -232,7 +232,10 @@ export interface PropEntry {
    * - `componentRef` 提供语义（AI 可据此识别这是一个子组件槽位）。
    */
   componentRef?: string
-  /** @deprecated 旧格式兼容 — 优先使用 schemaRef */
+  /**
+   * Build-time 中间字段：VCM 提取阶段写入，随后由 generator `compactProps`
+   * 转换为 `schemaRef` （并汇入 catalog.schemaPool）。**不会出现在落盘 catalog 中**。
+   */
   schema?: PropSchema
 }
 
@@ -244,9 +247,14 @@ export interface EmitEntry {
   description?: string
   /** schema 池引用 key 列表（首选） */
   schemaRefs?: string[]
-  /** @deprecated 旧格式兼容 — 优先使用 schemaRefs */
+  /**
+   * Build-time 中间字段：VCM 提取阶段写入，随后由 generator `compactEmits`
+   * 转换为 `schemaRefs` 并汇入 catalog.schemaPool。**不会出现在落盘 catalog 中**。
+   */
   schema?: PropSchema[]
-  /** @deprecated 旧格式兼容 — 优先使用 type + schema */
+  /**
+   * Build-time 中间字段：仅在提取阶段被赋值，不会落盘。如需事件载荷语义，使用 schemaRefs。
+   */
   payload?: Array<{ name: string; type: string }>
 }
 

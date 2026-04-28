@@ -10,6 +10,7 @@
  *   保证手工编辑与 AI 编辑共享同一模型、同一 undo 链。
  */
 import { ref, reactive, computed } from 'vue'
+import { deepClone } from '@spark-view/spark-utils'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
 import type { EditToolHost } from '@spark-view/spark-ai'
@@ -1279,9 +1280,6 @@ export function useDevState() {
     markNavDirty()
     addStatus('已填充模块上下文演示数据', 'info')
   }
-
-  // ── 工具 ──
-  function deepClone<T>(obj: T): T { return JSON.parse(JSON.stringify(obj)) as T }
 
   // ═══════════════════════════════════════════════════════════
   // 初始化

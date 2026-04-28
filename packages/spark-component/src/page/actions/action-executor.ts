@@ -25,9 +25,12 @@ import type {
 
 import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
+import { Logger } from '@spark-view/spark-utils'
 import type { PageMessageType } from '../../core/capability-system.js'
 import { extractActionExecutionControl } from './action-control'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
+
+const logger = Logger('action-executor')
 
 // ── 视图查找辅助 ──────────────────────────────────────────────────────────
 
@@ -196,9 +199,7 @@ export async function executeActionDescriptor(
       executeOpen(descriptor)
       break
     default:
-      if (import.meta.env.DEV) {
-        console.warn(`[action-executor] 未知 action 类型: ${action}`)
-      }
+      logger.warn(`未知 action 类型: ${action}`)
       return
   }
 

@@ -319,9 +319,7 @@ export function buildPageService(
     },
 
     showLoading: (_show, _text) => {
-      if (import.meta.env.DEV) {
-        console.warn('[PageRenderer] showLoading 尚未接入全局加载遮罩服务')
-      }
+      pageLogger.warn('showLoading 尚未接入全局加载遮罩服务')
     },
 
     navigate: (path, params) => {

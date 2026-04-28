@@ -14,8 +14,8 @@
  */
 
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
-import { existsSync, unlinkSync, writeFileSync } from 'node:fs'
-import { dirname, resolve, basename } from 'node:path'
+import { writeFileSync } from 'node:fs'
+import { resolve, basename } from 'node:path'
 import { globSync } from 'glob'
 import { getOrCreateChecker, extractComponentApiVcm } from './extract-component-api-vcm'
 import type { VcmCheckerOptions } from './extract-component-api-vcm'
@@ -42,6 +42,7 @@ import { auditCatalog, logAuditReport } from './catalog-quality-audit'
 import type { AuditReport, AuditOptions } from './catalog-quality-audit'
 
 import { nestedSchemaCollector } from './nested-schema-collector'
+import { deepClone } from '@spark-view/spark-utils'
 // ── 2. 常量与生成约束 (Constants & Policies) ───────────────────────────────────────
 
 /** 统一日志前缀，方便从构建日志里快速筛出目录生成阶段输出。 */
@@ -49,8 +50,6 @@ const logger = createLogger('spark-catalog-json')
 
 /** 组件目录标准产物文件名。 */
 const CANONICAL_CATALOG_FILE = 'component-catalog.json'
-/** 历史遗留的目录产物文件，生成完成后需要清理，避免出现双产物歧义。 */
-const LEGACY_CATALOG_FILES = ['component-catalog.ai.json'] as const
 
 // ── 3. 外部参数与内部工作上下文 (Options & Internal Contexts) ────────────────────
 
@@ -81,21 +80,6 @@ export interface JsonCatalogOptions {
  */
 export function getCanonicalCatalogOutputPath(root: string): string {
   return resolve(root, 'packages/spark-ai/src/catalog', CANONICAL_CATALOG_FILE)
-}
-
-/**
- * 清理已废弃的旧目录产物，避免同目录下出现多个看似都能消费的 catalog 文件。
- */
-export function cleanupLegacyCatalogOutputs(canonicalPath: string): void {
-  const catalogDir = dirname(canonicalPath)
-
-  for (const legacyFileName of LEGACY_CATALOG_FILES) {
-    const legacyPath = resolve(catalogDir, legacyFileName)
-    if (!existsSync(legacyPath)) continue
-
-    unlinkSync(legacyPath)
-    logger.info(`🧹 已清理旧目录产物: ${legacyFileName}`)
-  }
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -578,7 +562,7 @@ function toCanonicalComponent(
  * 这样既保留运行态信息，又维持落盘 JSON 的稳定与紧凑。
  */
 function createCatalogFilePayload(catalog: ComponentCatalog): unknown {
-  const payload = JSON.parse(JSON.stringify(catalog)) as {
+  const payload = deepClone(catalog) as unknown as {
     components?: Record<string, Record<string, unknown>>
     canonical?: { components?: Record<string, Record<string, unknown>> }
   }
@@ -773,7 +757,6 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
 
   const outPath = getCanonicalCatalogOutputPath(root)
   writeFileSync(outPath, JSON.stringify(filePayload, null, 2), 'utf-8')
-  cleanupLegacyCatalogOutputs(outPath)
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
 
   // 质量审计属于后置能力：目录本身先生成，再决定是否做结构质量分析。

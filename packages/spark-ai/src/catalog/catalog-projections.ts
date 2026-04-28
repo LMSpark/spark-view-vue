@@ -800,7 +800,6 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
 
   const eventGuide = entry.emits.map((emit) => ({
     name: emit.name,
-    ...(emit.payload !== undefined ? { payload: emit.payload } : {}),
     ...(emit.description !== undefined ? { description: emit.description } : {}),
   }))
 

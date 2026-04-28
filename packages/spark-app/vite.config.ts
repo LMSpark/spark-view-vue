@@ -18,7 +18,6 @@ export default defineConfig({
         preserveModulesRoot: 'src',
         dir: 'dist',
         entryFileNames: '[name].js',
-        generatedCode: { constBindings: true },
       },
     },
   },
