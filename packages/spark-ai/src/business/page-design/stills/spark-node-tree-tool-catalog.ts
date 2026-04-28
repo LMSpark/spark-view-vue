@@ -66,7 +66,7 @@ const NODE_PARAM = {
   required: ['type'],
   properties: {
     type: 'string — 组件类型',
-    id: 'string? — 历史兼容字段；推荐放在 props.id',
+    id: 'string? — 节点 id；也可在 props.id 提供稳定节点 id',
     props: 'Record<string, unknown> ? — 节点属性（推荐在 props.id 提供稳定节点 id）',
     children: {
       kind: 'array',
@@ -327,7 +327,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.addNode',
     target: 'children',
     coreMethod: 'addNode',
-    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 queryComponentCatalog 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
+    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 catalog.guide 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
     paramsSchema: {
       kind: 'object',
       required: ['node'],
@@ -528,7 +528,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.replaceNode',
     target: 'node',
     coreMethod: 'replaceNode',
-    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 queryComponentCatalog 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
+    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 catalog.guide 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: {
       componentId: COMPONENT_ID_PARAM,
       node: NODE_PARAM,

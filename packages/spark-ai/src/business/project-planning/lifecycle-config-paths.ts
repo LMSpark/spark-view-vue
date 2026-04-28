@@ -70,9 +70,9 @@ export const BUSINESS_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
     },
     {
       key: 'orchestration.followup-policy-default',
-      target: 'business/project-planning/business-follow-up-policy.ts#createDefaultFollowUpPolicy',
+      target: 'core/session/default-follow-up-policy.ts#createDefaultFollowUpPolicy',
       configureWith: 'createDefaultFollowUpPolicy()',
-      description: '业务层通用反馈策略实现（原 core 中的默认逻辑）。',
+      description: '核心层通用反馈策略实现。',
     },
     {
       key: 'orchestration.followup-policy-business',

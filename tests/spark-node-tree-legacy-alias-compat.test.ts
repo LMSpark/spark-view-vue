@@ -97,7 +97,7 @@ describe('sparkNodeTree legacy alias compatibility', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap', bootstrapPayload)
+    const init = exec('edit.bootstrap')
     expect(init.ok).toBe(true)
 
     expectInvalidAlias(exec('sparkNodeTree.getNode', { nodeId: 'root-table' }), 'nodeId')

@@ -8,7 +8,7 @@ import { createExportCompletionMonitor } from './export-completion-monitor'
 import {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from './repeat-detection-monitor'
+} from '../../core/session/repeat-detection-monitor'
 import type { SessionMonitor } from '../../core/session/session-contracts'
 import {
   DEFAULT_ORCHESTRATION_SCENARIO,

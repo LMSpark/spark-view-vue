@@ -19,14 +19,6 @@ function execGuide(params: unknown): StillResult {
   return executeStill('catalog.guide', params, session, 'catalog-guide-strict')
 }
 
-function execLegacyCatalog(params: unknown): StillResult {
-  return executeStill('queryComponentCatalog', params, session, 'query-component-catalog-strict')
-}
-
-function execLegacyGuide(params: unknown): StillResult {
-  return executeStill('queryComponentGuide', params, session, 'query-component-guide-strict')
-}
-
 beforeEach(() => {
   clearDomains()
   clearRegistry()
@@ -54,27 +46,26 @@ describe('catalog.query — Component Directory', () => {
     expect(data['category']).toBe('field')
   })
 
-  it('normalizes wrapped layout category to container', () => {
+  it('rejects wrapped or aliased categories', () => {
     const result = execQuery({ category: { category: 'layout' } })
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
+    expect(result.ok).toBe(false)
+    if (result.ok) return
 
-    const data = result.data as Record<string, unknown>
-    expect(data['category']).toBe('container')
-    expect(typeof data['count']).toBe('number')
+    expect(result.code).toBe('INVALID_PARAMS')
   })
 
-  it('supports legacy queryComponentCatalog full list and component guide params', () => {
-    const full = execLegacyCatalog({ componentType: '*' })
-    expect(full.ok).toBe(true)
-    if (!full.ok) return
-    expect((full.data as Record<string, unknown>)['total']).toBeTypeOf('number')
+  it('rejects removed type/componentType shortcuts', () => {
+    const byType = execQuery({ type: 'r-table' })
+    expect(byType.ok).toBe(false)
+    if (!byType.ok) {
+      expect(byType.code).toBe('INVALID_PARAMS')
+    }
 
-    const guide = execLegacyCatalog({ componentType: 'r-table' })
-    expect(guide.ok).toBe(true)
-    if (!guide.ok) return
-    expect((guide.data as Record<string, unknown>)['type']).toBe('r-table')
-    expect(Array.isArray((guide.data as Record<string, unknown>)['optionalProps'])).toBe(true)
+    const byComponentType = execQuery({ componentType: 'r-table' })
+    expect(byComponentType.ok).toBe(false)
+    if (!byComponentType.ok) {
+      expect(byComponentType.code).toBe('INVALID_PARAMS')
+    }
   })
 
   it('fails fast when session catalog is missing', () => {
@@ -117,13 +108,21 @@ describe('catalog.guide — Component Config Guide', () => {
     expect(result.code).toBe('INVALID_PARAMS')
   })
 
-  it('supports legacy queryComponentGuide componentType params', () => {
-    const result = execLegacyGuide({ componentType: 'r-table' })
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
+  it('rejects removed componentType params', () => {
+    const result = execGuide({ componentType: 'r-table' })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
 
-    const data = result.data as Record<string, unknown>
-    expect(data['type']).toBe('r-table')
-    expect(Array.isArray(data['failFastChecks'])).toBe(true)
+    expect(result.code).toBe('INVALID_PARAMS')
+  })
+
+  it('does not register removed component query actions', () => {
+    const catalog = executeStill('queryComponentCatalog', {}, session, 'removed-catalog-action')
+    expect(catalog.ok).toBe(false)
+    if (!catalog.ok) expect(catalog.code).toBe('UNKNOWN_ACTION')
+
+    const guide = executeStill('queryComponentGuide', { type: 'r-table' }, session, 'removed-guide-action')
+    expect(guide.ok).toBe(false)
+    if (!guide.ok) expect(guide.code).toBe('UNKNOWN_ACTION')
   })
 })

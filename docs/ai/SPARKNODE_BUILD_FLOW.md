@@ -47,9 +47,9 @@
 
 ### 第 1 步：查询组件列表
 
-**调用入口**：`queryComponentCatalog('*')` 或 `catalog.query({})`  
-**响应来源**：`catalog-projections.ts → projectComponentDirectory()`  
-**响应结构**：`FcDirectoryPayload`  
+**调用入口**：`catalog.query({})`
+**响应来源**：`catalog-projections.ts → projectComponentDirectory()`
+**响应结构**：`FcDirectoryPayload`
 **包含内容**：
 
 - `registry` — 按分类列出全部组件 type（`containers / fields / groups / meta`）
@@ -79,9 +79,9 @@ A = 'r-table'
 
 ### 第 3 步：查询 A 的配置规格
 
-**调用入口**：`queryComponentGuide('r-table')` 或 `catalog.guide({ type: 'r-table' })`  
-**响应来源**：`catalog-projections.ts → projectComponentConfigGuide() / projectComponentSpec()`  
-**响应结构**：`FcComponentConfigGuide` / `FcComponentSpec`  
+**调用入口**：`catalog.guide({ type: 'r-table' })`
+**响应来源**：`catalog-projections.ts → projectComponentConfigGuide() / projectComponentSpec()`
+**响应结构**：`FcComponentConfigGuide` / `FcComponentSpec`
 **包含内容**：
 
 - `requiredProps` — 必填属性列表（含类型、描述）
@@ -95,7 +95,7 @@ A = 'r-table'
 
 **关键源码**：
 - 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectComponentSpec`、`projectComponentConfigGuide`、`projectHydratedComponent`）
-- 查询入口：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery`、`catalogGuide`、`queryComponentCatalog`、`queryComponentGuide`）
+- 查询入口：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery`、`catalogGuide`）
 
 ---
 
@@ -135,9 +135,9 @@ const B: SparkNode = {
 
 ### 第 5 步：调用 SparkNodeTree FC 写入树
 
-**调用入口**：通过 Stills 系统执行 `sparkNodeTree.addNode` / `sparkNodeTree.addNodes` 等动作  
-**执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts)（`EDIT_NODE_TREE_STILLS`）  
-**Catalog 来源**：[packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）  
+**调用入口**：通过 Stills 系统执行 `sparkNodeTree.addNode` / `sparkNodeTree.addNodes` 等动作
+**执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts)（`EDIT_NODE_TREE_STILLS`）
+**Catalog 来源**：[packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）
 **底层 API**：[packages/spark-component/src/core/spark-node-tree.ts](../../../packages/spark-component/src/core/spark-node-tree.ts)（`SparkNodeTree` 类）
 
 典型写入调用示例：

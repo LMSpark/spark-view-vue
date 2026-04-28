@@ -49,8 +49,8 @@ export const STILLS_DATASET_DOMAIN = `
         · 字段可见性与控件类型
         · 工具栏按钮
       【UI 组装强制 SOP】：
-        1. 必定先通过 queryComponentCatalog('*') 查询并掌握所有可用组件及其分类。
-        2. 决定使用某个组件前，必定通过 queryComponentGuide(type) 查阅它的完整规格（props schema 和规则）。
+        1. 必定先通过 catalog.query({}) 查询并掌握所有可用组件及其分类。
+        2. 决定使用某个组件前，必定通过 catalog.guide({ type }) 查阅它的完整规格（props schema 和规则）。
         3. 依据上一步获得的规格组装出合法的 SparkNode 实例后，再调用 sparkNodeTree.addNode 等。绝对禁止凭猜测构造 props。
       此阶段数据已确定，问题数量少且聚焦，几轮即可完成。
       完成标志：rule.json 写入成功
@@ -227,7 +227,7 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
   - 只有在 countNodes=1 且 listChildren(parentComponentId:null) 返回 0 个子节点时，才可认定 rule.json 为空；否则禁止输出“无页面结构/空页面”结论
 
   按目标文件选择动作：
-  - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 queryComponentCatalog('*')，选定 type 后再 queryComponentGuide(type)；调整已有节点位置优先用 sparkNodeTree.moveNode，禁止用 removeNode + addNode 重建整段子树
+  - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 catalog.query({})，选定 type 后再 catalog.guide({ type })；调整已有节点位置优先用 sparkNodeTree.moveNode，禁止用 removeNode + addNode 重建整段子树
     ⚠ componentId 规则（违反则工具返回 null，造成死循环）：
       • componentId / parentComponentId 必须是节点的真实 id 值
         （即 listChildren 返回 SparkNode 中的顶层 id 字段或 props.id 字段）

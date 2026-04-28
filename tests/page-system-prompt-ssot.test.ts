@@ -14,8 +14,8 @@ describe('page-system-prompt SSoT', () => {
     expect(prompt).not.toContain('queryActionSpec')
     expect(prompt).not.toMatch(/SparkNode\.[A-Za-z]/u)
     expect(prompt).toContain('stills.actionSpec')
-    expect(prompt).toContain('queryComponentCatalog')
-    expect(prompt).toContain('queryComponentGuide')
+    expect(prompt).toContain('catalog.query')
+    expect(prompt).toContain('catalog.guide')
   })
 
   it('keeps current AI guides on catalog.query/catalog.guide instead of deleted SparkNode component entries', () => {

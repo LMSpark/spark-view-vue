@@ -12,13 +12,54 @@
  * 我们测试其接口契约和类型安全性，而非实际 HTTP 调用。
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   createSessionBackend,
   SessionBackendImpl,
   type SessionBackend,
   type LlmResponse,
 } from '@spark-view/spark-ai'
+
+const {
+  mockPost,
+  mockGet,
+  mockDelete,
+  mockStreamSSE,
+  mockRequestUse,
+} = vi.hoisted(() => ({
+  mockPost: vi.fn(),
+  mockGet: vi.fn(),
+  mockDelete: vi.fn(),
+  mockStreamSSE: vi.fn(),
+  mockRequestUse: vi.fn(),
+}))
+
+vi.mock('@spark-view/spark-utils', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('@spark-view/spark-utils')
+  return {
+    ...actual,
+    createRequest: () => ({
+      post: mockPost,
+      get: mockGet,
+      delete: mockDelete,
+      interceptors: {
+        request: { use: mockRequestUse },
+        response: { use: vi.fn() },
+      },
+    }),
+    createFetchClient: () => ({
+      streamSSE: mockStreamSSE,
+    }),
+  }
+})
+
+beforeEach(() => {
+  mockPost.mockReset()
+  mockGet.mockReset()
+  mockDelete.mockReset()
+  mockStreamSSE.mockReset()
+  mockRequestUse.mockReset()
+})
 
 describe('SessionBackendImpl', () => {
   describe('interface compliance', () => {
@@ -73,6 +114,14 @@ describe('SessionBackendImpl', () => {
     it('appendMessages signature should be callable', () => {
       const fn: SessionBackend['appendMessages'] = backend.appendMessages.bind(backend)
       expect(typeof fn).toBe('function')
+    })
+
+    it('executeTurn fails fast when SSE endpoint is unavailable', async () => {
+      mockStreamSSE.mockRejectedValue({ status: 404, message: 'stream route missing' })
+
+      await expect(backend.executeTurn('session-1')).rejects.toThrow('HTTP 404')
+      expect(mockStreamSSE).toHaveBeenCalledOnce()
+      expect(mockPost).not.toHaveBeenCalled()
     })
   })
 })

@@ -119,42 +119,10 @@ export class SessionBackendImpl implements SessionBackend {
     options: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void } = {},
   ): Promise<LlmResponse | null> {
     try {
-      // 优先走 SSE 通道，确保与后端 /turn/stream 流式协议一致。
       return await this.executeTurnViaSse(sessionId, options)
     } catch (err) {
       const detail = toBackendErrorMessage(err)
-
-      // 仅在 SSE 端点缺失/方法不允许时回退到非流式接口，避免掩盖真实 LLM 错误。
-      const canFallback = detail.includes('HTTP 404')
-        || detail.includes('HTTP 405')
-        || detail.includes('INVALID_STREAM_ENDPOINT')
-
-      if (canFallback) {
-        log.warn('SSE turn unavailable, fallback to non-stream turn:', detail)
-        return await this.executeTurnViaHttp(sessionId, options.signal)
-      }
-
       log.error('executeTurn failed:', detail, err)
-      throw new Error(`会话轮次调用失败: ${detail}`)
-    }
-  }
-
-  private async executeTurnViaHttp(sessionId: string, signal?: AbortSignal): Promise<LlmResponse> {
-    try {
-      const resp = await this.http.post<{
-        text: string
-        reasoning?: string
-        toolCalls?: ToolCall[]
-      }>(`${this.baseUrl}/${sessionId}/turn`, {
-        protocolVersion: 3,
-      }, signal ? { signal } : undefined)
-
-      const result: LlmResponse = { text: resp.text }
-      if (resp.reasoning !== undefined) result.reasoning = resp.reasoning
-      if (resp.toolCalls !== undefined) result.toolCalls = resp.toolCalls
-      return result
-    } catch (err) {
-      const detail = toBackendErrorMessage(err)
       throw new Error(`会话轮次调用失败: ${detail}`)
     }
   }

@@ -6,7 +6,7 @@ const TEXT_MODEL_WRITE_ACTIONS = new Set<string>([
   'textModel.writeStyle',
 ])
 
-const LEGACY_DATASET_AGGREGATE_WRITE_ACTIONS = new Set<string>([
+const HIDDEN_DATASET_AGGREGATE_WRITE_ACTIONS = new Set<string>([
   'datasetTool.addAggregate',
   'datasetTool.updateAggregate',
   'datasetTool.removeAggregate',
@@ -20,7 +20,7 @@ const NODE_TREE_WRITE_ACTIONS = new Set<string>(
 
 const DATASET_WRITE_ACTIONS = new Set<string>(
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE
-    .filter((row) => row.type === 'request' && !LEGACY_DATASET_AGGREGATE_WRITE_ACTIONS.has(row.action))
+    .filter((row) => row.type === 'request' && !HIDDEN_DATASET_AGGREGATE_WRITE_ACTIONS.has(row.action))
     .map((row) => row.action),
 )
 

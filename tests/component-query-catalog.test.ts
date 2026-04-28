@@ -165,6 +165,32 @@ describe('catalog-projections', () => {
     expect(projectComponentSpec(makeCatalog(), 'missing')).toBeNull()
   })
 
+  it('projectComponentSpec fails fast for legacy schemaRef component prefix', () => {
+    const base = makeCatalog()
+    const catalog: ComponentCatalog = {
+      ...base,
+      componentCount: base.componentCount + 1,
+      components: {
+        ...base.components,
+        'r-legacy': makeEntry({
+          type: 'r-legacy',
+          category: 'field',
+          description: 'legacy schemaRef field',
+          props: [
+            {
+              name: 'legacyConfig',
+              type: 'object',
+              required: false,
+              schemaRef: 'component:r-text',
+            },
+          ],
+        }),
+      },
+    }
+
+    expect(() => projectComponentSpec(catalog, 'r-legacy')).toThrow(/legacy schemaRef "component:\*" 已移除/u)
+  })
+
   it('projectComponentConfigGuide returns normalized guide for known component', () => {
     const guide = projectComponentConfigGuide(makeCatalog(), 'r-table')
     expect(guide).not.toBeNull()

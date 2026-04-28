@@ -109,12 +109,10 @@ export interface LlmParamValidationResult {
  * - requiredKeys           : 额外追加的必填字段名列表，与 schema.required 合并后统一校验。
  * - oneOfRequiredKeyGroups : 多组互斥 required 组合；至少满足其中一组即通过。
  *                            例：[['selector'], ['parentTable', 'childTable']]
- * - allowUnknownRootKeys   : 根层是否允许存在未声明的字段（默认 false = 严格模式）。
  */
 export interface LlmParamValidationOptions {
   requiredKeys?: readonly string[]
   oneOfRequiredKeyGroups?: ReadonlyArray<readonly string[]>
-  allowUnknownRootKeys?: boolean
 }
 
 // =========================================================
@@ -123,8 +121,6 @@ export interface LlmParamValidationOptions {
 
 /**
  * 对象层校验上下文，跨层传递不可变的策略参数。
- *
- * 根层通过 options.allowUnknownRootKeys 控制，嵌套层始终使用严格模式（false）。
  */
 type ValidationContext = {
   /** 当前对象层是否允许存在未声明字段。 */
@@ -134,7 +130,8 @@ type ValidationContext = {
 /**
  * 叶子描述能推断出的所有基础类型，包含特殊值 'unknown'。
  *
- * 'unknown' 表示无法从描述文本中推断出具体类型，校验器对该字段放行。
+ * 'unknown' 仅表示 schema 显式声明为 unknown；
+ * 不再作为“无法推断时的默认兜底放行”。
  */
 type ExpectedKind = 'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'
 
@@ -172,14 +169,6 @@ const WILDCARD_KEY_PATTERN = /^<.+>$/u
 
 /** 嵌套对象/数组层始终使用严格上下文（禁止未知键）。 */
 const NESTED_CONTEXT: ValidationContext = { allowUnknownKeys: false }
-
-/**
- * 字符串类型的 fallback 提示词列表。
- *
- * 当描述文本未命中任何明确类型规则时，若包含这些提示词之一，
- * 则推断为 string 类型（宽松兜底，避免误报）。
- */
-const STRING_FALLBACK_HINTS = ['typeresource', 'type', 'category', 'dependencytype'] as const
 
 /**
  * 禁传字段的提示词列表。
@@ -366,13 +355,12 @@ function pushIssue(issues: LlmParamValidationIssue[], path: string, message: str
 /**
  * 从叶子描述字符串推断出期望的基础类型集合。
  *
- * 推断策略（保守启发式）：
+ * 推断策略（严格模式）：
  *  1. 若描述含 'unknown' → 直接返回 {unknown}，校验器放行该字段。
  *  2. 遍历 EXPECTED_KIND_RULES，命中则加入期望集合（多条可同时命中）。
- *  3. 若无命中但含 STRING_FALLBACK_HINTS → 宽松兜底为 string。
- *  4. 若仍无命中 → 返回 {unknown}，放行。
+ *  3. 若无命中 → 返回空集合，由调用方按“schema 描述不合法”报错。
  *
- * 设计原则：宁可放行也不误报，避免把"说明文本"过度解释成强约束。
+ * 设计原则：参数 schema 是 SSoT，描述必须表达明确类型；不再做猜测式兜底。
  */
 function inferExpectedKinds(description: string): Set<'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'> {
   const normalized = description.toLowerCase()
@@ -389,16 +377,6 @@ function inferExpectedKinds(description: string): Set<'string' | 'number' | 'boo
     if (rule.predicate(normalized)) {
       expected.add(rule.kind)
     }
-  }
-
-  // fallback 1：含特定提示词时推断为 string（宽松兜底）。
-  if (expected.size === 0 && STRING_FALLBACK_HINTS.some(hint => normalized.includes(hint))) {
-    expected.add('string')
-  }
-
-  // fallback 2：无法推断时放行，避免误报。
-  if (expected.size === 0) {
-    expected.add('unknown')
   }
 
   return expected
@@ -465,8 +443,13 @@ function validateLeafSchema(
   }
 
   const expected = inferExpectedKinds(description)
-  // 'unknown' 表示无法推断类型，放行所有值。
+  // 'unknown' 仅代表 schema 显式声明 unknown，放行所有值。
   if (expected.has('unknown')) return
+
+  if (expected.size === 0) {
+    pushIssue(issues, path, 'schema 描述缺少可识别类型，请显式标注 string/number/boolean/array/object 或 unknown')
+    return
+  }
 
   // array / object 优先检查，避免后续 primitive 分支对复合类型误判。
   if (expected.has('array')) {
@@ -772,9 +755,7 @@ export function validateLlmDeserializedParams(
     ],
   }
 
-  validateObjectSchema(params, mergedRootSchema, '$', issues, {
-    allowUnknownKeys: options.allowUnknownRootKeys ?? false,
-  })
+  validateObjectSchema(params, mergedRootSchema, '$', issues, NESTED_CONTEXT)
 
   validateOneOfRequiredGroups(params, options.oneOfRequiredKeyGroups ?? [], issues)
 

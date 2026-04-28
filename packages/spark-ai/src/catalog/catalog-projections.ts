@@ -24,7 +24,6 @@ import type {
   EmitEntry,
   PropEntry,
   PropSchema,
-  PropSchemaProperty,
   RootFieldEntry,
 } from './types'
 import type { StillsCatalog, StillsComponentEntry } from './stills-catalog-types'
@@ -146,7 +145,7 @@ export interface ComponentConfigGuide {
    * LLM 在提交配置前应逐条对照，验证生成的 SparkNode 是否满足约束。
    */
   failFastChecks: string[]
-  /** 由 props.schemaRef=component:* 推导出的子组件说明（用于补齐容器组合链路） */
+  /** 由 props.componentRef 推导出的子组件说明（用于补齐容器组合链路） */
   subComponentGuides?: Array<{
     type: string
     fromProps: string[]
@@ -159,20 +158,12 @@ export interface ComponentConfigGuide {
   }>
 }
 
-function parseComponentRef(schemaRef?: string): string | null {
-  if (typeof schemaRef !== 'string') return null
-  if (!schemaRef.startsWith('component:')) return null
-  const refType = schemaRef.slice('component:'.length).trim()
-  return refType.length > 0 ? refType : null
-}
-
 function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: string; fromProps: string[] }> {
   const refs = new Map<string, Set<string>>()
   for (const prop of entry.props) {
-    // 首选：prop.componentRef（VCM schema 展开后 @componentRef 作为独立语义标签）
-    // 兜底：prop.schemaRef 的旧 `component:xxx` 形式（无结构 schema 时使用）
-    const refType = prop.componentRef ?? parseComponentRef(prop.schemaRef)
-    if (refType === null) continue
+    // 仅允许使用 componentRef 作为子组件引用来源；不再兼容 schemaRef=component:*。
+    const refType = prop.componentRef
+    if (typeof refType !== 'string') continue
     const normalized = refType.trim()
     if (normalized.length === 0) continue
     if (!refs.has(normalized)) refs.set(normalized, new Set<string>())
@@ -529,33 +520,13 @@ function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEnt
 function resolvePropSchema(
   catalog: ComponentCatalog,
   prop: PropEntry,
-  visited: Set<string> = new Set(),
 ): PropSchema | undefined {
   if (prop.schemaRef === undefined) return undefined
 
-  // "component:X" 引用：从 catalog.components[X].props 递归展开为 object schema
   if (prop.schemaRef.startsWith('component:')) {
-    const componentType = prop.schemaRef.slice('component:'.length)
-    // 防环：已访问过的组件类型不再递归
-    if (visited.has(componentType)) return undefined
-    const referencedEntry = catalog.components[componentType]
-    if (referencedEntry !== undefined) {
-      const nextVisited = new Set(visited)
-      nextVisited.add(componentType)
-      const properties: Record<string, PropSchemaProperty> = {}
-      for (const refProp of referencedEntry.props) {
-        const nestedSchema = resolvePropSchema(catalog, refProp, nextVisited)
-        properties[refProp.name] = {
-          name: refProp.name,
-          type: refProp.type,
-          ...(refProp.required ? { required: refProp.required } : {}),
-          ...(refProp.description !== undefined ? { description: refProp.description } : {}),
-          ...(nestedSchema !== undefined ? { schema: nestedSchema } : {}),
-        }
-      }
-      return { kind: 'object', type: componentType, properties }
-    }
-    return undefined
+    throw new Error(
+      `legacy schemaRef "component:*" 已移除，请改用 componentRef + schemaPool 对象结构（prop=${prop.name}, schemaRef=${prop.schemaRef}）`,
+    )
   }
 
   return catalog.schemaPool?.[prop.schemaRef]
@@ -660,7 +631,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
 }
 
 /**
- * AI FC 投影：提炼单组件能力核心规格（适用于 catalog.guide / queryComponentGuide）。
+ * AI FC 投影：提炼单组件能力核心规格（适用于 catalog.guide）。
  *
  * 输出精简的 FcComponentSpec，仅保留 LLM 构造 SparkNode 所需的最小信息：
  * type / category / description / props（含必填标记）/ emits（含描述）。

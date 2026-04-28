@@ -123,6 +123,42 @@ describe('validateLlmDeserializedParams', () => {
     expect(result.ok).toBe(true)
     expect(result.issues).toHaveLength(0)
   })
+
+  it('fails fast when leaf schema description has no recognizable type', () => {
+    const result = validateLlmDeserializedParams(
+      {
+        foo: 'bar',
+      },
+      {
+        foo: '字段说明（缺少类型标注）',
+      },
+      {
+        requiredKeys: ['foo'],
+      },
+    )
+
+    expect(result.ok).toBe(false)
+    expect(formatLlmParamValidationIssues(result.issues)).toContain('schema 描述缺少可识别类型')
+  })
+
+  it('keeps explicit unknown leaf schema pass-through', () => {
+    const result = validateLlmDeserializedParams(
+      {
+        payload: {
+          anything: true,
+        },
+      },
+      {
+        payload: 'unknown — 明确声明由上层自行处理',
+      },
+      {
+        requiredKeys: ['payload'],
+      },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.issues).toHaveLength(0)
+  })
 })
 
 describe('validateDataSetCrudToolStillParams', () => {

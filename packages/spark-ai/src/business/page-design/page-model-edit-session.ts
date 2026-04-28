@@ -24,34 +24,6 @@ import {
   type PageModelStillsSession,
 } from './page-model-session-host'
 
-const FALLBACK_TOOL_WRITE_SET = new Set<string>([
-  'sparkNodeTree.addNode',
-  'sparkNodeTree.addNodes',
-  'sparkNodeTree.moveNode',
-  'sparkNodeTree.setProps',
-  'sparkNodeTree.setPropsBatch',
-  'sparkNodeTree.replaceNode',
-  'sparkNodeTree.replaceNodes',
-  'sparkNodeTree.removeNode',
-  'sparkNodeTree.removeNodes',
-  'datasetTool.createTable',
-  'datasetTool.createTables',
-  'datasetTool.updateTable',
-  'datasetTool.removeTable',
-  'datasetTool.createColumn',
-  'datasetTool.updateColumn',
-  'datasetTool.removeColumn',
-  'datasetTool.setTableMeta',
-  'datasetTool.setColumnMeta',
-  'datasetTool.upsertTableMeta',
-  'datasetTool.upsertColumnMeta',
-  'datasetTool.writePagedata',
-  'datasetTool.replaceAll',
-  'datasetTool.syncDataSet',
-  'textModel.writeScript',
-  'textModel.writeStyle',
-])
-
 export interface PageModelEditLogEntry {
   type: 'info' | 'success' | 'error'
   tag: string
@@ -91,9 +63,9 @@ export interface PageModelEditSessionRuntime {
   STILLS_EDIT_RUNTIME_PROMPT: string
   getEditState: typeof getEditState
   getActiveNodeTree: typeof getActiveNodeTree
-  isEditWriteAction?: (value: string) => boolean
-  isEditNodeTreeWriteAction?: (value: string) => boolean
-  isEditDataSetWriteAction?: (value: string) => boolean
+  isEditWriteAction: (value: string) => boolean
+  isEditNodeTreeWriteAction: (value: string) => boolean
+  isEditDataSetWriteAction: (value: string) => boolean
 }
 
 export interface PageModelEditSessionOptions {
@@ -168,19 +140,15 @@ const DEFAULT_RUNTIME: PageModelEditSessionRuntime = {
 }
 
 function isToolWriteAction(runtime: PageModelEditSessionRuntime, action: string): boolean {
-  return runtime.isEditWriteAction ? runtime.isEditWriteAction(action) : FALLBACK_TOOL_WRITE_SET.has(action)
+  return runtime.isEditWriteAction(action)
 }
 
 function isNodeTreeWriteAction(runtime: PageModelEditSessionRuntime, action: string): boolean {
-  return runtime.isEditNodeTreeWriteAction
-    ? runtime.isEditNodeTreeWriteAction(action)
-    : action.startsWith('sparkNodeTree.') && isToolWriteAction(runtime, action)
+  return runtime.isEditNodeTreeWriteAction(action)
 }
 
 function isDataSetWriteAction(runtime: PageModelEditSessionRuntime, action: string): boolean {
-  return runtime.isEditDataSetWriteAction
-    ? runtime.isEditDataSetWriteAction(action)
-    : action.startsWith('datasetTool.') && isToolWriteAction(runtime, action)
+  return runtime.isEditDataSetWriteAction(action)
 }
 
 function isEmptySseMonitorEvent(event: { type: string; data: string }): boolean {

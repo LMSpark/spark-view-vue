@@ -1,9 +1,0 @@
-export {
-  STILLS_PROTOCOL_BASE,
-  STILLS_DATASET_DOMAIN,
-  STILLS_RUNTIME_PROMPT,
-  STILLS_EDIT_RUNTIME_PROMPT,
-  STILLS_BLUEPRINT_PROMPT,
-} from '../../../core/stills/stills-prompts'
-
-

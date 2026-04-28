@@ -43,9 +43,9 @@ const noArgActions = new Set(
     .map((row) => row.action)
 )
 
-const LEGACY_DATASET_EXPORT_ACTION = 'datasetTool.export'
+const HIDDEN_DATASET_EXPORT_ACTION = 'datasetTool.export'
 
-const LEGACY_DATASET_AGGREGATE_ACTIONS = new Set([
+const HIDDEN_DATASET_AGGREGATE_ACTIONS = new Set([
   'datasetTool.listAggregates',
   'datasetTool.getAggregate',
   'datasetTool.addAggregate',
@@ -54,7 +54,7 @@ const LEGACY_DATASET_AGGREGATE_ACTIONS = new Set([
 ])
 
 function isEditDatasetStillActionEnabled(action: string): boolean {
-  return action !== LEGACY_DATASET_EXPORT_ACTION && !LEGACY_DATASET_AGGREGATE_ACTIONS.has(action)
+  return action !== HIDDEN_DATASET_EXPORT_ACTION && !HIDDEN_DATASET_AGGREGATE_ACTIONS.has(action)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -96,18 +96,12 @@ function stripLayoutField(data: unknown): unknown {
 /**
  * 对单个 catalog 行执行 still 入参校验。
  *
- * 这里除了复用 catalog 提供的 schema 校验外，还补充编辑模式特有约束：
- * - 禁止调用 datasetTool.export
- *
- * 原因是编辑态直接操作 live model，不再通过“导出动作”把结果回写给宿主。
+ * 这里复用 catalog 提供的 schema 校验；编辑态动作注册范围由 isEditDatasetStillActionEnabled 收口。
  */
 function validateDatasetStillRow(
   row: (typeof DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE)[number],
   params: unknown,
 ): string | null {
-  if (row.action === 'datasetTool.export') {
-    return '编辑模式直接操作 live DataSet，禁止使用 datasetTool.export；请改用 datasetTool.describe/listTables/getTable 等当前态读取动作'
-  }
   return validateDataSetCrudToolStillParams(row.action, params ?? {})
 }
 
@@ -320,40 +314,8 @@ const EDIT_DATASET_STILLS_RAW: StillDefinition[] = DATASET_CRUD_TOOL_STILLS_PARA
   execute: (session: IStillSession, params: unknown) => executeDatasetStillRow(session, row, params),
 } as StillDefinition))
 
-const datasetExportRow = DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.find(
-  (row) => row.action === LEGACY_DATASET_EXPORT_ACTION,
-)
-
-const BLOCKED_LEGACY_DATASET_EXPORT_STILL: StillDefinition | null = datasetExportRow === undefined
-  ? null
-  : {
-    action: LEGACY_DATASET_EXPORT_ACTION,
-    type: 'describe',
-    description: '已禁用：编辑模式不通过导出动作回写 pagedata.json',
-    paramsSchema: {},
-    resultSchema: {},
-    example: {},
-    usageRules: [
-      '编辑模式直接操作 live DataSet，禁止调用 datasetTool.export。',
-      '如需读取当前态，请调用 datasetTool.describe、datasetTool.listTables 或 datasetTool.getTable。',
-    ],
-    validate: () => '编辑模式直接操作 live DataSet，禁止使用 datasetTool.export；请改用当前态读取动作',
-    execute: (): StillResult => ({
-      ok: false,
-      code: 'INVALID_PARAMS',
-      msg: '编辑模式禁止使用 datasetTool.export',
-      fix: '请改用 datasetTool.describe、datasetTool.listTables 或 datasetTool.getTable 读取当前态。',
-    }),
-  }
-
-export const EDIT_DATASET_STILLS_EFFECTIVE: StillDefinition[] = (
-  BLOCKED_LEGACY_DATASET_EXPORT_STILL === null
-    ? EDIT_DATASET_STILLS_RAW.filter((still) => isEditDatasetStillActionEnabled(still.action))
-    : [
-      ...EDIT_DATASET_STILLS_RAW.filter((still) => isEditDatasetStillActionEnabled(still.action)),
-      BLOCKED_LEGACY_DATASET_EXPORT_STILL,
-    ]
-)
+export const EDIT_DATASET_STILLS_EFFECTIVE: StillDefinition[] = EDIT_DATASET_STILLS_RAW
+  .filter((still) => isEditDatasetStillActionEnabled(still.action))
 
 export const EDIT_DATASET_STILLS: StillDefinition[] = EDIT_DATASET_STILLS_EFFECTIVE
 

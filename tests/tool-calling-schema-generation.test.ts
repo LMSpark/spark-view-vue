@@ -141,12 +141,14 @@ describe('tool-calling schema generation', () => {
     }
   })
 
-  it('exposes legacy component query FC names used by prompts', () => {
+  it('exposes only current catalog FC names', () => {
     const functionNames = generateToolDefinitions().map(tool => tool.function.name)
-    expect(functionNames).toContain('queryComponentCatalog')
-    expect(functionNames).toContain('queryComponentGuide')
+    expect(functionNames).toContain('catalog_query')
+    expect(functionNames).toContain('catalog_guide')
+    expect(functionNames).not.toContain('queryComponentCatalog')
+    expect(functionNames).not.toContain('queryComponentGuide')
 
-    expect(functionNameToAction('queryComponentCatalog')).toBe('queryComponentCatalog')
-    expect(functionNameToAction('queryComponentGuide')).toBe('queryComponentGuide')
+    expect(functionNameToAction('catalog_query')).toBe('catalog.query')
+    expect(functionNameToAction('catalog_guide')).toBe('catalog.guide')
   })
 })

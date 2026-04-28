@@ -35,6 +35,7 @@ const DISABLED_EDIT_ACTIONS = [
   'edit.changedLines',
   'edit.exportFiles',
   'dataset.export',
+  'datasetTool.export',
   'datasetTool.listAggregates',
   'datasetTool.getAggregate',
   'datasetTool.addAggregate',
@@ -94,7 +95,7 @@ describe('edit domain fine-grained flow', () => {
     expect(isEditDataSetWriteAction('datasetTool.updateView')).toBe(true)
   })
 
-  it('bootstrap no longer compares payload with the current live model', () => {
+  it('bootstrap rejects file snapshot payloads and uses the current live model', () => {
     seedLiveModel({
       ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
@@ -102,13 +103,19 @@ describe('edit domain fine-grained flow', () => {
       styleCss: '.page {}\n',
     })
 
-    const result = exec('edit.bootstrap', {
+    const snapshotPayload = exec('edit.bootstrap', {
       ruleJson: [],
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
       scriptJs: 'export default {}\n',
       styleCss: '.page {}\n',
     })
+    expect(snapshotPayload.ok).toBe(false)
+    if (!snapshotPayload.ok) {
+      expect(snapshotPayload.code).toBe('INVALID_PARAMS')
+      expect(snapshotPayload.msg).toContain('不再接收文件快照 payload')
+    }
 
+    const result = exec('edit.bootstrap')
     expect(result.ok).toBe(true)
   })
 
@@ -121,7 +128,7 @@ describe('edit domain fine-grained flow', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap', bootstrapPayload)
+    const init = exec('edit.bootstrap')
     expect(init.ok).toBe(true)
 
     const addTable = exec('datasetTool.createTable', {
@@ -136,11 +143,7 @@ describe('edit domain fine-grained flow', () => {
     const scriptWrite = exec('textModel.writeScript', { content: 'export default { immediate: true }\n' })
     expect(scriptWrite.ok).toBe(true)
 
-    const blockedRawExport = exec('datasetTool.export')
-    expect(blockedRawExport.ok).toBe(false)
-    if (!blockedRawExport.ok) {
-      expect(blockedRawExport.code).toBe('INVALID_PARAMS')
-    }
+    expectActionUnavailable('datasetTool.export')
 
     expectActionUnavailable('edit.exportFiles')
     expectActionUnavailable('dataset.changedLines')
@@ -227,12 +230,7 @@ describe('edit domain fine-grained flow', () => {
     style = '.page {}\n'
 
     // 初始化时已经包含表和关系，但没有视图依赖（避免约束冲突）
-    const init = exec('edit.bootstrap', {
-      ruleJson: [],
-      pageDataJson: seededDataSet.toJson(),
-      scriptJs: 'export default {}\n',
-      styleCss: '.page {}\n',
-    })
+    const init = exec('edit.bootstrap')
     expect(init.ok).toBe(true)
 
     // 验证删除关系前 pagedata 包含关系名

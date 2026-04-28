@@ -12,11 +12,9 @@ import {
   createMonitorsForScenario,
   type OrchestrationMonitorFactoryOptions,
 } from './orchestration-monitor-factory'
-import type { RepeatDetectionConfig } from './repeat-detection-monitor'
-import {
-  createDefaultFollowUpPolicy,
-  createBusinessFollowUpPolicy,
-} from './business-follow-up-policy'
+import type { RepeatDetectionConfig } from '../../core/session/repeat-detection-monitor'
+import { createDefaultFollowUpPolicy } from '../../core/session/default-follow-up-policy'
+import { createBusinessFollowUpPolicy } from './business-follow-up-policy'
 import type { ProjectPlanningBusinessContext } from './business-context'
 import {
   DEFAULT_ORCHESTRATION_SCENARIO,

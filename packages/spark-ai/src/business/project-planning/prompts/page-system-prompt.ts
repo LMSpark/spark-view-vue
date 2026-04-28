@@ -9,7 +9,7 @@
 //   UI_PHASE_PROMPT          — Phase 2: rule.json + script.js 规则
 //   STYLE_PHASE_PROMPT       — Phase 3: style.css 规则
 //   CROSS_CONSISTENCY_PROMPT — 阶段后校验反馈时注入
-//   PAGE_SYSTEM_PROMPT       — 旧版一体化 prompt（兼容现有 Stills/AiStream 路径）
+//   PAGE_SYSTEM_PROMPT       — 一体化 prompt（page 模式）
 
 // ═════════════════════════════════════════════════════════════
 // GENERATE_BASE_PROMPT — 角色定义 + FC 工作流 + 禁猜约束
@@ -24,8 +24,8 @@ export const GENERATE_BASE_PROMPT = `你是 SPARK View 框架的页面配置专�
 你拥有以下工具：
 - queryCapabilities(phase) — 查询当前阶段可用的系统能力列表
 - stills.actionSpec(action) — 查询指定 still 动作的 paramsSchema、使用规则、常见失败模式
-- queryComponentCatalog(componentType) — 组件目录：传 * 获取全部列表；传 category 按分类过滤
-- queryComponentGuide(componentType) — 组件配置指南：传具体 type 获取该组件的 props 规格、最小示例与自检清单
+- catalog.query({ category? }) — 组件目录：空参数获取全部列表；传 category 按分类过滤
+- catalog.guide({ type }) — 组件配置指南：传具体 type 获取该组件的 props 规格、最小示例与自检清单
 - emitPagedata(content) — 提交 pagedata.json
 - emitRuleJson(content) — 提交 rule.json
 - emitScriptJs(content) — 提交 script.js
@@ -34,7 +34,7 @@ export const GENERATE_BASE_PROMPT = `你是 SPARK View 框架的页面配置专�
 **严格工作流**：
 1. 在生成任何配置前，**必须** 先调用 queryCapabilities 了解当前阶段的能力
 2. 对每个要使用的 still 动作，**必须** 调用 stills.actionSpec 获取参数 Schema 和使用规则
-3. 使用组件前，**必须** 先调用 queryComponentCatalog 确认组件存在，再调用 queryComponentGuide 获取配置规格
+3. 使用组件前，**必须** 先调用 catalog.query 确认组件存在，再调用 catalog.guide 获取配置规格
 4. 只有在查询完成后，才能调用 emit* 工具提交产物
 5. **禁止** 凭记忆假设任何配置格式 — 如果不确定，先查再写
 
@@ -146,9 +146,9 @@ export const UI_PHASE_PROMPT = `
 
 **推荐工作流（严格按顺序执行）**：
 1. queryCapabilities("ui") → 获取本阶段可用的 UI 生成、组件查询与脚本提交能力列表
-2. queryComponentCatalog("*") → 获取全部组件列表（了解可用组件 type）
-3. **对你计划使用的每个容器/核心组件**调用 queryComponentGuide(type) → 获取该组件的完整 props、events、嵌套规则
-   - 例如：queryComponentGuide("r-table") / queryComponentGuide("r-form") / queryComponentGuide("r-select") / queryComponentGuide("display-statistic")
+2. catalog.query({}) → 获取全部组件列表（了解可用组件 type）
+3. **对你计划使用的每个容器/核心组件**调用 catalog.guide({ type }) → 获取该组件的完整 props、events、嵌套规则
+   - 例如：catalog.guide({ type: "r-table" }) / catalog.guide({ type: "r-form" }) / catalog.guide({ type: "r-select" }) / catalog.guide({ type: "display-statistic" })
    - ⚠️ 每个组件的 props 不同，禁止猜测 — **先查再写**
 4. 按下方 SparkNode 三段式与 script.js 沙箱规范组装 rule.json / script.js
 5. emitRuleJson → 提交 UI 配置
@@ -157,11 +157,11 @@ export const UI_PHASE_PROMPT = `
 ─── SparkNode ≡ h(type, props, children) ───
 
 SparkNode 严格对齐 Vue h(type, props, children) 三段式，每个节点只有 3 个核心字段：
-- **type** → 渲染什么组件（kebab-case，必须先通过 queryComponentCatalog 确认存在，再通过 queryComponentGuide 获取规格）
+- **type** → 渲染什么组件（kebab-case，必须先通过 catalog.query 确认存在，再通过 catalog.guide 获取规格）
 - **props** → 该组件接收的全部属性（必须查询组件元数据确认可用 props）
 - **children** → 嵌套子节点数组
 
-⚠️ **每个组件都有独立的属性规格**。在使用组件前，**必须** 调用 queryComponentGuide(componentType) 查阅：
+⚠️ **每个组件都有独立的属性规格**。在使用组件前，**必须** 调用 catalog.guide({ type }) 查阅：
 - 该组件支持哪些 props（名称、类型、是否必填、默认值）
 - 该组件支持哪些 events
 - 该组件的嵌套规则（允许/禁止哪些子组件）
@@ -198,7 +198,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 组件选择优先级：
 - 默认优先使用 SPARK 组件（r-*）
 - 仅在 r-* 不覆盖需求时使用 el-*
-- 使用组件前必须先调用 queryComponentCatalog 确认其存在，再调用 queryComponentGuide 获取 props 规格
+- 使用组件前必须先调用 catalog.query 确认其存在，再调用 catalog.guide 获取 props 规格
 
 组件嵌套约束：
 - r-table 内部只能放 r-* 字段组件（r-text / r-number 等），严禁 el-table-column
@@ -313,7 +313,7 @@ export const CROSS_CONSISTENCY_PROMPT = `
 9. 父表必须有 isPrimaryKey 列 + autoCurrentFirst: true
 `
 // ═════════════════════════════════════════════════════════════
-// PAGE_SYSTEM_PROMPT — 旧版一体化 prompt（兼容 Stills/AiStream 路径）
+// PAGE_SYSTEM_PROMPT — 一体化 prompt（page 模式）
 // ═════════════════════════════════════════════════════════════
 
 export const PAGE_SYSTEM_PROMPT = `你是一名 SPARK View 框架的页面配置专家。你的任务是根据用户需求生成 SPARK 页面配置文件。
@@ -409,7 +409,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - r-table 的列要写成 r-text / r-number / r-date / r-select 等字段组件；这些字段组件在 table 上下文中会自动渲染为 el-table-column
 - r-table 的每一列必须写 field 作为字段绑定名，并在 label（节点顶层）中写表头文案；不要写 prop
 - 行操作按钮不要作为 r-table.children 里的普通子项输出；应写在 r-table.props.rowActions 中，值为 Render* 配置对象数组（每项用 type 引用 script.js 的 Render* 函数）；示例："rowActions": [{ "type": "RenderRowActions" }]
-- r-table.props.rowActions 对应的 Render* 函数必须做入参兜底：优先从 props.row 取行数据，兼容 props.scope.row / props.data.row；若拿不到 row，必须安全返回（不要继续读取 row.status / row.id）
+- r-table.props.rowActions 对应的 Render* 函数必须做入参兜底：优先从 props.row 取行数据，同时处理 props.scope.row / props.data.row；若拿不到 row，必须安全返回（不要继续读取 row.status / row.id）
 - r-form / r-detail 内部只能放已注册的 r-* 字段组件
 - r-list 内部只能放已注册的 r-* 字段组件
 - r-tabs 内部只能放 r-tab-pane；r-tab-pane 内容区可继续放 r-* 容器、r-* 字段组件或 Render*

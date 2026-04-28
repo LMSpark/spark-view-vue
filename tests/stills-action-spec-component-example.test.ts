@@ -24,14 +24,14 @@ beforeEach(() => {
 })
 
 describe('stills.actionSpec component example', () => {
-  it('rejects component type query and redirects to catalog.query', () => {
+  it('rejects component type query and redirects to catalog.guide', () => {
     const result = exec('stills.actionSpec', { action: 'r-text' })
     expect(result.ok).toBe(false)
     if (result.ok) return
 
     expect(result.code).toBe('COMPONENT_QUERY_REQUIRED')
     expect(result.msg).toContain('组件 type')
-    expect(result.fix).toContain('catalog.query')
+    expect(result.fix).toContain('catalog.guide')
     expect(result.fix).toContain('"type":"r-text"')
   })
 

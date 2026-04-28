@@ -121,12 +121,13 @@ export function bindLiveModelAdapter(state: EditDomainState, host: EditToolHost)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 功能分区一：输入校验
-// 目标：兼容旧调用方仍传对象，但 bootstrap 本身不再依赖 payload 内容。
+// 目标：edit.bootstrap 只负责校验宿主 live adapter，不再接收文件快照 payload。
 // ─────────────────────────────────────────────────────────────────────────────
 
 function validateEditBootstrapPayload(params: unknown): string | null {
   if (params === undefined || params === null) return null
-  if (typeof params !== 'object') return 'edit.bootstrap 参数必须是对象或留空'
+  if (typeof params !== 'object' || Array.isArray(params)) return 'edit.bootstrap 参数必须留空或传 {}'
+  if (Object.keys(params).length > 0) return 'edit.bootstrap 不再接收文件快照 payload，请传 {}'
   return null
 }
 
