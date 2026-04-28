@@ -47,6 +47,7 @@
  */
 import { computed, onMounted, onScopeDispose, ref, toValue, watch, type Ref } from 'vue'
 import * as Icons from '@element-plus/icons-vue'
+import { Logger } from '@spark-view/spark-utils'
 import {
   useAiPanelStore,
   type AiSessionConfig,
@@ -58,6 +59,8 @@ import {
   type AiFeedbackConfig,
 } from '../../composables/useAiPanelStore'
 import type { AiChatSender, AiFcErrorReporter } from '../../composables/useAiChat'
+
+const logger = Logger('AiLauncherButton')
 
 // ── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -273,7 +276,7 @@ async function syncActiveContext(): Promise<void> {
   try {
     await store.sync(sessionConfig)
   } catch (error) {
-    console.error('[AiLauncherButton] 同步 AI 上下文失败', error)
+    logger.error('同步 AI 上下文失败', error)
   } finally {
     syncingContext.value = false
   }
@@ -295,7 +298,7 @@ async function handleClick(): Promise<void> {
   try {
     await store.open(sessionConfig)
   } catch (error) {
-    console.error('[AiLauncherButton] 启动 AI 流程失败', error)
+    logger.error('启动 AI 流程失败', error)
   } finally {
     launching.value = false
   }

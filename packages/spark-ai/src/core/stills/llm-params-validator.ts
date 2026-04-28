@@ -27,7 +27,9 @@
  */
 
 import {
-  type ArrayItemKind,
+  ARRAY_ITEM_KIND_RULES,
+  EXPECTED_KIND_RULES,
+  type ExpectedKind,
   type LlmParamArraySchema,
   type LlmParamEnumSchema,
   type LlmParamObjectSchema,
@@ -37,7 +39,6 @@ import {
   isPlainRecord,
   isWildcardKey,
   normalizeSchemaNode,
-  parseLeafDescription,
 } from './schema-ir'
 
 // =========================================================
@@ -137,38 +138,73 @@ const PRIMITIVE_KIND_CHECKERS: Readonly<Record<PrimitiveKind, (value: unknown) =
 }
 
 // =========================================================
-// 三、问题收集辅助
+// 三、Schema 归一化与问题收集
 // =========================================================
+//
+// 类型守卫与 normalizeSchemaNode 全部从 './schema-ir' 复用（SSoT），
+// 本模块只追加 issue 收集器等校验私有辅助。
 
 /**
  * 向问题列表追加一条问题。
  *
  * 统一通过此函数追加，方便后续在此插入截断、去重或日志逻辑。
- * 类型守卫（isPlainRecord / isObjectSchema / isArraySchema / isEnumSchema /
- * isWildcardKey）与 normalizeSchemaNode 由 ./schema-ir 单一持有，本模块仅消费。
  */
 function pushIssue(issues: LlmParamValidationIssue[], path: string, message: string): void {
   issues.push({ path, message })
 }
 
 // =========================================================
-// 四、叶子值基础校验
+// 五、叶子规则推断与基础值校验
 // =========================================================
+
+/**
+ * 从叶子描述字符串推断出期望的基础类型集合。
+ *
+ * 推断策略（严格模式）：
+ *  1. 若描述含 'unknown' → 直接返回 {unknown}，校验器放行该字段。
+ *  2. 遍历 EXPECTED_KIND_RULES，命中则加入期望集合（多条可同时命中）。
+ *  3. 若无命中 → 返回空集合，由调用方按“schema 描述不合法”报错。
+ *
+ * 设计原则：参数 schema 是 SSoT，描述必须表达明确类型；不再做猜测式兜底。
+ */
+function inferExpectedKinds(description: string): Set<'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'> {
+  const normalized = description.toLowerCase()
+  const expected = new Set<ExpectedKind>()
+
+  // 快速路径：明确声明 unknown 的字段直接放行。
+  if (normalized.includes('unknown')) {
+    expected.add('unknown')
+    return expected
+  }
+
+  // 逐条规则匹配，把描述文本映射到基础类型集合。
+  for (const rule of EXPECTED_KIND_RULES) {
+    if (rule.predicate(normalized)) {
+      expected.add(rule.kind)
+    }
+  }
+
+  return expected
+}
 
 /**
  * 对 primitive 类型的数组元素做基础类型校验（string[] / number[] / boolean[]）。
  *
  * 只做类型兜底，不做深层语义判断（如数值范围、字符串格式等），
  * 这类语义约束应由更上层调用方自行处理。
- * 元素类型由 parseLeafDescription 解析得到，本函数仅按 itemKind 做 typeof 判断。
+ * 若描述未命中任何元素类型规则则跳过（视为放行）。
  */
 function validatePrimitiveArrayItems(
   value: unknown[],
-  itemKind: ArrayItemKind | undefined,
+  description: string,
   path: string,
   issues: LlmParamValidationIssue[],
 ): void {
-  if (itemKind === undefined) return
+  const normalized = description.toLowerCase()
+  const matchedRule = ARRAY_ITEM_KIND_RULES.find(rule => rule.predicate(normalized))
+  if (matchedRule === undefined) return
+
+  const { itemKind } = matchedRule
   const mismatchMessage = ARRAY_ITEM_KIND_MISMATCH_MESSAGE[itemKind]
 
   for (const [index, item] of value.entries()) {
@@ -184,11 +220,11 @@ function validatePrimitiveArrayItems(
  *
  * 本函数只处理"描述型叶子"能表达的有限约束：
  *  1. 禁传字段检查（运行时字段 / 函数字段）。
- *  2. null 允许性（parsed.allowsNull）。
- *  3. 基础类型检查（parsed.expectedKinds + parsed.arrayItemKind）。
+ *  2. null 允许性（描述中含 'null' 则允许传 null）。
+ *  3. 基础类型检查（通过 inferExpectedKinds 推断后验证）。
  *
- * 描述解析统一委托 `parseLeafDescription`（schema-ir 单一事实源），
- * 复杂嵌套结构（对象/数组）交给 object/array schema 节点处理。
+ * 复杂嵌套结构（对象/数组）交给 object/array schema 节点处理；
+ * 当描述同时命中 array 特征时，会进一步调用 validatePrimitiveArrayItems。
  */
 function validateLeafSchema(
   value: unknown,
@@ -204,16 +240,14 @@ function validateLeafSchema(
     return
   }
 
-  const parsed = parseLeafDescription(description)
-
-  // null 处理：parsed.allowsNull 为 true 则放行，否则报错。
+  // null 处理：描述中含 'null' 则允许传 null，否则报错。
   if (value === null) {
-    if (parsed.allowsNull) return
+    if (description.toLowerCase().includes('null')) return
     pushIssue(issues, path, '不能为 null')
     return
   }
 
-  const expected = parsed.expectedKinds
+  const expected = inferExpectedKinds(description)
   // 'unknown' 仅代表 schema 显式声明 unknown，放行所有值。
   if (expected.has('unknown')) return
 
@@ -229,7 +263,7 @@ function validateLeafSchema(
       return
     }
     // 进一步尝试 primitive 元素类型校验（string[] / number[] / boolean[]）。
-    validatePrimitiveArrayItems(value, parsed.arrayItemKind, path, issues)
+    validatePrimitiveArrayItems(value, description, path, issues)
     return
   }
 

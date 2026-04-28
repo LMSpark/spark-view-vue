@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { Logger } from '@spark-view/spark-utils'
 import AiChatShell from './AiChatShell.vue'
 import { useAiChat } from '../../composables/useAiChat'
 import type { AiDraftActionConfig } from '../../composables/useAiPanelStore'
@@ -40,6 +41,8 @@ import type {
   StreamAiChatText,
   TokenUsage,
 } from '../../composables/useAiChat'
+
+const logger = Logger('AiChatWidget')
 
 const props = defineProps<{
   mode?: ChatMode
@@ -192,7 +195,7 @@ async function handleFileChange(e: Event) {
       const attachment = await uploadFile(file)
       pendingFiles.value.push(attachment)
     } catch (err) {
-      console.error('[AiChatWidget] file upload failed', err)
+      logger.error('file upload failed', err)
     }
   }
   target.value = '' // 重置 input
@@ -262,7 +265,7 @@ async function handleTriggerDraftAction(actionId: string): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     appendToolLog({ type: 'error', tag: 'draft-action', text: `${action.label}: ${message}` })
-    console.error('[AiChatWidget] draft action failed', { actionId: action.id, error })
+    logger.error('draft action failed', { actionId: action.id, error })
   } finally {
     draftLoadingActionId.value = null
   }

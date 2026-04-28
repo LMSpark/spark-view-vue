@@ -88,21 +88,24 @@ export type ArrayItemKind = 'string' | 'number' | 'boolean'
  */
 export interface ParsedLeafDescription {
   raw: string
-  description?: string | undefined
+  description?: string
   expectedKinds: ReadonlySet<LeafKind>
-  arrayItemKind?: ArrayItemKind | undefined
+  arrayItemKind?: ArrayItemKind
   allowsNull: boolean
   optional: boolean
 }
 
 // =========================================================
-// 二、内部规则常量（模块私有）
+// 二、规则常量（共享导出）
 // =========================================================
 
 /** 通配键正则：匹配 <任意字符> 形式的 schema 键，如 <customViewId>。 */
-const WILDCARD_KEY_PATTERN = /^<.+>$/u
+export const WILDCARD_KEY_PATTERN = /^<.+>$/u
 
-type KindRule = {
+/** 期望类型推断结果集合元素类型。 */
+export type ExpectedKind = LeafKind
+
+export type KindRule = {
   kind: Exclude<LeafKind, 'unknown'>
   predicate: (normalized: string) => boolean
 }
@@ -113,7 +116,7 @@ type KindRule = {
  * 规则按优先级排列：array / object 在前，防止后续 primitive 分支误判。
  * 规则之间不互斥，一条描述可同时命中多条（如 string|number 混合描述）。
  */
-const EXPECTED_KIND_RULES: readonly KindRule[] = [
+export const EXPECTED_KIND_RULES: readonly KindRule[] = [
   {
     kind: 'array',
     predicate: normalized => normalized.includes('[]') || normalized.includes('array<'),
@@ -140,12 +143,12 @@ const EXPECTED_KIND_RULES: readonly KindRule[] = [
   },
 ]
 
-type ArrayItemKindRule = {
+export type ArrayItemKindRule = {
   itemKind: ArrayItemKind
   predicate: (normalized: string) => boolean
 }
 
-const ARRAY_ITEM_KIND_RULES: readonly ArrayItemKindRule[] = [
+export const ARRAY_ITEM_KIND_RULES: readonly ArrayItemKindRule[] = [
   { itemKind: 'string', predicate: normalized => normalized.includes('string[]') },
   { itemKind: 'number', predicate: normalized => normalized.includes('number[]') },
   { itemKind: 'boolean', predicate: normalized => normalized.includes('boolean[]') },
@@ -229,7 +232,13 @@ export function parseLeafDescription(raw: string): ParsedLeafDescription {
 
   if (normalized.includes('unknown')) {
     expectedKinds.add('unknown')
-    return { raw, description, expectedKinds, allowsNull, optional }
+    return {
+      raw,
+      ...(description !== undefined ? { description } : {}),
+      expectedKinds,
+      allowsNull,
+      optional,
+    }
   }
 
   for (const rule of EXPECTED_KIND_RULES) {
@@ -241,5 +250,12 @@ export function parseLeafDescription(raw: string): ParsedLeafDescription {
     arrayItemKind = ARRAY_ITEM_KIND_RULES.find(rule => rule.predicate(normalized))?.itemKind
   }
 
-  return { raw, description, expectedKinds, arrayItemKind, allowsNull, optional }
+  return {
+    raw,
+    ...(description !== undefined ? { description } : {}),
+    expectedKinds,
+    ...(arrayItemKind !== undefined ? { arrayItemKind } : {}),
+    allowsNull,
+    optional,
+  }
 }
