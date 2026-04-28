@@ -90,7 +90,7 @@ export {
 export {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from './repeat-detection-monitor'
+} from '../../core/session/repeat-detection-monitor'
 
 export {
   createBlueprintOrchestrationMonitor,
@@ -111,11 +111,6 @@ export {
 } from './orchestration-monitor-factory'
 
 export {
-  formatWarningsAsFollowUp,
-  DefaultFollowUpPolicy,
-  createDefaultFollowUpPolicy,
-  formatWarningsAsFollowUpBusiness,
-  BusinessFollowUpPolicy,
   createBusinessFollowUpPolicy,
 } from './business-follow-up-policy'
 

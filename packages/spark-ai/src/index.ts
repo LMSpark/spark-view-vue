@@ -194,17 +194,16 @@ export {
   type OrchestrationScenario,
 } from './business/project-planning'
 
-// ── Business Orchestration（业务层编排配置工厂）─────────────────────────────
+// ── Follow-Up Policy（核心通用 + 业务装饰器）──────────────────────────────
 export {
   formatWarningsAsFollowUp,
   DefaultFollowUpPolicy,
   createDefaultFollowUpPolicy,
+  type FollowUpDecorations,
 } from './core/session/default-follow-up-policy'
 
 // ── Business Orchestration（业务层编排配置工厂）─────────────────────────────
 export {
-  formatWarningsAsFollowUpBusiness,
-  BusinessFollowUpPolicy,
   createBusinessFollowUpPolicy,
   createOrchestratorConfig,
   createGenerateConfig,

@@ -1,6 +1,9 @@
 /**
  * Default Follow-Up Policy — 通用跟进策略
  * Core generic implementation — no business-domain dependencies.
+ *
+ * 通过可选的 FollowUpDecorations 注入纯字符串/纯结构装饰，
+ * 业务层在不引入新策略类的前提下定制提示词内容。
  */
 
 import { getStill } from '../stills/dispatcher'
@@ -11,16 +14,37 @@ import type {
 } from './session-contracts'
 import type { PostValidationWarning } from '../stills/types'
 
-export function formatWarningsAsFollowUp(action: string, warnings: PostValidationWarning[]): string {
+export interface FollowUpDecorations {
+  /** 拼到 [系统后置校验警告] 头部之后的上下文前缀，例如 "[页面名] " */
+  warningContextPrefix?: string
+  /** 拼到 [系统即时纠错] 头部之后的额外行，例如 "\n[当前编排阶段] generate" */
+  errorPhaseLine?: string
+  /** 合并进 actionSpec JSON 的额外字段，例如 { businessHint: '...' } */
+  actionSpecExtras?: Record<string, unknown>
+}
+
+export function formatWarningsAsFollowUp(
+  action: string,
+  warnings: PostValidationWarning[],
+  decorations?: FollowUpDecorations,
+): string {
   const lines = warnings.map(w => {
     const fix = w.fix ? `\n  建议: ${w.fix}` : ''
     return `- [${w.rule}] ${w.detail}${fix}`
   })
-  return `[系统后置校验警告]\n动作 ${action} 执行成功，但存在以下一致性问题：\n${lines.join('\n')}\n请在下一轮优先修复这些问题。`
+  const prefix = decorations?.warningContextPrefix ?? ''
+  const header = prefix ? `[系统后置校验警告] ${prefix}` : '[系统后置校验警告]'
+  return `${header}\n动作 ${action} 执行成功，但存在以下一致性问题：\n${lines.join('\n')}\n请在下一轮优先修复这些问题。`
 }
 
-export function buildInlineActionSpec(action: string, fallbackFix?: string): string {
+export function buildInlineActionSpec(
+  action: string,
+  fallbackFix?: string,
+  decorations?: FollowUpDecorations,
+): string {
   const still = getStill(action)
+  const extras = decorations?.actionSpecExtras ?? {}
+
   if (still === undefined) {
     return JSON.stringify({
       action,
@@ -29,6 +53,7 @@ export function buildInlineActionSpec(action: string, fallbackFix?: string): str
         ? `请直接使用修复建议中的参数格式：${fallbackFix}`
         : '请直接使用上一条修复建议中的参数格式',
       usageRules: ['这是降级 actionSpec；不需要再次调用 stills.actionSpec。'],
+      ...extras,
       example: null,
       failureModes: [],
     }, null, 2)
@@ -39,16 +64,24 @@ export function buildInlineActionSpec(action: string, fallbackFix?: string): str
     type: still.type,
     paramsSchema: still.paramsSchema ?? null,
     usageRules: still.usageRules ?? [],
+    ...extras,
     example: still.example ?? null,
     failureModes: still.failureModes ?? [],
   }, null, 2)
 }
 
-export function buildErrorFollowUp(action: string, code: string, msg: string, fix: string): string {
-  const inlineActionSpec = buildInlineActionSpec(action, fix)
+export function buildErrorFollowUp(
+  action: string,
+  code: string,
+  msg: string,
+  fix: string,
+  decorations?: FollowUpDecorations,
+): string {
+  const inlineActionSpec = buildInlineActionSpec(action, fix, decorations)
+  const phaseLine = decorations?.errorPhaseLine ?? ''
   const actionSpecText = `\n对应动作 actionSpec（已内联，无需再次查询）:\n${inlineActionSpec}`
 
-  return `[系统即时纠错]\n动作 ${action} 执行失败（${code}）。\n错误详情: ${msg}\n修复建议: ${fix}${actionSpecText}\n请直接根据上面的 actionSpec 修正参数并重试，不需要再额外调用 stills.actionSpec；不要重复原错误指令。`
+  return `[系统即时纠错]${phaseLine}\n动作 ${action} 执行失败（${code}）。\n错误详情: ${msg}\n修复建议: ${fix}${actionSpecText}\n请直接根据上面的 actionSpec 修正参数并重试，不需要再额外调用 stills.actionSpec；不要重复原错误指令。`
 }
 
 export function toParamsSignature(params: unknown): string {
@@ -85,34 +118,40 @@ export function countConsecutiveSameFailedSignature(ctx: MonitorContext): number
   return count
 }
 
-function buildEscalatedErrorFollowUp(action: string, failedCount: number): string {
-  const inlineActionSpec = buildInlineActionSpec(action)
+function buildEscalatedErrorFollowUp(
+  action: string,
+  failedCount: number,
+  decorations?: FollowUpDecorations,
+): string {
+  const inlineActionSpec = buildInlineActionSpec(action, undefined, decorations)
   const actionSpecText = `\n对应动作 actionSpec（已内联，无需再次查询）:\n${inlineActionSpec}`
 
   return `[系统升级纠错]\n动作 ${action} 已连续 ${failedCount} 次使用相同参数失败。\n请停止复用失败参数，直接按已内联 actionSpec 重新组装参数后重试。${actionSpecText}`
 }
 
 export class DefaultFollowUpPolicy implements FollowUpPolicy {
+  constructor(private readonly decorations?: FollowUpDecorations) {}
+
   buildFollowUps(ctx: FollowUpBuildContext): string[] {
     const { action, result, monitorCtx } = ctx
     const followUps: string[] = []
 
     if (!result.ok) {
-      followUps.push(buildErrorFollowUp(action, result.code, result.msg, result.fix))
+      followUps.push(buildErrorFollowUp(action, result.code, result.msg, result.fix, this.decorations))
       const failedCount = countConsecutiveSameFailedSignature(monitorCtx)
       if (failedCount >= 2) {
-        followUps.push(buildEscalatedErrorFollowUp(action, failedCount))
+        followUps.push(buildEscalatedErrorFollowUp(action, failedCount, this.decorations))
       }
     }
 
     if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
-      followUps.push(formatWarningsAsFollowUp(action, result.warnings))
+      followUps.push(formatWarningsAsFollowUp(action, result.warnings, this.decorations))
     }
 
     return followUps
   }
 }
 
-export function createDefaultFollowUpPolicy(): FollowUpPolicy {
-  return new DefaultFollowUpPolicy()
+export function createDefaultFollowUpPolicy(decorations?: FollowUpDecorations): FollowUpPolicy {
+  return new DefaultFollowUpPolicy(decorations)
 }

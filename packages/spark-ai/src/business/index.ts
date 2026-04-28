@@ -7,7 +7,7 @@ export {
   STILLS_RUNTIME_PROMPT,
   STILLS_EDIT_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
-} from './project-planning/prompts/stills-prompts'
+} from '../core/stills/stills-prompts'
 export {
   NAV_PLANNER_SYSTEM_PROMPT,
 } from './project-planning/nav-planner-prompt'
@@ -50,11 +50,6 @@ export {
   createMonitorsForScenario,
   createDefaultMonitors,
   type OrchestrationScenario,
-  formatWarningsAsFollowUp,
-  DefaultFollowUpPolicy,
-  createDefaultFollowUpPolicy,
-  formatWarningsAsFollowUpBusiness,
-  BusinessFollowUpPolicy,
   createBusinessFollowUpPolicy,
   createOrchestratorConfig,
   createGenerateConfig,

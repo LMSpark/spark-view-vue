@@ -43,6 +43,7 @@ export {
   toParamsSignature,
   countConsecutiveSameFailedSignature,
 } from './session/default-follow-up-policy'
+export type { FollowUpDecorations } from './session/default-follow-up-policy'
 
 // 4) Orchestration
 export {
