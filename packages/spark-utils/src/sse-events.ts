@@ -7,6 +7,10 @@
  * 职责单一：仅管理 SSE 连接和事件分发，不涉及 AI 逻辑 / 缓存 / 文件操作。
  */
 
+import { Logger } from './logger'
+
+const logger = Logger('SSE')
+
 // ─── 类型定义 ────────────────────────────────────────────────────────────────
 
 /**
@@ -123,9 +127,7 @@ function _ensureConnection(): void {
     _retryCount++
     if (_retryCount > _MAX_RETRIES) {
       _teardown()
-      if (import.meta.env.DEV) {
-        console.warn('[SSE] 已达最大重连次数，停止监听')
-      }
+      logger.warn('已达最大重连次数，停止监听')
     }
   }
 }
@@ -143,7 +145,7 @@ function _addEsListener(es: EventSource, eventType: string): void {
       }
     } catch (err) {
       _malformedEventCount += 1
-      console.warn('[SSE] 丢弃畸形事件', {
+      logger.warn('丢弃畸形事件', {
         eventType,
         totalMalformed: _malformedEventCount,
         error: (err as Error).message,

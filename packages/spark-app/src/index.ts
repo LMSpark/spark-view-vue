@@ -56,8 +56,7 @@ export type {
 // Logger
 export {
   createAppLogger,
-  createScopedLogger,
-  createScopedLogger as createLogger, // Alias for convenience
+  createLogger,
   appLogger,
   createBatchHttpTransport,
   configureRemoteLogger,

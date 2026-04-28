@@ -7,14 +7,14 @@
  * - Transport 触发与错误隔离
  * - error() 方法处理 Error 对象 vs 普通对象
  * - success() 使用 console.info
- * - createScopedLogger 前缀设置
+ * - createLogger 前缀设置
  * - createBatchHttpTransport 批量发送与级别过滤
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   createAppLogger,
-  createScopedLogger,
+  createLogger,
   createBatchHttpTransport,
 } from '../index'
 import type { LogTransport } from '../index'
@@ -195,11 +195,11 @@ describe('AppLogger', () => {
     })
   })
 
-  // ── createScopedLogger ──
+  // ── createLogger ──
 
-  describe('createScopedLogger', () => {
+  describe('createLogger', () => {
     it('scope 作为前缀', () => {
-      const logger = createScopedLogger('Router', { level: 'info' })
+      const logger = createLogger('Router', { level: 'info' })
       logger.info('navigated')
 
       const msg = String(callArgs(infoSpy)[0])

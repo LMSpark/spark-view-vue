@@ -16,6 +16,7 @@ import {
 } from './capability-system.js'
 import type { CapabilityKey, SparkCapabilityConsumer } from './capability-system.js'
 import type { LoggerApi } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
@@ -145,13 +146,9 @@ export function useSparkHostScope(
 // 仅用于匿名 Spark 节点的本地 id 兜底，保证上下文树里每个节点都有稳定标识。
 let _idCounter = 0
 
-// 页面 logger 尚未就绪时，仅在开发环境打印到控制台，生产环境保持静默。
-const DEV_FALLBACK_LOGGER: LoggerApi = {
-  debug: () => undefined,
-  info: import.meta.env.DEV ? (...args: unknown[]) => console.info(...args) : () => undefined,
-  warn: import.meta.env.DEV ? (...args: unknown[]) => console.warn(...args) : () => undefined,
-  error: import.meta.env.DEV ? (...args: unknown[]) => console.error(...args) : () => undefined,
-}
+// 页面 logger 尚未就绪时的兜底通道：直接走 Logger SSoT，避免与 console 直连而绕开
+// 仓库统一的日志策略（DEV/PROD 过滤、远端 transport 等）。
+const DEV_FALLBACK_LOGGER: LoggerApi = Logger('SparkComponent:fallback')
 
 // ===== Vue 运行时输入 -> SparkNode 归一化 =====
 

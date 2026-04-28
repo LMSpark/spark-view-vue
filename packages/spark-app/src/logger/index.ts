@@ -398,17 +398,12 @@ export function createAppLogger(config?: AppLoggerConfig): AppLogger {
 /**
  * 创建作用域 Logger
  */
-export function createScopedLogger(scope: string, config?: AppLoggerConfig): AppLogger {
+export function createLogger(scope: string, config?: AppLoggerConfig): AppLogger {
   return new AppLogger({
     ...config,
     prefix: scope
   })
 }
-
-/**
- * 创建作用域 Logger (便捷别名)
- */
-export const createLogger = createScopedLogger
 
 /**
  * 默认 Logger 实例
