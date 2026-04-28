@@ -393,12 +393,28 @@ const RELATION_UPDATE_SCHEMA = {
   },
 } as const
 
+const DEPENDENCY_TYPE_RECOMMENDED_VALUES = [
+  'currentRow',
+  'selectedRows',
+  'allRows',
+  'pagedRows',
+] as const
+
+const DEPENDENCY_TYPE_PARAM = {
+  kind: 'enum',
+  type: 'string',
+  enum: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
+  optional: true,
+  openEnded: true,
+  note: '依赖类型推荐值字典；常用 currentRow / selectedRows / allRows / pagedRows，也允许业务侧自定义字符串。',
+} as const
+
 const VIEW_DEPENDENCY_UPDATE_SCHEMA = {
   kind: 'object',
   optional: {
     parentTable: PARENT_TABLE_PARAM,
     childTable: CHILD_TABLE_PARAM,
-    dependencyType: 'DependencyType? — 常用 currentRow / selectedRows / allRows / pagedRows',
+    dependencyType: DEPENDENCY_TYPE_PARAM,
     autoLoad: 'boolean? — 父变化时是否自动加载子视图',
   },
 } as const
@@ -1649,7 +1665,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     paramsSchema: {
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
-      dependencyType: 'DependencyType? — 依赖类型，默认 currentRow',
+      dependencyType: DEPENDENCY_TYPE_PARAM,
       autoLoad: 'boolean? — 父变化时是否自动级联加载子视图',
     },
     resultSchema: {

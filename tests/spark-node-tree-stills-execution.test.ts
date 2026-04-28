@@ -86,7 +86,7 @@ describe('sparkNodeTree stills execution coverage', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap', bootstrapPayload)
+    const init = exec('edit.bootstrap', {})
     expect(init.ok).toBe(true)
 
     const failedAdd = exec('sparkNodeTree.addNode', {
@@ -155,7 +155,7 @@ describe('sparkNodeTree stills execution coverage', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap', bootstrapPayload)
+    const init = exec('edit.bootstrap', {})
     expect(init.ok).toBe(true)
 
     const getNode = exec('sparkNodeTree.getNode', { componentId: 'root-table' })
