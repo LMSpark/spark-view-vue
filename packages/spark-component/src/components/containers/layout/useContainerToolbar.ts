@@ -5,9 +5,8 @@ import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
 import { usePermission } from '../../../permission/index.js'
 import { isBuiltinAction } from '../../../page/actions'
 import { isActionDisplayed } from '../support/actions/action-visibility'
+import { wrapPermissionListeners } from '../support/actions/permission-listeners'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
-
-type ListenerMap = Record<string, unknown>
 
 export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
@@ -75,18 +74,6 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
     { immediate: true },
   )
 
-  function wrapPermissionGuardedHandler(handler: unknown, allowed: boolean): unknown {
-    if (allowed) return handler
-    return (..._args: unknown[]) => undefined
-  }
-
-  function readListenerMap(action: SparkNode): ListenerMap | undefined {
-    const listenerSource = action.props?.['on']
-    return listenerSource !== null && listenerSource !== undefined && typeof listenerSource === 'object' && !Array.isArray(listenerSource)
-      ? listenerSource as ListenerMap
-      : undefined
-  }
-
   function applyPermissionDisabledState(action: SparkNode, allowed: boolean): SparkNode {
     const patchedAction = allowed
       ? action
@@ -95,19 +82,14 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
       buttonDisabled: true,
       })
 
-    const listenerMap = readListenerMap(patchedAction)
-    if (!listenerMap) return patchedAction
+    const wrappedOn = wrapPermissionListeners(patchedAction.props?.['on'], { allowed })
+    if (!wrappedOn) return patchedAction
 
     return {
       ...patchedAction,
       props: {
         ...(patchedAction.props ?? {}),
-        on: Object.fromEntries(
-          Object.entries(listenerMap).map(([eventName, handler]) => [
-            eventName,
-            wrapPermissionGuardedHandler(handler, allowed),
-          ])
-        ),
+        on: wrappedOn,
       },
     }
   }

@@ -5,13 +5,12 @@ import type { IDataRow, IDataSource, IModelPermission } from '@spark-view/spark-
 import { usePermission } from '../../../permission/index.js'
 import { isBuiltinAction } from '../../../page/actions'
 import { isActionDisplayed } from '../support/actions/action-visibility'
+import { wrapPermissionListeners } from '../support/actions/permission-listeners'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 import { resolveCurrentRowPath } from '../../support/row-selection-path'
 import type { PermissionDeniedBehavior } from '../support/RendererActions.types'
 
 export type LateralActionPosition = 'left' | 'right'
-type ListenerMap = Record<string, unknown>
-type ListenerHandler = (...args: unknown[]) => unknown
 type ScopedSparkNode = SparkNode
 
 interface UseContainerActionsOptions<TScope> {
@@ -26,26 +25,6 @@ interface UseContainerActionsOptions<TScope> {
     listenerArgs: unknown[]
     scopedProps: Record<string, unknown>
   }
-}
-
-function wrapScopedHandler(handler: unknown, scopedArgs: unknown[], allowed: boolean): unknown {
-  if (!allowed) {
-    return (..._args: unknown[]) => undefined
-  }
-
-  if (typeof handler === 'function') {
-    return (...args: unknown[]) => (handler as ListenerHandler)(...scopedArgs, ...args)
-  }
-  if (Array.isArray(handler)) {
-    return (...args: unknown[]) => {
-      for (const item of handler) {
-        if (typeof item === 'function') {
-          ;(item as ListenerHandler)(...scopedArgs, ...args)
-        }
-      }
-    }
-  }
-  return handler
 }
 
 export function useContainerActions<TScope>(options: UseContainerActionsOptions<TScope>) {
@@ -110,16 +89,10 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
 
         const permissionPatchedAction = applyPermissionDisabledState(patchedAction, permissionAllowed)
 
-        const listenerSource = permissionPatchedAction.props?.['on']
-        const listenerMap = listenerSource !== null && listenerSource !== undefined && typeof listenerSource === 'object' && !Array.isArray(listenerSource)
-          ? listenerSource as ListenerMap
-          : undefined
-
-        const wrappedOn = listenerMap
-          ? Object.fromEntries(
-            Object.entries(listenerMap).map(([eventName, handler]) => [eventName, wrapScopedHandler(handler, resolved.listenerArgs, permissionAllowed)])
-          )
-          : undefined
+        const wrappedOn = wrapPermissionListeners(permissionPatchedAction.props?.['on'], {
+          allowed: permissionAllowed,
+          scopedArgs: resolved.listenerArgs,
+        })
 
         const scopedAction: ScopedSparkNode = {
           ...permissionPatchedAction,
