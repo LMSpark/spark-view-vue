@@ -21,26 +21,26 @@
         >
           <template #default="slotProps">
             <span class="custom-tree-node">
-              <template v-if="nodeContentChildren.length > 0">
-                <RendererHostScope :row="(slotProps?.data as IDataRow | undefined)">
+              <RendererHostScope :row="(slotProps?.data as IDataRow | undefined)">
+                <template v-if="nodeContentChildren.length > 0">
                   <SparkComponentRenderer
                     v-for="(child, index) in nodeContentChildren"
                     :key="nodeId(child) ?? `r-tree-node-content-${index}`"
                     :config="child"
                   />
-                </RendererHostScope>
-              </template>
-              <template v-else>
-                <slot :node="slotProps?.node" :data="slotProps?.data">
-                  <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-                </slot>
-              </template>
-              <span
-                v-if="hasNodeActions"
-                class="tree-node-actions"
-              >
-                <SparkComponentRenderer :config="createScopedNodeActionsToolbarConfig((slotProps?.data as IDataRow) ?? {})" />
-              </span>
+                </template>
+                <template v-else>
+                  <slot :node="slotProps?.node" :data="slotProps?.data">
+                    <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+                  </slot>
+                </template>
+                <span
+                  v-if="hasNodeActions"
+                  class="tree-node-actions"
+                >
+                  <SparkComponentRenderer :config="rawNodeActionsToolbarConfig" />
+                </span>
+              </RendererHostScope>
             </span>
           </template>
         </el-tree>
@@ -78,7 +78,6 @@ import {
   nodeId,
   PAGE_DATASET,
   DATA_SOURCE,
-  MODULE_CONTEXT,
   PAGE_SERVICE,
   ACTION_CAPABILITY,
   createActionCapability,
@@ -97,9 +96,6 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import { useContainerActionVisibility } from '../../layout/useContainerActionVisibility'
-import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
-import { resolveCurrentRowPath } from '../../../support/row-selection-path'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
@@ -125,7 +121,6 @@ const {
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
-const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
@@ -151,22 +146,6 @@ const treeIdField = computed(() =>
 
 const visibleToolbarConfigs = computed(() => toolbarConfigs.value)
 const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
-
-const { getVisibleActionConfigs: getScopedNodeActions } = useContainerActionVisibility<{ row: IDataRow, index: number }>({
-  actionConfigs: dockedNodeActions,
-  resolveScope: ({ row, index }) => ({
-    row: resolveCurrentRowPath(row, resolvedView.value),
-    data: row,
-    index,
-    listenerArgs: [row, index],
-      propsPatch: {
-      row,
-      rowIndex: index,
-      data: row,
-      moduleContext: moduleContext.value,
-    },
-  }),
-})
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
 
@@ -244,12 +223,10 @@ const nodeActionCapability = {
 
 sparkProvide(ACTION_CAPABILITY, createActionCapability(nodeActionCapability))
 
-function createScopedNodeActionsToolbarConfig(row: IDataRow): SparkNode {
-  return {
-    type: 'r-toolbar',
-    children: getScopedNodeActions({ row, index: 0 }),
-  }
-}
+const rawNodeActionsToolbarConfig = computed<SparkNode>(() => ({
+  type: 'r-toolbar',
+  children: dockedNodeActions.value,
+}))
 
 // 事件处理器与零代码动作由 createRendererTreeZeroCode 收口
 </script>

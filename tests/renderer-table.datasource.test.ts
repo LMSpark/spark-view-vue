@@ -43,6 +43,59 @@ function readConfigActionText(config: Record<string, unknown>): string {
   return String(config['type'] ?? '')
 }
 
+function resolveScopedRow(
+  dataRow: unknown,
+  propsMap: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  const capabilityRow = dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)
+    ? dataRow as Record<string, unknown>
+    : undefined
+  return capabilityRow ?? (propsMap['row'] as Record<string, unknown> | undefined)
+}
+
+function invokeScopedClick(click: unknown, scopedRow: Record<string, unknown> | undefined): boolean {
+  if (typeof click !== 'function') return false
+  scopedRow !== undefined ? click(scopedRow, 'evt') : click('evt')
+  return true
+}
+
+function withScopedRowProp(config: Record<string, unknown>, scopedRow: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (scopedRow === undefined) return config
+  return {
+    ...config,
+    props: {
+      ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
+      row: scopedRow,
+    },
+  }
+}
+
+function renderActionFallbackButton(options: {
+  config: Record<string, unknown>
+  propsMap: Record<string, unknown>
+  click: unknown
+  scopedRow: Record<string, unknown> | undefined
+  actionType: string
+  label: string
+  executeAction: (action: SparkNode) => void
+}) {
+  const { config, propsMap, click, scopedRow, actionType, label, executeAction } = options
+  const isButtonLike = actionType === 'r-button' || actionType === 'el-button'
+  return h('button', {
+    class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
+    'data-type': actionType,
+    'data-row-id': String(scopedRow?.['id'] ?? ''),
+    'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
+    'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
+    disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
+    onClick: () => {
+      if (invokeScopedClick(click, scopedRow)) return
+      const actionForExecute = withScopedRowProp(config, scopedRow)
+      executeAction(actionForExecute as unknown as SparkNode)
+    },
+  }, label)
+}
+
 const SparkActionStub = defineComponent({
   props: {
     config: {
@@ -52,11 +105,13 @@ const SparkActionStub = defineComponent({
   },
   setup(props) {
     const { sparkConsume } = useSparkComponent({ type: 'spark-action-stub' } as SparkNode)
+    const dataRow = sparkConsume(DATA_ROW)
     return () => {
       const config = props.config as Record<string, unknown>
       const propsMap = readConfigProps(config)
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
+      const scopedRow = resolveScopedRow(dataRow, propsMap)
       const type = String(config['type'] ?? '')
 
       if (type === 'r-toolbar') {
@@ -139,23 +194,17 @@ const SparkActionStub = defineComponent({
         ])
       }
 
-      const isButtonLike = type === 'r-button' || type === 'el-button'
-
-      return h('button', {
-        class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
-        'data-type': type,
-        'data-row-id': String((propsMap['row'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-        'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
-        'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-        disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
-        onClick: () => {
-          if (typeof click === 'function') {
-            click('evt')
-            return
-          }
-          sparkConsume(ACTION_CAPABILITY)?.execute(config as unknown as SparkNode)
+      return renderActionFallbackButton({
+        config,
+        propsMap,
+        click,
+        scopedRow,
+        actionType: type,
+        label: readConfigActionText(config),
+        executeAction: action => {
+          sparkConsume(ACTION_CAPABILITY)?.execute(action)
         },
-      }, readConfigActionText(config))
+      })
     }
   }
 })
@@ -399,6 +448,7 @@ const SparkColumnRendererStub = defineComponent({
   },
   setup(props) {
     const { sparkConsume } = useSparkComponent({ type: 'spark-column-renderer-stub' } as SparkNode)
+    const dataRow = sparkConsume(DATA_ROW)
     return () => {
       const config = props.config as Record<string, unknown>
       const type = String(config['type'] ?? '')
@@ -433,24 +483,19 @@ const SparkColumnRendererStub = defineComponent({
       const propsMap = readConfigProps(config)
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
-      const typeLabel = readConfigActionText(config)
+      const scopedRow = resolveScopedRow(dataRow, propsMap)
       const actionType = String(config['type'] ?? '')
-      const isButtonLike = actionType === 'r-button' || actionType === 'el-button'
-      return h('button', {
-        class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
-        'data-type': actionType,
-        'data-row-id': String((propsMap['row'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-        'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
-        'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-        disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
-        onClick: () => {
-          if (typeof click === 'function') {
-            click('evt')
-            return
-          }
-          sparkConsume(ACTION_CAPABILITY)?.execute(config as unknown as SparkNode)
+      return renderActionFallbackButton({
+        config,
+        propsMap,
+        click,
+        scopedRow,
+        actionType,
+        label: readConfigActionText(config),
+        executeAction: action => {
+          sparkConsume(ACTION_CAPABILITY)?.execute(action)
         },
-      }, typeLabel)
+      })
     }
   }
 })
@@ -1670,10 +1715,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const rowAction = wrapper.find('.spark-action-stub[data-type="row-button"]')
     expect(rowAction.attributes('data-row-id')).toBe('7')
-    expect(rowAction.attributes('data-row-index')).toBe('2')
 
     await rowAction.trigger('click')
-    expect(rowActionSpy).toHaveBeenCalledWith({ id: 7, name: 'Alice' }, 2, 'evt')
+    expect(rowActionSpy).toHaveBeenCalledWith({ id: 7, name: 'Alice' }, 'evt')
   })
 
   it('should default row-action header to center while keeping action content left-aligned and single-line', () => {

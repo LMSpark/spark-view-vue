@@ -45,12 +45,14 @@
         -->
         <!-- 行操作列（左） -->
         <el-table-column
-          v-if="showRowActionsLeftVisible"
+          v-if="showRowActionsLeft"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
             <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
-              <SparkComponentRenderer :config="createScopedRowActionsToolbarConfig(scope)" />
+              <RendererHostScope :row="(scope.row as IDataRow)">
+                <SparkComponentRenderer :config="rawRowActionsToolbarConfig" />
+              </RendererHostScope>
             </div>
           </template>
         </el-table-column>
@@ -96,12 +98,14 @@
 
         <!-- 行操作列（右） -->
         <el-table-column
-          v-if="showRowActionsRightVisible"
+          v-if="showRowActionsRight"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
             <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
-              <SparkComponentRenderer :config="createScopedRowActionsToolbarConfig(scope)" />
+              <RendererHostScope :row="(scope.row as IDataRow)">
+                <SparkComponentRenderer :config="rawRowActionsToolbarConfig" />
+              </RendererHostScope>
             </div>
           </template>
         </el-table-column>
@@ -150,11 +154,9 @@ import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import type { ToolbarPosition } from '../../layout/toolbar-position'
-import { useContainerActionVisibility } from '../../layout/useContainerActionVisibility'
 import type { FilterNode } from '../../RendererFilter.types'
 import type { ActionsAlign, ActionsFixed, ActionsPosition } from '../../support/RendererActions.types'
 import { useTableFilters } from '../../layout/useTableFilters'
-import { resolveCurrentRowPath } from '../../../support/row-selection-path'
 import RendererTableFilterPanel from './RendererTableFilterPanel.vue'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
@@ -464,32 +466,10 @@ const rowActionsPositionValue = computed<ActionsPosition>(() => childProp<Action
 const showRowActionsLeft = computed(() => rowActionConfigs.value.length > 0 && rowActionsPositionValue.value === 'left')
 const showRowActionsRight = computed(() => rowActionConfigs.value.length > 0 && rowActionsPositionValue.value === 'right')
 
-const { getVisibleActionConfigs: getScopedRowActions } = useContainerActionVisibility<{ row: IDataRow, index: number }>({
-  actionConfigs: rowActionConfigs,
-  resolveScope: ({ row, index }) => ({
-    row: resolveCurrentRowPath(row, resolvedView.value),
-    data: row,
-    index,
-    listenerArgs: [row, index],
-    propsPatch: { row, rowIndex: index },
-  }),
-})
-
-const hasVisibleRowActionsInRows = computed(() => {
-  const rows = tableData.value
-  if (!Array.isArray(rows) || rows.length === 0) return false
-
-  for (let index = 0; index < rows.length; index += 1) {
-    const row = rows[index]
-    if (row === undefined) continue
-    if (getScopedRowActions({ row, index }).length > 0) return true
-  }
-
-  return false
-})
-
-const showRowActionsLeftVisible = computed(() => showRowActionsLeft.value && hasVisibleRowActionsInRows.value)
-const showRowActionsRightVisible = computed(() => showRowActionsRight.value && hasVisibleRowActionsInRows.value)
+const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
+  type: 'r-toolbar',
+  children: rowActionConfigs.value,
+}))
 
 const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
   const align = childProp<ActionsAlign>(actionsNode.value, 'align')
@@ -538,24 +518,6 @@ const rowActionColumnAttrs = computed(() => {
     ...(fixed !== undefined ? { fixed } : {}),
   }
 })
-
-function resolveRowActionScope(scope: Record<string, unknown>) {
-  // 从 el-table 默认 slot scope 提取 row / $index。
-  // 这里采用 fail-safe 默认值，保证作用域函数在测试桩与真实环境下都可执行。
-  return {
-    row: (scope['row'] as IDataRow | undefined) ?? {},
-    index: typeof scope['$index'] === 'number' ? scope['$index'] : 0,
-  }
-}
-
-function createScopedRowActionsToolbarConfig(scope: Record<string, unknown>): SparkNode {
-  // 构造行操作投影 r-toolbar 节点，children 已由 getScopedRowActions 完成可见性过滤与 props 绑定。
-  const { row, index } = resolveRowActionScope(scope)
-  return {
-    type: 'r-toolbar',
-    children: getScopedRowActions({ row, index }),
-  }
-}
 
 // ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────
 

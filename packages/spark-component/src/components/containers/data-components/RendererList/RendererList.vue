@@ -22,24 +22,26 @@
               @click="handleItemClick(row, index, $event)"
             >
               <div
-                v-if="showItemActionsLeftValue && hasVisibleItemActions(row, index)"
+                v-if="showItemActionsLeft"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <SparkComponentRenderer :config="createScopedItemActionsToolbarConfig({ row, index })" />
+                <RendererHostScope :row="row">
+                  <SparkComponentRenderer :config="rawItemActionsToolbarConfig" />
+                </RendererHostScope>
               </div>
 
               <div :class="itemClass" :style="itemStyle">
                 <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
                   <div class="renderer-list-item-body" :style="itemContentGridStyle">
                     <RendererHostScope :row="row">
-                    <div
-                      v-for="(child, childIndex) in itemContentChildren"
-                      :key="nodeId(child) ?? `r-list-item-child-${childIndex}`"
-                      class="renderer-list-grid-item"
-                      :style="getItemContentChildGridStyle(child)"
-                    >
-                      <SparkComponentRenderer :config="child" />
-                    </div>
+                      <div
+                        v-for="(child, childIndex) in itemContentChildren"
+                        :key="nodeId(child) ?? `r-list-item-child-${childIndex}`"
+                        class="renderer-list-grid-item"
+                        :style="getItemContentChildGridStyle(child)"
+                      >
+                        <SparkComponentRenderer :config="child" />
+                      </div>
                     </RendererHostScope>
                     <slot
                       v-if="!itemContentChildren.length"
@@ -50,10 +52,12 @@
               </div>
 
               <div
-                v-if="showItemActionsRightValue && hasVisibleItemActions(row, index)"
+                v-if="showItemActionsRight"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <SparkComponentRenderer :config="createScopedItemActionsToolbarConfig({ row, index })" />
+                <RendererHostScope :row="row">
+                  <SparkComponentRenderer :config="rawItemActionsToolbarConfig" />
+                </RendererHostScope>
               </div>
             </div>
           </div>
@@ -91,11 +95,9 @@ import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import { useContainerActionVisibility } from '../../layout/useContainerActionVisibility'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout/toolbar-position'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
-import { resolveCurrentRowPath } from '../../../support/row-selection-path'
 import type { ActionsPosition } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { createRendererListZeroCode } from './zero-code'
@@ -178,20 +180,6 @@ const itemActionsClassValue = computed(() => {
 })
 const showItemActionsLeft = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'left')
 const showItemActionsRight = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'right')
-
-const { getVisibleActionConfigs: getScopedItemActions } = useContainerActionVisibility<{ row: IDataRow, index: number }>({
-  actionConfigs: itemActionConfigs,
-  resolveScope: ({ row, index }) => ({
-    row: resolveCurrentRowPath(row, resolvedView.value),
-    data: row,
-    index,
-    listenerArgs: [row, index],
-    propsPatch: { row, rowIndex: index },
-  }),
-})
-
-const showItemActionsLeftValue = showItemActionsLeft
-const showItemActionsRightValue = showItemActionsRight
 
 const {
   gridChildren: itemContentChildren,
@@ -285,16 +273,10 @@ function getRowScope(row: IDataRow, index: number) {
   })
 }
 
-function createScopedItemActionsToolbarConfig(scope: { row: IDataRow, index: number }): SparkNode {
-  return {
-    type: 'r-toolbar',
-    children: getScopedItemActions(scope),
-  }
-}
-
-function hasVisibleItemActions(row: IDataRow, index: number): boolean {
-  return getScopedItemActions({ row, index }).length > 0
-}
+const rawItemActionsToolbarConfig = computed<SparkNode>(() => ({
+  type: 'r-toolbar',
+  children: itemActionConfigs.value,
+}))
 
 async function handleItemClick(row: IDataRow, index: number, event: Event) {
   await dispatch('item-click', row, index, event)

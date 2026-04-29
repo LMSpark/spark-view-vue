@@ -8,6 +8,7 @@
 
 import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../core/types'
+import { nodeInputProps } from '../../core/types'
 
 // ── 执行作用域 ────────────────────────────────────────────────────────────
 
@@ -49,22 +50,12 @@ export function getBuiltinActionLabelByName(name: BuiltinActionName): string {
   return BUILTIN_ACTION_META[name].label
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null
-}
-
 function readString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
 }
 
-function getActionProps(action: SparkNode): Record<string, unknown> {
-  return asRecord(action.props) ?? {}
-}
-
 export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
-  const propsMap = getActionProps(action)
+  const propsMap = nodeInputProps(action)
   const actionName = readString(propsMap['action'])
   if (!actionName) return null
   return isBuiltinActionName(actionName) ? actionName : null
@@ -75,7 +66,7 @@ export function isBuiltinAction(action: SparkNode): boolean {
 }
 
 export function getBuiltinActionLabel(action: SparkNode): string {
-  const propsMap = getActionProps(action)
+  const propsMap = nodeInputProps(action)
   const explicit = readString(propsMap['label'])
   if (explicit) return explicit
 

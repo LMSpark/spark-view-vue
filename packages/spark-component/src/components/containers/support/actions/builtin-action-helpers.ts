@@ -8,6 +8,7 @@
 import type { PageMessageType } from '../../../internal'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../../internal'
+import { nodeInputProps } from '../../../internal'
 import { resolveSelectedRowsPath } from '../../../support/row-selection-path'
 
 // ── 值解析 ────────────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ export function readMessageType(value: unknown): PageMessageType {
 }
 
 export function getActionProps(action: SparkNode): Record<string, unknown> {
-  return asRecord(action.props) ?? {}
+  return nodeInputProps(action)
 }
 
 export function hasOwnProp(record: Record<string, unknown>, key: string): boolean {
