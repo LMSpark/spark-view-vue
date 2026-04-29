@@ -42,7 +42,7 @@ function resolveNodePermAction(node: SparkNode): ResolvedPermAction {
     return { action: explicitPermAction, inferred: false }
   }
 
-  const builtinAction = nodeInputProp(node, 'action') ?? nodeInputProp(node, 'builtinAction')
+  const builtinAction = nodeInputProp(node, 'action')
   if (typeof builtinAction !== 'string' || builtinAction.length === 0) return { inferred: false }
 
   switch (builtinAction) {

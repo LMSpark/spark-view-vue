@@ -14,10 +14,11 @@ import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'
 import { PAGE_PERMISSION_MODE } from './page-permission-mode'
-import * as permissionResolver from './PermissionResolver'
 import {
   isPermittedAction,
   resolveFieldPermissionState,
+  isModelActionAllowed,
+  isRowActionAllowed,
 } from './PermissionResolver'
 import type { PermissionAction, PermissionActionContext } from './PermissionResolver'
 import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
@@ -42,13 +43,6 @@ export interface UsePermissionReturn {
     config?: Omit<IFieldRenderConfig, 'field'>,
   ): IFieldRenderState | null
 
-  /** 格式化字段显示值（脱敏值由服务端直接返回，本方法仅应用自定义 formatter） */
-  formatFieldValue(
-    field: string | undefined,
-    value: unknown,
-    row: IDataRow | null | undefined,
-    formatDisplay?: (value: unknown) => string,
-  ): string
 }
 
 /**
@@ -68,20 +62,15 @@ export function usePermission(): UsePermissionReturn {
     },
 
     isModelActionAllowed(action, modelPerm) {
-      return permissionResolver.isModelActionAllowed(action, modelPerm, mode)
+      return isModelActionAllowed(action, modelPerm, mode)
     },
 
     isRowActionAllowed(action, row) {
-      return permissionResolver.isRowActionAllowed(action, row, mode)
+      return isRowActionAllowed(action, row, mode)
     },
 
     resolveFieldState(field, row, config) {
       return resolveFieldPermissionState(field, row, config ?? {}, mode)
-    },
-
-    formatFieldValue(_field, value, _row, formatDisplay) {
-      const formatter = formatDisplay ?? ((v: unknown) => String(v ?? ''))
-      return formatter(value)
     },
   }
 }

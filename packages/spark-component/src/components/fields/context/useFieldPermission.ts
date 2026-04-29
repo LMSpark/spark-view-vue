@@ -102,7 +102,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   const currentDisplayValue = computed(() => {
     if (shouldSuppressReadableValueWhenWritable.value) return ''
-    return perm.formatFieldValue(fieldName.value, sourceFieldValue.value, currentRow.value, formatValue)
+    return formatValue(sourceFieldValue.value)
   })
 
   function isTableCellHidden(row: IDataRow): boolean {
@@ -120,7 +120,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   function getTableCellDisplayValue(row: IDataRow): string {
     if (!fieldName.value) return formatValue(fallbackValue)
-    return perm.formatFieldValue(fieldName.value, getRowRawValue(row), row, formatValue)
+    return formatValue(getRowRawValue(row))
   }
 
   function syncValue(value: TValue): void {

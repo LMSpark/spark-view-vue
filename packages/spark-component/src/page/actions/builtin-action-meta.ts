@@ -65,7 +65,7 @@ function getActionProps(action: SparkNode): Record<string, unknown> {
 
 export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
   const propsMap = getActionProps(action)
-  const actionName = readString(propsMap['action']) ?? readString(propsMap['builtinAction'])
+  const actionName = readString(propsMap['action'])
   if (!actionName) return null
   return isBuiltinActionName(actionName) ? actionName : null
 }
