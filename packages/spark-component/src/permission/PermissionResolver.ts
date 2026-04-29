@@ -138,7 +138,6 @@ export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermiss
   const resolvedPermAction = resolveNodePermAction(action)
   const permAction = resolvedPermAction.action
   if (!isModelScopedPermAction(permAction)) return true
-  if (resolvedPermAction.inferred && modelPerm === undefined) return true
   return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm, permissionMode } : { permissionMode })
 }
 
@@ -147,10 +146,6 @@ export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined,
   const resolvedPermAction = resolveNodePermAction(action)
   const permAction = resolvedPermAction.action
   if (!isRowScopedPermAction(permAction)) return true
-
-  // 对“推断得到的”行权限动作做宽松处理：
-  // 如果后端没有返回 row._perm 快照，则不强制禁用，避免把无权限数据模型的旧页面全部锁死。
-  if (resolvedPermAction.inferred && row?._perm === undefined) return true
 
   return isPermittedAction(permAction, { row: row ?? null, permissionMode })
 }

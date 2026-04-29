@@ -1679,6 +1679,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     ds.getTable('Users')!.setApi({ list: { url: '/api/users', method: 'GET' } })
     const dv = ds.getView('Users', 'default')!
+    ;(dv as DataView & { _modelPerm?: { allowCreate?: boolean } })._modelPerm = { allowCreate: true }
     const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
@@ -1817,6 +1818,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const dv = ds.getView('Users', 'default')!
+    ;(dv as DataView & { _modelPerm?: { allowCreate?: boolean } })._modelPerm = { allowCreate: true }
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
@@ -1862,7 +1864,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     warnSpy.mockRestore()
   })
 
-  it('should execute builtin row delete action directly on data view rows', async () => {
+  it('should execute builtin delete-current action directly on data view rows', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Builtin-Row',
       tables: {
@@ -1874,7 +1876,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 7, name: 'Alice' }, { id: 8, name: 'Bob' }] as IDataRow[],
+              rows: [
+                { id: 7, name: 'Alice', _perm: { allowDelete: true } },
+                { id: 8, name: 'Bob', _perm: { allowDelete: true } },
+              ] as IDataRow[],
             },
           },
         }
@@ -1882,15 +1887,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const dv = ds.getView('Users', 'default')!
+    dv.setCurrentRowById(7)
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'r-actions',
+          type: 'r-toolbar',
           children: [
             {
               type: 'r-button',
               props: {
-                action: 'delete-row',
+                action: 'delete-current',
                 label: '删除',
                 successMessage: '',
                 confirmMessage: '',
@@ -1932,7 +1938,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Carol' }] as IDataRow[],
+              rows: [
+                { id: 1, name: 'Alice', _perm: { allowDelete: true } },
+                { id: 2, name: 'Bob', _perm: { allowDelete: true } },
+                { id: 3, name: 'Carol', _perm: { allowDelete: true } },
+              ] as IDataRow[],
             },
           },
         }
@@ -1941,6 +1951,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const dv = ds.getView('Users', 'default')!
     dv.selection.setSelectedRows([dv.rows[0]!, dv.rows[2]!])
+    dv.setCurrentRowById(1)
 
     const wrapper = mountRendererTableWithView(dv, {
       children: [
@@ -1997,6 +2008,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const dv = ds.getView('Users', 'default')!
+    ;(dv as DataView & { _modelPerm?: { allowCreate?: boolean } })._modelPerm = { allowCreate: true }
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
@@ -2115,7 +2127,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice', _perm: { allowDelete: true } }] as IDataRow[],
             },
           },
         }
@@ -2124,6 +2136,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const dv = ds.getView('Users', 'default')!
     dv.selection.setSelectedRows([dv.rows[0]!])
+    dv.setCurrentRowById(1)
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
@@ -2820,7 +2833,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
   })
 
-  it('should keep delete-current enabled when inferred permission has no row _perm snapshot', async () => {
+  it('should disable delete-current when inferred permission has no row _perm snapshot', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Toolbar-DeleteCurrent-Infer-NoPermSnapshot',
       tables: {
@@ -2864,13 +2877,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const actionButton = () => wrapper.find('.spark-action-stub[data-type="delete-current"]')
 
     expect(actionButton().exists()).toBe(true)
-    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
 
     dv.setCurrentRowById(2)
     await flushPromises()
     await nextTick()
 
-    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('should disable tree toolbar and node actions when denied by permission', async () => {

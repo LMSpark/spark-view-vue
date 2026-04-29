@@ -2,11 +2,18 @@ import { mount } from '@vue/test-utils'
 import type { ComponentMountingOptions } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES, PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import type { IDataSet, DataView } from '@spark-view/spark-data'
 import type { PageComponentRegistry } from '../../packages/spark-component/src/core/capabilities'
 import { createPageComponentRegistry } from '../../packages/spark-component/src/page/context/page-component-registry'
+
+const TEST_APP_LOGGER = {
+  debug: (message: string, context?: unknown) => console.info(message, context),
+  info: (message: string, context?: unknown) => console.info(message, context),
+  warn: (message: string, context?: unknown) => console.warn(message, context),
+  error: (message: string, context?: unknown) => console.error(message, context),
+}
 
 type MountedWithPageDataSetWrapper = VueWrapper<any> & {
   __pageComponentRegistry?: PageComponentRegistry
@@ -32,6 +39,7 @@ export function mountWithPageDataSet(
       const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
       sparkProvide(PAGE_DATASET, options.dataSet)
       sparkProvide(PAGE_COMPONENT_REGISTRY, pageComponentRegistry)
+      sparkProvide(APP_SERVICES, { logger: TEST_APP_LOGGER })
       return () => h(component as never, options.props ?? {}, options.slots ?? {})
     },
   })
