@@ -14,11 +14,10 @@ import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'
 import { PAGE_PERMISSION_MODE } from './page-permission-mode'
+import * as permissionResolver from './PermissionResolver'
 import {
   isPermittedAction,
   resolveFieldPermissionState,
-  isModelActionAllowed as _isModelActionAllowed,
-  isRowActionAllowed as _isRowActionAllowed,
 } from './PermissionResolver'
 import type { PermissionAction, PermissionActionContext } from './PermissionResolver'
 import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
@@ -69,11 +68,11 @@ export function usePermission(): UsePermissionReturn {
     },
 
     isModelActionAllowed(action, modelPerm) {
-      return _isModelActionAllowed(action, modelPerm, mode)
+      return permissionResolver.isModelActionAllowed(action, modelPerm, mode)
     },
 
     isRowActionAllowed(action, row) {
-      return _isRowActionAllowed(action, row, mode)
+      return permissionResolver.isRowActionAllowed(action, row, mode)
     },
 
     resolveFieldState(field, row, config) {

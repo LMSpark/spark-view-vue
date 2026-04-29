@@ -7,9 +7,8 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+import * as capabilityApi from './capability-system.js'
 import {
-  sparkProvide as rawSparkProvide,
-  sparkRemove as rawSparkRemove,
   APP_SERVICES,
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
@@ -381,14 +380,14 @@ export function useSparkComponent(
     if (implementation === undefined) {
       throw new Error(`[spark] sparkProvide received undefined implementation: ${String(name)}. Use sparkRemove(name) to clear capability explicitly.`)
     }
-    rawSparkProvide(context, name, implementation)
+    capabilityApi.sparkProvide(context, name, implementation)
     if (import.meta.env.DEV && name !== DATA_ROW) {
       logger.debug(`[spark] provided: ${String(name)}`)
     }
   }
 
   function sparkRemove<T>(name: CapabilityKey<T>): void {
-    rawSparkRemove(context, name)
+    capabilityApi.sparkRemove(context, name)
     if (import.meta.env.DEV) {
       logger.debug(`[spark] removed: ${String(name)}`)
     }
