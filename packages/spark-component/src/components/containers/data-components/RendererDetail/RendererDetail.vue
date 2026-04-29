@@ -46,10 +46,7 @@
 import { computed, type StyleValue } from 'vue'
 import {
   SparkComponentRenderer,
-  ACTION_CAPABILITY,
-  createActionCapability,
   nodeId,
-  type SparkNode,
 } from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
@@ -73,7 +70,6 @@ const detailAlignStyle = computed<StyleValue>(() => ({
 
 const {
   registerApi,
-  sparkProvide,
   logger,
   pageService,
   resolvedView,
@@ -102,8 +98,6 @@ const {
 
 const {
   detailApi,
-  handleBuiltinToolbarAction,
-  isBuiltinActionDisabled,
 } = createRendererDetailZeroCode({
   props,
   resolvedView,
@@ -113,17 +107,6 @@ const {
 })
 
 registerApi(detailApi)
-
-const toolbarActionCapability = {
-  isDisabled(action: SparkNode): boolean {
-    return isBuiltinActionDisabled(action)
-  },
-  execute(action: SparkNode): void {
-    handleBuiltinToolbarAction(action)
-  },
-}
-
-sparkProvide(ACTION_CAPABILITY, createActionCapability(toolbarActionCapability))
 
 </script>
 

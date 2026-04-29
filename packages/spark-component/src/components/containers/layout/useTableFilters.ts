@@ -1,20 +1,20 @@
 import { computed, reactive, watch } from 'vue'
-import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../../internal'
 import { nodeInputProp } from '../../internal'
 import type { DataView, FilterExpression, FilterOperator, FilterValueExpression } from '@spark-view/spark-data'
+import type { ValueRef } from '../../shared-types.js'
 
 interface LoggerLike {
   error(message: string, error?: unknown): void
 }
 
 interface UseTableFiltersOptions {
-  filterChildren: ComputedRef<SparkNode[]>
-  dataView: ComputedRef<DataView | null>
-  filterClass: ComputedRef<string | undefined>
-  filterGridColumns: ComputedRef<number | undefined>
-  filterGridGap: ComputedRef<number | string | undefined>
-  filterGridAutoRows: ComputedRef<string | undefined>
+  filterChildren: ValueRef<SparkNode[]>
+  dataView: ValueRef<DataView | null>
+  filterClass: ValueRef<string | undefined>
+  filterGridColumns: ValueRef<number | undefined>
+  filterGridGap: ValueRef<number | string | undefined>
+  filterGridAutoRows: ValueRef<string | undefined>
   logger: LoggerLike
 }
 

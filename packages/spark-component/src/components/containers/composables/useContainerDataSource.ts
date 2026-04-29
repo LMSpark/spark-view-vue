@@ -1,6 +1,7 @@
 import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { DataView, IDataRow, IDataSet, IModelPermission } from '@spark-view/spark-data'
+import type { ValueRef } from '../../shared-types.js'
 import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver.js'
 import { extractModelPermission, type ModelPermissionSource } from '../../../permission/index.js'
 
@@ -10,10 +11,10 @@ interface LoggerLike {
 }
 
 interface UseContainerDataSourceOptions<TSource> {
-  dataKey: ComputedRef<string | undefined>
+  dataKey: ValueRef<string | undefined>
   pageDataSet: IDataSet | null
   mapView: (view: DataView) => TSource
-  externalDataSource?: ComputedRef<TSource | undefined>
+  externalDataSource?: ValueRef<TSource | undefined>
 }
 
 interface UseContainerDataSourceEffectsOptions<TSource> {

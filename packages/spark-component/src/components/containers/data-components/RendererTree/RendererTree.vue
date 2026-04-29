@@ -79,8 +79,6 @@ import {
   PAGE_DATASET,
   DATA_SOURCE,
   PAGE_SERVICE,
-  ACTION_CAPABILITY,
-  createActionCapability,
   type SparkNode,
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
@@ -199,10 +197,6 @@ const {
   handleNodeExpand,
   handleNodeCollapse,
   handleNodeDrop,
-  handleBuiltinToolbarAction,
-  handleBuiltinNodeAction,
-  isBuiltinToolbarActionDisabled,
-  isBuiltinNodeActionDisabled,
 }: {
   treeApi: RendererTreeApi
   getNodeKey: (data: unknown) => string | number | null
@@ -211,10 +205,6 @@ const {
   handleNodeExpand: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeCollapse: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeDrop: (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => Promise<void>
-  handleBuiltinToolbarAction: (action: SparkNode) => void
-  handleBuiltinNodeAction: (action: SparkNode, row: IDataRow, index: number) => void
-  isBuiltinToolbarActionDisabled: (action: SparkNode) => boolean
-  isBuiltinNodeActionDisabled: (action: SparkNode, row: IDataRow, index: number) => boolean
 } = createRendererTreeZeroCode({
   props,
   resolvedView,
@@ -242,26 +232,6 @@ const {
 })
 
 registerApi(treeApi)
-
-const nodeActionCapability = {
-  isDisabled(action: SparkNode): boolean {
-    const row = action.props?.['row'] as IDataRow | undefined
-    const index = action.props?.['rowIndex']
-    if (row) return isBuiltinNodeActionDisabled(action, row, typeof index === 'number' ? index : 0)
-    return isBuiltinToolbarActionDisabled(action)
-  },
-  execute(action: SparkNode): void {
-    const row = action.props?.['row'] as IDataRow | undefined
-    const index = action.props?.['rowIndex']
-    if (!row) {
-      handleBuiltinToolbarAction(action)
-      return
-    }
-    handleBuiltinNodeAction(action, row, typeof index === 'number' ? index : 0)
-  },
-}
-
-sparkProvide(ACTION_CAPABILITY, createActionCapability(nodeActionCapability))
 
 const rawNodeActionsToolbarConfig = computed<SparkNode>(() => ({
   type: 'r-toolbar',

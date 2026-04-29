@@ -1,7 +1,7 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <SparkComponentRenderer v-if="showToolbar" :config="projectedToolbarRendererConfig!" />
+    <SparkComponentRenderer v-if="toolbarRendererConfig" :config="toolbarRendererConfig" />
 
     <!-- 过滤区 -->
     <RendererTableFilterPanel
@@ -31,6 +31,7 @@
         :data="tableData"
         
         v-bind="elTableProps"
+        :row-class-name="tableRowClassName"
         @current-change="handleCurrentChange"
         @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
@@ -43,9 +44,16 @@
           2. 模板驱动列（默认 slot）
           3. 行操作列（左右）
         -->
+        <!-- 多选勾栏：仅多选模式显示 -->
+        <el-table-column
+          v-if="resolvedView?.isMultiSelect === true"
+          type="selection"
+          v-bind="selectionColumnAttrs"
+        />
+
         <!-- 行操作列（左） -->
         <el-table-column
-          v-if="showRowActionsLeft"
+          v-if="rowActionConfigs.length > 0 && rowActionsPositionValue === 'left'"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
@@ -98,7 +106,7 @@
 
         <!-- 行操作列（右） -->
         <el-table-column
-          v-if="showRowActionsRight"
+          v-if="rowActionConfigs.length > 0 && rowActionsPositionValue === 'right'"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
@@ -138,15 +146,13 @@
  *
  * 结构约定：
  * - 工具栏/筛选区/行操作优先使用结构化 props（toolbar/filter/actions）。
- * - children 中结构节点只按 node.props 读取配置，并在内容区过滤这些结构节点。
+ * - children 仅承载列定义，不再参与结构区解算。
  */
-import { computed, nextTick, ref, watch, type CSSProperties } from 'vue'
+import { computed, nextTick, ref, toRef, watch, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
-  ACTION_CAPABILITY,
-  createActionCapability,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -168,12 +174,9 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
-const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-filter'])
-
-// 共享 props.children 允许文本子节点；表格列区只接受结构节点，局部显式收窄。
+// children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
 const allChildNodes = computed(() => getSparkNodeChildren(props.children))
-const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
-const renderedContentChildNodes = computed(() => contentChildNodes.value.map(normalizeDefaultSortableTableNode))
+const renderedContentChildNodes = computed(() => allChildNodes.value.map(normalizeDefaultSortableTableNode))
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
@@ -264,19 +267,14 @@ function resolveRowFragmentClass(node: SparkNode): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-const toolbarNodes = computed(() => allChildNodes.value.filter(child => child.type === 'r-toolbar'))
-const toolbarNode = computed(() => props.toolbar ?? toolbarNodes.value[0])
-const filterNode = computed(() => props.filter ?? allChildNodes.value.find(child => child.type === 'r-filter'))
-const actionsNode = computed(() => props.actions ?? toolbarNodes.value[1])
-const explicitFilterChildren = computed(() => getSparkNodeChildren(filterNode.value?.children))
-const autoFilterChildren = computed(() => contentChildNodes.value.filter(isAutoFilterCandidate))
-const effectiveFilterChildren = computed(() =>
-  explicitFilterChildren.value.length > 0
-    ? explicitFilterChildren.value
-    : autoFilterChildren.value
-)
+const effectiveFilterChildren = computed(() => {
+  const explicitChildren = getSparkNodeChildren(props.filter?.children)
+  return explicitChildren.length > 0
+    ? explicitChildren
+    : allChildNodes.value.filter(isAutoFilterCandidate)
+})
 const normalizedFilterNode = computed<FilterNode | undefined>(() => {
-  const node = filterNode.value
+  const node = props.filter
   if (node?.type !== 'r-filter') return undefined
   return node as FilterNode
 })
@@ -284,10 +282,7 @@ const normalizedFilterNode = computed<FilterNode | undefined>(() => {
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
 const baseElTableProps = computed<Record<string, unknown>>(() => {
-  const raw = props.tableProps ?? {}
-  const {
-    ...tableProps
-  } = raw
+  const tableProps = props.tableProps ?? {}
 
   const explicitResizable = tableProps['resizable']
   const resolvedResizable = explicitResizable === true || explicitResizable === false ? explicitResizable : true
@@ -302,7 +297,6 @@ const baseElTableProps = computed<Record<string, unknown>>(() => {
     resizable: resolvedResizable,
   }
 })
-const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
 
@@ -312,8 +306,8 @@ const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
-  externalDataSource: computed(() => props.dataSource),
-  dataKey: effectiveDataKey,
+  externalDataSource: toRef(props, 'dataSource'),
+  dataKey: toRef(props, 'dataKey'),
   pageDataSet,
   mapView: view => view,
 })
@@ -327,35 +321,29 @@ useContainerDataSourceEffects({
 
 // ── 工具栏区：读取结构化 toolbar 配置，并向工具栏子树提供内置动作宿主能力 ──
 
-const visibleToolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
 const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = childProp<ToolbarPosition>(toolbarNode.value, 'position')
+  const position = childProp<ToolbarPosition>(props.toolbar, 'position')
   return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
     ? position
     : 'top'
 })
-const toolbarClassValue = computed(() => childProp<string>(toolbarNode.value, 'class') ?? 'renderer-toolbar-default')
-const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
-  if (!showToolbar.value) return undefined
+  const children = getSparkNodeChildren(props.toolbar?.children)
+  if (children.length === 0) return undefined
+
+  const tableName = typeof props.dataKey === 'string' ? props.dataKey.split('@')[0] : undefined
+  const toolbarDataKey = tableName ? `${tableName}@currentRow` : undefined
 
   return {
     type: 'r-toolbar',
-    ...(toolbarNode.value?.id !== undefined ? { id: toolbarNode.value.id } : {}),
+    ...(toolbarDataKey ? { dataKey: toolbarDataKey } : {}),
+    ...(props.toolbar?.id !== undefined ? { id: props.toolbar.id } : {}),
     props: {
-      ...(toolbarNode.value?.props ?? {}),
-      class: ['renderer-table-toolbar', toolbarClassValue.value],
+      ...(props.toolbar?.props ?? {}),
+      class: ['renderer-table-toolbar', childProp<string>(props.toolbar, 'class') ?? 'renderer-toolbar-default'],
     },
-    children: visibleToolbarConfigs.value,
-  }
-})
-
-const projectedToolbarRendererConfig = computed<SparkNode | undefined>(() => {
-  if (!toolbarRendererConfig.value) return undefined
-  return {
-    ...toolbarRendererConfig.value,
-    children: visibleToolbarConfigs.value,
+    children,
   }
 })
 
@@ -374,10 +362,10 @@ const {
 } = useTableFilters({
   filterChildren: effectiveFilterChildren,
   dataView: resolvedView,
-  filterClass: computed(() => childProp<string>(filterNode.value, 'class') ?? ''),
-  filterGridColumns: computed(() => childProp<number>(filterNode.value, 'gridColumns') ?? 24),
-  filterGridGap: computed(() => childProp<number | string>(filterNode.value, 'gridGap') ?? 12),
-  filterGridAutoRows: computed(() => childProp<string>(filterNode.value, 'gridAutoRows') ?? 'minmax(32px, auto)'),
+  filterClass: computed(() => childProp<string>(props.filter, 'class') ?? ''),
+  filterGridColumns: computed(() => childProp<number>(props.filter, 'gridColumns') ?? 24),
+  filterGridGap: computed(() => childProp<number | string>(props.filter, 'gridGap') ?? 12),
+  filterGridAutoRows: computed(() => childProp<string>(props.filter, 'gridAutoRows') ?? 'minmax(32px, auto)'),
   logger,
 })
 
@@ -392,11 +380,11 @@ const {
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
   filterNode: normalizedFilterNode,
-  tableFilterCollapsible: computed(() => props.filterCollapsible),
-  tableFilterDefaultCollapsed: computed(() => props.filterDefaultCollapsed),
-  tableFilterAutoFitMinWidth: computed(() => props.filterAutoFitMinWidth),
-  tableFilterItemSpan: computed(() => props.filterItemSpan),
-  tableFilterActionSpan: computed(() => props.filterActionSpan),
+  tableFilterCollapsible: toRef(props, 'filterCollapsible'),
+  tableFilterDefaultCollapsed: toRef(props, 'filterDefaultCollapsed'),
+  tableFilterAutoFitMinWidth: toRef(props, 'filterAutoFitMinWidth'),
+  tableFilterItemSpan: toRef(props, 'filterItemSpan'),
+  tableFilterActionSpan: toRef(props, 'filterActionSpan'),
   baseElTableProps,
   resolvedView,
 })
@@ -408,9 +396,6 @@ const nativeTableRef = ref<NativeTableLike | null>(null)
 const {
   dispatch,
   tableApi,
-  handleBuiltinToolbarAction,
-  handleBuiltinRowAction,
-  isBuiltinActionDisabled,
 } = createRendererTableZeroCode({
   props,
   resolvedView,
@@ -426,30 +411,6 @@ const {
 
 registerApi(tableApi)
 
-const rowActionCapability = {
-  isDisabled(action: SparkNode): boolean {
-    const row = action.props?.['row'] as IDataRow | undefined
-    const index = action.props?.['rowIndex']
-    const builtinDisabled = isBuiltinActionDisabled(action, {
-      ...(row !== undefined ? { row } : {}),
-      ...(typeof index === 'number' ? { index } : {}),
-    })
-
-    return builtinDisabled
-  },
-  execute(action: SparkNode): void {
-    const row = action.props?.['row'] as IDataRow | undefined
-    const index = action.props?.['rowIndex']
-    if (!row) {
-      handleBuiltinToolbarAction(action)
-      return
-    }
-    handleBuiltinRowAction(action, row, typeof index === 'number' ? index : 0)
-  },
-}
-
-sparkProvide(ACTION_CAPABILITY, createActionCapability(rowActionCapability))
-
 // DataView → el-table 当前行单向同步
 watch(
   () => resolvedView.value?.currentRow,
@@ -461,54 +422,41 @@ watch(
 
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
-const rowActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
-const rowActionsPositionValue = computed<ActionsPosition>(() => childProp<ActionsPosition>(actionsNode.value, 'position') ?? 'right')
-const showRowActionsLeft = computed(() => rowActionConfigs.value.length > 0 && rowActionsPositionValue.value === 'left')
-const showRowActionsRight = computed(() => rowActionConfigs.value.length > 0 && rowActionsPositionValue.value === 'right')
+const rowActionConfigs = computed(() => getSparkNodeChildren(props.actions?.children))
+const rowActionsPositionValue = computed<ActionsPosition>(() => childProp<ActionsPosition>(props.actions, 'position') ?? 'right')
+
+const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
+  const align = childProp<ActionsAlign>(props.actions, 'align')
+  if (align === 'left' || align === 'center' || align === 'right') return align
+  return undefined
+})
+
+const rowActionsFixedValue = computed<ActionsFixed | undefined>(() => {
+  const fixed = childProp<ActionsFixed>(props.actions, 'fixed')
+  if (fixed === true || fixed === false || fixed === 'left' || fixed === 'right') return fixed
+  return undefined
+})
 
 const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
   type: 'r-toolbar',
   children: rowActionConfigs.value,
 }))
 
-const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
-  const align = childProp<ActionsAlign>(actionsNode.value, 'align')
-  if (align === 'left' || align === 'center' || align === 'right') return align
-  return undefined
-})
-
-const rowActionsHeaderAlignValue = computed<ActionsAlign>(() => {
-  return rowActionsAlignValue.value ?? 'center'
-})
-
-const rowActionsFixedValue = computed<ActionsFixed | undefined>(() => {
-  const fixed = childProp<ActionsFixed>(actionsNode.value, 'fixed')
-  if (fixed === true || fixed === false || fixed === 'left' || fixed === 'right') return fixed
-  return undefined
-})
-
-const rowActionsJustifyContentValue = computed(() => {
-  switch (rowActionsAlignValue.value) {
-    case 'center':
-      return 'center'
-    case 'right':
-      return 'flex-end'
-    default:
-      return 'flex-start'
-  }
-})
-
 const rowActionsContainerStyle = computed<CSSProperties>(() => ({
-  justifyContent: rowActionsJustifyContentValue.value,
+  justifyContent: rowActionsAlignValue.value === 'center'
+    ? 'center'
+    : rowActionsAlignValue.value === 'right'
+      ? 'flex-end'
+      : 'flex-start',
   flexWrap: 'nowrap',
 }))
 
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childProp<string>(actionsNode.value, 'label') ?? '操作'
-  const width = childProp<number | string>(actionsNode.value, 'width') ?? 220
+  const label = childProp<string>(props.actions, 'label') ?? '操作'
+  const width = childProp<number | string>(props.actions, 'width') ?? 220
   const align = rowActionsAlignValue.value
-  const headerAlign = rowActionsHeaderAlignValue.value
+  const headerAlign = align ?? 'center'
   const fixed = rowActionsFixedValue.value
   return {
     label,
@@ -516,6 +464,92 @@ const rowActionColumnAttrs = computed(() => {
     ...(align !== undefined ? { align } : {}),
     headerAlign,
     ...(fixed !== undefined ? { fixed } : {}),
+  }
+})
+
+function normalizeRowClassValue(value: unknown): string {
+  if (typeof value === 'string') return value.trim()
+  if (Array.isArray(value)) {
+    return value.filter(item => typeof item === 'string').join(' ').trim()
+  }
+  return ''
+}
+
+const selectedRowIdSet = computed(() => {
+  const view = resolvedView.value
+  const selectedRows = view?.selectedRows ?? []
+  const keyField = view?.primaryKey
+  const ids = new Set<string | number>()
+
+  if (typeof keyField !== 'string' || keyField.length === 0) {
+    return ids
+  }
+
+  for (const row of selectedRows) {
+    const key = (row as Record<string, unknown>)[keyField]
+    if (typeof key === 'string' || typeof key === 'number') {
+      ids.add(key)
+    }
+  }
+
+  return ids
+})
+
+const selectedRowRefSet = computed(() => new Set(resolvedView.value?.selectedRows ?? []))
+
+const selectionColumnAttrs = computed(() => {
+  const widthValue = elTableProps.value['selectionWidth']
+  const width = typeof widthValue === 'number' || typeof widthValue === 'string' ? widthValue : 52
+
+  const fixedValue = elTableProps.value['selectionFixed']
+  const fixed = fixedValue === true || fixedValue === false || fixedValue === 'left' || fixedValue === 'right'
+    ? fixedValue
+    : undefined
+
+  const selectableValue = elTableProps.value['selectionSelectable']
+  const selectable = typeof selectableValue === 'function'
+    ? selectableValue as (row: IDataRow, index: number) => boolean
+    : undefined
+
+  return {
+    width,
+    ...(fixed !== undefined ? { fixed } : {}),
+    ...(selectable !== undefined ? { selectable } : {}),
+  }
+})
+
+function isSelectedRow(row: IDataRow): boolean {
+  const view = resolvedView.value
+  const keyField = view?.primaryKey
+  if (typeof keyField === 'string' && keyField.length > 0) {
+    const key = (row as Record<string, unknown>)[keyField]
+    if ((typeof key === 'string' || typeof key === 'number') && selectedRowIdSet.value.has(key)) {
+      return true
+    }
+  }
+  return selectedRowRefSet.value.has(row)
+}
+
+const tableRowClassName = computed(() => {
+  const externalClassResolver = (elTableProps.value['rowClassName'] ?? elTableProps.value['row-class-name']) as unknown
+
+  return ({ row, rowIndex }: { row: IDataRow, rowIndex: number }) => {
+    const classNames: string[] = []
+
+    if (typeof externalClassResolver === 'function') {
+      const externalClass = (externalClassResolver as (args: { row: IDataRow, rowIndex: number }) => unknown)({ row, rowIndex })
+      const normalized = normalizeRowClassValue(externalClass)
+      if (normalized.length > 0) classNames.push(normalized)
+    } else if (typeof externalClassResolver === 'string') {
+      const normalized = externalClassResolver.trim()
+      if (normalized.length > 0) classNames.push(normalized)
+    }
+
+    if (isSelectedRow(row)) {
+      classNames.push('spark-selection-row')
+    }
+
+    return classNames.join(' ').trim()
   }
 })
 
@@ -605,6 +639,11 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
   --spark-table-header-text: #1f2d3d;
   --spark-table-header-border: #dbe6f6;
   --spark-table-sort-active: #2f6feb;
+  --spark-table-current-row-bg: #eaf3ff;
+  --spark-table-current-row-bg-hover: #deecff;
+  --spark-table-selection-row-bg: #f2f9ef;
+  --spark-table-selection-row-bg-hover: #e7f4e2;
+  --el-table-current-row-bg-color: var(--spark-table-current-row-bg);
 }
 
 .renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell) {
@@ -630,6 +669,23 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 
 .renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell:last-child) {
   border-top-right-radius: 10px;
+}
+
+/* 当前行/勾选行高亮：提升行态辨识度。 */
+.renderer-table-main :deep(.el-table__body tr.current-row > td.el-table__cell) {
+  background-color: var(--spark-table-current-row-bg) !important;
+}
+
+.renderer-table-main :deep(.el-table__body tr.current-row:hover > td.el-table__cell) {
+  background-color: var(--spark-table-current-row-bg-hover) !important;
+}
+
+.renderer-table-main :deep(.el-table__body tr.spark-selection-row > td.el-table__cell) {
+  background-color: var(--spark-table-selection-row-bg) !important;
+}
+
+.renderer-table-main :deep(.el-table__body tr.spark-selection-row:hover > td.el-table__cell) {
+  background-color: var(--spark-table-selection-row-bg-hover) !important;
 }
 
 /* 左右侧工具栏布局时，工具栏内部也改为纵向堆叠。 */

@@ -41,17 +41,21 @@ import {
   ACTION_CAPABILITY,
   DATA_ROW,
   DATA_SOURCE,
+  PAGE_SERVICE,
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
-import { isBuiltinAction } from '../../../page/actions'
+import { getBuiltinActionName, isBuiltinAction } from '../../../page/actions'
 import { resolveButtonStyle } from '../support/actions/button-templates'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
+import { createBuiltinActionHandler } from '../support/actions/builtin-action-handler'
+import { hasRemoteListApi } from '../support/actions/builtin-action-helpers'
+import { isBuiltinActionDisabled } from '../support/actions/builtin-action-disabled'
 
 const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',
@@ -63,7 +67,7 @@ const props = withDefaults(defineProps<RButtonProps>(), {
 
 // ── 一、基础能力与上下文 ─────────────────────────────────────────────────
 // useSparkPageComponent 负责接入可见性、禁用态、规范化 props 以及 capability 消费入口。
-const { isVisible, isDisabled, resolvedProps, sparkConsume } = useSparkPageComponent(props)
+const { isVisible, isDisabled, resolvedProps, sparkConsume, logger } = useSparkPageComponent(props)
 // 权限能力用于模型级与行级动作授权判断。
 const permission = usePermission()
 
@@ -84,6 +88,11 @@ function resolveActionHost() {
   return sparkConsume(ACTION_CAPABILITY)
 }
 
+function resolveActionView(): DataView | null {
+  const dataSource = sparkConsume(DATA_SOURCE)
+  return dataSource as DataView | null
+}
+
 // 统一解析作用域行：优先 DATA_ROW；若不存在则回退到 DATA_SOURCE.currentRow。
 // 这样可同时覆盖行内按钮与工具栏按钮。
 function resolveScopedRow(): IDataRow | undefined {
@@ -97,11 +106,16 @@ function resolveScopedRow(): IDataRow | undefined {
 const hostActionDisabled = computed(() => {
   if (!hasBuiltinAction.value) return false
 
-  const actionHost = resolveActionHost()
-  if (actionHost === null) return false
-
   // 将 DATA_SOURCE / DATA_ROW 显式并入动作节点，保证宿主拿到完整作用域。
   const nodeForCheck = resolveActionNodeWithDataCapabilities()
+  const view = resolveActionView()
+  const row = resolveScopedRow()
+  if (view) {
+    return isBuiltinActionDisabled(nodeForCheck, view, row ? { row, index: 0 } : undefined)
+  }
+
+  const actionHost = resolveActionHost()
+  if (actionHost === null) return false
   return actionHost.isDisabled(nodeForCheck)
 })
 
@@ -160,6 +174,25 @@ function resolveActionNodeWithDataCapabilities(): SparkNode {
   }
 }
 
+function executeBuiltinActionDirect(action: SparkNode): void {
+  const view = resolveActionView()
+  const pageService = sparkConsume(PAGE_SERVICE)
+  const builtinActionHandler = createBuiltinActionHandler({
+    getView: () => view,
+    getPageService: () => pageService,
+    getLogger: () => logger,
+    hasRemoteListApi,
+  })
+
+  const row = resolveScopedRow()
+  if (row) {
+    builtinActionHandler.handleRow(action, row, 0)
+    return
+  }
+
+  builtinActionHandler.handleToolbar(action)
+}
+
 // ── 六、视觉样式解析 ─────────────────────────────────────────────────────
 // 显式 props 优先，action/template 为兜底与预设来源。
 const resolved = computed(() => {
@@ -209,7 +242,19 @@ const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() =>
 async function handleClick(event: MouseEvent): Promise<void> {
   if (hasBuiltinAction.value) {
     const actionNode = resolveActionNodeWithDataCapabilities()
+    const actionName = getBuiltinActionName(actionNode)
     const actionHost = resolveActionHost()
+
+    if (actionName === 'submit-current-form' && actionHost !== null) {
+      actionHost.execute(actionNode)
+      return
+    }
+
+    if (resolveActionView()) {
+      executeBuiltinActionDirect(actionNode)
+      return
+    }
+
     if (actionHost === null) return
     actionHost.execute(actionNode)
     return

@@ -44,10 +44,7 @@
 import { computed, ref } from 'vue'
 import {
   SparkComponentRenderer,
-  ACTION_CAPABILITY,
-  createActionCapability,
   nodeId,
-  type SparkNode,
 } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
@@ -66,7 +63,6 @@ const formPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.form
 
 const {
   registerApi,
-  sparkProvide,
   logger,
   pageService,
   resolvedView,
@@ -94,8 +90,6 @@ const {
 const nativeFormRef = ref<unknown>(null)
 const {
   formApi,
-  handleBuiltinToolbarAction,
-  isBuiltinActionDisabled,
 } = createRendererFormZeroCode({
   props,
   resolvedView,
@@ -106,17 +100,6 @@ const {
 })
 
 registerApi(formApi)
-
-const toolbarActionCapability = {
-  isDisabled(action: SparkNode): boolean {
-    return isBuiltinActionDisabled(action)
-  },
-  execute(action: SparkNode): void {
-    handleBuiltinToolbarAction(action)
-  },
-}
-
-sparkProvide(ACTION_CAPABILITY, createActionCapability(toolbarActionCapability))
 
 </script>
 
