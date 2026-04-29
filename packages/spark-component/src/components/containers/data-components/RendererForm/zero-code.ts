@@ -2,10 +2,13 @@ import type { DataView } from '@spark-view/spark-data'
 import type { IPageServiceCapability } from '../../../internal'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
-import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
+import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
+import { isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
+import { hasRemoteListApi } from '../../support/actions/builtin-action-helpers'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererFormApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
+import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 
 interface NativeFormLike {
   validate?: () => Promise<boolean>
@@ -62,24 +65,25 @@ export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions)
     },
   }
 
-  const builtinActions = createBuiltinActionBridge({
+  const builtinActionHandler = createBuiltinActionHandler({
     getView: () => options.resolvedView.value,
     getPageService: () => options.pageService,
     getLogger: () => options.logger,
+    hasRemoteListApi,
     getFormApi: () => formApi,
   })
 
-  function isBuiltinActionDisabled(action: SparkNode): boolean {
-    return builtinActions.isDisabled(action)
+  function isBuiltinActionDisabledAtScope(action: SparkNode, scope?: BuiltinActionScope): boolean {
+    return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
   }
 
   function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinActions.handleToolbar(action)
+    builtinActionHandler.handleToolbar(action)
   }
 
   return {
     formApi,
-    isBuiltinActionDisabled,
+    isBuiltinActionDisabled: isBuiltinActionDisabledAtScope,
     handleBuiltinToolbarAction,
   }
 }

@@ -2,11 +2,14 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { IPageServiceCapability } from '../../../internal'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
-import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
+import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
+import { isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
 import { getSelectedRows } from '../../support/actions/builtin-action-helpers'
+import { hasRemoteListApi } from '../../support/actions/builtin-action-helpers'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
+import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 
 /* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 
@@ -208,28 +211,29 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     },
   }
 
-  const builtinActions = createBuiltinActionBridge({
+  const builtinActionHandler = createBuiltinActionHandler({
     getView: () => options.resolvedView.value,
     getPageService: () => options.pageService,
     getLogger: () => options.logger,
+    hasRemoteListApi,
   })
 
-  function isBuiltinActionDisabled(action: SparkNode, scope?: { row?: IDataRow; index?: number }): boolean {
-    return builtinActions.isDisabled(action, scope)
+  function isBuiltinActionDisabledAtScope(action: SparkNode, scope?: BuiltinActionScope): boolean {
+    return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
   }
 
   function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinActions.handleToolbar(action)
+    builtinActionHandler.handleToolbar(action)
   }
 
   function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number): void {
-    builtinActions.handleRow(action, row, index)
+    builtinActionHandler.handleRow(action, row, index)
   }
 
   return {
     dispatch,
     tableApi,
-    isBuiltinActionDisabled,
+    isBuiltinActionDisabled: isBuiltinActionDisabledAtScope,
     handleBuiltinToolbarAction,
     handleBuiltinRowAction,
   }

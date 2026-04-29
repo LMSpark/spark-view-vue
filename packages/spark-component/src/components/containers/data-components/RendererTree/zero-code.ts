@@ -8,9 +8,12 @@ import {
 } from '../../../internal'
 import type { SparkNode } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
-import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
+import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
+import { isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
+import { hasRemoteListApi } from '../../support/actions/builtin-action-helpers'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
+import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 
 export interface TreeNode {
   id?: string | number
@@ -195,26 +198,28 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     },
   }
 
-  const builtinActions = createBuiltinActionBridge({
+  const builtinActionHandler = createBuiltinActionHandler({
     getView: () => options.resolvedView.value,
     getPageService: () => options.pageService,
     getLogger: () => options.logger,
+    hasRemoteListApi,
   })
 
   function isBuiltinNodeActionDisabled(action: SparkNode, row: IDataRow, index: number): boolean {
-    return builtinActions.isDisabled(action, { row, index })
+    const scope: BuiltinActionScope = { row, index }
+    return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
   }
 
   function isBuiltinToolbarActionDisabled(action: SparkNode): boolean {
-    return builtinActions.isDisabled(action)
+    return isBuiltinActionDisabled(action, options.resolvedView.value)
   }
 
   function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinActions.handleToolbar(action)
+    builtinActionHandler.handleToolbar(action)
   }
 
   function handleBuiltinNodeAction(action: SparkNode, row: IDataRow, index: number): void {
-    builtinActions.handleRow(action, row, index)
+    builtinActionHandler.handleRow(action, row, index)
   }
 
   function createTreeEventControl(): TreeEventControl {
