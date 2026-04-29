@@ -8,7 +8,6 @@
  * 此处直接静态导入 Spark，避免无效动态导入告警。
  */
 
-import type { App } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import { createLogger } from './logger'
 
@@ -34,7 +33,7 @@ const DEFAULT_EXCLUDE = [
  *
  * 可用于经典模式启动，或在运行时动态追加组件时调用。
  */
-export function setupAutoRegister(_app: App, options: AutoRegisterOptions = {}) {
+export function setupAutoRegister(options: AutoRegisterOptions = {}) {
 
   const exclude = options.exclude ?? DEFAULT_EXCLUDE
 

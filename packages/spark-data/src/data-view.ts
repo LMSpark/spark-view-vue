@@ -674,9 +674,6 @@ export class DataView implements IDataSource {
     return this._columnMap?.get(name)
   }
 
-  /** @internal 返回 DataTable 列定义（已弃用，请使用 `columns` getter） */
-  getColumns() { return this._dataTable?.columns }
-
   /** @internal 返回 DataSet 实例 */
   getDataSet() { return this._dataTable?.dataSet }
 
@@ -939,11 +936,14 @@ export class DataView implements IDataSource {
 
   /** 获取手工编辑追踪委托（懒初始化） */
   private get dirtyTrackingDelegate(): DirtyTrackingDelegate {
-    this._dirtyTrackingDelegate ??= new DirtyTrackingDelegate({
-      getColumns: () => this._dataTable?.columns,
-      getComputedColumnNames: () => this._computedDelegate.names,
-      getPrimaryKeyFields: () => this.effectivePkFields,
-    })
+    if (!this._dirtyTrackingDelegate) {
+      const view = this
+      this._dirtyTrackingDelegate = new DirtyTrackingDelegate({
+        get columns() { return view._dataTable?.columns },
+        getComputedColumnNames: () => view._computedDelegate.names,
+        getPrimaryKeyFields: () => view.effectivePkFields,
+      })
+    }
     return this._dirtyTrackingDelegate
   }
 

@@ -120,7 +120,6 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     if (auth) {
       logPhase('AUTH-INIT', '初始化认证服务')
 
-      // 创建新的 AuthService 实例，传入配置（采用新方式，删除过时的 initialize 调用）
       const authConfig: AuthConfig = {
         apiEndpoints: auth.apiEndpoints,
         tokenStorage: auth.tokenStorage,
@@ -185,31 +184,8 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // =========================================================================
     // 阶段 4: SPARK 组件系统和服务注册
     // =========================================================================
-    // 说明：SPARK 框架采用"能力系统"来管理组件和服务，而不是传统的 Vue 依赖注入
-    //
-    // 工作原理：
-    // 1. SparkApp.start() 时已自动安装了 SPARK 插件
-    // 2. 插件提供了组件注册表（SPARK_REGISTRY_KEY）
-    // 3. 组件通过 inject(SPARK_REGISTRY_KEY) 获取注册表
-    //
-    // 服务获取方式（新方式 - 推荐）：
-    // ✅ 使用 APP_SERVICES 能力：consume(APP_SERVICES) 获取 router/logger/auth
-    // ✅ 直接使用 Vue 工具：useRouter()、Logger('module')
-    //
-    // 旧方式（已废弃）：
-    // ❌ Vue provide/inject：app.provide() / inject() 提供应用服务
-    //
-    // 示例代码：
-    // ```typescript
-    // // 在组件中获取服务（推荐方式）
-    // const { sparkConsume } = useSparkComponent({ type: 'my-component' })
-    // const services = consume(APP_SERVICES)  // 获取 router/logger/auth
-    // services?.router?.push('/home')
-    //
-    // // 或者直接使用
-    // import { useRouter } from 'vue-router'
-    // const router = useRouter()
-    // ```
+    // SPARK 通过"能力系统"管理组件与服务：SparkApp.start() 已安装插件并暴露
+    // SPARK_REGISTRY_KEY；服务通过 consume(APP_SERVICES) 或直接 useRouter()/Logger() 获取。
 
     logPhase('SERVICES', 'SPARK 能力系统服务已就绪')
 

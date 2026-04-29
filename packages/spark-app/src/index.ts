@@ -41,10 +41,6 @@ export {
   TokenManager
 } from './auth'
 
-// HttpClient 已废弃，请使用 Request 类
-// 从 @spark-view/spark-utils 导入 createRequest
-// IApiContext 现在在 @spark-view/spark-data 中
-
 export type {
   AuthConfig,
   LoginCredentials,

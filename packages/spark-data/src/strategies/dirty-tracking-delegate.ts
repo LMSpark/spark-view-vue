@@ -49,7 +49,7 @@ import type { ISaveChangesHost, ICrudNetworkOps } from './types'
  */
 export interface IDirtyTrackingHost {
   /** 返回 DataTable 列定义（未 attach 时可能返回 undefined） */
-  getColumns(): DataColumn[] | undefined
+  readonly columns: readonly DataColumn[] | undefined
   /** 返回计算列名集合（用于排除） */
   getComputedColumnNames(): ReadonlySet<string>
   /**
@@ -121,7 +121,7 @@ export class DirtyTrackingDelegate {
    * 无列定义时回退到 null（getDiff/snapshot 降级为全字段对比）。
    */
   private _getEditableFields(): Set<string> | null {
-    const columns = this._host.getColumns()
+    const columns = this._host.columns
     if (!columns?.length) return null
 
     // 实际生效的主键字段（可能来自 override 而非 col.isPrimaryKey）

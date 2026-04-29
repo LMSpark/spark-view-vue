@@ -199,7 +199,7 @@ export interface IComputedColumnHost {
   /** 宿主的行数据 */
   readonly rows: IDataRow[]
   /** DataTable 列定义（可能为 undefined——dataTable 尚未 attach） */
-  getColumns(): ReadonlyArray<{ name: string; computeExpression?: string }> | undefined
+  readonly columns: ReadonlyArray<{ name: string; computeExpression?: string }> | undefined
   /** 获取 DataSet 实例（可能为 undefined——无 DataSet 上下文） */
   getDataSet(): IComputedColumnDataSet | undefined
 }
@@ -270,7 +270,7 @@ export class ComputedColumnDelegate {
    * 内置编译缓存：列指纹 + ctx 不变时跳过。
    */
   syncFromConfig(): void {
-    const columns = this._host.getColumns()
+    const columns = this._host.columns
     if (!columns?.length) return
 
     // 编译缓存：列表达式指纹（字符串比较）+ ctx 对象引用（=== 比较，不做深序列化）
