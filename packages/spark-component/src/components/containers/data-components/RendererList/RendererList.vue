@@ -130,13 +130,18 @@ const props = withDefaults(defineProps<RListProps>(), {
 const listPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.listProps ?? {}) }))
 const slots = useSlots()
 
-// 优先消费结构化 props.toolbar / props.actions；
-// 兼容旧配置：若未走结构化输入，仍可从 children 中回退提取 r-toolbar / r-actions。
+// 仅消费结构化 props.toolbar / props.actions；children 仅承载内容节点。
 const allChildNodes = computed(() => getSparkNodeChildren(props.children))
 const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-actions'])
 const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
-const toolbarNode = computed(() => props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
-const actionsNode = computed(() => props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
+const toolbarNode = computed(() => props.toolbar)
+const actionsNode = computed(() => props.actions)
+
+const legacyStructuralChildren = computed(() => allChildNodes.value.filter(child => STRUCTURAL_CHILD_TYPES.has(child.type)))
+if (legacyStructuralChildren.value.length > 0) {
+  const found = legacyStructuralChildren.value.map(child => child.type).join(', ')
+  throw new Error(`[r-list] legacy structural children are not supported: ${found}. Use props.toolbar / props.actions instead.`)
+}
 
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
