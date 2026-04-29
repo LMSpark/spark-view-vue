@@ -15,7 +15,6 @@ import {
 } from './capability-system.js'
 import type { CapabilityKey, SparkCapabilityConsumer } from './capability-system.js'
 import type { LoggerApi } from '@spark-view/spark-utils'
-import { Logger } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
@@ -145,10 +144,6 @@ export function useSparkHostScope(
 // 仅用于匿名 Spark 节点的本地 id 兜底，保证上下文树里每个节点都有稳定标识。
 let _idCounter = 0
 
-// 页面 logger 尚未就绪时的兜底通道：直接走 Logger SSoT，避免与 console 直连而绕开
-// 仓库统一的日志策略（DEV/PROD 过滤、远端 transport 等）。
-const DEV_FALLBACK_LOGGER: LoggerApi = Logger('SparkComponent:fallback')
-
 // ===== Vue 运行时输入 -> SparkNode 归一化 =====
 
 // Vue 事件监听属性不属于 SparkNode.props 的业务配置，归一化时需要剔除。
@@ -192,10 +187,6 @@ function buildEffectiveConfig(instance: RuntimeInstance, fallbackConfig?: SparkN
   }
 
   return normalizeSparkNode(base, 'unknown')
-}
-
-function readConfigProp(instance: RuntimeInstance, fallbackConfig: SparkNodeInput | undefined, propName: string): unknown {
-  return nodeInputProp(buildEffectiveConfig(instance, fallbackConfig), propName)
 }
 
 // ===== Spark 上下文桥接与能力辅助 =====
@@ -243,7 +234,10 @@ function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
   const consumeFromCurrent = createSparkCapabilityConsumer(context)
   const resolveLogger = (): LoggerApi => {
     const appServices = consumeFromCurrent(APP_SERVICES)
-    return isLoggerApi(appServices?.logger) ? appServices.logger : DEV_FALLBACK_LOGGER
+    if (!isLoggerApi(appServices?.logger)) {
+      throw new Error('[spark] APP_SERVICES.logger is required but missing. Ensure page root provides APP_SERVICES before components log.')
+    }
+    return appServices.logger
   }
 
   return {
@@ -361,15 +355,16 @@ export function useSparkComponent(
 
   // 统一从归一化配置读取可视/禁用状态，避免 props 来源分散导致语义不一致。
   const logger = createPageLoggerProxy(context)
+  const effectiveConfig = computed(() => buildEffectiveConfig(currentInstance, fallbackConfig))
   const readNormalizedConfigProp = (propName: string): unknown => {
-    return readConfigProp(currentInstance, fallbackConfig, propName)
+    return nodeInputProp(effectiveConfig.value, propName)
   }
   const isVisible = computed(() => readNormalizedConfigProp('visible') !== false)
   const isDisabled = computed(() => readNormalizedConfigProp('disabled') === true)
 
   // props 中若引用了 DATA_ROW 占位符，在这里统一投影为最终给组件消费的运行时 props。
   const resolvedProps = computed(() => {
-    const props = buildEffectiveConfig(currentInstance, fallbackConfig).props ?? {}
+    const props = effectiveConfig.value.props ?? {}
     const row = consumeCapability(DATA_ROW) as Record<string, unknown> | null
     return resolvePlaceholderProps(props, row)
   })
@@ -381,39 +376,23 @@ export function useSparkComponent(
       throw new Error(`[spark] sparkProvide received undefined implementation: ${String(name)}. Use sparkRemove(name) to clear capability explicitly.`)
     }
     capabilityApi.sparkProvide(context, name, implementation)
-    if (import.meta.env.DEV && name !== DATA_ROW) {
-      logger.debug(`[spark] provided: ${String(name)}`)
-    }
   }
 
   function sparkRemove<T>(name: CapabilityKey<T>): void {
     capabilityApi.sparkRemove(context, name)
-    if (import.meta.env.DEV) {
-      logger.debug(`[spark] removed: ${String(name)}`)
-    }
   }
 
   function sparkConsume<T>(name: CapabilityKey<T>): T | null {
     const impl = consumeCapability(name)
-    if (impl !== null) return impl
-    if (import.meta.env.DEV) {
-      logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
-    }
-    return null
+    return impl
   }
 
   // ===== 生命周期：初始化日志与上下文清理 =====
 
   let initialized = false
-  const instanceUid = currentInstance?.uid
-
   const initialize = () => {
     if (initialized) return
     initialized = true
-    if (import.meta.env.DEV) {
-      const uidSuffix = instanceUid === undefined ? '' : `#uid:${instanceUid}`
-      logger.debug(`[spark] init: ${context.type} (${context.id})${uidSuffix}`)
-    }
   }
 
   const destroy = () => {

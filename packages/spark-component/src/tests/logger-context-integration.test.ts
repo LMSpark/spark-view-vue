@@ -2,12 +2,12 @@
  * 页面层 Logger 集成测试
  *
  * 验证 useSparkComponent 返回的 logger 只依赖页面层 APP_SERVICES.logger：
- * 1. 页面层未提供 logger 时回退到 console
+ * 1. 页面层未提供 logger 时 fail-fast 抛错
  * 2. 页面根提供 APP_SERVICES.logger 后组件使用该 logger
  * 3. 子组件继承页面层 logger，不再依赖局部 LOGGER 覆盖
  */
 
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { Spark, useSparkComponent, APP_SERVICES, type IAppServicesCapability } from '@spark-view/spark-component'
@@ -26,9 +26,7 @@ function createAppServices(logger: LoggerApi): IAppServicesCapability {
 }
 
 describe('Logger Context Integration', () => {
-  it('页面层未提供 logger 时回退到 console', () => {
-    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined)
-
+  it('页面层未提供 logger 时 fail-fast 抛错', () => {
     const TestComponent = defineComponent({
       setup() {
         const { logger } = useSparkComponent({ type: 'test-comp' })
@@ -38,14 +36,9 @@ describe('Logger Context Integration', () => {
       }
     })
 
-    const wrapper = mount(TestComponent, {
+    expect(() => mount(TestComponent, {
       global: { plugins: [Spark.createPlugin()] }
-    })
-
-    expect(wrapper.text()).toBe('test')
-    expect(consoleInfoSpy).toHaveBeenCalled()
-
-    consoleInfoSpy.mockRestore()
+    })).toThrow('[spark] APP_SERVICES.logger is required but missing. Ensure page root provides APP_SERVICES before components log.')
   })
 
   it('页面根提供 APP_SERVICES.logger 后组件使用页面 logger', async () => {
