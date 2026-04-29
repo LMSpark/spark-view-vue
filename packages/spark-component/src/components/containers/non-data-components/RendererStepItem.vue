@@ -41,14 +41,8 @@ interface Props {
   props?: { [key: string]: unknown }
   children?: SparkNode['children']
   id?: string
-  /** 步骤唯一标识 */
-  name?: string | number
-  /** 步骤值（name 别名） */
-  value?: string | number
   /** 步骤标题 */
   title?: string
-  /** 步骤标签（title 别名） */
-  label?: string
   /** 步骤描述文本 */
   description?: string
   /** 步骤状态 */
@@ -93,7 +87,7 @@ const {
 })
 
 const stepTitle = computed(() => {
-  const value = props.title ?? props.label
+  const value = props.title
   return typeof value === 'string' && value.trim().length > 0 ? value : `步骤${props.index + 1}`
 })
 

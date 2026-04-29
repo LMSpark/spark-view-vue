@@ -42,12 +42,8 @@ interface Props {
   id?: string
   /** 标签页唯一标识 */
   name?: string | number
-  /** 标签页值 */
-  value?: string | number
   /** 标签页标签文本 */
   label?: string
-  /** 标签页标题（label 别名） */
-  title?: string
   /** 是否禁用 */
   disabled?: boolean
   /** 是否延迟加载 */
@@ -86,12 +82,12 @@ const {
 })
 
 const paneName = computed<string | number>(() => {
-  const value = props.name ?? props.value ?? props.id
+  const value = props.name ?? props.id
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${props.index}`
 })
 
 const paneLabel = computed(() => {
-  const value = props.label ?? props.title
+  const value = props.label
   return typeof value === 'string' && value.trim().length > 0 ? value : `标签页${props.index + 1}`
 })
 

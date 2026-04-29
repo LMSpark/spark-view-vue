@@ -42,8 +42,6 @@ interface Props {
   name?: string | number
   /** 面板标题 */
   title?: string
-  /** 面板标签（title 别名） */
-  label?: string
   /** 是否禁用 */
   disabled?: boolean
   /** 面板体自定义 class */
@@ -83,7 +81,7 @@ const itemName = computed<string | number>(() => {
 })
 
 const itemTitle = computed(() => {
-  const value = props.title ?? props.label
+  const value = props.title
   return typeof value === 'string' && value.trim().length > 0 ? value : `分组${props.index + 1}`
 })
 
