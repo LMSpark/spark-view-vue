@@ -9,7 +9,6 @@
     :center="center"
     :show-icon="showIcon"
     :effect="effect"
-    v-bind="hostProps"
     @close="handleClose"
   />
 </template>

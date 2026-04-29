@@ -4,7 +4,6 @@ import type {
   SparkNodeProps,
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
-import type { ActionsNode } from '../../support/RendererActions.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { TreeEventHandler } from './zero-code'
 
@@ -20,8 +19,8 @@ export interface RTreeProps
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
-  /** 结构化节点动作 */
-  actions?: ActionsNode
+  /** 结构化节点动作（toolbar 结构） @componentRef r-toolbar */
+  actions?: ToolbarNode
   /** 结构化编辑区 @componentRef r-editor */
   editor?: EditorNode
   /** 节点主键字段名，默认取 treeConfig.idField */

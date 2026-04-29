@@ -6,7 +6,6 @@
     :size="size"
     :block="block"
     :disabled="isDisabled || !isCurrentFieldEditable"
-    v-bind="hostProps"
     @update:model-value="handleChange"
   />
 </template>

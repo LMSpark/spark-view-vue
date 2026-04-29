@@ -13,7 +13,6 @@
     :show-text="showText"
     :stroke-linecap="strokeLinecap"
     :format="formatFn"
-    v-bind="hostProps"
   />
 </template>
 

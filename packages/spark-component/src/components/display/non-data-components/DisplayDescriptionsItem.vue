@@ -7,7 +7,6 @@
     :align="contentAlign"
     :label-class-name="labelClassName"
     :class-name="className"
-    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length > 0">
       <SparkComponentRenderer

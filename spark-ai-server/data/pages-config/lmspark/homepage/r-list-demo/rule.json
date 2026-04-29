@@ -106,7 +106,7 @@
                                 ]
                             },
                             {
-                                "type": "r-actions",
+                                "type": "r-toolbar",
                                 "props": {
                                     "position": "right"
                                 },
@@ -341,7 +341,7 @@
                                 ]
                             },
                             {
-                                "type": "r-actions",
+                                "type": "r-toolbar",
                                 "props": {
                                     "position": "left"
                                 },

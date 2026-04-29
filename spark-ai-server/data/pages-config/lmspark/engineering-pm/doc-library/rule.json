@@ -125,7 +125,7 @@
         }
       },
       {
-        "type": "r-actions",
+        "type": "r-toolbar",
         "props": {
           "label": "操作",
           "width": 140,

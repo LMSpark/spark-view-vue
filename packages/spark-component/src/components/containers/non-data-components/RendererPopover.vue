@@ -13,7 +13,6 @@
     :hide-after="hideAfter"
     :show-arrow="showArrow"
     :popper-class="popperClass"
-    v-bind="hostProps"
   >
     <template #reference>
       <SparkComponentRenderer

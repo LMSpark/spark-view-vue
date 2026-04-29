@@ -1,14 +1,12 @@
 <template>
   <div :class="['renderer-list-layout', `renderer-list-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-list-toolbar-scope" :row="resolvedDataRow ?? undefined">
-      <div :class="['renderer-list-toolbar', toolbarClassValue]">
+    <div v-if="showToolbar" :class="['renderer-list-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
           v-for="(action, index) in visibleToolbarConfigs"
           :key="nodeId(action) ?? `r-list-toolbar-${index}`"
           :config="action"
         />
-      </div>
-    </RendererHostScope>
+    </div>
 
     <div class="renderer-list-main">
       <div class="renderer-list" :style="listStyle" v-bind="listPropsValue">
@@ -27,43 +25,35 @@
                 v-if="showItemActionsLeftValue && hasVisibleItemActions(row, index)"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <RendererHostScope
-                  type="r-list-item-action-scope"
-                  :children="getScopedItemActions({ row, index })"
-                  :row="row"
-                />
+                <SparkComponentRenderer :config="createScopedItemActionsToolbarConfig({ row, index })" />
               </div>
 
               <div :class="itemClass" :style="itemStyle">
-                <RendererHostScope type="r-list-item" :row="row">
-                  <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
-                    <div class="renderer-list-item-body" :style="itemContentGridStyle">
-                      <div
-                        v-for="(child, childIndex) in itemContentChildren"
-                        :key="nodeId(child) ?? `r-list-item-child-${childIndex}`"
-                        class="renderer-list-grid-item"
-                        :style="getItemContentChildGridStyle(child)"
-                      >
-                        <SparkComponentRenderer :config="child" />
-                      </div>
-                      <slot
-                        v-if="!itemContentChildren.length"
-                        v-bind="getRowScope(row, index)"
-                      />
+                <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
+                  <div class="renderer-list-item-body" :style="itemContentGridStyle">
+                    <RendererHostScope :row="row">
+                    <div
+                      v-for="(child, childIndex) in itemContentChildren"
+                      :key="nodeId(child) ?? `r-list-item-child-${childIndex}`"
+                      class="renderer-list-grid-item"
+                      :style="getItemContentChildGridStyle(child)"
+                    >
+                      <SparkComponentRenderer :config="child" />
                     </div>
-                  </component>
-                </RendererHostScope>
+                    </RendererHostScope>
+                    <slot
+                      v-if="!itemContentChildren.length"
+                      v-bind="getRowScope(row, index)"
+                    />
+                  </div>
+                </component>
               </div>
 
               <div
                 v-if="showItemActionsRightValue && hasVisibleItemActions(row, index)"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <RendererHostScope
-                  type="r-list-item-action-scope"
-                  :children="getScopedItemActions({ row, index })"
-                  :row="row"
-                />
+                <SparkComponentRenderer :config="createScopedItemActionsToolbarConfig({ row, index })" />
               </div>
             </div>
           </div>
@@ -100,16 +90,16 @@ import {
 import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
-import RendererHostScope from '../../support/RendererHostScope.vue'
-import { useContainerActions } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import { useContainerActionVisibility } from '../../layout/useContainerActionVisibility'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/toolbar-position'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
-import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
+import { resolveCurrentRowPath } from '../../../support/row-selection-path'
+import type { ActionsPosition } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { createRendererListZeroCode } from './zero-code'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 
 const props = withDefaults(defineProps<RListProps>(), {
   type: 'r-list',
@@ -132,16 +122,10 @@ const slots = useSlots()
 
 // 仅消费结构化 props.toolbar / props.actions；children 仅承载内容节点。
 const allChildNodes = computed(() => getSparkNodeChildren(props.children))
-const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-actions'])
+const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar'])
 const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
 const toolbarNode = computed(() => props.toolbar)
 const actionsNode = computed(() => props.actions)
-
-const legacyStructuralChildren = computed(() => allChildNodes.value.filter(child => STRUCTURAL_CHILD_TYPES.has(child.type)))
-if (legacyStructuralChildren.value.length > 0) {
-  const found = legacyStructuralChildren.value.map(child => child.type).join(', ')
-  throw new Error(`[r-list] legacy structural children are not supported: ${found}. Use props.toolbar / props.actions instead.`)
-}
 
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
@@ -153,7 +137,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
-const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
@@ -170,53 +154,39 @@ useContainerDataSourceEffects({
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))
 
-const {
-  toolbarPositionValue,
-  toolbarClassValue,
-  visibleToolbarConfigs,
-  showToolbar,
-} = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(toolbarNode.value?.children)),
-  toolbarPosition: computed(() => {
-    const position = toolbarNode.value?.props?.['position']
-    return (position === 'top' || position === 'bottom' || position === 'left' || position === 'right')
-      ? position as ToolbarPosition
-      : undefined
-  }),
-  toolbarClass: computed(() => {
-    const className = toolbarNode.value?.props?.['class']
-    return typeof className === 'string' ? className : undefined
-  }),
-  modelPermission,
-  dataSource: computed(() => resolvedView.value),
+const visibleToolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
+const toolbarPositionValue = computed<ToolbarPosition>(() => {
+  const position = toolbarNode.value?.props?.['position']
+  return (position === 'top' || position === 'bottom' || position === 'left' || position === 'right')
+    ? position as ToolbarPosition
+    : 'top'
 })
+const toolbarClassValue = computed(() => {
+  const className = toolbarNode.value?.props?.['class']
+  return typeof className === 'string' ? className : 'renderer-toolbar-default'
+})
+const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
-const {
-  actionPositionValue: itemActionsPositionValue,
-  actionClassValue: itemActionsClassValue,
-  showActionsLeft: showItemActionsLeft,
-  showActionsRight: showItemActionsRight,
-  getScopedActionConfigs: getScopedItemActions,
-} = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => getSparkNodeChildren(actionsNode.value?.children)),
-  actionPosition: computed(() => {
-    const position = actionsNode.value?.props?.['position']
-    return position === 'left' || position === 'right' ? position : 'right'
-  }),
-  actionClass: computed(() => {
-    const className = actionsNode.value?.props?.['class']
-    return typeof className === 'string' ? className : ''
-  }),
-  permissionDeniedBehavior: computed(() => {
-    const behavior = actionsNode.value?.props?.['permDeniedBehavior']
-    return behavior === 'hide' || behavior === 'disable' ? behavior as PermissionDeniedBehavior : 'disable'
-  }),
-  modelPermission,
-  dataSource: computed(() => resolvedView.value),
+const itemActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
+const itemActionsPositionValue = computed<ActionsPosition>(() => {
+  const position = actionsNode.value?.props?.['position']
+  return position === 'left' || position === 'right' ? position : 'right'
+})
+const itemActionsClassValue = computed(() => {
+  const className = actionsNode.value?.props?.['class']
+  return typeof className === 'string' ? className : ''
+})
+const showItemActionsLeft = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'left')
+const showItemActionsRight = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'right')
+
+const { getVisibleActionConfigs: getScopedItemActions } = useContainerActionVisibility<{ row: IDataRow, index: number }>({
+  actionConfigs: itemActionConfigs,
   resolveScope: ({ row, index }) => ({
-    row,
+    row: resolveCurrentRowPath(row, resolvedView.value),
+    data: row,
+    index,
     listenerArgs: [row, index],
-    scopedProps: { row, rowIndex: index },
+    propsPatch: { row, rowIndex: index },
   }),
 })
 
@@ -313,6 +283,13 @@ function getRowScope(row: IDataRow, index: number) {
     row,
     index,
   })
+}
+
+function createScopedItemActionsToolbarConfig(scope: { row: IDataRow, index: number }): SparkNode {
+  return {
+    type: 'r-toolbar',
+    children: getScopedItemActions(scope),
+  }
 }
 
 function hasVisibleItemActions(row: IDataRow, index: number): boolean {

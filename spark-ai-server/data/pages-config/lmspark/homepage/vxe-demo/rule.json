@@ -156,7 +156,7 @@
                     }
                   },
                   {
-                    "type": "r-actions",
+                    "type": "r-toolbar",
                     "children": [
                       {
                         "type": "RenderRowActions"

@@ -315,7 +315,7 @@ FieldContextRenderer / 具体字段组件按宿主规则渲染
     },
     // ── 行操作：行级动作 ──
     {
-      "type": "r-actions",
+      "type": "r-toolbar",
       "children": [
         {
           "type": "builtin-action",

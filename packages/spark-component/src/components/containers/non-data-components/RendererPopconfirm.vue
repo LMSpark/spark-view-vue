@@ -11,7 +11,6 @@
     :hide-icon="hideIcon"
     :hide-after="hideAfter"
     :width="width"
-    v-bind="hostProps"
     @confirm="$emit('confirm')"
     @cancel="$emit('cancel')"
   >

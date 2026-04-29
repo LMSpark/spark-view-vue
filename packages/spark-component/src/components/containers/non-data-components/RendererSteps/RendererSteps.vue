@@ -9,7 +9,7 @@
     </div>
 
     <div class="renderer-steps-main">
-      <el-steps v-bind="hostProps" :active="activeStepIndex">
+      <el-steps :active="activeStepIndex">
         <SparkComponentRenderer
           v-for="(step, index) in stepConfigs"
           :key="getStepKey(step, index)"
@@ -35,7 +35,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/toolbar-position'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
@@ -65,17 +65,18 @@ const activeStepName = useDefaultedSelection({
   getValue: getStepName,
 })
 
-const {
-  toolbarPositionValue,
-  toolbarClassValue,
-  visibleToolbarConfigs,
-  showToolbar,
-} = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.class),
-  modelPermission: computed(() => undefined),
+const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
+const toolbarPositionValue = computed<ToolbarPosition>(() => {
+  const position = props.toolbar?.props?.position
+  return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
+    ? position as ToolbarPosition
+    : 'top'
 })
+const toolbarClassValue = computed(() => {
+  const className = props.toolbar?.props?.class
+  return typeof className === 'string' ? className : 'renderer-toolbar-default'
+})
+const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 const activeStepIndex = computed(() => {
   const index = stepConfigs.value.findIndex((step, idx) => getStepName(step, idx) === activeStepName.value)

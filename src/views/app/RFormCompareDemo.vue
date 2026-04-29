@@ -126,7 +126,7 @@ import {
   PAGE_DATASET,
   RendererForm,
   type SparkNode,
-  useSparkHostScope,
+  useSparkContextScope,
 } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 
@@ -170,7 +170,7 @@ const employeeDataSet = SparkData.createDataSet({
 const usersView = employeeDataSet.getView('Users', 'default')
 const formDataKey = 'Users@currentRow'
 
-const { sparkProvide } = useSparkHostScope('r-form-compare-demo-page')
+const { sparkProvide } = useSparkContextScope('r-form-compare-demo-page')
 sparkProvide(PAGE_DATASET, employeeDataSet)
 
 const configChildren: SparkNode[] = [

@@ -21,7 +21,7 @@ import { Spark } from '../system/spark.js'
 
 // ── 数据容器 ──
 import {
-  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList, RendererRowFragment,
+  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
 } from './containers/data-components/index.js'
 
 // ── 命名区域 ──
@@ -29,7 +29,6 @@ import {
   RendererFilter, RendererEditor, RendererHeader, RendererFooter, RendererTail,
   RendererFieldScope,
 } from './containers/index.js'
-import RendererHostScope from './containers/support/RendererHostScope.vue'
 
 // ── 非数据容器 + 布局 + Passthrough ──
 import {
@@ -103,9 +102,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-detail', RendererDetail],
   ['r-tree', RendererTree],
   ['r-list', RendererList],
-  ['r-row-fragment', RendererRowFragment],
   // 区域子组件
-  ['r-actions', RendererHostScope],
   ['r-field-scope', RendererFieldScope],
   ['r-filter', RendererFilter],
   ['r-editor', RendererEditor],

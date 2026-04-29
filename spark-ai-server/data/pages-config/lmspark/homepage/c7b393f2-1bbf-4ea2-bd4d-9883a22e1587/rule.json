@@ -344,7 +344,7 @@
         "children": []
       },
       {
-        "type": "r-actions",
+        "type": "r-toolbar",
         "id": "leave-actions",
         "props": {
           "id": "leave-actions",

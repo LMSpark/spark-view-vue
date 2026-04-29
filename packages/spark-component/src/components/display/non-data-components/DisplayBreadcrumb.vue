@@ -3,7 +3,6 @@
     v-if="isVisible"
     :separator="separator"
     :separator-icon="separatorIcon"
-    v-bind="hostProps"
   >
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"

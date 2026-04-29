@@ -369,7 +369,7 @@
                 ]
               },
               {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {
                   "permDeniedBehavior": "disable"
                 },

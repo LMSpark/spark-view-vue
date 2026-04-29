@@ -24,9 +24,7 @@
 
     <div v-show="!resolvedCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
-        <RendererHostScope type="r-filter-panel-scope">
-          <SparkComponentRenderer :config="fieldScopeConfig" />
-        </RendererHostScope>
+        <SparkComponentRenderer :config="fieldScopeConfig" />
       </div>
       <div class="renderer-table-filters__actions" :style="resolvedActionsStyle">
         <el-button type="primary" size="small" @click="handleSearch">查询</el-button>
@@ -60,7 +58,6 @@ import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../internal'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkComponent } from '../internal'
 import { PAGE_PERMISSION_MODE } from '../../permission'
-import RendererHostScope from './support/RendererHostScope.vue'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {

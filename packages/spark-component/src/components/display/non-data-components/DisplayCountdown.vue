@@ -7,7 +7,6 @@
     :suffix="suffix"
     :title="title"
     :value-style="valueStyle"
-    v-bind="hostProps"
     @finish="handleFinish"
     @change="handleChange"
   />

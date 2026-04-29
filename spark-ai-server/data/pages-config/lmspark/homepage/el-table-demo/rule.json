@@ -9,10 +9,10 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "表格演示 —— DataSet 数据 + Render* 操作列",
+          "title": "表格演示 —— DataSet 数据 + r-table 零代码操作列",
           "type": "info",
           "closable": false,
-          "description": "数据来自 pagedata.json（DataSet），表格通过 script.js 的 Render* 函数渲染。操作列包含详情/编辑/删除按钮。"
+          "description": "数据来自 pagedata.json（DataSet），表格通过 r-table 零代码渲染。操作列包含详情/编辑/删除按钮。"
         },
         "style": {
           "marginBottom": "16px"
@@ -25,32 +25,172 @@
         },
         "children": [
           {
-            "type": "div",
-            "style": {
-              "display": "flex",
-              "justifyContent": "space-between",
-              "alignItems": "center",
-              "marginBottom": "12px"
+            "type": "r-table",
+            "id": "usersTable",
+            "props": {
+              "id": "usersTable",
+              "dataKey": "Users@default@rows",
+              "tableProps": {
+                "rowKey": "id",
+                "highlightCurrentRow": true,
+                "border": true,
+                "stripe": true
+              },
+              "toolbar": {
+                "type": "r-toolbar",
+                "props": {
+                  "id": "usersToolbar"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnAdd",
+                      "label": "新增",
+                      "template": "toolbar-primary",
+                      "icon": "Plus",
+                      "action": "append-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "id": "btnRefresh",
+                      "label": "刷新",
+                      "template": "toolbar-default",
+                      "icon": "Refresh",
+                      "action": "refresh"
+                    }
+                  }
+                ]
+              },
+              "actions": {
+                "type": "r-toolbar",
+                "props": {
+                  "width": 180,
+                  "fixed": "right",
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "详情",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "编辑",
+                      "template": "text",
+                      "action": "message-row"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "label": "删除",
+                      "template": "text-danger",
+                      "action": "delete-row"
+                    }
+                  }
+                ]
+              }
             },
             "children": [
               {
-                "type": "span",
-                "style": {
-                  "fontSize": "16px",
-                  "fontWeight": "600",
-                  "color": "#303133"
+                "type": "r-number",
+                "id": "colId",
+                "props": {
+                  "id": "colId",
+                  "field": "id",
+                  "label": "ID",
+                  "width": 60,
+                  "sortable": true,
+                  "readonly": true
                 },
-                "children": [
-                  "用户列表"
-                ]
+                "children": []
               },
               {
-                "type": "RenderToolbar"
+                "type": "r-text",
+                "id": "colName",
+                "props": {
+                  "id": "colName",
+                  "field": "name",
+                  "label": "姓名",
+                  "width": 90,
+                  "sortable": true,
+                  "readonly": true
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colEmail",
+                "props": {
+                  "id": "colEmail",
+                  "field": "email",
+                  "label": "邮箱",
+                  "minWidth": 220,
+                  "readonly": true
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colDepartment",
+                "props": {
+                  "id": "colDepartment",
+                  "field": "department",
+                  "label": "部门",
+                  "width": 110,
+                  "readonly": true
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "id": "colSalary",
+                "props": {
+                  "id": "colSalary",
+                  "field": "salary",
+                  "label": "薪资",
+                  "width": 110,
+                  "readonly": true,
+                  "align": "right"
+                },
+                "children": []
+              },
+              {
+                "type": "r-date",
+                "id": "colJoinDate",
+                "props": {
+                  "id": "colJoinDate",
+                  "field": "joinDate",
+                  "label": "入职日期",
+                  "dateType": "date",
+                  "valueFormat": "YYYY-MM-DD",
+                  "width": 150,
+                  "readonly": true
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "colIsActive",
+                "props": {
+                  "id": "colIsActive",
+                  "field": "isActive",
+                  "label": "在职",
+                  "width": 90,
+                  "readonly": true,
+                  "align": "center"
+                },
+                "children": []
               }
             ]
-          },
-          {
-            "type": "RenderTable"
           }
         ]
       }

@@ -16,7 +16,6 @@ interface RendererTableViewStateOptions {
   tableFilterActionSpan: ValueRef<number | undefined>
   baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
-  filteredRows: ValueRef<IDataRow[] | undefined>
 }
 
 interface TableTreeSeedNode extends Record<string, unknown> {
@@ -42,7 +41,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   // 表格数据：普通列表直接透传；树形配置下按需构造成嵌套 children
   const tableData = computed(() => buildTreeTableRows(
     options.resolvedView.value,
-    options.filteredRows.value ?? options.resolvedView.value?.rows ?? [],
+    options.resolvedView.value?.rows ?? [],
   ))
 
   // rowKey 优先主键，缺失时回退到 tree id 字段

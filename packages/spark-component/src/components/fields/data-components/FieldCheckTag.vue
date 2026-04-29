@@ -3,7 +3,6 @@
     v-if="isVisible"
     :checked="isChecked"
     :disabled="isDisabled"
-    v-bind="hostProps"
     @change="handleChange"
   >
     <slot>{{ label }}</slot>

@@ -64,11 +64,11 @@ export interface SparkNodeProps {
    */
   children?: SparkNodeChildren
   /**
-   * @internal 内部属性：底层宿主组件透传属性。
-   *
-   * 由框架运行时消费，用于替代隐式属性透传；业务配置侧不应直接声明。
+   * 权限不足时的呈现策略。
+   * - `disable`：保留可见但禁用（默认）
+   * - `hide`：直接隐藏组件
    */
-  hostProps?: Record<string, unknown>
+  permissionDeniedMode?: 'disable' | 'hide'
 }
 
 /**

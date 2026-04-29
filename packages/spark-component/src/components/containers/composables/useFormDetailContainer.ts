@@ -8,10 +8,10 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerModuleContext } from './useContainerModuleContext'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
 import { createCurrentRowScope } from '../support/scopeFactories'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
+import type { ToolbarPosition } from '../layout/toolbar-position'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
@@ -114,18 +114,18 @@ export function useFormDetailContainer(
     { immediate: true },
   )
 
-  const {
-    toolbarPositionValue,
-    toolbarClassValue,
-    visibleToolbarConfigs,
-    showToolbar,
-  } = useContainerToolbar({
-    toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.position),
-    toolbarClass: computed(() => props.toolbar?.props?.class),
-    modelPermission,
-    dataSource: computed(() => resolvedView.value),
+  const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
+  const toolbarPositionValue = computed<ToolbarPosition>(() => {
+    const position = props.toolbar?.props?.position
+    return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
+      ? position
+      : 'top'
   })
+  const toolbarClassValue = computed(() => {
+    const className = props.toolbar?.props?.class
+    return typeof className === 'string' ? className : 'renderer-toolbar-default'
+  })
+  const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
   function getDefaultScope() {
     return createCurrentRowScope({
@@ -139,6 +139,7 @@ export function useFormDetailContainer(
 
   return {
     registerApi,
+    sparkProvide,
     logger,
     pageService,
     resolvedView,

@@ -7,7 +7,6 @@ import type {
 } from '../../../shared-types'
 import type { RowClickHandler } from '../../support'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
-import type { ActionsNode } from '../../support/RendererActions.types'
 
 /**
  * r-list 组件公开属性接口。
@@ -22,8 +21,8 @@ export interface RListProps
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
-  /** 结构化列表项动作 */
-  actions?: ActionsNode
+  /** 结构化列表项动作（toolbar 结构） @componentRef r-toolbar */
+  actions?: ToolbarNode
   /** 列数 */
   columns?: number
   /** 列表项间距 */

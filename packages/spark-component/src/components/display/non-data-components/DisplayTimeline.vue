@@ -1,5 +1,5 @@
 <template>
-  <el-timeline v-if="isVisible" v-bind="hostProps">
+  <el-timeline v-if="isVisible">
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
       :key="nodeId(child) ?? `r-timeline-child-${index}`"

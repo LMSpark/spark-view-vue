@@ -4,7 +4,6 @@
     :title="title"
     :icon="icon"
     :content="content"
-    v-bind="hostProps"
     @back="$emit('back')"
   >
     <template v-if="resolvedChildren.length" #default>

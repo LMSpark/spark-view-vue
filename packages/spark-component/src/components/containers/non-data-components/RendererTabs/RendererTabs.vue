@@ -10,7 +10,6 @@
 
     <div class="renderer-tabs-main">
       <el-tabs
-        v-bind="hostProps"
         :model-value="currentActiveName"
         @update:model-value="handleModelUpdate"
         @tab-click="handleTabClick"
@@ -39,7 +38,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/toolbar-position'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
@@ -70,17 +69,18 @@ const currentActiveName = useDefaultedSelection({
   getValue: getPaneName,
 })
 
-const {
-  toolbarPositionValue,
-  toolbarClassValue,
-  visibleToolbarConfigs,
-  showToolbar,
-} = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.class),
-  modelPermission: computed(() => undefined),
+const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
+const toolbarPositionValue = computed<ToolbarPosition>(() => {
+  const position = props.toolbar?.props?.position
+  return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
+    ? position as ToolbarPosition
+    : 'top'
 })
+const toolbarClassValue = computed(() => {
+  const className = props.toolbar?.props?.class
+  return typeof className === 'string' ? className : 'renderer-toolbar-default'
+})
+const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 // ── r-tabs 包装 API ──────────────────────────────────────────────────────
 

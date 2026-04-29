@@ -1,20 +1,27 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <template v-if="showToolbar">
-      <RendererHostScope
-        type="r-table-toolbar-scope"
-        :row="resolvedDataRow ?? undefined"
-        :action-capability="toolbarActionCapability"
-      >
-        <SparkComponentRenderer :config="toolbarRendererConfig!" />
-      </RendererHostScope>
-    </template>
+    <SparkComponentRenderer v-if="showToolbar" :config="projectedToolbarRendererConfig!" />
 
     <!-- 过滤区 -->
-    <SparkComponentRenderer
-      v-if="hasFilters"
-      :config="filterRendererConfig!"
+    <RendererTableFilterPanel
+      :visible="hasFilters"
+      :rows="resolvedView?.rows ?? []"
+      :filter-class="filterClassValue"
+      :filter-model="filterModel"
+      :filter-configs="filterConfigs"
+      :active-filter-count="activeFilterCount"
+      :collapsible="filterCollapsibleValue"
+      :collapsed="filtersCollapsed"
+      :grid-columns="filterGridColumnsValue"
+      :grid-gap="filterGridGapValue"
+      :grid-auto-rows="filterGridAutoRowsValue"
+      :auto-fit-min-width="filterAutoFitMinWidthValue"
+      :item-span="filterItemSpanValue"
+      :action-span="filterActionSpanValue"
+      :on-search="handleFilterSearch"
+      :on-reset="handleFilterReset"
+      :on-toggle-collapsed="toggleFiltersCollapsed"
     />
 
     <!-- 表格主体 -->
@@ -43,12 +50,7 @@
         >
           <template #default="scope">
             <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
-              <RendererHostScope
-                type="r-table-row-action-scope"
-                :children="getScopedRowActionConfigs(scope)"
-                :row="getScopedRowActionRow(scope)"
-                :action-capability="rowActionCapability"
-              />
+              <SparkComponentRenderer :config="createScopedRowActionsToolbarConfig(scope)" />
             </div>
           </template>
         </el-table-column>
@@ -73,11 +75,13 @@
             :class-name="resolveRowFragmentClass(child)"
           >
             <template #default="scope">
-              <!--
-                将当前行 slot scope 回写到 row-fragment 节点配置中，
-                让下游 RendererHostScope 统一解析 DATA_ROW。
-              -->
-              <SparkComponentRenderer :config="createScopedRowFragmentConfig(child, scope)" />
+              <RendererHostScope :row="(scope.row as IDataRow)">
+                <SparkComponentRenderer
+                  v-for="(fragmentChild, fragmentIndex) in resolveRowFragmentChildren(child)"
+                  :key="nodeId(fragmentChild) ?? `r-table-row-fragment-${fragmentIndex}`"
+                  :config="fragmentChild"
+                />
+              </RendererHostScope>
             </template>
           </el-table-column>
 
@@ -97,12 +101,7 @@
         >
           <template #default="scope">
             <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
-              <RendererHostScope
-                type="r-table-row-action-scope"
-                :children="getScopedRowActionConfigs(scope)"
-                :row="getScopedRowActionRow(scope)"
-                :action-capability="rowActionCapability"
-              />
+              <SparkComponentRenderer :config="createScopedRowActionsToolbarConfig(scope)" />
             </div>
           </template>
         </el-table-column>
@@ -142,18 +141,22 @@ import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
+  ACTION_CAPABILITY,
+  createActionCapability,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
-import { useContainerActions, type LateralActionPosition } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/toolbar-position'
+import { useContainerActionVisibility } from '../../layout/useContainerActionVisibility'
 import type { FilterNode } from '../../RendererFilter.types'
-import type { ActionsAlign, ActionsFixed, PermissionDeniedBehavior } from '../../support/RendererActions.types'
-import RendererHostScope from '../../support/RendererHostScope.vue'
+import type { ActionsAlign, ActionsFixed, ActionsPosition } from '../../support/RendererActions.types'
 import { useTableFilters } from '../../layout/useTableFilters'
+import { resolveCurrentRowPath } from '../../../support/row-selection-path'
+import RendererTableFilterPanel from './RendererTableFilterPanel.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 
 // ── 基础工具：通用读取与列投影辅助 ────────────────────────────────────────
 
@@ -163,7 +166,7 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
-const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-filter', 'r-actions'])
+const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-filter'])
 
 // 共享 props.children 允许文本子节点；表格列区只接受结构节点，局部显式收窄。
 const allChildNodes = computed(() => getSparkNodeChildren(props.children))
@@ -217,6 +220,10 @@ function rowFragmentProp(node: SparkNode, key: string): unknown {
   return (node.props as Record<string, unknown> | undefined)?.[key]
 }
 
+function resolveRowFragmentChildren(node: SparkNode): SparkNode[] {
+  return getSparkNodeChildren(node.children)
+}
+
 function resolveRowFragmentLabel(node: SparkNode): string {
   // 列标题优先级：title > label > 空字符串。
   return String(rowFragmentProp(node, 'title') ?? rowFragmentProp(node, 'label') ?? '')
@@ -255,21 +262,10 @@ function resolveRowFragmentClass(node: SparkNode): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-function createScopedRowFragmentConfig(node: SparkNode, scope: Record<string, unknown>): SparkNode {
-  // 关键桥接：把当前行直接注入 data。
-  // RowFragment -> RendererHostScope -> DATA_ROW 将沿此通道完成上下文传递。
-  return {
-    ...node,
-    props: {
-      ...(node.props ?? {}),
-      data: (scope['row'] as IDataRow | undefined) ?? undefined,
-    },
-  }
-}
-
-const toolbarNode = computed(() => props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
+const toolbarNodes = computed(() => allChildNodes.value.filter(child => child.type === 'r-toolbar'))
+const toolbarNode = computed(() => props.toolbar ?? toolbarNodes.value[0])
 const filterNode = computed(() => props.filter ?? allChildNodes.value.find(child => child.type === 'r-filter'))
-const actionsNode = computed(() => props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
+const actionsNode = computed(() => props.actions ?? toolbarNodes.value[1])
 const explicitFilterChildren = computed(() => getSparkNodeChildren(filterNode.value?.children))
 const autoFilterChildren = computed(() => contentChildNodes.value.filter(isAutoFilterCandidate))
 const effectiveFilterChildren = computed(() =>
@@ -313,7 +309,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
-const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
@@ -329,18 +325,15 @@ useContainerDataSourceEffects({
 
 // ── 工具栏区：读取结构化 toolbar 配置，并向工具栏子树提供内置动作宿主能力 ──
 
-const {
-  toolbarPositionValue,
-  toolbarClassValue,
-  visibleToolbarConfigs,
-  showToolbar,
-} = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(toolbarNode.value?.children)),
-  toolbarPosition: computed(() => childProp<ToolbarPosition>(toolbarNode.value, 'position')),
-  toolbarClass: computed(() => childProp<string>(toolbarNode.value, 'class')),
-  modelPermission,
-  dataSource: resolvedView,
+const visibleToolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
+const toolbarPositionValue = computed<ToolbarPosition>(() => {
+  const position = childProp<ToolbarPosition>(toolbarNode.value, 'position')
+  return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
+    ? position
+    : 'top'
 })
+const toolbarClassValue = computed(() => childProp<string>(toolbarNode.value, 'class') ?? 'renderer-toolbar-default')
+const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
   if (!showToolbar.value) return undefined
@@ -356,6 +349,14 @@ const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
   }
 })
 
+const projectedToolbarRendererConfig = computed<SparkNode | undefined>(() => {
+  if (!toolbarRendererConfig.value) return undefined
+  return {
+    ...toolbarRendererConfig.value,
+    children: visibleToolbarConfigs.value,
+  }
+})
+
 // ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
 
 const {
@@ -365,7 +366,6 @@ const {
   filterGridColumnsValue,
   filterGridGapValue,
   filterGridAutoRowsValue,
-  filteredRows,
   hasFilters,
   activeFilterCount,
   resetFilters,
@@ -397,34 +397,6 @@ const {
   tableFilterActionSpan: computed(() => props.filterActionSpan),
   baseElTableProps,
   resolvedView,
-  filteredRows,
-})
-
-const filterRendererConfig = computed<SparkNode | undefined>(() => {
-  if (!hasFilters.value) return undefined
-
-  return {
-    type: 'r-filter',
-    ...(filterNode.value?.id !== undefined ? { id: filterNode.value.id } : {}),
-    props: {
-      ...(filterNode.value?.props ?? {}),
-      class: filterClassValue.value,
-      model: filterModel,
-      configs: filterConfigs.value,
-      activeCount: activeFilterCount.value,
-      collapsible: filterCollapsibleValue.value,
-      collapsed: filtersCollapsed.value,
-      gridColumns: filterGridColumnsValue.value,
-      gridGap: filterGridGapValue.value,
-      gridAutoRows: filterGridAutoRowsValue.value,
-      autoFitMinWidth: filterAutoFitMinWidthValue.value,
-      itemSpan: filterItemSpanValue.value,
-      actionSpan: filterActionSpanValue.value,
-      searchAction: handleFilterSearch,
-      resetAction: handleFilterReset,
-      toggleCollapsedAction: toggleFiltersCollapsed,
-    },
-  }
 })
 
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
@@ -452,23 +424,16 @@ const {
 
 registerApi(tableApi)
 
-const toolbarActionCapability = {
-  isDisabled(action: SparkNode): boolean {
-    return isBuiltinActionDisabled(action)
-  },
-  execute(action: SparkNode): void {
-    handleBuiltinToolbarAction(action)
-  },
-}
-
 const rowActionCapability = {
   isDisabled(action: SparkNode): boolean {
     const row = action.props?.['row'] as IDataRow | undefined
     const index = action.props?.['rowIndex']
-    return isBuiltinActionDisabled(action, {
+    const builtinDisabled = isBuiltinActionDisabled(action, {
       ...(row !== undefined ? { row } : {}),
       ...(typeof index === 'number' ? { index } : {}),
     })
+
+    return builtinDisabled
   },
   execute(action: SparkNode): void {
     const row = action.props?.['row'] as IDataRow | undefined
@@ -481,6 +446,8 @@ const rowActionCapability = {
   },
 }
 
+sparkProvide(ACTION_CAPABILITY, createActionCapability(rowActionCapability))
+
 // DataView → el-table 当前行单向同步
 watch(
   () => resolvedView.value?.currentRow,
@@ -490,23 +457,21 @@ watch(
   },
 )
 
-// ── 行操作区：仅使用结构化 r-actions 组装行操作列 ───────────────────────
+// ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
-const {
-  showActionsLeft: showRowActionsLeft,
-  showActionsRight: showRowActionsRight,
-  getScopedActionConfigs: getScopedRowActions,
-} = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => getSparkNodeChildren(actionsNode.value?.children)),
-  actionPosition: computed(() => childProp<LateralActionPosition>(actionsNode.value, 'position') ?? 'right'),
-  actionClass: computed(() => childProp<string>(actionsNode.value, 'class') ?? ''),
-  permissionDeniedBehavior: computed(() => childProp<PermissionDeniedBehavior>(actionsNode.value, 'permDeniedBehavior') ?? 'disable'),
-  modelPermission,
-  dataSource: resolvedView,
+const rowActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
+const rowActionsPositionValue = computed<ActionsPosition>(() => childProp<ActionsPosition>(actionsNode.value, 'position') ?? 'right')
+const showRowActionsLeft = computed(() => rowActionConfigs.value.length > 0 && rowActionsPositionValue.value === 'left')
+const showRowActionsRight = computed(() => rowActionConfigs.value.length > 0 && rowActionsPositionValue.value === 'right')
+
+const { getVisibleActionConfigs: getScopedRowActions } = useContainerActionVisibility<{ row: IDataRow, index: number }>({
+  actionConfigs: rowActionConfigs,
   resolveScope: ({ row, index }) => ({
-    row,
+    row: resolveCurrentRowPath(row, resolvedView.value),
+    data: row,
+    index,
     listenerArgs: [row, index],
-    scopedProps: { row, rowIndex: index },
+    propsPatch: { row, rowIndex: index },
   }),
 })
 
@@ -583,14 +548,13 @@ function resolveRowActionScope(scope: Record<string, unknown>) {
   }
 }
 
-function getScopedRowActionConfigs(scope: Record<string, unknown>): SparkNode[] {
-  // 基于当前行上下文做动作可见性与 props 绑定投影。
+function createScopedRowActionsToolbarConfig(scope: Record<string, unknown>): SparkNode {
+  // 构造行操作投影 r-toolbar 节点，children 已由 getScopedRowActions 完成可见性过滤与 props 绑定。
   const { row, index } = resolveRowActionScope(scope)
-  return getScopedRowActions({ row, index })
-}
-
-function getScopedRowActionRow(scope: Record<string, unknown>): IDataRow {
-  return resolveRowActionScope(scope).row
+  return {
+    type: 'r-toolbar',
+    children: getScopedRowActions({ row, index }),
+  }
 }
 
 // ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────

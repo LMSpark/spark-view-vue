@@ -11,7 +11,6 @@
     :small="small"
     :disabled="isDisabled"
     :hide-on-single-page="hideOnSinglePage"
-    v-bind="hostProps"
     @update:current-page="handleCurrentChange"
     @update:page-size="handleSizeChange"
   />

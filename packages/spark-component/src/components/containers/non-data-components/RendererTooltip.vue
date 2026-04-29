@@ -12,7 +12,6 @@
     :enterable="enterable"
     :popper-class="popperClass"
     :raw-content="rawContent"
-    v-bind="hostProps"
   >
     <template #default>
       <SparkComponentRenderer

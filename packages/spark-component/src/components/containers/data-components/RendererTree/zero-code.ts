@@ -40,6 +40,7 @@ export interface NativeTreeLike {
   getCurrentNode?: () => unknown
   setCurrentKey?: (key: string | number | null) => void
   filter?: (value: string) => void
+  getCheckedNodes?: (leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[]
   getCheckedKeys?: (leafOnly?: boolean) => Array<string | number>
   setCheckedKeys?: (keys: Array<string | number>, leafOnly?: boolean) => void
   append?: (data: unknown, parentNode: unknown) => void
@@ -143,6 +144,11 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       const tree = options.nativeTreeRef.value as NativeTreeLike | null
       if (!tree || typeof tree.filter !== 'function') return
       tree.filter(keyword)
+    },
+    getCheckedNodes(leafOnly, includeHalfChecked) {
+      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      if (!tree || typeof tree.getCheckedNodes !== 'function') return []
+      return tree.getCheckedNodes(leafOnly, includeHalfChecked) as IDataRow[]
     },
     getCheckedKeys() {
       const tree = options.nativeTreeRef.value as NativeTreeLike | null

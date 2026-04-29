@@ -1,6 +1,5 @@
 <template>
   <el-drawer
-    v-bind="hostProps"
     :model-value="visibleValue"
     @update:model-value="handleModelUpdate"
     @open="handleOpen"
@@ -22,8 +21,7 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-drawer-field-scope">
-      <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
+    <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
           :key="nodeId(child) ?? `r-drawer-child-${index}`"
@@ -33,8 +31,7 @@
           <SparkComponentRenderer :config="child" />
         </div>
         <slot v-bind="getDefaultScope()" />
-      </div>
-    </RendererHostScope>
+    </div>
 
     <template v-if="showFooter" #footer>
       <div :class="['renderer-drawer-footer', footerClassValue]">
@@ -61,7 +58,6 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'

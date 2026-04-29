@@ -1,5 +1,5 @@
 import type { SparkNode } from '../internal'
-import type { ToolbarPosition } from './layout/useContainerToolbar'
+import type { ToolbarPosition } from './layout/toolbar-position'
 
 /**
  * `r-editor` 结构化配置属性。

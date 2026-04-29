@@ -4,7 +4,6 @@
     :image="image"
     :image-size="imageSize"
     :description="description"
-    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length > 0">
       <SparkComponentRenderer

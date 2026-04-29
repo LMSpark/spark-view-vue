@@ -4,7 +4,6 @@
     :icon="icon"
     :title="title"
     :sub-title="subTitle"
-    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length > 0" #extra>
       <SparkComponentRenderer

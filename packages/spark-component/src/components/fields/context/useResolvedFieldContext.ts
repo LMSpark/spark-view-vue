@@ -14,9 +14,9 @@ export type FieldRenderMode = string
 function inferModeFromHostType(hostType: string | null): FieldRenderMode | null {
   if (hostType === null) return null
   if (hostType === 'r-field-scope' || hostType.endsWith('-field-scope')) return null
+  if (hostType === 'r-filter' || hostType.includes('filter-panel')) return 'form'
   if (hostType.includes('table')) return 'table'
   if (hostType.includes('tree')) return 'tree'
-  if (hostType.includes('filter-panel')) return 'form'
   if (hostType.includes('form')) return 'form'
   if (hostType.includes('detail')) return 'detail'
   return null

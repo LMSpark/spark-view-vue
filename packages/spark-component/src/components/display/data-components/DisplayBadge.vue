@@ -11,7 +11,6 @@
     :offset="offset"
     :badge-style="badgeStyle"
     :badge-class="badgeClass"
-    v-bind="hostProps"
   >
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"

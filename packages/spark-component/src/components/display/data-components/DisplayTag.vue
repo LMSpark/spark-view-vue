@@ -1,7 +1,6 @@
 <template>
   <el-tag
     v-if="isVisible"
-    v-bind="hostProps"
     :type="resolvedTagType"
     :closable="closable"
     :disable-transitions="disableTransitions"

@@ -1,15 +1,14 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
-import type { ActionsNode, PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import type { EditorNode } from '../../RendererEditor.types'
-import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/toolbar-position'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
   children?: SparkNode['children'] | undefined
   toolbar?: ToolbarNode | undefined
-  actions?: ActionsNode | undefined
+  actions?: ToolbarNode | undefined
   editor?: EditorNode | undefined
 }
 
@@ -21,12 +20,13 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const effectiveDataKey = computed(() => options.props.dataKey)
 
   // 优先消费结构化 props.toolbar / props.actions / props.editor；
-  // 兼容旧配置：若未提升，仍可从 children 中回退提取结构节点。
+  // children 模式下约定：第一个 r-toolbar 为工具栏，第二个 r-toolbar 为节点动作。
   const allChildNodes = computed(() => getSparkNodeChildren(options.props.children))
-  const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-actions', 'r-editor'])
+  const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-editor'])
   const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
-  const toolbarNode = computed(() => options.props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
-  const actionsNode = computed(() => options.props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
+  const toolbarNodes = computed(() => allChildNodes.value.filter(child => child.type === 'r-toolbar'))
+  const toolbarNode = computed(() => options.props.toolbar ?? toolbarNodes.value[0])
+  const actionsNode = computed(() => options.props.actions ?? toolbarNodes.value[1])
   const editorNode = computed(() => options.props.editor ?? allChildNodes.value.find(child => child.type === 'r-editor'))
 
   const nodeContentChildren = computed<SparkNode[]>(() => {
@@ -51,10 +51,6 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const nodeActionClassValue = computed<string>(() => {
     const className = actionsNode.value?.props?.['class']
     return typeof className === 'string' ? className : ''
-  })
-  const permissionDeniedBehaviorValue = computed<PermissionDeniedBehavior>(() => {
-    const behavior = actionsNode.value?.props?.['permDeniedBehavior']
-    return behavior === 'hide' || behavior === 'disable' ? behavior : 'disable'
   })
   const editorConfigs = computed(() => getSparkNodeChildren(editorNode.value?.children))
   const editorPositionValue = computed<ToolbarPosition>(() => {
@@ -92,7 +88,6 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     toolbarClassValue,
     dockedNodeActions,
     nodeActionClassValue,
-    permissionDeniedBehaviorValue,
     hasNodeActions,
     editorConfigs,
     editorPositionValue,

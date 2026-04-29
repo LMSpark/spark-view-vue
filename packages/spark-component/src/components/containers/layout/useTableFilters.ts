@@ -8,10 +8,6 @@ interface LoggerLike {
   error(message: string, error?: unknown): void
 }
 
-interface ViewColumnLike {
-  name: string
-}
-
 interface UseTableFiltersOptions {
   filterChildren: ComputedRef<SparkNode[]>
   dataView: ComputedRef<DataView | null>
@@ -23,9 +19,6 @@ interface UseTableFiltersOptions {
 }
 
 interface FilterCapableView {
-  rows?: Array<Record<string, unknown>>
-  columns?: readonly ViewColumnLike[]
-  getColumn?: (name: string) => ViewColumnLike | undefined
   setFilter?: (expr: FilterExpression | undefined) => Promise<void> | void
   refresh?: () => Promise<void> | void
   filterExpression?: FilterExpression
@@ -51,13 +44,6 @@ interface ResidentFieldRefFilterDescriptor {
 }
 
 type FilterDescriptor = InputFilterDescriptor | ResidentFieldRefFilterDescriptor
-
-function isViewColumnLike(value: unknown): value is ViewColumnLike {
-  return value !== null
-    && typeof value === 'object'
-    && 'name' in value
-    && typeof (value as { name?: unknown }).name === 'string'
-}
 
 function shouldRefreshFilterView(view: DataView): boolean {
   const dataTable = (view as unknown as FilterCapableView).dataTable
@@ -123,33 +109,8 @@ function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator 
   }
 }
 
-function hasViewField(view: DataView | null, fieldName: string): boolean {
-  if (!view) return true
-
-  const candidate = view as unknown as FilterCapableView
-  if (typeof candidate.getColumn === 'function') {
-    return candidate.getColumn(fieldName) !== undefined
-  }
-
-  if (Array.isArray(candidate.columns) && candidate.columns.every(isViewColumnLike) && candidate.columns.length > 0) {
-    return candidate.columns.some(column => column.name === fieldName)
-  }
-
-  if (Array.isArray(candidate.rows) && candidate.rows.length > 0) {
-    return candidate.rows.some(row => fieldName in row)
-  }
-
-  return false
-}
-
-function assertViewFieldExists(view: DataView | null, fieldName: string, source: string): void {
-  if (hasViewField(view, fieldName)) return
-  throw new Error(`RendererTable: ${source} 引用了不存在的字段 "${fieldName}"`)
-}
-
 function createResidentFieldRefDescriptor(
   config: SparkNode,
-  view: DataView | null,
 ): ResidentFieldRefFilterDescriptor | undefined {
   const refField = getNodeFilterValueRefField(config)
   if (refField === undefined) return undefined
@@ -159,9 +120,6 @@ function createResidentFieldRefDescriptor(
     throw new Error('RendererTable: 配置 filterValueRefField 的筛选节点必须声明 field')
   }
 
-  assertViewFieldExists(view, field, '过滤字段')
-  assertViewFieldExists(view, refField, 'filterValueRefField')
-
   return {
     kind: 'field-ref',
     field,
@@ -170,8 +128,8 @@ function createResidentFieldRefDescriptor(
   }
 }
 
-function describeFilterNode(config: SparkNode, view: DataView | null): FilterDescriptor {
-  const residentFieldRef = createResidentFieldRefDescriptor(config, view)
+function describeFilterNode(config: SparkNode): FilterDescriptor {
+  const residentFieldRef = createResidentFieldRefDescriptor(config)
   if (residentFieldRef) return residentFieldRef
 
   return {
@@ -225,7 +183,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   })
 
   const filterDescriptors = computed(() => {
-    return allFilterNodes.value.map(config => describeFilterNode(config, options.dataView.value))
+    return allFilterNodes.value.map(config => describeFilterNode(config))
   })
 
   const filterConfigs = computed(() => {
@@ -329,10 +287,6 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     }
   }, { deep: true })
 
-  const filteredRows = computed(() => {
-    return options.dataView.value?.rows ?? []
-  })
-
   const activeFilterCount = computed(() => {
     let count = 0
     for (const descriptor of filterDescriptors.value) {
@@ -365,7 +319,6 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     filterGridGapValue,
     filterGridAutoRowsValue,
     filterExpression,
-    filteredRows,
     hasFilters: hasRenderableFilters,
     activeFilterCount,
     resetFilters,

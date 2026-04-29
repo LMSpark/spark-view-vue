@@ -1,5 +1,5 @@
 <template>
-  <el-icon v-if="isVisible" :size="iconSize" :color="color" v-bind="hostProps">
+  <el-icon v-if="isVisible" :size="iconSize" :color="color">
     <component :is="resolvedIconComponent" v-if="resolvedIconComponent" />
   </el-icon>
 </template>

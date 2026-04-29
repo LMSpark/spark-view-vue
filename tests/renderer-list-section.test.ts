@@ -61,7 +61,7 @@ describe('RendererList and RendererSection container integration', () => {
         gridGap: 12,
         itemColSpan: 12,
         toolbar: { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'list-toolbar-action' }] },
-        actions: { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
+        actions: { type: 'r-toolbar', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
       },
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
@@ -83,7 +83,7 @@ describe('RendererList and RendererSection container integration', () => {
     expect(wrapper.find('.renderer-list-item-shell--left').exists()).toBe(true)
     expect(wrapper.findAll('.biz-list-item')).toHaveLength(2)
     expect(wrapper.findAll('.biz-list-item')[1]?.attributes('data-row-id')).toBe('2')
-    const renderedItemActions = wrapper.findAll('.spark-action-stub[data-type="list-item-delete"]')
+    const renderedItemActions = wrapper.findAll('.renderer-list-item-actions .spark-action-stub[data-type="r-toolbar"]')
     expect(renderedItemActions).toHaveLength(2)
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('grid-template-columns: repeat(24, minmax(0, 1fr));')
     expect(wrapper.find('.renderer-list').attributes('style')).toContain('gap: 12px;')
@@ -92,7 +92,7 @@ describe('RendererList and RendererSection container integration', () => {
     await nextTick()
   })
 
-  it('should not render structured item actions when permDeniedBehavior is explicitly hide', () => {
+  it('should keep structured item actions visible even when permDeniedBehavior is hide', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'ListPermDS',
       tables: {
@@ -118,7 +118,7 @@ describe('RendererList and RendererSection container integration', () => {
       props: {
         dataKey: 'Users@rows',
         actions: {
-          type: 'r-actions',
+          type: 'r-toolbar',
           props: { position: 'left', permDeniedBehavior: 'hide' },
           children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }],
         },
@@ -138,8 +138,9 @@ describe('RendererList and RendererSection container integration', () => {
       },
     })
 
-    expect(wrapper.find('.spark-action-stub[data-type="list-item-delete"]').exists()).toBe(false)
-    expect(wrapper.find('.renderer-list-item-actions').exists()).toBe(false)
+    const itemActionToolbar = wrapper.find('.renderer-list-item-actions .spark-action-stub[data-type="r-toolbar"]')
+    expect(itemActionToolbar.exists()).toBe(true)
+    expect(wrapper.find('.renderer-list-item-actions').exists()).toBe(true)
   })
 
   it('should expose r-table-aligned list api for current row and row mutations', async () => {

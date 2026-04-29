@@ -1,28 +1,26 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :row="formModel" :action-capability="toolbarActionCapability">
-      <div :class="['renderer-form-toolbar', toolbarClassValue]">
+    <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
         </template>
-      </div>
-    </RendererHostScope>
+    </div>
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
-        <RendererHostScope type="r-form-field-scope" :row="formModel">
-          <div class="renderer-form-grid" :style="gridStyle">
-            <div
-              v-for="(child, index) in gridChildren"
-              :key="nodeId(child) ?? `r-form-child-${index}`"
-              class="renderer-form-grid-item"
-              :style="getChildGridStyle(child)"
-            >
+        <div class="renderer-form-grid" :style="gridStyle">
+          <div
+            v-for="(child, index) in gridChildren"
+            :key="nodeId(child) ?? `r-form-child-${index}`"
+            class="renderer-form-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <RendererHostScope :row="formModel">
               <SparkComponentRenderer :config="child" />
-            </div>
-            <slot v-bind="getDefaultScope()" />
+            </RendererHostScope>
           </div>
-        </RendererHostScope>
+          <slot v-bind="getDefaultScope()" />
+        </div>
       </el-form>
     </div>
   </div>
@@ -46,13 +44,15 @@
 import { computed, ref } from 'vue'
 import {
   SparkComponentRenderer,
+  ACTION_CAPABILITY,
+  createActionCapability,
   nodeId,
   type SparkNode,
 } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
-import RendererHostScope from '../../support/RendererHostScope.vue'
 import { createRendererFormZeroCode } from './zero-code'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 
 const props = withDefaults(defineProps<RFormProps>(), {
   type: 'r-form',
@@ -66,6 +66,7 @@ const formPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.form
 
 const {
   registerApi,
+  sparkProvide,
   logger,
   pageService,
   resolvedView,
@@ -114,6 +115,9 @@ const toolbarActionCapability = {
     handleBuiltinToolbarAction(action)
   },
 }
+
+sparkProvide(ACTION_CAPABILITY, createActionCapability(toolbarActionCapability))
+
 </script>
 
 <style scoped>

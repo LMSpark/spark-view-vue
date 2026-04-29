@@ -1,7 +1,6 @@
 <template>
   <el-button
-    v-if="isVisible"
-    v-bind="hostProps"
+    v-if="effectiveVisible"
     :type="resolved.buttonType"
     :size="resolved.buttonSize"
     :plain="resolved.plain"
@@ -51,6 +50,8 @@ import {
 import { isBuiltinAction } from '../../../page/actions'
 import { resolveButtonStyle } from '../support/actions/button-templates'
 import type { RButtonProps } from './RendererButton.props'
+import { extractModelPermission, usePermission } from '../../../permission'
+import type { IDataRow } from '@spark-view/spark-data'
 
 const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',
@@ -61,6 +62,7 @@ const props = withDefaults(defineProps<RButtonProps>(), {
 })
 
 const { isVisible, isDisabled, resolvedProps, sparkConsume } = useSparkPageComponent(props)
+const permission = usePermission()
 
 const currentNode = computed<SparkNode>(() => ({
   type: props.type,
@@ -82,7 +84,35 @@ const hostActionDisabled = computed(() => {
   return actionHost !== null ? actionHost.isDisabled(currentNode.value) : false
 })
 
-const effectiveDisabled = computed(() => isDisabled.value || hostActionDisabled.value)
+const permissionAllowed = computed(() => {
+  if (!hasBuiltinAction.value) return true
+
+  const dataSource = sparkConsume(DATA_SOURCE)
+  const dataRow = sparkConsume(DATA_ROW)
+  const modelPerm = extractModelPermission(dataSource)
+  const scopedRow = (dataRow ?? ((dataSource as { currentRow?: IDataRow } | null)?.currentRow)) ?? undefined
+
+  return permission.isModelActionAllowed(currentNode.value, modelPerm)
+    && permission.isRowActionAllowed(currentNode.value, scopedRow)
+})
+
+const permissionDeniedMode = computed<'disable' | 'hide'>(() => {
+  const mode = resolvedProps.value['permissionDeniedMode']
+  return mode === 'hide' ? 'hide' : 'disable'
+})
+
+const effectiveVisible = computed(() => {
+  if (!isVisible.value) return false
+  if (permissionAllowed.value) return true
+  return permissionDeniedMode.value !== 'hide'
+})
+
+const effectiveDisabled = computed(() => {
+  if (!permissionAllowed.value && permissionDeniedMode.value === 'disable') {
+    return true
+  }
+  return isDisabled.value || hostActionDisabled.value
+})
 
 function resolveActionNodeWithDataCapabilities(): SparkNode {
   const dataSource = sparkConsume(DATA_SOURCE)

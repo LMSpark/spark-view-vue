@@ -447,20 +447,20 @@
           "name": "rowActionsWidth",
           "type": "string | number | undefined",
           "required": false,
-          "description": "行操作列宽度（历史兼容字段，优先级低于 r-actions.props.width）"
+          "description": "行操作列宽度（历史兼容字段，优先级低于 r-toolbar.props.width）"
         },
         {
           "name": "rowActionsAlign",
           "type": "ActionsAlign | undefined",
           "required": false,
-          "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）",
+          "description": "行操作列对齐（历史兼容字段，优先级低于 r-toolbar.props.align）",
           "schemaRef": "schema_00010"
         },
         {
           "name": "rowActionsFixed",
           "type": "ActionsFixed | undefined",
           "required": false,
-          "description": "行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed）",
+          "description": "行操作列固定（历史兼容字段，优先级低于 r-toolbar.props.fixed）",
           "schemaRef": "schema_00011"
         },
         {
@@ -476,7 +476,7 @@
           "type": "ActionsNode | undefined",
           "required": false,
           "description": "结构化行动作\r\n提示词模板：默认动作 message-row / delete-row。\r\n权限要求：写操作按钮必须声明 permAction(create/delete/edit)，并建议 permDeniedBehavior='disable'。",
-          "componentRef": "r-actions",
+          "componentRef": "r-toolbar",
           "schemaRef": "schema_00014"
         },
         {
@@ -9458,9 +9458,9 @@
       "properties": {
         "type": {
           "name": "type",
-          "type": "\"r-actions\"",
+          "type": "\"r-toolbar\"",
           "required": true,
-          "description": "节点类型固定为 `r-actions`。"
+          "description": "节点类型固定为 `r-toolbar`。"
         },
         "props": {
           "name": "props",
@@ -27843,20 +27843,20 @@
           "name": "rowActionsWidth",
           "type": "string | number | undefined",
           "required": false,
-          "description": "行操作列宽度（历史兼容字段，优先级低于 r-actions.props.width）"
+          "description": "行操作列宽度（历史兼容字段，优先级低于 r-toolbar.props.width）"
         },
         "prop_00036": {
           "name": "rowActionsAlign",
           "type": "ActionsAlign | undefined",
           "required": false,
-          "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）",
+          "description": "行操作列对齐（历史兼容字段，优先级低于 r-toolbar.props.align）",
           "schemaRef": "schema_00010"
         },
         "prop_00037": {
           "name": "rowActionsFixed",
           "type": "ActionsFixed | undefined",
           "required": false,
-          "description": "行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed）",
+          "description": "行操作列固定（历史兼容字段，优先级低于 r-toolbar.props.fixed）",
           "schemaRef": "schema_00011"
         },
         "prop_00038": {
@@ -27872,7 +27872,7 @@
           "type": "ActionsNode | undefined",
           "required": false,
           "description": "结构化行动作\r\n提示词模板：默认动作 message-row / delete-row。\r\n权限要求：写操作按钮必须声明 permAction(create/delete/edit)，并建议 permDeniedBehavior='disable'。",
-          "componentRef": "r-actions",
+          "componentRef": "r-toolbar",
           "schemaRef": "schema_00014"
         },
         "prop_00040": {

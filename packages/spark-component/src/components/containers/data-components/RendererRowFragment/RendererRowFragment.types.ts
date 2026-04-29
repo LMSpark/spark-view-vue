@@ -1,4 +1,3 @@
-import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../../internal'
 
 /** 行片段内容对齐方式。 */
@@ -110,10 +109,6 @@ export interface RendererRowFragmentProps {
   inline?: boolean
   /** 紧凑模式。 */
   compact?: boolean
-  /** 当前数据行。 */
-  data?: IDataRow
-  /** 上游行作用域（运行时透传）。 */
-  rowScope?: Record<string, unknown>
   /** 片段字段节点列表。 */
   children?: SparkNode[]
 }

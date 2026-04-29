@@ -1,4 +1,3 @@
-export { default } from './RendererRowFragment.vue'
 export type {
   RowFragmentAlign,
   RendererRowFragmentConfigProps,

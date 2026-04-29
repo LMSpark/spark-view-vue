@@ -4,7 +4,6 @@
     :direction="direction"
     :border-style="borderStyle"
     :content-position="contentPosition"
-    v-bind="hostProps"
   >
     <template v-if="content">{{ content }}</template>
   </el-divider>

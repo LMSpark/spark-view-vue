@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { ACTION_CAPABILITY, RendererTable, RendererRowFragment, FieldText, DATA_ROW, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { ACTION_CAPABILITY, RendererTable, FieldText, DATA_ROW, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -1040,6 +1040,59 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(dv.currentRow?.['id']).toBe('leaf')
   })
 
+  it('RendererTree API should expose checked nodes from native tree', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS3-Checked-Nodes',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
+          views: {
+            default: {
+              rows: [
+                { id: 'root', label: '根节点', children: [{ id: 'leaf', label: '叶子节点', children: [] }] },
+              ] as IDataRow[],
+            },
+          },
+        },
+      },
+    })
+
+    const dv = ds.getView('Nodes', 'default')!
+    const checkedNodes: IDataRow[] = [{ id: 'leaf', label: '叶子节点' }]
+    const getCheckedNodesSpy = vi.fn((_leafOnly?: boolean, _includeHalfChecked?: boolean) => checkedNodes)
+
+    const CheckedTreeStub = defineComponent({
+      setup(_, { slots, expose }) {
+        const treeData = { id: 'root', label: '根节点', children: checkedNodes }
+        expose({
+          getCheckedNodes: getCheckedNodesSpy,
+        })
+        return () => h('div', { class: 'el-tree-checked-api-stub' }, slots['default']?.({
+          node: { level: 1 },
+          data: treeData,
+        }))
+      },
+    })
+
+    const wrapper = await mountRendererTreeWithView(dv, {}, {
+      global: {
+        stubs: {
+          'el-tree': CheckedTreeStub,
+          SparkComponentRenderer: SparkActionStub,
+        }
+      },
+    })
+
+    const api = getMountedComponentApi<{
+      getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): IDataRow[]
+    }>(wrapper, 'r-tree')
+
+    expect(api.getCheckedNodes).toBeTypeOf('function')
+    expect(api.getCheckedNodes(true, true)).toEqual(checkedNodes)
+    expect(getCheckedNodesSpy).toHaveBeenCalledWith(true, true)
+  })
+
   it('RendererTree should initialize selection and expansion by node ID', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS3-Init-By-Id',
@@ -1592,7 +1645,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
-          { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
+          { type: 'r-toolbar', props: { position: 'left' }, children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
         ],
       },
       global: {
@@ -1629,12 +1682,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: rowActionDataSet,
       props: {
         dataKey: 'Users@rows',
-        children: [
-          {
-            type: 'r-actions',
-            children: [{ type: 'row-button' }],
-          },
-        ],
+        actions: {
+          type: 'r-toolbar',
+          children: [{ type: 'row-button' }],
+        },
       },
       global: {
         config: {
@@ -2276,7 +2327,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] },
-          { type: 'r-actions', children: [{ type: 'biz-row-action-config' }] },
+          { type: 'r-toolbar', children: [{ type: 'biz-row-action-config' }] },
         ],
       },
       global: {
@@ -2297,20 +2348,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="biz-row-action-config"]').exists()).toBe(true)
   })
 
-  it('should disable denied structured row actions by default', () => {
+  it('should keep structured row actions enabled even when row permission denies', () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
       props: {
         dataKey: 'Users@rows',
-        children: [
-          {
-            type: 'r-actions',
-            children: [
-              { type: 'delete-row', props: { permAction: 'delete' } },
-            ],
-          },
-        ],
+        actions: {
+          type: 'r-toolbar',
+          children: [
+            { type: 'delete-row', props: { permAction: 'delete' } },
+          ],
+        },
       },
       global: {
         stubs: {
@@ -2323,7 +2372,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const deniedAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
     expect(deniedAction.exists()).toBe(true)
-    expect((deniedAction.element as HTMLButtonElement).disabled).toBe(true)
+    expect((deniedAction.element as HTMLButtonElement).disabled).toBe(false)
     expect(wrapper.find('.renderer-table-row-actions').exists()).toBe(true)
   })
 
@@ -2471,7 +2520,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
   it('should render r-row-fragment as a table column with row-scoped fragment content', () => {
     const fragmentDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
     const registry = Spark.createRegistry()
-    registry.register('r-row-fragment', RendererRowFragment)
     registry.register('row-fragment-probe', TableRowFragmentProbe)
     const plugin = Spark.createPlugin({ registry })
 
@@ -2561,7 +2609,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
       label: rowFixture.label,
     }])
     const registry = Spark.createRegistry()
-    registry.register('r-row-fragment', RendererRowFragment)
     registry.register('row-fragment-icon-probe', TableRowFragmentIconProbe)
     registry.register('row-fragment-link-probe', TableRowFragmentLinkProbe)
     const plugin = Spark.createPlugin({ registry })
@@ -2685,7 +2732,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="tree-node-content"]').exists()).toBe(true)
   })
 
-  it('should disable toolbar and row actions when denied by permission', async () => {
+  it('should disable toolbar actions but keep row actions enabled when denied by permission', async () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const permissionView = permissionDataSet.getView('Users', 'default')!
     ;(permissionView as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: false, allowExport: true }
@@ -2699,7 +2746,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { type: 'create-button', props: { permAction: 'create' } },
             { type: 'export-button', props: { permAction: 'export' } },
           ] },
-          { type: 'r-actions', children: [
+          { type: 'r-toolbar', children: [
             { type: 'delete-row', props: { permAction: 'delete' } },
             { type: 'plain-row' },
           ] },
@@ -2723,7 +2770,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
     const deniedRowAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
     expect(deniedRowAction.exists()).toBe(true)
-    expect((deniedRowAction.element as HTMLButtonElement).disabled).toBe(true)
+    expect((deniedRowAction.element as HTMLButtonElement).disabled).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="plain-row"]').exists()).toBe(true)
   })
 
@@ -2886,7 +2933,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it('should disable tree toolbar and node actions when denied by permission', async () => {
+  it('should disable tree toolbar actions but keep node actions enabled when denied by permission', async () => {
     const DeniedTreeStub = defineComponent({
       setup(_, { slots }) {
         return () => h('div', { class: 'el-tree-stub denied' }, slots['default']?.({
@@ -2920,7 +2967,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           { type: 'import-tree', props: { permAction: 'import' } },
           { type: 'export-tree', props: { permAction: 'export' } },
         ] },
-        { type: 'r-actions', children: [
+        { type: 'r-toolbar', children: [
           { type: 'create-child-node', props: { permAction: 'create-child' } },
           { type: 'delete-node', props: { permAction: 'delete' } },
           { type: 'plain-node' },
@@ -2945,9 +2992,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const deniedCreateChild = wrapper.find('.spark-action-stub[data-type="create-child-node"]')
     const deniedDeleteNode = wrapper.find('.spark-action-stub[data-type="delete-node"]')
     expect(deniedCreateChild.exists()).toBe(true)
-    expect((deniedCreateChild.element as HTMLButtonElement).disabled).toBe(true)
+    expect((deniedCreateChild.element as HTMLButtonElement).disabled).toBe(false)
     expect(deniedDeleteNode.exists()).toBe(true)
-    expect((deniedDeleteNode.element as HTMLButtonElement).disabled).toBe(true)
+    expect((deniedDeleteNode.element as HTMLButtonElement).disabled).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="plain-node"]').exists()).toBe(true)
   })
 
@@ -2983,25 +3030,23 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const dv = ds.getView('Nodes', 'default')!
     ;(dv as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
     const wrapper = await mountRendererTreeWithView(dv, {
-      children: [
-        {
-          type: 'r-actions',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'append-row',
-                permAction: 'create-child',
-                label: '新增子节点',
-                setCurrentRowOnSuccess: true,
-                appendPayload: { label: '新增节点' },
-                inheritFieldMap: { parentId: 'id' },
-                successMessage: '',
-              },
+      actions: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'append-row',
+              permAction: 'create-child',
+              label: '新增子节点',
+              setCurrentRowOnSuccess: true,
+              appendPayload: { label: '新增节点' },
+              inheritFieldMap: { parentId: 'id' },
+              successMessage: '',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -3061,7 +3106,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
         },
         {
-          type: 'r-actions',
+          type: 'r-toolbar',
           children: [
             {
               type: 'r-button',

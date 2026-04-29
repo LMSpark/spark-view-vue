@@ -187,9 +187,9 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'DockActionsNode': {
     name: 'DockActionsNode',
-    definition: 'interface extends SparkNode { type: "r-actions" }',
+    definition: 'interface extends SparkNode { type: "r-toolbar" }',
     fields: [
-      { name: 'type', type: '"r-actions"', desc: '固定值' },
+      { name: 'type', type: '"r-toolbar"', desc: '固定值' },
       { name: 'props.position', type: 'LateralActionPosition', desc: '行操作列位置' },
       { name: 'props.label', type: 'string', desc: '列标题（默认"操作"）' },
       { name: 'props.width', type: 'number | string', desc: '列宽（默认 160）' },

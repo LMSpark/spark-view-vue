@@ -1,30 +1,28 @@
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-detail-toolbar-scope" :row="detailData" :action-capability="toolbarActionCapability">
-      <div :class="['renderer-detail-toolbar', toolbarClassValue]">
+    <div v-if="showToolbar" :class="['renderer-detail-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
           v-for="(action, index) in visibleToolbarConfigs"
           :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
           :config="action"
         />
-      </div>
-    </RendererHostScope>
+    </div>
 
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
-        <RendererHostScope type="r-detail-field-scope" :row="detailData">
-          <div class="renderer-detail-grid" :style="gridStyle">
-            <div
-              v-for="(child, index) in gridChildren"
-              :key="nodeId(child) ?? `r-detail-child-${index}`"
-              class="renderer-detail-grid-item"
-              :style="getChildGridStyle(child)"
-            >
+        <div class="renderer-detail-grid" :style="gridStyle">
+          <div
+            v-for="(child, index) in gridChildren"
+            :key="nodeId(child) ?? `r-detail-child-${index}`"
+            class="renderer-detail-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <RendererHostScope :row="detailData">
               <SparkComponentRenderer :config="child" />
-            </div>
-            <slot v-bind="getDefaultScope()" />
+            </RendererHostScope>
           </div>
-        </RendererHostScope>
+          <slot v-bind="getDefaultScope()" />
+        </div>
       </div>
     </div>
   </div>
@@ -48,13 +46,15 @@
 import { computed, type StyleValue } from 'vue'
 import {
   SparkComponentRenderer,
+  ACTION_CAPABILITY,
+  createActionCapability,
   nodeId,
   type SparkNode,
 } from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
-import RendererHostScope from '../../support/RendererHostScope.vue'
 import { createRendererDetailZeroCode } from './zero-code'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 
 const props = withDefaults(defineProps<RDetailProps>(), {
   type: 'r-detail',
@@ -73,6 +73,7 @@ const detailAlignStyle = computed<StyleValue>(() => ({
 
 const {
   registerApi,
+  sparkProvide,
   logger,
   pageService,
   resolvedView,
@@ -121,6 +122,9 @@ const toolbarActionCapability = {
     handleBuiltinToolbarAction(action)
   },
 }
+
+sparkProvide(ACTION_CAPABILITY, createActionCapability(toolbarActionCapability))
+
 </script>
 
 <style scoped>

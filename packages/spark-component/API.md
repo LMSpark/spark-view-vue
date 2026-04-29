@@ -512,7 +512,7 @@ export type {
 
 | type | 组件 | 说明 |
 |------|------|------|
-| `r-actions` | RendererActions | 操作按钮区 |
+| `r-toolbar` | RendererToolbar | 操作按钮区（含工具栏与 actions 区） |
 | `r-filter` | RendererFilter | 筛选条件区 |
 | `r-editor` | RendererEditor | 编辑区 |
 | `r-header` | RendererHeader | 容器顶部操作栏（div 弹性布局，非 el-header） |

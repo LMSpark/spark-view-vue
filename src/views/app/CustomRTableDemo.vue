@@ -72,7 +72,7 @@
 /**
  * @skill-description 自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。
  */
-import { FieldNumber, FieldText, PAGE_DATASET, RendererTable, useSparkHostScope } from '@spark-view/spark-component'
+import { FieldNumber, FieldText, PAGE_DATASET, RendererTable, useSparkContextScope } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 
 const employeeDataSet = SparkData.createDataSet({
@@ -102,19 +102,19 @@ const employeeDataSet = SparkData.createDataSet({
 
 const tableDataKey = 'Employees@default@rows'
 
-const { sparkProvide } = useSparkHostScope('custom-r-table-demo-page')
+const { sparkProvide } = useSparkContextScope('custom-r-table-demo-page')
 sparkProvide(PAGE_DATASET, employeeDataSet)
 
 const hostSnippet = `<script setup lang="ts">
 import {
   PAGE_DATASET,
   RendererTable,
-  useSparkHostScope,
+  useSparkContextScope,
 } from '@spark-view/spark-component'
 
 const tableDataKey = 'Employees@default@rows'
 
-const { sparkProvide } = useSparkHostScope('custom-r-table-demo-page')
+const { sparkProvide } = useSparkContextScope('custom-r-table-demo-page')
 sparkProvide(PAGE_DATASET, employeeDataSet)
 <\/script>
 

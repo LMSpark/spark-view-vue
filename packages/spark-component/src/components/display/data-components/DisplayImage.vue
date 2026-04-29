@@ -12,7 +12,6 @@
     :preview-teleported="previewTeleported"
     :close-on-press-escape="closeOnPressEscape"
     :style="imageStyle"
-    v-bind="hostProps"
   >
     <template #placeholder>
       <slot name="placeholder">

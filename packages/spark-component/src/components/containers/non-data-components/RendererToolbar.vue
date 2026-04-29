@@ -32,14 +32,46 @@
  * @description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import { watch } from 'vue'
+import {
+  DATA_SOURCE,
+  PAGE_DATASET,
+  SparkComponentRenderer,
+  getSparkNodeChildren,
+  nodeId,
+  useSparkPageComponent,
+} from '../../internal'
+import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver'
+import type { DataView } from '@spark-view/spark-data'
 import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.props'
 
 const props = withDefaults(defineProps<RToolbarProps>(), {
   type: 'r-toolbar',
 })
 
-useSparkPageComponent(props)
+const { sparkConsume, sparkProvide } = useSparkPageComponent(props)
+
+const inheritedDataSource = sparkConsume(DATA_SOURCE)
+const pageDataSet = sparkConsume(PAGE_DATASET)
+
+const resolvedToolbarDataSource = computed<DataView | null>(() => {
+  if (props.dataSource !== undefined && props.dataSource !== null) {
+    return props.dataSource as DataView
+  }
+
+  if (typeof props.dataKey === 'string' && props.dataKey.trim().length > 0) {
+    const capabilities = resolveDataCapabilitiesFromDataKey(props.dataKey, pageDataSet)
+    if (capabilities.dataSource) return capabilities.dataSource
+  }
+
+  return inheritedDataSource as DataView | null
+})
+
+watch(resolvedToolbarDataSource, (source) => {
+  if (source !== null) {
+    sparkProvide(DATA_SOURCE, source)
+  }
+}, { immediate: true })
 
 const gap = computed<number | string>(() => props.gap ?? 8)
 const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)

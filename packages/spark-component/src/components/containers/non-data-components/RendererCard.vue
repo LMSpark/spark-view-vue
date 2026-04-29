@@ -4,7 +4,6 @@
     :shadow="shadow"
     :body-style="bodyStyle"
     :body-class="bodyClass"
-    v-bind="hostProps"
   >
     <template v-if="header || $slots['header']" #header>
       <div class="r-card-header">

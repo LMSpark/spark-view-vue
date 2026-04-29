@@ -3,7 +3,6 @@
     v-if="isVisible"
     :to="to"
     :replace="replace"
-    v-bind="hostProps"
   >
     {{ label }}
   </el-breadcrumb-item>

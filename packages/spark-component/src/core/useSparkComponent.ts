@@ -78,11 +78,11 @@ export interface UseSparkComponentOptions {
   parentContext?: SparkCapabilityContext
 }
 
-interface SparkHostResolverOptions<T extends string = string> {
+interface HostTypeResolverOptions<T extends string = string> {
   hostTypes?: readonly T[]
 }
 
-interface ResolvedSparkHost<T extends string = string> {
+interface ResolvedHostType<T extends string = string> {
   hostType: T | null
   parentContext: SparkCapabilityContext | null
 }
@@ -96,7 +96,7 @@ export type SparkNodeInput = {
 
 function normalizeHostType<T extends string>(
   type: string,
-  options: SparkHostResolverOptions<T>,
+  options: HostTypeResolverOptions<T>,
 ): T | null {
   if (options.hostTypes === undefined) {
     return type as T
@@ -105,15 +105,19 @@ function normalizeHostType<T extends string>(
   return options.hostTypes.includes(type as T) ? (type as T) : null
 }
 
-export function resolveSparkHost<T extends string = string>(
-  hostType: string | null,
+export function resolveHostTypeFromContext<T extends string = string>(
   parentContext: SparkCapabilityContext | null,
-  options: SparkHostResolverOptions<T> = {},
-): ResolvedSparkHost<T> {
-  let currentType = hostType
+  options: HostTypeResolverOptions<T> = {},
+): ResolvedHostType<T> {
   let currentContext = parentContext
 
-  while (currentType !== null) {
+  while (currentContext !== null) {
+    const currentType = typeof currentContext.type === 'string' ? currentContext.type : null
+    if (currentType === null) {
+      currentContext = currentContext.parent ?? null
+      continue
+    }
+
     const normalizedType = normalizeHostType(currentType, options)
     if (normalizedType !== null) {
       return {
@@ -122,8 +126,7 @@ export function resolveSparkHost<T extends string = string>(
       }
     }
 
-    currentContext = currentContext?.parent ?? null
-    currentType = typeof currentContext?.type === 'string' ? currentContext.type : null
+    currentContext = currentContext.parent ?? null
   }
 
   return {
@@ -132,7 +135,7 @@ export function resolveSparkHost<T extends string = string>(
   }
 }
 
-export function useSparkHostScope(
+export function useSparkContextScope(
   type: string,
   options?: UseSparkComponentOptions,
 ): UseSparkComponentReturn {

@@ -8,7 +8,6 @@ export { default as RendererTree } from './RendererTree/index.js'
 export type { RendererTreeApi, RTreeProps } from './RendererTree/index.js'
 export { default as RendererList } from './RendererList/index.js'
 export type { RendererListApi, RListProps } from './RendererList/index.js'
-export { default as RendererRowFragment } from './RendererRowFragment/index.js'
 export type {
 	RowFragmentAlign,
 	RendererRowFragmentConfigProps,

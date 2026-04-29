@@ -13,7 +13,6 @@
       :type="tourType"
       :close-on-press-escape="closeOnPressEscape"
       :scroll-into-view-options="scrollIntoViewOptions"
-      v-bind="hostProps"
       @close="handleClose"
       @finish="handleFinish"
       @change="handleChange"

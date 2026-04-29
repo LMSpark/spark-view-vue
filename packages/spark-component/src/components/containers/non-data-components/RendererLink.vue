@@ -1,12 +1,11 @@
 <template>
   <el-link
-    v-if="isVisible"
+    v-if="effectiveVisible"
     :type="linkType"
     :underline="underline"
-    :disabled="isDisabled"
+    :disabled="effectiveDisabled"
     :href="href"
     :target="target"
-    v-bind="hostProps"
   >
     {{ label }}
     <SparkComponentRenderer
@@ -23,8 +22,18 @@
  * @description 链接组件，可渲染子内容。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { IDataRow } from '@spark-view/spark-data'
+import {
+  DATA_ROW,
+  DATA_SOURCE,
+  SparkComponentRenderer,
+  getSparkNodeChildren,
+  nodeId,
+  useSparkPageComponent,
+  type SparkNode,
+} from '../../internal'
 import type { RLinkProps } from './RendererLink.props'
+import { usePermission, extractModelPermission } from '../../../permission'
 
 
 
@@ -35,7 +44,45 @@ const props = withDefaults(defineProps<RLinkProps>(), {
   target: '_self',
 })
 
-const { isVisible, isDisabled } = useSparkPageComponent(props)
+const { isVisible, isDisabled, resolvedProps, sparkConsume } = useSparkPageComponent(props)
+const permission = usePermission()
+
+function readActionNode(): SparkNode {
+  return {
+    type: props.type,
+    props: resolvedProps.value,
+    ...(props.children !== undefined ? { children: props.children } : {}),
+  }
+}
+
+const permissionAllowed = computed(() => {
+  const actionNode = readActionNode()
+  const dataSource = sparkConsume(DATA_SOURCE)
+  const dataRow = sparkConsume(DATA_ROW)
+  const modelPerm = extractModelPermission(dataSource)
+  const scopedRow = (dataRow ?? ((dataSource as { currentRow?: IDataRow } | null)?.currentRow)) ?? undefined
+
+  return permission.isModelActionAllowed(actionNode, modelPerm)
+    && permission.isRowActionAllowed(actionNode, scopedRow)
+})
+
+const permissionDeniedMode = computed<'disable' | 'hide'>(() => {
+  const mode = resolvedProps.value['permissionDeniedMode']
+  return mode === 'hide' ? 'hide' : 'disable'
+})
+
+const effectiveVisible = computed(() => {
+  if (!isVisible.value) return false
+  if (permissionAllowed.value) return true
+  return permissionDeniedMode.value !== 'hide'
+})
+
+const effectiveDisabled = computed(() => {
+  if (!permissionAllowed.value && permissionDeniedMode.value === 'disable') {
+    return true
+  }
+  return isDisabled.value
+})
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>

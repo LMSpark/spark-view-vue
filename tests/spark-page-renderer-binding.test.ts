@@ -1,8 +1,10 @@
 import { flushPromises, mount } from '@vue/test-utils'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
-import { Spark, SparkPageRenderer } from '@spark-view/spark-component'
+import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
@@ -276,5 +278,43 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(createButtonProps['onClick']).toBeUndefined()
     expect(callFunc).not.toHaveBeenCalled()
     expect(refreshButtonProps['onClick']).toBeUndefined()
+  })
+
+  it('tree-node-scope demo keeps native tree props typed and button clicks executable', () => {
+    const callFunc = vi.fn<(functionName: string, ...args: unknown[]) => unknown>()
+    const ruleText = readFileSync(
+      resolve(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/homepage/tree-node-scope-demo/rule.json'),
+      'utf8',
+    )
+    const children = buildPageChildren(JSON.parse(ruleText) as never, {
+      callFunc,
+      actionCtx: createActionContext(),
+    })
+
+    const section = children[0] as SparkNode
+    const sectionChildren = Array.isArray(section.children) ? section.children : []
+    const treeNode = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.type === 'r-tree')
+    const currentButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.props?.['id'] === 'btn-get-current')
+    const checkedButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.props?.['id'] === 'btn-get-checked')
+
+    expect(treeNode).toBeDefined()
+    const treeProps = treeNode?.props?.['treeProps'] as Record<string, unknown>
+    expect(treeProps['filterNodeMethod']).toBeUndefined()
+    expect(treeProps['showCheckbox']).toBe(true)
+    expect(treeProps['draggable']).toBe(true)
+
+    expect(currentButton?.props?.['text']).toBeUndefined()
+    expect(currentButton?.props?.['label']).toBe('获取当前选中节点')
+    expect(currentButton?.props?.['onClick']).toBeTypeOf('function')
+
+    expect(checkedButton?.props?.['text']).toBeUndefined()
+    expect(checkedButton?.props?.['label']).toBe('获取勾选节点')
+    expect(checkedButton?.props?.['onClick']).toBeTypeOf('function')
+
+    ;(currentButton?.props?.['onClick'] as (() => unknown))()
+    ;(checkedButton?.props?.['onClick'] as (() => unknown))()
+
+    expect(callFunc).toHaveBeenCalledWith('getCurrentNode')
+    expect(callFunc).toHaveBeenCalledWith('getCheckedNodes')
   })
 })

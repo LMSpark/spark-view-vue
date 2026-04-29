@@ -6,8 +6,7 @@
     :lazy="paneLazy"
     :closable="paneClosable"
   >
-    <RendererHostScope type="r-tab-pane-field-scope">
-      <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
+    <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
         <div
           v-for="(child, index) in paneChildren"
           :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
@@ -17,8 +16,7 @@
           <SparkComponentRenderer :config="child" />
         </div>
         <slot />
-      </div>
-    </RendererHostScope>
+    </div>
   </el-tab-pane>
 </template>
 
@@ -31,7 +29,6 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import RendererHostScope from '../support/RendererHostScope.vue'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {

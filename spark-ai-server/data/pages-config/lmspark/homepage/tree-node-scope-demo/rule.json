@@ -15,18 +15,7 @@
         "props": {
           "id": "tree-demo",
           "dataKey": "TreeData@rows",
-          "showCheckbox": true,
-          "defaultExpandAll": true,
           "nodeKey": "id",
-          "props": {
-            "label": "name",
-            "children": "children"
-          },
-          "filterable": true,
-          "highlightCurrent": true,
-          "draggable": true,
-          "allowDrop": true,
-          "allowDrag": true,
           "onNodeClick": "handleNodeClick",
           "onNodeExpand": "handleNodeExpand",
           "onNodeCollapse": "handleNodeCollapse",
@@ -36,9 +25,10 @@
               "label": "name",
               "children": "children"
             },
+            "showCheckbox": true,
             "highlightCurrent": true,
             "defaultExpandAll": true,
-            "filterNodeMethod": "filterNode"
+            "draggable": true
           }
         },
         "children": [
@@ -69,8 +59,8 @@
         "id": "btn-get-current",
         "props": {
           "id": "btn-get-current",
-          "text": "获取当前选中节点",
-          "action": "getCurrentNode",
+          "label": "获取当前选中节点",
+          "onClick": "getCurrentNode",
           "buttonType": "primary",
           "plain": true
         }
@@ -80,8 +70,8 @@
         "id": "btn-get-checked",
         "props": {
           "id": "btn-get-checked",
-          "text": "获取勾选节点",
-          "action": "getCheckedNodes",
+          "label": "获取勾选节点",
+          "onClick": "getCheckedNodes",
           "buttonType": "success",
           "plain": true
         }

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isVisible" :class="spaceClasses" :style="spaceStyle" v-bind="hostProps">
+  <div v-if="isVisible" :class="spaceClasses" :style="spaceStyle">
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
       :key="nodeId(child) ?? `r-space-child-${index}`"

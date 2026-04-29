@@ -14,7 +14,7 @@ export type {
 } from './system/index.js'
 
 // ── 2. Core 层（基础 composable / 类型 / 能力键） ──
-export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHostScope, resolvePlaceholderProps } from './core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkContextScope, resolvePlaceholderProps } from './core/index.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,
@@ -142,8 +142,6 @@ export type {
   FilterNode,
   RendererFilterConfigProps,
   RendererFilterProps,
-  ActionsNode,
-  RendererActionsConfigProps,
   ActionsAlign,
   ActionsPosition,
   EditorNode,

@@ -6,7 +6,6 @@
     :loading="loading"
     :animated="animated"
     :throttle="throttle"
-    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length" #default>
       <SparkComponentRenderer

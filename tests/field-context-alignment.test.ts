@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
-import { Spark, PAGE_COMPONENT_REGISTRY, FieldText, useSparkHostScope } from '@spark-view/spark-component'
+import { Spark, PAGE_COMPONENT_REGISTRY, FieldText, useSparkContextScope } from '@spark-view/spark-component'
 import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
 import { useResolvedFieldContext } from '../packages/spark-component/src/components/fields/context/useResolvedFieldContext'
@@ -279,6 +279,35 @@ describe('字段宿主推导会考虑中间层', () => {
     expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('table')
   })
 
+  it('r-table 内的 r-filter 面板字段会解析为 form 语义', () => {
+    const FieldScopeBridge = createIntermediateBridge('r-field-scope')
+    const FilterBridge = createIntermediateBridge('r-filter', FieldScopeBridge)
+
+    const wrapper = mountFieldInContext({
+      component: FilterBridge,
+      type: 'r-filter',
+      model: {},
+      fieldName: 'id',
+      hostType: 'r-table',
+    })
+
+    expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('form')
+  })
+
+  it('包含 table 字样的 filter-panel 宿主优先解析为 form 语义', () => {
+    const FilterPanelBridge = createIntermediateBridge('renderer-table-filter-panel')
+
+    const wrapper = mountFieldInContext({
+      component: FilterPanelBridge,
+      type: 'renderer-table-filter-panel',
+      model: {},
+      fieldName: 'id',
+      hostType: 'r-table',
+    })
+
+    expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('form')
+  })
+
   it('会跨越多层中间组件解析到最近宿主语义', () => {
     const DataScopeBridge = createIntermediateBridge('r-data-scope')
     const ListItemBridge = createIntermediateBridge('r-list-item', DataScopeBridge)
@@ -339,7 +368,7 @@ describe('字段宿主推导会考虑中间层', () => {
     const NativeTableWrapper = defineComponent({
       name: 'NativeTableWrapper',
       setup() {
-        useSparkHostScope('r-table')
+        useSparkContextScope('r-table')
         return () => h(ElTableStub, null, {
           default: () => h(FieldText as never, {
             type: 'r-text',

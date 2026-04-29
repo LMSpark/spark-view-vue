@@ -8,7 +8,6 @@
     :marker="marker"
     :direction="direction"
     :type="anchorType"
-    v-bind="hostProps"
     @change="handleChange"
     @click="handleClick"
   >

@@ -123,7 +123,7 @@ SparkNode
 ├─ 🔗 DataBinding : dataKey
 ├─ 👁️ State       : visible, disabled
 ├─ 🎨 Layout      : grid.*, style, class
-├─ 🧱 Structure   : children（含 r-toolbar/r-filter/r-actions/r-header/r-footer/r-tail）
+├─ 🧱 Structure   : children（含 r-toolbar/r-filter/r-header/r-footer/r-tail）
 ├─ ⚡ Actions     : on.* 与 builtin-action props
 ├─ 📡 Events      : on.*
 └─ 📦 Props       : 组件特有属性（透传）
@@ -198,7 +198,7 @@ SparkNode
   "children": [
     { "type": "r-toolbar", "children": [] },
     { "type": "r-filter", "children": [] },
-    { "type": "r-actions", "children": [] }
+    { "type": "r-toolbar", "children": [] }
   ]
 }
 ```
@@ -225,7 +225,7 @@ SparkNode
 
 ### 4.1 r-table（数据表格，Wrapper 版规范）
 
-> 规范：r-table 默认区只允许列节点。除列以外，工具栏、筛选项、行操作必须写在 children 中，并分别放入 r-toolbar、r-filter、r-actions 包装节点。
+> 规范：r-table 默认区只允许列节点。除列以外，工具栏、筛选项、行操作必须写在 children 中；其中行操作区使用第二个 r-toolbar 节点表达。
 
 ```jsonc
 {
@@ -274,7 +274,7 @@ SparkNode
       ]
     },
     {
-      "type": "r-actions",
+      "type": "r-toolbar",
       "children": [
         { "type": "el-button", "children": ["编辑"], "on": { "click": "handleEdit" } }
       ]
@@ -414,7 +414,7 @@ SparkNode
       ]
     },
     {
-      "type": "r-actions",
+      "type": "r-toolbar",
       "children": [
         { "type": "el-button", "children": ["查看"], "on": { "click": "handleInspect" } }
       ]
@@ -798,7 +798,7 @@ r-text / r-select / r-number / ...（字段组件）
           ]
         },
         {
-          "type": "r-actions",
+          "type": "r-toolbar",
           "children": [
             { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
             { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } }
@@ -830,7 +830,7 @@ r-text / r-select / r-number / ...（字段组件）
     },
     "children": [
       {
-        "type": "r-actions",
+        "type": "r-toolbar",
         "children": [
           { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } }
         ]
@@ -1351,9 +1351,9 @@ interface DualActionsConfig {
 
 | 容器类型 | actions 语义 | 映射到现有 props |
 |---------|-------------|-----------------|
-| r-table | 行操作列 | `children[type='r-actions']` + `props.docks.actions.*` |
-| r-tree | 节点操作 | `children[type='r-actions']` |
-| r-list | 项操作 | `children[type='r-actions']` + `props.docks.actions.*` |
+| r-table | 行操作列 | `children[type='r-toolbar']`（第二个） + `props.docks.actions.*` |
+| r-tree | 节点操作 | `children[type='r-toolbar']`（第二个） |
+| r-list | 项操作 | `children[type='r-toolbar']`（第二个） + `props.docks.actions.*` |
 | r-dialog | 头尾操作区 | `children[type='r-header'/'r-footer']` + `props.docks.header/footer.*` |
 | r-drawer | 头尾操作区 | `children[type='r-header'/'r-footer']` + `props.docks.header/footer.*` |
 
@@ -1361,8 +1361,8 @@ interface DualActionsConfig {
 
 | 旧写法 | 新写法 |
 |--------|--------|
-| `"props": { "rowActions": [...], "rowActionsWidth": 150 }` | `children[type='r-actions'] + props.docks.actions.width` |
-| `"props": { "nodeActions": [...] }` | `children[type='r-actions']` |
+| `"props": { "rowActions": [...], "rowActionsWidth": 150 }` | `children[type='r-toolbar']（第二个） + props.docks.actions.width` |
+| `"props": { "nodeActions": [...] }` | `children[type='r-toolbar']（第二个）` |
 | `"props": { "headerActions": [...], "footerActions": [...] }` | `children[type='r-header'/'r-footer'] + props.docks.header/footer` |
 
 #### StateConfig — 状态控制
@@ -1560,7 +1560,7 @@ interface BehaviorConfig {
       ]
     },
     {
-      "type": "r-actions",
+      "type": "r-toolbar",
       "children": [
         { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
         { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } }

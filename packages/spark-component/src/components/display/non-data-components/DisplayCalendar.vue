@@ -3,7 +3,6 @@
     v-if="isVisible"
     v-model="modelDate"
     :range="range"
-    v-bind="hostProps"
   >
     <template v-if="$slots['date-cell']" #date-cell="scope">
       <slot name="date-cell" v-bind="scope" />

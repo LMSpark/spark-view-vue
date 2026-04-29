@@ -7,7 +7,6 @@
     :column="column"
     :direction="direction"
     :size="descriptionsSize"
-    v-bind="hostProps"
   >
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"

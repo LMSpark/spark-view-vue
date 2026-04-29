@@ -1,6 +1,7 @@
 import type { SparkNode } from '../../internal'
 import type { TailNode } from '../RendererTail.types'
-import type { ToolbarPosition } from '../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../layout/toolbar-position'
+import type { IDataSource } from '@spark-view/spark-data'
 
 /** 工具栏交叉轴对齐方式。 */
 export type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
@@ -16,6 +17,10 @@ export type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 export interface RendererToolbarConfigProps extends Record<string, unknown> {
 	/** 工具栏 DOM 标识。 */
 	id?: string
+	/** 数据绑定键（与宿主容器绑定同一 DataView）。 */
+	dataKey?: string
+	/** 运行时数据线（框架注入）。 */
+	dataSource?: IDataSource
 	/** 工具栏停靠位置。 */
 	position?: ToolbarPosition
 	/** 工具栏附加 class。 */
@@ -56,6 +61,10 @@ export interface RendererToolbarProps {
 	type?: 'r-toolbar'
 	/** 工具栏 DOM 标识。 */
 	id?: string
+	/** 数据绑定键（与宿主容器绑定同一 DataView）。 */
+	dataKey?: string
+	/** 运行时数据线（框架注入）。 */
+	dataSource?: IDataSource
 	/** 工具栏动作节点列表。 */
 	children?: SparkNode[]
 	/** 尾部动作区 @componentRef r-tail */

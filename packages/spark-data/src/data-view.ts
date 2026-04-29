@@ -84,10 +84,15 @@ function isFilterFieldRef(value: unknown): value is FilterFieldRef {
 }
 
 function resolveFilterFieldRef(fieldName: string, row: IDataRow): unknown {
-  if (!(fieldName in row)) {
+  const rowValue: unknown = row
+  if (rowValue === null || typeof rowValue !== 'object' || Array.isArray(rowValue)) {
+    throw new Error(`过滤值表达式解析时收到非法行数据，字段 "${fieldName}"`)
+  }
+  if (!(fieldName in rowValue)) {
     throw new Error(`过滤值表达式引用了不存在的字段 "${fieldName}"`)
   }
-  return row[fieldName]
+  const rowRecord = rowValue as Record<string, unknown>
+  return rowRecord[fieldName]
 }
 
 function assertNoLegacyFilterPlaceholderString(value: string): void {
@@ -425,11 +430,18 @@ export class DataView implements IDataSource {
       const parentKey = typeof rel.parentField === 'string' ? rel.parentField : pView.primaryKey
       const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
 
-      const values = Array.from(new Set(parentRows.map(row => {
-        if (!(parentKey in row)) {
+      const values = Array.from(new Set(parentRows.map((row, rowIndex) => {
+        const rowValue: unknown = row
+        if (rowValue === null || typeof rowValue !== 'object' || Array.isArray(rowValue)) {
+          throw new Error(
+            `远端关系过滤收到非法父行数据（index=${rowIndex}, field=${parentKey}） [${this.tableName}@${this.viewId}]`
+          )
+        }
+        if (!(parentKey in rowValue)) {
           throw new Error(`远端关系过滤引用了不存在的父字段 "${parentKey}" [${this.tableName}@${this.viewId}]`)
         }
-        return row[parentKey]
+        const rowRecord = rowValue as Record<string, unknown>
+        return rowRecord[parentKey]
       })))
 
       if (values.some(value => value === undefined)) {

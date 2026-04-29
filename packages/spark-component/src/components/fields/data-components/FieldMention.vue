@@ -16,7 +16,6 @@
     :type="inputType"
     :placeholder="placeholder"
     :rows="rows"
-    v-bind="hostProps"
     @update:model-value="handleTextInput"
     @select="handleSelect"
     @search="handleSearch"

@@ -8,6 +8,7 @@ export interface RendererTreeApi extends BaseCrudContainerApi {
   setCurrentKey(key: string | number): void
   expandToNode(key: string | number): Promise<void>
   filter(keyword: string): void
+  getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): IDataRow[]
   getCheckedKeys(): Array<string | number>
   setCheckedKeys(keys: Array<string | number>): void
   moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null>

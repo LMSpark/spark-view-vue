@@ -9,7 +9,6 @@
     :prefix="prefix"
     :suffix="suffix"
     :value-style="valueStyle"
-    v-bind="hostProps"
   />
 </template>
 

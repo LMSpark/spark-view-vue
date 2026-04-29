@@ -5,7 +5,6 @@ import type {
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
-import type { ActionsNode } from '../../support/RendererActions.types'
 
 /**
  * r-table 组件公开属性接口。
@@ -46,10 +45,9 @@ export interface RTableProps
    */
   filter?: FilterNode
   /**
-   * 结构化行动作
+   * 结构化行动作（toolbar 结构）
    * 提示词模板：默认动作 message-row / delete-row。
-   * 权限要求：写操作按钮必须声明 permAction(create/delete/edit)，并建议 permDeniedBehavior='disable'。
-   * @componentRef r-actions
+   * @componentRef r-toolbar
    */
-  actions?: ActionsNode
+  actions?: ToolbarNode
 }

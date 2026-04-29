@@ -39,6 +39,9 @@ function handleAdd() {
 
 function handleRefresh() {
   _pageState.rows = INIT_ROWS.slice()
+  if (typeof $refreshData === 'function') {
+    $refreshData()
+  }
   $page.showMessage('已刷新（恢复初始数据）', 'success')
 }
 
@@ -50,6 +53,9 @@ function handleDelete(row) {
   $page.showConfirm('确认删除「' + row.name + '」？').then(function(ok) {
     if (!ok) return
     _pageState.rows = _pageState.rows.filter(function(r) { return r.id !== row.id })
+    if (typeof $refreshData === 'function') {
+      $refreshData()
+    }
     $page.showMessage('「' + row.name + '」已删除', 'success')
   })
 }

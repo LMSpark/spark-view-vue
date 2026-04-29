@@ -8,7 +8,7 @@
  */
 
 export { useSparkComponent, useSparkConsume, useSparkPageComponent, resolvePlaceholderProps } from './useSparkComponent.js'
-export { useSparkHostScope } from './useSparkComponent.js'
+export { useSparkContextScope } from './useSparkComponent.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,

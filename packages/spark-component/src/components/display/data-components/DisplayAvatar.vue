@@ -8,7 +8,6 @@
     :src-set="srcSet"
     :alt="alt"
     :fit="fit"
-    v-bind="hostProps"
   >
     <template v-if="text">{{ text }}</template>
   </el-avatar>

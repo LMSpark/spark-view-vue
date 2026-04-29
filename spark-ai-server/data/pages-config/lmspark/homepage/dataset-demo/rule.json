@@ -78,7 +78,7 @@
               },
               "dataKey": "Users@rows",
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {},
                 "children": [
                   {
@@ -215,7 +215,7 @@
               },
               "dataKey": "Orders@rows",
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {},
                 "children": [
                   {
@@ -343,7 +343,7 @@
               },
               "dataKey": "OrderItems@rows",
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {},
                 "children": [
                   {

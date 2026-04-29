@@ -216,20 +216,11 @@
             "textField": "name",
             "treeMode": "nested"
           },
-          "autoLoad": true
+          "autoLoad": false
         }
       },
       "resourceType": "static-data",
       "businessCategory": "reference",
-      "api": {
-        "list": {
-          "url": "/api/tree-data",
-          "pagination": {
-            "pageParam": "page",
-            "sizeParam": "pageSize"
-          }
-        }
-      },
       "crudConfig": {
         "skipPermissionCheck": true
       }

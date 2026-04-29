@@ -79,11 +79,12 @@ import {
   markRaw,
   onUnmounted,
   resolveDynamicComponent,
+  watchEffect,
 } from 'vue'
 import type { PropType } from 'vue'
 import type { IDataRow, IDataSource } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
-import { resolveSparkHost } from '../core/useSparkComponent.js'
+import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
 import {
   nodeId,
   isSparkNode,
@@ -93,6 +94,7 @@ import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentReg
 import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE } from '../core/capability-keys.js'
 import { consumeSparkCapability } from '../core/capability-system.js'
+import { createSparkCapabilityContext, sparkProvide, sparkRemove } from '../core/capability-system.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
 import type { BeforeRenderContext } from './support/beforeRender.js'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from './support/beforeRender.js'
@@ -150,6 +152,7 @@ interface VueComponentLike {
 
 // 复用空对象常量，避免多个 computed 在“无 props”场景反复制造新引用。
 const EMPTY_RUNTIME_PROPS = Object.freeze({}) as NodeRuntimeProps
+let _rendererScopedContextId = 0
 
 // ── 渲染器输入：外部只传节点本体与可选父上下文 ───────────────────────────────
 
@@ -329,7 +332,7 @@ function resolveHostTypeConstraintState(
     }
   }
 
-  const resolvedHost = resolveSparkHost(parentContext?.type ?? null, parentContext, {
+  const resolvedHost = resolveHostTypeFromContext(parentContext, {
     hostTypes: expectedTypes,
   })
 
@@ -508,14 +511,6 @@ function filterNativeDomProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
 
 // ── 渲染器运行时锚点：父能力上下文与注册表入口 ──────────────────────────────
 
-// 根节点 / 测试场景：显式把父能力上下文锚到当前 renderer 实例上。
-if (explicitParentContext.value !== undefined && currentInstance !== null) {
-  bindCapabilityContextOwner(currentInstance, explicitParentContext.value)
-  onUnmounted(() => {
-    unbindCapabilityContextOwner(currentInstance)
-  })
-}
-
 // 渲染器只直接消费注册表，不创建自己的业务能力上下文。
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
 
@@ -563,6 +558,62 @@ const effectiveNode = computed<SparkNode>(() => {
   const resolved = resolvePlaceholderProps(props, row)
   if (resolved === props) return node
   return { ...node, props: resolved }
+})
+
+const rendererScopedRow = computed(() => {
+  return resolveScopedRow({
+    rawProps: effectiveNode.value.props ?? EMPTY_RUNTIME_PROPS,
+    parentContext: parentCapabilityContext.value,
+  })
+})
+
+const rendererRowCapabilityContext = createSparkCapabilityContext({
+  id: `spark-renderer-row-${++_rendererScopedContextId}`,
+  type: 'r-renderer-row-scope',
+})
+
+let boundCapabilityContext: SparkCapabilityContext | null = null
+
+watchEffect(() => {
+  const row = rendererScopedRow.value
+  const parentContext = parentCapabilityContext.value
+
+  if (parentContext !== null) {
+    rendererRowCapabilityContext.parent = parentContext
+  } else {
+    delete rendererRowCapabilityContext.parent
+  }
+
+  if (row === null) {
+    sparkRemove(rendererRowCapabilityContext, DATA_ROW)
+  } else {
+    sparkProvide(rendererRowCapabilityContext, DATA_ROW, row)
+  }
+
+  if (currentInstance === null) return
+
+  const nextBoundContext = row !== null
+    ? rendererRowCapabilityContext
+    : (explicitParentContext.value !== undefined ? explicitParentContext.value : null)
+
+  if (boundCapabilityContext === nextBoundContext) return
+
+  if (boundCapabilityContext !== null) {
+    unbindCapabilityContextOwner(currentInstance as object)
+  }
+
+  if (nextBoundContext !== null) {
+    bindCapabilityContextOwner(currentInstance as object, nextBoundContext)
+  }
+
+  boundCapabilityContext = nextBoundContext
+})
+
+onUnmounted(() => {
+  if (currentInstance !== null && boundCapabilityContext !== null) {
+    unbindCapabilityContextOwner(currentInstance as object)
+  }
+  boundCapabilityContext = null
 })
 
 // ── 组件解析：registry 组件 / 全局组件 / 原生标签 / 未注册降级 ────────────────
@@ -699,7 +750,7 @@ const externalComponentProps = computed(() => {
  *   - 业务输入 → config.props
  *   - 结构输入 → type / id / children
  *
- * 命名区域通过 wrapper 子节点（如 `r-toolbar` / `r-actions`）声明；
+ * 命名区域通过 wrapper 子节点（如 `r-toolbar`）声明；
  * 这里仅做统一 props 透传，并保留对历史 `order` 残余输入的过滤兖底。
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。

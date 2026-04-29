@@ -125,7 +125,7 @@
                 ]
               },
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {
                   "id": "actions__details"
                 },
@@ -290,7 +290,7 @@
                 ]
               },
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {
                   "id": "actions__voucherList"
                 },

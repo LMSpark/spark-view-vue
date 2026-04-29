@@ -3,7 +3,6 @@
     v-if="isVisible"
     :href="href"
     :title="title"
-    v-bind="hostProps"
   >
     <template v-if="!$slots['default']">{{ title }}</template>
     <slot />

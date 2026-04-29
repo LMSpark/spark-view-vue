@@ -33,26 +33,25 @@ export type PermissionAction = PermissionActionName | (string & {})
 
 interface ResolvedPermAction {
   action?: PermissionAction
-  inferred: boolean
 }
 
 function resolveNodePermAction(node: SparkNode): ResolvedPermAction {
   const explicitPermAction = nodeInputProp(node, 'permAction')
   if (typeof explicitPermAction === 'string' && explicitPermAction.length > 0) {
-    return { action: explicitPermAction, inferred: false }
+    return { action: explicitPermAction }
   }
 
   const builtinAction = nodeInputProp(node, 'action')
-  if (typeof builtinAction !== 'string' || builtinAction.length === 0) return { inferred: false }
+  if (typeof builtinAction !== 'string' || builtinAction.length === 0) return {}
 
   switch (builtinAction) {
     case 'append-row':
     case 'prompt-append':
-      return { action: 'create', inferred: true }
+      return { action: 'create' }
     case 'delete-row':
     case 'delete-current':
     case 'delete-selected':
-      return { action: 'delete', inferred: true }
+      return { action: 'delete' }
     case 'prompt-edit':
     case 'patch-row':
     case 'patch-current':
@@ -60,9 +59,9 @@ function resolveNodePermAction(node: SparkNode): ResolvedPermAction {
     case 'move-row':
     case 'move-current':
     case 'submit-current-form':
-      return { action: 'edit', inferred: true }
+      return { action: 'edit' }
     default:
-      return { inferred: false }
+      return {}
   }
 }
 
@@ -135,16 +134,14 @@ export function isRowScopedPermAction(action: PermissionAction | undefined): boo
 
 /** 判断 SparkNode 的模型级动作（create/import/export）是否被权限允许 */
 export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined, permissionMode?: NavPermissionMode): boolean {
-  const resolvedPermAction = resolveNodePermAction(action)
-  const permAction = resolvedPermAction.action
+  const permAction = resolveNodePermAction(action).action
   if (!isModelScopedPermAction(permAction)) return true
   return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm, permissionMode } : { permissionMode })
 }
 
 /** 判断 SparkNode 的行级动作（edit/delete/create-child）是否被权限允许 */
 export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined, permissionMode?: NavPermissionMode): boolean {
-  const resolvedPermAction = resolveNodePermAction(action)
-  const permAction = resolvedPermAction.action
+  const permAction = resolveNodePermAction(action).action
   if (!isRowScopedPermAction(permAction)) return true
 
   return isPermittedAction(permAction, { row: row ?? null, permissionMode })

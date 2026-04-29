@@ -11,7 +11,6 @@
     :split-button="splitButton"
     :popper-class="popperClass"
     :max-height="maxHeight"
-    v-bind="hostProps"
   >
     <template #default>
       <SparkComponentRenderer

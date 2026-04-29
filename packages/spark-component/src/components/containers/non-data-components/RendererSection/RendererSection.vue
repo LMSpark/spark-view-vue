@@ -27,19 +27,17 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-section-field-scope">
-      <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
-        <div
-          v-for="(child, index) in gridChildren"
-          :key="nodeId(child) ?? `r-section-child-${index}`"
-          class="renderer-section-grid-item"
-          :style="getChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-        <slot v-bind="getDefaultScope()" />
+    <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
+      <div
+        v-for="(child, index) in gridChildren"
+        :key="nodeId(child) ?? `r-section-child-${index}`"
+        class="renderer-section-grid-item"
+        :style="getChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
       </div>
-    </RendererHostScope>
+      <slot v-bind="getDefaultScope()" />
+    </div>
   </el-card>
 
   <div v-else :class="['renderer-section', { 'renderer-section--bordered': bordered }]">
@@ -68,19 +66,17 @@
       </div>
     </div>
 
-    <RendererHostScope type="r-section-field-scope">
-      <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
-        <div
-          v-for="(child, index) in gridChildren"
-          :key="nodeId(child) ?? `r-section-child-${index}`"
-          class="renderer-section-grid-item"
-          :style="getChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-        <slot v-bind="getDefaultScope()" />
+    <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
+      <div
+        v-for="(child, index) in gridChildren"
+        :key="nodeId(child) ?? `r-section-child-${index}`"
+        class="renderer-section-grid-item"
+        :style="getChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
       </div>
-    </RendererHostScope>
+      <slot v-bind="getDefaultScope()" />
+    </div>
   </div>
 </template>
 
@@ -96,7 +92,6 @@ import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'

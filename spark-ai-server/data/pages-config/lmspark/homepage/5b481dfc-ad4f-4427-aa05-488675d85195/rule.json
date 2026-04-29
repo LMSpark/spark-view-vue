@@ -259,7 +259,7 @@
                 "stripe": true
               },
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {
                   "width": 200,
                   "fixed": "right",
@@ -479,7 +479,7 @@
                 "stripe": true
               },
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {
                   "width": 200,
                   "fixed": "right",
@@ -633,7 +633,7 @@
                 "stripe": true
               },
               "actions": {
-                "type": "r-actions",
+                "type": "r-toolbar",
                 "props": {
                   "width": 200,
                   "fixed": "right",
