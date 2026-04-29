@@ -68,7 +68,7 @@
 
 ## 格式约束（必须严格遵守）
 
-- 根结构: `{ "dataset": { "dataSetName": "XxxDS", "tables": {}, "tableRelations": [] } }`
+- 根结构: `{ "dataSetName": "XxxDS", "tables": {}, "tableRelations": [] }`
 - 每张表: `{ "columns": [...], "views": { "default": { "rows": [...] } } }`（不加 tableName 字段）
 - 主键: `"isPrimaryKey": true`（不是 `primaryKey`）
 - 每列都有 name 和 type（string/number/boolean）
@@ -460,7 +460,7 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
 
 ## 4. 格式约束（必须严格遵守）
 
-- 根结构: { "dataset": { "dataSetName": "NavigationEditorDS", "tables": {}, "tableRelations": [] } }
+- 根结构: { "dataSetName": "NavigationEditorDS", "tables": {}, "tableRelations": [] }
 - 每张表: { "columns": [...], "views": { "default": { "rows": [...] } } }（不加 tableName 字段）
 - 主键: "isPrimaryKey": true（不是 primaryKey）
 - 每列都有 name 和 type

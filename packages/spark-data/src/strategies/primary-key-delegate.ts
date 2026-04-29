@@ -279,7 +279,7 @@ export class PrimaryKeyDelegate {
    * **快速路径**：若 `_pk` 计算列已注册（`ensurePkColumn()` 已调用），
    * 直接读取预计算的 `row._pk`——O(1) 字段读取，无类型强转。
    *
-   * **兼容路径**：若 `_pk` 尚未注册（非托管行 / 初始化前调用），
+   * **未注册路径**：若 `_pk` 尚未注册（非托管行 / 初始化前调用），
    * 回退到 `row[primaryKey]` + `coercePkValue` 运行时强转。
    *
    * 所有内部 Map/Set/`===` 比较均使用此方法。
@@ -293,7 +293,7 @@ export class PrimaryKeyDelegate {
       if ('_pk' in row) return undefined
     }
 
-    // 兼容路径：非托管行 / _pk 尚未注册
+    // 未注册路径：非托管行 / _pk 尚未注册
     const field = this.primaryKey
     const value = row[field]
     if (value === undefined || value === null) return undefined

@@ -381,8 +381,5 @@ export function formatPageDataSnapshot(
   entry: DataSetHistorySnapshot,
   indentation = 2,
 ): string {
-  if (entry.sourceData) {
-    return JSON.stringify(entry.sourceData, null, indentation)
-  }
-  return JSON.stringify({ dataset: entry.snapshot }, null, indentation)
+  return JSON.stringify(entry.snapshot, null, indentation)
 }

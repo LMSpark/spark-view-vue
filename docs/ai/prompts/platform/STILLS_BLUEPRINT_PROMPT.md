@@ -6,7 +6,7 @@
 >
 > 所属： [AI 提示词体系](../../README.md) / 平台规则 / Stills 蓝图执行提示词。
 >
-> 相关文档： [AI_PROTOCOL_UNIFIED.md](AI_PROTOCOL_UNIFIED.md) / [DATASET_STILLS_SCHEME.md](../../architecture/DATASET_STILLS_SCHEME.md)
+> 相关入口： [API_FIRST_PROMPT.md](API_FIRST_PROMPT.md) / [GOVERNANCE.md](../../GOVERNANCE.md)
 
 ---
 
@@ -237,6 +237,6 @@ Round 4+: 按 blueprint checkpoints 逐步执行
 
 ## 3. 与其他文档的分工
 
-- [AI_PROTOCOL_UNIFIED.md](AI_PROTOCOL_UNIFIED.md)：统一协议层与前端解析约定。
-- [DATASET_STILLS_SCHEME.md](../../architecture/DATASET_STILLS_SCHEME.md)：整体架构、动作目录、阶段计划。
+- [API_FIRST_PROMPT.md](API_FIRST_PROMPT.md)：API-first 约束与边界。
+- [GOVERNANCE.md](../../GOVERNANCE.md)：提示词体系维护规则。
 - 本文：给 AI 直接使用的蓝图驱动渐进执行提示词（业务无关）。

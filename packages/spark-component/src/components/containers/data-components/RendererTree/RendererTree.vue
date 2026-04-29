@@ -85,6 +85,7 @@ import {
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
+import { extractModelPermission, isModelActionAllowed, isRowActionAllowed, type ModelPermissionSource } from '../../../../permission'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
@@ -97,6 +98,7 @@ import { useRendererTreeViewState } from './view-state'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../../support/beforeRender'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -144,7 +146,45 @@ const treeIdField = computed(() =>
   resolvedView.value?.treeConfig?.idField ?? 'id'
 )
 
-const visibleToolbarConfigs = computed(() => toolbarConfigs.value)
+function resolveTreeToolbarActionNode(node: SparkNode): SparkNode {
+  const dataSource = resolvedView.value
+  const currentRow = dataSource?.currentRow
+  const scopedRow = currentRow !== null && currentRow !== undefined && typeof currentRow === 'object' && !Array.isArray(currentRow)
+    ? currentRow as IDataRow
+    : undefined
+  const modelPermission = extractModelPermission(dataSource as ModelPermissionSource | null)
+
+  const beforeRender = resolveNodeBeforeRender(node, {
+    row: scopedRow,
+    data: scopedRow,
+    dataSource,
+    modelPermission,
+    host: { type: 'r-tree-toolbar' },
+  })
+
+  const resolvedNode = mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
+    mirrorDisabledToButtonDisabled: true,
+    markResolved: true,
+  })
+
+  const allowed = isModelActionAllowed(resolvedNode, modelPermission) && isRowActionAllowed(resolvedNode, scopedRow)
+  if (allowed) return resolvedNode
+
+  return {
+    ...resolvedNode,
+    props: {
+      ...(resolvedNode.props ?? {}),
+      disabled: true,
+      buttonDisabled: true,
+    },
+  }
+}
+
+function isTreeToolbarActionVisible(node: SparkNode): boolean {
+  return node.props?.['visible'] !== false
+}
+
+const visibleToolbarConfigs = computed(() => toolbarConfigs.value.map(resolveTreeToolbarActionNode).filter(isTreeToolbarActionVisible))
 const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
@@ -322,4 +362,3 @@ const rawNodeActionsToolbarConfig = computed<SparkNode>(() => ({
   color: #303133;
 }
 </style>
-

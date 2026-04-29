@@ -377,7 +377,7 @@ const PropsTable = defineComponent({
           class: { 'props-table__event': /^on[A-Z]/.test(prop.name) },
         }, [
           h('td', [h('code', prop.name)]),
-          h('td', renderType(prop.type, emit)),
+          h('td', createTypeCells(prop.type, emit)),
           h('td', prop.required ? '✓' : ''),
           h('td', prop.default ? [h('code', prop.default)] : []),
           h('td', prop.description ?? ''),
@@ -387,7 +387,7 @@ const PropsTable = defineComponent({
   },
 })
 
-function renderType(typeStr: string, emit: (event: 'type-click', name: string) => void) {
+function createTypeCells(typeStr: string, emit: (event: 'type-click', name: string) => void) {
   const parts = extractClickableTypes(typeStr)
   if (parts.length === 1 && parts[0] && !parts[0].clickable) {
     return [h('code', { class: 'props-table__type' }, typeStr)]

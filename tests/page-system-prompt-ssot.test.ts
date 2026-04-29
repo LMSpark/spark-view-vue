@@ -3,15 +3,19 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import {
-  GENERATE_BASE_PROMPT,
-  UI_PHASE_PROMPT,
+  PAGE_SYSTEM_PROMPT,
 } from '../packages/spark-ai/src/business/project-planning/prompts/page-system-prompt'
 
 describe('page-system-prompt SSoT', () => {
-  it('uses current action and component discovery entries instead of legacy queryActionSpec capabilities', () => {
-    const prompt = `${GENERATE_BASE_PROMPT}\n${UI_PHASE_PROMPT}`
+  it('uses current Stills action and component discovery entries only', () => {
+    const prompt = PAGE_SYSTEM_PROMPT
 
+    expect(prompt).not.toContain('queryCapabilities')
     expect(prompt).not.toContain('queryActionSpec')
+    expect(prompt).not.toContain('queryComponentCatalog')
+    expect(prompt).not.toContain('queryComponentGuide')
+    expect(prompt).not.toContain('emitPagedata')
+    expect(prompt).not.toContain('emitRuleJson')
     expect(prompt).not.toMatch(/SparkNode\.[A-Za-z]/u)
     expect(prompt).toContain('stills.actionSpec')
     expect(prompt).toContain('catalog.query')

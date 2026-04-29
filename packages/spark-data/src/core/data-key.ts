@@ -140,14 +140,13 @@ function parseCrossPageKey(dataKey: string): DataKeyDescriptor | null {
 // ===== 解析函数 =====
 
 /**
- * 判断 dataKey 是否为 DataSet 数据键（新格式或旧格式）
+ * 判断 dataKey 是否为当前合法的 DataSet 数据键
  *
  * @param dataKey 原始 dataKey 字符串
  * @returns 是否为 DataSet 绑定键
  */
 export function isDataKey(dataKey: string): boolean {
-  if (!dataKey) return false
-  return dataKey.includes(SEPARATOR)
+  return parseDataKey(dataKey) !== null
 }
 
 /**

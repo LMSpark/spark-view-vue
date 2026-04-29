@@ -22,11 +22,9 @@
 | 分组 | 文件 | 角色 |
 |------|------|------|
 | **平台规则** | [API_FIRST_PROMPT.md](prompts/platform/API_FIRST_PROMPT.md) | API-first 约束（强制） |
-| | [AI_PROTOCOL_UNIFIED.md](prompts/platform/AI_PROTOCOL_UNIFIED.md) | 统一交互协议 |
 | | [STILLS_BLUEPRINT_PROMPT.md](prompts/platform/STILLS_BLUEPRINT_PROMPT.md) | Stills 蓝图驱动渐进执行提示词（业务无关） |
-| | [STILLS_RUNTIME_PROMPT.md](prompts/platform/STILLS_RUNTIME_PROMPT.md) | Stills 运行时系统提示词（精简版） |
 | **数据生成** | [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md) | 生产版主入口 |
-| | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 兼容入口（规则已收口到生产版） |
+| | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 组装模板（规则以生产版为准） |
 | | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证附录 |
 | **页面配置生成** | [SPARK_PAGE_CONFIG_PROMPT.md](prompts/pages/SPARK_PAGE_CONFIG_PROMPT.md) | 页面配置主提示词 |
 | | [AI_PAGE_GENERATION_STRATEGY.md](prompts/pages/AI_PAGE_GENERATION_STRATEGY.md) | 策略与实战经验 |
@@ -37,9 +35,7 @@
 
 ### 第 3 层：AI 架构设计（architecture/）
 
-AI 配置能力的系统设计与实施规划：
-
-现行实现与后续演进以下列文档为准；带“旧”标记的文档仅保留归档，不再作为实现依据。
+AI 配置能力的系统设计与实施规划。这里只保留当前仍存在并可作为依据的文档。
 
 | 文件 | 说明 |
 |------|------|
@@ -47,18 +43,11 @@ AI 配置能力的系统设计与实施规划：
 | [DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md) | **预研母版**：DevSystem AI 统一到页面级 4 文件同层编辑的背景梳理与目标架构；审核时以实施计划书为准 |
 | [DEVSYSTEM_DATASET_TOOL_SSOT.md](architecture/DEVSYSTEM_DATASET_TOOL_SSOT.md) | **当前实现**：DevSystem / `pagedata.json` / `DataSetCrudTool` / AI 能力目录之间的 SSoT 边界与调用链 |
 | [AI_FRONTEND_UNIFICATION_PLAN.md](architecture/AI_FRONTEND_UNIFICATION_PLAN.md) | 前端 AI 引擎统一与细粒度编辑主链路规划 |
-| [AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md](architecture/AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md) | ~~旧~~ 全生命周期方案草案（含已删除的 design-session / AiDesignStudio 入口） |
-| [DATASET_STILLS_SCHEME.md](architecture/DATASET_STILLS_SCHEME.md) | **旧入口名仍被引用**：若文件缺失，以当前实现文档和代码为准 |
-| [AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md](architecture/AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md) | ~~旧~~ design-session 计划（已被当前实现取代） |
-| [AI_INTERACTION_ARCHITECTURE.md](architecture/AI_INTERACTION_ARCHITECTURE.md) | ~~旧~~ 双通道交互体系设计（AiDesignStudio 已删除） |
-| [AI_LIFECYCLE_IMPLEMENTATION_PLAN.md](architecture/AI_LIFECYCLE_IMPLEMENTATION_PLAN.md) | ~~旧~~ 分阶段实施路线图（基于已废弃入口） |
-| [AI_METADATA_PIPELINE.md](architecture/AI_METADATA_PIPELINE.md) | 组件元数据提取管线 |
-| [DEV_SYSTEM_ENGINEERING_CHAIN.md](architecture/DEV_SYSTEM_ENGINEERING_CHAIN.md) | ~~旧~~ 开发系统工程链草案（含 Proposal / AiDesignStudio 体系） |
 
 ## 角色约定
 
 - **生产版主入口**：直接复制给 AI 使用的主提示词。
-- **兼容入口**：用于旧链接兼容或提示词组装跳转，不再维护第二份独立规则正文。
+- **组装模板**：用于二次组装或缩短上下文，不维护第二份独立规则正文。
 - **模板版**：用于二次组装的精简模板；并非所有文件名带 TEMPLATE 的文档都仍承担该角色。
 - **案例附录**：保留验证案例和质量门，不作为首选复制入口。
 - **策略版**：沉淀实战方法和跨文件协同经验。
@@ -66,6 +55,6 @@ AI 配置能力的系统设计与实施规划：
 ## 使用顺序
 
 1. 先判断问题属于平台规则、数据生成、页面配置生成还是组件专项。
-2. 进入对应分组，选择合适角色（生产版主入口 / 兼容入口 / 模板版 / 案例附录 / 策略版）。
+2. 进入对应分组，选择合适角色（生产版主入口 / 组装模板 / 案例附录 / 策略版）。
 3. 涉及运行时行为时，以 system-prompt.txt 为最终对齐基线。
 4. 维护或扩展体系前，先看 [GOVERNANCE.md](GOVERNANCE.md)。

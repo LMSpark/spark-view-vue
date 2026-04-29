@@ -39,8 +39,8 @@ High-value entry points:
 ## Non-Negotiable Rules
 
 - **UI 组装强制 SOP**（AI Tool 调用规范）：
-  1. 需要构造组件时，先调用 `queryComponentCatalog('*')` 或 `catalog.query({ category: 'container' })` 查全量/分类列表。
-  2. 选定组件类型（如 r-table）后，必定调用 `queryComponentGuide('r-table')` 或 `catalog.guide({ type: 'r-table' })` 拉取该型 props schema (配置规格)。
+  1. 需要构造组件时，先调用 `catalog.query({})` 或 `catalog.query({ category: 'container' })` 查全量/分类列表。
+  2. 选定组件类型（如 r-table）后，必定调用 `catalog.guide({ type: 'r-table' })` 拉取该型 props schema (配置规格)。
   3. 基于拉取到的合法规格在本地拼接 SparkNode (`{ type, props, children }`)。
   4. 最后调用 `sparkNodeTree.addNode` 或 `sparkNodeTree.addNodes` 实施写入。**绝对禁止不看 specs 凭空构造 props！**
 - Config-first: prefer `rule.json`, `pagedata.json`, view metadata, and existing renderer capabilities. Use `script.js` only when config cannot express the behavior.

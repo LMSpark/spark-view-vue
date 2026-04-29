@@ -34,15 +34,19 @@
 import { computed } from 'vue'
 import { watch } from 'vue'
 import {
+  DATA_ROW,
   DATA_SOURCE,
   PAGE_DATASET,
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
   useSparkPageComponent,
+  type SparkNode,
 } from '../../internal'
 import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver'
-import type { DataView } from '@spark-view/spark-data'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
+import { extractModelPermission, isModelActionAllowed, isRowActionAllowed, type ModelPermissionSource } from '../../../permission'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.props'
 
 const props = withDefaults(defineProps<RToolbarProps>(), {
@@ -52,6 +56,7 @@ const props = withDefaults(defineProps<RToolbarProps>(), {
 const { sparkConsume, sparkProvide } = useSparkPageComponent(props)
 
 const inheritedDataSource = sparkConsume(DATA_SOURCE)
+const inheritedDataRow = sparkConsume(DATA_ROW)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const resolvedToolbarDataSource = computed<DataView | null>(() => {
@@ -81,11 +86,61 @@ const justify = computed<InlineJustify>(() => props.justify ?? 'start')
 // 尾区节点通过 props.tail 输入。
 const contentChildren = computed(() => props.children ?? [])
 
+function resolveToolbarActionContext() {
+  const dataSource = resolvedToolbarDataSource.value
+  const currentRow = dataSource?.currentRow
+  const rowCandidate = inheritedDataRow ?? currentRow
+  const row = rowCandidate !== null && rowCandidate !== undefined && typeof rowCandidate === 'object' && !Array.isArray(rowCandidate)
+    ? rowCandidate as IDataRow
+    : undefined
+
+  return {
+    dataSource,
+    modelPermission: extractModelPermission(dataSource as ModelPermissionSource | null),
+    row,
+  }
+}
+
+function resolveToolbarActionNode(node: SparkNode): SparkNode {
+  const context = resolveToolbarActionContext()
+  const beforeRender = resolveNodeBeforeRender(node, {
+    row: context.row,
+    data: context.row,
+    dataSource: context.dataSource,
+    modelPermission: context.modelPermission,
+    host: { type: 'r-toolbar' },
+  })
+
+  let resolvedNode = mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
+    mirrorDisabledToButtonDisabled: true,
+    markResolved: true,
+  })
+
+  // 行作用域工具栏由行宿主负责动作语义，不在 toolbar 层做模型/当前行权限投影。
+  if (inheritedDataRow !== null) return resolvedNode
+
+  const allowed = isModelActionAllowed(resolvedNode, context.modelPermission) && isRowActionAllowed(resolvedNode, context.row)
+  if (allowed) return resolvedNode
+
+  return {
+    ...resolvedNode,
+    props: {
+      ...(resolvedNode.props ?? {}),
+      disabled: true,
+      buttonDisabled: true,
+    },
+  }
+}
+
+function isToolbarActionVisible(node: SparkNode): boolean {
+  return node.props?.['visible'] !== false
+}
+
 // 主区：常规子节点。
-const startChildren = computed(() => getSparkNodeChildren(contentChildren.value))
+const startChildren = computed(() => getSparkNodeChildren(contentChildren.value).map(resolveToolbarActionNode).filter(isToolbarActionVisible))
 
 // 尾区：来自 r-tail 的 children。
-const endChildren = computed(() => getSparkNodeChildren(props.tail?.children))
+const endChildren = computed(() => getSparkNodeChildren(props.tail?.children).map(resolveToolbarActionNode).filter(isToolbarActionVisible))
 
 function normalizeSize(value: number | string): string {
   return typeof value === 'number' ? `${value}px` : value

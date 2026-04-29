@@ -19,7 +19,7 @@ SPARK 页面配置的**全部 4 个文件**。rule.json 是主文件，其他 3 
 
 文件名：pagedata.json
 ```json
-{ "dataset": { ... } }
+{ "dataSetName": "PageDataSet", "tables": { ... }, "tableRelations": [] }
 ```
 
 文件名：script.js
@@ -661,11 +661,9 @@ pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联�
 
 ```json
 {
-  "dataset": {
-    "dataSetName": "PageDataSet",
-    "tables": { ... },
-    "tableRelations": [ ... ]
-  }
+  "dataSetName": "PageDataSet",
+  "tables": { ... },
+  "tableRelations": [ ... ]
 }
 ```
 

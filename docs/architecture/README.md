@@ -9,11 +9,6 @@
 3. [PLATFORM_TENANT_ROUTING.md](PLATFORM_TENANT_ROUTING.md)：租户/项目路由与平台级路径结构。
 4. [SPARK_AI_PACKAGE_FULL_DESIGN.md](SPARK_AI_PACKAGE_FULL_DESIGN.md)：`packages/spark-ai` 完整设计方案（含与后端接口关联、风险和分阶段落地计划）。
 
-## 重要重构记录
-
-- [RELATION_REFACTOR.md](RELATION_REFACTOR.md)：关系模型重构与当前结构约束。
-- [STILLS_REFACTOR_V3.md](STILLS_REFACTOR_V3.md)：stills 相关重构记录与阶段性结论。
-
 ## 编写边界
 
 - 这里记录“系统为什么这样设计”，不是“新手怎么使用”。

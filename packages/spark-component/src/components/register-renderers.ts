@@ -150,6 +150,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-alert', DisplayAlert],
   // 非数据字段
   ['r-column-group', FieldContextRenderer],
+  ['r-row-fragment', FieldContextRenderer],
   ['r-tree-node-summary', FieldTreeNodeSummary],
   // 支持
   ['code-editor', SparkCodeEditor],

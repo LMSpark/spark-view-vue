@@ -680,8 +680,6 @@ const ACTION_TITLE_MAP: Record<string, string> = {
   'edit.bootstrap': '初始化编辑会话',
   'catalog.query': '组件目录',
   'catalog.guide': '组件指南',
-  queryComponentCatalog: '组件目录',
-  queryComponentGuide: '组件指南',
   'interaction.ask': '反问确认',
   'dataset.export': '导出数据集',
   'dataset.bootstrap': '初始化数据集',

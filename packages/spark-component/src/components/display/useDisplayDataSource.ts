@@ -36,7 +36,7 @@ export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSou
     if (typeof props.dataKey === 'string' && props.dataKey.trim().length > 0 && pageDataSet) {
       const boundValue = resolveRawKey(props.dataKey, pageDataSet)
       if (boundValue !== undefined) {
-        // 兼容 dataKey 指向对象（如 summaryRow）+ field 指定具体字段 的用法。
+        // dataKey 可指向对象（如 summaryRow），field 再选择对象内字段。
         if (
           props.field
           && boundValue !== null

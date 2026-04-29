@@ -229,8 +229,8 @@ describe('DataKey 统一解析器', () => {
       expect(isDataKey('Users@grid@rows')).toBe(true)
     })
 
-    it('4 段格式 isDataKey 仍返回 true（仅检测 @ 存在）', () => {
-      expect(isDataKey('DS@Orders@grid@currentRow')).toBe(true)
+    it('4 段旧格式不再识别', () => {
+      expect(isDataKey('DS@Orders@grid@currentRow')).toBe(false)
     })
 
     it('#scope 跨页面格式返回 true', () => {

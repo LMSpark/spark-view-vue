@@ -177,8 +177,6 @@ const safeNotifications = computed(() => Array.isArray(notifications) ? notifica
 
 /** 检查导航配置中是否包含指定 action 的工具栏项 */
 function hasAction(action: string): boolean {
-  // 无工具栏配置时默认全部显示（向后兼容）
-  if (safeToolbarItems.value.length === 0) return true
   return safeToolbarItems.value.some(item => item.path === action)
 }
 /* 通知（SSE 实时驱动） */

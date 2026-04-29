@@ -22,6 +22,8 @@ interface FilterCapableView {
   setFilter?: (expr: FilterExpression | undefined) => Promise<void> | void
   refresh?: () => Promise<void> | void
   filterExpression?: FilterExpression
+  getColumn?: (name: string) => unknown
+  columns?: Array<{ name?: string; field?: string }>
   dataTable?: {
     resourceType?: string
     api?: {
@@ -128,6 +130,34 @@ function createResidentFieldRefDescriptor(
   }
 }
 
+function hasKnownColumns(view: FilterCapableView): boolean {
+  return typeof view.getColumn === 'function' || Array.isArray(view.columns)
+}
+
+function hasColumn(view: FilterCapableView, name: string): boolean {
+  if (typeof view.getColumn === 'function') {
+    return view.getColumn(name) !== undefined
+  }
+  return (view.columns ?? []).some(column => column.name === name || column.field === name)
+}
+
+function assertResidentFieldRefsExist(
+  view: DataView | null,
+  descriptors: FilterDescriptor[],
+): void {
+  if (!view) return
+
+  const candidate = view as unknown as FilterCapableView
+  if (!hasKnownColumns(candidate)) return
+
+  for (const descriptor of descriptors) {
+    if (!isResidentFieldRefDescriptor(descriptor)) continue
+    if (!hasColumn(candidate, descriptor.refField)) {
+      throw new Error(`RendererTable: filterValueRefField 引用了不存在的字段 ${descriptor.refField}`)
+    }
+  }
+}
+
 function describeFilterNode(config: SparkNode): FilterDescriptor {
   const residentFieldRef = createResidentFieldRefDescriptor(config)
   if (residentFieldRef) return residentFieldRef
@@ -185,6 +215,11 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   const filterDescriptors = computed(() => {
     return allFilterNodes.value.map(config => describeFilterNode(config))
   })
+
+  assertResidentFieldRefsExist(
+    options.dataView.value,
+    filterDescriptors.value,
+  )
 
   const filterConfigs = computed(() => {
     return filterDescriptors.value
@@ -247,6 +282,11 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     refreshRemote: boolean,
   ): Promise<void> {
     if (!hasAnyFilterNodes.value) return
+
+    assertResidentFieldRefsExist(
+      view,
+      filterDescriptors.value,
+    )
 
     const candidate = view as unknown as FilterCapableView
     if (typeof candidate.setFilter !== 'function') return

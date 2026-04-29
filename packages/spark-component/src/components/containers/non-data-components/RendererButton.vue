@@ -189,7 +189,7 @@ const resolvedIcon = computed((): Component | null => {
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
 // ── 七、业务 click 处理器解析 ───────────────────────────────────────────
-// 兼容两种写法：props.on.click 与 props.onClick。
+// 支持 props.on.click 和 props.onClick 两种声明式入口。
 const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() => {
   const on = resolvedProps.value['on']
   if (on !== null && typeof on === 'object' && !Array.isArray(on)) {

@@ -54,19 +54,17 @@
 【1】顶层输出格式
 ═══════════════════════════════════════════════════
 
-优先使用当前推荐的 dataset 包装格式：
+使用当前 canonical DataSet 顶层结构，不使用 `dataset` 包裹：
 
 {
-  "dataset": {
-    "dataSetName": "BusinessDataSet",
-    "tables": {},
-    "tableRelations": []
-  }
+  "dataSetName": "BusinessDataSet",
+  "tables": {},
+  "tableRelations": []
 }
 
 说明：
 
-- 当前解析器兼容历史直出格式，但新生成内容一律使用 dataset 包装格式。
+- 历史 `{ "dataset": { ... } }` 包裹结构已移除，新生成内容一律直接输出 canonical DataSet。
 - dataSetName 必须存在。
 - tables 必须存在，即使为空对象。
 - tableRelations 可省略，但建议显式输出空数组 []。
@@ -180,17 +178,15 @@
 【3】DataSet 结构
 ═══════════════════════════════════════════════════
 
-dataset 内部结构：
+DataSet 顶层结构：
 
 {
-  "dataset": {
-    "dataSetName": "OrderManagementDataSet",
-    "tables": {
-      "Orders": { ... },
-      "OrderItems": { ... }
-    },
-    "tableRelations": [ ... ]
-  }
+  "dataSetName": "OrderManagementDataSet",
+  "tables": {
+    "Orders": { ... },
+    "OrderItems": { ... }
+  },
+  "tableRelations": [ ... ]
 }
 
 可选顶层字段：
@@ -366,53 +362,51 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 推荐示例：
 
 {
-  "dataset": {
-    "dataSetName": "UserFormDataSet",
-    "tables": {
-      "Users": {
-        "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "status", "type": "string", "label": "状态" },
-          { "name": "roleCode", "type": "string", "label": "角色" }
-        ],
-        "views": {
-          "default": {
-            "rows": []
-          }
-        }
-      },
-      "StatusOptions": {
-        "columns": [
-          { "name": "value", "type": "string", "label": "值" },
-          { "name": "label", "type": "string", "label": "显示名" }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              { "value": "active", "label": "启用" },
-              { "value": "inactive", "label": "停用" }
-            ]
-          }
-        }
-      },
-      "RoleOptions": {
-        "columns": [
-          { "name": "code", "type": "string", "label": "编码", "isPrimaryKey": true },
-          { "name": "name", "type": "string", "label": "名称" }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              { "code": "admin", "name": "管理员" },
-              { "code": "editor", "name": "编辑" },
-              { "code": "viewer", "name": "访客" }
-            ]
-          }
+  "dataSetName": "UserFormDataSet",
+  "tables": {
+    "Users": {
+      "columns": [
+        { "name": "id", "type": "number", "isPrimaryKey": true },
+        { "name": "status", "type": "string", "label": "状态" },
+        { "name": "roleCode", "type": "string", "label": "角色" }
+      ],
+      "views": {
+        "default": {
+          "rows": []
         }
       }
     },
-    "tableRelations": []
-  }
+    "StatusOptions": {
+      "columns": [
+        { "name": "value", "type": "string", "label": "值" },
+        { "name": "label", "type": "string", "label": "显示名" }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            { "value": "active", "label": "启用" },
+            { "value": "inactive", "label": "停用" }
+          ]
+        }
+      }
+    },
+    "RoleOptions": {
+      "columns": [
+        { "name": "code", "type": "string", "label": "编码", "isPrimaryKey": true },
+        { "name": "name", "type": "string", "label": "名称" }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            { "code": "admin", "name": "管理员" },
+            { "code": "editor", "name": "编辑" },
+            { "code": "viewer", "name": "访客" }
+          ]
+        }
+      }
+    }
+  },
+  "tableRelations": []
 }
 
 对应字段常见写法：
@@ -711,7 +705,7 @@ dependencyType 可选值（属于 viewDependencies，而不是 tableRelations）
 
 输出前你必须自行检查：
 
-1. 顶层是否使用了 dataset 包装。
+1. 顶层是否直接使用 canonical DataSet，且没有 `dataset` 包裹。
 2. dataSetName 是否存在。
 3. 每张表是否都存在 columns。
 4. 每张表是否都存在 views.default。

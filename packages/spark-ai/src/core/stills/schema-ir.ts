@@ -186,7 +186,7 @@ export function isWildcardKey(key: string): boolean {
 /**
  * 将任意 schema 节点归一化为标准形态。
  *
- * 兼容四种写法：
+ * 支持四种当前 schema 写法：
  *  1. 叶子字符串：直接返回，表示"面向 LLM 的描述字符串"，由叶子解析器处理。
  *  2. 显式 DSL：{ kind: 'object' | 'array' | 'enum', ... } 直接返回，不再包装。
  *  3. 简写对象：{ fieldA: 'desc', ... } → 自动提升为 object schema（properties = 原对象）。

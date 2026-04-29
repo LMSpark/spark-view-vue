@@ -25,19 +25,17 @@ function createMemoryHistoryAdapter(backingStore: MemoryStorageMap) {
 
 function createCanonicalPageData(name: string) {
   return {
-    dataset: {
-      dataSetName: 'OrdersDS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'name', type: 'string' },
-          ],
-          views: {
-            default: {
-              rows: [{ id: 1, name }],
-            },
+    dataSetName: 'OrdersDS',
+    tables: {
+      Orders: {
+        tableName: 'Orders',
+        columns: [
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'name', type: 'string' },
+        ],
+        views: {
+          default: {
+            rows: [{ id: 1, name }],
           },
         },
       },
@@ -87,7 +85,14 @@ describe('DataSet history/version', () => {
     expect(history.map((entry) => entry.version)).toEqual([2, 1])
 
     const restoredText = formatPageDataSnapshot(history[1]!)
-    expect(JSON.parse(restoredText)).toEqual(firstPageData)
+    const restoredPageData = JSON.parse(restoredText) as {
+      dataSetName?: string
+      dataset?: unknown
+      tables?: Record<string, { views?: { default?: { rows?: Array<Record<string, unknown>> } } }>
+    }
+    expect(restoredPageData.dataset).toBeUndefined()
+    expect(restoredPageData.dataSetName).toBe('OrdersDS')
+    expect(restoredPageData.tables?.['Orders']?.views?.default?.rows?.[0]?.['name']).toBe('Alice')
   })
 
   it('should restore a previous version into the same DataSet instance', () => {
@@ -121,7 +126,7 @@ describe('DataSet history/version', () => {
 
     for (let version = 1; version <= 5; version += 1) {
       const snapshot = createCanonicalPageData(`User-${version}`)
-      commitDataSetSnapshot(snapshot.dataset, {
+      commitDataSetSnapshot(snapshot, {
         adapter,
         scopeId: pageId,
         pageId,

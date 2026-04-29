@@ -8,7 +8,7 @@
 
 公共 API 规矩：
 - `create*` 入口优先使用命名类型或位置参数，保持强约束、容易定位错误。
-- 宽输入、归一化、兼容性入口统一收口到 `fromJson(...)`。
+- 宽输入与归一化入口统一收口到 `fromJson(...)`；历史包裹结构不再接受。
 
 ```typescript
 import { SparkData } from '@spark-view/spark-data'
@@ -25,7 +25,7 @@ import { SparkData } from '@spark-view/spark-data'
 创建 DataSet 实例
 
 该入口是强约束入口，只接受 canonical `IDataSetMetadata`。
-如果输入是 JSON 字符串、pagedata 原始对象或 legacy 结构，请改用 `SparkData.fromJson(...)`。
+如果输入是 JSON 字符串或 pagedata 原始对象，请改用 `SparkData.fromJson(...)`。
 
 **参数：**
 - `meta: IDataSetMetadata` - canonical DataSet 元数据
@@ -157,6 +157,7 @@ type FilterExpression =
 #### `SparkData.fromJson(json)`
 
 从 JSON 字符串、canonical DataSet 对象或 pagedata 原始对象恢复 DataSet。
+历史 `{ dataset: ... }` 包裹结构已移除，请直接传入 canonical `IDataSetMetadata`。
 该入口负责宽输入归一化；当你需要强约束类型检查时，请优先使用 `createDataSet(meta)`。
 
 **参数：**
@@ -228,10 +229,6 @@ const view = SparkData.createDataView('Users')
 const detailView = SparkData.createDataView('Orders', { viewId: 'detail' })
 ```
 
----
-
----
-
 ## 高级用法
 
 ### 直接访问类构造器
@@ -245,7 +242,7 @@ import { SparkData } from '@spark-view/spark-data'
 const dataSet = new (await import('@spark-view/spark-data')).DataSet({ ... })
 ```
 
-### 向后兼容的导入方式
+### 直接类导入
 
 ```typescript
 import { DataSet, TreeManager } from '@spark-view/spark-data'
@@ -351,14 +348,16 @@ DataKey 是统一的数据绑定键格式，用于在页面配置（rule.json）
 ### 格式
 
 ```
-scope@tableName@viewId@field     # 完整 4 段格式
-scope@tableName@field            # 简写（viewId 默认 'default'）
+tableName@viewId@field           # 完整 3 段格式
+tableName@field                  # 简写（viewId 默认 'default'）
+#scope@tableName@viewId@field    # 跨页面完整格式
+#scope@tableName@field           # 跨页面简写（viewId 默认 'default'）
 ```
 
-- **scope** — 页面 ID 或 DataSet 名称（`dataSetName`）
+- **scope** — 跨页面页面 ID 或 DataSet 名称（`dataSetName`），必须使用 `#` 前缀
 - **tableName** — 表名
 - **viewId** — 视图 ID（省略时默认 `'default'`）
-- **field** — `rows` | `currentRow` | `selectedRows`
+- **field** — `rows` | `currentRow` | `selectedRows` | `summaryRow` | `selectionSummaryRow`
 
 ### API
 
@@ -370,13 +369,16 @@ scope@tableName@field            # 简写（viewId 默认 'default'）
 
 解析 DataKey 字符串为结构化描述符。非 DataKey 格式返回 `null`。
 
-统一格式（`@` 分隔符，无 scope 前缀，SPA 单 DataSet）：
+统一格式（`@` 分隔符；跨页面必须带 `#scope` 前缀）：
 
 | 段数 | 格式 | 示例 |
 |------|------|------|
 | 2 段 | `table@field`（viewId 默认 `default`） | `Users@rows` |
 | 3 段 | `table@viewId@field` | `Users@grid@rows` |
-| 4 段 | `scope@table@viewId@field`（旧格式，向后兼容，scope 被忽略） | — |
+| 3 段 | `#scope@table@field`（viewId 默认 `default`） | `#SharedDS@Users@rows` |
+| 4 段 | `#scope@table@viewId@field` | `#SharedDS@Users@grid@rows` |
+
+旧式 `scope@table@viewId@field` 和点号链式 DataKey 不再支持。
 
 ```typescript
 import { parseDataKey } from '@spark-view/spark-data'
@@ -386,6 +388,9 @@ parseDataKey('Users@rows')
 
 parseDataKey('Users@grid@rows')
 // → { tableName: 'Users', viewId: 'grid', field: 'rows', raw: 'Users@grid@rows' }
+
+parseDataKey('#SharedDS@Users@rows')
+// → { scope: 'SharedDS', tableName: 'Users', viewId: 'default', field: 'rows', raw: '#SharedDS@Users@rows', crossPage: true }
 
 parseDataKey('settings.siteName')
 // → null（非 DataKey，回落到 pageData 路径）
