@@ -24,7 +24,7 @@ import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
 import { toError, createRequest } from '@spark-view/spark-utils'
 import type { HttpClient, RequestConfig, RequestError } from '@spark-view/spark-utils'
-import { simpleEnvAdapter as envAdapter } from '../env'
+import { envAdapter } from '../env'
 
 // =============================================================================
 // 2. 常量和日志 (Constants & Logger)

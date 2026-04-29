@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { TokenManager } from '../TokenManager'
 
 describe('TokenManager', () => {
-  // 在 vitest jsdom 环境中，simpleEnvAdapter 检测到 isTest=true，
+  // 在 vitest jsdom 环境中，envAdapter 检测到 isTest=true，
   // 因此无论 storage 参数为何值，getToken/setToken/clearToken 均走内存路径。
 
   let tm: TokenManager

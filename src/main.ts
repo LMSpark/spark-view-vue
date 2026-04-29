@@ -43,7 +43,6 @@ import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger 
 import { getNavHomePath } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark, registerAllRenderers } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
-import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
 // 创建启动日志（临时用于启动流程）
 import { createLogger } from '@spark-view/spark-app'
@@ -167,7 +166,7 @@ async function startApp() {
         sessionId: _sessionId,
       })
       // 远程日志同样双注册，确保全链路上报
-      addLogTransport(remoteTransport as unknown as UtilsLogTransport)
+      addLogTransport(remoteTransport)
       // remoteTransport 已通过 configureRemoteLogger 注册到 spark-app _globalTransports
 
       startupLogger.info('📡 远程日志已启用（全链路）', {

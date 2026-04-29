@@ -18,7 +18,7 @@
  * 日志级别（与 spark-utils 共享）
  */
 export type { LogLevel } from '@spark-view/spark-utils'
-import type { LogLevel } from '@spark-view/spark-utils'
+import type { LogLevel, LogTransport as BaseLogTransport } from '@spark-view/spark-utils'
 import { createFetchClient } from '@spark-view/spark-utils'
 
 /**
@@ -60,9 +60,10 @@ export interface AppLoggerConfig {
 
 /**
  * 日志传输器接口
+ *
+ * 继承 spark-utils LogTransport（SSoT）并补充批量传输需要的 flush/destroy。
  */
-export interface LogTransport {
-  send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>
+export interface LogTransport extends BaseLogTransport {
   /** 立即刷新队列中的日志（批量传输器可选实现） */
   flush?(): void
   /** 销毁传输器，释放定时器等资源 */

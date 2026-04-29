@@ -26,7 +26,7 @@ export interface SimpleEnvironmentInfo {
  * 简单环境适配器
  * 支持客户端、服务端和测试环境自动检测
  */
-export const simpleEnvAdapter = {
+export const envAdapter = {
   /**
    * 获取环境信息（自动检测环境）
    */
