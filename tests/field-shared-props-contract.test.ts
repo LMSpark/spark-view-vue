@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type {
-  SparkFieldProps,
+  SparkFieldSemanticProps,
   SparkFileFieldProps,
   SparkFilePickerFieldProps,
   SparkFileUploadActionProps,
@@ -49,17 +49,17 @@ type _DatePropsReuseTemporalAndRangeContracts = AssertTrue<Extends<
 
 type _NumberPropsReuseNumericBoundsAndRangeContracts = AssertTrue<Extends<
   RNumberProps,
-  SparkFieldProps & SparkNumericBoundsProps & SparkRangeFilterProps
+  SparkFieldSemanticProps & SparkNumericBoundsProps & SparkRangeFilterProps
 >>
 
 type _SliderPropsReuseNumericBoundsContract = AssertTrue<Extends<
   RSliderProps,
-  SparkFieldProps & SparkNumericBoundsProps
+  SparkFieldSemanticProps & SparkNumericBoundsProps
 >>
 
 type _RatePropsReuseNumericMaxContract = AssertTrue<Extends<
   RRateProps,
-  SparkFieldProps & SparkNumericMaxProps
+  SparkFieldSemanticProps & SparkNumericMaxProps
 >>
 
 type _CascaderPropsReuseHierarchicalSelectionContract = AssertTrue<Extends<

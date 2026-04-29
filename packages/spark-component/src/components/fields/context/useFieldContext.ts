@@ -3,7 +3,7 @@ import type { ComputedRef } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
-import type { SparkFieldProps } from '../../shared-types.js'
+import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types.js'
 
 export interface FieldContextProps {
   type: string
@@ -41,8 +41,10 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-type FieldContextInputProps = OptionalWithUndefined<Pick<SparkFieldProps,
-  | 'type' | 'width' | 'children'
+type FieldContextInputProps = OptionalWithUndefined<Pick<SparkNodeProps,
+  | 'type' | 'children'
+>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+  | 'width'
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'

@@ -1,4 +1,4 @@
-import type { SparkFieldProps } from '../../../shared-types.js'
+import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-types.js'
 import { useFieldPermission } from '../../context/useFieldPermission'
 import type { FieldPermissionProps } from '../../context/useFieldPermission'
 import { useFieldControlState } from './useFieldControlState'
@@ -8,8 +8,10 @@ type OptionalWithUndefined<T> = {
 }
 
 interface BasicFieldProps<TValue>
-  extends FieldPermissionProps<TValue>, OptionalWithUndefined<Pick<SparkFieldProps,
-    | 'type' | 'width' | 'children'
+  extends FieldPermissionProps<TValue>, OptionalWithUndefined<Pick<SparkNodeProps,
+    | 'type' | 'children'
+  >>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+    | 'width'
     | 'titleAlign' | 'valueAlign'
     | 'headerCellClassName' | 'cellClassName'
     | 'titleClassName' | 'valueClassName'

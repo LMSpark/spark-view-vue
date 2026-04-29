@@ -40,7 +40,6 @@ import type { CancellableControl } from '../../internal/cancellable-control'
  * 所有描述符均可携带 `then` 实现链式执行。
  */
 export type ActionDescriptor =
-  | ScriptCallAction
   | ShowMessageAction
   | ShowConfirmAction
   | ShowAlertAction
@@ -55,7 +54,6 @@ export type ActionDescriptor =
 
 /** ActionDescriptor 的统一动作名集合。 */
 export type ActionDescriptorActionName =
-  | 'script'
   | 'show-message'
   | 'confirm'
   | 'alert'
@@ -83,13 +81,6 @@ interface ActionDescriptorBase {
    * 数组内任一描述符设为 true，则整体取消默认行为。
    */
   cancelDefault?: boolean
-}
-
-/** 调用 pageFunctions 中的脚本函数（兼容 script.js 迁移期） */
-export interface ScriptCallAction extends ActionDescriptorBase {
-  action: 'script'
-  /** 函数名 */
-  fn: string
 }
 
 /** 弹出消息提示 */
@@ -222,8 +213,6 @@ export interface ActionExecutionContext {
   getPageService: () => IPageServiceCapability | null
   /** 路由推送（框架无关） */
   getRouter: () => RouterLike | null
-  /** 调用 script.js 函数（兼容迁移期） */
-  callFunc: (name: string, ...args: unknown[]) => unknown
 }
 
 /**

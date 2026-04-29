@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import type { PageSelectableValue } from '../../../internal'
 import type { FieldOption } from '../../options/index.js'
 import type {
-  SparkFieldProps,
+  SparkFieldSemanticProps,
   SparkOptionFieldProps,
   SparkOptionValueMode,
   SparkPrimaryActionTextProps,
@@ -15,13 +15,13 @@ type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 interface UseEntityPickerStateOptions {
   buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
   readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
-  clearable: ValueRef<NonNullable<SparkFieldProps['clearable']>>
+  clearable: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
   multiple: ValueRef<NonNullable<SparkOptionFieldProps['multiple']>>
   searchable: ValueRef<boolean>
   valueSeparator: ValueRef<NonNullable<SparkOptionFieldProps['valueSeparator']>>
   valueMode: ValueRef<SparkOptionValueMode>
   entityName: ValueRef<string>
-  placeholder: ValueRef<NonNullable<SparkFieldProps['placeholder']>>
+  placeholder: ValueRef<NonNullable<SparkFieldSemanticProps['placeholder']>>
   flatOptions: ValueRef<FieldOption[]>
   currentRawValue: ValueRef<EntityPickerValue>
   currentRawStringValue: ValueRef<string>

@@ -270,7 +270,6 @@ const actionCtx = {
   getDataSet: () => pds.dataSet,
   getPageService: () => pageService,
   getRouter: () => router,
-  callFunc: callPageFunction,
 }
 const reportedRuntimeErrorObjects = new WeakSet<object>()
 

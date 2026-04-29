@@ -64,7 +64,6 @@ function createActionContext(overrides?: Partial<ActionExecutionContext>): Actio
     getDataSet: () => ds,
     getPageService: () => createPageService(),
     getRouter: () => null,
-    callFunc: vi.fn(),
     ...overrides,
   }
 }
@@ -437,7 +436,6 @@ describe('navigate action — 事件行插值', () => {
       getDataSet: () => ds,
       getPageService: () => pageService,
       getRouter: () => router,
-      callFunc: vi.fn(),
     }
 
     // 直接测试 executeActionDescriptor
@@ -475,7 +473,6 @@ describe('navigate action — 事件行插值', () => {
       getDataSet: () => ds,
       getPageService: () => createPageService(),
       getRouter: () => router,
-      callFunc: vi.fn(),
     }
 
     const desc: ActionDescriptor = { action: 'navigate', path: '/user/{name}' }
@@ -507,7 +504,6 @@ describe('navigate action — 事件行插值', () => {
       getDataSet: () => ds,
       getPageService: () => pageService,
       getRouter: () => router,
-      callFunc: vi.fn(),
     }
 
     const on: Record<string, unknown> = {

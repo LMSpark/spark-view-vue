@@ -219,15 +219,6 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
 }
 
 /**
- * 字段级属性（兼容根层）。
- *
- * 保留给仍然需要“字段语义 + SparkNodeProps 根层”打包使用的旧引用；
- * 新的具体字段 props 应优先显式 `extends SparkNodeProps, ...FieldFamilyProps`。
- */
-export interface SparkFieldProps<TValue = unknown>
-  extends SparkNodeProps, SparkFieldSemanticProps<TValue> {}
-
-/**
  * 主动作按钮文案。
  *
  * 适用于带显式主操作按钮的字段，

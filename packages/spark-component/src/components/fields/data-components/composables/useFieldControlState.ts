@@ -1,7 +1,7 @@
 import type { ComputedRef } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../../columnFormRules'
-import type { SparkFieldProps } from '../../../shared-types.js'
+import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-types.js'
 import { useFieldContext } from '../../context/useFieldContext'
 import { useControlledFieldChange } from './useControlledFieldChange'
 
@@ -25,8 +25,10 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-interface FieldControlProps extends OptionalWithUndefined<Pick<SparkFieldProps,
-  | 'type' | 'width' | 'children'
+interface FieldControlProps extends OptionalWithUndefined<Pick<SparkNodeProps,
+  | 'type' | 'children'
+>>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+  | 'width'
   | 'onChange'
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'

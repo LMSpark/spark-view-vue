@@ -4,7 +4,7 @@ import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '../../internal'
 import { usePermission } from '../../../permission/index.js'
-import type { SparkFieldProps } from '../../shared-types.js'
+import type { SparkFieldSemanticProps } from '../../shared-types.js'
 import { useSparkConsume } from '../../internal'
 import { columnToFormRules } from '../columnFormRules'
 import type { FormItemRule } from '../columnFormRules'
@@ -15,7 +15,7 @@ type OptionalWithUndefined<T> = {
 }
 
 export interface FieldPermissionProps<TValue>
-  extends OptionalWithUndefined<Omit<Pick<SparkFieldProps, 'field' | 'label' | 'value'>, 'value'>> {
+  extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'value'>, 'value'>> {
   value?: TValue | undefined
 }
 

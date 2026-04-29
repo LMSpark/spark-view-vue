@@ -9,12 +9,11 @@ import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 
 describe('SparkPageRenderer root props aggregation', () => {
-  function createActionContext(callFunc: (name: string, ...args: unknown[]) => unknown): ActionExecutionContext {
+  function createActionContext(): ActionExecutionContext {
     return {
       getDataSet: () => null,
       getPageService: () => null,
       getRouter: () => null,
-      callFunc,
     }
   }
 
@@ -268,7 +267,7 @@ describe('SparkPageRenderer root props aggregation', () => {
       },
     ] as never, {
       callFunc,
-      actionCtx: createActionContext(callFunc),
+      actionCtx: createActionContext(),
     })
 
     const createButtonProps = children[0]?.props as Record<string, unknown>

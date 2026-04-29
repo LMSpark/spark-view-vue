@@ -56,7 +56,6 @@ function createActionContext(dataSet: ReturnType<typeof createDataView>['dataSet
     getDataSet: () => dataSet,
     getPageService: () => pageService,
     getRouter: () => null,
-    callFunc: vi.fn(),
   }
 }
 

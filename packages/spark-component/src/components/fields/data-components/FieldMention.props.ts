@@ -12,7 +12,7 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
     * - `options.valueField / labelField / disabledField`：候选项字段映射
    * - `searchable`：是否启用本地候选项过滤
    *
-   * 主输入文本本身走继承自 `SparkFieldProps` 的 `value/field` 语义：
+  * 主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `value/field` 语义：
    * - `value` 表示当前 Mention 输入框中的文本值
    * - `field` 表示这份文本最终持久化到宿主数据行的哪个字段
    *

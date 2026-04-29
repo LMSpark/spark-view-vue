@@ -13,7 +13,6 @@ import type {
   ShowConfirmAction,
   ShowAlertAction,
   NavigateAction,
-  ScriptCallAction,
   AppendRowAction,
   DeleteCurrentAction,
   DeleteSelectedAction,
@@ -142,7 +141,7 @@ function interpolatePath(template: string, row: IDataRow | null): string {
  *
  * @param descriptor 声明式动作描述
  * @param ctx 运行时上下文（延迟求值）
- * @param eventArgs 原始 DOM/Vue 事件参数（透传给 script 调用）
+ * @param eventArgsOrOptions 原始事件参数或执行选项
  */
 export async function executeActionDescriptor(
   descriptor: ActionDescriptor,
@@ -162,9 +161,6 @@ export async function executeActionDescriptor(
   const action = descriptor.action
 
   switch (action) {
-    case 'script':
-      executeScript(descriptor, ctx, eventArgs)
-      break
     case 'show-message':
       executeShowMessage(descriptor, ctx)
       break
@@ -213,10 +209,6 @@ export async function executeActionDescriptor(
 }
 
 // ── 各动作实现 ────────────────────────────────────────────────────────────
-
-function executeScript(desc: ScriptCallAction, ctx: ActionExecutionContext, eventArgs?: unknown[]): void {
-  ctx.callFunc(desc.fn, ...(eventArgs ?? []))
-}
 
 function executeShowMessage(desc: ShowMessageAction, ctx: ActionExecutionContext): void {
   const ps = ctx.getPageService()

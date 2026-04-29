@@ -8,7 +8,6 @@ export type {
   ActionExecutionControl,
   ActionExecutionContext,
   RouterLike,
-  ScriptCallAction,
   ShowMessageAction,
   ShowConfirmAction,
   ShowAlertAction,

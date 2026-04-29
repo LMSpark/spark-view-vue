@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { IPageSelectedFile, IPageUploadedFile } from '../../../internal'
 import type {
-  SparkFieldProps,
+  SparkFieldSemanticProps,
   SparkFileFieldProps,
   SparkFilePickerFieldProps,
   SparkFileUploadActionProps,
@@ -20,7 +20,7 @@ interface UploadBrowseFieldStateOptions {
   primaryAction: ValueRef<'upload' | 'browse'>
   buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
   readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
-  canClear: ValueRef<NonNullable<SparkFieldProps['clearable']>>
+  canClear: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
   action: ValueRef<NonNullable<SparkFileUploadActionProps['action']>>
   accept: ValueRef<NonNullable<SparkFileFieldProps['accept']>>
   multiple: ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>
@@ -52,7 +52,7 @@ interface FileBrowserFieldStateOptions {
   accept: ValueRef<NonNullable<SparkFileFieldProps['accept']>>
   multiple: ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>
   separator: ValueRef<NonNullable<SparkFileFieldProps['separator']>>
-  canClear: ValueRef<NonNullable<SparkFieldProps['clearable']>>
+  canClear: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
   browseFiles: (options: {
     title: string
     accept: string
