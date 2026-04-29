@@ -190,10 +190,10 @@ export function isSparkNode(value: unknown): value is SparkNode {
     && typeof (value as { type?: unknown }).type === 'string'
 }
 
-/** 从 children 输入中提取结构子节点，忽略文本子节点 */
+/** 直接透传 children 为结构子节点数组 */
 export function getSparkNodeChildren(children: SparkNodeChildren | undefined): SparkNode[] {
   if (!Array.isArray(children) || children.length === 0) return []
-  return children.filter(isSparkNode)
+  return children as SparkNode[]
 }
 
 /**

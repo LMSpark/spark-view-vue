@@ -135,8 +135,6 @@ export type {
   RTreeProps,
   RListProps,
   ToolbarNode,
-  RendererToolbarConfigProps,
-  RendererToolbarProps,
   InlineAlign,
   InlineJustify,
   FilterNode,

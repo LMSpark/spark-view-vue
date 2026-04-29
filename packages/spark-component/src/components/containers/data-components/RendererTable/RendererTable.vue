@@ -151,7 +151,7 @@
 import { computed, nextTick, ref, toRef, watch, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
-  getSparkNodeChildren, nodeId, type SparkNode,
+  nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
@@ -175,7 +175,7 @@ const props = withDefaults(defineProps<RTableProps>(), {
 })
 
 // children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
-const allChildNodes = computed(() => getSparkNodeChildren(props.children))
+const allChildNodes = computed(() => (props.children as SparkNode[]) ?? [])
 const renderedContentChildNodes = computed(() => allChildNodes.value.map(normalizeDefaultSortableTableNode))
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
@@ -226,7 +226,7 @@ function rowFragmentProp(node: SparkNode, key: string): unknown {
 }
 
 function resolveRowFragmentChildren(node: SparkNode): SparkNode[] {
-  return getSparkNodeChildren(node.children)
+  return (node.children as SparkNode[]) ?? []
 }
 
 function resolveRowFragmentLabel(node: SparkNode): string {
@@ -268,7 +268,7 @@ function resolveRowFragmentClass(node: SparkNode): string | undefined {
 }
 
 const effectiveFilterChildren = computed(() => {
-  const explicitChildren = getSparkNodeChildren(props.filter?.children)
+  const explicitChildren = props.filter?.children ?? []
   return explicitChildren.length > 0
     ? explicitChildren
     : allChildNodes.value.filter(isAutoFilterCandidate)
@@ -329,7 +329,7 @@ const toolbarPositionValue = computed<ToolbarPosition>(() => {
 })
 
 const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
-  const children = getSparkNodeChildren(props.toolbar?.children)
+  const children = props.toolbar?.children ?? []
   if (children.length === 0) return undefined
 
   const tableName = typeof props.dataKey === 'string' ? props.dataKey.split('@')[0] : undefined
@@ -337,9 +337,9 @@ const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
 
   return {
     type: 'r-toolbar',
-    ...(toolbarDataKey ? { dataKey: toolbarDataKey } : {}),
     ...(props.toolbar?.id !== undefined ? { id: props.toolbar.id } : {}),
     props: {
+      ...(toolbarDataKey ? { dataKey: toolbarDataKey } : {}),
       ...(props.toolbar?.props ?? {}),
       class: ['renderer-table-toolbar', childProp<string>(props.toolbar, 'class') ?? 'renderer-toolbar-default'],
     },
@@ -422,7 +422,7 @@ watch(
 
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
-const rowActionConfigs = computed(() => getSparkNodeChildren(props.actions?.children))
+const rowActionConfigs = computed(() => props.actions?.children ?? [])
 const rowActionsPositionValue = computed<ActionsPosition>(() => childProp<ActionsPosition>(props.actions, 'position') ?? 'right')
 
 const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {

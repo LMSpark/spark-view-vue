@@ -13,7 +13,7 @@ export { default as RendererTail } from './RendererTail.vue'
 export { default as RendererFieldScope } from './support/RendererFieldScope.vue'
 
 // ── 结构节点类型（供容器 Props 组合使用） ──
-export type { ToolbarNode, RendererToolbarConfigProps, RendererToolbarProps, InlineAlign, InlineJustify } from './non-data-components/RendererToolbar.types.js'
+export type { ToolbarNode, RToolbarProps, InlineAlign, InlineJustify } from './non-data-components/RendererToolbar.types.js'
 export type { FilterNode, RendererFilterConfigProps, RendererFilterProps } from './RendererFilter.types.js'
 export type { ActionsAlign, ActionsPosition, ActionsFixed } from './support/RendererActions.types.js'
 export type { EditorNode, RendererEditorConfigProps, RendererEditorProps } from './RendererEditor.types.js'

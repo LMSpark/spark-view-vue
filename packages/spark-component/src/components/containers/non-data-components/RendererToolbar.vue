@@ -47,7 +47,7 @@ import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resol
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { extractModelPermission, isModelActionAllowed, isRowActionAllowed, type ModelPermissionSource } from '../../../permission'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
-import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.props'
+import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.types'
 
 const props = withDefaults(defineProps<RToolbarProps>(), {
   type: 'r-toolbar',
