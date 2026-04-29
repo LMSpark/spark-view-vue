@@ -135,9 +135,9 @@
  *
  * 结构约定：
  * - 工具栏/筛选区/行操作优先使用结构化 props（toolbar/filter/actions）。
- * - 运行时保留对 children 中结构节点的兼容读取，并在内容区过滤这些结构节点。
+ * - children 中结构节点只按 node.props 读取配置，并在内容区过滤这些结构节点。
  */
-import { computed, nextTick, ref, watch, useAttrs, type CSSProperties } from 'vue'
+import { computed, nextTick, ref, watch, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -170,53 +170,18 @@ const allChildNodes = computed(() => getSparkNodeChildren(props.children))
 const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
 const renderedContentChildNodes = computed(() => contentChildNodes.value.map(normalizeDefaultSortableTableNode))
 
-const attrs = useAttrs()
-
-function readLegacyNumberLikeAttr(name: string): string | number | undefined {
-  const value = attrs[name]
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
-
-function readLegacyActionsAlignAttr(name: string): ActionsAlign | undefined {
-  const value = attrs[name]
-  return value === 'left' || value === 'center' || value === 'right'
-    ? value
-    : undefined
-}
-
-function readLegacyActionsFixedAttr(name: string): ActionsFixed | undefined {
-  const value = attrs[name]
-  if (value === true || value === false) return value
-  return value === 'left' || value === 'right'
-    ? value
-    : undefined
-}
-
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
 }
 
-/**
- * 兼容读取结构节点属性：优先 props.xx，缺失时回退到历史根级字段。
- * 说明：旧配置里 r-actions 可能直接写 width/label 到节点根级，导致宽度回退到默认值。
- */
-function childCompatProp<T>(child: SparkNode | undefined, name: string): T | undefined {
-  const propValue = child?.props?.[name]
-  if (propValue !== undefined) return propValue as T
-
-  const raw = child as unknown as Record<string, unknown> | undefined
-  return raw?.[name] as T | undefined
-}
-
 function isAutoFilterCandidate(node: SparkNode): boolean {
   if (isRowFragmentNode(node)) return false
 
-  const field = childCompatProp<unknown>(node, 'field')
+  const field = childProp<unknown>(node, 'field')
   if (typeof field !== 'string' || field.trim().length === 0) return false
 
-  const filterable = childCompatProp<unknown>(node, 'filterable')
+  const filterable = childProp<unknown>(node, 'filterable')
   return filterable === true
 }
 
@@ -232,10 +197,10 @@ function normalizeDefaultSortableTableNode(node: SparkNode): SparkNode {
   const sourceProps = node.props ?? {}
   if (sourceProps['sortable'] !== undefined) return node
 
-  const field = childCompatProp<unknown>(node, 'field')
-    ?? childCompatProp<unknown>(node, 'fieldName')
-    ?? childCompatProp<unknown>(node, 'prop')
-    ?? childCompatProp<unknown>(node, 'property')
+  const field = childProp<unknown>(node, 'field')
+    ?? childProp<unknown>(node, 'fieldName')
+    ?? childProp<unknown>(node, 'prop')
+    ?? childProp<unknown>(node, 'property')
   if (typeof field !== 'string' || field.trim().length === 0) return node
 
   return {
@@ -320,52 +285,14 @@ const normalizedFilterNode = computed<FilterNode | undefined>(() => {
 
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
-const legacyRowActionsWidth = computed<string | number | undefined>(() => {
-  if (typeof props.rowActionsWidth === 'string' || typeof props.rowActionsWidth === 'number') {
-    return props.rowActionsWidth
-  }
-  const value = props.tableProps?.['rowActionsWidth']
-  if (typeof value === 'string' || typeof value === 'number') return value
-  return readLegacyNumberLikeAttr('rowActionsWidth')
-})
-
-const legacyRowActionsAlign = computed<ActionsAlign | undefined>(() => {
-  if (props.rowActionsAlign === 'left' || props.rowActionsAlign === 'center' || props.rowActionsAlign === 'right') {
-    return props.rowActionsAlign
-  }
-  const value = props.tableProps?.['rowActionsAlign']
-  if (value === 'left' || value === 'center' || value === 'right') return value
-  return readLegacyActionsAlignAttr('rowActionsAlign')
-})
-
-const legacyRowActionsFixed = computed<ActionsFixed | undefined>(() => {
-  if (
-    props.rowActionsFixed === true
-    || props.rowActionsFixed === false
-    || props.rowActionsFixed === 'left'
-    || props.rowActionsFixed === 'right'
-  ) {
-    return props.rowActionsFixed
-  }
-  const value = props.tableProps?.['rowActionsFixed']
-  if (value === true || value === false || value === 'left' || value === 'right') return value
-  return readLegacyActionsFixedAttr('rowActionsFixed')
-})
-
 const baseElTableProps = computed<Record<string, unknown>>(() => {
   const raw = props.tableProps ?? {}
   const {
-    rowActionsWidth: _rowActionsWidth,
-    rowActionsAlign: _rowActionsAlign,
-    rowActionsFixed: _rowActionsFixed,
-    resize: _resize,
     ...tableProps
   } = raw
 
-  const resizeAlias = _resize === true || _resize === false ? _resize : undefined
   const explicitResizable = tableProps['resizable']
-  const resolvedResizable = resizeAlias
-    ?? (explicitResizable === true || explicitResizable === false ? explicitResizable : true)
+  const resolvedResizable = explicitResizable === true || explicitResizable === false ? explicitResizable : true
 
   const resolvedBorder = resolvedResizable === true
     ? true
@@ -600,9 +527,9 @@ const showRowActionsLeftVisible = computed(() => showRowActionsLeft.value && has
 const showRowActionsRightVisible = computed(() => showRowActionsRight.value && hasVisibleRowActionsInRows.value)
 
 const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
-  const align = childCompatProp<ActionsAlign>(actionsNode.value, 'align')
+  const align = childProp<ActionsAlign>(actionsNode.value, 'align')
   if (align === 'left' || align === 'center' || align === 'right') return align
-  return legacyRowActionsAlign.value
+  return undefined
 })
 
 const rowActionsHeaderAlignValue = computed<ActionsAlign>(() => {
@@ -610,9 +537,9 @@ const rowActionsHeaderAlignValue = computed<ActionsAlign>(() => {
 })
 
 const rowActionsFixedValue = computed<ActionsFixed | undefined>(() => {
-  const fixed = childCompatProp<ActionsFixed>(actionsNode.value, 'fixed')
+  const fixed = childProp<ActionsFixed>(actionsNode.value, 'fixed')
   if (fixed === true || fixed === false || fixed === 'left' || fixed === 'right') return fixed
-  return legacyRowActionsFixed.value
+  return undefined
 })
 
 const rowActionsJustifyContentValue = computed(() => {
@@ -633,10 +560,8 @@ const rowActionsContainerStyle = computed<CSSProperties>(() => ({
 
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childCompatProp<string>(actionsNode.value, 'label') ?? '操作'
-  const width = childCompatProp<number | string>(actionsNode.value, 'width')
-    ?? legacyRowActionsWidth.value
-    ?? 220
+  const label = childProp<string>(actionsNode.value, 'label') ?? '操作'
+  const width = childProp<number | string>(actionsNode.value, 'width') ?? 220
   const align = rowActionsAlignValue.value
   const headerAlign = rowActionsHeaderAlignValue.value
   const fixed = rowActionsFixedValue.value
