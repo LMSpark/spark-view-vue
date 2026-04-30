@@ -43,11 +43,11 @@
                     "action": "append-row",
                     "label": "新增订单",
                     "buttonType": "primary",
-                    "appendPayload": {
-                      "customer": "新客户",
-                      "status": "draft",
-                      "priority": "medium",
-                      "owner": "系统",
+              "props": {
+                "border": true,
+                "stripe": true,
+                "highlightCurrentRow": true
+              },
                       "amount": 8800,
                       "orderDate": "2026-03-18",
                       "region": "east",
