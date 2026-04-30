@@ -1,28 +1,10 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <SparkComponentRenderer v-if="toolbarRendererConfig" :config="toolbarRendererConfig" />
+    <SparkComponentRenderer v-if="toolbarNode" :config="toolbarNode" />
 
     <!-- 过滤区 -->
-    <RendererTableFilterPanel
-      :visible="hasFilters"
-      :rows="resolvedView?.rows ?? []"
-      :filter-class="filterClassValue"
-      :filter-model="filterModel"
-      :filter-configs="filterConfigs"
-      :active-filter-count="activeFilterCount"
-      :collapsible="filterCollapsibleValue"
-      :collapsed="filtersCollapsed"
-      :grid-columns="filterGridColumnsValue"
-      :grid-gap="filterGridGapValue"
-      :grid-auto-rows="filterGridAutoRowsValue"
-      :auto-fit-min-width="filterAutoFitMinWidthValue"
-      :item-span="filterItemSpanValue"
-      :action-span="filterActionSpanValue"
-      :on-search="handleFilterSearch"
-      :on-reset="handleFilterReset"
-      :on-toggle-collapsed="toggleFiltersCollapsed"
-    />
+    <RendererFilter v-if="hasFilters" v-bind="filterRendererProps" :class="filterPanelClass" />
 
     <!-- 表格主体 -->
     <div class="renderer-table-main">
@@ -151,7 +133,7 @@
 import { computed, nextTick, ref, toRef, watch, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
-  nodeId, type SparkNode,
+  nodeId, PROP_DATA_KEY, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
@@ -159,12 +141,11 @@ import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
-import type { ToolbarPosition } from '../../layout/toolbar-position'
-import type { FilterNode } from '../../RendererFilter.types'
+import type { ToolbarPosition } from '../../layout'
 import type { ActionsAlign, ActionsFixed, ActionsPosition } from '../../support/RendererActions.types'
-import { useTableFilters } from '../../layout/useTableFilters'
-import RendererTableFilterPanel from './RendererTableFilterPanel.vue'
+import { useTableFilters } from '../../layout'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import RendererFilter from '../../RendererFilter.vue'
 
 // ── 基础工具：通用读取与列投影辅助 ────────────────────────────────────────
 
@@ -175,22 +156,29 @@ const props = withDefaults(defineProps<RTableProps>(), {
 })
 
 // children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
-const allChildNodes = computed(() => (props.children as SparkNode[]) ?? [])
-const renderedContentChildNodes = computed(() => allChildNodes.value.map(normalizeDefaultSortableTableNode))
+const renderedContentChildNodes = computed(() => ((props.children as SparkNode[]) ?? []).map(normalizeDefaultSortableTableNode))
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
 }
 
-function isAutoFilterCandidate(node: SparkNode): boolean {
-  if (isRowFragmentNode(node)) return false
-
-  const field = childProp<unknown>(node, 'field')
-  if (typeof field !== 'string' || field.trim().length === 0) return false
-
-  const filterable = childProp<unknown>(node, 'filterable')
-  return filterable === true
+function withToolbarDataKey(
+  toolbar: SparkNode | undefined,
+  containerDataKey: string | undefined,
+): SparkNode | undefined {
+  if (!toolbar) return undefined
+  const existingDataKey = toolbar.props?.[PROP_DATA_KEY]
+  if (existingDataKey !== undefined && existingDataKey !== null && existingDataKey !== '') return toolbar
+  const tableName = typeof containerDataKey === 'string' ? containerDataKey.split('@')[0] : undefined
+  if (!tableName) return toolbar
+  return {
+    ...toolbar,
+    props: {
+      ...toolbar.props,
+      [PROP_DATA_KEY]: `${tableName}@currentRow`,
+    },
+  }
 }
 
 // ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
@@ -267,16 +255,10 @@ function resolveRowFragmentClass(node: SparkNode): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-const effectiveFilterChildren = computed(() => {
-  const explicitChildren = props.filter?.children ?? []
-  return explicitChildren.length > 0
-    ? explicitChildren
-    : allChildNodes.value.filter(isAutoFilterCandidate)
-})
-const normalizedFilterNode = computed<FilterNode | undefined>(() => {
+const normalizedFilterNode = computed(() => {
   const node = props.filter
   if (node?.type !== 'r-filter') return undefined
-  return node as FilterNode
+  return node
 })
 
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
@@ -322,52 +304,18 @@ useContainerDataSourceEffects({
 // ── 工具栏区：读取结构化 toolbar 配置，并向工具栏子树提供内置动作宿主能力 ──
 
 const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = childProp<ToolbarPosition>(props.toolbar, 'position')
+  const position = props.toolbar?.props?.['position']
   return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
     ? position
     : 'top'
 })
 
-const toolbarRendererConfig = computed<SparkNode | undefined>(() => {
-  const children = props.toolbar?.children ?? []
-  if (children.length === 0) return undefined
-
-  const tableName = typeof props.dataKey === 'string' ? props.dataKey.split('@')[0] : undefined
-  const toolbarDataKey = tableName ? `${tableName}@currentRow` : undefined
-
-  return {
-    type: 'r-toolbar',
-    ...(props.toolbar?.id !== undefined ? { id: props.toolbar.id } : {}),
-    props: {
-      ...(toolbarDataKey ? { dataKey: toolbarDataKey } : {}),
-      ...(props.toolbar?.props ?? {}),
-      class: ['renderer-table-toolbar', childProp<string>(props.toolbar, 'class') ?? 'renderer-toolbar-default'],
-    },
-    children,
-  }
-})
+/** 工具栏节点透传，自动补齐 dataKey（若调用方未显式提供）。 */
+const toolbarNode = computed<SparkNode | undefined>(() =>
+  withToolbarDataKey(props.toolbar, props.dataKey),
+)
 
 // ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
-
-const {
-  filterModel,
-  filterConfigs,
-  filterClassValue,
-  filterGridColumnsValue,
-  filterGridGapValue,
-  filterGridAutoRowsValue,
-  hasFilters,
-  activeFilterCount,
-  resetFilters,
-} = useTableFilters({
-  filterChildren: effectiveFilterChildren,
-  dataView: resolvedView,
-  filterClass: computed(() => childProp<string>(props.filter, 'class') ?? ''),
-  filterGridColumns: computed(() => childProp<number>(props.filter, 'gridColumns') ?? 24),
-  filterGridGap: computed(() => childProp<number | string>(props.filter, 'gridGap') ?? 12),
-  filterGridAutoRows: computed(() => childProp<string>(props.filter, 'gridAutoRows') ?? 'minmax(32px, auto)'),
-  logger,
-})
 
 const {
   tableData,
@@ -389,6 +337,30 @@ const {
   resolvedView,
 })
 
+const {
+  filterRendererProps,
+  hasFilters,
+  zeroCodeBridge,
+} = useTableFilters({
+  filterChildren: computed(() => props.filter?.children ?? []),
+  dataView: resolvedView,
+  filterClass: computed(() => props.filter?.class ?? ''),
+  filterGridColumns: computed(() => props.filter?.gridColumns ?? 24),
+  filterGridGap: computed(() => props.filter?.gridGap ?? 12),
+  filterGridAutoRows: computed(() => props.filter?.gridAutoRows ?? 'minmax(32px, auto)'),
+  filterCollapsible: filterCollapsibleValue,
+  filterCollapsed: filtersCollapsed,
+  filterAutoFitMinWidth: filterAutoFitMinWidthValue,
+  filterItemSpan: filterItemSpanValue,
+  filterActionSpan: filterActionSpanValue,
+  toggleCollapsedAction: toggleFiltersCollapsed,
+  logger,
+})
+
+const filterPanelClass = computed(() =>
+  ['renderer-table-filter-panel', filterRendererProps.value.class].filter(Boolean).join(' '),
+)
+
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
 
 const nativeTableRef = ref<NativeTableLike | null>(null)
@@ -402,11 +374,15 @@ const {
   nativeTableRef,
   pageService,
   logger,
-  filterModel,
-  resetFilters,
+  filterModel: zeroCodeBridge.value.filterModel,
+  resetFilters: () => {
+    void zeroCodeBridge.value.resetFilters()
+  },
   hasFilters,
-  activeFilterCount,
-  handleFilterSearch,
+  activeFilterCount: computed(() => zeroCodeBridge.value.activeFilterCount),
+  handleFilterSearch: async () => {
+    await zeroCodeBridge.value.searchFilters()
+  },
 })
 
 registerApi(tableApi)
@@ -423,16 +399,16 @@ watch(
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
 const rowActionConfigs = computed(() => props.actions?.children ?? [])
-const rowActionsPositionValue = computed<ActionsPosition>(() => childProp<ActionsPosition>(props.actions, 'position') ?? 'right')
+const rowActionsPositionValue = computed<ActionsPosition>(() => props.actions?.position ?? 'right')
 
 const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
-  const align = childProp<ActionsAlign>(props.actions, 'align')
+  const align = props.actions?.align
   if (align === 'left' || align === 'center' || align === 'right') return align
   return undefined
 })
 
 const rowActionsFixedValue = computed<ActionsFixed | undefined>(() => {
-  const fixed = childProp<ActionsFixed>(props.actions, 'fixed')
+  const fixed = props.actions?.fixed
   if (fixed === true || fixed === false || fixed === 'left' || fixed === 'right') return fixed
   return undefined
 })
@@ -453,8 +429,8 @@ const rowActionsContainerStyle = computed<CSSProperties>(() => ({
 
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childProp<string>(props.actions, 'label') ?? '操作'
-  const width = childProp<number | string>(props.actions, 'width') ?? 220
+  const label = props.actions?.label ?? '操作'
+  const width = props.actions?.width ?? 220
   const align = rowActionsAlignValue.value
   const headerAlign = align ?? 'center'
   const fixed = rowActionsFixedValue.value
@@ -553,20 +529,6 @@ const tableRowClassName = computed(() => {
   }
 })
 
-// ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────
-
-async function handleFilterSearch(): Promise<void> {
-  // 对远程表触发 refresh()；本地表 filteredRows 已是 computed 实时过滤
-  const view = resolvedView.value
-  if (view?.dataTable?.api?.list) {
-    await view.refresh()
-  }
-}
-
-function handleFilterReset() {
-  resetFilters()
-}
-
 // ── 事件桥接：el-table 原生事件统一转发到零代码调度器 ───────────────────
 
 async function handleCurrentChange(currentRow: IDataRow | null, oldCurrentRow?: IDataRow | null) {
@@ -630,6 +592,10 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 .renderer-table-main {
   min-width: 0;
   flex: 1;
+}
+
+.renderer-table-filter-panel {
+  width: 100%;
 }
 
 /* 表头视觉强化：提升层次感与可读性。 */

@@ -1,7 +1,6 @@
-import type { SparkNode } from '../../internal'
 import type { SparkDataContainerProps, SparkNodeProps } from '../../shared-types'
-import type { TailNode } from '../RendererTail.types'
-import type { ToolbarPosition } from '../layout/toolbar-position'
+import type { RendererTailProps } from '../RendererTail.types'
+import type { ToolbarPosition } from '../layout'
 
 /** 工具栏交叉轴对齐方式。 */
 export type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
@@ -10,23 +9,15 @@ export type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
 export type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 
 /**
- * `r-toolbar` 结构化节点。
- */
-export interface ToolbarNode extends SparkNode {
-	/** 节点类型固定为 `r-toolbar`。 */
-	type: 'r-toolbar'
-	/** 宿主容器读取的属性（不得添加已在 RToolbarProps 里的重复字段）。 */
-	props?: { position?: ToolbarPosition; class?: string } & Record<string, unknown>
-	/** 工具栏动作节点列表。 */
-	children?: SparkNode[]
-}
-
-/**
  * `RendererToolbar` Vue 组件公开属性。
  */
 export interface RToolbarProps extends SparkNodeProps, SparkDataContainerProps {
-  /** 尾部动作区（通常放次要按鈕） @componentRef r-tail */
-  tail?: TailNode
+  /** 尾部动作区（通常放次要按钮） @componentRef r-tail */
+  tail?: RendererTailProps
+  /** 工具栏停靠位置 */
+  position?: ToolbarPosition
+  /** 工具栏附加 class */
+  class?: string
   /** 主区内元素间距 */
   gap?: number | string
   /** 主区与尾区间距 */

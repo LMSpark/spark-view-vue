@@ -5,31 +5,8 @@
     "props": {
       "border": true,
       "stripe": true,
-      "highlightCurrentRow": true
-    },
-    "children": [
-      {
-        "type": "r-toolbar",
-        "props": {
-          "position": "top"
-        },
-        "children": [
-          {
-            "type": "r-tail",
-            "children": [
-              {
-                "type": "r-button",
-                "props": {
-                  "label": "上传文档",
-                  "buttonType": "primary",
-                  "icon": "Upload"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
+      "highlightCurrentRow": true,
+      "filter": {
         "type": "r-filter",
         "children": [
           {
@@ -68,6 +45,48 @@
           }
         ]
       },
+      "toolbar": {
+        "type": "r-toolbar",
+        "props": {
+          "position": "top"
+        },
+        "children": [
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "r-button",
+                "props": {
+                  "label": "上传文档",
+                  "buttonType": "primary",
+                  "icon": "Upload"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "type": "r-toolbar",
+        "props": {
+          "label": "操作",
+          "width": 140,
+          "fixed": "right"
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "action": "message-row",
+              "label": "查看",
+              "buttonSize": "small",
+              "message": "文档 {name} | 类型 {type} | 项目 {project} | 版本 {version}"
+            }
+          }
+        ]
+      }
+    },
+    "children": [
       {
         "type": "el-table-column",
         "props": {
@@ -123,25 +142,6 @@
           "label": "版本",
           "width": 80
         }
-      },
-      {
-        "type": "r-toolbar",
-        "props": {
-          "label": "操作",
-          "width": 140,
-          "fixed": "right"
-        },
-        "children": [
-          {
-            "type": "r-button",
-            "props": {
-              "action": "message-row",
-              "label": "查看",
-              "buttonSize": "small",
-              "message": "文档 {name} | 类型 {type} | 项目 {project} | 版本 {version}"
-            }
-          }
-        ]
       }
     ]
   }

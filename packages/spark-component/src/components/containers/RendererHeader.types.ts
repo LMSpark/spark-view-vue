@@ -1,4 +1,5 @@
 import type { SparkNode } from '../internal'
+import type { SparkNodeProps } from '../shared-types'
 
 /**
  * `r-header` 结构化配置属性。
@@ -13,31 +14,17 @@ export interface RendererHeaderConfigProps extends Record<string, unknown> {
 }
 
 /**
- * `r-header` 结构化节点。
- *
- * 作为结构化子节点挂在容器下，容器可通过 `header` 配置读取。
- */
-export interface HeaderNode extends SparkNode {
-  /** 节点类型固定为 `r-header`。 */
-  type: 'r-header'
-  /** 头部区域结构化配置。 */
-  props?: RendererHeaderConfigProps
-  /** 头部内容节点列表。 */
-  children?: SparkNode[]
-}
-
-/**
  * `RendererHeader` 运行时公开属性。
- *
- * 既可由 `r-header` 结构节点投影而来，也可由容器显式传入。
  */
-export interface RendererHeaderProps {
+export interface RendererHeaderProps extends SparkNodeProps {
   /** 组件类型固定为 `r-header`。 */
   type?: 'r-header'
   /** 节点标识。 */
   id?: string
   /** 头部内容节点列表。 */
   children?: SparkNode[]
-  /** 页头宽度 */
+  /** 头部区域附加 class */
+  class?: string
+  /** 头部区域宽度 */
   width?: string | number
 }

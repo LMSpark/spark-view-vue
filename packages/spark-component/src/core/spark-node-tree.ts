@@ -1,4 +1,4 @@
-import { isSparkNode, normalizeSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './types.js'
+import { isSparkNode, normalizeSparkNode, nodeId as readNodeId, PROP_DATA_KEY, type SparkNode, type SparkNodeChildren } from './types.js'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 
 // ====================
@@ -1539,7 +1539,7 @@ function countRecursive(node: SparkNode): number {
  * 递归收集所有 props.dataKey。
  */
 function collectDataKeysRecursive(node: SparkNode, out: Set<string>): void {
-  const dataKey = node.props?.['dataKey']
+  const dataKey = node.props?.[PROP_DATA_KEY]
   if (typeof dataKey === 'string' && dataKey.length > 0) {
     out.add(dataKey)
   }

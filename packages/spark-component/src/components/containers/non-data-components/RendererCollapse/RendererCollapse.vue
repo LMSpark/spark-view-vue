@@ -1,13 +1,5 @@
 <template>
-  <div :class="['renderer-collapse-layout', `renderer-collapse-layout--${toolbarPositionValue}`]">
-    <div v-if="showToolbar" :class="['renderer-collapse-toolbar', toolbarClassValue]">
-      <SparkComponentRenderer
-        v-for="(action, index) in visibleToolbarConfigs"
-        :key="nodeId(action) ?? `r-collapse-toolbar-${index}`"
-        :config="action"
-      />
-    </div>
-
+  <div class="renderer-collapse-layout">
     <div class="renderer-collapse-main">
       <el-collapse
         :model-value="currentValue"
@@ -37,7 +29,6 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import type { ToolbarPosition } from '../../layout/toolbar-position'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'
@@ -62,19 +53,6 @@ const itemConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-collapse-item')
 )
 const currentValue = useMirroredValue(computed(() => props.value))
-
-const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
-const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = props.toolbar?.props?.position
-  return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
-    ? position as ToolbarPosition
-    : 'top'
-})
-const toolbarClassValue = computed(() => {
-  const className = props.toolbar?.props?.class
-  return typeof className === 'string' ? className : 'renderer-toolbar-default'
-})
-const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 // ── r-collapse 包装 API ──────────────────────────────────────────────────
 
@@ -143,40 +121,11 @@ function getItemScope(item: SparkNode, index: number) {
 
 <style scoped>
 .renderer-collapse-layout {
-  display: flex;
-  gap: 12px;
   width: 100%;
-}
-
-.renderer-collapse-layout--top,
-.renderer-collapse-layout--bottom {
-  flex-direction: column;
-}
-
-.renderer-collapse-layout--bottom {
-  flex-direction: column-reverse;
-}
-
-.renderer-collapse-layout--right {
-  flex-direction: row-reverse;
 }
 
 .renderer-collapse-main {
   min-width: 0;
-  flex: 1;
-}
-
-.renderer-collapse-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.renderer-collapse-layout--left .renderer-collapse-toolbar,
-.renderer-collapse-layout--right .renderer-collapse-toolbar {
-  flex-direction: column;
-  align-items: stretch;
 }
 
 .renderer-collapse-item-body {

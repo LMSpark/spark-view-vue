@@ -1,9 +1,9 @@
 import type { SparkGridLayoutProps, SparkNodeProps } from '../../../shared-types'
-import type { HeaderNode } from '../../RendererHeader.types'
+import type { RendererHeaderProps } from '../../RendererHeader.types'
 
 export interface RSectionProps extends SparkNodeProps, SparkGridLayoutProps {
   /** 结构化头部 @componentRef r-header */
-  header?: HeaderNode
+  header?: RendererHeaderProps
   /** 分区标题 */
   title?: SparkText
   /** 分区描述 */

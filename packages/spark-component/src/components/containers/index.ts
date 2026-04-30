@@ -13,14 +13,14 @@ export { default as RendererTail } from './RendererTail.vue'
 export { default as RendererFieldScope } from './support/RendererFieldScope.vue'
 
 // ── 结构节点类型（供容器 Props 组合使用） ──
-export type { ToolbarNode, RToolbarProps, InlineAlign, InlineJustify } from './non-data-components/RendererToolbar.types.js'
-export type { FilterNode, RendererFilterConfigProps, RendererFilterProps } from './RendererFilter.types.js'
-export type { ActionsAlign, ActionsPosition, ActionsFixed } from './support/RendererActions.types.js'
-export type { EditorNode, RendererEditorConfigProps, RendererEditorProps } from './RendererEditor.types.js'
-export type { HeaderNode, RendererHeaderConfigProps, RendererHeaderProps } from './RendererHeader.types.js'
-export type { FooterNode, RendererFooterConfigProps, RendererFooterProps } from './RendererFooter.types.js'
-export type { TailNode, RendererTailConfigProps, RendererTailProps } from './RendererTail.types.js'
-export type { ToolbarPosition } from './layout/toolbar-position.js'
+export type { RToolbarProps, InlineAlign, InlineJustify } from './non-data-components/RendererToolbar.types.js'
+export type { RendererFilterConfigProps, RendererFilterProps } from './RendererFilter.types.js'
+export type { ActionsAlign, ActionsPosition, ActionsFixed, RendererActionsProps } from './support/RendererActions.types.js'
+export type { RendererEditorConfigProps, RendererEditorProps } from './RendererEditor.types.js'
+export type { RendererHeaderConfigProps, RendererHeaderProps } from './RendererHeader.types.js'
+export type { RendererFooterConfigProps, RendererFooterProps } from './RendererFooter.types.js'
+export type { RendererTailConfigProps, RendererTailProps } from './RendererTail.types.js'
+export type { ToolbarPosition } from './layout/index.js'
 
 export {
 	useContainerDataSource,

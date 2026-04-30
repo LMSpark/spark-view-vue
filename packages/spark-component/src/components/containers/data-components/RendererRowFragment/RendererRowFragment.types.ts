@@ -1,4 +1,5 @@
 import type { SparkNode } from '../../../internal'
+import type { SparkNodeProps } from '../../../shared-types'
 
 /** 行片段内容对齐方式。 */
 export type RowFragmentAlign = 'left' | 'center' | 'right'
@@ -52,23 +53,11 @@ export interface RendererRowFragmentConfigProps {
 }
 
 /**
- * `r-row-fragment` 结构化节点。
- *
- * 作为行片段配置挂在集合宿主下，由宿主按自身语义消费 title/width/fields 等元属性。
- */
-export interface RowFragmentNode extends SparkNode {
-  /** 节点类型固定为 `r-row-fragment`。 */
-  type: 'r-row-fragment'
-  /** 行片段结构化配置。 */
-  props?: RendererRowFragmentConfigProps & Record<string, unknown>
-}
-
-/**
  * `RendererRowFragment` 运行时公开属性。
  *
- * 用于把一组字段组织成可复用的“行片段”，交给 table/list/tree 等宿主决定最终承载方式。
+ * 用于把一组字段组织成可复用的"行片段"，交给 table/list/tree 等宿主决定最终承载方式。
  */
-export interface RendererRowFragmentProps {
+export interface RendererRowFragmentProps extends SparkNodeProps {
   /** 组件类型固定为 `r-row-fragment`。 */
   type?: 'r-row-fragment'
   /** 节点标识。 */

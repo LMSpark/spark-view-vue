@@ -8,15 +8,15 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerModuleContext } from './useContainerModuleContext'
-import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
+import type { RToolbarProps } from '../non-data-components/RendererToolbar.types'
 import { createCurrentRowScope } from '../support/scopeFactories'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
-import type { ToolbarPosition } from '../layout/toolbar-position'
+import type { ToolbarPosition } from '../layout'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
   dataSource?: DataView
-  toolbar?: ToolbarNode
+  toolbar?: RToolbarProps
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
@@ -116,13 +116,13 @@ export function useFormDetailContainer(
 
   const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
   const toolbarPositionValue = computed<ToolbarPosition>(() => {
-    const position = props.toolbar?.props?.position
+    const position = props.toolbar?.position
     return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
       ? position
       : 'top'
   })
   const toolbarClassValue = computed(() => {
-    const className = props.toolbar?.props?.class
+    const className = props.toolbar?.class
     return typeof className === 'string' ? className : 'renderer-toolbar-default'
   })
   const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)

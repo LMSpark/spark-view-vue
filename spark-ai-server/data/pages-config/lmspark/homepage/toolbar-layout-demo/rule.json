@@ -312,12 +312,7 @@
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
-                  "rowActionsLabel": "操作",
-                  "rowActionsWidth": 220,
-                  "rowActionsAlign": "center"
-                },
-                "children": [
-                  {
+                  "toolbar": {
                     "type": "r-toolbar",
                     "props": {
                       "position": "top"
@@ -342,6 +337,38 @@
                       }
                     ]
                   },
+                  "actions": {
+                    "type": "r-toolbar",
+                    "children": [
+                      {
+                        "type": "r-button",
+                        "order": 1,
+                        "props": {
+                          "action": "message-row",
+                          "type": "primary",
+                          "size": "small",
+                          "link": true
+                        }
+                      },
+                      {
+                        "type": "r-button",
+                        "order": 2,
+                        "props": {
+                          "action": "delete-row",
+                          "type": "danger",
+                          "size": "small",
+                          "link": true
+                        }
+                      }
+                    ],
+                    "props": {
+                      "width": 220,
+                      "align": "center",
+                      "label": "操作"
+                    }
+                  }
+                },
+                "children": [
                   {
                     "type": "r-text",
                     "field": "id",
@@ -425,31 +452,6 @@
                       "label": "截止日期",
                       "width": 140
                     }
-                  },
-                  {
-                    "type": "r-toolbar",
-                    "children": [
-                      {
-                        "type": "r-button",
-                        "order": 1,
-                        "props": {
-                          "action": "message-row",
-                          "type": "primary",
-                          "size": "small",
-                          "link": true
-                        }
-                      },
-                      {
-                        "type": "r-button",
-                        "order": 2,
-                        "props": {
-                          "action": "delete-row",
-                          "type": "danger",
-                          "size": "small",
-                          "link": true
-                        }
-                      }
-                    ]
                   }
                 ]
               }

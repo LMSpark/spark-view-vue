@@ -3,8 +3,9 @@ import type {
   SparkInteractiveDataContainerProps,
   SparkNodeProps,
 } from '../../../shared-types'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
-import type { FilterNode } from '../../RendererFilter.types'
+import type { SparkNode } from '../../../internal'
+import type { RendererFilterProps } from '../../RendererFilter.types'
+import type { RendererActionsProps } from '../../support/RendererActions.types'
 
 /**
  * r-table 组件公开属性接口。
@@ -33,21 +34,21 @@ export interface RTableProps
    */
   tableProps?: Record<string, unknown>
   /**
-    * 结构化工具栏
+   * 结构化工具栏（完整 SparkNode，直接透传给 SparkComponentRenderer）
    * 提示词模板：默认动作 append-row / refresh / delete-current。
-    * @componentRef r-toolbar
+   * @componentRef r-toolbar
    */
-  toolbar?: ToolbarNode
+  toolbar?: SparkNode
   /**
    * 结构化筛选区
    * 提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。
    * @componentRef r-filter
    */
-  filter?: FilterNode
+  filter?: RendererFilterProps
   /**
    * 结构化行动作（toolbar 结构）
    * 提示词模板：默认动作 message-row / delete-row。
    * @componentRef r-toolbar
    */
-  actions?: ToolbarNode
+  actions?: RendererActionsProps
 }

@@ -1,5 +1,5 @@
 import type { SparkNodeProps } from '../../../shared-types'
-import type { ToolbarNode } from '../RendererToolbar.types'
+import type { RToolbarProps } from '../RendererToolbar.types'
 
 export interface TabsClickEvent {
   /** 当前点击标签页的 paneName */
@@ -9,7 +9,7 @@ export interface TabsClickEvent {
 
 export interface RTabsProps extends SparkNodeProps {
   /** 结构化工具栏 @componentRef r-toolbar */
-  toolbar?: ToolbarNode
+  toolbar?: RToolbarProps
   /** 当前激活标签页 */
   value?: string | number
   /** 标签页切换回调（activeName 变更） */

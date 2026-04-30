@@ -25,7 +25,69 @@
           "stripe": true,
           "highlightCurrentRow": true,
           "filterCollapsible": true,
-          "sortable": true
+          "sortable": true,
+          "filter": {
+            "type": "r-filter",
+            "children": [
+              {
+                "type": "r-text",
+                "field": "name",
+                "props": {
+                  "label": "姓名"
+                }
+              },
+              {
+                "type": "r-select",
+                "field": "department",
+                "props": {
+                  "label": "部门",
+                  "options": [
+                    {
+                      "label": "技术部",
+                      "value": "技术部"
+                    },
+                    {
+                      "label": "产品部",
+                      "value": "产品部"
+                    },
+                    {
+                      "label": "设计部",
+                      "value": "设计部"
+                    },
+                    {
+                      "label": "市场部",
+                      "value": "市场部"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-multi-select",
+                "field": "status",
+                "props": {
+                  "label": "状态",
+                  "options": [
+                    {
+                      "label": "在职",
+                      "value": "在职"
+                    },
+                    {
+                      "label": "离职",
+                      "value": "离职"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-number",
+                "field": "salary",
+                "props": {
+                  "label": "薪资",
+                  "filterMode": "range"
+                }
+              }
+            ]
+          }
         },
         "children": [
           {
@@ -116,68 +178,6 @@
               "filterable": true,
               "sortable": true
             }
-          },
-          {
-            "type": "r-filter",
-            "children": [
-              {
-                "type": "r-text",
-                "field": "name",
-                "props": {
-                  "label": "姓名"
-                }
-              },
-              {
-                "type": "r-select",
-                "field": "department",
-                "props": {
-                  "label": "部门",
-                  "options": [
-                    {
-                      "label": "技术部",
-                      "value": "技术部"
-                    },
-                    {
-                      "label": "产品部",
-                      "value": "产品部"
-                    },
-                    {
-                      "label": "设计部",
-                      "value": "设计部"
-                    },
-                    {
-                      "label": "市场部",
-                      "value": "市场部"
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "r-multi-select",
-                "field": "status",
-                "props": {
-                  "label": "状态",
-                  "options": [
-                    {
-                      "label": "在职",
-                      "value": "在职"
-                    },
-                    {
-                      "label": "离职",
-                      "value": "离职"
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "r-number",
-                "field": "salary",
-                "props": {
-                  "label": "薪资",
-                  "filterMode": "range"
-                }
-              }
-            ]
           }
         ]
       }

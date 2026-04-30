@@ -2,7 +2,7 @@
   <FieldContextRenderer v-bind="fieldCtx">
     <template #form>
       <el-date-picker
-        :model-value="fieldValue as string | Date | Array<string | Date>"
+        :model-value="safeDateValue"
         :type="resolvedPickerType"
         :placeholder="isRangeType ? undefined : placeholder"
         :start-placeholder="isRangeType ? startPlaceholder : undefined"
@@ -72,6 +72,13 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
 })
 
 const { fieldValue, isCurrentFieldEditable } = permission
+
+const safeDateValue = computed<string | Date | Array<string | Date> | null>(() => {
+  const v = fieldValue.value
+  if (v === null || v === undefined) return null
+  if (typeof v === 'string' || v instanceof Date || Array.isArray(v)) return v
+  return null
+})
 
 async function handleChange(value: string | Date | Array<string | Date>): Promise<void> {
   await handleControlledChange(value)

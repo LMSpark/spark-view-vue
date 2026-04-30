@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { ACTION_CAPABILITY, RendererTable, FieldText, DATA_ROW, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { RendererTable, FieldText, DATA_ROW, DATA_SOURCE, PAGE_SERVICE, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -8,6 +8,8 @@ import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from 
 import type { SparkNode } from '@spark-view/spark-component'
 import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
 import RendererFilter from '../packages/spark-component/src/components/containers/RendererFilter.vue'
+import { createBuiltinActionHandler } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-handler'
+import { hasRemoteListApi } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-helpers'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']
@@ -194,6 +196,15 @@ const SparkActionStub = defineComponent({
         ])
       }
 
+      if (type === 'r-field-scope') {
+        return h(RendererFieldScopeStub as any, {
+          model: (propsMap['model'] as Record<string, unknown> | undefined) ?? {},
+          configs: Array.isArray(propsMap['configs']) ? propsMap['configs'] : [],
+          autoFitMinWidth: String(propsMap['autoFitMinWidth'] ?? ''),
+          defaultColSpan: Number(propsMap['defaultColSpan'] ?? 24),
+        })
+      }
+
       return renderActionFallbackButton({
         config,
         propsMap,
@@ -201,8 +212,21 @@ const SparkActionStub = defineComponent({
         scopedRow,
         actionType: type,
         label: readConfigActionText(config),
-        executeAction: action => {
-          sparkConsume(ACTION_CAPABILITY)?.execute(action)
+        executeAction: (action: SparkNode) => {
+          const view = sparkConsume(DATA_SOURCE) as DataView | null
+          const pageService = sparkConsume(PAGE_SERVICE)
+          const handler = createBuiltinActionHandler({
+            getView: () => view,
+            getPageService: () => pageService,
+            getLogger: () => ({ debug: () => {}, info: () => {}, warn: console.warn, error: console.error }),
+            hasRemoteListApi,
+          })
+          const row = resolveScopedRow(dataRow, propsMap)
+          if (row !== undefined) {
+            void handler.handleRow(action, row, 0)
+          } else {
+            void handler.handleToolbar(action)
+          }
         },
       })
     }
@@ -492,8 +516,21 @@ const SparkColumnRendererStub = defineComponent({
         scopedRow,
         actionType,
         label: readConfigActionText(config),
-        executeAction: action => {
-          sparkConsume(ACTION_CAPABILITY)?.execute(action)
+        executeAction: (action: SparkNode) => {
+          const view = sparkConsume(DATA_SOURCE) as DataView | null
+          const pageService = sparkConsume(PAGE_SERVICE)
+          const handler = createBuiltinActionHandler({
+            getView: () => view,
+            getPageService: () => pageService,
+            getLogger: () => ({ debug: () => {}, info: () => {}, warn: console.warn, error: console.error }),
+            hasRemoteListApi,
+          })
+          const row = resolveScopedRow(dataRow, propsMap)
+          if (row !== undefined) {
+            void handler.handleRow(action, row, 0)
+          } else {
+            void handler.handleToolbar(action)
+          }
         },
       })
     }
@@ -1683,15 +1720,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
   it('should render table toolbar from children and structured row actions', async () => {
     const rowActionSpy = vi.fn()
 
-    const toolbarDataSet = createInlineDataSet('Users', [{ id: 1 }])
+    const toolbarDataSet = createInlineDataSet('Users', [{ id: 7, name: 'Alice' }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: toolbarDataSet,
       props: {
         dataKey: 'Users@rows',
-        children: [
-          { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
-          { type: 'r-toolbar', props: { position: 'left' }, children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
-        ],
+        toolbar: { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
+        actions: { position: 'left', children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
       },
       global: {
         config: {
@@ -1717,7 +1752,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(rowAction.attributes('data-row-id')).toBe('7')
 
     await rowAction.trigger('click')
-    expect(rowActionSpy).toHaveBeenCalledWith({ id: 7, name: 'Alice' }, 'evt')
+    expect(rowActionSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 7, name: 'Alice' }), 'evt')
   })
 
   it('should default row-action header to center while keeping action content left-aligned and single-line', () => {
@@ -1778,30 +1813,28 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'append-row',
-                label: '新增',
-                appendPayload: { id: 2, name: 'Bob' },
-                successMessage: '',
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'append-row',
+              label: '新增',
+              appendPayload: { id: 2, name: 'Bob' },
+              successMessage: '',
             },
-            {
-              type: 'r-button',
-              props: {
-                action: 'refresh',
-                label: '刷新',
-                successMessage: '',
-              },
+          },
+          {
+            type: 'r-button',
+            props: {
+              action: 'refresh',
+              label: '刷新',
+              successMessage: '',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         config: {
@@ -1917,22 +1950,20 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'append-row',
-                label: '新增',
-                appendPayload: { id: 2, name: 'Bob' },
-                successMessage: '',
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'append-row',
+              label: '新增',
+              appendPayload: { id: 2, name: 'Bob' },
+              successMessage: '',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         config: {
@@ -1984,22 +2015,20 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const dv = ds.getView('Users', 'default')!
     dv.setCurrentRowById(7)
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'delete-current',
-                label: '删除',
-                successMessage: '',
-                confirmMessage: '',
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'delete-current',
+              label: '删除',
+              successMessage: '',
+              confirmMessage: '',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -2049,22 +2078,20 @@ describe('RendererTable - DataView as single data intermediary', () => {
     dv.setCurrentRowById(1)
 
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'delete-selected',
-                label: '删除勾选',
-                successMessage: '',
-                confirmMessage: '',
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'delete-selected',
+              label: '删除勾选',
+              successMessage: '',
+              confirmMessage: '',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -2107,22 +2134,20 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'append-row',
-                label: '新增静默',
-                appendPayload: { id: 2, name: 'Bob' },
-                silent: true,
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'append-row',
+              label: '新增静默',
+              appendPayload: { id: 2, name: 'Bob' },
+              silent: true,
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -2171,21 +2196,19 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'refresh',
-                label: '刷新',
-                errorMessage: '刷新失败',
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'refresh',
+              label: '刷新',
+              errorMessage: '刷新失败',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -2235,23 +2258,21 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     const wrapper = mountRendererTableWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'delete-selected',
-                label: '删除勾选',
-                idField: 'uid',
-                confirmMessage: '',
-                failureMessage: '没有可删除记录',
-              },
+      toolbar: {
+        type: 'r-toolbar',
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'delete-selected',
+              label: '删除勾选',
+              idField: 'uid',
+              confirmMessage: '',
+              failureMessage: '没有可删除记录',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -2282,8 +2303,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTree as any, {
       props: {
         data: [{ id: 'node-1', label: '节点 1' }],
+        toolbar: { position: 'right', children: [{ type: 'tree-toolbar' }] },
         children: [
-          { type: 'r-toolbar', props: { position: 'right' }, children: [{ type: 'tree-toolbar' }] },
           { type: 'node-button', props: { on: { click: nodeActionSpy } } },
         ],
       },
@@ -2329,21 +2350,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
 
     const wrapper = await mountRendererTreeWithView(dv, {
-      children: [
-        {
-          type: 'r-toolbar',
-          children: [
-            {
-              type: 'r-button',
-              props: {
-                action: 'refresh',
-                label: '刷新导航树',
-                successMessage: '',
-              },
+      toolbar: {
+        children: [
+          {
+            type: 'r-button',
+            props: {
+              action: 'refresh',
+              label: '刷新导航树',
+              successMessage: '',
             },
-          ],
-        },
-      ],
+          },
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -2720,7 +2738,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
     const dv = ds.getView('Nodes', 'default')!
     const wrapper = await mountRendererTreeWithView(dv, {
-      children: [{ type: 'r-toolbar', children: [{ type: 'biz-tree-toolbar' }] }],
+      toolbar: { children: [{ type: 'biz-tree-toolbar' }] },
     }, {
       slots: {
         default: ({ data }: Record<string, unknown>) => h('span', {
@@ -2757,9 +2775,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
     const dv = ds.getView('Nodes', 'default')!
     const wrapper = await mountRendererTreeWithView(dv, {
+      editor: { position: 'right', class: 'tree-editor-panel', children: [{ type: 'tree-editor-template' }] },
       children: [
         { type: 'tree-node-content' },
-        { type: 'r-editor', props: { position: 'right', class: 'tree-editor-panel' }, children: [{ type: 'tree-editor-template' }] },
       ],
     }, {
       global: {
@@ -2785,16 +2803,19 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: permissionDataSet,
       props: {
         dataKey: 'Users@rows',
-        children: [
-          { type: 'r-toolbar', children: [
+        toolbar: {
+          type: 'r-toolbar',
+          children: [
             { type: 'create-button', props: { permAction: 'create' } },
             { type: 'export-button', props: { permAction: 'export' } },
-          ] },
-          { type: 'r-toolbar', children: [
+          ],
+        },
+        actions: {
+          children: [
             { type: 'delete-row', props: { permAction: 'delete' } },
             { type: 'plain-row' },
-          ] },
-        ],
+          ],
+        },
       },
       global: {
         stubs: {
@@ -3006,17 +3027,19 @@ describe('RendererTable - DataView as single data intermediary', () => {
     ;(dv as any)._modelPerm = { allowImport: false, allowCreate: false, allowExport: true }
 
     const wrapper = await mountRendererTreeWithView(dv, {
-      children: [
-        { type: 'r-toolbar', children: [
+      toolbar: {
+        children: [
           { type: 'import-tree', props: { permAction: 'import' } },
           { type: 'export-tree', props: { permAction: 'export' } },
-        ] },
-        { type: 'r-toolbar', children: [
+        ],
+      },
+      actions: {
+        children: [
           { type: 'create-child-node', props: { permAction: 'create-child' } },
           { type: 'delete-node', props: { permAction: 'delete' } },
           { type: 'plain-node' },
-        ] },
-      ],
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -3208,8 +3231,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
         { type: 'r-number', props: { field: 'age', label: '年龄' } },
-        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
       ],
+      filter: {
+        children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }],
+      },
     }, {
       global: {
         stubs: {
@@ -3261,8 +3286,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
-        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
       ],
+      filter: {
+        children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }],
+      },
     }, {
       global: {
         stubs: {
@@ -3360,11 +3387,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
       children: [
         { type: 'r-number', props: { field: 'score', label: '分数', filterMode: 'range' } },
         { type: 'r-multi-select', props: { field: 'status', label: '状态' } },
-        { type: 'r-filter', children: [
+      ],
+      filter: {
+        children: [
           { type: 'r-number', props: { field: 'score', label: '分数', filterMode: 'range' } },
           { type: 'r-multi-select', props: { field: 'status', label: '状态' } },
-        ] },
-      ],
+        ],
+      },
     }, {
       global: {
         stubs: {
@@ -3407,12 +3436,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
-        {
-          type: 'r-filter',
-          props: { collapsible: true, defaultCollapsed: true },
-          children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }],
-        },
       ],
+      filter: {
+        type: 'r-filter',
+        collapsible: true,
+        defaultCollapsed: true,
+        children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }],
+      },
     }, {
       global: {
         stubs: {

@@ -139,8 +139,14 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "rowActionsLabel": "操作",
-              "rowActionsWidth": 220
+              "actions": {
+                "type": "r-toolbar",
+                "children": [],
+                "props": {
+                  "width": 220,
+                  "label": "操作"
+                }
+              }
             },
             "filter": {
               "type": "r-filter",
@@ -648,7 +654,35 @@
               "stripe": true,
               "highlightCurrentRow": true,
               "filterCollapsible": true,
-              "filterDefaultCollapsed": true
+              "filterDefaultCollapsed": true,
+              "filter": {
+                "type": "r-filter",
+                "children": [
+                  {
+                    "type": "r-text",
+                    "field": "product",
+                    "props": {
+                      "label": "商品"
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "qty",
+                    "props": {
+                      "label": "数量",
+                      "filterMode": "range"
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "lineAmount",
+                    "props": {
+                      "label": "行金额",
+                      "filterMode": "range"
+                    }
+                  }
+                ]
+              }
             },
             "children": [
               {
@@ -691,34 +725,6 @@
                   "label": "行金额",
                   "width": 120
                 }
-              },
-              {
-                "type": "r-filter",
-                "children": [
-                  {
-                    "type": "r-text",
-                    "field": "product",
-                    "props": {
-                      "label": "商品"
-                    }
-                  },
-                  {
-                    "type": "r-number",
-                    "field": "qty",
-                    "props": {
-                      "label": "数量",
-                      "filterMode": "range"
-                    }
-                  },
-                  {
-                    "type": "r-number",
-                    "field": "lineAmount",
-                    "props": {
-                      "label": "行金额",
-                      "filterMode": "range"
-                    }
-                  }
-                ]
               }
             ]
           }

@@ -5,31 +5,8 @@
     "props": {
       "border": true,
       "stripe": true,
-      "highlightCurrentRow": true
-    },
-    "children": [
-      {
-        "type": "r-toolbar",
-        "props": {
-          "position": "top"
-        },
-        "children": [
-          {
-            "type": "r-tail",
-            "children": [
-              {
-                "type": "r-button",
-                "props": {
-                  "label": "新增项目",
-                  "buttonType": "primary",
-                  "icon": "Plus"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
+      "highlightCurrentRow": true,
+      "filter": {
         "type": "r-filter",
         "children": [
           {
@@ -68,6 +45,48 @@
           }
         ]
       },
+      "toolbar": {
+        "type": "r-toolbar",
+        "props": {
+          "position": "top"
+        },
+        "children": [
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "r-button",
+                "props": {
+                  "label": "新增项目",
+                  "buttonType": "primary",
+                  "icon": "Plus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "type": "r-toolbar",
+        "props": {
+          "label": "操作",
+          "width": 150,
+          "fixed": "right"
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "action": "message-row",
+              "label": "查看",
+              "buttonSize": "small",
+              "message": "项目 {code} | 名称 {name} | 负责人 {managerName} | 状态 {status}"
+            }
+          }
+        ]
+      }
+    },
+    "children": [
       {
         "type": "el-table-column",
         "props": {
@@ -131,25 +150,6 @@
           "label": "结束日期",
           "width": 120
         }
-      },
-      {
-        "type": "r-toolbar",
-        "props": {
-          "label": "操作",
-          "width": 150,
-          "fixed": "right"
-        },
-        "children": [
-          {
-            "type": "r-button",
-            "props": {
-              "action": "message-row",
-              "label": "查看",
-              "buttonSize": "small",
-              "message": "项目 {code} | 名称 {name} | 负责人 {managerName} | 状态 {status}"
-            }
-          }
-        ]
       }
     ]
   }

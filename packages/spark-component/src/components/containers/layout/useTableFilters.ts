@@ -2,7 +2,9 @@ import { computed, reactive, watch } from 'vue'
 import type { SparkNode } from '../../internal'
 import { nodeInputProp } from '../../internal'
 import type { DataView, FilterExpression, FilterOperator, FilterValueExpression } from '@spark-view/spark-data'
+import type { IDataRow } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
+import type { RendererFilterProps } from '../RendererFilter.types'
 
 interface LoggerLike {
   error(message: string, error?: unknown): void
@@ -15,7 +17,20 @@ interface UseTableFiltersOptions {
   filterGridColumns: ValueRef<number | undefined>
   filterGridGap: ValueRef<number | string | undefined>
   filterGridAutoRows: ValueRef<string | undefined>
+  filterCollapsible?: ValueRef<boolean | undefined>
+  filterCollapsed?: ValueRef<boolean | undefined>
+  filterAutoFitMinWidth?: ValueRef<string | undefined>
+  filterItemSpan?: ValueRef<number | undefined>
+  filterActionSpan?: ValueRef<number | undefined>
+  toggleCollapsedAction?: () => void
   logger: LoggerLike
+}
+
+interface TableFilterZeroCodeBridge {
+  filterModel: Record<string, unknown>
+  activeFilterCount: number
+  resetFilters: () => Promise<void>
+  searchFilters: () => Promise<void>
 }
 
 interface FilterCapableView {
@@ -351,9 +366,54 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     }
   }
 
+  async function searchFilters(): Promise<void> {
+    const view = options.dataView.value
+    if (!view || !hasAnyFilterNodes.value) return
+    try {
+      await applyFilterToView(view, filterExpression.value, true)
+    } catch (error) {
+      options.logger.error('RendererTable: 应用过滤失败', error)
+    }
+  }
+
+  const filterRendererProps = computed<RendererFilterProps>(() => {
+    const collapsible = options.filterCollapsible?.value
+    const collapsed = options.filterCollapsed?.value
+    const autoFitMinWidth = options.filterAutoFitMinWidth?.value
+    const itemSpan = options.filterItemSpan?.value
+    const actionSpan = options.filterActionSpan?.value
+    const toggleCollapsedAction = options.toggleCollapsedAction
+
+    return {
+      class: filterClassValue.value,
+      model: filterModel as IDataRow,
+      configs: filterConfigs.value,
+      activeCount: activeFilterCount.value,
+      gridColumns: filterGridColumnsValue.value,
+      gridGap: filterGridGapValue.value,
+      gridAutoRows: filterGridAutoRowsValue.value,
+      searchAction: searchFilters,
+      resetAction: resetFilters,
+      ...(collapsible !== undefined ? { collapsible } : {}),
+      ...(collapsed !== undefined ? { collapsed } : {}),
+      ...(autoFitMinWidth !== undefined ? { autoFitMinWidth } : {}),
+      ...(itemSpan !== undefined ? { itemSpan } : {}),
+      ...(actionSpan !== undefined ? { actionSpan } : {}),
+      ...(toggleCollapsedAction !== undefined ? { toggleCollapsedAction } : {}),
+    }
+  })
+
+  const zeroCodeBridge = computed<TableFilterZeroCodeBridge>(() => ({
+    filterModel,
+    activeFilterCount: activeFilterCount.value,
+    resetFilters,
+    searchFilters,
+  }))
+
   return {
     filterModel,
     filterConfigs,
+    filterRendererProps,
     filterClassValue,
     filterGridColumnsValue,
     filterGridGapValue,
@@ -361,6 +421,8 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     filterExpression,
     hasFilters: hasRenderableFilters,
     activeFilterCount,
+    searchFilters,
     resetFilters,
+    zeroCodeBridge,
   }
 }

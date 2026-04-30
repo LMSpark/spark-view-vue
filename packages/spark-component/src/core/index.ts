@@ -53,6 +53,7 @@ export { SPARK_REGISTRY_KEY } from '../system/keys.js'
 
 export {
   SPARK_NODE_STRUCT_KEYS,
+  PROP_DATA_KEY,
   normalizeSparkNode,
   nodeId,
   nodeInputProp,

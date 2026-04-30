@@ -96,7 +96,7 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import type { ToolbarPosition } from '../../layout/toolbar-position'
+import type { ToolbarPosition } from '../../layout'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
 import type { ActionsPosition } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
@@ -158,24 +158,24 @@ const showListItems = computed(() => listRows.value.length > 0 && (mergedChildre
 
 const visibleToolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
 const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = toolbarNode.value?.props?.['position']
+  const position = toolbarNode.value?.position
   return (position === 'top' || position === 'bottom' || position === 'left' || position === 'right')
     ? position as ToolbarPosition
     : 'top'
 })
 const toolbarClassValue = computed(() => {
-  const className = toolbarNode.value?.props?.['class']
+  const className = toolbarNode.value?.class
   return typeof className === 'string' ? className : 'renderer-toolbar-default'
 })
 const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 const itemActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
 const itemActionsPositionValue = computed<ActionsPosition>(() => {
-  const position = actionsNode.value?.props?.['position']
+  const position = actionsNode.value?.position
   return position === 'left' || position === 'right' ? position : 'right'
 })
 const itemActionsClassValue = computed(() => {
-  const className = actionsNode.value?.props?.['class']
+  const className = actionsNode.value?.class
   return typeof className === 'string' ? className : ''
 })
 const showItemActionsLeft = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'left')

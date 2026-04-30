@@ -4,7 +4,7 @@ import type {
   SparkGridLayoutProps,
   SparkNodeProps,
 } from '../../../shared-types'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
+import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
 
 /**
  * r-detail 组件公开属性接口。
@@ -18,7 +18,7 @@ export interface RDetailProps
   /** 显式收窄为详情容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
-  toolbar?: ToolbarNode
+  toolbar?: RToolbarProps
   /** 标题对齐 */
   titleAlign?: 'left' | 'center' | 'right'
   /** 值对齐 */

@@ -27,7 +27,7 @@ export type {
   SparkCapabilityContext,
   LoggerApi,
 } from '../core/index.js'
-export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode, isSparkNode, getSparkNodeChildren } from '../core/index.js'
+export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, PROP_DATA_KEY, normalizeSparkNode, isSparkNode, getSparkNodeChildren } from '../core/index.js'
 
 // ── 能力键 ──
 export {

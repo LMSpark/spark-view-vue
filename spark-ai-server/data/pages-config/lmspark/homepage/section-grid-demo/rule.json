@@ -32,13 +32,7 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "rowActionsWidth": 360,
-              "rowActionsFixed": "right",
-              "rowActionsAlign": "center",
-              "rowActionsLabel": "⚙ 操作"
-            },
-            "children": [
-              {
+              "toolbar": {
                 "type": "r-toolbar",
                 "props": {
                   "position": "top"
@@ -76,6 +70,53 @@
                   }
                 ]
               },
+              "actions": {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "order": 1,
+                    "props": {
+                      "action": "message-row",
+                      "type": "primary",
+                      "size": "small",
+                      "link": true
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "order": 2,
+                    "props": {
+                      "action": "prompt-edit",
+                      "type": "warning",
+                      "size": "small",
+                      "link": true
+                    }
+                  },
+                  {
+                    "type": "RenderStatusAction",
+                    "order": 3
+                  },
+                  {
+                    "type": "r-button",
+                    "order": 4,
+                    "props": {
+                      "action": "delete-row",
+                      "type": "danger",
+                      "size": "small",
+                      "link": true
+                    }
+                  }
+                ],
+                "props": {
+                  "width": 360,
+                  "fixed": "right",
+                  "align": "center",
+                  "label": "⚙ 操作"
+                }
+              }
+            },
+            "children": [
               {
                 "type": "r-text",
                 "field": "id",
@@ -171,45 +212,6 @@
                   "activeText": "启用",
                   "inactiveText": "禁用"
                 }
-              },
-              {
-                "type": "r-toolbar",
-                "children": [
-                  {
-                    "type": "r-button",
-                    "order": 1,
-                    "props": {
-                      "action": "message-row",
-                      "type": "primary",
-                      "size": "small",
-                      "link": true
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "order": 2,
-                    "props": {
-                      "action": "prompt-edit",
-                      "type": "warning",
-                      "size": "small",
-                      "link": true
-                    }
-                  },
-                  {
-                    "type": "RenderStatusAction",
-                    "order": 3
-                  },
-                  {
-                    "type": "r-button",
-                    "order": 4,
-                    "props": {
-                      "action": "delete-row",
-                      "type": "danger",
-                      "size": "small",
-                      "link": true
-                    }
-                  }
-                ]
               }
             ]
           }

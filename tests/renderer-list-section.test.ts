@@ -60,8 +60,8 @@ describe('RendererList and RendererSection container integration', () => {
         dataKey: 'Users@rows',
         gridGap: 12,
         itemColSpan: 12,
-        toolbar: { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'list-toolbar-action' }] },
-        actions: { type: 'r-toolbar', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
+        toolbar: { position: 'bottom', children: [{ type: 'list-toolbar-action' }] },
+        actions: { position: 'left', children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
       },
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {

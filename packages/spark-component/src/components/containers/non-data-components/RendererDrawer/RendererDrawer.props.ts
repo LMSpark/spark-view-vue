@@ -3,17 +3,17 @@ import type {
   SparkNodeProps,
   SparkVisibilityContainerProps,
 } from '../../../shared-types'
-import type { FooterNode } from '../../RendererFooter.types'
-import type { HeaderNode } from '../../RendererHeader.types'
+import type { RendererFooterProps } from '../../RendererFooter.types'
+import type { RendererHeaderProps } from '../../RendererHeader.types'
 
 export interface RDrawerProps
   extends SparkNodeProps,
     SparkVisibilityContainerProps,
     SparkGridLayoutProps {
   /** 结构化头部 @componentRef r-header */
-  header?: HeaderNode
+  header?: RendererHeaderProps
   /** 结构化底部 @componentRef r-footer */
-  footer?: FooterNode
+  footer?: RendererFooterProps
   /** 抽屉标题 */
   title?: SparkText
   /** 控制显隐 */

@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
-import type { FilterNode } from '../../RendererFilter.types'
+import type { RendererFilterProps } from '../../RendererFilter.types'
 import type { ValueRef } from '../../../shared-types.js'
 
 // ==============================
@@ -8,7 +8,7 @@ import type { ValueRef } from '../../../shared-types.js'
 // ==============================
 
 interface RendererTableViewStateOptions {
-  filterNode: ValueRef<FilterNode | undefined>
+  filterNode: ValueRef<RendererFilterProps | undefined>
   tableFilterCollapsible: ValueRef<boolean | undefined>
   tableFilterDefaultCollapsed: ValueRef<boolean | undefined>
   tableFilterAutoFitMinWidth: ValueRef<string | undefined>
@@ -75,27 +75,27 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 
   // 过滤区展示态
   const filterCollapsibleValue = computed(() =>
-    options.filterNode.value?.props?.collapsible
+    options.filterNode.value?.collapsible
     ?? options.tableFilterCollapsible.value
     ?? false,
   )
   const filterDefaultCollapsedValue = computed(() =>
-    options.filterNode.value?.props?.defaultCollapsed
+    options.filterNode.value?.defaultCollapsed
     ?? options.tableFilterDefaultCollapsed.value
     ?? false,
   )
   const filterAutoFitMinWidthValue = computed(() =>
-    options.filterNode.value?.props?.autoFitMinWidth
+    options.filterNode.value?.autoFitMinWidth
     ?? options.tableFilterAutoFitMinWidth.value
     ?? '220px',
   )
   const filterItemSpanValue = computed(() =>
-    options.filterNode.value?.props?.itemSpan
+    options.filterNode.value?.itemSpan
     ?? options.tableFilterItemSpan.value
     ?? 1,
   )
   const filterActionSpanValue = computed(() =>
-    options.filterNode.value?.props?.actionSpan
+    options.filterNode.value?.actionSpan
     ?? options.tableFilterActionSpan.value
     ?? filterItemSpanValue.value,
   )

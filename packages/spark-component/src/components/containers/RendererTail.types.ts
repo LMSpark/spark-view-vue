@@ -1,4 +1,5 @@
 import type { SparkNode } from '../internal'
+import type { SparkNodeProps } from '../shared-types'
 
 /**
  * `r-tail` 结构化配置属性。
@@ -13,25 +14,9 @@ export interface RendererTailConfigProps extends Record<string, unknown> {
 }
 
 /**
- * `r-tail` 结构化节点。
- *
- * 作为结构化子节点挂在工具栏等容器下，容器可通过 `tail` 配置读取。
- */
-export interface TailNode extends SparkNode {
-  /** 节点类型固定为 `r-tail`。 */
-  type: 'r-tail'
-  /** 尾部区域结构化配置。 */
-  props?: RendererTailConfigProps
-  /** 尾部内容节点列表。 */
-  children?: SparkNode[]
-}
-
-/**
  * `RendererTail` 运行时公开属性。
- *
- * 既可由 `r-tail` 结构节点投影而来，也可由宿主组件显式传入。
  */
-export interface RendererTailProps {
+export interface RendererTailProps extends SparkNodeProps {
   /** 组件类型固定为 `r-tail`。 */
   type?: 'r-tail'
   /** 节点标识。 */

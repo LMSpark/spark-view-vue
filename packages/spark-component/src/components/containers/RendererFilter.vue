@@ -55,9 +55,8 @@
  */
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '../internal'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkComponent } from '../internal'
 import { PAGE_PERMISSION_MODE } from '../../permission'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, useSparkComponent } from '../internal'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
@@ -81,7 +80,10 @@ function assertPanelConfigs(value: unknown): asserts value is SparkNode[] {
 assertPanelModel(props.model)
 assertPanelConfigs(props.configs)
 
-const standaloneChildren = computed(() => getSparkNodeChildren(props.children))
+const standaloneChildren = computed(() => {
+  const source = props.children ?? props.configs
+  return getSparkNodeChildren(source)
+})
 const resolvedConfigs = computed(() => props.configs ?? standaloneChildren.value)
 const isPanelMode = computed(() => props.model !== undefined && props.configs !== undefined)
 const resolvedModel = computed<IDataRow>(() => props.model ?? {})
@@ -91,6 +93,7 @@ const resolvedCollapsed = computed(() => props.collapsed ?? false)
 const resolvedGridColumns = computed(() => props.gridColumns ?? 24)
 const resolvedGridGap = computed(() => props.gridGap ?? 12)
 const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, auto)')
+
 function isWideFilterConfig(config: SparkNode): boolean {
   const filterMode = nodeInputProp(config, 'filterMode')
   if (filterMode === 'range') return true
@@ -108,7 +111,11 @@ function getSmartAutoFitMinWidth(configs: SparkNode[]): string {
   return hasWideField ? '210px' : '190px'
 }
 
-const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? getSmartAutoFitMinWidth(resolvedConfigs.value))
+const resolvedAutoFitMinWidth = computed(() => {
+  const raw = (props.autoFitMinWidth ?? '').trim()
+  if (raw.length > 0) return raw
+  return getSmartAutoFitMinWidth(resolvedConfigs.value)
+})
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
 const resolvedActionSpan = computed(() => {
   const fallback = resolvedItemSpan.value

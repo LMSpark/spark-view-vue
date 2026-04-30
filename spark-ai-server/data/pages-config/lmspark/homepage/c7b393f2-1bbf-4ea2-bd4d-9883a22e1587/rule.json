@@ -119,10 +119,8 @@
         "size": "default"
       },
       "filterCollapsible": true,
-      "filterDefaultCollapsed": true
-    },
-    "children": [
-      {
+      "filterDefaultCollapsed": true,
+      "filter": {
         "type": "r-filter",
         "props": {
           "id": "leave-filter",
@@ -193,7 +191,7 @@
         ],
         "id": "leave-filter"
       },
-      {
+      "toolbar": {
         "type": "r-toolbar",
         "props": {
           "id": "leave-toolbar"
@@ -226,6 +224,66 @@
         ],
         "id": "leave-toolbar"
       },
+      "actions": {
+        "type": "r-toolbar",
+        "id": "leave-actions",
+        "props": {
+          "id": "leave-actions",
+          "width": 400,
+          "align": "center",
+          "fixed": "right"
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "id": "action-view",
+            "props": {
+              "id": "action-view",
+              "label": "查看",
+              "action": "onActionViewClick",
+              "template": "text"
+            },
+            "children": []
+          },
+          {
+            "type": "r-button",
+            "id": "action-approve",
+            "props": {
+              "id": "action-approve",
+              "label": "审批",
+              "action": "onActionApproveClick",
+              "template": "text",
+              "color": "#409EFF"
+            },
+            "children": []
+          },
+          {
+            "type": "r-button",
+            "props": {
+              "id": "action-edit",
+              "label": "编辑",
+              "action": "prompt-edit",
+              "template": "text"
+            },
+            "children": [],
+            "id": "action-edit"
+          },
+          {
+            "type": "r-button",
+            "props": {
+              "id": "action-delete",
+              "label": "删除",
+              "action": "delete-row",
+              "template": "text",
+              "color": "#F56C6C"
+            },
+            "children": [],
+            "id": "action-delete"
+          }
+        ]
+      }
+    },
+    "children": [
       {
         "type": "r-text",
         "id": "col-employeeName",
@@ -342,64 +400,6 @@
           "format": "YYYY-MM-DD HH:mm"
         },
         "children": []
-      },
-      {
-        "type": "r-toolbar",
-        "id": "leave-actions",
-        "props": {
-          "id": "leave-actions",
-          "width": 400,
-          "align": "center",
-          "fixed": "right"
-        },
-        "children": [
-          {
-            "type": "r-button",
-            "id": "action-view",
-            "props": {
-              "id": "action-view",
-              "label": "查看",
-              "action": "onActionViewClick",
-              "template": "text"
-            },
-            "children": []
-          },
-          {
-            "type": "r-button",
-            "id": "action-approve",
-            "props": {
-              "id": "action-approve",
-              "label": "审批",
-              "action": "onActionApproveClick",
-              "template": "text",
-              "color": "#409EFF"
-            },
-            "children": []
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "id": "action-edit",
-              "label": "编辑",
-              "action": "prompt-edit",
-              "template": "text"
-            },
-            "children": [],
-            "id": "action-edit"
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "id": "action-delete",
-              "label": "删除",
-              "action": "delete-row",
-              "template": "text",
-              "color": "#F56C6C"
-            },
-            "children": [],
-            "id": "action-delete"
-          }
-        ]
       }
     ]
   },

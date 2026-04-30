@@ -32,7 +32,15 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "filterable": true
+          "filterable": true,
+          "toolbar": {
+            "type": "r-toolbar",
+            "children": [
+              {
+                "type": "RenderRowActions"
+              }
+            ]
+          }
         },
         "children": [
           {
@@ -84,14 +92,6 @@
                 }
               ]
             }
-          },
-          {
-            "type": "r-toolbar",
-            "children": [
-              {
-                "type": "RenderRowActions"
-              }
-            ]
           }
         ]
       }

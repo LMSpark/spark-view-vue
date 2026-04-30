@@ -63,7 +63,7 @@ describe('RendererToolbar integration', () => {
         children: [
           { type: 'main-action' },
         ],
-        tail: { type: 'r-tail', props: { class: 'toolbar-tail-custom' }, children: [{ type: 'tail-action' }] },
+        tail: { class: 'toolbar-tail-custom', children: [{ type: 'tail-action' }] },
       },
       global: {
         stubs: {
@@ -82,8 +82,7 @@ describe('RendererToolbar integration', () => {
           { type: 'main-action' },
         ],
         tail: {
-          type: 'r-tail',
-          props: { class: 'toolbar-tail-prop-custom' },
+          class: 'toolbar-tail-prop-custom',
           children: [{ type: 'tail-action-from-prop' }],
         },
       },

@@ -12,5 +12,4 @@ export type {
 	RowFragmentAlign,
 	RendererRowFragmentConfigProps,
 	RendererRowFragmentProps,
-	RowFragmentNode,
 } from './RendererRowFragment/index.js'

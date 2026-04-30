@@ -136,12 +136,7 @@
                       "border": true,
                       "stripe": true,
                       "highlightCurrentRow": true,
-                      "rowActionsWidth": 180,
-                      "rowActionsFixed": "right",
-                      "rowActionsLabel": "零代码动作"
-                    },
-                    "children": [
-                      {
+                      "toolbar": {
                         "type": "r-toolbar",
                         "props": {
                           "position": "top"
@@ -167,6 +162,42 @@
                           }
                         ]
                       },
+                      "actions": {
+                        "type": "r-toolbar",
+                        "children": [
+                          {
+                            "type": "r-button",
+                            "props": {
+                              "action": "prompt-edit",
+                              "label": "编辑",
+                              "buttonType": "warning",
+                              "buttonSize": "small",
+                              "buttonLink": true,
+                              "permAction": "edit"
+                            }
+                          },
+                          {
+                            "type": "r-button",
+                            "props": {
+                              "action": "delete-row",
+                              "label": "删除",
+                              "buttonType": "danger",
+                              "buttonSize": "small",
+                              "buttonLink": true,
+                              "confirmTitle": "删除确认",
+                              "confirmMessage": "确认删除当前记录吗？",
+                              "permAction": "delete"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "width": 180,
+                          "fixed": "right",
+                          "label": "零代码动作"
+                        }
+                      }
+                    },
+                    "children": [
                       {
                         "type": "r-text",
                         "field": "id",
@@ -198,35 +229,6 @@
                           "label": "部门",
                           "width": 120
                         }
-                      },
-                      {
-                        "type": "r-toolbar",
-                        "children": [
-                          {
-                            "type": "r-button",
-                            "props": {
-                              "action": "prompt-edit",
-                              "label": "编辑",
-                              "buttonType": "warning",
-                              "buttonSize": "small",
-                              "buttonLink": true,
-                              "permAction": "edit"
-                            }
-                          },
-                          {
-                            "type": "r-button",
-                            "props": {
-                              "action": "delete-row",
-                              "label": "删除",
-                              "buttonType": "danger",
-                              "buttonSize": "small",
-                              "buttonLink": true,
-                              "confirmTitle": "删除确认",
-                              "confirmMessage": "确认删除当前记录吗？",
-                              "permAction": "delete"
-                            }
-                          }
-                        ]
                       }
                     ]
                   },

@@ -128,6 +128,13 @@ export interface SparkNode {
 // ── SparkNode 结构键（运行时） ────────────────────────────────────────────
 
 /**
+ * SparkNode props 中数据绑定键的规范名称。
+ *
+ * 全组件系列统一使用此常量，避免 `'dataKey'` / `'DataKey'` / `'data-key'` 大小写不一致。
+ */
+export const PROP_DATA_KEY = 'dataKey' as const
+
+/**
  * SparkNode 结构键集合（type / id / props / children）
  *
  * `id` 属于运行时结构键，不再视为普通业务属性。

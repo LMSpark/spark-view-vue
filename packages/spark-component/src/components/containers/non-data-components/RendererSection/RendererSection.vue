@@ -122,7 +122,7 @@ const { registerApi } = useSparkPageComponent(props)
 // 头部区域优先通过 props.header 输入。
 const contentChildren = computed(() => props.children ?? [])
 
-const headerClassValue = computed(() => String(props.header?.props?.class ?? ''))
+const headerClassValue = computed(() => String(props.header?.class ?? ''))
 const headerActionsClassValue = computed(() => '')
 
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))

@@ -29,15 +29,11 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
-import { nodeId, type SparkNode } from '../../internal'
+import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
+import type { SparkNodeProps } from '../../shared-types'
 
-interface Props {
-  type?: string
-  /** 原始属性包（透传） */
-  props?: { [key: string]: unknown }
-  children?: SparkNode['children']
-  id?: string
+interface Props extends SparkNodeProps {
   /** 步骤标题 */
   title?: string
   /** 步骤描述文本 */

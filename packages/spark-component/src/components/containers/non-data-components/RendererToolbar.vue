@@ -31,8 +31,7 @@
  * @skill r-toolbar
  * @description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。
  */
-import { computed } from 'vue'
-import { watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   DATA_ROW,
   DATA_SOURCE,
@@ -58,6 +57,7 @@ const { sparkConsume, sparkProvide } = useSparkPageComponent(props)
 const inheritedDataSource = sparkConsume(DATA_SOURCE)
 const inheritedDataRow = sparkConsume(DATA_ROW)
 const pageDataSet = sparkConsume(PAGE_DATASET)
+const toolbarReactiveVersion = ref(0)
 
 const resolvedToolbarDataSource = computed<DataView | null>(() => {
   if (props.dataSource !== undefined && props.dataSource !== null) {
@@ -78,6 +78,24 @@ watch(resolvedToolbarDataSource, (source) => {
   }
 }, { immediate: true })
 
+watch(resolvedToolbarDataSource, (source, _previous, onCleanup) => {
+  if (source === null) return
+
+  const bumpReactiveVersion = () => {
+    toolbarReactiveVersion.value += 1
+  }
+
+  source.events.on('currentRowChanged', bumpReactiveVersion)
+  source.events.on('selectedRowsChanged', bumpReactiveVersion)
+  source.events.on('rowsChanged', bumpReactiveVersion)
+
+  onCleanup(() => {
+    source.events.off('currentRowChanged', bumpReactiveVersion)
+    source.events.off('selectedRowsChanged', bumpReactiveVersion)
+    source.events.off('rowsChanged', bumpReactiveVersion)
+  })
+}, { immediate: true })
+
 const gap = computed<number | string>(() => props.gap ?? 8)
 const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)
 const align = computed<InlineAlign>(() => props.align ?? 'center')
@@ -87,6 +105,7 @@ const justify = computed<InlineJustify>(() => props.justify ?? 'start')
 const contentChildren = computed(() => props.children ?? [])
 
 function resolveToolbarActionContext() {
+  void toolbarReactiveVersion.value
   const dataSource = resolvedToolbarDataSource.value
   const currentRow = dataSource?.currentRow
   const rowCandidate = inheritedDataRow ?? currentRow
@@ -161,7 +180,7 @@ function justifyToCss(value: InlineJustify): string {
 
 // 读取子节点的 class。
 function dockClass(name: string): string {
-  if (name === 'tail') return props.tail?.props?.class ?? ''
+  if (name === 'tail') return props.tail?.class ?? ''
   return ''
 }
 

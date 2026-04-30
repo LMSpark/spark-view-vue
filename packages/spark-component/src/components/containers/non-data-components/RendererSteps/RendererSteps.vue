@@ -35,7 +35,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import type { ToolbarPosition } from '../../layout/toolbar-position'
+import type { ToolbarPosition } from '../../layout'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
@@ -67,13 +67,13 @@ const activeStepName = useDefaultedSelection({
 
 const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
 const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = props.toolbar?.props?.position
+  const position = props.toolbar?.position
   return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
     ? position as ToolbarPosition
     : 'top'
 })
 const toolbarClassValue = computed(() => {
-  const className = props.toolbar?.props?.class
+  const className = props.toolbar?.class
   return typeof className === 'string' ? className : 'renderer-toolbar-default'
 })
 const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)

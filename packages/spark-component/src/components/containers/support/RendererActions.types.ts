@@ -15,3 +15,25 @@ export type ActionsFixed = boolean | ActionsPosition
 
 /** 权限不足时的动作呈现策略。 */
 export type PermissionDeniedBehavior = 'hide' | 'disable'
+
+import type { SparkNodeProps } from '../../shared-types.js'
+
+/**
+ * 表格行动作列配置属性。
+ *
+ * 用于 `r-table` 的 `actions` 属性，描述行动作操作列的列元数据与子动作节点。
+ */
+export interface RendererActionsProps extends SparkNodeProps {
+  /** 行动作列停靠位置（列在表格的左侧或右侧） */
+  position?: ActionsPosition
+  /** 操作列单元格文本对齐方式 */
+  align?: ActionsAlign
+  /** 列固定策略 */
+  fixed?: ActionsFixed
+  /** 列标题文本 */
+  label?: string
+  /** 列宽度 */
+  width?: number | string
+  /** 列附加 CSS class */
+  class?: string
+}

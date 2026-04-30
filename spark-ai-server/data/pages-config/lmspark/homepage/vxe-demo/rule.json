@@ -56,10 +56,8 @@
                   "showPagination": true,
                   "pageSize": 10,
                   "sortable": true,
-                  "filterable": true
-                },
-                "children": [
-                  {
+                  "filterable": true,
+                  "toolbar": {
                     "type": "r-toolbar",
                     "props": {
                       "position": "top"
@@ -70,6 +68,16 @@
                       }
                     ]
                   },
+                  "actions": {
+                    "type": "r-toolbar",
+                    "children": [
+                      {
+                        "type": "RenderRowActions"
+                      }
+                    ]
+                  }
+                },
+                "children": [
                   {
                     "type": "r-text",
                     "field": "id",
@@ -154,14 +162,6 @@
                       "width": 100,
                       "sortable": true
                     }
-                  },
-                  {
-                    "type": "r-toolbar",
-                    "children": [
-                      {
-                        "type": "RenderRowActions"
-                      }
-                    ]
                   }
                 ]
               }

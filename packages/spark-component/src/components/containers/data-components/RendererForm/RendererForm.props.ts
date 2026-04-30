@@ -4,7 +4,7 @@ import type {
   SparkGridLayoutProps,
   SparkNodeProps,
 } from '../../../shared-types'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
+import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
 
 /**
  * r-form 组件公开属性接口。
@@ -18,7 +18,7 @@ export interface RFormProps
   /** 显式收窄为表单容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
-  toolbar?: ToolbarNode
+  toolbar?: RToolbarProps
   /** 表单标签宽度 */
   labelWidth?: SparkText
   /** 透传给 el-form 的显式属性 */

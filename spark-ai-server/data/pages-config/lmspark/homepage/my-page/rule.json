@@ -42,10 +42,16 @@
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true
-            },
-            "children": [
-              {
+              "highlightCurrentRow": true,
+              "actions": {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "RenderActions"
+                  }
+                ]
+              },
+              "toolbar": {
                 "type": "r-toolbar",
                 "props": {
                   "position": "top"
@@ -55,7 +61,9 @@
                     "type": "RenderSearchBar"
                   }
                 ]
-              },
+              }
+            },
+            "children": [
               {
                 "type": "r-text",
                 "field": "id",
@@ -126,9 +134,6 @@
                   "label": "创建时间",
                   "width": 150
                 }
-              },
-              {
-                "type": "RenderActions"
               }
             ]
           }
