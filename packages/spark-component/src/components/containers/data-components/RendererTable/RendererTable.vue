@@ -34,7 +34,7 @@
 
         <!-- 行操作列（左） -->
         <el-table-column
-          v-if="(props.actions?.children?.length ?? 0) > 0 && rowActionsPositionValue === 'left'"
+          v-if="(props.actions?.children?.length ?? 0) > 0 && props.actions?.position === 'left'"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
@@ -57,13 +57,13 @@
           :key="nodeId(child) ?? `r-table-child-${index}`"
         >
           <el-table-column
-            v-if="isRowFragmentNode(child)"
+            v-if="child.type === 'r-row-fragment'"
             v-bind="rowFragmentAttrs(child)"
           >
             <template #default="scope">
               <RendererHostScope :row="(scope.row as IDataRow)">
                 <SparkComponentRenderer
-                  v-for="(fragmentChild, fragmentIndex) in resolveRowFragmentChildren(child)"
+                  v-for="(fragmentChild, fragmentIndex) in ((child.children as SparkNode[]) ?? [])"
                   :key="nodeId(fragmentChild) ?? `r-table-row-fragment-${fragmentIndex}`"
                   :config="fragmentChild"
                 />
@@ -82,7 +82,7 @@
 
         <!-- 行操作列（右） -->
         <el-table-column
-          v-if="(props.actions?.children?.length ?? 0) > 0 && rowActionsPositionValue === 'right'"
+          v-if="(props.actions?.children?.length ?? 0) > 0 && (props.actions?.position ?? 'right') === 'right'"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
@@ -164,12 +164,8 @@ function buildToolbarNode(
 
 // ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
 
-function isRowFragmentNode(node: SparkNode): boolean {
-  return node.type === 'r-row-fragment'
-}
-
 function normalizeDefaultSortableTableNode(node: SparkNode): SparkNode {
-  if (isRowFragmentNode(node) || node.type === 'r-column-group') return node
+  if (node.type === 'r-row-fragment' || node.type === 'r-column-group') return node
 
   const sourceProps = node.props ?? {}
   if (sourceProps['sortable'] !== undefined) return node
@@ -192,10 +188,6 @@ function rowFragmentAttrs(node: SparkNode) {
     ...(typeof p?.['headerAlign'] === 'string' ? { headerAlign: p['headerAlign'] } : {}),
     ...(typeof className === 'string' ? { className } : {}),
   }
-}
-
-function resolveRowFragmentChildren(node: SparkNode): SparkNode[] {
-  return (node.children as SparkNode[]) ?? []
 }
 
 // ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
@@ -332,11 +324,6 @@ watch(
 )
 
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
-
-const rowActionsPositionValue = computed<'left' | 'right'>(() => {
-  const p = props.actions?.position
-  return p === 'left' ? 'left' : 'right'
-})
 
 const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
   type: 'r-toolbar',
