@@ -92,20 +92,20 @@
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
             type="json-tree-editor"
-            :value="editor.text.value"
+            :model-value="editor.text.value"
             :policy="rulePolicy"
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:value="editor.updateText"
+            @update:model-value="editor.updateText"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
-            :value="editor.text.value"
+            :model-value="editor.text.value"
             :language="resolveCodeLanguage(resolvedActiveFile)"
             class="code-input code-input--code"
             height="100%"
-            @update:value="editor.updateText"
+            @update:model-value="editor.updateText"
           />
           <el-input
             v-else

@@ -8,7 +8,7 @@
     </div>
     <textarea
       v-if="initError"
-      :value="value"
+      :value="modelValue"
       class="spark-json-editor__fallback"
       :readonly="readOnly"
       spellcheck="false"
@@ -57,7 +57,7 @@ interface SparkJsonEditorModule {
 
 interface Props {
   /** JSON 字符串内容 */
-  value?: string
+  modelValue?: string
   /** 是否只读 */
   readOnly?: boolean
   /** 编辑器高度 */
@@ -104,7 +104,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: string]
+  'update:modelValue': [value: string]
 }>()
 
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -112,8 +112,8 @@ const editorRef = shallowRef<SparkJsonEditorInstance | null>(null)
 const editorModuleRef = shallowRef<SparkJsonEditorModule | null>(null)
 const initError = ref<string | null>(null)
 const schemaError = ref<string | null>(null)
-const currentContent = shallowRef<Content>(toEditorContent(props.value))
-const lastSerializedValue = ref(props.value)
+const currentContent = shallowRef<Content>(toEditorContent(props.modelValue ?? ''))
+const lastSerializedValue = ref(props.modelValue)
 const editorExtensionProps = shallowRef<Pick<JSONEditorPropsOptional, 'validator' | 'onRenderValue'>>({})
 
 const rootStyle = computed(() => ({
@@ -195,8 +195,8 @@ function buildEditorProps(): JSONEditorPropsOptional {
       currentContent.value = updatedContent
       const nextValue = toEditorText(updatedContent)
       lastSerializedValue.value = nextValue
-      if (nextValue !== props.value) {
-        emit('update:value', nextValue)
+      if (nextValue !== props.modelValue) {
+        emit('update:modelValue', nextValue)
       }
     },
   }
@@ -230,10 +230,11 @@ function handleFallbackInput(event: Event): void {
   const target = event.target as HTMLTextAreaElement
   currentContent.value = { text: target.value }
   lastSerializedValue.value = target.value
-  emit('update:value', target.value)
+  emit('update:modelValue', target.value)
 }
 
-watch(() => props.value, (value) => {
+watch(() => props.modelValue, (value) => {
+  if (value === undefined) return
   if (value === lastSerializedValue.value) return
   currentContent.value = toEditorContent(value)
   lastSerializedValue.value = value

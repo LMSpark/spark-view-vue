@@ -246,7 +246,7 @@ interface JsonTreeEditorProps {
   /** r-table 内列宽 */
   width?: number
   /** JSON 字符串内容 */
-  value?: string
+  modelValue?: string
   /** 已解析的 JSON 文档对象 */
   documentValue?: JsonDocument | null
   /** 编辑器高度 */
@@ -286,7 +286,7 @@ const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: string]
+  'update:modelValue': [value: string]
   'update:documentValue': [value: JsonDocument]
 }>()
 
@@ -296,7 +296,7 @@ const { permission, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'json-tree-editor',
   fallbackValue: '',
-  emitUpdate: value => emit('update:value', value),
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const { fieldValue, isCurrentFieldEditable: _fieldEditable } = permission
@@ -317,7 +317,7 @@ const effectiveFieldInput = computed<string | JsonDocument>(() => {
     if (raw !== null && typeof raw === 'object') return raw as JsonDocument
     return typeof raw === 'string' ? raw : ''
   }
-  return props.value
+  return props.modelValue ?? ''
 })
 // ── 合并 policy（平铺 props 优先） ──────────────────────────
 
@@ -692,7 +692,7 @@ function mutateModel(
   parseError.value = null
   lastEmittedValue = nextText
   emit('update:documentValue', deepClone(nextDocument))
-  emit('update:value', nextText)
+  emit('update:modelValue', nextText)
   // 字段模式：通过能力链回写 DATA_ROW[field]
   void handleControlledChange(nextText)
 }
