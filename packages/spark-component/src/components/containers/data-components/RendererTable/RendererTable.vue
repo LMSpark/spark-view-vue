@@ -29,7 +29,7 @@
         <el-table-column
           v-if="resolvedView?.isMultiSelect === true"
           type="selection"
-          v-bind="selectionColumnAttrs"
+          :width="52"
         />
 
         <!-- 行操作列（左） -->
@@ -40,7 +40,7 @@
           <template #default="scope">
             <div class="renderer-table-row-actions">
               <RendererHostScope :row="(scope.row as IDataRow)">
-                <SparkComponentRenderer :config="rawRowActionsToolbarConfig" />
+                <SparkComponentRenderer :config="{ type: 'r-toolbar', children: props.actions?.children ?? [] }" />
               </RendererHostScope>
             </div>
           </template>
@@ -88,7 +88,7 @@
           <template #default="scope">
             <div class="renderer-table-row-actions">
               <RendererHostScope :row="(scope.row as IDataRow)">
-                <SparkComponentRenderer :config="rawRowActionsToolbarConfig" />
+                <SparkComponentRenderer :config="{ type: 'r-toolbar', children: props.actions?.children ?? [] }" />
               </RendererHostScope>
             </div>
           </template>
@@ -125,7 +125,6 @@ import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import type { ToolbarPosition } from '../../layout'
-import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
@@ -137,30 +136,6 @@ const props = withDefaults(defineProps<RTableProps>(), {
 
 // children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
 const renderedContentChildNodes = computed(() => ((props.children as SparkNode[]) ?? []).map(normalizeDefaultSortableTableNode))
-
-/** 将扁平 RToolbarProps 转为 SparkNode，并自动补齐 dataKey。 */
-function buildToolbarNode(
-  toolbar: RToolbarProps | undefined,
-  containerDataKey: string | undefined,
-): SparkNode | undefined {
-  if (!toolbar) return undefined
-  const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
-  const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== null && existingDataKey !== '')
-    ? existingDataKey
-    : (() => {
-        const tableName = typeof containerDataKey === 'string' ? containerDataKey.split('@')[0] : undefined
-        return tableName ? `${tableName}@currentRow` : undefined
-      })()
-  return {
-    type: 'r-toolbar',
-    ...(id !== undefined ? { id } : {}),
-    props: {
-      ...propsFields,
-      ...(resolvedDataKey !== undefined ? { [PROP_DATA_KEY]: resolvedDataKey } : {}),
-    },
-    ...(children !== undefined ? { children } : {}),
-  }
-}
 
 // ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
 
@@ -235,9 +210,28 @@ const toolbarPositionValue = computed<ToolbarPosition>(() => {
 })
 
 /** 将 RToolbarProps 转换为 SparkNode，自动补齐 dataKey（若调用方未显式提供）。 */
-const toolbarNode = computed<SparkNode | undefined>(() =>
-  buildToolbarNode(props.toolbar, props.dataKey),
-)
+const toolbarNode = computed<SparkNode | undefined>(() => {
+  const toolbar = props.toolbar
+  if (!toolbar) return undefined
+
+  const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
+  const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== null && existingDataKey !== '')
+    ? existingDataKey
+    : (() => {
+        const tableName = typeof props.dataKey === 'string' ? props.dataKey.split('@')[0] : undefined
+        return tableName ? `${tableName}@currentRow` : undefined
+      })()
+
+  return {
+    type: 'r-toolbar',
+    ...(id !== undefined ? { id } : {}),
+    props: {
+      ...propsFields,
+      ...(resolvedDataKey !== undefined ? { [PROP_DATA_KEY]: resolvedDataKey } : {}),
+    },
+    ...(children !== undefined ? { children } : {}),
+  }
+})
 
 // ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
 
@@ -325,11 +319,6 @@ watch(
 
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
-const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
-  type: 'r-toolbar',
-  children: props.actions?.children ?? [],
-}))
-
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = { label: '操作', width: 220, headerAlign: 'center' }
 
@@ -354,8 +343,6 @@ const selectedRowIdSet = computed(() => {
 })
 
 const selectedRowRefSet = computed(() => new Set(resolvedView.value?.selectedRows ?? []))
-
-const selectionColumnAttrs = { width: 52 }
 
 function isSelectedRow(row: IDataRow): boolean {
   const view = resolvedView.value
