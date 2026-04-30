@@ -205,7 +205,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
     })
 
     wrapper.findComponent(ElTabsStub).vm.$emit('update:modelValue', 'a')
-    expect(wrapper.emitted('update:value')?.[0]).toEqual(['a'])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['a'])
   })
 
   it('should render collapse items with toolbar children and item grid body', () => {

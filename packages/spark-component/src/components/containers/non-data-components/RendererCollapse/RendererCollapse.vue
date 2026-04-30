@@ -46,7 +46,7 @@ const props = withDefaults(defineProps<RCollapseProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: CollapseValue]
+  'update:modelValue': [value: CollapseValue]
 }>()
 
 const slots = useSlots()
@@ -60,10 +60,10 @@ const {
   state: currentValue,
   commitValue: commitCollapseValue,
 } = useUnifiedValueBridge<CollapseValue>({
-  value: computed(() => props.value),
+  value: computed(() => props.modelValue),
   fallbackValue: [],
   normalize: value => value ?? [],
-  emitValue: value => emit('update:value', value),
+  emitValue: value => emit('update:modelValue', value),
 })
 
 // ── r-collapse 包装 API ──────────────────────────────────────────────────

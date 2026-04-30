@@ -46,7 +46,7 @@ const props = withDefaults(defineProps<RStepsProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: string | number]
+  'update:modelValue': [value: string | number]
 }>()
 
 const slots = useSlots()
@@ -56,7 +56,7 @@ const { registerApi } = useSparkPageComponent(props)
 // 工具栏优先通过 props.toolbar 输入；children 作为步骤项输入。
 const stepConfigs = computed(() => getSparkNodeChildren(props.children))
 const activeStepName = useDefaultedSelection({
-  value: computed(() => props.value),
+  value: computed(() => props.modelValue),
   items: stepConfigs,
   getValue: getStepName,
 })

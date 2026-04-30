@@ -220,7 +220,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     })
 
     wrapper.findComponent(ElDrawerStub).vm.$emit('update:modelValue', false)
-    expect(wrapper.emitted('update:value')?.[0]).toEqual([false])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false])
     expect(wrapper.find('.biz-drawer-footer').attributes('data-visible')).toBe('true')
   })
 
@@ -262,7 +262,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('step2', expect.objectContaining({ type: 'r-step' }), 1)
-    expect(wrapper.emitted('update:value')?.[0]).toEqual(['step2'])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['step2'])
   })
 
   it('should resolve step fields from props only', async () => {
@@ -301,7 +301,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('root-step-2', expect.objectContaining({ type: 'r-step' }), 1)
-    expect(wrapper.emitted('update:value')?.[0]).toEqual(['root-step-2'])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['root-step-2'])
   })
 })
 

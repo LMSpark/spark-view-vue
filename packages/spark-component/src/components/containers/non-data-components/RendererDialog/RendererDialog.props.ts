@@ -17,7 +17,7 @@ export interface RDialogProps
   /** 对话框标题 */
   title?: SparkText
   /** 控制显隐 */
-  value?: boolean
+  modelValue?: boolean
   /** 内容区 CSS 类名 */
   bodyClass?: SparkText
 }

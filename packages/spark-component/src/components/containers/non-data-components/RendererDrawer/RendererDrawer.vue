@@ -73,7 +73,7 @@ const props = withDefaults(defineProps<RDrawerProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: boolean]
+  'update:modelValue': [value: boolean]
 }>()
 
 const slots = useSlots()
@@ -100,10 +100,10 @@ const {
   state: visibleValue,
   commitValue: commitVisibleValue,
 } = useUnifiedValueBridge<boolean>({
-  value: computed(() => props.value),
+  value: computed(() => props.modelValue),
   fallbackValue: false,
   normalize: value => value ?? false,
-  emitValue: value => emit('update:value', value),
+  emitValue: value => emit('update:modelValue', value),
 })
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)

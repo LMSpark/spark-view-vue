@@ -50,7 +50,7 @@ const props = withDefaults(defineProps<RTabsProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:value': [value: string | number]
+  'update:modelValue': [value: string | number]
 }>()
 
 const slots = useSlots()
@@ -60,7 +60,7 @@ const { registerApi } = useSparkPageComponent(props)
 // 工具栏优先通过 props.toolbar 输入；children 作为面板内容输入。
 const paneConfigs = computed(() => getSparkNodeChildren(props.children))
 const currentActiveName = useDefaultedSelection({
-  value: computed(() => props.value),
+  value: computed(() => props.modelValue),
   items: paneConfigs,
   getValue: getPaneName,
 })
