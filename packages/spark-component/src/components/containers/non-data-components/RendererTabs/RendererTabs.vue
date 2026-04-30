@@ -58,11 +58,7 @@ const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
 // 工具栏优先通过 props.toolbar 输入；children 作为面板内容输入。
-const contentChildren = computed(() => props.children ?? [])
-
-const paneConfigs = computed(() =>
-  getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-tab-pane')
-)
+const paneConfigs = computed(() => getSparkNodeChildren(props.children))
 const currentActiveName = useDefaultedSelection({
   value: computed(() => props.value),
   items: paneConfigs,

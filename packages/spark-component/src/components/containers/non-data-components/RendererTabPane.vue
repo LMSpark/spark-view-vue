@@ -75,7 +75,7 @@ const {
 })
 
 const paneName = computed<string | number>(() => {
-  const value = props.name ?? props.id
+  const value = props.name
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${props.index}`
 })
 

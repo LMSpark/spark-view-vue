@@ -14,7 +14,6 @@ import type { SparkNodeProps } from '../shared-types'
  *   RendererFilter.vue 本身只消费布局尺寸字段，`class` 由父容器直接注入自身模板，不透传给本组件。
  * - **内部桥接字段**（`model` / `activeCount` / `collapsed` / `*Action`）：
  *   由父容器在模板渲染时直接注入，不来自 pagedata.json 或 script.js。
- * - **兼容字段**：`configs` 已并入 `children` 语义，运行时按 `children ?? configs` 取值。
  */
 export interface RendererFilterProps extends SparkNodeProps {
   /** 组件类型固定为 `r-filter`。 */
@@ -60,12 +59,6 @@ export interface RendererFilterProps extends SparkNodeProps {
    */
   model?: IDataRow
   /**
-   * 筛选项配置节点列表（兼容别名，语义同 `children`）。
-   * @deprecated 请改用 `children`。
-   * @internal
-   */
-  configs?: SparkNode[]
-  /**
    * 当前激活的筛选条件数。
    * @internal
    */
@@ -92,8 +85,3 @@ export interface RendererFilterProps extends SparkNodeProps {
   toggleCollapsedAction?: () => void
 }
 
-/**
- * `r-filter` 结构化配置属性（向后兼容别名，等同于 {@link RendererFilterProps}）。
- * @deprecated 请直接使用 `RendererFilterProps`。
- */
-export type RendererFilterConfigProps = RendererFilterProps

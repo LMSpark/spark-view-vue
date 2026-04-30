@@ -116,7 +116,7 @@ script.js 运行在受限沙箱中，不支持 import。
 | 类别 | 错误写法 | 正确做法 |
 |------|---------|---------|
 | 组件发现 | 凭记忆写 type / props | catalog.query 后 catalog.guide |
-| 动作参数 | 猜参数名或用旧别名 | stills.actionSpec 查当前 schema |
+| 动作参数 | 猜参数名 | stills.actionSpec 查当前 schema |
 | 节点定位 | 把 r-table 当 componentId | 用真实 id，未知则 findByType/listChildren |
 | DataKey | dataset.tables.Users.rows | Users@rows |
 | 表数据 | table.rows | table.views.default.rows |

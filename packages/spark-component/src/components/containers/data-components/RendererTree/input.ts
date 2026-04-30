@@ -19,17 +19,15 @@ interface RendererTreeInputOptions {
 export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const effectiveDataKey = computed(() => options.props.dataKey)
 
-  // 优先消费结构化 props.toolbar / props.actions / props.editor。
-  const allChildNodes = computed(() => getSparkNodeChildren(options.props.children))
-  const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-editor'])
-  const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
+  // 优先消费结构化 props.toolbar / props.actions / props.editor；children 不再做结构分流。
   const toolbarNode = computed(() => options.props.toolbar)
   const actionsNode = computed(() => options.props.actions)
   const editorNode = computed(() => options.props.editor)
 
   const nodeContentChildren = computed<SparkNode[]>(() => {
+    const contentChildren = getSparkNodeChildren(options.props.children)
     const nodes: SparkNode[] = []
-    for (const child of contentChildren.value) {
+    for (const child of contentChildren) {
       if (typeof child === 'string') continue
       nodes.push(child)
     }

@@ -95,12 +95,8 @@ type TextAlign = 'left' | 'center' | 'right'
 interface Props extends SparkNodeProps {
   /** 显示标签 */
   displayLabel?: string | undefined
-  /** 直接传入的标签（供 r-column-group 直连使用） */
-  label?: string | undefined
   /** 字段绑定名 */
   fieldName?: string | undefined
-  /** 直接传入的字段名（供裸列节点使用） */
-  field?: string | undefined
   /** 列宽 */
   width?: string | number | undefined
   /** 表格列排序能力 */
@@ -115,7 +111,7 @@ interface Props extends SparkNodeProps {
   align?: TextAlign | undefined
   /** 表头对齐 */
   headerAlign?: TextAlign | undefined
-  /** 合并后的子组件配置 */
+  /** 子组件配置 */
   mergedChildren?: SparkNode[] | undefined
   /** 当前字段是否隐藏 */
   isCurrentFieldHidden?: boolean | undefined
@@ -146,11 +142,10 @@ interface Props extends SparkNodeProps {
 const props = defineProps<Props>()
 
 const resolvedContext = useResolvedFieldContext()
-const resolvedDisplayLabel = computed(() => props.displayLabel ?? props.label ?? '')
-const resolvedFieldName = computed(() => props.fieldName ?? props.field ?? '')
+const resolvedDisplayLabel = computed(() => props.displayLabel ?? '')
+const resolvedFieldName = computed(() => props.fieldName ?? '')
 const resolvedChildren = computed<SparkNode[]>(() => {
-  const children = props.mergedChildren ?? props.children
-  return getSparkNodeChildren(children)
+  return getSparkNodeChildren(props.mergedChildren)
 })
 const resolvedCurrentFieldHidden = computed(() => props.isCurrentFieldHidden ?? false)
 const resolvedShouldRenderCurrentField = computed(() => props.shouldRenderCurrentField ?? !resolvedCurrentFieldHidden.value)
@@ -158,7 +153,7 @@ const resolvedCurrentDisplayValue = computed(() => props.currentDisplayValue ?? 
 const resolvedValidationRules = computed<FormItemRule[]>(() => props.validationRules ?? [])
 
 const resolvedHeaderAlign = computed(() => props.headerAlign ?? 'center')
-const resolvedValueAlign = computed(() => props.align ?? props.valueAlign ?? 'left')
+const resolvedValueAlign = computed(() => props.valueAlign ?? 'left')
 const resolvedSortable = computed<boolean | 'custom'>(() => props.sortable ?? true)
 
 const tableHeaderClassName = computed(() => props.headerCellClassName ?? `spark-col-header--${resolvedHeaderAlign.value}`)

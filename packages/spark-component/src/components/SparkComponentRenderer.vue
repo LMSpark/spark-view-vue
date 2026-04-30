@@ -161,7 +161,7 @@ interface RendererProps {
    * 被渲染的节点本体。
    *
    * 这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，
-   * 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。
+    * 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。
    */
   config: SparkNode
   /**
@@ -750,8 +750,8 @@ const externalComponentProps = computed(() => {
  *   - 业务输入 → config.props
  *   - 结构输入 → type / id / children
  *
- * 命名区域通过 wrapper 子节点（如 `r-toolbar`）声明；
- * 这里仅做统一 props 透传，并保留对历史 `order` 残余输入的过滤兖底。
+ * 命名区域通过结构化 props 声明；
+ * 这里仅做统一 props 透传，并保留对 `order` 残余输入的过滤。
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */

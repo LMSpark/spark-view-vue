@@ -2,13 +2,13 @@
  * 嵌套 Schema 收集器
  * 
  * 用于收集在处理组件 props 过程中发现的需要递归池化的嵌套类型 schema。
- * 例如 ActionsNode.props 中的 RendererActionsConfigProps。
+ * 例如 ActionsNode.props 中的结构化对象类型。
  */
 
 import type { PropSchema } from './component-catalog-schema'
 
 export interface NestedSchemaRecord {
-  /** 嵌套类型的完整类型名称（如 "RendererActionsConfigProps" 或 "RendererActionsConfigProps | undefined"） */
+  /** 嵌套类型的完整类型名称（如 "SomeNestedType" 或 "SomeNestedType | undefined"） */
   typeName: string
   /** 转换后的 PropSchema */
   schema: PropSchema

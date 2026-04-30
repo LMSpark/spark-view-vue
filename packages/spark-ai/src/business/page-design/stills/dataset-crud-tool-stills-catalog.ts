@@ -994,7 +994,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       deleted: 'boolean — 删除完成后视为 true',
     },
     example: {
-      tableName: 'LegacyUsers',
+      tableName: 'UsersSample',
     },
     validation: { requiredKeys: ['tableName'] },
     usageRules: [

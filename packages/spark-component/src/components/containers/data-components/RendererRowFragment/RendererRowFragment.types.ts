@@ -5,54 +5,6 @@ import type { SparkNodeProps } from '../../../shared-types'
 export type RowFragmentAlign = 'left' | 'center' | 'right'
 
 /**
- * `r-row-fragment` 的公共宿主元属性。
- *
- * 这些属性先作为“行片段语义契约”沉淀下来，供不同集合宿主按需消费：
- * - table 可消费 title/label/width/minWidth/align/headerAlign
- * - list / tree / gantt 可消费 title/description/width/class
- *
- * 底层 `RendererHostScope` 本身保持透明，不直接解释这些属性。
- */
-export interface RendererRowFragmentConfigProps {
-  /** 标题位文本。 */
-  title?: string
-  /** 标签文本（title 别名）。 */
-  label?: string
-  /** 描述文本。 */
-  description?: string
-  /** 宽度。 */
-  width?: string | number
-  /** 最小宽度。 */
-  minWidth?: string | number
-  /** 内容对齐方式。 */
-  align?: RowFragmentAlign
-  /** 表头对齐方式。 */
-  headerAlign?: RowFragmentAlign
-  /** 片段附加 class。 */
-  class?: string
-  /** CSS Grid 列数。 */
-  gridColumns?: number
-  /** 栅格间距。 */
-  gridGap?: number | string
-  /** 栅格行高。 */
-  gridAutoRows?: string
-  /** 自适应最小宽度。 */
-  autoFitMinWidth?: string
-  /** 默认跨列数。 */
-  defaultColSpan?: number
-  /** 标签位置。 */
-  labelPosition?: 'top' | 'left' | 'right'
-  /** 标签宽度。 */
-  labelWidth?: string
-  /** 内联模式。 */
-  inline?: boolean
-  /** 紧凑模式。 */
-  compact?: boolean
-  /** 片段字段节点列表。 */
-  children?: SparkNode[]
-}
-
-/**
  * `RendererRowFragment` 运行时公开属性。
  *
  * 用于把一组字段组织成可复用的"行片段"，交给 table/list/tree 等宿主决定最终承载方式。
@@ -64,8 +16,6 @@ export interface RendererRowFragmentProps extends SparkNodeProps {
   id?: string
   /** 标题位文本。 */
   title?: string
-  /** 标签文本（title 别名）。 */
-  label?: string
   /** 描述文本。 */
   description?: string
   /** 宽度。 */

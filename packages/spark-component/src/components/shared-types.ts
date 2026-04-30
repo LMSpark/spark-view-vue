@@ -31,7 +31,7 @@ export interface ValueRef<T> {
  *
  * 说明：
  * - type 由渲染器路由与组件默认值共同决定
- * - id 对应 SparkNode.props.id 的运行时映射
+ * - id 对应 SparkNode.id 的运行时映射
  * - children 必须对齐 `SparkNode.children` 的真实运行时形态
  * - registry 分支会直接把 `node.children` 透传给目标组件
  * - `children` 允许包含文本子节点，因此不能错误收窄成 `SparkNode[]`
@@ -48,7 +48,7 @@ export interface SparkNodeProps {
   /**
    * 组件实例的稳定标识。
    *
-   * 它通常对应 `SparkNode.props.id`，可用于：
+    * 它通常对应 `SparkNode.id`，可用于：
    * - 页面脚本按名称查询节点
    * - 事件回调、日志、调试面板定位具体组件
    * - 某些容器对子节点做稳定 key 推导

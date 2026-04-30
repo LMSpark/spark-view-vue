@@ -251,7 +251,7 @@ export async function start(options: StartOptions): Promise<void> {
       const shouldAutoRegister = spark?.autoRegister !== false
       
       if (shouldAutoRegister) {
-        logStartDebug('注册内置 renderer 别名...')
+        logStartDebug('注册内置 renderer 组件...')
         registerAllRenderers()
         startLogger.info('内置 renderer 注册完成: r-* 核心组件已就绪')
 

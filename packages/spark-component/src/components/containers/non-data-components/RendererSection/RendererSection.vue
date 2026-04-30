@@ -83,9 +83,8 @@
 <script setup lang="ts">
 /**
  * @skill r-section
- * @description 分区容器（别名 r-block），支持可选卡片化包装以及标题/描述/折叠/头部操作区。
+ * @description 分区容器，支持可选卡片化包装以及标题/描述/折叠/头部操作区。
  * @category container
- * @notes r-block 是此组件的别名，功能完全一致
  * @notes 头部操作区通过结构化 `header` 区域声明
  */
 import { computed, useSlots } from 'vue'
@@ -120,7 +119,7 @@ const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
 // 头部区域优先通过 props.header 输入。
-const contentChildren = computed(() => props.children ?? [])
+const contentChildren = computed(() => props.children)
 
 const headerClassValue = computed(() => String(props.header?.class ?? ''))
 const headerActionsClassValue = computed(() => '')

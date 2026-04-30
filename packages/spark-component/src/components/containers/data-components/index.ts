@@ -10,6 +10,5 @@ export { default as RendererList } from './RendererList/index.js'
 export type { RendererListApi, RListProps } from './RendererList/index.js'
 export type {
 	RowFragmentAlign,
-	RendererRowFragmentConfigProps,
 	RendererRowFragmentProps,
 } from './RendererRowFragment/index.js'

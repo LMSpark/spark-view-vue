@@ -72,20 +72,11 @@ function assertPanelModel(value: unknown): asserts value is IDataRow {
   throw new Error('RendererFilter: panel 模式下 model 必须是对象')
 }
 
-function assertPanelConfigs(value: unknown): asserts value is SparkNode[] {
-  if (value === undefined || Array.isArray(value)) return
-  throw new Error('RendererFilter: panel 模式下 configs 必须是节点数组')
-}
-
 assertPanelModel(props.model)
-assertPanelConfigs(props.configs)
 
-const standaloneChildren = computed(() => {
-  const source = props.children ?? props.configs
-  return getSparkNodeChildren(source)
-})
-const resolvedConfigs = computed(() => props.configs ?? standaloneChildren.value)
-const isPanelMode = computed(() => props.model !== undefined && props.configs !== undefined)
+const standaloneChildren = computed(() => getSparkNodeChildren(props.children))
+const resolvedConfigs = computed(() => standaloneChildren.value)
+const isPanelMode = computed(() => props.model !== undefined)
 const resolvedModel = computed<IDataRow>(() => props.model ?? {})
 const resolvedFilterModel = computed<IDataRow>(() => resolvedModel.value)
 const resolvedActiveCount = computed(() => props.activeCount ?? 0)
@@ -147,7 +138,7 @@ const fieldScopeConfig = computed<SparkNode>(() => ({
   type: 'r-field-scope',
   props: {
     model: resolvedFilterModel.value,
-    configs: resolvedConfigs.value,
+    children: resolvedConfigs.value,
     gridColumns: resolvedGridColumns.value,
     gridGap: resolvedGridGap.value,
     gridAutoRows: resolvedGridAutoRows.value,

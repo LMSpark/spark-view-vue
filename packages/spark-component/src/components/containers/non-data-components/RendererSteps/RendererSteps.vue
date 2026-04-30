@@ -54,11 +54,7 @@ const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
 // 工具栏优先通过 props.toolbar 输入；children 作为步骤项输入。
-const contentChildren = computed(() => props.children ?? [])
-
-const stepConfigs = computed(() =>
-  getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-step')
-)
+const stepConfigs = computed(() => getSparkNodeChildren(props.children))
 const activeStepName = useDefaultedSelection({
   value: computed(() => props.value),
   items: stepConfigs,

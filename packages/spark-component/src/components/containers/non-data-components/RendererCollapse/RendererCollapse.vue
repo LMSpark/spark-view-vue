@@ -47,11 +47,7 @@ const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
 // 工具栏优先通过 props.toolbar 输入。
-const contentChildren = computed(() => props.children ?? [])
-
-const itemConfigs = computed(() =>
-  getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-collapse-item')
-)
+const itemConfigs = computed(() => getSparkNodeChildren(props.children))
 const currentValue = useMirroredValue(computed(() => props.value))
 
 // ── r-collapse 包装 API ──────────────────────────────────────────────────

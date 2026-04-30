@@ -207,7 +207,7 @@
         ]
       },
       {
-        "type": "r-menu",
+        "type": "r-toolbar",
         "props": {
           "gap": 10,
           "zoneGap": 18,

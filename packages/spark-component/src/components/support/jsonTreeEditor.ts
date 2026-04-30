@@ -504,7 +504,7 @@ export function updateNodeValue(model: TreeModel, uid: string, nextValue: JsonVa
 }
 
 // ════════════════════════════════════════════════════════════
-// Schema 解析（JSON Schema Draft-07 兼容）
+// Schema 解析（JSON Schema Draft-07）
 // ════════════════════════════════════════════════════════════
 
 type JsonSchemaRecord = Record<string, unknown>

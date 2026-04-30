@@ -32,7 +32,7 @@
  * @description 字段宿主容器：包裹 el-form 并向下 provide DATA_ROW，
  * 使内部字段组件（r-text / r-select 等）可消费当前行数据并参与表单校验；
  * 同时通过 useContainerGrid 提供 24 列栅格布局。
- * 本组件自身不渲染任何字段，字段由 configs 中的子节点声明。
+ * 本组件自身不渲染任何字段，字段由 children 中的子节点声明。
  * @category internal
  */
 import { computed, shallowReactive, watch } from 'vue'
@@ -48,7 +48,7 @@ interface RendererFieldScopeProps {
   /** 表单数据模型 */
   model?: IDataRow
   /** 字段组件配置列表 */
-  configs?: SparkNode[]
+  children?: SparkNode[]
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -74,7 +74,7 @@ interface RendererFieldScopeProps {
 const props = withDefaults(defineProps<RendererFieldScopeProps>(), {
   type: 'r-field-scope',
   model: () => ({}),
-  configs: () => [],
+  children: () => [],
   gridColumns: 24,
   gridGap: 12,
   gridAutoRows: 'minmax(32px, auto)',
@@ -135,7 +135,7 @@ watch(
 )
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: () => props.configs ?? [],
+  children: () => props.children,
   columns: () => props.gridColumns,
   gap: () => props.gridGap,
   autoRows: () => props.gridAutoRows,

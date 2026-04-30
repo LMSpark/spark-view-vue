@@ -191,7 +191,7 @@ export const Spark = {
   },
 
   /**
-   * 读取节点 id（顶层 `node.id` 为标准；未归一化输入回退读取 `node.props.id`）。
+    * 读取节点 id（只读取顶层 `node.id`）。
    *
    * @example Spark.nodeId(child) ?? `fallback-${i}`
    */

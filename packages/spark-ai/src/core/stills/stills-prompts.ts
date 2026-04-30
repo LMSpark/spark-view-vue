@@ -230,12 +230,12 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
   - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 catalog.query({})，选定 type 后再 catalog.guide({ type })；调整已有节点位置优先用 sparkNodeTree.moveNode，禁止用 removeNode + addNode 重建整段子树
     ⚠ componentId 规则（违反则工具返回 null，造成死循环）：
       • componentId / parentComponentId 必须是节点的真实 id 值
-        （即 listChildren 返回 SparkNode 中的顶层 id 字段或 props.id 字段）
+        （即 listChildren 返回 SparkNode 中的顶层 id 字段）
       • 绝对禁止将组件类型名（r-table / r-tabs / r-text / r-select / r-date 等）当作 componentId 传入
       • 若不知道目标节点 id，按优先级选择：
         ① 优先调用 sparkNodeTree.findByType({ type: 'r-tabs' }) 按类型一步拿到真实 id
         ② 或调用 sparkNodeTree.listChildren({parentComponentId:null}) 逐层遍历，
-           从每个节点的 id 或 props.id 字段读取真实 id，再调用 getNode / setProps / moveNode / removeNode
+           从每个节点的顶层 id 字段读取真实 id，再调用 getNode / setProps / moveNode / removeNode
     ⚠ DataKey 详细约束（rule 编辑必须遵守）：
       • 只允许 @ 语法：table@field、table@viewId@field、#scope@table@field、#scope@table@viewId@field
       • field 只允许：rows / currentRow / selectedRows / summaryRow / selectionSummaryRow；允许字段路径后缀，如 stats@currentRow.totalUsers

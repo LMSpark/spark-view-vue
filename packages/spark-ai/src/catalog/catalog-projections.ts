@@ -161,7 +161,7 @@ export interface ComponentConfigGuide {
 function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: string; fromProps: string[] }> {
   const refs = new Map<string, Set<string>>()
   for (const prop of entry.props) {
-    // 仅允许使用 componentRef 作为子组件引用来源；不再兼容 schemaRef=component:*。
+    // 仅允许使用 componentRef 作为子组件引用来源；schemaRef=component:* 无效。
     const refType = prop.componentRef
     if (typeof refType !== 'string') continue
     const normalized = refType.trim()
@@ -525,7 +525,7 @@ function resolvePropSchema(
 
   if (prop.schemaRef.startsWith('component:')) {
     throw new Error(
-      `legacy schemaRef "component:*" 已移除，请改用 componentRef + schemaPool 对象结构（prop=${prop.name}, schemaRef=${prop.schemaRef}）`,
+      `schemaRef "component:*" 已移除，请改用 componentRef + schemaPool 对象结构（prop=${prop.name}, schemaRef=${prop.schemaRef}）`,
     )
   }
 

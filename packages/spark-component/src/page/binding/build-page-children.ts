@@ -10,7 +10,7 @@
  * - on / ActionDescriptor 绑定为可执行闭包
  * - children 递归转换
  * - props 内嵌 SparkNode 递归归并
- * - props.id 去重
+ * - 顶层 id 去重
  */
 
 import type { RuleConfig } from '@spark-view/spark-page-config'
@@ -40,7 +40,7 @@ export interface BuildPageChildrenOptions {
  * - 统一把根级业务字段收入 props
  * - 统一绑定 on / on* 事件
  * - 递归处理 children 与 props 中嵌套的 SparkNode
- * - 保证 props.id 在同一次构建内唯一
+ * - 保证顶层 id 在同一次构建内唯一
  */
 export function buildPageChildren(
   rules: RuleConfig[],
@@ -66,7 +66,7 @@ export function buildPageChildren(
   // ── 局部归并辅助 ───────────────────────────────────────────────────────
 
   /**
-   * 为 props.id 生成本轮构建内唯一的稳定值。
+  * 为节点顶层 id 生成本轮构建内唯一的稳定值。
    *
    * 规则：
    * - 有显式 id 时优先使用显式 id
@@ -118,7 +118,7 @@ export function buildPageChildren(
    * 3. 递归绑定 props 中的普通业务值
    * 4. 再把根级字段并入 props（含根级 on）
    * 5. 绑定 children
-   * 6. 最后统一处理 id 去重
+  * 6. 最后统一处理顶层 id 去重
    */
   function bindNode(current: Record<string, unknown>): SparkNode {
     const cloned: SparkNode = { type: current['type'] as string }
@@ -170,12 +170,17 @@ export function buildPageChildren(
       cloned.props = propsObj
     }
 
-    // id 去重放在最后，确保读到的是已经合并完成的最终 props.id。
-    const rawId = typeof propsObj['id'] === 'string' ? propsObj['id'] : undefined
+    // id 去重放在最后；仅接受顶层 id。
+    const rawId = typeof current['id'] === 'string' ? current['id'] : undefined
     if (rawId !== undefined) {
       const nodeType = cloned.type
       const finalId = ensureUniqueId(nodeType, rawId)
-      propsObj['id'] = finalId
+      cloned.id = finalId
+    }
+
+    // 结构 id 固定在顶层，显式移除 props.id。
+    if ('id' in propsObj) {
+      delete propsObj['id']
       cloned.props = propsObj
     }
 

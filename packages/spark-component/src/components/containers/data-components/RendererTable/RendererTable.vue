@@ -218,8 +218,8 @@ function resolveRowFragmentChildren(node: SparkNode): SparkNode[] {
 }
 
 function resolveRowFragmentLabel(node: SparkNode): string {
-  // 列标题优先级：title > label > 空字符串。
-  return String(rowFragmentProp(node, 'title') ?? rowFragmentProp(node, 'label') ?? '')
+  // 列标题仅从 title 读取。
+  return String(rowFragmentProp(node, 'title') ?? '')
 }
 
 function resolveRowFragmentWidth(node: SparkNode): string | number | undefined {
@@ -241,12 +241,10 @@ function resolveRowFragmentAlign(node: SparkNode): string | undefined {
 }
 
 function resolveRowFragmentHeaderAlign(node: SparkNode): string | undefined {
-  // 表头对齐优先使用 headerAlign，未配置时回退到 align。
+  // 表头对齐仅读取 headerAlign。
   const headerAlign = rowFragmentProp(node, 'headerAlign')
   if (typeof headerAlign === 'string') return headerAlign
-
-  const align = rowFragmentProp(node, 'align')
-  return typeof align === 'string' ? align : undefined
+  return undefined
 }
 
 function resolveRowFragmentClass(node: SparkNode): string | undefined {

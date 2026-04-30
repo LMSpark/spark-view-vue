@@ -240,7 +240,7 @@ export interface SparkNodeFindByTypeParams {
  * findByType 单条匹配结果。
  */
 export interface SparkNodeFindByTypeMatch {
-  /** 节点的真实 id（来自顶层 id 字段或 props.id）。节点未设置 id 时为 undefined。 */
+  /** 节点的真实 id（来自顶层 id 字段）。节点未设置 id 时为 undefined。 */
   id: string | undefined
   /** 组件类型名 */
   type: string
@@ -1072,9 +1072,7 @@ function buildSparkNode(params: {
   props?: Record<string, unknown>
   children?: SparkNodeChildren
 }): SparkNode {
-  const normalizedId = typeof params.id === 'string'
-    ? params.id
-    : (typeof params.props?.['id'] === 'string' ? params.props['id'] : undefined)
+  const normalizedId = typeof params.id === 'string' ? params.id : undefined
 
   return {
     type: params.type,
@@ -1096,7 +1094,7 @@ function copySparkNode(
   const type = nextType === KEEP ? node.type : nextType
   const props = nextProps === KEEP ? node.props : nextProps
   const children = nextChildren === KEEP ? node.children : nextChildren
-  const nextId = typeof props?.['id'] === 'string' ? props['id'] : readNodeId(node)
+  const nextId = readNodeId(node)
 
   return buildSparkNode({
     type,

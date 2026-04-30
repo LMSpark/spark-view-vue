@@ -314,7 +314,7 @@ function reportRuntimeError(phase: PageRuntimeErrorPhase, pageId: string, errorL
 onErrorCaptured((capturedError, _instance, info) => {
   if (wasRuntimeErrorReported(capturedError)) return
   const suffix = info ? `\n\n[vueInfo]\n${info}` : ''
-  reportRuntimeError('render', currentPageId.value || props.pageId || props.pageConfig?.pageId || 'unknown', `${formatRuntimeError(capturedError)}${suffix}`)
+  reportRuntimeError('render', currentPageId.value || 'unknown', `${formatRuntimeError(capturedError)}${suffix}`)
 })
 
 // ==================== 脚本编译 ====================

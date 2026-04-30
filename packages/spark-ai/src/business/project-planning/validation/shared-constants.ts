@@ -42,6 +42,6 @@ export const CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' |
  */
 export const NON_FIELD_R_TYPES: ReadonlySet<string> = new Set([
   'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
-  'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
+  'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section',
   'r-column-group',
 ])

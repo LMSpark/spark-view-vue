@@ -387,7 +387,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     return {
       class: filterClassValue.value,
       model: filterModel as IDataRow,
-      configs: filterConfigs.value,
+      children: filterConfigs.value,
       activeCount: activeFilterCount.value,
       gridColumns: filterGridColumnsValue.value,
       gridGap: filterGridGapValue.value,

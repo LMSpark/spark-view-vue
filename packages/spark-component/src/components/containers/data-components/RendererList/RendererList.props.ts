@@ -25,8 +25,6 @@ export interface RListProps
   actions?: RToolbarProps
   /** 列数 */
   columns?: number
-  /** 列表项间距 */
-  gap?: number | string
   /** 最小项宽度 */
   minItemWidth?: SparkText
   /** 行唯一键字段 */

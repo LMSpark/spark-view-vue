@@ -264,7 +264,7 @@ export interface PropSchemaProperty {
   type: string
   required?: boolean
   description?: string
-  /** 嵌套 schema 池引用 key（用于递归展开如 RendererActionsConfigProps 等配置类型） */
+  /** 嵌套 schema 池引用 key（用于递归展开结构化对象类型） */
   schemaRef?: string
   /**
    * @internal 临时字段 — 仅在生成阶段使用

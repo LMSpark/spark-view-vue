@@ -106,7 +106,6 @@ import RendererHostScope from '../../support/RendererHostScope.vue'
 const props = withDefaults(defineProps<RListProps>(), {
   type: 'r-list',
   columns: 1,
-  gap: 0,
   minItemWidth: '',
   rowKey: 'id',
   emptyText: '暂无数据',
@@ -122,16 +121,13 @@ const props = withDefaults(defineProps<RListProps>(), {
 const listPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.listProps ?? {}) }))
 const slots = useSlots()
 
-// 仅消费结构化 props.toolbar / props.actions；children 仅承载内容节点。
-const allChildNodes = computed(() => getSparkNodeChildren(props.children))
-const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar'])
-const contentChildren = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
+// 仅消费结构化 props.toolbar / props.actions；children 直接作为内容节点，不再做结构分流。
 const toolbarNode = computed(() => props.toolbar)
 const actionsNode = computed(() => props.actions)
 
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
-  return getSparkNodeChildren(contentChildren.value)
+  return getSparkNodeChildren(props.children)
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
@@ -218,7 +214,7 @@ const {
 registerApi(listApi)
 
 const normalizedGridGap = computed(() => {
-  const value = props.gridGap ?? props.gap
+  const value = props.gridGap
   return typeof value === 'number' ? `${value}px` : value
 })
 

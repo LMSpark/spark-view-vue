@@ -106,7 +106,7 @@ const {
   mode: () => props.mode ?? 'multi',
   systemPrompt: () => props.systemPrompt,
   sender: () => props.sender,
-  pageId: () => props.pageId ?? props.storageKey,
+  pageId: () => props.pageId,
   storageKey: () => props.storageKey,
   streamAiChatText: props.streamAiChatText,
   parseTokenUsage: props.parseTokenUsage,
@@ -121,7 +121,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 const draftLoadingActionId = ref<string | null>(null)
 const draftActions = computed(() => props.draftActions ?? [])
 
-// ── 语音识别（Web Speech API，浏览器兼容处理） ──────────────────────────
+// ── 语音识别（Web Speech API，浏览器能力检测） ──────────────────────────
 
 interface SpeechRecognitionLike {
   lang: string

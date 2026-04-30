@@ -427,7 +427,7 @@ export type {
 | `r-tree` | RendererTree | DataView → el-tree，支持懒加载/嵌套 |
 | `r-list` | RendererList | DataView → 列表渲染 |
 
-### 容器组件 — 非数据驱动（39 类型，含 2 别名）
+### 容器组件 — 非数据驱动（37 类型）
 
 纯布局/交互容器，透传 children。
 
@@ -439,9 +439,7 @@ export type {
 | `r-drawer` | RendererDrawer | el-drawer 抽屉 |
 | `r-steps` | RendererSteps | el-steps 步骤条 |
 | `r-section` | RendererSection | 语义分区容器 |
-| `r-block` | RendererSection | ⇢ `r-section` 别名 |
 | `r-toolbar` | RendererToolbar | 工具栏 |
-| `r-menu` | RendererToolbar | ⇢ `r-toolbar` 别名 |
 | `r-row` | RendererRow | el-row 栅格行 |
 | `r-col` | RendererCol | el-col 栅格列（span/offset/push/pull） |
 | `r-card` | RendererCard | el-card 卡片 |

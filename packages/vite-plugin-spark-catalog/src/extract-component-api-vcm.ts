@@ -411,7 +411,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined): PropSchema | 
       }
       if (propMeta.description !== '') childSchema.description = propMeta.description
 
-      // 递归处理嵌套 schema（如 ActionsNode.props 中的 RendererActionsConfigProps）
+      // 递归处理嵌套 schema（如 ActionsNode.props 中的结构化对象类型）
       const nestedPropSchema = convertSchema(propMeta.schema)
       if (nestedPropSchema !== undefined) {
         // 暂存完整的嵌套 schema，供后续处理时转换为 schemaRef

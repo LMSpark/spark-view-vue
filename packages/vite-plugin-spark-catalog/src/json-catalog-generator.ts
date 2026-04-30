@@ -673,7 +673,7 @@ function buildSortedComponents(
   registry.groups.sort()
   registry.meta.sort()
 
-  // 递归处理所有嵌套 schema（如 ActionsNode.props 中的 RendererActionsConfigProps）
+  // 递归处理所有嵌套 schema（如 ActionsNode.props 中的结构化对象类型）
   // 这些在 convertSchema 过程中被识别出来，需要提取为独立的 schema 池条目
   const nestedSchemas = nestedSchemaCollector.getAll()
   for (const record of nestedSchemas) {

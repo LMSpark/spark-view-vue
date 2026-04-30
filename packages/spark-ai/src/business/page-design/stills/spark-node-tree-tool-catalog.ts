@@ -53,7 +53,7 @@ export interface SparkNodeTreeToolCapabilityRow {
 
 const NO_PARAMS: Record<string, unknown> = {}
 const COMPONENT_ID_PARAM =
-  'string — 节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段或 props.id 字段）；' +
+  'string — 节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段）；' +
   '绝对禁止使用组件类型名（r-table、r-tabs、r-text、r-select 等）作为 componentId，类型名不是 id'
 const PARENT_COMPONENT_ID_PARAM =
   'string | null ? — 父节点的 id 值（同 COMPONENT_ID_PARAM 规则）；null/省略表示当前绑定组件实例'
@@ -66,8 +66,8 @@ const NODE_PARAM = {
   required: ['type'],
   properties: {
     type: 'string — 组件类型',
-    id: 'string? — 节点 id；也可在 props.id 提供稳定节点 id',
-    props: 'Record<string, unknown> ? — 节点属性（推荐在 props.id 提供稳定节点 id）',
+    id: 'string? — 节点顶层 id',
+    props: 'Record<string, unknown> ? — 节点属性',
     children: {
       kind: 'array',
       note: 'SparkNodeChildren ? — 子节点数组，可混合 SparkNode / string / number',
@@ -85,7 +85,7 @@ const SET_PROPS_BATCH_ITEM_SCHEMA = {
   optional: {
     merge: 'boolean? — true=合并，false=替换；省略时默认合并',
   },
-  note: '每个批处理项都必须显式提供 componentId；不再接受 nodeId 兼容字段。',
+  note: '每个批处理项都必须显式提供 componentId；nodeId 参数无效。',
 } as const
 const SET_PROPS_BATCH_ITEMS_SCHEMA = {
   kind: 'array',
@@ -98,7 +98,7 @@ const REPLACE_NODES_ITEM_SCHEMA = {
     componentId: COMPONENT_ID_PARAM,
     node: NODE_PARAM,
   },
-  note: '每个替换项都必须显式提供 componentId；不再接受 nodeId 兼容字段。',
+  note: '每个替换项都必须显式提供 componentId；nodeId 参数无效。',
 } as const
 const REPLACE_NODES_ITEMS_SCHEMA = {
   kind: 'array',

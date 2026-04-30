@@ -17,10 +17,10 @@ describe('SparkNode input helpers', () => {
     expect(nodeInputProp(node, 'label')).toBe('姓名')
   })
 
-  it('nodeInputProp should ignore root-level compatibility fields', () => {
+  it('nodeInputProp should ignore root-level non-props fields', () => {
     const node = {
       type: 'r-number',
-      name: 'legacy-id',
+      name: 'node-id',
       field: 'root-field',
     } as SparkNode & Record<string, unknown>
 

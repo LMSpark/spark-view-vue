@@ -75,8 +75,6 @@ export type SparkCapabilityContext = ICapabilityContext
  * 停靠区域（toolbar / actions / filter / header / footer / editor / tail）
  * 在规范形态下通过结构化 props 表达，例如
  * `props: { toolbar: { type: 'r-toolbar', children: [...] } }`。
- * 页面绑定层也兼容等价的 wrapper 子节点输入（如 `r-toolbar`）；
- * 运行时容器优先消费结构化 props，并在需要时从 children 做回退读取。
  *
  * @example
  * ```jsonc
@@ -148,7 +146,7 @@ export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['typ
  *
  * 统一处理：
  * - 空 type → fallbackType（fallbackType 本身为空时兜底 `'unknown'`）
- * - 节点定位 id：优先顶层 id；缺失时用 props.id 补齐到顶层
+ * - 节点定位 id：只读取顶层 id
  * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
  * - children 缺省或非数组 → `[]`
  *
@@ -166,16 +164,12 @@ export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): S
     : normalizedFallbackType
 
   const rawTopLevelId = (node as { id?: unknown }).id
-  const topLevelId = typeof rawTopLevelId === 'string' ? rawTopLevelId : undefined
+  const normalizedId = typeof rawTopLevelId === 'string' ? rawTopLevelId : undefined
   const rawProps = (node as { props?: unknown }).props
   const hasObjectProps = rawProps !== undefined
     && rawProps !== null
     && typeof rawProps === 'object'
     && !Array.isArray(rawProps)
-  const propsId = hasObjectProps && typeof (rawProps as Record<string, unknown>)['id'] === 'string'
-    ? ((rawProps as Record<string, unknown>)['id'] as string)
-    : undefined
-  const normalizedId = topLevelId ?? propsId
 
   const normalizedProps = hasObjectProps
     ? { ...(rawProps as Record<string, unknown>) }
@@ -205,15 +199,10 @@ export function getSparkNodeChildren(children: SparkNodeChildren | undefined): S
 
 /**
  * 读取节点 id。
- *
- * 规范形态以顶层 id 为准；对未归一化输入回退读取 props.id。
  */
 export function nodeId(node: { id?: unknown; props?: Record<string, unknown> }): string | undefined {
   const topLevelId = node.id
   if (typeof topLevelId === 'string') return topLevelId
-
-  const propsId = node.props?.['id']
-  if (typeof propsId === 'string') return propsId
   return undefined
 }
 

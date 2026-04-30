@@ -111,9 +111,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-tail', RendererTail],
   // 核心非数据容器
   ['r-section', RendererSection],
-  ['r-block', RendererSection],
   ['r-toolbar', RendererToolbar],
-  ['r-menu', RendererToolbar],
   ['r-tabs', RendererTabs],
   ['r-tab-pane', RendererTabPane],
   ['r-collapse', RendererCollapse],
