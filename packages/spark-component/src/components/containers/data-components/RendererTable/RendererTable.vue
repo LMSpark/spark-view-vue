@@ -11,7 +11,6 @@
       <el-table
         ref="nativeTableRef"
         :data="tableData"
-        
         v-bind="elTableProps"
         :row-class-name="tableRowClassName"
         @current-change="handleCurrentChange"
@@ -35,11 +34,11 @@
 
         <!-- 行操作列（左） -->
         <el-table-column
-          v-if="rowActionConfigs.length > 0 && rowActionsPositionValue === 'left'"
+          v-if="(props.actions?.children?.length ?? 0) > 0 && rowActionsPositionValue === 'left'"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
-            <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
+            <div class="renderer-table-row-actions">
               <RendererHostScope :row="(scope.row as IDataRow)">
                 <SparkComponentRenderer :config="rawRowActionsToolbarConfig" />
               </RendererHostScope>
@@ -59,12 +58,7 @@
         >
           <el-table-column
             v-if="isRowFragmentNode(child)"
-            :label="resolveRowFragmentLabel(child)"
-            :width="resolveRowFragmentWidth(child)"
-            :min-width="resolveRowFragmentMinWidth(child)"
-            :align="resolveRowFragmentAlign(child)"
-            :header-align="resolveRowFragmentHeaderAlign(child)"
-            :class-name="resolveRowFragmentClass(child)"
+            v-bind="rowFragmentAttrs(child)"
           >
             <template #default="scope">
               <RendererHostScope :row="(scope.row as IDataRow)">
@@ -88,11 +82,11 @@
 
         <!-- 行操作列（右） -->
         <el-table-column
-          v-if="rowActionConfigs.length > 0 && rowActionsPositionValue === 'right'"
+          v-if="(props.actions?.children?.length ?? 0) > 0 && rowActionsPositionValue === 'right'"
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
-            <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
+            <div class="renderer-table-row-actions">
               <RendererHostScope :row="(scope.row as IDataRow)">
                 <SparkComponentRenderer :config="rawRowActionsToolbarConfig" />
               </RendererHostScope>
@@ -119,7 +113,7 @@
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
  * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（summaryRow/currentRow）而不是 children 文本插值。
  */
-import { computed, nextTick, ref, toRef, watch, type CSSProperties } from 'vue'
+import { computed, nextTick, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   nodeId, PROP_DATA_KEY, type SparkNode,
@@ -135,8 +129,6 @@ import type { RToolbarProps } from '../../non-data-components/RendererToolbar.ty
 import { useTableFilters } from '../../layout'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
-// ── 基础工具：通用读取与列投影辅助 ────────────────────────────────────────
-
 // ── Props / slots 输入 ───────────────────────────────────────────────────
 
 const props = withDefaults(defineProps<RTableProps>(), {
@@ -145,11 +137,6 @@ const props = withDefaults(defineProps<RTableProps>(), {
 
 // children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
 const renderedContentChildNodes = computed(() => ((props.children as SparkNode[]) ?? []).map(normalizeDefaultSortableTableNode))
-
-/** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
-function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
-  return child?.props?.[name] as T | undefined
-}
 
 /** 将扁平 RToolbarProps 转为 SparkNode，并自动补齐 dataKey。 */
 function buildToolbarNode(
@@ -187,71 +174,29 @@ function normalizeDefaultSortableTableNode(node: SparkNode): SparkNode {
   const sourceProps = node.props ?? {}
   if (sourceProps['sortable'] !== undefined) return node
 
-  const field = childProp<unknown>(node, 'field')
-    ?? childProp<unknown>(node, 'fieldName')
-    ?? childProp<unknown>(node, 'prop')
-    ?? childProp<unknown>(node, 'property')
+  const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
   if (typeof field !== 'string' || field.trim().length === 0) return node
 
-  return {
-    ...node,
-    props: {
-      ...sourceProps,
-      sortable: true,
-    },
-  }
+  return { ...node, props: { ...sourceProps, sortable: true } }
 }
 
-function rowFragmentProp(node: SparkNode, key: string): unknown {
-  // row-fragment 元属性统一从 node.props 读取，避免在模板中散落字面量访问。
-  return (node.props as Record<string, unknown> | undefined)?.[key]
+function rowFragmentAttrs(node: SparkNode) {
+  const p = node.props as Record<string, unknown> | undefined
+  const width = p?.['width']; const minWidth = p?.['minWidth']
+  const align = p?.['align']; const className = p?.['class']
+  return {
+    label: String(p?.['title'] ?? ''),
+    ...(typeof width === 'string' || typeof width === 'number' ? { width } : {}),
+    ...(typeof minWidth === 'string' || typeof minWidth === 'number' ? { minWidth } : {}),
+    ...(typeof align === 'string' ? { align } : {}),
+    ...(typeof p?.['headerAlign'] === 'string' ? { headerAlign: p['headerAlign'] } : {}),
+    ...(typeof className === 'string' ? { className } : {}),
+  }
 }
 
 function resolveRowFragmentChildren(node: SparkNode): SparkNode[] {
   return (node.children as SparkNode[]) ?? []
 }
-
-function resolveRowFragmentLabel(node: SparkNode): string {
-  // 列标题仅从 title 读取。
-  return String(rowFragmentProp(node, 'title') ?? '')
-}
-
-function resolveRowFragmentWidth(node: SparkNode): string | number | undefined {
-  // width 仅接受字符串/数字，其他类型直接忽略，避免透传非法值污染底层表格。
-  const value = rowFragmentProp(node, 'width')
-  return typeof value === 'string' || typeof value === 'number' ? value : undefined
-}
-
-function resolveRowFragmentMinWidth(node: SparkNode): string | number | undefined {
-  // minWidth 与 width 同步做显式类型收敛。
-  const value = rowFragmentProp(node, 'minWidth')
-  return typeof value === 'string' || typeof value === 'number' ? value : undefined
-}
-
-function resolveRowFragmentAlign(node: SparkNode): string | undefined {
-  // 对齐属性保持透传语义，不在此处改写值域。
-  const value = rowFragmentProp(node, 'align')
-  return typeof value === 'string' ? value : undefined
-}
-
-function resolveRowFragmentHeaderAlign(node: SparkNode): string | undefined {
-  // 表头对齐仅读取 headerAlign。
-  const headerAlign = rowFragmentProp(node, 'headerAlign')
-  if (typeof headerAlign === 'string') return headerAlign
-  return undefined
-}
-
-function resolveRowFragmentClass(node: SparkNode): string | undefined {
-  // class 只接受字符串，防止对象/数组类型误入 class-name。
-  const value = rowFragmentProp(node, 'class')
-  return typeof value === 'string' ? value : undefined
-}
-
-const normalizedFilterNode = computed(() => {
-  const node = props.filter
-  if (node?.type !== 'r-filter') return undefined
-  return node
-})
 
 // ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
 
@@ -314,7 +259,7 @@ const {
   filtersCollapsed,
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
-  filterNode: normalizedFilterNode,
+  filterNode: toRef(props, 'filter'),
   baseElTableProps,
   resolvedView,
 })
@@ -388,7 +333,6 @@ watch(
 
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
-const rowActionConfigs = computed(() => props.actions?.children ?? [])
 const rowActionsPositionValue = computed<'left' | 'right'>(() => {
   const p = props.actions?.position
   return p === 'left' ? 'left' : 'right'
@@ -396,20 +340,11 @@ const rowActionsPositionValue = computed<'left' | 'right'>(() => {
 
 const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
   type: 'r-toolbar',
-  children: rowActionConfigs.value,
+  children: props.actions?.children ?? [],
 }))
-
-const rowActionsContainerStyle: CSSProperties = {
-  justifyContent: 'flex-start',
-  flexWrap: 'nowrap',
-}
 
 /** 行操作列统一属性（标题 + 宽度） */
-const rowActionColumnAttrs = computed(() => ({
-  label: '操作',
-  width: 220,
-  headerAlign: 'center',
-}))
+const rowActionColumnAttrs = { label: '操作', width: 220, headerAlign: 'center' }
 
 const selectedRowIdSet = computed(() => {
   const view = resolvedView.value
@@ -587,6 +522,8 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 .renderer-table-row-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
   gap: 8px;
 }
 
