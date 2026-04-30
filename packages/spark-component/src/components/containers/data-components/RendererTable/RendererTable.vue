@@ -150,7 +150,7 @@
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
-  nodeId, PROP_DATA_KEY, type SparkNode,
+  nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
@@ -247,7 +247,7 @@ const toolbarNode = computed<SparkNode | undefined>(() => {
     ...(id !== undefined ? { id } : {}),
     props: {
       ...propsFields,
-      ...(resolvedDataKey !== undefined ? { [PROP_DATA_KEY]: resolvedDataKey } : {}),
+      ...(resolvedDataKey !== undefined ? { dataKey: resolvedDataKey } : {}),
     },
     ...(children !== undefined ? { children } : {}),
   }
