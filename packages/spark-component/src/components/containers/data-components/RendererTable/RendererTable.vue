@@ -35,7 +35,9 @@
         <!-- 行操作列（左） -->
         <el-table-column
           v-if="(props.actions?.children?.length ?? 0) > 0 && props.actions?.position === 'left'"
-          v-bind="rowActionColumnAttrs"
+          label="操作"
+          :width="220"
+          header-align="center"
         >
           <template #default="scope">
             <div class="renderer-table-row-actions">
@@ -83,7 +85,9 @@
         <!-- 行操作列（右） -->
         <el-table-column
           v-if="(props.actions?.children?.length ?? 0) > 0 && (props.actions?.position ?? 'right') === 'right'"
-          v-bind="rowActionColumnAttrs"
+          label="操作"
+          :width="220"
+          header-align="center"
         >
           <template #default="scope">
             <div class="renderer-table-row-actions">
@@ -319,9 +323,6 @@ watch(
 
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
-/** 行操作列统一属性（标题 + 宽度） */
-const rowActionColumnAttrs = { label: '操作', width: 220, headerAlign: 'center' }
-
 const selectedRowIdSet = computed(() => {
   const view = resolvedView.value
   const selectedRows = view?.selectedRows ?? []
@@ -356,9 +357,9 @@ function isSelectedRow(row: IDataRow): boolean {
   return selectedRowRefSet.value.has(row)
 }
 
-const tableRowClassName = computed(() =>
-  ({ row }: { row: IDataRow }) => isSelectedRow(row) ? 'spark-selection-row' : ''
-)
+function tableRowClassName({ row }: { row: IDataRow }) {
+  return isSelectedRow(row) ? 'spark-selection-row' : ''
+}
 
 // ── 事件桥接：el-table 原生事件统一转发到零代码调度器 ───────────────────
 
