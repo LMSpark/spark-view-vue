@@ -65,7 +65,7 @@
             <template #default="scope">
               <RendererHostScope :row="(scope.row as IDataRow)">
                 <SparkComponentRenderer
-                  v-for="(fragmentChild, fragmentIndex) in (child.rowFragmentChildren ?? [])"
+                  v-for="(fragmentChild, fragmentIndex) in ((child.node.children as SparkNode[]) ?? [])"
                   :key="nodeId(fragmentChild) ?? `r-table-row-fragment-${fragmentIndex}`"
                   :config="fragmentChild"
                 />
@@ -141,13 +141,23 @@ const props = withDefaults(defineProps<RTableProps>(), {
 interface RenderedTableChild {
   node: SparkNode
   rowFragmentColumnAttrs?: Record<string, unknown>
-  rowFragmentChildren?: SparkNode[]
 }
 
 // children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
 const renderedContentChildren = computed<RenderedTableChild[]>(() => {
   return ((props.children as SparkNode[]) ?? []).map((rawNode) => {
-    const node = normalizeDefaultSortableTableNode(rawNode)
+    const sourceProps = rawNode.props ?? {}
+    const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
+    const node = (
+      rawNode.type === 'r-row-fragment'
+      || rawNode.type === 'r-column-group'
+      || sourceProps['sortable'] !== undefined
+      || typeof field !== 'string'
+      || field.trim().length === 0
+    )
+      ? rawNode
+      : { ...rawNode, props: { ...sourceProps, sortable: true } }
+
     if (node.type !== 'r-row-fragment') {
       return { node }
     }
@@ -168,24 +178,9 @@ const renderedContentChildren = computed<RenderedTableChild[]>(() => {
         ...(typeof p?.['headerAlign'] === 'string' ? { headerAlign: p['headerAlign'] } : {}),
         ...(typeof className === 'string' ? { className } : {}),
       },
-      rowFragmentChildren: (node.children as SparkNode[]) ?? [],
     }
   })
 })
-
-// ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
-
-function normalizeDefaultSortableTableNode(node: SparkNode): SparkNode {
-  if (node.type === 'r-row-fragment' || node.type === 'r-column-group') return node
-
-  const sourceProps = node.props ?? {}
-  if (sourceProps['sortable'] !== undefined) return node
-
-  const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
-  if (typeof field !== 'string' || field.trim().length === 0) return node
-
-  return { ...node, props: { ...sourceProps, sortable: true } }
-}
 
 // ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
 
