@@ -7,8 +7,8 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-export type OptionFieldStateProps<TValue> = OptionalWithUndefined<Omit<SparkOptionFieldProps, 'value' | 'options'>> & {
-  value?: TValue | undefined
+export type OptionFieldStateProps<TValue> = OptionalWithUndefined<Omit<SparkOptionFieldProps, 'modelValue' | 'options'>> & {
+  modelValue?: TValue | undefined
   options?: unknown[] | undefined
 }
 

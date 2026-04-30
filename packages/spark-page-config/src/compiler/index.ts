@@ -134,6 +134,15 @@ export function compileRule(raw: string): RuleConfig[] {
   return arr.map(normalizeRuleNode)
 }
 
+/**
+ * 需要从节点顶层自动提升到 props 的字段集合。
+ *
+ * SparkComponentRenderer 只透传 node.props，顶层额外字段会被 normalizeSparkNode 丢弃。
+ * 在编译阶段将这些字段提升到 props，兼容历史 rule.json 中未规范写入 props 的配置。
+ * 提升规则：props 内已有同名字段时保留 props 内的值（不覆盖）。
+ */
+const HOIST_TO_PROPS_KEYS: ReadonlySet<string> = new Set(['dataKey', 'field'])
+
 export function normalizeRuleNode(node: unknown): RuleConfig {
   if (typeof node === 'string') return { type: node }
   if (node === null || node === undefined || typeof node !== 'object') return { type: String(node) }
@@ -145,10 +154,18 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
       : (Array.isArray(rawChildren) ? rawChildren : [rawChildren]).map((c: unknown) =>
           typeof c === 'string' ? c : normalizeRuleNode(c)
         )
+  // 从顶层提升到 props（props 已有值时不覆盖）
+  const rawProps = (rest['props'] as Record<string, unknown> | undefined) ?? {}
+  const hoistedProps: Record<string, unknown> = {}
+  for (const key of HOIST_TO_PROPS_KEYS) {
+    if (key in rest && !(key in rawProps)) {
+      hoistedProps[key] = rest[key]
+    }
+  }
   return {
     ...rest,
     type: String(rest['type'] ?? 'div'),
-    props: (rest['props'] as Record<string, unknown> | undefined) ?? {},
+    props: Object.keys(hoistedProps).length > 0 ? { ...hoistedProps, ...rawProps } : rawProps,
     ...(children !== undefined && { children })
   } as RuleConfig
 }

@@ -50,22 +50,38 @@
               "name": "李四",
               "age": 32,
               "createTime": "2024-02-20",
-              "selectDate": "2024-07-15"
+              "selectDate": "2024-06-02"
             },
             {
               "id": 3,
               "name": "王五",
               "age": 25,
               "createTime": "2024-03-10",
-              "selectDate": "2024-08-20"
+              "selectDate": "2024-06-03"
+            },
+            {
+              "id": 4,
+              "name": "赵六",
+              "age": 35,
+              "createTime": "2024-04-05",
+              "selectDate": "2024-06-04"
+            },
+            {
+              "id": 5,
+              "name": "孙七",
+              "age": 29,
+              "createTime": "2024-05-18",
+              "selectDate": "2024-06-05"
             }
           ],
           "autoCurrentFirst": true,
-          "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true
+          "autoSelectFirst": true
         }
-      }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "master",
+      "api": {},
+      "crudConfig": {}
     },
     "user_resumes": {
       "tableName": "user_resumes",
@@ -176,32 +192,92 @@
             {
               "id": 1,
               "userId": 1,
-              "title": "张三的简历",
-              "summary": "5年Java开发经验",
-              "expectedPosition": "高级Java工程师",
-              "expectedCity": "北京",
+              "title": "张三 - 高级前端开发",
+              "summary": "5年前端开发经验，精通Vue/React，有大型项目架构经验",
+              "workExperience": "2022-至今 某科技公司 高级前端开发\n2020-2022 某互联网公司 前端开发\n2019-2020 某创业公司 前端实习生",
+              "educationBackground": "2015-2019 北京理工大学 计算机科学与技术 本科",
+              "skills": "Vue3, React, TypeScript, Webpack, Node.js",
+              "certificates": "PMP项目管理认证",
+              "projects": "企业级低代码平台前端架构\n数据可视化大屏系统",
+              "languageSkills": "英语CET-6",
               "expectedSalary": 25000,
-              "status": "active"
+              "expectedPosition": "高级前端开发工程师",
+              "expectedCity": "北京",
+              "status": "在职-看机会",
+              "createTime": "2024-01-15",
+              "updateTime": "2024-06-01"
             },
             {
               "id": 2,
               "userId": 2,
-              "title": "李四的简历",
-              "summary": "3年前端开发经验",
-              "expectedPosition": "前端开发工程师",
+              "title": "李四 - 全栈工程师",
+              "summary": "8年全栈开发经验，擅长Java+Vue技术栈，有团队管理经验",
+              "workExperience": "2021-至今 某大型企业 全栈架构师\n2018-2021 某软件公司 高级全栈开发\n2016-2018 某外包公司 Java开发",
+              "educationBackground": "2012-2016 华中科技大学 软件工程 本科",
+              "skills": "Java, Spring Boot, Vue, MySQL, Redis, Docker",
+              "certificates": "OCPJP认证",
+              "projects": "电商平台全栈开发\n企业内部管理系统",
+              "languageSkills": "英语CET-4",
+              "expectedSalary": 30000,
+              "expectedPosition": "全栈架构师",
               "expectedCity": "上海",
-              "expectedSalary": 20000,
-              "status": "active"
+              "status": "在职-看机会",
+              "createTime": "2024-02-20",
+              "updateTime": "2024-06-02"
             },
             {
               "id": 3,
               "userId": 3,
-              "title": "王五的简历",
-              "summary": "2年测试工程师经验",
-              "expectedPosition": "测试工程师",
+              "title": "王五 - 产品经理",
+              "summary": "3年产品经验，擅长B端产品设计，熟悉敏捷开发流程",
+              "workExperience": "2023-至今 某互联网公司 产品经理\n2021-2023 某创业公司 助理产品经理",
+              "educationBackground": "2017-2021 厦门大学 信息管理与信息系统 本科",
+              "skills": "Axure, Figma, XMind, Jira, SQL",
+              "certificates": "NPDP产品经理认证",
+              "projects": "CRM系统产品设计\n数据中台产品规划",
+              "languageSkills": "英语CET-6",
+              "expectedSalary": 18000,
+              "expectedPosition": "产品经理",
               "expectedCity": "深圳",
-              "expectedSalary": 15000,
-              "status": "active"
+              "status": "离职-随时到岗",
+              "createTime": "2024-03-10",
+              "updateTime": "2024-06-03"
+            },
+            {
+              "id": 4,
+              "userId": 4,
+              "title": "赵六 - 后端架构师",
+              "summary": "10年后端开发经验，精通分布式系统设计，有高并发项目经验",
+              "workExperience": "2020-至今 某金融科技公司 技术总监\n2016-2020 某大型互联网公司 高级后端开发\n2014-2016 某软件公司 后端开发",
+              "educationBackground": "2010-2014 浙江大学 计算机科学与技术 本科\n2014-2017 浙江大学 计算机应用技术 硕士",
+              "skills": "Go, Java, Kafka, Elasticsearch, Kubernetes, 微服务",
+              "certificates": "AWS解决方案架构师认证",
+              "projects": "金融交易系统架构设计\n亿级流量网关系统",
+              "languageSkills": "英语CET-6, 日语N2",
+              "expectedSalary": 45000,
+              "expectedPosition": "技术总监/架构师",
+              "expectedCity": "杭州",
+              "status": "在职-看机会",
+              "createTime": "2024-04-05",
+              "updateTime": "2024-06-04"
+            },
+            {
+              "id": 5,
+              "userId": 5,
+              "title": "孙七 - UI/UX设计师",
+              "summary": "4年UI设计经验，擅长数据可视化与交互设计",
+              "workExperience": "2022-至今 某设计公司 高级UI设计师\n2020-2022 某互联网公司 UI设计师",
+              "educationBackground": "2016-2020 中国美术学院 视觉传达设计 本科",
+              "skills": "Figma, Sketch, Photoshop, Illustrator, AE",
+              "certificates": "",
+              "projects": "企业级后台管理系统UI设计\n移动端APP交互设计",
+              "languageSkills": "英语CET-4",
+              "expectedSalary": 20000,
+              "expectedPosition": "高级UI设计师",
+              "expectedCity": "广州",
+              "status": "在职-暂不看机会",
+              "createTime": "2024-05-18",
+              "updateTime": "2024-06-05"
             }
           ],
           "autoCurrentFirst": true,
@@ -272,87 +348,67 @@
           "rows": [
             {
               "id": 1,
-              "code": "BACHELOR",
-              "name": "本科",
-              "level": "本科",
-              "description": "本科学历",
-              "status": "active",
+              "code": "PHD",
+              "name": "博士研究生",
+              "level": "博士",
+              "description": "博士研究生学历",
+              "status": "启用",
               "sortOrder": 1
             },
             {
               "id": 2,
               "code": "MASTER",
-              "name": "硕士",
-              "level": "研究生",
+              "name": "硕士研究生",
+              "level": "硕士",
               "description": "硕士研究生学历",
-              "status": "active",
+              "status": "启用",
               "sortOrder": 2
             },
             {
               "id": 3,
-              "code": "DOCTOR",
-              "name": "博士",
-              "level": "研究生",
-              "description": "博士研究生学历",
-              "status": "active",
+              "code": "BACHELOR",
+              "name": "本科",
+              "level": "本科",
+              "description": "大学本科学历",
+              "status": "启用",
               "sortOrder": 3
             },
             {
               "id": 4,
-              "code": "ASSOCIATE",
+              "code": "COLLEGE",
               "name": "大专",
-              "level": "专科",
-              "description": "大专学历",
-              "status": "active",
+              "level": "大专",
+              "description": "大学专科学历",
+              "status": "启用",
               "sortOrder": 4
             },
             {
               "id": 5,
               "code": "HIGH_SCHOOL",
               "name": "高中",
-              "level": "中等教育",
+              "level": "高中",
               "description": "高中学历",
-              "status": "active",
+              "status": "启用",
               "sortOrder": 5
+            },
+            {
+              "id": 6,
+              "code": "MIDDLE_SCHOOL",
+              "name": "初中及以下",
+              "level": "初中",
+              "description": "初中及以下学历",
+              "status": "停用",
+              "sortOrder": 6
             }
           ],
           "autoCurrentFirst": true,
           "autoSelectFirst": true
         }
       },
-      "resourceType": "dictionary",
+      "resourceType": "static-data",
       "businessCategory": "reference",
-      "api": {
-        "list": {
-          "url": "/api/education-dict",
-          "method": "GET",
-          "pagination": {
-            "pageParam": "page",
-            "sizeParam": "size"
-          }
-        },
-        "create": {
-          "url": "/api/education-dict",
-          "method": "POST"
-        },
-        "retrieve": {
-          "url": "/api/education-dict/{id}",
-          "method": "GET"
-        },
-        "update": {
-          "url": "/api/education-dict/{id}",
-          "method": "PUT"
-        },
-        "delete": {
-          "url": "/api/education-dict/{id}",
-          "method": "DELETE"
-        }
-      },
-      "crudConfig": {
-        "timeout": 30000,
-        "retryCount": 3,
-        "validateData": true
-      }
+      "api": {},
+      "crudConfig": {}
     }
   },
   "tableRelations": [
@@ -368,7 +424,7 @@
     {
       "parentTable": "users",
       "childTable": "user_resumes",
-      "dependencyType": "allRows",
+      "dependencyType": "currentRow",
       "autoLoad": true
     }
   ],
@@ -376,16 +432,16 @@
   "layout": {
     "tablePositions": {
       "users": {
-        "x": 50,
-        "y": 50
+        "x": 40,
+        "y": 40
       },
       "user_resumes": {
-        "x": 407,
-        "y": 78
+        "x": 360,
+        "y": 40
       },
       "education_dict": {
-        "x": 724,
-        "y": 134
+        "x": 40,
+        "y": 320
       }
     }
   }

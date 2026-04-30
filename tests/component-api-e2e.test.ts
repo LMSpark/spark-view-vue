@@ -30,10 +30,10 @@ describe('End-to-end: real component extraction (VCM)', () => {
     expect(propNames).toContain('field')
     expect(propNames).toContain('label')
 
-    // 字段组件统一对外暴露 update:value
+    // 字段组件统一对外暴露 update:modelValue
     expect(api!.emits.length).toBeGreaterThanOrEqual(1)
     const emitNames = api!.emits.map(e => e.name)
-    expect(emitNames).toContain('update:value')
+    expect(emitNames).toContain('update:modelValue')
   })
 
   it('batch extracts multiple field components', () => {

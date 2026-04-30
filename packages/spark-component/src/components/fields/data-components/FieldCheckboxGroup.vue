@@ -53,8 +53,8 @@ const displayValue = computed<MultiValue>(() => {
     return Array.isArray(rowValue) ? (rowValue as MultiValue) : []
   }
 
-  if (!boundField && Array.isArray(props.value)) {
-    return props.value as MultiValue
+  if (!boundField && Array.isArray(props.modelValue)) {
+    return props.modelValue as MultiValue
   }
 
   const rawValue = fieldValue.value

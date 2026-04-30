@@ -65,7 +65,7 @@ const resolvedOptions = computed<ResolvedSegmentedOption[]>(() =>
   }),
 )
 
-const selectedValue = ref(props.value ?? resolvedOptions.value[0]?.value ?? '')
+const selectedValue = ref(props.modelValue ?? resolvedOptions.value[0]?.value ?? '')
 
 watch(() => fieldValue.value, (value) => {
   if (value === undefined || value === null || value === '') {

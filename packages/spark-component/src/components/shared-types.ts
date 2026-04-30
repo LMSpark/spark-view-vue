@@ -149,8 +149,10 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    * 适用于：
    * - display 组件直接渲染显式值
    * - field 组件在不依赖 `field/currentRow` 的情况下进行受控展示
+   *
+   * 对应 Vue v-model 标准命名，支持 `v-model="xxx"` 写法。
    */
-  value?: TValue
+  modelValue?: TValue
   /**
    * 字段绑定名。
    *

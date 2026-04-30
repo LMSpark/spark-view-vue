@@ -15,8 +15,8 @@ type OptionalWithUndefined<T> = {
 }
 
 export interface FieldPermissionProps<TValue>
-  extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'value'>, 'value'>> {
-  value?: TValue | undefined
+  extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue'>, 'modelValue'>> {
+  modelValue?: TValue | undefined
 }
 
 interface UseFieldPermissionOptions<TValue> {
@@ -24,6 +24,16 @@ interface UseFieldPermissionOptions<TValue> {
   type: string
   fallbackValue: TValue
   formatDisplay?: (value: unknown) => string
+  /**
+   * 运行时类型校正函数。
+   *
+   * `sourceFieldValue` 从行数据中读取的原始值类型不可控（DataSet 行数据是 `unknown`），
+   * 此函数在赋给 `fieldValue` 之前统一做类型校正，避免非预期类型（如 boolean false）
+   * 流入 el-input / el-input-number 等的 :model-value，从而消除 Vue runtime prop 警告。
+   *
+   * 注意：仅对来自行数据的值应用；`props.modelValue` 显式传入时直接使用（调用方负责类型正确性）。
+   */
+  coerce?: (rawValue: unknown) => TValue
 }
 
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
@@ -51,7 +61,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const selectedRows = computed<IDataRow[]>(() => activeSelectedRows.value)
 
   const sourceFieldValue = computed<TValue>(() => {
-    if (props.value !== undefined) return props.value
+    if (props.modelValue !== undefined) return props.modelValue
     const row = activeRow.value
     if (row !== null && fieldName.value && fieldName.value in row) {
       return row[fieldName.value] as TValue

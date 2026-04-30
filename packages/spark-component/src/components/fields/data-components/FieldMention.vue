@@ -163,9 +163,9 @@ const resolvedOptions = computed<MentionRuntimeOption[]>(() => {
   })
 })
 
-const textValue = ref(normalizeTextValue(props.value))
+const textValue = ref(normalizeTextValue(props.modelValue))
 
-watch(() => props.value, (v) => {
+watch(() => props.modelValue, (v) => {
   const nextValue = normalizeTextValue(v)
   if (nextValue !== textValue.value) {
     textValue.value = nextValue

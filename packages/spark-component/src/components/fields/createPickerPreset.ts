@@ -38,7 +38,7 @@ const SHARED_PROPS = {
   /** 字段宽度 */
   width: { type: Number, default: undefined },
   /** 直接传入的值 */
-  value: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
+  modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
   /** 可选项数组 */
   options: { type: Array as PropType<unknown[]>, default: undefined },
   /** 选项绑定键 */
@@ -79,7 +79,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
   return defineComponent({
     name: `FieldEntityPicker[${defaults.entityName}]`,
     props: SHARED_PROPS,
-    emits: ['update:value'],
+    emits: ['update:modelValue'],
     setup(props, { emit }) {
       const forwardedProps = computed<Record<string, unknown>>(() => {
         const result: Record<string, unknown> = {}
@@ -96,8 +96,8 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
           }
         }
 
-        if (props['value'] !== undefined) {
-          result['value'] = props['value']
+        if (props['modelValue'] !== undefined) {
+          result['modelValue'] = props['modelValue']
         }
 
         const resolvedField = props['field'] ?? props['name']
@@ -132,7 +132,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
       return () => h(FieldEntityPicker, {
         type: 'r-entity-picker',
         ...forwardedProps.value,
-        'onUpdate:value': (value: EntityPickerValue) => emitFieldValueUpdate(emit, value),
+        'onUpdate:modelValue': (value: EntityPickerValue) => emitFieldValueUpdate(emit, value),
       })
     },
   })
