@@ -142,7 +142,7 @@ import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import type { ToolbarPosition } from '../../layout'
-import type { ActionsAlign, ActionsFixed, ActionsPosition } from '../../support/RendererActions.types'
+import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import RendererFilter from '../../RendererFilter.vue'
@@ -163,21 +163,27 @@ function childProp<T>(child: SparkNode | undefined, name: string): T | undefined
   return child?.props?.[name] as T | undefined
 }
 
-function withToolbarDataKey(
-  toolbar: SparkNode | undefined,
+/** 将扁平 RToolbarProps 转为 SparkNode，并自动补齐 dataKey。 */
+function buildToolbarNode(
+  toolbar: RToolbarProps | undefined,
   containerDataKey: string | undefined,
 ): SparkNode | undefined {
   if (!toolbar) return undefined
-  const existingDataKey = toolbar.props?.[PROP_DATA_KEY]
-  if (existingDataKey !== undefined && existingDataKey !== null && existingDataKey !== '') return toolbar
-  const tableName = typeof containerDataKey === 'string' ? containerDataKey.split('@')[0] : undefined
-  if (!tableName) return toolbar
+  const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
+  const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== null && existingDataKey !== '')
+    ? existingDataKey
+    : (() => {
+        const tableName = typeof containerDataKey === 'string' ? containerDataKey.split('@')[0] : undefined
+        return tableName ? `${tableName}@currentRow` : undefined
+      })()
   return {
-    ...toolbar,
+    type: 'r-toolbar',
+    ...(id !== undefined ? { id } : {}),
     props: {
-      ...toolbar.props,
-      [PROP_DATA_KEY]: `${tableName}@currentRow`,
+      ...propsFields,
+      ...(resolvedDataKey !== undefined ? { [PROP_DATA_KEY]: resolvedDataKey } : {}),
     },
+    ...(children !== undefined ? { children } : {}),
   }
 }
 
@@ -302,15 +308,15 @@ useContainerDataSourceEffects({
 // ── 工具栏区：读取结构化 toolbar 配置，并向工具栏子树提供内置动作宿主能力 ──
 
 const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = props.toolbar?.props?.['position']
+  const position = props.toolbar?.position
   return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
     ? position
     : 'top'
 })
 
-/** 工具栏节点透传，自动补齐 dataKey（若调用方未显式提供）。 */
+/** 将 RToolbarProps 转换为 SparkNode，自动补齐 dataKey（若调用方未显式提供）。 */
 const toolbarNode = computed<SparkNode | undefined>(() =>
-  withToolbarDataKey(props.toolbar, props.dataKey),
+  buildToolbarNode(props.toolbar, props.dataKey),
 )
 
 // ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
@@ -397,18 +403,9 @@ watch(
 // ── 行操作区：仅使用结构化 toolbar 组装行操作列 ───────────────────────
 
 const rowActionConfigs = computed(() => props.actions?.children ?? [])
-const rowActionsPositionValue = computed<ActionsPosition>(() => props.actions?.position ?? 'right')
-
-const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
-  const align = props.actions?.align
-  if (align === 'left' || align === 'center' || align === 'right') return align
-  return undefined
-})
-
-const rowActionsFixedValue = computed<ActionsFixed | undefined>(() => {
-  const fixed = props.actions?.fixed
-  if (fixed === true || fixed === false || fixed === 'left' || fixed === 'right') return fixed
-  return undefined
+const rowActionsPositionValue = computed<'left' | 'right'>(() => {
+  const p = props.actions?.position
+  return p === 'left' ? 'left' : 'right'
 })
 
 const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
@@ -417,29 +414,16 @@ const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
 }))
 
 const rowActionsContainerStyle = computed<CSSProperties>(() => ({
-  justifyContent: rowActionsAlignValue.value === 'center'
-    ? 'center'
-    : rowActionsAlignValue.value === 'right'
-      ? 'flex-end'
-      : 'flex-start',
+  justifyContent: 'flex-start',
   flexWrap: 'nowrap',
 }))
 
 /** 行操作列统一属性（标题 + 宽度） */
-const rowActionColumnAttrs = computed(() => {
-  const label = props.actions?.label ?? '操作'
-  const width = props.actions?.width ?? 220
-  const align = rowActionsAlignValue.value
-  const headerAlign = align ?? 'center'
-  const fixed = rowActionsFixedValue.value
-  return {
-    label,
-    width,
-    ...(align !== undefined ? { align } : {}),
-    headerAlign,
-    ...(fixed !== undefined ? { fixed } : {}),
-  }
-})
+const rowActionColumnAttrs = computed(() => ({
+  label: '操作',
+  width: 220,
+  headerAlign: 'center',
+}))
 
 function normalizeRowClassValue(value: unknown): string {
   if (typeof value === 'string') return value.trim()

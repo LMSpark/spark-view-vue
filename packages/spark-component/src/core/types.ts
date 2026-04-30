@@ -64,40 +64,33 @@ export type SparkCapabilityContext = ICapabilityContext
 /**
  * SparkNode - 组件配置的最小输入类型
  *
- * 严格对齐 Vue `h(type, props, children)` 三段式，仅保留 `type / props / children` 3 个根级字段。
+ * 结构键 `type / id / props / children` 对齐 Vue `h(type, props, children)` 三段式。
  *
- * 业务输入统一放在 `props` 中，包括：
- * - `id`
- * - `dataKey`
- * - `class`
- * - 组件自有配置项
+ * `props` 放置组件自有的配置项（如 border / stripe / highlightCurrentRow 等）。
  *
  * 停靠区域（toolbar / actions / filter / header / footer / editor / tail）
- * 在规范形态下通过结构化 props 表达，例如
- * `props: { toolbar: { type: 'r-toolbar', children: [...] } }`。
+ * 作为顶层字段直接声明在节点上，由页面配置编译器映射为组件 prop，例如：
+ * `toolbar: { type: 'r-toolbar', children: [...] }`。
  *
  * @example
  * ```jsonc
  * {
  *   "type": "r-table",
- *   "props": {
- *     "id": "orders-table",
- *     "dataKey": "Orders@rows",
- *     "toolbar": {
- *       "type": "r-toolbar",
- *       "props": { "position": "top" },
- *       "children": [
- *         { "type": "r-button", "props": { "action": "append-row" } }
- *       ]
- *     },
- *     "actions": {
- *       "type": "r-toolbar",
- *       "props": { "position": "right" },
- *       "children": [
- *         { "type": "r-button", "props": { "action": "delete-row" } }
- *       ]
- *     }
+ *   "id": "orders-table",
+ *   "dataKey": "Orders@rows",
+ *   "toolbar": {
+ *     "type": "r-toolbar",
+ *     "children": [
+ *       { "type": "r-button", "props": { "action": "append-row" } }
+ *     ]
  *   },
+ *   "actions": {
+ *     "type": "r-toolbar",
+ *     "children": [
+ *       { "type": "r-button", "props": { "action": "delete-row" } }
+ *     ]
+ *   },
+ *   "props": { "border": true, "stripe": true },
  *   "children": [
  *     { "type": "el-table-column", "props": { "field": "name", "label": "姓名" } }
  *   ]
