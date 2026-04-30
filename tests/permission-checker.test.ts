@@ -5,34 +5,41 @@ import type { IDataRow } from '../packages/spark-data/src/types'
 const { canCreate, canImport, canExport, canDelete, canCreateChild, canEdit } = permission
 
 describe('PermissionChecker', () => {
-  it('defaults rows without editableFields permission data to readonly', () => {
+  it('defaults rows without snapshot to baseline allow (max(baseline, snapshot))', () => {
     const rowWithoutPerm = { id: 1 } as IDataRow
     const rowWithEmptyPerm = { id: 2, _perm: {} } as IDataRow
 
-    expect(canEdit(rowWithoutPerm)).toBe(false)
-    expect(canEdit(rowWithEmptyPerm)).toBe(false)
+    // 未声明 editableFields → 基线允许
+    expect(canEdit(rowWithoutPerm)).toBe(true)
+    expect(canEdit(rowWithEmptyPerm)).toBe(true)
   })
 
-  it('treats empty editableFields as not editable', () => {
+  it('treats empty editableFields as explicit deny', () => {
     const row = { id: 3, _perm: { editableFields: [] } } as IDataRow
 
     expect(canEdit(row)).toBe(false)
   })
 
-  it('requires explicit model and row write permissions', () => {
+  it('uses max(baseline=allow, snapshot) — only explicit false denies', () => {
     const modelPerm = { allowCreate: true, allowImport: true, allowExport: true }
     const writableRow = { id: 4, _perm: { editableFields: ['name'], allowDelete: true, allowCreateChild: true } } as IDataRow
-    const readonlyRow = { id: 5 } as IDataRow
+    const rowWithoutPerm = { id: 5 } as IDataRow
+    const explicitDenyRow = { id: 6, _perm: { allowDelete: false, allowCreateChild: false } } as IDataRow
 
     expect(canCreate(modelPerm)).toBe(true)
     expect(canImport(modelPerm)).toBe(true)
     expect(canExport(modelPerm)).toBe(true)
-    expect(canCreate(undefined)).toBe(false)
-    expect(canImport(undefined)).toBe(false)
-    expect(canExport(undefined)).toBe(false)
+    // 缺省模型权限 → 基线允许
+    expect(canCreate(undefined)).toBe(true)
+    expect(canImport(undefined)).toBe(true)
+    expect(canExport(undefined)).toBe(true)
     expect(canDelete(writableRow)).toBe(true)
     expect(canCreateChild(writableRow)).toBe(true)
-    expect(canDelete(readonlyRow)).toBe(false)
-    expect(canCreateChild(readonlyRow)).toBe(false)
+    // 行无 _perm → 基线允许
+    expect(canDelete(rowWithoutPerm)).toBe(true)
+    expect(canCreateChild(rowWithoutPerm)).toBe(true)
+    // 显式 false → 拒绝
+    expect(canDelete(explicitDenyRow)).toBe(false)
+    expect(canCreateChild(explicitDenyRow)).toBe(false)
   })
 })

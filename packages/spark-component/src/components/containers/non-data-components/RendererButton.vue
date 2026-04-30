@@ -101,6 +101,25 @@ function resolveScopedRow(): IDataRow | undefined {
   return (dataRow ?? ((dataSource as { currentRow?: IDataRow } | null)?.currentRow)) ?? undefined
 }
 
+// 解析权限判定的作用域行集合。
+// 工具栏（无 DATA_ROW）+ DataView 多选模式：绑定到 selectedRows，行级权限要求每行都允许。
+// 其他场景（行内按钮 / 单选）：退化为单行（DATA_ROW 或 currentRow）。
+function resolvePermissionScopeRows(): IDataRow[] {
+  const dataRow = sparkConsume(DATA_ROW)
+  if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
+    return [dataRow as IDataRow]
+  }
+
+  const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
+  if (dataSource && dataSource.isMultiSelect === true) {
+    const selected = dataSource.selectedRows ?? []
+    return selected.length > 0 ? selected.slice() : []
+  }
+
+  const currentRow = (dataSource as { currentRow?: IDataRow } | null)?.currentRow
+  return currentRow !== null && currentRow !== undefined ? [currentRow] : []
+}
+
 // ── 三、宿主动作禁用态（内置动作） ──────────────────────────────────────
 // 内置动作的禁用态由宿主统一裁决（例如 DataView 行态/选择态）。
 const hostActionDisabled = computed(() => {
@@ -121,16 +140,19 @@ const hostActionDisabled = computed(() => {
 
 // ── 四、权限判定与可见/禁用策略 ─────────────────────────────────────────
 // permissionAllowed 仅做授权判定，不负责组件最终的显示和禁用。
+// 节点未声明 permAction 且非内置动作时，isModel/RowActionAllowed 直接返回 true（基线允许）。
+// 多选模式下的工具栏：绑定到 selectedRows，行级动作要求每行都允许（任一被拒即整体拒）。
 const permissionAllowed = computed(() => {
-  // 非内置动作沿用原有“默认允许”策略，避免误伤普通按钮。
-  if (!hasBuiltinAction.value) return true
-
   const dataSource = sparkConsume(DATA_SOURCE)
   const modelPerm = extractModelPermission(dataSource)
-  const scopedRow = resolveScopedRow()
 
-  return permission.isModelActionAllowed(currentNode.value, modelPerm)
-    && permission.isRowActionAllowed(currentNode.value, scopedRow)
+  if (!permission.isModelActionAllowed(currentNode.value, modelPerm)) return false
+
+  const scopeRows = resolvePermissionScopeRows()
+  if (scopeRows.length === 0) {
+    return permission.isRowActionAllowed(currentNode.value, undefined)
+  }
+  return scopeRows.every((row) => permission.isRowActionAllowed(currentNode.value, row))
 })
 
 // 拒绝策略：hide 表示隐藏；disable 表示保留展示但不可点击。
@@ -184,9 +206,12 @@ function executeBuiltinActionDirect(action: SparkNode): void {
     hasRemoteListApi,
   })
 
-  const row = resolveScopedRow()
-  if (row) {
-    builtinActionHandler.handleRow(action, row, 0)
+  // 仅当宿主明确注入 DATA_ROW（行内场景）时按行执行；
+  // 工具栏即使能从 DATA_SOURCE.currentRow 兜底拿到行，也按工具栏语义分发，
+  // 让 handler 区分单行/多选（如 delete-current 在多选时升级为批量删除）。
+  const dataRow = sparkConsume(DATA_ROW)
+  if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
+    builtinActionHandler.handleRow(action, dataRow as IDataRow, 0)
     return
   }
 

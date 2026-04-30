@@ -16,36 +16,41 @@ import type { NavPermissionMode } from '@spark-view/spark-utils'
 
 // ── 模型级检查 ──
 
+// 语义：基线允许，仅在权限快照显式禁止时才拒绝（与 spark-data PermissionChecker 一致）。
+// 即 effective = max(baseline=true, snapshot)；缺省/未声明 = 允许。
+
 export function canCreate(modelPermission?: IModelPermission, permissionMode?: NavPermissionMode): boolean {
   if (permissionMode === 'none') return true
-  return modelPermission?.allowCreate === true
+  return modelPermission?.allowCreate !== false
 }
 
 export function canImport(modelPermission?: IModelPermission, permissionMode?: NavPermissionMode): boolean {
   if (permissionMode === 'none') return true
-  return modelPermission?.allowImport === true
+  return modelPermission?.allowImport !== false
 }
 
 export function canExport(modelPermission?: IModelPermission, permissionMode?: NavPermissionMode): boolean {
   if (permissionMode === 'none') return true
-  return modelPermission?.allowExport === true
+  return modelPermission?.allowExport !== false
 }
 
 // ── 行级检查 ──
 
 export function canDelete(row: IDataRow, permissionMode?: NavPermissionMode): boolean {
   if (permissionMode === 'none') return true
-  return row._perm?.allowDelete === true
+  return row._perm?.allowDelete !== false
 }
 
 export function canCreateChild(row: IDataRow, permissionMode?: NavPermissionMode): boolean {
   if (permissionMode === 'none') return true
-  return row._perm?.allowCreateChild === true
+  return row._perm?.allowCreateChild !== false
 }
 
 export function canEdit(row: IDataRow, permissionMode?: NavPermissionMode): boolean {
   if (permissionMode === 'none') return true
-  return (row._perm?.editableFields?.length ?? 0) > 0
+  // 未声明 editableFields → 基线允许；声明了空数组 → 显式禁止。
+  if (!row._perm?.editableFields) return true
+  return row._perm.editableFields.length > 0
 }
 
 // ── 字段级检查 ──

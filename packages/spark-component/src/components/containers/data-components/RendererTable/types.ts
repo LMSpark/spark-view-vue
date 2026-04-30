@@ -23,8 +23,4 @@ export interface RendererTableApi extends BaseContainerApi {
   toggleUiRowSelection(row: IDataRow, selected?: boolean): void
   doLayout(): void
   getNativeTable(): unknown
-  getFilterModel(): Record<string, unknown>
-  resetFilters(): void
-  hasActiveFilters(): boolean
-  getActiveFilterCount(): number
 }

@@ -1,19 +1,13 @@
-import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../internal'
 import type { SparkNodeProps } from '../shared-types'
 
 /**
  * `r-filter` / `RendererFilter` 完整属性定义。
  *
- * 同时作为：
- * - Vue `defineProps<RendererFilterProps>()` 的类型（组件内部消费）；
- * - `r-table` 等容器 `filter?: RendererFilterProps` 结构化配置类型（父容器读取布局字段）。
- *
- * ### 属性分组
- * - **配置字段**（`class` / `dataKey` / `collapsible` / 尺寸类）：由父容器从 pagedata.json 读取，
- *   RendererFilter.vue 本身只消费布局尺寸字段，`class` 由父容器直接注入自身模板，不透传给本组件。
- * - **内部桥接字段**（`model` / `activeCount` / `collapsed` / `*Action`）：
- *   由父容器在模板渲染时直接注入，不来自 pagedata.json 或 script.js。
+ * SSOT 设计：r-filter 通过 `dataKey` 自治绑定 DataView 的 rows 维度，
+ * 自己维护 filterModel / FilterExpression / DataView.setFilter 同步。
+ * 父容器（r-table 等）不再注入桥接字段；嵌入 r-table 时可省略 dataKey，
+ * 由 r-table 提供的 DATA_SOURCE 能力向下注入。
  */
 export interface RendererFilterProps extends SparkNodeProps {
   /** 组件类型固定为 `r-filter`。 */
@@ -32,7 +26,8 @@ export interface RendererFilterProps extends SparkNodeProps {
   class?: string
   /**
    * 数据绑定键（dataKey）。
-   * @remarks 由父容器用于解析筛选区绑定的数据上下文，RendererFilter.vue 本身不直接消费。
+   * @remarks RendererFilter 通过该 key 解析 DataView，并写入 filterExpression。
+   * 未提供时退回到向上注入的 DATA_SOURCE 能力（如 r-table 内嵌时）。
    */
   dataKey?: string
   /** 是否允许折叠。 */
@@ -51,37 +46,5 @@ export interface RendererFilterProps extends SparkNodeProps {
   gridGap?: number | string
   /** 栅格行高。 */
   gridAutoRows?: string
-
-  // ── 内部桥接字段（由父容器模板注入，不来自 pagedata.json / script.js） ──
-  /**
-   * 筛选条件模型对象。
-   * @internal
-   */
-  model?: IDataRow
-  /**
-   * 当前激活的筛选条件数。
-   * @internal
-   */
-  activeCount?: number
-  /**
-   * 是否处于折叠状态（运行时受控）。
-   * @internal
-   */
-  collapsed?: boolean
-  /**
-   * 搜索动作回调。
-   * @internal
-   */
-  searchAction?: () => Promise<void> | void
-  /**
-   * 重置动作回调。
-   * @internal
-   */
-  resetAction?: () => Promise<void> | void
-  /**
-   * 折叠切换动作回调。
-   * @internal
-   */
-  toggleCollapsedAction?: () => void
 }
 

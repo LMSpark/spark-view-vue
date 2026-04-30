@@ -21,6 +21,7 @@ import {
   asRecord,
   hasOwnProp,
   resolveConfiguredText,
+  interpolateMessageProps,
   extractErrorMessage,
   getSelectedRows,
   resolveEditTargetRow,
@@ -328,7 +329,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
   function getSelectedRowsOrWarn(view: DataView, propsMap: Record<string, unknown>): IDataRow[] | null {
     const selectedRows = getSelectedRows(view)
     if (selectedRows.length === 0) {
-      notifyAction(propsMap, 'warning', '请先勾选记录')
+      notifyAction(propsMap, 'warning', '请先选择记录')
       return null
     }
     return selectedRows
@@ -661,17 +662,19 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
         case 'delete-selected': {
           const selectedRows = getSelectedRowsOrWarn(view, propsMap)
           if (!selectedRows) return
-          const allowed = await confirmAction(propsMap, `确认删除已勾选的 ${selectedRows.length} 条记录吗？`, '批量删除确认')
+          const count = selectedRows.length
+          const interpolatedProps = interpolateMessageProps(propsMap, { count })
+          const allowed = await confirmAction(interpolatedProps, `确认删除已选择的 ${count} 条记录吗？`, '批量删除确认')
           if (!allowed) return
           await executeSelectedRowsByIdAction(
             selectedRows,
-            propsMap,
+            interpolatedProps,
             idField,
             async (id) => {
               const deleteResult = await view.removeRow(id)
               return isCrudSuccess(deleteResult)
             },
-            count => `已删除 ${count} 条记录`,
+            n => `已删除 ${n} 条记录`,
             '未删除任何记录'
           )
           return

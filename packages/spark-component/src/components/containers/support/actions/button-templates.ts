@@ -76,7 +76,7 @@ const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
   'clear-rows':          { template: 'danger', label: '清空', icon: 'Delete' },
   'delete-row':          { template: 'danger', label: '删除', icon: 'Delete' },
   'delete-current':      { template: 'danger', label: '删除当前行', icon: 'Delete' },
-  'delete-selected':     { template: 'danger', label: '删除勾选', icon: 'Delete' },
+  'delete-selected':     { template: 'danger', label: '删除选择', icon: 'Delete' },
   'patch-row':           { template: 'success', label: '更新' },
   'patch-current':       { template: 'success', label: '更新当前' },
   'patch-selected':      { template: 'success', label: '批量更新' },

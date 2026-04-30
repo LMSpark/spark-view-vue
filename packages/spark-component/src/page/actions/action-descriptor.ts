@@ -135,7 +135,7 @@ export interface DeleteCurrentAction extends ActionDescriptorBase {
   idField?: string
 }
 
-/** 删除已勾选行（可带确认） */
+/** 删除已选择行（可带确认） */
 export interface DeleteSelectedAction extends ActionDescriptorBase {
   action: 'delete-selected'
   dataKey?: string

@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-30T10:03:03.089Z",
+  "buildTime": "2026-04-30T12:56:50.077Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -2246,7 +2246,7 @@
       "type": "r-filter",
       "filePath": "packages/spark-component/src/components/containers/RendererFilter.vue",
       "category": "container",
-      "description": "筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。",
+      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点；",
       "props": [
         {
           "name": "dataKey",
@@ -33262,7 +33262,7 @@
       "r-filter": {
         "type": "r-filter",
         "category": "container",
-        "description": "筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。",
+        "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点；",
         "filePath": "packages/spark-component/src/components/containers/RendererFilter.vue",
         "propRefs": [
           "prop_00190",

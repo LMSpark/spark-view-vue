@@ -67,15 +67,12 @@ function resolveNodePermAction(node: SparkNode): ResolvedPermAction {
 
 // ── 核心动作判断 ──
 
-function hasOwnContext<T extends object, K extends PropertyKey>(value: T, key: K): value is T & Record<K, unknown> {
-  return Object.prototype.hasOwnProperty.call(value, key)
-}
-
 /**
  * 判断指定动作在权限上下文中是否被允许。
  *
- * 支持 model 级（create/import/export）和 row 级（edit/delete/create-child）动作。
- * 未注册的自定义动作默认放行。
+ * 语义：effective = max(基线允许, 权限快照)。缺少快照 = 基线允许。
+ * 仅当快照显式禁止（如 _modelPerm.allowCreate === false / _perm.allowDelete === false /
+ * editableFields=[]）时才拒绝。
  */
 export function isPermittedAction(
   action: PermissionAction | undefined,
@@ -86,23 +83,22 @@ export function isPermittedAction(
   const mode = context.permissionMode
   if (mode === 'none') return true
 
-  const hasModelPermission = hasOwnContext(context, 'modelPermission')
-  const hasRow = hasOwnContext(context, 'row')
+  const row = context.row ?? null
 
   switch (action) {
     case 'create':
-      return hasModelPermission && canCreate(context.modelPermission, mode)
+      return canCreate(context.modelPermission, mode)
     case 'import':
-      return hasModelPermission && canImport(context.modelPermission, mode)
+      return canImport(context.modelPermission, mode)
     case 'export':
-      return hasModelPermission && canExport(context.modelPermission, mode)
+      return canExport(context.modelPermission, mode)
     case 'create-child':
-      return (hasModelPermission ? canCreate(context.modelPermission, mode) : true)
-        && (hasRow ? !!context.row && canCreateChild(context.row, mode) : true)
+      return canCreate(context.modelPermission, mode)
+        && (row ? canCreateChild(row, mode) : true)
     case 'delete':
-      return hasRow && !!context.row && canDelete(context.row, mode)
+      return row ? canDelete(row, mode) : true
     case 'edit':
-      return hasRow && !!context.row && canEdit(context.row, mode)
+      return row ? canEdit(row, mode) : true
     default:
       return true
   }

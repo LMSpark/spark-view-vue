@@ -32,7 +32,7 @@ export const BUILTIN_ACTION_META = {
   'refresh': { label: '刷新' },
   'delete-row': { label: '删除' },
   'delete-current': { label: '删除当前' },
-  'delete-selected': { label: '删除勾选' },
+  'delete-selected': { label: '删除选择' },
   'patch-row': { label: '更新' },
   'patch-current': { label: '更新当前' },
   'patch-selected': { label: '批量更新' },

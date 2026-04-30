@@ -42,9 +42,7 @@ function resolveBuiltinBeforeRenderAction(
     console.warn(`[builtin-actions] ${message}`, error)
   })
 
-  return mergeNodeBeforeRenderProps(action, state.propsPatch, {
-    mirrorDisabledToButtonDisabled: true,
-  })
+  return mergeNodeBeforeRenderProps(action, state.propsPatch)
 }
 
 function matchesRowCondition(row: IDataRow | null | undefined, condition: Record<string, unknown> | null): boolean {
@@ -70,7 +68,7 @@ export function isBuiltinActionDisabled(
 ): boolean {
   const resolvedAction = resolveBuiltinBeforeRenderAction(action, view, scope)
   const propsMap = getActionProps(resolvedAction)
-  if (readBoolean(propsMap['buttonDisabled']) === true || readBoolean(propsMap['disabled']) === true) return true
+  if (readBoolean(propsMap['disabled']) === true) return true
 
   const actionName = getBuiltinActionName(resolvedAction)
   if (!actionName || !view) return false

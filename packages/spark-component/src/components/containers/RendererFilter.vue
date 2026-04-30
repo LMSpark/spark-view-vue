@@ -51,36 +51,104 @@
 <script setup lang="ts">
 /**
  * @skill r-filter
- * @description 筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。
+ * @description 筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点；
+ * 当 children 中含有带 `field` 的过滤项节点时进入面板模式，自维护 filterModel
+ * 与 DataView.setFilter 同步，无需父容器注入桥接字段。
  */
-import { computed } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import { computed, ref, toRef, watch } from 'vue'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_PERMISSION_MODE } from '../../permission'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, useSparkComponent } from '../internal'
+import {
+  DATA_SOURCE,
+  PAGE_DATASET,
+  SparkComponentRenderer,
+  getSparkNodeChildren,
+  nodeId,
+  nodeInputProp,
+  useSparkPageComponent,
+  type SparkNode,
+} from '../internal'
+import { useContainerDataSource } from './composables/useContainerDataSource'
+import { useFilterPanel } from './layout'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-filter',
 })
 
-function isRecordObject(value: unknown): value is IDataRow {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+const { sparkConsume, sparkProvide, logger } = useSparkPageComponent(props)
 
-function assertPanelModel(value: unknown): asserts value is IDataRow {
-  if (value === undefined || isRecordObject(value)) return
-  throw new Error('RendererFilter: panel 模式下 model 必须是对象')
-}
-
-assertPanelModel(props.model)
-
+// ── 子节点归一化 ─────────────────────────────────────────────────────────
 const standaloneChildren = computed(() => getSparkNodeChildren(props.children))
 const resolvedConfigs = computed(() => standaloneChildren.value)
-const isPanelMode = computed(() => props.model !== undefined)
-const resolvedModel = computed<IDataRow>(() => props.model ?? {})
-const resolvedFilterModel = computed<IDataRow>(() => resolvedModel.value)
-const resolvedActiveCount = computed(() => props.activeCount ?? 0)
-const resolvedCollapsed = computed(() => props.collapsed ?? false)
+
+/**
+ * 是否进入面板模式：children 中至少有一个带 `field` 的节点视为过滤项。
+ * 仅承载 wrapper 子节点（无 field）的情况退回 standalone 渲染。
+ */
+const isPanelMode = computed(() => {
+  return resolvedConfigs.value.some((node) => {
+    const field = nodeInputProp(node, 'field')
+    return typeof field === 'string' && field.trim().length > 0
+  })
+})
+
+// ── DataView 自治解析 ───────────────────────────────────────────────────
+const pageDataSet = sparkConsume(PAGE_DATASET)
+const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
+
+const { resolvedDataSource: resolvedFromKey } = useContainerDataSource<DataView>({
+  dataKey: toRef(props, 'dataKey'),
+  pageDataSet,
+  mapView: view => view,
+})
+
+const resolvedView = computed<DataView | null>(() => {
+  if (resolvedFromKey.value) return resolvedFromKey.value
+  return inheritedDataSource ?? null
+})
+
+// 面板模式下必须能解析到 DataView，否则 fail-fast。
+watch(
+  [isPanelMode, resolvedView],
+  ([panelMode, view]) => {
+    if (panelMode && !view) {
+      throw new Error(
+        'RendererFilter: 面板模式必须能解析到 DataView，请通过 dataKey 显式绑定，'
+        + '或确保父容器通过 DATA_SOURCE 能力向下注入。',
+      )
+    }
+  },
+  { immediate: true },
+)
+
+// ── 过滤状态自治（仅面板模式下生效） ────────────────────────────────────
+const {
+  filterModel,
+  hasFilters,
+  activeFilterCount,
+  searchFilters,
+  resetFilters,
+} = useFilterPanel({
+  filterChildren: computed(() => isPanelMode.value ? resolvedConfigs.value : []),
+  dataView: resolvedView,
+  logger,
+})
+
+// ── 折叠状态自治 ────────────────────────────────────────────────────────
+const filtersCollapsed = ref<boolean>(props.defaultCollapsed ?? false)
+watch(() => props.defaultCollapsed, (next) => {
+  filtersCollapsed.value = next ?? false
+})
+function toggleFiltersCollapsed() {
+  if (props.collapsible !== true) return
+  filtersCollapsed.value = !filtersCollapsed.value
+}
+
+// ── 渲染态计算 ──────────────────────────────────────────────────────────
+const resolvedFilterModel = computed<IDataRow>(() => filterModel as IDataRow)
+const resolvedActiveCount = computed(() => activeFilterCount.value)
+const resolvedCollapsed = computed(() => filtersCollapsed.value)
 const resolvedGridColumns = computed(() => props.gridColumns ?? 24)
 const resolvedGridGap = computed(() => props.gridGap ?? 12)
 const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, auto)')
@@ -151,22 +219,31 @@ const fieldScopeConfig = computed<SparkNode>(() => ({
   },
 }))
 
-const { sparkProvide } = useSparkComponent({ type: props.type })
+// 面板内的字段区不参与权限读写控制（仅作为查询条件输入）。
 if (isPanelMode.value) {
   sparkProvide(PAGE_PERMISSION_MODE, 'none')
 }
 
+// hasFilters 已由 useFilterPanel 提供；导出供模板可读
+void hasFilters
+
 async function handleSearch(): Promise<void> {
-  await props.searchAction?.()
+  await searchFilters()
 }
 
 async function handleReset(): Promise<void> {
-  await props.resetAction?.()
+  await resetFilters()
 }
 
 function handleToggleCollapsed() {
-  props.toggleCollapsedAction?.()
+  toggleFiltersCollapsed()
 }
+
+// 面向脚本/测试暴露过滤模型与活跃数，便于读取/赋值或断言。
+defineExpose({
+  filterModel,
+  activeFilterCount,
+})
 </script>
 
 <style scoped>

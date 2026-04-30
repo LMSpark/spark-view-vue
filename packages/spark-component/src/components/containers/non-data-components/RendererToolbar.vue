@@ -44,7 +44,7 @@ import {
 } from '../../internal'
 import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { extractModelPermission, isModelActionAllowed, isRowActionAllowed, type ModelPermissionSource } from '../../../permission'
+import { extractModelPermission, type ModelPermissionSource } from '../../../permission'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.types'
 
@@ -130,25 +130,10 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
     host: { type: 'r-toolbar' },
   })
 
-  let resolvedNode = mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
-    mirrorDisabledToButtonDisabled: true,
+  // 仅做 onBeforeRender 透传；权限/禁用由叶子组件（RendererButton）自管。
+  return mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
     markResolved: true,
   })
-
-  // 行作用域工具栏由行宿主负责动作语义，不在 toolbar 层做模型/当前行权限投影。
-  if (inheritedDataRow !== null) return resolvedNode
-
-  const allowed = isModelActionAllowed(resolvedNode, context.modelPermission) && isRowActionAllowed(resolvedNode, context.row)
-  if (allowed) return resolvedNode
-
-  return {
-    ...resolvedNode,
-    props: {
-      ...(resolvedNode.props ?? {}),
-      disabled: true,
-      buttonDisabled: true,
-    },
-  }
 }
 
 function isToolbarActionVisible(node: SparkNode): boolean {

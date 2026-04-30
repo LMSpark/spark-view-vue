@@ -83,7 +83,7 @@ import {
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
-import { extractModelPermission, isModelActionAllowed, isRowActionAllowed, type ModelPermissionSource } from '../../../../permission'
+import { extractModelPermission, type ModelPermissionSource } from '../../../../permission'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
@@ -160,22 +160,10 @@ function resolveTreeToolbarActionNode(node: SparkNode): SparkNode {
     host: { type: 'r-tree-toolbar' },
   })
 
-  const resolvedNode = mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
-    mirrorDisabledToButtonDisabled: true,
+  // 仅做 onBeforeRender 透传；权限/禁用由叶子组件（RendererButton）自管。
+  return mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
     markResolved: true,
   })
-
-  const allowed = isModelActionAllowed(resolvedNode, modelPermission) && isRowActionAllowed(resolvedNode, scopedRow)
-  if (allowed) return resolvedNode
-
-  return {
-    ...resolvedNode,
-    props: {
-      ...(resolvedNode.props ?? {}),
-      disabled: true,
-      buttonDisabled: true,
-    },
-  }
 }
 
 function isTreeToolbarActionVisible(node: SparkNode): boolean {

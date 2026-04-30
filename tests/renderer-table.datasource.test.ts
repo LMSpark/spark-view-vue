@@ -10,6 +10,13 @@ import RendererToolbar from '../packages/spark-component/src/components/containe
 import RendererFilter from '../packages/spark-component/src/components/containers/RendererFilter.vue'
 import { createBuiltinActionHandler } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-handler'
 import { hasRemoteListApi } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-helpers'
+import {
+  extractModelPermission,
+  isModelActionAllowed,
+  isRowActionAllowed,
+  PAGE_PERMISSION_MODE,
+  type ModelPermissionSource,
+} from '../packages/spark-component/src/permission'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']
@@ -48,11 +55,17 @@ function readConfigActionText(config: Record<string, unknown>): string {
 function resolveScopedRow(
   dataRow: unknown,
   propsMap: Record<string, unknown>,
+  dataSource?: unknown,
 ): Record<string, unknown> | undefined {
   const capabilityRow = dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)
     ? dataRow as Record<string, unknown>
     : undefined
-  return capabilityRow ?? (propsMap['row'] as Record<string, unknown> | undefined)
+  if (capabilityRow !== undefined) return capabilityRow
+  const propRow = propsMap['row'] as Record<string, unknown> | undefined
+  if (propRow !== undefined) return propRow
+  // 回退：DATA_SOURCE.currentRow（与 RendererButton 一致）
+  const cur = (dataSource as { currentRow?: Record<string, unknown> } | null | undefined)?.currentRow
+  return cur !== undefined && cur !== null ? cur : undefined
 }
 
 function invokeScopedClick(click: unknown, scopedRow: Record<string, unknown> | undefined): boolean {
@@ -89,7 +102,7 @@ function renderActionFallbackButton(options: {
     'data-row-id': String(scopedRow?.['id'] ?? ''),
     'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
     'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-    disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
+    disabled: propsMap['disabled'] === true,
     onClick: () => {
       if (invokeScopedClick(click, scopedRow)) return
       const actionForExecute = withScopedRowProp(config, scopedRow)
@@ -113,7 +126,8 @@ const SparkActionStub = defineComponent({
       const propsMap = readConfigProps(config)
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
-      const scopedRow = resolveScopedRow(dataRow, propsMap)
+      const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
+      const scopedRow = resolveScopedRow(dataRow, propsMap, dataSource)
       const type = String(config['type'] ?? '')
 
       if (type === 'r-toolbar') {
@@ -124,90 +138,37 @@ const SparkActionStub = defineComponent({
       }
 
       if (type === 'r-filter') {
-        const resolvedConfigs = Array.isArray(propsMap['configs'])
-          ? propsMap['configs'] as Array<Record<string, unknown>>
-          : []
-        const resolvedModel = (propsMap['model'] as Record<string, unknown> | undefined) ?? {}
-        const resolvedCollapsed = propsMap['collapsed'] === true
-        const resolvedActiveCount = Number(propsMap['activeCount'] ?? 0)
-        const resolvedCollapsible = propsMap['collapsible'] === true
-        return h('div', { class: 'renderer-table-filters' }, [
-          ...(resolvedCollapsible
-            ? [
-                h('div', { class: 'renderer-table-filters__header' }, [
-                  h('div', { class: 'renderer-table-filters__heading' }, [
-                    h('span', { class: 'renderer-table-filters__title' }, '筛选条件'),
-                    ...(resolvedActiveCount > 0
-                      ? [h('span', { class: 'el-tag-stub renderer-table-filters__count' }, `${resolvedActiveCount} 项筛选`)]
-                      : []),
-                  ]),
-                  h('button', {
-                    type: 'button',
-                    class: ['renderer-table-filters__toggle', resolvedCollapsed ? 'is-collapsed' : ''],
-                    'aria-expanded': String(!resolvedCollapsed),
-                    onClick: () => {
-                      const toggleCollapsedAction = propsMap['toggleCollapsedAction']
-                      if (typeof toggleCollapsedAction === 'function') {
-                        void toggleCollapsedAction()
-                      }
-                    },
-                  }, [
-                    h('span', { class: 'renderer-table-filters__toggle-icon', 'aria-hidden': 'true' }, '>'),
-                    h('span', { class: 'renderer-table-filters__toggle-text' }, resolvedCollapsed ? '展开筛选' : '收起筛选'),
-                  ]),
-                ]),
-              ]
-            : []),
-          h('div', {
-            class: 'renderer-table-filters__content',
-            style: resolvedCollapsed ? { display: 'none' } : {},
-          }, [
-            h('div', { class: 'renderer-table-filters__body' }, [
-              h(RendererFieldScopeStub as any, {
-                model: resolvedModel,
-                configs: resolvedConfigs,
-                autoFitMinWidth: String(propsMap['autoFitMinWidth'] ?? ''),
-                defaultColSpan: Number(propsMap['itemSpan'] ?? 24),
-              }),
-            ]),
-            h('div', { class: 'renderer-table-filters__actions' }, [
-              h('button', {
-                type: 'button',
-                class: 'el-button-stub el-button-stub--primary',
-                onClick: () => {
-                  const searchAction = propsMap['searchAction']
-                  if (typeof searchAction === 'function') {
-                    void searchAction()
-                  }
-                },
-              }, '查询'),
-              h('button', {
-                type: 'button',
-                class: 'el-button-stub',
-                onClick: () => {
-                  const resetAction = propsMap['resetAction']
-                  if (typeof resetAction === 'function') {
-                    void resetAction()
-                  }
-                },
-              }, '重置'),
-            ]),
-          ]),
-        ])
+        return h(RendererFilter as any, {
+          ...readConfigProps(config),
+          children: Array.isArray(config['children']) ? config['children'] : [],
+        })
       }
 
       if (type === 'r-field-scope') {
+        const childrenList = Array.isArray(propsMap['children'])
+          ? propsMap['children']
+          : (Array.isArray(propsMap['configs']) ? propsMap['configs'] : [])
         return h(RendererFieldScopeStub as any, {
           model: (propsMap['model'] as Record<string, unknown> | undefined) ?? {},
-          configs: Array.isArray(propsMap['configs']) ? propsMap['configs'] : [],
+          configs: childrenList,
           autoFitMinWidth: String(propsMap['autoFitMinWidth'] ?? ''),
           defaultColSpan: Number(propsMap['defaultColSpan'] ?? 24),
         })
       }
 
+      // 模拟 RendererButton 自管权限：当节点是内置/受权限管的动作时，做叶子级权限投影。
+      const modelPerm = extractModelPermission(dataSource as ModelPermissionSource | null)
+      const permissionMode = sparkConsume(PAGE_PERMISSION_MODE) ?? undefined
+      const actionNode = { type, props: propsMap } as SparkNode
+      const permissionAllowed = isModelActionAllowed(actionNode, modelPerm, permissionMode)
+        && isRowActionAllowed(actionNode, scopedRow, permissionMode)
+      const stubPropsMap = permissionAllowed
+        ? propsMap
+        : { ...propsMap, disabled: true }
+
       return renderActionFallbackButton({
         config,
-        propsMap,
+        propsMap: stubPropsMap,
         click,
         scopedRow,
         actionType: type,
@@ -507,7 +468,8 @@ const SparkColumnRendererStub = defineComponent({
       const propsMap = readConfigProps(config)
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
-      const scopedRow = resolveScopedRow(dataRow, propsMap)
+      const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
+      const scopedRow = resolveScopedRow(dataRow, propsMap, dataSource)
       const actionType = String(config['type'] ?? '')
       return renderActionFallbackButton({
         config,
@@ -525,7 +487,7 @@ const SparkColumnRendererStub = defineComponent({
             getLogger: () => ({ debug: () => {}, info: () => {}, warn: console.warn, error: console.error }),
             hasRemoteListApi,
           })
-          const row = resolveScopedRow(dataRow, propsMap)
+          const row = resolveScopedRow(dataRow, propsMap, dataSource)
           if (row !== undefined) {
             void handler.handleRow(action, row, 0)
           } else {
@@ -2410,7 +2372,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="biz-row-action-config"]').exists()).toBe(true)
   })
 
-  it('should keep structured row actions enabled even when row permission denies', () => {
+  it('should disable structured row actions when row permission denies (leaf-managed)', () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
@@ -2434,7 +2396,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const deniedAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
     expect(deniedAction.exists()).toBe(true)
-    expect((deniedAction.element as HTMLButtonElement).disabled).toBe(false)
+    // 叶子自管一致语义：行内 row._perm.allowDelete=false 与工具栏一样需被拒。
+    expect((deniedAction.element as HTMLButtonElement).disabled).toBe(true)
     expect(wrapper.find('.renderer-table-row-actions').exists()).toBe(true)
   })
 
@@ -2835,7 +2798,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
     const deniedRowAction = wrapper.find('.spark-action-stub[data-type="delete-row"]')
     expect(deniedRowAction.exists()).toBe(true)
-    expect((deniedRowAction.element as HTMLButtonElement).disabled).toBe(false)
+    // 叶子自管一致语义：行内 row._perm.allowDelete=false 与工具栏一样需被拒。
+    expect((deniedRowAction.element as HTMLButtonElement).disabled).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="plain-row"]').exists()).toBe(true)
   })
 
@@ -2945,7 +2909,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
   })
 
-  it('should disable delete-current when inferred permission has no row _perm snapshot', async () => {
+  it('should keep delete-current enabled when row has no _perm snapshot (baseline allow)', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Toolbar-DeleteCurrent-Infer-NoPermSnapshot',
       tables: {
@@ -2989,16 +2953,17 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const actionButton = () => wrapper.find('.spark-action-stub[data-type="delete-current"]')
 
     expect(actionButton().exists()).toBe(true)
-    expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
+    // 行无 _perm 快照 → 基线允许（max(true, undefined)）
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
 
     dv.setCurrentRowById(2)
     await flushPromises()
     await nextTick()
 
-    expect((actionButton().element as HTMLButtonElement).disabled).toBe(true)
+    expect((actionButton().element as HTMLButtonElement).disabled).toBe(false)
   })
 
-  it('should disable tree toolbar actions but keep node actions enabled when denied by permission', async () => {
+  it('should disable tree toolbar actions and node actions when denied by permission (leaf-managed)', async () => {
     const DeniedTreeStub = defineComponent({
       setup(_, { slots }) {
         return () => h('div', { class: 'el-tree-stub denied' }, slots['default']?.({
@@ -3059,9 +3024,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const deniedCreateChild = wrapper.find('.spark-action-stub[data-type="create-child-node"]')
     const deniedDeleteNode = wrapper.find('.spark-action-stub[data-type="delete-node"]')
     expect(deniedCreateChild.exists()).toBe(true)
-    expect((deniedCreateChild.element as HTMLButtonElement).disabled).toBe(false)
+    // 叶子自管一致语义：节点 _perm.allowCreateChild=false 应被拒
+    expect((deniedCreateChild.element as HTMLButtonElement).disabled).toBe(true)
     expect(deniedDeleteNode.exists()).toBe(true)
-    expect((deniedDeleteNode.element as HTMLButtonElement).disabled).toBe(false)
+    // 节点 _perm.allowDelete=false 应被拒
+    expect((deniedDeleteNode.element as HTMLButtonElement).disabled).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="plain-node"]').exists()).toBe(true)
   })
 
@@ -3157,6 +3124,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const dv = ds.getView('Users', 'default')!
+    dv.setCurrentRowById(1)
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
@@ -3404,13 +3372,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const vm = wrapper.vm as unknown as { filterModel: Record<string, unknown>; tableData: IDataRow[] }
-    vm.filterModel['score'] = [15, 25]
+    const filterWrapper = wrapper.findComponent(RendererFilter)
+    const filterVm = filterWrapper.vm as unknown as { filterModel: Record<string, unknown> }
+    const vm = wrapper.vm as unknown as { tableData: IDataRow[] }
+    filterVm.filterModel['score'] = [15, 25]
     await nextTick()
     expect(vm.tableData).toHaveLength(1)
     expect(vm.tableData[0]?.['score']).toBe(20)
 
-    vm.filterModel['status'] = ['done', 'archived']
+    filterVm.filterModel['status'] = ['done', 'archived']
     await nextTick()
     expect(vm.tableData).toHaveLength(1)
     expect(vm.tableData[0]?.['status']).toBe('done')

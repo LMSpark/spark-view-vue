@@ -26,7 +26,7 @@ export interface BeforeRenderState {
 type BeforeRenderHandler = (context: BeforeRenderContext) => unknown
 
 interface MergeBeforeRenderOptions {
-  mirrorDisabledToButtonDisabled?: boolean
+
   markResolved?: boolean
 }
 
@@ -36,10 +36,6 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   return isObjectRecord(value) && typeof value['then'] === 'function'
-}
-
-function hasOwn(record: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(record, key)
 }
 
 function sanitizeContextProps(props: Record<string, unknown>): Record<string, unknown> {
@@ -128,15 +124,6 @@ export function mergeNodeBeforeRenderProps(
 
   if (options?.markResolved === true) {
     nextProps[BEFORE_RENDER_RESOLVED_PROP] = true
-  }
-
-  if (
-    options?.mirrorDisabledToButtonDisabled === true
-    && hasOwn(patch, 'disabled')
-    && !hasOwn(patch, 'buttonDisabled')
-    && typeof patch['disabled'] === 'boolean'
-  ) {
-    nextProps['buttonDisabled'] = patch['disabled']
   }
 
   return {

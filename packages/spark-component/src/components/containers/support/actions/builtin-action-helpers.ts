@@ -62,6 +62,29 @@ export function resolveConfiguredText(record: Record<string, unknown>, key: stri
   return ''
 }
 
+const MESSAGE_TEXT_KEYS = ['confirmMessage', 'confirmTitle', 'successMessage', 'failureMessage', 'emptyMessage', 'errorMessage', 'validateMessage'] as const
+
+export function interpolateMessageProps(
+  record: Record<string, unknown>,
+  vars: Record<string, string | number>,
+): Record<string, unknown> {
+  let touched = false
+  const next: Record<string, unknown> = { ...record }
+  for (const key of MESSAGE_TEXT_KEYS) {
+    const raw = next[key]
+    if (typeof raw !== 'string') continue
+    const replaced = raw.replace(/\{(\w+)\}/g, (_match, name: string) => {
+      const v = vars[name]
+      return v === undefined ? `{${name}}` : String(v)
+    })
+    if (replaced !== raw) {
+      next[key] = replaced
+      touched = true
+    }
+  }
+  return touched ? next : record
+}
+
 export function normalizeComparable(value: unknown): unknown {
   if (value === '') return null
   return value ?? null

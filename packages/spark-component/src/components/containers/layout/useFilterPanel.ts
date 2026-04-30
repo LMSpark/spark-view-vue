@@ -2,35 +2,25 @@ import { computed, reactive, watch } from 'vue'
 import type { SparkNode } from '../../internal'
 import { nodeInputProp } from '../../internal'
 import type { DataView, FilterExpression, FilterOperator, FilterValueExpression } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
-import type { RendererFilterProps } from '../RendererFilter.types'
+
+/**
+ * `useFilterPanel`：r-filter 自治的筛选状态 / 表达式 / DataView 同步逻辑。
+ *
+ * 设计目标：
+ * - 单一职责：仅维护 filterModel + filterExpression + 同步 DataView.setFilter/refresh。
+ * - 调用方（RendererFilter.vue）通过 dataKey 自行解析 DataView，再注入到本 composable。
+ * - 不再产出渲染态 props bag，也不再桥接给父容器（r-table）。
+ */
 
 interface LoggerLike {
   error(message: string, error?: unknown): void
 }
 
-interface UseTableFiltersOptions {
+interface UseFilterPanelOptions {
   filterChildren: ValueRef<SparkNode[]>
   dataView: ValueRef<DataView | null>
-  filterClass: ValueRef<string | undefined>
-  filterGridColumns: ValueRef<number | undefined>
-  filterGridGap: ValueRef<number | string | undefined>
-  filterGridAutoRows: ValueRef<string | undefined>
-  filterCollapsible?: ValueRef<boolean | undefined>
-  filterCollapsed?: ValueRef<boolean | undefined>
-  filterAutoFitMinWidth?: ValueRef<string | undefined>
-  filterItemSpan?: ValueRef<number | undefined>
-  filterActionSpan?: ValueRef<number | undefined>
-  toggleCollapsedAction?: () => void
   logger: LoggerLike
-}
-
-interface TableFilterZeroCodeBridge {
-  filterModel: Record<string, unknown>
-  activeFilterCount: number
-  resetFilters: () => Promise<void>
-  searchFilters: () => Promise<void>
 }
 
 interface FilterCapableView {
@@ -98,14 +88,14 @@ function getNodeFilterValueRefField(config: SparkNode): string | undefined {
   const value = nodeInputProp(config, 'filterValueRefField')
   if (value === undefined) return undefined
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error('RendererTable: filterValueRefField 必须是非空字符串')
+    throw new Error('RendererFilter: filterValueRefField 必须是非空字符串')
   }
   return value.trim()
 }
 
 function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
   if (Array.isArray(value)) return
-  throw new Error('RendererTable: r-filter children 必须是数组节点配置')
+  throw new Error('RendererFilter: r-filter children 必须是数组节点配置')
 }
 
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
@@ -134,7 +124,7 @@ function createResidentFieldRefDescriptor(
 
   const field = getNodeField(config)
   if (!field) {
-    throw new Error('RendererTable: 配置 filterValueRefField 的筛选节点必须声明 field')
+    throw new Error('RendererFilter: 配置 filterValueRefField 的筛选节点必须声明 field')
   }
 
   return {
@@ -168,7 +158,7 @@ function assertResidentFieldRefsExist(
   for (const descriptor of descriptors) {
     if (!isResidentFieldRefDescriptor(descriptor)) continue
     if (!hasColumn(candidate, descriptor.refField)) {
-      throw new Error(`RendererTable: filterValueRefField 引用了不存在的字段 ${descriptor.refField}`)
+      throw new Error(`RendererFilter: filterValueRefField 引用了不存在的字段 ${descriptor.refField}`)
     }
   }
 }
@@ -205,21 +195,8 @@ function buildCondition(config: SparkNode, value: unknown): FilterExpression | u
   }
 }
 
-export function useTableFilters(options: UseTableFiltersOptions) {
+export function useFilterPanel(options: UseFilterPanelOptions) {
   const filterModel = reactive<Record<string, unknown>>({})
-
-  const filterClassValue = computed(() =>
-    options.filterClass.value ?? ''
-  )
-  const filterGridColumnsValue = computed(() =>
-    options.filterGridColumns.value ?? 24
-  )
-  const filterGridGapValue = computed(() =>
-    options.filterGridGap.value ?? 12
-  )
-  const filterGridAutoRowsValue = computed(() =>
-    options.filterGridAutoRows.value ?? 'minmax(32px, auto)'
-  )
 
   const allFilterNodes = computed(() => {
     const nodes = options.filterChildren.value
@@ -326,7 +303,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
       await applyFilterToView(view, filterExpression.value, false)
       initialized = true
     } catch (error) {
-      options.logger.error('RendererTable: 同步过滤表达式失败', error)
+      options.logger.error('RendererFilter: 同步过滤表达式失败', error)
     }
   }, { immediate: true })
 
@@ -336,7 +313,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     try {
       await applyFilterToView(view, expr, initialized)
     } catch (error) {
-      options.logger.error('RendererTable: 应用过滤失败', error)
+      options.logger.error('RendererFilter: 应用过滤失败', error)
     } finally {
       initialized = true
     }
@@ -362,7 +339,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     try {
       await applyFilterToView(view, filterExpression.value, true)
     } catch (error) {
-      options.logger.error('RendererTable: 重置过滤失败', error)
+      options.logger.error('RendererFilter: 重置过滤失败', error)
     }
   }
 
@@ -372,57 +349,17 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     try {
       await applyFilterToView(view, filterExpression.value, true)
     } catch (error) {
-      options.logger.error('RendererTable: 应用过滤失败', error)
+      options.logger.error('RendererFilter: 应用过滤失败', error)
     }
   }
-
-  const filterRendererProps = computed<RendererFilterProps>(() => {
-    const collapsible = options.filterCollapsible?.value
-    const collapsed = options.filterCollapsed?.value
-    const autoFitMinWidth = options.filterAutoFitMinWidth?.value
-    const itemSpan = options.filterItemSpan?.value
-    const actionSpan = options.filterActionSpan?.value
-    const toggleCollapsedAction = options.toggleCollapsedAction
-
-    return {
-      class: filterClassValue.value,
-      model: filterModel as IDataRow,
-      children: filterConfigs.value,
-      activeCount: activeFilterCount.value,
-      gridColumns: filterGridColumnsValue.value,
-      gridGap: filterGridGapValue.value,
-      gridAutoRows: filterGridAutoRowsValue.value,
-      searchAction: searchFilters,
-      resetAction: resetFilters,
-      ...(collapsible !== undefined ? { collapsible } : {}),
-      ...(collapsed !== undefined ? { collapsed } : {}),
-      ...(autoFitMinWidth !== undefined ? { autoFitMinWidth } : {}),
-      ...(itemSpan !== undefined ? { itemSpan } : {}),
-      ...(actionSpan !== undefined ? { actionSpan } : {}),
-      ...(toggleCollapsedAction !== undefined ? { toggleCollapsedAction } : {}),
-    }
-  })
-
-  const zeroCodeBridge = computed<TableFilterZeroCodeBridge>(() => ({
-    filterModel,
-    activeFilterCount: activeFilterCount.value,
-    resetFilters,
-    searchFilters,
-  }))
 
   return {
     filterModel,
     filterConfigs,
-    filterRendererProps,
-    filterClassValue,
-    filterGridColumnsValue,
-    filterGridGapValue,
-    filterGridAutoRowsValue,
     filterExpression,
     hasFilters: hasRenderableFilters,
     activeFilterCount,
     searchFilters,
     resetFilters,
-    zeroCodeBridge,
   }
 }

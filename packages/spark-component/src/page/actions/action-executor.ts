@@ -331,14 +331,14 @@ async function executeDeleteSelected(desc: DeleteSelectedAction, ctx: ActionExec
 
   if (selectedRows.length === 0) {
     const ps = ctx.getPageService()
-    if (ps) ps.showMessage('请先勾选记录', 'warning')
+    if (ps) ps.showMessage('请先选择记录', 'warning')
     return
   }
 
   if (desc.confirmMessage) {
     const ps = ctx.getPageService()
     if (ps) {
-      const ok = await ps.showConfirm(desc.confirmMessage ?? `确认删除已勾选的 ${selectedRows.length} 条记录吗？`)
+      const ok = await ps.showConfirm(desc.confirmMessage ?? `确认删除已选择的 ${selectedRows.length} 条记录吗？`)
       if (!ok) return
     }
   }

@@ -1,7 +1,7 @@
 import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CrudApi, FilterExpression, IDataRow, TableResourceType } from '@spark-view/spark-data'
-import { useTableFilters } from '../packages/spark-component/src/components/containers/layout/useTableFilters'
+import { useFilterPanel } from '../packages/spark-component/src/components/containers/layout/useFilterPanel'
 
 interface FilterViewLike {
   rows: IDataRow[]
@@ -51,16 +51,12 @@ async function mountTableFilters(view: FilterViewLike, filterChildren: Array<Rec
     error: vi.fn<(message: string, error?: unknown) => void>(),
   }
   const viewRef = ref(view)
-  let api!: ReturnType<typeof useTableFilters>
+  let api!: ReturnType<typeof useFilterPanel>
 
   scope.run(() => {
-    api = useTableFilters({
+    api = useFilterPanel({
       filterChildren: computed(() => filterChildren as any),
       dataView: computed(() => viewRef.value as any),
-      filterClass: computed(() => undefined),
-      filterGridColumns: computed(() => undefined),
-      filterGridGap: computed(() => undefined),
-      filterGridAutoRows: computed(() => undefined),
       logger,
     })
   })
@@ -75,7 +71,7 @@ async function mountTableFilters(view: FilterViewLike, filterChildren: Array<Rec
   }
 }
 
-describe('useTableFilters', () => {
+describe('useFilterPanel', () => {
   it('无筛选配置时不会覆盖视图自带 filterExpression', async () => {
     const { view, setFilter, refresh } = createView({
       rows: [{ id: 1, status: '草稿' }],

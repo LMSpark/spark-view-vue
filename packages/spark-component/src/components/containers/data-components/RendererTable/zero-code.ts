@@ -28,11 +28,6 @@ interface RendererTableZeroCodeOptions {
   selectedRowsOriginatorId?: string
   pageService: IPageServiceCapability | null | undefined
   logger: LoggerApi
-  filterModel: Record<string, unknown>
-  resetFilters: () => void
-  hasFilters: ValueRef<boolean>
-  activeFilterCount: ValueRef<number>
-  handleFilterSearch: () => Promise<void>
 }
 
 type LoadTreePathResult = Awaited<ReturnType<RendererTableApi['loadTreePath']>>
@@ -128,7 +123,11 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       return options.resolvedView.value ? getSelectedRows(options.resolvedView.value) : []
     },
     async query() {
-      await options.handleFilterSearch()
+      const view = options.resolvedView.value
+      if (!view) return
+      if (typeof view.refresh === 'function') {
+        await view.refresh()
+      }
     },
     async loadTreeNested(rootId, limit, depthLimit) {
       const view = options.resolvedView.value
@@ -196,18 +195,6 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     },
     getNativeTable() {
       return options.nativeTableRef.value
-    },
-    getFilterModel() {
-      return { ...options.filterModel }
-    },
-    resetFilters() {
-      options.resetFilters()
-    },
-    hasActiveFilters() {
-      return options.hasFilters.value
-    },
-    getActiveFilterCount() {
-      return options.activeFilterCount.value
     },
   }
 

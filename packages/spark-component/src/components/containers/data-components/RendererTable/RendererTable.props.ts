@@ -28,7 +28,7 @@ export interface RTableProps
   resizable?: boolean
   /**
    * 结构化工具栏
-   * 提示词模板：默认动作 append-row / refresh / delete-current。
+   * 提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。
    * @componentRef r-toolbar
    */
   toolbar?: RToolbarProps

@@ -29,18 +29,20 @@ describe('PermissionResolver', () => {
     expect(isPermittedAction('delete', { row: lockedRow })).toBe(false)
   })
 
-  it('defaults missing permission data to readonly for actions and fields', () => {
+  it('defaults missing permission data to baseline allow for actions; field editable still requires grant', () => {
     const row = { id: 1, name: 'Alice' } as IDataRow
 
     const state = resolveFieldPermissionState('name', row)
 
-    expect(isPermittedAction('create', {})).toBe(false)
-    expect(isPermittedAction('import', {})).toBe(false)
-    expect(isPermittedAction('export', {})).toBe(false)
-    expect(isPermittedAction('edit', { row })).toBe(false)
-    expect(isPermittedAction('delete', { row })).toBe(false)
-    expect(isPermittedAction('create-child', { row })).toBe(false)
+    // 缺省快照 → 基线允许（max(true, undefined) = true）
+    expect(isPermittedAction('create', {})).toBe(true)
+    expect(isPermittedAction('import', {})).toBe(true)
+    expect(isPermittedAction('export', {})).toBe(true)
+    expect(isPermittedAction('edit', { row })).toBe(true)
+    expect(isPermittedAction('delete', { row })).toBe(true)
+    expect(isPermittedAction('create-child', { row })).toBe(true)
     expect(state?.readable).toBe(true)
+    // 字段级可编辑仍需 editableFields 显式授予
     expect(state?.editable).toBe(false)
     expect(state?.visibility).toBe(FieldVisibility.Visible)
     expect(state?.shouldRender).toBe(true)
