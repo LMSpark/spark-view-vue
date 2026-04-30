@@ -9,11 +9,6 @@ import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererTableViewStateOptions {
   filterNode: ValueRef<RendererFilterProps | undefined>
-  tableFilterCollapsible: ValueRef<boolean | undefined>
-  tableFilterDefaultCollapsed: ValueRef<boolean | undefined>
-  tableFilterAutoFitMinWidth: ValueRef<string | undefined>
-  tableFilterItemSpan: ValueRef<number | undefined>
-  tableFilterActionSpan: ValueRef<number | undefined>
   baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
 }
@@ -75,29 +70,19 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 
   // 过滤区展示态
   const filterCollapsibleValue = computed(() =>
-    options.filterNode.value?.collapsible
-    ?? options.tableFilterCollapsible.value
-    ?? false,
+    options.filterNode.value?.collapsible ?? false,
   )
   const filterDefaultCollapsedValue = computed(() =>
-    options.filterNode.value?.defaultCollapsed
-    ?? options.tableFilterDefaultCollapsed.value
-    ?? false,
+    options.filterNode.value?.defaultCollapsed ?? false,
   )
   const filterAutoFitMinWidthValue = computed(() =>
-    options.filterNode.value?.autoFitMinWidth
-    ?? options.tableFilterAutoFitMinWidth.value
-    ?? '220px',
+    options.filterNode.value?.autoFitMinWidth ?? '220px',
   )
   const filterItemSpanValue = computed(() =>
-    options.filterNode.value?.itemSpan
-    ?? options.tableFilterItemSpan.value
-    ?? 1,
+    options.filterNode.value?.itemSpan ?? 1,
   )
   const filterActionSpanValue = computed(() =>
-    options.filterNode.value?.actionSpan
-    ?? options.tableFilterActionSpan.value
-    ?? filterItemSpanValue.value,
+    options.filterNode.value?.actionSpan ?? filterItemSpanValue.value,
   )
 
   // 折叠状态：初始值跟随默认配置，后续可由用户交互改变
