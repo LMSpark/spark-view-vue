@@ -220,7 +220,7 @@ DataView
 | **P2-B** | ~~**`RendererHostScope` / `RendererFieldScope` 升类**~~ ⏸ 暂缓：`containers/support/` 现已是清晰的"容器辅助"分类（CRUD + Scope + InteractionControl + map-node-props），升类对运行时与可读性收益有限；保持现状以减小 import 冲击面。如未来 `support/` 目录继续膨胀再触发。 | — |
 | **P2-C** | ~~**`layout/` 改名**~~ ⏸ 暂缓：`containers/layout/` 仅 3 个 composable + 1 个测试 import；命名稍显误导但不影响功能。机械改名性价比低。 | — |
 | **P2-D** | ~~**`RendererFilter` / `RendererHeader/Footer/Tail` / `RendererEditor` 归类**~~ ⏸ 暂缓：现位置在 `containers/` 顶层，已与 README 索引匹配；移动会触发大量类型 import 改动而无运行时收益。 | — |
-| **P2-E** | **AI composable 出包** | 仍待立项：[composables/](../../packages/spark-component/src/composables/) 4 个 AI 文件与渲染层无关；建议出独立 `@spark-view/spark-ai-ui` 包。工作量与影响面较大，**单独分支**推进。 | 高（出包） |
+| **P2-E** | ~~**AI composable 出包**~~ ⏸ 暂缓：实际盘点显示 4 个 composable 还耦合 3 个 Vue 组件（`AiLauncherButton` / `AiChatWidget` / `AppAiPanel`），且通过 [packages/spark-component/src/components/index.ts](../../packages/spark-component/src/components/index.ts) 公开导出。出包属真正破坏性变更（新建 `@spark-view/spark-ai-ui` 包 + 修依赖图 + 改外部调用方），需独立立项与设计评审，不纳入本轮精简。 | — |
 
 ### P3：命名/术语收敛
 
@@ -235,7 +235,7 @@ DataView
 | # | 项目 | 操作 | 影响面 |
 |---|---|---|---|
 | **P4-A** | ~~`builtin-action-helpers.ts` 拆解~~ ⏸ 暂缓：与 `executor-helpers.ts` 共存于 `page/actions/` 后边界已可控；强行去重会牵动多个调用点而收益低。 | — |
-| **P4-B** | 公共 API 分层 | 仍待立项：`index.ts` 暴露面 150+，建议拆 `index.ts` / `index.advanced.ts` 并添加 `@internal` JSDoc。**单独分支**推进。 | 中（外部使用方） |
+| **P4-B** | ~~公共 API 分层~~ ⏸ 暂缓：[packages/spark-component/src/index.ts](../../packages/spark-component/src/index.ts) 当前 157 行（含分层注释）已是规范的“主入口 + 命名空间导出”。引入 `index.advanced.ts` 会破坏 80+ docs/tests/plop-templates 的现有 import；仅加 `@internal` JSDoc 又只是工具语义、无运行时收益。如未来为 SDK 用户做正式发布再触发。 | — |
 | **P4-C** | ~~Ambient 声明集中~~ ⏸ 暂缓：散落 ambient 数量小，集中收益不抵改动成本。 | — |
 
 ---
