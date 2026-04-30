@@ -17,6 +17,5 @@ export {
 } from './builtin-action-helpers.js'
 
 export { isBuiltinActionDisabled } from './builtin-action-disabled.js'
-export { createBuiltinActionHandler } from './builtin-action-handler.js'
 export { resolveButtonStyle } from './button-templates.js'
 export type { ButtonTemplateProps, ResolvedButtonStyle } from './button-templates.js'

@@ -1,428 +1,179 @@
 /**
- * Action Descriptor 执行引擎
+ * Action Descriptor 执行引擎（单一真源）
  *
  * 解析并执行声明式 action descriptor，提供框架无关的行为执行能力。
- * 被 normalizeRuleEvents（on 事件）和 容器 wrapper 区域（如 `r-toolbar`）共同使用。
+ * 由 normalizeRuleEvents（on 事件）、容器 wrapper 区域（如 r-toolbar）以及
+ * SparkNode 翻译器（nodeToActionDescriptor）共同使用。
  */
 
 import type {
   ActionDescriptor,
-  ActionExecutionControl,
   ActionExecutionContext,
-  ShowMessageAction,
-  ShowConfirmAction,
-  ShowAlertAction,
-  NavigateAction,
-  AppendRowAction,
-  DeleteCurrentAction,
-  DeleteSelectedAction,
-  RefreshAction,
-  PatchCurrentAction,
-  SetFieldAction,
-  OpenAction,
+  ActionExecutionControl,
+  ActionExecutionScope,
+  ActionUiDecorator,
 } from './action-descriptor'
-
-import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { Logger } from '@spark-view/spark-utils'
-import type { PageMessageType } from '../../core/capability-system.js'
 import { extractActionExecutionControl } from './action-control'
-import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
+import { Logger } from '@spark-view/spark-utils'
+import { extractErrorMessage, interpolate } from './executor-helpers'
+import { createActionNotifier } from './action-notifier'
+
+import {
+  executeShowMessage,
+  executeAlert,
+  executeConfirm,
+  executeNavigate,
+  executeOpen,
+} from './executors/show'
+
+import {
+  executeAppendRow,
+  executeDelete,
+  executePatch,
+  executeMove,
+  executeMessageRow,
+  executeRefresh,
+  executeClearRows,
+  executeSetField,
+} from './executors/data'
+
+import { executeSubmitCurrentForm } from './executors/form'
 
 const logger = Logger('action-executor')
-
-// ── 视图查找辅助 ──────────────────────────────────────────────────────────
-
-interface ResolvedActionDataCapabilities {
-  dataSource: DataView | null
-  currentRow: IDataRow | null
-  selectedRows: IDataRow[]
-}
-
-function isRowLike(value: unknown): value is IDataRow {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
-function resolveSelectedRows(dataSource: DataView | null): IDataRow[] {
-  if (!dataSource || !Array.isArray(dataSource.selectedRows)) return []
-  return dataSource.selectedRows.filter(isRowLike)
-}
-
-/**
- * 动作执行前统一解析数据能力：DataView、currentRow、selectedRows。
- */
-function resolveActionDataCapabilities(dataKey: string | undefined, ctx: ActionExecutionContext): ResolvedActionDataCapabilities {
-  const ds = ctx.getDataSet()
-  if (!ds) {
-    return {
-      dataSource: null,
-      currentRow: null,
-      selectedRows: [],
-    }
-  }
-
-  if (dataKey) {
-    const binding = resolveDataKeyBinding(dataKey, ds)
-    if (!binding) {
-      return {
-        dataSource: null,
-        currentRow: null,
-        selectedRows: [],
-      }
-    }
-
-    if (binding.kind === 'view') {
-      const dataSource = binding.source as DataView
-      return {
-        dataSource,
-        currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
-        selectedRows: resolveSelectedRows(dataSource),
-      }
-    }
-
-    const dataSource = getViewFromRawKey(dataKey, ds) ?? null
-    return {
-      dataSource,
-      currentRow: isRowLike(binding.value)
-        ? binding.value
-        : (isRowLike(dataSource?.currentRow) ? dataSource.currentRow : null),
-      selectedRows: resolveSelectedRows(dataSource),
-    }
-  }
-
-  // 无 dataKey：回退到 DataSet 中第一个表的 default 视图
-  for (const tableName of Object.keys(ds.tables)) {
-    const dataSource = ds.getView(tableName, 'default')
-    if (!dataSource) continue
-    return {
-      dataSource,
-      currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
-      selectedRows: resolveSelectedRows(dataSource),
-    }
-  }
-
-  return {
-    dataSource: null,
-    currentRow: null,
-    selectedRows: [],
-  }
-}
 
 export interface ActionExecutionOptions {
   eventArgs?: unknown[]
   control?: ActionExecutionControl
+  scope?: ActionExecutionScope
 }
-
-function resolveRowId(row: IDataRow, idField: string): string | number | null {
-  const raw = row[idField]
-  return typeof raw === 'string' || typeof raw === 'number' ? raw : null
-}
-
-function inferNextRowId(view: DataView, idField: string): string | number {
-  const numericIds = view.rows
-    .map(row => row[idField])
-    .filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
-  if (numericIds.length > 0) return Math.max(...numericIds) + 1
-  return `row-${Date.now()}`
-}
-
-function interpolatePath(template: string, row: IDataRow | null): string {
-  if (!row) return template
-  return template.replace(/\{([a-zA-Z0-9_.]+)\}/g, (_, key: string) => {
-    const val = row[key]
-    return val !== null && val !== undefined ? String(val) : ''
-  })
-}
-
-// ── 执行引擎 ──────────────────────────────────────────────────────────────
 
 /**
- * 执行单个 action descriptor
- *
- * @param descriptor 声明式动作描述
- * @param ctx 运行时上下文（延迟求值）
- * @param eventArgsOrOptions 原始事件参数或执行选项
+ * 执行单个 action descriptor。
  */
 export async function executeActionDescriptor(
   descriptor: ActionDescriptor,
   ctx: ActionExecutionContext,
   eventArgsOrOptions?: unknown[] | ActionExecutionOptions,
+  scope?: ActionExecutionScope,
 ): Promise<void> {
   const options = Array.isArray(eventArgsOrOptions)
     ? { eventArgs: eventArgsOrOptions }
     : (eventArgsOrOptions ?? {})
+
   const eventArgs = options.eventArgs
   const control = options.control
+  const effectiveScope = scope ?? options.scope
 
   if (descriptor.cancelDefault && control) {
     control.cancel = true
   }
 
-  const action = descriptor.action
+  try {
+    await dispatchAction(descriptor, ctx, effectiveScope, eventArgs, control)
+  } catch (error) {
+    handleTopLevelError(descriptor, ctx, error)
+    return
+  }
 
-  switch (action) {
+  if (descriptor.then) {
+    const opts: ActionExecutionOptions = {}
+    if (eventArgs !== undefined) opts.eventArgs = eventArgs
+    if (control !== undefined) opts.control = control
+    if (effectiveScope !== undefined) opts.scope = effectiveScope
+    await executeActionDescriptor(descriptor.then, ctx, opts)
+  }
+}
+
+function decoratorOf(descriptor: ActionDescriptor): ActionUiDecorator | undefined {
+  return descriptor as ActionUiDecorator
+}
+
+function handleTopLevelError(
+  descriptor: ActionDescriptor,
+  ctx: ActionExecutionContext,
+  error: unknown,
+): void {
+  const decorator = decoratorOf(descriptor)
+  const detail = extractErrorMessage(error)
+  const fallback = decorator?.errorMessage
+    ? interpolate(decorator.errorMessage, {}, null)
+    : `${descriptor.action}失败`
+  const message = detail.length > 0 ? `${fallback}: ${detail}` : fallback
+  const notifier = createActionNotifier(ctx, decorator)
+  notifier.notifyError(message)
+  if (import.meta.env.DEV) {
+    logger.warn(`action 执行失败 action=${descriptor.action} message=${message}`)
+  }
+}
+
+async function dispatchAction(
+  descriptor: ActionDescriptor,
+  ctx: ActionExecutionContext,
+  scope: ActionExecutionScope | undefined,
+  eventArgs: unknown[] | undefined,
+  control: ActionExecutionControl | undefined,
+): Promise<void> {
+  switch (descriptor.action) {
     case 'show-message':
       executeShowMessage(descriptor, ctx)
-      break
+      return
     case 'confirm':
-      await executeConfirm(descriptor, ctx, eventArgs, control)
-      break
+      await executeConfirm(
+        descriptor,
+        ctx,
+        scope,
+        eventArgs,
+        control,
+        async (next, c, s, e, ctrl) => {
+          const opts: ActionExecutionOptions = {}
+          if (e !== undefined) opts.eventArgs = e
+          if (ctrl !== undefined) opts.control = ctrl
+          if (s !== undefined) opts.scope = s
+          await executeActionDescriptor(next, c, opts)
+        },
+      )
+      return
     case 'alert':
       await executeAlert(descriptor, ctx)
-      break
+      return
     case 'navigate':
       executeNavigate(descriptor, ctx, eventArgs)
-      break
-    case 'append-row':
-      await executeAppendRow(descriptor, ctx)
-      break
-    case 'delete-current':
-      await executeDeleteCurrent(descriptor, ctx)
-      break
-    case 'delete-selected':
-      await executeDeleteSelected(descriptor, ctx)
-      break
-    case 'refresh':
-      await executeRefresh(descriptor, ctx)
-      break
-    case 'patch-current':
-      await executePatchCurrent(descriptor, ctx)
-      break
-    case 'set-field':
-      await executeSetField(descriptor, ctx)
-      break
+      return
     case 'open':
       executeOpen(descriptor)
-      break
-    default:
-      logger.warn(`未知 action 类型: ${action}`)
       return
-  }
-
-  // 链式执行
-  if (descriptor.then) {
-    const nextOptions: ActionExecutionOptions = {}
-    if (eventArgs !== undefined) nextOptions.eventArgs = eventArgs
-    if (control !== undefined) nextOptions.control = control
-    await executeActionDescriptor(descriptor.then, ctx, nextOptions)
-  }
-}
-
-// ── 各动作实现 ────────────────────────────────────────────────────────────
-
-function executeShowMessage(desc: ShowMessageAction, ctx: ActionExecutionContext): void {
-  const ps = ctx.getPageService()
-  if (ps) ps.showMessage(desc.message, desc.messageType ?? 'info')
-}
-
-async function executeConfirm(
-  desc: ShowConfirmAction,
-  ctx: ActionExecutionContext,
-  eventArgs?: unknown[],
-  control?: ActionExecutionControl,
-): Promise<void> {
-  const ps = ctx.getPageService()
-  if (!ps) return
-
-  const confirmOpts: { type?: PageMessageType } = {}
-  if (desc.confirmType) confirmOpts.type = desc.confirmType
-  const confirmed = await ps.showConfirm(
-    desc.message,
-    desc.title ?? '确认',
-    confirmOpts,
-  )
-  const nestedControl = control ?? extractActionExecutionControl(eventArgs)
-
-  if (confirmed && desc.onConfirm) {
-    const confirmOptions: ActionExecutionOptions = {}
-    if (eventArgs !== undefined) confirmOptions.eventArgs = eventArgs
-    if (nestedControl !== undefined) confirmOptions.control = nestedControl
-    await executeActionDescriptor(desc.onConfirm, ctx, confirmOptions)
-  }
-  if (!confirmed && desc.onCancel) {
-    const cancelOptions: ActionExecutionOptions = {}
-    if (eventArgs !== undefined) cancelOptions.eventArgs = eventArgs
-    if (nestedControl !== undefined) cancelOptions.control = nestedControl
-    await executeActionDescriptor(desc.onCancel, ctx, cancelOptions)
-  }
-}
-
-async function executeAlert(desc: ShowAlertAction, ctx: ActionExecutionContext): Promise<void> {
-  const ps = ctx.getPageService()
-  if (ps) await ps.showAlert(desc.message, desc.title, {})
-}
-
-function executeNavigate(desc: NavigateAction, ctx: ActionExecutionContext, eventArgs?: unknown[]): void {
-  const router = ctx.getRouter()
-  if (!router) return
-
-  let path = desc.path
-  if (path.includes('{')) {
-    // 优先从事件参数取行数据（如 row-click 的 row），回退到 currentRow
-    const eventRow = eventArgs?.[0]
-    const rowFromEvent = (eventRow !== null && eventRow !== undefined && typeof eventRow === 'object' && !Array.isArray(eventRow))
-      ? eventRow as IDataRow
-      : null
-    const fallbackRow = resolveActionDataCapabilities(undefined, ctx).currentRow
-    path = interpolatePath(path, rowFromEvent ?? fallbackRow)
-  }
-
-  void router.push(path)
-}
-
-async function executeAppendRow(desc: AppendRowAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
-  if (!dataSource) return
-
-  const idField = desc.idField ?? 'id'
-  const payload: Record<string, unknown> = { ...(desc.payload ?? {}) }
-  if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
-    payload[idField] = inferNextRowId(dataSource, idField)
-  }
-
-  const ps = ctx.getPageService()
-  const result = await dataSource.addRow(payload as IDataRow)
-  if (ps) {
-    ps.showMessage(
-      isCrudResult(result) && !result.success ? getCrudErrorMessage(result, '新增失败') : '新增成功',
-      isCrudResult(result) && !result.success ? 'warning' : 'success'
-    )
-  }
-}
-
-async function executeDeleteCurrent(desc: DeleteCurrentAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
-  if (!dataSource) return
-
-  if (!currentRow) {
-    const ps = ctx.getPageService()
-    if (ps) ps.showMessage('请先选择当前行', 'warning')
-    return
-  }
-
-  if (desc.confirmMessage) {
-    const ps = ctx.getPageService()
-    if (ps) {
-      const ok = await ps.showConfirm(desc.confirmMessage)
-      if (!ok) return
-    }
-  }
-
-  const idField = desc.idField ?? 'id'
-  const id = resolveRowId(currentRow, idField)
-  if (id !== null) {
-    const deleted = await dataSource.removeRow(id)
-    const ps = ctx.getPageService()
-    if (ps) {
-      const deleteMessage = isCrudResult(deleted)
-        ? (deleted.success ? '已删除' : getCrudErrorMessage(deleted, '删除失败'))
-        : (deleted ? '已删除' : '删除失败')
-      ps.showMessage(
-        deleteMessage,
-        isCrudSuccess(deleted) ? 'success' : 'warning'
-      )
+    case 'set-field':
+      await executeSetField(descriptor, ctx)
+      return
+    case 'append-row':
+      await executeAppendRow(descriptor, ctx, scope)
+      return
+    case 'delete':
+      await executeDelete(descriptor, ctx, scope)
+      return
+    case 'patch':
+      await executePatch(descriptor, ctx, scope)
+      return
+    case 'move':
+      await executeMove(descriptor, ctx, scope)
+      return
+    case 'message-row':
+      executeMessageRow(descriptor, ctx, scope)
+      return
+    case 'refresh':
+      await executeRefresh(descriptor, ctx)
+      return
+    case 'clear-rows':
+      await executeClearRows(descriptor, ctx)
+      return
+    case 'submit-current-form':
+      await executeSubmitCurrentForm(descriptor, ctx, scope)
+      return
+    default: {
+      const exhaustive: never = descriptor
+      logger.warn(`未知 action 类型: ${(exhaustive as { action: string }).action}`)
     }
   }
 }
 
-async function executeDeleteSelected(desc: DeleteSelectedAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource, selectedRows } = resolveActionDataCapabilities(desc.dataKey, ctx)
-  if (!dataSource) return
-
-  if (selectedRows.length === 0) {
-    const ps = ctx.getPageService()
-    if (ps) ps.showMessage('请先选择记录', 'warning')
-    return
-  }
-
-  if (desc.confirmMessage) {
-    const ps = ctx.getPageService()
-    if (ps) {
-      const ok = await ps.showConfirm(desc.confirmMessage ?? `确认删除已选择的 ${selectedRows.length} 条记录吗？`)
-      if (!ok) return
-    }
-  }
-
-  const idField = desc.idField ?? 'id'
-  let removed = 0
-  for (const row of [...selectedRows]) {
-    const id = resolveRowId(row, idField)
-    if (id === null) continue
-    const deleted = await dataSource.removeRow(id)
-    if (isCrudSuccess(deleted)) removed++
-  }
-
-  const ps = ctx.getPageService()
-  if (ps) {
-    ps.showMessage(removed > 0 ? `已删除 ${removed} 条记录` : '未删除任何记录', removed > 0 ? 'success' : 'warning')
-  }
-}
-
-async function executeRefresh(desc: RefreshAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
-  if (!dataSource) return
-
-  if (!dataSource.dataTable?.api?.list) {
-    const ps = ctx.getPageService()
-    if (ps) ps.showMessage('当前数据为内联数据，无需刷新', 'warning')
-    return
-  }
-
-  await dataSource.refresh()
-  const ps = ctx.getPageService()
-  if (ps) ps.showMessage('刷新完成', 'success')
-}
-
-async function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
-  if (!dataSource) return
-
-  if (!currentRow) {
-    const ps = ctx.getPageService()
-    if (ps) ps.showMessage('请先选择当前行', 'warning')
-    return
-  }
-
-  const idField = desc.idField ?? 'id'
-  const id = resolveRowId(currentRow, idField)
-  if (id === null) return
-
-  const patch: Record<string, unknown> = { ...(desc.patch ?? {}) }
-  if (desc.field !== undefined) {
-    patch[desc.field] = desc.value
-  }
-
-  if (Object.keys(patch).length > 0) {
-    const ps = ctx.getPageService()
-    const result = await dataSource.editRowById(id, patch)
-    if (ps) {
-      const updateMessage = isCrudResult(result)
-        ? (result.success ? '更新成功' : getCrudErrorMessage(result, '更新失败'))
-        : (result ? '更新成功' : '更新失败')
-      ps.showMessage(
-        updateMessage,
-        isCrudSuccess(result) ? 'success' : 'warning'
-      )
-    }
-  }
-}
-
-async function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
-  if (!dataSource) return
-
-  if (!currentRow) return
-
-  const idField = desc.idField ?? 'id'
-  const id = resolveRowId(currentRow, idField)
-  if (id === null) return
-
-  await dataSource.editRowById(id, { [desc.field]: desc.value })
-}
-
-function executeOpen(desc: OpenAction): void {
-  // 通过 DOM 事件通知目标 dialog/drawer 打开
-  // 未来可改为 SPARK 能力链通信
-  const event = new CustomEvent('spark:open', { detail: { target: desc.target }, bubbles: true })
-  document.dispatchEvent(event)
-}
+export { extractActionExecutionControl }

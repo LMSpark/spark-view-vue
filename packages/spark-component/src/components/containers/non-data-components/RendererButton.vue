@@ -40,6 +40,7 @@ import * as ElIcons from '@element-plus/icons-vue'
 import {
   DATA_ROW,
   DATA_SOURCE,
+  PAGE_DATASET,
   PAGE_SERVICE,
   SparkComponentRenderer,
   getSparkNodeChildren,
@@ -47,13 +48,16 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
-import { isBuiltinAction } from '../../../page/actions'
+import {
+  isBuiltinAction,
+  nodeToActionDescriptor,
+  executeActionDescriptor,
+  type ActionExecutionScope,
+} from '../../../page/actions'
 import { resolveButtonStyle } from '../support/actions/button-templates'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { createBuiltinActionHandler } from '../support/actions/builtin-action-handler'
-import { hasRemoteListApi } from '../support/actions/builtin-action-helpers'
 import { isBuiltinActionDisabled } from '../support/actions/builtin-action-disabled'
 
 const props = withDefaults(defineProps<RButtonProps>(), {
@@ -184,26 +188,23 @@ function resolveActionNodeWithDataCapabilities(): SparkNode {
   }
 }
 
-function executeBuiltinActionDirect(action: SparkNode): void {
-  const view = resolveActionView()
-  const pageService = sparkConsume(PAGE_SERVICE)
-  const builtinActionHandler = createBuiltinActionHandler({
-    getView: () => view,
-    getPageService: () => pageService,
-    getLogger: () => logger,
-    hasRemoteListApi,
-  })
-
-  // 仅当宿主明确注入 DATA_ROW（行内场景）时按行执行；
-  // 工具栏即使能从 DATA_SOURCE.currentRow 兜底拿到行，也按工具栏语义分发，
-  // 让 handler 区分单行/多选（如 delete-current 在多选时升级为批量删除）。
-  const dataRow = sparkConsume(DATA_ROW)
-  if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
-    builtinActionHandler.handleRow(action, dataRow as IDataRow, 0)
+async function executeBuiltinActionDirect(action: SparkNode): Promise<void> {
+  const descriptor = nodeToActionDescriptor(action)
+  if (!descriptor) {
+    logger.warn(`r-button 内置动作未识别: ${String(action.props?.['action'])}`)
     return
   }
-
-  builtinActionHandler.handleToolbar(action)
+  const dataRow = sparkConsume(DATA_ROW)
+  const scope: ActionExecutionScope = {}
+  if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
+    scope.row = dataRow as IDataRow
+  }
+  const ctx = {
+    getDataSet: () => sparkConsume(PAGE_DATASET),
+    getPageService: () => sparkConsume(PAGE_SERVICE),
+    getRouter: () => null,
+  }
+  await executeActionDescriptor(descriptor, ctx, undefined, scope)
 }
 
 // ── 六、视觉样式解析 ─────────────────────────────────────────────────────
@@ -256,7 +257,7 @@ async function handleClick(event: MouseEvent): Promise<void> {
   if (hasBuiltinAction.value) {
     if (!resolveActionView()) return
     const actionNode = resolveActionNodeWithDataCapabilities()
-    executeBuiltinActionDirect(actionNode)
+    await executeBuiltinActionDirect(actionNode)
     return
   }
 

@@ -2,10 +2,8 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { IPageServiceCapability } from '../../../internal'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
-import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
 import { isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
-import { getSelectedRows } from '../../support/actions/builtin-action-helpers'
-import { hasRemoteListApi } from '../../support/actions/builtin-action-helpers'
+import { getSelectedRows } from '../../../../page/actions/index.js'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
@@ -198,30 +196,13 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     },
   }
 
-  const builtinActionHandler = createBuiltinActionHandler({
-    getView: () => options.resolvedView.value,
-    getPageService: () => options.pageService,
-    getLogger: () => options.logger,
-    hasRemoteListApi,
-  })
-
   function isBuiltinActionDisabledAtScope(action: SparkNode, scope?: BuiltinActionScope): boolean {
     return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
-  }
-
-  function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinActionHandler.handleToolbar(action)
-  }
-
-  function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number): void {
-    builtinActionHandler.handleRow(action, row, index)
   }
 
   return {
     dispatch,
     tableApi,
     isBuiltinActionDisabled: isBuiltinActionDisabledAtScope,
-    handleBuiltinToolbarAction,
-    handleBuiltinRowAction,
   }
 }

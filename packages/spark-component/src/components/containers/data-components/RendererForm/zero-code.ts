@@ -2,9 +2,7 @@ import type { DataView } from '@spark-view/spark-data'
 import type { IPageServiceCapability } from '../../../internal'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
-import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
 import { isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
-import { hasRemoteListApi } from '../../support/actions/builtin-action-helpers'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererFormApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
@@ -65,25 +63,12 @@ export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions)
     },
   }
 
-  const builtinActionHandler = createBuiltinActionHandler({
-    getView: () => options.resolvedView.value,
-    getPageService: () => options.pageService,
-    getLogger: () => options.logger,
-    hasRemoteListApi,
-    getFormApi: () => formApi,
-  })
-
   function isBuiltinActionDisabledAtScope(action: SparkNode, scope?: BuiltinActionScope): boolean {
     return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
-  }
-
-  function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinActionHandler.handleToolbar(action)
   }
 
   return {
     formApi,
     isBuiltinActionDisabled: isBuiltinActionDisabledAtScope,
-    handleBuiltinToolbarAction,
   }
 }

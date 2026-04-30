@@ -1,56 +1,71 @@
 /**
  * Action Descriptor — 声明式行为描述符
  *
- * rule.json 中的 `on` 事件 / 区域子节点（如 `r-toolbar`）均可使用 ActionDescriptor，
- * 替代 script.js 中的函数调用，实现 **配置驱动、零脚本** 的交互逻辑。
- *
- * @example
- * ```jsonc
- * // rule.json — on 事件
- * { "type": "el-button", "on": { "click": { "action": "show-message", "message": "已保存", "messageType": "success" } } }
- *
- * // rule.json — confirm → chain
- * { "on": { "click": { "action": "confirm", "message": "确认删除？", "onConfirm": { "action": "delete-current" } } } }
- *
- * // r-toolbar wrapper — prompt → append
- * {
- *   "children": [
- *     {
- *       "type": "r-toolbar",
- *       "props": { "position": "top" },
- *       "children": [
- *         { "type": "r-button", "props": { "action": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }
- *       ]
- *     }
- *   ]
- * }
- * ```
+ * 单一动作真源：rule.json 的 `on` 事件、容器区域子节点（如 `r-toolbar`）、
+ * 内置按钮的 `props.action` 全部统一通过此 descriptor 声明，
+ * 由 `executeActionDescriptor` 单一执行器消费。
  */
 
-import type { IDataSet } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import type { IPageServiceCapability, PageMessageType } from '../../core/capability-system.js'
 import type { CancellableControl } from '../../internal/cancellable-control'
 
-// ── 类型定义 ──────────────────────────────────────────────────────────────
+// ── 通用装饰：所有 data-mutating 动作共享 ─────────────────────────────────
 
 /**
- * ActionDescriptor 判别联合
- *
- * 通过 `action` 字段区分具体行为类型。
- * 所有描述符均可携带 `then` 实现链式执行。
+ * UI 装饰：与具体动作语义无关，统一控制消息/确认/静默。
+ * 文案模板支持 `{var}` 插值（执行器在适当时机注入 `count`、`row` 字段等）。
  */
+export interface ActionUiDecorator {
+  silent?: boolean
+  successMessage?: string
+  failureMessage?: string
+  emptyMessage?: string
+  errorMessage?: string
+  confirmMessage?: string
+  confirmTitle?: string
+  confirmType?: PageMessageType
+}
+
+// ── 行作用域（执行参数） ──────────────────────────────────────────────────
+
+/** 表单 API（submit-current-form 专用） */
+export interface ActionFormApi {
+  getCurrentRow(): IDataRow | null
+  getFormData(): Record<string, unknown>
+  validate?(): Promise<boolean>
+}
+
+/**
+ * 动作执行作用域：调用方按需挂入。
+ * - row：行内动作（target='scope'）的当前行
+ * - index：行索引
+ * - formApi：仅 submit-current-form 需要
+ */
+export interface ActionExecutionScope {
+  row?: IDataRow
+  index?: number
+  formApi?: ActionFormApi
+}
+
+// ── 类型定义 ──────────────────────────────────────────────────────────────
+
+/** ActionDescriptor 判别联合（合并后 14 类） */
 export type ActionDescriptor =
   | ShowMessageAction
   | ShowConfirmAction
   | ShowAlertAction
   | NavigateAction
-  | AppendRowAction
-  | DeleteCurrentAction
-  | DeleteSelectedAction
-  | RefreshAction
-  | PatchCurrentAction
-  | SetFieldAction
   | OpenAction
+  | SetFieldAction
+  | AppendRowAction
+  | DeleteAction
+  | PatchAction
+  | MoveAction
+  | MessageRowAction
+  | RefreshAction
+  | ClearRowsAction
+  | SubmitCurrentFormAction
 
 /** ActionDescriptor 的统一动作名集合。 */
 export type ActionDescriptorActionName =
@@ -58,108 +73,60 @@ export type ActionDescriptorActionName =
   | 'confirm'
   | 'alert'
   | 'navigate'
-  | 'append-row'
-  | 'delete-current'
-  | 'delete-selected'
-  | 'refresh'
-  | 'patch-current'
-  | 'set-field'
   | 'open'
+  | 'set-field'
+  | 'append-row'
+  | 'delete'
+  | 'patch'
+  | 'move'
+  | 'message-row'
+  | 'refresh'
+  | 'clear-rows'
+  | 'submit-current-form'
+
+/** 行目标：区分 row 来源 */
+export type ActionRowTarget = 'scope' | 'current' | 'selected'
 
 interface ActionDescriptorBase {
-  /** 动作类型标识（必须命中 ActionDescriptorActionName） */
   action: ActionDescriptorActionName
-  /** 链式：当前动作完成后执行下一个 */
   then?: ActionDescriptor
-  /**
-   * 取消组件默认行为
-   *
-   * 为 true 时，容器事件（row-click/selection-change 等）跳过默认的
-   * setCurrentRow / setSelectedRows 等同步操作；字段变更事件跳过默认的
-   * emit + syncValue。
-   *
-   * 数组内任一描述符设为 true，则整体取消默认行为。
-   */
   cancelDefault?: boolean
 }
 
-/** 弹出消息提示 */
+// ── UI 单一动作 ──────────────────────────────────────────────────────────
+
 export interface ShowMessageAction extends ActionDescriptorBase {
   action: 'show-message'
   message: string
   messageType?: PageMessageType
 }
 
-/** 弹出确认框 → 分支执行 */
 export interface ShowConfirmAction extends ActionDescriptorBase {
   action: 'confirm'
   message: string
   title?: string
   confirmType?: PageMessageType
-  /** 确认后执行 */
   onConfirm?: ActionDescriptor
-  /** 取消后执行 */
   onCancel?: ActionDescriptor
 }
 
-/** 弹出提示框（纯告知，无分支） */
 export interface ShowAlertAction extends ActionDescriptorBase {
   action: 'alert'
   message: string
   title?: string
 }
 
-/** 路由导航 */
 export interface NavigateAction extends ActionDescriptorBase {
   action: 'navigate'
-  /** 目标路径，支持 `{field}` 从 currentRow 插值 */
+  /** 目标路径，支持 `{field}` 从 currentRow / 事件 row 插值 */
   path: string
 }
 
-/** 追加空行 / 带初始值的行 */
-export interface AppendRowAction extends ActionDescriptorBase {
-  action: 'append-row'
-  /** 指定目标视图（可选，默认取第一个表） */
-  dataKey?: string
-  /** 初始行数据 */
-  payload?: Record<string, unknown>
-  /** 主键字段名 */
-  idField?: string
+export interface OpenAction extends ActionDescriptorBase {
+  action: 'open'
+  target: string
 }
 
-/** 删除当前行（可带确认） */
-export interface DeleteCurrentAction extends ActionDescriptorBase {
-  action: 'delete-current'
-  dataKey?: string
-  confirmMessage?: string
-  idField?: string
-}
-
-/** 删除已选择行（可带确认） */
-export interface DeleteSelectedAction extends ActionDescriptorBase {
-  action: 'delete-selected'
-  dataKey?: string
-  confirmMessage?: string
-  idField?: string
-}
-
-/** 刷新数据（远程 API 表） */
-export interface RefreshAction extends ActionDescriptorBase {
-  action: 'refresh'
-  dataKey?: string
-}
-
-/** 更新当前行字段 */
-export interface PatchCurrentAction extends ActionDescriptorBase {
-  action: 'patch-current'
-  dataKey?: string
-  patch?: Record<string, unknown>
-  field?: string
-  value?: unknown
-  idField?: string
-}
-
-/** 设置字段值（通用） */
 export interface SetFieldAction extends ActionDescriptorBase {
   action: 'set-field'
   dataKey?: string
@@ -168,23 +135,86 @@ export interface SetFieldAction extends ActionDescriptorBase {
   idField?: string
 }
 
-/** 打开弹层（dialog/drawer） */
-export interface OpenAction extends ActionDescriptorBase {
-  action: 'open'
-  /** 目标组件 id */
-  target: string
+// ── Data-mutating 动作（带 UI 装饰） ─────────────────────────────────────
+
+export interface ActionPromptConfig {
+  field: string
+  message?: string
+  title?: string
+  defaultValue?: string
+  placeholder?: string
+}
+
+export interface AppendRowAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'append-row'
+  dataKey?: string
+  appendPayload?: Record<string, unknown>
+  idField?: string
+  inheritFields?: string[]
+  inheritFieldMap?: Record<string, string>
+  setCurrentRowOnSuccess?: boolean
+  /** 启用 prompt 模式：弹窗输入指定字段后再追加 */
+  prompt?: ActionPromptConfig
+}
+
+export interface DeleteAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'delete'
+  target: ActionRowTarget
+  dataKey?: string
+  idField?: string
+}
+
+export interface PatchAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'patch'
+  target: ActionRowTarget
+  dataKey?: string
+  idField?: string
+  patch?: Record<string, unknown>
+  field?: string
+  value?: unknown
+  /** prompt 模式：弹窗输入字段值替代静态 patch */
+  prompt?: ActionPromptConfig
+}
+
+export interface MoveAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'move'
+  target: 'scope' | 'current'
+  dataKey?: string
+  idField?: string
+  newParentId?: string | number | null
+  targetParentSource?: 'field' | 'scope'
+  targetParentField?: string
+  index?: number
+}
+
+export interface MessageRowAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'message-row'
+  target: 'scope' | 'current'
+  dataKey?: string
+  message?: string
+  messageFields?: string[]
+  messageType?: PageMessageType
+}
+
+export interface RefreshAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'refresh'
+  dataKey?: string
+}
+
+export interface ClearRowsAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'clear-rows'
+  dataKey?: string
+}
+
+export interface SubmitCurrentFormAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'submit-current-form'
+  dataKey?: string
+  idField?: string
+  validateMessage?: string
 }
 
 // ── 类型守卫 ──────────────────────────────────────────────────────────────
 
-/**
- * 判断值是否为 ActionDescriptor 形态对象
- *
- * 用于在绑定层区分字符串函数名与声明式动作对象。
- * 运行时守卫仅做结构判定（`action` 为 string）；
- * 具体动作名合法性由 TypeScript 联合类型与执行分支共同约束。
- */
-/** isActionDescriptor 内部用于收窄 unknown 对象的最小形状 */
 interface ActionDescriptorShape {
   action: unknown
 }
@@ -200,31 +230,14 @@ export function isActionDescriptor(value: unknown): value is ActionDescriptor {
 
 // ── 运行时上下文 ──────────────────────────────────────────────────────────
 
-/**
- * Action 执行上下文
- *
- * 由 SparkPageRenderer 在绑定阶段构建，提供 action 执行所需的运行时资源。
- * 所有 getter 延迟求值：action 执行时才解析，适应 DataSet 异步加载。
- */
 export interface ActionExecutionContext {
-  /** 页面级 DataSet（延迟求值） */
   getDataSet: () => IDataSet | null
-  /** UI 消息/确认/输入能力 */
   getPageService: () => IPageServiceCapability | null
-  /** 路由推送（框架无关） */
   getRouter: () => RouterLike | null
 }
 
-/**
- * Action 默认行为控制器
- *
- * 与容器/字段事件的控制对象保持同构：
- * - `cancel = false` → 允许组件默认行为继续执行
- * - `cancel = true`  → 阻止组件默认行为
- */
 export type ActionExecutionControl = CancellableControl
 
-/** 最小化路由接口，避免绑定到具体路由实现 */
 export interface RouterLike {
   push(to: string | { path: string; query?: Record<string, string> }): unknown
 }

@@ -8,8 +8,8 @@ import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from 
 import type { SparkNode } from '@spark-view/spark-component'
 import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
 import RendererFilter from '../packages/spark-component/src/components/containers/RendererFilter.vue'
-import { createBuiltinActionHandler } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-handler'
-import { hasRemoteListApi } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-helpers'
+import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
+import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import {
   extractModelPermission,
   isModelActionAllowed,
@@ -174,20 +174,17 @@ const SparkActionStub = defineComponent({
         actionType: type,
         label: readConfigActionText(config),
         executeAction: (action: SparkNode) => {
-          const view = sparkConsume(DATA_SOURCE) as DataView | null
+          const dataSet = sparkConsume(PAGE_DATASET)
           const pageService = sparkConsume(PAGE_SERVICE)
-          const handler = createBuiltinActionHandler({
-            getView: () => view,
-            getPageService: () => pageService,
-            getLogger: () => ({ debug: () => {}, info: () => {}, warn: console.warn, error: console.error }),
-            hasRemoteListApi,
-          })
+          const desc = nodeToActionDescriptor(action)
+          if (!desc) return
           const row = resolveScopedRow(dataRow, propsMap)
-          if (row !== undefined) {
-            void handler.handleRow(action, row, 0)
-          } else {
-            void handler.handleToolbar(action)
-          }
+          void executeActionDescriptor(
+            desc,
+            { getDataSet: () => dataSet, getPageService: () => pageService, getRouter: () => null },
+            undefined,
+            row !== undefined ? { row, index: 0 } : undefined,
+          )
         },
       })
     }
@@ -479,20 +476,17 @@ const SparkColumnRendererStub = defineComponent({
         actionType,
         label: readConfigActionText(config),
         executeAction: (action: SparkNode) => {
-          const view = sparkConsume(DATA_SOURCE) as DataView | null
+          const dataSet = sparkConsume(PAGE_DATASET)
           const pageService = sparkConsume(PAGE_SERVICE)
-          const handler = createBuiltinActionHandler({
-            getView: () => view,
-            getPageService: () => pageService,
-            getLogger: () => ({ debug: () => {}, info: () => {}, warn: console.warn, error: console.error }),
-            hasRemoteListApi,
-          })
+          const desc = nodeToActionDescriptor(action)
+          if (!desc) return
           const row = resolveScopedRow(dataRow, propsMap, dataSource)
-          if (row !== undefined) {
-            void handler.handleRow(action, row, 0)
-          } else {
-            void handler.handleToolbar(action)
-          }
+          void executeActionDescriptor(
+            desc,
+            { getDataSet: () => dataSet, getPageService: () => pageService, getRouter: () => null },
+            undefined,
+            row !== undefined ? { row, index: 0 } : undefined,
+          )
         },
       })
     }

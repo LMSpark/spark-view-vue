@@ -1,10 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
-import { createBuiltinActionHandler } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-handler'
 import { isBuiltinActionDisabled } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-disabled'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
-import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions/action-descriptor'
+import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
+import type {
+  ActionExecutionContext,
+  ActionExecutionScope,
+  ActionFormApi,
+} from '../packages/spark-component/src/page/actions/action-descriptor'
 import type { IPageServiceCapability } from '@spark-view/spark-component'
 
 function createDataView() {
@@ -28,7 +32,7 @@ function createDataView() {
 
   const view = dataSet.getView('Users', 'default')
   if (!view) {
-    throw new Error('Users@default view not created')
+    throw new Error('Users@rows view not created')
   }
   view.setCurrentRowById(1)
   return { dataSet, view }
@@ -167,27 +171,20 @@ describe('DataView CRUD bridge', () => {
   })
 
   it('builtin append-row should call view.addRow instead of appendRow', async () => {
-    const { view } = createDataView()
+    const { dataSet, view } = createDataView()
     const pageService = createPageService()
     const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as IDataRow)
     const appendRowSpy = vi.spyOn(view, 'appendRow')
 
-    const handler = createBuiltinActionHandler({
-      getView: () => view,
-      getPageService: () => pageService,
-      getLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }) as never,
-      hasRemoteListApi: () => false,
-    })
-
-    const action = {
+    const desc = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'append-row',
+        dataKey: 'Users@rows',
         appendPayload: { id: 2, name: 'Bob' },
       },
-    }
-
-    handler.handleToolbar(action)
+    })!
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService))
     await flushAsync()
 
     expect(addRowSpy).toHaveBeenCalledWith({ id: 2, name: 'Bob' })
@@ -195,24 +192,19 @@ describe('DataView CRUD bridge', () => {
   })
 
   it('builtin append-row should switch currentRow to created row when configured', async () => {
-    const { view } = createDataView()
+    const { dataSet, view } = createDataView()
     const pageService = createPageService()
 
-    const handler = createBuiltinActionHandler({
-      getView: () => view,
-      getPageService: () => pageService,
-      getLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }) as never,
-      hasRemoteListApi: () => false,
-    })
-
-    handler.handleToolbar({
+    const desc = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'append-row',
+        dataKey: 'Users@rows',
         setCurrentRowOnSuccess: true,
         appendPayload: { id: 2, name: 'Bob' },
       },
-    })
+    })!
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService))
     await flushAsync()
 
     expect(view.currentRow?.['id']).toBe(2)
@@ -220,29 +212,25 @@ describe('DataView CRUD bridge', () => {
   })
 
   it('builtin prompt-edit should call view.editRowById instead of updateRowById', async () => {
-    const { view } = createDataView()
+    const { dataSet, view } = createDataView()
     const pageService = createPageService({
       showPrompt: vi.fn(async () => 'Bob'),
     })
     const editRowSpy = vi.spyOn(view, 'editRowById').mockResolvedValue(true)
     const updateRowSpy = vi.spyOn(view, 'updateRowById')
 
-    const handler = createBuiltinActionHandler({
-      getView: () => view,
-      getPageService: () => pageService,
-      getLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }) as never,
-      hasRemoteListApi: () => false,
-    })
-
-    const action = {
+    const desc = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'prompt-edit',
+        dataKey: 'Users@rows',
+        targetRow: 'current',
         field: 'name',
       },
-    }
-
-    handler.handleToolbar(action)
+    })!
+    const scope: ActionExecutionScope = {}
+    if (view.currentRow) scope.row = view.currentRow
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService), undefined, scope)
     await flushAsync()
 
     expect(editRowSpy).toHaveBeenCalledWith(1, { name: 'Bob' })
@@ -250,29 +238,26 @@ describe('DataView CRUD bridge', () => {
   })
 
   it('builtin submit-current-form should call view.editRowById with current form draft', async () => {
-    const { view } = createDataView()
+    const { dataSet, view } = createDataView()
     const pageService = createPageService()
     const editRowSpy = vi.spyOn(view, 'editRowById').mockResolvedValue(true)
     const validateSpy = vi.fn(async () => true)
 
-    const handler = createBuiltinActionHandler({
-      getView: () => view,
-      getPageService: () => pageService,
-      getLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }) as never,
-      hasRemoteListApi: () => false,
-      getFormApi: () => ({
-        getCurrentRow: () => view.currentRow,
-        getFormData: () => ({ id: 1, name: 'Alice-2' }),
-        validate: validateSpy,
-      }),
-    })
+    const formApi: ActionFormApi = {
+      getCurrentRow: () => view.currentRow,
+      getFormData: () => ({ id: 1, name: 'Alice-2' }),
+      validate: validateSpy,
+    }
 
-    handler.handleToolbar({
+    const desc = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'submit-current-form',
+        dataKey: 'Users@rows',
       },
-    })
+    })!
+    const scope: ActionExecutionScope = { formApi }
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService), undefined, scope)
     await flushAsync()
 
     expect(validateSpy).toHaveBeenCalledOnce()
@@ -309,22 +294,22 @@ describe('DataView CRUD bridge', () => {
       data: { id: 'child-a', title: '子节点 A', parentId: 'root-1', nodeKind: 'page' },
     })
 
-    const handler = createBuiltinActionHandler({
-      getView: () => view,
-      getPageService: () => pageService,
-      getLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }) as never,
-      hasRemoteListApi: () => false,
-    })
-
-    handler.handleRow({
+    const desc = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'prompt-append',
+        dataKey: 'Nodes@rows',
         field: 'title',
         inheritFieldMap: { parentId: 'id' },
         appendPayload: { nodeKind: 'page' },
       },
-    }, view.rows[0]!, 0)
+    })!
+    await executeActionDescriptor(
+      desc,
+      { getDataSet: () => dataSet, getPageService: () => pageService, getRouter: () => null },
+      undefined,
+      { row: view.rows[0]!, index: 0 },
+    )
     await flushAsync()
 
     expect(addRowSpy).toHaveBeenCalledWith(expect.objectContaining({
@@ -335,7 +320,7 @@ describe('DataView CRUD bridge', () => {
   })
 
   it('builtin clear-rows should replace current view rows with empty list', async () => {
-    const { view } = createDataView()
+    const { dataSet, view } = createDataView()
     const pageService = createPageService({
       showConfirm: vi.fn(async () => true),
     })
@@ -344,19 +329,14 @@ describe('DataView CRUD bridge', () => {
 
     expect(view.rows).toHaveLength(1)
 
-    const handler = createBuiltinActionHandler({
-      getView: () => view,
-      getPageService: () => pageService,
-      getLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }) as never,
-      hasRemoteListApi: () => false,
-    })
-
-    handler.handleToolbar({
+    const desc = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'clear-rows',
+        dataKey: 'Users@rows',
       },
-    })
+    })!
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService))
     await flushAsync()
 
     expect(view.rows).toHaveLength(0)
@@ -410,7 +390,7 @@ describe('DataView CRUD bridge', () => {
       {
         action: 'append-row',
         dataKey: 'Users@rows',
-        payload: { id: 2, name: 'Bob' },
+        appendPayload: { id: 2, name: 'Bob' },
       },
       createActionContext(dataSet, pageService),
     )
@@ -429,7 +409,8 @@ describe('DataView CRUD bridge', () => {
 
     await executeActionDescriptor(
       {
-        action: 'delete-current',
+        action: 'delete',
+        target: 'current',
         dataKey: 'Users@rows',
         confirmMessage: '确认删除？',
       },
