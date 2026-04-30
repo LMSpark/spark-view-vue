@@ -93,6 +93,8 @@ import { useResolvedFieldContext } from '../context/useResolvedFieldContext'
 type TextAlign = 'left' | 'center' | 'right'
 
 interface Props extends SparkNodeProps {
+  /** 兼容 SparkNode 原始列标题输入（避免 fallthrough warning） */
+  label?: string | undefined
   /** 显示标签 */
   displayLabel?: string | undefined
   /** 字段绑定名 */
@@ -142,7 +144,7 @@ interface Props extends SparkNodeProps {
 const props = defineProps<Props>()
 
 const resolvedContext = useResolvedFieldContext()
-const resolvedDisplayLabel = computed(() => props.displayLabel ?? '')
+const resolvedDisplayLabel = computed(() => props.displayLabel ?? props.label ?? '')
 const resolvedFieldName = computed(() => props.fieldName ?? '')
 const resolvedChildren = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(props.mergedChildren)

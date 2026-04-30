@@ -111,11 +111,13 @@ const ElStepStub = defineComponent({
 
 describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   it('should keep drawer visibility in sync when API opens without external prop writeback', () => {
-    const emit = vi.fn<(event: 'update:value', value: boolean) => void>()
     const visibleValue = ref(false)
+    const commitVisibleValue = vi.fn((value: boolean) => {
+      visibleValue.value = value
+    })
     const { drawerApi, handleModelUpdate } = createRendererDrawerZeroCode({
-      emit,
       visibleValue,
+      commitVisibleValue,
       onOpen: undefined,
       onClose: undefined,
       onOpened: undefined,
@@ -125,20 +127,24 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     drawerApi.open()
     expect(visibleValue.value).toBe(true)
     expect(drawerApi.isVisible()).toBe(true)
+    expect(commitVisibleValue).toHaveBeenCalledWith(true)
 
     handleModelUpdate(false)
     expect(visibleValue.value).toBe(false)
+    expect(commitVisibleValue).toHaveBeenCalledWith(false)
 
     drawerApi.toggle()
     expect(visibleValue.value).toBe(true)
   })
 
   it('should keep dialog visibility in sync when API opens without external prop writeback', () => {
-    const emit = vi.fn<(event: 'update:value', value: boolean) => void>()
     const visibleValue = ref(false)
+    const commitVisibleValue = vi.fn((value: boolean) => {
+      visibleValue.value = value
+    })
     const { dialogApi, handleModelUpdate } = createRendererDialogZeroCode({
-      emit,
       visibleValue,
+      commitVisibleValue,
       onOpen: undefined,
       onClose: undefined,
       onOpened: undefined,
@@ -148,9 +154,11 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     dialogApi.open()
     expect(visibleValue.value).toBe(true)
     expect(dialogApi.isVisible()).toBe(true)
+    expect(commitVisibleValue).toHaveBeenCalledWith(true)
 
     handleModelUpdate(false)
     expect(visibleValue.value).toBe(false)
+    expect(commitVisibleValue).toHaveBeenCalledWith(false)
 
     dialogApi.toggle()
     expect(visibleValue.value).toBe(true)

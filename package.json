@@ -19,6 +19,8 @@
         "debug:sse:loop": "node scripts/verify-sse-debug-loop.mjs --pageId section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expectText 姓名",
         "debug:sse:loop:py": "python scripts/verify-sse-debug-loop.py --page-id section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expect-text 姓名",
         "debug:sse:loop:py:visual": "python scripts/verify-sse-debug-loop.py --page-id section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expect-text 姓名 --assert-visual-change --min-diff-ratio 0.0001",
+        "search:value:noise": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/search-value-noise.ps1",
+        "search:value:noise:summary": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/search-value-noise.ps1 -SummaryOnly",
         "start": "vite preview --port 5173",
         "build": "node scripts/build-all.mjs",
         "build:fe": "cross-env BUILD_MODE=smart node scripts/build-frontend.mjs",

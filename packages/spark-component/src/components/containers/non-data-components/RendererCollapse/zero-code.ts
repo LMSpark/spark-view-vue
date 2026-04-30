@@ -4,11 +4,9 @@ import type { ValueRef } from '../../../shared-types.js'
 
 type CollapseValue = string | number | Array<string | number>
 
-type CollapseEmit = (event: 'update:value', value: CollapseValue) => void
-
 interface RendererCollapseZeroCodeOptions {
-  emit: CollapseEmit
   currentValue: ValueRef<CollapseValue | undefined>
+  commitCollapseValue: (value: CollapseValue, options?: { emit?: boolean }) => void
   itemConfigs: ValueRef<SparkNode[]>
   getItemName: (item: SparkNode, index: number) => string | number
   onChange: ((value: CollapseValue) => void) | undefined
@@ -20,25 +18,21 @@ export function createRendererCollapseZeroCode(options: RendererCollapseZeroCode
       return options.currentValue.value
     },
     setExpandedItems(value) {
-      options.currentValue.value = value
-      options.emit('update:value', value)
+      options.commitCollapseValue(value)
     },
     expandAll() {
       const allNames = options.itemConfigs.value.map((item, index) => options.getItemName(item, index))
-      options.currentValue.value = allNames
-      options.emit('update:value', allNames)
+      options.commitCollapseValue(allNames)
     },
     collapseAll() {
-      options.currentValue.value = []
-      options.emit('update:value', [])
+      options.commitCollapseValue([])
     },
     toggleItem(name) {
       const current = Array.isArray(options.currentValue.value) ? options.currentValue.value : []
       const next = current.includes(name)
         ? current.filter(item => item !== name)
         : [...current, name]
-      options.currentValue.value = next
-      options.emit('update:value', next)
+      options.commitCollapseValue(next)
     },
     isItemExpanded(name) {
       const current = options.currentValue.value
@@ -50,11 +44,10 @@ export function createRendererCollapseZeroCode(options: RendererCollapseZeroCode
   return {
     collapseApi,
     handleModelUpdate(value: CollapseValue) {
-      options.currentValue.value = value
-      options.emit('update:value', value)
+      options.commitCollapseValue(value)
     },
     handleChange(value: CollapseValue) {
-      options.currentValue.value = value
+      options.commitCollapseValue(value, { emit: false })
       options.onChange?.(value)
     },
   }

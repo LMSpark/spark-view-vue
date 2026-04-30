@@ -60,7 +60,7 @@ import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
-import { useMirroredValue } from '../state'
+import { useUnifiedValueBridge } from '../state'
 
 const props = withDefaults(defineProps<RDrawerProps>(), {
   type: 'r-drawer',
@@ -96,13 +96,21 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const visibleValue = useMirroredValue(computed(() => props.value ?? false))
+const {
+  state: visibleValue,
+  commitValue: commitVisibleValue,
+} = useUnifiedValueBridge<boolean>({
+  value: computed(() => props.value),
+  fallbackValue: false,
+  normalize: value => value ?? false,
+  emitValue: value => emit('update:value', value),
+})
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)
 
 function closeDrawer(): void {
-  emit('update:value', false)
+  commitVisibleValue(false)
 }
 
 // ── r-drawer 包装 API ────────────────────────────────────────────────────
@@ -122,8 +130,8 @@ const {
   handleOpened: () => void
   handleClosed: () => void
 } = createRendererDrawerZeroCode({
-  emit,
   visibleValue,
+  commitVisibleValue,
   onOpen: props.onOpen,
   onClose: props.onClose,
   onOpened: props.onOpened,

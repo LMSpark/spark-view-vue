@@ -1,5 +1,12 @@
 <template>
   <div class="renderer-collapse-layout">
+    <div v-if="toolbarConfigs.length > 0" class="renderer-collapse-toolbar">
+      <SparkComponentRenderer
+        v-for="(tool, index) in toolbarConfigs"
+        :key="nodeId(tool) ?? `r-collapse-toolbar-${index}`"
+        :config="tool"
+      />
+    </div>
     <div class="renderer-collapse-main">
       <el-collapse
         :model-value="currentValue"
@@ -31,7 +38,7 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
-import { useMirroredValue } from '../state'
+import { useUnifiedValueBridge } from '../state'
 import type { RCollapseProps, CollapseValue } from './RendererCollapse.props'
 
 const props = withDefaults(defineProps<RCollapseProps>(), {
@@ -48,7 +55,16 @@ const { registerApi } = useSparkPageComponent(props)
 
 // 工具栏优先通过 props.toolbar 输入。
 const itemConfigs = computed(() => getSparkNodeChildren(props.children))
-const currentValue = useMirroredValue(computed(() => props.value))
+const toolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
+const {
+  state: currentValue,
+  commitValue: commitCollapseValue,
+} = useUnifiedValueBridge<CollapseValue>({
+  value: computed(() => props.value),
+  fallbackValue: [],
+  normalize: value => value ?? [],
+  emitValue: value => emit('update:value', value),
+})
 
 // ── r-collapse 包装 API ──────────────────────────────────────────────────
 
@@ -61,8 +77,8 @@ const {
   handleModelUpdate: (value: CollapseValue) => void
   handleChange: (value: CollapseValue) => void
 } = createRendererCollapseZeroCode({
-  emit,
   currentValue,
+  commitCollapseValue,
   itemConfigs,
   getItemName,
   onChange: props.onChange,
@@ -122,6 +138,14 @@ function getItemScope(item: SparkNode, index: number) {
 
 .renderer-collapse-main {
   min-width: 0;
+}
+
+.renderer-collapse-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .renderer-collapse-item-body {
