@@ -208,7 +208,7 @@ DataView
 | # | 项目 | 操作 | 影响面 |
 |---|---|---|---|
 | **P1-A** | ~~**统一 Action 真源**~~ ✅ 已完成（2026-04-30）：彻底删除 `builtin-action-handler.ts`（~1100 行），`executeActionDescriptor` 成为唯一动作执行入口；新增 `nodeToActionDescriptor(node, scope?)` 翻译层把 SparkNode → ActionDescriptor。23 个内置动作合并为 14 个判别联合（delete/patch/move/message-row 用 `target: 'scope'\|'current'\|'selected'`；prompt-append/prompt-edit 折叠成 AppendRow/Patch 的 `prompt` 修饰）。模块结构：[packages/spark-component/src/page/actions/](../../packages/spark-component/src/page/actions/)（action-descriptor / executor-helpers / data-capabilities / action-notifier / executors/{show,data,form} / action-executor / node-to-descriptor）。 | — |
-| **P1-B** | **权限决策收敛** | 仅保留两层：`PermissionChecker`（纯函数，输入 row + mode）+ `PermissionResolver.isPermittedAction`（动作 → checker 调用）。`isBuiltinActionDisabled` 的非权限部分（disabledWhenRow / 数据态）保留；权限部分转调 Resolver。`RendererButton.permissionAllowed` 仅做最终消费。 | 高（权限链） |
+| **P1-B** | ~~**权限决策收敛**~~ ✅ 现状已满足（2026-04-30 复核）：`PermissionChecker` 仅纯函数；`PermissionResolver.isPermittedAction` / `isModel/RowActionAllowed` 做动作→checker 派发；`isBuiltinActionDisabled` 已只判断数据态（disabledWhenRow / view.rows / currentRow / selectedRows），**无权限调用**；`RendererButton.permissionAllowed` 通过 `usePermission` 薄壳消费 Resolver。四路职责已剥离，无需进一步合并。 | — |
 | **P1-C** | ~~**删除 `ACTION_CAPABILITY` 链路**~~ ✅ 已完成（2026-04-30，随 P1-A 重构）：RendererButton 已迁至 `executeActionDescriptor`，packages 内零引用；eslint 白名单与 CAPABILITY_SYSTEM_MIGRATION 文档同步清理。 | — |
 | **P1-D** | ~~**Capability key 前缀统一**~~ ✅ 已完成（2026-04-30）：`PAGE_COMPONENT_REGISTRY` / `MODULE_CONTEXT` 已从 `app:*` 切换为 `spark:capability:*`，所有 capability key 现统一前缀。 | — |
 
