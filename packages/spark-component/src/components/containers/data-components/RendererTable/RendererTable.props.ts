@@ -16,12 +16,16 @@ export interface RTableProps
     SparkInteractiveDataContainerProps {
   /** 显式收窄为表格容器使用的 DataView 数据线。 */
   dataSource?: DataView
-  /**
-   * 透传给底层 el-table 的显式属性集合。
-   *
-   * 说明：不再依赖 attrs 隐式透传，统一通过该入口传递 rowKey/treeProps/highlightCurrentRow 等底层参数。
-   */
-  tableProps?: Record<string, unknown>
+  /** 是否显示纵向边框。默认 true（resizable 启用时强制开启）。 */
+  border?: boolean
+  /** 是否开启斑马纹。 */
+  stripe?: boolean
+  /** 是否高亮当前行。 */
+  highlightCurrentRow?: boolean
+  /** 行数据的 Key，用于树形表格。 */
+  rowKey?: SparkText
+  /** 是否允许拖动列宽，默认 true。 */
+  resizable?: boolean
   /**
    * 结构化工具栏
    * 提示词模板：默认动作 append-row / refresh / delete-current。

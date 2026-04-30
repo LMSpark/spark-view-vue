@@ -268,17 +268,12 @@ const normalizedFilterNode = computed(() => {
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
 const baseElTableProps = computed<Record<string, unknown>>(() => {
-  const tableProps = props.tableProps ?? {}
-
-  const explicitResizable = tableProps['resizable']
-  const resolvedResizable = explicitResizable === true || explicitResizable === false ? explicitResizable : true
-
-  const resolvedBorder = resolvedResizable === true
-    ? true
-    : (tableProps['border'] ?? true)
-
+  const resolvedResizable = props.resizable !== undefined ? props.resizable : true
+  const resolvedBorder = resolvedResizable === true ? true : (props.border ?? true)
   return {
-    ...tableProps,
+    ...(props.stripe !== undefined ? { stripe: props.stripe } : {}),
+    ...(props.highlightCurrentRow !== undefined ? { highlightCurrentRow: props.highlightCurrentRow } : {}),
+    ...(props.rowKey !== undefined ? { rowKey: props.rowKey } : {}),
     border: resolvedBorder,
     resizable: resolvedResizable,
   }
