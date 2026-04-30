@@ -119,17 +119,6 @@
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
  * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（summaryRow/currentRow）而不是 children 文本插值。
  */
-/**
- * RendererTable - 表格容器组件
- *
- * 双模式：
- * 1. 配置驱动：列结构直接来自 props.children，统一走 SparkComponentRenderer。
- * 2. 模板驱动：保留默认 slot，允许直接手写 el-table-column。
- *
- * 结构约定：
- * - 工具栏/筛选区/行操作优先使用结构化 props（toolbar/filter/actions）。
- * - children 仅承载列定义，不再参与结构区解算。
- */
 import { computed, nextTick, ref, toRef, watch, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
@@ -265,7 +254,7 @@ const normalizedFilterNode = computed(() => {
   return node
 })
 
-// ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
+// ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
 
 const baseElTableProps = computed<Record<string, unknown>>(() => {
   const resolvedResizable = props.resizable !== undefined ? props.resizable : true
@@ -403,10 +392,10 @@ const rawRowActionsToolbarConfig = computed<SparkNode>(() => ({
   children: rowActionConfigs.value,
 }))
 
-const rowActionsContainerStyle = computed<CSSProperties>(() => ({
+const rowActionsContainerStyle: CSSProperties = {
   justifyContent: 'flex-start',
   flexWrap: 'nowrap',
-}))
+}
 
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => ({
@@ -414,14 +403,6 @@ const rowActionColumnAttrs = computed(() => ({
   width: 220,
   headerAlign: 'center',
 }))
-
-function normalizeRowClassValue(value: unknown): string {
-  if (typeof value === 'string') return value.trim()
-  if (Array.isArray(value)) {
-    return value.filter(item => typeof item === 'string').join(' ').trim()
-  }
-  return ''
-}
 
 const selectedRowIdSet = computed(() => {
   const view = resolvedView.value
@@ -445,26 +426,7 @@ const selectedRowIdSet = computed(() => {
 
 const selectedRowRefSet = computed(() => new Set(resolvedView.value?.selectedRows ?? []))
 
-const selectionColumnAttrs = computed(() => {
-  const widthValue = elTableProps.value['selectionWidth']
-  const width = typeof widthValue === 'number' || typeof widthValue === 'string' ? widthValue : 52
-
-  const fixedValue = elTableProps.value['selectionFixed']
-  const fixed = fixedValue === true || fixedValue === false || fixedValue === 'left' || fixedValue === 'right'
-    ? fixedValue
-    : undefined
-
-  const selectableValue = elTableProps.value['selectionSelectable']
-  const selectable = typeof selectableValue === 'function'
-    ? selectableValue as (row: IDataRow, index: number) => boolean
-    : undefined
-
-  return {
-    width,
-    ...(fixed !== undefined ? { fixed } : {}),
-    ...(selectable !== undefined ? { selectable } : {}),
-  }
-})
+const selectionColumnAttrs = { width: 52 }
 
 function isSelectedRow(row: IDataRow): boolean {
   const view = resolvedView.value
@@ -478,28 +440,9 @@ function isSelectedRow(row: IDataRow): boolean {
   return selectedRowRefSet.value.has(row)
 }
 
-const tableRowClassName = computed(() => {
-  const externalClassResolver = (elTableProps.value['rowClassName'] ?? elTableProps.value['row-class-name']) as unknown
-
-  return ({ row, rowIndex }: { row: IDataRow, rowIndex: number }) => {
-    const classNames: string[] = []
-
-    if (typeof externalClassResolver === 'function') {
-      const externalClass = (externalClassResolver as (args: { row: IDataRow, rowIndex: number }) => unknown)({ row, rowIndex })
-      const normalized = normalizeRowClassValue(externalClass)
-      if (normalized.length > 0) classNames.push(normalized)
-    } else if (typeof externalClassResolver === 'string') {
-      const normalized = externalClassResolver.trim()
-      if (normalized.length > 0) classNames.push(normalized)
-    }
-
-    if (isSelectedRow(row)) {
-      classNames.push('spark-selection-row')
-    }
-
-    return classNames.join(' ').trim()
-  }
-})
+const tableRowClassName = computed(() =>
+  ({ row }: { row: IDataRow }) => isSelectedRow(row) ? 'spark-selection-row' : ''
+)
 
 // ── 事件桥接：el-table 原生事件统一转发到零代码调度器 ───────────────────
 
