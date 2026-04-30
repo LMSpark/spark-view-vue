@@ -449,8 +449,9 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
     // 结构 schema 优先级：
     // 1) VCM 抽取出的真实结构（object/array）——首选；
     // 2) rawType 提取的命名字面量 enum（InlineAlign 等）；
-    // 3) 兜底：仅当上述两类都缺失且存在 @componentRef 时，写 `component:xxx` 旧形式引用，
-    //    供消费层递归展开目标组件 props。
+    // 当上述两类都缺失而仅存在 @componentRef 时，schemaRef 留空——
+    // 消费层通过独立的 componentRef 字段定位目标组件，无需再写入旧的
+    // `component:xxx` 占位（消费层已 fail-fast 拒绝）。
     let schemaResolved = false
     if (prop.schema !== undefined) {
       const normalizedSchema = normalizeNestedSchema(schemaPool, prop.schema)
@@ -464,10 +465,6 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
       const enumType = prop.type.replace(/\s*\|\s*undefined\s*$/, '').trim()
       const enumSchema: PropSchema = { kind: 'enum', type: enumType, variants: prop.__enumVariants }
       compacted.schemaRef = resolveSchemaRef(schemaPool, enumSchema)
-      schemaResolved = true
-    }
-    if (!schemaResolved && prop.__componentRef !== undefined) {
-      compacted.schemaRef = `component:${prop.__componentRef}`
     }
     result.push(compacted)
   }

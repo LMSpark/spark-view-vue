@@ -22,7 +22,7 @@
       </div>
       <el-input-number
         v-else
-        :model-value="fieldValue as number"
+        :model-value="typeof fieldValue === 'number' ? fieldValue : (fieldValue == null ? 0 : (typeof fieldValue === 'boolean' ? 0 : Number(fieldValue)))"
         :min="min"
         :max="max"
         :precision="precision"

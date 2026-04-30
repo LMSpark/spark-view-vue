@@ -5,7 +5,7 @@
     </template>
     <template #form>
       <el-input
-        :model-value="fieldValue as string"
+        :model-value="typeof fieldValue === 'string' ? fieldValue : (fieldValue == null ? '' : String(fieldValue))"
         type="textarea"
         :rows="rows"
         :autosize="autosize"
