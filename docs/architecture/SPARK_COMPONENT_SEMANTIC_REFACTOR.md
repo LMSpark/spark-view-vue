@@ -217,26 +217,26 @@ DataView
 | # | 项目 | 操作 | 影响面 |
 |---|---|---|---|
 | **P2-A** | ~~**拆解 `containers/support/`**~~ ✅ 部分完成（2026-04-30）：删除死代码 `action-visibility.ts`（零引用）；`builtin-action-disabled.ts` / `builtin-action-helpers.ts` / `button-templates.ts` 移入 [packages/spark-component/src/page/actions/](../../packages/spark-component/src/page/actions/)，与执行器统一入口；6 处消费方 + 1 处测试 import 同步更新。`containers/support/` 剩余 CRUD/Scope/InteractionControl 部分按 P2-B 评估，本轮不动。 | — |
-| **P2-B** | **`RendererHostScope` / `RendererFieldScope` 升类** | 移入 `data-components/` 或独立 `scope/` —— 它们是 DATA_ROW 的核心提供者，等同一级容器。 | 中 |
-| **P2-C** | **`layout/` 改名** | 重命名为 `composables-layout/` 或合并入 `containers/composables/`。 | 低 |
-| **P2-D** | **`RendererFilter` / `RendererHeader/Footer/Tail` / `RendererEditor` 归类** | Filter → data-components；Header/Footer/Tail → `containers/structure/`；Editor → `support/editor/` 或并入 fields。 | 低 |
-| **P2-E** | **AI composable 出包** | [composables/](../../packages/spark-component/src/composables/) 全部为 AI 逻辑，与渲染层无关。迁出到 `@spark-view/spark-app` 或新设 `spark-ai-ui`。 | 中（导出面变窄） |
+| **P2-B** | ~~**`RendererHostScope` / `RendererFieldScope` 升类**~~ ⏸ 暂缓：`containers/support/` 现已是清晰的"容器辅助"分类（CRUD + Scope + InteractionControl + map-node-props），升类对运行时与可读性收益有限；保持现状以减小 import 冲击面。如未来 `support/` 目录继续膨胀再触发。 | — |
+| **P2-C** | ~~**`layout/` 改名**~~ ⏸ 暂缓：`containers/layout/` 仅 3 个 composable + 1 个测试 import；命名稍显误导但不影响功能。机械改名性价比低。 | — |
+| **P2-D** | ~~**`RendererFilter` / `RendererHeader/Footer/Tail` / `RendererEditor` 归类**~~ ⏸ 暂缓：现位置在 `containers/` 顶层，已与 README 索引匹配；移动会触发大量类型 import 改动而无运行时收益。 | — |
+| **P2-E** | **AI composable 出包** | 仍待立项：[composables/](../../packages/spark-component/src/composables/) 4 个 AI 文件与渲染层无关；建议出独立 `@spark-view/spark-ai-ui` 包。工作量与影响面较大，**单独分支**推进。 | 高（出包） |
 
 ### P3：命名/术语收敛
 
 | # | 项目 | 操作 | 影响面 |
 |---|---|---|---|
-| **P3-A** | `handler` / `dispatcher` → `executor` | crud-dispatcher.ts → crud-executor.ts；createBuiltinActionHandler → createBuiltinActionExecutor。 | 低（机械改名） |
-| **P3-B** | `BuiltinActionScope` 收敛到 `ActionContext` | 复用 BeforeRenderContext 的 row/index/dataSource 子集。 | 低 |
-| **P3-C** | `host.type` → `parentType` | 在 BeforeRenderContext 内部消歧。 | 低 |
+| **P3-A** | ~~`handler` / `dispatcher` → `executor`~~ ⏸ 部分自然完成：`createBuiltinActionHandler` 已在 P1-A 中删除（不再存在）；`crud-dispatcher.ts` 仍以 dispatcher 命名（CRUD 派发与 action executor 语义不同，强行改名混淆更大）。终止此项。 | — |
+| **P3-B** | ~~`BuiltinActionScope` 收敛到 `ActionContext`~~ ⏸ 暂缓：`BuiltinActionScope` 与 `ActionExecutionScope` 现已并存，前者用于 disabled 判定（仅 row/index），后者用于执行（含 formApi）。语义已分明。 | — |
+| **P3-C** | ~~`host.type` → `parentType`~~ ⏸ 暂缓：`BeforeRenderContext.host.type` 已不与 ACTION_CAPABILITY 冲突（P1-C 已删），歧义自动消解。 | — |
 
 ### P4：工具与 API
 
 | # | 项目 | 操作 | 影响面 |
 |---|---|---|---|
-| **P4-A** | `builtin-action-helpers.ts` 拆解 | 通用 `readString/readBoolean/readStringArray` → `core/`；`interpolateMessageProps` 内化到 `action-executor.ts`；`extractErrorMessage` 移到 `spark-utils`（若未存在）。 | 低 |
-| **P4-B** | 公共 API 分层 | `index.ts` 仅暴露核心；高级类型移到 `index.advanced.ts` 或加 `@internal` JSDoc。 | 中（外部使用方） |
-| **P4-C** | Ambient 声明集中 | `declare const SparkText` 类的散落声明集中到 `env.d.ts`。 | 低 |
+| **P4-A** | ~~`builtin-action-helpers.ts` 拆解~~ ⏸ 暂缓：与 `executor-helpers.ts` 共存于 `page/actions/` 后边界已可控；强行去重会牵动多个调用点而收益低。 | — |
+| **P4-B** | 公共 API 分层 | 仍待立项：`index.ts` 暴露面 150+，建议拆 `index.ts` / `index.advanced.ts` 并添加 `@internal` JSDoc。**单独分支**推进。 | 中（外部使用方） |
+| **P4-C** | ~~Ambient 声明集中~~ ⏸ 暂缓：散落 ambient 数量小，集中收益不抵改动成本。 | — |
 
 ---
 
