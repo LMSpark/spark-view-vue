@@ -43,26 +43,25 @@
                     "action": "append-row",
                     "label": "新增订单",
                     "buttonType": "primary",
-              "props": {
-                "border": true,
-                "stripe": true,
-                "highlightCurrentRow": true
-              },
-                      "amount": 8800,
-                      "orderDate": "2026-03-18",
-                      "region": "east",
-                      "_perm": {
-                        "allowDelete": true,
-                        "editableFields": [
-                          "status",
-                          "priority",
-                          "owner",
-                          "amount"
-                        ]
-                      }
+                    "props": {
+                      "border": true,
+                      "stripe": true,
+                      "highlightCurrentRow": true
                     },
-                    "successMessage": "已新增订单"
-                  }
+                    "amount": 8800,
+                    "orderDate": "2026-03-18",
+                    "region": "east",
+                    "_perm": {
+                      "allowDelete": true,
+                      "editableFields": [
+                        "status",
+                        "priority",
+                        "owner",
+                        "amount"
+                      ]
+                    }
+                  },
+                  "successMessage": "已新增订单"
                 },
                 {
                   "type": "r-button",
@@ -138,15 +137,7 @@
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true,
-              "actions": {
-                "type": "r-toolbar",
-                "children": [],
-                "props": {
-                  "width": 220,
-                  "label": "操作"
-                }
-              }
+              "highlightCurrentRow": true
             },
             "filter": {
               "type": "r-filter",
