@@ -60,7 +60,7 @@
  * @skill r-tree
  * @description 树形容器，支持懒加载、节点操作和编辑器侧面板。
  * @category container
- * @binding datakey-driven
+ * @binding dataKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET

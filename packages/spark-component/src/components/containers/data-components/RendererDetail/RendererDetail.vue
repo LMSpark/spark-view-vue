@@ -33,7 +33,7 @@
  * @skill r-detail
  * @description 数据详情容器，与 r-form 结构一致但不可编辑。
  * @category container
- * @binding datakey-driven
+ * @binding dataKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET

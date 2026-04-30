@@ -74,7 +74,7 @@
  * @skill r-list
  * @description 列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。
  * @category container
- * @binding datakey-driven
+ * @binding dataKey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @notes 使用结构化 `toolbar` / `actions` 区域声明工具栏与列表项操作

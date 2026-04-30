@@ -31,7 +31,7 @@ export interface RendererFilterProps extends SparkNodeProps {
    */
   class?: string
   /**
-   * 数据绑定键（datakey）。
+   * 数据绑定键（dataKey）。
    * @remarks 由父容器用于解析筛选区绑定的数据上下文，RendererFilter.vue 本身不直接消费。
    */
   dataKey?: string

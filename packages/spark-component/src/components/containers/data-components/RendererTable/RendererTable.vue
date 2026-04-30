@@ -109,7 +109,7 @@
  * @skill r-table
  * @description 数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
  * @category container
- * @binding datakey-driven
+ * @binding dataKey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @consumes PAGE_SERVICE

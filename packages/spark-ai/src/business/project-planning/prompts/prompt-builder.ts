@@ -65,7 +65,7 @@ const SKILL_KEYWORDS: Record<string, string[]> = {
     '查看详情', '详情展示',
   ],
   'r-table': [
-    'r-table', '表格容器', 'datakey', '数据绑定表格',
+    'r-table', '表格容器', 'dataKey', '数据绑定表格',
     '列表页', '数据表格', '主从表',
   ],
 }
