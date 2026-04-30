@@ -67,7 +67,6 @@ export default [
               'LOGGER',
               'PAGE_SERVICE',
               'THEME',
-              'ACTION_CAPABILITY',
               'PAGE_DATASET',
               'DATA_SOURCE',
               'DATA_ROW',
