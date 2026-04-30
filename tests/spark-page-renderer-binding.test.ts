@@ -294,8 +294,8 @@ describe('SparkPageRenderer root props aggregation', () => {
     const section = children[0] as SparkNode
     const sectionChildren = Array.isArray(section.children) ? section.children : []
     const treeNode = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.type === 'r-tree')
-    const currentButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.props?.['id'] === 'btn-get-current')
-    const checkedButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.props?.['id'] === 'btn-get-checked')
+    const currentButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.id === 'btn-get-current')
+    const checkedButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.id === 'btn-get-checked')
 
     expect(treeNode).toBeDefined()
     const treeProps = treeNode?.props?.['treeProps'] as Record<string, unknown>

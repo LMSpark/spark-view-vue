@@ -188,7 +188,7 @@ describe('catalog-projections', () => {
       },
     }
 
-    expect(() => projectComponentSpec(catalog, 'r-legacy')).toThrow(/legacy schemaRef "component:\*" 已移除/u)
+    expect(() => projectComponentSpec(catalog, 'r-legacy')).toThrow(/schemaRef "component:\*" 已移除/u)
   })
 
   it('projectComponentConfigGuide returns normalized guide for known component', () => {

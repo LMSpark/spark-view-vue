@@ -23,8 +23,9 @@ describe('SparkNode runtime contract', () => {
         disabled: Boolean,
         field: String,
       },
-      setup() {
-        const result = useSparkComponent({ type: 'test-child' } as SparkNode)
+      setup(props) {
+        // 节点定位 id 走顶层 id（硬切换语义：不再从 vnode.props.id 自动提升）。
+        const result = useSparkComponent({ type: 'test-child', id: props.id } as SparkNode)
         const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
 
         expect(result.isVisible.value).toBe(false)
