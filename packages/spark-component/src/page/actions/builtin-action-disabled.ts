@@ -5,11 +5,11 @@
  */
 
 import type { DataView, IDataRow, IDataSource } from '@spark-view/spark-data'
-import type { SparkNode } from '../../../internal'
-import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../../support/beforeRender.js'
-import { extractModelPermission } from '../../../../permission/index.js'
-import { getBuiltinActionName } from '../../../../page/actions/index.js'
-import type { BuiltinActionScope } from '../../../../page/actions/index.js'
+import type { SparkNode } from '../../components/internal'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../components/support/beforeRender.js'
+import { extractModelPermission } from '../../permission/index.js'
+import { getBuiltinActionName } from './index.js'
+import type { BuiltinActionScope } from './index.js'
 import {
   getActionProps,
   readBoolean,

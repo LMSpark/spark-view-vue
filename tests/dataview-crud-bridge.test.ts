@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
-import { isBuiltinActionDisabled } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-disabled'
+import { isBuiltinActionDisabled } from '../packages/spark-component/src/page/actions/builtin-action-disabled'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import type {

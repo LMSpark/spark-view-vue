@@ -9,7 +9,7 @@
  * 容器可额外注入 buttonSize/text 等默认值（行操作自动 small+text）。
  */
 
-import type { BuiltinActionName } from '../../../../page/actions/index.js'
+import type { BuiltinActionName } from './index.js'
 
 // ── 模板属性类型 ──────────────────────────────────────────────────────────
 

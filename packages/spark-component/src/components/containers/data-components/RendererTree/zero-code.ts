@@ -8,7 +8,7 @@ import {
 } from '../../../internal'
 import type { SparkNode } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
-import { isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
+import { isBuiltinActionDisabled } from '../../../../page/actions/index'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
 import type { BuiltinActionScope } from '../../../../page/actions/index.js'

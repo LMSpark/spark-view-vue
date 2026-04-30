@@ -54,11 +54,11 @@ import {
   executeActionDescriptor,
   type ActionExecutionScope,
 } from '../../../page/actions'
-import { resolveButtonStyle } from '../support/actions/button-templates'
+import { resolveButtonStyle } from '../../../page/actions/index'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { isBuiltinActionDisabled } from '../support/actions/builtin-action-disabled'
+import { isBuiltinActionDisabled } from '../../../page/actions/index'
 
 const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',

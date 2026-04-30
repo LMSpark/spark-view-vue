@@ -43,5 +43,3 @@ export { mapNodeProps } from './map-node-props.js'
 export type { MapNodePropsOptions } from './map-node-props.js'
 
 export { createToolbarScope, createRowScope, createCurrentRowScope } from './scopeFactories.js'
-
-export * from './actions/index.js'

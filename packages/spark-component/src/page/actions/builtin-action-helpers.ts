@@ -5,11 +5,11 @@
  * 供 meta / disabled / handler 三个模块共用。
  */
 
-import type { PageMessageType } from '../../../internal'
+import type { PageMessageType } from '../../components/internal'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '../../../internal'
-import { nodeInputProps } from '../../../internal'
-import { resolveSelectedRowsPath } from '../../../support/row-selection-path'
+import type { SparkNode } from '../../components/internal'
+import { nodeInputProps } from '../../components/internal'
+import { resolveSelectedRowsPath } from '../../components/support/row-selection-path'
 
 // ── 值解析 ────────────────────────────────────────────────────────────────
 

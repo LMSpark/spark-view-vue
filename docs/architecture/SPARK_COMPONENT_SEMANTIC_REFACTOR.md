@@ -216,7 +216,7 @@ DataView
 
 | # | 项目 | 操作 | 影响面 |
 |---|---|---|---|
-| **P2-A** | **拆解 `containers/support/`** | 拆为：`actions/`（与 page/actions 合并）、`crud/`（base-crud-methods、crud-dispatcher、crud-result-helpers）、`scope/`（RendererHostScope / RendererFieldScope）、`internal/`（map-node-props 等）。 | 中（导入路径） |
+| **P2-A** | ~~**拆解 `containers/support/`**~~ ✅ 部分完成（2026-04-30）：删除死代码 `action-visibility.ts`（零引用）；`builtin-action-disabled.ts` / `builtin-action-helpers.ts` / `button-templates.ts` 移入 [packages/spark-component/src/page/actions/](../../packages/spark-component/src/page/actions/)，与执行器统一入口；6 处消费方 + 1 处测试 import 同步更新。`containers/support/` 剩余 CRUD/Scope/InteractionControl 部分按 P2-B 评估，本轮不动。 | — |
 | **P2-B** | **`RendererHostScope` / `RendererFieldScope` 升类** | 移入 `data-components/` 或独立 `scope/` —— 它们是 DATA_ROW 的核心提供者，等同一级容器。 | 中 |
 | **P2-C** | **`layout/` 改名** | 重命名为 `composables-layout/` 或合并入 `containers/composables/`。 | 低 |
 | **P2-D** | **`RendererFilter` / `RendererHeader/Footer/Tail` / `RendererEditor` 归类** | Filter → data-components；Header/Footer/Tail → `containers/structure/`；Editor → `support/editor/` 或并入 fields。 | 低 |
