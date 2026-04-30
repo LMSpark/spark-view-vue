@@ -60,7 +60,37 @@
         >
           <el-table-column
             v-if="child.type === 'r-row-fragment'"
-            v-bind="rowFragmentColumnAttrs(child)"
+            :label="String((child.props as Record<string, unknown> | undefined)?.['title'] ?? '')"
+            :width="
+              (() => {
+                const value = (child.props as Record<string, unknown> | undefined)?.['width']
+                return typeof value === 'string' || typeof value === 'number' ? value : undefined
+              })()
+            "
+            :min-width="
+              (() => {
+                const value = (child.props as Record<string, unknown> | undefined)?.['minWidth']
+                return typeof value === 'string' || typeof value === 'number' ? value : undefined
+              })()
+            "
+            :align="
+              (() => {
+                const value = (child.props as Record<string, unknown> | undefined)?.['align']
+                return typeof value === 'string' ? value : undefined
+              })()
+            "
+            :header-align="
+              (() => {
+                const value = (child.props as Record<string, unknown> | undefined)?.['headerAlign']
+                return typeof value === 'string' ? value : undefined
+              })()
+            "
+            :class-name="
+              (() => {
+                const value = (child.props as Record<string, unknown> | undefined)?.['class']
+                return typeof value === 'string' ? value : undefined
+              })()
+            "
           >
             <template #default="scope">
               <RendererHostScope :row="(scope.row as IDataRow)">
@@ -154,23 +184,6 @@ const normalizedContentChildNodes = computed<SparkNode[]>(() => {
       : { ...rawNode, props: { ...sourceProps, sortable: true } }
   })
 })
-
-function rowFragmentColumnAttrs(node: SparkNode): Record<string, unknown> {
-  const p = node.props as Record<string, unknown> | undefined
-  const width = p?.['width']
-  const minWidth = p?.['minWidth']
-  const align = p?.['align']
-  const className = p?.['class']
-
-  return {
-    label: String(p?.['title'] ?? ''),
-    ...(typeof width === 'string' || typeof width === 'number' ? { width } : {}),
-    ...(typeof minWidth === 'string' || typeof minWidth === 'number' ? { minWidth } : {}),
-    ...(typeof align === 'string' ? { align } : {}),
-    ...(typeof p?.['headerAlign'] === 'string' ? { headerAlign: p['headerAlign'] } : {}),
-    ...(typeof className === 'string' ? { className } : {}),
-  }
-}
 
 // ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
 
