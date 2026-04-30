@@ -60,37 +60,12 @@
         >
           <el-table-column
             v-if="child.type === 'r-row-fragment'"
-            :label="String((child.props as Record<string, unknown> | undefined)?.['title'] ?? '')"
-            :width="
-              (() => {
-                const value = (child.props as Record<string, unknown> | undefined)?.['width']
-                return typeof value === 'string' || typeof value === 'number' ? value : undefined
-              })()
-            "
-            :min-width="
-              (() => {
-                const value = (child.props as Record<string, unknown> | undefined)?.['minWidth']
-                return typeof value === 'string' || typeof value === 'number' ? value : undefined
-              })()
-            "
-            :align="
-              (() => {
-                const value = (child.props as Record<string, unknown> | undefined)?.['align']
-                return typeof value === 'string' ? value : undefined
-              })()
-            "
-            :header-align="
-              (() => {
-                const value = (child.props as Record<string, unknown> | undefined)?.['headerAlign']
-                return typeof value === 'string' ? value : undefined
-              })()
-            "
-            :class-name="
-              (() => {
-                const value = (child.props as Record<string, unknown> | undefined)?.['class']
-                return typeof value === 'string' ? value : undefined
-              })()
-            "
+            :label="rowFragmentLabel(child)"
+            :width="rowFragmentStringOrNumberProp(child, 'width')"
+            :min-width="rowFragmentStringOrNumberProp(child, 'minWidth')"
+            :align="rowFragmentStringProp(child, 'align')"
+            :header-align="rowFragmentStringProp(child, 'headerAlign')"
+            :class-name="rowFragmentStringProp(child, 'class')"
           >
             <template #default="scope">
               <RendererHostScope :row="(scope.row as IDataRow)">
@@ -184,6 +159,24 @@ const normalizedContentChildNodes = computed<SparkNode[]>(() => {
       : { ...rawNode, props: { ...sourceProps, sortable: true } }
   })
 })
+
+function rowFragmentRawProp(node: SparkNode, key: string): unknown {
+  return (node.props as Record<string, unknown> | undefined)?.[key]
+}
+
+function rowFragmentLabel(node: SparkNode): string {
+  return String(rowFragmentRawProp(node, 'title') ?? '')
+}
+
+function rowFragmentStringProp(node: SparkNode, key: string): string | undefined {
+  const value = rowFragmentRawProp(node, key)
+  return typeof value === 'string' ? value : undefined
+}
+
+function rowFragmentStringOrNumberProp(node: SparkNode, key: string): string | number | undefined {
+  const value = rowFragmentRawProp(node, key)
+  return typeof value === 'string' || typeof value === 'number' ? value : undefined
+}
 
 // ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
 
