@@ -5,9 +5,6 @@ import type {
 import {
   consumeSparkCapability,
 } from './capability-system.js'
-import type {
-  SparkActionCapability,
-} from './capability-keys.js'
 
 export {
   PAGE_DATASET,
@@ -24,7 +21,6 @@ export type {
   PageComponentRegistry,
   ModuleContextCapability,
   PageCssScopeCapability,
-  SparkActionCapability,
 } from './capability-keys.js'
 
 // 关系约束：
@@ -97,13 +93,6 @@ export function consumeCapabilityFromProvider<T>(
       : null
   }
   return consumeSparkCapability(provider, key)
-}
-
-// ===== 宿主协议与逐层查找规则 =====
-
-/** 创建动作能力对象（与 provider 查找解耦，通过 ACTION_CAPABILITY 注入）。 */
-export function createActionCapability(actions: SparkActionCapability): SparkActionCapability {
-  return Object.freeze(actions)
 }
 
 // PAGE_PERMISSION_MODE 已迁入 permission/page-permission-mode.ts（权限模块唯一维护）

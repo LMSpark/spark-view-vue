@@ -83,11 +83,9 @@ export {
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
-  ACTION_CAPABILITY,
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
   consumeCapabilityFromProvider,
-  createActionCapability,
 } from './core/index.js'
 export type {
   CapabilityKey,
@@ -114,7 +112,6 @@ export type {
   PageComponentApiEntry,
   ModuleContextCapability,
   PageCssScopeCapability,
-  SparkActionCapability,
 } from './core/index.js'
 export type {
   RendererTableApi,

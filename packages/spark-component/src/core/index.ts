@@ -102,14 +102,12 @@ export {
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
-  ACTION_CAPABILITY,
 } from './capability-keys.js'
 
 export {
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
   consumeCapabilityFromProvider,
-  createActionCapability,
 } from './capabilities.js'
 
 export type {
@@ -118,5 +116,4 @@ export type {
   PageComponentRegistry,
   ModuleContextCapability,
   PageCssScopeCapability,
-  SparkActionCapability,
 } from './capability-keys.js'

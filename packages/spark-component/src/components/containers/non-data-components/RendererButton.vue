@@ -38,7 +38,6 @@
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
 import {
-  ACTION_CAPABILITY,
   DATA_ROW,
   DATA_SOURCE,
   PAGE_SERVICE,
@@ -48,7 +47,7 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
-import { getBuiltinActionName, isBuiltinAction } from '../../../page/actions'
+import { isBuiltinAction } from '../../../page/actions'
 import { resolveButtonStyle } from '../support/actions/button-templates'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
@@ -79,14 +78,8 @@ const currentNode = computed<SparkNode>(() => ({
   ...(props.children !== undefined ? { children: props.children } : {}),
 }))
 
-// 仅内置动作（例如 refresh/delete-current）才需要接入 ACTION_CAPABILITY。
+// 仅内置动作（例如 refresh/delete-current）才需要介入宿主禁用裁决。
 const hasBuiltinAction = computed(() => isBuiltinAction(currentNode.value))
-
-// 读取最近动作宿主能力。这里必须动态读取，不能缓存。
-// 原因：按钮所在节点可能被重投影，最近宿主会变化。
-function resolveActionHost() {
-  return sparkConsume(ACTION_CAPABILITY)
-}
 
 function resolveActionView(): DataView | null {
   const dataSource = sparkConsume(DATA_SOURCE)
@@ -121,21 +114,16 @@ function resolvePermissionScopeRows(): IDataRow[] {
 }
 
 // ── 三、宿主动作禁用态（内置动作） ──────────────────────────────────────
-// 内置动作的禁用态由宿主统一裁决（例如 DataView 行态/选择态）。
+// 内置动作的禁用态由 view 调用 isBuiltinActionDisabled 进行裁决（例如 DataView 行态/选择态）。
 const hostActionDisabled = computed(() => {
   if (!hasBuiltinAction.value) return false
-
-  // 将 DATA_SOURCE / DATA_ROW 显式并入动作节点，保证宿主拿到完整作用域。
-  const nodeForCheck = resolveActionNodeWithDataCapabilities()
   const view = resolveActionView()
-  const row = resolveScopedRow()
-  if (view) {
-    return isBuiltinActionDisabled(nodeForCheck, view, row ? { row, index: 0 } : undefined)
-  }
+  if (!view) return false
 
-  const actionHost = resolveActionHost()
-  if (actionHost === null) return false
-  return actionHost.isDisabled(nodeForCheck)
+  // 将 DATA_SOURCE / DATA_ROW 显式并入动作节点，保证裁决拿到完整作用域。
+  const nodeForCheck = resolveActionNodeWithDataCapabilities()
+  const row = resolveScopedRow()
+  return isBuiltinActionDisabled(nodeForCheck, view, row ? { row, index: 0 } : undefined)
 })
 
 // ── 四、权限判定与可见/禁用策略 ─────────────────────────────────────────
@@ -177,7 +165,7 @@ const effectiveDisabled = computed(() => {
 })
 
 // ── 五、动作节点作用域补全 ─────────────────────────────────────────────
-// 为内置动作执行补齐 dataSource/row，保持 ACTION_CAPABILITY 入参稳定。
+// 为内置动作执行补齐 dataSource/row，保持裁决与执行入参稳定。
 function resolveActionNodeWithDataCapabilities(): SparkNode {
   const dataSource = sparkConsume(DATA_SOURCE)
   const dataRow = resolveScopedRow()
@@ -262,26 +250,13 @@ const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() =>
 
 // ── 八、点击执行流 ─────────────────────────────────────────────────────
 // 执行优先级：
-// 1. 内置动作：交给 ACTION_CAPABILITY。
+// 1. 内置动作：必须上游存在容器提供的 DATA_SOURCE，由 view 直驱执行。
 // 2. 普通按钮：调用业务 onClick，并在有作用域行时透传 row。
 async function handleClick(event: MouseEvent): Promise<void> {
   if (hasBuiltinAction.value) {
+    if (!resolveActionView()) return
     const actionNode = resolveActionNodeWithDataCapabilities()
-    const actionName = getBuiltinActionName(actionNode)
-    const actionHost = resolveActionHost()
-
-    if (actionName === 'submit-current-form' && actionHost !== null) {
-      actionHost.execute(actionNode)
-      return
-    }
-
-    if (resolveActionView()) {
-      executeBuiltinActionDirect(actionNode)
-      return
-    }
-
-    if (actionHost === null) return
-    actionHost.execute(actionNode)
+    executeBuiltinActionDirect(actionNode)
     return
   }
 

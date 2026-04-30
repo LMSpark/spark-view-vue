@@ -39,13 +39,11 @@ export {
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
-  ACTION_CAPABILITY,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
   consumeCapabilityFromProvider,
-  createActionCapability,
 } from '../core/index.js'
 export type {
   IAppServicesCapability,
@@ -67,7 +65,6 @@ export type {
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
-  SparkActionCapability,
 } from '../core/index.js'
 
 // ── 事件控制 ──
