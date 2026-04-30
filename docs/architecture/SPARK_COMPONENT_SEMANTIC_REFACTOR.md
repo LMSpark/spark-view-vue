@@ -210,7 +210,7 @@ DataView
 | **P1-A** | **统一 Action 真源** | 让 `BuiltinActionHandler` 调用 `executeActionDescriptor` 完成共有动作（append-row / delete-current / delete-selected / refresh）。BuiltinAction 仅保留按钮特有装饰（buttonType / silent / disabledWhenRow / 文案插值）。`{count}` 插值上提到 `executeActionDescriptor`。 | 高（动作执行链） |
 | **P1-B** | **权限决策收敛** | 仅保留两层：`PermissionChecker`（纯函数，输入 row + mode）+ `PermissionResolver.isPermittedAction`（动作 → checker 调用）。`isBuiltinActionDisabled` 的非权限部分（disabledWhenRow / 数据态）保留；权限部分转调 Resolver。`RendererButton.permissionAllowed` 仅做最终消费。 | 高（权限链） |
 | **P1-C** | **删除 `ACTION_CAPABILITY` 链路** | 已验证：声明 + 3 处 consume，但**零 provider**，`submit-current-form` 分支永远走不到。删除 capability key + RendererButton 中 `resolveActionHost` 相关分支（含 `submit-current-form` 特殊分支与 fallback `actionHost.execute`），全部内置动作统一走 `executeBuiltinActionDirect` / view 直驱。 | 中（修 RendererButton） |
-| **P1-D** | **Capability key 前缀统一** | 仅 `PAGE_COMPONENT_REGISTRY = 'app:page-component-registry'`、`MODULE_CONTEXT = 'app:module-context'` 是 `app:` 前缀，其余全部 `spark:capability:*`（[capability-keys.ts L65-L72](../../packages/spark-component/src/core/capability-keys.ts)）。改为 `spark:capability:page-component-registry` / `spark:capability:module-context` 即可对齐。 | 低（无运行时影响，仅字符串） |
+| **P1-D** | ~~**Capability key 前缀统一**~~ ✅ 已完成（2026-04-30）：`PAGE_COMPONENT_REGISTRY` / `MODULE_CONTEXT` 已从 `app:*` 切换为 `spark:capability:*`，所有 capability key 现统一前缀。 | — |
 
 ### P2：分类边界清理
 

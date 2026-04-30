@@ -47,8 +47,8 @@ declare module './capability-system.js' {
     'spark:capability:page-dataset': IDataSet
     'spark:capability:data-source': IDataSource
     'spark:capability:data-row': IDataRow
-    'app:page-component-registry': PageComponentRegistry
-    'app:module-context': ModuleContextCapability
+    'spark:capability:page-component-registry': PageComponentRegistry
+    'spark:capability:module-context': ModuleContextCapability
     'spark:capability:css-scope': PageCssScopeCapability
     'spark:capability:permission-mode': NavPermissionMode
   }
@@ -57,6 +57,6 @@ declare module './capability-system.js' {
 export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-dataset')
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
 export const DATA_ROW = defineCapability<IDataRow>('spark:capability:data-row')
-export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('app:page-component-registry')
-export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:module-context')
+export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry')
+export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:capability:module-context')
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
