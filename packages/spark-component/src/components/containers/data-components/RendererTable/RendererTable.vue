@@ -4,7 +4,7 @@
     <SparkComponentRenderer v-if="toolbarNode" :config="toolbarNode" />
 
     <!-- 过滤区 -->
-    <RendererFilter v-if="hasFilters" v-bind="filterRendererProps" :class="filterPanelClass" />
+    <SparkComponentRenderer v-if="hasFilters" :config="filterSparkNode" />
 
     <!-- 表格主体 -->
     <div class="renderer-table-main">
@@ -134,7 +134,6 @@ import type { ToolbarPosition } from '../../layout'
 import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import RendererFilter from '../../RendererFilter.vue'
 
 // ── 基础工具：通用读取与列投影辅助 ────────────────────────────────────────
 
@@ -340,9 +339,17 @@ const {
   logger,
 })
 
-const filterPanelClass = computed(() =>
-  ['renderer-table-filter-panel', filterRendererProps.value.class].filter(Boolean).join(' '),
-)
+const filterSparkNode = computed<SparkNode>(() => {
+  const { children, class: userClass, ...restFilterProps } = filterRendererProps.value
+  return {
+    type: 'r-filter',
+    props: {
+      ...restFilterProps,
+      class: ['renderer-table-filter-panel', userClass].filter(Boolean).join(' '),
+    },
+    children: children ?? [],
+  }
+})
 
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
 

@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-30T09:48:23.342Z",
+  "buildTime": "2026-04-30T09:55:35.232Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -2252,7 +2252,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（dataKey）。"
+          "description": "数据绑定键（datakey）。"
         },
         {
           "name": "collapsible",
@@ -25899,7 +25899,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（dataKey）。"
+          "description": "数据绑定键（datakey）。"
         },
         "collapsible": {
           "name": "collapsible",
@@ -29508,7 +29508,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（dataKey）。"
+          "description": "数据绑定键（datakey）。"
         },
         "prop_00191": {
           "name": "collapsible",
