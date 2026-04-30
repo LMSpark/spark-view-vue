@@ -55,17 +55,17 @@
              说明：这是本次架构调整后的关键点，RowFragment 本体不再直接声明 el-table-column。
         -->
         <template
-          v-for="(child, index) in renderedContentChildNodes"
-          :key="nodeId(child) ?? `r-table-child-${index}`"
+          v-for="(child, index) in renderedContentChildren"
+          :key="nodeId(child.node) ?? `r-table-child-${index}`"
         >
           <el-table-column
-            v-if="child.type === 'r-row-fragment'"
-            v-bind="rowFragmentAttrs(child)"
+            v-if="child.node.type === 'r-row-fragment'"
+            v-bind="child.rowFragmentColumnAttrs"
           >
             <template #default="scope">
               <RendererHostScope :row="(scope.row as IDataRow)">
                 <SparkComponentRenderer
-                  v-for="(fragmentChild, fragmentIndex) in ((child.children as SparkNode[]) ?? [])"
+                  v-for="(fragmentChild, fragmentIndex) in (child.rowFragmentChildren ?? [])"
                   :key="nodeId(fragmentChild) ?? `r-table-row-fragment-${fragmentIndex}`"
                   :config="fragmentChild"
                 />
@@ -75,7 +75,7 @@
 
           <SparkComponentRenderer
             v-else
-            :config="child"
+            :config="child.node"
           />
         </template>
 
@@ -138,8 +138,40 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
+interface RenderedTableChild {
+  node: SparkNode
+  rowFragmentColumnAttrs?: Record<string, unknown>
+  rowFragmentChildren?: SparkNode[]
+}
+
 // children 已结构化：仅包含列定义，toolbar/filter/actions 为独立属性
-const renderedContentChildNodes = computed(() => ((props.children as SparkNode[]) ?? []).map(normalizeDefaultSortableTableNode))
+const renderedContentChildren = computed<RenderedTableChild[]>(() => {
+  return ((props.children as SparkNode[]) ?? []).map((rawNode) => {
+    const node = normalizeDefaultSortableTableNode(rawNode)
+    if (node.type !== 'r-row-fragment') {
+      return { node }
+    }
+
+    const p = node.props as Record<string, unknown> | undefined
+    const width = p?.['width']
+    const minWidth = p?.['minWidth']
+    const align = p?.['align']
+    const className = p?.['class']
+
+    return {
+      node,
+      rowFragmentColumnAttrs: {
+        label: String(p?.['title'] ?? ''),
+        ...(typeof width === 'string' || typeof width === 'number' ? { width } : {}),
+        ...(typeof minWidth === 'string' || typeof minWidth === 'number' ? { minWidth } : {}),
+        ...(typeof align === 'string' ? { align } : {}),
+        ...(typeof p?.['headerAlign'] === 'string' ? { headerAlign: p['headerAlign'] } : {}),
+        ...(typeof className === 'string' ? { className } : {}),
+      },
+      rowFragmentChildren: (node.children as SparkNode[]) ?? [],
+    }
+  })
+})
 
 // ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
 
@@ -153,20 +185,6 @@ function normalizeDefaultSortableTableNode(node: SparkNode): SparkNode {
   if (typeof field !== 'string' || field.trim().length === 0) return node
 
   return { ...node, props: { ...sourceProps, sortable: true } }
-}
-
-function rowFragmentAttrs(node: SparkNode) {
-  const p = node.props as Record<string, unknown> | undefined
-  const width = p?.['width']; const minWidth = p?.['minWidth']
-  const align = p?.['align']; const className = p?.['class']
-  return {
-    label: String(p?.['title'] ?? ''),
-    ...(typeof width === 'string' || typeof width === 'number' ? { width } : {}),
-    ...(typeof minWidth === 'string' || typeof minWidth === 'number' ? { minWidth } : {}),
-    ...(typeof align === 'string' ? { align } : {}),
-    ...(typeof p?.['headerAlign'] === 'string' ? { headerAlign: p['headerAlign'] } : {}),
-    ...(typeof className === 'string' ? { className } : {}),
-  }
 }
 
 // ── 基础输入解析：DataKey → DataView 与基础 el-table 属性 ───────────────────
