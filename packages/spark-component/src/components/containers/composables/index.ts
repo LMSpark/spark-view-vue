@@ -1,12 +1,12 @@
 export {
   useContainerDataSource,
   useContainerDataSourceEffects,
-} from './useContainerDataSource.js'
+} from './container-composables.js'
 
 export {
   useContainerModuleContext,
-} from './useContainerModuleContext.js'
+} from './container-composables.js'
 
 export {
   useFormDetailContainer,
-} from './useFormDetailContainer.js'
+} from './container-composables.js'

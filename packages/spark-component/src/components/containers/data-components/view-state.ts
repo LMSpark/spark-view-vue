@@ -1,16 +1,15 @@
 /**
  * data-components/view-state.ts
  *
- * 汇总 RendererList / RendererTable / RendererTree 三个容器的视图态层，
+ * 汇总 RendererList / RendererTable / RendererTree / RendererForm / RendererDetail 五类容器的视图态层，
  * 共享工具类型与纯函数，消除各容器 view-state.ts 中的重复代码。
  */
 
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { SparkData, type DataView, type IDataRow, type TreeConfig } from '@spark-view/spark-data'
-import type { RendererFilterProps } from '../RendererFilter.types'
 import type { ValueRef } from '../../shared-types.js'
 import { useDataViewState } from './useDataViewState'
-import type { TreeNode, NativeTreeLike, NativeTreeNodeLike } from './RendererTree/zero-code'
+import type { TreeNode } from './RendererTree/zero-code'
 
 // ============================================================
 // § 共享类型
@@ -73,7 +72,6 @@ export function useRendererListViewState(options: RendererListViewStateOptions) 
 // ============================================================
 
 interface RendererTableViewStateOptions {
-  filterNode: ValueRef<RendererFilterProps | undefined>
   baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
 }
@@ -86,7 +84,10 @@ const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freez
 export function useRendererTableViewState(options: RendererTableViewStateOptions) {
   const {
     rows,
+    currentRow,
+    selectedRows,
     primaryKey,
+    isMultiSelect,
     treeConfig,
   } = useDataViewState(options.resolvedView)
 
@@ -122,46 +123,13 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return result
   })
 
-  // 过滤区展示态
-  const filterCollapsibleValue = computed(() =>
-    options.filterNode.value?.collapsible ?? false,
-  )
-  const filterDefaultCollapsedValue = computed(() =>
-    options.filterNode.value?.defaultCollapsed ?? false,
-  )
-  const filterAutoFitMinWidthValue = computed(() =>
-    options.filterNode.value?.autoFitMinWidth ?? '220px',
-  )
-  const filterItemSpanValue = computed(() =>
-    options.filterNode.value?.itemSpan ?? 1,
-  )
-  const filterActionSpanValue = computed(() =>
-    options.filterNode.value?.actionSpan ?? filterItemSpanValue.value,
-  )
-
-  // 折叠状态：初始值跟随默认配置，后续可由用户交互改变
-  const filtersCollapsed = ref(false)
-
-  function toggleFiltersCollapsed() {
-    // 未开启可折叠时直接 fail-fast 返回
-    if (!filterCollapsibleValue.value) return
-    filtersCollapsed.value = !filtersCollapsed.value
-  }
-
-  // 当折叠配置改变时，同步更新折叠状态（但不覆盖用户交互的改变）
-  watch(filterDefaultCollapsedValue, (newDefaultValue) => {
-    filtersCollapsed.value = newDefaultValue
-  }, { immediate: true })
-
   return {
     tableData,
     elTableProps,
-    filterCollapsibleValue,
-    filterAutoFitMinWidthValue,
-    filterItemSpanValue,
-    filterActionSpanValue,
-    filtersCollapsed,
-    toggleFiltersCollapsed,
+    currentRow,
+    selectedRows,
+    primaryKey,
+    isMultiSelect,
   }
 }
 
@@ -226,28 +194,16 @@ function buildTreeTableRows(
 // § RendererTree 视图态
 // ============================================================
 
-interface RendererTreeViewStateProps {
-  nodeKey?: string | undefined
-  currentKey?: string | number | null | undefined
-  expandToKey?: string | number | null | undefined
-  expandLevel?: number | undefined
-}
-
 interface RendererTreeViewStateOptions {
-  props: RendererTreeViewStateProps
   resolvedView: ValueRef<DataView | null | undefined>
-  nodeKeyField: ValueRef<string>
   treeIdField: ValueRef<string>
-  nativeTreeRef: ValueRef<unknown>
-  syncCurrentByKey: (key: string | number | null | undefined) => void
-  expandToNode: (key: string | number) => Promise<void>
-  getNodeKey: (data: unknown) => string | number | null
 }
 
 export function useRendererTreeViewState(options: RendererTreeViewStateOptions) {
   const {
     rows,
     currentRow,
+    primaryKey,
     treeConfig,
   } = useDataViewState(options.resolvedView)
 
@@ -298,91 +254,31 @@ export function useRendererTreeViewState(options: RendererTreeViewStateOptions) 
     label: labelField.value,
   }))
 
-  watch(
-    currentRow,
-    async nextCurrentRow => {
-      await nextTick()
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
-      if (!tree?.setCurrentKey) return
-      const key = options.getNodeKey(nextCurrentRow)
-      tree.setCurrentKey(key ?? null)
-    },
-    { immediate: true }
-  )
-
-  watch(
-    [() => treeData.value, () => options.props.expandLevel],
-    async ([nextTreeRows, expandLevel]) => {
-      if (nextTreeRows.length === 0 || expandLevel === undefined) return
-      await applyExpandLevel(treeData.value, options.nativeTreeRef, options.getNodeKey, expandLevel)
-    },
-    { immediate: true }
-  )
-
-  watch(
-    [() => treeData.value.length, () => options.props.currentKey],
-    async ([rowCount, currentKey]) => {
-      if (rowCount === 0 || currentKey === undefined) return
-      await nextTick()
-      options.syncCurrentByKey(currentKey)
-    },
-    { immediate: true }
-  )
-
-  watch(
-    [() => treeData.value.length, () => options.props.expandToKey],
-    async ([rowCount, expandToKey]) => {
-      if (rowCount === 0 || expandToKey === null || expandToKey === undefined) return
-      await options.expandToNode(expandToKey)
-    },
-    { immediate: true }
-  )
-
   return {
     treeData,
     elTreeFieldProps,
     getNodeLabel,
+    currentRow,
+    primaryKey,
+    treeConfig,
   }
 }
 
 // ============================================================
-// § RendererTree — 展开层级辅助函数
+// § RendererForm / RendererDetail 视图态
 // ============================================================
 
-async function applyExpandLevel(
-  treeData: TreeNode[],
-  nativeTreeRef: ValueRef<unknown>,
-  getNodeKey: (data: unknown) => string | number | null,
-  level: number,
-): Promise<void> {
-  if (!Number.isFinite(level) || level < 2) return
-  await nextTick()
-  const tree = nativeTreeRef.value as NativeTreeLike | null
-  for (const key of collectExpandKeysByLevel(treeData, getNodeKey, level)) {
-    const nativeNode = tree?.getNode?.(key) as NativeTreeNodeLike | undefined
-    nativeNode?.expand?.()
-  }
+interface RendererFormDetailViewStateOptions {
+  resolvedView: ValueRef<DataView | null | undefined>
 }
 
-function collectExpandKeysByLevel(
-  nodes: TreeNode[],
-  getNodeKey: (data: unknown) => string | number | null,
-  targetLevel: number,
-  currentLevel = 1,
-): Array<string | number> {
-  const result: Array<string | number> = []
-  if (targetLevel <= 1) return result
-
-  for (const node of nodes) {
-    const key = getNodeKey(node)
-    if (key !== null && currentLevel < targetLevel) {
-      result.push(key)
-    }
-    const children = Array.isArray(node.children) ? node.children : []
-    if (children.length > 0 && currentLevel < targetLevel) {
-      result.push(...collectExpandKeysByLevel(children, getNodeKey, targetLevel, currentLevel + 1))
-    }
-  }
-
-  return result
+/**
+ * RendererForm / RendererDetail 与 DataView 的对接层。
+ *
+ * 表单/详情仅需 currentRow 投影（contextData 镜像驱动），
+ * 通过本层统一接入，保持与 List / Table / Tree 的 view-state 模式一致。
+ */
+export function useRendererFormDetailViewState(options: RendererFormDetailViewStateOptions) {
+  const { currentRow } = useDataViewState(options.resolvedView)
+  return { currentRow }
 }

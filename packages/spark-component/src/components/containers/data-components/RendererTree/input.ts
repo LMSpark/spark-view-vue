@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
 import type { RendererEditorProps } from '../../RendererEditor.types'
 import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
-import { useContainerToolbar } from '../../composables/useContainerToolbar'
+import { useContainerToolbar } from '../../composables/container-composables'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined

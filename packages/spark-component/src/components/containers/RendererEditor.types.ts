@@ -1,6 +1,6 @@
 import type { SparkNode } from '../internal'
 import type { SparkNodeProps } from '../shared-types'
-import type { ToolbarPosition } from './layout'
+import type { ToolbarPosition } from './composables/container-composables'
 
 /**
  * `RendererEditor` 运行时公开属性。

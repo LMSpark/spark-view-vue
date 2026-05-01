@@ -20,7 +20,7 @@ export type { RendererEditorProps } from './RendererEditor.types.js'
 export type { RendererHeaderProps } from './RendererHeader.types.js'
 export type { RendererFooterProps } from './RendererFooter.types.js'
 export type { RendererTailProps } from './RendererTail.types.js'
-export type { ToolbarPosition } from './layout/index.js'
+export type { ToolbarPosition } from './composables/container-composables.js'
 
 export {
 	useContainerDataSource,

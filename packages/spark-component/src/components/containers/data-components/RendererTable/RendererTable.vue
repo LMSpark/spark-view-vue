@@ -17,7 +17,7 @@
     >
         <!-- 列区必须直接是 el-table 的子级，不可引入透明包装层 -->
         <el-table-column
-          v-if="resolvedView?.isMultiSelect === true"
+          v-if="isMultiSelect"
           type="selection"
           :width="52"
         />
@@ -103,9 +103,8 @@ import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from '../view-state'
-import { useDataViewState } from '../useDataViewState'
-import { useContainerDataSource } from '../../composables/useContainerDataSource'
-import { useContainerToolbar } from '../../composables/useContainerToolbar'
+import { useContainerDataSource } from '../../composables/container-composables'
+import { useContainerToolbar } from '../../composables/container-composables'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
@@ -240,16 +239,14 @@ const hasRightActions = computed(() => actionsNode.value !== undefined && (props
 const {
   tableData,
   elTableProps,
-} = useRendererTableViewState({
-  filterNode: toRef(props, 'filter'),
-  baseElTableProps,
-  resolvedView,
-})
-const {
   currentRow,
   selectedRows,
   primaryKey,
-} = useDataViewState(resolvedView)
+  isMultiSelect,
+} = useRendererTableViewState({
+  baseElTableProps,
+  resolvedView,
+})
 
 const hasFilters = computed(() => (props.filter?.children?.length ?? 0) > 0)
 

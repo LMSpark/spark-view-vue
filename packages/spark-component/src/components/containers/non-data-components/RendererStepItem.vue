@@ -30,7 +30,7 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId } from '../../internal'
-import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
+import { useCompositeItemGrid } from '../composables/container-composables'
 import type { SparkNodeProps } from '../../shared-types'
 
 interface Props extends SparkNodeProps {

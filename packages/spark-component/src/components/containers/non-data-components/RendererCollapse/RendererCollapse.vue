@@ -36,7 +36,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import { useContainerToolbar } from '../../composables/useContainerToolbar'
+import { useContainerToolbar } from '../../composables/container-composables'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
 import { useUnifiedValueBridge } from '../state'

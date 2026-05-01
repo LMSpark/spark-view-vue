@@ -47,7 +47,7 @@ import {
   nodeId,
 } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
-import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
+import { useFormDetailContainer } from '../../composables/container-composables'
 import { createRendererFormZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 

@@ -50,8 +50,8 @@ import {
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { RToolbarProps } from './RendererToolbar.types'
-import { useContainerDataSource } from '../composables/useContainerDataSource'
-import { useDataViewEventBridge } from '../composables/useDataViewEventBridge'
+import { useContainerDataSource } from '../composables/container-composables'
+import { useDataViewEventBridge } from '../composables/container-composables'
 
 // ============================================================================
 // 1) 组件输入与能力入口

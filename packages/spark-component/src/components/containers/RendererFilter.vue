@@ -67,8 +67,8 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../internal'
-import { useContainerDataSource } from './composables/useContainerDataSource'
-import { useFilterPanel } from './layout'
+import { useContainerDataSource } from './composables/container-composables'
+import { useFilterPanel } from './composables/container-composables'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
@@ -100,6 +100,7 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   sparkConsume,
   inheritedDataSource: computed(() => inheritedDataSource),
   mapView: view => view,
+  skipEffects: true,
 })
 
 // 面板模式下必须能解析到 DataView，否则 fail-fast。

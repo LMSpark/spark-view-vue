@@ -35,7 +35,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import { useContainerToolbar } from '../../composables/useContainerToolbar'
+import { useContainerToolbar } from '../../composables/container-composables'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
