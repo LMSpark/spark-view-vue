@@ -6,7 +6,7 @@ import type { ValueRef } from '../../../shared-types.js'
 interface RendererListZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
-  listRows: ValueRef<IDataRow[]>
+  listRows: ValueRef<readonly IDataRow[]>
 }
 
 export function createRendererListZeroCode(options: RendererListZeroCodeOptions) {
@@ -23,7 +23,7 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
   const listApi: RendererListApi = {
     ...baseMethods,
     getRows() {
-      return options.listRows.value
+      return options.listRows.value as IDataRow[]
     },
     getItemCount() {
       return options.listRows.value.length

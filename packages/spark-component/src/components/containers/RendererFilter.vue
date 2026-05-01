@@ -1,28 +1,28 @@
 <template>
-  <div v-if="isPanelMode && resolvedConfigs.length > 0" class="renderer-table-filters">
+  <div v-if="isPanelMode && standaloneChildren.length > 0" class="renderer-table-filters">
     <div v-if="props.collapsible" class="renderer-table-filters__header">
       <div class="renderer-table-filters__heading">
         <span class="renderer-table-filters__title">筛选条件</span>
         <el-tag
-          v-if="resolvedActiveCount > 0"
+          v-if="activeFilterCount > 0"
           size="small"
           type="info"
           class="renderer-table-filters__count"
-        >{{ resolvedActiveCount }} 项筛选</el-tag>
+        >{{ activeFilterCount }} 项筛选</el-tag>
       </div>
       <button
         type="button"
         class="renderer-table-filters__toggle"
-        :class="{ 'is-collapsed': resolvedCollapsed }"
-        :aria-expanded="!resolvedCollapsed"
+        :class="{ 'is-collapsed': filtersCollapsed }"
+        :aria-expanded="!filtersCollapsed"
         @click="handleToggleCollapsed"
       >
         <span class="renderer-table-filters__toggle-icon" aria-hidden="true">></span>
-        <span class="renderer-table-filters__toggle-text">{{ resolvedCollapsed ? '展开筛选' : '收起筛选' }}</span>
+        <span class="renderer-table-filters__toggle-text">{{ filtersCollapsed ? '展开筛选' : '收起筛选' }}</span>
       </button>
     </div>
 
-    <div v-show="!resolvedCollapsed" class="renderer-table-filters__content">
+    <div v-show="!filtersCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
         <SparkComponentRenderer :config="fieldScopeConfig" />
       </div>
@@ -30,11 +30,11 @@
         <el-button type="primary" size="small" @click="handleSearch">查询</el-button>
         <el-button size="small" @click="handleReset">重置</el-button>
         <el-tag
-          v-if="resolvedActiveCount > 0 && !props.collapsible"
+          v-if="activeFilterCount > 0 && !props.collapsible"
           size="small"
           type="info"
           class="renderer-table-filters__count"
-        >{{ resolvedActiveCount }} 项筛选</el-tag>
+        >{{ activeFilterCount }} 项筛选</el-tag>
       </div>
     </div>
   </div>
@@ -67,8 +67,7 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../internal'
-import { useContainerDataSource } from './composables/container-composables'
-import { useFilterPanel } from './composables/container-composables'
+import { useContainerDataSource, useFilterPanel } from './composables/container-composables'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
@@ -79,14 +78,13 @@ const { sparkConsume, sparkProvide, logger } = useSparkPageComponent(props)
 
 // ── 子节点归一化 ─────────────────────────────────────────────────────────
 const standaloneChildren = computed(() => getSparkNodeChildren(props.children))
-const resolvedConfigs = computed(() => standaloneChildren.value)
 
 /**
  * 是否进入面板模式：children 中至少有一个带 `field` 的节点视为过滤项。
  * 仅承载 wrapper 子节点（无 field）的情况退回 standalone 渲染。
  */
 const isPanelMode = computed(() => {
-  return resolvedConfigs.value.some((node) => {
+  return standaloneChildren.value.some((node) => {
     const field = nodeInputProp(node, 'field')
     return typeof field === 'string' && field.trim().length > 0
   })
@@ -98,7 +96,7 @@ const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: toRef(props, 'dataKey'),
   sparkConsume,
-  inheritedDataSource: computed(() => inheritedDataSource),
+  inheritedDataSource,
   mapView: view => view,
   skipEffects: true,
 })
@@ -120,12 +118,11 @@ watch(
 // ── 过滤状态自治（仅面板模式下生效） ────────────────────────────────────
 const {
   filterModel,
-  hasFilters,
   activeFilterCount,
   searchFilters,
   resetFilters,
 } = useFilterPanel({
-  filterChildren: computed(() => isPanelMode.value ? resolvedConfigs.value : []),
+  filterChildren: () => isPanelMode.value ? standaloneChildren.value : [],
   dataView: resolvedView,
   logger,
 })
@@ -141,9 +138,6 @@ function toggleFiltersCollapsed() {
 }
 
 // ── 渲染态计算 ──────────────────────────────────────────────────────────
-const resolvedFilterModel = computed<IDataRow>(() => filterModel as IDataRow)
-const resolvedActiveCount = computed(() => activeFilterCount.value)
-const resolvedCollapsed = computed(() => filtersCollapsed.value)
 const resolvedGridColumns = computed(() => props.gridColumns ?? 24)
 const resolvedGridGap = computed(() => props.gridGap ?? 12)
 const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, auto)')
@@ -168,7 +162,7 @@ function getSmartAutoFitMinWidth(configs: SparkNode[]): string {
 const resolvedAutoFitMinWidth = computed(() => {
   const raw = (props.autoFitMinWidth ?? '').trim()
   if (raw.length > 0) return raw
-  return getSmartAutoFitMinWidth(resolvedConfigs.value)
+  return getSmartAutoFitMinWidth(standaloneChildren.value)
 })
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
 const resolvedActionSpan = computed(() => {
@@ -180,7 +174,7 @@ const resolvedActionSpan = computed(() => {
 })
 
 const resolvedActionsStyle = computed<Record<string, string>>(() => {
-  const minWidthRaw = resolvedAutoFitMinWidth.value.trim()
+  const minWidthRaw = resolvedAutoFitMinWidth.value
   const gap = typeof resolvedGridGap.value === 'number' ? `${resolvedGridGap.value}px` : `${resolvedGridGap.value}`
 
   if (minWidthRaw.length > 0) {
@@ -200,8 +194,8 @@ const resolvedActionsStyle = computed<Record<string, string>>(() => {
 const fieldScopeConfig = computed<SparkNode>(() => ({
   type: 'r-field-scope',
   props: {
-    model: resolvedFilterModel.value,
-    children: resolvedConfigs.value,
+    model: filterModel as IDataRow,
+    children: standaloneChildren.value,
     gridColumns: resolvedGridColumns.value,
     gridGap: resolvedGridGap.value,
     gridAutoRows: resolvedGridAutoRows.value,
@@ -218,9 +212,6 @@ const fieldScopeConfig = computed<SparkNode>(() => ({
 if (isPanelMode.value) {
   sparkProvide(PAGE_PERMISSION_MODE, 'none')
 }
-
-// hasFilters 已由 useFilterPanel 提供；导出供模板可读
-void hasFilters
 
 async function handleSearch(): Promise<void> {
   await searchFilters()

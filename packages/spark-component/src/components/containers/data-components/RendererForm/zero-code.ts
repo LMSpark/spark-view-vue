@@ -63,12 +63,9 @@ export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions)
     },
   }
 
-  function isBuiltinActionDisabledAtScope(action: SparkNode, scope?: BuiltinActionScope): boolean {
-    return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
-  }
-
   return {
     formApi,
-    isBuiltinActionDisabled: isBuiltinActionDisabledAtScope,
+    isBuiltinActionDisabled: (action: SparkNode, scope?: BuiltinActionScope) =>
+      isBuiltinActionDisabled(action, options.resolvedView.value, scope),
   }
 }

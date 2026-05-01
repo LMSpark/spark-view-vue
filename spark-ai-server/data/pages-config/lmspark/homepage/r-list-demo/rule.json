@@ -91,7 +91,7 @@
                                                 "type": "r-statistic",
                                                 "props": {
                                                     "title": "产品数",
-                                                    "dataKey": "Products@cards@summaryRow",
+                                                    "dataKey": "Products@cards@aggregateResult",
                                                     "field": "stock",
                                                     "prefix": "库存合计：",
                                                     "valueStyle": {

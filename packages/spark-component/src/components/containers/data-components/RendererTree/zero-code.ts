@@ -211,10 +211,6 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     return isBuiltinActionDisabled(action, options.resolvedView.value)
   }
 
-  function createTreeEventControl(): TreeEventControl {
-    return createCancellableControl()
-  }
-
   async function runTreeEvent(
     handler: TreeEventHandler | undefined,
     data: TreeNode,
@@ -222,7 +218,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     component: ElTreeComponent,
     autoHandle?: () => void,
   ): Promise<void> {
-    const control = createTreeEventControl()
+    const control = createCancellableControl()
     await handler?.(data, node, component, control)
     if (!control.cancel) {
       if (autoHandle) {
@@ -260,17 +256,13 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     const draggedKey = getNodeKey(draggingNode.data)
     if (draggedKey === null) return
 
-    const parentIdField = options.resolvedView.value?.treeConfig?.parentIdField ?? 'parentId'
     let newParentId: string | number | null = null
     if (dropType === 'inner') {
       newParentId = getNodeKey(dropNode.data)
     } else {
-      const rawParentId = dropNode.data?.[parentIdField]
-      newParentId = typeof rawParentId === 'string' || typeof rawParentId === 'number'
-        ? rawParentId
-        : rawParentId === null || rawParentId === undefined
-          ? null
-          : String(rawParentId)
+      // 取 dropNode 在树索引中的 parentId，避免手工解析行字段
+      const dropNodeKey = getNodeKey(dropNode.data)
+      newParentId = (dropNodeKey !== null ? view.treeManager?.getNode(dropNodeKey)?.parentId : null) ?? null
     }
 
     const moveTreeNode = ((nextNodeId: string | number, nextParentId: string | number | null, nextIndex?: number) =>

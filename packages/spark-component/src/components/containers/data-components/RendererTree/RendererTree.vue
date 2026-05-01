@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
@@ -74,7 +74,7 @@
  *
  * 内部通过 useContainerDataSource 统一解析 dataKey，并走能力链读取 PAGE_DATASET。
  */
-import { computed, nextTick, ref, toRef, watch } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import {
   useSparkPageComponent,
   SparkComponentRenderer,
@@ -91,15 +91,12 @@ import {
   type TreeNode,
   type ElTreeNode,
   type ElTreeComponent,
-  type NativeTreeLike,
-  type NativeTreeNodeLike,
 } from './zero-code'
 import { useRendererTreeInput } from './input'
-import { useRendererTreeViewState } from '../view-state'
+import { useRendererTreeViewEffects, useRendererTreeViewState } from '../view-state'
 
 import { useContainerDataSource } from '../../composables/container-composables'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../../support/beforeRender'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -133,41 +130,23 @@ const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSo
   logPrefix: 'RendererTree',
 })
 
-const nodeKeyField = computed(() =>
-  props.nodeKey ?? primaryKey.value ?? treeConfig.value?.idField ?? 'id'
-)
+// -- DataView 投影（SSOT）----------------------------------------------------------
 
-const treeIdField = computed(() =>
-  treeConfig.value?.idField ?? 'id'
-)
-
-function resolveTreeToolbarActionNode(node: SparkNode): SparkNode {
-  const dataSource = resolvedView.value
-  const scopedRowInput = currentRow.value
-  const scopedRow = scopedRowInput !== null && scopedRowInput !== undefined && typeof scopedRowInput === 'object' && !Array.isArray(scopedRowInput)
-    ? scopedRowInput as IDataRow
-    : undefined
-
-  const beforeRender = resolveNodeBeforeRender(node, {
-    row: scopedRow,
-    data: scopedRow,
-    dataSource,
-    modelPermission: modelPermission.value,
-    host: { type: 'r-tree-toolbar' },
-  })
-
-  // 仅做 onBeforeRender 透传；权限/禁用由叶子组件（RendererButton）自管。
-  return mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
-    markResolved: true,
-  })
-}
-
-function isTreeToolbarActionVisible(node: SparkNode): boolean {
-  return node.props?.['visible'] !== false
-}
-
-const visibleToolbarConfigs = computed(() => toolbarConfigs.value.map(resolveTreeToolbarActionNode).filter(isTreeToolbarActionVisible))
-const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
+const {
+  treeData,
+  treeIdField,
+  nodeKeyField,
+  elTreeFieldProps,
+  getNodeLabel,
+  currentRow,
+  visibleToolbarConfigs,
+  showToolbar,
+} = useRendererTreeViewState({
+  resolvedView,
+  toolbarConfigs,
+  modelPermission,
+  nodeKey: toRef(props, 'nodeKey'),
+})
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
 
@@ -192,7 +171,7 @@ const {
 } = createRendererTreeZeroCode({
   props,
   resolvedView,
-  treeData: computed(() => treeData.value as IDataRow[]),
+  treeData,
   nativeTreeRef,
   logger,
   pageService,
@@ -200,95 +179,17 @@ const {
   treeIdField,
 })
 
-const {
+useRendererTreeViewEffects({
+  currentRow,
   treeData,
-  elTreeFieldProps,
-  getNodeLabel,
-  currentRow,
-  primaryKey,
-  treeConfig,
-} = useRendererTreeViewState({
-  resolvedView,
-  treeIdField,
+  expandLevel: toRef(props, 'expandLevel'),
+  currentKey: toRef(props, 'currentKey'),
+  expandToKey: toRef(props, 'expandToKey'),
+  nativeTreeRef,
+  getNodeKey,
+  syncCurrentByKey,
+  treeApi,
 })
-
-watch(
-  currentRow,
-  async nextCurrentRow => {
-    await nextTick()
-    const tree = nativeTreeRef.value as NativeTreeLike | null
-    if (!tree?.setCurrentKey) return
-    const key = getNodeKey(nextCurrentRow)
-    tree.setCurrentKey(key ?? null)
-  },
-  { immediate: true }
-)
-
-watch(
-  [() => treeData.value, () => props.expandLevel],
-  async ([nextTreeRows, expandLevel]) => {
-    if (nextTreeRows.length === 0 || expandLevel === undefined) return
-    await applyExpandLevel(treeData.value, nativeTreeRef, getNodeKey, expandLevel)
-  },
-  { immediate: true }
-)
-
-watch(
-  [() => treeData.value.length, () => props.currentKey],
-  async ([rowCount, currentKey]) => {
-    if (rowCount === 0 || currentKey === undefined) return
-    await nextTick()
-    syncCurrentByKey(currentKey)
-  },
-  { immediate: true }
-)
-
-watch(
-  [() => treeData.value.length, () => props.expandToKey],
-  async ([rowCount, expandToKey]) => {
-    if (rowCount === 0 || expandToKey === null || expandToKey === undefined) return
-    await treeApi.expandToNode(expandToKey)
-  },
-  { immediate: true }
-)
-
-async function applyExpandLevel(
-  nextTreeData: TreeNode[],
-  treeRef: { value: unknown },
-  resolveNodeKey: (data: unknown) => string | number | null,
-  level: number,
-): Promise<void> {
-  if (!Number.isFinite(level) || level < 2) return
-  await nextTick()
-  const tree = treeRef.value as NativeTreeLike | null
-  for (const key of collectExpandKeysByLevel(nextTreeData, resolveNodeKey, level)) {
-    const nativeNode = tree?.getNode?.(key) as NativeTreeNodeLike | undefined
-    nativeNode?.expand?.()
-  }
-}
-
-function collectExpandKeysByLevel(
-  nodes: TreeNode[],
-  resolveNodeKey: (data: unknown) => string | number | null,
-  targetLevel: number,
-  currentLevel = 1,
-): Array<string | number> {
-  const result: Array<string | number> = []
-  if (targetLevel <= 1) return result
-
-  for (const node of nodes) {
-    const key = resolveNodeKey(node)
-    if (key !== null && currentLevel < targetLevel) {
-      result.push(key)
-    }
-    const children = Array.isArray(node.children) ? node.children : []
-    if (children.length > 0 && currentLevel < targetLevel) {
-      result.push(...collectExpandKeysByLevel(children, resolveNodeKey, targetLevel, currentLevel + 1))
-    }
-  }
-
-  return result
-}
 
 registerApi(treeApi)
 

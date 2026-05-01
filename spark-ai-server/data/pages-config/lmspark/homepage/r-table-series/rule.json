@@ -454,7 +454,7 @@
       {
         "type": "r-section",
         "props": {
-          "title": "汇总区（summaryRow / selectionSummaryRow）",
+          "title": "汇总区（aggregateResult / selectionAggregateResult）",
           "description": "左侧展示全量汇总，右侧展示勾选行汇总"
         },
         "children": [
@@ -464,7 +464,7 @@
             "children": [
               {
                 "type": "r-detail",
-                "dataKey": "Orders@summaryRow",
+                "dataKey": "Orders@aggregateResult",
                 "children": [
                   {
                     "type": "r-number",
@@ -502,7 +502,7 @@
               },
               {
                 "type": "r-detail",
-                "dataKey": "Orders@selectionSummaryRow",
+                "dataKey": "Orders@selectionAggregateResult",
                 "children": [
                   {
                     "type": "r-number",

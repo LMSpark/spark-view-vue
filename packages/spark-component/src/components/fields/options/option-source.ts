@@ -1,10 +1,4 @@
-import { SparkData, type DataView } from '@spark-view/spark-data'
-
-interface TreeOptionSeedNode extends Record<string, unknown> {
-  id: string | number
-  name: string
-  parentId?: string | number | null
-}
+import { SparkData, type DataView, type FlatTreeNode } from '@spark-view/spark-data'
 
 export function buildOptionSourceFromView(
   view: DataView,
@@ -19,11 +13,16 @@ export function buildOptionSourceFromView(
   const treeConfig = view.treeConfig
   if (!treeConfig) return rows
 
+  // 优先复用 DataView 内部已同步的 TreeManager
+  if (view.treeManager) {
+    return view.treeManager.buildNestedTree()
+  }
+
   const idField = treeConfig.idField ?? view.primaryKey
   const parentIdField = treeConfig.parentIdField ?? 'parentId'
   const textField = treeConfig.textField ?? labelField
 
-  const seedNodes: TreeOptionSeedNode[] = rows.flatMap(row => {
+  const seedNodes: FlatTreeNode[] = rows.flatMap(row => {
     const record = row as Record<string, unknown>
     const rawId = record[idField]
     if (typeof rawId !== 'string' && typeof rawId !== 'number') {

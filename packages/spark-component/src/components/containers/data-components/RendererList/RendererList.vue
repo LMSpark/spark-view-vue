@@ -78,25 +78,21 @@
  * @notes 使用结构化 `toolbar` / `actions` 区域声明工具栏与列表项操作
  */
 import { computed, toRef, useSlots } from 'vue'
-import type { CSSProperties } from 'vue'
 import {
   useSparkPageComponent,
   SparkComponentRenderer,
-  getSparkNodeChildren,
   nodeId,
   DATA_SOURCE,
   MODULE_CONTEXT,
-  type SparkNode,
 } from '../../../internal'
 import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
 import { useContainerDataSource } from '../../composables/container-composables'
 import { useContainerToolbar } from '../../composables/container-composables'
-import { useRendererListViewState } from '../view-state'
+import { useRendererListNodeState, useRendererListViewState } from '../view-state'
 import { useContainerGrid } from '../../composables/container-composables'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
-import type { ActionsPosition } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/container-composables'
 import { createRendererListZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
@@ -118,15 +114,7 @@ const props = withDefaults(defineProps<RListProps>(), {
 })
 const listPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.listProps ?? {}) }))
 const slots = useSlots()
-
-// 仅消费结构化 props.toolbar / props.actions；children 直接作为内容节点，不再做结构分流。
-const toolbarNode = computed(() => props.toolbar)
-const actionsNode = computed(() => props.actions)
-
-const mergedChildren = computed<SparkNode[]>(() => {
-  return getSparkNodeChildren(props.children)
-})
-const hasDefaultSlot = computed(() => slots['default'] !== undefined)
+const hasDefaultSlot = slots['default'] !== undefined
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
@@ -144,7 +132,25 @@ const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSo
 const { listRows } = useRendererListViewState({
   resolvedView,
 })
-const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))
+
+const {
+  toolbarNode,
+  mergedChildren,
+  showListItems,
+  itemActionsPositionValue,
+  itemActionsClassValue,
+  showItemActionsLeft,
+  showItemActionsRight,
+  itemBodyWrapperTag,
+  itemBodyWrapperAttrs,
+  listStyle,
+  itemGridStyle,
+  rawItemActionsToolbarConfig,
+} = useRendererListNodeState({
+  props,
+  listRows,
+  hasDefaultSlot: { value: hasDefaultSlot },
+})
 
 const {
   visibleToolbarConfigs,
@@ -155,18 +161,6 @@ const {
   toolbarNode,
 })
 
-const itemActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
-const itemActionsPositionValue = computed<ActionsPosition>(() => {
-  const position = actionsNode.value?.position
-  return position === 'left' || position === 'right' ? position : 'right'
-})
-const itemActionsClassValue = computed(() => {
-  const className = actionsNode.value?.class
-  return typeof className === 'string' ? className : ''
-})
-const showItemActionsLeft = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'left')
-const showItemActionsRight = computed(() => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'right')
-
 const {
   gridChildren: itemContentChildren,
   gridStyle: itemContentGridStyle,
@@ -176,15 +170,6 @@ const {
   columns: () => props.gridColumns,
   gap: () => props.gridGap,
   autoRows: () => props.gridAutoRows,
-})
-
-const itemBodyWrapperTag = computed(() => props.useCard ? 'el-card' : 'div')
-const itemBodyWrapperAttrs = computed<Record<string, unknown>>(() => {
-  if (!props.useCard) return {}
-  return {
-    shadow: props.cardShadow,
-    class: 'renderer-list-card',
-  }
 })
 
 // ── r-list 包装 API ──────────────────────────────────────────────────────
@@ -202,46 +187,6 @@ const {
 })
 
 registerApi(listApi)
-
-const normalizedGridGap = computed(() => {
-  const value = props.gridGap
-  return typeof value === 'number' ? `${value}px` : value
-})
-
-const normalizedItemColSpan = computed(() => {
-  if (typeof props.itemColSpan === 'number' && Number.isFinite(props.itemColSpan)) {
-    return Math.max(1, Math.trunc(props.itemColSpan))
-  }
-
-  if (props.columns > 1) {
-    return Math.max(1, Math.floor(props.gridColumns / props.columns))
-  }
-
-  return props.gridColumns
-})
-
-const normalizedItemRowSpan = computed(() => {
-  if (typeof props.itemRowSpan === 'number' && Number.isFinite(props.itemRowSpan)) {
-    return Math.max(1, Math.trunc(props.itemRowSpan))
-  }
-  return 1
-})
-
-const listStyle = computed<Record<string, string>>(() => {
-  return {
-    display: 'grid',
-    gap: normalizedGridGap.value,
-    gridTemplateColumns: `repeat(${Math.max(props.gridColumns, 1)}, minmax(0, 1fr))`,
-    gridAutoRows: props.gridAutoRows,
-    alignItems: 'start',
-  }
-})
-
-const itemGridStyle = computed<CSSProperties>(() => ({
-  gridColumn: `span ${normalizedItemColSpan.value} / span ${normalizedItemColSpan.value}`,
-  gridRow: `span ${normalizedItemRowSpan.value} / span ${normalizedItemRowSpan.value}`,
-  minWidth: 0,
-}))
 
 function getItemKey(row: IDataRow, index: number): string | number {
   const keyValue = row[props.rowKey]
@@ -264,11 +209,6 @@ function getRowScope(row: IDataRow, index: number) {
     index,
   })
 }
-
-const rawItemActionsToolbarConfig = computed<SparkNode>(() => ({
-  type: 'r-toolbar',
-  children: itemActionConfigs.value,
-}))
 
 async function handleItemClick(row: IDataRow, index: number, event: Event) {
   await dispatch('item-click', row, index, event)

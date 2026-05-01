@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-05-01T15:32:04.363Z",
+  "buildTime": "2026-05-01T19:00:48.126Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -26560,8 +26560,8 @@
           "required": true,
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@24947": {
-          "name": "__@toPrimitive@24947",
+        "__@toPrimitive@965": {
+          "name": "__@toPrimitive@965",
           "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
           "required": true,
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."

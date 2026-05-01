@@ -31,12 +31,9 @@ export function createRendererDetailZeroCode(options: RendererDetailZeroCodeOpti
     },
   }
 
-  function isBuiltinActionDisabledAtScope(action: SparkNode, scope?: BuiltinActionScope): boolean {
-    return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
-  }
-
   return {
     detailApi,
-    isBuiltinActionDisabled: isBuiltinActionDisabledAtScope,
+    isBuiltinActionDisabled: (action: SparkNode, scope?: BuiltinActionScope) =>
+      isBuiltinActionDisabled(action, options.resolvedView.value, scope),
   }
 }

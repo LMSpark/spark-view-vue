@@ -597,10 +597,11 @@ export interface IViewMetadata {
    */
   autoLoad?: boolean
   /**
-   * 设置分页、排序、过滤等参数后是否自动刷新数据（默认 false）。
+   * @deprecated 此字段已无实际语义。
    *
-   * 设为 `true` 时，调用 `setPage()` / `setPageSize()` / `setSort()` / `setFilter()`
-   * 会在修改参数后自动调用 `refresh()`，消费层无需手动触发刷新。
+   * `setPage()` / `setPageSize()` / `setSort()` / `setFilter()` 均已改为“设置即处理”语义：
+   * 远端视图自动调用 `refresh()`，静态/本地视图就地处理或不处理，不再依赖此开关。
+   * 保留字段仅为向后兼容，新配置无需设置此项。
    */
   autoRefresh?: boolean
   /**

@@ -76,7 +76,6 @@
     </el-table>
   </div>
 </template>
-
 <script setup lang="ts">
 /**
  * @skill r-table
@@ -92,7 +91,7 @@
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
  * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
  */
-import { computed, nextTick, ref, toRef, watch } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren,
@@ -102,7 +101,7 @@ import {
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
-import { useRendererTableViewState } from '../view-state'
+import { useRendererTableNodeState, useRendererTableViewEffects, useRendererTableViewState } from '../view-state'
 import { useContainerDataSource } from '../../composables/container-composables'
 import { useContainerToolbar } from '../../composables/container-composables'
 import RendererHostScope from '../../support/RendererHostScope.vue'
@@ -113,22 +112,15 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
-// 列节点归一：常规列且未显式配置时自动补 sortable=true；r-row-fragment / r-column-group 原样保留。
-const normalizedContentChildNodes = computed<SparkNode[]>(() => {
-  return ((props.children as SparkNode[]) ?? []).map((rawNode) => {
-    const sourceProps = rawNode.props ?? {}
-    const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
-    return (
-      rawNode.type === 'r-row-fragment'
-      || rawNode.type === 'r-column-group'
-      || sourceProps['sortable'] !== undefined
-      || typeof field !== 'string'
-      || field.trim().length === 0
-    )
-      ? rawNode
-      : { ...rawNode, props: { ...sourceProps, sortable: true } }
-  })
-})
+const {
+  normalizedContentChildNodes,
+  toolbarNode,
+  actionScopeChildren,
+  hasLeftActions,
+  hasRightActions,
+  hasFilters,
+  filterSparkNode,
+} = useRendererTableNodeState({ props })
 
 // row-fragment 列元信息统一存在 node.props（title/width/minWidth/align/...），以下为类型安全读取工具。
 function rowFragmentRawProp(node: SparkNode, key: string): unknown {
@@ -181,30 +173,7 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   logPrefix: 'RendererTable',
 })
 
-// ── 外层布局方向 + 工具栏节点组装 ───────────────────────────────────────
-// 工具栏默认绑定到 table@currentRow，便于按钮动作获取当前行上下文。
-const toolbarNode = computed<SparkNode | undefined>(() => {
-  const toolbar = props.toolbar
-  if (!toolbar) return undefined
-
-  const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
-  const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== null && existingDataKey !== '')
-    ? existingDataKey
-    : (() => {
-        const tableName = typeof props.dataKey === 'string' ? props.dataKey.split('@')[0] : undefined
-        return tableName ? `${tableName}@currentRow` : undefined
-      })()
-
-  return {
-    type: 'r-toolbar',
-    ...(id !== undefined ? { id } : {}),
-    props: {
-      ...propsFields,
-      ...(resolvedDataKey !== undefined ? { dataKey: resolvedDataKey } : {}),
-    },
-    ...(children !== undefined ? { children } : {}),
-  }
-})
+// ── 外层布局方向（toolbar 结构由 view-state 统一组装） ───────────────────────────────────────
 
 const {
   toolbarPositionValue,
@@ -212,60 +181,16 @@ const {
   toolbarNode,
 })
 
-const actionsNode = computed<SparkNode | undefined>(() => {
-  const actions = props.actions
-  if (!actions || (actions.children?.length ?? 0) === 0) return undefined
-
-  const { type: _type, id, children, ...propsFields } = actions
-
-  return {
-    type: 'r-toolbar',
-    ...(id !== undefined ? { id } : {}),
-    props: {
-      ...propsFields,
-    },
-    ...(children !== undefined ? { children } : {}),
-  }
-})
-
-const actionScopeChildren = computed<SparkNode[]>(() => {
-  return actionsNode.value ? [actionsNode.value] : []
-})
-
-const hasLeftActions = computed(() => actionsNode.value !== undefined && props.actions?.position === 'left')
-const hasRightActions = computed(() => actionsNode.value !== undefined && (props.actions?.position ?? 'right') === 'right')
-
 // ── 筛选区透传：r-filter 自治 DataView 同步与 filterModel ─────────────────────────────
 const {
   tableData,
   elTableProps,
   currentRow,
-  selectedRows,
-  primaryKey,
   isMultiSelect,
+  isSelectedRow,
 } = useRendererTableViewState({
   baseElTableProps,
   resolvedView,
-})
-
-const hasFilters = computed(() => (props.filter?.children?.length ?? 0) > 0)
-
-// 透传 props.filter 为 r-filter SparkNode：仅结构化布局 props + children，不注入运行桥接。
-const filterSparkNode = computed<SparkNode>(() => {
-  const filter = props.filter ?? {}
-  const { type: _type, id, children, class: userClass, ...rest } = filter
-  return {
-    type: 'r-filter',
-    ...(id !== undefined ? { id } : {}),
-    props: {
-      // 表格场景默认布局：紧凑列宽 + 单列收纳，可被 props.filter 覆盖
-      autoFitMinWidth: '220px',
-      itemSpan: 1,
-      ...rest,
-      class: ['renderer-table-filter-panel', userClass].filter(Boolean).join(' '),
-    },
-    children: children ?? [],
-  }
 })
 
 // ── 零代码 API 桥接：filter API 已下放给 r-filter，这里仅保留 view.refresh()/选择态等 ───────────
@@ -284,53 +209,11 @@ const {
 
 registerApi(tableApi)
 
-// DataView -> el-table 当前行单向同步（等 nextTick 确保表格实例与 data 已渲染）。
-watch(
+useRendererTableViewEffects({
   currentRow,
-  async (row) => {
-    await nextTick()
-    nativeTableRef.value?.setCurrentRow?.(row ?? null)
-  },
-)
-
-// ── 选中态样式与行操作辅助：优先主键匹配，回落引用判等 ──────────────────────────────
-const selectedRowIdSet = computed(() => {
-  const keyField = primaryKey.value
-  const ids = new Set<string | number>()
-
-  if (typeof keyField !== 'string' || keyField.length === 0) {
-    return ids
-  }
-
-  for (const row of selectedRows.value) {
-    const key = (row as Record<string, unknown>)[keyField]
-    if (typeof key === 'string' || typeof key === 'number') {
-      ids.add(key)
-    }
-  }
-
-  return ids
+  nativeTableRef,
 })
 
-/**
- * 引用集合回退：当缺少主键时，使用对象引用判等维持选中态。
- */
-const selectedRowRefSet = computed(() => new Set(selectedRows.value))
-
-/**
- * 判断当前行是否属于“已选择集合”。
- * 顺序：primaryKey 匹配优先 -> 引用匹配回退。
- */
-function isSelectedRow(row: IDataRow): boolean {
-  const keyField = primaryKey.value
-  if (typeof keyField === 'string' && keyField.length > 0) {
-    const key = (row as Record<string, unknown>)[keyField]
-    if ((typeof key === 'string' || typeof key === 'number') && selectedRowIdSet.value.has(key)) {
-      return true
-    }
-  }
-  return selectedRowRefSet.value.has(row)
-}
 
 /**
  * el-table row-class-name 回调：仅负责打上选中行样式类。

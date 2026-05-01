@@ -29,9 +29,9 @@ import type {
   FilterExpression,
   FilterOperator,
   FilterValueExpression,
+  IDataSource,
   IDataRow,
   IModelPermission,
-  RequestState,
 } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver.js'
@@ -64,6 +64,27 @@ const DEFAULT_GRID_COLUMNS = 24
 const DEFAULT_GRID_GAP = '0px'
 const DEFAULT_AUTO_ROWS = 'minmax(32px, auto)'
 
+type OptionalString = string | null | undefined
+type OptionalStringOrNumber = string | number | null | undefined
+
+const DEFAULT_LOGGER: LoggerLike = {
+  warn: () => {},
+  error: () => {},
+}
+
+function toFiniteInteger(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value)
+  if (typeof value === 'string') {
+    const parsed = Number.parseInt(value, 10)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return undefined
+}
+
+function toNonEmptyString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' && value.trim().length > 0 ? value : fallback
+}
+
 export function normalizeGridGap(value: unknown): string {
   if (typeof value === 'number') return `${value}px`
   if (typeof value === 'string' && value.trim()) return value
@@ -71,17 +92,12 @@ export function normalizeGridGap(value: unknown): string {
 }
 
 export function normalizeSpan(value: unknown, fallback: number): number {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return Math.max(1, Math.trunc(value))
-  }
-  if (typeof value === 'string') {
-    const parsed = Number.parseInt(value, 10)
-    if (Number.isFinite(parsed)) return Math.max(1, parsed)
-  }
+  const parsed = toFiniteInteger(value)
+  if (parsed !== undefined) return Math.max(1, parsed)
   return fallback
 }
 
-function getSpanValue(child: SparkNode, keys: string[], fallback: number): number {
+function getSpanValue(child: SparkNode, keys: readonly string[], fallback: number): number {
   for (const key of keys) {
     const value = nodeInputProp(child, key)
     if (value !== undefined) return normalizeSpan(value, fallback)
@@ -89,7 +105,7 @@ function getSpanValue(child: SparkNode, keys: string[], fallback: number): numbe
   return fallback
 }
 
-function hasSpanOverride(child: SparkNode, keys: string[]): boolean {
+function hasSpanOverride(child: SparkNode, keys: readonly string[]): boolean {
   return keys.some(key => nodeInputProp(child, key) !== undefined)
 }
 
@@ -102,6 +118,12 @@ interface UseContainerGridOptions {
   defaultColSpan?: MaybeRefOrGetter<number>
   /** 当最后一行不满时，自动拉宽以填满行宽 */
   autoFillLastRow?: boolean
+}
+
+export interface ContainerGridState {
+  gridStyle: ComputedRef<CSSProperties>
+  getChildGridStyle: (child: SparkNode, index?: number) => CSSProperties
+  gridChildren: ComputedRef<SparkNode[]>
 }
 
 function normalizeAutoFitSpan(rawSpan: number, totalColumns: number, childCount: number): number {
@@ -117,12 +139,26 @@ function getAutoFitTrackCount(childCount: number): number {
   return Math.max(1, Math.min(Math.floor(childCount), 4))
 }
 
-export function useContainerGrid(options: UseContainerGridOptions) {
+export function useContainerGrid(options: UseContainerGridOptions): ContainerGridState {
+  function resolveColumns(): number {
+    return Math.max(toValue(options.columns ?? DEFAULT_GRID_COLUMNS), 1)
+  }
+
+  function resolveAutoFitMinWidth(): string {
+    return toNonEmptyString(toValue(options.autoFitMinWidth ?? ''))
+  }
+
+  function resolveGridTemplateColumns(): string {
+    const autoFitMinWidth = resolveAutoFitMinWidth()
+    if (autoFitMinWidth.length > 0) {
+      return `repeat(auto-fit, minmax(${autoFitMinWidth}, 1fr))`
+    }
+    return `repeat(${resolveColumns()}, minmax(0, 1fr))`
+  }
+
   const gridStyle = computed<CSSProperties>(() => ({
     display: 'grid',
-    gridTemplateColumns: toValue(options.autoFitMinWidth ?? '').trim().length > 0
-      ? `repeat(auto-fit, minmax(${toValue(options.autoFitMinWidth ?? '')}, 1fr))`
-      : `repeat(${Math.max(toValue(options.columns ?? DEFAULT_GRID_COLUMNS), 1)}, minmax(0, 1fr))`,
+    gridTemplateColumns: resolveGridTemplateColumns(),
     gap: normalizeGridGap(toValue(options.gap ?? DEFAULT_GRID_GAP)),
     gridAutoRows: toValue(options.autoRows ?? DEFAULT_AUTO_ROWS) || DEFAULT_AUTO_ROWS,
     alignItems: 'start',
@@ -130,8 +166,8 @@ export function useContainerGrid(options: UseContainerGridOptions) {
 
   function getChildGridStyle(child: SparkNode, index?: number): CSSProperties {
     const children = toValue(options.children)
-    const columns = Math.max(toValue(options.columns ?? DEFAULT_GRID_COLUMNS), 1)
-    const autoFitMinWidth = toValue(options.autoFitMinWidth ?? '').trim()
+    const columns = resolveColumns()
+    const autoFitMinWidth = resolveAutoFitMinWidth()
     const hasAutoFit = autoFitMinWidth.length > 0
     const spanKeys = ['colSpan', 'gridColSpan', 'span']
     const defaultColSpanValue = toValue(options.defaultColSpan)
@@ -201,13 +237,20 @@ export function useContainerGrid(options: UseContainerGridOptions) {
 
 interface UseCompositeItemGridOptions {
   children?: () => SparkNode['children'] | undefined
-  bodyClass?: () => unknown
-  gridColumns?: () => unknown
-  gridAutoRows?: () => unknown
-  gridGap?: () => unknown
+  bodyClass?: () => OptionalString
+  gridColumns?: () => OptionalStringOrNumber
+  gridAutoRows?: () => OptionalString
+  gridGap?: () => OptionalStringOrNumber
 }
 
-export function useCompositeItemGrid(options: UseCompositeItemGridOptions) {
+export interface CompositeItemGridState {
+  contentChildren: ComputedRef<SparkNode[]>
+  contentBodyClass: ComputedRef<string>
+  contentGridStyle: ComputedRef<CSSProperties>
+  getContentChildGridStyle: (child: SparkNode, index?: number) => CSSProperties
+}
+
+export function useCompositeItemGrid(options: UseCompositeItemGridOptions): CompositeItemGridState {
   const contentChildren = computed<SparkNode[]>(() => {
     const children = options.children?.()
     return getSparkNodeChildren(children)
@@ -215,7 +258,7 @@ export function useCompositeItemGrid(options: UseCompositeItemGridOptions) {
 
   const contentBodyClass = computed(() => {
     const bodyClass = options.bodyClass?.()
-    return typeof bodyClass === 'string' ? bodyClass : ''
+    return toNonEmptyString(bodyClass)
   })
 
   const {
@@ -224,12 +267,8 @@ export function useCompositeItemGrid(options: UseCompositeItemGridOptions) {
   } = useContainerGrid({
     children: () => contentChildren.value,
     columns: () => {
-      const value = options.gridColumns?.()
-      if (typeof value === 'number' && Number.isFinite(value)) return value
-      if (typeof value === 'string') {
-        const parsed = Number.parseInt(value, 10)
-        if (Number.isFinite(parsed)) return parsed
-      }
+      const parsed = toFiniteInteger(options.gridColumns?.())
+      if (parsed !== undefined) return parsed
       return 24
     },
     gap: () => {
@@ -263,11 +302,11 @@ interface LoggerLike extends ErrorLoggerLike {
 }
 
 interface UseContainerDataSourceOptions<TSource> {
-  dataKey: ValueRef<string | undefined>
+  dataKey: MaybeRefOrGetter<string | undefined>
   sparkConsume: SparkCapabilityConsumer
   mapView: (view: DataView) => TSource
-  externalDataSource?: ValueRef<TSource | undefined>
-  inheritedDataSource?: ValueRef<TSource | null | undefined>
+  externalDataSource?: MaybeRefOrGetter<TSource | undefined>
+  inheritedDataSource?: MaybeRefOrGetter<TSource | null | undefined>
   provideDataSource?: (source: TSource) => void
   logger?: LoggerLike
   logPrefix?: string
@@ -286,8 +325,22 @@ interface UseContainerDataSourceEffectsOptions<TSource> {
   logPrefix: string
 }
 
-export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>) {
+export interface ContainerDataSourceState<TSource> {
+  resolvedDataSource: ComputedRef<TSource | null>
+  resolvedDataRow: ComputedRef<IDataRow | null>
+  modelPermission: ComputedRef<IModelPermission | undefined>
+}
+
+export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>): ContainerDataSourceState<TSource> {
   const pageDataSet = options.sparkConsume(PAGE_DATASET)
+  const capabilities = computed(() => resolveDataCapabilitiesFromDataKey(toValue(options.dataKey), pageDataSet))
+
+  function resolveProvidedSource(): TSource | undefined {
+    const provided = options.externalDataSource !== undefined
+      ? toValue(options.externalDataSource)
+      : undefined
+    return provided
+  }
 
   function pickRowFromSource(source: unknown): IDataRow | null {
     if (source === null || source === undefined || typeof source !== 'object') return null
@@ -297,24 +350,26 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
   }
 
   const resolvedDataRow = computed<IDataRow | null>(() => {
-    const provided = options.externalDataSource?.value
+    const provided = resolveProvidedSource()
     if (provided !== undefined) return pickRowFromSource(provided)
 
-    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, pageDataSet)
-    if (capabilities.dataRow !== null) return capabilities.dataRow
+    if (capabilities.value.dataRow !== null) return capabilities.value.dataRow
 
-    const inherited = options.inheritedDataSource?.value
+    const inherited = options.inheritedDataSource !== undefined
+      ? toValue(options.inheritedDataSource)
+      : undefined
     return pickRowFromSource(inherited)
   })
 
   const resolvedDataSource = computed<TSource | null>(() => {
-    const provided = options.externalDataSource?.value
+    const provided = resolveProvidedSource()
     if (provided !== undefined) return provided
 
-    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, pageDataSet)
-    if (capabilities.dataSource) return options.mapView(capabilities.dataSource)
+    if (capabilities.value.dataSource) return options.mapView(capabilities.value.dataSource)
 
-    const inherited = options.inheritedDataSource?.value
+    const inherited = options.inheritedDataSource !== undefined
+      ? toValue(options.inheritedDataSource)
+      : undefined
     if (inherited !== null && inherited !== undefined) return inherited
 
     return null
@@ -328,10 +383,7 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
     useContainerDataSourceEffects({
       resolvedDataSource,
       ...(options.provideDataSource ? { provideDataSource: options.provideDataSource } : {}),
-      logger: options.logger ?? {
-        warn: () => {},
-        error: () => {},
-      },
+      logger: options.logger ?? DEFAULT_LOGGER,
       logPrefix: options.logPrefix ?? 'useContainerDataSource',
     })
   }
@@ -343,7 +395,7 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
   }
 }
 
-export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>) {
+export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>): void {
   function shouldAutoLoad(view: DataView): boolean {
     if (typeof view.requestData !== 'function') return false
 
@@ -367,10 +419,14 @@ export function useContainerDataSourceEffects<TSource>(options: UseContainerData
     })
   }
 
-  watch(options.resolvedDataSource, (source) => {
+  function runSourceEffects(source: TSource | null): void {
     if (source === null) return
     options.provideDataSource?.(source)
     tryAutoLoad(source)
+  }
+
+  watch(options.resolvedDataSource, (source) => {
+    runSourceEffects(source)
   }, { immediate: true })
 }
 
@@ -430,20 +486,21 @@ export interface ContainerToolbarState {
 export function useContainerToolbar(options: UseContainerToolbarOptions): ContainerToolbarState {
   const fallbackClass = options.defaultClass ?? 'renderer-toolbar-default'
   const fallbackPosition = options.defaultPosition ?? 'top'
+  const toolbarNodeValue = computed(() => toValue(options.toolbarNode))
 
   const visibleToolbarConfigs = computed(() =>
-    getSparkNodeChildren(toValue(options.toolbarNode)?.children)
+    getSparkNodeChildren(toolbarNodeValue.value?.children)
   )
 
   const toolbarPositionValue = computed<ToolbarPosition>(() => {
-    const position = toValue(options.toolbarNode)?.position
+    const position = toolbarNodeValue.value?.position
     return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
       ? position
       : fallbackPosition
   })
 
   const toolbarClassValue = computed(() => {
-    const className = toValue(options.toolbarNode)?.class
+    const className = toolbarNodeValue.value?.class
     return typeof className === 'string' ? className : fallbackClass
   })
 
@@ -503,7 +560,7 @@ export interface ClearedContext {
 }
 
 export interface RequestStateChangedContext {
-  state: RequestState
+  state: NonNullable<IDataSource['requestState']>
   view: DataView
   eventName: 'requestStateChanged'
 }
@@ -547,6 +604,21 @@ export interface DataViewEventBridgeOptions {
   onMutatingChanged?: (context: MutatingChangedContext) => void | Promise<void>
   onIgnoredByOriginatorId?: (context: OriginatorFilterContext) => void
   onError?: (error: unknown, context: DataViewBridgeBaseContext) => void
+}
+
+type DataViewBridgeEventArgs =
+  | [currentRow: IDataRow | null, originatorId?: string]
+  | [selectedRows: IDataRow[], originatorId?: string]
+  | []
+  | [requestState: NonNullable<IDataSource['requestState']>]
+  | [mutating: boolean]
+
+type DataViewBridgeEventHandler = (...args: DataViewBridgeEventArgs) => void
+
+interface DataViewBridgeRegistration {
+  enabled: boolean
+  eventName: DataViewBridgeEventName
+  handler: unknown
 }
 
 export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
@@ -607,9 +679,24 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
 
     options.onAttached?.(view)
 
+    const runNoArgEvent = (
+      eventName: Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged'>,
+      runner: () => void | Promise<void>,
+    ) => {
+      runWithErrorBoundary(eventName, view, runner)
+    }
+
+    const runOriginatorEvent = (
+      eventName: Extract<DataViewBridgeEventName, 'currentRowChanged' | 'selectedRowsChanged'>,
+      originatorId: string | undefined,
+      runner: () => void | Promise<void>,
+    ) => {
+      if (!shouldDispatchByOriginator(originatorId, view, eventName)) return
+      runWithErrorBoundary(eventName, view, runner)
+    }
+
     const handleCurrentRowChanged = (row: IDataRow | null, originatorId?: string) => {
-      if (!shouldDispatchByOriginator(originatorId, view, 'currentRowChanged')) return
-      runWithErrorBoundary('currentRowChanged', view, () =>
+      runOriginatorEvent('currentRowChanged', originatorId, () =>
         options.onCurrentRowChanged?.({
           row,
           ...(originatorId !== undefined ? { originatorId } : {}),
@@ -620,8 +707,7 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
     }
 
     const handleSelectedRowsChanged = (rows: IDataRow[], originatorId?: string) => {
-      if (!shouldDispatchByOriginator(originatorId, view, 'selectedRowsChanged')) return
-      runWithErrorBoundary('selectedRowsChanged', view, () =>
+      runOriginatorEvent('selectedRowsChanged', originatorId, () =>
         options.onSelectedRowsChanged?.({
           rows,
           ...(originatorId !== undefined ? { originatorId } : {}),
@@ -632,31 +718,31 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
     }
 
     const handleRowsChanged = () => {
-      runWithErrorBoundary('rowsChanged', view, () =>
+      runNoArgEvent('rowsChanged', () =>
         options.onRowsChanged?.({ view, eventName: 'rowsChanged' })
       )
     }
 
     const handleCleared = () => {
-      runWithErrorBoundary('cleared', view, () =>
+      runNoArgEvent('cleared', () =>
         options.onCleared?.({ view, eventName: 'cleared' })
       )
     }
 
-    const handleRequestStateChanged = (state: RequestState) => {
+    const handleRequestStateChanged = (state: NonNullable<IDataSource['requestState']>) => {
       runWithErrorBoundary('requestStateChanged', view, () =>
         options.onRequestStateChanged?.({ state, view, eventName: 'requestStateChanged' })
       )
     }
 
     const handleSummaryChanged = () => {
-      runWithErrorBoundary('summaryChanged', view, () =>
+      runNoArgEvent('summaryChanged', () =>
         options.onSummaryChanged?.({ view, eventName: 'summaryChanged' })
       )
     }
 
     const handleSelectionSummaryChanged = () => {
-      runWithErrorBoundary('selectionSummaryChanged', view, () =>
+      runNoArgEvent('selectionSummaryChanged', () =>
         options.onSelectionSummaryChanged?.({ view, eventName: 'selectionSummaryChanged' })
       )
     }
@@ -667,29 +753,50 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       )
     }
 
-    if (options.onCurrentRowChanged) view.events.on('currentRowChanged', handleCurrentRowChanged)
-    if (options.onSelectedRowsChanged) view.events.on('selectedRowsChanged', handleSelectedRowsChanged)
-    if (options.onRowsChanged) view.events.on('rowsChanged', handleRowsChanged)
-    if (options.onCleared) view.events.on('cleared', handleCleared)
-    if (options.onRequestStateChanged) view.events.on('requestStateChanged', handleRequestStateChanged)
-    if (options.onSummaryChanged) view.events.on('summaryChanged', handleSummaryChanged)
-    if (options.onSelectionSummaryChanged) view.events.on('selectionSummaryChanged', handleSelectionSummaryChanged)
-    if (options.onMutatingChanged) view.events.on('mutatingChanged', handleMutatingChanged)
+    const cleanupHandlers: Array<() => void> = []
+
+    const registerBridgeEvent = (
+      enabled: boolean,
+      eventName: DataViewBridgeEventName,
+      handler: unknown,
+    ): void => {
+      if (!enabled) return
+      const subscribedHandler = handler as DataViewBridgeEventHandler
+      view.events.on(eventName, subscribedHandler)
+      cleanupHandlers.push(() => {
+        view.events.off(eventName, subscribedHandler)
+      })
+    }
+
+    const registrations: readonly DataViewBridgeRegistration[] = [
+      { enabled: Boolean(options.onCurrentRowChanged), eventName: 'currentRowChanged', handler: handleCurrentRowChanged },
+      { enabled: Boolean(options.onSelectedRowsChanged), eventName: 'selectedRowsChanged', handler: handleSelectedRowsChanged },
+      { enabled: Boolean(options.onRowsChanged), eventName: 'rowsChanged', handler: handleRowsChanged },
+      { enabled: Boolean(options.onCleared), eventName: 'cleared', handler: handleCleared },
+      { enabled: Boolean(options.onRequestStateChanged), eventName: 'requestStateChanged', handler: handleRequestStateChanged },
+      { enabled: Boolean(options.onSummaryChanged), eventName: 'summaryChanged', handler: handleSummaryChanged },
+      { enabled: Boolean(options.onSelectionSummaryChanged), eventName: 'selectionSummaryChanged', handler: handleSelectionSummaryChanged },
+      { enabled: Boolean(options.onMutatingChanged), eventName: 'mutatingChanged', handler: handleMutatingChanged },
+    ]
+
+    for (const registration of registrations) {
+      registerBridgeEvent(registration.enabled, registration.eventName, registration.handler)
+    }
 
     onCleanup(() => {
-      if (options.onCurrentRowChanged) view.events.off('currentRowChanged', handleCurrentRowChanged)
-      if (options.onSelectedRowsChanged) view.events.off('selectedRowsChanged', handleSelectedRowsChanged)
-      if (options.onRowsChanged) view.events.off('rowsChanged', handleRowsChanged)
-      if (options.onCleared) view.events.off('cleared', handleCleared)
-      if (options.onRequestStateChanged) view.events.off('requestStateChanged', handleRequestStateChanged)
-      if (options.onSummaryChanged) view.events.off('summaryChanged', handleSummaryChanged)
-      if (options.onSelectionSummaryChanged) view.events.off('selectionSummaryChanged', handleSelectionSummaryChanged)
-      if (options.onMutatingChanged) view.events.off('mutatingChanged', handleMutatingChanged)
+      for (const cleanup of cleanupHandlers) cleanup()
     })
   })
 }
 
-export function useDataViewSyncGuard() {
+export interface DataViewSyncGuardState {
+  runWithViewSync: <T>(action: () => T) => T
+  runWithViewSyncAsync: <T>(action: () => Promise<T>) => Promise<T>
+  isViewSyncing: () => boolean
+  getSyncDepth: () => number
+}
+
+export function useDataViewSyncGuard(): DataViewSyncGuardState {
   let syncDepth = 0
 
   function enterViewSync(): void { syncDepth += 1 }
@@ -716,23 +823,18 @@ export function useDataViewSyncGuard() {
 // ============================================================
 
 interface UseFilterPanelOptions {
-  filterChildren: ValueRef<SparkNode[]>
-  dataView: ValueRef<DataView | null>
+  filterChildren: MaybeRefOrGetter<SparkNode[]>
+  dataView: MaybeRefOrGetter<DataView | null>
   logger: ErrorLoggerLike
 }
 
-interface FilterCapableView {
-  setFilter?: (expr: FilterExpression | undefined) => Promise<void> | void
-  refresh?: () => Promise<void> | void
-  filterExpression?: FilterExpression
-  getColumn?: (name: string) => unknown
-  columns?: Array<{ name?: string; field?: string }>
-  dataTable?: {
-    resourceType?: string
-    api?: {
-      list?: unknown
-    }
-  }
+export interface FilterPanelState {
+  filterModel: Record<string, unknown>
+  filterConfigs: ComputedRef<SparkNode[]>
+  hasFilters: ComputedRef<boolean>
+  activeFilterCount: ComputedRef<number>
+  searchFilters: () => Promise<void>
+  resetFilters: () => Promise<void>
 }
 
 interface InputFilterDescriptor {
@@ -749,22 +851,6 @@ interface ResidentFieldRefFilterDescriptor {
 }
 
 type FilterDescriptor = InputFilterDescriptor | ResidentFieldRefFilterDescriptor
-
-function shouldRefreshFilterView(view: DataView): boolean {
-  const dataTable = (view as unknown as FilterCapableView).dataTable
-  if (dataTable?.api?.list === undefined) return false
-  if (dataTable.resourceType === 'static-data') return false
-  return true
-}
-
-function isSameFilterExpression(
-  left: FilterExpression | undefined,
-  right: FilterExpression | undefined,
-): boolean {
-  if (left === right) return true
-  if (!left || !right) return false
-  return JSON.stringify(left) === JSON.stringify(right)
-}
 
 function isEmptyFilterValue(value: unknown): boolean {
   if (value === undefined || value === null) return true
@@ -833,34 +919,6 @@ function createResidentFieldRefDescriptor(
   }
 }
 
-function hasKnownColumns(view: FilterCapableView): boolean {
-  return typeof view.getColumn === 'function' || Array.isArray(view.columns)
-}
-
-function hasColumn(view: FilterCapableView, name: string): boolean {
-  if (typeof view.getColumn === 'function') {
-    return view.getColumn(name) !== undefined
-  }
-  return (view.columns ?? []).some(column => column.name === name || column.field === name)
-}
-
-function assertResidentFieldRefsExist(
-  view: DataView | null,
-  descriptors: FilterDescriptor[],
-): void {
-  if (!view) return
-
-  const candidate = view as unknown as FilterCapableView
-  if (!hasKnownColumns(candidate)) return
-
-  for (const descriptor of descriptors) {
-    if (!isResidentFieldRefDescriptor(descriptor)) continue
-    if (!hasColumn(candidate, descriptor.refField)) {
-      throw new Error(`RendererFilter: filterValueRefField 引用了不存在的字段 ${descriptor.refField}`)
-    }
-  }
-}
-
 function describeFilterNode(config: SparkNode): FilterDescriptor {
   const residentFieldRef = createResidentFieldRefDescriptor(config)
   if (residentFieldRef) return residentFieldRef
@@ -893,11 +951,39 @@ function buildCondition(config: SparkNode, value: unknown): FilterExpression | u
   }
 }
 
-export function useFilterPanel(options: UseFilterPanelOptions) {
+function syncFilterModelKeys(
+  filterModel: Record<string, unknown>,
+  configs: readonly SparkNode[],
+): void {
+  const validKeys = new Set<string>()
+  for (const config of configs) {
+    const field = getNodeField(config)
+    if (typeof field === 'string') validKeys.add(field)
+  }
+  for (const key of Object.keys(filterModel)) {
+    if (!validKeys.has(key)) {
+      filterModel[key] = undefined
+    }
+  }
+  for (const key of validKeys) {
+    if (!(key in filterModel)) {
+      filterModel[key] = undefined
+    }
+  }
+}
+
+function getInputFilterModelValue(
+  descriptor: InputFilterDescriptor,
+  model: Record<string, unknown>,
+): unknown {
+  return typeof descriptor.field === 'string' ? model[descriptor.field] : undefined
+}
+
+export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState {
   const filterModel = reactive<Record<string, unknown>>({})
 
   const allFilterNodes = computed(() => {
-    const nodes = options.filterChildren.value
+    const nodes = toValue(options.filterChildren)
     assertFilterNodesArray(nodes)
     return nodes
   })
@@ -906,16 +992,11 @@ export function useFilterPanel(options: UseFilterPanelOptions) {
     return allFilterNodes.value.map(config => describeFilterNode(config))
   })
 
-  assertResidentFieldRefsExist(
-    options.dataView.value,
-    filterDescriptors.value,
+  const inputFilterDescriptors = computed(() =>
+    filterDescriptors.value.filter(isInputFilterDescriptor)
   )
 
-  const filterConfigs = computed(() => {
-    return filterDescriptors.value
-      .filter(isInputFilterDescriptor)
-      .map(descriptor => descriptor.config)
-  })
+  const filterConfigs = computed(() => inputFilterDescriptors.value.map(descriptor => descriptor.config))
 
   const residentFieldRefConditions = computed<FilterExpression[]>(() => {
     return filterDescriptors.value
@@ -931,29 +1012,15 @@ export function useFilterPanel(options: UseFilterPanelOptions) {
   })
 
   watch(filterConfigs, (configs) => {
-    const nextKeys = new Set(configs.map(config => getNodeField(config)).filter((name): name is string => typeof name === 'string'))
-    for (const key of Object.keys(filterModel)) {
-      if (!nextKeys.has(key)) {
-        filterModel[key] = undefined
-      }
-    }
-    for (const key of nextKeys) {
-      if (!(key in filterModel)) {
-        filterModel[key] = undefined
-      }
-    }
+    syncFilterModelKeys(filterModel, configs)
   }, { immediate: true })
 
   const filterExpression = computed<FilterExpression | undefined>(() => {
     const conditions = [
       ...residentFieldRefConditions.value,
-      ...filterDescriptors.value
-        .filter(isInputFilterDescriptor)
+      ...inputFilterDescriptors.value
         .map(descriptor => {
-          return buildCondition(
-            descriptor.config,
-            typeof descriptor.field === 'string' ? filterModel[descriptor.field] : undefined,
-          )
+          return buildCondition(descriptor.config, getInputFilterModelValue(descriptor, filterModel))
         })
         .filter((expr): expr is FilterExpression => expr !== undefined),
     ]
@@ -969,92 +1036,74 @@ export function useFilterPanel(options: UseFilterPanelOptions) {
   async function applyFilterToView(
     view: DataView,
     expr: FilterExpression | undefined,
-    refreshRemote: boolean,
+    forceExecute = false,
   ): Promise<void> {
     if (!hasAnyFilterNodes.value) return
+    if (forceExecute) {
+      await view.executeFilter(expr)
+      return
+    }
+    await view.setFilter(expr)
+  }
 
-    assertResidentFieldRefsExist(
-      view,
-      filterDescriptors.value,
-    )
-
-    const candidate = view as unknown as FilterCapableView
-    if (typeof candidate.setFilter !== 'function') return
-    if (isSameFilterExpression(candidate.filterExpression, expr)) return
-
-    await candidate.setFilter(expr)
-
-    if (
-      refreshRemote
-      && shouldRefreshFilterView(view)
-      && typeof candidate.refresh === 'function'
-    ) {
-      await candidate.refresh()
+  async function applyWithHandledError(
+    view: DataView,
+    expr: FilterExpression | undefined,
+    errorMessage: string,
+    forceExecute = false,
+  ): Promise<boolean> {
+    try {
+      await applyFilterToView(view, expr, forceExecute)
+      return true
+    } catch (error) {
+      options.logger.error(errorMessage, error)
+      return false
     }
   }
 
-  let initialized = false
+  async function withActiveFilterView(action: (view: DataView) => Promise<void>): Promise<void> {
+    const view = toValue(options.dataView)
+    if (!view || !hasAnyFilterNodes.value) return
+    await action(view)
+  }
 
-  watch(() => options.dataView.value, async (view) => {
+  watch(() => toValue(options.dataView), async (view) => {
     if (!view) return
-    try {
-      await applyFilterToView(view, filterExpression.value, false)
-      initialized = true
-    } catch (error) {
-      options.logger.error('RendererFilter: 同步过滤表达式失败', error)
-    }
+    await applyWithHandledError(view, filterExpression.value, 'RendererFilter: 同步过滤表达式失败')
   }, { immediate: true })
 
   watch(filterExpression, async (expr) => {
-    const view = options.dataView.value
+    const view = toValue(options.dataView)
     if (!view) return
-    try {
-      await applyFilterToView(view, expr, initialized)
-    } catch (error) {
-      options.logger.error('RendererFilter: 应用过滤失败', error)
-    } finally {
-      initialized = true
-    }
+    await applyWithHandledError(view, expr, 'RendererFilter: 应用过滤失败')
   }, { deep: true })
 
   const activeFilterCount = computed(() => {
     let count = 0
-    for (const descriptor of filterDescriptors.value) {
-      if (!isInputFilterDescriptor(descriptor)) continue
-      if (typeof descriptor.field === 'string' && !isEmptyFilterValue(filterModel[descriptor.field])) {
+    for (const descriptor of inputFilterDescriptors.value) {
+      if (!isEmptyFilterValue(getInputFilterModelValue(descriptor, filterModel))) {
         count++
       }
     }
     return count
   })
 
-  async function resetFilters(): Promise<void> {
+  function resetFilters(): Promise<void> {
     for (const key of Object.keys(filterModel)) {
       filterModel[key] = undefined
     }
-    const view = options.dataView.value
-    if (!view || !hasAnyFilterNodes.value) return
-    try {
-      await applyFilterToView(view, filterExpression.value, true)
-    } catch (error) {
-      options.logger.error('RendererFilter: 重置过滤失败', error)
-    }
+    return Promise.resolve()
   }
 
   async function searchFilters(): Promise<void> {
-    const view = options.dataView.value
-    if (!view || !hasAnyFilterNodes.value) return
-    try {
-      await applyFilterToView(view, filterExpression.value, true)
-    } catch (error) {
-      options.logger.error('RendererFilter: 应用过滤失败', error)
-    }
+    await withActiveFilterView(async (view) => {
+      await applyWithHandledError(view, filterExpression.value, 'RendererFilter: 应用过滤失败', true)
+    })
   }
 
   return {
     filterModel,
     filterConfigs,
-    filterExpression,
     hasFilters: hasRenderableFilters,
     activeFilterCount,
     searchFilters,
@@ -1107,7 +1156,7 @@ export function useFormDetailContainer(
 
   const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
-  const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+  const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
     externalDataSource: toRef(props, 'dataSource'),
     dataKey: toRef(props, 'dataKey'),
     sparkConsume,
@@ -1117,7 +1166,7 @@ export function useFormDetailContainer(
     logPrefix,
   })
 
-  const { currentRow } = useRendererFormDetailViewState({ resolvedView })
+  const { currentRow, aggregateResult, selectionAggregateResult } = useRendererFormDetailViewState({ resolvedView })
 
   // ==========================================================================
   // 分区 3：currentRow -> contextData 同步镜像
@@ -1126,12 +1175,32 @@ export function useFormDetailContainer(
   const contextData = shallowReactive<IDataRow>({})
   let prevRow: unknown = Symbol('initial')
 
+  function resolveContextRow(): IDataRow | null {
+    const rawKey = props.dataKey
+    if (typeof rawKey === 'string') {
+      const normalizedKey = rawKey.trim()
+      const view = resolvedView.value
+      if (normalizedKey.endsWith('@selectionAggregateResult')) {
+        return (view?.selectionAggregateResult ?? selectionAggregateResult.value) as IDataRow
+      }
+      if (normalizedKey.endsWith('@aggregateResult')) {
+        return (view?.aggregateResult ?? aggregateResult.value) as IDataRow
+      }
+    }
+
+    return resolvedDataRow.value ?? currentRow.value
+  }
+
+  function syncContextDataFromCurrentRow(row: IDataRow | null, options?: { skipSameRef?: boolean }): void {
+    if (options?.skipSameRef === true && row === prevRow) return
+    prevRow = row
+    syncReactiveRow(contextData, row)
+  }
+
   watch(
-    currentRow,
-    (row) => {
-      if (row === prevRow) return
-      prevRow = row
-      syncReactiveRow(contextData, row)
+    () => resolveContextRow(),
+    (resolvedRow) => {
+      syncContextDataFromCurrentRow(resolvedRow, { skipSameRef: true })
     },
     { immediate: true },
   )
@@ -1139,10 +1208,17 @@ export function useFormDetailContainer(
   useDataViewEventBridge({
     resolvedView,
     onCurrentRowChanged: ({ row }) => {
-      syncReactiveRow(contextData, row)
+      const resolvedRow = resolveContextRow()
+      syncContextDataFromCurrentRow(resolvedRow ?? row)
     },
     onRowsChanged: () => {
-      syncReactiveRow(contextData, currentRow.value)
+      syncContextDataFromCurrentRow(resolveContextRow())
+    },
+    onSummaryChanged: () => {
+      syncContextDataFromCurrentRow(resolveContextRow())
+    },
+    onSelectionSummaryChanged: () => {
+      syncContextDataFromCurrentRow(resolveContextRow())
     },
   })
 
@@ -1197,6 +1273,8 @@ export function useFormDetailContainer(
     visibleToolbarConfigs,
     showToolbar,
     getDefaultScope,
+    aggregateResult,
+    selectionAggregateResult,
   }
 }
 

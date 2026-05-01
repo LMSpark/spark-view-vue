@@ -599,7 +599,7 @@
             "type": "r-detail",
             "props": {
               "id": "detail__summary",
-              "dataKey": "Entries@summaryRow"
+              "dataKey": "Entries@aggregateResult"
             },
             "children": [
               {

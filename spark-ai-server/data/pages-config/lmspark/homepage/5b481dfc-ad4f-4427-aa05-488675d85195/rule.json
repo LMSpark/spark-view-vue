@@ -17,7 +17,7 @@
           "id": "cardTotalOrders",
           "header": "总订单数",
           "shadow": "always",
-          "dataKey": "Orders@orderListView@summaryRow"
+          "dataKey": "Orders@orderListView@aggregateResult"
         },
         "children": [
           {
@@ -40,7 +40,7 @@
           "id": "cardTotalAmount",
           "header": "总金额",
           "shadow": "always",
-          "dataKey": "Orders@orderListView@summaryRow"
+          "dataKey": "Orders@orderListView@aggregateResult"
         },
         "children": [
           {
@@ -63,7 +63,7 @@
           "id": "cardAvgAmount",
           "header": "平均金额",
           "shadow": "always",
-          "dataKey": "Orders@orderListView@summaryRow"
+          "dataKey": "Orders@orderListView@aggregateResult"
         },
         "children": [
           {
@@ -86,7 +86,7 @@
           "id": "cardPendingOrders",
           "header": "待处理订单",
           "shadow": "always",
-          "dataKey": "Orders@pendingOrdersView@summaryRow"
+          "dataKey": "Orders@pendingOrdersView@aggregateResult"
         },
         "children": [
           {
@@ -109,7 +109,7 @@
           "id": "cardTotalCustomers",
           "header": "客户总数",
           "shadow": "always",
-          "dataKey": "Customers@default@summaryRow"
+          "dataKey": "Customers@default@aggregateResult"
         },
         "children": [
           {
@@ -132,7 +132,7 @@
           "id": "cardTotalProducts",
           "header": "产品总数",
           "shadow": "always",
-          "dataKey": "Products@default@summaryRow"
+          "dataKey": "Products@default@aggregateResult"
         },
         "children": [
           {
@@ -154,7 +154,7 @@
           "id": "cardTotalEmployees",
           "header": "员工总数",
           "shadow": "always",
-          "dataKey": "Employees@default@summaryRow"
+          "dataKey": "Employees@default@aggregateResult"
         },
         "children": [
           {

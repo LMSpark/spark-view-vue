@@ -323,7 +323,7 @@ export class DataView implements IDataSource {
   /** autoLoad 是否来自显式视图配置，而不是类默认值。 */
   autoLoadConfigured = false
 
-  /** 设置分页/排序/过滤后是否自动 refresh()（默认 false） */
+  /** @deprecated 已无实际语义。setPage/setPageSize/setSort/setFilter 均已改为"设置即处理"，不再依赖此开关。保留仅为向后兼容。 */
   autoRefresh = false
 
   private _shouldApplyStaticLocalFilter(): boolean {
@@ -354,6 +354,12 @@ export class DataView implements IDataSource {
     return fields
   }
 
+  private _assertKnownFilterFieldExists(fieldName: string): void {
+    if ((this._columnMap?.size ?? 0) === 0) return
+    if (this.getColumn(fieldName) !== undefined) return
+    throw new Error(`过滤表达式引用了不存在的字段 "${fieldName}"`)
+  }
+
   private _validateFilterValueExpression(
     value: FilterValueExpression,
     availableFields?: ReadonlySet<string>,
@@ -375,6 +381,9 @@ export class DataView implements IDataSource {
       }
       if (availableFields !== undefined && availableFields.size > 0 && !availableFields.has(fieldName)) {
         throw new Error(`过滤值表达式引用了不存在的字段 "${fieldName}"`)
+      }
+      if (availableFields === undefined) {
+        this._assertKnownFilterFieldExists(fieldName)
       }
       return
     }
@@ -404,6 +413,12 @@ export class DataView implements IDataSource {
     if (expr.field.trim() === '') {
       throw new Error(`过滤条件字段不能为空 [${this.tableName}@${this.viewId}]`)
     }
+    if (availableFields !== undefined && availableFields.size > 0 && !availableFields.has(expr.field)) {
+      throw new Error(`过滤条件字段不存在 "${expr.field}" [${this.tableName}@${this.viewId}]`)
+    }
+    if (availableFields === undefined) {
+      this._assertKnownFilterFieldExists(expr.field)
+    }
     this._validateFilterValueExpression(expr.value, availableFields)
   }
 
@@ -413,6 +428,15 @@ export class DataView implements IDataSource {
       : undefined
 
     this._validateFilterExpressionNode(expr, availableFields)
+  }
+
+  private _isSameFilterExpression(
+    left: FilterExpression | undefined,
+    right: FilterExpression | undefined,
+  ): boolean {
+    if (left === right) return true
+    if (!left || !right) return false
+    return JSON.stringify(left) === JSON.stringify(right)
   }
 
   private _shouldUseRemotePostQuery(): boolean {
@@ -1519,31 +1543,33 @@ export class DataView implements IDataSource {
     return sort.map(f => `${f.field}:${f.direction ?? 'asc'}`).join(',')
   }
 
-  /** 设置当前页（autoRefresh=true 时自动刷新） */
+  /** 设置当前页；远端视图自动重新查询 */
   async setPage(page: number): Promise<void> {
     this.page = page
-    if (this.autoRefresh) await this.refresh()
+    if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
-  /** 设置每页条数并重置页码为 1（autoRefresh=true 时自动刷新） */
+  /** 设置每页条数并重置页码为 1；远端视图自动重新查询 */
   async setPageSize(pageSize: number): Promise<void> {
     this.pageSize = pageSize
     this.page = 1
-    if (this.autoRefresh) await this.refresh()
+    if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
-  /** 设置排序表达式（autoRefresh=true 时自动刷新） */
+  /** 设置排序表达式；远端视图自动重新查询 */
   async setSort(sort: SortExpression | undefined): Promise<void> {
     if (sort === undefined) {
       delete this.sortExpression
     } else {
       this.sortExpression = sort
     }
-    if (this.autoRefresh) await this.refresh()
+    if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
-  /** 设置过滤表达式并重置页码为 1（autoRefresh=true 时自动刷新） */
+  /** 设置过滤表达式并重置页码为 1；表达式变更后由数据层自动处理数据 */
   async setFilter(filter: FilterExpression | undefined): Promise<void> {
+    if (this._isSameFilterExpression(this.filterExpression, filter)) return
+
     if (filter === undefined) {
       delete this.filterExpression
     } else {
@@ -1555,7 +1581,25 @@ export class DataView implements IDataSource {
       this._syncStaticLocalFilterRows()
       return
     }
-    if (this.autoRefresh) await this.refresh()
+    await this.refresh()
+  }
+
+  /**
+   * 显式执行过滤：即使表达式未变化也会处理数据（用于“查询”按钮语义）。
+   */
+  async executeFilter(filter: FilterExpression | undefined): Promise<void> {
+    const unchanged = this._isSameFilterExpression(this.filterExpression, filter)
+    if (!unchanged) {
+      await this.setFilter(filter)
+      return
+    }
+
+    if (this._shouldApplyStaticLocalFilter()) {
+      this._syncStaticLocalFilterRows()
+      return
+    }
+
+    await this.refresh()
   }
 
   /** 级联委托（setupCascade / teardownCascade） */

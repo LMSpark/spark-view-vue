@@ -86,6 +86,7 @@ export type {
   SortField,
   TreeConfig,
   TreePath,
+  FlatTreeNode,
   NestedTreeNode,
   NestedTreeSearchResult,
   AggregateType,
