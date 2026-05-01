@@ -1085,8 +1085,8 @@ function RenderStatusTag() {
 | `rows` | `IDataRow[]` | 视图当前行集合 |
 | `currentRow` | `IDataRow \| null` | 当前聚焦行 |
 | `selectedRows` | `IDataRow[]` | 当前选中行 |
-| `summaryRow` | `Readonly<IDataRow>` | 全行聚合值 |
-| `selectionSummaryRow` | `Readonly<IDataRow>` | 选中行聚合值 |
+| `summaryRow` | `Readonly<IDataRow>` | 全量聚合输出行；字段来自 `aggregates` 的 key，值为对应聚合结果 |
+| `selectionSummaryRow` | `Readonly<IDataRow>` | 选中行聚合输出行；字段来自 `aggregates` 的 key，值为对应聚合结果 |
 
 ## 附录 C：事件绑定速查
 

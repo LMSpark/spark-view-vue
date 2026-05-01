@@ -1,37 +1,37 @@
 /**
  * AggregateDelegate — 视图级聚合委托
  *
- * 持有 summaryRow（全部行聚合）和 selectionSummaryRow（选中行聚合）的缓存状态，
+ * 持有 aggregateResult（全部行聚合）和 selectionAggregateResult（选中行聚合）的缓存状态，
  * 并在行数据或选中行变更时完成重算与事件通知。
  *
  * `computeAggregateRow` 纯函数也在此文件定义（原位于 computed-column-delegate.ts）。
  */
 
-import type { IDataRow, AggregateColumnConfig, AggregateType } from '../types'
+import type { IDataRow, AggregateColumnConfig, AggregateType, AggregateResultRow } from '../types'
 
 // ─────────────────────────────────────────────
 // 聚合行计算（纯函数）
 // ─────────────────────────────────────────────
 
 /**
- * 根据视图级聚合配置（`view.aggregates`）计算汇总行。
+ * 根据视图级聚合配置（`view.aggregates`）计算聚合输出行。
  *
  * **纯函数**——无副作用，不依赖 DataView/DataSet 实例，方便独立测试。
  *
- * @param aggregates 聚合配置：`{ outputName: AggregateColumnConfig }`
+ * @param aggregates 聚合配置：`{ outputName: AggregateColumnConfig }`，对象 key 是结果行字段名
  * @param rows       参与聚合的行集合
- * @returns 汇总行对象；aggregates 为空或无行数据时返回空对象
+ * @returns 聚合输出行对象；aggregates 为空时返回 `{}`，rows 为空但 aggregates 非空时按类型返回默认输出
  */
 export function computeAggregateRow(
   aggregates: Record<string, AggregateColumnConfig>,
   rows: readonly IDataRow[],
-): IDataRow {
+): AggregateResultRow {
   const aggCols = Object.entries(aggregates)
   if (aggCols.length === 0) return {}
 
   // 空行时提前返回每种聚合类型的默认零值
   if (rows.length === 0) {
-    const result: IDataRow = {}
+    const result: AggregateResultRow = {}
     for (const [name, config] of aggCols) {
       switch (config.type) {
         case 'sum':   result[name] = 0; break
@@ -76,7 +76,7 @@ export function computeAggregateRow(
     }
   }
 
-  const result: IDataRow = {}
+  const result: AggregateResultRow = {}
   for (const a of accs) {
     switch (a.type) {
       case 'sum':   result[a.name] = a.sum; break
@@ -97,26 +97,26 @@ export function computeAggregateRow(
 // ─────────────────────────────────────────────
 
 /**
- * 视图级聚合委托——持有并管理 summaryRow / selectionSummaryRow 缓存状态。
+ * 视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。
  *
  * - `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged
  * - `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged
  */
 export class AggregateDelegate {
-  private _summaryRow: IDataRow = {}
-  private _selectionSummaryRow: IDataRow = {}
+  private _summaryRow: AggregateResultRow = {}
+  private _selectionSummaryRow: AggregateResultRow = {}
 
   constructor(
     /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置） */
     private readonly getAggregates: () => Record<string, AggregateColumnConfig>,
-    /** 通知订阅方全部聚合行已更新（summaryRow + selectionSummaryRow） */
+    /** 通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult） */
     private readonly emitSummaryChanged: () => void,
-    /** 通知订阅方仅选中行聚合已更新（selectionSummaryRow） */
+    /** 通知订阅方仅选中行聚合已更新（selectionAggregateResult） */
     private readonly emitSelectionSummaryChanged: () => void,
   ) {}
 
-  get summaryRow(): Readonly<IDataRow> { return this._summaryRow }
-  get selectionSummaryRow(): Readonly<IDataRow> { return this._selectionSummaryRow }
+  get aggregateResult(): Readonly<AggregateResultRow> { return this._summaryRow }
+  get selectionAggregateResult(): Readonly<AggregateResultRow> { return this._selectionSummaryRow }
 
   /**
    * 全量重算（行数据变更时调用，必须在 `_applyComputedColumns` 之后）。

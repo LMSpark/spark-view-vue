@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DataSetCrudTool → Future Stills Catalog
  *
  * 目标：
@@ -249,7 +249,6 @@ const AGGREGATE_ITEM_SCHEMA = {
   properties: {
     type: '"sum" | "count" | "avg" | "min" | "max" | "join" — 不只有求和；按场景选择计数/平均/极值/字符串拼接',
     field: 'string? — 源字段名；省略时默认与聚合输出键同名',
-    label: 'string? — UI 展示标题',
     separator: 'string? — join 聚合分隔符，仅 type="join" 时有效',
   },
 } as const
@@ -257,7 +256,7 @@ const AGGREGATE_ITEM_SCHEMA = {
 const AGGREGATES_SCHEMA = {
   kind: 'object',
   additionalProperties: AGGREGATE_ITEM_SCHEMA,
-  note: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 summaryRow / selectionSummaryRow 是运行时派生结果。',
+  note: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 aggregateResult / selectionAggregateResult 是运行时派生结果。',
 } as const
 
 const VIEW_METADATA_SCHEMA = {
@@ -279,7 +278,7 @@ const VIEW_METADATA_SCHEMA = {
     sortExpression: 'SortField[]? — 例如 [{ field: "createdAt", direction: "desc" }]',
     aggregates: AGGREGATES_SCHEMA,
   },
-  note: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，汇总结果可通过 Table@summaryRow / Table@selectionSummaryRow（或 Table@viewId@summaryRow）这类 DataKey 被 UI 引用。',
+  note: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成；UI 可通过 Table@aggregateResult / Table@selectionAggregateResult（或 Table@viewId@aggregateResult）这类 DataKey 引用结果行。',
 } as const
 
 const CRUD_HTTP_ENDPOINT_SCHEMA = {
@@ -1056,8 +1055,8 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
-      '若该视图配置了 aggregates，运行时汇总结果位于 view.summaryRow / view.selectionSummaryRow。',
-      'UI 侧引用聚合结果时，优先使用 DataKey：TableName@summaryRow、TableName@selectionSummaryRow、TableName@viewId@summaryRow，或继续追加字段路径如 Orders@summaryRow.totalAmount。',
+      '若该视图配置了 aggregates，运行时汇总结果位于 view.aggregateResult / view.selectionAggregateResult。',
+      'UI 侧引用聚合结果时，优先使用 DataKey：TableName@aggregateResult、TableName@selectionAggregateResult、TableName@viewId@aggregateResult，或继续追加字段路径如 Orders@aggregateResult.totalAmount。',
       '不存在时返回 undefined，而不是抛错。',
       CATALOG_ONLY_RULE,
     ],
@@ -1083,12 +1082,12 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       config: {
         pageSize: 50,
         aggregates: {
-          rowCount: { type: 'count', field: 'id', label: '行数' },
-          totalScore: { type: 'sum', field: 'score', label: '总分' },
-          avgScore: { type: 'avg', field: 'score', label: '平均分' },
-          minScore: { type: 'min', field: 'score', label: '最低分' },
-          maxScore: { type: 'max', field: 'score', label: '最高分' },
-          nameList: { type: 'join', field: 'name', separator: ' / ', label: '姓名列表' },
+          rowCount: { type: 'count', field: 'id' },
+          totalScore: { type: 'sum', field: 'score' },
+          avgScore: { type: 'avg', field: 'score' },
+          minScore: { type: 'min', field: 'score' },
+          maxScore: { type: 'max', field: 'score' },
+          nameList: { type: 'join', field: 'name', separator: ' / ' },
         },
       },
     },
@@ -1097,7 +1096,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_LIFECYCLE_RULE,
       STATIC_ROWS_ONLY_RULE,
-      '如需配置聚合，请在 config.aggregates 中声明输出键 -> 聚合配置；这是对象映射（Record/Map-like），不是数组；不要把 summaryRow 当作可直接写入 rows 的静态字段。',
+      '如需配置聚合，请在 config.aggregates 中声明输出键 -> 聚合配置；这是对象映射（Record/Map-like），不是数组；不要把 aggregateResult 当作可直接写入 rows 的静态字段。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
@@ -1129,12 +1128,12 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         page: 3,
         pageSize: 50,
         aggregates: {
-          rowCount: { type: 'count', field: 'id', label: '行数' },
-          totalScore: { type: 'sum', field: 'score', label: '总分' },
-          avgScore: { type: 'avg', field: 'score', label: '平均分' },
-          minScore: { type: 'min', field: 'score', label: '最低分' },
-          maxScore: { type: 'max', field: 'score', label: '最高分' },
-          selectedNames: { type: 'join', field: 'name', separator: ' / ', label: '姓名列表' },
+          rowCount: { type: 'count', field: 'id' },
+          totalScore: { type: 'sum', field: 'score' },
+          avgScore: { type: 'avg', field: 'score' },
+          minScore: { type: 'min', field: 'score' },
+          maxScore: { type: 'max', field: 'score' },
+          selectedNames: { type: 'join', field: 'name', separator: ' / ' },
         },
       },
     },
@@ -1144,8 +1143,8 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       STATIC_ROWS_ONLY_RULE,
       '如果 updates.rows 存在，会先 replaceRows，再 applyViewConfig。',
-      '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 summaryRow / selectionSummaryRow 上的字段名。',
-      '聚合配置生效后，UI 侧可用 TableName@summaryRow、TableName@selectionSummaryRow、TableName@viewId@summaryRow，或字段路径 TableName@summaryRow.totalScore 进行绑定。',
+      '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 aggregateResult / selectionAggregateResult 上的字段名。',
+      '聚合配置生效后，UI 侧可用 TableName@aggregateResult、TableName@selectionAggregateResult、TableName@viewId@aggregateResult，或字段路径 TableName@aggregateResult.totalScore 进行绑定。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
@@ -1773,8 +1772,8 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       '聚合配置按 viewId 隔离：同一 table 在不同视图可维护不同 aggregates，不会互相覆盖。',
-      'aggregates 是 MAP 结构：{ [key]: config }；key 是输出字段名，运行时聚合值按 summaryRow[key] / selectionSummaryRow[key] 读取。',
-      '返回值是配置态快照，不含运行时计算结果（summaryRow / selectionSummaryRow）。',
+      'aggregates 是 MAP 结构：{ [key]: config }；key 是输出字段名，config 只记录 type/field/separator，运行时结果按 aggregateResult[key] / selectionAggregateResult[key] 读取。',
+      '返回值是配置态快照，不含运行时计算结果（aggregateResult / selectionAggregateResult）。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
@@ -1833,15 +1832,15 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Orders',
       key: 'totalAmount',
-      config: { type: 'sum', field: 'amount', label: '合计金额' },
+      config: { type: 'sum', field: 'amount' },
     },
     validation: { requiredKeys: ['tableName', 'key', 'config'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       JSON_OBJECT_RULE,
       '视图聚合新增步骤：先选 viewId（不传即 default）→ 指定 key（输出字段名）→ 设 config.type（sum/count/avg/min/max/join）与 field。',
-      'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取仍用 summaryRow.totalAmount。',
-      '新增后在容器侧从 summaryRow[key]（全量）或 selectionSummaryRow[key]（选中集）读取聚合结果。',
+      'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取仍用 aggregateResult.totalAmount。',
+      '新增后 aggregates[key] 保留配置全貌；容器侧从 aggregateResult[key]（全量）或 selectionAggregateResult[key]（选中集）读取对应聚合结果。',
       'key 已存在时抛错，改用 datasetTool.updateAggregate。',
       'config.field 省略时默认与 key 同名，该字段必须在列定义中存在。',
       CATALOG_ONLY_RULE,
@@ -1873,7 +1872,6 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         optional: {
           type: '"sum" | "count" | "avg" | "min" | "max" | "join"',
           field: 'string? — 新源字段名',
-          label: 'string? — 新 UI 标题',
           separator: 'string? — join 分隔符',
         },
       },
@@ -1884,14 +1882,14 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Orders',
       key: 'totalAmount',
-      updates: { label: '订单合计' },
+      updates: { field: 'paidAmount' },
     },
     validation: { requiredKeys: ['tableName', 'key', 'updates'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       JSON_OBJECT_RULE,
       '可通过 updates.type 在 sum/count/avg/min/max/join 间切换；join 类型可同时传 updates.separator。',
-      '若修改 updates.field，只会改变聚合来源，不会改变结果引用 key；读取仍使用 summaryRow[key]。',
+      '若修改 updates.field，只会改变聚合来源，不会改变结果引用 key；读取仍使用 aggregateResult[key]。',
       'key 不存在时抛错，改用 datasetTool.addAggregate。',
       '只传需要修改的字段；未传字段保留原值。',
       CATALOG_ONLY_RULE,
@@ -1930,7 +1928,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       'key 不存在时抛错。',
-      '删除后对应 summaryRow / selectionSummaryRow 字段会立即消失。',
+      '删除后对应 aggregateResult / selectionAggregateResult 字段会立即消失。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
@@ -1991,8 +1989,8 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
           fieldRef: "直接写字段名（无需任何前缀）。行对象通过 with(__row) 解构，字段直接可见。例：price * qty / status === 'active' ? 1 : 0",
           ctxRef: "ctx.<key> — 引用外部上下文变量，需先调用 DataView.setComputedContext({ key: value }) 注入。例：amount * ctx.taxRate",
           childAgg: {
-            note: '子表聚合函数；需父子表已通过 datasetTool.createRelation 建立 TableRelation，否则子行为空',
-            childRef: "'子表名' 或 '子表名@视图ID'；省略视图 ID 时取 default 视图",
+            note: '子表聚合函数；需父子表已通过 datasetTool.createRelation 建立 TableRelation，否则子行为空。当前源码按 childTable 匹配并读取子表 default 视图。',
+            childRef: "'子表名'；例如 'Items'。当前不要写 'Items@filtered' 这类视图后缀。",
             functions: [
               '$sum(childRef, field) → number（无行时返回 0）',
               '$count(childRef) → number',
@@ -2010,7 +2008,6 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
               "$max('Items', 'lineTotal')  — 子行金额最大值",
               "$list('Items', 'sku')  — 收集子行 SKU 列表",
               "$join('Tags', 'name', ' / ')  — 拼接标签名",
-              "$sum('Items@filtered', 'amount')  — 使用 Items 表的 filtered 视图",
             ],
           },
           singleVsBlock: {

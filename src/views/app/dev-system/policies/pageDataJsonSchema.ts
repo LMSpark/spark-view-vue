@@ -228,7 +228,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       },
       additionalProperties: false,
     }),
-    aggregateColumnConfig: withMeta('聚合列配置', '描述 summaryRow / selectionSummaryRow 的聚合方式。对应 AI still 中的 AggregateColumnConfig。', {
+    aggregateColumnConfig: withMeta('聚合列配置', '描述 aggregateResult / selectionAggregateResult 的聚合方式。对应 AI still 中的 AggregateColumnConfig。', {
       type: 'object',
       properties: {
         type: withMeta('聚合类型', '聚合类型，仅支持 sum / count / avg / min / max / join。', { type: 'string', enum: aggregateTypes }),

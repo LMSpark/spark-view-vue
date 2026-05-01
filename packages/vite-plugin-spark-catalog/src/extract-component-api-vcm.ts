@@ -298,6 +298,7 @@ function buildPropEntry(p: {
   rawType?: unknown
   getTypeObject?: (() => unknown) | undefined
 }): PropEntryWithIdentity {
+  const description = normalizeDescription(p.description)
   const entry: PropEntryWithIdentity = {
     name: p.name,
     type: p.type,
@@ -305,7 +306,7 @@ function buildPropEntry(p: {
   }
 
   if (p.default !== undefined && p.default !== '') entry.default = p.default
-  if (p.description !== '') entry.description = p.description
+  if (description !== '') entry.description = description
 
   // @componentRef tag — 由 JSDoc 声明该 prop 引用的组件类型
   const componentRefTag = p.tags.find(t => t.name === 'componentRef')
@@ -359,12 +360,13 @@ function buildEmitEntry(e: {
   description: string
   schema?: PropertyMetaSchema[]
 }): EmitEntry {
+  const description = normalizeDescription(e.description)
   const entry: EmitEntry = {
     name: e.name,
     type: e.type,
   }
 
-  if (e.description !== '') entry.description = e.description
+  if (description !== '') entry.description = description
 
   // 事件参数 schema 是数组；逐项转换后仅保留有效结构。
   if (Array.isArray(e.schema) && e.schema.length > 0) {
@@ -409,7 +411,8 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined): PropSchema | 
         type: propMeta.type,
         required: propMeta.required,
       }
-      if (propMeta.description !== '') childSchema.description = propMeta.description
+      const description = normalizeDescription(propMeta.description)
+      if (description !== '') childSchema.description = description
 
       // 递归处理嵌套 schema（如 ActionsNode.props 中的结构化对象类型）
       const nestedPropSchema = convertSchema(propMeta.schema)
@@ -468,6 +471,10 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined): PropSchema | 
   }
 
   return undefined
+}
+
+function normalizeDescription(value: string): string {
+  return value.replace(/\r\n?/g, '\n')
 }
 
 function uniqueSchemaTypes(schemas: PropertyMetaSchema[]): string[] {

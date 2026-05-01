@@ -12,7 +12,7 @@
  *  4. ctx 上下文        5. 动态行操作        6. 聚合函数
  *  7. 混合表达式        8. 聚合动态编辑      9. stripComputedColumns
  * 10. 运行时错误降级   11. 边界条件         12. 字符串内函数定义
- * 13. summaryRow 列级聚合
+ * 13. aggregateResult 列级聚合
  */
 
 import { describe, it, expect, vi } from 'vitest'
@@ -742,12 +742,12 @@ describe('字符串内函数定义', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 13. summaryRow — 列级聚合
+// 13. aggregateResult — 列级聚合
 // ─────────────────────────────────────────────────────────────────────────────
-describe('summaryRow 列级聚合', () => {
+describe('aggregateResult 列级聚合', () => {
   it('sum — 所有行求和', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' } })
-    expect(orders.summaryRow['price']).toBe(150)  // 100+50+0
+    expect(orders.aggregateResult['price']).toBe(150)  // 100+50+0
   })
 
   it('count — 非 null/undefined 值计数', () => {
@@ -755,43 +755,43 @@ describe('summaryRow 列级聚合', () => {
       [{ id: 1, score: 95 }, { id: 2, score: null }, { id: 3, score: 45 }],
       undefined, { score: { type: 'count' } },
     )
-    expect(orders.summaryRow['score']).toBe(2)  // null 不计
+    expect(orders.aggregateResult['score']).toBe(2)  // null 不计
   })
 
   it('avg — 算术平均', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'avg' } })
-    expect(orders.summaryRow['price']).toBe(50)  // (100+50+0)/3
+    expect(orders.aggregateResult['price']).toBe(50)  // (100+50+0)/3
   })
 
   it('min / max — 极值', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'min' }, qty: { type: 'max' } })
-    expect(orders.summaryRow['price']).toBe(0)
-    expect(orders.summaryRow['qty']).toBe(99)
+    expect(orders.aggregateResult['price']).toBe(0)
+    expect(orders.aggregateResult['qty']).toBe(99)
   })
 
   it('空行时聚合边界值正确', () => {
     const { orders } = makeTestDS([], [], undefined,
       { price: { type: 'sum' }, qty: { type: 'avg' }, score: { type: 'min' } },
     )
-    expect(orders.summaryRow['price']).toBe(0)          // sum 空集 = 0
-    expect(orders.summaryRow['qty']).toBe(0)             // avg 空集 = 0
-    expect(orders.summaryRow['score']).toBeUndefined()   // min 空集 = undefined
+    expect(orders.aggregateResult['price']).toBe(0)          // sum 空集 = 0
+    expect(orders.aggregateResult['qty']).toBe(0)             // avg 空集 = 0
+    expect(orders.aggregateResult['score']).toBeUndefined()   // min 空集 = undefined
   })
 
   it('多列混合聚合类型', () => {
     const { orders } = makeTestDS([], undefined, undefined,
       { amount: { type: 'sum' }, score: { type: 'avg' }, price: { type: 'min' }, qty: { type: 'max' }, firstName: { type: 'count' } },
     )
-    expect(orders.summaryRow['amount']).toBe(2600)          // 1500+300+800
-    expect(orders.summaryRow['score']).toBeCloseTo(70.67, 1) // (95+72+45)/3
-    expect(orders.summaryRow['price']).toBe(0)
-    expect(orders.summaryRow['qty']).toBe(99)
-    expect(orders.summaryRow['firstName']).toBe(3)           // 张、李、王
+    expect(orders.aggregateResult['amount']).toBe(2600)          // 1500+300+800
+    expect(orders.aggregateResult['score']).toBeCloseTo(70.67, 1) // (95+72+45)/3
+    expect(orders.aggregateResult['price']).toBe(0)
+    expect(orders.aggregateResult['qty']).toBe(99)
+    expect(orders.aggregateResult['firstName']).toBe(3)           // 张、李、王
   })
 
-  it('无 aggregate 列时 summaryRow 为空对象', () => {
+  it('无 aggregate 列时 aggregateResult 为空对象', () => {
     const { orders } = makeTestDS([])
-    expect(orders.summaryRow).toEqual({})
+    expect(orders.aggregateResult).toEqual({})
   })
 
   // 计算列 + 视图聚合组合（列定义与聚合配置独立声明）
@@ -803,7 +803,7 @@ describe('summaryRow 列级聚合', () => {
     expect(f(orders.rows[0], 'total')).toBe(600)  // 100*6
     expect(f(orders.rows[1], 'total')).toBe(100)  // 50*2
     expect(f(orders.rows[2], 'total')).toBe(0)    // 0*99
-    expect(orders.summaryRow['total']).toBe(700)   // 600+100+0
+    expect(orders.aggregateResult['total']).toBe(700)   // 600+100+0
   })
 
   it('计算列 avg — 复杂表达式后聚合', () => {
@@ -811,7 +811,7 @@ describe('summaryRow 列级聚合', () => {
       { name: 'unitPrice', type: 'number', computeExpression: 'amount / (qty || 1)' },
     ], undefined, undefined, { unitPrice: { type: 'avg' } })
     // row1: 1500/6=250, row2: 300/2=150, row3: 800/99≈8.08
-    expect(orders.summaryRow['unitPrice'] as number).toBeCloseTo(136.03, 1)
+    expect(orders.aggregateResult['unitPrice'] as number).toBeCloseTo(136.03, 1)
   })
 
   it('计算列 min/max — 三元 + 聚合', () => {
@@ -819,7 +819,7 @@ describe('summaryRow 列级聚合', () => {
       { name: 'grade', type: 'number', computeExpression: "score >= 60 ? 1 : 0" },
     ], undefined, undefined, { grade: { type: 'sum' } })
     // row1: 95>=60→1, row2: 72>=60→1, row3: 45<60→0
-    expect(orders.summaryRow['grade']).toBe(2)
+    expect(orders.aggregateResult['grade']).toBe(2)
   })
 
   it('计算列 + 基础列同时聚合', () => {
@@ -827,9 +827,9 @@ describe('summaryRow 列级聚合', () => {
       [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
       undefined, undefined, { total: { type: 'sum' }, amount: { type: 'sum' }, score: { type: 'avg' } },
     )
-    expect(orders.summaryRow['total']).toBe(700)            // 计算列聚合
-    expect(orders.summaryRow['amount']).toBe(2600)          // 基础列聚合
-    expect(orders.summaryRow['score']).toBeCloseTo(70.67, 1)
+    expect(orders.aggregateResult['total']).toBe(700)            // 计算列聚合
+    expect(orders.aggregateResult['amount']).toBe(2600)          // 基础列聚合
+    expect(orders.aggregateResult['score']).toBeCloseTo(70.67, 1)
   })
 
   it('链式计算列 + aggregate', () => {
@@ -838,8 +838,8 @@ describe('summaryRow 列级聚合', () => {
       { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1' },
     ], undefined, undefined, { subtotal: { type: 'sum' }, tax: { type: 'sum' } })
     // subtotal: 600+100+0=700; tax: 60+10+0=70
-    expect(orders.summaryRow['subtotal']).toBe(700)
-    expect(orders.summaryRow['tax'] as number).toBeCloseTo(70)
+    expect(orders.aggregateResult['subtotal']).toBe(700)
+    expect(orders.aggregateResult['tax'] as number).toBeCloseTo(70)
   })
 
   it('函数体计算列 + aggregate', () => {
@@ -848,53 +848,53 @@ describe('summaryRow 列级聚合', () => {
       computeExpression: 'if (amount >= 1000) return 3; if (amount >= 500) return 2; return 1;',
     }], undefined, undefined, { tier: { type: 'sum' } })
     // row1: 1500→3, row2: 300→1, row3: 800→2 → sum=6
-    expect(orders.summaryRow['tier']).toBe(6)
+    expect(orders.aggregateResult['tier']).toBe(6)
   })
 
-  // 动态操作后 summaryRow 自动更新
+  // 动态操作后 aggregateResult 自动更新
 
-  it('appendRow 后 summaryRow 自动更新', () => {
+  it('appendRow 后 aggregateResult 自动更新', () => {
     const { orders } = makeTestDS(
       [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
       [{ id: 1, price: 10, qty: 5 }],
       undefined, { total: { type: 'sum' } },
     )
-    expect(orders.summaryRow['total']).toBe(50)
+    expect(orders.aggregateResult['total']).toBe(50)
 
     orders.appendRow({ id: 2, price: 20, qty: 3 })
-    expect(orders.summaryRow['total']).toBe(110)  // 50+60
+    expect(orders.aggregateResult['total']).toBe(110)  // 50+60
   })
 
-  it('updateRowById 后 summaryRow 自动更新', () => {
+  it('updateRowById 后 aggregateResult 自动更新', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
-    expect(orders.summaryRow['amount']).toBe(2600)
+    expect(orders.aggregateResult['amount']).toBe(2600)
 
     orders.updateRowById(1, { amount: 100 })
-    expect(orders.summaryRow['amount']).toBe(1200)  // 100+300+800
+    expect(orders.aggregateResult['amount']).toBe(1200)  // 100+300+800
   })
 
-  it('deleteRowById 后 summaryRow 自动更新', () => {
+  it('deleteRowById 后 aggregateResult 自动更新', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
-    expect(orders.summaryRow['amount']).toBe(2600)
+    expect(orders.aggregateResult['amount']).toBe(2600)
 
     orders.deleteRowById(1)
-    expect(orders.summaryRow['amount']).toBe(1100)  // 300+800
+    expect(orders.aggregateResult['amount']).toBe(1100)  // 300+800
   })
 
-  it('replaceRows 后 summaryRow 自动更新', () => {
+  it('replaceRows 后 aggregateResult 自动更新', () => {
     const { orders } = makeTestDS(
       [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
       [{ id: 1, price: 10, qty: 5 }],
       undefined, { total: { type: 'sum' }, score: { type: 'max' } },
     )
-    expect(orders.summaryRow['total']).toBe(50)
+    expect(orders.aggregateResult['total']).toBe(50)
 
     orders.replaceRows([
       { id: 1, price: 10, qty: 2, score: 60 },
       { id: 2, price: 20, qty: 3, score: 95 },
     ])
-    expect(orders.summaryRow['total']).toBe(80)   // 20+60
-    expect(orders.summaryRow['score']).toBe(95)
+    expect(orders.aggregateResult['total']).toBe(80)   // 20+60
+    expect(orders.aggregateResult['score']).toBe(95)
   })
 
   it('setComputedContext 后计算列聚合自动重算', () => {
@@ -903,10 +903,10 @@ describe('summaryRow 列级聚合', () => {
     ], undefined, undefined, { tax: { type: 'sum' } })
     orders.setComputedContext({ taxRate: 0.1 })
     // 1500*0.1 + 300*0.1 + 800*0.1 = 260
-    expect(orders.summaryRow['tax'] as number).toBeCloseTo(260)
+    expect(orders.aggregateResult['tax'] as number).toBeCloseTo(260)
 
     orders.setComputedContext({ taxRate: 0.2 })
-    expect(orders.summaryRow['tax'] as number).toBeCloseTo(520)
+    expect(orders.aggregateResult['tax'] as number).toBeCloseTo(520)
   })
 
   it('子表聚合 + 列级聚合联合', () => {
@@ -914,14 +914,14 @@ describe('summaryRow 列级聚合', () => {
       { name: 'itemTotal', type: 'number', computeExpression: "$sum('Items', 'amount')" },
     ], undefined, undefined, { itemTotal: { type: 'sum' } })
     // row1: 350, row2: 80, row3: 0 → sum=430
-    expect(orders.summaryRow['itemTotal']).toBe(430)
+    expect(orders.aggregateResult['itemTotal']).toBe(430)
   })
 
   // join 聚合
 
   it('join — 基础列字符串拼接', () => {
     const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
-    expect(orders.summaryRow['firstName']).toBe('张, 李, 王')
+    expect(orders.aggregateResult['firstName']).toBe('张, 李, 王')
   })
 
   it('join — 跳过 null/undefined/空串', () => {
@@ -929,76 +929,76 @@ describe('summaryRow 列级聚合', () => {
       [{ id: 1, firstName: 'A' }, { id: 2, firstName: null }, { id: 3, firstName: '' }, { id: 4, firstName: 'B' }],
       undefined, { firstName: { type: 'join' } },
     )
-    expect(orders.summaryRow['firstName']).toBe('A, B')
+    expect(orders.aggregateResult['firstName']).toBe('A, B')
   })
 
   it('join — 空行时返回空字符串', () => {
     const { orders } = makeTestDS([], [], undefined, { firstName: { type: 'join' } })
-    expect(orders.summaryRow['firstName']).toBe('')
+    expect(orders.aggregateResult['firstName']).toBe('')
   })
 
   it('join — 计算列 + join 联合', () => {
     const { orders } = makeTestDS([
       { name: 'fullName', type: 'string', computeExpression: "firstName + lastName" },
     ], undefined, undefined, { fullName: { type: 'join' } })
-    expect(orders.summaryRow['fullName']).toBe('张三, 李四, 王五')
+    expect(orders.aggregateResult['fullName']).toBe('张三, 李四, 王五')
   })
 
-  // selectionSummaryRow — 选中行聚合
+  // selectionAggregateResult — 选中行聚合
 
-  it('selectionSummaryRow — 清空选中后为空对象', () => {
+  it('selectionAggregateResult — 清空选中后为空对象', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' } })
     orders.selection.clearSelectedRows()
-    expect(orders.selectionSummaryRow).toEqual({})
+    expect(orders.selectionAggregateResult).toEqual({})
   })
 
-  it('selectionSummaryRow — 选中部分行后仅聚合选中行', () => {
+  it('selectionAggregateResult — 选中部分行后仅聚合选中行', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' }, score: { type: 'avg' } })
     // 选中 row1(price=100,score=95) + row3(price=0,score=45)
     orders.selection.setSelectedRows([orders.rows[0]!, orders.rows[2]!])
-    expect(orders.selectionSummaryRow['price']).toBe(100)           // 100+0
-    expect(orders.selectionSummaryRow['score']).toBeCloseTo(70)     // (95+45)/2
+    expect(orders.selectionAggregateResult['price']).toBe(100)           // 100+0
+    expect(orders.selectionAggregateResult['score']).toBeCloseTo(70)     // (95+45)/2
   })
 
-  it('selectionSummaryRow — 选中全部行等于 summaryRow', () => {
+  it('selectionAggregateResult — 选中全部行等于 aggregateResult', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     orders.selection.setSelectedRows([...orders.rows])
-    expect(orders.selectionSummaryRow['amount']).toBe(orders.summaryRow['amount'])
+    expect(orders.selectionAggregateResult['amount']).toBe(orders.aggregateResult['amount'])
   })
 
-  it('selectionSummaryRow — 切换选中后自动重算', () => {
+  it('selectionAggregateResult — 切换选中后自动重算', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     orders.selection.setSelectedRows([orders.rows[0]!])               // row1: 1500
-    expect(orders.selectionSummaryRow['amount']).toBe(1500)
+    expect(orders.selectionAggregateResult['amount']).toBe(1500)
 
     orders.selection.setSelectedRows([orders.rows[1]!, orders.rows[2]!]) // row2: 300, row3: 800
-    expect(orders.selectionSummaryRow['amount']).toBe(1100)
+    expect(orders.selectionAggregateResult['amount']).toBe(1100)
 
     orders.selection.clearSelectedRows()
-    expect(orders.selectionSummaryRow).toEqual({})
+    expect(orders.selectionAggregateResult).toEqual({})
   })
 
-  it('selectionSummaryRow — 计算列 + aggregate 选中聚合', () => {
+  it('selectionAggregateResult — 计算列 + aggregate 选中聚合', () => {
     const { orders } = makeTestDS([
       { name: 'total', type: 'number', computeExpression: 'price * qty' },
     ], undefined, undefined, { total: { type: 'sum' } })
     // row1: total=600, row2: total=100, row3: total=0
     orders.selection.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
-    expect(orders.selectionSummaryRow['total']).toBe(700)   // 600+100
+    expect(orders.selectionAggregateResult['total']).toBe(700)   // 600+100
   })
 
-  it('selectionSummaryRow — 行数据变更后自动重算', () => {
+  it('selectionAggregateResult — 行数据变更后自动重算', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     orders.selection.setSelectedRows([orders.rows[0]!])             // row1: 1500
-    expect(orders.selectionSummaryRow['amount']).toBe(1500)
+    expect(orders.selectionAggregateResult['amount']).toBe(1500)
 
     orders.updateRowById(1, { amount: 200 })
-    expect(orders.selectionSummaryRow['amount']).toBe(200)
+    expect(orders.selectionAggregateResult['amount']).toBe(200)
   })
 
-  it('selectionSummaryRow — join 聚合选中行', () => {
+  it('selectionAggregateResult — join 聚合选中行', () => {
     const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
     orders.selection.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
-    expect(orders.selectionSummaryRow['firstName']).toBe('张, 王')
+    expect(orders.selectionAggregateResult['firstName']).toBe('张, 王')
   })
 })

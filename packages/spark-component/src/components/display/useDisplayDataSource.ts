@@ -32,11 +32,11 @@ export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSou
     // 静态值优先（直接传入 value 的场景）
     if (props.value !== undefined) return props.value
 
-    // 值级 dataKey 绑定：支持 summaryRow / currentRow / rows 等 DataKey 解析。
+    // 值级 dataKey 绑定：支持 aggregateResult / currentRow / rows 等 DataKey 解析。
     if (typeof props.dataKey === 'string' && props.dataKey.trim().length > 0 && pageDataSet) {
       const boundValue = resolveRawKey(props.dataKey, pageDataSet)
       if (boundValue !== undefined) {
-        // dataKey 可指向对象（如 summaryRow），field 再选择对象内字段。
+        // dataKey 可指向对象（如 aggregateResult），field 再选择对象内字段。
         if (
           props.field
           && boundValue !== null

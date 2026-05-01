@@ -37,7 +37,7 @@ DataKey 只允许 @ 语法：
 - table@viewId@field
 - #scope@table@field
 - #scope@table@viewId@field
-- 常用 field：rows、currentRow、selectedRows、summaryRow、selectionSummaryRow。
+- 常用 field：rows、currentRow、selectedRows、aggregateResult、selectionAggregateResult。
 - 禁止旧点号格式和任意列名式 dataKey。
 
 ═══════════════════════════════════════════════════
@@ -106,7 +106,7 @@ script.js 运行在受限沙箱中，不支持 import。
 - 单表管理：一张主表 + r-table / r-form / r-detail。
 - 主从页面：父表 default 视图 autoCurrentFirst，子表通过 tableRelations 联动。
 - 树页面：节点表 + treeConfig，UI 优先 r-tree。
-- 统计页面：computeExpression + aggregates + summaryRow / selectionSummaryRow。
+- 统计页面：computeExpression + aggregates + aggregateResult / selectionAggregateResult。
 - 字段编辑选项：独立选项表 + optionKey / optionLabelField / optionValueField。
 
 ═══════════════════════════════════════════════════

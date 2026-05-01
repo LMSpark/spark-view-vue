@@ -7,7 +7,7 @@
  *  2. 视图（DataView）行数据正确
  *  3. 内存级联正确（setCurrentRow → 子视图过滤）
  *  4. 计算列正确（单行表达式 / 多语句 / 子表聚合函数）
- *  5. 视图聚合（summaryRow）正确
+ *  5. 视图聚合（aggregateResult）正确
  *
  * 本文件是提示词质量门：任何提示词修改必须保证此文件全部通过。
  * 它属于仓库级 AI 质量门，不属于 packages/spark-data 的运行时职责。
@@ -280,16 +280,16 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
     expect(items.rows.every(r => f(r, 'orderId') === 1)).toBe(true)
   })
 
-  it('B-6: 内存级联后 summaryRow 聚合只计算过滤后的行', () => {
+  it('B-6: 内存级联后 aggregateResult 聚合只计算过滤后的行', () => {
     const ds = fromPromptJson(CASE_B_JSON)
     const orders = ds.getView('Orders')!
     const items  = ds.getView('OrderItems')!
 
     orders.selection.setCurrentRow(orders.rows[0]!) // 订单1: 2 件
-    // 级联后只有 2 行，summaryRow 仅汇总这 2 行
-    expect(items.summaryRow).not.toBeNull()
-    expect(f(items.summaryRow, 'quantity') as number).toBeCloseTo(3, 2)  // 2+1
-    expect(f(items.summaryRow, 'subtotal') as number).toBeCloseTo(498.98, 1) // 199.98+299
+    // 级联后只有 2 行，aggregateResult 仅汇总这 2 行
+    expect(items.aggregateResult).not.toBeNull()
+    expect(f(items.aggregateResult, 'quantity') as number).toBeCloseTo(3, 2)  // 2+1
+    expect(f(items.aggregateResult, 'subtotal') as number).toBeCloseTo(498.98, 1) // 199.98+299
   })
 
   it('B-7: 切换到订单 2 → OrderItems 级联 1 条，汇总更新', () => {
@@ -301,7 +301,7 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
     orders.selection.setCurrentRow(orders.rows[1]!) // 订单 id=2
     expect(items.rows).toHaveLength(1)
     expect(f(items.rows[0], 'orderId')).toBe(2)
-    expect(f(items.summaryRow, 'subtotal') as number).toBeCloseTo(177.00, 2) // 3*59
+    expect(f(items.aggregateResult, 'subtotal') as number).toBeCloseTo(177.00, 2) // 3*59
   })
 })
 
@@ -400,14 +400,14 @@ describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
     expect(f(grades.rows[5], 'grade')).toBe('C')
   })
 
-  it('E9-4: 视图聚合 summaryRow（全部 6 行）', () => {
+  it('E9-4: 视图聚合 aggregateResult（全部 6 行）', () => {
     const ds = fromPromptJson(EXAMPLE_9_JSON)
     const grades = ds.getView('Grades')!
-    expect(grades.summaryRow).not.toBeNull()
+    expect(grades.aggregateResult).not.toBeNull()
     // avg(95,82,76,68,55,70) = 446/6 ≈ 74.33
-    expect(f(grades.summaryRow, 'score') as number).toBeCloseTo(74.33, 1)
+    expect(f(grades.aggregateResult, 'score') as number).toBeCloseTo(74.33, 1)
     // count = 6
-    expect(f(grades.summaryRow, 'id')).toBe(6)
+    expect(f(grades.aggregateResult, 'id')).toBe(6)
   })
 
   it('E9-5: 内存级联 — 选中张三 → Grades 显示 2 条（数学+语文）', () => {
@@ -420,14 +420,14 @@ describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
     expect(grades.rows.every(r => f(r, 'studentId') === 1)).toBe(true)
   })
 
-  it('E9-6: 级联后 summaryRow 只汇总过滤行', () => {
+  it('E9-6: 级联后 aggregateResult 只汇总过滤行', () => {
     const ds = fromPromptJson(EXAMPLE_9_JSON)
     const students = ds.getView('Students')!
     const grades   = ds.getView('Grades')!
 
     students.selection.setCurrentRow(students.rows[0]!) // 张三：95, 82
-    expect(f(grades.summaryRow, 'id')).toBe(2)           // count=2
-    expect(f(grades.summaryRow, 'score') as number).toBeCloseTo(88.5, 1) // avg(95,82)
+    expect(f(grades.aggregateResult, 'id')).toBe(2)           // count=2
+    expect(f(grades.aggregateResult, 'score') as number).toBeCloseTo(88.5, 1) // avg(95,82)
   })
 })
 
@@ -530,13 +530,13 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
     expect(f(depts.rows[2], 'headcount')).toBe(1)
   })
 
-  it('C-4: 初始 summaryRow（全 5 名员工）', () => {
+  it('C-4: 初始 aggregateResult（全 5 名员工）', () => {
     const ds = fromPromptJson(CASE_C_JSON)
     const employees = ds.getView('Employees')!
     // avg salary: (28000+18000+35000+22000+9500)/5 = 112500/5 = 22500
-    expect(f(employees.summaryRow, 'salary') as number).toBeCloseTo(22500, 0)
+    expect(f(employees.aggregateResult, 'salary') as number).toBeCloseTo(22500, 0)
     // count = 5
-    expect(f(employees.summaryRow, 'id')).toBe(5)
+    expect(f(employees.aggregateResult, 'id')).toBe(5)
   })
 
   // 注：Employees 配置了 api: '/api/employees'，级联触发的是 HTTP 请求而非内存过滤。
@@ -691,18 +691,18 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
   it('G-7: aggregates field 覆盖 — totalVal.field = totalValue', () => {
     const ds = fromPromptJson(CASE_G_JSON)
     const items = ds.getView('StockItems')!
-    // summaryRow 输出键是 totalVal（不是 totalValue）
+    // aggregateResult 输出键是 totalVal（不是 totalValue）
     // 全部 4 行: 59999.9 + 4975 + 29999.95 + 5980 = 100954.85
-    expect(f(items.summaryRow, 'totalVal') as number).toBeCloseTo(100954.85, 0)
-    // 原字段名 totalValue 不应出现在 summaryRow 中（键名覆盖）
-    expect(f(items.summaryRow, 'totalValue')).toBeUndefined()
+    expect(f(items.aggregateResult, 'totalVal') as number).toBeCloseTo(100954.85, 0)
+    // 原字段名 totalValue 不应出现在 aggregateResult 中（键名覆盖）
+    expect(f(items.aggregateResult, 'totalValue')).toBeUndefined()
   })
 
   it('G-8: aggregates separator — productList 使用 " | " 分隔', () => {
     const ds = fromPromptJson(CASE_G_JSON)
     const items = ds.getView('StockItems')!
     // 全部 4 行产品名用 " | " 拼接
-    expect(f(items.summaryRow, 'productList')).toBe('笔记本电脑 | 无线鼠标 | 笔记本电脑 | 机械键盘')
+    expect(f(items.aggregateResult, 'productList')).toBe('笔记本电脑 | 无线鼠标 | 笔记本电脑 | 机械键盘')
   })
 
   it('G-9: 内存级联（parentField 显式声明）— 选中仓库 1 → StockItems 显示 2 条', () => {
@@ -722,9 +722,9 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
 
     warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 北京仓：2 条
     // totalVal = 59999.9 + 4975 = 64974.9
-    expect(f(items.summaryRow, 'totalVal') as number).toBeCloseTo(64974.9, 0)
+    expect(f(items.aggregateResult, 'totalVal') as number).toBeCloseTo(64974.9, 0)
     // productList separator
-    expect(f(items.summaryRow, 'productList')).toBe('笔记本电脑 | 无线鼠标')
+    expect(f(items.aggregateResult, 'productList')).toBe('笔记本电脑 | 无线鼠标')
   })
 
   it('G-11: $list 计算列 productCodes 返回产品编码数组', () => {
@@ -904,7 +904,7 @@ describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', 
   it('H-8: aggregates inQuantity sum 全量行 = 380', () => {
     const ds = fromPromptJson(CASE_H_JSON)
     // 100 + 30 + 50 + 200 = 380
-    expect(f(ds.getView('Inbounds')!.summaryRow, 'inQuantity')).toBe(380)
+    expect(f(ds.getView('Inbounds')!.aggregateResult, 'inQuantity')).toBe(380)
   })
 
   it('H-9: 级联后 aggregates 只汇总过滤行 - 华东仓入库总量 = 130', () => {
@@ -913,7 +913,7 @@ describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', 
     const inbounds   = ds.getView('Inbounds')!
     warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 华东仓 id=1
     // 100 + 30 = 130
-    expect(f(inbounds.summaryRow, 'inQuantity')).toBe(130)
+    expect(f(inbounds.aggregateResult, 'inQuantity')).toBe(130)
   })
 
   it('H-10: 华北仓(id=3) 级联 - Inventories 1条，Inbounds 1条', () => {
@@ -1130,12 +1130,12 @@ describe('Case I：标准提示词模板自测 - 物业管理系统（三级层�
 
   it('I-12: aggregates count 全量 = 5', () => {
     const ds = fromPromptJson(CASE_I_JSON)
-    expect(f(ds.getView('RepairOrders')!.summaryRow, 'id')).toBe(5)
+    expect(f(ds.getView('RepairOrders')!.aggregateResult, 'id')).toBe(5)
   })
 
   it('I-13: aggregates join (field 覆盖) 全量', () => {
     const ds = fromPromptJson(CASE_I_JSON)
-    const typeList = f(ds.getView('RepairOrders')!.summaryRow, 'typeList') as string
+    const typeList = f(ds.getView('RepairOrders')!.aggregateResult, 'typeList') as string
     expect(typeList).toContain('水管漏水')
     expect(typeList).toContain('电梯故障')
     expect(typeList).toContain('门禁损坏')
@@ -1151,8 +1151,8 @@ describe('Case I：标准提示词模板自测 - 物业管理系统（三级层�
     communities.selection.setCurrentRow(communities.rows[0]!) // 翠湖花园
     buildings.selection.setCurrentRow(buildings.rows[0]!)     // 1栋 101
     // 过滤后只有 1001, 1002
-    expect(f(repairOrders.summaryRow, 'id')).toBe(2)
-    const typeList = f(repairOrders.summaryRow, 'typeList') as string
+    expect(f(repairOrders.aggregateResult, 'id')).toBe(2)
+    const typeList = f(repairOrders.aggregateResult, 'typeList') as string
     expect(typeList).toBe('水管漏水 | 电梯故障')
   })
 

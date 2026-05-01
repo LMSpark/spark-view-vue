@@ -515,8 +515,8 @@ DataKey 是 SPARK 独有的数据绑定机制，在 rule 上声明 `dataKey` 字
 | `表名@rows` | `"Users@rows"` | 绑定表的行数组（el-table / r-table 主数据） |
 | `表名@currentRow` | `"Users@currentRow"` | 绑定当前行（r-form / r-detail 主数据） |
 | `表名@selectedRows` | `"Users@selectedRows"` | 绑定选中行数组 |
-| `表名@summaryRow` | `"Users@summaryRow"` | 绑定全行聚合汇总 |
-| `表名@selectionSummaryRow` | `"Users@selectionSummaryRow"` | 绑定选中行聚合汇总 |
+| `表名@summaryRow` | `"Users@summaryRow"` | 绑定全量聚合输出行；字段来自 `aggregates` 的 key |
+| `表名@selectionSummaryRow` | `"Users@selectionSummaryRow"` | 绑定选中行聚合输出行；字段来自 `aggregates` 的 key |
 | `表名@currentRow.字段` | `"Users@currentRow.name"` | 绑定当前行的特定字段 |
 | `表名@视图ID@rows` | `"Users@grid@rows"` | 指定视图 ID（多视图场景） |
 | `#scope@表名@rows` | `"#SharedDS@Orders@rows"` | 跨页面共享数据（极少用） |

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DataKey 统一解析器测试
  *
  * 验证 parseDataKey / resolveDataKey / isDataKey / buildDataKey 的正确性
@@ -52,15 +52,15 @@ describe('DataKey 统一解析器', () => {
       })
     })
 
-    it('table@summaryRow', () => {
-      const dk = parseDataKey('Orders@summaryRow')
-      expect(dk!.field).toBe('summaryRow')
+    it('table@aggregateResult', () => {
+      const dk = parseDataKey('Orders@aggregateResult')
+      expect(dk!.field).toBe('aggregateResult')
       expect(dk!.viewId).toBe('default')
     })
 
-    it('table@selectionSummaryRow', () => {
-      const dk = parseDataKey('Items@selectionSummaryRow')
-      expect(dk!.field).toBe('selectionSummaryRow')
+    it('table@selectionAggregateResult', () => {
+      const dk = parseDataKey('Items@selectionAggregateResult')
+      expect(dk!.field).toBe('selectionAggregateResult')
     })
 
     it('带字段路径 table@field.path', () => {

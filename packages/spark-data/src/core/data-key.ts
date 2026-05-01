@@ -33,12 +33,12 @@
  */
 
 import type { DataView as SparkDataView } from '../data-view'
-import type { IDataRow, IDataSet, IDataSource } from '../types'
+import type { AggregateResultRow, IDataRow, IDataSet, IDataSource } from '../types'
 
 // ===== 类型定义 =====
 
 /** DataKey 可绑定的字段类型 */
-export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow' | 'selectionSummaryRow'
+export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'aggregateResult' | 'selectionAggregateResult'
 
 /** DataKey 解析后的描述符 */
 export interface DataKeyDescriptor {
@@ -65,7 +65,7 @@ export type DataKeyScalar = string | number | boolean | bigint | symbol | null |
 export type DataKeyObject = Record<string, unknown>
 
 /** DataKey 字段值（用于 kind='value' 场景） */
-export type DataKeyValue = IDataRow | IDataRow[] | DataKeyObject | unknown[] | DataKeyScalar
+export type DataKeyValue = IDataRow | AggregateResultRow | IDataRow[] | DataKeyObject | unknown[] | DataKeyScalar
 
 /** DataKey 解析结果值（含 rows → DataView 场景） */
 export type DataKeyResolvedValue = SparkDataView | DataKeyValue
@@ -76,7 +76,7 @@ export type DataKeyResolvedValue = SparkDataView | DataKeyValue
 const SEPARATOR = '@'
 
 /** 合法字段名集合 */
-const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows', 'summaryRow', 'selectionSummaryRow'])
+const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows', 'aggregateResult', 'selectionAggregateResult'])
 
 /** 跨页面数据引用前缀 */
 const CROSS_PAGE_PREFIX = '#'
@@ -238,14 +238,14 @@ function _resolveCore(
   const view = table.getView(descriptor.viewId)
   if (!view) return undefined
 
-  let value: SparkDataView | IDataRow[] | IDataRow | null | undefined
+  let value: SparkDataView | IDataRow[] | IDataRow | AggregateResultRow | null | undefined
 
   switch (descriptor.field) {
     case 'rows':                value = rowsAsView ? view : view.rows; break
     case 'currentRow':          value = view.currentRow; break
     case 'selectedRows':        value = view.selectedRows; break
-    case 'summaryRow':          value = view.summaryRow as IDataRow; break
-    case 'selectionSummaryRow': value = view.selectionSummaryRow as IDataRow; break
+    case 'aggregateResult':          value = view.aggregateResult as AggregateResultRow; break
+    case 'selectionAggregateResult': value = view.selectionAggregateResult as AggregateResultRow; break
     default:                    return undefined
   }
 
@@ -360,12 +360,12 @@ export function resolveDataKeyBinding(
   if (dk.field === 'rows') return { kind: 'view', source: view }
 
   // 其他字段 → 取原始值后按需提取 fieldPath
-  let value: IDataRow | IDataRow[] | null | undefined
+  let value: IDataRow | AggregateResultRow | IDataRow[] | null | undefined
   switch (dk.field) {
     case 'currentRow':          value = view.currentRow; break
     case 'selectedRows':        value = view.selectedRows; break
-    case 'summaryRow':          value = view.summaryRow; break
-    case 'selectionSummaryRow': value = view.selectionSummaryRow; break
+    case 'aggregateResult':          value = view.aggregateResult; break
+    case 'selectionAggregateResult': value = view.selectionAggregateResult; break
     default:                    return null
   }
 

@@ -153,7 +153,7 @@ const FORBIDDEN_SCRIPT_API_RULES: readonly ScriptApiViolationRule[] = [
   {
     pattern: /\.setSummaryRow\s*\(/,
     api: 'DataView.setSummaryRow 伪 API',
-    fix: 'DataView.summaryRow 由 aggregates 自动计算；不要在 script.js 中手动 setSummaryRow。',
+    fix: 'DataView.aggregateResult 由 aggregates 自动计算；不要在 script.js 中手动 setSummaryRow。',
   },
 ]
 

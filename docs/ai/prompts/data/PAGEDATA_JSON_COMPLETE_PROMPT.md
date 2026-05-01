@@ -211,14 +211,15 @@ DataSet 顶层结构：
                 ├── rows                  ← UI 绑定的基础行数据
                 ├── currentRow            ← 驱动 currentRow 级联
                 ├── selectedRows          ← 驱动 selectedRows 级联
-                ├── summaryRow            ← aggregates 的全量汇总结果
-                ├── selectionSummaryRow   ← aggregates 的选中汇总结果
-                └── aggregates            ← 视图级聚合规则
+                ├── summaryRow            ← 全量聚合输出行，字段来自 aggregates 的 key
+                ├── selectionSummaryRow   ← 选中行聚合输出行，字段来自 aggregates 的 key
+                └── aggregates            ← 视图级聚合规则，key 是输出字段名，value 是 type/field/separator 配置
 
 要点：
 
 1. columns 和 api 属于 DataTable 层；rows、autoLoad、autoCurrentFirst、autoSelectFirst、aggregates、treeConfig 属于 DataView 层。
 2. AI 生成时不要把 currentRow、selectedRows、summaryRow、selectionSummaryRow 当成需要手填的 JSON 字段；它们是运行时状态或运行时派生结果。
+   需要声明聚合时写 `views.*.aggregates`，完整语义由 `aggregates[key]` 配置 + `summaryRow[key]` / `selectionSummaryRow[key]` 结果共同组成。
 3. pagedata.json 的核心任务是把“表结构 + 视图初始数据 + 视图行为 + tableRelations（以及需要时的 viewDependencies）”建模正确，而不是把运行时状态写死在 JSON 里。
 
 ═══════════════════════════════════════════════════
@@ -455,12 +456,12 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 aggregates 示例：
 
 {
-  "amount":   { "type": "sum",   "label": "合计金额" },
-  "score":    { "type": "avg",   "label": "平均分" },
-  "id":       { "type": "count", "label": "总数" },
-  "minPrice": { "type": "min",   "field": "price", "label": "最低价" },
-  "maxPrice": { "type": "max",   "field": "price", "label": "最高价" },
-  "tags":     { "type": "join",  "field": "tagName", "label": "标签汇总", "separator": " | " }
+  "amount":   { "type": "sum" },
+  "score":    { "type": "avg" },
+  "id":       { "type": "count" },
+  "minPrice": { "type": "min",   "field": "price" },
+  "maxPrice": { "type": "max",   "field": "price" },
+  "tags":     { "type": "join",  "field": "tagName", "separator": " | " }
 }
 
 支持类型：
@@ -478,7 +479,8 @@ aggregates 示例：
 2. key 是 summaryRow / selectionSummaryRow 的输出字段名。
 3. field 省略时默认与 key 同名。
 4. join 可带 separator。
-5. UI 侧如需绑定汇总行，可使用 TableName@summaryRow 或 TableName@selectionSummaryRow 这类 DataKey。
+5. aggregates 不配置标题/label；UI 文案由组件列、字段 label 或页面配置负责。
+6. UI 侧如需绑定汇总行，可使用 TableName@summaryRow 或 TableName@selectionSummaryRow 这类 DataKey。
 
 ═══════════════════════════════════════════════════
 【9】API 配置规范

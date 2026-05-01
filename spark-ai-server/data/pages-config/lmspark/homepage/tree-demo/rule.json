@@ -146,11 +146,8 @@
                   "highlight-current": true,
                   "default-expand-all": true,
                   "expand-on-click-node": false,
-                  "draggable": true
-                },
-                "children": [
-                  {
-                    "type": "r-toolbar",
+                  "draggable": true,
+                  "toolbar": {
                     "children": [
                       {
                         "type": "r-button",
@@ -197,22 +194,7 @@
                       }
                     ]
                   },
-                  {
-                    "type": "r-tree-node-summary",
-                    "props": {
-                      "nameField": "title",
-                      "typeField": "nodeKind",
-                      "metaField": "path",
-                      "extraField": "childPlacement",
-                      "showType": true,
-                      "showMeta": true,
-                      "showExtra": true,
-                      "showStatus": false,
-                      "showOwner": false
-                    }
-                  },
-                  {
-                    "type": "r-toolbar",
+                  "actions": {
                     "children": [
                       {
                         "type": "r-button",
@@ -271,13 +253,10 @@
                       }
                     ]
                   },
-                  {
-                    "type": "r-editor",
-                    "props": {
-                      "position": "right",
-                      "class": "nav-editor-tree__editor",
-                      "width": 600
-                    },
+                  "editor": {
+                    "position": "right",
+                    "class": "nav-editor-tree__editor",
+                    "width": 600,
                     "children": [
                       {
                         "type": "el-card",
@@ -467,6 +446,22 @@
                         ]
                       }
                     ]
+                  }
+                },
+                "children": [
+                  {
+                    "type": "r-tree-node-summary",
+                    "props": {
+                      "nameField": "title",
+                      "typeField": "nodeKind",
+                      "metaField": "path",
+                      "extraField": "childPlacement",
+                      "showType": true,
+                      "showMeta": true,
+                      "showExtra": true,
+                      "showStatus": false,
+                      "showOwner": false
+                    }
                   }
                 ]
               }

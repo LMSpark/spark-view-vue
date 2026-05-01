@@ -11,6 +11,7 @@ import type {
   QueryParams, DataColumn, DataRelation,
   CrudResult, CrudOperationConfig,
   IDataSource,
+  AggregateResultRow,
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
@@ -58,9 +59,9 @@ interface DataViewEventMap extends Record<string, any[]> {
   requestStateChanged: [requestState: RequestState]
   /** CRUD 变更状态变化 */
   mutatingChanged: [mutating: boolean]
-  /** summaryRow 已重算 */
+  /** aggregateResult 已重算 */
   summaryChanged: []
-  /** selectionSummaryRow 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
+  /** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
   selectionSummaryChanged: []
   /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
   'crud:before': [CrudLifecycleEvent]
@@ -583,7 +584,7 @@ export class DataView implements IDataSource {
    */
   commitMode: CommitMode = 'immediate'
 
-  /** 视图级聚合配置——行变更后自动重算 summaryRow / selectionSummaryRow。仅由 applyViewConfig() 初始化 */
+  /** 视图级聚合配置——行变更后自动重算 aggregateResult / selectionAggregateResult。仅由 applyViewConfig() 初始化 */
   readonly aggregates: Record<string, AggregateColumnConfig> = {}
 
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
@@ -707,17 +708,17 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 视图聚合（summaryRow / selectionSummaryRow）
+  // 视图聚合（aggregateResult / selectionAggregateResult）
   // ─────────────────────────────────────────────
 
-  /** 视图聚合汇总行——根据 aggregates 配置自动计算，行变更后自动重算 */
-  get summaryRow(): Readonly<IDataRow> {
-    return this._aggregateDelegate?.summaryRow ?? {}
+  /** 全量聚合输出行——字段来自 aggregates 的 key，值由对应 AggregateColumnConfig 计算 */
+  get aggregateResult(): Readonly<AggregateResultRow> {
+    return this._aggregateDelegate?.aggregateResult ?? {}
   }
 
-  /** 选中行聚合汇总行——与 summaryRow 相同逻辑，仅对 selectedRows 执行 */
-  get selectionSummaryRow(): Readonly<IDataRow> {
-    return this._aggregateDelegate?.selectionSummaryRow ?? {}
+  /** 选中行聚合输出行——字段结构与 aggregateResult 相同，仅对 selectedRows 执行 */
+  get selectionAggregateResult(): Readonly<AggregateResultRow> {
+    return this._aggregateDelegate?.selectionAggregateResult ?? {}
   }
 
   treeManager?: TreeManager | undefined

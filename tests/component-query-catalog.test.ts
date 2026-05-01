@@ -17,7 +17,7 @@ import {
 
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
   return {
-    dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$`,
+    dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
     htmlTypes: ['div', 'span'],
     validTypePrefixes: ['r-', 'el-', 'Render', 'spark-'],
     validAggregateTypes: ['sum', 'count', 'avg', 'min', 'max', 'join'],

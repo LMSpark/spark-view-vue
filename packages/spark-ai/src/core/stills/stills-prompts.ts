@@ -238,9 +238,9 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
            从每个节点的顶层 id 字段读取真实 id，再调用 getNode / setProps / moveNode / removeNode
     ⚠ DataKey 详细约束（rule 编辑必须遵守）：
       • 只允许 @ 语法：table@field、table@viewId@field、#scope@table@field、#scope@table@viewId@field
-      • field 只允许：rows / currentRow / selectedRows / summaryRow / selectionSummaryRow；允许字段路径后缀，如 stats@currentRow.totalUsers
+      • field 只允许：rows / currentRow / selectedRows / aggregateResult / selectionAggregateResult；允许字段路径后缀，如 stats@currentRow.totalUsers
       • 省略 viewId 时默认 default；若页面已存在特定 view，优先复用 table@viewId@field 的现有写法
-      • rows 用于列表/表格容器；currentRow 用于详情区/主从联动；selectedRows 用于批量选择；summaryRow / selectionSummaryRow 用于统计展示
+      • rows 用于列表/表格容器；currentRow 用于详情区/主从联动；selectedRows 用于批量选择；aggregateResult / selectionAggregateResult 用于统计展示
       • dataKey 绑定的是 DataView / 行上下文，不是任意列名；列组件、表单字段通常在容器上下文中使用 field，不要写成 Users@name 或 Orders@amount 这类非法 dataKey
       • r-table / r-form / r-detail / r-tree 这类自解析容器消费 dataKey；其子字段节点优先用 field / label，而不是重复写 dataKey
       • 旧点号格式一律禁止：dataset.tables.Users.rows、dataset.tables.Orders.views.grid.rows 都不是合法 DataKey
@@ -252,7 +252,7 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
       • 数据入口是 $dataSet：使用 $dataSet?.getView('TableName', 'default')，读取 view.rows / view.currentRow，写入 view.appendRow / view.updateRowById / view.deleteRowById
       • 组件入口是 $components.getApi('component-id')：dialogApi.open()/close()，formApi.getFormData()/setFieldValue()/resetFields()，tableApi.getRows()/query()/refresh()
       • 禁止伪造 $page 数据/组件 API：$page.getDataSet、$page.getTableRows、$page.getTableData、$page.getViewData、$page.setFieldValue、$page.getFieldValue、$page.setFormData、$page.getFormData、$page.clearForm、$page.createRow、$page.updateRow、$page.deleteRow、$page.refreshTable、$page.showDialog('id')、$page.hideDialog('id')、$page.confirm
-      • DataView 没有 getRows()/setSummaryRow()；rows 是属性，summaryRow 由 aggregates 自动计算
+      • DataView 没有 getRows()/setSummaryRow()；rows 是属性，aggregateResult 由 aggregates 自动计算
       • Element Plus table size 只允许 default / small / large，禁止 medium
   - 修改 style.css：使用 textModel.readStyle / textModel.writeStyle
 

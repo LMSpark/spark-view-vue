@@ -7,7 +7,7 @@
  * - 编译缓存管理（列指纹 + ctx 变更检测）
  * - 聚合解析器构建（通过 Host 接口访问 DataSet/DataRelation）
  *
- * DataView 仅保留薄代理（setComputedContext / recomputeColumns / summaryRow getter），
+ * DataView 仅保留薄代理（setComputedContext / recomputeColumns / aggregateResult getter），
  * 所有编排逻辑委托到本文件。
  *
  * ## 表达式格式
@@ -16,9 +16,8 @@
  * "firstName + ' ' + lastName"
  * "ctx.taxRate ? amount * ctx.taxRate : amount"
  *
- * // 子视图聚合（需配置 DataRelation，第一个参数为 '子表名' 或 '子表名@视图ID'）
+ * // 子表聚合（需配置 DataRelation；第一个参数按 childTable 匹配，当前读取 default 视图）
  * "$sum('OrderItems', 'amount')"
- * "$sum('OrderItems@grid', 'amount')"
  * "$count('OrderItems')"
  * "$avg('Scores', 'score')"
  * "$min('Bids', 'price')"
@@ -43,7 +42,7 @@ export type ComputedColumnContext = Record<string, unknown>
 /**
  * 聚合解析器——提供子表行解析（$sum/$count/$avg/$min/$max/$list/$join）。
  *
- * 视图引用格式：`'表名'` 或 `'表名@视图ID'`
+ * 子表引用格式：`'子表名'`。当前 resolver 按 TableRelation.childTable 匹配并读取 default 视图。
  */
 export interface AggregateResolver {
   /** 解析子表匹配行（$sum/$count/$avg/$min/$max/$list/$join） */
@@ -68,7 +67,7 @@ const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
  *
  * - 行字段直接引用（`with(__row)` 解构），无需前缀
  * - 外部上下文通过 `ctx` 参数
- * - 子视图聚合通过 `$sum` 等注入函数（需提供 `resolver`）
+ * - 子表聚合通过 `$sum` 等注入函数（需提供 `resolver`）
  *
  * @throws 编译期语法错误；运行期错误由 ComputedColumnDelegate._apply 捕获
  *

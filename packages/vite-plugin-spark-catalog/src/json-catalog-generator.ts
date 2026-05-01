@@ -171,7 +171,7 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
  * 有效组件类型前缀等。它们属于目录的一部分，而不是临时构建细节。
  */
 const DEFAULT_CONSTRAINTS: ComponentCatalog['constraints'] = {
-  dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$`,
+  dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
   htmlTypes: ['div', 'span', 'p', 'a', 'img', 'ul', 'li'],
   validTypePrefixes: ['r-', 'el-', 'Render', 'spark-'],
   validAggregateTypes: ['sum', 'count', 'avg', 'min', 'max', 'join'],

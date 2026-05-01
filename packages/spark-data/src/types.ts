@@ -159,19 +159,46 @@ export interface ICurrentRowSource extends IRowDataSource {
 }
 
 /**
- * 完整数据源全量接口，包含分页、聚合、权限、值序列化。
+ * 完整数据源全量接口，包含分页、聚合结果、权限、值序列化。
  *
- * DataView 实现此接口。
+ * DataView 实现此接口。此接口只暴露“运行时输出数据”，不承载聚合配置定义。
+ *
+ * 1. 行级计算列：`columns[].computeExpression` 对每一行求值，结果写回该行字段。
+ *    表达式可直接读取行字段，可通过 `ctx` 读取外部上下文，也可通过
+ *    `$sum/$count/$avg/$min/$max/$list/$join` 读取 DataRelation 匹配到的子表行。
+ * 2. 视图级聚合配置：定义在 `IViewMetadata.aggregates`，不是 `IDataSource` 字段。
+ *    每个输出项包含 `type / field / separator` 等后端 API 认得的规则信息。
+ * 3. 运行时聚合结果：`aggregateResult` 基于当前 `rows` 计算，`selectionAggregateResult`
+ *    基于当前 `selectedRows` 计算；二者都是由 aggregates 配置生成的“聚合结果输出行”，
+ *    字段名来自 aggregates 的输出 key，字段值是对应聚合计算结果。
+ * 4. UI / DataKey 消费：组件可直接读取 `dataSource.aggregateResult`，也可通过
+ *    `Table@aggregateResult.totalAmount` 或 `Table@selectionAggregateResult.totalAmount` 引用。
+ * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
+ *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */
 export interface IDataSource extends ICurrentRowSource {
   _modelPerm?: IModelPermission
   total?: number
   page?: number
   pageSize?: number
-  /** 视图聚合汇总行（由 view.aggregates 配置驱动，行变更后自动重算） */
-  summaryRow?: Readonly<IDataRow>
-  /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
-  selectionSummaryRow?: Readonly<IDataRow>
+  /**
+   * 当前 `rows` 的全量聚合输出行；按视图 aggregates 配置自动计算，行变更后自动重算。
+   *
+   * 注意它不是单个标量，而是 `AggregateResultRow` 形状的结果容器：
+   * 每个字段名来自 aggregates 的输出 key，每个字段值是对应聚合计算结果。
+   * 例如 aggregates 配置了 `totalAmount`、`avgScore` 两个输出名，则结果形如：
+   * `{ totalAmount: 1234, avgScore: 87.5 }`。
+   * 当视图已配置 aggregates 且 rows 为空时，源码按类型填默认输出：
+   * `sum/count/avg` 为 `0`，`min/max` 为 `undefined`，`join` 为空字符串。
+   */
+  aggregateResult?: Readonly<AggregateResultRow>
+  /**
+   * 当前 `selectedRows` 的选中聚合输出行；按视图 aggregates 配置自动计算，选中/数据变更后自动重算。
+   *
+   * 无选中行时源码直接返回空对象 `{}`，而不是按聚合类型填默认输出。
+   * 选中行存在时字段结构与 aggregateResult 相同。
+   */
+  selectionAggregateResult?: Readonly<AggregateResultRow>
 
   // ===== 选中值序列化（el-select / el-radio-group 等值型组件消费） =====
 
@@ -193,40 +220,51 @@ export type ComputedColumnFn = (row: IDataRow) => unknown
 /**
  * 视图聚合函数类型。
  *
- * 配置在 `IViewMetadata.aggregates`（`view.aggregates`）上，DataView 自动对当前 rows
- * 计算汇总值，结果写入 `view.summaryRow[columnName]`。
+ * 配置在 `IViewMetadata.aggregates`（运行时为 `view.aggregates`）上。DataView 会先
+ * 对 `computeExpression` 求值，再按 aggregates 的 key 生成输出行：
+ * `view.aggregateResult[key]` / `view.selectionAggregateResult[key]`。
  *
- * - `sum`   — 求和（非数字视为 0）
- * - `count` — 非 null/undefined 值计数
- * - `avg`   — 算术平均（空集 → 0）
- * - `min`   — 最小值（空集 → undefined）
- * - `max`   — 最大值（空集 → undefined）
- * - `join`  — 字符串拼接（逗号分隔，跳过 null/undefined/空串；空集 → ''）
+ * - `sum`   — `Number(raw ?? 0)` 累加；null/undefined 按 0，非数字会得到 NaN
+ * - `count` — 非 null/undefined 值计数（空字符串也计数）
+ * - `avg`   — 对可转为数字的值求平均；空集或无有效数字 → 0
+ * - `min`   — 可转为数字的最小值；空集或无有效数字 → undefined
+ * - `max`   — 可转为数字的最大值；空集或无有效数字 → undefined
+ * - `join`  — 字符串拼接（默认 `", "` 分隔，跳过 null/undefined/空串；空集 → ''）
  */
 export type AggregateType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'
+
+/** 单个聚合输出值类型（按 AggregateType 计算后得到的运行时值） */
+export type AggregateResultValue = number | string | undefined
+
+/** 视图聚合输出行（key 来自 aggregates 的输出字段名） */
+export type AggregateResultRow = Record<string, AggregateResultValue>
 
 /**
  * 单个聚合列配置。
  *
  * - `type`  — 聚合函数（sum / count / avg / min / max / join）
- * - `field` — 源字段名（省略时默认与 key 同名）
- * - `label` — 显示标题（UI 渲染表头 / 汇总标签使用）
+ * - `field` — 源字段名（省略时默认与 key 同名），可指向基础列或计算列
+ * - `separator` — `join` 的字符串分隔符
  *
  * @example
  * ```json
  * {
- *   "totalPrice": { "type": "sum", "field": "price", "label": "总价" },
- *   "avgScore":   { "type": "avg", "field": "score", "label": "平均分" }
+ *   "totalPrice": { "type": "sum", "field": "price" },
+ *   "avgScore":   { "type": "avg", "field": "score" }
  * }
  * ```
  */
 export interface AggregateColumnConfig {
   /** 聚合函数类型 */
   type: AggregateType
-  /** 源字段名（聚合哪个字段的值；省略时默认取与 key 同名的字段） */
+  /**
+   * 源字段名（聚合哪个字段的值；省略时默认取与 aggregates 的 key 同名的字段）。
+   *
+   * 注意：`field` 只决定从行里读哪个源字段，结果仍写入 aggregates 的 key。
+   * 例如 `{ totalAmount: { type: 'sum', field: 'amount' } }` 的结果位于
+   * `aggregateResult.totalAmount`，不是 `aggregateResult.amount`。
+   */
   field?: string
-  /** 显示标题（UI 渲染表头 / 汇总标签使用） */
-  label?: string
   /** join 聚合分隔符（默认 ', '），仅 type='join' 时有效 */
   separator?: string
 }
@@ -325,7 +363,7 @@ export interface DataColumn {
   /**
    * 是否为框架计算列（如 `_pk`）。
    *
-  * 计算列的值由框架自动维护，不参与序列化（`DataTable.toJson()` 自动排除）。
+   * 计算列的值由框架自动维护，不参与序列化（`DataTable.toJson()` 自动排除）。
    * UI 组件可通过 `columns.filter(c => !c.isComputed)` 获取用户定义列。
    */
   isComputed?: boolean
@@ -372,15 +410,17 @@ export interface DataColumn {
    * 计算列表达式（JS 表达式字符串）。
    *
    * 行字段直接引用（无需前缀），外部上下文通过 `ctx` 对象引用，
-   * 子视图聚合通过 `$sum` / `$count` / `$avg` / `$min` / `$max` / `$list` 函数。
+   * 子表聚合通过 `$sum` / `$count` / `$avg` / `$min` / `$max` / `$list` / `$join` 函数。
+   * 当前源码按 TableRelation 的 `childTable` 匹配子表 default 视图。
+   * 计算列先于 `view.aggregates` 求值，因此视图级聚合可以聚合计算列。
    *
    * @example
    * `"price * qty"`
    * `"firstName + ' ' + lastName"`
    * `"ctx.taxRate ? amount * ctx.taxRate : amount"`
    * `"$sum('OrderItems', 'amount')"`
-   * `"$sum('OrderItems@grid', 'amount')"`
    * `"$count('OrderItems')"`
+   * `"$join('Tags', 'name', ' | ')"`
    */
   computeExpression?: string
 }
@@ -573,16 +613,19 @@ export interface IViewMetadata {
   /**
    * 视图级聚合配置——输出名 → 聚合列配置。
    *
-   * 结果写入 `view.summaryRow / selectionSummaryRow`，行变更后自动重算。
+   * `aggregates` 是配置态输出，会被 `DataView.toJson()` 持久化；每个 key 是
+   * `aggregateResult / selectionAggregateResult` 上的结果字段名。`config.field` 只决定从哪一列取源值，
+   * 因而 key 与 field 可以不同。
+   *
    * 聚合配置与列定义（`DataColumn.computeExpression`）完全独立：
-   * 列负责逐行求值，聚合负责整列汇总。
+   * 列负责逐行求值，聚合负责对已求值的行集合做整列汇总。
    *
    * @example
    * ```json
    * {
    *   "aggregates": {
-   *     "totalPrice": { "type": "sum", "field": "price", "label": "总价" },
-   *     "score":      { "type": "avg" }
+   *     "totalPrice": { "type": "sum", "field": "price" },
+   *     "avgScore":   { "type": "avg", "field": "score" }
    *   }
    * }
    * ```
@@ -651,13 +694,22 @@ export interface IDataSetLayoutMetadata {
 
 // ===== 过滤和排序类型 =====
 
-/** 依赖类型 */
+/**
+ * 子视图响应父视图的数据变化触发源。
+ *
+ * 配置在 `ViewDependency.dependencyType`，决定父视图"哪种数据变化"会触发子视图重新级联加载。
+ *
+ * - `'currentRow'`   — 父视图当前聚焦行变化时触发（默认值）；子视图用当前行主键过滤
+ * - `'selectedRows'` — 父视图选中行集合变化时触发；子视图用所有选中行的主键 in-list 过滤
+ * - `'allRows'`      — 父视图全量行集合变化时触发（不区分分页）
+ * - `'pagedRows'`    — 父视图当前分页行集合变化时触发
+ */
 export type DependencyType =
-  | (string & {})
   | 'currentRow'
   | 'selectedRows'
   | 'allRows'
   | 'pagedRows'
+  | (string & {})
 
 /** 排序方向（小写） */
 export type SortDirection = 'asc' | 'desc'
@@ -681,7 +733,16 @@ export interface SortField {
  */
 export type SortExpression = SortField[]
 
-/** 过滤操作符 */
+/**
+ * 过滤操作符。
+ *
+ * - `==` / `!=` / `>` / `>=` / `<` / `<=` — 标量比较，value 为单个标量
+ * - `in` / `not in` — 集合成员，value 为数组
+ * - `like` / `not like` — SQL LIKE 模式（`%` 通配），通常由后端执行
+ * - `is null` / `is not null` — 空值判断，value 不使用
+ * - `between` / `not between` — 区间，value 为 `[min, max]` 两元素数组
+ * - `startsWith` / `endsWith` / `contains` — 字符串前缀/后缀/包含，前端内存过滤可用
+ */
 export type FilterOperator =
   | '==' | '!=' | '>' | '>=' | '<' | '<='
   | 'in' | 'not in' | 'like' | 'not like'
@@ -689,13 +750,24 @@ export type FilterOperator =
   | 'between' | 'not between'
   | 'startsWith' | 'endsWith' | 'contains'
 
-/** 过滤字段引用（当前行字段） */
+/**
+ * 过滤值中对当前行字段的动态引用。
+ *
+ * 将过滤值绑定到父视图当前行的某个字段，而非写死静态值。
+ * 例如 `{ kind: 'field', field: 'deptId' }` 表示"用当前行的 deptId 字段值做过滤"。
+ */
 export interface FilterFieldRef {
   kind: 'field'
   field: string
 }
 
-/** 过滤值表达式 */
+/**
+ * 过滤条件的值侧类型。
+ *
+ * - 标量（`string | number | boolean | null`）：静态常量值
+ * - `FilterFieldRef`：动态引用父视图当前行的字段值
+ * - `FilterValueExpression[]`：`in / between` 等多值操作符使用的数组
+ */
 export type FilterValueExpression =
   | string
   | number
@@ -704,7 +776,17 @@ export type FilterValueExpression =
   | FilterFieldRef
   | FilterValueExpression[]
 
-/** 过滤表达式 */
+/**
+ * 过滤表达式——树形判别联合。
+ *
+ * 四种形状：
+ * - `{ field, op, value }` — 叶子条件（字段、操作符、值）
+ * - `{ type: 'and' | 'or', children }` — 逻辑组合（AND/OR，可嵌套）
+ * - `{ type: '!condition', field, op, value }` — 叶子条件取反（NOT）
+ * - `{ type: '!and' | '!or', children }` — 逻辑组合取反（NAND/NOR）
+ *
+ * 叶子节点无 `type` 字段，通过是否存在 `field` 属性识别；组合节点通过 `type` 判别。
+ */
 export type FilterExpression =
   | { field: string; op: FilterOperator; value: FilterValueExpression }
   | { type: 'and' | 'or'; children: FilterExpression[] }
@@ -823,9 +905,10 @@ export interface DataRelation {
 // ===== 树类型 =====
 
 /**
- * 树端点 API 配置
- * 对应博文接口族（flat/nested 双模式成套）
- * 每个端点继承 HttpEndpoint，`url` 中可用 `{id}`、`{parentId}` 等路径占位符
+ * 树操作端点配置——flat/nested 双模式成套接口族。
+ *
+ * 每个端点均继承 `HttpEndpoint`，`url` 中可使用 `{id}`、`{parentId}` 等路径占位符。
+ * flat 模式（node/children/path/subtree/move/search）与 nested 模式（nested/nestedSearch）可按需配置，互不依赖。
  */
 export interface TreeApi {
   /**
@@ -887,8 +970,10 @@ export interface TreeApi {
   }
 }
 
-/** 树结构字段配置（属于视图层，固化在 DataView）
- * 注：HTTP 接口族配置在 CrudApi，模型始终存储平铺数据
+/**
+ * 树结构字段配置（属于视图层，固化在 DataView）。
+ *
+ * 树操作 HTTP 接口族配置在 `CrudApi`；模型层始终存储平铺数据，树形态由视图层组织。
  */
 export interface TreeConfig {
   idField?: string
@@ -937,7 +1022,15 @@ export interface NestedTreeSearchResult {
 // ===== 请求状态 =====
 
 /**
- * DataView 请求状态机
+ * 增删改提交模式。
+ *
+ * - `'immediate'`（默认）：`addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD（如已配置 API）
+ * - `'staged'`：仅修改内存并标记脏状态，需调用 `saveChanges()` 批量提交
+ */
+export type CommitMode = 'immediate' | 'staged'
+
+/**
+ * DataView 请求状态机。
  *
  * ```
  * Idle ──requestData()──▶ Preparing ──loadFromServer()──▶ Loading
@@ -946,14 +1039,6 @@ export interface NestedTreeSearchResult {
  *                                              Loaded                        Failed
  * ```
  */
-/**
- * 增删改提交模式。
- *
- * - `'immediate'`（默认）：`addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD（如已配置 API）
- * - `'staged'`：仅修改内存并标记脏状态，需调用 `saveChanges()` 批量提交
- */
-export type CommitMode = 'immediate' | 'staged'
-
 export enum RequestState {
   /** 未请求（初始态 / 被外部重置后） */
   Idle         = 0,
