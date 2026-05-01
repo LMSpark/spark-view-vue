@@ -1,0 +1,88 @@
+import { describe, expect, it } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { defineComponent, h } from 'vue'
+import {
+  DATA_SOURCE,
+  SPARK_REGISTRY_KEY,
+  Spark,
+  RendererLink,
+  useSparkComponent,
+} from '@spark-view/spark-component'
+import { SparkData } from '@spark-view/spark-data'
+
+const ElLinkStub = defineComponent({
+  props: ['type', 'underline', 'disabled', 'href', 'target'],
+  setup(props, { slots }) {
+    return () => h('a', {
+      class: 'el-link-stub',
+      'data-disabled': String(Boolean(props.disabled)),
+      'data-href': String(props.href ?? ''),
+    }, slots['default']?.())
+  },
+})
+
+function mountRendererLinkWithDataSource(dataSource: unknown, componentProps?: Record<string, unknown>) {
+  const { registry, rootContext } = Spark.createSystem()
+
+  const Provider = defineComponent({
+    setup() {
+      const { sparkProvide } = useSparkComponent({ type: 'r-toolbar' } as never, { parentContext: rootContext })
+      sparkProvide(DATA_SOURCE, dataSource as never)
+
+      return () => h(RendererLink as never, {
+        type: 'r-link',
+        label: '批量删除',
+        permissionDeniedMode: 'disable',
+        ...(componentProps ?? {}),
+      })
+    },
+  })
+
+  return mount(Provider, {
+    global: {
+      stubs: {
+        'el-link': ElLinkStub,
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      },
+    },
+  })
+}
+
+describe('RendererLink 权限作用域', () => {
+  it('多选工具栏应按 selectedRows 做行权限裁决，而不是只看 currentRow', () => {
+    const dataSet = SparkData.createDataSet({
+      dataSetName: 'RendererLinkPermissionDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'name', type: 'string' },
+          ],
+          views: {
+            default: {
+              rows: [
+                { id: 1, name: '允许行', _perm: { allowDelete: true } },
+                { id: 2, name: '拒绝行', _perm: { allowDelete: false } },
+              ],
+            },
+          },
+        },
+      },
+    })
+
+    const view = dataSet.getView('Users', 'default')!
+    view.setCurrentRowById(1)
+    view.setSelectedRows(view.rows.slice())
+
+    const wrapper = mountRendererLinkWithDataSource(view, {
+      action: 'delete-selected',
+    })
+
+    const link = wrapper.find('.el-link-stub')
+    expect(link.exists()).toBe(true)
+    expect(link.attributes('data-disabled')).toBe('true')
+  })
+})

@@ -1,9 +1,11 @@
 import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { DataView, IDataRow, IDataSet, IModelPermission } from '@spark-view/spark-data'
+import type { DataView, IDataRow, IModelPermission } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver.js'
 import { extractModelPermission, type ModelPermissionSource } from '../../../permission/index.js'
+import type { SparkCapabilityConsumer } from '../../../core/capability-system.js'
+import { PAGE_DATASET } from '../../internal.js'
 
 interface LoggerLike {
   warn(message: string): void
@@ -12,9 +14,13 @@ interface LoggerLike {
 
 interface UseContainerDataSourceOptions<TSource> {
   dataKey: ValueRef<string | undefined>
-  pageDataSet: IDataSet | null
+  sparkConsume: SparkCapabilityConsumer
   mapView: (view: DataView) => TSource
   externalDataSource?: ValueRef<TSource | undefined>
+  inheritedDataSource?: ValueRef<TSource | null | undefined>
+  provideDataSource?: (source: TSource) => void
+  logger?: LoggerLike
+  logPrefix?: string
 }
 
 interface UseContainerDataSourceEffectsOptions<TSource> {
@@ -25,6 +31,8 @@ interface UseContainerDataSourceEffectsOptions<TSource> {
 }
 
 export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>) {
+  const pageDataSet = options.sparkConsume(PAGE_DATASET)
+
   function pickRowFromSource(source: unknown): IDataRow | null {
     if (source === null || source === undefined || typeof source !== 'object') return null
     const currentRow = (source as { currentRow?: unknown }).currentRow
@@ -36,22 +44,41 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
     const provided = options.externalDataSource?.value
     if (provided !== undefined) return pickRowFromSource(provided)
 
-    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, options.pageDataSet)
-    return capabilities.dataRow
+    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, pageDataSet)
+    if (capabilities.dataRow !== null) return capabilities.dataRow
+
+    const inherited = options.inheritedDataSource?.value
+    return pickRowFromSource(inherited)
   })
 
   const resolvedDataSource = computed<TSource | null>(() => {
     const provided = options.externalDataSource?.value
     if (provided !== undefined) return provided
 
-    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, options.pageDataSet)
+    const capabilities = resolveDataCapabilitiesFromDataKey(options.dataKey.value, pageDataSet)
     if (capabilities.dataSource) return options.mapView(capabilities.dataSource)
+
+    const inherited = options.inheritedDataSource?.value
+    if (inherited !== null && inherited !== undefined) return inherited
+
     return null
   })
 
   const modelPermission = computed<IModelPermission | undefined>(() =>
     extractModelPermission(resolvedDataSource.value as ModelPermissionSource | null)
   )
+
+  if (options.provideDataSource || (options.logger && options.logPrefix)) {
+    useContainerDataSourceEffects({
+      resolvedDataSource,
+      ...(options.provideDataSource ? { provideDataSource: options.provideDataSource } : {}),
+      logger: options.logger ?? {
+        warn: () => {},
+        error: () => {},
+      },
+      logPrefix: options.logPrefix ?? 'useContainerDataSource',
+    })
+  }
 
   return {
     resolvedDataSource,

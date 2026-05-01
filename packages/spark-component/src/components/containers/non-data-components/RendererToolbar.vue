@@ -37,22 +37,21 @@
  * @skill r-toolbar
  * @description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。
  */
-import { computed, ref, watch } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import {
   DATA_ROW,
   DATA_SOURCE,
-  PAGE_DATASET,
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
-import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { extractModelPermission, type ModelPermissionSource } from '../../../permission'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { RToolbarProps } from './RendererToolbar.types'
+import { useContainerDataSource } from '../composables/useContainerDataSource'
+import { useDataViewEventBridge } from '../composables/useDataViewEventBridge'
 
 // ============================================================================
 // 1) 组件输入与能力入口
@@ -69,12 +68,10 @@ const { sparkConsume, sparkProvide } = useSparkPageComponent(props)
 // 2) 上下文能力与响应触发器
 //    - DATA_SOURCE: 上游提供的数据源
 //    - DATA_ROW: 上游行上下文（优先级高于 currentRow）
-//    - PAGE_DATASET: dataKey 解析所需的数据集能力
 //    - toolbarReactiveVersion: 事件触发计数器，用于让 beforeRender 相关逻辑重新计算
 // ============================================================================
 const inheritedDataSource = sparkConsume(DATA_SOURCE)
 const inheritedDataRow = sparkConsume(DATA_ROW)
-const pageDataSet = sparkConsume(PAGE_DATASET)
 const toolbarReactiveVersion = ref(0)
 
 // ============================================================================
@@ -84,47 +81,30 @@ const toolbarReactiveVersion = ref(0)
 //    2. dataKey 解析得到的 dataSource
 //    3. 继承父级 DATA_SOURCE
 // ============================================================================
-const resolvedToolbarDataSource = computed<DataView | null>(() => {
-  if (props.dataSource !== undefined && props.dataSource !== null) {
-    return props.dataSource as DataView
-  }
-
-  if (typeof props.dataKey === 'string' && props.dataKey.trim().length > 0) {
-    const capabilities = resolveDataCapabilitiesFromDataKey(props.dataKey, pageDataSet)
-    if (capabilities.dataSource) return capabilities.dataSource
-  }
-
-  return inheritedDataSource as DataView | null
+const { resolvedDataSource: resolvedToolbarDataSource, modelPermission } = useContainerDataSource<DataView>({
+  dataKey: toRef(props, 'dataKey'),
+  sparkConsume,
+  mapView: view => view,
+  externalDataSource: computed(() => props.dataSource as DataView | undefined),
+  inheritedDataSource: computed(() => inheritedDataSource as DataView | null),
+  provideDataSource: (source: DataView) => {
+    // 工具栏子动作通常直接消费 DATA_SOURCE；统一在数据解析层提供。
+    sparkProvide(DATA_SOURCE, source)
+  },
 })
 
-/**
- * 监听数据源并建立两类副作用：
- * 1) 向下提供 DATA_SOURCE（保证子动作可直接消费）
- * 2) 订阅 DataView 关键事件，驱动工具栏动作节点重算
- *
- * 说明：
- * - immediate: true 保证首次渲染时即建立能力与订阅。
- * - onCleanup 中对称解绑，避免数据源切换后残留监听器。
- */
-watch(resolvedToolbarDataSource, (source, _previous, onCleanup) => {
-  if (source === null) return
-
-  sparkProvide(DATA_SOURCE, source)
-
-  const bumpReactiveVersion = () => {
+useDataViewEventBridge({
+  resolvedView: resolvedToolbarDataSource,
+  onCurrentRowChanged: () => {
     toolbarReactiveVersion.value += 1
-  }
-
-  source.events.on('currentRowChanged', bumpReactiveVersion)
-  source.events.on('selectedRowsChanged', bumpReactiveVersion)
-  source.events.on('rowsChanged', bumpReactiveVersion)
-
-  onCleanup(() => {
-    source.events.off('currentRowChanged', bumpReactiveVersion)
-    source.events.off('selectedRowsChanged', bumpReactiveVersion)
-    source.events.off('rowsChanged', bumpReactiveVersion)
-  })
-}, { immediate: true })
+  },
+  onSelectedRowsChanged: () => {
+    toolbarReactiveVersion.value += 1
+  },
+  onRowsChanged: () => {
+    toolbarReactiveVersion.value += 1
+  },
+})
 
 // ============================================================================
 // 4) 动作节点预处理（beforeRender 作用域注入）
@@ -149,7 +129,7 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
     row,
     data: row,
     dataSource,
-    modelPermission: extractModelPermission(dataSource as ModelPermissionSource | null),
+    modelPermission: modelPermission.value,
     host: { type: 'r-toolbar' },
   })
 

@@ -17,8 +17,6 @@ interface RendererTreeInputOptions {
 }
 
 export function useRendererTreeInput(options: RendererTreeInputOptions) {
-  const effectiveDataKey = computed(() => options.props.dataKey)
-
   // 优先消费结构化 props.toolbar / props.actions / props.editor；children 不再做结构分流。
   const toolbarNode = computed(() => options.props.toolbar)
   const actionsNode = computed(() => options.props.actions)
@@ -77,7 +75,6 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const showEditor = computed(() => editorConfigs.value.length > 0)
 
   return {
-    effectiveDataKey,
     nodeContentChildren,
     toolbarConfigs,
     toolbarPositionValue,

@@ -2,6 +2,7 @@ import { computed, nextTick, watch } from 'vue'
 import { SparkData, type DataView } from '@spark-view/spark-data'
 import type { TreeNode, NativeTreeLike, NativeTreeNodeLike } from './zero-code'
 import type { ValueRef } from '../../../shared-types.js'
+import { useDataViewState } from '../useDataViewState'
 
 interface TreeManagerSeedNode extends Record<string, unknown> {
   id: string | number
@@ -28,8 +29,14 @@ interface RendererTreeViewStateOptions {
 }
 
 export function useRendererTreeViewState(options: RendererTreeViewStateOptions) {
+  const {
+    rows,
+    currentRow,
+    treeConfig,
+  } = useDataViewState(options.resolvedView)
+
   const labelField = computed(() =>
-    options.resolvedView.value?.treeConfig?.textField ?? 'label'
+    treeConfig.value?.textField ?? 'label'
   )
 
   function getNodeLabel(data: unknown): string {
@@ -44,13 +51,13 @@ export function useRendererTreeViewState(options: RendererTreeViewStateOptions) 
   }
 
   const treeData = computed<TreeNode[]>(() => {
-    const rows = (options.resolvedView.value?.rows as TreeNode[] | undefined) ?? []
-    if (rows.length === 0) return []
-    if (rows.some(row => Array.isArray(row.children))) return rows
-    if (!options.resolvedView.value?.treeConfig) return rows
+    const resolvedRows = rows.value as TreeNode[]
+    if (resolvedRows.length === 0) return []
+    if (resolvedRows.some(row => Array.isArray(row.children))) return resolvedRows
+    if (!treeConfig.value) return resolvedRows
 
-    const parentIdField = options.resolvedView.value.treeConfig.parentIdField ?? 'parentId'
-    const seedNodes: TreeManagerSeedNode[] = rows.flatMap(row => {
+    const parentIdField = treeConfig.value.parentIdField ?? 'parentId'
+    const seedNodes: TreeManagerSeedNode[] = resolvedRows.flatMap(row => {
       const rawId = row[options.treeIdField.value]
       if (typeof rawId !== 'string' && typeof rawId !== 'number') {
         return []
@@ -74,7 +81,7 @@ export function useRendererTreeViewState(options: RendererTreeViewStateOptions) 
     return SparkData.createTreeManager({
       idField: options.treeIdField.value,
       parentIdField,
-      textField: options.resolvedView.value.treeConfig.textField ?? 'label',
+      textField: treeConfig.value.textField ?? 'label',
       treeMode: 'nested',
     }, seedNodes).buildNestedTree() as TreeNode[]
   })
@@ -85,12 +92,12 @@ export function useRendererTreeViewState(options: RendererTreeViewStateOptions) 
   }))
 
   watch(
-    () => options.resolvedView.value?.currentRow,
-    async currentRow => {
+    currentRow,
+    async nextCurrentRow => {
       await nextTick()
       const tree = options.nativeTreeRef.value as NativeTreeLike | null
       if (!tree?.setCurrentKey) return
-      const key = options.getNodeKey(currentRow)
+      const key = options.getNodeKey(nextCurrentRow)
       tree.setCurrentKey(key ?? null)
     },
     { immediate: true }
@@ -98,8 +105,8 @@ export function useRendererTreeViewState(options: RendererTreeViewStateOptions) 
 
   watch(
     [() => treeData.value, () => options.props.expandLevel],
-    async ([rows, expandLevel]) => {
-      if (rows.length === 0 || expandLevel === undefined) return
+    async ([nextTreeRows, expandLevel]) => {
+      if (nextTreeRows.length === 0 || expandLevel === undefined) return
       await applyExpandLevel(treeData.value, options.nativeTreeRef, options.getNodeKey, expandLevel)
     },
     { immediate: true }

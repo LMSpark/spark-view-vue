@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-05-01T05:10:45.753Z",
+  "buildTime": "2026-05-01T13:25:57.976Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -9797,13 +9797,13 @@
         },
         "aggregateResult": {
           "name": "aggregateResult",
-          "type": "Readonly<IDataRow> | undefined",
+          "type": "Readonly<AggregateResultRow> | undefined",
           "required": false,
-          "description": "当前 `rows` 的全量聚合输出行；按视图 aggregates 配置自动计算，行变更后自动重算。\n\n注意它不是单个标量，而是 `IDataRow` 形状的结果容器：\n每个字段名来自 aggregates 的输出 key，每个字段值是对应聚合计算结果。\n例如 aggregates 配置了 `totalAmount`、`avgScore` 两个输出名，则结果形如：\n`{ totalAmount: 1234, avgScore: 87.5 }`。\n当视图已配置 aggregates 且 rows 为空时，源码按类型填默认输出：\n`sum/count/avg` 为 `0`，`min/max` 为 `undefined`，`join` 为空字符串。"
+          "description": "当前 `rows` 的全量聚合输出行；按视图 aggregates 配置自动计算，行变更后自动重算。\n\n注意它不是单个标量，而是 `AggregateResultRow` 形状的结果容器：\n每个字段名来自 aggregates 的输出 key，每个字段值是对应聚合计算结果。\n例如 aggregates 配置了 `totalAmount`、`avgScore` 两个输出名，则结果形如：\n`{ totalAmount: 1234, avgScore: 87.5 }`。\n当视图已配置 aggregates 且 rows 为空时，源码按类型填默认输出：\n`sum/count/avg` 为 `0`，`min/max` 为 `undefined`，`join` 为空字符串。"
         },
         "selectionAggregateResult": {
           "name": "selectionAggregateResult",
-          "type": "Readonly<IDataRow> | undefined",
+          "type": "Readonly<AggregateResultRow> | undefined",
           "required": false,
           "description": "当前 `selectedRows` 的选中聚合输出行；按视图 aggregates 配置自动计算，选中/数据变更后自动重算。\n\n无选中行时源码直接返回空对象 `{}`，而不是按聚合类型填默认输出。\n选中行存在时字段结构与 aggregateResult 相同。"
         },
@@ -26560,8 +26560,8 @@
           "required": true,
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@12955": {
-          "name": "__@toPrimitive@12955",
+        "__@toPrimitive@24947": {
+          "name": "__@toPrimitive@24947",
           "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
           "required": true,
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."

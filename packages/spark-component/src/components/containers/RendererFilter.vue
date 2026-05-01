@@ -60,7 +60,6 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_PERMISSION_MODE } from '../../permission'
 import {
   DATA_SOURCE,
-  PAGE_DATASET,
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
@@ -94,18 +93,13 @@ const isPanelMode = computed(() => {
 })
 
 // ── DataView 自治解析 ───────────────────────────────────────────────────
-const pageDataSet = sparkConsume(PAGE_DATASET)
 const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
 
-const { resolvedDataSource: resolvedFromKey } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: toRef(props, 'dataKey'),
-  pageDataSet,
+  sparkConsume,
+  inheritedDataSource: computed(() => inheritedDataSource),
   mapView: view => view,
-})
-
-const resolvedView = computed<DataView | null>(() => {
-  if (resolvedFromKey.value) return resolvedFromKey.value
-  return inheritedDataSource ?? null
 })
 
 // 面板模式下必须能解析到 DataView，否则 fail-fast。

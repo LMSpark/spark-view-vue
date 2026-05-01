@@ -1,7 +1,8 @@
 import { computed, ref, watch } from 'vue'
-import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
+import { SparkData, type DataView, type IDataRow, type TreeConfig } from '@spark-view/spark-data'
 import type { RendererFilterProps } from '../../RendererFilter.types'
 import type { ValueRef } from '../../../shared-types.js'
+import { useDataViewState } from '../useDataViewState'
 
 // ==============================
 // 类型定义
@@ -33,21 +34,24 @@ const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freez
 // ==============================
 
 export function useRendererTableViewState(options: RendererTableViewStateOptions) {
+  const {
+    rows,
+    primaryKey,
+    treeConfig,
+  } = useDataViewState(options.resolvedView)
+
   // 表格数据：普通列表直接透传；树形配置下按需构造成嵌套 children
-  const tableData = computed(() => buildTreeTableRows(
-    options.resolvedView.value,
-    options.resolvedView.value?.rows ?? [],
-  ))
+  const tableData = computed(() => buildTreeTableRows(rows.value, treeConfig.value, primaryKey.value))
 
   // rowKey 优先主键，缺失时回退到 tree id 字段
   const tableRowKeyValue = computed(() =>
-    options.resolvedView.value?.primaryKey
-    ?? options.resolvedView.value?.treeConfig?.idField
+    primaryKey.value
+    ?? treeConfig.value?.idField
   )
 
   // 仅树表时挂载 treeProps，避免普通表引入多余配置
   const tableTreePropsValue = computed<Record<string, unknown> | undefined>(() => {
-    if (!options.resolvedView.value?.treeConfig) return undefined
+    if (!treeConfig.value) return undefined
     return DEFAULT_TABLE_TREE_PROPS
   })
 
@@ -55,7 +59,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   const elTableProps = computed<Record<string, unknown>>(() => {
     const result = { ...options.baseElTableProps.value }
 
-    if (!options.resolvedView.value?.treeConfig) return result
+    if (!treeConfig.value) return result
 
     if (result['rowKey'] === undefined && tableRowKeyValue.value) {
       result['rowKey'] = tableRowKeyValue.value
@@ -115,19 +119,24 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 // 树形数据构建
 // ==============================
 
-function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[]): IDataRow[] {
+function buildTreeTableRows(
+  rows: IDataRow[],
+  treeConfig: TreeConfig | undefined,
+  primaryKey: string | undefined,
+): IDataRow[] {
   // 空数据或无视图时保持原样
-  if (!view || rows.length === 0) return rows
+  if (rows.length === 0) return rows
 
   // 已经是嵌套结构则不重复转换
   if (rows.some(row => Array.isArray((row as Record<string, unknown> | undefined)?.['children']))) {
     return rows
   }
 
-  const treeConfig = view.treeConfig
   if (!treeConfig) return rows
 
-  const idField = treeConfig.idField ?? view.primaryKey
+  const idFieldRaw = treeConfig.idField ?? primaryKey
+  if (typeof idFieldRaw !== 'string' || idFieldRaw.length === 0) return rows
+  const idField = idFieldRaw
   const parentIdField = treeConfig.parentIdField ?? 'parentId'
   const textField = treeConfig.textField ?? 'label'
 

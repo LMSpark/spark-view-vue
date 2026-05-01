@@ -77,14 +77,13 @@
  * @consumes PAGE_DATASET
  * @notes 使用结构化 `toolbar` / `actions` 区域声明工具栏与列表项操作
  */
-import { computed, useSlots } from 'vue'
+import { computed, toRef, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import {
   useSparkPageComponent,
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
-  PAGE_DATASET,
   DATA_SOURCE,
   MODULE_CONTEXT,
   type SparkNode,
@@ -92,7 +91,8 @@ import {
 import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
+import { useContainerDataSource } from '../../composables/useContainerDataSource'
+import { useRendererListViewState } from './view-state'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
@@ -123,31 +123,27 @@ const slots = useSlots()
 const toolbarNode = computed(() => props.toolbar)
 const actionsNode = computed(() => props.actions)
 
-const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(props.children)
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
-const pageDataSet = sparkConsume(PAGE_DATASET)
 const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
-  externalDataSource: computed(() => props.dataSource),
-  dataKey: effectiveDataKey,
-  pageDataSet,
+  externalDataSource: toRef(props, 'dataSource'),
+  dataKey: toRef(props, 'dataKey'),
+  sparkConsume,
   mapView: view => view,
-})
-
-useContainerDataSourceEffects({
-  resolvedDataSource: resolvedView,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererList',
 })
 
-const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
+const { listRows } = useRendererListViewState({
+  resolvedView,
+})
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))
 
 const visibleToolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
@@ -257,11 +253,17 @@ function getItemKey(row: IDataRow, index: number): string | number {
   return `${props.rowKey}-${index}`
 }
 
-function getRowScope(row: IDataRow, index: number) {
-  return createRowScope({
+function scopeBase() {
+  return {
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
     moduleContext: moduleContext.value,
+  }
+}
+
+function getRowScope(row: IDataRow, index: number) {
+  return createRowScope({
+    ...scopeBase(),
     row,
     index,
   })
@@ -277,11 +279,7 @@ async function handleItemClick(row: IDataRow, index: number, event: Event) {
 }
 
 function getDefaultScope() {
-  return createToolbarScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-    moduleContext: moduleContext.value,
-  }, {
+  return createToolbarScope(scopeBase(), {
     rows: listRows.value,
   })
 }

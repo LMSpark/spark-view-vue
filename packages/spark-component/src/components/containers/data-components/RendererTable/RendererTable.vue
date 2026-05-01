@@ -97,13 +97,14 @@ import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId, type SparkNode,
-  PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
+  DATA_SOURCE, PAGE_SERVICE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
+import { useDataViewState } from '../useDataViewState'
+import { useContainerDataSource } from '../../composables/useContainerDataSource'
 import type { ToolbarPosition } from '../../layout'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
@@ -169,18 +170,13 @@ const baseElTableProps = computed<Record<string, unknown>>(() => {
 // ── 能力注入与 DataView 解析（dataKey 优先，回落外部 dataSource）、向下提供 DATA_SOURCE ─────────────
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
-const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   externalDataSource: toRef(props, 'dataSource'),
   dataKey: toRef(props, 'dataKey'),
-  pageDataSet,
+  sparkConsume,
   mapView: view => view,
-})
-
-useContainerDataSourceEffects({
-  resolvedDataSource: resolvedView,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTable',
@@ -250,6 +246,11 @@ const {
   baseElTableProps,
   resolvedView,
 })
+const {
+  currentRow,
+  selectedRows,
+  primaryKey,
+} = useDataViewState(resolvedView)
 
 const hasFilters = computed(() => (props.filter?.children?.length ?? 0) > 0)
 
@@ -289,7 +290,7 @@ registerApi(tableApi)
 
 // DataView -> el-table 当前行单向同步（等 nextTick 确保表格实例与 data 已渲染）。
 watch(
-  () => resolvedView.value?.currentRow,
+  currentRow,
   async (row) => {
     await nextTick()
     nativeTableRef.value?.setCurrentRow?.(row ?? null)
@@ -298,16 +299,14 @@ watch(
 
 // ── 选中态样式与行操作辅助：优先主键匹配，回落引用判等 ──────────────────────────────
 const selectedRowIdSet = computed(() => {
-  const view = resolvedView.value
-  const selectedRows = view?.selectedRows ?? []
-  const keyField = view?.primaryKey
+  const keyField = primaryKey.value
   const ids = new Set<string | number>()
 
   if (typeof keyField !== 'string' || keyField.length === 0) {
     return ids
   }
 
-  for (const row of selectedRows) {
+  for (const row of selectedRows.value) {
     const key = (row as Record<string, unknown>)[keyField]
     if (typeof key === 'string' || typeof key === 'number') {
       ids.add(key)
@@ -320,15 +319,14 @@ const selectedRowIdSet = computed(() => {
 /**
  * 引用集合回退：当缺少主键时，使用对象引用判等维持选中态。
  */
-const selectedRowRefSet = computed(() => new Set(resolvedView.value?.selectedRows ?? []))
+const selectedRowRefSet = computed(() => new Set(selectedRows.value))
 
 /**
  * 判断当前行是否属于“已选择集合”。
  * 顺序：primaryKey 匹配优先 -> 引用匹配回退。
  */
 function isSelectedRow(row: IDataRow): boolean {
-  const view = resolvedView.value
-  const keyField = view?.primaryKey
+  const keyField = primaryKey.value
   if (typeof keyField === 'string' && keyField.length > 0) {
     const key = (row as Record<string, unknown>)[keyField]
     if ((typeof key === 'string' || typeof key === 'number') && selectedRowIdSet.value.has(key)) {

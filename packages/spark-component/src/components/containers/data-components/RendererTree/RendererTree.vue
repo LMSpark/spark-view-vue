@@ -72,21 +72,19 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 内部通过 useSparkPageComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。
+ * 内部通过 useContainerDataSource 统一解析 dataKey，并走能力链读取 PAGE_DATASET。
  */
-import { computed, ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import {
   useSparkPageComponent,
   SparkComponentRenderer,
   nodeId,
-  PAGE_DATASET,
   DATA_SOURCE,
   PAGE_SERVICE,
   type SparkNode,
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
-import { extractModelPermission, type ModelPermissionSource } from '../../../../permission'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
@@ -96,8 +94,9 @@ import {
 } from './zero-code'
 import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
+import { useDataViewState } from '../useDataViewState'
 
-import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
+import { useContainerDataSource } from '../../composables/useContainerDataSource'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../../support/beforeRender'
 
@@ -106,7 +105,6 @@ const props = withDefaults(defineProps<RTreeProps>(), {
 })
 const treePropsValue = computed<Record<string, unknown>>(() => ({ ...(props.treeProps ?? {}) }))
 const {
-  effectiveDataKey,
   nodeContentChildren,
   toolbarConfigs,
   toolbarPositionValue,
@@ -122,44 +120,43 @@ const {
 
 // 接入 SPARK 能力链
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
-const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
-  externalDataSource: computed(() => props.dataSource),
-  dataKey: effectiveDataKey,
-  pageDataSet,
+const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+  externalDataSource: toRef(props, 'dataSource'),
+  dataKey: toRef(props, 'dataKey'),
+  sparkConsume,
   mapView: view => view,
-})
-
-useContainerDataSourceEffects({
-  resolvedDataSource: resolvedView,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTree',
 })
+const {
+  currentRow,
+  primaryKey,
+  treeConfig,
+} = useDataViewState(resolvedView)
 
 const nodeKeyField = computed(() =>
-  props.nodeKey ?? resolvedView.value?.primaryKey ?? resolvedView.value?.treeConfig?.idField ?? 'id'
+  props.nodeKey ?? primaryKey.value ?? treeConfig.value?.idField ?? 'id'
 )
 
 const treeIdField = computed(() =>
-  resolvedView.value?.treeConfig?.idField ?? 'id'
+  treeConfig.value?.idField ?? 'id'
 )
 
 function resolveTreeToolbarActionNode(node: SparkNode): SparkNode {
   const dataSource = resolvedView.value
-  const currentRow = dataSource?.currentRow
-  const scopedRow = currentRow !== null && currentRow !== undefined && typeof currentRow === 'object' && !Array.isArray(currentRow)
-    ? currentRow as IDataRow
+  const scopedRowInput = currentRow.value
+  const scopedRow = scopedRowInput !== null && scopedRowInput !== undefined && typeof scopedRowInput === 'object' && !Array.isArray(scopedRowInput)
+    ? scopedRowInput as IDataRow
     : undefined
-  const modelPermission = extractModelPermission(dataSource as ModelPermissionSource | null)
 
   const beforeRender = resolveNodeBeforeRender(node, {
     row: scopedRow,
     data: scopedRow,
     dataSource,
-    modelPermission,
+    modelPermission: modelPermission.value,
     host: { type: 'r-tree-toolbar' },
   })
 
