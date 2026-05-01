@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-30T17:38:22.390Z",
+  "buildTime": "2026-05-01T03:22:59.228Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -894,7 +894,7 @@
           "schemaRef": "schema_00009"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "CollapseValue | undefined",
           "required": false,
           "description": "当前展开的面板"
@@ -1007,10 +1007,9 @@
           "description": "对话框标题"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | undefined",
           "required": false,
-          "default": "false",
           "description": "控制显隐"
         },
         {
@@ -1149,10 +1148,9 @@
           "description": "抽屉标题"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | undefined",
           "required": false,
-          "default": "false",
           "description": "控制显隐"
         },
         {
@@ -1861,7 +1859,7 @@
           "schemaRef": "schema_00009"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
           "description": "当前步骤"
@@ -1971,7 +1969,7 @@
           "schemaRef": "schema_00009"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
           "description": "当前激活标签页"
@@ -3732,10 +3730,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -3894,10 +3892,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "CascaderValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -4061,10 +4059,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -4212,10 +4210,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "CheckboxGroupMultiValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -4385,10 +4383,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -4534,10 +4532,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | Date | (string | Date)[] | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -4645,7 +4643,7 @@
           "description": "展示标签"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
@@ -4859,10 +4857,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "EntityPickerValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -5034,10 +5032,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -5184,10 +5182,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -5314,10 +5312,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -5481,10 +5479,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -5642,10 +5640,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -5756,7 +5754,7 @@
           "name": "mentionTriggers",
           "type": "{ prefix: string; split?: string; writebackField?: string; searchable?: boolean; options?: { dataKey?: string; valueField?: string; labelField?: string; disabledField?: string; }; }[] | undefined",
           "required": false,
-          "description": "完整的提及触发规则列表。\r\n\r\n每一项描述一个前缀触发器的完整结构：\r\n- `prefix`：触发字符\r\n- `split`：选中后写回文本的分隔符\r\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\r\n- `options.dataKey`：候选项数据源\r\n - `options.valueField / labelField / disabledField`：候选项字段映射\r\n- `searchable`：是否启用本地候选项过滤\r\n\r\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `value/field` 语义：\r\n- `value` 表示当前 Mention 输入框中的文本值\r\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\r\n\r\n注意：底层 el-mention 只支持一个全局 `split`；\r\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
+          "description": "完整的提及触发规则列表。\r\n\r\n每一项描述一个前缀触发器的完整结构：\r\n- `prefix`：触发字符\r\n- `split`：选中后写回文本的分隔符\r\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\r\n- `options.dataKey`：候选项数据源\r\n - `options.valueField / labelField / disabledField`：候选项字段映射\r\n- `searchable`：是否启用本地候选项过滤\r\n\r\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\r\n- `modelValue` 表示当前 Mention 输入框中的文本值\r\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\r\n\r\n注意：底层 el-mention 只支持一个全局 `split`；\r\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
         },
         {
           "name": "placement",
@@ -5825,10 +5823,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -6006,10 +6004,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "MultiValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -6151,10 +6149,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "number | [number | undefined, number | undefined] | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -6273,7 +6271,7 @@
           "description": "展示标签"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
@@ -6470,10 +6468,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -6622,10 +6620,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -6795,10 +6793,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -6972,10 +6970,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7125,10 +7123,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7261,10 +7259,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | null | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7369,10 +7367,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7497,10 +7495,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7656,10 +7654,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | Date | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7799,10 +7797,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -7974,10 +7972,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "TransferValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -8172,10 +8170,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "TreeSelectValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -8361,10 +8359,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "field",
@@ -8486,7 +8484,7 @@
           "description": "展示标签"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
@@ -8875,14 +8873,14 @@
           "name": "config",
           "type": "SparkNode",
           "required": true,
-          "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+          "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
           "schemaRef": "schema_00473"
         },
         {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
-          "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
+          "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
           "schemaRef": "schema_00474"
         }
       ]
@@ -9269,10 +9267,9 @@
           "description": "r-table 内列宽"
         },
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "default": "\"\"",
           "description": "JSON 字符串内容"
         },
         {
@@ -9368,10 +9365,9 @@
       "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
       "props": [
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "default": "\"\"",
           "description": "编辑器内容"
         },
         {
@@ -9419,10 +9415,9 @@
       "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
       "props": [
         {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "default": "\"\"",
           "description": "JSON 字符串内容"
         },
         {
@@ -28568,7 +28563,7 @@
           "description": "卡片主体 class"
         },
         "prop_00078": {
-          "name": "value",
+          "name": "modelValue",
           "type": "CollapseValue | undefined",
           "required": false,
           "description": "当前展开的面板"
@@ -28651,10 +28646,9 @@
           "description": "对话框标题"
         },
         "prop_00091": {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | undefined",
           "required": false,
-          "default": "false",
           "description": "控制显隐"
         },
         "prop_00092": {
@@ -29113,7 +29107,7 @@
           "schemaRef": "schema_00443"
         },
         "prop_00159": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
           "description": "当前步骤"
@@ -29155,7 +29149,7 @@
           "description": "标签页体自定义 class"
         },
         "prop_00166": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
           "description": "当前激活标签页"
@@ -30331,10 +30325,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         "prop_00344": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00345": {
           "name": "field",
@@ -30465,10 +30459,10 @@
           "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。"
         },
         "prop_00365": {
-          "name": "value",
+          "name": "modelValue",
           "type": "CascaderValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00366": {
           "name": "placeholder",
@@ -30542,10 +30536,10 @@
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
         "prop_00377": {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00378": {
           "name": "placeholder",
@@ -30566,10 +30560,10 @@
           "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。"
         },
         "prop_00381": {
-          "name": "value",
+          "name": "modelValue",
           "type": "CheckboxGroupMultiValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00382": {
           "name": "buttonStyle",
@@ -30632,10 +30626,10 @@
           "description": "范围值中间的展示分隔文案。"
         },
         "prop_00391": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | Date | (string | Date)[] | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00392": {
           "name": "placeholder",
@@ -30666,7 +30660,7 @@
           "description": "展示标签"
         },
         "prop_00396": {
-          "name": "value",
+          "name": "modelValue",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
@@ -30815,10 +30809,10 @@
           "schemaRef": "schema_00462"
         },
         "prop_00417": {
-          "name": "value",
+          "name": "modelValue",
           "type": "EntityPickerValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00418": {
           "name": "buttonText",
@@ -30962,7 +30956,7 @@
           "name": "mentionTriggers",
           "type": "{ prefix: string; split?: string; writebackField?: string; searchable?: boolean; options?: { dataKey?: string; valueField?: string; labelField?: string; disabledField?: string; }; }[] | undefined",
           "required": false,
-          "description": "完整的提及触发规则列表。\r\n\r\n每一项描述一个前缀触发器的完整结构：\r\n- `prefix`：触发字符\r\n- `split`：选中后写回文本的分隔符\r\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\r\n- `options.dataKey`：候选项数据源\r\n - `options.valueField / labelField / disabledField`：候选项字段映射\r\n- `searchable`：是否启用本地候选项过滤\r\n\r\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `value/field` 语义：\r\n- `value` 表示当前 Mention 输入框中的文本值\r\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\r\n\r\n注意：底层 el-mention 只支持一个全局 `split`；\r\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
+          "description": "完整的提及触发规则列表。\r\n\r\n每一项描述一个前缀触发器的完整结构：\r\n- `prefix`：触发字符\r\n- `split`：选中后写回文本的分隔符\r\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\r\n- `options.dataKey`：候选项数据源\r\n - `options.valueField / labelField / disabledField`：候选项字段映射\r\n- `searchable`：是否启用本地候选项过滤\r\n\r\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\r\n- `modelValue` 表示当前 Mention 输入框中的文本值\r\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\r\n\r\n注意：底层 el-mention 只支持一个全局 `split`；\r\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
         },
         "prop_00439": {
           "name": "placement",
@@ -31040,10 +31034,10 @@
           "description": "折叠后最多显示的标签数量。"
         },
         "prop_00450": {
-          "name": "value",
+          "name": "modelValue",
           "type": "MultiValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00451": {
           "name": "precision",
@@ -31052,10 +31046,10 @@
           "description": "数值展示与写回时使用的小数精度。"
         },
         "prop_00452": {
-          "name": "value",
+          "name": "modelValue",
           "type": "number | [number | undefined, number | undefined] | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00453": {
           "name": "min",
@@ -31070,10 +31064,10 @@
           "description": "最大值。"
         },
         "prop_00455": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00456": {
           "name": "allowHalf",
@@ -31083,10 +31077,10 @@
           "description": "是否允许选择半星。"
         },
         "prop_00457": {
-          "name": "value",
+          "name": "modelValue",
           "type": "number | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00458": {
           "name": "max",
@@ -31151,10 +31145,10 @@
           "description": "关闭状态下展示的文本。"
         },
         "prop_00467": {
-          "name": "value",
+          "name": "modelValue",
           "type": "boolean | null | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00468": {
           "name": "autosize",
@@ -31226,10 +31220,10 @@
           "description": "范围终点占位文案。"
         },
         "prop_00478": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | Date | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00479": {
           "name": "placeholder",
@@ -31294,10 +31288,10 @@
           "schemaRef": "schema_00468"
         },
         "prop_00488": {
-          "name": "value",
+          "name": "modelValue",
           "type": "TransferValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00489": {
           "name": "defaultExpandAll",
@@ -31314,10 +31308,10 @@
           "description": "是否在节点展开后再渲染其子节点。"
         },
         "prop_00491": {
-          "name": "value",
+          "name": "modelValue",
           "type": "TreeSelectValue | undefined",
           "required": false,
-          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
+          "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         "prop_00492": {
           "name": "autoUpload",
@@ -31580,14 +31574,14 @@
           "name": "config",
           "type": "SparkNode",
           "required": true,
-          "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+          "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
           "schemaRef": "schema_00473"
         },
         "prop_00532": {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
-          "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
+          "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
           "schemaRef": "schema_00474"
         },
         "prop_00533": {
@@ -31899,10 +31893,9 @@
           "description": "r-table 内列宽"
         },
         "prop_00588": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "default": "\"\"",
           "description": "JSON 字符串内容"
         },
         "prop_00589": {
@@ -31990,10 +31983,9 @@
           "description": "创建对象默认子值"
         },
         "prop_00602": {
-          "name": "value",
+          "name": "modelValue",
           "type": "string | undefined",
           "required": false,
-          "default": "\"\"",
           "description": "编辑器内容"
         },
         "prop_00603": {
@@ -32134,11 +32126,11 @@
           "type": "[e: MouseEvent, href?: string]"
         },
         "emit_00003": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: CollapseValue]"
         },
         "emit_00004": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: boolean]"
         },
         "emit_00005": {
@@ -32158,7 +32150,7 @@
           "type": "[index: number]"
         },
         "emit_00009": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: string | number]"
         },
         "emit_00010": {
@@ -32194,7 +32186,7 @@
           "type": "[value: number]"
         },
         "emit_00018": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: string]"
         },
         "emit_00019": {
@@ -32202,11 +32194,11 @@
           "type": "[item: SuggestionItem]"
         },
         "emit_00020": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: CascaderValue]"
         },
         "emit_00021": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: MultiValue]",
           "schemaRefs": [
             "schema_00463"
@@ -32221,15 +32213,15 @@
           "type": "[checked: boolean]"
         },
         "emit_00024": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: string | Date | (string | Date)[]]"
         },
         "emit_00025": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "any[]"
         },
         "emit_00026": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: EntityPickerValue]"
         },
         "emit_00027": {
@@ -32244,11 +32236,11 @@
           "type": "[pattern: string, prefix: string]"
         },
         "emit_00029": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: number | [number | undefined, number | undefined]]"
         },
         "emit_00030": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: number]"
         },
         "emit_00031": {
@@ -32256,22 +32248,22 @@
           "type": "[value: string | number]"
         },
         "emit_00032": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: boolean | null]"
         },
         "emit_00033": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: string | Date]"
         },
         "emit_00034": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: TransferValue]",
           "schemaRefs": [
             "schema_00469"
           ]
         },
         "emit_00035": {
-          "name": "update:value",
+          "name": "update:modelValue",
           "type": "[value: TreeSelectValue]"
         },
         "emit_00036": {
@@ -34985,6 +34977,21 @@
       "selfResolving": true,
       "dataContainer": true
     },
+    "r-collapse": {
+      "valueType": "string"
+    },
+    "r-dialog": {
+      "valueType": "boolean"
+    },
+    "r-drawer": {
+      "valueType": "boolean"
+    },
+    "r-steps": {
+      "valueType": "string"
+    },
+    "r-tabs": {
+      "valueType": "string"
+    },
     "r-toolbar": {
       "selfResolving": true,
       "dataContainer": true
@@ -35029,144 +35036,182 @@
     },
     "r-autocomplete": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-cascader": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-checkbox": {
       "fieldProvider": true,
+      "valueType": "boolean",
       "bindingDelegate": "form-element"
     },
     "r-checkbox-group": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-color": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-date": {
       "fieldProvider": true,
+      "valueType": "array",
       "bindingDelegate": "form-element"
     },
     "r-dept-picker": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-entity-picker": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-file-browser": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-file-path": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-html-editor": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-icon": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-image": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-mention": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-multi-select": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-number": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-product-picker": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-radio": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-rate": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-segmented": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-select": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-slider": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-switch": {
       "fieldProvider": true,
+      "valueType": "boolean",
       "bindingDelegate": "form-element"
     },
     "r-text": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-textarea": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-time-picker": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-time-select": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-transfer": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-tree-select": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-upload": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "r-user-picker": {
       "fieldProvider": true,
       "hasOptions": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
     },
     "json-tree-editor": {
       "fieldProvider": true,
+      "valueType": "string",
       "bindingDelegate": "form-element"
+    },
+    "spark-code-editor": {
+      "valueType": "string"
+    },
+    "spark-json-editor": {
+      "valueType": "string"
     }
   }
 }

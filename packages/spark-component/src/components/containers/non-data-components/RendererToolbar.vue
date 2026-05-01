@@ -1,8 +1,14 @@
 <template>
-  <div :class="rootClasses" :style="rootStyle">
+  <!--
+    工具栏整体布局：
+    - 根容器使用 Grid 做“主区 + 尾区”两列分区。
+    - 主区渲染 props.children。
+    - 尾区渲染 props.tail.children，并固定右对齐。
+  -->
+  <div class="renderer-toolbar" :style="rootStyle">
     <div
       v-if="startChildren.length > 0"
-      :class="startClasses"
+      class="renderer-toolbar-lane renderer-toolbar-lane--start"
       :style="laneStyle"
     >
       <SparkComponentRenderer
@@ -14,8 +20,8 @@
 
     <div
       v-if="endChildren.length > 0"
-      :class="endClasses"
-      :style="tailLaneStyle"
+      :class="['renderer-toolbar-lane', 'renderer-toolbar-lane--end', props.tail?.class]"
+      :style="[laneStyle, { justifyContent: 'end' }]"
     >
       <SparkComponentRenderer
         v-for="(child, index) in endChildren"
@@ -46,19 +52,38 @@ import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resol
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { extractModelPermission, type ModelPermissionSource } from '../../../permission'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
-import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.types'
+import type { RToolbarProps } from './RendererToolbar.types'
 
+// ============================================================================
+// 1) 组件输入与能力入口
+//    - 接收工具栏配置 props
+//    - 通过 useSparkPageComponent 获取能力消费/提供接口
+// ============================================================================
 const props = withDefaults(defineProps<RToolbarProps>(), {
   type: 'r-toolbar',
 })
 
 const { sparkConsume, sparkProvide } = useSparkPageComponent(props)
 
+// ============================================================================
+// 2) 上下文能力与响应触发器
+//    - DATA_SOURCE: 上游提供的数据源
+//    - DATA_ROW: 上游行上下文（优先级高于 currentRow）
+//    - PAGE_DATASET: dataKey 解析所需的数据集能力
+//    - toolbarReactiveVersion: 事件触发计数器，用于让 beforeRender 相关逻辑重新计算
+// ============================================================================
 const inheritedDataSource = sparkConsume(DATA_SOURCE)
 const inheritedDataRow = sparkConsume(DATA_ROW)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const toolbarReactiveVersion = ref(0)
 
+// ============================================================================
+// 3) 数据源解析策略
+//    优先级：
+//    1. 显式 props.dataSource
+//    2. dataKey 解析得到的 dataSource
+//    3. 继承父级 DATA_SOURCE
+// ============================================================================
 const resolvedToolbarDataSource = computed<DataView | null>(() => {
   if (props.dataSource !== undefined && props.dataSource !== null) {
     return props.dataSource as DataView
@@ -72,14 +97,19 @@ const resolvedToolbarDataSource = computed<DataView | null>(() => {
   return inheritedDataSource as DataView | null
 })
 
-watch(resolvedToolbarDataSource, (source) => {
-  if (source !== null) {
-    sparkProvide(DATA_SOURCE, source)
-  }
-}, { immediate: true })
-
+/**
+ * 监听数据源并建立两类副作用：
+ * 1) 向下提供 DATA_SOURCE（保证子动作可直接消费）
+ * 2) 订阅 DataView 关键事件，驱动工具栏动作节点重算
+ *
+ * 说明：
+ * - immediate: true 保证首次渲染时即建立能力与订阅。
+ * - onCleanup 中对称解绑，避免数据源切换后残留监听器。
+ */
 watch(resolvedToolbarDataSource, (source, _previous, onCleanup) => {
   if (source === null) return
+
+  sparkProvide(DATA_SOURCE, source)
 
   const bumpReactiveVersion = () => {
     toolbarReactiveVersion.value += 1
@@ -96,124 +126,77 @@ watch(resolvedToolbarDataSource, (source, _previous, onCleanup) => {
   })
 }, { immediate: true })
 
-const gap = computed<number | string>(() => props.gap ?? 8)
-const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)
-const align = computed<InlineAlign>(() => props.align ?? 'center')
-const justify = computed<InlineJustify>(() => props.justify ?? 'start')
-
-// 尾区节点通过 props.tail 输入。
-const contentChildren = computed(() => props.children ?? [])
-
-function resolveToolbarActionContext() {
+// ============================================================================
+// 4) 动作节点预处理（beforeRender 作用域注入）
+//    - 解析当前 row / dataSource / modelPermission
+//    - 执行 onBeforeRender 并合并 patch
+// ============================================================================
+function resolveToolbarActionNode(node: SparkNode): SparkNode {
+  // 显式读取版本号，建立与 DataView 事件的依赖关系。
+  // 事件触发时该值递增，从而让动作节点计算链整体刷新。
   void toolbarReactiveVersion.value
+
   const dataSource = resolvedToolbarDataSource.value
-  const currentRow = dataSource?.currentRow
-  const rowCandidate = inheritedDataRow ?? currentRow
-  const row = rowCandidate !== null && rowCandidate !== undefined && typeof rowCandidate === 'object' && !Array.isArray(rowCandidate)
-    ? rowCandidate as IDataRow
+
+  // 行上下文优先使用父级明确传入的 DATA_ROW，
+  // 若不存在则回退到当前 DataView.currentRow。
+  const rowInput = inheritedDataRow ?? dataSource?.currentRow
+  const row = rowInput !== null && rowInput !== undefined && typeof rowInput === 'object' && !Array.isArray(rowInput)
+    ? rowInput as IDataRow
     : undefined
 
-  return {
+  const beforeRender = resolveNodeBeforeRender(node, {
+    row,
+    data: row,
     dataSource,
     modelPermission: extractModelPermission(dataSource as ModelPermissionSource | null),
-    row,
-  }
-}
-
-function resolveToolbarActionNode(node: SparkNode): SparkNode {
-  const context = resolveToolbarActionContext()
-  const beforeRender = resolveNodeBeforeRender(node, {
-    row: context.row,
-    data: context.row,
-    dataSource: context.dataSource,
-    modelPermission: context.modelPermission,
     host: { type: 'r-toolbar' },
   })
 
-  // 仅做 onBeforeRender 透传；权限/禁用由叶子组件（RendererButton）自管。
+  // 工具栏容器仅负责合并 onBeforeRender 的 propsPatch，
+  // 具体权限禁用策略仍由叶子动作组件自行解释。
   return mergeNodeBeforeRenderProps(node, beforeRender.propsPatch, {
     markResolved: true,
   })
 }
 
-function isToolbarActionVisible(node: SparkNode): boolean {
-  return node.props?.['visible'] !== false
-}
+// ============================================================================
+// 5) 分区子节点构建
+//    - startChildren: 常规 children
+//    - endChildren: tail 区 children
+//    两者流程一致：提取 SparkNode -> beforeRender 处理 -> visible 过滤
+// ============================================================================
+const startChildren = computed(() =>
+  getSparkNodeChildren(props.children)
+    .map(resolveToolbarActionNode)
+    .filter((node) => node.props?.['visible'] !== false)
+)
 
-// 主区：常规子节点。
-const startChildren = computed(() => getSparkNodeChildren(contentChildren.value).map(resolveToolbarActionNode).filter(isToolbarActionVisible))
+const endChildren = computed(() =>
+  getSparkNodeChildren(props.tail?.children)
+    .map(resolveToolbarActionNode)
+    .filter((node) => node.props?.['visible'] !== false)
+)
 
-// 尾区：来自 r-tail 的 children。
-const endChildren = computed(() => getSparkNodeChildren(props.tail?.children).map(resolveToolbarActionNode).filter(isToolbarActionVisible))
-
-function normalizeSize(value: number | string): string {
-  return typeof value === 'number' ? `${value}px` : value
-}
-
-// 统一把内部抽象值映射到 CSS Grid/Flex 对齐值，避免模板中散落条件分支。
-function alignToCss(value: InlineAlign): string {
-  if (value === 'start') return 'start'
-  if (value === 'end') return 'end'
-  return value
-}
-
-function justifyToCss(value: InlineJustify): string {
-  if (value === 'start') return 'start'
-  if (value === 'end') return 'end'
-  return value
-}
-
-// 读取子节点的 class。
-function dockClass(name: string): string {
-  if (name === 'tail') return props.tail?.class ?? ''
-  return ''
-}
-
-const rootClasses = computed(() => [
-  'renderer-toolbar',
-  {
-    'renderer-toolbar--split': endChildren.value.length > 0,
-  },
-])
-
-const startClasses = computed(() => [
-  'renderer-toolbar-lane',
-  'renderer-toolbar-lane--start',
-  dockClass('default'),
-])
-
-const endClasses = computed(() => [
-  'renderer-toolbar-lane',
-  'renderer-toolbar-lane--end',
-  dockClass('tail'),
-])
-
-// 根容器用两列 grid，而不是继续做一层 flex 语义：
-// - 只有主区时：单列
-// - 有尾区时：主区占满剩余空间，尾区自适应宽度
-// 这样和你前面定的“矩阵布局 + 区域分桶”方向保持一致。
+// ============================================================================
+// 6) 布局样式计算
+//    - rootStyle: 控制主/尾两列栅格以及列间距
+//    - laneStyle: 控制分区内按钮横向流式排列
+// ============================================================================
 const rootStyle = computed<Record<string, string>>(() => ({
   display: 'grid',
   gridTemplateColumns: endChildren.value.length > 0 ? 'minmax(0, 1fr) auto' : 'minmax(0, 1fr)',
-  columnGap: normalizeSize(zoneGap.value),
-  alignItems: alignToCss(align.value),
+  columnGap: typeof props.zoneGap === 'number' ? `${props.zoneGap}px` : (props.zoneGap ?? '12px'),
+  alignItems: props.align ?? 'center',
 }))
 
-// 单个 lane 内仍然使用 grid-auto-flow: column，避免把"横向容器"继续拆成另一种独立语义。
-// 从实现层看，它就是一个单行矩阵流。
 const laneStyle = computed<Record<string, string>>(() => ({
   display: 'grid',
   gridAutoFlow: 'column',
   gridAutoColumns: 'max-content',
-  gap: normalizeSize(gap.value),
-  alignItems: alignToCss(align.value),
-  justifyContent: justifyToCss(justify.value),
-}))
-
-// 尾区固定向右收束：即使主区 justify 改变，也不影响尾区行为。
-const tailLaneStyle = computed<Record<string, string>>(() => ({
-  ...laneStyle.value,
-  justifyContent: 'end',
+  gap: typeof props.gap === 'number' ? `${props.gap}px` : (props.gap ?? '8px'),
+  alignItems: props.align ?? 'center',
+  justifyContent: props.justify ?? 'start',
 }))
 </script>
 

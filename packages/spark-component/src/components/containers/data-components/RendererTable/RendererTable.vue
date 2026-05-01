@@ -4,17 +4,17 @@
     <SparkComponentRenderer v-if="toolbarNode" :config="toolbarNode" />
     <SparkComponentRenderer v-if="hasFilters" :config="filterSparkNode" />
 
-    <div class="renderer-table-main">
-      <el-table
-        ref="nativeTableRef"
-        :data="tableData"
-        v-bind="elTableProps"
-        :row-class-name="tableRowClassName"
-        @current-change="handleCurrentChange"
-        @row-click="handleRowClick"
-        @selection-change="handleSelectionChange"
-        @sort-change="handleSortChange"
-      >
+    <el-table
+      ref="nativeTableRef"
+      class="renderer-table-main"
+      :data="tableData"
+      v-bind="elTableProps"
+      :row-class-name="tableRowClassName"
+      @current-change="handleCurrentChange"
+      @row-click="handleRowClick"
+      @selection-change="handleSelectionChange"
+      @sort-change="handleSortChange"
+    >
         <!-- 列区必须直接是 el-table 的子级，不可引入透明包装层 -->
         <el-table-column
           v-if="resolvedView?.isMultiSelect === true"
@@ -24,17 +24,13 @@
 
         <!-- 行操作列（左） -->
         <el-table-column
-          v-if="(props.actions?.children?.length ?? 0) > 0 && props.actions?.position === 'left'"
+          v-if="hasLeftActions"
           label="操作"
           :width="220"
           header-align="center"
         >
           <template #default="scope">
-            <div class="renderer-table-row-actions">
-              <RendererHostScope :row="(scope.row as IDataRow)">
-                <SparkComponentRenderer :config="{ type: 'r-toolbar', children: props.actions?.children ?? [] }" />
-              </RendererHostScope>
-            </div>
+            <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
           </template>
         </el-table-column>
 
@@ -53,13 +49,7 @@
             :class-name="rowFragmentStringProp(child, 'class')"
           >
             <template #default="scope">
-              <RendererHostScope :row="(scope.row as IDataRow)">
-                <SparkComponentRenderer
-                  v-for="(fragmentChild, fragmentIndex) in ((child.children as SparkNode[]) ?? [])"
-                  :key="nodeId(fragmentChild) ?? `r-table-row-fragment-${fragmentIndex}`"
-                  :config="fragmentChild"
-                />
-              </RendererHostScope>
+              <RendererHostScope :row="(scope.row as IDataRow)" :children="rowFragmentChildren(child)" />
             </template>
           </el-table-column>
 
@@ -74,21 +64,16 @@
 
         <!-- 行操作列（右，默认） -->
         <el-table-column
-          v-if="(props.actions?.children?.length ?? 0) > 0 && (props.actions?.position ?? 'right') === 'right'"
+          v-if="hasRightActions"
           label="操作"
           :width="220"
           header-align="center"
         >
           <template #default="scope">
-            <div class="renderer-table-row-actions">
-              <RendererHostScope :row="(scope.row as IDataRow)">
-                <SparkComponentRenderer :config="{ type: 'r-toolbar', children: props.actions?.children ?? [] }" />
-              </RendererHostScope>
-            </div>
+            <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
           </template>
         </el-table-column>
-      </el-table>
-    </div>
+    </el-table>
   </div>
 </template>
 
@@ -110,6 +95,7 @@
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
+  getSparkNodeChildren,
   nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, PAGE_SERVICE,
 } from '../../../internal'
@@ -161,6 +147,10 @@ function rowFragmentStringProp(node: SparkNode, key: string): string | undefined
 function rowFragmentStringOrNumberProp(node: SparkNode, key: string): string | number | undefined {
   const value = rowFragmentRawProp(node, key)
   return typeof value === 'string' || typeof value === 'number' ? value : undefined
+}
+
+function rowFragmentChildren(node: SparkNode): SparkNode[] {
+  return getSparkNodeChildren(node.children)
 }
 
 // ── 基础 el-table props：resizable 默认 true，且与 border 联动 ──────────────────────────
@@ -227,6 +217,29 @@ const toolbarNode = computed<SparkNode | undefined>(() => {
     ...(children !== undefined ? { children } : {}),
   }
 })
+
+const actionsNode = computed<SparkNode | undefined>(() => {
+  const actions = props.actions
+  if (!actions || (actions.children?.length ?? 0) === 0) return undefined
+
+  const { type: _type, id, children, ...propsFields } = actions
+
+  return {
+    type: 'r-toolbar',
+    ...(id !== undefined ? { id } : {}),
+    props: {
+      ...propsFields,
+    },
+    ...(children !== undefined ? { children } : {}),
+  }
+})
+
+const actionScopeChildren = computed<SparkNode[]>(() => {
+  return actionsNode.value ? [actionsNode.value] : []
+})
+
+const hasLeftActions = computed(() => actionsNode.value !== undefined && props.actions?.position === 'left')
+const hasRightActions = computed(() => actionsNode.value !== undefined && (props.actions?.position ?? 'right') === 'right')
 
 // ── 筛选区透传：r-filter 自治 DataView 同步与 filterModel ─────────────────────────────
 const {
@@ -407,7 +420,7 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 }
 
 /* 表头视觉强化：提升层次感与可读性。 */
-.renderer-table-main :deep(.el-table) {
+.renderer-table-main {
   --spark-table-header-bg: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
   --spark-table-header-bg-hover: linear-gradient(180deg, #f2f8ff 0%, #e6efff 100%);
   --spark-table-header-text: #1f2d3d;
@@ -467,15 +480,6 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 .renderer-table-layout--right .renderer-table-toolbar :deep(.renderer-toolbar-lane) {
   grid-auto-flow: row;
   grid-auto-rows: max-content;
-}
-
-/* 行操作列内容左对齐，避免按钮全部挤在列中间。 */
-.renderer-table-row-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: nowrap;
-  gap: 8px;
 }
 
 </style>

@@ -8,8 +8,7 @@
         />
     </div>
 
-    <div class="renderer-detail-main">
-      <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
+    <div class="renderer-detail-main" v-bind="detailPropsValue" :style="detailAlignStyle">
         <div class="renderer-detail-grid" :style="gridStyle">
           <div
             v-for="(child, index) in gridChildren"
@@ -23,7 +22,6 @@
           </div>
           <slot v-bind="getDefaultScope()" />
         </div>
-      </div>
     </div>
   </div>
 </template>

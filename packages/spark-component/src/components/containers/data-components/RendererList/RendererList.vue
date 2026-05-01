@@ -8,8 +8,7 @@
         />
     </div>
 
-    <div class="renderer-list-main">
-      <div class="renderer-list" :style="listStyle" v-bind="listPropsValue">
+    <div class="renderer-list-main renderer-list" :style="listStyle" v-bind="listPropsValue">
         <template v-if="showListItems">
           <div
             v-for="(row, index) in listRows"
@@ -65,7 +64,6 @@
         <div v-else-if="emptyText" class="renderer-list-empty">{{ emptyText }}</div>
         <slot v-else v-bind="getDefaultScope()" />
       </div>
-    </div>
   </div>
 </template>
 

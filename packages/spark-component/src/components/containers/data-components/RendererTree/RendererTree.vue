@@ -1,55 +1,58 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
-        <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
-          <SparkComponentRenderer :config="action" />
-        </template>
+        <SparkComponentRenderer
+          v-for="(action, index) in visibleToolbarConfigs"
+          :key="nodeId(action) ?? `r-tree-toolbar-${index}`"
+          :config="action"
+        />
     </div>
 
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
-      <div class="renderer-tree-main">
-        <el-tree
-          ref="nativeTreeRef"
-          :data="treeData"
-          :node-key="nodeKeyField"
-          :props="elTreeFieldProps"
-          v-bind="treePropsValue"
-          @node-click="handleNodeClick"
-          @node-expand="handleNodeExpand"
-          @node-collapse="handleNodeCollapse"
-          @node-drop="handleNodeDrop"
-        >
-          <template #default="slotProps">
-            <span class="custom-tree-node">
-              <RendererHostScope :row="(slotProps?.data as IDataRow | undefined)">
-                <template v-if="nodeContentChildren.length > 0">
-                  <SparkComponentRenderer
-                    v-for="(child, index) in nodeContentChildren"
-                    :key="nodeId(child) ?? `r-tree-node-content-${index}`"
-                    :config="child"
-                  />
-                </template>
-                <template v-else>
-                  <slot :node="slotProps?.node" :data="slotProps?.data">
-                    <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-                  </slot>
-                </template>
-                <span
-                  v-if="hasNodeActions"
-                  class="tree-node-actions"
-                >
-                  <SparkComponentRenderer :config="rawNodeActionsToolbarConfig" />
-                </span>
-              </RendererHostScope>
-            </span>
-          </template>
-        </el-tree>
-      </div>
+      <el-tree
+        ref="nativeTreeRef"
+        class="renderer-tree-main"
+        :data="treeData"
+        :node-key="nodeKeyField"
+        :props="elTreeFieldProps"
+        v-bind="treePropsValue"
+        @node-click="handleNodeClick"
+        @node-expand="handleNodeExpand"
+        @node-collapse="handleNodeCollapse"
+        @node-drop="handleNodeDrop"
+      >
+        <template #default="slotProps">
+          <span class="custom-tree-node">
+            <RendererHostScope :row="(slotProps?.data as IDataRow | undefined)">
+              <template v-if="nodeContentChildren.length > 0">
+                <SparkComponentRenderer
+                  v-for="(child, index) in nodeContentChildren"
+                  :key="nodeId(child) ?? `r-tree-node-content-${index}`"
+                  :config="child"
+                />
+              </template>
+              <template v-else>
+                <slot :node="slotProps?.node" :data="slotProps?.data">
+                  <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+                </slot>
+              </template>
+              <span
+                v-if="hasNodeActions"
+                class="tree-node-actions"
+              >
+                <SparkComponentRenderer :config="rawNodeActionsToolbarConfig" />
+              </span>
+            </RendererHostScope>
+          </span>
+        </template>
+      </el-tree>
 
       <div v-if="showEditor" :class="['renderer-tree-editor', editorClassValue]" :style="editorStyleValue">
-        <template v-for="(child, index) in editorConfigs" :key="nodeId(child) ?? `r-tree-editor-${index}`">
-          <SparkComponentRenderer :config="child" />
-        </template>
+        <SparkComponentRenderer
+          v-for="(child, index) in editorConfigs"
+          :key="nodeId(child) ?? `r-tree-editor-${index}`"
+          :config="child"
+        />
       </div>
     </div>
   </div>

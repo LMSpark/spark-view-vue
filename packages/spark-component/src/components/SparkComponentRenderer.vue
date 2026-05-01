@@ -17,10 +17,8 @@
     :is="externalComponent"
     v-bind="externalComponentProps"
   >
-    <template v-if="hasRenderableChildren || hasRuntimeDefaultSlot">
-      <RecursiveChildrenBlock :children="renderableChildren" />
-      <RuntimeDefaultSlotBlock v-if="hasRuntimeDefaultSlot" :render="runtimeDefaultSlotResolved" />
-    </template>
+    <RecursiveChildrenBlock v-if="hasRenderableChildren" :children="renderableChildren" />
+    <RuntimeDefaultSlotBlock v-if="hasRuntimeDefaultSlot" :render="runtimeDefaultSlotResolved" />
   </component>
 
   <!-- 未注册：降级渲染卡片负责提示外观与属性面板，子组件树仍继续递归 -->
@@ -130,7 +128,7 @@ type RenderableChild = SparkNode | string | number
 type RecursiveChildrenList = RenderableChild[]
 type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'external' | 'fallback'
-type RuntimeDefaultSlot = (() => unknown) | undefined
+
 type ParentCapabilityContext = SparkCapabilityContext | null
 type HostTypeConstraintState = {
   matched: boolean
@@ -176,7 +174,6 @@ interface RendererProps {
 const rendererProps = defineProps<RendererProps>()
 const currentInstance = getCurrentInstance()
 const currentOwner = currentInstance as SparkRuntimeOwner | null
-const explicitParentContext = computed(() => rendererProps.parentContext)
 // 保存当前渲染器组件类型，供本地递归块继续回到同一个渲染入口。
 const currentRendererComponent = currentInstance?.type ?? null
 
@@ -256,36 +253,20 @@ const RuntimeDefaultSlotBlock = defineComponent({
 
 // ── 基础工具：组件声明识别与 registry 协商 ─────────────────────────────────
 
-/**
- * 读取组件 props 声明。
- *
- * 该函数只用于判断组件是否显式声明某个 prop，不参与真实 props 合并。
- */
-function readDeclaredProps(component: unknown): DeclaredProps | null {
-  if (component === null || component === undefined) return null
-  if (typeof component !== 'object' && typeof component !== 'function') return null
-
-  const normalizedComponent = component as VueComponentLike
-  return normalizedComponent.props ?? null
+// 判断目标组件是否显式声明某个 prop，用于 children prop / slot 协商。
+function declaresProp(component: unknown, propName: string): boolean {
+  if (component === null || component === undefined) return false
+  if (typeof component !== 'object' && typeof component !== 'function') return false
+  const declared = (component as VueComponentLike).props
+  if (declared === null || declared === undefined) return false
+  if (Array.isArray(declared)) return declared.includes(propName)
+  if (typeof declared !== 'object' && typeof declared !== 'function') return false
+  return Object.prototype.hasOwnProperty.call(declared, propName)
 }
 
 // 渲染器内部统一的诊断输出入口，避免 beforeRender / 未注册分支各自散落 console.warn。
 function warnRendererIssue(message: string, error?: unknown): void {
-  if (!import.meta.env.DEV) return
-  if (error === undefined) {
-    console.warn(`[SparkComponentRenderer] ${message}`)
-    return
-  }
-  console.warn(`[SparkComponentRenderer] ${message}`, error)
-}
-
-// 判断目标组件是否显式声明某个 prop，用于 children prop / slot 协商。
-function declaresProp(component: unknown, propName: string): boolean {
-  const declaredProps = readDeclaredProps(component)
-  if (declaredProps === null || declaredProps === undefined) return false
-  if (Array.isArray(declaredProps)) return declaredProps.includes(propName)
-  if (typeof declaredProps !== 'object' && typeof declaredProps !== 'function') return false
-  return Object.prototype.hasOwnProperty.call(declaredProps, propName)
+  if (import.meta.env.DEV) console.warn(`[SparkComponentRenderer] ${message}`, ...(error !== undefined ? [error] : []))
 }
 
 // registry 元信息允许显式指定 children 协商模式；未指定时回退到自动探测。
@@ -345,17 +326,10 @@ function resolveHostTypeConstraintState(
 
 // ── 基础工具：渲染时作用域数据解析 ─────────────────────────────────────────
 
-// 从 unknown 中识别行对象；只接受对象，不接受数组或原始值。
-function asDataRow(value: unknown): IDataRow | null {
+// 从 unknown 中识别非数组对象；供行数据、DataSource 等场景复用。
+function asObject<T extends object>(value: unknown): T | null {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-    ? value as IDataRow
-    : null
-}
-
-// 从 unknown 中识别 IDataSource；供 beforeRender、字段作用域和权限快照读取复用。
-function asDataSource(value: unknown): IDataSource | null {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-    ? value as IDataSource
+    ? value as T
     : null
 }
 
@@ -365,14 +339,14 @@ function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
 
 // dataSource 优先取节点显式注入，其次沿父能力链回溯 DATA_SOURCE。
 function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): IDataSource | null {
-  return asDataSource(rawProps['dataSource'])
+  return asObject<IDataSource>(rawProps['dataSource'])
     ?? consumeSparkCapability<IDataSource>(parentContext, DATA_SOURCE)
 }
 
 // row 优先取节点局部作用域，其次退回 data，再次沿父能力链回溯 DATA_ROW。
 function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): IDataRow | null {
-  return asDataRow(rawProps['row'])
-    ?? asDataRow(rawProps['data'])
+  return asObject<IDataRow>(rawProps['row'])
+    ?? asObject<IDataRow>(rawProps['data'])
     ?? consumeSparkCapability<IDataRow>(parentContext, DATA_ROW)
 }
 
@@ -438,24 +412,7 @@ function buildRegistryStructuralProps(
   return structuralProps
 }
 
-// 外部组件与原生标签共用一套入口，原生标签会额外过滤掉不该落到 DOM 的作用域字段。
-function buildExternalComponentProps(
-  rawProps: NodeRuntimeProps,
-  isNativeTag: boolean,
-): NodeRuntimeProps {
-  return isNativeTag ? filterNativeDomProps(rawProps) : rawProps
-}
-
-// 原生标签只允许白名单，避免任意字符串都被当作 DOM tag 透传出去。
-function isNativeRenderableType(type: string): boolean {
-  return NATIVE_RENDERABLE_TAGS.has(type)
-}
-
 // 除 registry 外，再尝试从当前 Vue 应用上下文解析全局组件。
-function resolveFromVueContext(type: string): unknown {
-  const resolved = resolveDynamicComponent(type)
-  return typeof resolved === 'string' ? null : resolved
-}
 
 // props 透传辅助：过滤框架保留键，并把事件映射为 Vue listener props。
 
@@ -521,7 +478,7 @@ const normalizedNode = computed<SparkNode>(() => normalizeSparkNode(rendererProp
 
 // 通过运行时实例锚点表解析父能力上下文，不走 Vue provide/inject。
 const parentCapabilityContext = computed(() =>
-  resolveParentCapabilityContext(currentOwner, explicitParentContext.value)
+  resolveParentCapabilityContext(currentOwner, rendererProps.parentContext)
 )
 
 /**
@@ -594,7 +551,7 @@ watchEffect(() => {
 
   const nextBoundContext = row !== null
     ? rendererRowCapabilityContext
-    : (explicitParentContext.value !== undefined ? explicitParentContext.value : null)
+    : (rendererProps.parentContext ?? null)
 
   if (boundCapabilityContext === nextBoundContext) return
 
@@ -644,7 +601,7 @@ const registryComponent = computed(() => {
 // registry 没命中时，再尝试 Vue 全局组件 / 原生标签；都失败则进入 fallback。
 const nativeRenderableTag = computed(() => {
   const type = resolvedNodeType.value
-  return type !== null && isNativeRenderableType(type) ? type : null
+  return type !== null && NATIVE_RENDERABLE_TAGS.has(type) ? type : null
 })
 
 const externalComponent = computed(() => {
@@ -653,9 +610,9 @@ const externalComponent = computed(() => {
   const type = resolvedNodeType.value
   if (type === null) return null
 
-  const appComponent = resolveFromVueContext(type)
-  if (appComponent) {
-    return markRaw(appComponent as object)
+  const resolved = resolveDynamicComponent(type)
+  if (typeof resolved !== 'string') {
+    return markRaw(resolved as object)
   }
 
   if (nativeRenderableTag.value !== null) {
@@ -700,13 +657,15 @@ const renderableChildren = computed<RenderableChild[]>(() =>
 // 模板里是否需要继续挂 RecursiveChildrenBlock。
 const hasRenderableChildren = computed(() => renderableChildren.value.length > 0)
 
-const runtimeDefaultSlot = computed<RuntimeDefaultSlot>(() => {
+const hasRuntimeDefaultSlot = computed(() => {
   const candidate = effectiveNode.value.props?.['$defaultSlot']
-  return typeof candidate === 'function' ? candidate as () => unknown : undefined
+  return typeof candidate === 'function'
 })
 
-const hasRuntimeDefaultSlot = computed(() => runtimeDefaultSlot.value !== undefined)
-const runtimeDefaultSlotResolved = computed(() => runtimeDefaultSlot.value ?? (() => null))
+const runtimeDefaultSlotResolved = computed(() => {
+  const candidate = effectiveNode.value.props?.['$defaultSlot']
+  return typeof candidate === 'function' ? candidate as () => unknown : () => null
+})
 
 // childrenMode 是 registry 对 renderer 的显式协议，优先级高于组件 props 声明推断。
 const registryChildrenMode = computed<ComponentChildrenMode>(() =>
@@ -722,11 +681,9 @@ const registryConsumesChildrenProp = computed(() => {
 })
 
 // 只有 registry 组件才需要决定“children 走 prop 还是走 slot”。
-const shouldRenderRegistryChildrenViaSlot = computed(() => {
-  return renderBranch.value === 'registry'
-    && hasRenderableChildren.value
-    && !registryConsumesChildrenProp.value
-})
+const shouldRenderRegistryChildrenViaSlot = computed(() =>
+  hasRenderableChildren.value && !registryConsumesChildrenProp.value
+)
 
 
 // ── props 透传：SparkNode.props → 目标组件运行时 props ───────────────────────
@@ -736,12 +693,11 @@ const nodeForwardedProps = computed(() => buildNodeForwardedProps(effectiveNode.
 
 // 外部组件 / 原生标签实际收到的 props。
 // 其中原生标签还要再过滤一层，避免运行时作用域字段落到 DOM attrs 上。
-const externalComponentProps = computed(() => {
-  return buildExternalComponentProps(
-    nodeForwardedProps.value,
-    nativeRenderableTag.value !== null,
-  )
-})
+const externalComponentProps = computed(() =>
+  nativeRenderableTag.value !== null
+    ? filterNativeDomProps(nodeForwardedProps.value)
+    : nodeForwardedProps.value
+)
 
 /**
  * 已注册组件的完整 Props = forwardedProps + 必要的 SparkNode 结构字段。
@@ -755,13 +711,8 @@ const externalComponentProps = computed(() => {
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */
-const registryComponentProps = computed(() => {
-  // 非 registry 分支不会消费结构字段，直接返回基础透传 props。
-  if (renderBranch.value !== 'registry') return nodeForwardedProps.value
-
-  return {
-    ...nodeForwardedProps.value,
-    ...buildRegistryStructuralProps(effectiveNode.value, registryConsumesChildrenProp.value),
-  }
-})
+const registryComponentProps = computed(() => ({
+  ...nodeForwardedProps.value,
+  ...buildRegistryStructuralProps(effectiveNode.value, registryConsumesChildrenProp.value),
+}))
 </script>

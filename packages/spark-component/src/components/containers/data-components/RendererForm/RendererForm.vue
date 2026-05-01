@@ -1,13 +1,14 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">
-        <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
-          <SparkComponentRenderer :config="action" />
-        </template>
+        <SparkComponentRenderer
+          v-for="(action, index) in visibleToolbarConfigs"
+          :key="nodeId(action) ?? `r-form-toolbar-${index}`"
+          :config="action"
+        />
     </div>
 
-    <div class="renderer-form-main">
-      <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
+    <el-form ref="nativeFormRef" class="renderer-form-main" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
         <div class="renderer-form-grid" :style="gridStyle">
           <div
             v-for="(child, index) in gridChildren"
@@ -21,8 +22,7 @@
           </div>
           <slot v-bind="getDefaultScope()" />
         </div>
-      </el-form>
-    </div>
+    </el-form>
   </div>
 </template>
 
