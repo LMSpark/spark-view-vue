@@ -28,6 +28,13 @@ interface UseContainerToolbarOptions {
    * @default 'renderer-toolbar-default'
    */
   defaultClass?: string
+  /**
+   * position 回退值，当 toolbar.position 未设置或无效时使用。
+   * - 绝大多数容器工具栏默认 `'top'`
+   * - RendererTree editor 等侧边栏面板默认 `'right'`
+   * @default 'top'
+   */
+  defaultPosition?: ToolbarPosition
 }
 
 export interface ContainerToolbarState {
@@ -43,6 +50,7 @@ export interface ContainerToolbarState {
 
 export function useContainerToolbar(options: UseContainerToolbarOptions): ContainerToolbarState {
   const fallbackClass = options.defaultClass ?? 'renderer-toolbar-default'
+  const fallbackPosition = options.defaultPosition ?? 'top'
 
   const visibleToolbarConfigs = computed(() =>
     getSparkNodeChildren(toValue(options.toolbarNode)?.children)
@@ -52,7 +60,7 @@ export function useContainerToolbar(options: UseContainerToolbarOptions): Contai
     const position = toValue(options.toolbarNode)?.position
     return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
       ? position
-      : 'top'
+      : fallbackPosition
   })
 
   const toolbarClassValue = computed(() => {

@@ -102,10 +102,10 @@ import {
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
-import { useRendererTableViewState } from './view-state'
+import { useRendererTableViewState } from '../view-state'
 import { useDataViewState } from '../useDataViewState'
 import { useContainerDataSource } from '../../composables/useContainerDataSource'
-import type { ToolbarPosition } from '../../layout'
+import { useContainerToolbar } from '../../composables/useContainerToolbar'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
@@ -183,13 +183,6 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
 })
 
 // ── 外层布局方向 + 工具栏节点组装 ───────────────────────────────────────
-const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = props.toolbar?.position
-  return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
-    ? position
-    : 'top'
-})
-
 // 工具栏默认绑定到 table@currentRow，便于按钮动作获取当前行上下文。
 const toolbarNode = computed<SparkNode | undefined>(() => {
   const toolbar = props.toolbar
@@ -212,6 +205,12 @@ const toolbarNode = computed<SparkNode | undefined>(() => {
     },
     ...(children !== undefined ? { children } : {}),
   }
+})
+
+const {
+  toolbarPositionValue,
+} = useContainerToolbar({
+  toolbarNode,
 })
 
 const actionsNode = computed<SparkNode | undefined>(() => {

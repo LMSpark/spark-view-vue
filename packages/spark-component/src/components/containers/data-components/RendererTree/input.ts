@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
 import type { RendererEditorProps } from '../../RendererEditor.types'
-import type { ToolbarPosition } from '../../layout'
 import type { RToolbarProps } from '../../non-data-components/RendererToolbar.types'
+import { useContainerToolbar } from '../../composables/useContainerToolbar'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
@@ -33,28 +33,23 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   })
   const dockedNodeActions = computed(() => getSparkNodeChildren(actionsNode.value?.children))
   const hasNodeActions = computed(() => dockedNodeActions.value.length > 0)
-  const toolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
-  const toolbarPositionValue = computed<ToolbarPosition>(() => {
-    const position = toolbarNode.value?.position
-    return position === 'top' || position === 'bottom' || position === 'left' || position === 'right' ? position : 'top'
-  })
-  const toolbarClassValue = computed<string | undefined>(() => {
-    const className = toolbarNode.value?.class
-    return typeof className === 'string' ? className : undefined
+  const {
+    visibleToolbarConfigs: toolbarConfigs,
+    toolbarPositionValue,
+    toolbarClassValue,
+  } = useContainerToolbar({
+    toolbarNode,
+    defaultClass: '',
   })
   const nodeActionClassValue = computed<string>(() => {
     const className = actionsNode.value?.class
     return typeof className === 'string' ? className : ''
   })
-  const editorConfigs = computed(() => getSparkNodeChildren(editorNode.value?.children))
-  const editorPositionValue = computed<ToolbarPosition>(() => {
-    const position = editorNode.value?.position
-    return position === 'top' || position === 'bottom' || position === 'left' || position === 'right' ? position : 'right'
-  })
-  const editorClassValue = computed<string>(() => {
-    const className = editorNode.value?.class
-    return typeof className === 'string' ? className : ''
-  })
+  const {
+    visibleToolbarConfigs: editorConfigs,
+    toolbarPositionValue: editorPositionValue,
+    toolbarClassValue: editorClassValue,
+  } = useContainerToolbar({ toolbarNode: editorNode, defaultPosition: 'right', defaultClass: '' })
   const editorStyleValue = computed<Record<string, string>>(() => {
     const width = editorNode.value?.width
     if (typeof width === 'number' && Number.isFinite(width)) {

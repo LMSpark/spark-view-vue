@@ -92,9 +92,9 @@ import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
 import { useContainerDataSource } from '../../composables/useContainerDataSource'
-import { useRendererListViewState } from './view-state'
+import { useContainerToolbar } from '../../composables/useContainerToolbar'
+import { useRendererListViewState } from '../view-state'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import type { ToolbarPosition } from '../../layout'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
 import type { ActionsPosition } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
@@ -146,18 +146,14 @@ const { listRows } = useRendererListViewState({
 })
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))
 
-const visibleToolbarConfigs = computed(() => getSparkNodeChildren(toolbarNode.value?.children))
-const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = toolbarNode.value?.position
-  return (position === 'top' || position === 'bottom' || position === 'left' || position === 'right')
-    ? position as ToolbarPosition
-    : 'top'
+const {
+  visibleToolbarConfigs,
+  toolbarPositionValue,
+  toolbarClassValue,
+  showToolbar,
+} = useContainerToolbar({
+  toolbarNode,
 })
-const toolbarClassValue = computed(() => {
-  const className = toolbarNode.value?.class
-  return typeof className === 'string' ? className : 'renderer-toolbar-default'
-})
-const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 const itemActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
 const itemActionsPositionValue = computed<ActionsPosition>(() => {

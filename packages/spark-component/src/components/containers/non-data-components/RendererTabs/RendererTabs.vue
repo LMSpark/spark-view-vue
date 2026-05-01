@@ -38,7 +38,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import type { ToolbarPosition } from '../../layout'
+import { useContainerToolbar } from '../../composables/useContainerToolbar'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
@@ -65,18 +65,8 @@ const currentActiveName = useDefaultedSelection({
   getValue: getPaneName,
 })
 
-const visibleToolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
-const toolbarPositionValue = computed<ToolbarPosition>(() => {
-  const position = props.toolbar?.position
-  return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
-    ? position as ToolbarPosition
-    : 'top'
-})
-const toolbarClassValue = computed(() => {
-  const className = props.toolbar?.class
-  return typeof className === 'string' ? className : 'renderer-toolbar-default'
-})
-const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
+const { visibleToolbarConfigs, toolbarPositionValue, toolbarClassValue, showToolbar } =
+  useContainerToolbar({ toolbarNode: () => props.toolbar })
 
 // ── r-tabs 包装 API ──────────────────────────────────────────────────────
 

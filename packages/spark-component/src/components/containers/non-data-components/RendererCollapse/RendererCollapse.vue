@@ -1,8 +1,8 @@
 <template>
   <div class="renderer-collapse-layout">
-    <div v-if="toolbarConfigs.length > 0" class="renderer-collapse-toolbar">
+    <div v-if="showToolbar" class="renderer-collapse-toolbar">
       <SparkComponentRenderer
-        v-for="(tool, index) in toolbarConfigs"
+        v-for="(tool, index) in visibleToolbarConfigs"
         :key="nodeId(tool) ?? `r-collapse-toolbar-${index}`"
         :config="tool"
       />
@@ -36,6 +36,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import { useContainerToolbar } from '../../composables/useContainerToolbar'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
 import { useUnifiedValueBridge } from '../state'
@@ -55,7 +56,7 @@ const { registerApi } = useSparkPageComponent(props)
 
 // 工具栏优先通过 props.toolbar 输入。
 const itemConfigs = computed(() => getSparkNodeChildren(props.children))
-const toolbarConfigs = computed(() => getSparkNodeChildren(props.toolbar?.children))
+const { visibleToolbarConfigs, showToolbar } = useContainerToolbar({ toolbarNode: () => props.toolbar })
 const {
   state: currentValue,
   commitValue: commitCollapseValue,
