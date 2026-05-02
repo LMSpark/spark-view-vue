@@ -101,6 +101,10 @@ interface Props extends SparkNodeProps {
   width?: string | number | undefined
   /** 表格列排序能力 */
   sortable?: boolean | 'custom' | undefined
+  /** 显示标签别名（兼容 SparkNode 原始 props 中的 label，避免 fragment fallthrough warning） */
+  label?: string | undefined
+  /** 字段绑定名别名（兼容 SparkNode 原始 props 中的 field，避免 fragment fallthrough warning） */
+  field?: string | undefined
   /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */
   filterable?: boolean | undefined
   /** 最小列宽 */
@@ -142,10 +146,10 @@ interface Props extends SparkNodeProps {
 const props = defineProps<Props>()
 
 const resolvedContext = useResolvedFieldContext()
-const resolvedDisplayLabel = computed(() => props.displayLabel ?? '')
-const resolvedFieldName = computed(() => props.fieldName ?? '')
+const resolvedDisplayLabel = computed(() => props.displayLabel ?? props.label ?? '')
+const resolvedFieldName = computed(() => props.fieldName ?? props.field ?? '')
 const resolvedChildren = computed<SparkNode[]>(() => {
-  return getSparkNodeChildren(props.mergedChildren)
+  return getSparkNodeChildren(props.mergedChildren ?? props.children)
 })
 const resolvedCurrentFieldHidden = computed(() => props.isCurrentFieldHidden ?? false)
 const resolvedShouldRenderCurrentField = computed(() => props.shouldRenderCurrentField ?? !resolvedCurrentFieldHidden.value)

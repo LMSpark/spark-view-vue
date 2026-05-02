@@ -452,6 +452,7 @@ export class DataSet implements IDataSet {
     const eventKeys = [
       'currentRowChanged', 'selectedRowsChanged', 'rowsChanged',
       'cleared', 'requestStateChanged', 'mutatingChanged',
+      'summaryChanged', 'selectionSummaryChanged', 'stateChanged',
     ] as const
     for (const key of eventKeys) {
       const handler = h[key]

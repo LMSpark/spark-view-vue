@@ -287,7 +287,7 @@ function handlePageChange(page: number) {
 function handlePageSizeChange(size: number) {
   dataState.resolvedView.value?.setPageSize(size)
 }
-const { currentRow, isMultiSelect } = dataState
+const { currentRow, isMultiSelect, selectedRows } = dataState
 
 const tableRowKeyValue = computed(() =>
   dataState.primaryKey.value
@@ -360,6 +360,30 @@ watch(
   },
 )
 
+// 将 DataView.selectedRows 反写到 el-table 原生 checkbox，防止外部设置选中态（如 autoSelectFirst）时勾选框不亮
+let _isSyncingSelection = false
+watch(
+  [selectedRows, rows],
+  async () => {
+    if (_isSyncingSelection) return
+    // 在 nextTick 之前先置标志，阻止 el-table 随 :data 更新而内部触发的 selection-change 写入 DataView
+    _isSyncingSelection = true
+    try {
+      await nextTick()
+      const table = nativeTableRef.value
+      if (!table) return
+      table.clearSelection?.()
+      for (const row of rows.value) {
+        if (isSelectedRow(row as IDataRow)) {
+          table.toggleRowSelection?.(row as IDataRow, true)
+        }
+      }
+    } finally {
+      _isSyncingSelection = false
+    }
+  },
+)
+
 
 /**
  * el-table row-class-name 回调：仅负责打上选中行样式类。
@@ -385,6 +409,7 @@ async function handleRowClick(row: IDataRow, column?: unknown, event?: Event) {
 
 /** 多选变更事件桥接。 */
 async function handleSelectionChange(selection: IDataRow[]) {
+  if (_isSyncingSelection) return
   await dispatch('selection-change', Array.isArray(selection) ? selection : [])
 }
 

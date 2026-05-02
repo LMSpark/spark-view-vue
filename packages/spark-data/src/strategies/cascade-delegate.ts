@@ -13,7 +13,7 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { DataRelation, IDataSource, IEventEmitter } from '../types'
 import { getParentRows } from '../core/utils'
-import type { ICascadeHost, EmitClearedFn } from './types'
+import type { ICascadeHost } from './types'
 
 const logger = Logger('DataView:Cascade')
 
@@ -30,7 +30,6 @@ export class CascadeDelegate {
 
   constructor(
     private host: ICascadeHost,
-    private emitCleared: EmitClearedFn,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -120,8 +119,7 @@ export class CascadeDelegate {
     const parentRows = getParentRows(parentView, rel.dependencyType ?? 'currentRow')
 
     if (!parentRows.length) {
-      this.host.resetState()
-      this.emitCleared()
+      this.host.clearAll()
       return
     }
 

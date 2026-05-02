@@ -27,6 +27,16 @@ export class LocalMutationDelegate {
   // 私有辅助
   // ─────────────────────────────────────────────
 
+  private hasSelectionStateChanged(before: {
+    currentRowId: string | number | null
+    selectedRowIds: Array<string | number>
+  }): boolean {
+    const host = this.host
+    if (before.currentRowId !== host._currentRowId) return true
+    if (before.selectedRowIds.length !== host._selectedRowIds.length) return true
+    return before.selectedRowIds.some((id, index) => id !== host._selectedRowIds[index])
+  }
+
   /** 构建 row → index 映射（O(n)），供 updateRowById 原地更新 rowIndexMap 复用 */
   buildRowIndexMap(rows: IDataRow[]): Map<IDataRow, number> {
     const m = new Map<IDataRow, number>()
@@ -119,6 +129,10 @@ export class LocalMutationDelegate {
    */
   deleteRowById(id: string | number): boolean {
     const h = this.host
+    const selectionBefore = {
+      currentRowId: h._currentRowId,
+      selectedRowIds: [...h._selectedRowIds],
+    }
     const idx = h.rows.findIndex(r => h.getPkKey(r) === id)
     if (idx < 0) return false
 
@@ -140,13 +154,21 @@ export class LocalMutationDelegate {
     }
 
     this.postMutation?.(null)
-    this.emitRowsChanged()
+    if (this.hasSelectionStateChanged(selectionBefore)) {
+      this.emitRowsChanged('selection')
+    } else {
+      this.emitRowsChanged()
+    }
     return true
   }
 
   /** 本地整批替换所有行，清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     const h = this.host
+    const selectionBefore = {
+      currentRowId: h._currentRowId,
+      selectedRowIds: [...h._selectedRowIds],
+    }
     h.rows = [...rows]
     h.rowIndexMap = undefined  // 行集合已替换，缓存失效
 
@@ -155,6 +177,10 @@ export class LocalMutationDelegate {
     pruneInvalidSelections(h, validPks)
 
     this.postMutation?.('all')
-    this.emitRowsChanged()
+    if (this.hasSelectionStateChanged(selectionBefore)) {
+      this.emitRowsChanged('selection')
+    } else {
+      this.emitRowsChanged()
+    }
   }
 }

@@ -23,8 +23,19 @@ export function resolveActionDataCapabilities(
   ctx: ActionExecutionContext,
 ): ResolvedActionDataCapabilities {
   const empty: ResolvedActionDataCapabilities = { dataSource: null, currentRow: null, selectedRows: [] }
+  const scopedView = ctx.getDataSource?.() ?? null
+
+  if (!dataKey) {
+    if (!scopedView) return empty
+    return {
+      dataSource: scopedView,
+      currentRow: isRowLike(scopedView.currentRow) ? scopedView.currentRow : null,
+      selectedRows: getSelectedRows(scopedView),
+    }
+  }
+
   const ds = ctx.getDataSet()
-  if (!ds || !dataKey) return empty
+  if (!ds) return empty
 
   const binding = resolveDataKeyBinding(dataKey, ds)
   if (!binding) return empty

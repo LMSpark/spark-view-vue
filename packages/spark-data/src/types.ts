@@ -54,6 +54,9 @@ export interface ViewChangeHandlers {
   cleared?: (tableName: string, viewId: string) => void
   requestStateChanged?: (tableName: string, viewId: string, requestState: RequestState) => void
   mutatingChanged?: (tableName: string, viewId: string, mutating: boolean) => void
+  summaryChanged?: (tableName: string, viewId: string) => void
+  selectionSummaryChanged?: (tableName: string, viewId: string) => void
+  stateChanged?: (tableName: string, viewId: string, change: DataViewChangeEvent) => void
 }
 
 // ===== 权限类型 =====
@@ -212,6 +215,94 @@ export interface IDataSource extends ICurrentRowSource {
   label?: string | null
   /** 选中行标签数组 */
   labels?: readonly string[]
+}
+
+// ===== DataView 状态订阅契约 =====
+
+/**
+ * DataView 统一状态变化类型。
+ *
+ * 独立事件（rowsChanged/currentRowChanged 等）保留用于精细订阅；
+ * stateChanged 用于框架适配层统一失效 snapshot，例如 Vue/React/Solid 等。
+ */
+export type DataViewStateChangeKind =
+  | 'rows'
+  | 'selection'
+  | 'request'
+  | 'aggregate'
+  | 'mutation'
+  | 'config'
+  | 'cleared'
+
+/**
+ * DataView 统一状态变化事件。
+ *
+ * revision 是视图级全局版本；各分区 revision 用于适配层按需判断哪类状态变化。
+ */
+export interface DataViewChangeEvent {
+  tableName: string
+  viewId: string
+  kinds: readonly DataViewStateChangeKind[]
+  revision: number
+  rowsRevision: number
+  selectionRevision: number
+  requestRevision: number
+  aggregateRevision: number
+  mutationRevision: number
+  configRevision: number
+  originatorId?: string
+}
+
+/** DataView 统一状态变化监听函数。 */
+export type DataViewChangeListener = (change: DataViewChangeEvent) => void
+
+/**
+ * DataView 运行时快照。
+ *
+ * 快照是框架无关的只读读取面，供 UI 适配层转成各框架自己的响应式状态。
+ * rows/currentRow/selectedRows 等仍保持 DataView 内部对象引用，不做深拷贝。
+ */
+export interface DataViewSnapshot extends IDataSource {
+  tableName: string
+  viewId: string
+  rows: readonly IDataRow[]
+  columns: readonly DataColumn[]
+  currentRow: IDataRow | null
+  selectedRows: readonly IDataRow[]
+  primaryKey: string | undefined
+  treeConfig: TreeConfig | undefined
+  isMultiSelect: boolean
+  requestState: RequestState
+  total: number
+  page: number
+  pageSize: number
+  mutating: boolean
+  mutatingError: Error | null
+  loadingError: Error | null
+  aggregateResult: Readonly<AggregateResultRow>
+  selectionAggregateResult: Readonly<AggregateResultRow>
+  value: string
+  label: string | null
+  labels: readonly string[]
+  revision: number
+  rowsRevision: number
+  selectionRevision: number
+  requestRevision: number
+  aggregateRevision: number
+  mutationRevision: number
+  configRevision: number
+}
+
+/**
+ * 框架无关的 DataView Store 契约。
+ *
+ * Vue/React 等渲染层应依赖 getSnapshot + subscribe，而不是依赖具体响应式代理。
+ */
+export interface IDataViewStore {
+  readonly tableName: string
+  readonly viewId: string
+  getSnapshot(): DataViewSnapshot
+  subscribe(listener: DataViewChangeListener): () => void
 }
 
 // ===== 数据模型类型 =====

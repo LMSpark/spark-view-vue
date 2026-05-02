@@ -66,6 +66,11 @@ export type {
   IRowDataSource,
   ICurrentRowSource,
   IDataSource,
+  IDataViewStore,
+  DataViewSnapshot,
+  DataViewChangeEvent,
+  DataViewChangeListener,
+  DataViewStateChangeKind,
   IDataSet,
 
   // DataSet 配置（createDataSet / fromJson 参数类型）

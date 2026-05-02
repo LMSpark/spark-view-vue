@@ -6,6 +6,19 @@ function getCurrentDemoRow() {
 	return getDemoView()?.currentRow ?? null
 }
 
+function resolveRowPk(row) {
+	if (!row || typeof row !== 'object') return null
+	const id = row.id
+	if (typeof id === 'number' || typeof id === 'string') return id
+	const pk = row._pk
+	if (typeof pk === 'number' || typeof pk === 'string') return pk
+	return null
+}
+
+function resolveCurrentRowPk() {
+	return resolveRowPk(getCurrentDemoRow())
+}
+
 function handleCreateRow() {
 	const view = getDemoView()
 	if (!view) {
@@ -76,13 +89,59 @@ function handleDeleteCurrentRow() {
 		return
 	}
 
-	if (typeof row.id !== 'number') {
+	const rowId = resolveRowPk(row)
+	if (!(typeof rowId === 'number' || typeof rowId === 'string')) {
 		$page.showMessage('当前行缺少主键，无法删除', 'error')
 		return
 	}
 
-	view.deleteRowById(row.id)
-	$page.showMessage(`已删除 #${row.id}`, 'success')
+	const deleted = view.deleteRowById(rowId)
+	if (deleted) {
+		const nextRow = view.rows?.[0] ?? null
+		if (view.selection?.setCurrentRow) {
+			view.selection.setCurrentRow(nextRow, 'row-action-delete-fallback')
+		}
+		$page.showMessage(`已删除 #${rowId}`, 'success')
+		return
+	}
+	$page.showMessage(`删除失败：记录 #${rowId} 不存在或已删除`, 'warning')
+}
+
+function handleDeleteRowById(rowId) {
+	const view = getDemoView()
+	if (!view) {
+		$page.showMessage('DemoData 视图不存在', 'warning')
+		return
+	}
+
+	const targetId = (typeof rowId === 'number' || typeof rowId === 'string')
+		? rowId
+		: resolveCurrentRowPk()
+
+	if (!(typeof targetId === 'number' || typeof targetId === 'string')) {
+		$page.showMessage('当前行主键不可用，无法删除', 'error')
+		return
+	}
+
+	const beforeRows = Array.isArray(view.rows) ? view.rows : []
+	const targetIndex = beforeRows.findIndex((item) => resolveRowPk(item) === targetId)
+	if (targetIndex < 0) {
+		$page.showMessage(`删除失败：记录 #${targetId} 不存在或已删除`, 'warning')
+		return
+	}
+
+	const deleted = view.deleteRowById(targetId)
+	if (deleted) {
+		const afterRows = Array.isArray(view.rows) ? view.rows : []
+		const nextIndex = Math.min(targetIndex, Math.max(afterRows.length - 1, 0))
+		const nextRow = afterRows.length > 0 ? afterRows[nextIndex] : null
+		if (view.selection?.setCurrentRow) {
+			view.selection.setCurrentRow(nextRow, 'row-action-delete-by-id')
+		}
+		$page.showMessage(`已删除 #${targetId}`, 'success')
+		return
+	}
+	$page.showMessage(`删除失败：记录 #${targetId} 不存在或已删除`, 'warning')
 }
 
 function RenderToolbar() {
@@ -129,7 +188,12 @@ function RenderTableToolbar() {
 	])
 }
 
-function RenderRowActions() {
+function RenderRowActions(props) {
+	const row = props?.row || props?.scope?.row || props?.data?.row || null
+	const rowId = resolveRowPk(row)
+	const rowName = row?.name ?? (rowId ?? '-')
+	const rowStatus = row?.status ?? '-'
+
 	return h('div', {
 		style: {
 			display: 'flex',
@@ -141,12 +205,18 @@ function RenderRowActions() {
 		h('button', {
 			type: 'button',
 			class: 'el-button el-button--small is-plain',
-			onClick: handleInspectRow,
+			onClick: function() {
+				if (rowId === null) {
+					$page.showMessage('当前行数据不可用', 'warning')
+					return
+				}
+				$page.showMessage(`当前行: ${rowName} / ${rowStatus}`, 'info')
+			},
 		}, '查看'),
 		h('button', {
 			type: 'button',
 			class: 'el-button el-button--danger is-plain el-button--small',
-			onClick: handleDeleteCurrentRow,
+			onClick: function() { handleDeleteRowById(rowId) },
 		}, '删除'),
 	])
 }

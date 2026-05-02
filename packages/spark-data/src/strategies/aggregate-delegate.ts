@@ -124,14 +124,16 @@ export class AggregateDelegate {
    * @param rows         全部行（已含计算列求值结果）
    * @param selectedRows 当前选中行（无选中时传空数组）
    */
-  recompute(rows: IDataRow[], selectedRows: IDataRow[]): void {
+  recompute(rows: IDataRow[], selectedRows: IDataRow[], options?: { emit?: boolean }): void {
     const aggs = this.getAggregates()
     if (Object.keys(aggs).length === 0) return
     this._summaryRow = computeAggregateRow(aggs, rows)
     this._selectionSummaryRow = selectedRows.length > 0
       ? computeAggregateRow(aggs, selectedRows)
       : {}
-    this.emitSummaryChanged()
+    if (options?.emit !== false) {
+      this.emitSummaryChanged()
+    }
   }
 
   /**
@@ -139,12 +141,14 @@ export class AggregateDelegate {
    *
    * @param selectedRows 当前选中行
    */
-  recomputeSelection(selectedRows: IDataRow[]): void {
+  recomputeSelection(selectedRows: IDataRow[], options?: { emit?: boolean }): void {
     const aggs = this.getAggregates()
     if (Object.keys(aggs).length === 0) return
     this._selectionSummaryRow = selectedRows.length > 0
       ? computeAggregateRow(aggs, selectedRows)
       : {}
-    this.emitSelectionSummaryChanged()
+    if (options?.emit !== false) {
+      this.emitSelectionSummaryChanged()
+    }
   }
 }

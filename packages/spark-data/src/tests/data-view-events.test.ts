@@ -278,3 +278,220 @@ describe('DataView 事件流端到端', () => {
     expect(after.mock.calls[0]?.[0].operation).toBe('retrieve')
   })
 })
+
+describe('DataView snapshot + subscribe 统一状态订阅', () => {
+  it('setCurrentRow 后 stateChanged 失效 snapshot', () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const changes: string[][] = []
+
+    const off = deptView.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    const before = deptView.getSnapshot()
+    deptView.setCurrentRow(deptView.rows[0]!)
+    const after = deptView.getSnapshot()
+
+    expect(after.revision).toBeGreaterThan(before.revision)
+    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
+    expect(after.currentRow).toBe(deptView.rows[0])
+    expect(changes.at(-1)).toContain('selection')
+
+    off()
+    const countAfterOff = changes.length
+    deptView.setCurrentRow(deptView.rows[1]!)
+    expect(changes).toHaveLength(countAfterOff)
+  })
+
+  it('updateFromServer 通过 rows stateChanged 通知快照更新', async () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const changes: string[][] = []
+
+    deptView.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    deptView.updateFromServer([{ id: 3, name: 'Sales' }])
+    await new Promise(resolve => setTimeout(resolve, 25))
+
+    const snapshot = deptView.getSnapshot()
+    expect(snapshot.rows).toHaveLength(1)
+    expect(snapshot.rows[0]?.['name']).toBe('Sales')
+    expect(snapshot.rowsRevision).toBeGreaterThan(0)
+    expect(changes.some(kinds => kinds.includes('rows'))).toBe(true)
+  })
+
+  it('DataSet.onAnyViewChange 转发 stateChanged', () => {
+    const ds = createTestDataSet()
+    const handler = vi.fn()
+    const off = ds.onAnyViewChange({ stateChanged: handler })
+
+    const deptView = ds.getView('Departments')!
+    deptView.setCurrentRow(deptView.rows[0]!)
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(handler.mock.calls[0]?.[0]).toBe('Departments')
+    expect(handler.mock.calls[0]?.[1]).toBe('default')
+    expect(handler.mock.calls[0]?.[2].kinds).toContain('selection')
+
+    off()
+  })
+
+  it('resetState 通过 stateChanged 通知 snapshot 清空', () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const changes: string[][] = []
+
+    deptView.setCurrentRow(deptView.rows[0]!)
+    const before = deptView.getSnapshot()
+    deptView.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    deptView.resetState()
+    const after = deptView.getSnapshot()
+
+    expect(after.revision).toBeGreaterThan(before.revision)
+    expect(after.rows).toHaveLength(0)
+    expect(after.currentRow).toBeNull()
+    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
+    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
+    expect(changes.some(kinds => kinds.includes('rows') && kinds.includes('selection'))).toBe(true)
+  })
+
+  it('recomputeColumns 会通过 rows stateChanged 通知计算列快照更新', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ComputedSnapshotDS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'price', type: 'number' },
+            { name: 'qty', type: 'number' },
+            { name: 'total', type: 'number', computeExpression: 'price * qty' },
+          ],
+          views: {
+            default: {
+              rows: [{ id: 1, price: 8, qty: 5 }],
+            },
+          },
+        },
+      },
+    })
+    const orders = ds.getView('Orders')!
+    const changes: string[][] = []
+
+    orders.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    const before = orders.getSnapshot()
+    orders.rows[0]!['price'] = 10
+    orders.recomputeColumns()
+    await new Promise(resolve => setTimeout(resolve, 25))
+    const after = orders.getSnapshot()
+
+    expect(after.rows[0]?.['total']).toBe(50)
+    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
+    expect(changes.some(kinds => kinds.includes('rows'))).toBe(true)
+  })
+
+  it('setComputedContext 会通过 rows stateChanged 通知计算列快照更新', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ComputedContextSnapshotDS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number' },
+            { name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' },
+          ],
+          views: {
+            default: {
+              rows: [{ id: 1, amount: 100 }],
+            },
+          },
+        },
+      },
+    })
+    const orders = ds.getView('Orders')!
+    const changes: string[][] = []
+
+    orders.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    const before = orders.getSnapshot()
+    orders.setComputedContext({ taxRate: 0.2 })
+    await new Promise(resolve => setTimeout(resolve, 25))
+    const after = orders.getSnapshot()
+
+    expect(after.rows[0]?.['tax']).toBe(20)
+    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
+    expect(changes.some(kinds => kinds.includes('rows'))).toBe(true)
+  })
+
+  it('deleteRowById 清理当前行时随 rows 事件递增 selectionRevision', async () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const changes: string[][] = []
+
+    deptView.setCurrentRow(deptView.rows[0]!)
+    const before = deptView.getSnapshot()
+    deptView.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    deptView.deleteRowById(1)
+    await new Promise(resolve => setTimeout(resolve, 25))
+    const after = deptView.getSnapshot()
+
+    expect(after.currentRow).toBeNull()
+    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
+    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
+    expect(changes.some(kinds => kinds.includes('rows') && kinds.includes('selection'))).toBe(true)
+  })
+
+  it('replaceRows 裁剪选中行时随 rows 事件递增 selectionRevision', async () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const changes: string[][] = []
+
+    deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
+    const before = deptView.getSnapshot()
+    deptView.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    deptView.replaceRows([{ id: 2, name: 'Marketing' }])
+    await new Promise(resolve => setTimeout(resolve, 25))
+    const after = deptView.getSnapshot()
+
+    expect(after.selectedRows).toHaveLength(1)
+    expect(after.selectedRows[0]?.['id']).toBe(2)
+    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
+    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
+    expect(changes.some(kinds => kinds.includes('rows') && kinds.includes('selection'))).toBe(true)
+  })
+
+  it('clearAll 只触发一次统一 stateChanged（含 cleared）', () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const changes: string[][] = []
+
+    deptView.subscribe((change) => {
+      changes.push([...change.kinds])
+    })
+
+    deptView.clearAll()
+
+    expect(changes).toHaveLength(1)
+    expect(changes[0]).toContain('cleared')
+    expect(changes[0]).toContain('rows')
+    expect(changes[0]).toContain('selection')
+  })
+})

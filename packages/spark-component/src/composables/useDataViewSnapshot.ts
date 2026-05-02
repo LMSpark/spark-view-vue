@@ -33,6 +33,8 @@ interface DataViewRefLike<T> {
 const EMPTY_ROWS = Object.freeze([])
 const EMPTY_COLUMNS = Object.freeze([])
 const EMPTY_LABELS = Object.freeze([])
+const EMPTY_AGGREGATE_RESULT = Object.freeze({})
+const EMPTY_SELECTION_AGGREGATE_RESULT = Object.freeze({})
 
 /** 空 snapshot 占位（避免 null/undefined 判断的冗余） */
 const EMPTY_SNAPSHOT: DataViewSnapshot = Object.freeze({
@@ -50,8 +52,8 @@ const EMPTY_SNAPSHOT: DataViewSnapshot = Object.freeze({
   mutating: false,
   mutatingError: null,
   loadingError: null,
-  aggregateResult: {},
-  selectionAggregateResult: {},
+  aggregateResult: EMPTY_AGGREGATE_RESULT,
+  selectionAggregateResult: EMPTY_SELECTION_AGGREGATE_RESULT,
   primaryKey: undefined,
   treeConfig: undefined,
   value: '',

@@ -201,6 +201,7 @@ async function executeBuiltinActionDirect(action: SparkNode): Promise<void> {
   }
   const ctx = {
     getDataSet: () => sparkConsume(PAGE_DATASET),
+    getDataSource: () => resolveActionView(),
     getPageService: () => sparkConsume(PAGE_SERVICE),
     getRouter: () => null,
   }

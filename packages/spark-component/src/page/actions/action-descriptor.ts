@@ -6,7 +6,7 @@
  * 由 `executeActionDescriptor` 单一执行器消费。
  */
 
-import type { IDataRow, IDataSet } from '@spark-view/spark-data'
+import type { DataView, IDataRow, IDataSet } from '@spark-view/spark-data'
 import type { IPageServiceCapability, PageMessageType } from '../../core/capability-system.js'
 import type { CancellableControl } from '../../internal/cancellable-control'
 
@@ -232,6 +232,13 @@ export function isActionDescriptor(value: unknown): value is ActionDescriptor {
 
 export interface ActionExecutionContext {
   getDataSet: () => IDataSet | null
+  /**
+   * 可选：调用方显式提供当前作用域 DataView。
+   *
+   * 仅用于容器已确定 DataView 的受控场景（如 r-table 内置按钮），
+   * 避免在缺少 dataKey 时误报“数据视图未就绪”。
+   */
+  getDataSource?: () => DataView | null
   getPageService: () => IPageServiceCapability | null
   getRouter: () => RouterLike | null
 }

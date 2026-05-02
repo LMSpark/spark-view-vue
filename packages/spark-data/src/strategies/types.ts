@@ -5,7 +5,15 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, IDataSet, DataRelation, CrudResult, CrudOperationConfig, RequestState } from '../types'
+import type {
+  IDataRow,
+  IDataSet,
+  DataRelation,
+  CrudResult,
+  CrudOperationConfig,
+  RequestState,
+  DataViewStateChangeKind,
+} from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
 
@@ -19,8 +27,15 @@ export type EmitCurrentRowChangedFn = (originatorId?: string) => void
 /** SelectionDelegate 向宿主发射 selectedRows 变更的回调签名 */
 export type EmitSelectedRowsChangedFn = (originatorId?: string) => void
 
-/** LocalMutationDelegate 向宿主发射 rows 变更的回调签名 */
-export type EmitRowsChangedFn = () => void
+/**
+ * LocalMutationDelegate 向宿主发射 rows 变更的回调签名。
+ *
+ * `kinds` 会并入 rows 防抖窗口内的统一 stateChanged kinds，
+ * 用于表达“本次 rows 变更同时影响了 selection/request 等分区”。
+ */
+export type EmitRowsChangedFn = (
+  kinds?: DataViewStateChangeKind | readonly DataViewStateChangeKind[],
+) => void
 
 /**
  * LocalMutationDelegate 变更后的后处理回调（计算列求值 + 聚合重算）。
@@ -165,7 +180,7 @@ export interface ICrudHost extends IRowStore {
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean
   /** 按主键删除一行 */
   deleteRowById(id: string | number): boolean
-  /** 静默重置状态（requestState→Idle，清空行和选中） */
+  /** 重置状态（requestState→Idle，清空行和选中；通过 stateChanged 通知订阅者） */
   resetState(): void
   /** 走完整请求编排（非阻塞，结果经 stateChanged 事件通知） */
   requestData(): void
@@ -224,7 +239,9 @@ export interface ICascadeHost extends IViewIdentity {
    * CascadeDelegate 用此字段判断是走网络加载还是内存过滤。
    */
   readonly crudService: CrudService | undefined
-  /** 静默重置状态（requestState→Idle，清空行和选中） */
+  /** 清空所有状态并发射 cleared/stateChanged（单波次） */
+  clearAll(): void
+  /** 重置状态（requestState→Idle，清空行和选中；通过 stateChanged 通知订阅者） */
   resetState(): void
   /**
    * 走完整请求编排（幂等：requestState≠Idle 时直接返回）
