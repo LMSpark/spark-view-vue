@@ -54,7 +54,7 @@ export type {
   ComponentRegistry,
   LoggerApi
 } from './core/index.js'
-export type { CancellableControl } from './internal/cancellable-control.js'
+export type { CancellableControl } from './core/cancellable-control.js'
 
 // ── 5. DI Keys + SparkNode 结构常量 ──
 export {
@@ -71,10 +71,6 @@ export {
 
 // ── 6. 数据 + Renderer 能力键 ──
 export {
-  defineCapability,
-  sparkProvide,
-  sparkRemove,
-  sparkConsume,
   APP_SERVICES,
   PAGE_SERVICE,
   PAGE_DATASET,
@@ -88,9 +84,6 @@ export {
   consumeCapabilityFromProvider,
 } from './core/index.js'
 export type {
-  CapabilityKey,
-  CapabilityTypeMap,
-  ICapabilityContext,
   IAppServicesCapability,
   IPageServiceCapability,
   IThemeCapability,

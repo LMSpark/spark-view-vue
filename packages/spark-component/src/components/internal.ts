@@ -33,9 +33,6 @@ export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, normaliz
 export {
   APP_SERVICES,
   PAGE_SERVICE,
-  defineCapability,
-  sparkProvide,
-  sparkConsume,
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
@@ -59,8 +56,6 @@ export type {
   IPageSelectedEntity,
   IPageSelectedFile,
   IPageUploadedFile,
-  CapabilityKey,
-  CapabilityTypeMap,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
@@ -68,4 +63,4 @@ export type {
 } from '../core/index.js'
 
 // ── 事件控制 ──
-export { createCancellableControl, type CancellableControl } from '../internal/cancellable-control.js'
+export { createCancellableControl, type CancellableControl } from '../core/cancellable-control.js'

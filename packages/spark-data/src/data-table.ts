@@ -150,7 +150,7 @@ export class DataTable {
 
     // 保存原始用户列数（dataTable setter 会注入 _pk 计算列变更 columns.length）
     const hasUserColumns = columns.length > 0
-    const defaultView = DataView.create(tableName, 'default')
+    const defaultView = new DataView(tableName, 'default')
     // 提前设置引用，使 view.primaryKey getter 可访问列定义。
     defaultView.dataTable = this
     this.views['default'] = defaultView
@@ -236,7 +236,7 @@ export class DataTable {
    */
   getOrCreateView(viewId: string): DataView {
     if (!this.views[viewId]) {
-      const view = DataView.create(this.tableName, viewId)
+      const view = new DataView(this.tableName, viewId)
       // 始终设置 dataTable 引用（使 view.primaryKey getter 可访问列定义）
       view.dataTable = this
       // 视图管理职责：设置级联

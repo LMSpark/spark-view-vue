@@ -64,19 +64,11 @@ export {
 export { SparkNodeTree } from './spark-node-tree.js'
 
 export {
-  defineCapability,
-  sparkProvide,
-  sparkRemove,
-  sparkConsume,
   APP_SERVICES,
   PAGE_SERVICE,
 } from './capability-system.js'
 
 export type {
-  CapabilityKey,
-  SparkCapabilityConsumer,
-  CapabilityTypeMap,
-  ICapabilityContext,
   IAppServicesCapability,
   IPageServiceCapability,
   IThemeCapability,

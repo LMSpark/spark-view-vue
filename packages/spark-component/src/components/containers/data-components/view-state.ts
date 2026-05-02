@@ -29,7 +29,7 @@ import type { ValueRef } from '../../shared-types.js'
 import { PAGE_DATASET } from '../../internal'
 import type { TreeNode } from './RendererTree/zero-code'
 import { extractModelPermission, type ModelPermissionSource } from '../../../permission/index.js'
-import type { SparkCapabilityConsumer } from '../../../core/capability-system.js'
+import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
 import { useDataViewSnapshot } from '../../../composables/useDataViewSnapshot.js'
 
 // ============================================================

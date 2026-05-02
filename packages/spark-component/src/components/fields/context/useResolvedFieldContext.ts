@@ -1,7 +1,6 @@
 import { computed, getCurrentInstance } from 'vue'
 import type { SparkCapabilityContext } from '../../internal'
-import type { SparkRuntimeOwner } from '../../../internal/capability-context'
-import { resolveParentCapabilityContext } from '../../../internal/capability-context'
+import { type SparkRuntimeOwner, resolveParentCapabilityContext } from '@spark-view/spark-utils'
 
 export type FieldRenderMode = string
 

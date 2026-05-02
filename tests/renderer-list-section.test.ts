@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
-import { RendererList, RendererSection, Spark, defineCapability, useSparkComponent } from '@spark-view/spark-component'
+import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-view/spark-utils'
 import { SparkData } from '@spark-view/spark-data'
 import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 

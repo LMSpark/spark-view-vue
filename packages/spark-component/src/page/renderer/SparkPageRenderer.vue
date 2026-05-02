@@ -84,7 +84,7 @@ import {
   bindPageRootCapabilityContext,
   resolveCapabilityContextOwner,
   unbindPageRootCapabilityContext,
-} from '../../internal/capability-context.js'
+} from '@spark-view/spark-utils'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 
 const logger = Logger('SparkPageRenderer')

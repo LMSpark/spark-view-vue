@@ -11,6 +11,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
+import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import {
   Spark,
   useSparkComponent,
@@ -18,9 +19,6 @@ import {
   useSparkPageComponent,
   APP_SERVICES,
   PAGE_SERVICE,
-  defineCapability,
-  sparkProvide,
-  sparkConsume,
   PAGE_COMPONENT_REGISTRY,
 } from '@spark-view/spark-component'
 import type { SparkNode, IEventEmitter } from '@spark-view/spark-component'

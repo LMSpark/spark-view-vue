@@ -7,17 +7,19 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import * as capabilityApi from './capability-system.js'
+import * as capabilityApi from '@spark-view/spark-utils'
 import {
-  APP_SERVICES,
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
-} from './capability-system.js'
-import type { CapabilityKey, SparkCapabilityConsumer } from './capability-system.js'
-import type { LoggerApi } from '@spark-view/spark-utils'
+  type CapabilityKey,
+  type ICapabilityContext,
+  type LoggerApi,
+  type SparkCapabilityConsumer,
+} from '@spark-view/spark-utils'
+import { APP_SERVICES } from './capability-system.js'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
-import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
+import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '@spark-view/spark-utils'
 import {
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
@@ -25,7 +27,6 @@ import {
   findNearestCapabilityProviderByKeys,
 } from './capabilities.js'
 import type { PageComponentRegistry } from './capabilities.js'
-import type { ICapabilityContext } from './capability-system.js'
 
 // ===== 类型与返回值约定 =====
 

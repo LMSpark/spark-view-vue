@@ -1,7 +1,7 @@
 import {
   isCancellableControl,
   type CancellableControl,
-} from '../../internal/cancellable-control'
+} from '../../core/cancellable-control.js'
 
 /**
  * 从事件参数中提取默认行为控制器。

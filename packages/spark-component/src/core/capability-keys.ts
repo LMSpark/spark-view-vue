@@ -1,4 +1,4 @@
-import { defineCapability } from './capability-system.js'
+import { defineCapability } from '@spark-view/spark-utils'
 import type { IModuleContext } from './capability-system.js'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
@@ -42,7 +42,7 @@ export interface PageCssScopeCapability {
   inject(css: string): void
 }
 
-declare module './capability-system.js' {
+declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
     'spark:capability:page-dataset': IDataSet
     'spark:capability:data-source': IDataSource

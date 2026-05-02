@@ -1,15 +1,11 @@
 /**
- * Vitest 全局 setup —— 配置 DataView.wrapInstance 为 Vue shallowReactive
+ * Vitest 全局 setup —— 响应式包装由 Vue 集成层（如 usePageDataSet）处理
  *
- * spark-data 本身无框架依赖，但根测试环境通过 Vue mounted 组件验证，
- * 因此需要在测试启动前配置 shallowReactive 包装（与生产 plugin.ts 一致）。
+ * spark-data 本身无框架依赖，DataView 是纯数据结构。
+ * 响应式代理由上层消费方在各自的作用域里自行处理。
  */
-import { shallowReactive } from 'vue'
 import { defineComponent, h } from 'vue'
 import { config } from '@vue/test-utils'
-import { DataView } from '@spark-view/spark-data'
-
-DataView.wrapInstance = (dv) => shallowReactive(dv) as DataView
 
 const GlobalElTableStub = defineComponent({
 	name: 'GlobalElTableStub',

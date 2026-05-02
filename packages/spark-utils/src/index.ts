@@ -10,6 +10,26 @@ export { Logger, addLogTransport, removeLogTransport, clearLogTransports, parseL
 
 export type { LogLevel, LoggerApi, LogTransport } from './logger'
 
+// ==================== 能力系统核心 ====================
+
+export {
+  defineCapability,
+  sparkProvide,
+  sparkRemove,
+  sparkConsume,
+  createSparkCapabilityContext,
+  consumeSparkCapability,
+  createSparkCapabilityConsumer,
+  getSparkCapabilityProvider,
+} from './capability'
+
+export type {
+  CapabilityKey,
+  CapabilityName,
+  SparkCapabilityConsumer,
+  ICapabilityContext,
+} from './capability'
+
 // ==================== HTTP 模块 ====================
 
 export * from './http/index.js'
@@ -71,3 +91,17 @@ export type {
 // ==================== 快照历史 ====================
 
 export { SnapshotHistory } from './snapshot-history'
+
+// ==================== 能力上下文运行时锚点 ====================
+
+export {
+  bindCapabilityContextOwner,
+  unbindCapabilityContextOwner,
+  resolveCapabilityContextOwner,
+  bindPageRootCapabilityContext,
+  unbindPageRootCapabilityContext,
+  resolvePageRootCapabilityContext,
+  resolveParentCapabilityContext,
+} from './capability-context'
+
+export type { SparkRuntimeOwner } from './capability-context'

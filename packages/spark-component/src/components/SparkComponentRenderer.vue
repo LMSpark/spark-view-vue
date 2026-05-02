@@ -89,11 +89,10 @@ import {
   normalizeSparkNode,
 } from '../core/types.js'
 import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
+import { consumeSparkCapability, createSparkCapabilityContext, sparkProvide, sparkRemove } from '@spark-view/spark-utils'
 import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE } from '../core/capability-keys.js'
-import { consumeSparkCapability } from '../core/capability-system.js'
-import { createSparkCapabilityContext, sparkProvide, sparkRemove } from '../core/capability-system.js'
-import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
+import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '@spark-view/spark-utils'
 import type { BeforeRenderContext } from './support/beforeRender.js'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from './support/beforeRender.js'
 import { extractModelPermission } from '../permission/index.js'

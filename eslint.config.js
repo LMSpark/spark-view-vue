@@ -56,53 +56,30 @@ export default [
       'no-restricted-imports': ['error', {
         paths: [
           {
-            name: '@spark-view/spark-utils',
+            name: '@spark-view/spark-component',
             importNames: [
               'defineCapability',
-              'normalizeKey',
               'sparkProvide',
+              'sparkRemove',
               'sparkConsume',
-              'createEventEmitter',
-              'APP_SERVICES',
-              'LOGGER',
-              'PAGE_SERVICE',
-              'THEME',
-              'PAGE_DATASET',
-              'DATA_SOURCE',
-              'DATA_ROW',
-              'PAGE_COMPONENT_REGISTRY',
-              'MODULE_CONTEXT',
-              'CSS_SCOPE',
+              'createSparkCapabilityContext',
+              'consumeSparkCapability',
+              'createSparkCapabilityConsumer',
+              'getSparkCapabilityProvider',
             ],
-            message: '能力系统已迁移到 @spark-view/spark-component，请从 @spark-view/spark-component 导入对应符号。'
+            message: '能力系统 core 位于 @spark-view/spark-utils，请从 @spark-view/spark-utils 导入对应符号。'
           },
           {
-            name: '@spark-view/spark-utils',
+            name: '@spark-view/spark-component',
             allowTypeImports: true,
             importNames: [
               'CapabilityKey',
-              'CapabilityTypeMap',
               'CapabilityName',
               'ICapabilityContext',
-              'IEventEmitter',
-              'IAppServicesCapability',
-              'IPageServiceCapability',
-              'IThemeCapability',
-              'ThemeMode',
-              'IModuleContext',
-              'IModuleContextItem',
-              'PageMessageType',
-              'PageDialogResult',
-              'IPageDialogOptions',
-              'IPageBrowseFilesOptions',
-              'IPageUploadFilesOptions',
-              'IPageSelectEntitiesOptions',
-              'PageSelectableValue',
-              'IPageSelectedEntity',
-              'IPageSelectedFile',
-              'IPageUploadedFile',
+              'SparkCapabilityConsumer',
+              'CapabilityTypeMap',
             ],
-            message: '能力类型已迁移到 @spark-view/spark-component，请从 @spark-view/spark-component 导入对应类型。'
+            message: '能力系统 core 类型位于 @spark-view/spark-utils，请从 @spark-view/spark-utils 导入对应类型。'
           }
         ],
         patterns: [

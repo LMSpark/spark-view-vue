@@ -1,91 +1,16 @@
 /**
- * spark-component 内部能力系统（本地实现）
+ * spark-component 页面/组件语义能力定义。
  *
- * 目标：
- * - 迁移自 @spark-view/spark-utils 的能力核心能力
- * - 能力键统一符号化（Symbol.for）
- * - 对外提供类型安全的 key / provide / consume 基础设施
+ * 通用 capability core 位于 @spark-view/spark-utils。
+ * 本文件只保留与 spark-component 运行时直接相关的能力键与类型。
  */
 
-import type { LoggerApi } from '@spark-view/spark-utils'
+import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-data'
 import { createEventEmitter } from '@spark-view/spark-data'
 
 export type { IEventEmitter }
 export { createEventEmitter }
-
-export type CapabilityKey<T> = symbol & { readonly __capabilityType?: T }
-export type CapabilityName = CapabilityKey<unknown>
-export type SparkCapabilityConsumer = <T>(name: CapabilityKey<T>) => T | null
-
-export interface ICapabilityContext {
-  id: string
-  type: string
-  parent?: ICapabilityContext
-  capabilities: Map<CapabilityName, unknown>
-}
-
-export function defineCapability<T>(name: string): CapabilityKey<T> {
-  return Symbol.for(name) as CapabilityKey<T>
-}
-
-export function sparkProvide<T>(ctx: ICapabilityContext, name: CapabilityKey<T>, impl: T): void {
-  ctx.capabilities.set(name, impl)
-}
-
-export function sparkRemove(ctx: ICapabilityContext, name: CapabilityKey<unknown>): void {
-  ctx.capabilities.delete(name)
-}
-
-export function sparkConsume<T>(ctx: ICapabilityContext, name: CapabilityKey<T>): T | null {
-  let current: ICapabilityContext | undefined = ctx
-  while (current) {
-    const impl = current.capabilities.get(name)
-    if (impl !== undefined) return impl as T
-    current = current.parent
-  }
-  return null
-}
-
-/** Create a minimal Spark capability context node. */
-export function createSparkCapabilityContext(
-  config: { id: string; type: string },
-  parent?: ICapabilityContext | null,
-): ICapabilityContext {
-  const context: ICapabilityContext = {
-    id: config.id,
-    type: config.type,
-    capabilities: new Map<CapabilityName, unknown>(),
-  }
-  if (parent !== undefined && parent !== null) {
-    context.parent = parent
-  }
-  return context
-}
-
-/** Consume capability from context chain; null when not found. */
-export function consumeSparkCapability<T>(
-  context: ICapabilityContext | null | undefined,
-  name: CapabilityKey<T>,
-): T | null {
-  if (!context) return null
-  return sparkConsume(context, name)
-}
-
-/** Create a typed capability consumer bound to a specific context. */
-export function createSparkCapabilityConsumer(
-  context: ICapabilityContext | null,
-): SparkCapabilityConsumer {
-  return <T>(name: CapabilityKey<T>): T | null => consumeSparkCapability(context, name)
-}
-
-/** Read local-only provider value without walking parent chain. */
-export function getSparkCapabilityProvider(
-  context: ICapabilityContext,
-  name: CapabilityKey<unknown>,
-): unknown {
-  return context.capabilities.get(name)
-}
 
 export interface IAppServicesCapability {
   router?: {
@@ -208,7 +133,9 @@ export interface IModuleContext {
   nodeId: string
 }
 
-export interface CapabilityTypeMap {
-  'spark:capability:app-services': IAppServicesCapability
-  'spark:capability:page-service': IPageServiceCapability
+declare module '@spark-view/spark-utils' {
+  interface CapabilityTypeMap {
+    'spark:capability:app-services': IAppServicesCapability
+    'spark:capability:page-service': IPageServiceCapability
+  }
 }

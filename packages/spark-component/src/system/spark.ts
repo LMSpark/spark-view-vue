@@ -12,11 +12,11 @@
  */
 
 import { defineAsyncComponent } from 'vue'
+import { createSparkCapabilityContext } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
 import type { SparkCapabilityContext, ComponentRegistry, SparkNode } from '../core/types.js'
 import { nodeId, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/types.js'
-import { createSparkCapabilityContext } from '../core/capability-system.js'
 
 /* -------------------------------------------------------------------------- */
 

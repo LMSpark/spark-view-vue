@@ -6,7 +6,7 @@
  *
  * 精简公共 API，只暴露外部消费者实际需要的最小集合：
  * - 命名空间：`SparkData`
- * - 核心类：`DataSet`（spark-page-config 直接使用）、`DataView`（框架层 wrapInstance 钩子）
+ * - 核心类：`DataSet`、`DataView`（纯 TS，无框架依赖）
  * - DataKey 解析工具函数
  * - 权限渲染常量
  * - 数据配置所需的类型

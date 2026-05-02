@@ -1961,17 +1961,9 @@ export class DataView implements IDataSource, IDataViewStore {
   }
 
   static fromJson(data: IViewMetadata, tableName: string, viewId: string): DataView {
-    const v = DataView.create(tableName, viewId)
+    const v = new DataView(tableName, viewId)
     if (data.rows !== undefined) v.rows = [...data.rows]
     v.applyViewConfig(data)
     return v
-  }
-
-  /** 实例包装钩子——集成层可覆盖以添加自定义包装（如响应式代理） */
-  static wrapInstance: (instance: DataView) => DataView = (v) => v
-
-  /** @internal 创建 DataView 实例（通过 wrapInstance 钩子可选包装） */
-  static create(tableName: string, viewId = 'default'): DataView {
-    return DataView.wrapInstance(new DataView(tableName, viewId))
   }
 }

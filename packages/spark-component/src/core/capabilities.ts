@@ -1,10 +1,10 @@
 import type {
-  ICapabilityContext,
   CapabilityKey,
-} from './capability-system.js'
+  ICapabilityContext,
+} from '@spark-view/spark-utils'
 import {
   consumeSparkCapability,
-} from './capability-system.js'
+} from '@spark-view/spark-utils'
 
 export {
   PAGE_DATASET,

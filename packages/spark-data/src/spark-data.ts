@@ -91,7 +91,7 @@ export namespace SparkData {
    * @returns 数据视图实例
    */
   export function createDataView(tableName: string, meta?: IViewMetadata): DataView {
-    const view = DataView.create(tableName, meta?.viewId)
+    const view = new DataView(tableName, meta?.viewId)
     // 所有视图配置字段由 applyViewConfig 集中赋值，单一来源
     view.applyViewConfig({ ...meta, tableName })
     return view
