@@ -31,17 +31,11 @@ import type {
   FilterValueExpression,
   IDataSource,
   IDataRow,
-  IModelPermission,
 } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
-import { resolveDataCapabilitiesFromDataKey } from '../../../core/data-key-resolver.js'
-import { extractModelPermission, type ModelPermissionSource } from '../../../permission/index.js'
-import type { SparkCapabilityConsumer } from '../../../core/capability-system.js'
 import {
   DATA_SOURCE,
   MODULE_CONTEXT,
-  PAGE_DATASET,
-  PAGE_SERVICE,
   getSparkNodeChildren,
   nodeInputProp,
   useSparkPageComponent,
@@ -51,7 +45,7 @@ import {
 } from '../../internal.js'
 export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
-import { useRendererFormDetailViewState } from '../data-components/view-state.js'
+import { useContainerDataSource } from '../data-components/view-state.js'
 import type { RToolbarProps } from '../non-data-components/RendererToolbar.types'
 import { createCurrentRowScope } from '../support/scopeFactories'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
@@ -63,13 +57,34 @@ import { syncReactiveRow } from '../../support/row-mirror-sync'
 const DEFAULT_GRID_COLUMNS = 24
 const DEFAULT_GRID_GAP = '0px'
 const DEFAULT_AUTO_ROWS = 'minmax(32px, auto)'
+const AUTO_FIT_MAX_TRACKS = 4
+const DEFAULT_COL_SPAN_KEYS = ['colSpan', 'gridColSpan', 'span'] as const
+const DEFAULT_ROW_SPAN_KEYS = ['rowSpan', 'gridRowSpan'] as const
+const TOOLBAR_POSITIONS = ['top', 'bottom', 'left', 'right'] as const
+const DEFAULT_TOOLBAR_CLASS = 'renderer-toolbar-default'
+const DEFAULT_TOOLBAR_POSITION: ToolbarPosition = 'top'
+const DEFAULT_NUMERIC_ZERO = 0
+const FILTER_SYNC_ERROR_MESSAGE = 'RendererFilter: 同步过滤表达式失败'
+const FILTER_APPLY_ERROR_MESSAGE = 'RendererFilter: 应用过滤失败'
+const FILTER_OPERATOR_BETWEEN: FilterOperator = 'between'
+const FILTER_OPERATOR_IN: FilterOperator = 'in'
+const FILTER_OPERATOR_CONTAINS: FilterOperator = 'contains'
+const FILTER_OPERATOR_EQUALS: FilterOperator = '=='
+const FILTER_VALUE_KIND_FIELD = 'field'
+const FILTER_NODE_TYPE_TEXT = 'r-text'
+const FILTER_NODE_TYPE_DATE = 'r-date'
+const FILTER_NODE_TYPE_NUMBER = 'r-number'
+const DATAKEY_SUFFIX_AGGREGATE_RESULT = '@aggregateResult'
+const DATAKEY_SUFFIX_SELECTION_AGGREGATE_RESULT = '@selectionAggregateResult'
+const FORM_CONTAINER_LOG_PREFIX = 'RendererForm'
+const DETAIL_CONTAINER_LOG_PREFIX = 'RendererDetail'
+const CONTEXT_SYNC_SKIP_SAME_REF = true
 
 type OptionalString = string | null | undefined
 type OptionalStringOrNumber = string | number | null | undefined
 
-const DEFAULT_LOGGER: LoggerLike = {
-  warn: () => {},
-  error: () => {},
+interface ErrorLoggerLike {
+  error(message: string, error?: unknown): void
 }
 
 function toFiniteInteger(value: unknown): number | undefined {
@@ -82,31 +97,41 @@ function toFiniteInteger(value: unknown): number | undefined {
 }
 
 function toNonEmptyString(value: unknown, fallback = ''): string {
-  return typeof value === 'string' && value.trim().length > 0 ? value : fallback
+  return hasStringValue(value) && value.trim().length > 0 ? value : fallback
+}
+
+function toPositiveInteger(value: unknown, fallback: number): number {
+  return Math.max(1, toFiniteInteger(value) ?? fallback)
+}
+
+function hasStringValue(value: unknown): value is string {
+  return typeof value === 'string'
 }
 
 export function normalizeGridGap(value: unknown): string {
   if (typeof value === 'number') return `${value}px`
-  if (typeof value === 'string' && value.trim()) return value
+  if (hasStringValue(value) && value.trim()) return value
   return DEFAULT_GRID_GAP
 }
 
 export function normalizeSpan(value: unknown, fallback: number): number {
-  const parsed = toFiniteInteger(value)
-  if (parsed !== undefined) return Math.max(1, parsed)
-  return fallback
+  return toPositiveInteger(value, fallback)
+}
+
+function getFirstNodeInput(child: SparkNode, keys: readonly string[]): unknown {
+  for (const key of keys) {
+    const value = nodeInputProp(child, key)
+    if (value !== undefined) return value
+  }
+  return undefined
 }
 
 function getSpanValue(child: SparkNode, keys: readonly string[], fallback: number): number {
-  for (const key of keys) {
-    const value = nodeInputProp(child, key)
-    if (value !== undefined) return normalizeSpan(value, fallback)
-  }
-  return fallback
+  return normalizeSpan(getFirstNodeInput(child, keys), fallback)
 }
 
-function hasSpanOverride(child: SparkNode, keys: readonly string[]): boolean {
-  return keys.some(key => nodeInputProp(child, key) !== undefined)
+function hasNodeInputOverride(child: SparkNode, keys: readonly string[]): boolean {
+  return getFirstNodeInput(child, keys) !== undefined
 }
 
 interface UseContainerGridOptions {
@@ -129,95 +154,109 @@ export interface ContainerGridState {
 function normalizeAutoFitSpan(rawSpan: number, totalColumns: number, childCount: number): number {
   const safeColumns = Math.max(1, Math.floor(totalColumns))
   const safeChildCount = Math.max(1, Math.floor(childCount))
-  const targetColumns = Math.min(safeChildCount, 4)
+  const targetColumns = Math.min(safeChildCount, AUTO_FIT_MAX_TRACKS)
   const baseSpan = Math.max(1, Math.floor(safeColumns / targetColumns))
 
   return Math.max(1, Math.round(rawSpan / baseSpan))
 }
 
 function getAutoFitTrackCount(childCount: number): number {
-  return Math.max(1, Math.min(Math.floor(childCount), 4))
+  return Math.max(1, Math.min(Math.floor(childCount), AUTO_FIT_MAX_TRACKS))
+}
+
+function resolveGridOptions(options: UseContainerGridOptions) {
+  const children = toValue(options.children)
+  const columns = toPositiveInteger(toValue(options.columns ?? DEFAULT_GRID_COLUMNS), DEFAULT_GRID_COLUMNS)
+  const autoFitMinWidth = toNonEmptyString(toValue(options.autoFitMinWidth ?? ''))
+  const hasAutoFit = autoFitMinWidth.length > 0
+  const defaultColSpanValue = toValue(options.defaultColSpan)
+  const defaultColSpan = defaultColSpanValue ?? DEFAULT_GRID_COLUMNS
+  return {
+    children,
+    columns,
+    autoFitMinWidth,
+    hasAutoFit,
+    defaultColSpanValue,
+    defaultColSpan,
+    gridTemplateColumns: hasAutoFit
+      ? `repeat(auto-fit, minmax(${autoFitMinWidth}, 1fr))`
+      : `repeat(${columns}, minmax(0, 1fr))`,
+  }
+}
+
+function resolveLastRowColSpan(params: {
+  enabled: boolean | undefined
+  index: number | undefined
+  childrenLength: number
+  columns: number
+  colSpan: number
+  hasAutoFit: boolean
+  hasExplicitColSpan: boolean
+}): number {
+  const { enabled, index, childrenLength, columns, colSpan, hasAutoFit, hasExplicitColSpan } = params
+  if (!enabled || index === undefined) return colSpan
+
+  if (hasAutoFit) {
+    const trackCount = getAutoFitTrackCount(childrenLength)
+    const baseSpan = hasExplicitColSpan ? Math.max(1, colSpan) : 1
+    const itemsPerRow = Math.max(1, Math.floor(trackCount / baseSpan))
+    const remainder = childrenLength % itemsPerRow
+    const lastRowItemCount = remainder === 0 ? itemsPerRow : remainder
+    const lastRowStartIndex = childrenLength - lastRowItemCount
+
+    if (index < lastRowStartIndex) return colSpan
+    if (lastRowItemCount === 1) return trackCount
+    if (lastRowItemCount === 2 && trackCount % 2 === 0) return Math.max(baseSpan, trackCount / 2)
+    return hasExplicitColSpan ? colSpan : 1
+  }
+
+  const itemsPerRow = Math.max(1, Math.floor(columns / colSpan))
+  const lastRowStartIndex = Math.floor(childrenLength / itemsPerRow) * itemsPerRow
+  if (index < lastRowStartIndex) return colSpan
+  const lastRowItemCount = childrenLength - lastRowStartIndex
+  return lastRowItemCount > 0 && lastRowItemCount < itemsPerRow
+    ? Math.ceil(columns / lastRowItemCount)
+    : colSpan
 }
 
 export function useContainerGrid(options: UseContainerGridOptions): ContainerGridState {
-  function resolveColumns(): number {
-    return Math.max(toValue(options.columns ?? DEFAULT_GRID_COLUMNS), 1)
-  }
+  const resolvedGridOptions = computed(() => resolveGridOptions(options))
 
-  function resolveAutoFitMinWidth(): string {
-    return toNonEmptyString(toValue(options.autoFitMinWidth ?? ''))
-  }
-
-  function resolveGridTemplateColumns(): string {
-    const autoFitMinWidth = resolveAutoFitMinWidth()
-    if (autoFitMinWidth.length > 0) {
-      return `repeat(auto-fit, minmax(${autoFitMinWidth}, 1fr))`
+  const gridStyle = computed<CSSProperties>(() => {
+    const resolved = resolvedGridOptions.value
+    return {
+      display: 'grid',
+      gridTemplateColumns: resolved.gridTemplateColumns,
+      gap: normalizeGridGap(toValue(options.gap ?? DEFAULT_GRID_GAP)),
+      gridAutoRows: toValue(options.autoRows ?? DEFAULT_AUTO_ROWS) || DEFAULT_AUTO_ROWS,
+      alignItems: 'start',
     }
-    return `repeat(${resolveColumns()}, minmax(0, 1fr))`
-  }
-
-  const gridStyle = computed<CSSProperties>(() => ({
-    display: 'grid',
-    gridTemplateColumns: resolveGridTemplateColumns(),
-    gap: normalizeGridGap(toValue(options.gap ?? DEFAULT_GRID_GAP)),
-    gridAutoRows: toValue(options.autoRows ?? DEFAULT_AUTO_ROWS) || DEFAULT_AUTO_ROWS,
-    alignItems: 'start',
-  }))
+  })
 
   function getChildGridStyle(child: SparkNode, index?: number): CSSProperties {
-    const children = toValue(options.children)
-    const columns = resolveColumns()
-    const autoFitMinWidth = resolveAutoFitMinWidth()
-    const hasAutoFit = autoFitMinWidth.length > 0
-    const spanKeys = ['colSpan', 'gridColSpan', 'span']
-    const defaultColSpanValue = toValue(options.defaultColSpan)
-    const defaultColSpan = defaultColSpanValue ?? DEFAULT_GRID_COLUMNS
-    const rawColSpan = getSpanValue(child, spanKeys, defaultColSpan)
-    const hasExplicitColSpan = hasSpanOverride(child, spanKeys) || defaultColSpanValue !== undefined
-    const colSpan = hasAutoFit
-      ? normalizeAutoFitSpan(rawColSpan, columns, children.length)
+    const resolved = resolvedGridOptions.value
+    const rawColSpan = getSpanValue(child, DEFAULT_COL_SPAN_KEYS, resolved.defaultColSpan)
+    const hasExplicitColSpan = hasNodeInputOverride(child, DEFAULT_COL_SPAN_KEYS) || resolved.defaultColSpanValue !== undefined
+    const colSpan = resolved.hasAutoFit
+      ? normalizeAutoFitSpan(rawColSpan, resolved.columns, resolved.children.length)
       : rawColSpan
-    const rowSpan = getSpanValue(child, ['rowSpan', 'gridRowSpan'], 1)
-
-    let finalColSpan = colSpan
-
-    if (options.autoFillLastRow && index !== undefined) {
-      if (hasAutoFit) {
-        const trackCount = getAutoFitTrackCount(children.length)
-        const baseSpan = hasExplicitColSpan ? Math.max(1, colSpan) : 1
-        const itemsPerRow = Math.max(1, Math.floor(trackCount / baseSpan))
-        const remainder = children.length % itemsPerRow
-        const lastRowItemCount = remainder === 0 ? itemsPerRow : remainder
-        const lastRowStartIndex = children.length - lastRowItemCount
-
-        if (index >= lastRowStartIndex) {
-          if (lastRowItemCount === 1) {
-            finalColSpan = trackCount
-          } else if (lastRowItemCount === 2 && trackCount % 2 === 0) {
-            finalColSpan = Math.max(baseSpan, trackCount / 2)
-          } else if (!hasExplicitColSpan) {
-            finalColSpan = 1
-          }
-        }
-      } else {
-        const itemsPerRow = Math.max(1, Math.floor(columns / colSpan))
-        const lastRowStartIndex = Math.floor(children.length / itemsPerRow) * itemsPerRow
-
-        if (index >= lastRowStartIndex) {
-          const lastRowItemCount = children.length - lastRowStartIndex
-          if (lastRowItemCount > 0 && lastRowItemCount < itemsPerRow) {
-            finalColSpan = Math.ceil(columns / lastRowItemCount)
-          }
-        }
-      }
-    }
+    const rowSpan = getSpanValue(child, DEFAULT_ROW_SPAN_KEYS, 1)
+    const finalColSpan = resolveLastRowColSpan({
+      enabled: options.autoFillLastRow,
+      index,
+      childrenLength: resolved.children.length,
+      columns: resolved.columns,
+      colSpan,
+      hasAutoFit: resolved.hasAutoFit,
+      hasExplicitColSpan,
+    })
 
     const childGridStyle: CSSProperties = {
       gridRow: `span ${rowSpan} / span ${rowSpan}`,
       minWidth: 0,
     }
 
-    if (!hasAutoFit || hasExplicitColSpan || finalColSpan > 1) {
+    if (!resolved.hasAutoFit || hasExplicitColSpan || finalColSpan > 1) {
       childGridStyle.gridColumn = `span ${finalColSpan} / span ${finalColSpan}`
     }
 
@@ -227,7 +266,7 @@ export function useContainerGrid(options: UseContainerGridOptions): ContainerGri
   return {
     gridStyle,
     getChildGridStyle,
-    gridChildren: computed(() => toValue(options.children)),
+    gridChildren: computed(() => resolvedGridOptions.value.children),
   }
 }
 
@@ -269,11 +308,11 @@ export function useCompositeItemGrid(options: UseCompositeItemGridOptions): Comp
     columns: () => {
       const parsed = toFiniteInteger(options.gridColumns?.())
       if (parsed !== undefined) return parsed
-      return 24
+      return DEFAULT_GRID_COLUMNS
     },
     gap: () => {
       const value = options.gridGap?.()
-      return typeof value === 'number' || typeof value === 'string' ? value : 0
+      return typeof value === 'number' || typeof value === 'string' ? value : DEFAULT_NUMERIC_ZERO
     },
     autoRows: () => {
       const value = options.gridAutoRows?.()
@@ -287,147 +326,6 @@ export function useCompositeItemGrid(options: UseCompositeItemGridOptions): Comp
     contentGridStyle,
     getContentChildGridStyle,
   }
-}
-
-// ============================================================
-// § useContainerDataSource
-// ============================================================
-
-interface ErrorLoggerLike {
-  error(message: string, error?: unknown): void
-}
-
-interface LoggerLike extends ErrorLoggerLike {
-  warn(message: string): void
-}
-
-interface UseContainerDataSourceOptions<TSource> {
-  dataKey: MaybeRefOrGetter<string | undefined>
-  sparkConsume: SparkCapabilityConsumer
-  mapView: (view: DataView) => TSource
-  externalDataSource?: MaybeRefOrGetter<TSource | undefined>
-  inheritedDataSource?: MaybeRefOrGetter<TSource | null | undefined>
-  provideDataSource?: (source: TSource) => void
-  logger?: LoggerLike
-  logPrefix?: string
-  /**
-   * 设为 true 可跳过 effects（provideDataSource + autoLoad）。
-   * 当调用方自行管理数据加载生命周期时使用（如 RendererFilter）。
-   * @default false
-   */
-  skipEffects?: boolean
-}
-
-interface UseContainerDataSourceEffectsOptions<TSource> {
-  resolvedDataSource: ComputedRef<TSource | null>
-  provideDataSource?: (source: TSource) => void
-  logger: LoggerLike
-  logPrefix: string
-}
-
-export interface ContainerDataSourceState<TSource> {
-  resolvedDataSource: ComputedRef<TSource | null>
-  resolvedDataRow: ComputedRef<IDataRow | null>
-  modelPermission: ComputedRef<IModelPermission | undefined>
-}
-
-export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>): ContainerDataSourceState<TSource> {
-  const pageDataSet = options.sparkConsume(PAGE_DATASET)
-  const capabilities = computed(() => resolveDataCapabilitiesFromDataKey(toValue(options.dataKey), pageDataSet))
-
-  function resolveProvidedSource(): TSource | undefined {
-    const provided = options.externalDataSource !== undefined
-      ? toValue(options.externalDataSource)
-      : undefined
-    return provided
-  }
-
-  function pickRowFromSource(source: unknown): IDataRow | null {
-    if (source === null || source === undefined || typeof source !== 'object') return null
-    const currentRow = (source as { currentRow?: unknown }).currentRow
-    if (currentRow === null || currentRow === undefined || typeof currentRow !== 'object' || Array.isArray(currentRow)) return null
-    return currentRow as IDataRow
-  }
-
-  const resolvedDataRow = computed<IDataRow | null>(() => {
-    const provided = resolveProvidedSource()
-    if (provided !== undefined) return pickRowFromSource(provided)
-
-    if (capabilities.value.dataRow !== null) return capabilities.value.dataRow
-
-    const inherited = options.inheritedDataSource !== undefined
-      ? toValue(options.inheritedDataSource)
-      : undefined
-    return pickRowFromSource(inherited)
-  })
-
-  const resolvedDataSource = computed<TSource | null>(() => {
-    const provided = resolveProvidedSource()
-    if (provided !== undefined) return provided
-
-    if (capabilities.value.dataSource) return options.mapView(capabilities.value.dataSource)
-
-    const inherited = options.inheritedDataSource !== undefined
-      ? toValue(options.inheritedDataSource)
-      : undefined
-    if (inherited !== null && inherited !== undefined) return inherited
-
-    return null
-  })
-
-  const modelPermission = computed<IModelPermission | undefined>(() =>
-    extractModelPermission(resolvedDataSource.value as ModelPermissionSource | null)
-  )
-
-  if (!options.skipEffects) {
-    useContainerDataSourceEffects({
-      resolvedDataSource,
-      ...(options.provideDataSource ? { provideDataSource: options.provideDataSource } : {}),
-      logger: options.logger ?? DEFAULT_LOGGER,
-      logPrefix: options.logPrefix ?? 'useContainerDataSource',
-    })
-  }
-
-  return {
-    resolvedDataSource,
-    resolvedDataRow,
-    modelPermission,
-  }
-}
-
-export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>): void {
-  function shouldAutoLoad(view: DataView): boolean {
-    if (typeof view.requestData !== 'function') return false
-
-    const autoLoadState = view as { autoLoad?: boolean; autoLoadConfigured?: boolean }
-    if (autoLoadState.autoLoadConfigured === true && autoLoadState.autoLoad === false) return false
-
-    const dataTable = view.dataTable
-    if (dataTable?.resourceType === 'static-data') return false
-    if (!dataTable?.api?.list) return false
-
-    return true
-  }
-
-  function tryAutoLoad(source: TSource | null): void {
-    if (source === null) return
-    const maybeView = source as DataView
-    if (!shouldAutoLoad(maybeView)) return
-
-    void maybeView.requestData().catch((error: unknown) => {
-      options.logger.error(`${options.logPrefix}: requestData() 失败`, error)
-    })
-  }
-
-  function runSourceEffects(source: TSource | null): void {
-    if (source === null) return
-    options.provideDataSource?.(source)
-    tryAutoLoad(source)
-  }
-
-  watch(options.resolvedDataSource, (source) => {
-    runSourceEffects(source)
-  }, { immediate: true })
 }
 
 // ============================================================
@@ -453,6 +351,10 @@ export function useContainerModuleContext(
 // ============================================================
 // § useContainerToolbar
 // ============================================================
+
+function isToolbarPosition(value: unknown): value is ToolbarPosition {
+  return typeof value === 'string' && TOOLBAR_POSITIONS.some(position => position === value)
+}
 
 /** 工具栏节点所需的最小属性形状，与 RToolbarProps 结构对齐。 */
 interface ToolbarLike {
@@ -484,8 +386,8 @@ export interface ContainerToolbarState {
 }
 
 export function useContainerToolbar(options: UseContainerToolbarOptions): ContainerToolbarState {
-  const fallbackClass = options.defaultClass ?? 'renderer-toolbar-default'
-  const fallbackPosition = options.defaultPosition ?? 'top'
+  const fallbackClass = options.defaultClass ?? DEFAULT_TOOLBAR_CLASS
+  const fallbackPosition = options.defaultPosition ?? DEFAULT_TOOLBAR_POSITION
   const toolbarNodeValue = computed(() => toValue(options.toolbarNode))
 
   const visibleToolbarConfigs = computed(() =>
@@ -494,9 +396,7 @@ export function useContainerToolbar(options: UseContainerToolbarOptions): Contai
 
   const toolbarPositionValue = computed<ToolbarPosition>(() => {
     const position = toolbarNodeValue.value?.position
-    return position === 'top' || position === 'bottom' || position === 'left' || position === 'right'
-      ? position
-      : fallbackPosition
+    return isToolbarPosition(position) ? position : fallbackPosition
   })
 
   const toolbarClassValue = computed(() => {
@@ -528,6 +428,9 @@ export type DataViewBridgeEventName =
   | 'summaryChanged'
   | 'selectionSummaryChanged'
   | 'mutatingChanged'
+
+type NoArgBridgeEventName = Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged'>
+type OriginatorBridgeEventName = Extract<DataViewBridgeEventName, 'currentRowChanged' | 'selectedRowsChanged'>
 
 /** 桥接层基础上下文：用于统一错误处理、诊断与日志。 */
 export interface DataViewBridgeBaseContext {
@@ -588,7 +491,7 @@ export interface OriginatorFilterContext {
 }
 
 export interface DataViewEventBridgeOptions {
-  resolvedView: ValueRef<DataView | null | undefined>
+  resolvedView: ValueRef<DataView | null>
   ignoreOriginatorId?: string
   shouldDispatchByOriginatorId?: (context: OriginatorFilterContext) => boolean
   enabled?: boolean
@@ -615,10 +518,32 @@ type DataViewBridgeEventArgs =
 
 type DataViewBridgeEventHandler = (...args: DataViewBridgeEventArgs) => void
 
-interface DataViewBridgeRegistration {
+type BridgeHandlerFactory = () => unknown
+
+interface BridgeRegistrationFactory {
   enabled: boolean
   eventName: DataViewBridgeEventName
-  handler: unknown
+  createHandler: BridgeHandlerFactory
+}
+
+function registerDataViewEvents(
+  view: DataView,
+  registrations: readonly BridgeRegistrationFactory[],
+): () => void {
+  const cleanupHandlers: Array<() => void> = []
+
+  for (const registration of registrations) {
+    if (!registration.enabled) continue
+    const handler = registration.createHandler() as DataViewBridgeEventHandler
+    view.events.on(registration.eventName, handler)
+    cleanupHandlers.push(() => {
+      view.events.off(registration.eventName, handler)
+    })
+  }
+
+  return () => {
+    for (const cleanup of cleanupHandlers) cleanup()
+  }
 }
 
 export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
@@ -650,15 +575,15 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
   const shouldDispatchByOriginator = (
     originatorId: string | undefined,
     view: DataView,
-    eventName: 'currentRowChanged' | 'selectedRowsChanged',
+    eventName: OriginatorBridgeEventName,
   ): boolean => {
     if (options.ignoreOriginatorId && originatorId === options.ignoreOriginatorId) {
-      options.onIgnoredByOriginatorId?.({ originatorId, view, eventName })
+      options.onIgnoredByOriginatorId?.(createOriginatorContext(originatorId, view, eventName))
       return false
     }
 
     if (options.shouldDispatchByOriginatorId && !options.shouldDispatchByOriginatorId({ originatorId, view, eventName })) {
-      options.onIgnoredByOriginatorId?.({ originatorId, view, eventName })
+      options.onIgnoredByOriginatorId?.(createOriginatorContext(originatorId, view, eventName))
       return false
     }
 
@@ -680,14 +605,23 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
     options.onAttached?.(view)
 
     const runNoArgEvent = (
-      eventName: Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged'>,
+      eventName: NoArgBridgeEventName,
       runner: () => void | Promise<void>,
     ) => {
       runWithErrorBoundary(eventName, view, runner)
     }
 
+    const createNoArgBridgeHandler = <T extends NoArgBridgeEventName>(
+      eventName: T,
+      callback: ((context: { view: DataView; eventName: T }) => void | Promise<void>) | undefined,
+    ): (() => void) => {
+      return () => {
+        runNoArgEvent(eventName, () => callback?.({ view, eventName }))
+      }
+    }
+
     const runOriginatorEvent = (
-      eventName: Extract<DataViewBridgeEventName, 'currentRowChanged' | 'selectedRowsChanged'>,
+      eventName: OriginatorBridgeEventName,
       originatorId: string | undefined,
       runner: () => void | Promise<void>,
     ) => {
@@ -717,17 +651,9 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       )
     }
 
-    const handleRowsChanged = () => {
-      runNoArgEvent('rowsChanged', () =>
-        options.onRowsChanged?.({ view, eventName: 'rowsChanged' })
-      )
-    }
+    const handleRowsChanged = createNoArgBridgeHandler('rowsChanged', options.onRowsChanged)
 
-    const handleCleared = () => {
-      runNoArgEvent('cleared', () =>
-        options.onCleared?.({ view, eventName: 'cleared' })
-      )
-    }
+    const handleCleared = createNoArgBridgeHandler('cleared', options.onCleared)
 
     const handleRequestStateChanged = (state: NonNullable<IDataSource['requestState']>) => {
       runWithErrorBoundary('requestStateChanged', view, () =>
@@ -735,17 +661,12 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       )
     }
 
-    const handleSummaryChanged = () => {
-      runNoArgEvent('summaryChanged', () =>
-        options.onSummaryChanged?.({ view, eventName: 'summaryChanged' })
-      )
-    }
+    const handleSummaryChanged = createNoArgBridgeHandler('summaryChanged', options.onSummaryChanged)
 
-    const handleSelectionSummaryChanged = () => {
-      runNoArgEvent('selectionSummaryChanged', () =>
-        options.onSelectionSummaryChanged?.({ view, eventName: 'selectionSummaryChanged' })
-      )
-    }
+    const handleSelectionSummaryChanged = createNoArgBridgeHandler(
+      'selectionSummaryChanged',
+      options.onSelectionSummaryChanged,
+    )
 
     const handleMutatingChanged = (mutating: boolean) => {
       runWithErrorBoundary('mutatingChanged', view, () =>
@@ -753,39 +674,18 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       )
     }
 
-    const cleanupHandlers: Array<() => void> = []
-
-    const registerBridgeEvent = (
-      enabled: boolean,
-      eventName: DataViewBridgeEventName,
-      handler: unknown,
-    ): void => {
-      if (!enabled) return
-      const subscribedHandler = handler as DataViewBridgeEventHandler
-      view.events.on(eventName, subscribedHandler)
-      cleanupHandlers.push(() => {
-        view.events.off(eventName, subscribedHandler)
-      })
-    }
-
-    const registrations: readonly DataViewBridgeRegistration[] = [
-      { enabled: Boolean(options.onCurrentRowChanged), eventName: 'currentRowChanged', handler: handleCurrentRowChanged },
-      { enabled: Boolean(options.onSelectedRowsChanged), eventName: 'selectedRowsChanged', handler: handleSelectedRowsChanged },
-      { enabled: Boolean(options.onRowsChanged), eventName: 'rowsChanged', handler: handleRowsChanged },
-      { enabled: Boolean(options.onCleared), eventName: 'cleared', handler: handleCleared },
-      { enabled: Boolean(options.onRequestStateChanged), eventName: 'requestStateChanged', handler: handleRequestStateChanged },
-      { enabled: Boolean(options.onSummaryChanged), eventName: 'summaryChanged', handler: handleSummaryChanged },
-      { enabled: Boolean(options.onSelectionSummaryChanged), eventName: 'selectionSummaryChanged', handler: handleSelectionSummaryChanged },
-      { enabled: Boolean(options.onMutatingChanged), eventName: 'mutatingChanged', handler: handleMutatingChanged },
+    const registrations: BridgeRegistrationFactory[] = [
+      { enabled: Boolean(options.onCurrentRowChanged), eventName: 'currentRowChanged', createHandler: () => handleCurrentRowChanged },
+      { enabled: Boolean(options.onSelectedRowsChanged), eventName: 'selectedRowsChanged', createHandler: () => handleSelectedRowsChanged },
+      { enabled: Boolean(options.onRowsChanged), eventName: 'rowsChanged', createHandler: () => handleRowsChanged },
+      { enabled: Boolean(options.onCleared), eventName: 'cleared', createHandler: () => handleCleared },
+      { enabled: Boolean(options.onRequestStateChanged), eventName: 'requestStateChanged', createHandler: () => handleRequestStateChanged },
+      { enabled: Boolean(options.onSummaryChanged), eventName: 'summaryChanged', createHandler: () => handleSummaryChanged },
+      { enabled: Boolean(options.onSelectionSummaryChanged), eventName: 'selectionSummaryChanged', createHandler: () => handleSelectionSummaryChanged },
+      { enabled: Boolean(options.onMutatingChanged), eventName: 'mutatingChanged', createHandler: () => handleMutatingChanged },
     ]
 
-    for (const registration of registrations) {
-      registerBridgeEvent(registration.enabled, registration.eventName, registration.handler)
-    }
-
-    onCleanup(() => {
-      for (const cleanup of cleanupHandlers) cleanup()
-    })
+    onCleanup(registerDataViewEvents(view, registrations))
   })
 }
 
@@ -882,21 +782,29 @@ function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
   throw new Error('RendererFilter: r-filter children 必须是数组节点配置')
 }
 
+function createOriginatorContext(
+  originatorId: string | undefined,
+  view: DataView,
+  eventName: OriginatorBridgeEventName,
+): OriginatorFilterContext {
+  return { originatorId, view, eventName }
+}
+
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
   const explicit = nodeInputProp(config, 'filterOp') ?? nodeInputProp(config, 'filterOperator')
-  if (typeof explicit === 'string') return explicit as FilterOperator
+  if (hasStringValue(explicit)) return explicit as FilterOperator
   if (Array.isArray(value)) {
-    if (isRangeFilterConfig(config) || config.type === 'r-date' || config.type === 'r-number') {
-      return 'between'
+    if (isRangeFilterConfig(config) || config.type === FILTER_NODE_TYPE_DATE || config.type === FILTER_NODE_TYPE_NUMBER) {
+      return FILTER_OPERATOR_BETWEEN
     }
-    return 'in'
+    return FILTER_OPERATOR_IN
   }
 
   switch (config.type) {
-    case 'r-text':
-      return 'contains'
+    case FILTER_NODE_TYPE_TEXT:
+      return FILTER_OPERATOR_CONTAINS
     default:
-      return '=='
+      return FILTER_OPERATOR_EQUALS
   }
 }
 
@@ -940,6 +848,37 @@ function isResidentFieldRefDescriptor(
   return descriptor.kind === 'field-ref'
 }
 
+function splitFilterDescriptors(descriptors: readonly FilterDescriptor[]): {
+  input: InputFilterDescriptor[]
+  residentFieldRef: ResidentFieldRefFilterDescriptor[]
+} {
+  const input: InputFilterDescriptor[] = []
+  const residentFieldRef: ResidentFieldRefFilterDescriptor[] = []
+
+  for (const descriptor of descriptors) {
+    if (isInputFilterDescriptor(descriptor)) {
+      input.push(descriptor)
+      continue
+    }
+    if (isResidentFieldRefDescriptor(descriptor)) {
+      residentFieldRef.push(descriptor)
+    }
+  }
+
+  return { input, residentFieldRef }
+}
+
+function toResidentFieldRefCondition(descriptor: ResidentFieldRefFilterDescriptor): FilterExpression {
+  return {
+    field: descriptor.field,
+    op: descriptor.op,
+    value: {
+      kind: FILTER_VALUE_KIND_FIELD,
+      field: descriptor.refField,
+    } as FilterValueExpression,
+  }
+}
+
 function buildCondition(config: SparkNode, value: unknown): FilterExpression | undefined {
   const field = getNodeField(config)
   if (!field || isEmptyFilterValue(value)) return undefined
@@ -958,7 +897,7 @@ function syncFilterModelKeys(
   const validKeys = new Set<string>()
   for (const config of configs) {
     const field = getNodeField(config)
-    if (typeof field === 'string') validKeys.add(field)
+    if (hasStringValue(field)) validKeys.add(field)
   }
   for (const key of Object.keys(filterModel)) {
     if (!validKeys.has(key)) {
@@ -976,7 +915,73 @@ function getInputFilterModelValue(
   descriptor: InputFilterDescriptor,
   model: Record<string, unknown>,
 ): unknown {
-  return typeof descriptor.field === 'string' ? model[descriptor.field] : undefined
+  return hasStringValue(descriptor.field) ? model[descriptor.field] : undefined
+}
+
+function buildInputFilterConditions(
+  descriptors: readonly InputFilterDescriptor[],
+  model: Record<string, unknown>,
+): FilterExpression[] {
+  return descriptors
+    .map(descriptor => buildCondition(descriptor.config, getInputFilterModelValue(descriptor, model)))
+    .filter((expr): expr is FilterExpression => expr !== undefined)
+}
+
+function combineFilterConditions(conditions: FilterExpression[]): FilterExpression | undefined {
+  if (conditions.length === 0) return undefined
+  if (conditions.length === 1) return conditions[0]
+  return { type: 'and', children: conditions }
+}
+
+function countActiveInputFilters(
+  descriptors: readonly InputFilterDescriptor[],
+  model: Record<string, unknown>,
+): number {
+  let count = 0
+  for (const descriptor of descriptors) {
+    if (!isEmptyFilterValue(getInputFilterModelValue(descriptor, model))) {
+      count += 1
+    }
+  }
+  return count
+}
+
+function clearFilterModel(model: Record<string, unknown>): void {
+  for (const key of Object.keys(model)) {
+    model[key] = undefined
+  }
+}
+
+function getNormalizedDataKey(rawKey: unknown): string | null {
+  if (typeof rawKey !== 'string') return null
+  const normalized = rawKey.trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+type FilterApplyMode = 'set' | 'execute'
+
+async function applyFilterSafely(params: {
+  view: DataView | null | undefined
+  expr: FilterExpression | undefined
+  hasFilters: boolean
+  logger: ErrorLoggerLike
+  message: string
+  mode?: FilterApplyMode
+}): Promise<boolean> {
+  const { view, expr, hasFilters, logger, message, mode = 'set' } = params
+  if (!view || !hasFilters) return false
+
+  try {
+    if (mode === 'execute') {
+      await view.executeFilter(expr)
+    } else {
+      await view.setFilter(expr)
+    }
+    return true
+  } catch (error) {
+    logger.error(message, error)
+    return false
+  }
 }
 
 export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState {
@@ -988,27 +993,18 @@ export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState
     return nodes
   })
 
-  const filterDescriptors = computed(() => {
-    return allFilterNodes.value.map(config => describeFilterNode(config))
-  })
+  const filterDescriptors = computed(() => allFilterNodes.value.map(config => describeFilterNode(config)))
+
+  const descriptorBuckets = computed(() => splitFilterDescriptors(filterDescriptors.value))
 
   const inputFilterDescriptors = computed(() =>
-    filterDescriptors.value.filter(isInputFilterDescriptor)
+    descriptorBuckets.value.input
   )
 
   const filterConfigs = computed(() => inputFilterDescriptors.value.map(descriptor => descriptor.config))
 
   const residentFieldRefConditions = computed<FilterExpression[]>(() => {
-    return filterDescriptors.value
-      .filter(isResidentFieldRefDescriptor)
-      .map(descriptor => ({
-        field: descriptor.field,
-        op: descriptor.op,
-        value: {
-          kind: 'field',
-          field: descriptor.refField,
-        } as FilterValueExpression,
-      }))
+    return descriptorBuckets.value.residentFieldRef.map(descriptor => toResidentFieldRefCondition(descriptor))
   })
 
   watch(filterConfigs, (configs) => {
@@ -1018,86 +1014,51 @@ export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState
   const filterExpression = computed<FilterExpression | undefined>(() => {
     const conditions = [
       ...residentFieldRefConditions.value,
-      ...inputFilterDescriptors.value
-        .map(descriptor => {
-          return buildCondition(descriptor.config, getInputFilterModelValue(descriptor, filterModel))
-        })
-        .filter((expr): expr is FilterExpression => expr !== undefined),
+      ...buildInputFilterConditions(inputFilterDescriptors.value, filterModel),
     ]
-
-    if (conditions.length === 0) return undefined
-    if (conditions.length === 1) return conditions[0]
-    return { type: 'and', children: conditions }
+    return combineFilterConditions(conditions)
   })
 
   const hasRenderableFilters = computed(() => filterConfigs.value.length > 0)
   const hasAnyFilterNodes = computed(() => allFilterNodes.value.length > 0)
 
-  async function applyFilterToView(
-    view: DataView,
-    expr: FilterExpression | undefined,
-    forceExecute = false,
-  ): Promise<void> {
-    if (!hasAnyFilterNodes.value) return
-    if (forceExecute) {
-      await view.executeFilter(expr)
-      return
-    }
-    await view.setFilter(expr)
-  }
+  const resolvedFilterDataView = computed(() => toValue(options.dataView))
 
-  async function applyWithHandledError(
-    view: DataView,
-    expr: FilterExpression | undefined,
-    errorMessage: string,
-    forceExecute = false,
-  ): Promise<boolean> {
-    try {
-      await applyFilterToView(view, expr, forceExecute)
-      return true
-    } catch (error) {
-      options.logger.error(errorMessage, error)
-      return false
-    }
-  }
-
-  async function withActiveFilterView(action: (view: DataView) => Promise<void>): Promise<void> {
-    const view = toValue(options.dataView)
-    if (!view || !hasAnyFilterNodes.value) return
-    await action(view)
-  }
-
-  watch(() => toValue(options.dataView), async (view) => {
-    if (!view) return
-    await applyWithHandledError(view, filterExpression.value, 'RendererFilter: 同步过滤表达式失败')
+  watch(resolvedFilterDataView, async (view) => {
+    await applyFilterSafely({
+      view,
+      expr: filterExpression.value,
+      hasFilters: hasAnyFilterNodes.value,
+      logger: options.logger,
+      message: FILTER_SYNC_ERROR_MESSAGE,
+    })
   }, { immediate: true })
 
   watch(filterExpression, async (expr) => {
-    const view = toValue(options.dataView)
-    if (!view) return
-    await applyWithHandledError(view, expr, 'RendererFilter: 应用过滤失败')
+    await applyFilterSafely({
+      view: resolvedFilterDataView.value,
+      expr,
+      hasFilters: hasAnyFilterNodes.value,
+      logger: options.logger,
+      message: FILTER_APPLY_ERROR_MESSAGE,
+    })
   }, { deep: true })
 
-  const activeFilterCount = computed(() => {
-    let count = 0
-    for (const descriptor of inputFilterDescriptors.value) {
-      if (!isEmptyFilterValue(getInputFilterModelValue(descriptor, filterModel))) {
-        count++
-      }
-    }
-    return count
-  })
+  const activeFilterCount = computed(() => countActiveInputFilters(inputFilterDescriptors.value, filterModel))
 
   function resetFilters(): Promise<void> {
-    for (const key of Object.keys(filterModel)) {
-      filterModel[key] = undefined
-    }
+    clearFilterModel(filterModel)
     return Promise.resolve()
   }
 
   async function searchFilters(): Promise<void> {
-    await withActiveFilterView(async (view) => {
-      await applyWithHandledError(view, filterExpression.value, 'RendererFilter: 应用过滤失败', true)
+    await applyFilterSafely({
+      view: resolvedFilterDataView.value,
+      expr: filterExpression.value,
+      hasFilters: hasAnyFilterNodes.value,
+      logger: options.logger,
+      message: FILTER_APPLY_ERROR_MESSAGE,
+      mode: 'execute',
     })
   }
 
@@ -1127,103 +1088,166 @@ interface FormDetailContainerProps extends SparkNode {
   gridAutoRows: string | undefined
 }
 
+/**
+ * r-form / r-detail 在消费 useFormDetailContainer 时的最小输入形状。
+ *
+ * 目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。
+ */
+export interface FormDetailContainerConsumerProps {
+  type: SparkNode['type']
+  id?: SparkNode['id']
+  toolbar?: RToolbarProps
+  children?: SparkNode['children']
+  dataSource?: DataView
+  dataKey: string | undefined
+  gridColumns: number | undefined
+  gridGap: number | string | undefined
+  gridAutoRows: string | undefined
+}
+
+/**
+ * 构建 useFormDetailContainer 规范入参。
+ *
+ * 仅在字段存在时写入可选属性，保持与历史调用结构一致，避免引入 undefined 噪声字段。
+ */
+export function buildFormDetailContainerProps(
+  props: FormDetailContainerConsumerProps,
+): FormDetailContainerProps {
+  return {
+    type: props.type,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+    ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
+    dataKey: props.dataKey,
+    gridColumns: props.gridColumns,
+    gridGap: props.gridGap,
+    gridAutoRows: props.gridAutoRows,
+  }
+}
+
 export function useFormDetailContainer(
   props: FormDetailContainerProps,
   containerType: 'r-form' | 'r-detail',
 ) {
   // ==========================================================================
-  // 分区 1：布局输入与内容区网格
+  // 分区 1：布局层（children -> 网格投影）
+  // 目标：将容器 children 统一投影为可渲染网格结构，避免模板层重复计算。
   // ==========================================================================
 
   const contentChildren = computed(() => props.children ?? [])
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
     children: computed(() => getSparkNodeChildren(contentChildren.value)),
-    columns: computed(() => props.gridColumns ?? 24),
-    gap: computed(() => props.gridGap ?? 0),
-    autoRows: computed(() => props.gridAutoRows ?? 'minmax(32px, auto)'),
+    columns: computed(() => props.gridColumns ?? DEFAULT_GRID_COLUMNS),
+    gap: computed(() => props.gridGap ?? DEFAULT_NUMERIC_ZERO),
+    autoRows: computed(() => props.gridAutoRows ?? DEFAULT_AUTO_ROWS),
   })
 
   // ==========================================================================
-  // 分区 2：能力接入与 DataView 解析
+  // 分区 2：能力接入层（capability / DataView 解析）
+  // 目标：统一获取页面能力、模块上下文，并解析 dataKey 对应的 DataView 与数据行。
   // ==========================================================================
 
-  const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
+  const logPrefix = containerType === 'r-form' ? FORM_CONTAINER_LOG_PREFIX : DETAIL_CONTAINER_LOG_PREFIX
 
   const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
 
-  const pageService = sparkConsume(PAGE_SERVICE)
-
   const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
-  const { resolvedDataSource: resolvedView, resolvedDataRow, modelPermission } = useContainerDataSource<DataView>({
+  const dataState = useContainerDataSource({
     externalDataSource: toRef(props, 'dataSource'),
     dataKey: toRef(props, 'dataKey'),
     sparkConsume,
-    mapView: view => view,
     provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
     logger,
     logPrefix,
   })
 
-  const { currentRow, aggregateResult, selectionAggregateResult } = useRendererFormDetailViewState({ resolvedView })
-
   // ==========================================================================
-  // 分区 3：currentRow -> contextData 同步镜像
+  // 分区 3：上下文镜像层（DataView -> contextData）
+  // 目标：将 DataView 的“当前行/汇总行”镜像到 contextData，供字段组件与表达式统一消费。
+  // 约束：镜像是浅层同步，保持对象引用稳定，减少不必要响应式抖动。
   // ==========================================================================
 
   const contextData = shallowReactive<IDataRow>({})
   let prevRow: unknown = Symbol('initial')
 
+  /**
+   * 解析当前容器应绑定的“上下文行”。
+   *
+   * 规则优先级：
+   * 1) 当 dataKey 指向汇总结果时，直接返回聚合行（aggregateResult / selectionAggregateResult）
+   * 2) 否则优先使用 dataKey 已解析到的行（resolvedDataRow）
+   * 3) 最后回落到 DataView.currentRow
+   */
   function resolveContextRow(): IDataRow | null {
-    const rawKey = props.dataKey
-    if (typeof rawKey === 'string') {
-      const normalizedKey = rawKey.trim()
-      const view = resolvedView.value
-      if (normalizedKey.endsWith('@selectionAggregateResult')) {
-        return (view?.selectionAggregateResult ?? selectionAggregateResult.value) as IDataRow
+    const normalizedKey = getNormalizedDataKey(props.dataKey)
+    if (normalizedKey) {
+      const view = dataState.resolvedView.value
+      const viewSelectionAggregateResult = view?.selectionAggregateResult
+      const viewAggregateResult = view?.aggregateResult
+      // 选中行汇总：仅统计 selectedRows 的聚合输出。
+      if (normalizedKey.endsWith(DATAKEY_SUFFIX_SELECTION_AGGREGATE_RESULT)) {
+        return (viewSelectionAggregateResult ?? dataState.selectionAggregateResult.value) as IDataRow
       }
-      if (normalizedKey.endsWith('@aggregateResult')) {
-        return (view?.aggregateResult ?? aggregateResult.value) as IDataRow
+      // 全量汇总：统计当前视图 rows 的聚合输出。
+      if (normalizedKey.endsWith(DATAKEY_SUFFIX_AGGREGATE_RESULT)) {
+        return (viewAggregateResult ?? dataState.aggregateResult.value) as IDataRow
       }
     }
 
-    return resolvedDataRow.value ?? currentRow.value
+    return dataState.resolvedDataRow.value ?? dataState.currentRow.value
   }
 
+  /**
+   * 将解析出的行同步到 contextData。
+   *
+   * `skipSameRef` 用于跳过“同引用重复写入”，避免无意义的浅层同步。
+   */
   function syncContextDataFromCurrentRow(row: IDataRow | null, options?: { skipSameRef?: boolean }): void {
     if (options?.skipSameRef === true && row === prevRow) return
     prevRow = row
     syncReactiveRow(contextData, row)
   }
 
+  function syncResolvedContextRow(): void {
+    syncContextDataFromCurrentRow(resolveContextRow())
+  }
+
   watch(
-    () => resolveContextRow(),
+    resolveContextRow,
     (resolvedRow) => {
-      syncContextDataFromCurrentRow(resolvedRow, { skipSameRef: true })
+      syncContextDataFromCurrentRow(resolvedRow, { skipSameRef: CONTEXT_SYNC_SKIP_SAME_REF })
     },
     { immediate: true },
   )
 
+  // 事件桥接：兜住 DataView 在运行时的关键变化，保证 contextData 与数据态持续一致。
   useDataViewEventBridge({
-    resolvedView,
+    resolvedView: dataState.resolvedView,
+    // currentRow 变化时，仍以 resolveContextRow 为准，确保汇总 dataKey 不被 currentRow 覆盖。
     onCurrentRowChanged: ({ row }) => {
       const resolvedRow = resolveContextRow()
       syncContextDataFromCurrentRow(resolvedRow ?? row)
     },
+    // rows 变化可能导致 currentRow/聚合行失效，统一重算并同步。
     onRowsChanged: () => {
-      syncContextDataFromCurrentRow(resolveContextRow())
+      syncResolvedContextRow()
     },
+    // aggregateResult 重算后立即同步到 contextData。
     onSummaryChanged: () => {
-      syncContextDataFromCurrentRow(resolveContextRow())
+      syncResolvedContextRow()
     },
+    // selectionAggregateResult 重算后立即同步到 contextData。
     onSelectionSummaryChanged: () => {
-      syncContextDataFromCurrentRow(resolveContextRow())
+      syncResolvedContextRow()
     },
   })
 
   // ==========================================================================
-  // 分区 4：工具栏视图态投影
+  // 分区 4：工具栏投影层
+  // 目标：统一解析 toolbar 可见项、位置与样式类，供模板直接消费。
   // ==========================================================================
 
   const {
@@ -1236,17 +1260,23 @@ export function useFormDetailContainer(
   })
 
   // ==========================================================================
-  // 分区 5：作用域构建
+  // 分区 5：作用域构建层
+  // 目标：输出字段渲染所需默认作用域，保持 form/detail 的访问面一致。
   // ==========================================================================
 
+  /** 提取作用域公共基底，避免 scope 构造重复。 */
   function scopeBase() {
     return {
-      dataSource: resolvedView.value,
-      modelPermission: modelPermission.value,
+      dataSource: dataState.resolvedView.value,
+      modelPermission: dataState.modelPermission.value,
       moduleContext: moduleContext.value,
     }
   }
 
+  /**
+   * 默认作用域：row/model 均绑定 contextData。
+   * 这样字段组件在 form/detail 中使用同一份上下文来源，不区分 current/summary 场景。
+   */
   function getDefaultScope() {
     return createCurrentRowScope({
       ...scopeBase(),
@@ -1256,14 +1286,13 @@ export function useFormDetailContainer(
   }
 
   // ==========================================================================
-  // 分区 6：对外输出
+  // 分区 6：对外输出层
   // ==========================================================================
   return {
     registerApi,
     sparkProvide,
     logger,
-    pageService,
-    resolvedView,
+    resolvedView: dataState.resolvedView,
     contextData,
     gridChildren,
     gridStyle,
@@ -1273,8 +1302,8 @@ export function useFormDetailContainer(
     visibleToolbarConfigs,
     showToolbar,
     getDefaultScope,
-    aggregateResult,
-    selectionAggregateResult,
+    aggregateResult: dataState.aggregateResult,
+    selectionAggregateResult: dataState.selectionAggregateResult,
   }
 }
 

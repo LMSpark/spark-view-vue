@@ -323,9 +323,6 @@ export class DataView implements IDataSource {
   /** autoLoad 是否来自显式视图配置，而不是类默认值。 */
   autoLoadConfigured = false
 
-  /** @deprecated 已无实际语义。setPage/setPageSize/setSort/setFilter 均已改为"设置即处理"，不再依赖此开关。保留仅为向后兼容。 */
-  autoRefresh = false
-
   private _shouldApplyStaticLocalFilter(): boolean {
     const table = this._dataTable
     if (!table) return false
@@ -1714,7 +1711,6 @@ export class DataView implements IDataSource {
       this.autoLoad = vc.autoLoad
       this.autoLoadConfigured = true
     }
-    if (vc.autoRefresh !== undefined) this.autoRefresh = vc.autoRefresh
     if (vc.commitMode !== undefined) this.commitMode = vc.commitMode
     if (vc.valueField !== undefined) this.valueField = vc.valueField
     if (vc.labelField !== undefined) this.labelField = vc.labelField
@@ -1782,7 +1778,6 @@ export class DataView implements IDataSource {
     if (this.autoSelectFirst) result.autoSelectFirst = this.autoSelectFirst
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
-    if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh
     if (this.commitMode !== 'immediate') result.commitMode = this.commitMode
     if (this.valueField !== undefined) result.valueField = this.valueField
     if (this.labelField !== undefined) result.labelField = this.labelField

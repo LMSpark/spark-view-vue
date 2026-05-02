@@ -10,7 +10,7 @@ import { createCancelledCrudResult } from './interactionControl.js'
 import type { EventDispatcher } from './useEventDefaults.js'
 
 export function createBaseCrudMethods(
-  resolvedView: ValueRef<DataView | null | undefined>,
+  resolvedView: ValueRef<DataView | null>,
   dispatch: EventDispatcher,
 ): BaseContainerApi {
   return {

@@ -1,7 +1,7 @@
 export {
   useContainerDataSource,
   useContainerDataSourceEffects,
-} from './container-composables.js'
+} from '../data-components/view-state.js'
 
 export {
   useContainerModuleContext,

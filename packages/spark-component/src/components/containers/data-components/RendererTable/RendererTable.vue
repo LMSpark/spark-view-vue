@@ -91,20 +91,20 @@
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
  * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
  */
-import { computed, ref, toRef } from 'vue'
+import { computed, nextTick, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId, type SparkNode,
-  DATA_SOURCE, PAGE_SERVICE,
+  DATA_SOURCE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
-import { useRendererTableNodeState, useRendererTableViewEffects, useRendererTableViewState } from '../view-state'
-import { useContainerDataSource } from '../../composables/container-composables'
+import { useContainerDataSource, useRendererTableViewState } from '../view-state'
 import { useContainerToolbar } from '../../composables/container-composables'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import { deriveSiblingFieldDataKey } from '@spark-view/spark-data'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
 
@@ -112,15 +112,84 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
-const {
-  normalizedContentChildNodes,
-  toolbarNode,
-  actionScopeChildren,
-  hasLeftActions,
-  hasRightActions,
-  hasFilters,
-  filterSparkNode,
-} = useRendererTableNodeState({ props })
+const normalizedContentChildNodes = computed<SparkNode[]>(() => {
+  return getSparkNodeChildren(props.children).map((rawNode) => {
+    const sourceProps = rawNode.props ?? {}
+    const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
+    return (
+      rawNode.type === 'r-row-fragment'
+      || rawNode.type === 'r-column-group'
+      || sourceProps['sortable'] !== undefined
+      || typeof field !== 'string'
+      || field.trim().length === 0
+    )
+      ? rawNode
+      : { ...rawNode, props: { ...sourceProps, sortable: true } }
+  })
+})
+
+const toolbarNode = computed<SparkNode | undefined>(() => {
+  const toolbar = props.toolbar
+  if (!toolbar) return undefined
+
+  const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
+  const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== '')
+    ? existingDataKey
+    : deriveSiblingFieldDataKey(props.dataKey, 'currentRow')
+
+  return {
+    type: 'r-toolbar',
+    ...(id !== undefined ? { id } : {}),
+    props: {
+      ...propsFields,
+      ...(resolvedDataKey !== undefined ? { dataKey: resolvedDataKey } : {}),
+    },
+    ...(children !== undefined ? { children } : {}),
+  }
+})
+
+const actionsNode = computed<SparkNode | undefined>(() => {
+  const actions = props.actions
+  if (!actions || (actions.children?.length ?? 0) === 0) return undefined
+  const { type: _type, id, children, ...propsFields } = actions
+  return {
+    type: 'r-toolbar',
+    ...(id !== undefined ? { id } : {}),
+    props: {
+      ...propsFields,
+    },
+    ...(children !== undefined ? { children } : {}),
+  }
+})
+
+const actionScopeChildren = computed<SparkNode[]>(() => {
+  return actionsNode.value ? [actionsNode.value] : []
+})
+
+const hasLeftActions = computed(
+  () => actionsNode.value !== undefined && props.actions?.position === 'left'
+)
+const hasRightActions = computed(
+  () => actionsNode.value !== undefined && (props.actions?.position ?? 'right') === 'right'
+)
+
+const hasFilters = computed(() => (props.filter?.children?.length ?? 0) > 0)
+
+const filterSparkNode = computed<SparkNode>(() => {
+  const filter = props.filter ?? {}
+  const { type: _type, id, children, class: userClass, ...rest } = filter
+  return {
+    type: 'r-filter',
+    ...(id !== undefined ? { id } : {}),
+    props: {
+      autoFitMinWidth: '220px',
+      itemSpan: 1,
+      ...rest,
+      class: ['renderer-table-filter-panel', userClass].filter(Boolean).join(' '),
+    },
+    children: children ?? [],
+  }
+})
 
 // row-fragment 列元信息统一存在 node.props（title/width/minWidth/align/...），以下为类型安全读取工具。
 function rowFragmentRawProp(node: SparkNode, key: string): unknown {
@@ -158,21 +227,22 @@ const baseElTableProps = computed<Record<string, unknown>>(() => {
   }
 })
 
+const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freeze({
+  children: 'children',
+  hasChildren: 'hasChildren',
+})
+
 // ── 能力注入与 DataView 解析（dataKey 优先，回落外部 dataSource）、向下提供 DATA_SOURCE ─────────────
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
-const pageService = sparkConsume(PAGE_SERVICE)
-
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
   dataKey: toRef(props, 'dataKey'),
   sparkConsume,
-  mapView: view => view,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTable',
 })
-
 // ── 外层布局方向（toolbar 结构由 view-state 统一组装） ───────────────────────────────────────
 
 const {
@@ -184,14 +254,59 @@ const {
 // ── 筛选区透传：r-filter 自治 DataView 同步与 filterModel ─────────────────────────────
 const {
   tableData,
-  elTableProps,
   currentRow,
   isMultiSelect,
-  isSelectedRow,
 } = useRendererTableViewState({
-  baseElTableProps,
-  resolvedView,
+  dataState,
 })
+
+const tableRowKeyValue = computed(() =>
+  dataState.primaryKey.value
+  ?? dataState.treeConfig.value?.idField
+)
+
+const tableTreePropsValue = computed<Record<string, unknown> | undefined>(() => {
+  if (!dataState.treeConfig.value) return undefined
+  return DEFAULT_TABLE_TREE_PROPS
+})
+
+const elTableProps = computed<Record<string, unknown>>(() => {
+  const result = { ...baseElTableProps.value }
+
+  if (!dataState.treeConfig.value) return result
+
+  if (result['rowKey'] === undefined && tableRowKeyValue.value) {
+    result['rowKey'] = tableRowKeyValue.value
+  }
+
+  if (result['treeProps'] === undefined && tableTreePropsValue.value) {
+    result['treeProps'] = tableTreePropsValue.value
+  }
+
+  return result
+})
+
+const selectedRowIdSet = computed<Set<string | number>>(() => {
+  const keyField = dataState.primaryKey.value
+  const ids = new Set<string | number>()
+  if (typeof keyField !== 'string' || keyField.length === 0) return ids
+  for (const row of dataState.selectedRows.value) {
+    const key = (row as Record<string, unknown>)[keyField]
+    if (typeof key === 'string' || typeof key === 'number') ids.add(key)
+  }
+  return ids
+})
+
+const selectedRowRefSet = computed<Set<IDataRow>>(() => new Set(dataState.selectedRows.value))
+
+function isSelectedRow(row: IDataRow): boolean {
+  const keyField = dataState.primaryKey.value
+  if (typeof keyField === 'string' && keyField.length > 0) {
+    const key = (row as Record<string, unknown>)[keyField]
+    if ((typeof key === 'string' || typeof key === 'number') && selectedRowIdSet.value.has(key)) return true
+  }
+  return selectedRowRefSet.value.has(row)
+}
 
 // ── 零代码 API 桥接：filter API 已下放给 r-filter，这里仅保留 view.refresh()/选择态等 ───────────
 const nativeTableRef = ref<NativeTableLike | null>(null)
@@ -201,18 +316,20 @@ const {
   tableApi,
 } = createRendererTableZeroCode({
   props,
-  resolvedView,
+  resolvedView: dataState.resolvedView,
   nativeTableRef,
-  pageService,
   logger,
 })
 
 registerApi(tableApi)
 
-useRendererTableViewEffects({
+watch(
   currentRow,
-  nativeTableRef,
-})
+  async (row) => {
+    await nextTick()
+    nativeTableRef.value?.setCurrentRow?.(row ?? null)
+  },
+)
 
 
 /**
@@ -244,13 +361,13 @@ async function handleSelectionChange(selection: IDataRow[]) {
 
 /** 处理排序变化（服务端排序） */
 async function handleSortChange({ prop, order }: { prop: string | null, order: 'ascending' | 'descending' | null }) {
-  if (!resolvedView.value) return
+  if (!dataState.resolvedView.value) return
   if (!prop || !order) {
     // 取消排序
-    await resolvedView.value.setSort(undefined)
+    await dataState.resolvedView.value.setSort(undefined)
   } else {
     // 设置排序
-    await resolvedView.value.setSort([{
+    await dataState.resolvedView.value.setSort([{
       field: prop,
       direction: order === 'ascending' ? 'asc' : 'desc',
     }])

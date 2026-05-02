@@ -47,7 +47,10 @@ import {
   nodeId,
 } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
-import { useFormDetailContainer } from '../../composables/container-composables'
+import {
+  buildFormDetailContainerProps,
+  useFormDetailContainer,
+} from '../../composables/container-composables'
 import { createRendererFormZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
@@ -64,7 +67,6 @@ const formPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.form
 const {
   registerApi,
   logger,
-  pageService,
   resolvedView,
   contextData: formModel,
   gridChildren,
@@ -75,17 +77,20 @@ const {
   visibleToolbarConfigs,
   showToolbar,
   getDefaultScope,
-} = useFormDetailContainer({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-  ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
-  dataKey: props.dataKey,
-  gridColumns: props.gridColumns,
-  gridGap: props.gridGap,
-  gridAutoRows: props.gridAutoRows,
-}, 'r-form')
+} = useFormDetailContainer(
+  buildFormDetailContainerProps({
+    type: props.type,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+    ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
+    dataKey: props.dataKey,
+    gridColumns: props.gridColumns,
+    gridGap: props.gridGap,
+    gridAutoRows: props.gridAutoRows,
+  }),
+  'r-form',
+)
 
 const nativeFormRef = ref<unknown>(null)
 const {
@@ -95,7 +100,6 @@ const {
   resolvedView,
   formModel,
   nativeFormRef,
-  pageService,
   logger,
 })
 

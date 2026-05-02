@@ -3,15 +3,12 @@
  *
  * 职责：
  * - 创建并注入 Registry
- * - 创建根 Spark 能力上下文
- * - 将根上下文绑定到 app runtime，而不是通过 Vue provide 传递
+ * - 配置 DataView 运行时包装策略
  */
 
 import type { App, Plugin } from 'vue'
 import { shallowReactive } from 'vue'
 import type { ComponentRegistry } from '../core/types.js'
-import { createSparkCapabilityContext } from '../core/capability-system.js'
-import { bindAppRootCapabilityContext } from '../internal/capability-context.js'
 import { getGlobalRegistry } from './registry.js'
 import { SPARK_REGISTRY_KEY } from './keys.js'
 import { DataView } from '@spark-view/spark-data'
@@ -30,12 +27,8 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
       // 配置 DataView 使用 Vue shallowReactive 包装（仅追踪顶层属性，避免 rows 数据行的深度 Proxy 开销）
       DataView.wrapInstance = (dv) => shallowReactive(dv) as DataView
 
-      // 创建应用级根能力上下文
-      const rootContext = createSparkCapabilityContext({ id: 'spark-root', type: 'spark-app' })
-
-      // Registry 仍通过 Vue DI 注入；SparkContext 自己通过 runtime 锚点表建树。
+      // Registry 通过 Vue DI 注入；业务能力上下文由 Spark runtime owner/pageRoot 锚点建树。
       app.provide(SPARK_REGISTRY_KEY, registry)
-      bindAppRootCapabilityContext(app, rootContext)
     }
   }
 }

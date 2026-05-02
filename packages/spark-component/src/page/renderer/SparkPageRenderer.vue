@@ -59,7 +59,7 @@
  * ```
  */
 import {
-  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, onErrorCaptured,
+  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, onErrorCaptured, onUnmounted,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
@@ -80,9 +80,15 @@ import { buildPageService, type PageServiceOverrides } from '../services/buildPa
 import { buildPageContext } from '../context/buildPageContext'
 import { buildPageChildren } from '../binding'
 import type { PageContext } from '../context/types'
+import {
+  bindPageRootCapabilityContext,
+  resolveCapabilityContextOwner,
+  unbindPageRootCapabilityContext,
+} from '../../internal/capability-context.js'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 
 const logger = Logger('SparkPageRenderer')
+const currentInstance = getCurrentInstance()
 
 type PageRuntimeErrorPhase = 'load' | 'script-compile' | 'init' | 'script-function' | 'render'
 
@@ -219,7 +225,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page', logger)
 const route = useRoute()
-const vueApp = getCurrentInstance()?.appContext.app
+const vueApp = currentInstance?.appContext.app
 const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
 
 // PAGE_SERVICE
@@ -242,6 +248,9 @@ let _nodeTree: SparkNodeTree | null = null
 // ── DataSetCrudTool：pagedata.json 的 SSoT（AI 编辑入口）──
 let _crudTool: DataSetCrudTool | null = null
 const pageContainer = ref<HTMLElement | null>(null)
+const currentCapabilityContext = currentInstance
+  ? resolveCapabilityContextOwner(currentInstance as object)
+  : null
 
 // ── CSS 作用域 ──
 const { scopedCss, setScopedCss } = useCssScope({ enableScope: props.enableCssScope })
@@ -511,6 +520,25 @@ watch(
   },
   { immediate: true },
 )
+
+watch(
+  pageContainer,
+  (nextContainer, prevContainer) => {
+    if (prevContainer) {
+      unbindPageRootCapabilityContext(prevContainer)
+    }
+    if (nextContainer && currentCapabilityContext) {
+      bindPageRootCapabilityContext(nextContainer, currentCapabilityContext)
+    }
+  },
+  { immediate: true },
+)
+
+onUnmounted(() => {
+  if (pageContainer.value) {
+    unbindPageRootCapabilityContext(pageContainer.value)
+  }
+})
 
 // ==================== Expose ====================
 

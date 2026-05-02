@@ -424,3 +424,96 @@ export function buildDataKey(
 export function getViewKey(descriptor: DataKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
 }
+
+// ===== 跨框架能力解析（framework-agnostic capability resolution）=====
+
+/**
+ * DataKey 能力解析结果。
+ *
+ * 设计约束：此类型及以下函数不依赖任何 UI 框架，可在 Node.js、测试、非 Vue 环境中使用。
+ */
+export interface ResolvedDataCapabilities {
+  /** 解析到的 DataView（来自 rows/currentRow/… 字段所属视图）；无匹配时为 null */
+  dataSource: SparkDataView | null
+  /**
+   * 解析到的上下文行：
+   * - view-binding（field='rows'）→ view.currentRow
+   * - field-binding（field='currentRow' / 其他行字段）→ 绑定行本身
+   * 无匹配时为 null
+   */
+  dataRow: IDataRow | null
+}
+
+function isRowLike(value: unknown): value is IDataRow {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+/**
+ * 统一 DataKey 能力解析入口（框架无关）。
+ *
+ * - dataSource：定位到绑定键所属的 DataView
+ * - dataRow：view-binding 返回 view.currentRow；field-binding 返回绑定行
+ */
+export function resolveDataCapabilitiesFromDataKey(
+  rawKey: string | undefined,
+  dataSet: IDataSet | null | undefined,
+): ResolvedDataCapabilities {
+  const empty: ResolvedDataCapabilities = { dataSource: null, dataRow: null }
+  if (!rawKey || !dataSet) return empty
+
+  const binding = resolveDataKeyBinding(rawKey, dataSet)
+  if (!binding) return empty
+
+  if (binding.kind === 'view') {
+    const dataSource = binding.source as SparkDataView
+    const currentRow = dataSource.currentRow
+    return {
+      dataSource,
+      dataRow: isRowLike(currentRow) ? currentRow : null,
+    }
+  }
+
+  const dataSource = getViewFromRawKey(rawKey, dataSet) ?? null
+  return {
+    dataSource,
+    dataRow: isRowLike(binding.value) ? binding.value : null,
+  }
+}
+
+/**
+ * 统一 DataKey → DataView 入口（框架无关）。
+ *
+ * - 空 key / 缺少 DataSet → null
+ * - 非法 key / 视图不存在 → null
+ */
+export function resolveViewFromDataKey(
+  rawKey: string | undefined,
+  dataSet: IDataSet | null | undefined,
+): SparkDataView | null {
+  return resolveDataCapabilitiesFromDataKey(rawKey, dataSet).dataSource
+}
+
+/**
+ * 从任意合法 DataKey 派生"同 scope + 同 table + 同 viewId"的目标字段 DataKey。
+ *
+ * @example
+ * deriveSiblingFieldDataKey('Orders@grid@rows', 'currentRow') // → 'Orders@grid@currentRow'
+ * deriveSiblingFieldDataKey('#Shared@Orders@rows', 'selectedRows') // → '#Shared@Orders@selectedRows'
+ */
+export function deriveSiblingFieldDataKey(
+  rawKey: string | undefined,
+  targetField: DataKeyField,
+): string | undefined {
+  if (typeof rawKey !== 'string') return undefined
+  const normalized = rawKey.trim()
+  if (normalized.length === 0) return undefined
+
+  const descriptor = parseDataKey(normalized)
+  if (!descriptor) return undefined
+
+  const scopePrefix = descriptor.scope ? `#${descriptor.scope}@` : ''
+  if (descriptor.viewId === 'default') {
+    return `${scopePrefix}${descriptor.tableName}@${targetField}`
+  }
+  return `${scopePrefix}${descriptor.tableName}@${descriptor.viewId}@${targetField}`
+}

@@ -50,7 +50,7 @@ import {
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { RToolbarProps } from './RendererToolbar.types'
-import { useContainerDataSource } from '../composables/container-composables'
+import { useContainerDataSource } from '../data-components/view-state'
 import { useDataViewEventBridge } from '../composables/container-composables'
 
 // ============================================================================
@@ -81,10 +81,9 @@ const toolbarReactiveVersion = ref(0)
 //    2. dataKey 解析得到的 dataSource
 //    3. 继承父级 DATA_SOURCE
 // ============================================================================
-const { resolvedDataSource: resolvedToolbarDataSource, modelPermission } = useContainerDataSource<DataView>({
+const dataState = useContainerDataSource({
   dataKey: toRef(props, 'dataKey'),
   sparkConsume,
-  mapView: view => view,
   externalDataSource: computed(() => props.dataSource as DataView | undefined),
   inheritedDataSource: computed(() => inheritedDataSource as DataView | null),
   provideDataSource: (source: DataView) => {
@@ -92,9 +91,8 @@ const { resolvedDataSource: resolvedToolbarDataSource, modelPermission } = useCo
     sparkProvide(DATA_SOURCE, source)
   },
 })
-
 useDataViewEventBridge({
-  resolvedView: resolvedToolbarDataSource,
+  resolvedView: dataState.resolvedView,
   onCurrentRowChanged: () => {
     toolbarReactiveVersion.value += 1
   },
@@ -116,7 +114,7 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
   // 事件触发时该值递增，从而让动作节点计算链整体刷新。
   void toolbarReactiveVersion.value
 
-  const dataSource = resolvedToolbarDataSource.value
+  const dataSource = dataState.resolvedView.value
 
   // 行上下文优先使用父级明确传入的 DATA_ROW，
   // 若不存在则回退到当前 DataView.currentRow。
@@ -129,7 +127,7 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
     row,
     data: row,
     dataSource,
-    modelPermission: modelPermission.value,
+    modelPermission: dataState.modelPermission.value,
     host: { type: 'r-toolbar' },
   })
 

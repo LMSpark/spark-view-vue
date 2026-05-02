@@ -3,7 +3,7 @@ import { SparkData } from '@spark-view/spark-data'
 import {
   resolveDataCapabilitiesFromDataKey,
   resolveViewFromDataKey,
-} from '../packages/spark-component/src/core/data-key-resolver'
+} from '@spark-view/spark-data'
 
 describe('spark-component dataKey resolver', () => {
   function createDataSet() {

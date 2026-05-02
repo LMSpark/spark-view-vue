@@ -1,40 +1,23 @@
-import type { App } from 'vue'
 import type { SparkCapabilityContext } from '../core/types.js'
 
 /**
  * Spark 运行时上下文锚点表。
  *
- * SparkCapabilityContext 自己形成结构树；Vue 运行时只提供当前实例/appContext 入口，
+ * SparkCapabilityContext 自己形成结构树；
+ * 运行时仅保留 owner 链与 pageRoot 锚点，
  * 不再通过 provide/inject 传递父上下文。
  */
 
 export interface SparkRuntimeOwner {
 	parent?: SparkRuntimeOwner | null
-	appContext?: unknown
+	pageRoot?: unknown
 }
 
 const OWNER_CONTEXTS = new WeakMap<object, SparkCapabilityContext>()
-const APP_ROOT_CONTEXTS = new WeakMap<object, SparkCapabilityContext>()
+const PAGE_ROOT_CONTEXTS = new WeakMap<object, SparkCapabilityContext>()
 
 function isObject(value: unknown): value is object {
 	return typeof value === 'object' && value !== null
-}
-
-function resolveInstalledAppContext(app: App): object | null {
-	const appContext = (app as App & { _context?: unknown })._context
-	return isObject(appContext) ? appContext : null
-}
-
-export function bindAppRootCapabilityContext(app: App, context: SparkCapabilityContext): void {
-	const appContext = resolveInstalledAppContext(app)
-	if (appContext === null) return
-	APP_ROOT_CONTEXTS.set(appContext, context)
-}
-
-export function unbindAppRootCapabilityContext(app: App): void {
-	const appContext = resolveInstalledAppContext(app)
-	if (appContext === null) return
-	APP_ROOT_CONTEXTS.delete(appContext)
 }
 
 export function bindCapabilityContextOwner(owner: object, context: SparkCapabilityContext): void {
@@ -43,6 +26,23 @@ export function bindCapabilityContextOwner(owner: object, context: SparkCapabili
 
 export function unbindCapabilityContextOwner(owner: object): void {
 	OWNER_CONTEXTS.delete(owner)
+}
+
+export function resolveCapabilityContextOwner(owner: object): SparkCapabilityContext | null {
+	return OWNER_CONTEXTS.get(owner) ?? null
+}
+
+export function bindPageRootCapabilityContext(pageRoot: object, context: SparkCapabilityContext): void {
+	PAGE_ROOT_CONTEXTS.set(pageRoot, context)
+}
+
+export function unbindPageRootCapabilityContext(pageRoot: object): void {
+	PAGE_ROOT_CONTEXTS.delete(pageRoot)
+}
+
+export function resolvePageRootCapabilityContext(pageRoot: unknown): SparkCapabilityContext | null {
+	if (!isObject(pageRoot)) return null
+	return PAGE_ROOT_CONTEXTS.get(pageRoot) ?? null
 }
 
 export function resolveParentCapabilityContext(
@@ -62,10 +62,10 @@ export function resolveParentCapabilityContext(
 		currentOwner = currentOwner.parent ?? null
 	}
 
-	const appContext = owner?.appContext
-	if (!isObject(appContext)) {
-		return null
+	const pageRootContext = resolvePageRootCapabilityContext(owner?.pageRoot)
+	if (pageRootContext !== null) {
+		return pageRootContext
 	}
 
-	return APP_ROOT_CONTEXTS.get(appContext) ?? null
+	return null
 }

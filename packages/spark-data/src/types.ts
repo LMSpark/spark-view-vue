@@ -161,7 +161,11 @@ export interface ICurrentRowSource extends IRowDataSource {
 /**
  * 完整数据源全量接口，包含分页、聚合结果、权限、值序列化。
  *
- * DataView 实现此接口。此接口只暴露“运行时输出数据”，不承载聚合配置定义。
+ * DataView 实现此接口。可将其理解为“UI 读取 DataView(API 视图)时看到的运行时数据结构”。
+ *
+ * 边界：
+ * - DataView 对应 table + viewId 的 API 视图（含 requestData/refresh/requestState）。
+ * - IDataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataKey 解析得到）。
  *
  * 1. 行级计算列：`columns[].computeExpression` 对每一行求值，结果写回该行字段。
  *    表达式可直接读取行字段，可通过 `ctx` 读取外部上下文，也可通过
@@ -596,14 +600,6 @@ export interface IViewMetadata {
    * 仅对有配置 `api` 且为 default 视图的主表有意义。
    */
   autoLoad?: boolean
-  /**
-   * @deprecated 此字段已无实际语义。
-   *
-   * `setPage()` / `setPageSize()` / `setSort()` / `setFilter()` 均已改为“设置即处理”语义：
-   * 远端视图自动调用 `refresh()`，静态/本地视图就地处理或不处理，不再依赖此开关。
-   * 保留字段仅为向后兼容，新配置无需设置此项。
-   */
-  autoRefresh?: boolean
   /**
    * 增删改提交模式（默认 `'immediate'`）。
    *

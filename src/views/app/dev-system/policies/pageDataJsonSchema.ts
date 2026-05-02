@@ -314,9 +314,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
         labelField: withMeta('标签字段', '选项视图用于显示文本的字段。', { type: 'string' }),
         selectionDelimiter: withMeta('多选分隔符', '多选值序列化分隔符；空字符串通常表示单选。', { type: 'string' }),
         autoLoad: withMeta('是否自动加载', 'DataSet 初始化后是否自动请求该视图数据。', { type: 'boolean' }),
-        autoRefresh: withMeta('是否自动刷新', '分页、过滤、排序变化后是否自动刷新。', { type: 'boolean' }),
         commitMode: withMeta('提交模式', '视图提交模式，仅支持 immediate / staged。', { type: 'string', enum: commitModes }),
-        autoCommit: withMeta('是否自动提交', '本地变更后是否自动提交。', { type: 'boolean' }),
         aggregates: withMeta('聚合列集合', '视图级聚合列配置集合，对应 dataview.setAggregates。', {
           type: 'object',
           additionalProperties: { $ref: '#/$defs/aggregateColumnConfig' },

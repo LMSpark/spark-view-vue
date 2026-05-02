@@ -51,6 +51,12 @@ export {
   getViewFromRawKey,
 } from './core/data-key'
 export type { DataKeyBinding } from './core/data-key'
+export {
+  resolveDataCapabilitiesFromDataKey,
+  resolveViewFromDataKey,
+  deriveSiblingFieldDataKey,
+} from './core/data-key'
+export type { ResolvedDataCapabilities } from './core/data-key'
 
 // ===== 核心类型 =====
 

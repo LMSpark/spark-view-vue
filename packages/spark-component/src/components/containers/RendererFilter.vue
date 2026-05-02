@@ -67,7 +67,8 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../internal'
-import { useContainerDataSource, useFilterPanel } from './composables/container-composables'
+import { useContainerDataSource } from './data-components/view-state'
+import { useFilterPanel } from './composables/container-composables'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
@@ -93,17 +94,15 @@ const isPanelMode = computed(() => {
 // ── DataView 自治解析 ───────────────────────────────────────────────────
 const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
 
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+const dataState = useContainerDataSource({
   dataKey: toRef(props, 'dataKey'),
   sparkConsume,
   inheritedDataSource,
-  mapView: view => view,
   skipEffects: true,
 })
-
 // 面板模式下必须能解析到 DataView，否则 fail-fast。
 watch(
-  [isPanelMode, resolvedView],
+  [isPanelMode, dataState.resolvedView],
   ([panelMode, view]) => {
     if (panelMode && !view) {
       throw new Error(
@@ -123,7 +122,7 @@ const {
   resetFilters,
 } = useFilterPanel({
   filterChildren: () => isPanelMode.value ? standaloneChildren.value : [],
-  dataView: resolvedView,
+  dataView: dataState.resolvedView,
   logger,
 })
 

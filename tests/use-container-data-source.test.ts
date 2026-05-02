@@ -1,7 +1,7 @@
 import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CrudApi, TableResourceType } from '@spark-view/spark-data'
-import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/composables/container-composables'
+import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/data-components/view-state'
 
 interface AutoLoadViewLike {
   autoLoad?: boolean
@@ -40,9 +40,9 @@ async function mountAutoLoadEffect(source: AutoLoadViewLike | null) {
   }
 
   scope.run(() => {
-    const resolvedDataSource = ref<AutoLoadViewLike | null>(source)
+    const resolvedView = ref<AutoLoadViewLike | null>(source)
     useContainerDataSourceEffects<AutoLoadViewLike>({
-      resolvedDataSource: computed(() => resolvedDataSource.value),
+      resolvedView: computed(() => resolvedView.value),
       logger,
       logPrefix: 'test',
     })

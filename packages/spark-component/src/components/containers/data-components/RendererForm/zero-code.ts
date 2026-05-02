@@ -1,12 +1,11 @@
 import type { DataView } from '@spark-view/spark-data'
-import type { IPageServiceCapability } from '../../../internal'
 import type { LoggerApi } from '@spark-view/spark-utils'
-import type { SparkNode } from '../../../internal'
-import { isBuiltinActionDisabled } from '../../../../page/actions/index'
-import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
+import {
+  createContainerZeroCodeBase,
+  getNativeRefValue,
+} from '../zero-code-shared.js'
 import type { RendererFormApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
-import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 
 interface NativeFormLike {
   validate?: () => Promise<boolean>
@@ -16,28 +15,30 @@ interface NativeFormLike {
 
 interface RendererFormZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
-  resolvedView: ValueRef<DataView | null | undefined>
+  resolvedView: ValueRef<DataView | null>
   formModel: Record<string, unknown>
   nativeFormRef: ValueRef<unknown>
-  pageService: IPageServiceCapability | null | undefined
   logger: LoggerApi
 }
 
 export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions) {
-  const { dispatch } = createCrudDispatcher(options.props)
+  const { props, resolvedView, formModel, nativeFormRef } = options
 
-  const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
+  const { baseMethods, isBuiltinActionDisabled } = createContainerZeroCodeBase({
+    props,
+    resolvedView,
+  })
 
   const formApi: RendererFormApi = {
     ...baseMethods,
     getFormData() {
-      return options.formModel
+      return formModel
     },
     getNativeForm() {
-      return options.nativeFormRef.value
+      return getNativeRefValue<NativeFormLike>(nativeFormRef)
     },
     async validate() {
-      const form = options.nativeFormRef.value as NativeFormLike | null
+      const form = getNativeRefValue<NativeFormLike>(nativeFormRef)
       if (!form || typeof form.validate !== 'function') return true
       try {
         return await form.validate()
@@ -46,26 +47,25 @@ export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions)
       }
     },
     resetFields() {
-      const form = options.nativeFormRef.value as NativeFormLike | null
+      const form = getNativeRefValue<NativeFormLike>(nativeFormRef)
       if (!form || typeof form.resetFields !== 'function') return
       form.resetFields()
     },
     clearValidate() {
-      const form = options.nativeFormRef.value as NativeFormLike | null
+      const form = getNativeRefValue<NativeFormLike>(nativeFormRef)
       if (!form || typeof form.clearValidate !== 'function') return
       form.clearValidate()
     },
     getFieldValue(field) {
-      return options.formModel[field]
+      return formModel[field]
     },
     setFieldValue(field, value) {
-      options.formModel[field] = value
+      formModel[field] = value
     },
   }
 
   return {
     formApi,
-    isBuiltinActionDisabled: (action: SparkNode, scope?: BuiltinActionScope) =>
-      isBuiltinActionDisabled(action, options.resolvedView.value, scope),
+    isBuiltinActionDisabled,
   }
 }

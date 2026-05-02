@@ -41,7 +41,7 @@ app.mount('#app')
 | 操作 | 机制 | 内容 |
 |------|------|------|
 | `app.provide(SPARK_REGISTRY_KEY, registry)` | Vue DI | 组件注册表（全局单例）|
-| `bindAppRootCapabilityContext(app, rootContext)` | 运行时锚点表 | 根能力上下文（WeakMap 绑定到 app._context）|
+| `bindCapabilityContextOwner(owner, context)` / `bindPageRootCapabilityContext(pageRoot, context)` | 运行时锚点表 | owner 链 + pageRoot DOM 锚点（WeakMap）|
 
 > **注意**：`SparkPlugin` 不提供任何业务能力（如路由、logger）。根上下文通过运行时实例锚点表（非 Vue provide/inject）向子组件传递。这些由应用层的 `PageRenderer` 填充。
 

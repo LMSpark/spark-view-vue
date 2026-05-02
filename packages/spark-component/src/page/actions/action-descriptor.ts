@@ -118,7 +118,7 @@ export interface ShowAlertAction extends ActionDescriptorBase {
 
 export interface NavigateAction extends ActionDescriptorBase {
   action: 'navigate'
-  /** 目标路径，支持 `{field}` 从 currentRow / 事件 row 插值 */
+  /** 目标路径，支持 `{field}` 从事件 row 插值 */
   path: string
 }
 

@@ -268,7 +268,6 @@ const VIEW_METADATA_SCHEMA = {
     page: 'number? — 当前页',
     pageSize: 'number? — 每页大小',
     autoLoad: 'boolean? — DataSet 初始化后是否自动加载',
-    autoRefresh: 'boolean? — page/filter/sort 变化后是否自动刷新',
     commitMode: '"immediate" | "staged" ? — 提交模式',
     valueField: 'string | string[] ? — 值序列化字段',
     labelField: 'string? — 标签字段',

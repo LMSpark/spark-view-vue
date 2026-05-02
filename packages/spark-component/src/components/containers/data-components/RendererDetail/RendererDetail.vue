@@ -47,7 +47,10 @@ import {
   nodeId,
 } from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
-import { useFormDetailContainer } from '../../composables/container-composables'
+import {
+  buildFormDetailContainerProps,
+  useFormDetailContainer,
+} from '../../composables/container-composables'
 import { createRendererDetailZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
@@ -69,7 +72,6 @@ const detailAlignStyle = computed<StyleValue>(() => ({
 const {
   registerApi,
   logger,
-  pageService,
   resolvedView,
   gridChildren,
   gridStyle,
@@ -80,17 +82,20 @@ const {
   showToolbar,
   getDefaultScope,
   contextData: detailData,
-} = useFormDetailContainer({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-  ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
-  dataKey: props.dataKey,
-  gridColumns: props.gridColumns,
-  gridGap: props.gridGap,
-  gridAutoRows: props.gridAutoRows,
-}, 'r-detail')
+} = useFormDetailContainer(
+  buildFormDetailContainerProps({
+    type: props.type,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+    ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
+    dataKey: props.dataKey,
+    gridColumns: props.gridColumns,
+    gridGap: props.gridGap,
+    gridAutoRows: props.gridAutoRows,
+  }),
+  'r-detail',
+)
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────
 
@@ -100,7 +105,6 @@ const {
   props,
   resolvedView,
   detailData,
-  pageService,
   logger,
 })
 

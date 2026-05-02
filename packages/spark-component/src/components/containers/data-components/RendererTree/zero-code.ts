@@ -1,6 +1,5 @@
 import { nextTick } from 'vue'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import type { IPageServiceCapability } from '../../../internal'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import {
   createCancellableControl,
@@ -8,10 +7,11 @@ import {
 } from '../../../internal'
 import type { SparkNode } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
-import { isBuiltinActionDisabled } from '../../../../page/actions/index'
-import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
+import {
+  createContainerCrudContext,
+  getNativeRefValue,
+} from '../zero-code-shared.js'
 import type { RendererTreeApi } from './types'
-import type { BuiltinActionScope } from '../../../../page/actions/index.js'
 
 export interface TreeNode {
   id?: string | number
@@ -70,48 +70,65 @@ interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
 
 interface RendererTreeZeroCodeOptions {
   props: RendererTreeBehaviorProps
-  resolvedView: ValueRef<DataView | null | undefined>
+  resolvedView: ValueRef<DataView | null>
   treeData: ValueRef<IDataRow[]>
   nativeTreeRef: ValueRef<unknown>
   logger: LoggerApi
-  pageService: IPageServiceCapability | null | undefined
   nodeKeyField: ValueRef<string>
   treeIdField: ValueRef<string>
 }
 
 export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions) {
+  const {
+    props,
+    resolvedView,
+    treeData,
+    nativeTreeRef,
+    nodeKeyField,
+    treeIdField,
+    logger,
+  } = options
+
   function getNodeKey(data: unknown): string | number | null {
     const node = data as IDataRow | null | undefined
-    const key = node?.[options.nodeKeyField.value]
+    const key = node?.[nodeKeyField.value]
     return typeof key === 'string' || typeof key === 'number' ? key : null
   }
 
+  function getNativeTree(): NativeTreeLike | null {
+    return getNativeRefValue<NativeTreeLike>(nativeTreeRef)
+  }
+
   function syncCurrentByKey(key: string | number | null | undefined): void {
-    const tree = options.nativeTreeRef.value as NativeTreeLike | null
+    const tree = getNativeTree()
     if (key === null || key === undefined) {
-      options.resolvedView.value?.setCurrentRowById(null)
+      resolvedView.value?.setCurrentRowById(null)
       tree?.setCurrentKey?.(null)
       return
     }
-    options.resolvedView.value?.setCurrentRowById(key)
+    resolvedView.value?.setCurrentRowById(key)
     tree?.setCurrentKey?.(key)
   }
 
-  const { dispatch } = createCrudDispatcher(options.props)
-
-  const baseCrudMethods = createBaseCrudMethods(options.resolvedView, dispatch)
+  const {
+    baseMethods: baseCrudMethods,
+    isBuiltinActionDisabled: isBuiltinDisabled,
+  } = createContainerCrudContext({
+    props,
+    resolvedView,
+  })
   const { getDataSource, addRow, editRowById, removeRow } = baseCrudMethods
 
   const treeApi: RendererTreeApi = {
     getDataSource,
     getTreeData() {
-      return options.treeData.value
+      return treeData.value
     },
     getNativeTree() {
-      return options.nativeTreeRef.value
+      return getNativeTree()
     },
     getCurrentNode() {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree || typeof tree.getCurrentNode !== 'function') return null
       return (tree.getCurrentNode() as IDataRow | null) ?? null
     },
@@ -119,14 +136,14 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       syncCurrentByKey(key)
     },
     async expandToNode(key) {
-      const view = options.resolvedView.value
+      const view = resolvedView.value
       if (!view) return
 
       const path = await view.loadTreePath(key)
       await view.expandTreeToNode(key)
       await nextTick()
 
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree || typeof tree.getNode !== 'function') {
         syncCurrentByKey(key)
         return
@@ -139,22 +156,22 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       syncCurrentByKey(key)
     },
     filter(keyword) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree || typeof tree.filter !== 'function') return
       tree.filter(keyword)
     },
     getCheckedNodes(leafOnly, includeHalfChecked) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree || typeof tree.getCheckedNodes !== 'function') return []
       return tree.getCheckedNodes(leafOnly, includeHalfChecked) as IDataRow[]
     },
     getCheckedKeys() {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree || typeof tree.getCheckedKeys !== 'function') return []
       return tree.getCheckedKeys()
     },
     setCheckedKeys(keys) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree || typeof tree.setCheckedKeys !== 'function') return
       tree.setCheckedKeys(keys)
     },
@@ -162,30 +179,30 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     editRowById,
     removeRow,
     moveNode(nodeId, newParentId, index) {
-      const view = options.resolvedView.value
+      const view = resolvedView.value
       if (!view) return Promise.resolve(null)
       return view.moveTreeNode(nodeId, newParentId, index)
     },
     appendNode(parentKey, nodeData) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree) return
       const parentNode = parentKey !== null ? tree.getNode?.(parentKey) : null
       tree.append?.(nodeData, parentNode ?? undefined)
     },
     insertBefore(refKey, nodeData) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree) return
       const refNode = tree.getNode?.(refKey)
       if (refNode !== null && refNode !== undefined) tree.insertBefore?.(nodeData, refNode)
     },
     insertAfter(refKey, nodeData) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree) return
       const refNode = tree.getNode?.(refKey)
       if (refNode !== null && refNode !== undefined) tree.insertAfter?.(nodeData, refNode)
     },
     updateNode(key, patch) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree) return false
       const elNode = tree.getNode?.(key) as { data?: IDataRow } | undefined
       if (elNode?.data === undefined) return false
@@ -193,7 +210,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       return true
     },
     removeNode(key) {
-      const tree = options.nativeTreeRef.value as NativeTreeLike | null
+      const tree = getNativeTree()
       if (!tree) return false
       const elNode = tree.getNode?.(key)
       if (elNode === null || elNode === undefined) return false
@@ -203,12 +220,11 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   }
 
   function isBuiltinNodeActionDisabled(action: SparkNode, row: IDataRow, index: number): boolean {
-    const scope: BuiltinActionScope = { row, index }
-    return isBuiltinActionDisabled(action, options.resolvedView.value, scope)
+    return isBuiltinDisabled(action, { row, index })
   }
 
   function isBuiltinToolbarActionDisabled(action: SparkNode): boolean {
-    return isBuiltinActionDisabled(action, options.resolvedView.value)
+    return isBuiltinDisabled(action)
   }
 
   async function runTreeEvent(
@@ -228,29 +244,29 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   }
 
   const handleNodeClick = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-    await runTreeEvent(options.props.onNodeClick, data, node, component, () => {
+    await runTreeEvent(props.onNodeClick, data, node, component, () => {
       const key = getNodeKey(data)
       if (key === null) {
-        options.logger.warn('RendererTree node-click 跳过自动选中：节点缺少主键', {
-          nodeKey: options.nodeKeyField.value,
-          treeIdField: options.treeIdField.value,
+        logger.warn('RendererTree node-click 跳过自动选中：节点缺少主键', {
+          nodeKey: nodeKeyField.value,
+          treeIdField: treeIdField.value,
         })
         return
       }
-      options.resolvedView.value?.setCurrentRowById(key)
+      resolvedView.value?.setCurrentRowById(key)
     })
   }
 
   const handleNodeExpand = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-    await runTreeEvent(options.props.onNodeExpand, data, node, component)
+    await runTreeEvent(props.onNodeExpand, data, node, component)
   }
 
   const handleNodeCollapse = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-    await runTreeEvent(options.props.onNodeCollapse, data, node, component)
+    await runTreeEvent(props.onNodeCollapse, data, node, component)
   }
 
   const handleNodeDrop = async (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => {
-    const view = options.resolvedView.value
+    const view = resolvedView.value
     if (!view) return
 
     const draggedKey = getNodeKey(draggingNode.data)

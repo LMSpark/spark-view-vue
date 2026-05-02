@@ -15,7 +15,6 @@ import type {
 } from '../action-descriptor'
 import type { IDataRow } from '@spark-view/spark-data'
 import { interpolate, isRowLike } from '../executor-helpers'
-import { resolveActionDataCapabilities } from '../data-capabilities'
 import { extractActionExecutionControl } from '../action-control'
 import type { PageMessageType } from '../../../core/capability-system.js'
 
@@ -71,8 +70,7 @@ export function executeNavigate(
   if (path.includes('{')) {
     const eventRow = eventArgs?.[0]
     const rowFromEvent: IDataRow | null = isRowLike(eventRow) ? eventRow : null
-    const fallbackRow = resolveActionDataCapabilities(undefined, ctx).currentRow
-    path = interpolate(path, {}, rowFromEvent ?? fallbackRow)
+    path = interpolate(path, {}, rowFromEvent)
   }
 
   void router.push(path)

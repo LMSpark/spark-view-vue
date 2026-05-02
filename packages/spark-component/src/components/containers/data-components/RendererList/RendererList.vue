@@ -11,7 +11,7 @@
     <div class="renderer-list-main renderer-list" :style="listStyle" v-bind="listPropsValue">
         <template v-if="showListItems">
           <div
-            v-for="(row, index) in listRows"
+            v-for="(row, index) in rows"
             :key="getItemKey(row, index)"
             class="renderer-list-cell"
             :style="itemGridStyle"
@@ -81,6 +81,7 @@ import { computed, toRef, useSlots } from 'vue'
 import {
   useSparkPageComponent,
   SparkComponentRenderer,
+  getSparkNodeChildren,
   nodeId,
   DATA_SOURCE,
   MODULE_CONTEXT,
@@ -88,9 +89,8 @@ import {
 import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
-import { useContainerDataSource } from '../../composables/container-composables'
 import { useContainerToolbar } from '../../composables/container-composables'
-import { useRendererListNodeState, useRendererListViewState } from '../view-state'
+import { useContainerDataSource } from '../view-state'
 import { useContainerGrid } from '../../composables/container-composables'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
 import { useContainerModuleContext } from '../../composables/container-composables'
@@ -119,38 +119,91 @@ const hasDefaultSlot = slots['default'] !== undefined
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
-const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
   dataKey: toRef(props, 'dataKey'),
   sparkConsume,
-  mapView: view => view,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererList',
 })
+const { rows } = dataState
 
-const { listRows } = useRendererListViewState({
-  resolvedView,
+const toolbarNode = computed(() => props.toolbar)
+const actionsNode = computed(() => props.actions)
+const mergedChildren = computed(() => getSparkNodeChildren(props.children))
+
+const showListItems = computed(
+  () => rows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot)
+)
+
+const itemActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
+const itemActionsPositionValue = computed<'left' | 'right'>(() => {
+  const position = actionsNode.value?.position
+  return position === 'left' || position === 'right' ? position : 'right'
+})
+const itemActionsClassValue = computed(() => {
+  const className = actionsNode.value?.class
+  return typeof className === 'string' ? className : ''
+})
+const showItemActionsLeft = computed(
+  () => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'left'
+)
+const showItemActionsRight = computed(
+  () => itemActionConfigs.value.length > 0 && itemActionsPositionValue.value === 'right'
+)
+
+const itemBodyWrapperTag = computed(() => props.useCard ? 'el-card' : 'div')
+const itemBodyWrapperAttrs = computed<Record<string, unknown>>(() => {
+  if (!props.useCard) return {}
+  return {
+    shadow: props.cardShadow,
+    class: 'renderer-list-card',
+  }
 })
 
-const {
-  toolbarNode,
-  mergedChildren,
-  showListItems,
-  itemActionsPositionValue,
-  itemActionsClassValue,
-  showItemActionsLeft,
-  showItemActionsRight,
-  itemBodyWrapperTag,
-  itemBodyWrapperAttrs,
-  listStyle,
-  itemGridStyle,
-  rawItemActionsToolbarConfig,
-} = useRendererListNodeState({
-  props,
-  listRows,
-  hasDefaultSlot: { value: hasDefaultSlot },
+const normalizedGridGap = computed(() => {
+  const value = props.gridGap
+  return typeof value === 'number' ? `${value}px` : value
 })
+
+const normalizedItemColSpan = computed(() => {
+  if (typeof props.itemColSpan === 'number' && Number.isFinite(props.itemColSpan)) {
+    return Math.max(1, Math.trunc(props.itemColSpan))
+  }
+  if ((props.columns ?? 1) > 1) {
+    return Math.max(1, Math.floor((props.gridColumns ?? 24) / (props.columns ?? 1)))
+  }
+  return props.gridColumns ?? 24
+})
+
+const normalizedItemRowSpan = computed(() => {
+  if (typeof props.itemRowSpan === 'number' && Number.isFinite(props.itemRowSpan)) {
+    return Math.max(1, Math.trunc(props.itemRowSpan))
+  }
+  return 1
+})
+
+const listStyle = computed<Record<string, string>>(() => {
+  return {
+    display: 'grid',
+    gap: normalizedGridGap.value ?? '0',
+    gridTemplateColumns: `repeat(${Math.max(props.gridColumns ?? 24, 1)}, minmax(0, 1fr))`,
+    gridAutoRows: props.gridAutoRows ?? 'minmax(32px, auto)',
+    alignItems: 'start',
+  }
+})
+
+const itemGridStyle = computed<Record<string, string | number>>(() => ({
+  gridColumn: `span ${normalizedItemColSpan.value} / span ${normalizedItemColSpan.value}`,
+  gridRow: `span ${normalizedItemRowSpan.value} / span ${normalizedItemRowSpan.value}`,
+  minWidth: 0,
+}))
+
+const rawItemActionsToolbarConfig = computed(() => ({
+  type: 'r-toolbar' as const,
+  children: itemActionConfigs.value,
+}))
 
 const {
   visibleToolbarConfigs,
@@ -182,8 +235,8 @@ const {
   listApi: RendererListApi
 } = createRendererListZeroCode({
   props,
-  resolvedView,
-  listRows,
+  resolvedView: dataState.resolvedView,
+  rows,
 })
 
 registerApi(listApi)
@@ -196,8 +249,8 @@ function getItemKey(row: IDataRow, index: number): string | number {
 
 function scopeBase() {
   return {
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
+    dataSource: dataState.resolvedView.value,
+    modelPermission: dataState.modelPermission.value,
     moduleContext: moduleContext.value,
   }
 }
@@ -216,7 +269,7 @@ async function handleItemClick(row: IDataRow, index: number, event: Event) {
 
 function getDefaultScope() {
   return createToolbarScope(scopeBase(), {
-    rows: listRows.value,
+    rows: rows.value,
   })
 }
 </script>
