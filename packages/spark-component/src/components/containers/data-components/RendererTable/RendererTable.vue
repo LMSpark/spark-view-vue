@@ -7,8 +7,9 @@
     <el-table
       ref="nativeTableRef"
       class="renderer-table-main"
-      :data="tableData"
+      :data="rows"
       v-bind="elTableProps"
+      v-loading="isLoading"
       :row-class-name="tableRowClassName"
       @current-change="handleCurrentChange"
       @row-click="handleRowClick"
@@ -30,7 +31,9 @@
           header-align="center"
         >
           <template #default="scope">
-            <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
+            <div class="renderer-table-row-actions">
+              <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
+            </div>
           </template>
         </el-table-column>
 
@@ -70,10 +73,25 @@
           header-align="center"
         >
           <template #default="scope">
-            <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
+            <div class="renderer-table-row-actions">
+              <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
+            </div>
           </template>
         </el-table-column>
     </el-table>
+
+    <el-pagination
+      v-if="showPagination"
+      class="renderer-table-pagination"
+      background
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="dataState.total.value"
+      :current-page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :page-sizes="[10, 20, 50, 100]"
+      @current-change="handlePageChange"
+      @size-change="handlePageSizeChange"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -101,7 +119,8 @@ import {
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
-import { useContainerDataSource, useRendererTableViewState } from '../view-state'
+import { RequestState } from '@spark-view/spark-data'
+import { useContainerDataSource, buildTreeTableRows } from '../view-state'
 import { useContainerToolbar } from '../../composables/container-composables'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { deriveSiblingFieldDataKey } from '@spark-view/spark-data'
@@ -248,17 +267,27 @@ const dataState = useContainerDataSource({
 const {
   toolbarPositionValue,
 } = useContainerToolbar({
-  toolbarNode,
+  toolbarNode: () => props.toolbar,
 })
 
 // ── 筛选区透传：r-filter 自治 DataView 同步与 filterModel ─────────────────────────────
-const {
-  tableData,
-  currentRow,
-  isMultiSelect,
-} = useRendererTableViewState({
-  dataState,
-})
+const rows = computed(() => buildTreeTableRows(
+  dataState.resolvedView.value,
+  dataState.rows.value,
+  dataState.treeConfig.value,
+  dataState.primaryKey.value,
+))
+const isLoading = computed(() => dataState.requestState.value === RequestState.Loading)
+const showPagination = computed(() => dataState.total.value > 0)
+
+function handlePageChange(page: number) {
+  dataState.resolvedView.value?.setPage(page)
+}
+
+function handlePageSizeChange(size: number) {
+  dataState.resolvedView.value?.setPageSize(size)
+}
+const { currentRow, isMultiSelect } = dataState
 
 const tableRowKeyValue = computed(() =>
   dataState.primaryKey.value
@@ -411,6 +440,10 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 
 .renderer-table-filter-panel {
   width: 100%;
+}
+
+.renderer-table-pagination {
+  justify-content: flex-end;
 }
 
 /* 表头视觉强化：提升层次感与可读性。 */

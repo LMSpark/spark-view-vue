@@ -976,6 +976,13 @@ async function applyFilterSafely(params: {
       await view.executeFilter(expr)
     } else {
       await view.setFilter(expr)
+      // Remote tables: setFilter updates the expression; an explicit refresh is needed
+      // to reload data from the server (setFilter alone may not drive a fetch in all paths).
+      // Static-data tables are excluded: they apply filters locally without a server round-trip.
+      const dt = (view as unknown as { dataTable?: { api?: { list?: unknown }; resourceType?: string } }).dataTable
+      if (dt?.api?.list !== undefined && dt.resourceType !== 'static-data') {
+        await view.refresh()
+      }
     }
     return true
   } catch (error) {
@@ -1025,6 +1032,7 @@ export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState
   const resolvedFilterDataView = computed(() => toValue(options.dataView))
 
   watch(resolvedFilterDataView, async (view) => {
+    if (filterExpression.value === undefined) return
     await applyFilterSafely({
       view,
       expr: filterExpression.value,

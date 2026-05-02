@@ -105,10 +105,6 @@ export interface ContainerDataViewContextState {
  */
 export type DataViewState = DataViewRuntimeState & ContainerDataViewContextState
 
-type RendererTableViewState = DataViewState & {
-  tableData: ComputedRef<IDataRow[]>
-}
-
 type RendererTreeViewState = DataViewState & {
   treeData: ComputedRef<TreeNode[]>
   treeIdField: ComputedRef<string>
@@ -282,27 +278,7 @@ function isAlreadyNested(rows: readonly unknown[]): boolean {
 // § RendererTable 视图态
 // ============================================================
 
-type RendererTableViewStateOptions = {
-  dataState: DataViewState
-}
-
-export function useRendererTableViewState(options: RendererTableViewStateOptions): RendererTableViewState {
-  const { rows, treeConfig, primaryKey } = options.dataState
-
-  // 表格数据：普通列表直接透传；树形配置下按需构造成嵌套 children
-  const tableData = computed(() => buildTreeTableRows(
-    options.dataState.resolvedView.value,
-    rows.value,
-    treeConfig.value,
-    primaryKey.value,
-  ))
-
-  return {
-    ...options.dataState,
-    /** rows 的树形处理版本，直接传给 el-table :data */
-    tableData,
-  }
-}
+// RendererTable 直接消费 dataState.rows，无需额外表格视图态层。
 
 // ============================================================
 // § RendererTable — 树形数据构建
@@ -313,7 +289,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
  * 优先复用 DataView 内部已同步的 treeManager；回退到手动组装 seedNodes。
  * 无树配置或数据已是嵌套时原样返回。
  */
-function buildTreeTableRows(
+export function buildTreeTableRows(
   view: DataView | null | undefined,
   rows: readonly IDataRow[],
   treeConfig: TreeConfig | undefined,

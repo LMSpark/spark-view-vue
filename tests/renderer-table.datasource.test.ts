@@ -176,7 +176,17 @@ const SparkActionStub = defineComponent({
         executeAction: (action: SparkNode) => {
           const dataSet = sparkConsume(PAGE_DATASET)
           const pageService = sparkConsume(PAGE_SERVICE)
-          const desc = nodeToActionDescriptor(action)
+          const actionWithKey: SparkNode =
+            action.props?.['dataKey'] !== null && action.props?.['dataKey'] !== undefined || dataSource === null
+              ? action
+              : {
+                  ...action,
+                  props: {
+                    ...(action.props ?? {}),
+                    dataKey: `${dataSource.tableName}@${dataSource.viewId}@rows`,
+                  },
+                }
+          const desc = nodeToActionDescriptor(actionWithKey)
           if (!desc) return
           const row = resolveScopedRow(dataRow, propsMap)
           void executeActionDescriptor(
@@ -478,7 +488,19 @@ const SparkColumnRendererStub = defineComponent({
         executeAction: (action: SparkNode) => {
           const dataSet = sparkConsume(PAGE_DATASET)
           const pageService = sparkConsume(PAGE_SERVICE)
-          const desc = nodeToActionDescriptor(action)
+          // Augment action with dataKey derived from DATA_SOURCE if the action has none.
+          // This mirrors RendererButton's resolveActionNodeWithDataCapabilities() flow.
+          const actionWithKey: SparkNode =
+            action.props?.['dataKey'] !== null && action.props?.['dataKey'] !== undefined || dataSource === null
+              ? action
+              : {
+                  ...action,
+                  props: {
+                    ...(action.props ?? {}),
+                    dataKey: `${dataSource.tableName}@${dataSource.viewId}@rows`,
+                  },
+                }
+          const desc = nodeToActionDescriptor(actionWithKey)
           if (!desc) return
           const row = resolveScopedRow(dataRow, propsMap, dataSource)
           void executeActionDescriptor(
@@ -766,14 +788,14 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     // component's computed tableData should come from DataView.rows
     const vm = wrapper.vm as any
-    expect(vm.tableData).toBeDefined()
-    expect(vm.tableData).toEqual(dv.rows)
+    expect(vm.rows).toBeDefined()
+    expect(vm.rows).toEqual(dv.rows)
 
     // reactive: when DataView.rows changes, component updates
     dv.appendRow({ id: 3 })
     await nextTick()
-    expect(vm.tableData).toHaveLength(3)
-    expect(vm.tableData[2].id).toBe(3)
+    expect(vm.rows).toHaveLength(3)
+    expect(vm.rows[2].id).toBe(3)
   })
 
   it('should call requestData() on mount when table has API and rows empty', async () => {
@@ -3217,9 +3239,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     await filterInput.setValue('Ali')
     await nextTick()
 
-    const vm = wrapper.vm as unknown as { tableData: IDataRow[] }
-    expect(vm.tableData).toHaveLength(2)
-    expect(vm.tableData.map(row => row['name'])).toEqual(['Alice', 'Alicia'])
+    const vm = wrapper.vm as unknown as { rows: IDataRow[] }
+    expect(vm.rows).toHaveLength(2)
+    expect(vm.rows.map(row => row['name'])).toEqual(['Alice', 'Alicia'])
   })
 
   it('should sync filter expression to data view and refresh remote tables', async () => {
@@ -3367,16 +3389,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const filterWrapper = wrapper.findComponent(RendererFilter)
     const filterVm = filterWrapper.vm as unknown as { filterModel: Record<string, unknown> }
-    const vm = wrapper.vm as unknown as { tableData: IDataRow[] }
+    const vm = wrapper.vm as unknown as { rows: IDataRow[] }
     filterVm.filterModel['score'] = [15, 25]
     await nextTick()
-    expect(vm.tableData).toHaveLength(1)
-    expect(vm.tableData[0]?.['score']).toBe(20)
+    expect(vm.rows).toHaveLength(1)
+    expect(vm.rows[0]?.['score']).toBe(20)
 
     filterVm.filterModel['status'] = ['done', 'archived']
     await nextTick()
-    expect(vm.tableData).toHaveLength(1)
-    expect(vm.tableData[0]?.['status']).toBe('done')
+    expect(vm.rows).toHaveLength(1)
+    expect(vm.rows[0]?.['status']).toBe('done')
   })
 
   it('should support collapsible filter panel and default collapsed state', async () => {
