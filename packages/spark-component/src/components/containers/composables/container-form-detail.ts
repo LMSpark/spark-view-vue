@@ -1,0 +1,312 @@
+/**
+ * container-form-detail.ts
+ *
+ * 表单/详情容器编排层：r-form 与 r-detail 的完整运行时编排。
+ *
+ * 职责：
+ * - useFormDetailContainer    : 6 个分区的完整容器编排（布局/能力/镜像/工具栏/作用域/输出）
+ * - buildFormDetailContainerProps : 规范化构建入参（避免消费端重复展开可选字段）
+ * - FormDetailContainerConsumerProps : 两侧容器组件的最小输入形状
+ *
+ * 工作流程（6 分区）：
+ *   1. 布局层     : children → CSS Grid 投影（useContainerGrid）
+ *   2. 能力接入层  : dataKey → DataView 解析 + 能力注入（useContainerDataSource）
+ *   3. 上下文镜像层 : DataView.currentRow / aggregateResult → contextData（shallowReactive）
+ *   4. 工具栏投影层 : toolbar SparkNode → 可见性/位置（useContainerToolbar）
+ *   5. 作用域构建层 : contextData → 字段渲染默认作用域（createCurrentRowScope）
+ *   6. 对外输出层  : 汇总所有状态并返回
+ *
+ * 消费方：RendererForm.vue、RendererDetail.vue
+ */
+
+import { computed, shallowReactive, toRef, watch } from 'vue'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
+import {
+  DATA_SOURCE,
+  MODULE_CONTEXT,
+  getSparkNodeChildren,
+  useSparkPageComponent,
+  type SparkNode,
+} from '../../internal.js'
+import type { RToolbarProps } from '../layout/RendererToolbar.types'
+import { createCurrentRowScope } from '../support/scopeFactories'
+import { syncReactiveRow } from '../../support/row-mirror-sync'
+import { useContainerDataSource } from '../data-views/view-data-source.js'
+import { useDataViewEventBridge } from './useDataViewEventBridge.js'
+import { useContainerGrid } from './container-layout.js'
+import { useContainerModuleContext, useContainerToolbar } from './container-ui.js'
+
+// ============================================================
+// § 常量
+// ============================================================
+
+/** 汇总结果 dataKey 后缀（全量行聚合）。 */
+const DATAKEY_SUFFIX_AGGREGATE_RESULT = '@aggregateResult'
+/** 选中行汇总后缀。 */
+const DATAKEY_SUFFIX_SELECTION_AGGREGATE_RESULT = '@selectionAggregateResult'
+
+/** 表单容器日志前缀。 */
+const FORM_CONTAINER_LOG_PREFIX = 'RendererForm'
+/** 详情容器日志前缀。 */
+const DETAIL_CONTAINER_LOG_PREFIX = 'RendererDetail'
+
+/**
+ * 浅层同步时是否跳过同引用写入（减少不必要响应式抖动）。
+ */
+const CONTEXT_SYNC_SKIP_SAME_REF = true
+
+/** CSS Grid 列数默认值。 */
+const DEFAULT_GRID_COLUMNS = 24
+/** CSS Grid 行高模板默认值。 */
+const DEFAULT_AUTO_ROWS = 'minmax(32px, auto)'
+/** CSS Grid 间距默认值（数字 0 由 normalizeGridGap 转为 '0px'）。 */
+const DEFAULT_GRID_GAP = 0
+
+// ============================================================
+// § 内部工具函数
+// ============================================================
+
+/**
+ * 标准化 dataKey：非字符串或空字符串返回 null，否则返回去空后的字符串。
+ */
+function getNormalizedDataKey(rawKey: unknown): string | null {
+  if (typeof rawKey !== 'string') return null
+  const normalized = rawKey.trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+// ============================================================
+// § 入参类型
+// ============================================================
+
+/** 容器内部完整属性形状（包括私有布局字段）。 */
+interface FormDetailContainerProps extends SparkNode {
+  dataKey: string | undefined
+  dataSource?: DataView
+  toolbar?: RToolbarProps
+  gridColumns: number | undefined
+  gridGap: number | string | undefined
+  gridAutoRows: string | undefined
+}
+
+/**
+ * r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。
+ *
+ * 目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。
+ */
+export interface FormDetailContainerConsumerProps {
+  type: SparkNode['type']
+  id?: SparkNode['id']
+  toolbar?: RToolbarProps
+  children?: SparkNode['children']
+  dataSource?: DataView
+  dataKey: string | undefined
+  gridColumns: number | undefined
+  gridGap: number | string | undefined
+  gridAutoRows: string | undefined
+}
+
+/**
+ * 构建 `useFormDetailContainer` 规范入参。
+ *
+ * 仅在字段存在时写入可选属性，避免引入 undefined 噪声字段。
+ */
+export function buildFormDetailContainerProps(
+  props: FormDetailContainerConsumerProps,
+): FormDetailContainerProps {
+  return {
+    type: props.type,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+    ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
+    dataKey: props.dataKey,
+    gridColumns: props.gridColumns,
+    gridGap: props.gridGap,
+    gridAutoRows: props.gridAutoRows,
+  }
+}
+
+// ============================================================
+// § useFormDetailContainer
+// ============================================================
+
+/**
+ * r-form / r-detail 容器完整编排。
+ *
+ * 返回模板层所需的全部响应式状态：布局、DataView、contextData、工具栏、作用域。
+ */
+export function useFormDetailContainer(
+  props: FormDetailContainerProps,
+  containerType: 'r-form' | 'r-detail',
+) {
+  // ==========================================================================
+  // 分区 1：布局层（children → 网格投影）
+  //
+  // 目标：将容器 children 统一投影为可渲染网格结构，避免模板层重复计算。
+  // ==========================================================================
+
+  const contentChildren = computed(() => props.children ?? [])
+
+  const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
+    children: computed(() => getSparkNodeChildren(contentChildren.value)),
+    columns: computed(() => props.gridColumns ?? DEFAULT_GRID_COLUMNS),
+    gap: computed(() => props.gridGap ?? DEFAULT_GRID_GAP),
+    autoRows: computed(() => props.gridAutoRows ?? DEFAULT_AUTO_ROWS),
+  })
+
+  // ==========================================================================
+  // 分区 2：能力接入层（capability / DataView 解析）
+  //
+  // 目标：统一获取页面能力、模块上下文，并解析 dataKey 对应的 DataView 与数据行。
+  // ==========================================================================
+
+  const logPrefix = containerType === 'r-form' ? FORM_CONTAINER_LOG_PREFIX : DETAIL_CONTAINER_LOG_PREFIX
+  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
+  const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
+
+  const dataState = useContainerDataSource({
+    externalDataSource: toRef(props, 'dataSource'),
+    dataKey: toRef(props, 'dataKey'),
+    sparkConsume,
+    provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
+    logger,
+    logPrefix,
+  })
+
+  // ==========================================================================
+  // 分区 3：上下文镜像层（DataView → contextData）
+  //
+  // 目标：将 DataView 的"当前行/汇总行"镜像到 contextData，供字段组件与表达式统一消费。
+  // 约束：镜像是浅层同步，保持对象引用稳定，减少不必要响应式抖动。
+  // ==========================================================================
+
+  const contextData = shallowReactive<IDataRow>({})
+  let prevRow: unknown = Symbol('initial')
+
+  /**
+   * 解析当前容器应绑定的"上下文行"。
+   *
+   * 优先级：
+   * 1) dataKey 指向汇总结果 → 返回聚合行（aggregateResult / selectionAggregateResult）
+   * 2) dataKey 已解析到的行（resolvedDataRow）
+   * 3) 回落到 DataView.currentRow
+   */
+  function resolveContextRow(): IDataRow | null {
+    const normalizedKey = getNormalizedDataKey(props.dataKey)
+    if (normalizedKey) {
+      const view = dataState.resolvedView.value
+      // 选中行汇总：仅统计 selectedRows 的聚合输出。
+      if (normalizedKey.endsWith(DATAKEY_SUFFIX_SELECTION_AGGREGATE_RESULT)) {
+        return (view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value) as IDataRow
+      }
+      // 全量汇总：统计当前视图 rows 的聚合输出。
+      if (normalizedKey.endsWith(DATAKEY_SUFFIX_AGGREGATE_RESULT)) {
+        return (view?.aggregateResult ?? dataState.aggregateResult.value) as IDataRow
+      }
+    }
+    return dataState.resolvedDataRow.value ?? dataState.currentRow.value
+  }
+
+  /**
+   * 将解析出的行同步到 contextData。
+   *
+   * `skipSameRef=true` 跳过同引用重复写入，避免无意义的浅层同步。
+   */
+  function syncContextDataFromCurrentRow(row: IDataRow | null, options?: { skipSameRef?: boolean }): void {
+    if (options?.skipSameRef === true && row === prevRow) return
+    prevRow = row
+    syncReactiveRow(contextData, row)
+  }
+
+  function syncResolvedContextRow(): void {
+    syncContextDataFromCurrentRow(resolveContextRow())
+  }
+
+  // 响应式行变化：通过 watch 驱动 contextData 同步。
+  watch(
+    resolveContextRow,
+    (resolvedRow) => {
+      syncContextDataFromCurrentRow(resolvedRow, { skipSameRef: CONTEXT_SYNC_SKIP_SAME_REF })
+    },
+    { immediate: true },
+  )
+
+  // 事件桥接：捕获 DataView 细粒度变化，保证 contextData 与数据态持续一致。
+  useDataViewEventBridge({
+    resolvedView: dataState.resolvedView,
+    // currentRow 变化：以 resolveContextRow 为准，确保汇总 dataKey 不被 currentRow 覆盖。
+    onCurrentRowChanged: ({ row }) => {
+      syncContextDataFromCurrentRow(resolveContextRow() ?? row)
+    },
+    // rows 变化可能导致 currentRow/聚合行失效，统一重算并同步。
+    onRowsChanged: () => {
+      syncResolvedContextRow()
+    },
+    // aggregateResult 重算后立即同步到 contextData。
+    onSummaryChanged: () => {
+      syncResolvedContextRow()
+    },
+    // selectionAggregateResult 重算后立即同步到 contextData。
+    onSelectionSummaryChanged: () => {
+      syncResolvedContextRow()
+    },
+  })
+
+  // ==========================================================================
+  // 分区 4：工具栏投影层
+  //
+  // 目标：统一解析 toolbar 可见项、位置与样式类，供模板直接消费。
+  // ==========================================================================
+
+  const {
+    visibleToolbarConfigs,
+    toolbarPositionValue,
+    toolbarClassValue,
+    showToolbar,
+  } = useContainerToolbar({
+    toolbarNode: () => props.toolbar,
+  })
+
+  // ==========================================================================
+  // 分区 5：作用域构建层
+  //
+  // 目标：输出字段渲染所需默认作用域，保持 form/detail 的访问面一致。
+  // ==========================================================================
+
+  /**
+   * 默认作用域：row/model 均绑定 contextData。
+   * 字段组件在 form/detail 中使用同一份上下文，不区分 current/summary 场景。
+   */
+  function getDefaultScope() {
+    return createCurrentRowScope({
+      dataSource: dataState.resolvedView.value,
+      modelPermission: dataState.modelPermission.value,
+      moduleContext: moduleContext.value,
+      row: contextData,
+      model: contextData,
+    })
+  }
+
+  // ==========================================================================
+  // 分区 6：对外输出层
+  // ==========================================================================
+
+  return {
+    registerApi,
+    sparkProvide,
+    logger,
+    resolvedView: dataState.resolvedView,
+    contextData,
+    gridChildren,
+    gridStyle,
+    getChildGridStyle,
+    toolbarPositionValue,
+    toolbarClassValue,
+    visibleToolbarConfigs,
+    showToolbar,
+    getDefaultScope,
+    aggregateResult: dataState.aggregateResult,
+    selectionAggregateResult: dataState.selectionAggregateResult,
+  }
+}

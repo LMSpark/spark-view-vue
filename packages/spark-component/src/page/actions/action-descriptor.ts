@@ -25,6 +25,8 @@ export interface ActionUiDecorator {
   confirmMessage?: string
   confirmTitle?: string
   confirmType?: PageMessageType
+  /** 当目标行字段值匹配时禁用（字段值全部相等才触发） */
+  disabledWhenRow?: Record<string, unknown>
 }
 
 // ── 行作用域（执行参数） ──────────────────────────────────────────────────

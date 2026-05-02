@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
-import RendererTabPane from '../packages/spark-component/src/components/containers/non-data-components/RendererTabPane.vue'
-import RendererCollapseItem from '../packages/spark-component/src/components/containers/non-data-components/RendererCollapseItem.vue'
-import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
+import RendererTabPane from '../packages/spark-component/src/components/containers/layout/RendererTabPane.vue'
+import RendererCollapseItem from '../packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue'
+import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']

@@ -76,6 +76,9 @@ function pickDecorator(props: Record<string, unknown>): ActionUiDecorator {
   const confirmType = readMessageType(props['confirmType'])
   if (confirmType) out.confirmType = confirmType
 
+  const disabledWhenRow = asRecord(props['disabledWhenRow'])
+  if (disabledWhenRow) out.disabledWhenRow = disabledWhenRow
+
   return out
 }
 

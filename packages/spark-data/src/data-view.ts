@@ -74,6 +74,7 @@ interface DataViewEventMap extends Record<string, any[]> {
 
 /** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
 const ROWS_CHANGED_DEBOUNCE_MS = 16
+const REQUEST_SUPERSEDED_MESSAGE = 'Request superseded'
 
 const LEGACY_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$\[/
 const LEGACY_PARENT_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$parent\[/
@@ -321,7 +322,7 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 请求成功后是否自动 selectedRows = [rows[0]]（默认 true） */
   autoSelectFirst = true
   /** 树结构字段配置 */
-  treeConfig?: TreeConfig | undefined
+  treeConfig?: TreeConfig
 
   /** DataSet 初始化后是否自动加载数据（默认 false） */
   autoLoad = false
@@ -444,6 +445,10 @@ export class DataView implements IDataSource, IDataViewStore {
   private _shouldUseRemotePostQuery(): boolean {
     const listEndpoint = this._dataTable?.api?.list
     return listEndpoint !== undefined && listEndpoint.method !== 'GET'
+  }
+
+  private _createRequestSupersededResult<T = unknown>(): CrudResult<T> {
+    return { success: false, message: REQUEST_SUPERSEDED_MESSAGE }
   }
 
   private _buildRemoteRelationFilter(
@@ -581,11 +586,7 @@ export class DataView implements IDataSource, IDataViewStore {
       }
     }
 
-    if ('field' in expr && 'op' in expr) {
-      return this._matchesFilterCondition(row, expr)
-    }
-
-    throw new Error(`未知过滤表达式节点 [${this.tableName}@${this.viewId}]`)
+    return this._matchesFilterCondition(row, expr)
   }
 
   private _syncStaticLocalFilterRows(): void {
@@ -953,13 +954,14 @@ export class DataView implements IDataSource, IDataViewStore {
   }
 
   private syncTreeManagerFromRows(): void {
-    if (!this.treeConfig || !this.treeManager) {
-      if (!this.treeConfig) return
-      if (this.rows.length === 0) return
+    if (!this.treeConfig) return
+    if (this.rows.length === 0) {
+      this.treeManager?.clear()
+      return
     }
+
     const treeManager = this._ensureTreeManager()
     treeManager.clear()
-    if (this.rows.length === 0) return
     treeManager.addNodesToCache(this.collectTreeSeedRowsFromRows())
   }
 
@@ -1289,7 +1291,7 @@ export class DataView implements IDataSource, IDataViewStore {
 
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadFromServer 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
-        return { success: false, message: 'Request superseded' }
+        return this._createRequestSupersededResult()
       }
 
       if (result.success && result.data !== undefined) {
@@ -1303,7 +1305,7 @@ export class DataView implements IDataSource, IDataViewStore {
     } catch (error) {
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadFromServer 请求 ${requestId} 异常被忽略（已被新请求替代）`)
-        return { success: false, message: 'Request superseded' }
+        return this._createRequestSupersededResult()
       }
 
       this.loadingError = toError(error)
@@ -1370,7 +1372,7 @@ export class DataView implements IDataSource, IDataViewStore {
 
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadTreeNested 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
-        return { success: false, message: 'Request superseded' }
+        return this._createRequestSupersededResult()
       }
 
       this.updateFromServer(rows as IDataRow[])
@@ -1380,7 +1382,7 @@ export class DataView implements IDataSource, IDataViewStore {
     } catch (error) {
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadTreeNested 请求 ${requestId} 异常被忽略（已被新请求替代）`)
-        return { success: false, message: 'Request superseded' }
+        return this._createRequestSupersededResult()
       }
 
       this.loadingError = toError(error)

@@ -326,8 +326,12 @@ export async function start(options: StartOptions): Promise<void> {
 
       // 移除 bootstrap 占位路由 —— DynamicRouter 已注册真实路由，
       // 占位路由若保留会因 Vue Router 先注册先匹配而遮盖真实组件（render: () => null）
-      router.removeRoute('spark-bootstrap-root')
-      router.removeRoute('spark-bootstrap-login')
+      if (router.hasRoute('spark-bootstrap-root')) {
+        router.removeRoute('spark-bootstrap-root')
+      }
+      if (router.hasRoute('spark-bootstrap-login')) {
+        router.removeRoute('spark-bootstrap-login')
+      }
 
       // 注入到全局访问模块：导航访问 + 缓存管理（AI 热重载需要）
       setDynamicRouter(dynamicRouter)

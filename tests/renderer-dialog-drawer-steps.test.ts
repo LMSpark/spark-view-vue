@@ -3,10 +3,10 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { defineCapability } from '@spark-view/spark-utils'
-import RendererStepItem from '../packages/spark-component/src/components/containers/non-data-components/RendererStepItem.vue'
-import RendererToolbar from '../packages/spark-component/src/components/containers/non-data-components/RendererToolbar.vue'
-import { createRendererDialogZeroCode } from '../packages/spark-component/src/components/containers/non-data-components/RendererDialog/zero-code'
-import { createRendererDrawerZeroCode } from '../packages/spark-component/src/components/containers/non-data-components/RendererDrawer/zero-code'
+import RendererStepItem from '../packages/spark-component/src/components/containers/layout/RendererStepItem.vue'
+import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
+import { createRendererDialogZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDialog/zero-code'
+import { createRendererDrawerZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDrawer/zero-code'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']

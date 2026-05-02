@@ -1,6 +1,7 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-view/spark-utils'
+import type { ConfigLoader } from '@spark-view/spark-page-config'
 import type {
   ChildPlacement,
   NavContextConfig,
@@ -14,6 +15,9 @@ import type {
 } from '@spark-view/spark-utils'
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
+import { refreshRoutes } from './nav-access'
+import { CrossProjectRefPage } from '../router/cross-project-ref-page'
+import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../router/cross-project-ref-route'
 
 /* ══════════════════════════════════════════════════════════
  * useNavigation — 应用导航核心 composable
@@ -122,6 +126,12 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     }
 
     return null
+  }
+
+  function resolveRefHostPath(node: NavNode): string {
+    const explicitPath = typeof node.path === 'string' ? normalizePath(node.path) : ''
+    if (explicitPath.includes('/__ref/')) return explicitPath
+    return normalizePath(`/__ref/${encodeURIComponent(node.id)}`)
   }
 
   /** 为裸路径添加当前租户+项目前缀（/xxx → /t/{tenantId}/{projectId}/xxx） */
@@ -397,10 +407,96 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
    * 导航操作
    * ──────────────────────────────────────────── */
 
+  function pushNamedRoute(routeName: string | symbol, routePath: string): void {
+    const tenantId = route.params['tenantId']
+    const projectId = route.params['projectId']
+    const params: Record<string, string> = {}
+    if (routePath.startsWith('/t/')) {
+      if (typeof tenantId === 'string' && tenantId) {
+        params['tenantId'] = tenantId
+      }
+      if (typeof projectId === 'string' && projectId) {
+        params['projectId'] = projectId
+      }
+    }
+    void router.push({
+      name: routeName,
+      ...(Object.keys(params).length > 0 ? { params } : {}),
+    })
+  }
+
+  function isConfigLoader(value: unknown): value is ConfigLoader {
+    return value !== null &&
+      typeof value === 'object' &&
+      typeof (value as { loadPageConfig?: unknown }).loadPageConfig === 'function'
+  }
+
+  function readRouteRecordConfigLoader(routeRecord: { props?: unknown }): ConfigLoader | null {
+    const propsByView = routeRecord.props
+    if (propsByView === null || typeof propsByView !== 'object') return null
+
+    const defaultProps = (propsByView as Record<string, unknown>)['default']
+    if (defaultProps === null || typeof defaultProps !== 'object') return null
+
+    const configLoader = (defaultProps as Record<string, unknown>)['configLoader']
+    return isConfigLoader(configLoader) ? configLoader : null
+  }
+
+  function findRegisteredConfigLoader(): ConfigLoader | null {
+    for (const routeRecord of router.getRoutes()) {
+      const configLoader = readRouteRecordConfigLoader(routeRecord)
+      if (configLoader !== null) return configLoader
+    }
+    return null
+  }
+
+  function ensureCrossProjectRefHostRoute(): boolean {
+    if (router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)) return true
+
+    const configLoader = findRegisteredConfigLoader()
+    if (configLoader === null) return false
+
+    router.addRoute({
+      path: '/t/:tenantId/:projectId/__ref/:refNodeId',
+      name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
+      component: CrossProjectRefPage,
+      props: { configLoader },
+      meta: {
+        type: 'cross-project-ref',
+      },
+    })
+    return router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)
+  }
+
+  async function navigateToRefNode(node: NavNode): Promise<void> {
+    const refNodeId = node.id
+    await refreshRoutes().catch(() => null)
+    const tenantId = route.params['tenantId']
+    const projectId = route.params['projectId']
+    if (
+      typeof tenantId === 'string' && tenantId &&
+      typeof projectId === 'string' && projectId &&
+      ensureCrossProjectRefHostRoute()
+    ) {
+      void router.push({
+        name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
+        params: {
+          tenantId,
+          projectId,
+          refNodeId,
+        },
+      })
+      return
+    }
+
+    const targetPath = addTenantPrefix(resolveRefHostPath(node))
+    void router.push(targetPath)
+  }
+
   /**
    * 导航到指定路径 — 统一从路由表 meta.type 自动判定
    *
-   * 如果该路径存在 system-page 路由，优先按 name 跳转（精确匹配）；
+   * 如果该路径存在 system-page / cross-project-ref 路由，优先按 name 跳转（精确匹配）；
    * 否则降级为 router.push(path)。
    * 不再依赖导航节点的 linkTarget 字段 —— 路由表是唯一权威。
    */
@@ -423,21 +519,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       )
 
     if (exactSystemRoute?.name !== undefined) {
-      const tenantId = route.params['tenantId']
-      const projectId = route.params['projectId']
-      const params: Record<string, string> = {}
-      if (exactSystemRoute.path.startsWith('/t/')) {
-        if (typeof tenantId === 'string' && tenantId) {
-          params['tenantId'] = tenantId
-        }
-        if (typeof projectId === 'string' && projectId) {
-          params['projectId'] = projectId
-        }
-      }
-      void router.push({
-        name: exactSystemRoute.name,
-        ...(Object.keys(params).length > 0 ? { params } : {}),
-      })
+      pushNamedRoute(exactSystemRoute.name, exactSystemRoute.path)
       return
     }
 
@@ -453,19 +535,19 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       )
 
     if (vueRoute?.name !== undefined) {
-      const tenantId = route.params['tenantId']
-      const projectId = route.params['projectId']
-      const params: Record<string, string> = {}
-      if (typeof tenantId === 'string' && tenantId) {
-        params['tenantId'] = tenantId
-      }
-      if (typeof projectId === 'string' && projectId) {
-        params['projectId'] = projectId
-      }
-      void router.push({
-        name: vueRoute.name,
-        ...(Object.keys(params).length > 0 ? { params } : {}),
-      })
+      pushNamedRoute(vueRoute.name, vueRoute.path)
+      return
+    }
+
+    const crossProjectRoute = router
+      .getRoutes()
+      .find((routeRecord) =>
+        routeRecord.meta['type'] === 'cross-project-ref' &&
+        normalizeComparablePath(routeRecord.path) === targetComparablePath
+      )
+
+    if (crossProjectRoute?.name !== undefined) {
+      pushNamedRoute(crossProjectRoute.name, crossProjectRoute.path)
       return
     }
 
@@ -521,16 +603,9 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       }
     }
 
-    // 跨工程引用：后端已解析 refPath
-    if (node.nodeKind === 'ref' && node.refPath) {
-      if (typeof node.refProjectId === 'string' && node.refProjectId.trim() !== '') {
-        const localHostPath = typeof node.path === 'string' && node.path.trim() !== ''
-          ? node.path
-          : `/__ref/${encodeURIComponent(node.id)}`
-        navigateByPath(localHostPath)
-        return
-      }
-      navigateByPath(node.refPath)
+    // 跨工程引用：进入本项目宿主路由，再由 CrossProjectRefPage 加载目标项目页面。
+    if (node.nodeKind === 'ref') {
+      void navigateToRefNode(node)
       return
     }
 

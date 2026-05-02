@@ -11,6 +11,7 @@ import type { ConfigLoader } from '@spark-view/spark-page-config'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 import { createLogger } from '../logger'
 import { CrossProjectRefPage } from './cross-project-ref-page'
+import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 import { InvalidSystemPage } from './invalid-system-page'
 
@@ -23,6 +24,11 @@ function isUnauthorizedError(error: unknown): boolean {
 }
 
 const routerLogger = createLogger('DynamicRouter')
+export { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
+
+function isUuidLike(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
 
 function shouldLogDynamicRouteDetails(): boolean {
   if (typeof globalThis === 'undefined') return false
@@ -184,16 +190,42 @@ export class DynamicRouter {
     return this.normalizePath(`/${resolvedSegments.join('/')}${normalizedPath}`)
   }
 
+  private registerCrossProjectRefHostRoute(skipTenantPrefix = false): void {
+    if (skipTenantPrefix) return
+
+    const routePath = this.addTenantPrefix('/__ref/:refNodeId')
+    if (this.router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)) {
+      return
+    }
+
+    this.router.addRoute({
+      path: routePath,
+      name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
+      component: CrossProjectRefPage,
+      props: { configLoader: this.configLoader },
+      meta: {
+        type: 'cross-project-ref',
+      },
+    })
+    this.registeredRoutes.add(routePath)
+  }
+
   private resolveCrossProjectRefUrl(node: NavNode): string | null {
-    const targetProjectId = typeof node.refProjectId === 'string' ? node.refProjectId.trim() : ''
     const refPath = typeof node.refPath === 'string' ? node.refPath.trim() : ''
-    if (targetProjectId === '' || refPath === '') return null
+    if (refPath === '') return null
 
-    const match = /^@app:[^/]+(\/.*)?$/.exec(refPath)
-    const targetPath = match?.[1]
-    if (targetPath === undefined || targetPath.trim() === '') return null
+    const match = /^@app:([^/]+)(\/.*)?$/.exec(refPath)
+    if (match !== null) {
+      const targetProjectId = typeof node.refProjectId === 'string' && node.refProjectId.trim() !== ''
+        ? node.refProjectId.trim()
+        : match[1]
+      const targetPath = match[2]
+      if (targetProjectId === undefined || targetPath === undefined || targetPath.trim() === '') return null
 
-    return this.buildScopedRefPath(targetPath, targetProjectId)
+      return this.buildScopedRefPath(targetPath, targetProjectId)
+    }
+
+    return this.normalizePath(refPath)
   }
 
   private resolveCrossProjectRefPageId(node: NavNode): string | null {
@@ -207,25 +239,33 @@ export class DynamicRouter {
   }
 
   private resolveCrossProjectRefHostPath(node: NavNode): string | null {
-    const refUrl = this.resolveCrossProjectRefUrl(node)
-    if (refUrl === null) return null
+    if (node.nodeKind !== 'ref') return null
 
     const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
-    if (nodePath !== '') return nodePath
+    if (nodePath !== '' && this.normalizePath(nodePath).includes('/__ref/')) return nodePath
 
     return `/__ref/${encodeURIComponent(node.id)}`
   }
 
   private resolvePageId(node: NavNode, rawNodePath: string): string {
+    if (node.nodeKind === 'ref') {
+      return this.resolveCrossProjectRefPageId(node) ?? node.refId ?? node.id
+    }
+
     const normalizedPath = this.normalizePath(rawNodePath)
     const slug = normalizedPath.replace(/^\/+/, '').replace(/\/+$/, '')
+    const slugSegments = slug.split('/').filter(Boolean)
     const isConfigLikeNode =
       node.nodeKind !== 'system-page' &&
       node.nodeKind !== 'system-action' &&
       node.nodeKind !== 'link'
 
-    if (isConfigLikeNode && slug !== '' && !slug.includes('/')) {
-      return slug
+    if (isConfigLikeNode && slugSegments.length === 1) {
+      return slugSegments[0] as string
+    }
+
+    if (isConfigLikeNode && slugSegments.length > 1 && isUuidLike(node.id)) {
+      return slugSegments[slugSegments.length - 1] as string
     }
 
     return node.id
@@ -295,6 +335,8 @@ export class DynamicRouter {
    * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
   private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
+    this.registerCrossProjectRefHostRoute(skipTenantPrefix)
+
     for (const node of nodes) {
       const isLinkNode = node.nodeKind === 'link'
       const isRefNode = node.nodeKind === 'ref'
@@ -302,15 +344,17 @@ export class DynamicRouter {
       const isIframeNode = isLinkNode && node.linkTarget !== 'new-tab' && !isSelfNode
       const crossProjectRefUrl = isRefNode ? this.resolveCrossProjectRefUrl(node) : null
       const crossProjectRefHostPath = isRefNode ? this.resolveCrossProjectRefHostPath(node) : null
-      const isCrossProjectRefNode = crossProjectRefUrl !== null && crossProjectRefHostPath !== null
+      const isCrossProjectRefNode = isRefNode && crossProjectRefHostPath !== null
       const isNewTabNode = isLinkNode && node.linkTarget === 'new-tab'
       const isActionNode = node.nodeKind === 'system-action'
       const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
-      const rawNodePath = nodePath !== ''
-        ? node.path as string
-        : isIframeNode
-          ? `/__link/${encodeURIComponent(node.id)}`
-          : (crossProjectRefHostPath ?? '')
+      const rawNodePath = isCrossProjectRefNode
+        ? crossProjectRefHostPath
+        : nodePath !== ''
+          ? node.path as string
+          : isIframeNode
+            ? `/__link/${encodeURIComponent(node.id)}`
+            : ''
 
       // new-tab / self / system-action 节点不注册路由
       if (isNewTabNode || isSelfNode || isActionNode || rawNodePath === '') {
@@ -329,16 +373,66 @@ export class DynamicRouter {
       const routePath = skipTenantPrefix
         ? this.normalizePath(rawNodePath)
         : this.addTenantPrefix(rawNodePath)
+      const routeName = `nav-${node.id}`
+      const expectedRouteType = isIframeNode
+        ? 'external-link'
+        : isCrossProjectRefNode
+          ? 'cross-project-ref'
+          : useStaticComponent && component !== undefined
+            ? 'system-page'
+            : node.nodeKind === 'system-page'
+              ? 'invalid-system-page'
+              : 'config-page'
+
+      if (!this.registeredRoutes.has(routePath)) {
+        const staleRoute = this.router.getRoutes().find(route => route.path === routePath)
+        if (
+          staleRoute?.name !== undefined &&
+          (staleRoute.meta['type'] !== expectedRouteType || staleRoute.name !== routeName)
+        ) {
+          this.router.removeRoute(staleRoute.name)
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`移除同路径旧类型路由: ${routePath}`, {
+              previousName: staleRoute.name,
+              previousType: staleRoute.meta['type'],
+              nextName: routeName,
+              nextType: expectedRouteType,
+            })
+          }
+        }
+      }
 
       if (this.registeredRoutes.has(routePath)) {
-        if (shouldLogDynamicRouteDetails()) {
-          routerLogger.debug(`路由已注册，跳过: ${routePath}`)
+        const existingRoute = this.router.getRoutes().find(route => route.path === routePath)
+        const existingRouteName = existingRoute?.name
+        const existingRouteType = existingRoute?.meta['type']
+        const shouldReplaceWithCrossProjectRef =
+          isCrossProjectRefNode &&
+          existingRouteName !== undefined &&
+          existingRouteType !== 'cross-project-ref'
+
+        if (shouldReplaceWithCrossProjectRef) {
+          this.router.removeRoute(existingRouteName)
+          this.registeredRoutes.delete(routePath)
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`跨项目引用路由覆盖同路径普通路由: ${routePath}`)
+          }
+        } else {
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`路由已注册，跳过: ${routePath}`)
+          }
+          if (node.children?.length) {
+            this.registerRoutesFromNav(node.children, skipTenantPrefix)
+          }
+          continue
         }
-      } else if (isIframeNode || isCrossProjectRefNode) {
+      }
+
+      if (isIframeNode || isCrossProjectRefNode) {
         const linkUrl = isIframeNode
           ? nodePath
           : crossProjectRefUrl
-        if (linkUrl === null) {
+        if (isIframeNode && linkUrl === null) {
           if (node.children?.length) {
             this.registerRoutesFromNav(node.children, skipTenantPrefix)
           }
@@ -347,7 +441,7 @@ export class DynamicRouter {
         const route: RouteRecordRaw = isCrossProjectRefNode
           ? {
               path: routePath,
-              name: `nav-${node.id}`,
+              name: routeName,
               component: CrossProjectRefPage,
               props: { configLoader: this.configLoader },
               meta: {
@@ -364,7 +458,7 @@ export class DynamicRouter {
             }
           : {
               path: routePath,
-              name: `nav-${node.id}`,
+              name: routeName,
               component: ExternalLinkFramePage,
               meta: {
                 type: 'external-link',
@@ -384,7 +478,7 @@ export class DynamicRouter {
       } else if (useStaticComponent && component !== undefined) {
           const route: RouteRecordRaw = {
             path: routePath,
-            name: `nav-${node.id}`,
+            name: routeName,
             component,
             meta: {
               type: 'system-page',
@@ -408,7 +502,7 @@ export class DynamicRouter {
         })
         const route: RouteRecordRaw = {
           path: routePath,
-          name: `nav-${node.id}`,
+          name: routeName,
           component: InvalidSystemPage,
           meta: {
             type: 'invalid-system-page',
@@ -428,7 +522,7 @@ export class DynamicRouter {
         // config 页面 → PageRenderer
         const route: RouteRecordRaw = {
           path: routePath,
-          name: `nav-${node.id}`,
+          name: routeName,
           component: this.pageComponent,
           props: { configLoader: this.configLoader },
           meta: {

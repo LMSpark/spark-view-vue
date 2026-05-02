@@ -1,12 +1,12 @@
 export {
   useContainerDataSource,
   useContainerDataSourceEffects,
-} from '../data-components/view-state.js'
+} from '../data-views/view-data-source.js'
 
 export {
   useContainerModuleContext,
-} from './container-composables.js'
+} from './container-ui.js'
 
 export {
   useFormDetailContainer,
-} from './container-composables.js'
+} from './container-form-detail.js'

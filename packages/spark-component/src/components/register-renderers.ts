@@ -22,7 +22,7 @@ import { Spark } from '../system/spark.js'
 // ── 数据容器 ──
 import {
   RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
-} from './containers/data-components/index.js'
+} from './containers/data-views/index.js'
 
 // ── 命名区域 ──
 import {
@@ -41,7 +41,7 @@ import {
   RendererLayoutHeader, RendererLayoutFooter, RendererRow, RendererCol,
   RendererAffix, RendererBacktop, RendererScrollbar,
   RendererCarousel, RendererCarouselItem, RendererWatermark,
-} from './containers/non-data-components/index.js'
+} from './containers/layout/index.js'
 
 // ── 核心字段 ──
 import {

@@ -17,10 +17,29 @@ import type {
   RuleConfig,
 } from '@spark-view/spark-page-config'
 import { createRequest, Logger } from '@spark-view/spark-utils'
-import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
+import type { AppNavRoot, HttpClient, NavNode, RequestConfig } from '@spark-view/spark-utils'
+import { getNavTree } from '../navigation/nav-access'
 
 interface ReloadableRenderer {
   reload?: () => Promise<void>
+}
+
+interface ParsedRefPath {
+  projectId: string | null
+  pageId: string | null
+}
+
+interface ResolvedRefTarget {
+  hostRefNodeId: string | null
+  targetProjectId: string | null
+  refPath: string | null
+  pageId: string | null
+}
+
+type FileResponse = {
+  content?: unknown
+  timestamp?: unknown
+  notModified?: unknown
 }
 
 const logger = Logger('CrossProjectRefPage')
@@ -47,22 +66,136 @@ function stripQueryAndHash(path: string): string {
   return path.split('#', 1)[0]?.split('?', 1)[0] ?? path
 }
 
-function resolveRefRelativePath(refPath: string): string | null {
-  const trimmed = refPath.trim()
-  if (trimmed === '') return null
-  if (trimmed.startsWith('@app:')) {
-    const slashIndex = trimmed.indexOf('/')
-    if (slashIndex < 0) return null
-    return stripQueryAndHash(trimmed.slice(slashIndex))
-  }
-  return stripQueryAndHash(trimmed)
+function normalizePath(path: string): string {
+  const trimmed = stripQueryAndHash(path).trim()
+  if (trimmed === '') return '/'
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+  if (withLeadingSlash.length === 1) return withLeadingSlash
+  return withLeadingSlash.replace(/\/+$/, '')
 }
 
-function resolveRefPageId(refPath: string): string | null {
-  const relativePath = resolveRefRelativePath(refPath)
-  if (relativePath === null) return null
-  const pageId = relativePath.replace(/^\/+/, '').replace(/\/+$/, '')
-  return pageId === '' ? null : pageId
+function stripTenantProjectPrefix(path: string): string {
+  const normalized = normalizePath(path)
+  const match = /^\/t\/[^/]+\/[^/]+(\/.*)?$/.exec(normalized)
+  return normalizePath(match?.[1] ?? normalized)
+}
+
+function decodePathSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return segment
+  }
+}
+
+function resolveHostRefNodeId(routePath: string): string | null {
+  const segments = stripTenantProjectPrefix(routePath).split('/').filter(Boolean)
+  const refIndex = segments.indexOf('__ref')
+  const refNodeId = refIndex >= 0 ? segments[refIndex + 1] : undefined
+  return refNodeId === undefined ? null : decodePathSegment(refNodeId)
+}
+
+function safePageId(value: unknown, hostRefNodeId: string | null): string | null {
+  const pageId = asNonEmptyString(value)
+  if (pageId === null || pageId === hostRefNodeId) return null
+  return pageId
+}
+
+function lastPathSegment(path: string): string | null {
+  const normalized = normalizePath(path)
+  const segments = normalized.split('/').filter(Boolean)
+  return segments.length === 0 ? null : (segments[segments.length - 1] ?? null)
+}
+
+function parseRefPath(refPath: string | null): ParsedRefPath {
+  if (refPath === null) return { projectId: null, pageId: null }
+
+  const trimmed = refPath.trim()
+  const appMatch = /^@app:([^/]+)(\/.*)?$/.exec(trimmed)
+  if (appMatch !== null) {
+    return {
+      projectId: asNonEmptyString(appMatch[1]),
+      pageId: appMatch[2] === undefined ? null : lastPathSegment(appMatch[2]),
+    }
+  }
+
+  return {
+    projectId: null,
+    pageId: lastPathSegment(trimmed),
+  }
+}
+
+function refNodeHostPath(node: NavNode): string {
+  const explicitPath = asNonEmptyString(node.path)
+  if (explicitPath !== null && normalizePath(explicitPath).includes('/__ref/')) {
+    return explicitPath
+  }
+  return `/__ref/${encodeURIComponent(node.id)}`
+}
+
+function findRefNodeById(nodes: NavNode[], refNodeId: string): NavNode | null {
+  for (const node of nodes) {
+    if (node.nodeKind === 'ref' && node.id === refNodeId) return node
+    if (node.children?.length) {
+      const match = findRefNodeById(node.children, refNodeId)
+      if (match !== null) return match
+    }
+  }
+  return null
+}
+
+function findRefNodeByHostPath(nodes: NavNode[], routePath: string): NavNode | null {
+  const targetPath = stripTenantProjectPrefix(routePath)
+  for (const node of nodes) {
+    if (node.nodeKind === 'ref' && stripTenantProjectPrefix(refNodeHostPath(node)) === targetPath) {
+      return node
+    }
+    if (node.children?.length) {
+      const match = findRefNodeByHostPath(node.children, routePath)
+      if (match !== null) return match
+    }
+  }
+  return null
+}
+
+function findRouteRefNode(navTree: AppNavRoot | null, routePath: string, hostRefNodeId: string | null): NavNode | null {
+  if (navTree === null) return null
+  if (hostRefNodeId !== null) {
+    const byId = findRefNodeById(navTree.children, hostRefNodeId)
+    if (byId !== null) return byId
+  }
+  return findRefNodeByHostPath(navTree.children, routePath)
+}
+
+function resolveRefTarget(
+  navTree: AppNavRoot | null,
+  routePath: string,
+  routeMeta: Record<string, unknown>,
+  hostProjectId: string | null,
+): ResolvedRefTarget {
+  const hostRefNodeId = resolveHostRefNodeId(routePath)
+  const refNode = findRouteRefNode(navTree, routePath, hostRefNodeId)
+  const refPath = asNonEmptyString(refNode?.refPath) ?? asNonEmptyString(routeMeta['refPath'])
+  const parsedRefPath = parseRefPath(refPath)
+
+  const targetProjectId =
+    asNonEmptyString(refNode?.refProjectId) ??
+    asNonEmptyString(routeMeta['refProjectId']) ??
+    parsedRefPath.projectId ??
+    hostProjectId
+
+  const pageId =
+    parsedRefPath.pageId ??
+    safePageId(routeMeta['refPageId'], hostRefNodeId) ??
+    safePageId(routeMeta['pageId'], hostRefNodeId) ??
+    safePageId(refNode?.refId, hostRefNodeId)
+
+  return {
+    hostRefNodeId,
+    targetProjectId,
+    refPath,
+    pageId,
+  }
 }
 
 function mergeHeaders(
@@ -141,14 +274,8 @@ function createScopedHttpClient(
   }
 }
 
-type FileResponse = {
-  content?: unknown
-  timestamp?: unknown
-  notModified?: unknown
-}
-
 class CrossProjectPageConfigLoader implements ConfigLoader {
-  private client: HttpClient
+  private readonly client: HttpClient
   private readonly basePath: string
 
   constructor(client: HttpClient, basePath: string) {
@@ -264,9 +391,8 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
   private async readFile(pageId: string, filename: string): Promise<string> {
     const encodedPageId = encodeURIComponent(pageId)
     const encodedFileName = encodeURIComponent(filename)
-    const url = `${this.basePath}/${encodedPageId}/${encodedFileName}`
     const result = await this.client.request<FileResponse>({
-      url,
+      url: `${this.basePath}/${encodedPageId}/${encodedFileName}`,
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -289,6 +415,7 @@ export const CrossProjectRefPage = defineComponent({
   setup(props, { expose }) {
     const route = useRoute()
     const pageRendererRef = ref<ReloadableRenderer | null>(null)
+    let lastLoggedErrorKey: string | null = null
 
     expose({
       async reload() {
@@ -298,18 +425,14 @@ export const CrossProjectRefPage = defineComponent({
 
     const tenantId = computed(() => asNonEmptyString(route.params['tenantId']))
     const hostProjectId = computed(() => asNonEmptyString(route.params['projectId']))
-    const targetProjectId = computed(() => asNonEmptyString(route.meta['refProjectId']))
-    const targetRefPath = computed(() => asNonEmptyString(route.meta['refPath']))
-    const targetPageId = computed(() => {
-      const explicit = asNonEmptyString(route.meta['refPageId'])
-      if (explicit !== null) return explicit
-      const refPath = targetRefPath.value
-      return refPath === null ? null : resolveRefPageId(refPath)
-    })
+    const refTarget = computed(() =>
+      resolveRefTarget(getNavTree(), route.path, route.meta, hostProjectId.value)
+    )
+    const targetProjectId = computed(() => refTarget.value.targetProjectId)
+    const targetPageId = computed(() => refTarget.value.pageId)
 
     const scopedLoader = computed<ConfigLoader | null>(() => {
       const scopedTenantId = tenantId.value
-      const currentHostProjectId = hostProjectId.value
       const scopedProjectId = targetProjectId.value
       if (scopedTenantId === null || scopedProjectId === null) return null
 
@@ -317,7 +440,7 @@ export const CrossProjectRefPage = defineComponent({
       const scopedClient = createScopedHttpClient(baseClient, {
         'X-Tenant-Id': scopedTenantId,
         'X-Project-Id': scopedProjectId,
-      }, scopedTenantId, currentHostProjectId, scopedProjectId)
+      }, scopedTenantId, hostProjectId.value, scopedProjectId)
 
       return new CrossProjectPageConfigLoader(
         scopedClient,
@@ -328,22 +451,38 @@ export const CrossProjectRefPage = defineComponent({
     const errorMessage = computed(() => {
       if (tenantId.value === null) return '缺少 tenantId，无法解析引用页面'
       if (targetProjectId.value === null) return '缺少目标项目 ID，无法解析引用页面'
-      if (targetRefPath.value === null) return '缺少 refPath，无法解析引用页面'
-      if (targetPageId.value === null) return '无法从 refPath 推断目标页面 ID'
+      if (targetPageId.value === null) return '缺少目标页面 ID，无法解析引用页面'
       return null
     })
+
+    function logInitError(message: string): void {
+      const target = refTarget.value
+      const logKey = JSON.stringify({
+        route: route.fullPath,
+        hostRefNodeId: target.hostRefNodeId,
+        refProjectId: target.targetProjectId,
+        refPath: target.refPath,
+        pageId: target.pageId,
+        message,
+      })
+      if (logKey === lastLoggedErrorKey) return
+
+      lastLoggedErrorKey = logKey
+      logger.error('跨项目引用页初始化失败', {
+        route: route.fullPath,
+        tenantId: tenantId.value,
+        hostRefNodeId: target.hostRefNodeId,
+        refProjectId: target.targetProjectId,
+        refPath: target.refPath,
+        pageId: target.pageId,
+        message,
+      })
+    }
 
     return () => {
       if (errorMessage.value !== null || scopedLoader.value === null || targetPageId.value === null) {
         const message = errorMessage.value ?? '引用页面加载器初始化失败'
-        logger.error('跨项目引用页初始化失败', {
-          route: route.fullPath,
-          tenantId: tenantId.value,
-          refProjectId: targetProjectId.value,
-          refPath: targetRefPath.value,
-          pageId: targetPageId.value,
-          message,
-        })
+        logInitError(message)
         return h('div', { class: 'spark-cross-project-ref-error' }, message)
       }
 

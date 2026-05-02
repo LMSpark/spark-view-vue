@@ -27,8 +27,8 @@ export { default as AiLauncherButton } from './support/AiLauncherButton.vue'
 export * from './support/jsonTreeEditor.js'
 
 // ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────
-export * from './containers/data-components/index.js'
-export * from './containers/non-data-components/index.js'
+export * from './containers/data-views/index.js'
+export * from './containers/layout/index.js'
 export * from './fields/data-components/index.js'
 export * from './fields/non-data-components/index.js'
 export * from './display/data-components/index.js'

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
-import { isBuiltinActionDisabled } from '../packages/spark-component/src/page/actions/builtin-action-disabled'
+import { isActionDescriptorDisabled } from '../packages/spark-component/src/page/actions/action-disabled'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import type {
@@ -368,7 +368,7 @@ describe('DataView CRUD bridge', () => {
     const view = dataSet.getView('NavigationNodes', 'default')!
     view.setCurrentRowById('__toolbar__')
 
-    expect(isBuiltinActionDisabled({
+    const descriptor = nodeToActionDescriptor({
       type: 'r-button',
       props: {
         action: 'submit-current-form',
@@ -377,7 +377,8 @@ describe('DataView CRUD bridge', () => {
           parentId: null,
         },
       },
-    }, view)).toBe(true)
+    })
+    expect(isActionDescriptorDisabled(descriptor!, view)).toBe(true)
   })
 
   it('action executor append-row should call view.addRow instead of appendRow', async () => {

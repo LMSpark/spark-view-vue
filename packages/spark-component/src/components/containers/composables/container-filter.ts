@@ -1,0 +1,482 @@
+/**
+ * container-filter.ts
+ *
+ * 容器过滤面板层：过滤表达式构建、双向绑定模型管理与 DataView 过滤应用。
+ *
+ * 职责：
+ * - useFilterPanel : 从过滤器节点配置生成表达式，管理 filterModel，应用到 DataView
+ *
+ * 工作流程：
+ *   filterChildren (SparkNode[]) → 描述符 → 模型同步 → filterExpression → DataView.setFilter/executeFilter
+ *
+ * 两种过滤值类型：
+ *   1. input     : 用户输入的双向绑定值（filterModel[field]）
+ *   2. field-ref : 常驻字段引用（filterValueRefField），无需用户输入，直接引用 DataView 字段值
+ *
+ * 消费方：RendererFilter.vue
+ */
+
+import { computed, reactive, toValue, watch } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter } from 'vue'
+import type {
+  DataView,
+  FilterExpression,
+  FilterOperator,
+  FilterValueExpression,
+} from '@spark-view/spark-data'
+import { nodeInputProp, type SparkNode } from '../../internal.js'
+
+// ============================================================
+// § 过滤器常量
+// ============================================================
+
+/** setFilter 路径同步失败的错误消息前缀。 */
+const FILTER_SYNC_ERROR_MESSAGE = 'RendererFilter: 同步过滤表达式失败'
+/** executeFilter 路径应用失败的错误消息前缀。 */
+const FILTER_APPLY_ERROR_MESSAGE = 'RendererFilter: 应用过滤失败'
+
+/** 过滤操作符常量：范围（日期/数字）。 */
+const FILTER_OPERATOR_BETWEEN: FilterOperator = 'between'
+/** 过滤操作符常量：多值 IN。 */
+const FILTER_OPERATOR_IN: FilterOperator = 'in'
+/** 过滤操作符常量：文本包含。 */
+const FILTER_OPERATOR_CONTAINS: FilterOperator = 'contains'
+/** 过滤操作符常量：精确匹配（默认）。 */
+const FILTER_OPERATOR_EQUALS: FilterOperator = '=='
+
+/** 过滤值类型标记：字段引用。 */
+const FILTER_VALUE_KIND_FIELD = 'field'
+
+/** 文本字段组件类型。 */
+const FILTER_NODE_TYPE_TEXT = 'r-text'
+/** 日期字段组件类型。 */
+const FILTER_NODE_TYPE_DATE = 'r-date'
+/** 数字字段组件类型。 */
+const FILTER_NODE_TYPE_NUMBER = 'r-number'
+
+// ============================================================
+// § 内部类型与工具函数
+// ============================================================
+
+/** 极简日志接口（最小化依赖）。 */
+interface ErrorLoggerLike {
+  error(message: string, error?: unknown): void
+}
+
+/** 类型守卫：是否为字符串。 */
+function hasStringValue(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+/** 判断过滤值是否为空（空字符串、空数组、null、undefined 均视为空）。 */
+function isEmptyFilterValue(value: unknown): boolean {
+  if (value === undefined || value === null) return true
+  if (typeof value === 'string') return value.trim().length === 0
+  if (Array.isArray(value)) return value.length === 0
+  return false
+}
+
+/** 判断节点是否为范围过滤配置（filterMode === 'range'）。 */
+function isRangeFilterConfig(config: SparkNode): boolean {
+  return nodeInputProp(config, 'filterMode') === 'range'
+}
+
+/** 从节点获取 field 属性。 */
+function getNodeField(config: SparkNode): string | undefined {
+  const f = nodeInputProp(config, 'field')
+  return typeof f === 'string' ? f : undefined
+}
+
+/**
+ * 从节点获取 filterValueRefField 属性。
+ * - 非字符串或空字符串时抛出（配置错误应 fail-fast）。
+ */
+function getNodeFilterValueRefField(config: SparkNode): string | undefined {
+  const value = nodeInputProp(config, 'filterValueRefField')
+  if (value === undefined) return undefined
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error('RendererFilter: filterValueRefField 必须是非空字符串')
+  }
+  return value.trim()
+}
+
+/** 断言过滤节点数组类型（配置错误 fail-fast）。 */
+function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
+  if (Array.isArray(value)) return
+  throw new Error('RendererFilter: r-filter children 必须是数组节点配置')
+}
+
+/**
+ * 推断过滤操作符（优先级：显式配置 > 数组类型推断 > 节点类型推断 > 默认精确匹配）。
+ */
+function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
+  const explicit = nodeInputProp(config, 'filterOp') ?? nodeInputProp(config, 'filterOperator')
+  if (hasStringValue(explicit)) return explicit as FilterOperator
+
+  if (Array.isArray(value)) {
+    if (
+      isRangeFilterConfig(config) ||
+      config.type === FILTER_NODE_TYPE_DATE ||
+      config.type === FILTER_NODE_TYPE_NUMBER
+    ) {
+      return FILTER_OPERATOR_BETWEEN
+    }
+    return FILTER_OPERATOR_IN
+  }
+
+  switch (config.type) {
+    case FILTER_NODE_TYPE_TEXT:
+      return FILTER_OPERATOR_CONTAINS
+    default:
+      return FILTER_OPERATOR_EQUALS
+  }
+}
+
+// ============================================================
+// § 过滤描述符类型
+// ============================================================
+
+interface InputFilterDescriptor {
+  kind: 'input'
+  config: SparkNode
+  field: string | undefined
+}
+
+interface ResidentFieldRefFilterDescriptor {
+  kind: 'field-ref'
+  field: string
+  op: FilterOperator
+  refField: string
+}
+
+type FilterDescriptor = InputFilterDescriptor | ResidentFieldRefFilterDescriptor
+
+/**
+ * 尝试从节点创建常驻字段引用描述符（filterValueRefField 存在时）。
+ */
+function createResidentFieldRefDescriptor(
+  config: SparkNode,
+): ResidentFieldRefFilterDescriptor | undefined {
+  const refField = getNodeFilterValueRefField(config)
+  if (refField === undefined) return undefined
+
+  const field = getNodeField(config)
+  if (!field) {
+    throw new Error('RendererFilter: 配置 filterValueRefField 的筛选节点必须声明 field')
+  }
+
+  return {
+    kind: 'field-ref',
+    field,
+    op: inferFilterOperator(config, undefined),
+    refField,
+  }
+}
+
+/** 将节点配置描述为 FilterDescriptor（优先检测 field-ref，否则 input）。 */
+function describeFilterNode(config: SparkNode): FilterDescriptor {
+  const residentFieldRef = createResidentFieldRefDescriptor(config)
+  if (residentFieldRef) return residentFieldRef
+  return { kind: 'input', config, field: getNodeField(config) }
+}
+
+function isInputFilterDescriptor(descriptor: FilterDescriptor): descriptor is InputFilterDescriptor {
+  return descriptor.kind === 'input'
+}
+
+/**
+ * 将描述符数组拆分为 input 和 field-ref 两组。
+ */
+function splitFilterDescriptors(descriptors: readonly FilterDescriptor[]): {
+  input: InputFilterDescriptor[]
+  residentFieldRef: ResidentFieldRefFilterDescriptor[]
+} {
+  const input: InputFilterDescriptor[] = []
+  const residentFieldRef: ResidentFieldRefFilterDescriptor[] = []
+  for (const descriptor of descriptors) {
+    if (isInputFilterDescriptor(descriptor)) input.push(descriptor)
+    else residentFieldRef.push(descriptor)
+  }
+  return { input, residentFieldRef }
+}
+
+/** 将 field-ref 描述符转换为 FilterExpression（引用另一字段的值）。 */
+function toResidentFieldRefCondition(descriptor: ResidentFieldRefFilterDescriptor): FilterExpression {
+  return {
+    field: descriptor.field,
+    op: descriptor.op,
+    value: {
+      kind: FILTER_VALUE_KIND_FIELD,
+      field: descriptor.refField,
+    } as FilterValueExpression,
+  }
+}
+
+/** 从模型值构建单条过滤条件（值为空则返回 undefined）。 */
+function buildCondition(config: SparkNode, value: unknown): FilterExpression | undefined {
+  const field = getNodeField(config)
+  if (!field || isEmptyFilterValue(value)) return undefined
+  return {
+    field,
+    op: inferFilterOperator(config, value),
+    value: value as FilterValueExpression,
+  }
+}
+
+// ============================================================
+// § filterModel 工具函数
+// ============================================================
+
+/**
+ * 同步 filterModel 的键集合与当前过滤器配置节点。
+ *
+ * - 删除已移除节点对应的键（赋值为 undefined）
+ * - 添加新增节点对应的键（初始化为 undefined）
+ * - 保持 filterModel 对象引用不变（支持双向绑定）
+ */
+function syncFilterModelKeys(
+  filterModel: Record<string, unknown>,
+  configs: readonly SparkNode[],
+): void {
+  const validKeys = new Set<string>()
+  for (const config of configs) {
+    const field = getNodeField(config)
+    if (hasStringValue(field)) validKeys.add(field)
+  }
+  for (const key of Object.keys(filterModel)) {
+    if (!validKeys.has(key)) filterModel[key] = undefined
+  }
+  for (const key of validKeys) {
+    if (!(key in filterModel)) filterModel[key] = undefined
+  }
+}
+
+/** 从模型中获取单个 input 描述符的当前值。 */
+function getInputFilterModelValue(
+  descriptor: InputFilterDescriptor,
+  model: Record<string, unknown>,
+): unknown {
+  return hasStringValue(descriptor.field) ? model[descriptor.field] : undefined
+}
+
+/**
+ * 从输入描述符列表和模型构建所有过滤条件（跳过空值）。
+ */
+function buildInputFilterConditions(
+  descriptors: readonly InputFilterDescriptor[],
+  model: Record<string, unknown>,
+): FilterExpression[] {
+  return descriptors
+    .map(descriptor => buildCondition(descriptor.config, getInputFilterModelValue(descriptor, model)))
+    .filter((expr): expr is FilterExpression => expr !== undefined)
+}
+
+/**
+ * 合并多条过滤条件为单个表达式（AND 关系）。
+ *
+ * - 0 条 → undefined（无过滤）
+ * - 1 条 → 直接返回
+ * - 多条 → `{ type: 'and', children: [...] }`
+ */
+function combineFilterConditions(conditions: FilterExpression[]): FilterExpression | undefined {
+  if (conditions.length === 0) return undefined
+  if (conditions.length === 1) return conditions[0]
+  return { type: 'and', children: conditions }
+}
+
+/** 统计当前有值的 input 过滤器数量（用于 badge 显示）。 */
+function countActiveInputFilters(
+  descriptors: readonly InputFilterDescriptor[],
+  model: Record<string, unknown>,
+): number {
+  let count = 0
+  for (const descriptor of descriptors) {
+    if (!isEmptyFilterValue(getInputFilterModelValue(descriptor, model))) count += 1
+  }
+  return count
+}
+
+/** 清空 filterModel 所有键的值（赋值为 undefined，保留键结构）。 */
+function clearFilterModel(model: Record<string, unknown>): void {
+  for (const key of Object.keys(model)) {
+    model[key] = undefined
+  }
+}
+
+// ============================================================
+// § applyFilterSafely（过滤应用）
+// ============================================================
+
+/**
+ * 过滤应用模式：
+ * - `'set'`     : 仅更新表达式存储，远端表需额外 refresh()
+ * - `'execute'` : 立即执行过滤查询（自动处理 refresh）
+ */
+type FilterApplyMode = 'set' | 'execute'
+
+/**
+ * 安全地将过滤表达式应用到 DataView。
+ *
+ * - `execute` 模式：调用 `view.executeFilter(expr)`（适合"搜索"按钮触发场景）
+ * - `set` 模式：调用 `view.setFilter(expr)`，对远端表额外调用 `view.refresh()`
+ * - 捕获所有异常并通过 logger 记录（不向外抛出）
+ */
+async function applyFilterSafely(params: {
+  view: DataView | null | undefined
+  expr: FilterExpression | undefined
+  hasFilters: boolean
+  logger: ErrorLoggerLike
+  message: string
+  mode?: FilterApplyMode
+}): Promise<boolean> {
+  const { view, expr, hasFilters, logger, message, mode = 'set' } = params
+  if (!view || !hasFilters) return false
+
+  try {
+    if (mode === 'execute') {
+      await view.executeFilter(expr)
+    } else {
+      await view.setFilter(expr)
+      // Remote tables: setFilter alone may not drive a fetch in all paths; explicit refresh needed.
+      // Static-data tables apply filters locally and do NOT need a server round-trip.
+      const dt = (view as unknown as { dataTable?: { api?: { list?: unknown }; resourceType?: string } }).dataTable
+      if (dt?.api?.list !== undefined && dt.resourceType !== 'static-data') {
+        await view.refresh()
+      }
+    }
+    return true
+  } catch (error) {
+    logger.error(message, error)
+    return false
+  }
+}
+
+// ============================================================
+// § useFilterPanel
+// ============================================================
+
+interface UseFilterPanelOptions {
+  /** 过滤器子节点列表（响应式）。 */
+  filterChildren: MaybeRefOrGetter<SparkNode[]>
+  /** 目标 DataView（响应式）。 */
+  dataView: MaybeRefOrGetter<DataView | null>
+  /** 错误日志接口。 */
+  logger: ErrorLoggerLike
+}
+
+/** `useFilterPanel` 返回状态。 */
+export interface FilterPanelState {
+  /** 双向绑定的过滤模型（field → 用户输入值）。 */
+  filterModel: Record<string, unknown>
+  /** 当前可渲染的过滤器配置列表（input 类型）。 */
+  filterConfigs: ComputedRef<SparkNode[]>
+  /** 是否有可渲染的过滤器。 */
+  hasFilters: ComputedRef<boolean>
+  /** 当前有值的过滤器数量（用于 badge）。 */
+  activeFilterCount: ComputedRef<number>
+  /** 应用过滤（executeFilter 模式，用于搜索按钮）。 */
+  searchFilters: () => Promise<void>
+  /** 重置所有过滤值。 */
+  resetFilters: () => Promise<void>
+}
+
+/**
+ * 过滤面板完整状态管理。
+ *
+ * 内部流程：
+ * 1. `filterChildren` → 描述符（describeFilterNode） → input / field-ref 两组
+ * 2. `filterModel`（reactive）按 input 描述符同步键集（syncFilterModelKeys）
+ * 3. `filterExpression`（computed）= combineFilterConditions(field-ref 条件 + input 条件)
+ * 4. `watch(resolvedView)` → 视图切换时同步应用当前表达式
+ * 5. `watch(filterExpression)` → 表达式变化时自动应用（setFilter + 可选 refresh）
+ * 6. `searchFilters` → executeFilter（主动搜索）
+ * 7. `resetFilters` → clearFilterModel
+ */
+export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState {
+  const filterModel = reactive<Record<string, unknown>>({})
+
+  const allFilterNodes = computed(() => {
+    const nodes = toValue(options.filterChildren)
+    assertFilterNodesArray(nodes)
+    return nodes
+  })
+
+  const filterDescriptors = computed(() => allFilterNodes.value.map(config => describeFilterNode(config)))
+  const descriptorBuckets = computed(() => splitFilterDescriptors(filterDescriptors.value))
+  const inputFilterDescriptors = computed(() => descriptorBuckets.value.input)
+  const filterConfigs = computed(() => inputFilterDescriptors.value.map(descriptor => descriptor.config))
+
+  const residentFieldRefConditions = computed<FilterExpression[]>(() =>
+    descriptorBuckets.value.residentFieldRef.map(descriptor => toResidentFieldRefCondition(descriptor)),
+  )
+
+  // filterModel 键集与当前可渲染过滤器配置同步（新增初始化 / 删除清理）。
+  watch(filterConfigs, (configs) => {
+    syncFilterModelKeys(filterModel, configs)
+  }, { immediate: true })
+
+  // 合并 field-ref 常驻条件 + 用户输入条件 → 最终 FilterExpression。
+  const filterExpression = computed<FilterExpression | undefined>(() => {
+    const conditions = [
+      ...residentFieldRefConditions.value,
+      ...buildInputFilterConditions(inputFilterDescriptors.value, filterModel),
+    ]
+    return combineFilterConditions(conditions)
+  })
+
+  const hasRenderableFilters = computed(() => filterConfigs.value.length > 0)
+  const hasAnyFilterNodes = computed(() => allFilterNodes.value.length > 0)
+  const resolvedFilterDataView = computed(() => toValue(options.dataView))
+
+  // DataView 切换时：将当前过滤表达式应用到新 view（用于持续过滤场景）。
+  watch(resolvedFilterDataView, async (view) => {
+    if (filterExpression.value === undefined) return
+    await applyFilterSafely({
+      view,
+      expr: filterExpression.value,
+      hasFilters: hasAnyFilterNodes.value,
+      logger: options.logger,
+      message: FILTER_SYNC_ERROR_MESSAGE,
+    })
+  }, { immediate: true })
+
+  // 表达式变化时：自动应用（set 模式，远端表追加 refresh）。
+  watch(filterExpression, async (expr) => {
+    await applyFilterSafely({
+      view: resolvedFilterDataView.value,
+      expr,
+      hasFilters: hasAnyFilterNodes.value,
+      logger: options.logger,
+      message: FILTER_APPLY_ERROR_MESSAGE,
+    })
+  }, { deep: true })
+
+  const activeFilterCount = computed(() =>
+    countActiveInputFilters(inputFilterDescriptors.value, filterModel),
+  )
+
+  function resetFilters(): Promise<void> {
+    clearFilterModel(filterModel)
+    return Promise.resolve()
+  }
+
+  async function searchFilters(): Promise<void> {
+    await applyFilterSafely({
+      view: resolvedFilterDataView.value,
+      expr: filterExpression.value,
+      hasFilters: hasAnyFilterNodes.value,
+      logger: options.logger,
+      message: FILTER_APPLY_ERROR_MESSAGE,
+      mode: 'execute',
+    })
+  }
+
+  return {
+    filterModel,
+    filterConfigs,
+    hasFilters: hasRenderableFilters,
+    activeFilterCount,
+    searchFilters,
+    resetFilters,
+  }
+}

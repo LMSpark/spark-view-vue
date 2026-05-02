@@ -1,7 +1,7 @@
 import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CrudApi, TableResourceType } from '@spark-view/spark-data'
-import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/data-components/view-state'
+import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/data-views/view-data-source'
 
 interface AutoLoadViewLike {
   autoLoad?: boolean
