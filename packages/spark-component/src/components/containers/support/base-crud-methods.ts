@@ -22,7 +22,7 @@ export function createBaseCrudMethods(
     },
     async refresh() {
       const view = resolvedView.value
-      if (!view?.dataTable?.api?.list) return
+      if (!view) return
       await view.refresh()
     },
     async addRow(row) {

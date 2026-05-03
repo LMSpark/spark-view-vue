@@ -304,7 +304,7 @@ function clearFilterModel(model: Record<string, unknown>): void {
 
 /**
  * 过滤应用模式：
- * - `'set'`     : 仅更新表达式存储，远端表需额外 refresh()
+ * - `'set'`     : 更新表达式并让 DataView 决定后续处理
  * - `'execute'` : 立即执行过滤查询（自动处理 refresh）
  */
 type FilterApplyMode = 'set' | 'execute'
@@ -313,7 +313,7 @@ type FilterApplyMode = 'set' | 'execute'
  * 安全地将过滤表达式应用到 DataView。
  *
  * - `execute` 模式：调用 `view.executeFilter(expr)`（适合"搜索"按钮触发场景）
- * - `set` 模式：调用 `view.setFilter(expr)`，对远端表额外调用 `view.refresh()`
+ * - `set` 模式：调用 `view.setFilter(expr)`
  * - 捕获所有异常并通过 logger 记录（不向外抛出）
  */
 async function applyFilterSafely(params: {
@@ -332,12 +332,6 @@ async function applyFilterSafely(params: {
       await view.executeFilter(expr)
     } else {
       await view.setFilter(expr)
-      // Remote tables: setFilter alone may not drive a fetch in all paths; explicit refresh needed.
-      // Static-data tables apply filters locally and do NOT need a server round-trip.
-      const dt = (view as unknown as { dataTable?: { api?: { list?: unknown }; resourceType?: string } }).dataTable
-      if (dt?.api?.list !== undefined && dt.resourceType !== 'static-data') {
-        await view.refresh()
-      }
     }
     return true
   } catch (error) {
@@ -435,7 +429,7 @@ export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState
     })
   }, { immediate: true })
 
-  // 表达式变化时：自动应用（set 模式，远端表追加 refresh）。
+  // 表达式变化时：自动应用（set 模式，后续行为由 DataView 决定）。
   watch(filterExpression, async (expr) => {
     await applyFilterSafely({
       view: resolvedFilterDataView.value,

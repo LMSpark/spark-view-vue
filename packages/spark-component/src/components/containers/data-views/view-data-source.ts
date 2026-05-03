@@ -122,10 +122,6 @@ function shouldAutoLoad(view: DataView): boolean {
   const autoLoadState = view as { autoLoad?: boolean; autoLoadConfigured?: boolean }
   if (autoLoadState.autoLoadConfigured === true && autoLoadState.autoLoad === false) return false
 
-  const dataTable = view.dataTable
-  if (dataTable?.resourceType === 'static-data') return false
-  if (!dataTable?.api?.list) return false
-
   return true
 }
 

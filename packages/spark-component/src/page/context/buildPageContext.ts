@@ -47,14 +47,14 @@ function createRefreshData(getDataSet: () => DataSet | null): (key?: string) => 
     if (key) {
       const { tableName, viewId } = parseRefreshKey(key)
       const view = ds.getView(tableName, viewId)
-      if (view?.crudService) {
+      if (view) {
         await view.refresh()
       }
     } else {
       const promises: Array<Promise<void>> = []
       for (const table of Object.values(ds.tables)) {
         const view = table.getView('default')
-        if (view?.crudService) {
+        if (view) {
           promises.push(view.refresh())
         }
       }
