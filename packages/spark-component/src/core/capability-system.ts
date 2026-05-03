@@ -5,7 +5,7 @@
  * 本文件只保留与 spark-component 运行时直接相关的能力键与类型。
  */
 
-import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
+import type { LoggerApi } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-data'
 import { createEventEmitter } from '@spark-view/spark-data'
 
@@ -26,7 +26,7 @@ export interface IAppServicesCapability {
   pageService?: Partial<IPageServiceCapability>
 }
 
-export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
+export { APP_SERVICES, PAGE_SERVICE } from './capability-keys.js'
 
 export type PageMessageType = 'success' | 'error' | 'warning' | 'info'
 export type PageDialogResult = 'confirm' | 'cancel' | 'close'
@@ -109,8 +109,6 @@ export interface IPageServiceCapability {
   showLoading(show: boolean, text?: string): void
   navigate(path: string, params?: Record<string, unknown>): void
 }
-
-export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
 
 export type ThemeMode = 'light' | 'dark' | 'auto'
 

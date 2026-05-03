@@ -7,9 +7,12 @@ import {
 } from '@spark-view/spark-utils'
 
 export {
+  APP_SERVICES,
+  PAGE_SERVICE,
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
+  PAGE_PERMISSION_MODE,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
@@ -95,4 +98,4 @@ export function consumeCapabilityFromProvider<T>(
   return consumeSparkCapability(provider, key)
 }
 
-// PAGE_PERMISSION_MODE 已迁入 permission/page-permission-mode.ts（权限模块唯一维护）
+// 所有能力键统一定义在 core/capability-keys.ts

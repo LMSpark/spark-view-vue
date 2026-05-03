@@ -63,11 +63,6 @@ export {
 
 export { SparkNodeTree } from './spark-node-tree.js'
 
-export {
-  APP_SERVICES,
-  PAGE_SERVICE,
-} from './capability-system.js'
-
 export type {
   IAppServicesCapability,
   IPageServiceCapability,
@@ -88,9 +83,12 @@ export type {
 } from './capability-system.js'
 
 export {
+  APP_SERVICES,
+  PAGE_SERVICE,
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
+  PAGE_PERMISSION_MODE,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,

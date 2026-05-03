@@ -1,5 +1,6 @@
 import { defineCapability } from '@spark-view/spark-utils'
 import type { IModuleContext } from './capability-system.js'
+import type { IAppServicesCapability, IPageServiceCapability } from './capability-system.js'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
 
@@ -57,6 +58,9 @@ declare module '@spark-view/spark-utils' {
 export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-dataset')
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
 export const DATA_ROW = defineCapability<IDataRow>('spark:capability:data-row')
+export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
+export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
+export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode')
 export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry')
 export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:capability:module-context')
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
