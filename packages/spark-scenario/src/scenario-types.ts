@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../../core/session/session-contracts'
+import type { JsonSchema } from './json-schema'
 
 export type AiScenarioScope = 'planning' | 'design' | 'business'
 export type AiConfirmPolicy = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'

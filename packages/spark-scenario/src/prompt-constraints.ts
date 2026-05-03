@@ -53,13 +53,13 @@ export const TIERED_QUERY_CONSTRAINT = `
 
 - 查询返回 undefined 时，立即停止并报告给用户
 - 参数验证失败时，输出具体的 Schema 不匹配信息
-- 不允许“静默降级”或“兜底回退”
+- 不允许"静默降级"或"兜底回退"
 `
 
 export function buildScenarioSystemPrompt(
   scenarioName: string,
   scenarioScope: string,
-  baseBehavior?: string
+  baseBehavior?: string,
 ): string {
   return `
 # 🎯 场景任务：${scenarioName}

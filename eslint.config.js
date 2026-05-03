@@ -181,6 +181,7 @@ export default [
           './tsconfig.typecheck.json',
           './.storybook/tsconfig.json',
           './packages/spark-ai/tsconfig.json',
+          './packages/spark-scenario/tsconfig.json',
           './packages/spark-utils/tsconfig.json',
           './packages/spark-data/tsconfig.json',
           './packages/spark-component/tsconfig.json',
