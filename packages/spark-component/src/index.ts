@@ -54,7 +54,7 @@ export type {
   ComponentRegistry,
   LoggerApi
 } from './core/index.js'
-export type { CancellableControl } from './core/cancellable-control.js'
+export type { CancellableControl } from './components/containers/support/interactionControl.js'
 
 // ── 5. DI Keys + SparkNode 结构常量 ──
 export {

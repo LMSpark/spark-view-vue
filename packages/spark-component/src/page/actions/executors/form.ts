@@ -8,7 +8,7 @@ import type {
   ActionExecutionContext,
   ActionExecutionScope,
   SubmitCurrentFormAction,
-} from '../action-descriptor'
+} from '../action-types'
 import { resolveActionDataCapabilities } from '../data-capabilities'
 import { resolveRowId, asRecord } from '../executor-helpers'
 import { createActionNotifier } from '../action-notifier'

@@ -45,7 +45,7 @@
 
 import {
   runControlledInteraction,
-  createInteractionControl,
+  createCancellableControl,
   type InteractionControl,
 } from './interactionControl'
 
@@ -134,7 +134,7 @@ export function useEventDefaults(
     const entry = declarations[eventName]
     if (!entry) {
       // 未声明的事件 → 透传（不应出现，防御性处理）
-      return createInteractionControl()
+      return createCancellableControl()
     }
 
     // 步骤 2: 按事件名称查找业务回调 B（支持单函数及数组）
@@ -153,7 +153,7 @@ export function useEventDefaults(
     }
 
     // 无系统默认: 仅执行 B + 返回 cancel（CRUD 场景）
-    const control = createInteractionControl()
+    const control = createCancellableControl()
     if (businessHandler) {
       await businessHandler(...args, control)
     }

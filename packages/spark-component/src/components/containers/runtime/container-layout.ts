@@ -41,11 +41,6 @@ const DEFAULT_ROW_SPAN_KEYS = ['rowSpan', 'gridRowSpan'] as const
 type OptionalString = string | null | undefined
 type OptionalStringOrNumber = string | number | null | undefined
 
-/** 类型守卫：是否为字符串。 */
-function hasStringValue(value: unknown): value is string {
-  return typeof value === 'string'
-}
-
 /**
  * 将值转换为有限整数。
  * - number：截断为整数；string：parseInt；其他：undefined。
@@ -63,7 +58,7 @@ function toFiniteInteger(value: unknown): number | undefined {
  * 将值转换为非空字符串，空/null/非字符串时返回 fallback。
  */
 function toNonEmptyString(value: unknown, fallback = ''): string {
-  return hasStringValue(value) && value.trim().length > 0 ? value : fallback
+  return typeof value === 'string' && value.trim().length > 0 ? value : fallback
 }
 
 /**
@@ -192,7 +187,7 @@ function resolveLastRowColSpan(params: {
  */
 export function normalizeGridGap(value: unknown): string {
   if (typeof value === 'number') return `${value}px`
-  if (hasStringValue(value) && value.trim()) return value
+  if (typeof value === 'string' && value.trim()) return value
   return DEFAULT_GRID_GAP
 }
 

@@ -2,7 +2,7 @@
 
 页面声明式动作层：
 
-1. `action-descriptor.ts`：动作描述符类型定义
+1. `action-types.ts`：动作描述符类型定义
 2. `action-control.ts`：默认行为控制器提取与传播辅助
 2. `action-executor.ts`：动作执行引擎
 3. `index.ts`：动作层统一入口

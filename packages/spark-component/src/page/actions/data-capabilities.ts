@@ -4,7 +4,7 @@
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data'
-import type { ActionExecutionContext } from './action-descriptor'
+import type { ActionExecutionContext } from './action-types'
 import { getSelectedRows, isRowLike } from './executor-helpers'
 
 export interface ResolvedActionDataCapabilities {

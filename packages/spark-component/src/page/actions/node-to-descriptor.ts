@@ -20,14 +20,14 @@ import type {
   PatchAction,
   RefreshAction,
   SubmitCurrentFormAction,
-} from './action-descriptor'
+} from './action-types'
 import { isBuiltinActionName, type BuiltinActionName } from './builtin-action-meta'
 import { asRecord, readString } from './executor-helpers'
 import {
   readBoolean,
   readOptionalMessageType,
   readOptionalStringArray,
-} from './builtin-action-helpers'
+} from './executor-helpers'
 /** 提取所有共有装饰字段（除 silent 外都 optional） */
 function pickDecorator(props: Record<string, unknown>): ActionUiDecorator {
   const out: ActionUiDecorator = {}

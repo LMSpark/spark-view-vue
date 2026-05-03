@@ -5,11 +5,11 @@
  */
 
 // ── AI 面板模块 ─────────────────────────────────────────────────────────
-export * from './support/ai/index.js'
+export * from './ai/index.js'
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
-export * from './support/editors/index.js'
+export * from './editors/index.js'
 
 // ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────
 export * from './containers/data-views/index.js'

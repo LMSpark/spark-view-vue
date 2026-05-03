@@ -5,18 +5,17 @@
 1. `containers/`：表格、表单、详情、树、对话框等容器 renderer
 2. `display/`：统计、标签、时间线、告警等展示 renderer
 3. `fields/`：字段 renderer 和字段级 composable
-4. `support/`：跨组件支撑能力
-   - `support/ai/`：AI 会话、面板、启动器与缓存
-   - `support/editors/`：代码/JSON/树形编辑器
-   - 根层仅保留渲染器辅助、行同步、选择路径、未注册兜底
-5. 根目录入口：`index.ts`、`internal.ts`、`register-renderers.ts`
+4. `support/`：跨组件支撑能力（根层仅保留渲染器辅助、行同步等）
+5. `ai/`：AI 会话、面板、启动器与缓存
+6. `editors/`：代码/JSON/树形编辑器
+7. 根目录入口：`index.ts`、`internal.ts`、`register-renderers.ts`
 
 推荐查找顺序：
 
 1. 先看对应领域的 `index.ts`
 2. 容器共享组合函数在 `containers/composables/`
 3. 字段共享组合函数在 `fields/context/`、`fields/options/`、`fields/data-components/composables/`
-4. 支撑组件按 feature 进入 `support/ai/` 或 `support/editors/`
+4. AI 能力入口 `ai/`，编辑器入口 `editors/`
 
 命名约定：
 

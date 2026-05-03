@@ -19,7 +19,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { RendererTable } from '@spark-view/spark-component'
 import { normalizeRuleEvents, normalizeOnProps } from '../packages/spark-component/src/page/binding/bind-normalize'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
-import type { ActionExecutionContext, ActionDescriptor } from '../packages/spark-component/src/page/actions/action-descriptor'
+import type { ActionExecutionContext, ActionDescriptor } from '../packages/spark-component/src/page/actions/action-types'
 import type { IPageServiceCapability } from '@spark-view/spark-component'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 

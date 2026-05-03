@@ -1,12 +1,14 @@
 /**
- * Action 执行器内部辅助：值解析 / 文案插值 / 行辅助
+ * Action 执行器内部辅助：值解析 / 文案插値 / 行辅助 / 内置动作 props 工具
  *
  * 与具体 executor 解耦，专注通用工具。
  */
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { resolveSelectedRowsPath } from '../../components/support/row-selection-path'
-import type { ActionUiDecorator } from './action-descriptor'
+import type { PageMessageType } from '../../components/internal'
+import type { SparkNode } from '../../components/internal'
+import { nodeInputProps } from '../../components/internal'
+import type { ActionUiDecorator } from './action-types'
 
 // ── 值解析（轻量） ─────────────────────────────────────────────────────────
 
@@ -116,7 +118,7 @@ export function resolveRowLabel(row: IDataRow, idField: string): string {
 }
 
 export function getSelectedRows(view: DataView): IDataRow[] {
-  return resolveSelectedRowsPath(view)
+  return view.selectedRows.slice()
 }
 
 export function hasRemoteListApi(view: DataView | null | undefined): boolean {
@@ -127,4 +129,35 @@ export function extractErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
   if (typeof error === 'string' && error.trim().length > 0) return error.trim()
   return ''
+}
+
+// ── 内置动作 props 工具 ──────────────────────────────────────────────────────────────
+
+export function readBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
+
+export function readOptionalStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const filtered = value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+  return filtered.length > 0 ? filtered : undefined
+}
+
+export function readOptionalMessageType(value: unknown): PageMessageType | undefined {
+  const text = readString(value)
+  if (!text) return undefined
+
+  switch (text) {
+    case 'success':
+    case 'error':
+    case 'warning':
+    case 'info':
+      return text
+    default:
+      return undefined
+  }
+}
+
+export function getActionProps(action: SparkNode): Record<string, unknown> {
+  return nodeInputProps(action)
 }

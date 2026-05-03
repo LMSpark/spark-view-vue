@@ -18,7 +18,7 @@ import type {
   PatchAction,
   RefreshAction,
   SetFieldAction,
-} from '../action-descriptor'
+} from '../action-types'
 import { resolveActionDataCapabilities } from '../data-capabilities'
 import {
   inferNextRowId,

@@ -29,12 +29,12 @@ export type {
   RefreshAction,
   ClearRowsAction,
   SubmitCurrentFormAction,
-} from './action-descriptor'
+} from './action-types'
 
-export { isActionDescriptor } from './action-descriptor'
+export { isActionDescriptor } from './action-types'
 export { executeActionDescriptor } from './action-executor'
 export type { ActionExecutionOptions } from './action-executor'
-export { extractActionExecutionControl } from './action-control'
+export { extractActionExecutionControl } from './action-executor'
 
 export { nodeToActionDescriptor } from './node-to-descriptor'
 export { hasRemoteListApi, getSelectedRows } from './executor-helpers'

@@ -8,7 +8,7 @@ import type {
   ActionExecutionContext,
   ActionExecutionScope,
   ActionFormApi,
-} from '../packages/spark-component/src/page/actions/action-descriptor'
+} from '../packages/spark-component/src/page/actions/action-types'
 import type { IPageServiceCapability } from '@spark-view/spark-component'
 
 function createDataView() {

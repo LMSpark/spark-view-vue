@@ -18,7 +18,7 @@ import {
   type ActionExecutionScope,
   type ActionExecutionContext,
 } from '../../../page/actions/index'
-import { getActionProps, readBoolean } from '../../../page/actions/builtin-action-helpers'
+import { getActionProps, readBoolean } from '../../../page/actions/executor-helpers'
 import type { SparkNode } from '../../internal'
 import type { DataView, IDataRow, IDataSource } from '@spark-view/spark-data'
 

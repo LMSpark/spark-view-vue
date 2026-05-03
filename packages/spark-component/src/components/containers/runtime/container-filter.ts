@@ -63,11 +63,6 @@ interface ErrorLoggerLike {
   error(message: string, error?: unknown): void
 }
 
-/** 类型守卫：是否为字符串。 */
-function hasStringValue(value: unknown): value is string {
-  return typeof value === 'string'
-}
-
 /** 判断过滤值是否为空（空字符串、空数组、null、undefined 均视为空）。 */
 function isEmptyFilterValue(value: unknown): boolean {
   if (value === undefined || value === null) return true
@@ -111,7 +106,7 @@ function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
  */
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
   const explicit = nodeInputProp(config, 'filterOp') ?? nodeInputProp(config, 'filterOperator')
-  if (hasStringValue(explicit)) return explicit as FilterOperator
+  if (typeof explicit === 'string') return explicit as FilterOperator
 
   if (Array.isArray(value)) {
     if (
@@ -241,7 +236,7 @@ function syncFilterModelKeys(
   const validKeys = new Set<string>()
   for (const config of configs) {
     const field = getNodeField(config)
-    if (hasStringValue(field)) validKeys.add(field)
+    if (typeof field === 'string') validKeys.add(field)
   }
   for (const key of Object.keys(filterModel)) {
     if (!validKeys.has(key)) filterModel[key] = undefined
@@ -256,7 +251,7 @@ function getInputFilterModelValue(
   descriptor: InputFilterDescriptor,
   model: Record<string, unknown>,
 ): unknown {
-  return hasStringValue(descriptor.field) ? model[descriptor.field] : undefined
+  return typeof descriptor.field === 'string' ? model[descriptor.field] : undefined
 }
 
 /**

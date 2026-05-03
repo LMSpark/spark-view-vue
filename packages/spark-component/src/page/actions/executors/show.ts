@@ -12,10 +12,10 @@ import type {
   ShowAlertAction,
   NavigateAction,
   OpenAction,
-} from '../action-descriptor'
+} from '../action-types'
 import type { IDataRow } from '@spark-view/spark-data'
 import { interpolate, isRowLike } from '../executor-helpers'
-import { extractActionExecutionControl } from '../action-control'
+import { extractActionExecutionControl } from '../action-executor'
 import type { PageMessageType } from '../../../core/capability-system.js'
 
 export function executeShowMessage(desc: ShowMessageAction, ctx: ActionExecutionContext): void {

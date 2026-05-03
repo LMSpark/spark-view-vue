@@ -1,7 +1,6 @@
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import { DATA_ROW, DATA_SOURCE, useSparkConsume } from '../../internal'
-import { resolveCurrentRowPath, resolveSelectedRowsPath } from '../../support/row-selection-path'
 
 export function useActiveFieldRow() {
   const { sparkConsume } = useSparkConsume()
@@ -9,11 +8,13 @@ export function useActiveFieldRow() {
   const dataSource = sparkConsume(DATA_SOURCE)
 
   const activeRow = computed<IDataRow | null>(() => {
-    return resolveCurrentRowPath(contextData, dataSource)
+    if (contextData !== null) return contextData
+    return dataSource?.currentRow ?? null
   })
 
   const activeSelectedRows = computed<IDataRow[]>(() => {
-    return resolveSelectedRowsPath(dataSource)
+    const rows = dataSource?.selectedRows
+    return rows === undefined ? [] : rows.slice()
   })
 
   return {

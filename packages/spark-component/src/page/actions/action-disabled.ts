@@ -6,7 +6,7 @@
  */
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import type { ActionDescriptor, ActionExecutionScope } from './action-descriptor'
+import type { ActionDescriptor, ActionExecutionScope } from './action-types'
 import { getSelectedRows } from './executor-helpers'
 
 // ── 私有辅助 ──────────────────────────────────────────────────────────────

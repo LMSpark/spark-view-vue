@@ -2,7 +2,7 @@
  * 动作执行消息中心：统一处理 silent / 多级文案 / pageService fail-soft。
  */
 
-import type { ActionExecutionContext, ActionUiDecorator } from './action-descriptor'
+import type { ActionExecutionContext, ActionUiDecorator } from './action-types'
 import type { PageMessageType } from '../../core/capability-system.js'
 import { Logger } from '@spark-view/spark-utils'
 

@@ -63,4 +63,4 @@ export type {
 } from '../core/index.js'
 
 // ── 事件控制 ──
-export { createCancellableControl, type CancellableControl } from '../core/cancellable-control.js'
+export { createCancellableControl, isCancellableControl, type CancellableControl } from './containers/support/interactionControl.js'

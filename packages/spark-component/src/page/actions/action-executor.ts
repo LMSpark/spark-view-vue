@@ -12,8 +12,8 @@ import type {
   ActionExecutionControl,
   ActionExecutionScope,
   ActionUiDecorator,
-} from './action-descriptor'
-import { extractActionExecutionControl } from './action-control'
+} from './action-types'
+import { isCancellableControl, type CancellableControl } from '../../components/containers/support/interactionControl.js'
 import { Logger } from '@spark-view/spark-utils'
 import { extractErrorMessage, interpolate } from './executor-helpers'
 import { createActionNotifier } from './action-notifier'
@@ -176,4 +176,11 @@ async function dispatchAction(
   }
 }
 
-export { extractActionExecutionControl }
+export function extractActionExecutionControl(
+  eventArgs?: readonly unknown[],
+): CancellableControl | undefined {
+  if (!Array.isArray(eventArgs) || eventArgs.length === 0) return undefined
+  const last: unknown = eventArgs[eventArgs.length - 1]
+  if (isCancellableControl(last)) return last
+  return undefined
+}

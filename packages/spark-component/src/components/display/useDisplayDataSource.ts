@@ -10,7 +10,6 @@ import { computed, type ComputedRef } from 'vue'
 import { useSparkConsume, DATA_ROW, DATA_SOURCE } from '../internal'
 import { PAGE_DATASET } from '../internal'
 import { resolveRawKey } from '@spark-view/spark-data'
-import { resolveCurrentRowPath } from '../support/row-selection-path'
 
 interface DisplayDataProps {
   dataKey?: string | undefined
@@ -50,7 +49,7 @@ export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSou
       }
     }
 
-    const activeRow = resolveCurrentRowPath(contextData, dataSource)
+    const activeRow = contextData ?? dataSource?.currentRow ?? null
     // 从当前行数据读取字段
     if (activeRow !== null && props.field && props.field in activeRow) {
       return activeRow[props.field]

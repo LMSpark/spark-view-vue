@@ -190,7 +190,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { deepClone } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
-import { useBasicFieldState } from '../../fields/data-components/composables/useBasicFieldState'
+import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import {
   addChildNode,
   addSiblingNode,

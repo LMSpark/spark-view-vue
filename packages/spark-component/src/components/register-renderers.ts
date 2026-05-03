@@ -78,7 +78,7 @@ import {
 } from './display/non-data-components/index.js'
 
 // ── 支持组件 ──
-import { SparkCodeEditor, SparkJsonEditor } from './support/editors/index.js'
+import { SparkCodeEditor, SparkJsonEditor } from './editors/index.js'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 注册表

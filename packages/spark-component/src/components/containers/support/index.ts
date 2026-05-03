@@ -1,9 +1,11 @@
 export {
   runControlledInteraction,
-  createInteractionControl,
+  createCancellableControl,
+  isCancellableControl,
   createCancelledCrudResult,
 } from './interactionControl.js'
 export type {
+  CancellableControl,
   InteractionControl,
   CancelableHandler,
   AddRowHandler,
@@ -28,8 +30,7 @@ export {
   getCrudErrorMessage,
 } from './crud-result-helpers.js'
 
-export { createCrudEventDefaults } from './crud-event-defaults.js'
-export { createCrudDispatcher } from './crud-dispatcher.js'
+export { createCrudEventDefaults, createCrudDispatcher } from './crud-defaults.js'
 
 export type {
   BaseCrudContainerApi,
