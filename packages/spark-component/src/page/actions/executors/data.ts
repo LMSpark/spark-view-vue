@@ -1,5 +1,5 @@
 /**
- * 数据相关动作执行器：append-row / delete / patch / move / message-row / refresh / clear-rows / set-field
+ * 数据相关动作执行器：append-row / delete / patch / move / message-row / refresh / clear-rows / set-field / submit-current-form
  *
  * 单一真源：BuiltinAction 与 bind-normalize 的 on 事件均通过这里执行。
  */
@@ -18,8 +18,8 @@ import type {
   PatchAction,
   RefreshAction,
   SetFieldAction,
+  SubmitCurrentFormAction,
 } from '../action-types'
-import { resolveActionDataCapabilities } from '../data-capabilities'
 import {
   inferNextRowId,
   resolveRowId,
@@ -27,8 +27,12 @@ import {
   getSelectedRows,
   hasRemoteListApi,
   interpolate,
+  asRecord,
+  resolveActionDataCapabilities,
+  confirmIfNeeded,
+  createActionNotifier,
+  type ActionNotifier,
 } from '../executor-helpers'
-import { confirmIfNeeded, createActionNotifier, type ActionNotifier } from '../action-notifier'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../../components/containers/support/crud-result-helpers.js'
 
 // ── target 行解析 ─────────────────────────────────────────────────────────
@@ -503,4 +507,64 @@ export async function executeSetField(desc: SetFieldAction, ctx: ActionExecution
   const id = resolveRowId(currentRow, idField)
   if (id === null) return
   await dataSource.editRowById(id, { [desc.field]: desc.value })
+}
+
+// ── submit-current-form ──────────────────────────────────────────────────
+
+export async function executeSubmitCurrentForm(
+  desc: SubmitCurrentFormAction,
+  ctx: ActionExecutionContext,
+  scope: ActionExecutionScope | undefined,
+): Promise<void> {
+  const notifier = createActionNotifier(ctx, desc)
+  const formApi = scope?.formApi
+  if (!formApi) {
+    notifier.notify('warning', desc.emptyMessage ?? '表单 API 未就绪')
+    return
+  }
+
+  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  if (!dataSource) {
+    notifier.notify('warning', desc.emptyMessage ?? '数据视图未就绪')
+    return
+  }
+
+  const idField = desc.idField ?? 'id'
+  const formRow = formApi.getCurrentRow()
+  const targetRow = formRow ?? dataSource.currentRow
+  if (!targetRow) {
+    notifier.notify('warning', '请先选择当前行')
+    return
+  }
+  const id = resolveRowId(targetRow, idField)
+  if (id === null) {
+    notifier.notifyError(`当前行缺少主键字段: ${idField}`)
+    return
+  }
+
+  if (typeof formApi.validate === 'function') {
+    const valid = await formApi.validate()
+    if (!valid) {
+      notifier.notify('warning', desc.validateMessage ?? '请先修正表单校验错误')
+      return
+    }
+  }
+
+  const draft = asRecord(formApi.getFormData())
+  if (!draft) {
+    notifier.notify('warning', '当前表单数据不可用')
+    return
+  }
+
+  const result = await dataSource.editRowById(id, draft)
+  if (isCrudSuccess(result)) {
+    notifier.notify('success', desc.successMessage ?? '保存成功')
+    return
+  }
+  notifier.notify(
+    'warning',
+    isCrudResult(result)
+      ? getCrudErrorMessage(result, desc.failureMessage ?? '保存失败')
+      : (desc.failureMessage ?? '保存失败'),
+  )
 }

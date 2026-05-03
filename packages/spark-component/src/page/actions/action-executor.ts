@@ -15,8 +15,7 @@ import type {
 } from './action-types'
 import { isCancellableControl, type CancellableControl } from '../../components/containers/support/interactionControl.js'
 import { Logger } from '@spark-view/spark-utils'
-import { extractErrorMessage, interpolate } from './executor-helpers'
-import { createActionNotifier } from './action-notifier'
+import { extractErrorMessage, interpolate, createActionNotifier } from './executor-helpers'
 
 import {
   executeShowMessage,
@@ -35,9 +34,8 @@ import {
   executeRefresh,
   executeClearRows,
   executeSetField,
+  executeSubmitCurrentForm,
 } from './executors/data'
-
-import { executeSubmitCurrentForm } from './executors/form'
 
 const logger = Logger('action-executor')
 

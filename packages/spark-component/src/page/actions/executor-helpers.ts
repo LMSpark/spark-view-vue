@@ -1,14 +1,16 @@
 /**
- * Action 执行器内部辅助：值解析 / 文案插値 / 行辅助 / 内置动作 props 工具
- *
- * 与具体 executor 解耦，专注通用工具。
+ * Action 执行器内部辅助：值解析 / 文案插值 / 行辅助 / 消息通知 / 数据能力解析 / 内置动作 props 工具
  */
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
+import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
-import type { ActionUiDecorator } from './action-types'
+import type { ActionExecutionContext, ActionUiDecorator } from './action-types'
+import { Logger } from '@spark-view/spark-utils'
+
+const _notifierLogger = Logger('action-executor')
 
 // ── 值解析（轻量） ─────────────────────────────────────────────────────────
 
@@ -160,4 +162,114 @@ export function readOptionalMessageType(value: unknown): PageMessageType | undef
 
 export function getActionProps(action: SparkNode): Record<string, unknown> {
   return nodeInputProps(action)
+}
+
+// ── 消息通知器 ────────────────────────────────────────────────────────────
+
+export interface ActionNotifier {
+  /** 发送装饰文案；silent 则吞掉 */
+  notify(type: PageMessageType, message: string): void
+  /** 发送 error（无视 silent） */
+  notifyError(message: string): void
+}
+
+export function createActionNotifier(
+  ctx: ActionExecutionContext,
+  decorator: ActionUiDecorator | undefined,
+): ActionNotifier {
+  const silent = decorator?.silent === true
+
+  function send(type: PageMessageType, message: string): void {
+    if (message.trim().length === 0) return
+    const ps = ctx.getPageService()
+    if (ps) {
+      ps.showMessage(message, type)
+      return
+    }
+    if (import.meta.env.DEV) {
+      _notifierLogger.warn(`PAGE_SERVICE 不可用，消息未展示: ${message}`)
+    }
+  }
+
+  return {
+    notify(type, message) {
+      if (silent) return
+      send(type, message)
+    },
+    notifyError(message) {
+      send('error', message)
+    },
+  }
+}
+
+/**
+ * 统一确认：返回 true 表示通过（无 confirmMessage 也直通）。
+ */
+export async function confirmIfNeeded(
+  ctx: ActionExecutionContext,
+  decorator: ActionUiDecorator | undefined,
+  fallbackMessage: string,
+  fallbackTitle: string,
+): Promise<boolean> {
+  const ps = ctx.getPageService()
+  if (!ps) return true
+
+  const rawMessage = decorator?.confirmMessage
+  if (rawMessage === '') return true
+  const message = rawMessage ?? fallbackMessage
+  if (message.trim().length === 0) return true
+
+  const title = decorator?.confirmTitle ?? fallbackTitle
+  const opts: { type?: PageMessageType } = {}
+  if (decorator?.confirmType) opts.type = decorator.confirmType
+  return await ps.showConfirm(message, title, opts)
+}
+
+// ── 数据能力解析 ──────────────────────────────────────────────────────────
+
+export interface ResolvedActionDataCapabilities {
+  dataSource: DataView | null
+  currentRow: IDataRow | null
+  selectedRows: IDataRow[]
+}
+
+export function resolveActionDataCapabilities(
+  dataKey: string | undefined,
+  ctx: ActionExecutionContext,
+): ResolvedActionDataCapabilities {
+  const empty: ResolvedActionDataCapabilities = { dataSource: null, currentRow: null, selectedRows: [] }
+  const scopedView = ctx.getDataSource?.() ?? null
+
+  if (!dataKey) {
+    if (!scopedView) return empty
+    return {
+      dataSource: scopedView,
+      currentRow: isRowLike(scopedView.currentRow) ? scopedView.currentRow : null,
+      selectedRows: getSelectedRows(scopedView),
+    }
+  }
+
+  const ds = ctx.getDataSet()
+  if (!ds) return empty
+
+  const binding = resolveDataKeyBinding(dataKey, ds)
+  if (!binding) return empty
+
+  if (binding.kind === 'view') {
+    const dataSource = binding.source as DataView
+    return {
+      dataSource,
+      currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
+      selectedRows: getSelectedRows(dataSource),
+    }
+  }
+
+  const dataSource = getViewFromRawKey(dataKey, ds) ?? null
+  return {
+    dataSource,
+    currentRow: isRowLike(binding.value)
+      ? binding.value
+      : (dataSource && isRowLike(dataSource.currentRow) ? dataSource.currentRow : null),
+    selectedRows: dataSource ? getSelectedRows(dataSource) : [],
+  }
 }
