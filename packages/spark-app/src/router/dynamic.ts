@@ -8,7 +8,7 @@
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
-import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
+import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
 import { CrossProjectRefPage } from './cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'

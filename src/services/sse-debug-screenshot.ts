@@ -1,4 +1,4 @@
-import { onServerEvent } from '@spark-view/spark-utils'
+import { onServerEvent } from '@/services/sse-events'
 import { http } from '@/services/http'
 
 interface UploadResponse {

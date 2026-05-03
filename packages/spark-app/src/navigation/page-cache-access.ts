@@ -3,7 +3,7 @@
  *
  * start.ts 在启动阶段注入 PageCacheHandle，供非组件上下文同步访问。
  */
-import type { PageCacheHandle } from '@spark-view/spark-ai'
+import type { PageCacheHandle } from './page-cache'
 
 let _pageCacheHandle: PageCacheHandle | null = null
 

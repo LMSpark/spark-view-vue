@@ -1,11 +1,11 @@
 import type { ComputedRef, InjectionKey } from 'vue'
-import type { NavContextState, NavNode, RegionItems, RegionVisibility } from '@spark-view/spark-utils'
+import type { NavContextState, NavNode, RegionItems, RegionVisibility } from './nav-model'
 
 /* ══════════════════════════════════════════════════════════
  * NavigationContext — Vue 依赖的运行时类型
  *
- * 纯 TS 导航类型（NavNode, AppNavRoot 等）定义在 @spark-view/spark-utils，
- * 消费方应直接从 spark-utils 导入。此文件仅保留 Vue 特有的类型。
+ * 纯 TS 导航类型（NavNode, AppNavRoot 等）定义在 nav-model.ts，
+ * 此文件仅保留 Vue 特有的类型。
  * ══════════════════════════════════════════════════════════ */
 
 export interface NavigationContext {

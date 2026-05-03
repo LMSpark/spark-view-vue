@@ -10,10 +10,10 @@
  * - 所有权限判断收口到本模块，方便统一维护
  */
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
-import type { NavPermissionMode } from '@spark-view/spark-utils'
+import type { NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'
-import { PAGE_PERMISSION_MODE } from '@spark-view/spark-utils'
+import { PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
 import {
   isPermittedAction,
   resolveFieldPermissionState,

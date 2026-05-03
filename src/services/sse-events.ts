@@ -7,7 +7,7 @@
  * 职责单一：仅管理 SSE 连接和事件分发，不涉及 AI 逻辑 / 缓存 / 文件操作。
  */
 
-import { Logger } from './logger'
+import { Logger } from '@spark-view/spark-utils'
 
 const logger = Logger('SSE')
 
@@ -19,10 +19,6 @@ const logger = Logger('SSE')
  */
 export const ServerEventType = {
   PAGE_CONFIG: 'page-config',
-  DEBUG_SCREENSHOT_REQUEST: 'debug-screenshot-request',
-  DEBUG_SCREENSHOT_RESULT: 'debug-screenshot-result',
-  DEBUG_ROUTE_REQUEST: 'debug-route-request',
-  DEBUG_ROUTE_RESULT: 'debug-route-result',
 } as const
 
 export type ServerEventTypeName = (typeof ServerEventType)[keyof typeof ServerEventType]
@@ -31,54 +27,6 @@ export interface FileChangeEvent {
   pageId: string
   file: string
   timestamp: number
-}
-
-export interface DebugScreenshotRequestEvent {
-  requestId?: string
-  reason?: string
-  selector?: string
-  pageId?: string
-  timestamp?: number
-}
-
-export interface DebugScreenshotResultEvent {
-  requestId?: string
-  pageId?: string
-  reason?: string
-  status?: 'success' | 'error' | 'busy'
-  message?: string
-  fileId?: string
-  name?: string
-  size?: number
-  mimeType?: string
-  timestamp?: number
-  serverTimestamp?: number
-}
-
-export interface DebugRouteRequestEvent {
-  requestId?: string
-  reason?: string
-  path?: string
-  pageId?: string
-  tenantId?: string
-  projectId?: string
-  replace?: boolean
-  timestamp?: number
-}
-
-export interface DebugRouteResultEvent {
-  requestId?: string
-  reason?: string
-  status?: 'success' | 'error' | 'ignored'
-  message?: string
-  path?: string
-  pageId?: string
-  targetPath?: string
-  currentPath?: string
-  tenantId?: string
-  projectId?: string
-  timestamp?: number
-  serverTimestamp?: number
 }
 
 // ─── 连接管理 ────────────────────────────────────────────────────────────────
@@ -204,28 +152,4 @@ export function onPageConfigChange(
   callback: (event: FileChangeEvent) => void,
 ): () => void {
   return onServerEvent<FileChangeEvent>(ServerEventType.PAGE_CONFIG, callback)
-}
-
-export function onDebugScreenshotRequest(
-  callback: (event: DebugScreenshotRequestEvent) => void,
-): () => void {
-  return onServerEvent<DebugScreenshotRequestEvent>(ServerEventType.DEBUG_SCREENSHOT_REQUEST, callback)
-}
-
-export function onDebugScreenshotResult(
-  callback: (event: DebugScreenshotResultEvent) => void,
-): () => void {
-  return onServerEvent<DebugScreenshotResultEvent>(ServerEventType.DEBUG_SCREENSHOT_RESULT, callback)
-}
-
-export function onDebugRouteRequest(
-  callback: (event: DebugRouteRequestEvent) => void,
-): () => void {
-  return onServerEvent<DebugRouteRequestEvent>(ServerEventType.DEBUG_ROUTE_REQUEST, callback)
-}
-
-export function onDebugRouteResult(
-  callback: (event: DebugRouteResultEvent) => void,
-): () => void {
-  return onServerEvent<DebugRouteResultEvent>(ServerEventType.DEBUG_ROUTE_RESULT, callback)
 }

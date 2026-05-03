@@ -1,5 +1,5 @@
 import type { Router } from 'vue-router'
-import { onServerEvent } from '@spark-view/spark-utils'
+import { onServerEvent } from '@/services/sse-events'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 

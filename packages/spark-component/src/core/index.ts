@@ -66,9 +66,6 @@ export { SparkNodeTree } from './spark-node-tree.js'
 export type {
   IAppServicesCapability,
   IPageServiceCapability,
-  IThemeCapability,
-  ThemeMode,
-  IModuleContext,
   PageMessageType,
   PageDialogResult,
   IPageDialogOptions,
@@ -79,33 +76,40 @@ export type {
   IPageSelectedEntity,
   IPageSelectedFile,
   IPageUploadedFile,
-} from '@spark-view/spark-utils'
+  NavPermissionMode,
+} from './capability-keys.js'
 
 export {
   APP_SERVICES,
   PAGE_SERVICE,
   PAGE_PERMISSION_MODE,
-  PAGE_COMPONENT_REGISTRY,
-  MODULE_CONTEXT,
-  CSS_SCOPE,
-} from '@spark-view/spark-utils'
+} from './capability-keys.js'
+
+export type {
+  ThemeMode,
+  IThemeCapability,
+  IModuleContextItem,
+  IModuleContext,
+  ModuleContextCapability,
+  PageComponentInstanceEntry,
+  PageComponentApiEntry,
+  PageComponentRegistry,
+  PageCssScopeCapability,
+} from './capability-keys.js'
 
 export {
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
+  MODULE_CONTEXT,
+  PAGE_COMPONENT_REGISTRY,
+  CSS_SCOPE,
 } from './capability-keys.js'
 
 export {
-  findNearestCapabilityProvider,
-  findNearestCapabilityProviderByKeys,
-  consumeCapabilityFromProvider,
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+  sparkConsumeFromProvider,
 } from '@spark-view/spark-utils'
 
-export type {
-  PageComponentInstanceEntry,
-  PageComponentApiEntry,
-  PageComponentRegistry,
-  ModuleContextCapability,
-  PageCssScopeCapability,
-} from '@spark-view/spark-utils'
+

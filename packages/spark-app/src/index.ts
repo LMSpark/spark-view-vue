@@ -152,7 +152,8 @@ export type {
   ChildPlacement,
   LinkTarget,
   NavNodeKind,
-} from '@spark-view/spark-utils'
+  NavPermissionMode,
+} from './navigation/nav-model'
 export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'
 

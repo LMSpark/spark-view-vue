@@ -1,6 +1,6 @@
 import { computed, reactive, onBeforeUnmount } from 'vue'
-import { onPageConfigChange } from '@spark-view/spark-utils'
-import type { FileChangeEvent } from '@spark-view/spark-utils'
+import { onPageConfigChange } from '@/services/sse-events'
+import type { FileChangeEvent } from '@/services/sse-events'
 
 export interface NotificationItem {
   id: number

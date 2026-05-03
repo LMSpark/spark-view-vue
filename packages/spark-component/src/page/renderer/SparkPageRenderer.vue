@@ -63,7 +63,7 @@ import {
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
-import type { NavPermissionMode } from '@spark-view/spark-utils'
+import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type { ConfigLoader, IPageRoute, PageConfig } from '@spark-view/spark-page-config'
@@ -73,10 +73,12 @@ import { PAGE_DATASET } from '../../core/capability-keys'
 import {
   PAGE_SERVICE,
   PAGE_PERMISSION_MODE,
+} from '../../core/capability-keys.js'
+import {
   MODULE_CONTEXT,
   CSS_SCOPE,
-} from '@spark-view/spark-utils'
-import type { ModuleContextCapability, PageCssScopeCapability } from '@spark-view/spark-utils'
+} from '../../core/capability-keys'
+import type { ModuleContextCapability, PageCssScopeCapability } from '../../core/capability-keys'
 import { useRendererSetup } from './useRendererSetup'
 import { useCssScope } from './useCssScope'
 import { usePageDataSet } from './usePageDataSet'
@@ -86,10 +88,10 @@ import { buildPageContext } from '../context/buildPageContext'
 import { buildPageChildren } from '../binding'
 import type { PageContext } from '../context/types'
 import {
-  bindPageRootCapabilityContext,
-  resolveCapabilityContextOwner,
-  unbindPageRootCapabilityContext,
-} from '@spark-view/spark-utils'
+  sparkBindPageRootContext,
+  sparkResolveContextOwner,
+  sparkUnbindPageRootContext,
+} from '../../core/capability-context.js'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 
 const logger = Logger('SparkPageRenderer')
@@ -254,7 +256,7 @@ let _nodeTree: SparkNodeTree | null = null
 let _crudTool: DataSetCrudTool | null = null
 const pageContainer = ref<HTMLElement | null>(null)
 const currentCapabilityContext = currentInstance
-  ? resolveCapabilityContextOwner(currentInstance as object)
+  ? sparkResolveContextOwner(currentInstance as object)
   : null
 
 // ── CSS 作用域 ──
@@ -530,10 +532,10 @@ watch(
   pageContainer,
   (nextContainer, prevContainer) => {
     if (prevContainer) {
-      unbindPageRootCapabilityContext(prevContainer)
+      sparkUnbindPageRootContext(prevContainer)
     }
     if (nextContainer && currentCapabilityContext) {
-      bindPageRootCapabilityContext(nextContainer, currentCapabilityContext)
+      sparkBindPageRootContext(nextContainer, currentCapabilityContext)
     }
   },
   { immediate: true },
@@ -541,7 +543,7 @@ watch(
 
 onUnmounted(() => {
   if (pageContainer.value) {
-    unbindPageRootCapabilityContext(pageContainer.value)
+    sparkUnbindPageRootContext(pageContainer.value)
   }
 })
 

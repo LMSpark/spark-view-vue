@@ -2,7 +2,7 @@ import type {
   PageComponentApiEntry,
   PageComponentInstanceEntry,
   PageComponentRegistry,
-} from '@spark-view/spark-utils'
+} from '../../core/capability-keys.js'
 
 export function createPageComponentRegistry(): PageComponentRegistry {
   const instanceMap = new Map<string, PageComponentInstanceEntry>()

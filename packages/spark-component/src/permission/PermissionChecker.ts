@@ -12,7 +12,7 @@
 
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
-import type { NavPermissionMode } from '@spark-view/spark-utils'
+import type { NavPermissionMode } from '../core/capability-keys.js'
 
 // ── 模型级检查 ──
 

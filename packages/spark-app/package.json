@@ -29,7 +29,6 @@
     }
   },
   "dependencies": {
-    "@spark-view/spark-ai": "workspace:*",
     "@spark-view/spark-component": "workspace:*",
     "@spark-view/spark-page-config": "workspace:*",
     "@spark-view/spark-utils": "workspace:*"

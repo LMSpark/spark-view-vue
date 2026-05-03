@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import type { AppNavRoot } from '@spark-view/spark-utils'
+import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { createDynamicRouter } from '../packages/spark-app/src/router/dynamic'
 
 const DummyPage = defineComponent({

@@ -1,5 +1,18 @@
 /**
- * Action 执行器内部辅助：值解析 / 文案插值 / 行辅助 / 消息通知 / 数据能力解析 / 内置动作 props 工具
+ * Action 执行器内部辅助工具集
+ *
+ * 按功能分区组织，仅供 action-data.ts 和 action-executor.ts 内部使用：
+ *
+ * 1. 值解析工具    — asRecord / readString / readBoolean 等
+ * 2. 文案插值      — interpolate / pickText
+ * 3. 行辅助        — isRowLike / resolveRowId / inferNextRowId / resolveRowLabel / getSelectedRows
+ * 4. 错误处理      — extractErrorMessage
+ * 5. 内置动作 props — readOptionalStringArray / readOptionalMessageType / getActionProps
+ * 6. 消息通知器    — ActionNotifier / createActionNotifier
+ * 7. 统一确认      — confirmIfNeeded
+ * 8. 数据能力解析  — resolveActionDataCapabilities
+ * 9. BuiltinAction 元数据 — BUILTIN_ACTION_META / isBuiltinActionName 等
+ * 10. ActionDescriptor 禁用判断 — isActionDescriptorDisabled
  */
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
@@ -12,14 +25,22 @@ import { Logger } from '@spark-view/spark-utils'
 
 const _notifierLogger = Logger('action-executor')
 
-// ── 值解析（轻量） ─────────────────────────────────────────────────────────
+// ── 值解析（轻量基础工具） ──────────────────────────────────────────────────
 
+/**
+ * 将任意值安全转为普通对象类型；数组、null、基础类型返回 null。
+ * 适用于从 SparkNode props 中读取配置对象（appendPayload、patch 等）。
+ */
 export function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : null
 }
 
+/**
+ * 读取非空字符串值，自动 trim；空字符串或非字符串类型返回 undefined。
+ * 用于从 SparkNode props 中读取可选字符串配置（dataKey、idField 等）。
+ */
 export function readString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
 }
@@ -58,8 +79,10 @@ export function interpolate(
 }
 
 /**
- * 取装饰文案；若未配置则使用 fallback。
- * 显式 `''` 视为有意清空（返回空字符串，调用方据此跳过提示）。
+ * 从 ActionUiDecorator 中读取指定装饰文案并插值；若未配置则使用 fallback。
+ *
+ * - 显式设置为 `''` 视为有意清空：返回空字符串，调用方据此跳过提示展示。
+ * - 调用方负责检查返回值是否为空，再决定是否调用 `notifier.notify()`。
  */
 export function pickText(
   decorator: ActionUiDecorator | undefined,
@@ -74,17 +97,35 @@ export function pickText(
   return interpolate(raw, vars, row ?? null)
 }
 
-// ── 行辅助 ────────────────────────────────────────────────────────────────
+// ── 行辅助工具 ───────────────────────────────────────────────────────────────
 
+/**
+ * 判断值是否"类行"：非 null 的普通对象（非数组）。
+ * 用于从 eventArgs 中安全识别行数据，避免误判基础类型或数组。
+ */
 export function isRowLike(value: unknown): value is IDataRow {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
+/**
+ * 安全读取行主键值；主键必须是字符串或数字类型，否则返回 null（fail-fast）。
+ * 返回 null 时调用方应报 error 并中止操作，不应使用 0 / '' 作为兜底。
+ */
 export function resolveRowId(row: IDataRow, idField: string): string | number | null {
   const raw = row[idField]
   return typeof raw === 'string' || typeof raw === 'number' ? raw : null
 }
 
+/**
+ * 为新行生成本地主键值（仅在 appendPayload 未提供 idField 时使用）。
+ *
+ * 策略（按优先级）：
+ * 1. 视图已有数字类型 ID → 取最大值 +1
+ * 2. 视图已有字符串 ID → 生成 `row-{timestamp}`，若冲突则自增后缀
+ * 3. 视图为空 → 返回 `row-{timestamp}`
+ *
+ * 注意：此 ID 仅为客户端临时主键，远程持久化后应以服务端 ID 为准。
+ */
 export function inferNextRowId(view: DataView, idField: string): string | number {
   const numericIds = view.rows
     .map(row => row[idField])
@@ -110,6 +151,10 @@ export function inferNextRowId(view: DataView, idField: string): string | number
 
 const ROW_LABEL_CANDIDATES = ['orderNo', 'name', 'title']
 
+/**
+ * 从行数据中提取可读的显示标签，用于确认弹窗等人性化提示（如"确认删除 张三 吗？"）。
+ * 候选字段顺序：orderNo → name → title → idField；都为空时返回 `'当前记录'`。
+ */
 export function resolveRowLabel(row: IDataRow, idField: string): string {
   for (const key of [...ROW_LABEL_CANDIDATES, idField]) {
     const value = row[key]
@@ -119,28 +164,46 @@ export function resolveRowLabel(row: IDataRow, idField: string): string {
   return '当前记录'
 }
 
+/** 获取视图当前选中行的快照副本（浅拷贝数组，防止后续操作影响迭代）。 */
 export function getSelectedRows(view: DataView): IDataRow[] {
   return view.selectedRows.slice()
 }
 
+/**
+ * 从任意 error 值中提取可读的错误消息字符串。
+ * - Error 实例 → `.message`
+ * - 非空字符串 → 直接返回（trim 后）
+ * - 其他 → 返回空字符串（调用方自行提供兜底文案）
+ */
 export function extractErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
   if (typeof error === 'string' && error.trim().length > 0) return error.trim()
   return ''
 }
 
-// ── 内置动作 props 工具 ──────────────────────────────────────────────────────────────
+// ── SparkNode props 类型读取工具 ─────────────────────────────────────────────
+// 从 SparkNode.props（Record<string,unknown>）中安全提取各类型值，
+// 用于 node-to-descriptor.ts 将 props 翻译为强类型 ActionDescriptor 字段。
 
+/** 读取布尔值；非布尔类型返回 undefined（不做隐式转换）。 */
 export function readBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined
 }
 
+/**
+ * 读取非空字符串数组；过滤掉空字符串。
+ * 若 value 不是数组或过滤后为空，返回 undefined 而非空数组（便于条件赋值）。
+ */
 export function readOptionalStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined
   const filtered = value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
   return filtered.length > 0 ? filtered : undefined
 }
 
+/**
+ * 读取合法的 PageMessageType 枚举值；非法字符串返回 undefined。
+ * 枚举范围：`'success' | 'error' | 'warning' | 'info'`。
+ */
 export function readOptionalMessageType(value: unknown): PageMessageType | undefined {
   const text = readString(value)
   if (!text) return undefined
@@ -156,16 +219,23 @@ export function readOptionalMessageType(value: unknown): PageMessageType | undef
   }
 }
 
+/** 获取 SparkNode 按钮节点的 input props（props 中非事件绑定的普通属性）。 */
 export function getActionProps(action: SparkNode): Record<string, unknown> {
   return nodeInputProps(action)
 }
 
 // ── 消息通知器 ────────────────────────────────────────────────────────────
 
+/**
+ * 动作执行通知接口（由 createActionNotifier 创建）。
+ *
+ * - `notify`：受 `silent` 控制，静默模式下吞掉非 error 消息
+ * - `notifyError`：始终展示 error（无视 silent），用于运行时异常
+ */
 export interface ActionNotifier {
-  /** 发送装饰文案；silent 则吞掉 */
+  /** 发送成功/警告/info 类型消息；`silent=true` 时静默忽略 */
   notify(type: PageMessageType, message: string): void
-  /** 发送 error（无视 silent） */
+  /** 发送 error 消息（无视 silent，始终展示） */
   notifyError(message: string): void
 }
 
@@ -199,7 +269,14 @@ export function createActionNotifier(
 }
 
 /**
- * 统一确认：返回 true 表示通过（无 confirmMessage 也直通）。
+ * 统一确认弹窗：返回 true 表示用户确认或无需确认（直通）。
+ *
+ * 直通条件（跳过弹窗）：
+ * - `pageService` 不可用
+ * - `confirmMessage` 显式设为 `''`（有意取消确认）
+ * - `confirmMessage` 未设置且 `fallbackMessage` 为空字符串
+ *
+ * `fallbackMessage` 为内置默认确认语（如"确认删除 XX 吗？"），由调用方构造。
  */
 export async function confirmIfNeeded(
   ctx: ActionExecutionContext,
@@ -223,12 +300,29 @@ export async function confirmIfNeeded(
 
 // ── 数据能力解析 ──────────────────────────────────────────────────────────
 
+/**
+ * 数据能力解析结果：执行器从此结构中读取操作目标。
+ */
 export interface ResolvedActionDataCapabilities {
+  /** 解析到的目标 DataView；未就绪时为 null */
   dataSource: DataView | null
+  /** DataView 当前行（currentRow）；无当前行时为 null */
   currentRow: IDataRow | null
+  /** DataView 当前选中行列表（快照副本） */
   selectedRows: IDataRow[]
 }
 
+/**
+ * 根据 dataKey 和执行上下文解析数据能力三元组。
+ *
+ * 解析优先级：
+ * 1. 无 dataKey → 使用 `ctx.getDataSource()` 作用域 DataView（容器注入）
+ * 2. 有 dataKey → 通过 `resolveDataKeyBinding` 从 DataSet 查找
+ *    - binding.kind = 'view' → 直接使用该 DataView
+ *    - 其他 kind → 通过 `getViewFromRawKey` 查找对应 DataView
+ *
+ * 任何环节不满足都返回全 null/空 的空结果，调用方负责 fail-fast。
+ */
 export function resolveActionDataCapabilities(
   dataKey: string | undefined,
   ctx: ActionExecutionContext,
@@ -270,9 +364,12 @@ export function resolveActionDataCapabilities(
   }
 }
 
-// ── BuiltinAction 元数据 ──────────────────────────────────────────────────
+// ── BuiltinAction 元数据注册表 ──────────────────────────────────────────────
+// 内置动作名称枚举 + 默认标签，是 node-to-descriptor.ts 和 button-templates.ts 的共同来源。
+// 新增 BuiltinAction 时在此注册，TypeScript 会自动推断 BuiltinActionName 联合类型。
 
 interface BuiltinActionMeta {
+  /** 动作的默认按钮标签（可被 r-button 的 label prop 覆盖） */
   label: string
 }
 
@@ -297,14 +394,20 @@ export const BUILTIN_ACTION_META = {
 
 export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
 
+/** 判断字符串是否为已注册的内置动作名（BuiltinActionName 类型守卫）。 */
 export function isBuiltinActionName(value: string): value is BuiltinActionName {
   return value in BUILTIN_ACTION_META
 }
 
+/** 通过动作名直接获取默认标签（已知类型，无需 SparkNode）。 */
 export function getBuiltinActionLabelByName(name: BuiltinActionName): string {
   return BUILTIN_ACTION_META[name].label
 }
 
+/**
+ * 从 SparkNode（r-button 等）的 `action` prop 中读取并验证内置动作名。
+ * 非内置动作名（如自定义 onClick）返回 null，由调用方走 onClick 路径。
+ */
 export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
   const propsMap = nodeInputProps(action)
   const actionName = readString(propsMap['action'])
@@ -312,10 +415,17 @@ export function getBuiltinActionName(action: SparkNode): BuiltinActionName | nul
   return isBuiltinActionName(actionName) ? actionName : null
 }
 
+/** 判断 SparkNode 是否声明了内置 action（快捷布尔判断）。 */
 export function isBuiltinAction(action: SparkNode): boolean {
   return getBuiltinActionName(action) !== null
 }
 
+/**
+ * 获取 SparkNode（r-button）的按钮显示标签：
+ * 1. 优先使用 `label` prop（用户显式配置）
+ * 2. 降级到内置动作默认标签
+ * 3. 非内置动作且无 label → 返回 `'执行'`
+ */
 export function getBuiltinActionLabel(action: SparkNode): string {
   const propsMap = nodeInputProps(action)
   const explicit = readString(propsMap['label'])
@@ -327,12 +437,20 @@ export function getBuiltinActionLabel(action: SparkNode): string {
 }
 
 // ── ActionDescriptor 语义禁用判断 ─────────────────────────────────────────
+// 根据动作类型和当前数据状态推断按钮是否应禁用。
+// 渲染器在 r-button 等组件中调用此函数驱动 `disabled` prop，
+// 实现"无选中行时删除按钮禁用"等零代码交互。
 
+/**
+ * 将字段值规范化后用于比较：空字符串和 null/undefined 都视为"无值"。
+ * 避免 disabledWhenRow 中 `{ status: null }` 与 `{ status: '' }` 语义不一致。
+ */
 function _normalizeComparable(value: unknown): unknown {
   if (value === '') return null
   return value ?? null
 }
 
+/** 判断行数据是否满足禁用条件（所有字段全部相等才匹配）。 */
 function _matchesRowCondition(
   row: IDataRow | null | undefined,
   condition: Record<string, unknown>,
@@ -345,7 +463,16 @@ function _matchesRowCondition(
 }
 
 /**
- * 根据 descriptor 动作语义 + DataView 当前状态 + 执行作用域判断按钮是否禁用。
+ * 根据 descriptor 动作语义、DataView 当前状态及执行作用域，判断按钮是否应禁用。
+ *
+ * 禁用规则（优先级从高到低）：
+ * 1. `disabledWhenRow` 条件匹配 scope.row 或 currentRow → 禁用
+ * 2. 动作语义规则：
+ *    - `clear-rows` → 视图行数为 0
+ *    - `submit-current-form` → currentRow 为 null
+ *    - `delete/patch/message-row` scope/current/selected 分别检查对应数据
+ *    - `move` scope/current 分别检查
+ *    - 其余动作（show-message/navigate/append-row 等）→ 始终不禁用
  */
 export function isActionDescriptorDisabled(
   descriptor: ActionDescriptor,

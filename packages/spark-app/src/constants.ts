@@ -5,7 +5,6 @@
  * 提供全局的 Symbol、枚举、错误码等常量定义
  */
 
-import { SharedErrorCodes, getSharedErrorMessage } from '@spark-view/spark-utils'
 
 /**
  * ============================================
@@ -26,8 +25,23 @@ export { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
  */
 
 export const ErrorCodes = {
-  // 继承共享错误码（网络、配置、路由、系统）
-  ...SharedErrorCodes,
+  // 网络相关 (3xxx)
+  NETWORK_ERROR: 3001,
+  NETWORK_TIMEOUT: 3002,
+  NETWORK_OFFLINE: 3003,
+  NETWORK_REQUEST_FAILED: 3004,
+
+  // 配置相关 (4xxx)
+  CONFIG_LOAD_FAILED: 4001,
+  CONFIG_INVALID: 4002,
+  CONFIG_NOT_FOUND: 4003,
+
+  // 路由相关 (5xxx)
+  ROUTE_NOT_FOUND: 5001,
+  ROUTE_INVALID: 5002,
+
+  // 系统相关 (9xxx)
+  UNKNOWN_ERROR: 9999,
 
   // 认证相关 (1xxx)
   AUTH_REQUIRED: 1001,
@@ -109,24 +123,28 @@ export const DefaultConfig = {
  * 获取错误消息
  */
 export function getErrorMessage(code: ErrorCode): string {
-  // 应用层专属消息
-  const appMessages: Record<number, string> = {
+  const messages: Record<number, string> = {
+    [ErrorCodes.NETWORK_ERROR]: '网络错误',
+    [ErrorCodes.NETWORK_TIMEOUT]: '请求超时',
+    [ErrorCodes.NETWORK_OFFLINE]: '网络未连接',
+    [ErrorCodes.NETWORK_REQUEST_FAILED]: '网络请求失败',
+    [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败',
+    [ErrorCodes.CONFIG_INVALID]: '配置无效',
+    [ErrorCodes.CONFIG_NOT_FOUND]: '配置未找到',
+    [ErrorCodes.ROUTE_NOT_FOUND]: '页面未找到',
+    [ErrorCodes.ROUTE_INVALID]: '路由无效',
+    [ErrorCodes.UNKNOWN_ERROR]: '未知错误',
     [ErrorCodes.AUTH_REQUIRED]: '需要登录',
     [ErrorCodes.AUTH_TOKEN_EXPIRED]: '登录已过期',
     [ErrorCodes.AUTH_TOKEN_INVALID]: '登录凭证无效',
     [ErrorCodes.AUTH_LOGIN_FAILED]: '登录失败',
-    
     [ErrorCodes.PERMISSION_DENIED]: '没有权限',
     [ErrorCodes.PERMISSION_INSUFFICIENT]: '权限不足，需要更高权限',
     [ErrorCodes.PERMISSION_NOT_FOUND]: '权限未找到',
-    
     [ErrorCodes.ROUTE_REDIRECT_FAILED]: '跳转失败',
-    
     [ErrorCodes.DATA_LOAD_FAILED]: '数据加载失败',
     [ErrorCodes.DATA_SAVE_FAILED]: '数据保存失败',
     [ErrorCodes.DATA_VALIDATION_FAILED]: '数据验证失败',
   }
-  
-  // 优先使用应用层消息，回退到共享消息
-  return appMessages[code] ?? getSharedErrorMessage(code)
+  return messages[code] ?? '未知错误'
 }

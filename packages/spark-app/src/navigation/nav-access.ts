@@ -8,7 +8,7 @@
  * - nav-access：同步、无 Vue 依赖、用于基础设施层（main.ts 路由守卫、LoginView 跳转）
  * - useNavigation：响应式 Vue composable、用于组件树内 UI 渲染和导航操作
  */
-import type { AppNavRoot } from '@spark-view/spark-utils'
+import type { AppNavRoot } from './nav-model'
 
 /** DynamicRouter 公共 API 子集（仅导航相关） */
 interface DynamicRouterAccess {

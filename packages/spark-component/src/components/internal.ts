@@ -38,9 +38,9 @@ export {
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
-  findNearestCapabilityProvider,
-  findNearestCapabilityProviderByKeys,
-  consumeCapabilityFromProvider,
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+  sparkConsumeFromProvider,
 } from '../core/index.js'
 export type {
   IAppServicesCapability,

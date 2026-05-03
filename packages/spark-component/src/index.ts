@@ -73,22 +73,25 @@ export {
 export {
   APP_SERVICES,
   PAGE_SERVICE,
+  PAGE_PERMISSION_MODE,
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
-  findNearestCapabilityProvider,
-  findNearestCapabilityProviderByKeys,
-  consumeCapabilityFromProvider,
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+  sparkConsumeFromProvider,
 } from './core/index.js'
 export type {
   IAppServicesCapability,
   IPageServiceCapability,
   IThemeCapability,
   ThemeMode,
+  IModuleContextItem,
   IModuleContext,
+  ModuleContextCapability,
   PageMessageType,
   PageDialogResult,
   IPageDialogOptions,
@@ -102,7 +105,6 @@ export type {
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
-  ModuleContextCapability,
   PageCssScopeCapability,
 } from './core/index.js'
 export type {

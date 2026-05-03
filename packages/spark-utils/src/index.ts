@@ -21,14 +21,14 @@ export {
   consumeSparkCapability,
   createSparkCapabilityConsumer,
   getSparkCapabilityProvider,
-} from './capability'
+} from './capability/index'
 
 export type {
   CapabilityKey,
   CapabilityName,
   SparkCapabilityConsumer,
   ICapabilityContext,
-} from './capability'
+} from './capability/index'
 
 // ==================== HTTP 模块 ====================
 
@@ -36,8 +36,6 @@ export * from './http/index.js'
 
 // ==================== 共享错误码 ====================
 
-export { SharedErrorCodes, getSharedErrorMessage } from './error-codes'
-export type { SharedErrorCode } from './error-codes'
 
 // ==================== 错误工具 ====================
 
@@ -49,98 +47,16 @@ export { SANDBOX_BLOCKED_KEYS, createSafeProxy } from './sandbox'
 
 export { deepClone } from './clone'
 
-// ==================== SSE 事件总线 ====================
-export {
-  ServerEventType,
-  onServerEvent,
-  onPageConfigChange,
-  onDebugScreenshotRequest,
-  onDebugScreenshotResult,
-  onDebugRouteRequest,
-  onDebugRouteResult,
-  configureSseUrl,
-} from './sse-events'
-export type {
-  ServerEventTypeName,
-  FileChangeEvent,
-  DebugScreenshotRequestEvent,
-  DebugScreenshotResultEvent,
-  DebugRouteRequestEvent,
-  DebugRouteResultEvent,
-} from './sse-events'
-
-// ==================== 导航模型类型 ====================
-
-export type {
-  ChildPlacement,
-  LinkTarget,
-  NavNodeKind,
-  NavContextItem,
-  NavContextConfig,
-  NavContextInput,
-  NavPermissionMode,
-  AppModuleBase,
-  AppNavigation,
-  NavNode,
-  AppNavRoot,
-  RegionItems,
-  RegionVisibility,
-  NavContextState,
-} from './nav-types'
 
 // ==================== 快照历史 ====================
 
 export { SnapshotHistory } from './snapshot-history'
 
-// ==================== 能力上下文运行时锚点 ====================
+// ==================== 能力树遍历辅助（公开基础设施） ====================
 
 export {
-  bindCapabilityContextOwner,
-  unbindCapabilityContextOwner,
-  resolveCapabilityContextOwner,
-  bindPageRootCapabilityContext,
-  unbindPageRootCapabilityContext,
-  resolvePageRootCapabilityContext,
-  resolveParentCapabilityContext,
-} from './capability-context'
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+  sparkConsumeFromProvider,
+} from './capability/helpers.js'
 
-export type { SparkRuntimeOwner } from './capability-context'
-
-// ==================== 业务能力类型与键 ====================
-
-export {
-  APP_SERVICES,
-  PAGE_SERVICE,
-  PAGE_PERMISSION_MODE,
-  PAGE_COMPONENT_REGISTRY,
-  MODULE_CONTEXT,
-  CSS_SCOPE,
-  findNearestCapabilityProvider,
-  findNearestCapabilityProviderByKeys,
-  consumeCapabilityFromProvider,
-} from './spark-capabilities'
-
-export type {
-  PageMessageType,
-  PageDialogResult,
-  PageSelectableValue,
-  IPageDialogOptions,
-  IPageBrowseFilesOptions,
-  IPageSelectedFile,
-  IPageUploadFilesOptions,
-  IPageUploadedFile,
-  IPageSelectorOption,
-  IPageSelectEntitiesOptions,
-  IPageSelectedEntity,
-  IPageServiceCapability,
-  IAppServicesCapability,
-  ThemeMode,
-  IThemeCapability,
-  IModuleContextItem,
-  IModuleContext,
-  PageComponentInstanceEntry,
-  PageComponentApiEntry,
-  PageComponentRegistry,
-  ModuleContextCapability,
-  PageCssScopeCapability,
-} from './spark-capabilities'

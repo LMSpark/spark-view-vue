@@ -1,6 +1,6 @@
 import { computed, getCurrentInstance } from 'vue'
 import type { SparkCapabilityContext } from '../../internal'
-import { type SparkRuntimeOwner, resolveParentCapabilityContext } from '@spark-view/spark-utils'
+import { type SparkRuntimeOwner, sparkResolveParentContext } from '../../../core/capability-context.js'
 
 export type FieldRenderMode = string
 
@@ -34,7 +34,7 @@ function resolveModeFromContextChain(start: SparkCapabilityContext | null): Fiel
 export function useResolvedFieldContext() {
   const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
   return computed<FieldRenderMode>(() => {
-    const parentContext = resolveParentCapabilityContext(currentOwner)
+    const parentContext = sparkResolveParentContext(currentOwner)
     return resolveModeFromContextChain(parentContext)
   })
 }

@@ -1,8 +1,17 @@
 /**
  * SparkNode → ActionDescriptor 翻译器
  *
- * 把 BuiltinAction（按钮 props.action）扁平字段映射为统一 descriptor。
- * 调用方拿到 descriptor 后由 executeActionDescriptor 执行。
+ * 将 BuiltinAction（按钮组件的 `props.action`）扁平字段映射为强类型的统一 descriptor。
+ * 调用方拿到 descriptor 后由 `executeActionDescriptor` 执行，
+ * 不命中内置动作名的按钮（自定义 onClick）返回 null，由调用方走 onClick 路径。
+ *
+ * ## 翻译流程
+ * ```
+ * SparkNode.props
+ *   → pickDecorator()  提取 UI 装饰字段
+ *   → pickDataKey() / pickIdField()  提取通用 CRUD 字段
+ *   → mapBuiltinAction()  按 BuiltinActionName switch 映射为具体 descriptor
+ * ```
  */
 
 import type { SparkNode } from '../../core/types'
@@ -28,7 +37,12 @@ import {
   readOptionalMessageType,
   readOptionalStringArray,
 } from './executor-helpers'
-/** 提取所有共有装饰字段（除 silent 外都 optional） */
+// ── 公共字段提取工具 ──────────────────────────────────────────────────────
+
+/**
+ * 从 props 中提取所有 ActionUiDecorator 字段，用于所有 data-mutating 类型 descriptor。
+ * 只写入存在的字段，不写 undefined（保持 descriptor 对象干净）。
+ */
 function pickDecorator(props: Record<string, unknown>): ActionUiDecorator {
   const out: ActionUiDecorator = {}
   if (readBoolean(props['silent']) === true) out.silent = true
@@ -60,6 +74,13 @@ function pickDecorator(props: Record<string, unknown>): ActionUiDecorator {
   return out
 }
 
+/**
+ * 从 props 中提取 Prompt 输入框配置。
+ *
+ * @param defaultMode - `'append'` 时读取 `defaultValue` prop（新增场景静态默认值）；
+ *                      `'edit'` 时不读（编辑场景由执行器从 row[field] 推断）
+ * 若未配置 `field` prop 则返回 undefined，表示不启用 prompt 模式。
+ */
 function pickPrompt(props: Record<string, unknown>, defaultMode: 'append' | 'edit'): ActionPromptConfig | undefined {
   const field = readString(props['field'])
   if (!field) return undefined
@@ -78,17 +99,22 @@ function pickPrompt(props: Record<string, unknown>, defaultMode: 'append' | 'edi
   return cfg
 }
 
+/** 读取 idField prop（主键字段名，默认由执行器使用 `'id'`）。 */
 function pickIdField(props: Record<string, unknown>): string | undefined {
   return readString(props['idField'])
 }
 
+/** 读取 dataKey prop（DataView 路径，省略时使用容器作用域 DataView）。 */
 function pickDataKey(props: Record<string, unknown>): string | undefined {
   return readString(props['dataKey'])
 }
 
+// ── 公开翻译入口 ──────────────────────────────────────────────────────────
+
 /**
- * 把 SparkNode（按钮）翻译为 ActionDescriptor。
- * 不命中内置动作名 → null（由调用方走 onClick 路径）。
+ * 将 SparkNode（按钮组件）翻译为 ActionDescriptor。
+ *
+ * @returns 对应的 ActionDescriptor；不命中内置动作名时返回 null（由调用方走 onClick 路径）
  */
 export function nodeToActionDescriptor(node: SparkNode): ActionDescriptor | null {
   const props = nodeInputProps(node)
@@ -97,6 +123,12 @@ export function nodeToActionDescriptor(node: SparkNode): ActionDescriptor | null
   return mapBuiltinAction(rawAction, props)
 }
 
+// ── BuiltinActionName → ActionDescriptor 映射 ─────────────────────────────
+
+/**
+ * 按 BuiltinActionName switch 将 props 映射为强类型 descriptor。
+ * 每个 case 只写入"该类型存在且非 undefined"的字段，保持 descriptor 对象干净。
+ */
 function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown>): ActionDescriptor | null {
   const decorator = pickDecorator(props)
   const dataKey = pickDataKey(props)

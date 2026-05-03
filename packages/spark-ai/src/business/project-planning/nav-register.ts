@@ -3,7 +3,15 @@
  */
 
 import { createRequest } from '@spark-view/spark-utils'
-import type { NavNode } from '@spark-view/spark-utils'
+
+interface NavNodePayload {
+  id: string
+  nodeKind: 'page'
+  title: string
+  icon: string
+  path: string
+  description?: string
+}
 
 export interface NavRegister {
   registerPageNavigation(pageId: string, options?: NavRegistrationOptions): Promise<NavRegistrationResult>
@@ -33,7 +41,7 @@ export function createNavRegister(options: {
       ? navOptions.prompt.slice(0, 60)
       : undefined
 
-    const node: NavNode = {
+    const node: NavNodePayload = {
       id: pageId,
       nodeKind: 'page',
       title,

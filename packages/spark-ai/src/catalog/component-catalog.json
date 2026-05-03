@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-05-03T07:12:39.172Z",
+  "buildTime": "2026-05-03T10:07:28.096Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -235,7 +235,7 @@
         },
         {
           "name": "externalToolLogs",
-          "type": "{ type: \"error\" | \"success\" | \"info\"; tag: string; text: string; timestamp?: string; }[] | undefined",
+          "type": "{ type: \"error\" | \"info\" | \"success\"; tag: string; text: string; timestamp?: string; }[] | undefined",
           "required": false
         },
         {
@@ -376,7 +376,7 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"small\"",
           "schemaRef": "schema_00011"
@@ -1585,7 +1585,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"click\" | \"contextmenu\" | \"hover\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式",
@@ -1691,7 +1691,7 @@
         },
         {
           "name": "linkType",
-          "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
@@ -1787,7 +1787,7 @@
         },
         {
           "name": "confirmButtonType",
-          "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
@@ -1795,7 +1795,7 @@
         },
         {
           "name": "cancelButtonType",
-          "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
@@ -1864,7 +1864,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"click\" | \"contextmenu\" | \"focus\" | \"hover\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。",
@@ -2187,7 +2187,7 @@
         },
         {
           "name": "mode",
-          "type": "\"header\" | \"content\"",
+          "type": "\"content\" | \"header\"",
           "required": true,
           "description": "渲染模式：步骤头部或内容区",
           "schemaRef": "schema_00470"
@@ -2731,7 +2731,7 @@
       "props": [
         {
           "name": "avatarSize",
-          "type": "number | \"default\" | \"small\" | \"large\" | undefined",
+          "type": "number | \"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
@@ -2839,7 +2839,7 @@
         },
         {
           "name": "badgeType",
-          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
@@ -3334,7 +3334,7 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -3396,7 +3396,7 @@
         },
         {
           "name": "format",
-          "type": "\"number\" | \"date\" | \"currency\" | \"percent\" | undefined",
+          "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
           "description": "格式化方式",
           "schemaRef": "schema_00481"
@@ -3468,7 +3468,7 @@
         },
         {
           "name": "alertType",
-          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
+          "type": "\"error\" | \"info\" | \"success\" | \"warning\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型",
@@ -3702,7 +3702,7 @@
         },
         {
           "name": "descriptionsSize",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -3863,7 +3863,7 @@
       "props": [
         {
           "name": "icon",
-          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
+          "type": "\"error\" | \"info\" | \"success\" | \"warning\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型",
@@ -3983,7 +3983,7 @@
         },
         {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "时间戳位置",
@@ -3991,7 +3991,7 @@
         },
         {
           "name": "itemType",
-          "type": "\"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
@@ -5258,32 +5258,11 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
         {
-          "name": "modelValue",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
-        },
-        {
-          "name": "clearable",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "true",
-          "description": "是否允许清空"
-        },
-        {
-          "name": "field",
+          "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "占位文案"
         },
         {
           "name": "label",
@@ -5293,11 +5272,46 @@
           "description": "展示标签"
         },
         {
-          "name": "placeholder",
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "modelValue",
+          "type": "EntityPickerValue | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "直接传入的值"
+        },
+        {
+          "name": "name",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
-          "description": "占位文案"
+          "description": "组件名称"
+        },
+        {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段绑定名"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
         },
         {
           "name": "optionKey",
@@ -5336,13 +5350,6 @@
           "description": "文本储存字段"
         },
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
-        },
-        {
           "name": "options",
           "type": "unknown[] | undefined",
           "required": false,
@@ -5362,13 +5369,6 @@
           "required": false,
           "default": "undefined",
           "description": "选项值字段"
-        },
-        {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
         },
         {
           "name": "buttonText",
@@ -6387,7 +6387,7 @@
         },
         {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "候选浮层位置",
@@ -6426,7 +6426,7 @@
         },
         {
           "name": "inputType",
-          "type": "\"text\" | \"textarea\" | undefined",
+          "type": "\"textarea\" | \"text\" | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
@@ -6886,32 +6886,11 @@
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
         {
-          "name": "modelValue",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
-        },
-        {
-          "name": "clearable",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "true",
-          "description": "是否允许清空"
-        },
-        {
-          "name": "field",
+          "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "占位文案"
         },
         {
           "name": "label",
@@ -6921,11 +6900,46 @@
           "description": "展示标签"
         },
         {
-          "name": "placeholder",
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "modelValue",
+          "type": "EntityPickerValue | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "直接传入的值"
+        },
+        {
+          "name": "name",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
-          "description": "占位文案"
+          "description": "组件名称"
+        },
+        {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段绑定名"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
         },
         {
           "name": "optionKey",
@@ -6964,13 +6978,6 @@
           "description": "文本储存字段"
         },
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
-        },
-        {
           "name": "options",
           "type": "unknown[] | undefined",
           "required": false,
@@ -6990,13 +6997,6 @@
           "required": false,
           "default": "undefined",
           "description": "选项值字段"
-        },
-        {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
         },
         {
           "name": "buttonText",
@@ -7346,7 +7346,7 @@
       "props": [
         {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -9099,32 +9099,11 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
         {
-          "name": "modelValue",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
-        },
-        {
-          "name": "clearable",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "true",
-          "description": "是否允许清空"
-        },
-        {
-          "name": "field",
+          "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
-          "description": "字段绑定名"
+          "description": "占位文案"
         },
         {
           "name": "label",
@@ -9134,11 +9113,46 @@
           "description": "展示标签"
         },
         {
-          "name": "placeholder",
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "modelValue",
+          "type": "EntityPickerValue | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "直接传入的值"
+        },
+        {
+          "name": "name",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
-          "description": "占位文案"
+          "description": "组件名称"
+        },
+        {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段绑定名"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
         },
         {
           "name": "optionKey",
@@ -9177,13 +9191,6 @@
           "description": "文本储存字段"
         },
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
-        },
-        {
           "name": "options",
           "type": "unknown[] | undefined",
           "required": false,
@@ -9203,13 +9210,6 @@
           "required": false,
           "default": "undefined",
           "description": "选项值字段"
-        },
-        {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
         },
         {
           "name": "buttonText",
@@ -9271,18 +9271,6 @@
           "required": false,
           "description": "表格列排序能力",
           "schemaRef": "schema_00490"
-        },
-        {
-          "name": "label",
-          "type": "string | undefined",
-          "required": false,
-          "description": "显示标签别名（兼容 SparkNode 原始 props 中的 label，避免 fragment fallthrough warning）"
-        },
-        {
-          "name": "field",
-          "type": "string | undefined",
-          "required": false,
-          "description": "字段绑定名别名（兼容 SparkNode 原始 props 中的 field，避免 fragment fallthrough warning）"
         },
         {
           "name": "filterable",
@@ -9578,7 +9566,7 @@
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"info\" | \"success\" | \"warning\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
           "schemaRef": "schema_00504"
         }
@@ -9675,9 +9663,9 @@
       "type": "RecoveryPolicyLike | undefined",
       "variants": [
         "undefined",
-        "\"strict\"",
+        "\"layered\"",
         "\"manual\"",
-        "\"layered\""
+        "\"strict\""
       ]
     },
     "schema_00004": {
@@ -9696,9 +9684,9 @@
       "kind": "enum",
       "type": "RecoveryPolicyLike",
       "variants": [
-        "\"strict\"",
+        "\"layered\"",
         "\"manual\"",
-        "\"layered\""
+        "\"strict\""
       ]
     },
     "schema_00006": {
@@ -9717,8 +9705,8 @@
       "type": "ChatMode | undefined",
       "variants": [
         "undefined",
-        "\"single\"",
-        "\"multi\""
+        "\"multi\"",
+        "\"single\""
       ]
     },
     "schema_00008": {
@@ -9874,21 +9862,175 @@
     },
     "schema_00011": {
       "kind": "enum",
-      "type": "\"default\" | \"small\" | \"large\" | undefined",
+      "type": "\"small\" | \"default\" | \"large\" | undefined",
       "variants": [
         "undefined",
-        "\"default\"",
         "\"small\"",
+        "\"default\"",
         "\"large\""
       ]
     },
     "schema_00012": {
       "kind": "object",
-      "type": "{ config: AiSessionConfig | null; }",
+      "type": "{ config: AiSessionConfig; cancel: () => void; }",
       "properties": {
         "config": {
           "name": "config",
-          "type": "AiSessionConfig | null",
+          "type": "AiSessionConfig",
+          "required": true,
+          "__nestedSchema": {
+            "kind": "object",
+            "type": "AiSessionConfig",
+            "properties": {
+              "storageKey": {
+                "name": "storageKey",
+                "type": "MaybeRefOrGetter<string>",
+                "required": true,
+                "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。"
+              },
+              "pageId": {
+                "name": "pageId",
+                "type": "MaybeRefOrGetter<string | undefined>",
+                "required": false,
+                "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。"
+              },
+              "sender": {
+                "name": "sender",
+                "type": "AiChatSender",
+                "required": true,
+                "description": "聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。"
+              },
+              "title": {
+                "name": "title",
+                "type": "MaybeRefOrGetter<string> | undefined",
+                "required": false,
+                "description": "面板标题。"
+              },
+              "placeholder": {
+                "name": "placeholder",
+                "type": "MaybeRefOrGetter<string> | undefined",
+                "required": false,
+                "description": "输入框 placeholder。"
+              },
+              "externalToolLogs": {
+                "name": "externalToolLogs",
+                "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
+                "required": false,
+                "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。"
+              },
+              "clearExternalToolLogs": {
+                "name": "clearExternalToolLogs",
+                "type": "(() => void) | undefined",
+                "required": false,
+                "description": "清空外部工具日志。若未提供，面板只清空自身内部日志。"
+              },
+              "fcErrorReporter": {
+                "name": "fcErrorReporter",
+                "type": "AiFcErrorReporter | undefined",
+                "required": false,
+                "description": "FC 调用失败时的诊断回传器。"
+              },
+              "beforeOpen": {
+                "name": "beforeOpen",
+                "type": "(() => void | Promise<void>) | undefined",
+                "required": false,
+                "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
+              },
+              "systemPrompt": {
+                "name": "systemPrompt",
+                "type": "MaybeRefOrGetter<string> | undefined",
+                "required": false,
+                "description": "自定义 system prompt。sender 可读取并随请求下发。"
+              },
+              "toolGuide": {
+                "name": "toolGuide",
+                "type": "MaybeRefOrGetter<string> | undefined",
+                "required": false,
+                "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。"
+              },
+              "toolCatalog": {
+                "name": "toolCatalog",
+                "type": "MaybeRefOrGetter<readonly AiToolSpec[]> | undefined",
+                "required": false,
+                "description": "工具目录（function schema 列表）。"
+              },
+              "toolInstances": {
+                "name": "toolInstances",
+                "type": "Record<string, AiToolHandler> | undefined",
+                "required": false,
+                "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。"
+              },
+              "fcLoop": {
+                "name": "fcLoop",
+                "type": "AiFcLoopConfig | undefined",
+                "required": false,
+                "description": "SSE + Function-Call 循环配置。",
+                "__nestedSchema": {
+                  "kind": "object",
+                  "type": "AiFcLoopConfig",
+                  "properties": {
+                    "enabled": {
+                      "name": "enabled",
+                      "type": "boolean | undefined",
+                      "required": false,
+                      "description": "是否启用本地 FC 循环（业务 sender 自行实现时读取本字段）。"
+                    },
+                    "maxRounds": {
+                      "name": "maxRounds",
+                      "type": "number | undefined",
+                      "required": false,
+                      "description": "单次 sender 调用内允许的最大工具往返轮数。"
+                    },
+                    "endpoint": {
+                      "name": "endpoint",
+                      "type": "string | undefined",
+                      "required": false,
+                      "description": "自定义后端端点（默认走 /api/ai/chat/stream）。"
+                    }
+                  }
+                }
+              },
+              "feedback": {
+                "name": "feedback",
+                "type": "AiFeedbackConfig | undefined",
+                "required": false,
+                "description": "反馈机制（文本 + 点赞点踩）。",
+                "__nestedSchema": {
+                  "kind": "object",
+                  "type": "AiFeedbackConfig",
+                  "properties": {
+                    "value": {
+                      "name": "value",
+                      "type": "Ref<string, string> | undefined",
+                      "required": false,
+                      "description": "绑定到 UI 文本框的 ref。"
+                    },
+                    "onSubmit": {
+                      "name": "onSubmit",
+                      "type": "((text: string, target?: { messageId?: string; rating?: \"up\" | \"down\"; } | undefined) => void | Promise<void>) | undefined",
+                      "required": false
+                    }
+                  }
+                }
+              },
+              "draftActions": {
+                "name": "draftActions",
+                "type": "MaybeRefOrGetter<readonly AiDraftActionConfig[]> | undefined",
+                "required": false,
+                "description": "人工触发的诊断草稿按钮。"
+              },
+              "hooks": {
+                "name": "hooks",
+                "type": "AiSessionHooks | undefined",
+                "required": false,
+                "description": "声明式生命周期 hooks（事件名即字段名）。"
+              }
+            }
+          }
+        },
+        "cancel": {
+          "name": "cancel",
+          "type": "() => void",
           "required": true
         }
       }
@@ -10055,171 +10197,6 @@
     },
     "schema_00014": {
       "kind": "object",
-      "type": "{ config: AiSessionConfig; cancel: () => void; }",
-      "properties": {
-        "config": {
-          "name": "config",
-          "type": "AiSessionConfig",
-          "required": true,
-          "__nestedSchema": {
-            "kind": "object",
-            "type": "AiSessionConfig",
-            "properties": {
-              "storageKey": {
-                "name": "storageKey",
-                "type": "MaybeRefOrGetter<string>",
-                "required": true,
-                "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。"
-              },
-              "pageId": {
-                "name": "pageId",
-                "type": "MaybeRefOrGetter<string | undefined>",
-                "required": false,
-                "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。"
-              },
-              "sender": {
-                "name": "sender",
-                "type": "AiChatSender",
-                "required": true,
-                "description": "聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。"
-              },
-              "title": {
-                "name": "title",
-                "type": "MaybeRefOrGetter<string> | undefined",
-                "required": false,
-                "description": "面板标题。"
-              },
-              "placeholder": {
-                "name": "placeholder",
-                "type": "MaybeRefOrGetter<string> | undefined",
-                "required": false,
-                "description": "输入框 placeholder。"
-              },
-              "externalToolLogs": {
-                "name": "externalToolLogs",
-                "type": "Ref<AiSessionToolLog[], AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]> | undefined",
-                "required": false,
-                "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。"
-              },
-              "clearExternalToolLogs": {
-                "name": "clearExternalToolLogs",
-                "type": "(() => void) | undefined",
-                "required": false,
-                "description": "清空外部工具日志。若未提供，面板只清空自身内部日志。"
-              },
-              "fcErrorReporter": {
-                "name": "fcErrorReporter",
-                "type": "AiFcErrorReporter | undefined",
-                "required": false,
-                "description": "FC 调用失败时的诊断回传器。"
-              },
-              "beforeOpen": {
-                "name": "beforeOpen",
-                "type": "(() => void | Promise<void>) | undefined",
-                "required": false,
-                "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
-              },
-              "systemPrompt": {
-                "name": "systemPrompt",
-                "type": "MaybeRefOrGetter<string> | undefined",
-                "required": false,
-                "description": "自定义 system prompt。sender 可读取并随请求下发。"
-              },
-              "toolGuide": {
-                "name": "toolGuide",
-                "type": "MaybeRefOrGetter<string> | undefined",
-                "required": false,
-                "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。"
-              },
-              "toolCatalog": {
-                "name": "toolCatalog",
-                "type": "MaybeRefOrGetter<readonly AiToolSpec[]> | undefined",
-                "required": false,
-                "description": "工具目录（function schema 列表）。"
-              },
-              "toolInstances": {
-                "name": "toolInstances",
-                "type": "Record<string, AiToolHandler> | undefined",
-                "required": false,
-                "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。"
-              },
-              "fcLoop": {
-                "name": "fcLoop",
-                "type": "AiFcLoopConfig | undefined",
-                "required": false,
-                "description": "SSE + Function-Call 循环配置。",
-                "__nestedSchema": {
-                  "kind": "object",
-                  "type": "AiFcLoopConfig",
-                  "properties": {
-                    "enabled": {
-                      "name": "enabled",
-                      "type": "boolean | undefined",
-                      "required": false,
-                      "description": "是否启用本地 FC 循环（业务 sender 自行实现时读取本字段）。"
-                    },
-                    "maxRounds": {
-                      "name": "maxRounds",
-                      "type": "number | undefined",
-                      "required": false,
-                      "description": "单次 sender 调用内允许的最大工具往返轮数。"
-                    },
-                    "endpoint": {
-                      "name": "endpoint",
-                      "type": "string | undefined",
-                      "required": false,
-                      "description": "自定义后端端点（默认走 /api/ai/chat/stream）。"
-                    }
-                  }
-                }
-              },
-              "feedback": {
-                "name": "feedback",
-                "type": "AiFeedbackConfig | undefined",
-                "required": false,
-                "description": "反馈机制（文本 + 点赞点踩）。",
-                "__nestedSchema": {
-                  "kind": "object",
-                  "type": "AiFeedbackConfig",
-                  "properties": {
-                    "value": {
-                      "name": "value",
-                      "type": "Ref<string, string> | undefined",
-                      "required": false,
-                      "description": "绑定到 UI 文本框的 ref。"
-                    },
-                    "onSubmit": {
-                      "name": "onSubmit",
-                      "type": "((text: string, target?: { messageId?: string; rating?: \"up\" | \"down\"; } | undefined) => void | Promise<void>) | undefined",
-                      "required": false
-                    }
-                  }
-                }
-              },
-              "draftActions": {
-                "name": "draftActions",
-                "type": "MaybeRefOrGetter<readonly AiDraftActionConfig[]> | undefined",
-                "required": false,
-                "description": "人工触发的诊断草稿按钮。"
-              },
-              "hooks": {
-                "name": "hooks",
-                "type": "AiSessionHooks | undefined",
-                "required": false,
-                "description": "声明式生命周期 hooks（事件名即字段名）。"
-              }
-            }
-          }
-        },
-        "cancel": {
-          "name": "cancel",
-          "type": "() => void",
-          "required": true
-        }
-      }
-    },
-    "schema_00015": {
-      "kind": "object",
       "type": "{ previousConfig: AiSessionConfig | null; config: AiSessionConfig; }",
       "properties": {
         "previousConfig": {
@@ -10230,6 +10207,17 @@
         "config": {
           "name": "config",
           "type": "AiSessionConfig",
+          "required": true
+        }
+      }
+    },
+    "schema_00015": {
+      "kind": "object",
+      "type": "{ config: AiSessionConfig | null; }",
+      "properties": {
+        "config": {
+          "name": "config",
+          "type": "AiSessionConfig | null",
           "required": true
         }
       }
@@ -10548,8 +10536,8 @@
         "undefined",
         "\"left\"",
         "\"right\"",
-        "\"bottom\"",
-        "\"top\""
+        "\"top\"",
+        "\"bottom\""
       ]
     },
     "schema_00032": {
@@ -11052,8 +11040,8 @@
       "type": "Property.AlignSelf | undefined",
       "variants": [
         "undefined",
-        "\"center\"",
         "\"auto\"",
+        "\"center\"",
         "\"start\"",
         "\"end\"",
         "\"stretch\"",
@@ -11124,22 +11112,6 @@
       "type": "Property.AnchorName | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00045": {
-      "kind": "enum",
-      "type": "Property.AnchorScope | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -11147,6 +11119,22 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00045": {
+      "kind": "enum",
+      "type": "Property.AnchorScope | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\"",
         "\"all\""
       ]
     },
@@ -11155,8 +11143,6 @@
       "type": "Property.AnimationComposition | undefined",
       "variants": [
         "undefined",
-        "\"add\"",
-        "\"replace\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -11164,7 +11150,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"accumulate\""
+        "\"accumulate\"",
+        "\"add\"",
+        "\"replace\""
       ]
     },
     "schema_00047": {
@@ -11219,7 +11207,6 @@
       "type": "Property.AnimationFillMode | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -11227,6 +11214,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"backwards\"",
         "\"both\"",
         "\"forwards\""
@@ -11253,14 +11241,14 @@
       "type": "Property.AnimationName | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00053": {
@@ -11285,14 +11273,14 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00055": {
@@ -11322,22 +11310,22 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"button\"",
-        "\"meter\"",
-        "\"textarea\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"button\"",
         "\"checkbox\"",
         "\"listbox\"",
         "\"menulist\"",
+        "\"meter\"",
         "\"progress-bar\"",
         "\"radio\"",
         "\"searchfield\"",
+        "\"textarea\"",
         "\"menulist-button\"",
         "\"textfield\""
       ]
@@ -11363,14 +11351,14 @@
       "type": "Property.BackdropFilter | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00059": {
@@ -11378,13 +11366,13 @@
       "type": "Property.BackfaceVisibility | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\""
       ]
     },
@@ -11393,8 +11381,6 @@
       "type": "Property.BackgroundAttachment | undefined",
       "variants": [
         "undefined",
-        "\"scroll\"",
-        "\"fixed\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -11402,7 +11388,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"local\""
+        "\"fixed\"",
+        "\"local\"",
+        "\"scroll\""
       ]
     },
     "schema_00061": {
@@ -11440,7 +11428,6 @@
       "type": "Property.BackgroundClip | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -11451,7 +11438,8 @@
         "\"border-box\"",
         "\"content-box\"",
         "\"padding-box\"",
-        "\"border-area\""
+        "\"border-area\"",
+        "\"text\""
       ]
     },
     "schema_00063": {
@@ -11665,14 +11653,14 @@
       "type": "Property.BackgroundImage | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00065": {
@@ -11697,7 +11685,6 @@
       "type": "Property.BackgroundRepeat | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -11706,6 +11693,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"no-repeat\"",
+        "\"repeat\"",
         "\"repeat-x\"",
         "\"repeat-y\"",
         "\"round\"",
@@ -11923,14 +11911,14 @@
       "type": "Property.BorderBlockEndStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -12152,14 +12140,14 @@
       "type": "Property.BorderBlockStartStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -12381,14 +12369,14 @@
       "type": "Property.BorderBottomStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -12419,7 +12407,6 @@
       "type": "Property.BorderImageRepeat | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "\"stretch\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -12428,6 +12415,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"repeat\"",
         "\"round\"",
         "\"space\""
       ]
@@ -12452,14 +12440,14 @@
       "type": "Property.BorderImageSource | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00077": {
@@ -12673,14 +12661,14 @@
       "type": "Property.BorderInlineEndStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -12902,14 +12890,14 @@
       "type": "Property.BorderInlineStartStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -13131,14 +13119,14 @@
       "type": "Property.BorderLeftStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -13360,14 +13348,14 @@
       "type": "Property.BorderRightStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -13589,14 +13577,14 @@
       "type": "Property.BorderTopStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -13627,14 +13615,14 @@
       "type": "Property.BoxShadow | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00089": {
@@ -13657,10 +13645,9 @@
       "type": "Property.BreakAfter | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"right\"",
-        "\"auto\"",
-        "\"page\"",
         "\"always\"",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -13674,6 +13661,7 @@
         "\"avoid-page\"",
         "\"avoid-region\"",
         "\"column\"",
+        "\"page\"",
         "\"recto\"",
         "\"region\"",
         "\"verso\""
@@ -13684,10 +13672,9 @@
       "type": "Property.BreakBefore | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"right\"",
-        "\"auto\"",
-        "\"page\"",
         "\"always\"",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -13701,6 +13688,7 @@
         "\"avoid-page\"",
         "\"avoid-region\"",
         "\"column\"",
+        "\"page\"",
         "\"recto\"",
         "\"region\"",
         "\"verso\""
@@ -13729,8 +13717,8 @@
       "type": "Property.CaptionSide | undefined",
       "variants": [
         "undefined",
-        "\"bottom\"",
         "\"top\"",
+        "\"bottom\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -13952,7 +13940,6 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"block\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -13960,6 +13947,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"bar\"",
+        "\"block\"",
         "\"underscore\""
       ]
     },
@@ -13970,13 +13958,13 @@
         "undefined",
         "\"left\"",
         "\"right\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"both\"",
         "\"inline-end\"",
         "\"inline-start\""
@@ -13987,7 +13975,6 @@
       "type": "Property.ClipPath | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -13995,6 +13982,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"border-box\"",
         "\"content-box\"",
         "\"padding-box\"",
@@ -14515,8 +14503,6 @@
       "type": "Property.ColumnRuleStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -14524,6 +14510,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -14539,13 +14527,13 @@
       "type": "Property.ColumnSpan | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\""
       ]
     },
@@ -14554,9 +14542,8 @@
       "type": "Property.Contain | undefined",
       "variants": [
         "undefined",
-        "\"style\"",
+        "\"strict\"",
         "\"size\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -14564,11 +14551,12 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"content\"",
         "\"inline-size\"",
         "\"layout\"",
         "\"paint\"",
-        "\"strict\""
+        "\"style\""
       ]
     },
     "schema_00109": {
@@ -14576,14 +14564,14 @@
       "type": "Property.ContainerName | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00110": {
@@ -14609,7 +14597,6 @@
       "type": "Property.Content | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -14618,6 +14605,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"none\"",
         "\"close-quote\"",
         "\"no-close-quote\"",
         "\"no-open-quote\"",
@@ -14630,13 +14618,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\""
       ]
     },
@@ -14645,57 +14633,6 @@
       "type": "Property.CounterIncrement | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00114": {
-      "kind": "enum",
-      "type": "Property.CounterReset | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00115": {
-      "kind": "enum",
-      "type": "Property.CounterSet | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00116": {
-      "kind": "enum",
-      "type": "Property.Cursor | undefined",
-      "variants": [
-        "undefined",
-        "\"text\"",
-        "\"default\"",
-        "\"auto\"",
-        "\"progress\"",
-        "\"copy\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -14703,6 +14640,55 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00114": {
+      "kind": "enum",
+      "type": "Property.CounterReset | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00115": {
+      "kind": "enum",
+      "type": "Property.CounterSet | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00116": {
+      "kind": "enum",
+      "type": "Property.Cursor | undefined",
+      "variants": [
+        "undefined",
+        "\"auto\"",
+        "\"default\"",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\"",
+        "\"text\"",
         "\"-moz-grab\"",
         "\"-moz-zoom-in\"",
         "\"-moz-zoom-out\"",
@@ -14715,6 +14701,7 @@
         "\"cell\"",
         "\"col-resize\"",
         "\"context-menu\"",
+        "\"copy\"",
         "\"crosshair\"",
         "\"e-resize\"",
         "\"ew-resize\"",
@@ -14731,6 +14718,7 @@
         "\"nw-resize\"",
         "\"nwse-resize\"",
         "\"pointer\"",
+        "\"progress\"",
         "\"row-resize\"",
         "\"s-resize\"",
         "\"se-resize\"",
@@ -14747,14 +14735,14 @@
       "type": "Property.D | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00118": {
@@ -14777,10 +14765,6 @@
       "type": "Property.Display | undefined",
       "variants": [
         "undefined",
-        "\"table\"",
-        "\"ruby\"",
-        "\"block\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -14788,6 +14772,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"block\"",
         "\"inline\"",
         "\"run-in\"",
         "\"-ms-flexbox\"",
@@ -14797,6 +14783,8 @@
         "\"flow\"",
         "\"flow-root\"",
         "\"grid\"",
+        "\"ruby\"",
+        "\"table\"",
         "\"ruby-base\"",
         "\"ruby-base-container\"",
         "\"ruby-text\"",
@@ -14863,13 +14851,13 @@
       "type": "Property.FieldSizing | undefined",
       "variants": [
         "undefined",
-        "\"fixed\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"fixed\"",
         "\"content\""
       ]
     },
@@ -14878,7 +14866,6 @@
       "type": "Property.Fill | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15078,6 +15065,7 @@
         "\"WindowFrame\"",
         "\"WindowText\"",
         "\"currentColor\"",
+        "\"none\"",
         "\"context-fill\"",
         "\"context-stroke\""
       ]
@@ -15117,14 +15105,14 @@
       "type": "Property.Filter | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00127": {
@@ -15197,13 +15185,13 @@
         "undefined",
         "\"left\"",
         "\"right\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"inline-end\"",
         "\"inline-start\""
       ]
@@ -15478,14 +15466,14 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"normal\""
+        "\"normal\"",
+        "\"none\""
       ]
     },
     "schema_00137": {
@@ -15509,13 +15497,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00139": {
@@ -15540,7 +15528,6 @@
       "type": "Property.FontSizeAdjust | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15548,6 +15535,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "number & {}",
         "\"from-font\""
       ]
@@ -15574,8 +15562,6 @@
       "type": "Property.FontSynthesis | undefined",
       "variants": [
         "undefined",
-        "\"style\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15583,6 +15569,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"style\"",
         "\"position\"",
         "\"small-caps\"",
         "\"weight\""
@@ -15594,13 +15582,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00144": {
@@ -15609,13 +15597,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00145": {
@@ -15624,13 +15612,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00146": {
@@ -15639,13 +15627,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00147": {
@@ -15653,8 +15641,6 @@
       "type": "Property.FontVariant | undefined",
       "variants": [
         "undefined",
-        "\"ruby\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15663,6 +15649,8 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"none\"",
+        "\"ruby\"",
         "\"small-caps\"",
         "\"jis04\"",
         "\"jis78\"",
@@ -15737,7 +15725,6 @@
       "type": "Property.FontVariantEastAsian | undefined",
       "variants": [
         "undefined",
-        "\"ruby\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15746,6 +15733,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"ruby\"",
         "\"jis04\"",
         "\"jis78\"",
         "\"jis83\"",
@@ -15761,7 +15749,6 @@
       "type": "Property.FontVariantEmoji | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -15769,6 +15756,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"text\"",
         "\"emoji\"",
         "\"unicode\""
       ]
@@ -15778,7 +15766,6 @@
       "type": "Property.FontVariantLigatures | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15787,6 +15774,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"none\"",
         "\"common-ligatures\"",
         "\"contextual\"",
         "\"discretionary-ligatures\"",
@@ -15825,7 +15813,6 @@
       "type": "Property.FontVariantPosition | undefined",
       "variants": [
         "undefined",
-        "\"sub\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -15833,6 +15820,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"sub\"",
         "\"super\""
       ]
     },
@@ -15856,7 +15844,6 @@
       "type": "Property.FontWeight | undefined",
       "variants": [
         "undefined",
-        "\"bold\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -15866,6 +15853,7 @@
         "\"unset\"",
         "\"normal\"",
         "number & {}",
+        "\"bold\"",
         "\"bolder\"",
         "\"lighter\""
       ]
@@ -15899,13 +15887,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"preserve-parent-color\""
       ]
     },
@@ -15995,22 +15983,6 @@
       "type": "Property.GridTemplateAreas | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00165": {
-      "kind": "enum",
-      "type": "Property.HangingPunctuation | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -16018,6 +15990,22 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00165": {
+      "kind": "enum",
+      "type": "Property.HangingPunctuation | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\"",
         "\"allow-end\"",
         "\"first\"",
         "\"force-end\"",
@@ -16060,15 +16048,15 @@
       "type": "Property.Hyphens | undefined",
       "variants": [
         "undefined",
+        "\"manual\"",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"manual\""
+        "\"none\""
       ]
     },
     "schema_00169": {
@@ -16243,10 +16231,10 @@
       "type": "Property.JustifySelf | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"center\"",
         "\"right\"",
-        "\"auto\"",
         "\"start\"",
         "\"end\"",
         "\"stretch\"",
@@ -16503,6 +16491,7 @@
       "type": "Property.LineBreak | undefined",
       "variants": [
         "undefined",
+        "\"strict\"",
         "\"auto\"",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -16511,7 +16500,6 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
-        "\"strict\"",
         "\"anywhere\"",
         "\"loose\""
       ]
@@ -16521,14 +16509,14 @@
       "type": "Property.ListStyleImage | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00183": {
@@ -16551,14 +16539,14 @@
       "type": "Property.ListStyleType | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00185": {
@@ -16566,13 +16554,13 @@
       "type": "Property.MarginTrim | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\"",
         "\"in-flow\""
       ]
@@ -16582,14 +16570,14 @@
       "type": "Property.Marker | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00187": {
@@ -16597,14 +16585,14 @@
       "type": "Property.MarkerEnd | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00188": {
@@ -16612,14 +16600,14 @@
       "type": "Property.MarkerMid | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00189": {
@@ -16627,14 +16615,14 @@
       "type": "Property.MarkerStart | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00190": {
@@ -16657,7 +16645,6 @@
       "type": "Property.MaskBorderRepeat | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "\"stretch\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -16666,6 +16653,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"repeat\"",
         "\"round\"",
         "\"space\""
       ]
@@ -16690,14 +16678,14 @@
       "type": "Property.MaskBorderSource | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00194": {
@@ -16726,7 +16714,6 @@
       "type": "Property.MaskComposite | undefined",
       "variants": [
         "undefined",
-        "\"add\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -16734,6 +16721,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"add\"",
         "\"exclude\"",
         "\"intersect\"",
         "\"subtract\""
@@ -16744,14 +16732,14 @@
       "type": "Property.MaskImage | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00197": {
@@ -16796,7 +16784,6 @@
       "type": "Property.MaskRepeat | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -16805,6 +16792,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"no-repeat\"",
+        "\"repeat\"",
         "\"repeat-x\"",
         "\"repeat-y\"",
         "\"round\"",
@@ -16865,14 +16853,14 @@
       "type": "Property.MathShift | undefined",
       "variants": [
         "undefined",
+        "\"compact\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"normal\"",
-        "\"compact\""
+        "\"normal\""
       ]
     },
     "schema_00204": {
@@ -16880,14 +16868,14 @@
       "type": "Property.MathStyle | undefined",
       "variants": [
         "undefined",
+        "\"compact\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"normal\"",
-        "\"compact\""
+        "\"normal\""
       ]
     },
     "schema_00205": {
@@ -16895,7 +16883,6 @@
       "type": "Property.MaxLines | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -16903,6 +16890,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "number & {}"
       ]
     },
@@ -16942,7 +16930,6 @@
       "type": "Property.OffsetPath | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -16950,6 +16937,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"border-box\"",
         "\"content-box\"",
         "\"padding-box\"",
@@ -16980,13 +16968,13 @@
       "variants": [
         "undefined",
         "\"fill\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"contain\"",
         "\"cover\"",
         "\"scale-down\""
@@ -16997,14 +16985,14 @@
       "type": "Property.ObjectViewBox | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00211": {
@@ -17265,13 +17253,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -17288,13 +17276,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00217": {
@@ -17303,15 +17291,15 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"scroll\"",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\"",
+        "\"scroll\"",
         "\"clip\""
       ]
     },
@@ -17336,15 +17324,15 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"scroll\"",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\"",
+        "\"scroll\"",
         "\"clip\""
       ]
     },
@@ -17370,15 +17358,15 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"scroll\"",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\"",
+        "\"scroll\"",
         "\"overlay\"",
         "\"clip\"",
         "\"-moz-hidden-unscrollable\""
@@ -17390,15 +17378,15 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"scroll\"",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\"",
+        "\"scroll\"",
         "\"overlay\"",
         "\"clip\"",
         "\"-moz-hidden-unscrollable\""
@@ -17410,13 +17398,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00224": {
@@ -17425,13 +17413,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"contain\""
       ]
     },
@@ -17441,13 +17429,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"contain\""
       ]
     },
@@ -17457,13 +17445,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"contain\""
       ]
     },
@@ -17473,13 +17461,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"contain\""
       ]
     },
@@ -17523,13 +17511,13 @@
         "undefined",
         "\"fill\"",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\"",
         "\"visible\"",
         "\"stroke\"",
@@ -17544,13 +17532,13 @@
       "type": "Property.Position | undefined",
       "variants": [
         "undefined",
-        "\"fixed\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"fixed\"",
         "\"-webkit-sticky\"",
         "\"absolute\"",
         "\"relative\"",
@@ -17581,11 +17569,10 @@
         "\"left\"",
         "\"center\"",
         "\"right\"",
-        "\"bottom\"",
         "\"top\"",
+        "\"bottom\"",
         "\"start\"",
         "\"end\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -17595,6 +17582,7 @@
         "\"unset\"",
         "\"self-end\"",
         "\"self-start\"",
+        "\"none\"",
         "\"x-end\"",
         "\"x-start\"",
         "\"y-end\"",
@@ -17646,11 +17634,10 @@
         "\"left\"",
         "\"center\"",
         "\"right\"",
-        "\"bottom\"",
         "\"top\"",
+        "\"bottom\"",
         "\"start\"",
         "\"end\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -17660,6 +17647,7 @@
         "\"unset\"",
         "\"self-end\"",
         "\"self-start\"",
+        "\"none\"",
         "\"x-end\"",
         "\"x-start\"",
         "\"y-end\"",
@@ -17748,14 +17736,14 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00238": {
@@ -17763,15 +17751,15 @@
       "type": "Property.Resize | undefined",
       "variants": [
         "undefined",
-        "\"block\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"both\"",
+        "\"block\"",
         "\"inline\"",
         "\"horizontal\"",
         "\"vertical\""
@@ -17782,14 +17770,14 @@
       "type": "Property.Rotate | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00240": {
@@ -17831,13 +17819,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00243": {
@@ -17863,7 +17851,6 @@
       "type": "Property.Scale | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -17871,6 +17858,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "number & {}"
       ]
     },
@@ -17894,13 +17882,13 @@
       "type": "Property.ScrollInitialTarget | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"nearest\""
       ]
     },
@@ -17912,14 +17900,14 @@
         "\"center\"",
         "\"start\"",
         "\"end\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00248": {
@@ -17942,8 +17930,6 @@
       "type": "Property.ScrollSnapType | undefined",
       "variants": [
         "undefined",
-        "\"block\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -17951,7 +17937,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"both\"",
+        "\"block\"",
         "\"inline\"",
         "\"x\"",
         "\"y\""
@@ -17962,7 +17950,6 @@
       "type": "Property.ScrollTimelineAxis | undefined",
       "variants": [
         "undefined",
-        "\"block\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -17970,6 +17957,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"block\"",
         "\"inline\"",
         "\"x\"",
         "\"y\""
@@ -17980,14 +17968,14 @@
       "type": "Property.ScrollTimelineName | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00252": {
@@ -18027,13 +18015,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"thin\""
       ]
     },
@@ -18057,7 +18045,6 @@
       "type": "Property.ShapeOutside | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -18065,6 +18052,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"border-box\"",
         "\"content-box\"",
         "\"padding-box\"",
@@ -18333,7 +18321,6 @@
       "type": "Property.Stroke | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -18533,6 +18520,7 @@
         "\"WindowFrame\"",
         "\"WindowText\"",
         "\"currentColor\"",
+        "\"none\"",
         "\"context-fill\"",
         "\"context-stroke\""
       ]
@@ -18813,13 +18801,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"fixed\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"fixed\""
       ]
     },
     "schema_00268": {
@@ -18857,10 +18845,10 @@
       "type": "Property.TextAlignLast | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"center\"",
         "\"right\"",
-        "\"auto\"",
         "\"start\"",
         "\"end\"",
         "\"-moz-initial\"",
@@ -18894,7 +18882,6 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"replace\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -18903,6 +18890,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"replace\"",
         "\"ideograph-alpha\"",
         "\"ideograph-numeric\"",
         "\"insert\"",
@@ -18915,9 +18903,7 @@
       "type": "Property.TextBox | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -18927,6 +18913,8 @@
         "\"unset\"",
         "\"normal\"",
         "\"ideographic\"",
+        "\"none\"",
+        "\"text\"",
         "\"cap\"",
         "\"ex\"",
         "\"ideographic-ink\"",
@@ -18940,7 +18928,6 @@
       "type": "Property.TextBoxEdge | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "\"auto\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -18950,6 +18937,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"ideographic\"",
+        "\"text\"",
         "\"cap\"",
         "\"ex\"",
         "\"ideographic-ink\""
@@ -18960,13 +18948,13 @@
       "type": "Property.TextBoxTrim | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"trim-both\"",
         "\"trim-end\"",
         "\"trim-start\""
@@ -18977,7 +18965,6 @@
       "type": "Property.TextCombineUpright | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -18985,6 +18972,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\"",
         "\"digits\""
       ]
@@ -19200,8 +19188,6 @@
       "type": "Property.TextDecorationLine | undefined",
       "variants": [
         "undefined",
-        "\"blink\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19209,6 +19195,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"blink\"",
         "\"grammar-error\"",
         "\"line-through\"",
         "\"overline\"",
@@ -19221,7 +19209,6 @@
       "type": "Property.TextDecorationSkip | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19229,6 +19216,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"box-decoration\"",
         "\"edges\"",
         "\"leading-spaces\"",
@@ -19243,13 +19231,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\""
       ]
     },
@@ -19499,7 +19487,7 @@
       "type": "Property.TextEmphasisStyle | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
+        "\"open\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19507,11 +19495,11 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"circle\"",
         "\"dot\"",
         "\"double-circle\"",
         "\"filled\"",
-        "\"open\"",
         "\"sesame\"",
         "\"triangle\""
       ]
@@ -19522,13 +19510,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"inter-character\"",
         "\"distribute\"",
         "\"inter-word\""
@@ -19589,14 +19577,14 @@
       "type": "Property.TextShadow | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00289": {
@@ -19605,14 +19593,14 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00290": {
@@ -19637,7 +19625,6 @@
       "type": "Property.TextTransform | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19645,6 +19632,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"full-width\"",
         "\"capitalize\"",
         "\"full-size-kana\"",
@@ -19658,9 +19646,9 @@
       "type": "Property.TextUnderlinePosition | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"right\"",
-        "\"auto\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19709,14 +19697,14 @@
       "type": "Property.TimelineScope | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00296": {
@@ -19725,7 +19713,6 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19733,6 +19720,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"-ms-manipulation\"",
         "\"-ms-none\"",
         "\"-ms-pan-x\"",
@@ -19753,14 +19741,14 @@
       "type": "Property.Transform | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00298": {
@@ -19845,7 +19833,6 @@
       "type": "Property.TransitionProperty | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19853,6 +19840,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\""
       ]
     },
@@ -19882,7 +19870,6 @@
       "type": "Property.UnicodeBidi | undefined",
       "variants": [
         "undefined",
-        "\"embed\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -19898,6 +19885,7 @@
         "\"-webkit-isolate-override\"",
         "\"-webkit-plaintext\"",
         "\"bidi-override\"",
+        "\"embed\"",
         "\"isolate-override\"",
         "\"plaintext\""
       ]
@@ -19907,16 +19895,16 @@
       "type": "Property.UserSelect | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"all\"",
+        "\"text\"",
         "\"-moz-none\""
       ]
     },
@@ -19925,13 +19913,13 @@
       "type": "Property.VectorEffect | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"fixed-position\"",
         "\"non-rotation\"",
         "\"non-scaling-size\"",
@@ -19943,7 +19931,6 @@
       "type": "Property.ViewTimelineAxis | undefined",
       "variants": [
         "undefined",
-        "\"block\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19951,6 +19938,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"block\"",
         "\"inline\"",
         "\"x\"",
         "\"y\""
@@ -19961,37 +19949,6 @@
       "type": "Property.ViewTimelineName | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00310": {
-      "kind": "enum",
-      "type": "Property.ViewTransitionClass | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00311": {
-      "kind": "enum",
-      "type": "Property.ViewTransitionName | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -19999,6 +19956,37 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00310": {
+      "kind": "enum",
+      "type": "Property.ViewTransitionClass | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00311": {
+      "kind": "enum",
+      "type": "Property.ViewTransitionName | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\"",
         "\"match-element\""
       ]
     },
@@ -20007,13 +19995,13 @@
       "type": "Property.Visibility | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\"",
         "\"collapse\""
       ]
@@ -20023,7 +20011,6 @@
       "type": "Property.WhiteSpace | undefined",
       "variants": [
         "undefined",
-        "\"pre\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -20037,6 +20024,7 @@
         "\"wrap\"",
         "\"-moz-pre-wrap\"",
         "\"break-spaces\"",
+        "\"pre\"",
         "\"pre-line\"",
         "\"pre-wrap\"",
         "\"preserve\"",
@@ -20166,7 +20154,6 @@
       "type": "Property.Zoom | undefined",
       "variants": [
         "undefined",
-        "\"reset\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -20175,7 +20162,8 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
-        "number & {}"
+        "number & {}",
+        "\"reset\""
       ]
     },
     "schema_00322": {
@@ -20198,7 +20186,6 @@
         "undefined",
         "\"reverse\"",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -20207,6 +20194,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"none\"",
         "\"alternate\"",
         "\"alternate-reverse\"",
         "\"backwards\"",
@@ -20436,8 +20424,6 @@
       "type": "Property.BorderBlockStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -20445,6 +20431,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -20666,8 +20654,6 @@
       "type": "Property.BorderImage | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
-        "\"none\"",
         "\"stretch\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -20676,7 +20662,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "number & {}",
+        "\"repeat\"",
         "\"round\"",
         "\"space\""
       ]
@@ -20892,8 +20880,6 @@
       "type": "Property.BorderInlineStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -20901,6 +20887,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -20916,8 +20904,6 @@
       "type": "Property.BorderStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -20925,6 +20911,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -20941,7 +20929,6 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"block\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21142,6 +21129,7 @@
         "\"WindowText\"",
         "\"currentColor\"",
         "\"bar\"",
+        "\"block\"",
         "\"underscore\""
       ]
     },
@@ -21150,14 +21138,14 @@
       "type": "Property.Container | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00333": {
@@ -21186,8 +21174,6 @@
       "type": "Property.Font | undefined",
       "variants": [
         "undefined",
-        "\"caption\"",
-        "\"menu\"",
         "\"icon\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -21196,6 +21182,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"caption\"",
+        "\"menu\"",
         "\"message-box\"",
         "\"small-caption\"",
         "\"status-bar\""
@@ -21206,14 +21194,14 @@
       "type": "Property.Grid | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00336": {
@@ -21269,22 +21257,6 @@
       "type": "Property.GridTemplate | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
-        "string & {}",
-        "\"-moz-initial\"",
-        "\"inherit\"",
-        "\"initial\"",
-        "\"revert\"",
-        "\"revert-layer\"",
-        "\"unset\""
-      ]
-    },
-    "schema_00340": {
-      "kind": "enum",
-      "type": "Property.LineClamp | undefined",
-      "variants": [
-        "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21292,6 +21264,22 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\""
+      ]
+    },
+    "schema_00340": {
+      "kind": "enum",
+      "type": "Property.LineClamp | undefined",
+      "variants": [
+        "undefined",
+        "string & {}",
+        "\"-moz-initial\"",
+        "\"inherit\"",
+        "\"initial\"",
+        "\"revert\"",
+        "\"revert-layer\"",
+        "\"unset\"",
+        "\"none\"",
         "number & {}"
       ]
     },
@@ -21300,7 +21288,6 @@
       "type": "Property.ListStyle | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21308,6 +21295,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"inside\"",
         "\"outside\""
       ]
@@ -21317,8 +21305,6 @@
       "type": "Property.MaskBorder | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
-        "\"none\"",
         "\"stretch\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -21327,7 +21313,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "number & {}",
+        "\"repeat\"",
         "\"round\"",
         "\"space\"",
         "\"alpha\"",
@@ -21340,8 +21328,6 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"scroll\"",
-        "\"hidden\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21349,7 +21335,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"hidden\"",
         "\"visible\"",
+        "\"scroll\"",
         "\"overlay\"",
         "\"clip\"",
         "\"-moz-hidden-unscrollable\""
@@ -21361,7 +21349,6 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21369,6 +21356,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"contain\""
       ]
     },
@@ -21427,8 +21415,8 @@
       "type": "Property.PlaceSelf | undefined",
       "variants": [
         "undefined",
-        "\"center\"",
         "\"auto\"",
+        "\"center\"",
         "\"start\"",
         "\"end\"",
         "\"stretch\"",
@@ -21456,11 +21444,10 @@
         "\"left\"",
         "\"center\"",
         "\"right\"",
-        "\"bottom\"",
         "\"top\"",
+        "\"bottom\"",
         "\"start\"",
         "\"end\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21470,6 +21457,7 @@
         "\"unset\"",
         "\"self-end\"",
         "\"self-start\"",
+        "\"none\"",
         "\"x-end\"",
         "\"x-start\"",
         "\"y-end\"",
@@ -21521,14 +21509,14 @@
       "type": "Property.ScrollTimeline | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00350": {
@@ -21536,7 +21524,7 @@
       "type": "Property.TextEmphasis | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
+        "\"open\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21736,11 +21724,11 @@
         "\"WindowFrame\"",
         "\"WindowText\"",
         "\"currentColor\"",
+        "\"none\"",
         "\"circle\"",
         "\"dot\"",
         "\"double-circle\"",
         "\"filled\"",
-        "\"open\"",
         "\"sesame\"",
         "\"triangle\""
       ]
@@ -21770,7 +21758,6 @@
       "type": "Property.Transition<string & {}> | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21779,6 +21766,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"none\"",
         "\"all\"",
         "\"ease\"",
         "\"ease-in\"",
@@ -21795,14 +21783,14 @@
       "type": "Property.ViewTimeline | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00354": {
@@ -21810,10 +21798,6 @@
       "type": "Property.MozAppearance | undefined",
       "variants": [
         "undefined",
-        "\"range\"",
-        "\"button\"",
-        "\"separator\"",
-        "\"none\"",
         "\"toolbar\"",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -21821,6 +21805,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"button\"",
         "\"checkbox\"",
         "\"listbox\"",
         "\"menulist\"",
@@ -21881,6 +21867,7 @@
         "\"radio-container\"",
         "\"radio-label\"",
         "\"radiomenuitem\"",
+        "\"range\"",
         "\"range-thumb\"",
         "\"resizer\"",
         "\"resizerpanel\"",
@@ -21899,6 +21886,7 @@
         "\"scrollbarthumb-vertical\"",
         "\"scrollbartrack-horizontal\"",
         "\"scrollbartrack-vertical\"",
+        "\"separator\"",
         "\"sheet\"",
         "\"spinner\"",
         "\"spinner-downbutton\"",
@@ -21933,14 +21921,14 @@
       "type": "Property.MozBinding | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00356": {
@@ -21948,7 +21936,6 @@
       "type": "Property.MozBorderBottomColors | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -22147,7 +22134,8 @@
         "\"Window\"",
         "\"WindowFrame\"",
         "\"WindowText\"",
-        "\"currentColor\""
+        "\"currentColor\"",
+        "\"none\""
       ]
     },
     "schema_00357": {
@@ -22155,7 +22143,6 @@
       "type": "Property.MozBorderLeftColors | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -22354,7 +22341,8 @@
         "\"Window\"",
         "\"WindowFrame\"",
         "\"WindowText\"",
-        "\"currentColor\""
+        "\"currentColor\"",
+        "\"none\""
       ]
     },
     "schema_00358": {
@@ -22362,7 +22350,6 @@
       "type": "Property.MozBorderRightColors | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -22561,7 +22548,8 @@
         "\"Window\"",
         "\"WindowFrame\"",
         "\"WindowText\"",
-        "\"currentColor\""
+        "\"currentColor\"",
+        "\"none\""
       ]
     },
     "schema_00359": {
@@ -22569,7 +22557,6 @@
       "type": "Property.MozBorderTopColors | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -22768,7 +22755,8 @@
         "\"Window\"",
         "\"WindowFrame\"",
         "\"WindowText\"",
-        "\"currentColor\""
+        "\"currentColor\"",
+        "\"none\""
       ]
     },
     "schema_00360": {
@@ -22777,7 +22765,6 @@
       "variants": [
         "undefined",
         "\"fill\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -22785,6 +22772,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"stroke\"",
         "\"fill-opacity\"",
         "\"stroke-opacity\""
@@ -22795,13 +22783,13 @@
       "type": "Property.MozOrient | undefined",
       "variants": [
         "undefined",
-        "\"block\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"block\"",
         "\"inline\"",
         "\"horizontal\"",
         "\"vertical\""
@@ -22827,14 +22815,14 @@
       "type": "Property.MozTextBlink | undefined",
       "variants": [
         "undefined",
-        "\"blink\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\"",
+        "\"blink\""
       ]
     },
     "schema_00364": {
@@ -22858,13 +22846,13 @@
       "type": "Property.MozWindowDragging | undefined",
       "variants": [
         "undefined",
-        "\"drag\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"drag\"",
         "\"no-drag\""
       ]
     },
@@ -22874,14 +22862,14 @@
       "variants": [
         "undefined",
         "\"default\"",
-        "\"menu\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"menu\"",
         "\"sheet\"",
         "\"tooltip\""
       ]
@@ -22923,13 +22911,13 @@
       "type": "Property.MsContentZoomChaining | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"chained\""
       ]
     },
@@ -22980,13 +22968,13 @@
       "type": "Property.MsContentZoomSnapType | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"mandatory\"",
         "\"proximity\""
       ]
@@ -22996,13 +22984,13 @@
       "type": "Property.MsContentZooming | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"zoom\""
       ]
     },
@@ -23025,14 +23013,14 @@
       "type": "Property.MsFlowFrom | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00377": {
@@ -23040,14 +23028,14 @@
       "type": "Property.MsFlowInto | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00378": {
@@ -23056,13 +23044,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00379": {
@@ -23118,13 +23106,13 @@
       "variants": [
         "undefined",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"-ms-autohiding-scrollbar\"",
         "\"scrollbar\""
       ]
@@ -23134,13 +23122,13 @@
       "type": "Property.MsScrollChaining | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"chained\""
       ]
     },
@@ -23149,13 +23137,13 @@
       "type": "Property.MsScrollRails | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"railed\""
       ]
     },
@@ -23192,13 +23180,13 @@
       "type": "Property.MsScrollSnapType | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"mandatory\"",
         "\"proximity\""
       ]
@@ -23208,13 +23196,13 @@
       "type": "Property.MsScrollTranslation | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"vertical-to-horizontal\""
       ]
     },
@@ -24871,13 +24859,13 @@
       "type": "Property.MsTextAutospace | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"ideograph-alpha\"",
         "\"ideograph-numeric\"",
         "\"ideograph-parenthesis\"",
@@ -24889,13 +24877,13 @@
       "type": "Property.MsTouchSelect | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"grippers\""
       ]
     },
@@ -24904,14 +24892,14 @@
       "type": "Property.MsUserSelect | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"text\"",
         "\"element\""
       ]
     },
@@ -24920,8 +24908,8 @@
       "type": "Property.MsWrapFlow | undefined",
       "variants": [
         "undefined",
-        "\"auto\"",
         "\"clear\"",
+        "\"auto\"",
         "\"start\"",
         "\"end\"",
         "\"-moz-initial\"",
@@ -24939,13 +24927,13 @@
       "type": "Property.MsWrapThrough | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"wrap\""
       ]
     },
@@ -24954,22 +24942,22 @@
       "type": "Property.WebkitAppearance | undefined",
       "variants": [
         "undefined",
-        "\"button\"",
-        "\"meter\"",
-        "\"textarea\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"button\"",
         "\"checkbox\"",
         "\"listbox\"",
         "\"menulist\"",
+        "\"meter\"",
         "\"progress-bar\"",
         "\"radio\"",
         "\"searchfield\"",
+        "\"textarea\"",
         "\"menulist-button\"",
         "\"textfield\"",
         "\"button-bevel\"",
@@ -25222,8 +25210,6 @@
       "type": "Property.WebkitBorderBeforeStyle | undefined",
       "variants": [
         "undefined",
-        "\"hidden\"",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -25231,6 +25217,8 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
+        "\"hidden\"",
         "\"dashed\"",
         "\"dotted\"",
         "\"double\"",
@@ -25246,7 +25234,6 @@
       "type": "Property.WebkitLineClamp | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -25254,6 +25241,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "number & {}"
       ]
     },
@@ -25262,8 +25250,6 @@
       "type": "Property.WebkitMaskAttachment | undefined",
       "variants": [
         "undefined",
-        "\"scroll\"",
-        "\"fixed\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -25271,7 +25257,9 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"local\""
+        "\"fixed\"",
+        "\"local\"",
+        "\"scroll\""
       ]
     },
     "schema_00407": {
@@ -25279,7 +25267,6 @@
       "type": "Property.WebkitMaskClip | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -25290,6 +25277,7 @@
         "\"border-box\"",
         "\"content-box\"",
         "\"padding-box\"",
+        "\"text\"",
         "\"fill-box\"",
         "\"stroke-box\"",
         "\"view-box\"",
@@ -25304,7 +25292,6 @@
       "type": "Property.WebkitMaskComposite | undefined",
       "variants": [
         "undefined",
-        "\"copy\"",
         "\"clear\"",
         "string & {}",
         "\"-moz-initial\"",
@@ -25313,6 +25300,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"copy\"",
         "\"destination-atop\"",
         "\"destination-in\"",
         "\"destination-out\"",
@@ -25329,14 +25317,14 @@
       "type": "Property.WebkitMaskImage | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00410": {
@@ -25367,7 +25355,6 @@
       "type": "Property.WebkitMaskRepeat | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -25376,6 +25363,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"no-repeat\"",
+        "\"repeat\"",
         "\"repeat-x\"",
         "\"repeat-y\"",
         "\"round\"",
@@ -25387,7 +25375,6 @@
       "type": "Property.WebkitMaskRepeatX | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -25395,6 +25382,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"no-repeat\"",
+        "\"repeat\"",
         "\"round\"",
         "\"space\""
       ]
@@ -25404,7 +25392,6 @@
       "type": "Property.WebkitMaskRepeatY | undefined",
       "variants": [
         "undefined",
-        "\"repeat\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -25412,6 +25399,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"no-repeat\"",
+        "\"repeat\"",
         "\"round\"",
         "\"space\""
       ]
@@ -26055,13 +26043,13 @@
       "variants": [
         "undefined",
         "\"default\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00419": {
@@ -26085,16 +26073,16 @@
       "type": "Property.WebkitUserSelect | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
         "\"auto\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"all\""
+        "\"none\"",
+        "\"all\"",
+        "\"text\""
       ]
     },
     "schema_00421": {
@@ -26116,7 +26104,6 @@
       "type": "Property.MsContentZoomSnap | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -26124,6 +26111,7 @@
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"mandatory\"",
         "\"proximity\""
       ]
@@ -26238,14 +26226,14 @@
       "type": "Property.BoxLines | undefined",
       "variants": [
         "undefined",
-        "\"multiple\"",
+        "\"single\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
-        "\"single\""
+        "\"multiple\""
       ]
     },
     "schema_00431": {
@@ -26358,9 +26346,9 @@
       "type": "Property.PageBreakAfter | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"right\"",
-        "\"auto\"",
         "\"always\"",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -26378,9 +26366,9 @@
       "type": "Property.PageBreakBefore | undefined",
       "variants": [
         "undefined",
+        "\"auto\"",
         "\"left\"",
         "\"right\"",
-        "\"auto\"",
         "\"always\"",
         "\"-moz-initial\"",
         "\"inherit\"",
@@ -26413,14 +26401,14 @@
       "type": "Property.ScrollSnapPointsX | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00441": {
@@ -26428,14 +26416,14 @@
       "type": "Property.ScrollSnapPointsY | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "string & {}",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
-        "\"unset\""
+        "\"unset\"",
+        "\"none\""
       ]
     },
     "schema_00442": {
@@ -26443,13 +26431,13 @@
       "type": "Property.ScrollSnapTypeX | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"mandatory\"",
         "\"proximity\""
       ]
@@ -26459,13 +26447,13 @@
       "type": "Property.ScrollSnapTypeY | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"mandatory\"",
         "\"proximity\""
       ]
@@ -26508,7 +26496,6 @@
       "type": "Property.MozUserFocus | undefined",
       "variants": [
         "undefined",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
@@ -26516,6 +26503,7 @@
         "\"revert-layer\"",
         "\"unset\"",
         "\"normal\"",
+        "\"none\"",
         "\"ignore\"",
         "\"select-after\"",
         "\"select-all\"",
@@ -26531,13 +26519,13 @@
         "undefined",
         "\"auto\"",
         "\"disabled\"",
-        "\"none\"",
         "\"-moz-initial\"",
         "\"inherit\"",
         "\"initial\"",
         "\"revert\"",
         "\"revert-layer\"",
         "\"unset\"",
+        "\"none\"",
         "\"enabled\""
       ]
     },
@@ -26917,12 +26905,12 @@
     },
     "schema_00464": {
       "kind": "enum",
-      "type": "\"click\" | \"contextmenu\" | \"hover\" | undefined",
+      "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
       "variants": [
         "undefined",
+        "\"hover\"",
         "\"click\"",
-        "\"contextmenu\"",
-        "\"hover\""
+        "\"contextmenu\""
       ]
     },
     "schema_00465": {
@@ -26936,15 +26924,15 @@
     },
     "schema_00466": {
       "kind": "enum",
-      "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+      "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
       "variants": [
         "undefined",
         "\"\"",
-        "\"default\"",
-        "\"success\"",
-        "\"warning\"",
         "\"info\"",
+        "\"success\"",
+        "\"default\"",
         "\"primary\"",
+        "\"warning\"",
         "\"danger\""
       ]
     },
@@ -26961,13 +26949,13 @@
     },
     "schema_00468": {
       "kind": "enum",
-      "type": "\"click\" | \"contextmenu\" | \"focus\" | \"hover\" | undefined",
+      "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
       "variants": [
         "undefined",
+        "\"hover\"",
         "\"click\"",
         "\"contextmenu\"",
-        "\"focus\"",
-        "\"hover\""
+        "\"focus\""
       ]
     },
     "schema_00469": {
@@ -26984,10 +26972,10 @@
     },
     "schema_00470": {
       "kind": "enum",
-      "type": "\"header\" | \"content\"",
+      "type": "\"content\" | \"header\"",
       "variants": [
-        "\"header\"",
-        "\"content\""
+        "\"content\"",
+        "\"header\""
       ]
     },
     "schema_00471": {
@@ -27001,12 +26989,12 @@
     },
     "schema_00472": {
       "kind": "enum",
-      "type": "number | \"default\" | \"small\" | \"large\" | undefined",
+      "type": "number | \"small\" | \"default\" | \"large\" | undefined",
       "variants": [
         "undefined",
         "number",
-        "\"default\"",
         "\"small\"",
+        "\"default\"",
         "\"large\""
       ]
     },
@@ -27033,14 +27021,14 @@
     },
     "schema_00475": {
       "kind": "enum",
-      "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+      "type": "\"\" | \"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\" | undefined",
       "variants": [
         "undefined",
         "\"\"",
-        "\"success\"",
-        "\"warning\"",
         "\"info\"",
+        "\"success\"",
         "\"primary\"",
+        "\"warning\"",
         "\"danger\""
       ]
     },
@@ -27080,9 +27068,9 @@
       "variants": [
         "undefined",
         "\"\"",
+        "\"info\"",
         "\"success\"",
         "\"warning\"",
-        "\"info\"",
         "\"danger\""
       ]
     },
@@ -27098,24 +27086,24 @@
     },
     "schema_00481": {
       "kind": "enum",
-      "type": "\"number\" | \"date\" | \"currency\" | \"percent\" | undefined",
+      "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
       "variants": [
         "undefined",
         "\"number\"",
-        "\"date\"",
         "\"currency\"",
-        "\"percent\""
+        "\"percent\"",
+        "\"date\""
       ]
     },
     "schema_00482": {
       "kind": "enum",
-      "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
+      "type": "\"error\" | \"info\" | \"success\" | \"warning\" | undefined",
       "variants": [
         "undefined",
         "\"error\"",
+        "\"info\"",
         "\"success\"",
-        "\"warning\"",
-        "\"info\""
+        "\"warning\""
       ]
     },
     "schema_00483": {
@@ -27380,8 +27368,8 @@
           "required": true,
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@976": {
-          "name": "__@toPrimitive@976",
+        "__@toPrimitive@775": {
+          "name": "__@toPrimitive@775",
           "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
           "required": true,
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -27390,22 +27378,22 @@
     },
     "schema_00484": {
       "kind": "enum",
-      "type": "\"bottom\" | \"top\" | undefined",
+      "type": "\"top\" | \"bottom\" | undefined",
       "variants": [
         "undefined",
-        "\"bottom\"",
-        "\"top\""
+        "\"top\"",
+        "\"bottom\""
       ]
     },
     "schema_00485": {
       "kind": "enum",
-      "type": "\"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+      "type": "\"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\" | undefined",
       "variants": [
         "undefined",
-        "\"success\"",
-        "\"warning\"",
         "\"info\"",
+        "\"success\"",
         "\"primary\"",
+        "\"warning\"",
         "\"danger\""
       ]
     },
@@ -27499,8 +27487,8 @@
       "variants": [
         "undefined",
         "\"text\"",
-        "\"tree\"",
-        "\"table\""
+        "\"table\"",
+        "\"tree\""
       ]
     },
     "schema_00490": {
@@ -27535,9 +27523,9 @@
       "type": "DatePickerType | undefined",
       "variants": [
         "undefined",
+        "\"date\"",
         "\"year\"",
         "\"month\"",
-        "\"date\"",
         "\"dates\"",
         "\"datetime\"",
         "\"week\"",
@@ -27557,11 +27545,11 @@
     },
     "schema_00495": {
       "kind": "enum",
-      "type": "\"text\" | \"textarea\" | undefined",
+      "type": "\"textarea\" | \"text\" | undefined",
       "variants": [
         "undefined",
-        "\"text\"",
-        "\"textarea\""
+        "\"textarea\"",
+        "\"text\""
       ]
     },
     "schema_00496": {
@@ -27699,7 +27687,7 @@
     },
     "schema_00504": {
       "kind": "object",
-      "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+      "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"info\" | \"success\" | \"warning\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
       "properties": {
         "treeData": {
           "name": "treeData",
@@ -27728,7 +27716,7 @@
         },
         "editForm": {
           "name": "editForm",
-          "type": "{ id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }",
+          "type": "{ id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }",
           "required": true
         },
         "hasContext": {
@@ -27783,7 +27771,7 @@
         },
         "statusMessages": {
           "name": "statusMessages",
-          "type": "Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>",
+          "type": "Ref<{ text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[]>",
           "required": true
         },
         "linkProbeLoading": {
@@ -27838,7 +27826,7 @@
         },
         "addStatus": {
           "name": "addStatus",
-          "type": "(text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void",
+          "type": "(text: string, type?: \"error\" | \"info\" | \"success\" | \"warning\") => void",
           "required": true
         },
         "loadNavConfig": {
@@ -28180,7 +28168,7 @@
         },
         "prop_00024": {
           "name": "externalToolLogs",
-          "type": "{ type: \"error\" | \"success\" | \"info\"; tag: string; text: string; timestamp?: string; }[] | undefined",
+          "type": "{ type: \"error\" | \"info\" | \"success\"; tag: string; text: string; timestamp?: string; }[] | undefined",
           "required": false
         },
         "prop_00025": {
@@ -28313,7 +28301,7 @@
         },
         "prop_00047": {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"small\"",
           "schemaRef": "schema_00011"
@@ -29023,7 +29011,7 @@
         },
         "prop_00155": {
           "name": "trigger",
-          "type": "\"click\" | \"contextmenu\" | \"hover\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式",
@@ -29114,7 +29102,7 @@
         },
         "prop_00169": {
           "name": "linkType",
-          "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
@@ -29174,7 +29162,7 @@
         },
         "prop_00178": {
           "name": "confirmButtonType",
-          "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
@@ -29182,7 +29170,7 @@
         },
         "prop_00179": {
           "name": "cancelButtonType",
-          "type": "\"\" | \"default\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
@@ -29230,7 +29218,7 @@
         },
         "prop_00186": {
           "name": "trigger",
-          "type": "\"click\" | \"contextmenu\" | \"focus\" | \"hover\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。",
@@ -29397,7 +29385,7 @@
         },
         "prop_00210": {
           "name": "mode",
-          "type": "\"header\" | \"content\"",
+          "type": "\"content\" | \"header\"",
           "required": true,
           "description": "渲染模式：步骤头部或内容区",
           "schemaRef": "schema_00470"
@@ -29671,7 +29659,7 @@
         },
         "prop_00253": {
           "name": "avatarSize",
-          "type": "number | \"default\" | \"small\" | \"large\" | undefined",
+          "type": "number | \"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
@@ -29758,7 +29746,7 @@
         },
         "prop_00266": {
           "name": "badgeType",
-          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"\" | \"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
@@ -30136,7 +30124,7 @@
         },
         "prop_00323": {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -30159,7 +30147,7 @@
         },
         "prop_00326": {
           "name": "format",
-          "type": "\"number\" | \"date\" | \"currency\" | \"percent\" | undefined",
+          "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
           "description": "格式化方式",
           "schemaRef": "schema_00481"
@@ -30210,7 +30198,7 @@
         },
         "prop_00334": {
           "name": "alertType",
-          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
+          "type": "\"error\" | \"info\" | \"success\" | \"warning\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型",
@@ -30363,7 +30351,7 @@
         },
         "prop_00357": {
           "name": "descriptionsSize",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"small\" | \"default\" | \"large\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
@@ -30464,7 +30452,7 @@
         },
         "prop_00373": {
           "name": "icon",
-          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
+          "type": "\"error\" | \"info\" | \"success\" | \"warning\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型",
@@ -30539,7 +30527,7 @@
         },
         "prop_00384": {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "时间戳位置",
@@ -30547,7 +30535,7 @@
         },
         "prop_00385": {
           "name": "itemType",
-          "type": "\"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
+          "type": "\"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
@@ -31156,62 +31144,76 @@
           "schemaRef": "schema_00494"
         },
         "prop_00478": {
-          "name": "modelValue",
-          "type": "EntityPickerValue | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "直接传入的值"
-        },
-        "prop_00479": {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
-        },
-        "prop_00480": {
-          "name": "clearable",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "true",
-          "description": "是否允许清空"
-        },
-        "prop_00481": {
-          "name": "field",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段绑定名"
-        },
-        "prop_00482": {
-          "name": "label",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "展示标签"
-        },
-        "prop_00483": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "占位文案"
         },
+        "prop_00479": {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "展示标签"
+        },
+        "prop_00480": {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        "prop_00481": {
+          "name": "modelValue",
+          "type": "EntityPickerValue | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "直接传入的值"
+        },
+        "prop_00482": {
+          "name": "name",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "组件名称"
+        },
+        "prop_00483": {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
         "prop_00484": {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段绑定名"
+        },
+        "prop_00485": {
+          "name": "clearable",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
+        },
+        "prop_00486": {
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "选项绑定键"
         },
-        "prop_00485": {
+        "prop_00487": {
           "name": "valueSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "值分隔符"
         },
-        "prop_00486": {
+        "prop_00488": {
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
@@ -31219,54 +31221,40 @@
           "description": "主值持久化模式",
           "schemaRef": "schema_00491"
         },
-        "prop_00487": {
+        "prop_00489": {
           "name": "textSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "文本分隔符"
         },
-        "prop_00488": {
+        "prop_00490": {
           "name": "textStorageField",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "文本储存字段"
         },
-        "prop_00489": {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
-        },
-        "prop_00490": {
+        "prop_00491": {
           "name": "options",
           "type": "unknown[] | undefined",
           "required": false,
           "default": "undefined",
           "description": "可选项数组"
         },
-        "prop_00491": {
+        "prop_00492": {
           "name": "optionLabelField",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "选项显示字段"
         },
-        "prop_00492": {
+        "prop_00493": {
           "name": "optionValueField",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "选项值字段"
-        },
-        "prop_00493": {
-          "name": "name",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "组件名称"
         },
         "prop_00494": {
           "name": "buttonText",
@@ -31470,7 +31458,7 @@
         },
         "prop_00523": {
           "name": "placement",
-          "type": "\"bottom\" | \"top\" | undefined",
+          "type": "\"top\" | \"bottom\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "候选浮层位置",
@@ -31509,7 +31497,7 @@
         },
         "prop_00529": {
           "name": "inputType",
-          "type": "\"text\" | \"textarea\" | undefined",
+          "type": "\"textarea\" | \"text\" | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
@@ -31885,256 +31873,244 @@
           "schemaRef": "schema_00490"
         },
         "prop_00585": {
-          "name": "label",
-          "type": "string | undefined",
-          "required": false,
-          "description": "显示标签别名（兼容 SparkNode 原始 props 中的 label，避免 fragment fallthrough warning）"
-        },
-        "prop_00586": {
-          "name": "field",
-          "type": "string | undefined",
-          "required": false,
-          "description": "字段绑定名别名（兼容 SparkNode 原始 props 中的 field，避免 fragment fallthrough warning）"
-        },
-        "prop_00587": {
           "name": "filterable",
           "type": "boolean | undefined",
           "required": false,
           "description": "表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning"
         },
-        "prop_00588": {
+        "prop_00586": {
           "name": "minWidth",
           "type": "string | number | undefined",
           "required": false,
           "description": "最小列宽"
         },
-        "prop_00589": {
+        "prop_00587": {
           "name": "fixed",
           "type": "boolean | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "固定列方向",
           "schemaRef": "schema_00500"
         },
-        "prop_00590": {
+        "prop_00588": {
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "列对齐",
           "schemaRef": "schema_00501"
         },
-        "prop_00591": {
+        "prop_00589": {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "表头对齐",
           "schemaRef": "schema_00501"
         },
-        "prop_00592": {
+        "prop_00590": {
           "name": "mergedChildren",
           "type": "SparkNode[] | undefined",
           "required": false,
           "description": "子组件配置"
         },
-        "prop_00593": {
+        "prop_00591": {
           "name": "isCurrentFieldHidden",
           "type": "boolean | undefined",
           "required": false,
           "description": "当前字段是否隐藏"
         },
-        "prop_00594": {
+        "prop_00592": {
           "name": "shouldRenderCurrentField",
           "type": "boolean | undefined",
           "required": false,
           "description": "当前宿主下字段是否应渲染"
         },
-        "prop_00595": {
+        "prop_00593": {
           "name": "currentDisplayValue",
           "type": "string | undefined",
           "required": false,
           "description": "当前显示值"
         },
-        "prop_00596": {
+        "prop_00594": {
           "name": "isTableCellHidden",
           "type": "((row: IDataRow) => boolean) | undefined",
           "required": false,
           "description": "表格行级隐藏判断"
         },
-        "prop_00597": {
+        "prop_00595": {
           "name": "getTableCellDisplayValue",
           "type": "((row: IDataRow) => string) | undefined",
           "required": false,
           "description": "表格行级显示值获取"
         },
-        "prop_00598": {
+        "prop_00596": {
           "name": "validationRules",
           "type": "FormItemRule[] | undefined",
           "required": false,
           "description": "表单验证规则"
         },
-        "prop_00599": {
+        "prop_00597": {
           "name": "titleAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "标题对齐（table/detail）",
           "schemaRef": "schema_00501"
         },
-        "prop_00600": {
+        "prop_00598": {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "值对齐（table/detail）",
           "schemaRef": "schema_00501"
         },
-        "prop_00601": {
+        "prop_00599": {
           "name": "headerCellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "表头 class（table）"
         },
-        "prop_00602": {
+        "prop_00600": {
           "name": "cellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "单元格 class（table）"
         },
-        "prop_00603": {
+        "prop_00601": {
           "name": "titleClassName",
           "type": "string | undefined",
           "required": false,
           "description": "标题 class（detail）"
         },
-        "prop_00604": {
+        "prop_00602": {
           "name": "valueClassName",
           "type": "string | undefined",
           "required": false,
           "description": "值 class（detail/table value）"
         },
-        "prop_00605": {
+        "prop_00603": {
           "name": "nameField",
           "type": "string | undefined",
           "required": false,
           "default": "\"name\"",
           "description": "名称字段名"
         },
-        "prop_00606": {
+        "prop_00604": {
           "name": "typeField",
           "type": "string | undefined",
           "required": false,
           "default": "\"type\"",
           "description": "类型字段名"
         },
-        "prop_00607": {
+        "prop_00605": {
           "name": "statusField",
           "type": "string | undefined",
           "required": false,
           "default": "\"status\"",
           "description": "状态字段名"
         },
-        "prop_00608": {
+        "prop_00606": {
           "name": "ownerField",
           "type": "string | undefined",
           "required": false,
           "default": "\"owner\"",
           "description": "负责人字段名"
         },
-        "prop_00609": {
+        "prop_00607": {
           "name": "metaField",
           "type": "string | undefined",
           "required": false,
           "default": "\"route\"",
           "description": "元信息字段名"
         },
-        "prop_00610": {
+        "prop_00608": {
           "name": "extraField",
           "type": "string | undefined",
           "required": false,
           "default": "\"childPlacement\"",
           "description": "扩展字段名"
         },
-        "prop_00611": {
+        "prop_00609": {
           "name": "showType",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示类型"
         },
-        "prop_00612": {
+        "prop_00610": {
           "name": "showStatus",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示状态"
         },
-        "prop_00613": {
+        "prop_00611": {
           "name": "showOwner",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否展示负责人"
         },
-        "prop_00614": {
+        "prop_00612": {
           "name": "showMeta",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示元信息"
         },
-        "prop_00615": {
+        "prop_00613": {
           "name": "showExtra",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否展示扩展信息"
         },
-        "prop_00616": {
+        "prop_00614": {
           "name": "config",
           "type": "SparkNode",
           "required": true,
           "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
           "schemaRef": "schema_00502"
         },
-        "prop_00617": {
+        "prop_00615": {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
           "schemaRef": "schema_00503"
         },
-        "prop_00618": {
+        "prop_00616": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "default": "'未注册的组件类型'",
           "description": "提示标题"
         },
-        "prop_00619": {
+        "prop_00617": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "default": "''",
           "description": "说明文本"
         },
-        "prop_00620": {
+        "prop_00618": {
           "name": "node",
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
           "schemaRef": "schema_00502"
         },
-        "prop_00621": {
+        "prop_00619": {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"info\" | \"success\" | \"warning\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
           "schemaRef": "schema_00504"
         }
       },
       "emits": {
         "emit_00001": {
-          "name": "clear",
+          "name": "send",
           "type": "[]"
         },
         "emit_00002": {
-          "name": "send",
+          "name": "clear",
           "type": "[]"
         },
         "emit_00003": {
@@ -32180,51 +32156,51 @@
           "type": "[actionId: string]"
         },
         "emit_00012": {
-          "name": "close",
-          "type": "[payload: { config: AiSessionConfig | null; }]",
+          "name": "active-change",
+          "type": "[active: boolean]"
+        },
+        "emit_00013": {
+          "name": "shortcut-trigger",
+          "type": "[]"
+        },
+        "emit_00014": {
+          "name": "before-open",
+          "type": "[payload: { config: AiSessionConfig; cancel: () => void; }]",
           "schemaRefs": [
             "schema_00012"
           ]
         },
-        "emit_00013": {
+        "emit_00015": {
           "name": "open",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
             "schema_00013"
           ]
         },
-        "emit_00014": {
-          "name": "active-change",
-          "type": "[active: boolean]"
-        },
-        "emit_00015": {
-          "name": "shortcut-trigger",
-          "type": "[]"
-        },
         "emit_00016": {
-          "name": "before-open",
-          "type": "[payload: { config: AiSessionConfig; cancel: () => void; }]",
-          "schemaRefs": [
-            "schema_00014"
-          ]
-        },
-        "emit_00017": {
           "name": "opened",
           "type": "[payload: { config: AiSessionConfig; }]",
           "schemaRefs": [
             "schema_00013"
           ]
         },
-        "emit_00018": {
+        "emit_00017": {
           "name": "sync",
           "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
           "schemaRefs": [
-            "schema_00015"
+            "schema_00014"
+          ]
+        },
+        "emit_00018": {
+          "name": "synced",
+          "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
+          "schemaRefs": [
+            "schema_00014"
           ]
         },
         "emit_00019": {
-          "name": "synced",
-          "type": "[payload: { previousConfig: AiSessionConfig | null; config: AiSessionConfig; }]",
+          "name": "close",
+          "type": "[payload: { config: AiSessionConfig | null; }]",
           "schemaRefs": [
             "schema_00015"
           ]
@@ -32233,7 +32209,7 @@
           "name": "closed",
           "type": "[payload: { config: AiSessionConfig | null; }]",
           "schemaRefs": [
-            "schema_00012"
+            "schema_00015"
           ]
         },
         "emit_00021": {
@@ -32355,11 +32331,11 @@
           "type": "[]"
         },
         "emit_00040": {
-          "name": "cancel",
+          "name": "confirm",
           "type": "[]"
         },
         "emit_00041": {
-          "name": "confirm",
+          "name": "cancel",
           "type": "[]"
         },
         "emit_00042": {
@@ -32371,11 +32347,11 @@
           "type": "[value: string | number]"
         },
         "emit_00044": {
-          "name": "change",
+          "name": "close",
           "type": "[current: number]"
         },
         "emit_00045": {
-          "name": "close",
+          "name": "change",
           "type": "[current: number]"
         },
         "emit_00046": {
@@ -34398,8 +34374,8 @@
           "prop_00455"
         ],
         "emitRefs": [
-          "emit_00043",
-          "emit_00066"
+          "emit_00066",
+          "emit_00043"
         ]
       },
       "r-select": {
@@ -34803,8 +34779,6 @@
           "prop_00600",
           "prop_00601",
           "prop_00602",
-          "prop_00603",
-          "prop_00604",
           "prop_00057"
         ],
         "emitRefs": []
@@ -34815,6 +34789,8 @@
         "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。",
         "filePath": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.vue",
         "propRefs": [
+          "prop_00603",
+          "prop_00604",
           "prop_00605",
           "prop_00606",
           "prop_00607",
@@ -34824,8 +34800,6 @@
           "prop_00611",
           "prop_00612",
           "prop_00613",
-          "prop_00614",
-          "prop_00615",
           "prop_00057"
         ],
         "emitRefs": []
@@ -34836,8 +34810,8 @@
         "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册组件，是 SPARK 渲染引擎的核心入口。",
         "filePath": "packages/spark-component/src/components/SparkComponentRenderer.vue",
         "propRefs": [
-          "prop_00616",
-          "prop_00617"
+          "prop_00614",
+          "prop_00615"
         ],
         "emitRefs": []
       },
@@ -34847,9 +34821,9 @@
         "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
         "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
         "propRefs": [
-          "prop_00618",
-          "prop_00619",
-          "prop_00620"
+          "prop_00616",
+          "prop_00617",
+          "prop_00618"
         ],
         "emitRefs": []
       },
@@ -34883,7 +34857,7 @@
         "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-data-set-designer\" 引用。",
         "filePath": "src/views/app/dev-system/DevDataSetDesigner.vue",
         "propRefs": [
-          "prop_00621"
+          "prop_00619"
         ],
         "emitRefs": []
       },
@@ -35224,10 +35198,6 @@
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
-    },
-    "r-context-renderer": {
-      "fieldProvider": true,
       "bindingDelegate": "form-element"
     }
   }

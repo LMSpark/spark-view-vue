@@ -1,7 +1,16 @@
 /**
- * 数据相关动作执行器：append-row / delete / patch / move / message-row / refresh / clear-rows / set-field / submit-current-form
+ * 数据变更动作执行器
  *
- * 单一真源：BuiltinAction 与 bind-normalize 的 on 事件均通过这里执行。
+ * 负责执行所有涉及 DataView CRUD 操作的动作描述符：
+ * append-row / delete / patch / move / message-row / refresh / clear-rows / set-field / submit-current-form
+ *
+ * 单一真源：BuiltinAction（内置按钮）与 bind-normalize（on 事件）均通过此模块执行。
+ *
+ * ## 公共约定
+ * - 每个执行器首先通过 `ensureView` 确保 DataView 就绪，否则 fail-fast 返回
+ * - 批量操作（selected）使用 `for...of` 逐行调用 CRUD，汇总成功数量
+ * - UI 消息通过 `ActionNotifier` 统一发送，`silent=true` 时自动吞掉成功/警告消息
+ * - `confirmIfNeeded` 实现统一确认弹窗，`confirmMessage=''` 表示有意跳过确认
  */
 
 import type { DataView, IDataRow, CrudResult } from '@spark-view/spark-data'
@@ -34,14 +43,25 @@ import {
 } from './executor-helpers'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
 
-// ── target 行解析 ─────────────────────────────────────────────────────────
+// ── 目标行解析 ────────────────────────────────────────────────────────────
 
+/** 目标行解析结果：单行操作用 primary，批量操作用 rows。 */
 interface TargetRows {
+  /** 操作目标行列表 */
   rows: IDataRow[]
-  /** 单行场景的代表行（current/scope）；selected 时为 null（用 rows） */
+  /**
+   * 单行场景（scope/current）的代表行；
+   * selected 批量场景时为 null（直接迭代 rows）
+   */
   primary: IDataRow | null
 }
 
+/**
+ * 按 target 语义从 DataView 和执行作用域中解析操作目标行。
+ * - `scope`：使用 scope.row（行内动作注入的当前行）
+ * - `current`：使用 view.currentRow（视图当前选中行）
+ * - `selected`：使用 view.selectedRows（复选框勾选的行集合）
+ */
 function resolveTargetRows(
   view: DataView,
   target: ActionRowTarget,
@@ -59,12 +79,20 @@ function resolveTargetRows(
   return { rows: getSelectedRows(view), primary: null }
 }
 
+/** 当目标行为空时的标准警告文案（区分 selected 批量和单行场景）。 */
 function targetEmptyFallback(target: ActionRowTarget): string {
   return target === 'selected' ? '请先选择记录' : '请先选择当前行'
 }
 
-// ── 视图就绪保护 ─────────────────────────────────────────────────────────
+// ── DataView 就绪保护 ─────────────────────────────────────────────────────
 
+/**
+ * 确保 DataView 就绪并返回；不就绪时发出警告并返回 null（fail-fast 前置守卫）。
+ *
+ * 优先从 ctx.getDataSource() 获取作用域 DataView（容器注入），
+ * 若无 dataSource 则通过 resolveActionDataCapabilities 按 dataKey 解析。
+ * 未就绪时发出 `emptyMessage`（默认"数据视图未就绪"）警告并返回 null。
+ */
 function ensureView(
   desc: { dataKey?: string } & ActionUiDecorator,
   ctx: ActionExecutionContext,
@@ -79,8 +107,16 @@ function ensureView(
   return dataSource
 }
 
-// ── 父行字段继承（append-row） ───────────────────────────────────────────
+// ── append-row 辅助 ──────────────────────────────────────────────────────
 
+/**
+ * 将父行（scope.row）的指定字段值合并到 payload 中，实现父行字段继承。
+ *
+ * - `inheritFields`：直接复制同名字段（如将父行 deptId 继承给子行）
+ * - `inheritFieldMap`：重命名复制（如 `{ childParentId: 'id' }` 将父行 id 赋给子行 childParentId）
+ *
+ * 若 scope.row 不存在（非行内动作触发）则直接返回原 payload，不修改。
+ */
 function applyInheritFields(
   payload: Record<string, unknown>,
   scope: ActionExecutionScope | undefined,
@@ -104,13 +140,29 @@ function applyInheritFields(
   return payload
 }
 
+/**
+ * 从 CRUD 结果中提取实际的行数据。
+ * - CrudResult<IDataRow>：取 result.data（失败时返回 null）
+ * - 直接是 IDataRow：直接返回
+ */
 function resolveCreatedRow(result: IDataRow | CrudResult<IDataRow>): IDataRow | null {
   if (isCrudResult(result)) return result.success && result.data ? result.data : null
   return result
 }
 
-// ── append-row ───────────────────────────────────────────────────────────
+// ── append-row 执行器 ────────────────────────────────────────────────────
 
+/**
+ * 执行新增行动作。
+ *
+ * 执行流程：
+ * 1. 确保 DataView 就绪
+ * 2. 若配置了 prompt，先弹输入框由用户填写指定字段
+ * 3. 合并 appendPayload + inheritFields/inheritFieldMap
+ * 4. 自动补充 idField（若未提供则用 inferNextRowId 生成）
+ * 5. 调用 view.addRow()，根据结果展示成功/失败消息
+ * 6. 若 setCurrentRowOnSuccess=true，将新行设为当前行
+ */
 export async function executeAppendRow(
   desc: AppendRowAction,
   ctx: ActionExecutionContext,
@@ -146,6 +198,10 @@ export async function executeAppendRow(
   await doAppend(view, payload, idField, desc, scope, notifier)
 }
 
+/**
+ * doAppend 内部实现：补充 idField + 调用 view.addRow() + 处理结果。
+ * 从 executeAppendRow 中分离，方便 prompt 模式和普通模式复用。
+ */
 async function doAppend(
   view: DataView,
   payload: Record<string, unknown>,
@@ -174,8 +230,15 @@ async function doAppend(
   notifier.notify('success', desc.successMessage ?? '新增成功')
 }
 
-// ── delete ───────────────────────────────────────────────────────────────
+// ── delete 执行器 ────────────────────────────────────────────────────────
 
+/**
+ * 执行删除行动作。
+ *
+ * 两种分支：
+ * - `selected` 批量删除：显示确认弹窗（文案含 {count} 插值）→ 逐行调用 removeRow → 汇报成功数
+ * - `scope/current` 单行删除：显示含行标签的确认弹窗 → 调用 removeRow → 处理结果
+ */
 export async function executeDelete(
   desc: DeleteAction,
   ctx: ActionExecutionContext,
@@ -252,14 +315,23 @@ export async function executeDelete(
   )
 }
 
-// ── patch ────────────────────────────────────────────────────────────────
+// ── patch 执行器 ─────────────────────────────────────────────────────────
 
+/** 合并 desc.patch 和 desc.field/value 为统一的 patch 对象。 */
 function resolveStaticPatch(desc: PatchAction): Partial<IDataRow> {
   const out: Record<string, unknown> = { ...(desc.patch ?? {}) }
   if (desc.field !== undefined) out[desc.field] = desc.value
   return out
 }
 
+/**
+ * 执行更新行字段动作。
+ *
+ * 三种模式：
+ * 1. `prompt` 模式（仅 scope/current）：弹输入框，用当前字段值作为 defaultValue
+ * 2. `selected` 批量更新：逐行调用 editRowById，汇报成功数
+ * 3. `scope/current` 单行更新：调用 editRowById，处理 CrudResult
+ */
 export async function executePatch(
   desc: PatchAction,
   ctx: ActionExecutionContext,
@@ -345,6 +417,7 @@ export async function executePatch(
   await doUpdate(view, id, patch, desc, notifier, '更新成功', '更新失败：记录不存在或已删除')
 }
 
+/** doUpdate 内部实现：调用 editRowById 并统一处理成功/失败消息。 */
 async function doUpdate(
   view: DataView,
   id: string | number,
@@ -367,8 +440,17 @@ async function doUpdate(
   )
 }
 
-// ── move (tree) ──────────────────────────────────────────────────────────
+// ── move 执行器（树节点移动） ─────────────────────────────────────────────
 
+/**
+ * 解析移动目标的新父节点 ID。
+ *
+ * 优先级：
+ * 1. `newParentId` 静态值（含 null，表示移到根节点）
+ * 2. `targetParentSource='field'`：从 scope.row 或 currentRow 的指定字段读取
+ * 3. `targetParentSource='scope'`：使用 scope.row 的主键作为目标父 ID
+ * 4. 默认：使用 view.currentRow 的主键
+ */
 function resolveMoveTargetParentId(
   view: DataView,
   desc: MoveAction,
@@ -392,6 +474,13 @@ function resolveMoveTargetParentId(
   return view.currentRow ? resolveRowId(view.currentRow, idField) : null
 }
 
+/**
+ * 执行树节点移动动作。
+ *
+ * 要求 DataView 实现了 `moveTreeNode(nodeId, newParentId, index?)` 方法，
+ * 否则发出警告并返回（不抛异常）。
+ * 目标父节点 ID 由 resolveMoveTargetParentId 根据配置解析。
+ */
 export async function executeMove(
   desc: MoveAction,
   ctx: ActionExecutionContext,
@@ -427,8 +516,16 @@ export async function executeMove(
   notifier.notify('success', desc.successMessage ?? '移动成功')
 }
 
-// ── message-row ──────────────────────────────────────────────────────────
+// ── message-row 执行器 ───────────────────────────────────────────────────
 
+/**
+ * 执行展示行数据消息动作（只读，不修改数据）。
+ *
+ * 消息文案优先级：
+ * 1. `desc.message` + `{field}` 插值
+ * 2. `desc.messageFields` 列举字段（格式：`字段: 值 | 字段: 值`）
+ * 3. 自动取行数据前 6 个字段的 JSON 快照（调试用）
+ */
 export function executeMessageRow(
   desc: MessageRowAction,
   ctx: ActionExecutionContext,
@@ -462,8 +559,12 @@ function formatRowMessage(row: IDataRow, desc: MessageRowAction): string {
   return JSON.stringify(compact)
 }
 
-// ── refresh / clear-rows ─────────────────────────────────────────────────
+// ── refresh / clear-rows 执行器 ───────────────────────────────────────────
 
+/**
+ * 执行刷新数据视图动作：调用 `view.refresh()` 重新加载远程数据。
+ * 适用于用户手动刷新或条件变化后需要重新加载的场景。
+ */
 export async function executeRefresh(
   desc: RefreshAction,
   ctx: ActionExecutionContext,
@@ -476,6 +577,10 @@ export async function executeRefresh(
   notifier.notify('success', desc.successMessage ?? '刷新完成')
 }
 
+/**
+ * 执行清空行列表动作：替换为空数组，同步清除 currentRow 和 selectedRows。
+ * 为本地操作，不发送远程删除请求；常用于"重新选择"等交互场景。
+ */
 export async function executeClearRows(
   desc: ClearRowsAction,
   ctx: ActionExecutionContext,
@@ -493,8 +598,15 @@ export async function executeClearRows(
   notifier.notify('success', desc.successMessage ?? '已清空当前列表')
 }
 
-// ── set-field（无装饰，与 patch 区分：不弹消息） ─────────────────────────
+// ── set-field 执行器（静默字段赋值） ────────────────────────────────────
 
+/**
+ * 静默更新当前行的单个字段值，不弹任何成功/失败消息。
+ *
+ * 与 patch 的区别：set-field 无 ActionUiDecorator，语义是"配置驱动的字段联动赋值"，
+ * 适用于表单字段变化时自动更新其他字段的零代码交互。
+ * 操作失败（无 currentRow 或无 idField）时静默返回，不上报错误。
+ */
 export async function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): Promise<void> {
   const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
   if (!dataSource || !currentRow) return
@@ -504,8 +616,19 @@ export async function executeSetField(desc: SetFieldAction, ctx: ActionExecution
   await dataSource.editRowById(id, { [desc.field]: desc.value })
 }
 
-// ── submit-current-form ──────────────────────────────────────────────────
+// ── submit-current-form 执行器 ───────────────────────────────────────────
 
+/**
+ * 执行提交当前表单动作。
+ *
+ * 执行流程：
+ * 1. 从 scope.formApi 获取表单 API（未注入则报警告）
+ * 2. 确保 DataView 就绪
+ * 3. 获取目标行（优先 formApi.getCurrentRow()，降级为 dataSource.currentRow）
+ * 4. 若 formApi.validate 存在，触发校验；校验失败则中止并提示 validateMessage
+ * 5. 调用 formApi.getFormData() 获取草稿数据
+ * 6. 调用 view.editRowById() 持久化，处理 CrudResult
+ */
 export async function executeSubmitCurrentForm(
   desc: SubmitCurrentFormAction,
   ctx: ActionExecutionContext,

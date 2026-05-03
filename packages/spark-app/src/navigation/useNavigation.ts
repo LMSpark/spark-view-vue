@@ -12,7 +12,7 @@ import type {
   AppNavRoot,
   RegionItems,
   RegionVisibility,
-} from '@spark-view/spark-utils'
+} from './nav-model'
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
 import { refreshRoutes } from './nav-access'

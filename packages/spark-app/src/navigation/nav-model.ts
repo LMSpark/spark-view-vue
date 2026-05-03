@@ -1,9 +1,7 @@
 /* ══════════════════════════════════════════════════════════
  * 导航模型类型定义（纯 TS，零框架依赖）
  *
- * 从 spark-app 迁移至 spark-utils 基础层，
- * 解除 spark-ai ↔ spark-app 循环依赖。
- * spark-app 通过包入口 re-export 这些类型。
+ * 归属 spark-app 应用层。
  * ══════════════════════════════════════════════════════════ */
 
 /** 子项存放位置 */
@@ -13,11 +11,11 @@ export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'p
  * 节点扁平分类（软件工程管理语义）
  *
  * nodeKind 同时编码了页面渲染方式：
- * - `'page'` / `'sub-page'` — 配置驱动页（PageRenderer，加载 rule.json）
- * - `'system-page'` — 系统内置页（静态 Vue 组件，有对应 SPA 路由，path 以 `/` 开头）
- * - `'system-action'` — 系统内置动作（toolbar 按钮，如全屏、AI 对话），不注册路由，path 为动作标识符
- * - `'link'` — 外部链接（iframe / 新标签页，由 `linkTarget` 区分）
- * - `'module'` / `'system-directory'` — 纯分组容器，无页面渲染
+ * - 'page' / 'sub-page' — 配置驱动页（PageRenderer，加载 rule.json）
+ * - 'system-page' — 系统内置页（静态 Vue 组件，有对应 SPA 路由，path 以 '/' 开头）
+ * - 'system-action' — 系统内置动作（toolbar 按钮，如全屏、AI 对话），不注册路由，path 为动作标识符
+ * - 'link' — 外部链接（iframe / 新标签页，由 linkTarget 区分）
+ * - 'module' / 'system-directory' — 纯分组容器，无页面渲染
  */
 export type NavNodeKind =
   | 'system-directory'
@@ -115,9 +113,9 @@ export interface AppNavigation {
   /**
    * 权限模式
    *
-   * - `'none'`：不控制，任何已认证用户可见
-   * - `'masked'`（默认）：可见 + 脱敏，菜单可见但内容按权限脱敏
-   * - `'invisible'`：不可见，无权用户看不到该节点
+   * - 'none'：不控制，任何已认证用户可见
+   * - 'masked'（默认）：可见 + 脱敏，菜单可见但内容按权限脱敏
+   * - 'invisible'：不可见，无权用户看不到该节点
    */
   permissionMode?: NavPermissionMode
 }
@@ -128,11 +126,11 @@ export interface AppNavigation {
  * 导航节点
  *
  * `path` 的语义由 `nodeKind` 决定：
- * - **page / sub-page** — SPA 路由路径（如 `/dashboard`）
- * - **system-page** — SPA 路由路径，与 VUE_PAGE_MAP 匹配（如 `/dashboard`、`/dev`）
- * - **system-action** — 动作标识符（如 `'ai-chat'`、`'fullscreen'`、`'profile'`）
- * - **link** — 外部 URL（配合 `linkTarget` 使用）
- * - **module / system-directory** — 通常不设置 `path`（可设 `redirect`）
+ * - page / sub-page — SPA 路由路径（如 '/dashboard'）
+ * - system-page — SPA 路由路径，与 VUE_PAGE_MAP 匹配（如 '/dashboard'、'/dev'）
+ * - system-action — 动作标识符（如 'ai-chat'、'fullscreen'、'profile'）
+ * - link — 外部 URL（配合 `linkTarget` 使用）
+ * - module / system-directory — 通常不设置 `path`（可设 `redirect`）
  */
 export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
   /** 唯一标识 */
@@ -141,8 +139,8 @@ export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
    * 路径 / 动作标识符（语义由 nodeKind 决定）
    *
    * - page / sub-page → SPA 路由路径
-   * - system-page → SPA 路由路径（与 VUE_PAGE_MAP 匹配，如 `/dashboard`）
-  * - system-action → 动作标识符（如 `'ai-chat'`、`'fullscreen'`）
+   * - system-page → SPA 路由路径（与 VUE_PAGE_MAP 匹配，如 '/dashboard'）
+   * - system-action → 动作标识符（如 'ai-chat'、'fullscreen'）
    * - link → 外部 URL
    */
   path?: string

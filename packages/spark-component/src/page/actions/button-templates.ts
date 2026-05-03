@@ -26,6 +26,12 @@ export interface ButtonTemplateProps {
 
 // ── 通用模板 ──────────────────────────────────────────────────────────────
 
+/**
+ * 内置样式模板注册表。
+ * 键为模板名（template prop 的合法值），值为对应 el-button 属性集合。
+ * 分组：语义类（主/成功/警告/危险/信息）、变体类（plain 边框）、
+ *       文字/链接类、图标类（circle + icon）、Toolbar 专用（默认 size）。
+ */
 const BUTTON_TEMPLATES: Record<string, ButtonTemplateProps> = {
   // 语义类
   'primary':       { buttonType: 'primary' },
@@ -67,6 +73,11 @@ interface ActionDefaults {
   icon?: string
 }
 
+/**
+ * BuiltinActionName → 默认样式和文案映射表。
+ * 每个内置动作有对应的 template（决定按钮颜色变体）和 label（默认文案）。
+ * 新增 BuiltinActionName 时必须在此处补充对应条目，否则 getActionDefaultLabel 会报错。
+ */
 const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
   'append-row':          { template: 'primary', label: '新增', icon: 'Plus' },
   'prompt-append':       { template: 'primary', label: '新增', icon: 'Plus' },
@@ -169,6 +180,10 @@ export function resolveButtonStyle(
   return result
 }
 
+/**
+ * 将模板字段合并到 target（只写入模板中非 undefined 的字段，不清空已有值）。
+ * 分离为独立函数避免 Layer 1/Layer 2 各自重复一套 if 判断。
+ */
 function applyTemplate(target: ResolvedButtonStyle, template: ButtonTemplateProps): void {
   if (template.buttonType !== undefined) target.buttonType = template.buttonType
   if (template.buttonSize !== undefined) target.buttonSize = template.buttonSize

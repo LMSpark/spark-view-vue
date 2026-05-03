@@ -7,7 +7,7 @@
 
 import type { IDataRow } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
-import type { NavPermissionMode } from '@spark-view/spark-utils'
+import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
 
 export interface IFieldRenderConfig {

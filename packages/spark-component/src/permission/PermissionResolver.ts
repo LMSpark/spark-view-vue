@@ -6,7 +6,7 @@
  */
 
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
-import type { NavPermissionMode } from '@spark-view/spark-utils'
+import type { NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { nodeInputProp } from '../core/types'
 import { canCreate, canImport, canExport, canDelete, canCreateChild, canEdit } from './PermissionChecker'

@@ -16,17 +16,14 @@ import {
   type LoggerApi,
   type SparkCapabilityConsumer,
 } from '@spark-view/spark-utils'
-import {
-  APP_SERVICES,
-  PAGE_COMPONENT_REGISTRY,
-  findNearestCapabilityProvider,
-  findNearestCapabilityProviderByKeys,
-} from '@spark-view/spark-utils'
-import type { PageComponentRegistry } from '@spark-view/spark-utils'
+import { APP_SERVICES } from './capability-keys.js'
+import { sparkFindNearestProvider, sparkFindNearestProviderByKeys } from '@spark-view/spark-utils'
+import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
+import type { PageComponentRegistry } from './capability-keys.js'
 import { DATA_ROW } from './capability-keys.js'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
-import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '@spark-view/spark-utils'
+import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from './capability-context.js'
 
 // ===== 类型与返回值约定 =====
 
@@ -201,7 +198,7 @@ function resolveParentContext(
   currentOwner: SparkRuntimeOwner | null,
   overrideParentContext?: SparkCapabilityContext,
 ): SparkCapabilityContext | null {
-  return resolveParentCapabilityContext(currentOwner, overrideParentContext)
+  return sparkResolveParentContext(currentOwner, overrideParentContext)
 }
 
 function registerPageComponentInstance(
@@ -317,8 +314,8 @@ export function useSparkConsume(): UseSparkCapabilityReaderReturn {
   const parentContext = resolveParentContext(currentOwner)
   return {
     provider: {
-      nearestCapabilityProvider: name => findNearestCapabilityProvider(parentContext, name, { includeSelf: true }),
-      nearestCapabilityProviderByKeys: keys => findNearestCapabilityProviderByKeys(parentContext, keys, { includeSelf: true }),
+      nearestCapabilityProvider: name => sparkFindNearestProvider(parentContext, name, { includeSelf: true }),
+      nearestCapabilityProviderByKeys: keys => sparkFindNearestProviderByKeys(parentContext, keys, { includeSelf: true }),
     },
     sparkConsume: createSparkCapabilityConsumer(parentContext),
   }
@@ -340,17 +337,17 @@ export function useSparkComponent(
   const context = createSparkCapabilityContext({ id: contextId, type: config.type }, parentContext)
   const currentProvider: UseSparkComponentReturn['provider'] = {
     nearestCapabilityProvider(name) {
-      return findNearestCapabilityProvider(context, name)
+      return sparkFindNearestProvider(context, name)
     },
     nearestCapabilityProviderByKeys(keys) {
-      return findNearestCapabilityProviderByKeys(context, keys)
+      return sparkFindNearestProviderByKeys(context, keys)
     },
   }
   const consumeCapability = createSparkCapabilityConsumer(context)
 
   if (currentInstance !== null) {
     // 绑定 owner 后，后代组件就能通过当前 Vue 实例回溯到这棵 SparkContext 子树。
-    bindCapabilityContextOwner(currentInstance as object, context)
+    sparkBindContextOwner(currentInstance as object, context)
   }
 
   // 页面注册表保存组件实例元信息，供页面级 API、调试和联动能力做反查。
@@ -405,7 +402,7 @@ export function useSparkComponent(
     pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
     if (currentInstance !== null) {
-      unbindCapabilityContextOwner(currentInstance as object)
+      sparkUnbindContextOwner(currentInstance as object)
     }
   }
 

@@ -17,7 +17,8 @@ import type {
   RuleConfig,
 } from '@spark-view/spark-page-config'
 import { createRequest, Logger } from '@spark-view/spark-utils'
-import type { AppNavRoot, HttpClient, NavNode, RequestConfig } from '@spark-view/spark-utils'
+import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
+import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
 
 interface ReloadableRenderer {

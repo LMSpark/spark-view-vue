@@ -92,7 +92,7 @@ import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentReg
 import { consumeSparkCapability, createSparkCapabilityContext, sparkProvide, sparkRemove } from '@spark-view/spark-utils'
 import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE } from '../core/capability-keys.js'
-import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '@spark-view/spark-utils'
+import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from '../core/capability-context.js'
 import type { BeforeRenderContext } from './support/beforeRender.js'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from './support/beforeRender.js'
 import { extractModelPermission } from '../permission/index.js'
@@ -477,7 +477,7 @@ const normalizedNode = computed<SparkNode>(() => normalizeSparkNode(rendererProp
 
 // 通过运行时实例锚点表解析父能力上下文，不走 Vue provide/inject。
 const parentCapabilityContext = computed(() =>
-  resolveParentCapabilityContext(currentOwner, rendererProps.parentContext)
+  sparkResolveParentContext(currentOwner, rendererProps.parentContext)
 )
 
 /**
@@ -555,11 +555,11 @@ watchEffect(() => {
   if (boundCapabilityContext === nextBoundContext) return
 
   if (boundCapabilityContext !== null) {
-    unbindCapabilityContextOwner(currentInstance as object)
+    sparkUnbindContextOwner(currentInstance as object)
   }
 
   if (nextBoundContext !== null) {
-    bindCapabilityContextOwner(currentInstance as object, nextBoundContext)
+    sparkBindContextOwner(currentInstance as object, nextBoundContext)
   }
 
   boundCapabilityContext = nextBoundContext
@@ -567,7 +567,7 @@ watchEffect(() => {
 
 onUnmounted(() => {
   if (currentInstance !== null && boundCapabilityContext !== null) {
-    unbindCapabilityContextOwner(currentInstance as object)
+    sparkUnbindContextOwner(currentInstance as object)
   }
   boundCapabilityContext = null
 })

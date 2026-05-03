@@ -17,7 +17,7 @@ import type {
   IPageUploadFilesOptions,
   IPageUploadedFile,
   PageDialogResult,
-} from '@spark-view/spark-utils'
+} from '../../core/capability-keys.js'
 import type { RequestError } from '@spark-view/spark-utils'
 import { createRequest } from '@spark-view/spark-utils'
 import { pageLogger } from './pageLogger'
