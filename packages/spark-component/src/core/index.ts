@@ -79,26 +79,28 @@ export type {
   IPageSelectedEntity,
   IPageSelectedFile,
   IPageUploadedFile,
-  IEventEmitter,
-} from './capability-system.js'
+} from '@spark-view/spark-utils'
 
 export {
   APP_SERVICES,
   PAGE_SERVICE,
-  PAGE_DATASET,
-  DATA_SOURCE,
-  DATA_ROW,
   PAGE_PERMISSION_MODE,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
+} from '@spark-view/spark-utils'
+
+export {
+  PAGE_DATASET,
+  DATA_SOURCE,
+  DATA_ROW,
 } from './capability-keys.js'
 
 export {
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
   consumeCapabilityFromProvider,
-} from './capabilities.js'
+} from '@spark-view/spark-utils'
 
 export type {
   PageComponentInstanceEntry,
@@ -106,4 +108,4 @@ export type {
   PageComponentRegistry,
   ModuleContextCapability,
   PageCssScopeCapability,
-} from './capability-keys.js'
+} from '@spark-view/spark-utils'

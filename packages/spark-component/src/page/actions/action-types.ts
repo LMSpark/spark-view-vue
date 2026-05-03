@@ -7,7 +7,7 @@
  */
 
 import type { DataView, IDataRow, IDataSet } from '@spark-view/spark-data'
-import type { IPageServiceCapability, PageMessageType } from '../../core/capability-system.js'
+import type { IPageServiceCapability, PageMessageType } from '@spark-view/spark-utils'
 import type { CancellableControl } from '../../components/containers/support/interactionControl.js'
 
 // ── 通用装饰：所有 data-mutating 动作共享 ─────────────────────────────────

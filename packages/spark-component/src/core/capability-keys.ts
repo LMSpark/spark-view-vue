@@ -1,66 +1,21 @@
+/**
+ * spark-component 数据层能力键定义。
+ *
+ * 仅保留依赖 @spark-view/spark-data 类型的三个键；
+ * 其余能力键已上移至 @spark-view/spark-utils。
+ */
+
 import { defineCapability } from '@spark-view/spark-utils'
-import type { IModuleContext } from './capability-system.js'
-import type { IAppServicesCapability, IPageServiceCapability } from './capability-system.js'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import type { NavPermissionMode } from '@spark-view/spark-utils'
-
-/** 页面内组件实例快照：记录当前页面上出现过的组件元信息。 */
-export interface PageComponentInstanceEntry {
-  id: string
-  type: string
-  props?: Record<string, unknown>
-}
-
-/** 页面内组件 API 条目：供脚本或页面级逻辑按 id/type 反查组件公开 API。 */
-export interface PageComponentApiEntry {
-  id: string
-  type: string
-  api: unknown
-}
-
-/** 页面级组件注册中心：统一维护实例快照和 API 映射。 */
-export interface PageComponentRegistry {
-  registerInstance(entry: PageComponentInstanceEntry): void
-  unregisterInstance(id: string): void
-  listInstances(type?: string): PageComponentInstanceEntry[]
-  getInstance(id: string): PageComponentInstanceEntry | null
-
-  registerApi(entry: PageComponentApiEntry): void
-  unregisterApi(id: string): void
-  listApis(type?: string): PageComponentApiEntry[]
-  getApi<T = unknown>(id: string): T | null
-  getApisByType<T = unknown>(type: string): T[]
-}
-
-/** 模块上下文能力（页面级） */
-export interface ModuleContextCapability {
-  getCurrent(): IModuleContext | null
-  subscribe(handler: (next: IModuleContext | null, prev: IModuleContext | null) => void): () => void
-}
-
-/** 页面 CSS 作用域注入能力 */
-export interface PageCssScopeCapability {
-  inject(css: string): void
-}
 
 declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
     'spark:capability:page-dataset': IDataSet
     'spark:capability:data-source': IDataSource
     'spark:capability:data-row': IDataRow
-    'spark:capability:page-component-registry': PageComponentRegistry
-    'spark:capability:module-context': ModuleContextCapability
-    'spark:capability:css-scope': PageCssScopeCapability
-    'spark:capability:permission-mode': NavPermissionMode
   }
 }
 
 export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-dataset')
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
 export const DATA_ROW = defineCapability<IDataRow>('spark:capability:data-row')
-export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
-export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
-export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode')
-export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry')
-export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:capability:module-context')
-export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')

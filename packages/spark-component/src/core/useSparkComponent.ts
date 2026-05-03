@@ -16,17 +16,17 @@ import {
   type LoggerApi,
   type SparkCapabilityConsumer,
 } from '@spark-view/spark-utils'
-import { APP_SERVICES } from './capability-system.js'
-import type { SparkCapabilityContext, SparkNode } from './types.js'
-import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
-import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '@spark-view/spark-utils'
 import {
-  DATA_ROW,
+  APP_SERVICES,
   PAGE_COMPONENT_REGISTRY,
   findNearestCapabilityProvider,
   findNearestCapabilityProviderByKeys,
-} from './capabilities.js'
-import type { PageComponentRegistry } from './capabilities.js'
+} from '@spark-view/spark-utils'
+import type { PageComponentRegistry } from '@spark-view/spark-utils'
+import { DATA_ROW } from './capability-keys.js'
+import type { SparkCapabilityContext, SparkNode } from './types.js'
+import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
+import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '@spark-view/spark-utils'
 
 // ===== 类型与返回值约定 =====
 

@@ -6,12 +6,11 @@
  */
 
 import { h, type Ref } from 'vue'
-import type { IPageServiceCapability, IModuleContext } from '../../core/capability-system.js'
+import type { IPageServiceCapability, IModuleContext, PageComponentRegistry } from '@spark-view/spark-utils'
 import type { IPageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
-import type { PageComponentRegistry } from '../../core/capability-keys'
 import {
   isPermittedAction, resolveFieldPermissionState,
   canCreate, canImport, canExport,

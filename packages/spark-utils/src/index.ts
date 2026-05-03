@@ -105,3 +105,42 @@ export {
 } from './capability-context'
 
 export type { SparkRuntimeOwner } from './capability-context'
+
+// ==================== 业务能力类型与键 ====================
+
+export {
+  APP_SERVICES,
+  PAGE_SERVICE,
+  PAGE_PERMISSION_MODE,
+  PAGE_COMPONENT_REGISTRY,
+  MODULE_CONTEXT,
+  CSS_SCOPE,
+  findNearestCapabilityProvider,
+  findNearestCapabilityProviderByKeys,
+  consumeCapabilityFromProvider,
+} from './spark-capabilities'
+
+export type {
+  PageMessageType,
+  PageDialogResult,
+  PageSelectableValue,
+  IPageDialogOptions,
+  IPageBrowseFilesOptions,
+  IPageSelectedFile,
+  IPageUploadFilesOptions,
+  IPageUploadedFile,
+  IPageSelectorOption,
+  IPageSelectEntitiesOptions,
+  IPageSelectedEntity,
+  IPageServiceCapability,
+  IAppServicesCapability,
+  ThemeMode,
+  IThemeCapability,
+  IModuleContextItem,
+  IModuleContext,
+  PageComponentInstanceEntry,
+  PageComponentApiEntry,
+  PageComponentRegistry,
+  ModuleContextCapability,
+  PageCssScopeCapability,
+} from './spark-capabilities'

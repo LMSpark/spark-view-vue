@@ -6,7 +6,7 @@
 
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { PageConfig, IPageRoute, IScriptContext } from '@spark-view/spark-page-config'
-import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'
+import type { PageComponentInstanceEntry } from '@spark-view/spark-utils'
 
 // ── 基础重导出 ────────────────────────────────────────────────────────────
 

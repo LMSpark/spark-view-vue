@@ -99,7 +99,6 @@ export type {
   IPageSelectedEntity,
   IPageSelectedFile,
   IPageUploadedFile,
-  IEventEmitter,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,

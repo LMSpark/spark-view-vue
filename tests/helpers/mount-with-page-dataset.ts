@@ -5,7 +5,7 @@ import { defineComponent, h } from 'vue'
 import { APP_SERVICES, PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import type { IDataSet, DataView } from '@spark-view/spark-data'
-import type { PageComponentRegistry } from '../../packages/spark-component/src/core/capabilities'
+import type { PageComponentRegistry } from '@spark-view/spark-utils'
 import { createPageComponentRegistry } from '../../packages/spark-component/src/page/context/page-component-registry'
 
 const TEST_APP_LOGGER = {

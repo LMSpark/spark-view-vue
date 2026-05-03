@@ -13,7 +13,7 @@ import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'
-import { PAGE_PERMISSION_MODE } from '../core/capability-keys'
+import { PAGE_PERMISSION_MODE } from '@spark-view/spark-utils'
 import {
   isPermittedAction,
   resolveFieldPermissionState,

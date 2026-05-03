@@ -5,7 +5,7 @@
  */
 
 import type { Router } from 'vue-router'
-import type { IAppServicesCapability } from '../../core/capability-system.js'
+import type { IAppServicesCapability } from '@spark-view/spark-utils'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 /**

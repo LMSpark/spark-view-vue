@@ -25,12 +25,12 @@
 
 import { ref, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
-import { APP_SERVICES } from '../../core/capability-system.js'
-import type { IAppServicesCapability } from '../../core/capability-system.js'
-import type { LoggerApi } from '@spark-view/spark-utils'
+import {
+  APP_SERVICES,
+  PAGE_COMPONENT_REGISTRY,
+} from '@spark-view/spark-utils'
+import type { IAppServicesCapability, PageComponentRegistry, LoggerApi } from '@spark-view/spark-utils'
 import { useSparkComponent, type UseSparkComponentReturn } from '../../core/useSparkComponent'
-import { PAGE_COMPONENT_REGISTRY } from '../../core/capability-keys'
-import type { PageComponentRegistry } from '../../core/capability-keys'
 import { buildAppServices } from '../services/provideAppServices'
 import { createPageComponentRegistry } from '../context/page-component-registry'
 
