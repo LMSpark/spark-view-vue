@@ -1,6 +1,6 @@
-import type { JsonSchema } from '../../../core/session/session-contracts'
-import type { AiScenarioDefinition, AiScenarioTool } from '../scenario-types'
-import { PLANNING_SCENARIO_SYSTEM_PROMPT } from '../scenario-prompt-template-registry'
+import type { JsonSchema } from '../../core/session/session-contracts'
+import type { AiScenarioDefinition, AiScenarioTool } from '../engine/scenario-types'
+import { PLANNING_SCENARIO_SYSTEM_PROMPT } from '../engine/scenario-prompt-template-registry'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 功能分区：规划场景工具集协议

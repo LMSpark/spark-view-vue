@@ -21,19 +21,6 @@ import {
   createBusinessScenarioPromptRegistry,
 } from './business-prompt-registry'
 
-// ═══════════════════════════════════════════════════════════════════════════
-// AI 工厂接口
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * AI 工厂提示词总装配接口。
- *
- * 统一入口：
- * - getPlanningPrompt()：获取规划场景提示词
- * - getDesignPrompt()：获取页面设计场景提示词
- * - getBusinessPrompt(businessId)：按注册 ID 获取业务提示词（fail-fast: 无注册则用动态模板）
- * - getBusinessPromptRegistry()：访问底层业务注册中心
- */
 export interface AiPromptFactory {
   getPlanningPrompt: () => string
   getDesignPrompt: () => string
@@ -41,17 +28,6 @@ export interface AiPromptFactory {
   getBusinessPromptRegistry: () => BusinessScenarioPromptRegistry
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 工厂实现
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * 创建 AI 提示词工厂。
- *
- * @param options.planningPrompt  覆盖默认规划提示词
- * @param options.designPrompt    覆盖默认设计提示词
- * @param options.businessRegistry 注入已有业务注册中心；不传则创建空注册中心
- */
 export function createAiPromptFactory(
   options?: {
     planningPrompt?: string

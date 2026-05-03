@@ -1,12 +1,5 @@
 import { buildBusinessScenarioSystemPrompt } from './scenario-prompt-template-registry'
 
-// ============================================================================
-// 功能分区：业务提示词注册协议（AI 工厂底座）
-// ============================================================================
-
-/**
- * 业务场景提示词注册项（统一主类型）。
- */
 export interface BusinessScenarioPromptRegistration {
   businessId: string
   businessName: string
@@ -17,23 +10,12 @@ export interface BusinessScenarioPromptRegistration {
   version?: string
 }
 
-/**
- * 业务提示词已解析结果。
- */
 export interface AiBusinessPromptResolved {
   id: string
   businessName: string
   systemPrompt: string
 }
 
-/**
- * 业务提示词注册中心（AI 工厂核心）。
- *
- * 用途：
- * 1) 注册多个业务域提示词模板
- * 2) 运行时按业务 ID 解析 systemPrompt
- * 3) 形成可扩展的 AI 工厂提示词层
- */
 export interface BusinessScenarioPromptRegistry {
   register: (definition: BusinessScenarioPromptRegistration) => void
   unregister: (id: string) => boolean
@@ -44,13 +26,8 @@ export interface BusinessScenarioPromptRegistry {
   buildPrompt: (id: string) => string | undefined
 }
 
-// 兼容导出（旧命名）
 export type AiBusinessPromptDefinition = BusinessScenarioPromptRegistration
 export type AiBusinessPromptRegistry = BusinessScenarioPromptRegistry
-
-// ============================================================================
-// 功能分区：注册中心实现
-// ============================================================================
 
 function normalizeBusinessId(value: string): string {
   return value.trim().toLowerCase()
@@ -78,9 +55,6 @@ function appendBusinessRegistrationExtensions(
   return `${basePrompt}${ruleBlock}${exampleBlock}${metaBlock}`
 }
 
-/**
- * 创建业务提示词注册中心。
- */
 export function createBusinessScenarioPromptRegistry(
   initial: readonly BusinessScenarioPromptRegistration[] = []
 ): BusinessScenarioPromptRegistry {
@@ -139,26 +113,12 @@ export function createBusinessScenarioPromptRegistry(
   }
 }
 
-/**
- * 兼容导出：createBusinessPromptRegistry。
- */
 export function createBusinessPromptRegistry(
   initial: readonly AiBusinessPromptDefinition[] = []
 ): AiBusinessPromptRegistry {
   return createBusinessScenarioPromptRegistry(initial)
 }
 
-// ============================================================================
-// 功能分区：AI 工厂快捷方法
-// ============================================================================
-
-/**
- * 按业务 ID 快速创建系统提示词。
- *
- * 典型用法：
- * - 在业务场景工厂里通过 promptRegistry.resolve(id) 注入 promptPolicy.systemPrompt
- * - 不存在时 fail-fast 返回 undefined，由上层决定是否中断
- */
 export function resolveBusinessSystemPrompt(
   registry: BusinessScenarioPromptRegistry,
   businessId: string

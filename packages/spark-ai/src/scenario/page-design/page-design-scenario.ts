@@ -1,9 +1,10 @@
-import type { IStillSession, StillDefinition, StillResult } from '../../../core/stills/types'
-import type { JsonSchema } from '../../../core/session/session-contracts'
-import { stillToToolDefinition } from '../../../core/fc-schema'
-import { EDIT_STILLS, isEditWriteAction } from '../../page-design/stills'
-import { PAGE_DESIGN_SCENARIO_SYSTEM_PROMPT } from '../scenario-prompt-template-registry'
-import type { AiScenarioRegistry } from '../scenario-registry'
+import type { PageModelSessionHostRuntime } from '../../business/page-design/page-model-session-host'
+import type { IStillSession, StillDefinition, StillResult } from '../../core/stills/types'
+import type { JsonSchema } from '../../core/session/session-contracts'
+import { stillToToolDefinition } from '../../core/fc-schema'
+import { EDIT_STILLS, isEditWriteAction } from '../../business/page-design/stills'
+import { PAGE_DESIGN_SCENARIO_SYSTEM_PROMPT } from '../engine/scenario-prompt-template-registry'
+import type { AiScenarioRegistry } from '../engine/scenario-registry'
 import type {
   AiScenarioCapability,
   AiScenarioContext,
@@ -12,7 +13,7 @@ import type {
   AiScenarioStep,
   AiScenarioTool,
   AiScenarioToolRegistration,
-} from '../scenario-types'
+} from '../engine/scenario-types'
 
 export const PAGE_DESIGN_SCENARIO_ID = 'page-design.four-file-edit'
 
@@ -450,3 +451,17 @@ export function isPageDesignScenarioWriteTool(toolName: string): boolean {
 }
 
 export const isPageDesignBusinessWriteTool = isPageDesignScenarioWriteTool
+
+
+export interface CreatePageDesignBusinessScenarioFromSessionHostOptions extends Omit<CreatePageDesignBusinessScenarioOptions, 'resolveSession'> {
+  sessionHost: PageModelSessionHostRuntime
+}
+
+export function createPageDesignBusinessScenarioFromSessionHost(
+  options: CreatePageDesignBusinessScenarioFromSessionHostOptions
+): AiScenarioDefinition {
+  return createPageDesignBusinessScenario({
+    ...options,
+    resolveSession: () => options.sessionHost.ensureSession().session,
+  })
+}
