@@ -1,3 +1,16 @@
+/**
+ * ==============================================
+ * 提示词层：基础分级约束模板
+ * ==============================================
+ * 功能分区：
+ * 1) 提供统一的分级查询约束文本。
+ * 2) 提供场景系统提示词拼装函数。
+ *
+ * 时序分区：
+ * 1) 上层注册模板时引用本文件。
+ * 2) runtime 解析 prompt 时注入到实际系统提示词。
+ */
+
 export const TIERED_QUERY_CONSTRAINT = `
 # 📋 严格的分级查询协议
 
@@ -61,6 +74,7 @@ export function buildScenarioSystemPrompt(
   scenarioScope: string,
   baseBehavior?: string,
 ): string {
+  // 时序：在 prompt 模板解析阶段调用，用于拼装场景最终系统提示词。
   return `
 # 🎯 场景任务：${scenarioName}
 

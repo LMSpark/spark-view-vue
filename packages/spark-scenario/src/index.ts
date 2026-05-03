@@ -8,9 +8,19 @@
  * - 场景运行时（createScenarioRuntime）
  * - 分级查询协议（AiScenarioQueryProtocol）
  * - 类型定义（AiScenarioDefinition 等）
+ *
+ * 分区导出顺序：
+ * 1) contracts（纯类型契约）
+ * 2) runtime（注册与执行）
+ * 3) system（系统装配）
+ * 4) prompt（提示词模板）
+ * 5) history（历史存储）
  */
 
-export type { JsonSchema, JsonSchemaProperty } from './json-schema'
+// ==============================================
+// contracts
+// ==============================================
+export type { JsonSchema, JsonSchemaProperty } from './contracts/json-schema'
 
 export type {
   AiScenarioScope,
@@ -39,7 +49,10 @@ export type {
   AiScenarioRunRequest,
   AiScenarioToolExecution,
   AiScenarioRunResult,
-} from './scenario-types'
+  AiScenarioRunRecord,
+  AiScenarioHistoryQuery,
+  AiScenarioHistoryPage,
+} from './contracts/scenario-types'
 
 export type {
   AiIntentCatalogEntry,
@@ -59,10 +72,81 @@ export type {
   AiToolSchemaNodeQuery,
   AiToolSchemaNodeInfo,
   AiScenarioQueryProtocol,
-} from './query-protocol'
+} from './contracts/query-protocol'
 
-export { createScenarioRegistry, type AiScenarioRegistry } from './scenario-registry'
+export type {
+  AiBrowserLlmRole,
+  AiBrowserLlmMessage,
+  AiBrowserLlmGenerateRequest,
+  AiBrowserLlmGenerateResponse,
+  AiBrowserLlmClient,
+  AiScenarioPlanningRequest,
+  AiScenarioPlan,
+  AiScenarioBrowserPlanner,
+} from './contracts/llm-contracts'
 
-export { createScenarioRuntime, type AiScenarioRuntime } from './scenario-runtime'
+// ==============================================
+// runtime
+// ==============================================
+export {
+  createScenarioRegistry,
+  type AiScenarioRegistry,
+  type AiScenarioRegistryOptions,
+} from './runtime/scenario-registry'
 
-export { TIERED_QUERY_CONSTRAINT, buildScenarioSystemPrompt } from './prompt-constraints'
+export {
+  createScenarioRuntime,
+  type AiScenarioRuntime,
+  type AiScenarioRuntimeOptions,
+} from './runtime/scenario-runtime'
+
+// ==============================================
+// system
+// ==============================================
+export {
+  createScenarioSystem,
+  registerScenarios,
+  type ScenarioSystem,
+  type ScenarioSystemOptions,
+} from './system/scenario-system'
+
+// ==============================================
+// prompt
+// ==============================================
+export {
+  createScenarioPromptTemplateRegistry,
+  type ScenarioPromptBuildContext,
+  type ScenarioPromptTemplateRegistration,
+  type ScenarioPromptTemplateRegistry,
+} from './prompt/scenario-prompt-template-registry'
+
+// ==============================================
+// history
+// ==============================================
+export {
+  createScenarioRunHistoryStore,
+  type AiScenarioRunHistoryStore,
+} from './history/run-history-store'
+
+// ==============================================
+// llm（browser）
+// ==============================================
+export {
+  createBrowserFetchLlmClient,
+  type BrowserFetchLlmClientOptions,
+} from './llm/browser-fetch-llm-client'
+
+export {
+  createBrowserScenarioPlanner,
+  type BrowserScenarioPlannerOptions,
+} from './llm/browser-scenario-planner'
+
+export {
+  createBrowserLocalLlmClient,
+  type BrowserLocalLlmClientOptions,
+} from './llm/browser-local-llm-client'
+
+// ==============================================
+// prompt 基础约束
+// ==============================================
+export { TIERED_QUERY_CONSTRAINT, buildScenarioSystemPrompt } from './prompt/prompt-constraints'

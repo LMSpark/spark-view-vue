@@ -1,21 +1,52 @@
 import type { JsonSchema } from './json-schema'
 
+// ==============================================
+// 合同层：基础枚举与策略
+// ==============================================
+// 功能分区：统一约束场景作用域、确认策略、恢复策略。
+// 时序分区：场景注册时声明 -> runtime 执行与恢复阶段消费。
+
+/** 场景作用域：用于路由与能力归类。 */
 export type AiScenarioScope = 'planning' | 'design' | 'business'
+/** 确认策略：控制执行前的人机确认粒度。 */
 export type AiConfirmPolicy = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
+/** 恢复策略：定义失败后的恢复方式。 */
 export type AiRecoveryPolicy = 'layered' | 'manual' | 'strict'
 
+/**
+ * 场景身份基类。
+ * 所有场景在 registry 中都用该三元组识别。
+ */
 export interface AiScenarioIdentity {
+  /** 场景唯一标识。 */
   id: string
+  /** 场景标题。 */
   title: string
+  /** 场景作用域。 */
   scope: AiScenarioScope
 }
 
+/**
+ * 提示词策略。
+ * 支持静态提示词、动态提示词、模板绑定三种入口。
+ */
 export interface AiScenarioPromptPolicy {
-  systemPrompt: string | ((ctx: AiScenarioContext) => string)
+  /** 场景系统提示词（静态字符串或动态函数）。 */
+  systemPrompt?: string | ((ctx: AiScenarioContext) => string)
+  /** 绑定提示词模板 ID（优先于 systemPrompt 解析）。 */
+  promptTemplateId?: string
+  /** 模板上下文，可静态给定也可动态构建。 */
+  promptTemplateContext?: Record<string, unknown> | ((ctx: AiScenarioContext) => Record<string, unknown>)
+  /** 确认策略。 */
   confirmPolicy?: AiConfirmPolicy
+  /** 恢复策略。 */
   recoveryPolicy?: AiRecoveryPolicy
 }
 
+/**
+ * 场景运行上下文。
+ * 由 run(request) 在执行阶段统一构建并下发给工具。
+ */
 export interface AiScenarioContext {
   userInput: string
   pageId?: string
@@ -25,6 +56,12 @@ export interface AiScenarioContext {
   user?: { id?: string; name?: string; role?: string }
   metadata?: Record<string, unknown>
 }
+
+// ==============================================
+// 合同层：能力与 payload
+// ==============================================
+// 功能分区：定义“能做什么”（capability）与“输入需要什么”（payload）。
+// 时序分区：query 阶段用于发现能力，执行前用于补齐参数。
 
 export type AiScenarioCapabilityKind = 'intent' | 'payload' | 'tool' | 'flow' | 'completion' | 'recovery'
 
@@ -40,6 +77,7 @@ export interface AiScenarioCapability {
 
 export type AiScenarioPayloadSlotSource = 'user' | 'context' | 'tool' | 'system'
 
+/** payload 字段槽位声明。 */
 export interface AiScenarioPayloadSlot {
   key: string
   label?: string
@@ -51,6 +89,7 @@ export interface AiScenarioPayloadSlot {
   examples?: readonly unknown[]
 }
 
+/** payload 契约（可做追问、补齐、校验的统一来源）。 */
 export interface AiScenarioPayloadContract {
   description?: string
   schema?: JsonSchema
@@ -58,6 +97,12 @@ export interface AiScenarioPayloadContract {
   required?: readonly string[]
   examples?: ReadonlyArray<Record<string, unknown>>
 }
+
+// ==============================================
+// 合同层：流程、闭合、恢复
+// ==============================================
+// 功能分区：定义执行步骤、闭合校验、失败恢复提示。
+// 时序分区：queryScenarioFlow -> runtime 执行 -> completion/recovery。
 
 export type AiScenarioFlowStepKind = 'query' | 'tool' | 'decision' | 'confirm' | 'completion'
 
@@ -79,13 +124,19 @@ export interface AiScenarioFlowContract {
   steps: readonly AiScenarioFlowStep[]
 }
 
+/**
+ * 闭合契约。
+ * mode=auto 时 runtime 在主流程后自动执行 tools。
+ */
 export interface AiScenarioCompletionContract {
   description?: string
+  mode?: 'auto' | 'manual'
   tools?: readonly string[]
   successSignals?: readonly string[]
   failureSignals?: readonly string[]
 }
 
+/** 失败恢复提示。 */
 export interface AiScenarioRecoveryHint {
   code?: string
   when: string
@@ -93,11 +144,16 @@ export interface AiScenarioRecoveryHint {
   tools?: readonly string[]
 }
 
+// ==============================================
+// 合同层：工具与意图匹配
+// ==============================================
+
 export interface AiScenarioToolCall {
   tool: string
   args?: unknown
 }
 
+/** 工具注册附加信息：用于 queryToolRegistration 暴露规则与示例。 */
 export interface AiScenarioToolRegistration {
   category?: string
   tags?: readonly string[]
@@ -107,6 +163,7 @@ export interface AiScenarioToolRegistration {
   fixHints?: readonly string[]
 }
 
+/** 可执行工具定义。 */
 export interface AiScenarioTool {
   name: string
   description: string
@@ -115,6 +172,7 @@ export interface AiScenarioTool {
   execute: (args: unknown, ctx: AiScenarioContext) => unknown
 }
 
+/** buildSteps 产出的执行步骤。 */
 export interface AiScenarioStep {
   id: string
   title: string
@@ -123,11 +181,20 @@ export interface AiScenarioStep {
   critical?: boolean
 }
 
+/** matchIntent 的返回结构。 */
 export interface AiScenarioIntentMatch {
   matched: boolean
   score: number
   reason?: string
 }
+
+// ==============================================
+// 合同层：场景定义与运行结果
+// ==============================================
+// 时序分区：
+// 1) register(scenario) 注册该定义。
+// 2) resolve(input) 路由到场景。
+// 3) run(request) 产出结果与执行记录。
 
 export interface AiScenarioDefinition extends AiScenarioIdentity {
   description?: string
@@ -150,6 +217,7 @@ export interface AiScenarioResolution {
   reason?: string
 }
 
+/** 运行请求。 */
 export interface AiScenarioRunRequest {
   scenarioId?: string
   userInput: string
@@ -159,6 +227,7 @@ export interface AiScenarioRunRequest {
   dryRun?: boolean
 }
 
+/** 单工具执行记录。 */
 export interface AiScenarioToolExecution {
   tool: string
   args: unknown
@@ -167,11 +236,40 @@ export interface AiScenarioToolExecution {
   error?: string
 }
 
+/** 单次运行结果。 */
 export interface AiScenarioRunResult {
+  runId: string
   scenario: AiScenarioIdentity
   systemPrompt: string
   payload: unknown
   steps: readonly AiScenarioStep[]
   executions: readonly AiScenarioToolExecution[]
   status: 'planned' | 'completed' | 'failed'
+}
+
+/** 单次运行历史记录。 */
+export interface AiScenarioRunRecord {
+  runId: string
+  startedAt: string
+  finishedAt: string
+  durationMs: number
+  request: AiScenarioRunRequest
+  result: AiScenarioRunResult
+}
+
+/** 历史查询参数。 */
+export interface AiScenarioHistoryQuery {
+  scenarioId?: string
+  status?: AiScenarioRunResult['status']
+  offset?: number
+  limit?: number
+}
+
+/** 历史分页结果。 */
+export interface AiScenarioHistoryPage {
+  total: number
+  offset: number
+  limit: number
+  hasMore: boolean
+  items: readonly AiScenarioRunRecord[]
 }
