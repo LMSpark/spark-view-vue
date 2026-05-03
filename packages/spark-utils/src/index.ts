@@ -27,15 +27,13 @@ export type {
   CapabilityKey,
   CapabilityName,
   SparkCapabilityConsumer,
+  CapabilityTypeMap,
   ICapabilityContext,
 } from './capability/index'
 
 // ==================== HTTP 模块 ====================
 
 export * from './http/index.js'
-
-// ==================== 共享错误码 ====================
-
 
 // ==================== 错误工具 ====================
 
