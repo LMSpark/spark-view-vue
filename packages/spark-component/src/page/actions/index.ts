@@ -39,7 +39,7 @@ export { extractActionExecutionControl } from './action-executor'
 export { nodeToActionDescriptor } from './node-to-descriptor'
 export { hasRemoteListApi, getSelectedRows } from './executor-helpers'
 
-export { isActionDescriptorDisabled } from './action-disabled'
+export { isActionDescriptorDisabled } from './executor-helpers'
 export { resolveButtonStyle } from './button-templates'
 export type { ButtonTemplateProps, ResolvedButtonStyle } from './button-templates'
 
@@ -50,5 +50,5 @@ export {
   getBuiltinActionName,
   isBuiltinAction,
   getBuiltinActionLabel,
-} from './builtin-action-meta'
-export type { BuiltinActionName } from './builtin-action-meta'
+} from './executor-helpers'
+export type { BuiltinActionName } from './executor-helpers'

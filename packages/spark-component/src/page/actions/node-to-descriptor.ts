@@ -21,7 +21,7 @@ import type {
   RefreshAction,
   SubmitCurrentFormAction,
 } from './action-types'
-import { isBuiltinActionName, type BuiltinActionName } from './builtin-action-meta'
+import { isBuiltinActionName, type BuiltinActionName } from './executor-helpers'
 import { asRecord, readString } from './executor-helpers'
 import {
   readBoolean,

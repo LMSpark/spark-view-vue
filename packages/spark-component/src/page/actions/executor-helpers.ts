@@ -7,7 +7,7 @@ import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
-import type { ActionExecutionContext, ActionUiDecorator } from './action-types'
+import type { ActionDescriptor, ActionExecutionContext, ActionExecutionScope, ActionUiDecorator } from './action-types'
 import { Logger } from '@spark-view/spark-utils'
 
 const _notifierLogger = Logger('action-executor')
@@ -271,5 +271,132 @@ export function resolveActionDataCapabilities(
       ? binding.value
       : (dataSource && isRowLike(dataSource.currentRow) ? dataSource.currentRow : null),
     selectedRows: dataSource ? getSelectedRows(dataSource) : [],
+  }
+}
+
+// ── BuiltinAction 元数据 ──────────────────────────────────────────────────
+
+interface BuiltinActionMeta {
+  label: string
+}
+
+export const BUILTIN_ACTION_META = {
+  'append-row': { label: '新增' },
+  'prompt-append': { label: '新增' },
+  'prompt-edit': { label: '编辑' },
+  'submit-current-form': { label: '保存当前' },
+  'clear-rows': { label: '清空' },
+  'move-row': { label: '移动' },
+  'move-current': { label: '移动当前' },
+  'refresh': { label: '刷新' },
+  'delete-row': { label: '删除' },
+  'delete-current': { label: '删除当前' },
+  'delete-selected': { label: '删除选择' },
+  'patch-row': { label: '更新' },
+  'patch-current': { label: '更新当前' },
+  'patch-selected': { label: '批量更新' },
+  'message-row': { label: '查看' },
+  'message-current': { label: '查看当前' },
+} as const satisfies Record<string, BuiltinActionMeta>
+
+export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
+
+export function isBuiltinActionName(value: string): value is BuiltinActionName {
+  return value in BUILTIN_ACTION_META
+}
+
+export function getBuiltinActionLabelByName(name: BuiltinActionName): string {
+  return BUILTIN_ACTION_META[name].label
+}
+
+export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
+  const propsMap = nodeInputProps(action)
+  const actionName = readString(propsMap['action'])
+  if (!actionName) return null
+  return isBuiltinActionName(actionName) ? actionName : null
+}
+
+export function isBuiltinAction(action: SparkNode): boolean {
+  return getBuiltinActionName(action) !== null
+}
+
+export function getBuiltinActionLabel(action: SparkNode): string {
+  const propsMap = nodeInputProps(action)
+  const explicit = readString(propsMap['label'])
+  if (explicit) return explicit
+
+  const actionName = getBuiltinActionName(action)
+  if (!actionName) return '执行'
+  return getBuiltinActionLabelByName(actionName)
+}
+
+// ── ActionDescriptor 语义禁用判断 ─────────────────────────────────────────
+
+function _normalizeComparable(value: unknown): unknown {
+  if (value === '') return null
+  return value ?? null
+}
+
+function _matchesRowCondition(
+  row: IDataRow | null | undefined,
+  condition: Record<string, unknown>,
+): boolean {
+  if (!row) return false
+  for (const [field, expected] of Object.entries(condition)) {
+    if (_normalizeComparable(row[field]) !== _normalizeComparable(expected)) return false
+  }
+  return true
+}
+
+/**
+ * 根据 descriptor 动作语义 + DataView 当前状态 + 执行作用域判断按钮是否禁用。
+ */
+export function isActionDescriptorDisabled(
+  descriptor: ActionDescriptor,
+  view: DataView | null | undefined,
+  scope?: ActionExecutionScope,
+): boolean {
+  if (!view) return false
+
+  const uiDesc = descriptor as Partial<{ disabledWhenRow: Record<string, unknown> }>
+  if (uiDesc.disabledWhenRow) {
+    const checkRow = scope?.row ?? view.currentRow ?? null
+    if (_matchesRowCondition(checkRow, uiDesc.disabledWhenRow)) return true
+  }
+
+  switch (descriptor.action) {
+    case 'show-message':
+    case 'confirm':
+    case 'alert':
+    case 'navigate':
+    case 'open':
+    case 'set-field':
+    case 'append-row':
+    case 'refresh':
+      return false
+
+    case 'clear-rows':
+      return view.rows.length === 0
+
+    case 'submit-current-form':
+      return view.currentRow === null
+
+    case 'delete':
+    case 'patch':
+    case 'message-row': {
+      const { target } = descriptor
+      if (target === 'scope') return scope?.row === undefined
+      if (target === 'current') return view.currentRow === null
+      return getSelectedRows(view).length === 0
+    }
+
+    case 'move': {
+      const { target } = descriptor
+      if (target === 'scope') return scope?.row === undefined
+      return view.currentRow === null
+    }
+
+    default:
+      return false
   }
 }
