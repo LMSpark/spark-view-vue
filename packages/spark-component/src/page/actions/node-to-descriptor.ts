@@ -22,15 +22,9 @@ import type {
   SubmitCurrentFormAction,
 } from './action-descriptor'
 import { isBuiltinActionName, type BuiltinActionName } from './builtin-action-meta'
+import { readString } from './executor-helpers'
+import { readBoolean } from './builtin-action-helpers'
 import type { PageMessageType } from '../../core/capability-system.js'
-
-function readString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
-}
-
-function readBoolean(value: unknown): boolean | undefined {
-  return typeof value === 'boolean' ? value : undefined
-}
 
 function readStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined

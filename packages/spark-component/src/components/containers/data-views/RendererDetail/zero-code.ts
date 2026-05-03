@@ -1,6 +1,6 @@
 import type { DataView } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
-import { createContainerZeroCodeBase } from '../zero-code-shared.js'
+import { createContainerCrudContext } from '../zero-code-shared.js'
 import type { RendererDetailApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -14,7 +14,7 @@ interface RendererDetailZeroCodeOptions {
 export function createRendererDetailZeroCode(options: RendererDetailZeroCodeOptions) {
   const { props, resolvedView, detailData } = options
 
-  const { baseMethods } = createContainerZeroCodeBase({
+  const { baseMethods } = createContainerCrudContext({
     props,
     resolvedView,
   })

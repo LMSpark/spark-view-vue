@@ -1,7 +1,7 @@
 import type { DataView } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import {
-  createContainerZeroCodeBase,
+  createContainerCrudContext,
   getNativeRefValue,
 } from '../zero-code-shared.js'
 import type { RendererFormApi } from './types'
@@ -24,7 +24,7 @@ interface RendererFormZeroCodeOptions {
 export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions) {
   const { props, resolvedView, formModel, nativeFormRef } = options
 
-  const { baseMethods } = createContainerZeroCodeBase({
+  const { baseMethods } = createContainerCrudContext({
     props,
     resolvedView,
   })

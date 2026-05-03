@@ -2,22 +2,12 @@ import type { DataView } from '@spark-view/spark-data'
 import { createBaseCrudMethods, createCrudDispatcher } from '../support/index.js'
 import type { ValueRef } from '../../shared-types.js'
 
-interface CreateContainerZeroCodeBaseOptions {
-  props: Readonly<Record<string, unknown>>
-  resolvedView: ValueRef<DataView | null>
-}
-
 type CrudEventDefaults = Parameters<typeof createCrudDispatcher>[1]
 
-interface CreateContainerCrudContextOptions extends CreateContainerZeroCodeBaseOptions {
+interface CreateContainerCrudContextOptions {
+  props: Readonly<Record<string, unknown>>
+  resolvedView: ValueRef<DataView | null>
   eventDefaults?: CrudEventDefaults
-}
-
-/**
- * 容器零代码层公共基础。
- */
-export function createContainerZeroCodeBase(options: CreateContainerZeroCodeBaseOptions) {
-  return createContainerCrudContext(options)
 }
 
 /**

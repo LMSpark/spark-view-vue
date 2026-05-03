@@ -6,6 +6,7 @@
  */
 
 import { computed, type ComputedRef } from 'vue'
+import { Logger } from '@spark-view/spark-utils'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 import { extractModelPermission } from '../../../permission/index.js'
 import {
@@ -23,6 +24,8 @@ import type { DataView, IDataRow, IDataSource } from '@spark-view/spark-data'
 
 // ── 私有：beforeRender 解析（从 view + scope 取上下文，不从 node props 取） ──
 
+const logger = Logger('useActionButtonRuntime')
+
 function resolveActionNode(
   action: SparkNode,
   view: DataView | null | undefined,
@@ -38,8 +41,7 @@ function resolveActionNode(
     modelPermission: extractModelPermission(dataSource),
     host: { type: null },
   }, (message, error) => {
-    if (!import.meta.env.DEV) return
-    console.warn(`[useActionButtonRuntime] ${message}`, error)
+    logger.warn(`${message}`, error)
   })
   return mergeNodeBeforeRenderProps(action, state.propsPatch)
 }

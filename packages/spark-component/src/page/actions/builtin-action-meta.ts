@@ -9,6 +9,7 @@
 import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../core/types'
 import { nodeInputProps } from '../../core/types'
+import { readString } from './executor-helpers'
 
 // ── 执行作用域 ────────────────────────────────────────────────────────────
 
@@ -48,10 +49,6 @@ export function isBuiltinActionName(value: string): value is BuiltinActionName {
 
 export function getBuiltinActionLabelByName(name: BuiltinActionName): string {
   return BUILTIN_ACTION_META[name].label
-}
-
-function readString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
 }
 
 export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
