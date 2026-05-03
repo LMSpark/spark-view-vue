@@ -4,7 +4,7 @@ import type {
   SparkNodeProps,
 } from '../../../shared-types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
-import type { RendererEditorProps } from '../../page-frame/RendererEditor.types'
+import type { RendererEditorProps } from '../../zones/RendererEditor.types'
 import type { TreeEventHandler } from './zero-code'
 
 /**

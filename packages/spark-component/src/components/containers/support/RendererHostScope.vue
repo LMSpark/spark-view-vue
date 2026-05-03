@@ -22,7 +22,7 @@ import {
   useSparkComponent,
   type SparkNode,
 } from '../../internal'
-import { syncReactiveRow } from '../../support/row-mirror-sync'
+import { syncReactiveRow } from './row-mirror-sync'
 
 const props = withDefaults(defineProps<{
   type?: string

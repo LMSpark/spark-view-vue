@@ -1,4 +1,4 @@
-# data-components
+# data-views
 
 这里存放直接依赖 DataSet / DataView 的容器 Vue 组件。
 
@@ -15,4 +15,8 @@
 3. `RendererDetail`
 4. `RendererTree`
 5. `RendererList`
-6. `RendererRowFragment/`（行片段链：`RendererRowFragment` + `RendererHostScope`）
+
+说明：
+
+1. `r-row-fragment` 是 `FieldContextRenderer` 的注册别名，由 `RendererTable` 在列区投影为表格列。
+2. 不保留没有真实组件实现的 `RendererRowFragment/` 空壳目录。

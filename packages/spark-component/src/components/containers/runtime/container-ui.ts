@@ -22,6 +22,7 @@ import {
   type IModuleContext,
   type ModuleContextCapability,
   type SparkNode,
+  type SparkNodeChildren,
 } from '../../internal.js'
 
 // ============================================================
@@ -70,7 +71,7 @@ export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
 /** 工具栏节点所需的最小属性形状（与 RToolbarProps 结构对齐）。 */
 interface ToolbarLike {
-  children?: Array<SparkNode | string>
+  children?: SparkNodeChildren
   position?: string
   class?: string | string[]
 }

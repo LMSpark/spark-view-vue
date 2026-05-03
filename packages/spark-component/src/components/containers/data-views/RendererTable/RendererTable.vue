@@ -122,7 +122,7 @@ import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { RequestState } from '@spark-view/spark-data'
 import { useContainerDataSource } from '../view-data-source'
 import { buildTreeTableRows } from '../view-tree-state'
-import { useContainerToolbar } from '../../composables/container-ui'
+import { useContainerToolbar } from '../../runtime/container-ui'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { deriveSiblingFieldDataKey } from '@spark-view/spark-data'
 

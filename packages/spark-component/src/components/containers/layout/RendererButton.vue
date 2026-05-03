@@ -33,7 +33,6 @@
  * @category container
  * @binding action
  * @notes 常用 action: append-row, refresh, patch-row, delete-row, delete-selected, message-row
- * @notes dock='toolbar' 放置工具栏；dock='actions' 放置行操作
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
@@ -150,8 +149,6 @@ const effectiveDisabled = computed(() => {
   return isDisabled.value || hostActionDisabled.value
 })
 
-// ── 五、动作节点作用域补全 ─────────────────────────────────────────────
-// 为内置动作执行补齐 dataSource/row，保持裁决与执行入参稳定。
 // ── 五、视觉样式解析 ─────────────────────────────────────────────────────
 // 显式 props 优先，action/template 为兜底与预设来源。
 const resolved = computed(() => {
@@ -180,9 +177,8 @@ const resolvedIcon = computed((): Component | null => {
 // children 统一规范化，避免模板层处理原始 mixed children。
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
-// ── 七、业务 click 处理器解析 ───────────────────────────────────────────
-// 支持 props.on.click 和 props.onClick 两种声明式入口。
 // ── 六、业务 click 处理器解析 ───────────────────────────────────────────
+// 支持 props.on.click 和 props.onClick 两种声明式入口。
 const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() => {
   const on = resolvedProps.value['on']
   if (on !== null && typeof on === 'object' && !Array.isArray(on)) {

@@ -1,6 +1,6 @@
 import type { SparkDataContainerProps, SparkNodeProps } from '../../shared-types'
-import type { RendererTailProps } from '../page-frame/RendererTail.types'
-import type { ToolbarPosition } from '../composables/container-ui'
+import type { RendererTailProps } from '../zones/RendererTail.types'
+import type { ToolbarPosition } from '../runtime/container-ui'
 
 /** 工具栏交叉轴对齐方式。 */
 export type InlineAlign = 'start' | 'center' | 'end' | 'stretch'

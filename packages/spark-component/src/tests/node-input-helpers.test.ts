@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { nodeInputProp, nodeInputProps, type SparkNode } from '../core/types'
+import {
+  getSparkNodeChildren,
+  isSparkNode,
+  nodeInputProp,
+  nodeInputProps,
+  type SparkNode,
+} from '../core/types'
 
 describe('SparkNode input helpers', () => {
   it('nodeInputProp should only read props', () => {
@@ -55,4 +61,23 @@ describe('SparkNode input helpers', () => {
     expect(merged['type']).toBeUndefined()
   })
 
+  it('isSparkNode should reject arrays even if they carry a type property', () => {
+    const value = [] as unknown[] & { type?: string }
+    value.type = 'r-text'
+
+    expect(isSparkNode(value)).toBe(false)
+  })
+
+  it('getSparkNodeChildren should filter text and invalid entries', () => {
+    const child: SparkNode = { type: 'r-text', props: { field: 'name' }, children: [] }
+    const children = [
+      child,
+      'plain text',
+      42,
+      { props: { label: 'missing type' } },
+      Object.assign([], { type: 'r-button' }),
+    ] as unknown as SparkNode['children']
+
+    expect(getSparkNodeChildren(children)).toEqual([child])
+  })
 })

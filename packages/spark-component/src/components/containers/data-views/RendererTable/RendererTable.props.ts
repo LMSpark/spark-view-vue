@@ -4,7 +4,7 @@ import type {
   SparkNodeProps,
 } from '../../../shared-types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
-import type { RendererFilterProps } from '../../page-frame/RendererFilter.types'
+import type { RendererFilterProps } from '../../zones/RendererFilter.types'
 
 /**
  * r-table 组件公开属性接口。

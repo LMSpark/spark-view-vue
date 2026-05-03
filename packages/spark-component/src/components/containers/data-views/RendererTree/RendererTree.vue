@@ -109,7 +109,7 @@ const {
   toolbarConfigs,
   toolbarPositionValue,
   toolbarClassValue,
-  dockedNodeActions,
+  nodeActionConfigs,
   hasNodeActions,
   editorConfigs,
   editorPositionValue,
@@ -294,7 +294,7 @@ registerApi(treeApi)
 
 const rawNodeActionsToolbarConfig = computed<SparkNode>(() => ({
   type: 'r-toolbar',
-  children: dockedNodeActions.value,
+  children: nodeActionConfigs.value,
 }))
 
 // 事件处理器与零代码动作由 createRendererTreeZeroCode 收口

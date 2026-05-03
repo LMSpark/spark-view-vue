@@ -57,8 +57,8 @@ import {
   type AiToolHandler,
   type AiFcLoopConfig,
   type AiFeedbackConfig,
-} from '../../composables/useAiPanelStore'
-import type { AiChatSender, AiFcErrorReporter } from '../../composables/useAiChat'
+} from './useAiPanelStore'
+import type { AiChatSender, AiFcErrorReporter } from './useAiChat'
 
 const logger = Logger('AiLauncherButton')
 

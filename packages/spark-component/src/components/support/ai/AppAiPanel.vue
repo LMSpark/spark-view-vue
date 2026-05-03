@@ -89,9 +89,9 @@
 <script setup lang="ts">
 import { computed, ref, onBeforeUnmount, watch } from 'vue'
 import AiChatWidget from './AiChatWidget.vue'
-import { useAiPanelStore } from '../../composables/useAiPanelStore'
-import { readCache, writeCache, PANEL_LAYOUT_PREFIX } from '../../composables/aiSessionCache'
-import type { FileAttachment, StreamAiChatText, TokenUsage } from '../../composables/useAiChat'
+import { useAiPanelStore } from './useAiPanelStore'
+import { readCache, writeCache, PANEL_LAYOUT_PREFIX } from './aiSessionCache'
+import type { FileAttachment, StreamAiChatText, TokenUsage } from './useAiChat'
 
 const props = defineProps<{
   streamAiChatText?: StreamAiChatText | undefined

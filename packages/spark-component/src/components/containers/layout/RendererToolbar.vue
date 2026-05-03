@@ -51,7 +51,7 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { RToolbarProps } from './RendererToolbar.types'
 import { useContainerDataSource } from '../data-views/view-data-source'
-import { useDataViewEventBridge } from '../composables/useDataViewEventBridge'
+import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge'
 
 // ============================================================================
 // 1) 组件输入与能力入口

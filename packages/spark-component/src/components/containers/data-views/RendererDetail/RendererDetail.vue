@@ -50,7 +50,7 @@ import type { RDetailProps } from './RendererDetail.props'
 import {
   buildFormDetailContainerProps,
   useFormDetailContainer,
-} from '../../composables/container-form-detail'
+} from '../../runtime/container-form-detail'
 import { createRendererDetailZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 

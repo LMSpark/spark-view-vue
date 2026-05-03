@@ -31,8 +31,8 @@
 import { computed, ref } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import AiChatShell from './AiChatShell.vue'
-import { useAiChat } from '../../composables/useAiChat'
-import type { AiDraftActionConfig } from '../../composables/useAiPanelStore'
+import { useAiChat } from './useAiChat'
+import type { AiDraftActionConfig } from './useAiPanelStore'
 import type {
   ChatMode,
   FileAttachment,
@@ -40,7 +40,7 @@ import type {
   AiFcErrorReporter,
   StreamAiChatText,
   TokenUsage,
-} from '../../composables/useAiChat'
+} from './useAiChat'
 
 const logger = Logger('AiChatWidget')
 

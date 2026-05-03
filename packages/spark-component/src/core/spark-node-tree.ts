@@ -1280,12 +1280,12 @@ function normalizeSparkNodeWithComponentIdsRecursive(
     ? { ...(sourceProps as Record<string, unknown>) }
     : (normalized.props !== undefined ? { ...normalized.props } : undefined)
 
-  const nextProps = componentId !== undefined
-    ? { ...(baseProps ?? {}), id: componentId }
-    : baseProps
+  const nextProps = baseProps === undefined ? undefined : { ...baseProps }
+  if (nextProps !== undefined) {
+    delete nextProps['id']
+  }
 
   const nextNode: Record<string, unknown> = {
-    ...source,
     type: normalized.type,
     children,
   }
@@ -1294,8 +1294,10 @@ function normalizeSparkNodeWithComponentIdsRecursive(
     nextNode['id'] = componentId
   }
 
-  if (nextProps !== undefined) {
+  if (nextProps !== undefined && Object.keys(nextProps).length > 0) {
     nextNode['props'] = nextProps
+  } else {
+    delete nextNode['props']
   }
 
   return nextNode as unknown as SparkNode

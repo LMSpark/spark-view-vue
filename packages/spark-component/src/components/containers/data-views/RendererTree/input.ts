@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
-import type { RendererEditorProps } from '../../page-frame/RendererEditor.types'
+import type { RendererEditorProps } from '../../zones/RendererEditor.types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
-import { useContainerToolbar } from '../../composables/container-ui'
+import { useContainerToolbar } from '../../runtime/container-ui'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
@@ -23,16 +23,10 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const editorNode = computed(() => options.props.editor)
 
   const nodeContentChildren = computed<SparkNode[]>(() => {
-    const contentChildren = getSparkNodeChildren(options.props.children)
-    const nodes: SparkNode[] = []
-    for (const child of contentChildren) {
-      if (typeof child === 'string') continue
-      nodes.push(child)
-    }
-    return nodes
+    return getSparkNodeChildren(options.props.children)
   })
-  const dockedNodeActions = computed(() => getSparkNodeChildren(actionsNode.value?.children))
-  const hasNodeActions = computed(() => dockedNodeActions.value.length > 0)
+  const nodeActionConfigs = computed(() => getSparkNodeChildren(actionsNode.value?.children))
+  const hasNodeActions = computed(() => nodeActionConfigs.value.length > 0)
   const {
     visibleToolbarConfigs: toolbarConfigs,
     toolbarPositionValue,
@@ -74,7 +68,7 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     toolbarConfigs,
     toolbarPositionValue,
     toolbarClassValue,
-    dockedNodeActions,
+    nodeActionConfigs,
     nodeActionClassValue,
     hasNodeActions,
     editorConfigs,

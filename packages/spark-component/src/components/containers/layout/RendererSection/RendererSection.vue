@@ -90,7 +90,7 @@
 import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId } from '../../../internal'
-import { useContainerGrid } from '../../composables/container-layout'
+import { useContainerGrid } from '../../runtime/container-layout'
 import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'

@@ -3,8 +3,8 @@ import type {
   SparkNodeProps,
   SparkVisibilityContainerProps,
 } from '../../../shared-types'
-import type { RendererFooterProps } from '../../page-frame/RendererFooter.types'
-import type { RendererHeaderProps } from '../../page-frame/RendererHeader.types'
+import type { RendererFooterProps } from '../../zones/RendererFooter.types'
+import type { RendererHeaderProps } from '../../zones/RendererHeader.types'
 
 export interface RDialogProps
   extends SparkNodeProps,

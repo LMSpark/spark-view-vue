@@ -101,9 +101,9 @@ export type SparkCapabilityContext = ICapabilityContext
 /**
  * SparkNode 子节点数组。
  *
- * 允许混合结构节点与纯文本子节点（string）；消费侧可用 `getSparkNodeChildren()` 过滤出结构节点。
+ * 允许混合结构节点与纯文本子节点（string / number）；消费侧可用 `getSparkNodeChildren()` 过滤出结构节点。
  */
-export type SparkNodeChildren = Array<SparkNode | string>
+export type SparkNodeChildren = Array<SparkNode | string | number>
 
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
@@ -173,14 +173,15 @@ export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): S
 export function isSparkNode(value: unknown): value is SparkNode {
   return value !== null
     && typeof value === 'object'
+    && !Array.isArray(value)
     && 'type' in value
     && typeof (value as { type?: unknown }).type === 'string'
 }
 
-/** 直接透传 children 为结构子节点数组 */
+/** 从混合 children 中提取结构子节点。 */
 export function getSparkNodeChildren(children: SparkNodeChildren | undefined): SparkNode[] {
   if (!Array.isArray(children) || children.length === 0) return []
-  return children as SparkNode[]
+  return children.filter(isSparkNode)
 }
 
 /**

@@ -9,9 +9,9 @@
  *
  * @module create-passthrough
  */
-import { h, computed, defineComponent, resolveComponent, type Component } from 'vue'
+import { h, computed, defineComponent, resolveComponent, type Component, type PropType } from 'vue'
 import SparkComponentRenderer from './SparkComponentRenderer.vue'
-import { getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNodeInput } from './internal.js'
+import { getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNodeChildren, type SparkNodeInput } from './internal.js'
 
 /** 透传组件配置 */
 interface PassthroughOptions {
@@ -38,11 +38,11 @@ export function createPassthrough(
     inheritAttrs: false,
     props: {
       type: { type: String, default: type },
-      children: { type: Array, default: undefined },
+      children: { type: Array as PropType<SparkNodeChildren>, default: undefined },
     },
     setup(props, { attrs }) {
       const { isVisible } = useSparkPageComponent(props as unknown as SparkNodeInput)
-      const resolvedChildren = computed(() => getSparkNodeChildren(props.children as never))
+      const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
       return () => {
         if (!isVisible.value) return null

@@ -38,8 +38,8 @@ function createSparkNodeTree(): SparkNode {
   }
 }
 
-function expectNode(value: SparkNode | string | undefined): SparkNode {
-  if (value === undefined || typeof value === 'string') {
+function expectNode(value: SparkNode | string | number | undefined): SparkNode {
+  if (value === undefined || typeof value === 'string' || typeof value === 'number') {
     throw new Error('Expected SparkNode child')
   }
   return value
@@ -92,15 +92,15 @@ describe('SparkNodeTree', () => {
     const secondChild = expectNode(root.children?.[1])
 
     expect(firstChild.id).toBe('r-text__0_0')
-    expect(firstChild.props?.['id']).toBe('r-text__0_0')
+    expect(firstChild.props?.['id']).toBeUndefined()
 
     expect(secondChild.id).toBe('r-table__0_1')
-    expect(secondChild.props?.['id']).toBe('r-table__0_1')
+    expect(secondChild.props?.['id']).toBeUndefined()
     const column = expectNode(secondChild.children?.[0])
     expect(column.id).toBe('el-table-column__0_1_0')
   })
 
-  it('fromJson 补齐 id 时应保留历史字段（如 class）', () => {
+  it('fromJson should drop root-level non-struct fields', () => {
     const tree = SparkNodeTree.fromJson({
       type: 'page-root',
       children: [
@@ -116,7 +116,8 @@ describe('SparkNodeTree', () => {
     const firstChild = expectNode(root.children?.[0])
 
     expect(firstChild.id).toBe('div__0_0')
-    expect((firstChild as unknown as Record<string, unknown>)['class']).toBe('dataset-demo')
+    expect((firstChild as unknown as Record<string, unknown>)['class']).toBeUndefined()
+    expect(firstChild.props?.['class']).toBeUndefined()
   })
 
   it('fromJson 遇到重复组件 id 时应 fail-fast', () => {

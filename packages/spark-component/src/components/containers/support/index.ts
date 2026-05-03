@@ -39,7 +39,4 @@ export type {
 
 export { createBaseCrudMethods } from './base-crud-methods.js'
 
-export { mapNodeProps } from './map-node-props.js'
-export type { MapNodePropsOptions } from './map-node-props.js'
-
 export { createToolbarScope, createRowScope, createCurrentRowScope } from './scopeFactories.js'
