@@ -1193,6 +1193,14 @@ export class DataView implements IDataSource, IDataViewStore {
       return
     }
 
+    // 无远程 list API（含 static-data）时，仅在数据层执行本地过滤同步，不触发网络请求。
+    if (this._shouldApplyStaticLocalFilter()) {
+      this._syncStaticLocalFilterRows()
+      this.selectionDelegate.applyAutoFirst()
+      this.setRequestState(RequestState.Loaded, { emit: true })
+      return
+    }
+
     const run = async (): Promise<void> => {
       this.setRequestState(RequestState.Preparing)
 
@@ -1391,7 +1399,7 @@ export class DataView implements IDataSource, IDataViewStore {
     }
   }
 
-  /** 强制刷新：先置 Idle 再 requestData()，无论当前状态一律重新拉取。清除 staged 模式的脏追踪状态。 */
+  /** 强制刷新：先置 Idle 再 requestData()；远程表重拉，静态/无 API 表走本地同步。清除 staged 模式的脏追踪状态。 */
   async refresh(): Promise<void> {
     this._dirtyTrackingDelegate?.clearAll()
     this.setRequestState(RequestState.Idle)
