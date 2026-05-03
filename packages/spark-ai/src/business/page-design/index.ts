@@ -41,3 +41,13 @@ export {
   type PageModelEditSessionController,
 } from './page-model-edit-session'
 
+export {
+  PAGE_DESIGN_BUSINESS_SCENARIO_ID,
+  createPageDesignBusinessScenario,
+  createPageDesignBusinessScenarioFromSessionHost,
+  registerPageDesignBusinessScenario,
+  isPageDesignBusinessWriteTool,
+  type PageDesignScenarioStillEvent,
+  type CreatePageDesignBusinessScenarioOptions,
+  type CreatePageDesignBusinessScenarioFromSessionHostOptions,
+} from './page-design-scenario'
