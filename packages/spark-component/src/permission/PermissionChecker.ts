@@ -2,7 +2,7 @@
  * 权限检查器 — 纯函数集
  *
  * 提供模型级、实例级和字段级的权限验证。
- * 脱敏值由服务端直接返回，前端仅消费权限快照并呈现结果。
+ * 字段脱敏规则也统一收口于此，避免权限判断分散在 data 层与组件层。
  *
  * permissionMode 语义：
  * - 'none'      → 不控制：跳过所有权限检查，一切可见/可编辑
@@ -75,6 +75,51 @@ export function getFieldVisibility(field: string, row: IDataRow, permissionMode?
   }
   if (perm.maskedFields?.includes(field)) return FieldVisibility.Masked
   return FieldVisibility.Visible
+}
+
+export function maskFieldValue(
+  field: string,
+  value: unknown,
+  row: IDataRow,
+  permissionMode?: NavPermissionMode,
+): string {
+  if (permissionMode === 'none') {
+    return String(value ?? '')
+  }
+  if (getFieldVisibility(field, row, permissionMode) !== FieldVisibility.Masked) {
+    return String(value ?? '')
+  }
+  return defaultMaskRule(field, value)
+}
+
+function defaultMaskRule(field: string, value: unknown): string {
+  if (value === null || value === undefined) return ''
+
+  const text = String(value)
+  const normalizedField = field.toLowerCase()
+
+  if ((normalizedField.includes('phone') || normalizedField.includes('mobile')) && text.length === 11) {
+    return `${text.substring(0, 3)}****${text.substring(7)}`
+  }
+
+  if ((normalizedField.includes('idcard') || normalizedField.includes('idno')) && text.length === 18) {
+    return `${text.substring(0, 3)}***********${text.substring(14)}`
+  }
+
+  if (normalizedField.includes('email')) {
+    const atIndex = text.indexOf('@')
+    if (atIndex > 3) {
+      return `${text.substring(0, 3)}***${text.substring(atIndex)}`
+    }
+  }
+
+  if ((normalizedField.includes('bank') || normalizedField.includes('card')) && text.length >= 16) {
+    return `${text.substring(0, 4)} **** **** ${text.substring(text.length - 4)}`
+  }
+
+  return text.length > 4
+    ? `${text.substring(0, 2)}***${text.substring(text.length - 2)}`
+    : '***'
 }
 
 // ── 工具函数 ──

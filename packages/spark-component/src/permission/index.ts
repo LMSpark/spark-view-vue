@@ -19,6 +19,7 @@ export {
   canCreate, canImport, canExport,
   canDelete, canCreateChild, canEdit,
   isFieldVisible, isFieldEditable, getFieldVisibility,
+  maskFieldValue,
   extractModelPermission,
 } from './PermissionChecker'
 export type { ModelPermissionSource } from './PermissionChecker'
