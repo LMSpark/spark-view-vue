@@ -37,7 +37,7 @@ export type { ActionExecutionOptions } from './action-executor'
 export { extractActionExecutionControl } from './action-executor'
 
 export { nodeToActionDescriptor } from './node-to-descriptor'
-export { hasRemoteListApi, getSelectedRows } from './executor-helpers'
+export { getSelectedRows } from './executor-helpers'
 
 export { isActionDescriptorDisabled } from './executor-helpers'
 export { resolveButtonStyle } from './button-templates'

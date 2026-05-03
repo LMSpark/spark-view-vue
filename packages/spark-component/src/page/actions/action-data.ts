@@ -25,7 +25,6 @@ import {
   resolveRowId,
   resolveRowLabel,
   getSelectedRows,
-  hasRemoteListApi,
   interpolate,
   asRecord,
   resolveActionDataCapabilities,
@@ -473,10 +472,6 @@ export async function executeRefresh(
   const view = ensureView(desc, ctx, notifier)
   if (!view) return
 
-  if (!hasRemoteListApi(view)) {
-    notifier.notify('warning', desc.emptyMessage ?? '当前数据为内联数据，无需刷新')
-    return
-  }
   await view.refresh()
   notifier.notify('success', desc.successMessage ?? '刷新完成')
 }

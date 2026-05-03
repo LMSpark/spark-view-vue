@@ -123,10 +123,6 @@ export function getSelectedRows(view: DataView): IDataRow[] {
   return view.selectedRows.slice()
 }
 
-export function hasRemoteListApi(view: DataView | null | undefined): boolean {
-  return Boolean(view?.dataTable?.api?.list)
-}
-
 export function extractErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
   if (typeof error === 'string' && error.trim().length > 0) return error.trim()
