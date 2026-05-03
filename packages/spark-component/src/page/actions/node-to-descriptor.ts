@@ -22,28 +22,12 @@ import type {
   SubmitCurrentFormAction,
 } from './action-descriptor'
 import { isBuiltinActionName, type BuiltinActionName } from './builtin-action-meta'
-import { readString } from './executor-helpers'
-import { readBoolean } from './builtin-action-helpers'
-import type { PageMessageType } from '../../core/capability-system.js'
-
-function readStringArray(value: unknown): string[] | undefined {
-  if (!Array.isArray(value)) return undefined
-  const filtered = value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-  return filtered.length > 0 ? filtered : undefined
-}
-
-function readMessageType(value: unknown): PageMessageType | undefined {
-  if (typeof value !== 'string') return undefined
-  if (value === 'success' || value === 'error' || value === 'warning' || value === 'info') return value
-  return undefined
-}
-
-function asRecord(value: unknown): Record<string, unknown> | undefined {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : undefined
-}
-
+import { asRecord, readString } from './executor-helpers'
+import {
+  readBoolean,
+  readOptionalMessageType,
+  readOptionalStringArray,
+} from './builtin-action-helpers'
 /** 提取所有共有装饰字段（除 silent 外都 optional） */
 function pickDecorator(props: Record<string, unknown>): ActionUiDecorator {
   const out: ActionUiDecorator = {}
@@ -67,7 +51,7 @@ function pickDecorator(props: Record<string, unknown>): ActionUiDecorator {
   const confirmTitle = readString(props['confirmTitle'])
   if (confirmTitle) out.confirmTitle = confirmTitle
 
-  const confirmType = readMessageType(props['confirmType'])
+  const confirmType = readOptionalMessageType(props['confirmType'])
   if (confirmType) out.confirmType = confirmType
 
   const disabledWhenRow = asRecord(props['disabledWhenRow'])
@@ -125,7 +109,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (idField) desc.idField = idField
       const payload = asRecord(props['appendPayload'])
       if (payload) desc.appendPayload = payload
-      const inheritFields = readStringArray(props['inheritFields'])
+      const inheritFields = readOptionalStringArray(props['inheritFields'])
       if (inheritFields) desc.inheritFields = inheritFields
       const inheritFieldMap = asRecord(props['inheritFieldMap'])
       if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap as Record<string, string>
@@ -139,7 +123,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (idField) desc.idField = idField
       const payload = asRecord(props['appendPayload'])
       if (payload) desc.appendPayload = payload
-      const inheritFields = readStringArray(props['inheritFields'])
+      const inheritFields = readOptionalStringArray(props['inheritFields'])
       if (inheritFields) desc.inheritFields = inheritFields
       const inheritFieldMap = asRecord(props['inheritFieldMap'])
       if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap as Record<string, string>
@@ -235,9 +219,9 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (dataKey) desc.dataKey = dataKey
       const message = readString(props['message'])
       if (message) desc.message = message
-      const messageFields = readStringArray(props['messageFields'])
+      const messageFields = readOptionalStringArray(props['messageFields'])
       if (messageFields) desc.messageFields = messageFields
-      const messageType = readMessageType(props['messageType'])
+      const messageType = readOptionalMessageType(props['messageType'])
       if (messageType) desc.messageType = messageType
       return desc
     }

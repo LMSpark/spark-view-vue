@@ -11,6 +11,7 @@ import {
 } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import { extractModelPermission } from '../../../permission/index.js'
+import { toDataRecord } from './data-row-utils.js'
 
 /**
  * DataView 标识态：来自 dataKey 反推或 DataView 本身的静态元信息。
@@ -87,13 +88,8 @@ const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_ROWS: readonly IDataRow[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
-function toRecord(value: unknown): Record<string, unknown> | null {
-  if (value === null || value === undefined || typeof value !== 'object') return null
-  return value as Record<string, unknown>
-}
-
 function normalizeAggregateResult(value: unknown, emptyValue: AggregateResultState): AggregateResultState {
-  return toRecord(value) ?? emptyValue
+  return toDataRecord(value) ?? emptyValue
 }
 
 function useResolvedViewRevision(resolvedView: ResolvedViewRef): ViewRevisionRef {

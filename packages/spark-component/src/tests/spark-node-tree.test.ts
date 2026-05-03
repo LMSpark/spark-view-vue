@@ -38,6 +38,13 @@ function createSparkNodeTree(): SparkNode {
   }
 }
 
+function expectNode(value: SparkNode | string | undefined): SparkNode {
+  if (value === undefined || typeof value === 'string') {
+    throw new Error('Expected SparkNode child')
+  }
+  return value
+}
+
 describe('SparkNodeTree', () => {
   it('应该围绕单个 root 实例提供查询 API', () => {
     const root = createSparkNodeTree()
@@ -81,23 +88,16 @@ describe('SparkNodeTree', () => {
     const root = tree.getAllData()
     expect(root.id).toBe('page-root__0')
 
-    const firstChild = root.children?.[0]
-    const secondChild = root.children?.[1]
-    expect(typeof firstChild === 'string').toBe(false)
-    expect(typeof secondChild === 'string').toBe(false)
+    const firstChild = expectNode(root.children?.[0])
+    const secondChild = expectNode(root.children?.[1])
 
-    if (typeof firstChild !== 'string') {
-      expect(firstChild.id).toBe('r-text__0_0')
-      expect(firstChild.props?.id).toBe('r-text__0_0')
-    }
+    expect(firstChild.id).toBe('r-text__0_0')
+    expect(firstChild.props?.['id']).toBe('r-text__0_0')
 
-    if (typeof secondChild !== 'string') {
-      expect(secondChild.id).toBe('table')
-      const column = secondChild.children?.[0]
-      if (typeof column !== 'string') {
-        expect(column.id).toBe('el-table-column__0_1_0')
-      }
-    }
+    expect(secondChild.id).toBe('r-table__0_1')
+    expect(secondChild.props?.['id']).toBe('r-table__0_1')
+    const column = expectNode(secondChild.children?.[0])
+    expect(column.id).toBe('el-table-column__0_1_0')
   })
 
   it('fromJson 补齐 id 时应保留历史字段（如 class）', () => {
@@ -113,8 +113,7 @@ describe('SparkNodeTree', () => {
     })
 
     const root = tree.getAllData()
-    const firstChild = root.children?.[0]
-    if (typeof firstChild === 'string') throw new Error('unexpected text child')
+    const firstChild = expectNode(root.children?.[0])
 
     expect(firstChild.id).toBe('div__0_0')
     expect((firstChild as unknown as Record<string, unknown>)['class']).toBe('dataset-demo')

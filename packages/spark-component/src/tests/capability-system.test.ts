@@ -153,7 +153,7 @@ describe('Capability system integration', () => {
       })
     })
 
-    it('reads runtime vnode inputs for id, visible and disabled without parent passing child config', () => {
+    it('reads runtime vnode inputs while component id comes from SparkNode config', () => {
       const { plugin } = createTestPlugin()
       const registry = createPageComponentRegistry()
 
@@ -165,7 +165,7 @@ describe('Capability system integration', () => {
           field: String,
         },
         setup() {
-          const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
+          const result = useSparkComponent({ type: 'test-comp', id: 'orders-table' } as SparkNode)
           const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
 
           expect(result.isVisible.value).toBe(false)
@@ -187,7 +187,6 @@ describe('Capability system integration', () => {
           const result = useSparkComponent({ type: 'root-comp' } as SparkNode)
           result.sparkProvide(PAGE_COMPONENT_REGISTRY, registry)
           return () => h(TestComp, {
-            id: 'orders-table',
             visible: false,
             disabled: true,
             field: 'orderNo',

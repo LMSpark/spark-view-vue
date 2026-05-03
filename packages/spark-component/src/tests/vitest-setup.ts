@@ -1,7 +1,5 @@
 /**
- * Vitest setup —— 响应式包装由 Vue 集成层（如 usePageDataSet）处理
+ * Vitest setup —— spark-component 测试公共入口。
  *
- * spark-component 测试中，DataView 响应式包装由消费方（如 usePageDataSet）自行处理。
+ * 当前没有全局测试钩子；保留文件用于 vitest 配置的稳定 setupFiles 入口。
  */
-import { defineComponent, h } from 'vue'
-import { config } from '@vue/test-utils'

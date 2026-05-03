@@ -15,14 +15,15 @@ export function readBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined
 }
 
-export function readStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+export function readOptionalStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const filtered = value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+  return filtered.length > 0 ? filtered : undefined
 }
 
-export function readMessageType(value: unknown): PageMessageType {
+export function readOptionalMessageType(value: unknown): PageMessageType | undefined {
   const text = readString(value)
-  if (!text) return 'info'
+  if (!text) return undefined
 
   switch (text) {
     case 'success':
@@ -31,7 +32,7 @@ export function readMessageType(value: unknown): PageMessageType {
     case 'info':
       return text
     default:
-      return 'info'
+      return undefined
   }
 }
 

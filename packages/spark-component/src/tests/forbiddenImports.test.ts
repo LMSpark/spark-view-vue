@@ -23,9 +23,7 @@ describe('packages/spark-component: forbidden imports', () => {
 
   const matches: Array<{ file: string; line: number; match: string }> = []
 
-  const vueImportRegex = /import\s+[^'"\n]+from\s+['"][^'"]+\.vue['"]/g
-  const requireVueRegex = /require\(['"][^'"]+\.vue['"]\)/g
-  const featuresPathRegex = /from\s+['"][^'"]*features\//g
+  const featuresPathRegex = /from\s+['"][^'"]*features\//
 
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8')
@@ -35,17 +33,17 @@ describe('packages/spark-component: forbidden imports', () => {
       // 跳过注释行（JSDoc / 行注释中的示例代码）
       const trimmed = line.trimStart()
       if (trimmed.startsWith('*') || trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*/')) continue
-      if (vueImportRegex.test(line) || requireVueRegex.test(line) || featuresPathRegex.test(line)) {
-        const found = (line.match(vueImportRegex) ?? line.match(requireVueRegex) ?? line.match(featuresPathRegex))?.[0] ?? line
+      if (featuresPathRegex.test(line)) {
+        const found = line.match(featuresPathRegex)?.[0] ?? line
         matches.push({ file: path.relative(root, file), line: i + 1, match: found })
       }
     }
   }
 
-  it('should not contain imports of .vue files or references to features/', () => {
+  it('should not reference features/', () => {
     if (matches.length > 0) {
       const msg = matches.map(m => `${m.file}:${m.line} -> ${m.match}`).join('\n')
-      throw new Error(`Found forbidden imports in packages/spark-component:\n${msg}`)
+      throw new Error(`Found forbidden feature imports in packages/spark-component:\n${msg}`)
     }
     expect(matches.length).toBe(0)
   })

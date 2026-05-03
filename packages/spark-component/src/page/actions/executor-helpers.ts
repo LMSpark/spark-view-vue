@@ -5,6 +5,7 @@
  */
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
+import { resolveSelectedRowsPath } from '../../components/support/row-selection-path'
 import type { ActionUiDecorator } from './action-descriptor'
 
 // ── 值解析（轻量） ─────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ export function resolveRowLabel(row: IDataRow, idField: string): string {
 }
 
 export function getSelectedRows(view: DataView): IDataRow[] {
-  return Array.isArray(view.selectedRows) ? view.selectedRows.filter(isRowLike) : []
+  return resolveSelectedRowsPath(view)
 }
 
 export function hasRemoteListApi(view: DataView | null | undefined): boolean {

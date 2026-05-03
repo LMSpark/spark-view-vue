@@ -16,32 +16,52 @@ import { compileFunctions } from '../page/createSandbox'
 import type { PageContext } from '../page/context/types'
 import * as permissionApi from '../permission/index'
 
+function createMockComponents(): PageContext['$components'] {
+  return {
+    get: vi.fn(() => null),
+    list: vi.fn(() => []),
+    getApi: vi.fn(() => null),
+    getApisByType: vi.fn(() => []),
+  }
+}
+
+function createMockPageService(): PageContext['$page'] {
+  return {
+    showDialog: vi.fn(async () => 'confirm' as const),
+    selectEntities: vi.fn(async () => []),
+    browseFiles: vi.fn(async () => []),
+    uploadFiles: vi.fn(async () => []),
+    showMessage: vi.fn(),
+    showConfirm: vi.fn(async () => true),
+    showPrompt: vi.fn(async () => null),
+    showAlert: vi.fn(async () => {}),
+    showLoading: vi.fn(),
+    navigate: vi.fn(),
+  }
+}
+
 /** 创建最小化的 PageContext mock */
 function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
-  return {
+  const base: PageContext = {
     $route: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
     $el: () => null,
     $query: () => null,
     $queryAll: () => document.querySelectorAll('.noop'),
     $dataSet: null,
-    $components: {
-      get: vi.fn(() => null),
-      list: vi.fn(() => []),
-    },
+    $components: createMockComponents(),
     $refreshData: async () => {},
-    $page: {
-      showMessage: vi.fn(),
-      showConfirm: vi.fn(async () => true),
-      showPrompt: vi.fn(async () => null),
-      showAlert: vi.fn(async () => {}),
-      showLoading: vi.fn(),
-      navigate: vi.fn(),
-    },
+    $page: createMockPageService(),
     permission: permissionApi as PageContext['permission'],
     SparkData: {} as PageContext['SparkData'],
     h: vi.fn() as unknown as PageContext['h'],
-    ...overrides,
+    setTimeout: window.setTimeout.bind(window) as unknown as PageContext['setTimeout'],
+    clearTimeout: window.clearTimeout.bind(window) as unknown as PageContext['clearTimeout'],
+    setInterval: window.setInterval.bind(window) as unknown as PageContext['setInterval'],
+    clearInterval: window.clearInterval.bind(window) as unknown as PageContext['clearInterval'],
+    console,
+    $moduleContext: null,
   }
+  return { ...base, ...overrides }
 }
 
 describe('createSandbox — compileFunctions', () => {
@@ -162,6 +182,8 @@ describe('createSandbox — compileFunctions', () => {
       $components: {
         get: vi.fn((id: string) => id === 'orders-table' ? { id, type: 'r-table' } : null),
         list: vi.fn((type?: string) => type === 'r-table' ? [{ id: 'orders-table', type: 'r-table' }] : []),
+        getApi: vi.fn(() => null),
+        getApisByType: vi.fn(() => []),
       },
     })
 

@@ -96,6 +96,7 @@ import {
 import { useRendererTreeInput } from './input'
 import { useContainerDataSource } from '../view-data-source'
 import { useRendererTreeViewState } from '../view-tree-state'
+import { resolveTreeNodeText, toDataRecord } from '../data-row-utils'
 import { resolveNodeBeforeRender, mergeNodeBeforeRenderProps } from '../../../support/beforeRender'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 
@@ -147,25 +148,10 @@ const nodeKeyField = computed<string>(() =>
 
 const labelField = computed(() => dataState.treeConfig.value?.textField ?? 'label')
 
-function toRecord(value: unknown): Record<string, unknown> | null {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null
-  return value as Record<string, unknown>
-}
-
-function readStringField(record: Record<string, unknown>, key: string): string | undefined {
-  const value = record[key]
-  return typeof value === 'string' ? value : undefined
-}
-
 function getNodeLabel(data: unknown): string {
-  const node = toRecord(data)
+  const node = toDataRecord(data)
   if (!node) return '节点'
-  const value = readStringField(node, labelField.value)
-  if (value) return value
-  return readStringField(node, 'label')
-    ?? readStringField(node, 'name')
-    ?? readStringField(node, 'title')
-    ?? '节点'
+  return resolveTreeNodeText(node, labelField.value, '节点')
 }
 
 const elTreeFieldProps = computed(() => ({

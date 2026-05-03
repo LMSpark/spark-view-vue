@@ -1,34 +1,18 @@
 /**
  * useDataViewEventBridge.ts
  *
- * DataView → Vue 适配层（两种订阅机制）：
+ * DataView → Vue 细粒度事件桥。
  *
- *   1. useDataViewSnapshot  : view.subscribe()（bulk）→ shallowRef<DataViewSnapshot>
- *      - 所有状态变化后触发，重新同步整个 snapshot
- *      - 不携带 originatorId 等附加参数
- *
- *   2. useDataViewEventBridge: view.events.on/off（细粒度）→ 容器状态回调
- *      - 带 originatorId 过滤，防止循环回写
- *      - 不同事件携带具体 payload（row / rows / state 等）
- *
- * 消费方：
- *   - useDataViewSnapshot  : 对外导出的通用快照适配函数（由容器状态层按需消费）
- *   - useDataViewEventBridge: RendererToolbar.vue（事件驱动）
+ * 基于 view.events.on/off 注册容器状态回调，带 originatorId 过滤，
+ * 防止 UI 与 DataView 之间循环回写。
  */
 
 // ============================================================
 // § 第 0 段：导入
 // ============================================================
 
-import { shallowRef, watchEffect } from 'vue'
-import type { ShallowRef } from 'vue'
-import {
-  RequestState,
-  type DataView,
-  type DataViewSnapshot,
-  type IDataRow,
-  type IDataSource,
-} from '@spark-view/spark-data'
+import { watchEffect } from 'vue'
+import type { DataView, IDataRow, IDataSource } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 
 // ============================================================
@@ -395,83 +379,4 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
 
     onCleanup(registerDataViewEvents(view, registrations))
   })
-}
-
-// ============================================================
-// § useDataViewSnapshot
-// ============================================================
-
-/** 最小 ref 形状约束：兼容 Ref/ComputedRef。 */
-interface DataViewRefLike<T> {
-  readonly value: T
-}
-
-/** 空 snapshot 占位（避免 null/undefined 判断的冗余） */
-const EMPTY_SNAPSHOT: DataViewSnapshot = Object.freeze({
-  tableName: '',
-  viewId: '',
-  rows: Object.freeze([]),
-  columns: Object.freeze([]),
-  currentRow: null,
-  selectedRows: Object.freeze([]),
-  isMultiSelect: false,
-  requestState: RequestState.Idle,
-  total: 0,
-  page: 1,
-  pageSize: 20,
-  mutating: false,
-  mutatingError: null,
-  loadingError: null,
-  aggregateResult: Object.freeze({}),
-  selectionAggregateResult: Object.freeze({}),
-  primaryKey: undefined,
-  treeConfig: undefined,
-  value: '',
-  label: null,
-  labels: Object.freeze([]),
-  revision: 0,
-  rowsRevision: 0,
-  selectionRevision: 0,
-  requestRevision: 0,
-  aggregateRevision: 0,
-  mutationRevision: 0,
-  configRevision: 0,
-})
-
-/**
- * Vue composable：订阅 DataView 事件，维护响应式 snapshot。
- *
- * 职责：
- * - 监听 viewRef 的变化
- * - 当 view 变为非 null 时，初始化 snapshot 并订阅其事件
- * - 当 view 变为 null 时，清理订阅并回到空 snapshot
- * - 事件触发时重新同步 snapshot（via getSnapshot()）
- *
- * 返回：
- *   shallowRef<DataViewSnapshot> — 与 view 生命周期同步的响应式快照
- */
-export function useDataViewSnapshot(viewRef: DataViewRefLike<DataView | null>): ShallowRef<DataViewSnapshot> {
-  const snapshot = shallowRef<DataViewSnapshot>(EMPTY_SNAPSHOT)
-
-  watchEffect((onCleanup) => {
-    const view = viewRef.value
-    if (!view) {
-      // view 不存在：回落到空快照并等待下一次绑定。
-      snapshot.value = EMPTY_SNAPSHOT
-      return
-    }
-
-    // 首次同步：确保订阅建立前 UI 已拿到当前最新状态。
-    snapshot.value = view.getSnapshot()
-
-    // 后续同步：任何 stateChanged 都刷新一次 snapshot 引用。
-    const unsubscribe = view.subscribe(() => {
-      snapshot.value = view.getSnapshot()
-    })
-
-    // 生命周期清理：view 切换/组件卸载时取消订阅。
-    onCleanup(unsubscribe)
-  })
-
-  return snapshot
 }

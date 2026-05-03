@@ -2,7 +2,9 @@
 import { APP_SERVICES, type IAppServicesCapability, type SparkCapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
-function createAppServices(logger: LoggerApi): IAppServicesCapability {
+type LoggerTestAppServices = IAppServicesCapability & Required<Pick<IAppServicesCapability, 'logger' | 'router'>>
+
+function createAppServices(logger: LoggerApi): LoggerTestAppServices {
   return {
     router: {
       push: async () => undefined,
@@ -30,7 +32,7 @@ describe('page-level logger capability', () => {
       capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
     }
 
-    const appServices = ctx.capabilities.get(APP_SERVICES) as IAppServicesCapability
+    const appServices = ctx.capabilities.get(APP_SERVICES) as LoggerTestAppServices
     appServices.logger.info('test')
 
     expect(called).toBe(true)
@@ -51,7 +53,7 @@ describe('page-level logger capability', () => {
       capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
     }
 
-    const appServices = ctx.capabilities.get(APP_SERVICES) as IAppServicesCapability
+    const appServices = ctx.capabilities.get(APP_SERVICES) as LoggerTestAppServices
     await appServices.router.push('/orders')
     appServices.logger.info('hello')
 

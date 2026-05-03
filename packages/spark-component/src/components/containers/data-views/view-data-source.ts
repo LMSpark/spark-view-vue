@@ -12,6 +12,7 @@ import type {
   ResolvedViewRef,
 } from './view-runtime-state.js'
 import { useDataViewState } from './view-runtime-state.js'
+import { toDataRecord } from './data-row-utils.js'
 
 /** 极简日志接口，仅供 useContainerDataSource 内部使用。 */
 interface DataSourceLoggerLike {
@@ -24,18 +25,14 @@ const DEFAULT_DATA_SOURCE_LOGGER: DataSourceLoggerLike = {
   error: () => {},
 }
 
-function isRecordValue(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
 function resolveMaybeValue<T>(source: MaybeRefOrGetter<T> | undefined): T | undefined {
   return source === undefined ? undefined : toValue(source)
 }
 
 function pickRowFromSource(source: unknown): IDataRow | null {
-  if (!isRecordValue(source)) return null
-  const currentRow = source['currentRow']
-  return isRecordValue(currentRow) ? currentRow as IDataRow : null
+  const sourceRecord = toDataRecord(source)
+  if (!sourceRecord) return null
+  return toDataRecord(sourceRecord['currentRow']) as IDataRow | null
 }
 
 interface UseContainerDataSourceOptions<TSource> {

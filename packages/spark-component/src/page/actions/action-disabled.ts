@@ -7,10 +7,14 @@
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { ActionDescriptor, ActionExecutionScope } from './action-descriptor'
-import { normalizeComparable } from './action-utils'
 import { getSelectedRows } from './executor-helpers'
 
 // ── 私有辅助 ──────────────────────────────────────────────────────────────
+
+function normalizeComparable(value: unknown): unknown {
+  if (value === '') return null
+  return value ?? null
+}
 
 function matchesRowCondition(
   row: IDataRow | null | undefined,

@@ -24,9 +24,9 @@ import {
   inferNextRowId,
   resolveRowId,
   resolveRowLabel,
+  getSelectedRows,
   hasRemoteListApi,
   interpolate,
-  isRowLike,
 } from '../executor-helpers'
 import { confirmIfNeeded, createActionNotifier, type ActionNotifier } from '../action-notifier'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../../components/containers/support/crud-result-helpers.js'
@@ -53,7 +53,7 @@ function resolveTargetRows(
     return { rows: row ? [row] : [], primary: row }
   }
   // selected
-  return { rows: Array.isArray(view.selectedRows) ? view.selectedRows.filter(isRowLike) : [], primary: null }
+  return { rows: getSelectedRows(view), primary: null }
 }
 
 function targetEmptyFallback(target: ActionRowTarget): string {

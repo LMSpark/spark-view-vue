@@ -2,6 +2,7 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { getSelectedRows } from '../../../../page/actions/index.js'
 import { createContainerCrudContext, getNativeRefValue } from '../zero-code-shared.js'
+import { toDataRecord } from '../data-row-utils.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -25,19 +26,6 @@ interface RendererTableZeroCodeOptions {
 
 type LoadTreePathResult = Awaited<ReturnType<RendererTableApi['loadTreePath']>>
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
-function getRecordEntries(record: Record<string, unknown>): Array<[string, unknown]> {
-  const entries: Array<[string, unknown]> = []
-  for (const key in record) {
-    if (!Object.prototype.hasOwnProperty.call(record, key)) continue
-    entries.push([key, record[key]])
-  }
-  return entries
-}
-
 function stripSyntheticTreeName<T>(value: T, textField: string | undefined): T {
   if (textField === undefined || textField === 'name') return value
 
@@ -51,9 +39,10 @@ function stripSyntheticTreeName<T>(value: T, textField: string | undefined): T {
     return (changed ? nextValue : value) as T
   }
 
-  if (!isRecord(value)) return value
+  const record = toDataRecord(value)
+  if (!record) return value
 
-  const entries = getRecordEntries(value)
+  const entries = Object.entries(record)
   const duplicatedLabelEntry = entries.find(([key]) => key === textField)
   const hasDuplicatedLabel = duplicatedLabelEntry !== undefined
   const duplicatedLabel = duplicatedLabelEntry?.[1]
