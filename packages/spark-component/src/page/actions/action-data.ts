@@ -19,7 +19,7 @@ import type {
   RefreshAction,
   SetFieldAction,
   SubmitCurrentFormAction,
-} from '../action-types'
+} from './action-types'
 import {
   inferNextRowId,
   resolveRowId,
@@ -32,8 +32,8 @@ import {
   confirmIfNeeded,
   createActionNotifier,
   type ActionNotifier,
-} from '../executor-helpers'
-import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../../components/containers/support/crud-result-helpers.js'
+} from './executor-helpers'
+import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
 
 // ── target 行解析 ─────────────────────────────────────────────────────────
 
