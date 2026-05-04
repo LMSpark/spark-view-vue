@@ -55,6 +55,17 @@ function extractText(response: OpenAiChatCompletionResponse): string {
 }
 
 export function createBrowserFetchLlmClient(options: BrowserFetchLlmClientOptions): AiBrowserLlmClient {
+  /**
+   * 创建基于 Fetch 的浏览器 LLM 客户端（兼容 OpenAI Chat Completions 协议）。
+   *
+   * 参数：
+   * - endpoint: LLM HTTP API 地址（支持 OpenAI-style 接口或兼容实现）。
+   * - model: 模型 ID 或名称。
+   * - apiKey: 可选的 Bearer token。
+   * - headers: 额外 HTTP 头。
+   *
+   * 返回值：遵循 `AiBrowserLlmClient` 接口的对象，统一返回 { text, raw }。
+   */
   async function generate(request: AiBrowserLlmGenerateRequest): Promise<AiBrowserLlmGenerateResponse> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

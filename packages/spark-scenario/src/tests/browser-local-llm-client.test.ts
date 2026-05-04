@@ -337,11 +337,10 @@ describe('browser-local-llm-client', () => {
 
     it('progress_callback 将原始 progress(0-100) 归一化为 0-1', async () => {
       const pipe = makePipeline({ generated_text: 'ok' })
-      let capturedCallback: ((ev: Record<string, unknown>) => void) | null = null
 
       const pipelineFactory = vi.fn().mockImplementation(
-        async (_task: unknown, _model: unknown, opts: Record<string, unknown>) => {
-          capturedCallback = opts['progress_callback'] as (ev: Record<string, unknown>) => void
+        async (_task: unknown, _model: unknown, _opts: Record<string, unknown>) => {
+          // captured via pipelineFactory.mock.calls
           return pipe
         },
       )
@@ -353,19 +352,20 @@ describe('browser-local-llm-client', () => {
 
       await client.generate({ messages: [{ role: 'user', content: 'hi' }] })
 
-      // 模拟 transformers.js 触发进度事件
-      capturedCallback?.({ progress: 50, file: 'model.onnx' })
+      // 模拟 transformers.js 触发进度事件（通过 pipelineFactory.mock.calls 取回回调并调用）
+      const opts = pipelineFactory.mock.calls[0]?.[2] as Record<string, unknown> | undefined
+      const progressCb = opts ? (opts['progress_callback'] as unknown as (ev: Record<string, unknown>) => void) : undefined
+      if (typeof progressCb === 'function') progressCb({ progress: 50, file: 'model.onnx' })
 
       expect(onProgress).toHaveBeenCalledWith({ progress: 0.5, file: 'model.onnx' })
     })
 
     it('progress/file 缺失时安全兜底（progress=0, file=""）', async () => {
       const pipe = makePipeline({ generated_text: 'ok' })
-      let capturedCallback: ((ev: Record<string, unknown>) => void) | null = null
 
       const pipelineFactory = vi.fn().mockImplementation(
-        async (_task: unknown, _model: unknown, opts: Record<string, unknown>) => {
-          capturedCallback = opts['progress_callback'] as (ev: Record<string, unknown>) => void
+        async (_task: unknown, _model: unknown, _opts: Record<string, unknown>) => {
+          // captured via pipelineFactory.mock.calls
           return pipe
         },
       )
@@ -377,8 +377,10 @@ describe('browser-local-llm-client', () => {
 
       await client.generate({ messages: [{ role: 'user', content: 'hi' }] })
 
-      // 空事件
-      capturedCallback?.({})
+      // 空事件（通过 pipelineFactory.mock.calls 取回回调并调用）
+      const opts = pipelineFactory.mock.calls[0]?.[2] as Record<string, unknown> | undefined
+      const progressCb = opts ? (opts['progress_callback'] as unknown as (ev: Record<string, unknown>) => void) : undefined
+      if (typeof progressCb === 'function') progressCb({})
 
       expect(onProgress).toHaveBeenCalledWith({ progress: 0, file: '' })
     })

@@ -3,18 +3,16 @@
  *
  * SPARK 注册制 AI 场景引擎（纯 TypeScript，无框架依赖）。
  *
- * 核心能力：
- * - 场景注册中心（createScenarioRegistry）
- * - 场景运行时（createScenarioRuntime）
- * - 分级查询协议（AiScenarioQueryProtocol）
- * - 类型定义（AiScenarioDefinition 等）
+ * 说明（按时序/流程导出）：
+ * 1) contracts：公共类型与协议（定义所有契约，最低依赖）
+ * 2) prompt：提示词模板与分级约束（供 LLM 使用的系统提示）
+ * 3) runtime：注册中心与运行时（场景发现 -> 执行）
+ * 4) system：系统装配与便捷注册（组装 runtime/planner/history）
+ * 5) llm：浏览器端 LLM 客户端与规划器（可切换本地/远程）
+ * 6) history：运行历史存储与查询
  *
- * 分区导出顺序：
- * 1) contracts（纯类型契约）
- * 2) runtime（注册与执行）
- * 3) system（系统装配）
- * 4) prompt（提示词模板）
- * 5) history（历史存储）
+ * 目标：按执行时序与功能将导出组织为便于阅读与集成的顺序，
+ * 并在每一层提供清晰注释与示例引用。
  */
 
 // ==============================================
@@ -86,7 +84,17 @@ export type {
 } from './contracts/llm-contracts'
 
 // ==============================================
-// runtime
+// prompt（提示词模板与分级约束） — 在 LLM 使用前可先定义模板
+// ==============================================
+export {
+  createScenarioPromptTemplateRegistry,
+  type ScenarioPromptBuildContext,
+  type ScenarioPromptTemplateRegistration,
+  type ScenarioPromptTemplateRegistry,
+} from './prompt/scenario-prompt-template-registry'
+
+// ==============================================
+// runtime（注册中心与执行引擎） — 场景发现、查询、执行
 // ==============================================
 export {
   createScenarioRegistry,
@@ -111,24 +119,6 @@ export {
 } from './system/scenario-system'
 
 // ==============================================
-// prompt
-// ==============================================
-export {
-  createScenarioPromptTemplateRegistry,
-  type ScenarioPromptBuildContext,
-  type ScenarioPromptTemplateRegistration,
-  type ScenarioPromptTemplateRegistry,
-} from './prompt/scenario-prompt-template-registry'
-
-// ==============================================
-// history
-// ==============================================
-export {
-  createScenarioRunHistoryStore,
-  type AiScenarioRunHistoryStore,
-} from './history/run-history-store'
-
-// ==============================================
 // llm（browser）
 // ==============================================
 export {
@@ -147,6 +137,14 @@ export {
 } from './llm/browser-local-llm-client'
 
 // ==============================================
-// prompt 基础约束
+// history
+// ==============================================
+export {
+  createScenarioRunHistoryStore,
+  type AiScenarioRunHistoryStore,
+} from './history/run-history-store'
+
+// ==============================================
+// prompt 基础约束（作为 prompt 层的一部分）
 // ==============================================
 export { TIERED_QUERY_CONSTRAINT, buildScenarioSystemPrompt } from './prompt/prompt-constraints'

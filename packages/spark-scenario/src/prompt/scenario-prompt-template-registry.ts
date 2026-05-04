@@ -108,3 +108,13 @@ export function createScenarioPromptTemplateRegistry(
     buildPrompt,
   }
 }
+
+/**
+ * 工厂函数：创建一个场景提示词模板注册中心。
+ *
+ * 示例：
+ * const reg = createScenarioPromptTemplateRegistry([{ id: 'leave', scope: 'business', scenarioName: '请假', baseBehavior: '辅助发起请假申请' }])
+ * const prompt = reg.buildPrompt('leave')
+ *
+ * 说明：返回的 registry 提供注册/注销/查询/列表和基于模板构建最终 prompt 的能力。
+ */

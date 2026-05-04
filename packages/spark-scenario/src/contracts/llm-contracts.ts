@@ -30,6 +30,15 @@ export interface AiBrowserLlmGenerateResponse {
 }
 
 export interface AiBrowserLlmClient {
+  /**
+   * 统一的浏览器端 LLM 客户端接口。
+   *
+   * 实现方可为：
+   * - 浏览器本地模型（transformers.js 等）
+   * - 基于 fetch 的远程模型（OpenAI 兼容 API）
+   *
+   * 要求：返回的 text 字段应为模型的最终可读文本（已做必要的后处理），raw 字段可选用于调试。
+   */
   generate: (request: AiBrowserLlmGenerateRequest) => Promise<AiBrowserLlmGenerateResponse>
 }
 
@@ -48,6 +57,12 @@ export interface AiScenarioPlan {
 }
 
 export interface AiScenarioBrowserPlanner {
+  /**
+   * 生成执行计划：仅使用 registry/llm 估算要执行的场景 ID 与工具调用列表。
+   */
   plan: (request: AiScenarioPlanningRequest) => Promise<AiScenarioPlan>
+  /**
+   * 生成计划并直接交由 runtime 执行，返回最终的运行结果（含工具执行输出与状态）。
+   */
   runWithPlanning: (request: AiScenarioPlanningRequest) => Promise<AiScenarioRunResult>
 }

@@ -219,6 +219,18 @@ function toRunRequest(request: AiScenarioPlanningRequest, plan: AiScenarioPlan):
 }
 
 export function createBrowserScenarioPlanner(options: BrowserScenarioPlannerOptions): AiScenarioBrowserPlanner {
+  /**
+   * 创建基于浏览器 LLM 的场景规划器（Planner）。
+   *
+   * 功能：
+   * 1) 使用 registry 查询目录与工具信息，调用 llm 生成执行计划（scenarioId + toolCalls）。
+   * 2) 提供 `plan`（仅生成计划）和 `runWithPlanning`（生成计划并交给 runtime.run 执行）两种方法。
+   *
+   * 使用示例：
+   * const planner = createBrowserScenarioPlanner({ runtime, llm })
+   * const plan = await planner.plan({ userInput: '我要请假三天' })
+   * await planner.runWithPlanning({ userInput: '我要请假三天' })
+   */
   async function plan(request: AiScenarioPlanningRequest): Promise<AiScenarioPlan> {
     const selected = await selectScenarioId(options, request)
     const toolPlan = await planToolCalls(options, request, selected.scenarioId)

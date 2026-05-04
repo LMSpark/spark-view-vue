@@ -11,6 +11,14 @@
  * 2) runtime 解析 prompt 时注入到实际系统提示词。
  */
 
+
+/**
+ * 分级查询约束文本片段（可直接注入到 system prompt 中）。
+ *
+ * 注意：该文本高度约束 LLM 的行为，强制模型按分级查询流程（queryIntentCatalog -> queryScenarioInfo ->
+ * queryScenarioTools -> queryToolSchemaNode -> runtime.run）执行。建议在 planner 的 system 消息中包含此约束，
+ * 以避免模型跳步骤或猜测工具/参数。
+ */
 export const TIERED_QUERY_CONSTRAINT = `
 # 📋 严格的分级查询协议
 
@@ -69,6 +77,16 @@ export const TIERED_QUERY_CONSTRAINT = `
 - 不允许"静默降级"或"兜底回退"
 `
 
+/**
+ * 生成最终的场景系统提示词。
+ *
+ * 参数：
+ * @param scenarioName 场景名，展示给 LLM 的任务标题。
+ * @param scenarioScope 场景作用域，用于在提示词中说明场景类别。
+ * @param baseBehavior 场景的核心行为说明（可选），用于补充职责描述。
+ *
+ * 返回值：完整的 system prompt 文本，包含分级查询约束与场景职责说明。
+ */
 export function buildScenarioSystemPrompt(
   scenarioName: string,
   scenarioScope: string,

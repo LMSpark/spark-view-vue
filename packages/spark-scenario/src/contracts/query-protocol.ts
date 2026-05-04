@@ -174,6 +174,17 @@ export interface AiToolSchemaNodeInfo {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export interface AiScenarioQueryProtocol {
+  /**
+   * 分级查询协议：为 planner/LLM 提供逐步发现场景、能力、Schema 与运行历史的能力。
+   *
+   * 使用示例（伪代码）：
+   * const catalog = registry.queryIntentCatalog()
+   * const info = registry.queryScenarioInfo('leave')
+   * const toolsPage = registry.queryScenarioTools({ scenarioId: 'leave', keyword: '申请' })
+   * const node = registry.queryToolSchemaNode({ toolName: 'applyLeave', pointer: 'body.reason' })
+   *
+   * 约定：所有查询在无法找到资源时应返回 undefined 或空分页结果（而非抛出），以便上层按规则处理并向用户/模型明确反馈。
+   */
   /** 步骤 1：发现可用场景。 */
   queryIntentCatalog: () => AiIntentCatalog
   /** 步骤 2：读取目标场景详情。 */

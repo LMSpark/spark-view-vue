@@ -6,8 +6,13 @@ import type { JsonSchema } from './json-schema'
 // 功能分区：统一约束场景作用域、确认策略、恢复策略。
 // 时序分区：场景注册时声明 -> runtime 执行与恢复阶段消费。
 
-/** 场景作用域：用于路由与能力归类。 */
-export type AiScenarioScope = 'planning' | 'design' | 'business'
+/** 场景作用域：用于路由与能力归类。
+ *
+ * 说明：业务系统中可能存在多个垂直域（例如 finance/HR 等），
+ * 在注册和查询时将场景按 scope 归类有利于目录筛选与路由决策。
+ * 此处列举常见 scope，允许后续扩展。
+ */
+export type AiScenarioScope = 'planning' | 'design' | 'business' | 'finance'
 /** 确认策略：控制执行前的人机确认粒度。 */
 export type AiConfirmPolicy = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
 /** 恢复策略：定义失败后的恢复方式。 */
@@ -163,13 +168,19 @@ export interface AiScenarioToolRegistration {
   fixHints?: readonly string[]
 }
 
-/** 可执行工具定义。 */
+/** 可执行工具定义。
+ *
+ * 注：在某些只用于元数据/文档展示的场景注册中，工具可能只需提供
+ * 名称/描述/参数等信息而不包含实际运行时的 `execute` 实现。
+ * 因此 `execute` 被声明为可选：注册中心和查询层允许缺失该字段，
+ * 但运行时在执行工具前必须检查并在缺失时抛出或返回错误。
+ */
 export interface AiScenarioTool {
   name: string
   description: string
   parameters?: JsonSchema
   registration?: AiScenarioToolRegistration
-  execute: (args: unknown, ctx: AiScenarioContext) => unknown
+  execute?: (args: unknown, ctx: AiScenarioContext) => unknown
 }
 
 /** buildSteps 产出的执行步骤。 */

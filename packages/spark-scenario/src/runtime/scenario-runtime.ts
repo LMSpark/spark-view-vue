@@ -182,6 +182,16 @@ export interface AiScenarioRuntimeOptions {
 // 流程分区：运行时实现
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * 创建场景运行时（Runtime）。
+ *
+ * 功能：负责将 AiScenarioRunRequest 转换为执行上下文、按步骤执行工具、处理闭合策略并写入历史。
+ *
+ * 典型使用流程：
+ * 1) runtime.registry.queryIntentCatalog()/queryScenarioInfo() 等用于规划阶段被 planner 使用；
+ * 2) planner 或调用方生成 AiScenarioRunRequest 后调用 runtime.run(request) 执行；
+ * 3) runtime 在执行结束后将记录写入内部 historyStore（可通过 options.historyLimit 配置保留条数）。
+ */
 export function createScenarioRuntime(
   initial: readonly AiScenarioDefinition[] = [],
   options: AiScenarioRuntimeOptions = {},
@@ -250,6 +260,17 @@ export function createScenarioRuntime(
           args: call.args,
           ok: false,
           error: `Tool not registered in scenario: ${call.tool}`,
+        })
+        return false
+      }
+
+      // 若工具未提供 execute 实现，视为运行时错误并返回失败。
+      if (typeof tool.execute !== 'function') {
+        executions.push({
+          tool: call.tool,
+          args: call.args,
+          ok: false,
+          error: `Tool ${call.tool} has no execute implementation`,
         })
         return false
       }

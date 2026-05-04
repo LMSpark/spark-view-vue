@@ -42,3 +42,20 @@ export interface JsonSchemaProperty {
   /** 枚举候选值。 */
   enum?: Array<string | number | null>
 }
+
+/**
+ * 约定：pointer 用于在 JsonSchema 内定位子节点，格式采用 JSON Pointer 风格（例如："/body/reason"），
+ * 或简单的点分路径（"body.reason"）——注册中心在 queryToolSchemaNode 时应支持两种解析方式。
+ *
+ * 示例：
+ * {
+ *   type: 'object',
+ *   properties: {
+ *     body: {
+ *       type: 'object',
+ *       properties: { reason: { type: 'string', description: '请假原因' } }
+ *     }
+ *   }
+ * }
+ * queryToolSchemaNode({ toolName: 'applyLeave', pointer: 'body.reason' }) => schema for reason 字段
+ */

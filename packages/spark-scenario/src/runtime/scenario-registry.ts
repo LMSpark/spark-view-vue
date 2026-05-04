@@ -313,6 +313,23 @@ export interface AiScenarioRegistryOptions {
 // 流程分区：注册中心实现
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * 创建场景注册中心（Registry）。
+ *
+ * 用途：管理场景注册生命周期并实现协议化的查询接口（AiScenarioQueryProtocol），
+ * 供 planner/LLM/runtime 在分级查询流程中逐步调用。
+ *
+ * 推荐调用顺序（时序）：
+ * 1) registry.queryIntentCatalog() — 发现可选场景
+ * 2) registry.queryScenarioInfo(scenarioId) — 获取场景详情
+ * 3) registry.queryScenarioTools(...) — 按需分页查工具
+ * 4) registry.queryToolSchemaNode(...) / queryToolSchema(...) — 精查参数结构
+ * 5) registry.queryToolRegistration(...) — 读取规则/示例/修复提示
+ *
+ * 参数：
+ * - initial: 启动时预注册的场景数组。
+ * - options: 可注入 runtime 的历史查询代理（queryRunHistory / queryRunRecord）。
+ */
 export function createScenarioRegistry(
   initial: readonly AiScenarioDefinition[] = [],
   options: AiScenarioRegistryOptions = {},
@@ -417,7 +434,17 @@ export function createScenarioRegistry(
   // 查询协议实现（按协议时序分层）
   // ----------------------------------------------
 
-  /** 步骤 1：意图目录查询。 */
+  /**
+   * 步骤 1：意图目录查询。
+   *
+   * 返回值说明：
+   * - entries: 每个条目为场景的轻量化元数据，供 LLM 或路由器快速浏览使用，
+   *   不包含运行时实现（如 execute），仅用于发现与匹配。
+   * - summary: 优先使用场景的 description；无描述时自动生成兜底文案，便于在提示词中直接展示。
+   *
+   * 使用建议（对 LLM）：
+   * - 首先调用此 API 构建可选场景目录，再用分级查询协议精查目标场景详情。
+   */
   function queryIntentCatalog(): AiIntentCatalog {
     const entries: AiIntentCatalogEntry[] = []
     for (const scenario of map.values()) {

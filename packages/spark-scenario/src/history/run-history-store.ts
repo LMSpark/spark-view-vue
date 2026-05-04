@@ -106,3 +106,13 @@ export function createScenarioRunHistoryStore(maxRecords = 200): AiScenarioRunHi
     clear,
   }
 }
+
+/**
+ * 工厂：创建内存型运行历史存储。
+ *
+ * 参数：
+ * - maxRecords: 最大保留条数（默认 200），超过时采用先进后出策略丢弃最老记录。
+ *
+ * 返回值：实现了 push/get/query/clear 的简单接口，适合在单进程测试或轻量运行时使用；
+ * 若需持久化或分布式场景，请替换为更强的持久层实现并把相应的 queryRunHistory/queryRunRecord 注入到 registry 中。
+ */
