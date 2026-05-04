@@ -471,3 +471,249 @@ mvn "-Dtest=ScenarioFunctionControllerTest,FilterExpressionCaseServiceTest" test
 - 后端可支持更多固定 FC，如通用 prompt、系统查询、调试工具和真正 Agent 子任务。
 - AI 框架可在 turn 内自动处理 backend FC，并在服务端完成 assistant/tool result append 与下一轮 LLM 调用。
 - 前端仍只负责人机交互和前端 FC；后端 FC 与会话通信过程对场景应用保持透明。
+
+## 13. 页面 4 文件编辑注册制替换方案
+
+> 记录日期：2026-05-04
+>
+> 本节记录“将旧 `packages/spark-ai` 页面 4 文件编辑链路，按 `spark-scenario` 注册制重新实现”的确认方案。该方案不以兼容旧 Stills 为目标，而是建立可 UI / 无 UI 运行的新闭环，并继续服务最终淘汰 `packages/spark-ai` 的目标。
+
+### 13.1 本期目标
+
+直接替换旧页面模型级 AI 编辑链路：
+
+- 页面 4 文件编辑运行时不再依赖 `@spark-view/spark-ai`。
+- UI 与无 UI/headless 都通过同一套场景、流程、函数与会话框架运行。
+- `edit.*` 作为流程控制函数族，不再写死某个固定 bootstrap 顺序。
+- `sparkNodeTree.*`、`datasetTool.*`、`textModel.*` 作为同一 `PageModelHost` 实例上的实际操作函数。
+- 所有 `PageModelHost` 实例按 `tenantId + projectId + pageId + sessionId` 隔离。
+- Headless 模式必须按注册流程完成校验与提交，最终强制导出落盘；未完成提交即视为本次运行失败。
+
+### 13.2 不兼容策略
+
+本期采用“不破不立”的策略：
+
+- 不做旧 Stills 运行时兼容层。
+- 不保留页面编辑链路对 `packages/spark-ai` 的运行时依赖。
+- 继续使用 `edit.*`、`sparkNodeTree.*`、`datasetTool.*`、`textModel.*` 这些函数名，是因为它们的领域语义清晰；它们在新方案中是正式注册函数名，不是旧系统兼容别名。
+
+旧命名空间的新语义：
+
+| 命名空间 | 新方案职责 |
+| --- | --- |
+| `edit.*` | 流程控制、反问、需求确认、校验、提交、回滚、导出 |
+| `sparkNodeTree.*` | `rule.json` 的页面节点树操作 |
+| `datasetTool.*` | `pagedata.json` 的 DataSet / DataView 操作 |
+| `textModel.*` | `script.js` / `style.css` 文本读写 |
+
+### 13.3 PageModelHost
+
+新增 `PageModelHost` 作为页面 4 文件编辑的统一执行实例。所有工具和函数必须作用在同一个 host 实例上，禁止各工具自行创建模型副本。
+
+Host key：
+
+```ts
+export interface PageModelHostKey {
+  tenantId: string
+  projectId: string
+  pageId: string
+  sessionId: string
+}
+```
+
+第一版建议能力边界：
+
+```ts
+export interface PageModelHost {
+  readonly key: PageModelHostKey
+  readonly mode: 'ui' | 'headless'
+  getNodeTree(): unknown
+  setNodeTree(next: unknown): void
+  getDataSetTool(): unknown
+  setDataSetTool(next: unknown): void
+  readScript(): string
+  writeScript(content: string): void
+  readStyle(): string
+  writeStyle(content: string): void
+  getFlowState(): PageModelFlowState
+  setFlowState(next: PageModelFlowState): void
+  getRequirements(): PageModelRequirements | null
+  setRequirements(next: PageModelRequirements): void
+  validate(): PageModelValidationResult
+  commit(): Promise<PageModelCommitResult>
+}
+```
+
+说明：
+
+- `spark-scenario` 核心框架仍保持干净。
+- 页面编辑能力放在 `spark-scenario/page-model` 子入口；该子入口允许引入 `spark-component` / `spark-data` 相关适配。
+- UI 模式 host 由 DevSystem 4 文件 `documents` 适配，写操作只更新 live model，不强制保存。
+- Headless 模式 host 由内存或文件实现承载；流程完成后必须事务式导出落盘。
+
+### 13.4 Host 实例管理
+
+新增 `PageModelHostRegistry`，按 `PageModelHostKey` 管理实例：
+
+- 同一个 `tenantId + projectId + pageId + sessionId` 下所有 FC 共享同一个 host。
+- 任一维度变化都视为不同实例，避免跨租户、跨项目、跨页面、跨会话污染。
+- registry 不负责 LLM 会话历史裁剪；它只负责业务模型 host 生命周期。
+- host 可以由 UI、内存、文件、API 或未来后端 Agent 注入。
+
+### 13.5 流程注册与 edit.*
+
+框架不能写死 `bootstrap`。流程必须通过注册机制表达，`edit.*` 只提供流程控制函数与可编排节点。
+
+第一版流程函数建议：
+
+| 函数 | 职责 |
+| --- | --- |
+| `edit.open` | 绑定或创建当前 `PageModelHost`，读取当前 4 文件事实 |
+| `edit.inspect` | 汇总当前页面模型、已确认需求、flow state 与关键风险 |
+| `edit.ask` | 当用户意图不足时发起结构化反问 |
+| `edit.confirmRequirements` | 将反问或模型判断得到的具体业务需求与限制写入 host + session store |
+| `edit.validate` | 校验当前 4 文件模型、DataKey、script/style 基本约束和流程完成度 |
+| `edit.commit` | Headless 模式事务式落盘；UI 模式只标记流程已提交或交由 UI 保存 |
+| `edit.rollback` | 回滚本次未提交变更，主要服务 headless 和失败恢复 |
+
+流程注册示例语义：
+
+1. `edit.open` 必须在任何写工具前完成。
+2. 意图缺失时优先 `edit.ask`，不得猜测业务约束。
+3. 写入前必须读取相关模型事实和函数规格。
+4. Headless 模式结束前必须 `edit.validate` + `edit.commit`。
+5. `edit.commit` 失败时必须保持 4 文件原子性，不允许部分写入。
+
+### 13.6 场景注册知识体系
+
+这里回到注册制。注册不是运行时工具清单，而是给 LLM 查询和编排的知识体系；工具只是承载这些注册项执行的运行载体。场景提示词也是注册内容，不能在框架写死。
+
+| 注册级别 | 责任 |
+| --- | --- |
+| 场景级 | 页面模型编辑场景的身份、边界、意图、系统规则和场景提示词 |
+| 流程级 | 可编排流程节点、关键步骤、闭合要求 |
+| 荷载级 | host key、requirements、SparkNode、Vue 组件 props、DataSet、文本内容等可传递数据结构 |
+| 工具级 | `edit` / `sparkNodeTree` / `datasetTool` / `textModel` 运行载体，以及其下可执行函数/action |
+
+荷载级必须完整注册：`SparkNode.props` 不是普通任意对象，它承载大量 Vue 组件属性。具体 props 字段必须来自 component catalog / `catalog.guide`，不能由模型凭经验猜测。`sparkNodeTree.addNode`、`sparkNodeTree.setProps` 等函数只是消费这些荷载的运行入口。
+
+具体业务需求和限制不作为静态注册项表达。场景提示词必须要求 LLM 不假设、不猜测；不清楚时先查询 `edit.ask` 的工具注册和参数 schema，再按 `reason/questions/id/prompt/options/allowFreeform` 货载调用 `edit.ask` 反问用户，最后由 `edit.confirmRequirements` 固化为 requirements 货载。
+
+### 13.7 框架层会话缓存
+
+历史会话、滑动窗口、缓存属于框架层职责，无论有无 UI 都必须可用。UI 只知道会话 ID，并消费事件展示。
+
+第一版新增可插拔 `AiScenarioSessionStore`：
+
+```ts
+export interface AiScenarioSessionStore {
+  get(sessionKey: AiScenarioSessionKey): Promise<AiScenarioSessionState | undefined>
+  set(sessionKey: AiScenarioSessionKey, state: AiScenarioSessionState): Promise<void>
+  appendMessage(sessionKey: AiScenarioSessionKey, message: AiScenarioMessage): Promise<void>
+  appendFunctionResult(sessionKey: AiScenarioSessionKey, result: AiScenarioFunctionCallResult): Promise<void>
+  clear(sessionKey: AiScenarioSessionKey): Promise<void>
+}
+```
+
+缓存内容：
+
+- 框架消息历史。
+- 已确认的 requirements。
+- FC 调用结果。
+- flow state。
+- 会话状态与可恢复信息。
+
+不缓存内容：
+
+- 不缓存完整 4 文件快照。
+- 4 文件当前事实仍由 `PageModelHost` 或其背后的文件/API/DB/UI 模型维护。
+
+默认实现：内存 `SessionStore`。后续可接浏览器、文件、后端或数据库实现。
+
+### 13.8 Headless 提交与落盘
+
+Headless 模式必须强制导出落盘，但不能在任意写工具后立即写文件。
+
+规则：
+
+1. 普通 `sparkNodeTree.*`、`datasetTool.*`、`textModel.*` 只修改 host 内存态。
+2. `edit.validate` 校验通过后才能 `edit.commit`。
+3. `edit.commit` 采用事务式写入：先写临时文件，再原子替换目标文件。
+4. 任何一个文件写入失败，必须保留原 4 文件不变，并返回结构化错误。
+5. headless run 结束时若 flow 要求提交但未提交，返回失败。
+
+UI 模式差异：
+
+- UI 模式写入 live model，不强制保存到后端。
+- UI 保存仍由 DevSystem 原有 `savePageFile` / `saveAllDirtyPageFiles` 控制。
+
+### 13.9 第一期实施范围
+
+第一期以可运行闭环为目标：
+
+1. 在 `packages/spark-scenario` 新增 `page-model` 子入口。
+2. 定义 `PageModelHost`、`PageModelHostKey`、`PageModelHostRegistry`、`PageModelFlowState`、`PageModelRequirements`。
+3. 提供 `MemoryPageModelHost` 和 `FilePageModelHost`。
+4. 提供页面模型场景注册工厂，注册 `edit.*`、`sparkNodeTree.*`、`datasetTool.*`、`textModel.*` 函数。
+5. 新增框架层 `AiScenarioSessionStore` 与内存实现。
+6. 新增 tool loop / FC 闭环，使 function definitions、function call、tool result、session store、flow state 可以串起来。
+7. DevSystem 页面模型级 AI 编辑改接新 `spark-scenario/page-model` 运行时，移除该链路对 `@spark-view/spark-ai` 的依赖。
+
+不做：
+
+- 不做旧 Stills 兼容。
+- 不把 4 文件快照塞进 session store。
+- 不在本期重构整个 AI 面板 UI 总线。
+- 不在核心 `spark-scenario` 入口直接暴露 `spark-component` / `spark-data` 依赖。
+
+### 13.10 实施步骤
+
+建议分最小闭环推进：
+
+1. 先落 `page-model` 类型与 host registry。
+2. 落内存 host 与文件 host，先不接 LLM。
+3. 落 `edit.open` / `edit.inspect` / `edit.confirmRequirements` / `edit.validate` / `edit.commit` 最小流程函数。
+4. 迁移最小 `textModel.*`，验证 script/style 读写。
+5. 迁移最小 `sparkNodeTree.*`，验证 rule.json 节点树读写。
+6. 迁移最小 `datasetTool.*`，验证 pagedata.json DataSet 读写。
+7. 接入 session store 与 function-call loop。
+8. 接 DevSystem UI host，替换旧页面模型编辑运行时。
+9. 逐步补齐旧目录中的全量 nodeTree / dataset 工具。
+
+### 13.11 验证计划
+
+`packages/spark-scenario` 聚焦验证：
+
+```powershell
+Set-Location D:\SPARK_VIEW\packages\spark-scenario
+pnpm run typecheck
+pnpm run lint
+pnpm exec vitest run src/tests/page-model-headless.e2e.test.ts --reporter verbose
+```
+
+首批 E2E 测试必须覆盖：
+
+- Memory host：读 4 文件、写文本、修改节点树、修改 DataSet、确认 requirements、validate。
+- File host：headless `edit.commit` 事务式落盘。
+- Host key 隔离：不同 `tenantId/projectId/pageId/sessionId` 不串状态。
+- Function bridge：连续调用 `edit.*`、`sparkNodeTree.*`、`datasetTool.*`、`textModel.*` 作用在同一 host。
+- Session store：缓存消息、requirements、FC 结果，不缓存 4 文件快照。
+- Flow guard：headless 未 validate/commit 结束时失败。
+
+DevSystem 接入后追加验证：
+
+```powershell
+Set-Location D:\SPARK_VIEW
+pnpm run typecheck
+pnpm run lint
+```
+
+必要时运行与 DevSystem 页面模型编辑相关的 focused Vitest。
+
+### 13.12 风险项
+
+- `spark-scenario/page-model` 会引入 `spark-component` / `spark-data` 相关实现，需要通过子入口隔离，避免污染核心入口。
+- 旧 dataset/nodeTree catalog 规模大，第一期应先迁最小闭环，再补齐全量工具。
+- Headless 事务式落盘必须严谨，否则会造成 4 文件部分写入。
+- requirements 同时写 host 和 session store，要明确执行真源：工具执行以 host 为准，模型推理可见性以 session store 消息/结果为准。
+- DevSystem 当前 AI 面板事件体系仍由 `spark-component` 承载，本期只替换页面编辑运行时，不扩大为 UI 总线重构。

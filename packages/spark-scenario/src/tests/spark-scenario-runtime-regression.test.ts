@@ -49,7 +49,6 @@ describe('spark-scenario runtime regressions', () => {
     const autoScenario: AiScenarioDefinition = {
       id: 'scenario.auto',
       title: 'Auto Completion',
-      scope: 'business',
       intents: ['auto'],
       promptPolicy: { systemPrompt: 'auto prompt' },
       completion: {
@@ -73,6 +72,8 @@ describe('spark-scenario runtime regressions', () => {
 
     // 阶段 3：断言 auto completion 已执行
     expect(autoResult.status).toBe('completed')
+    expect(autoResult.scenario.keywords).toEqual(['auto'])
+    expect(autoResult.scenario.tools?.map((item) => item.name)).toEqual(['main.run', 'completion.check'])
     expect(autoResult.executions.map((item) => item.tool)).toEqual(['main.run', 'completion.check'])
     expect(mainAuto).toHaveBeenCalledTimes(1)
     expect(completionAuto).toHaveBeenCalledTimes(1)
@@ -84,7 +85,6 @@ describe('spark-scenario runtime regressions', () => {
     const manualScenario: AiScenarioDefinition = {
       id: 'scenario.manual',
       title: 'Manual Completion',
-      scope: 'business',
       intents: ['manual'],
       promptPolicy: { systemPrompt: 'manual prompt' },
       completion: {
@@ -123,7 +123,6 @@ describe('spark-scenario runtime regressions', () => {
       {
         id: 'scenario.fallback',
         title: 'Template Fallback',
-        scope: 'design',
         intents: ['fallback'],
         promptPolicy: {
           promptTemplateId: 'template.not.exists',
@@ -159,7 +158,6 @@ describe('spark-scenario runtime regressions', () => {
     const scenarioA: AiScenarioDefinition = {
       id: 'scenario.history.a',
       title: 'History A',
-      scope: 'business',
       intents: ['a'],
       promptPolicy: { systemPrompt: 'prompt a' },
       tools: [createTool('a.run', () => ({ ok: true }))],
@@ -168,7 +166,6 @@ describe('spark-scenario runtime regressions', () => {
     const scenarioB: AiScenarioDefinition = {
       id: 'scenario.history.b',
       title: 'History B',
-      scope: 'planning',
       intents: ['b'],
       promptPolicy: { systemPrompt: 'prompt b' },
       tools: [createTool('b.run', () => ({ ok: true }))],

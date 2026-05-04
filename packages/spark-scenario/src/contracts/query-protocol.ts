@@ -27,6 +27,8 @@ import type {
   AiScenarioPayloadContract,
   AiScenarioRecoveryHint,
   AiScenarioRunRecord,
+  AiScenarioToolExecutionRegistration,
+  AiScenarioToolFunctionRegistration,
   AiScenarioToolRegistration,
 } from './scenario-types'
 
@@ -38,7 +40,7 @@ import type {
 export interface AiIntentCatalogEntry {
   scenarioId: string
   title: string
-  scope: string
+  prompt?: string
   intents: readonly string[]
   summary: string
 }
@@ -56,6 +58,9 @@ export interface AiToolSummary {
   name: string
   description: string
   scenarioId?: string
+  category?: string
+  tags?: readonly string[]
+  execution?: AiScenarioToolExecutionRegistration
   critical?: boolean
 }
 
@@ -63,7 +68,7 @@ export interface AiToolSummary {
 export interface AiScenarioInfo {
   scenarioId: string
   title: string
-  scope: string
+  prompt?: string
   description?: string
   systemPrompt: string
   defaultSteps: Array<{ id: string; title: string; description?: string }>
@@ -128,6 +133,12 @@ export interface AiToolSchemaInfo {
   examples?: Array<{ description: string; args: unknown }>
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 查询阶段 5 & 6：工具注册与函数映射
+// ═══════════════════════════════════════════════════════════════════════════
+// 阶段 5：queryToolRegistration（规则、失败码、修复提示）
+// 阶段 6：queryToolFunctions（工具 -> 函数 -> payload）
+
 /** 工具注册详情查询结果（规则、失败码、修复提示）。 */
 export interface AiToolRegistrationInfo {
   scenarioId?: string
@@ -137,8 +148,21 @@ export interface AiToolRegistrationInfo {
   registration: AiScenarioToolRegistration
 }
 
+/** 工具函数映射查询结果（工具 -> 函数 -> payload）。 */
+export interface AiToolFunctionsInfo {
+  /** 命中的场景 ID；跨场景同名工具时用于消歧。 */
+  scenarioId?: string
+  /** 工具名。 */
+  toolName: string
+  /** 工具描述（上层可直接展示）。 */
+  description: string
+  /** 函数映射列表：优先返回显式注册；未注册时由 registry 返回兼容默认映射。 */
+  functions: readonly AiScenarioToolFunctionRegistration[]
+}
+
 export interface AiScenarioToolsQuery {
   scenarioId?: string
+  category?: string
   keyword?: string
   offset?: number
   limit?: number
@@ -207,6 +231,14 @@ export interface AiScenarioQueryProtocol {
   queryToolSchemaNode: (query: AiToolSchemaNodeQuery) => AiToolSchemaNodeInfo | undefined
   /** 步骤 5：读取工具注册规则。 */
   queryToolRegistration: (toolName: string, scenarioId?: string) => AiToolRegistrationInfo | undefined
+  /**
+   * 步骤 6：读取工具函数映射。
+   *
+   * 约定：
+   * - 若工具显式声明 registration.functions，则返回该声明。
+   * - 若未声明，则返回兼容默认映射（tool.name -> function.name，含 default payload 投影）。
+   */
+  queryToolFunctions: (toolName: string, scenarioId?: string) => AiToolFunctionsInfo | undefined
   /** 步骤 7：查询运行历史分页。 */
   queryRunHistory: (query?: AiScenarioHistoryQuery) => AiScenarioHistoryPage
   /** 步骤 7：查询单条运行记录。 */

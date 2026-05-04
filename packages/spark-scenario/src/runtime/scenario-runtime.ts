@@ -6,6 +6,7 @@ import type {
   AiScenarioHistoryQuery,
   AiScenarioContext,
   AiScenarioDefinition,
+  AiScenarioIdentityTool,
   AiScenarioRunRecord,
   AiScenarioRunRequest,
   AiScenarioRunResult,
@@ -111,6 +112,19 @@ function createToolMap(tools: readonly AiScenarioTool[]): Map<string, AiScenario
   return map
 }
 
+function toIdentityTool(tool: AiScenarioTool): AiScenarioIdentityTool {
+  return {
+    name: tool.name,
+    description: tool.description,
+    ...(tool.parameters !== undefined ? { parameters: tool.parameters } : {}),
+    ...(tool.registration !== undefined ? { registration: tool.registration } : {}),
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function isFailedToolResult(value: unknown): value is { ok: false; code?: string; msg?: string; fix?: string } {
   return (
     typeof value === 'object'
@@ -120,12 +134,94 @@ function isFailedToolResult(value: unknown): value is { ok: false; code?: string
   )
 }
 
-function formatFailedToolResult(result: { code?: string; msg?: string; fix?: string }): string {
-  const code = result.code !== undefined && result.code !== '' ? `[${result.code}] ` : ''
-  const message = result.msg ?? 'Tool returned ok=false'
-  return result.fix !== undefined && result.fix !== ''
-    ? `${code}${message}; fix: ${result.fix}`
-    : `${code}${message}`
+function schemaTypeMatches(value: unknown, type: string | string[]): boolean {
+  const types = Array.isArray(type) ? type : [type]
+  for (const item of types) {
+    if (item === 'array' && Array.isArray(value)) return true
+    if (item === 'null' && value === null) return true
+    if (item === 'object' && isRecord(value)) return true
+    if (item === 'string' && typeof value === 'string') return true
+    if (item === 'number' && typeof value === 'number') return true
+    if (item === 'boolean' && typeof value === 'boolean') return true
+  }
+  return false
+}
+
+function validateToolArguments(tool: AiScenarioTool, args: unknown): string | null {
+  const schema = tool.parameters
+  if (schema === undefined) return null
+  const params = args === undefined ? {} : args
+  if (!isRecord(params)) return '参数必须是对象。'
+
+  for (const key of schema.required ?? []) {
+    if (!(key in params)) return `缺少 ${key}。`
+    const property = schema.properties[key]
+    if (property !== undefined && !schemaTypeMatches(params[key], property.type)) {
+      return `${key} 类型不符合参数结构。`
+    }
+  }
+
+  return null
+}
+
+function buildActionSpec(tool: AiScenarioTool): Record<string, unknown> {
+  return {
+    action: tool.name,
+    description: tool.description,
+    paramsSchema: tool.parameters ?? null,
+    usageRules: tool.registration?.rules ?? [],
+    example: tool.registration?.example ?? null,
+    failureModes: tool.registration?.failureCodes ?? [],
+    fixHints: tool.registration?.fixHints ?? [],
+    execution: tool.registration?.execution ?? null,
+  }
+}
+
+function buildRetryFix(tool: AiScenarioTool, reason: string): string {
+  const schema = JSON.stringify(tool.parameters ?? { type: 'object', properties: {} }, null, 2)
+  const example = tool.registration?.example !== undefined
+    ? ` 示例参数: ${JSON.stringify(tool.registration.example, null, 2)}。`
+    : ''
+  const rules = tool.registration?.rules !== undefined && tool.registration.rules.length > 0
+    ? ` 关键规则: ${tool.registration.rules.join('；')}`
+    : ''
+  return `${reason}。请按 ${tool.name} 的参数结构重试。参数结构: ${schema}.${example}${rules}`
+}
+
+function buildErrorFollowUp(tool: AiScenarioTool, code: string, msg: string, fix: string): string {
+  return `[系统即时纠错]\n动作 ${tool.name} 执行失败（${code}）。\n错误详情: ${msg}\n修复建议: ${fix}\n对应动作 actionSpec（已内联，无需再次查询）:\n${JSON.stringify(buildActionSpec(tool), null, 2)}\n请直接根据上面的 actionSpec 修正参数并重试，不需要重复原错误指令。`
+}
+
+function createToolFeedbackFailure(tool: AiScenarioTool, params: {
+  code: string
+  msg: string
+  fix?: string
+}): { ok: false; code: string; msg: string; fix: string; _followUp: string[] } {
+  const fix = params.fix !== undefined && params.fix !== ''
+    ? params.fix
+    : buildRetryFix(tool, params.msg)
+  return {
+    ok: false,
+    code: params.code,
+    msg: params.msg,
+    fix,
+    _followUp: [buildErrorFollowUp(tool, params.code, params.msg, fix)],
+  }
+}
+
+function enrichFailedToolResult(
+  tool: AiScenarioTool,
+  result: { ok: false; code?: string; msg?: string; fix?: string },
+): Record<string, unknown> {
+  const code = result.code ?? 'TOOL_RESULT_FAILED'
+  const msg = result.msg ?? 'Tool returned ok=false'
+  const failure = result.fix !== undefined
+    ? createToolFeedbackFailure(tool, { code, msg, fix: result.fix })
+    : createToolFeedbackFailure(tool, { code, msg })
+  return {
+    ...result,
+    ...failure,
+  }
 }
 
 /** 判断是否自动执行 completion 工具。 */
@@ -237,13 +333,21 @@ export function createScenarioRuntime(
     const payload = request.payload ?? resolvedScenario.buildPayload?.(ctx) ?? {}
     const steps = resolvedScenario.buildSteps?.(payload, ctx) ?? []
     const systemPrompt = resolveSystemPrompt(resolvedScenario, ctx, promptTemplates)
+    const scenarioKeywords = resolvedScenario.keywords ?? resolvedScenario.intents
+    const scenarioTools = resolvedScenario.tools.map((tool) => toIdentityTool(tool))
     const toolMap = createToolMap(resolvedScenario.tools)
     const calls = request.toolCalls ?? buildStepCalls(resolvedScenario, payload, ctx)
 
     function buildResult(status: AiScenarioRunResult['status'], executions: readonly AiScenarioToolExecution[]): AiScenarioRunResult {
       return {
         runId,
-        scenario: { id: resolvedScenario.id, title: resolvedScenario.title, scope: resolvedScenario.scope },
+        scenario: {
+          id: resolvedScenario.id,
+          title: resolvedScenario.title,
+          ...(systemPrompt !== '' ? { prompt: systemPrompt } : {}),
+          ...(scenarioKeywords.length > 0 ? { keywords: [...scenarioKeywords] } : {}),
+          ...(scenarioTools.length > 0 ? { tools: scenarioTools } : {}),
+        },
         systemPrompt,
         payload,
         steps,
@@ -275,17 +379,30 @@ export function createScenarioRuntime(
         return false
       }
 
+      const validationError = validateToolArguments(tool, call.args)
+      if (validationError !== null) {
+        executions.push({
+          tool: call.tool,
+          args: call.args,
+          ok: true,
+          result: createToolFeedbackFailure(tool, {
+            code: 'INVALID_PARAMS',
+            msg: validationError,
+          }),
+        })
+        return true
+      }
+
       try {
         const result = await tool.execute(call.args, ctx)
         if (isFailedToolResult(result)) {
           executions.push({
             tool: call.tool,
             args: call.args,
-            ok: false,
-            result,
-            error: formatFailedToolResult(result),
+            ok: true,
+            result: enrichFailedToolResult(tool, result),
           })
-          return false
+          return true
         }
 
         executions.push({
@@ -296,13 +413,17 @@ export function createScenarioRuntime(
         })
         return true
       } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
         executions.push({
           tool: call.tool,
           args: call.args,
-          ok: false,
-          error: error instanceof Error ? error.message : String(error),
+          ok: true,
+          result: createToolFeedbackFailure(tool, {
+            code: 'TOOL_EXECUTE_ERROR',
+            msg,
+          }),
         })
-        return false
+        return true
       }
     }
 

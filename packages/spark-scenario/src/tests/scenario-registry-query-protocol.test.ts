@@ -10,7 +10,6 @@ import { createScenarioRegistry, type AiScenarioDefinition } from '../index'
 const leaveScenario: AiScenarioDefinition = {
   id: 'scenario.leave',
   title: '请假申请',
-  scope: 'business',
   intents: ['请假', '休假', '年假'],
   description: '员工发起请假申请流程',
   promptPolicy: { systemPrompt: '你是请假助手' },
@@ -26,6 +25,47 @@ const leaveScenario: AiScenarioDefinition = {
         },
         required: ['days'],
       },
+      registration: {
+        category: 'leave',
+        tags: ['request'],
+        execution: { host: 'frontend', kind: 'tool' },
+        functions: [
+          {
+            name: 'leave.submitDraft',
+            description: '保存请假草稿',
+            payloads: [
+              {
+                name: 'draftPayload',
+                description: '草稿参数',
+                schema: {
+                  type: 'object',
+                  properties: {
+                    reason: { type: 'string', description: '请假原因' },
+                  },
+                },
+              },
+            ],
+          },
+          {
+            name: 'leave.submitFinal',
+            description: '提交正式请假申请',
+            payloads: [
+              {
+                name: 'finalPayload',
+                description: '正式提交参数',
+                schema: {
+                  type: 'object',
+                  properties: {
+                    days: { type: 'number', description: '请假天数' },
+                    reason: { type: 'string', description: '请假原因' },
+                  },
+                  required: ['days'],
+                },
+              },
+            ],
+          },
+        ],
+      },
     },
     {
       name: 'leave.cancel',
@@ -37,7 +77,6 @@ const leaveScenario: AiScenarioDefinition = {
 const reimbursementScenario: AiScenarioDefinition = {
   id: 'scenario.reimbursement',
   title: '费用报销',
-  scope: 'finance',
   intents: ['报销', '费用', '发票'],
   promptPolicy: { systemPrompt: '你是报销助手' },
   tools: [
@@ -63,7 +102,7 @@ describe('scenario-registry 查询协议', () => {
       expect(catalog.entries.map((e) => e.scenarioId)).toEqual(['scenario.leave', 'scenario.reimbursement'])
     })
 
-    it('每条 entry 包含 scenarioId / title / scope / intents / summary', () => {
+    it('每条 entry 包含 scenarioId / title / prompt / intents / summary', () => {
       const registry = createScenarioRegistry([leaveScenario])
 
       const catalog = registry.queryIntentCatalog()
@@ -71,7 +110,7 @@ describe('scenario-registry 查询协议', () => {
 
       expect(entry.scenarioId).toBe('scenario.leave')
       expect(entry.title).toBe('请假申请')
-      expect(entry.scope).toBe('business')
+      expect(entry.prompt).toBe('你是请假助手')
       expect(entry.intents).toEqual(['请假', '休假', '年假'])
       // description 有值时 summary 直接用 description
       expect(entry.summary).toBe('员工发起请假申请流程')
@@ -168,6 +207,21 @@ describe('scenario-registry 查询协议', () => {
       expect(page.items).toHaveLength(1)
       expect(page.items[0]!.name).toBe('leave.cancel')
     })
+
+    it('保留工具注册 category/tags/execution，并支持按 category 查询工具族', () => {
+      const registry = createScenarioRegistry([leaveScenario, reimbursementScenario])
+
+      const page = registry.queryScenarioTools({ scenarioId: 'scenario.leave', category: 'leave' })
+
+      expect(page.items).toHaveLength(1)
+      expect(page.items[0]).toMatchObject({
+        name: 'leave.submit',
+        category: 'leave',
+        tags: ['request'],
+        execution: { host: 'frontend', kind: 'tool' },
+      })
+      expect(registry.queryScenarioInfo('scenario.leave')?.tools[0]).toMatchObject({ category: 'leave' })
+    })
   })
 
   // ────────────────────────────────────────
@@ -223,6 +277,40 @@ describe('scenario-registry 查询协议', () => {
   })
 
   // ────────────────────────────────────────
+  // queryToolFunctions（工具 -> 函数 -> payload）
+  // ────────────────────────────────────────
+
+  describe('queryToolFunctions', () => {
+    it('优先返回显式注册的多函数映射', () => {
+      const registry = createScenarioRegistry([leaveScenario])
+
+      const info = registry.queryToolFunctions('leave.submit')!
+
+      expect(info.toolName).toBe('leave.submit')
+      expect(info.functions).toHaveLength(2)
+      expect(info.functions.map((item) => item.name)).toEqual(['leave.submitDraft', 'leave.submitFinal'])
+      expect(info.functions[0]?.payloads?.[0]?.name).toBe('draftPayload')
+      expect(info.functions[1]?.payloads?.[0]?.name).toBe('finalPayload')
+    })
+
+    it('未显式注册 functions 时返回兼容默认映射', () => {
+      const registry = createScenarioRegistry([leaveScenario])
+
+      const info = registry.queryToolFunctions('leave.cancel')!
+
+      expect(info.functions).toHaveLength(1)
+      expect(info.functions[0]?.name).toBe('leave.cancel')
+      expect(info.functions[0]?.description).toBe('撤销请假申请')
+    })
+
+    it('不存在的工具返回 undefined', () => {
+      const registry = createScenarioRegistry([leaveScenario])
+
+      expect(registry.queryToolFunctions('not.exist')).toBeUndefined()
+    })
+  })
+
+  // ────────────────────────────────────────
   // resolve（路由匹配）
   // ────────────────────────────────────────
 
@@ -233,6 +321,28 @@ describe('scenario-registry 查询协议', () => {
       const result = registry.resolve('我要申请年假三天', { userInput: '我要申请年假三天' })!
 
       expect(result.scenario.id).toBe('scenario.leave')
+      expect(result.score).toBeGreaterThan(0)
+    })
+
+    it('定义 identity.keywords 时按 keywords 进行匹配', () => {
+      const keywordScenario: AiScenarioDefinition = {
+        id: 'scenario.keyword',
+        title: '团建费用报销',
+        intents: ['无效关键词'],
+        keywords: ['团建报销', '活动报销'],
+        promptPolicy: { systemPrompt: '你是团建报销助手' },
+        tools: [
+          {
+            name: 'reimburse.team.submit',
+            description: '提交团建报销单',
+          },
+        ],
+      }
+      const registry = createScenarioRegistry([leaveScenario, keywordScenario])
+
+      const result = registry.resolve('我要提一个团建报销申请', { userInput: '我要提一个团建报销申请' })!
+
+      expect(result.scenario.id).toBe('scenario.keyword')
       expect(result.score).toBeGreaterThan(0)
     })
 

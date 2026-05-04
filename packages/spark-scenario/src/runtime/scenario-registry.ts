@@ -6,10 +6,12 @@ import type {
   AiScenarioFlowStep,
   AiScenarioHistoryPage,
   AiScenarioHistoryQuery,
+  AiScenarioIdentityTool,
   AiScenarioResolution,
   AiScenarioRunRecord,
   AiScenarioStep,
   AiScenarioTool,
+  AiScenarioToolFunctionRegistration,
 } from '../contracts/scenario-types'
 import type { JsonSchema } from '../contracts/json-schema'
 import type {
@@ -25,6 +27,7 @@ import type {
   AiScenarioRecoveryInfo,
   AiScenarioToolsPage,
   AiScenarioToolsQuery,
+  AiToolFunctionsInfo,
   AiToolRegistrationInfo,
   AiToolSchemaInfo,
   AiToolSchemaNodeInfo,
@@ -56,15 +59,36 @@ function normalize(value: string): string {
 }
 
 /** 默认关键词匹配算法：简单可解释、低开销。 */
-function keywordMatchScore(input: string, intents: readonly string[]): number {
+function keywordMatchScore(input: string, keywords: readonly string[]): number {
   const normalized = normalize(input)
   let score = 0
-  for (const intent of intents) {
-    const keyword = normalize(intent)
+  for (const raw of keywords) {
+    const keyword = normalize(raw)
     if (keyword.length === 0) continue
     if (normalized.includes(keyword)) score += keyword.length
   }
   return score
+}
+
+/** 读取场景关键词：优先 identity.keywords，缺省回退到 intents。 */
+function getScenarioKeywords(scenario: AiScenarioDefinition): readonly string[] {
+  const keywords = scenario.keywords
+  if (keywords !== undefined && keywords.length > 0) return keywords
+  return scenario.intents
+}
+
+function toIdentityTool(tool: AiScenarioTool): AiScenarioIdentityTool {
+  return {
+    name: tool.name,
+    description: tool.description,
+    ...(tool.parameters !== undefined ? { parameters: tool.parameters } : {}),
+    ...(tool.registration !== undefined ? { registration: tool.registration } : {}),
+  }
+}
+
+/** 读取场景工具实体：优先 identity.tools，缺省回退到 scenario.tools 实体快照。 */
+function getScenarioTools(scenario: AiScenarioDefinition): readonly AiScenarioIdentityTool[] {
+  return scenario.tools.map((tool) => toIdentityTool(tool))
 }
 
 /** 工具目录分页参数归一化。 */
@@ -189,6 +213,18 @@ function toolToCapability(scenarioId: string, tool: AiScenarioTool): AiScenarioC
   }
 }
 
+function toolToSummary(scenarioId: string, tool: AiScenarioTool, critical: boolean): AiToolSummary {
+  return {
+    name: tool.name,
+    description: tool.description,
+    scenarioId,
+    ...(tool.registration?.category !== undefined ? { category: tool.registration.category } : {}),
+    ...(tool.registration?.tags !== undefined ? { tags: tool.registration.tags } : {}),
+    ...(tool.registration?.execution !== undefined ? { execution: tool.registration.execution } : {}),
+    critical,
+  }
+}
+
 /** 汇总显式 capability + 工具 capability。 */
 function listScenarioCapabilities(scenario: AiScenarioDefinition): readonly AiScenarioCapability[] {
   const explicit = scenario.capabilities ?? []
@@ -288,6 +324,50 @@ function findScenarioTool(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 查询阶段 6：工具函数映射解析
+// ═══════════════════════════════════════════════════════════════════════════
+// 语义优先级：
+// 1) 显式注册：tool.registration.functions
+// 2) 兼容回退：tool.name -> function.name + default payload(投影 tool.parameters)
+
+/**
+ * 构建兼容默认函数映射。
+ *
+ * 用途：当工具未显式声明 functions 时，确保 queryToolFunctions 仍返回稳定结果，
+ * 让上层在“注册不完整”情况下也能按协议继续查询与展示。
+ */
+function buildDefaultToolFunction(tool: AiScenarioTool): AiScenarioToolFunctionRegistration {
+  return {
+    name: tool.name,
+    description: tool.description,
+    ...(tool.parameters !== undefined
+      ? {
+          payloads: [
+            {
+              name: 'default',
+              description: '默认参数货载，复用工具 parameters。',
+              schema: tool.parameters,
+              ...(tool.parameters.required !== undefined ? { required: tool.parameters.required } : {}),
+              ...(tool.registration?.example !== undefined ? { examples: [tool.registration.example] } : {}),
+            },
+          ],
+        }
+      : {}),
+  }
+}
+
+/**
+ * 解析工具函数映射（显式优先，兼容回退）。
+ */
+function resolveToolFunctions(tool: AiScenarioTool): readonly AiScenarioToolFunctionRegistration[] {
+  const functions = tool.registration?.functions
+  if (functions !== undefined && functions.length > 0) {
+    return functions
+  }
+  return [buildDefaultToolFunction(tool)]
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 功能分区：注册中心接口
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -325,6 +405,7 @@ export interface AiScenarioRegistryOptions {
  * 3) registry.queryScenarioTools(...) — 按需分页查工具
  * 4) registry.queryToolSchemaNode(...) / queryToolSchema(...) — 精查参数结构
  * 5) registry.queryToolRegistration(...) — 读取规则/示例/修复提示
+ * 6) registry.queryToolFunctions(...) — 读取工具函数映射（工具 -> 函数 -> payload）
  *
  * 参数：
  * - initial: 启动时预注册的场景数组。
@@ -420,7 +501,7 @@ export function createScenarioRegistry(
         continue
       }
 
-      const score = keywordMatchScore(input, scenario.intents)
+      const score = keywordMatchScore(input, getScenarioKeywords(scenario))
       if (score <= 0) continue
       if (best === undefined || score > best.score) {
         best = { scenario, score }
@@ -448,12 +529,17 @@ export function createScenarioRegistry(
   function queryIntentCatalog(): AiIntentCatalog {
     const entries: AiIntentCatalogEntry[] = []
     for (const scenario of map.values()) {
+      const keywords = getScenarioKeywords(scenario)
+      const tools = getScenarioTools(scenario)
+      const toolNames = tools.map((tool) => tool.name)
+      const staticPrompt = scenario.promptPolicy.systemPrompt
+      const prompt = typeof staticPrompt === 'string' ? staticPrompt : undefined
       entries.push({
         scenarioId: scenario.id,
         title: scenario.title,
-        scope: scenario.scope,
-        intents: scenario.intents,
-        summary: scenario.description ?? `场景类型：${scenario.scope}。触发关键词：${scenario.intents.join('、')}。`,
+        ...(prompt !== undefined && prompt !== '' ? { prompt } : {}),
+        intents: keywords,
+        summary: scenario.description ?? `场景标题：${scenario.title}。触发关键词：${keywords.join('、')}。可用工具：${toolNames.join('、')}。`,
       })
     }
     return { entries }
@@ -467,16 +553,11 @@ export function createScenarioRegistry(
     const staticPrompt = scenario.promptPolicy.systemPrompt
     const systemPrompt = typeof staticPrompt === 'function' ? '' : (staticPrompt ?? '')
     const criticalTools = listCriticalTools(flowInfo.flow)
-    const tools: AiToolSummary[] = scenario.tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-      scenarioId: scenario.id,
-      critical: criticalTools.has(tool.name),
-    }))
+    const tools: AiToolSummary[] = scenario.tools.map((tool) => toolToSummary(scenario.id, tool, criticalTools.has(tool.name)))
     return {
       scenarioId: scenario.id,
       title: scenario.title,
-      scope: scenario.scope,
+      ...(systemPrompt !== '' ? { prompt: systemPrompt } : {}),
       ...(scenario.description !== undefined ? { description: scenario.description } : {}),
       systemPrompt,
       defaultSteps: flowInfo.flow.steps.map((step) => ({
@@ -541,16 +622,19 @@ export function createScenarioRegistry(
   function queryScenarioTools(query?: AiScenarioToolsQuery): AiScenarioToolsPage {
     const { offset, limit } = toPage(query)
     const scenarioId = query?.scenarioId?.trim()
+    const category = query?.category?.trim()
     const keyword = query?.keyword?.trim().toLowerCase()
     const all: AiToolSummary[] = []
     for (const scenario of map.values()) {
       if (scenarioId !== undefined && scenarioId !== '' && scenario.id !== scenarioId) continue
       const criticalTools = listCriticalTools(resolveScenarioFlow(scenario).flow)
       for (const tool of scenario.tools) {
+        if (category !== undefined && category !== '' && tool.registration?.category !== category) continue
         if (keyword !== undefined && keyword !== '') {
-          if (!`${tool.name} ${tool.description}`.toLowerCase().includes(keyword)) continue
+          const haystack = [tool.name, tool.description, tool.registration?.category ?? '', ...(tool.registration?.tags ?? [])].join(' ').toLowerCase()
+          if (!haystack.includes(keyword)) continue
         }
-        all.push({ name: tool.name, description: tool.description, scenarioId: scenario.id, critical: criticalTools.has(tool.name) })
+        all.push(toolToSummary(scenario.id, tool, criticalTools.has(tool.name)))
       }
     }
     const items = all.slice(offset, offset + limit)
@@ -601,11 +685,35 @@ export function createScenarioRegistry(
       toolName: tool.name,
       description: tool.description,
       parameters: tool.parameters,
+      // 对未声明 registration 的工具返回可用默认注册信息，避免上层额外兜底。
       registration: tool.registration ?? {
         rules: ['调用前必须先查询 queryToolSchemaNode 或 queryToolSchema'],
         failureCodes: ['INVALID_PARAMS', 'TOOL_EXEC_FAILED'],
         fixHints: ['按 parameters 的 required 字段补齐参数后重试'],
+        functions: resolveToolFunctions(tool),
       },
+    }
+  }
+
+  /**
+   * 步骤 6：工具函数映射查询。
+   *
+   * 行为约定：
+   * - 空 toolName 返回 undefined（fail-fast 输入校验）。
+   * - 工具不存在返回 undefined（协议约定：查询不抛错）。
+   * - 工具存在时，返回“显式映射或兼容回退映射”。
+   */
+  function queryToolFunctions(toolName: string, scenarioId?: string): AiToolFunctionsInfo | undefined {
+    const lookupName = toolName.trim()
+    if (lookupName === '') return undefined
+    const resolved = findScenarioTool(map.values(), lookupName, scenarioId)
+    if (resolved === undefined) return undefined
+    const { scenario, tool } = resolved
+    return {
+      scenarioId: scenario.id,
+      toolName: tool.name,
+      description: tool.description,
+      functions: resolveToolFunctions(tool),
     }
   }
 
@@ -631,6 +739,7 @@ export function createScenarioRegistry(
     queryToolSchema,
     queryToolSchemaNode,
     queryToolRegistration,
+    queryToolFunctions,
     queryRunHistory,
     queryRunRecord,
   }

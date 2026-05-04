@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   createScenarioFunctionCallBridge,
   createScenarioRuntime,
+  runScenarioFunctionCalls,
   type AiScenarioContext,
   type AiScenarioDefinition,
   type AiScenarioTool,
@@ -49,7 +50,6 @@ function createScenario(id: string, tools: readonly AiScenarioTool[]): AiScenari
   return {
     id,
     title: `场景：${id}`,
-    scope: 'business',
     intents: [id],
     promptPolicy: { systemPrompt: `提示词：${id}` },
     tools,
@@ -200,5 +200,116 @@ describe('scenario function-call bridge', () => {
       executionHost: 'frontend',
       error: 'Function not registered: missing_function',
     })
+  })
+
+  it('returns registered parameter schema feedback for invalid function arguments without calling the tool', async () => {
+    const executeSubmit = vi.fn(() => ({ submitted: true }))
+    const runtime = createScenarioRuntime([
+      createScenario('scenario.leave', [
+        {
+          ...createExecutableTool('leave.submit', executeSubmit),
+          parameters: {
+            type: 'object',
+            properties: {
+              value: { type: 'string', description: '请假类型' },
+            },
+            required: ['value'],
+          },
+          registration: {
+            example: { value: 'annual' },
+            rules: ['value 必须来自已确认用户意图。'],
+          },
+        },
+      ]),
+    ])
+    const bridge = createScenarioFunctionCallBridge(runtime)
+
+    const result = await bridge.executeFunctionCall({
+      id: 'call-invalid-params',
+      name: 'scenario_leave__leave_submit',
+      arguments: '{}',
+    })
+
+    expect(result.ok).toBe(true)
+    expect(result.status).toBe('executed')
+    expect(result.result).toMatchObject({
+      ok: false,
+      code: 'INVALID_PARAMS',
+      msg: '缺少 value。',
+    })
+    expect(JSON.stringify(result.result)).toContain('required')
+    expect(JSON.stringify(result.result)).toContain('value 必须来自已确认用户意图。')
+    expect(executeSubmit).not.toHaveBeenCalled()
+  })
+
+  it('keeps function loop running when a registered tool returns business ok=false feedback', async () => {
+    const executeFailingTool = vi.fn(() => ({
+      ok: false,
+      code: 'BUSINESS_RULE_FAILED',
+      msg: '业务规则未满足',
+      fix: '补齐业务限制后重试。',
+    }))
+    const executeNextTool = vi.fn(() => ({ next: true }))
+    const runtime = createScenarioRuntime([
+      createScenario('scenario.leave', [
+        createExecutableTool('leave.submit', executeFailingTool),
+        createExecutableTool('leave.inspect', executeNextTool),
+      ]),
+    ])
+    const bridge = createScenarioFunctionCallBridge(runtime)
+    const appended: unknown[] = []
+
+    const result = await runScenarioFunctionCalls([
+      { id: 'call-fail', name: 'scenario_leave__leave_submit', arguments: '{"value":"annual"}' },
+      { id: 'call-next', name: 'scenario_leave__leave_inspect', arguments: '{"value":"state"}' },
+    ], {
+      bridge,
+      appendFunctionResult: (functionResult) => {
+        appended.push(functionResult)
+      },
+    })
+
+    expect(result.ok).toBe(true)
+    expect(result.results).toHaveLength(2)
+    expect(result.results[0]).toMatchObject({ ok: true, status: 'executed' })
+    expect(result.results[0]?.result).toMatchObject({ ok: false, code: 'BUSINESS_RULE_FAILED' })
+    expect(JSON.stringify(result.results[0]?.result)).toContain('_followUp')
+    expect(executeNextTool).toHaveBeenCalledTimes(1)
+    expect(appended).toHaveLength(2)
+  })
+
+  it('returns schema feedback when a registered frontend tool throws during execution', async () => {
+    const runtime = createScenarioRuntime([
+      createScenario('scenario.leave', [
+        {
+          ...createExecutableTool('leave.submit', () => {
+            throw new Error('执行器异常')
+          }),
+          parameters: {
+            type: 'object',
+            properties: {
+              value: { type: 'string', description: '请假类型' },
+            },
+            required: ['value'],
+          },
+        },
+      ]),
+    ])
+    const bridge = createScenarioFunctionCallBridge(runtime)
+
+    const result = await bridge.executeFunctionCall({
+      id: 'call-throw',
+      name: 'scenario_leave__leave_submit',
+      arguments: '{"value":"annual"}',
+    })
+
+    expect(result.ok).toBe(true)
+    expect(result.status).toBe('executed')
+    expect(result.result).toMatchObject({
+      ok: false,
+      code: 'TOOL_EXECUTE_ERROR',
+      msg: '执行器异常',
+    })
+    expect(JSON.stringify(result.result)).toContain('required')
   })
 })

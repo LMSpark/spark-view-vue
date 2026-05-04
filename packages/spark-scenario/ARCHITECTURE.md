@@ -1,24 +1,25 @@
 # spark-scenario 架构说明
 
-`spark-scenario` 是纯 TypeScript、无框架依赖的 AI 场景协议与运行时包。它不接管 AI 框架的会话、SSE、滑动窗口或 provider 调度，而是把业务场景、工具、函数定义和 payload 契约整理成 AI 框架可查询、可调用、可回放的结构。
+`spark-scenario` 是纯 TypeScript、无框架依赖的 AI 场景协议与运行时包。它不接管 AI 框架的会话、通信、滑动窗口或 provider 调度，而是把业务场景、工具、函数定义和 payload 契约整理成 AI 框架可查询、可调用、可回放的结构。
 
 本文按五级模型解释架构边界：框架级、场景级、工具级、函数级、货载级。
 
 ## 核心结论
 
-- 框架级负责通信和主循环：会话 ID、主/子 Agent、SSE、function_call、function_result、append、滑动窗口都属于 AI 框架。
-- 场景级负责业务组织：场景定义意图、提示词策略、payload 契约、流程、完成条件和恢复提示。
-- 工具级负责能力声明：工具描述参数 schema、执行宿主、分类、规则、失败码和修复提示。
-- 函数级负责 FC 协议：工具被投影成 AI 框架可见的 function definition，调用结果用 `callId` 回写。
-- 货载级负责数据形状：用户输入、上下文、参数槽位、函数 arguments、工具结果都必须有清晰结构边界。
+- 框架级负责通信和 LLM turn loop：会话 ID、主/子 Agent、function_call、function_result、append、滑动窗口都属于 AI 框架；`spark-scenario` 不拥有这些生命周期。
+- 场景级负责业务知识组织：场景定义意图、提示词策略、payload 契约、过程知识、完成条件和恢复提示。
+- 工具级负责能力声明：工具描述参数 schema、分类、规则、失败码、修复提示和执行宿主。
+- 函数级负责 FC 投影和执行桥接：工具被投影成 AI 框架可见的 function definition，调用结果用 `callId` 回写。
+- 货载级负责数据形状：用户输入、上下文、参数槽位、函数 arguments、工具结果、错误反馈和进程状态都必须有清晰结构边界。
+
+核心语义：LLM 是业务编排者，注册信息是 LLM 的知识协议。`flow`、`completion`、`recovery` 告诉 LLM 做事时可参考的阶段、检查点和恢复方式，不是要求框架把每种业务场景都强制编译成固定计划。
 
 ## 五级架构图
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
 │ 框架级：AI Framework / Agent Loop                             │
-│ sessionId, SSE, sliding window, LLM loop, function routing     │
-│ createScenarioSseLlmClient, AiBrowserLlmClient                 │
+│ sessionId, sliding window, LLM turn loop, function routing      │
 └──────────────────────────────┬───────────────────────────────┘
                                │ 投喂 function definitions / 回写 function results
 ┌──────────────────────────────▼───────────────────────────────┐
@@ -28,7 +29,7 @@
 └──────────────────────────────┬───────────────────────────────┘
                                │ functionName 映射到 scenarioId + toolName
 ┌──────────────────────────────▼───────────────────────────────┐
-│ 场景级：Scenario 定义与运行                                     │
+│ 场景级：Scenario 注册知识                                       │
 │ AiScenarioDefinition, promptPolicy, flow, recovery             │
 │ createScenarioRegistry, createScenarioRuntime                  │
 └──────────────────────────────┬───────────────────────────────┘
@@ -36,7 +37,7 @@
 ┌──────────────────────────────▼───────────────────────────────┐
 │ 工具级：Tool 能力声明                                           │
 │ AiScenarioTool, parameters, registration.execution             │
-│ frontend FC / backend FC                                       │
+│ 当前页面模型 FC 均为 frontend tool                              │
 └──────────────────────────────┬───────────────────────────────┘
                                │ 参数 schema、槽位、上下文和结果
 ┌──────────────────────────────▼───────────────────────────────┐
@@ -45,19 +46,19 @@
 └──────────────────────────────────────────────────────────────┘
 ```
 
-这不是传统“上层调用下层”的单向代码依赖图，而是 AI 运行时的信息责任图。`spark-scenario` 提供场景、工具、函数和 payload 的结构；AI 框架决定何时调用、如何通信、如何继续推理。
+这不是传统“上层调用下层”的单向代码依赖图，而是 AI 运行时的信息责任图。`spark-scenario` 提供场景、工具、函数和 payload 的结构；AI 框架决定何时调用、如何通信、如何继续推理。LLM 根据这些注册知识自主选择下一次 FC，工具结果再作为反馈回到 LLM。
 
 ## 层级责任详解
 
 ### 1. 框架级
 
-框架级是 AI 主循环所在地。它决定本轮使用哪个 session、是否创建子 Agent、如何打开 SSE、如何维护滑动窗口、如何把 function result append 回会话。
+框架级是 AI 主循环所在地。它决定本轮使用哪个 session、是否创建子 Agent、如何通信、如何维护滑动窗口、如何把 function result append 回会话。
 
 `spark-scenario` 在框架级只提供适配点：
 
 - `AiBrowserLlmClient`：统一 LLM 客户端接口。
-- `createScenarioSseLlmClient`：连接 AI 框架 SSE 的浏览器端兼容客户端。
-- `TIERED_QUERY_CONSTRAINT`：要求模型先查询能力目录，再使用工具或函数。
+- `createScenarioSseLlmClient`：连接 AI 框架通信流的浏览器端兼容客户端；通信细节不进入场景业务判断。
+- `TIERED_QUERY_CONSTRAINT`：要求模型不猜测工具、函数和货载；需要信息时查询能力目录、schema 或工具注册。
 - `buildScenarioSystemPrompt`：生成框架级基础约束和场景职责说明。
 
 框架级不应该做的事：
@@ -66,7 +67,7 @@
 - 不让场景应用解析 `delta/reasoning/result/error/done` 做业务决策。
 - 不要求 `spark-scenario` 创建、销毁、裁剪或持久化 AI session。
 
-框架级提示词的职责是“教 Agent 怎么使用系统”，不是写业务细节。例如：必须先调用 registry 查询场景、工具和 schema；未知字段必须停止；不能猜测参数。
+框架级提示词的职责是“教 Agent 怎么使用系统”，不是写业务细节。例如：不能猜测工具、函数、参数和货载；未知字段必须通过注册查询、FC 结果或结构化反问补足。查询顺序是推荐路径，不是固定业务计划。
 
 ### 2. 场景级
 
@@ -76,11 +77,12 @@
 - 什么时候匹配它：`intents`、`matchIntent`。
 - 该场景的提示词策略：`promptPolicy`。
 - 需要哪些货载数据：`payload`。
-- 推荐执行顺序：`flow`、`buildSteps`。
+- 过程知识：`flow`。
+- 兼容默认调用：`buildSteps`。
 - 完成和失败如何处理：`completion`、`recovery`。
 - 能调用哪些工具：`tools`。
 
-场景级提示词不负责通信，也不应该写死 provider 协议。它只描述业务角色、业务边界、确认策略和恢复策略。
+场景级提示词不负责通信，也不应该写死 provider 协议。它只描述业务角色、业务边界、确认策略、恢复策略，以及 LLM 应如何用 tool + function + payload 检查当前进程。
 
 ```typescript
 const scenario: AiScenarioDefinition = {
@@ -102,7 +104,7 @@ const scenario: AiScenarioDefinition = {
 }
 ```
 
-场景级通过 registry 暴露分级查询协议。LLM 或 AI 框架应先查 `queryIntentCatalog()`，再查 `queryScenarioInfo()`、`queryScenarioTools()`、`queryToolSchemaNode()`，最后才构造计划或 function call。
+场景级通过 registry 暴露分级查询协议。LLM 或 AI 框架可按需要查询 `queryIntentCatalog()`、`queryScenarioInfo()`、`queryScenarioTools()`、`queryToolSchemaNode()`、`queryToolRegistration()`。要求不是“每次必须先生成计划”，而是“不允许在缺少事实时猜测”；缺信息时先查询、反问或执行只读检查 FC。
 
 ### 3. 工具级
 
@@ -128,19 +130,15 @@ const tool: AiScenarioTool = {
   },
   registration: {
     rules: ['执行前必须具备 tenantId 和 projectId。'],
-    execution: {
-      host: 'backend',
-      kind: 'query',
-      backendRoute: '/api/ai/scenario-functions/filterExpressionCases.query',
-    },
+    execution: { host: 'frontend', kind: 'tool' },
   },
 }
 ```
 
-执行宿主是当前 FC 迁移的关键：
+执行宿主是当前 FC 迁移的关键。当前页面模型场景的 FC 全部注册为前端执行：
 
 - `frontend`：前端执行，适合页面状态、人机交互、可视化确认、浏览器 live model。
-- `backend`：后端执行，适合查询、固定 FC、通用 prompt、服务端数据访问和未来 Agent 后端自动执行。
+- `backend`：协议预留和未来扩展；前端 bridge 不会执行 backend 工具，只会返回 `requires-backend` 指示。它不是当前页面模型 FC 主路径。
 
 工具级规则和失败码是提示词材料，但不是提示词本体。模型在调用工具前应通过 `queryToolRegistration()` 读取它们。
 
@@ -173,19 +171,13 @@ interface AiScenarioFunctionDefinition {
 }
 ```
 
-函数调用进入 bridge 后按宿主分流：
+函数调用进入 bridge 后按宿主分流。当前页面模型工具均为前端函数：
 
 - 前端函数：解析 `arguments`，调用 `runtime.run()`，返回 `status='executed'` 或 `status='failed'`。
-- 后端函数：前端 bridge 不执行，返回 `status='requires-backend'` 与 `backendRoute`，由 AI 框架或后端 executor 执行。
+- 后端函数：仅作为协议能力保留；前端 bridge 不执行，返回 `status='requires-backend'` 与 `backendRoute`，交由外部框架处理。
 - 未注册函数或函数名冲突：fail-fast，不静默猜测。
 
-后端 FC 第一版已经收敛为：
-
-```http
-POST /api/ai/scenario-functions/{functionName}
-```
-
-该 endpoint 负责执行后端函数本身，不负责 append 会话，不负责继续下一轮 LLM 调用。对 `host='backend'` 的工具，调度时应优先使用 `registration.execution.backendRoute` 或 `AiScenarioFunctionCallResult.backendRoute`；provider 侧函数名可能经过 mapper 处理，不一定等同于后端 executor 的 `{functionName}`。
+注意：不要把 backend executor 当成当前页面模型 FC 方案的一部分。当前迁移主线是前端 bridge 承接页面模型工具执行，AI 框架负责把 function result 回灌给 LLM。
 
 ### 5. 货载级
 
@@ -197,7 +189,7 @@ POST /api/ai/scenario-functions/{functionName}
 - `AiScenarioPayloadContract`：场景运行需要补齐的 payload 槽位与 schema。
 - `AiScenarioToolCall.args`：工具执行参数。
 - `AiScenarioFunctionCall.arguments`：函数调用原始参数。
-- `AiScenarioFunctionCallResult.result`：函数执行结果。
+- `AiScenarioFunctionCallResult.result`：函数执行结果，也可以承载可恢复的业务失败、修复建议和当前进程状态。
 
 货载级不是数据库模型，也不表达外键、索引或约束。它是 AI 运行过程中的结构化数据合同。
 
@@ -224,7 +216,9 @@ Payload、Context、Arguments 的分工：
 | `payload` | 场景级 | 本次场景运行的已补齐业务数据 |
 | `tool.args` | 工具级 | 某次工具执行参数，通常来自 payload 或前一步结果 |
 | `function.arguments` | 函数级 | provider/Agent 发起 FC 时的原始参数 |
-| `result` | 函数/工具级 | 执行返回值，由 AI 框架决定是否 append 到会话 |
+| `result` | 函数/工具级 | 执行返回值、业务失败反馈、修复建议和状态摘要，由 AI 框架 append 给 LLM |
+
+业务失败和框架失败必须分层。函数名不存在、参数无法解析、执行宿主不匹配属于框架失败；工具执行后返回的 `{ ok: false, code, msg, fix }` 属于业务反馈，应尽量作为 result 回灌给 LLM，让 LLM 自主决定 inspect、ask、retry、validate、rollback 或 commit。
 
 ## 提示词在五级中的位置
 
@@ -232,13 +226,13 @@ Payload、Context、Arguments 的分工：
 
 | 层级 | 提示词内容 | 代码位置 |
 | --- | --- | --- |
-| 框架级 | 分级查询约束、禁止猜测、函数调用纪律、失败必须显式 | `TIERED_QUERY_CONSTRAINT`、`buildScenarioSystemPrompt` |
+| 框架级 | 禁止猜测、按需查询注册知识、函数调用纪律、反馈必须显式 | `TIERED_QUERY_CONSTRAINT`、`buildScenarioSystemPrompt` |
 | 场景级 | 场景角色、业务目标、确认/恢复策略、模板绑定 | `AiScenarioPromptPolicy`、`promptTemplateId` |
 | 工具级 | 工具调用规则、示例、失败码、修复提示 | `AiScenarioToolRegistration.rules/example/failureCodes/fixHints` |
 | 函数级 | function 描述、参数 schema、执行宿主 | `AiScenarioFunctionDefinition` |
 | 货载级 | 字段说明、必填槽位、缺失追问文本 | `AiScenarioPayloadSlot.description/askWhenMissing` |
 
-推荐拼装原则：框架级负责纪律，场景级负责业务身份，工具级负责调用规则，货载级负责字段语义。函数级只提供给 AI 框架，不应该再塞入大段业务提示词。
+推荐拼装原则：框架级负责纪律，场景级负责业务身份，工具级负责调用规则，货载级负责字段语义。函数级只提供给 AI 框架，不应该再塞入大段业务提示词。提示词要鼓励 LLM 用注册知识自主编排，而不是要求框架替 LLM 固定计划。
 
 ## FC 在五级中的位置
 
@@ -250,13 +244,13 @@ FC 的来源是工具级，运行入口是函数级，调度所有权在框架�
 函数级 AiScenarioFunctionDefinition
   ↓ 由 AI 框架投喂给 LLM
 AI 框架收到 function_call
-  ↓ 按 execution.host 分流
+  ↓ 按 execution.host 分流；当前页面模型为 frontend
 frontend: createScenarioFunctionCallBridge.executeFunctionCall()
-backend: POST /api/ai/scenario-functions/{functionName}
+backend: 返回 requires-backend 指示，非当前页面模型主路径
   ↓
 AiScenarioFunctionCallResult / 后端同形结果
   ↓
-AI 框架 append tool result 并决定是否继续推理
+AI 框架 append function result，LLM 基于成功或失败反馈继续自主编排
 ```
 
 场景应用只关心 FC 的业务语义：要调用哪个函数、参数是什么、结果是什么。SSE 的 `delta/reasoning/result/error/done` 属于框架级传输细节。
@@ -279,31 +273,33 @@ runtime.run({ scenarioId, toolCalls })
 toolResolver 执行工具
 ```
 
-该路径用于兼容和测试，不是未来主路径。它不具备一等 function_call/function_result 语义。
+该路径用于兼容和测试，不是未来主路径。它不具备一等 function_call/function_result 回灌语义，也不代表所有业务都必须先生成计划。
 
 ### FC 主路径
 
-未来主路径以 AI 框架为中心：
+未来主路径以 AI 框架和 LLM 自主编排为中心；这里描述 FC 语义，不讨论通信细节：
 
 ```text
 AI 框架解析/创建 session
   ↓
 读取 registry / bridge，获得 function definitions
   ↓
-LLM turn 产生 function_call
+LLM 基于注册知识产生 function_call
   ↓
-AI 框架把 function_call 交给前端 bridge 或后端 executor
+AI 框架把 function_call 交给前端 bridge；当前页面模型 FC 全部前端执行
   ↓
 拿到 function result
   ↓
-AI 框架 append 结果并继续下一轮 turn
+AI 框架 append 结果，LLM 根据 result 继续 inspect / ask / retry / validate / commit / rollback
 ```
 
 `spark-scenario` 在这个路径中提供函数目录和执行桥接，但不拥有会话生命周期。
 
-### 后端 FC 路径
+### backend 执行宿主保留语义
 
-后端函数由 `execution.host='backend'` 标记，第一版接口：
+`execution.host='backend'` 是协议保留能力，不是当前页面模型 FC 主路径。若未来工具声明为 backend，前端 bridge 不应静默执行，只返回 `requires-backend` 和可选 `backendRoute`，由外部框架或后端 executor 接管。
+
+示例接口形态可以是：
 
 ```http
 POST /api/ai/scenario-functions/{functionName}
@@ -317,7 +313,7 @@ POST /api/ai/scenario-functions/{functionName}
 - `context.tenantId/context.projectId`，或通过 `X-Tenant-Id`、`X-Project-Id` header 注入
 - `session`，仅作为上下文，不触发自动 append
 
-失败语义：协议错误返回 HTTP 400；未知函数返回 HTTP 404；业务执行失败返回 `ok=false,status='failed'` 的函数结果。
+失败语义需要区分：协议错误、未知函数、路由缺失属于框架失败；工具业务失败应返回结构化 function result，并由 AI 框架 append 给 LLM 继续推理。
 
 ## 代码分层
 
@@ -336,7 +332,7 @@ src/prompt/
 src/runtime/
   scenario-registry.ts         场景注册、查询、意图匹配
   scenario-runtime.ts          场景执行和工具执行
-  scenario-function-call-bridge.ts
+  scenario-function-call-bridge.ts 当前页面模型 FC 的前端执行桥接
 
 src/llm/
   scenario-sse-llm-client.ts   AI 框架 SSE 兼容客户端
@@ -357,7 +353,9 @@ src/history/
 - 不在 `spark-scenario` 中硬编码主/子 Agent 类型；由 AI 框架通过 session 和 stream URL 决定。
 - 不在前端保存 provider API Key。
 - 不用旧知识猜测工具和参数；必须通过 registry 查询和 schema 校验。
-- 后端工具不能被前端静默执行；必须返回 `requires-backend` 或显式失败。
+- 当前页面模型 FC 全部在前端执行；backend host 只是协议保留和未来扩展。
+- 后端工具不能被前端静默执行；若出现 backend host，必须返回 `requires-backend` 或显式失败。
+- 工具业务失败应尽量作为 function result 反馈给 LLM，不要和框架级协议失败混在一起。
 - 函数名冲突必须 fail-fast。
 - 货载缺失必须追问或失败，不用静默默认值掩盖问题。
 
@@ -371,14 +369,14 @@ src/history/
 - `AiScenarioToolRegistration.execution` 执行宿主元数据。
 - `function-call-contracts.ts` FC 契约。
 - `createScenarioFunctionCallBridge` 工具到函数的投影与前端执行桥接。
-- `createScenarioSseLlmClient` AI 框架 SSE 兼容客户端。
-- 后端 FC 第一版 executor：`filterExpressionCases.query`。
+- `createScenarioSseLlmClient` AI 框架通信兼容客户端。
+- 页面模型场景工具通过前端 bridge 执行。
 
 后续演进方向：
 
-- 场景注册信息入库后，后端可读取 function definitions、execution host 和 backendRoute。
-- AI 框架可在服务端自动完成 backend FC、append tool result 和下一轮 LLM turn。
-- 前端继续只负责人机交互和 `host='frontend'` 的 FC。
+- 强化 function result 回灌语义：业务失败、修复建议和进程状态应回到 LLM，而不是由框架替业务固定编排。
+- 场景注册信息入库后，后端可读取 function definitions 和 execution host；backendRoute 仅作为未来 backend 工具调度元数据。
+- 前端继续承接当前页面模型 `host='frontend'` 的 FC。
 
 ## 参考
 

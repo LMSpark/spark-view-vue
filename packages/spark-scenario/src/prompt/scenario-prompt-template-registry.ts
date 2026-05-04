@@ -1,5 +1,4 @@
 import { buildScenarioSystemPrompt } from './prompt-constraints'
-import type { AiScenarioScope } from '../contracts/scenario-types'
 
 /**
  * ==============================================
@@ -23,7 +22,7 @@ export interface ScenarioPromptTemplateRegistration {
   /** 模板 ID，需全局唯一。 */
   id: string
   /** 模板所属作用域。 */
-  scope: AiScenarioScope
+  scope: 'planning' | 'design' | 'business' | 'finance'
   /** 场景名称，可静态定义或动态生成。 */
   scenarioName: string | ((ctx: ScenarioPromptBuildContext) => string)
   /** 核心行为说明。 */

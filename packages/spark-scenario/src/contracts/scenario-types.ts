@@ -3,32 +3,43 @@ import type { JsonSchema } from './json-schema'
 // ==============================================
 // 合同层：基础枚举与策略
 // ==============================================
-// 功能分区：统一约束场景作用域、确认策略、恢复策略。
+// 功能分区：统一约束场景确认策略、恢复策略。
 // 时序分区：场景注册时声明 -> runtime 执行与恢复阶段消费。
 
-/** 场景作用域：用于路由与能力归类。
- *
- * 说明：业务系统中可能存在多个垂直域（例如 finance/HR 等），
- * 在注册和查询时将场景按 scope 归类有利于目录筛选与路由决策。
- * 此处列举常见 scope，允许后续扩展。
- */
-export type AiScenarioScope = 'planning' | 'design' | 'business' | 'finance'
 /** 确认策略：控制执行前的人机确认粒度。 */
 export type AiConfirmPolicy = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
 /** 恢复策略：定义失败后的恢复方式。 */
 export type AiRecoveryPolicy = 'layered' | 'manual' | 'strict'
 
 /**
+ * 工具实体基础结构。
+ * 身份快照与运行时工具都共享该结构；运行时工具仅额外补 execute。
+ */
+export interface AiScenarioToolEntity {
+  name: string
+  description: string
+  parameters?: JsonSchema
+  registration?: AiScenarioToolRegistration
+}
+
+/** 场景身份中的工具实体快照（直接对应工具实体结构）。 */
+export type AiScenarioIdentityTool = AiScenarioToolEntity
+
+/**
  * 场景身份基类。
- * 所有场景在 registry 中都用该三元组识别。
+ * 所有场景在 registry 中都用该身份信息与检索快照识别。
  */
 export interface AiScenarioIdentity {
   /** 场景唯一标识。 */
   id: string
   /** 场景标题。 */
   title: string
-  /** 场景作用域。 */
-  scope: AiScenarioScope
+  /** 场景提示词快照（可选，通常来源于 systemPrompt）。 */
+  prompt?: string
+  /** 场景关键词集合（可选；未提供时默认回退到 intents）。 */
+  keywords?: readonly string[]
+  /** 场景工具实体集合（可选；未提供时默认回退到 scenario.tools 的实体快照）。 */
+  tools?: readonly AiScenarioIdentityTool[]
 }
 
 /**
@@ -54,8 +65,10 @@ export interface AiScenarioPromptPolicy {
  */
 export interface AiScenarioContext {
   userInput: string
+  tenantId?: string
   pageId?: string
   projectId?: string
+  sessionId?: string
   moduleId?: string
   route?: string
   user?: { id?: string; name?: string; role?: string }
@@ -179,6 +192,52 @@ export interface AiScenarioToolExecutionRegistration {
   backendRoute?: string
 }
 
+// ==============================================
+// 合同层：工具函数与货载映射
+// ==============================================
+// 功能分区：
+// 1) 描述“工具 -> 函数 -> 货载”注册结构。
+// 2) 为 queryToolFunctions 提供稳定可读的数据来源。
+// 时序分区：
+// 1) 注册阶段：在 tool.registration.functions 中声明。
+// 2) 查询阶段：registry.queryToolFunctions / queryToolRegistration 读取。
+// 3) 执行阶段：bridge/runtime 参考该结构做函数投影与参数约束。
+
+/**
+ * 函数级 payload 注册。
+ *
+ * 语义：一个函数可声明多个 payload 形态，用于区分不同调用阶段、目标或参数约束。
+ */
+export interface AiScenarioToolFunctionPayloadRegistration {
+  /** payload 名称（函数内唯一即可），建议语义化命名，如 draft/final。 */
+  name: string
+  /** payload 用途说明，供查询面板和模型理解阶段差异。 */
+  description?: string
+  /** payload 对应 schema；未提供时由上层以工具参数或运行上下文约束。 */
+  schema?: JsonSchema
+  /** payload 级必填字段；用于细粒度校验提示。 */
+  required?: readonly string[]
+  /** 示例参数，供模型构造调用时参考。 */
+  examples?: ReadonlyArray<Record<string, unknown>>
+}
+
+/**
+ * 工具到函数的注册声明。
+ *
+ * 语义：一个工具可投影为多个函数，每个函数可再声明多个 payload。
+ * 边界：函数层只描述函数位形（name/aliases/payloads），不重复工具层语义（category/execution/rules）。
+ */
+export interface AiScenarioToolFunctionRegistration {
+  /** 函数名（建议在全局可区分；若冲突应由上层 fail-fast）。 */
+  name: string
+  /** 函数描述，强调该函数相对同工具下其它函数的职责差异。 */
+  description?: string
+  /** 别名集合，便于未来兼容旧函数名或多语言别称。 */
+  aliases?: readonly string[]
+  /** 函数支持的 payload 形态列表。 */
+  payloads?: readonly AiScenarioToolFunctionPayloadRegistration[]
+}
+
 /** 工具注册附加信息：用于 queryToolRegistration 暴露规则与示例。 */
 export interface AiScenarioToolRegistration {
   category?: string
@@ -189,6 +248,13 @@ export interface AiScenarioToolRegistration {
   fixHints?: readonly string[]
   /** 执行宿主与后端路由元数据；未声明时保持兼容，默认按前端工具处理。 */
   execution?: AiScenarioToolExecutionRegistration
+  /**
+   * 工具函数映射声明。
+   *
+   * 未声明时，注册中心查询接口应返回兼容的一对一默认映射：
+   * tool.name -> function.name，并把 tool.parameters 投影为默认 payload（name=default）。
+   */
+  functions?: readonly AiScenarioToolFunctionRegistration[]
 }
 
 /** 可执行工具定义。
@@ -198,11 +264,7 @@ export interface AiScenarioToolRegistration {
  * 因此 `execute` 被声明为可选：注册中心和查询层允许缺失该字段，
  * 但运行时在执行工具前必须检查并在缺失时抛出或返回错误。
  */
-export interface AiScenarioTool {
-  name: string
-  description: string
-  parameters?: JsonSchema
-  registration?: AiScenarioToolRegistration
+export interface AiScenarioTool extends AiScenarioToolEntity {
   execute?: (args: unknown, ctx: AiScenarioContext) => unknown
 }
 

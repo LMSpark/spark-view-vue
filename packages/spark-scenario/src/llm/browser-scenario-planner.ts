@@ -101,7 +101,7 @@ function formatIntentCatalog(runtime: AiScenarioRuntime): string {
   const catalog = runtime.registry.queryIntentCatalog()
   if (catalog.entries.length === 0) return '无可用场景。'
   return catalog.entries
-    .map((item) => `- ${item.scenarioId} | ${item.scope} | ${item.title} | intents=${item.intents.join(',')}`)
+    .map((item) => `- ${item.scenarioId} | ${item.title} | prompt=${item.prompt ?? ''} | intents=${item.intents.join(',')}`)
     .join('\n')
 }
 
@@ -110,7 +110,7 @@ function formatScenarioInfo(info: AiScenarioInfo): string {
   return [
     `scenarioId=${info.scenarioId}`,
     `title=${info.title}`,
-    `scope=${info.scope}`,
+    `prompt=${info.prompt ?? info.systemPrompt}`,
     `tools:`,
     tools,
   ].join('\n')

@@ -21,9 +21,9 @@
 export type { JsonSchema, JsonSchemaProperty } from './contracts/json-schema'
 
 export type {
-  AiScenarioScope,
   AiConfirmPolicy,
   AiRecoveryPolicy,
+  AiScenarioIdentityTool,
   AiScenarioIdentity,
   AiScenarioPromptPolicy,
   AiScenarioContext,
@@ -41,6 +41,8 @@ export type {
   AiScenarioToolExecutionHost,
   AiScenarioToolExecutionKind,
   AiScenarioToolExecutionRegistration,
+  AiScenarioToolFunctionPayloadRegistration,
+  AiScenarioToolFunctionRegistration,
   AiScenarioToolRegistration,
   AiScenarioTool,
   AiScenarioStep,
@@ -68,6 +70,7 @@ export type {
   AiScenarioRecoveryInfo,
   AiToolSchemaInfo,
   AiToolRegistrationInfo,
+  AiToolFunctionsInfo,
   AiScenarioToolsQuery,
   AiScenarioToolsPage,
   AiToolSchemaNodeQuery,
@@ -129,6 +132,14 @@ export {
   type AiScenarioFunctionResolution,
   type AiScenarioFunctionCallBridge,
 } from './runtime/scenario-function-call-bridge'
+
+export {
+  runScenarioFunctionCalls,
+  type AiScenarioFunctionLoopGuardContext,
+  type AiScenarioFunctionLoopGuard,
+  type AiScenarioFunctionLoopOptions,
+  type AiScenarioFunctionLoopResult,
+} from './runtime/scenario-function-loop'
 
 // ==============================================
 // system

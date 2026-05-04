@@ -135,6 +135,8 @@ function buildFunctionDefinition(params: {
   execution: AiScenarioToolExecutionRegistration
 }): AiScenarioFunctionDefinition {
   const { functionName, scenario, tool, execution } = params
+  const staticPrompt = scenario.promptPolicy.systemPrompt
+  const prompt = typeof staticPrompt === 'string' ? staticPrompt : undefined
   return {
     name: functionName,
     description: tool.description,
@@ -144,7 +146,7 @@ function buildFunctionDefinition(params: {
     execution,
     metadata: {
       scenarioTitle: scenario.title,
-      scope: scenario.scope,
+      ...(prompt !== undefined && prompt !== '' ? { prompt } : {}),
       tags: tool.registration?.tags ?? [],
       category: tool.registration?.category ?? '',
     },
