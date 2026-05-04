@@ -80,6 +80,7 @@ export function createBrowserFetchLlmClient(options: BrowserFetchLlmClientOption
       method: 'POST',
       headers,
       body: JSON.stringify(toRequestBody(options, request)),
+      ...(request.signal !== undefined ? { signal: request.signal } : {}),
     })
 
     if (!response.ok) {

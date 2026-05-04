@@ -22,6 +22,8 @@ export interface AiBrowserLlmGenerateRequest {
   messages: readonly AiBrowserLlmMessage[]
   temperature?: number
   maxTokens?: number
+  /** 可选取消信号；SSE / fetch 类客户端应把它透传给底层请求。 */
+  signal?: AbortSignal
 }
 
 export interface AiBrowserLlmGenerateResponse {

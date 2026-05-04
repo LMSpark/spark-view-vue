@@ -1,884 +1,526 @@
 # spark-scenario API 参考
 
+本文按五个层级说明 `@spark-view/spark-scenario` 的公开 API：框架级、场景级、工具级、函数级、货载级。读 API 时先确认对象属于哪一层，再决定由谁注册、由谁执行、由谁回写结果。
+
 ## 目录
 
+- [五级模型速览](#五级模型速览)
 - [导出概览](#导出概览)
-- [核心 API](#核心-api)
-- [类型定义](#类型定义)
-- [工作流示例](#工作流示例)
+- [框架级 API](#框架级-api)
+- [场景级 API](#场景级-api)
+- [工具级 API](#工具级-api)
+- [函数级 API](#函数级-api)
+- [货载级 API](#货载级-api)
+- [端到端接入示例](#端到端接入示例)
 
----
+## 五级模型速览
+
+| 层级 | 解决的问题 | 提示词归属 | FC 归属 | 主要 API |
+| --- | --- | --- | --- | --- |
+| 框架级 | 会话、SSE、LLM 主循环、主/子 Agent 调度、函数目录投喂 | 分级查询约束、通用 Agent 行为约束 | 负责收集 function definitions、接收 function_call、回写 function_result | `createScenarioSystem`、`createScenarioSseLlmClient`、`AiBrowserLlmClient` |
+| 场景级 | 某个业务场景能做什么、何时确认、失败如何恢复 | 场景角色、业务边界、场景模板绑定 | 不直接暴露给模型，先声明工具集合与流程 | `AiScenarioDefinition`、`createScenarioRegistry`、`createScenarioRuntime` |
+| 工具级 | 场景内一个可执行能力的元数据、参数 schema、执行宿主 | 工具规则、示例、失败码、修复提示 | 工具是 FC 的来源，但不是 provider 直接调用名 | `AiScenarioTool`、`AiScenarioToolRegistration` |
+| 函数级 | AI 框架可见的一等 Function Calling 协议 | 函数描述来自工具描述与 schema | function definition/call/result 的标准形态 | `createScenarioFunctionCallBridge`、`AiScenarioFunctionDefinition`、`AiScenarioFunctionCallResult` |
+| 货载级 | 用户输入、上下文、参数槽位、函数 arguments/result 的结构 | payload 缺失时的追问文本、字段说明 | function arguments 是一次调用的 payload 实例 | `AiScenarioPayloadContract`、`AiScenarioPayloadSlot`、`JsonSchema` |
+
+关键边界：
+
+- `delta`、`reasoning`、`result`、`error`、`done` 是 AI 框架传输事件；场景应用不直接依赖这些事件做业务分支。
+- `Tool` 是场景内的能力声明；`Function` 是 AI 框架可调用的协议投影。
+- `Payload/货载` 不是数据库模型，也不是会话历史；它只描述本次场景运行或函数调用需要携带的数据结构。
+- `spark-scenario` 不管理会话池、不裁剪滑动窗口、不保存 provider API Key。
 
 ## 导出概览
 
 ```typescript
 import {
-  // ===== contracts 层（纯类型）=====
-  createScenarioRegistry,      // 场景注册中心
-  createScenarioRuntime,       // 场景运行时
-  
-  // ===== system 层（装配）=====
-  createScenarioSystem,        // 统一启动
-  registerScenarios,           // 批量注册
-  
-  // ===== prompt 层（提示词）=====
-  createScenarioPromptTemplateRegistry,
-  
-  // ===== history 层（历史）=====
-  createScenarioRunHistoryStore,
-  
-  // ===== llm 层（推理）=====
-  createBrowserFetchLlmClient,      // HTTP 客户端
-  createBrowserLocalLlmClient,      // 本地推理
-  createBrowserScenarioPlanner,     // LLM 规划器
-  
-  // ===== 类型定义 =====
+  // contracts
   type AiScenarioDefinition,
-  type AiScenarioContext,
-  type AiScenarioQueryProtocol,
-  type AiBrowserLlmClient,
-  // ... 其他类型
+  type AiScenarioPromptPolicy,
+  type AiScenarioTool,
+  type AiScenarioToolRegistration,
+  type AiScenarioToolExecutionRegistration,
+  type AiScenarioPayloadContract,
+  type AiScenarioAgentSessionContext,
+  type AiScenarioFunctionDefinition,
+  type AiScenarioFunctionCall,
+  type AiScenarioFunctionCallResult,
+
+  // prompt
+  TIERED_QUERY_CONSTRAINT,
+  buildScenarioSystemPrompt,
+  createScenarioPromptTemplateRegistry,
+
+  // runtime
+  createScenarioRegistry,
+  createScenarioRuntime,
+  createScenarioFunctionCallBridge,
+
+  // system
+  createScenarioSystem,
+  registerScenarios,
+
+  // llm
+  createBrowserFetchLlmClient,
+  createBrowserLocalLlmClient,
+  createBrowserScenarioPlanner,
+  createScenarioSseLlmClient,
+
+  // history
+  createScenarioRunHistoryStore,
 } from '@spark-view/spark-scenario'
 ```
 
----
+## 框架级 API
 
-## 核心 API
+框架级负责把场景能力接入 AI 主循环。它关心会话 ID、SSE 流、LLM client、function definitions 和 function result 回写，但不直接写业务工具。
 
-### 1️⃣ createScenarioRegistry()
+### `createScenarioSystem(options)`
 
-**职责**：创建场景注册中心，管理生命周期 + 提供查询协议。
-
-**签名**：
+统一装配 registry、runtime，以及可选的 planner、prompt registry、history store。
 
 ```typescript
-function createScenarioRegistry(
-  options: AiScenarioRegistryOptions
-): AiScenarioRegistry
-```
-
-**参数**：
-
-```typescript
-interface AiScenarioRegistryOptions {
-  definitions?: readonly AiScenarioDefinition[]  // 初始场景列表
-  queryRunHistory?: (query: AiScenarioHistoryQuery) => AiScenarioHistoryPage
-  queryRunRecord?: (runId: string) => AiScenarioRunRecord | undefined
-}
-```
-
-**返回值**：
-
-```typescript
-interface AiScenarioRegistry {
-  // 生命周期
-  register(def: AiScenarioDefinition): void
-  unregister(scenarioId: string): void
-  get(scenarioId: string): AiScenarioDefinition | undefined
-  list(): readonly AiScenarioDefinition[]
-  clear(): void
-  
-  // 匹配
-  resolve(input: string, ctx?: AiScenarioContext): AiScenarioResolution | undefined
-  
-  // 查询协议（15 个方法）
-  queryIntentCatalog(): AiIntentCatalog
-  queryScenarioInfo(scenarioId: string): AiScenarioInfo | undefined
-  queryScenarioCapabilities(query?: AiScenarioCapabilitiesQuery): AiScenarioCapabilitiesPage
-  queryScenarioPayload(scenarioId: string): AiScenarioPayloadInfo | undefined
-  queryScenarioFlow(scenarioId: string): AiScenarioFlowInfo | undefined
-  queryScenarioCompletion(scenarioId: string): AiScenarioCompletionInfo | undefined
-  queryScenarioRecovery(scenarioId: string): AiScenarioRecoveryInfo | undefined
-  queryScenarioTools(query?: AiScenarioToolsQuery): AiScenarioToolsPage
-  queryToolSchema(toolName: string, scenarioId?: string): AiToolSchemaInfo | undefined
-  queryToolSchemaNode(query: AiToolSchemaNodeQuery): AiToolSchemaNodeInfo | undefined
-  queryToolRegistration(toolName: string, scenarioId?: string): AiToolRegistrationInfo | undefined
-  queryRunHistory(query?: AiScenarioHistoryQuery): AiScenarioHistoryPage
-  queryRunRecord(runId: string): AiScenarioRunRecord | undefined
-}
-```
-
-**使用示例**：
-
-```typescript
-const registry = createScenarioRegistry({
-  definitions: [
-    {
-      id: 'scenario.leave',
-      title: '请假审批',
-      scope: 'business',
-      tools: [...]
+const system = createScenarioSystem({
+  definitions: [],
+  toolResolver: async (call, context) => {
+    return {
+      tool: call.tool,
+      args: call.args,
+      ok: true,
+      result: { handled: true, context },
     }
-  ]
+  },
+})
+```
+
+框架级只提供 `toolResolver` 入口；具体工具是否前端执行、是否后端执行，由工具级 `registration.execution` 决定。
+
+### `createScenarioSseLlmClient(options)`
+
+提供 AI 框架 SSE 的 `AiBrowserLlmClient` 兼容实现。它连接自家 AI 框架的 SSE turn 流，不连接 provider，不接收 provider API Key。
+
+```typescript
+const llm = createScenarioSseLlmClient({
+  getSessionId: () => activeSessionId,
+  getHeaders: () => ({
+    'X-Tenant-Id': tenantId,
+    'X-Project-Id': projectId,
+  }),
+  onEvent: (event) => {
+    console.debug(event.type, event.payload)
+  },
 })
 
-// 注册新场景
-registry.register({
-  id: 'scenario.expense',
-  // ...
+const response = await llm.generate({
+  messages: [
+    { role: 'system', content: TIERED_QUERY_CONSTRAINT },
+    { role: 'user', content: '查询过滤表达式案例' },
+  ],
+  signal: abortController.signal,
 })
+```
 
-// 查询
+常用选项：
+
+| 选项 | 用途 |
+| --- | --- |
+| `sessionId` | 单会话面板已绑定会话时使用 |
+| `getSessionId()` | 多会话前端按当前 UI 状态取会话 ID |
+| `resolveSession(request)` | 由 AI 框架返回完整 `AiScenarioAgentSessionContext` |
+| `streamUrlBuilder(session)` | 自定义主/子 Agent 或未来统一 endpoint |
+| `requestBodyBuilder(request, session)` | 需要向新 endpoint 发送 body 时使用 |
+| `headers/getHeaders` | 注入认证、租户、项目等业务 header |
+| `credentials` | Cookie 鉴权场景 |
+| `onEvent(event)` | 调试原始 SSE 事件 |
+
+### `AiBrowserLlmClient`
+
+所有 LLM 客户端都实现同一接口，planner 只依赖该接口。
+
+```typescript
+interface AiBrowserLlmClient {
+  generate(request: AiBrowserLlmGenerateRequest): Promise<AiBrowserLlmGenerateResponse>
+}
+
+interface AiBrowserLlmGenerateRequest {
+  messages: readonly AiBrowserLlmMessage[]
+  temperature?: number
+  maxTokens?: number
+  signal?: AbortSignal
+}
+```
+
+`createBrowserFetchLlmClient` 和 `createBrowserLocalLlmClient` 仍可用于本地测试、OpenAI 兼容服务或浏览器本地模型；正式接 AI 框架时优先使用 `createScenarioSseLlmClient`。
+
+### 框架级提示词
+
+框架级提示词只描述“如何使用系统能力”，不写具体业务参数。
+
+```typescript
+const systemPrompt = buildScenarioSystemPrompt(
+  '场景 Agent',
+  'business',
+  '必须先查询场景、工具和 schema，再生成计划或发起 function call。',
+)
+```
+
+`TIERED_QUERY_CONSTRAINT` 是框架级基础约束，要求 LLM 通过 registry 查询能力，不允许猜工具、猜参数或静默降级。
+
+## 场景级 API
+
+场景级描述一个业务场景的身份、意图、提示词策略、payload 契约、流程、完成条件、恢复提示和工具集合。
+
+### `AiScenarioDefinition`
+
+```typescript
+const filterCaseScenario: AiScenarioDefinition = {
+  id: 'scenario.filter-expression-cases',
+  title: '过滤表达式案例查询',
+  scope: 'business',
+  description: '帮助用户查询和理解过滤表达式案例。',
+  intents: ['过滤表达式', '案例查询', 'filterExpression'],
+  promptPolicy: {
+    promptTemplateId: 'filter-expression-cases',
+    confirmPolicy: 'auto',
+    recoveryPolicy: 'strict',
+  },
+  payload: {
+    required: ['keyword'],
+    slots: [
+      {
+        key: 'keyword',
+        description: '要查询的案例关键词。',
+        required: true,
+        source: 'user',
+        askWhenMissing: '请提供要查询的过滤表达式关键词。',
+      },
+    ],
+  },
+  flow: {
+    steps: [
+      {
+        id: 'query-cases',
+        title: '查询过滤表达式案例',
+        kind: 'tool',
+        tool: 'filterExpressionCases.query',
+        requiredPayloadKeys: ['keyword'],
+      },
+    ],
+  },
+  // queryCasesTool 见“工具级 API”示例。
+  tools: [queryCasesTool],
+}
+```
+
+场景级提示词入口：
+
+| 字段 | 说明 |
+| --- | --- |
+| `promptPolicy.systemPrompt` | 静态或动态系统提示词 |
+| `promptPolicy.promptTemplateId` | 绑定 prompt registry 中的模板 ID |
+| `promptPolicy.promptTemplateContext` | 模板上下文，可静态给定或按 `AiScenarioContext` 生成 |
+| `promptPolicy.confirmPolicy` | 执行前确认粒度 |
+| `promptPolicy.recoveryPolicy` | 失败恢复策略 |
+
+### `createScenarioRegistry(options)`
+
+registry 是场景级能力目录和查询协议实现。
+
+```typescript
+const registry = createScenarioRegistry({ definitions: [filterCaseScenario] })
+
 const catalog = registry.queryIntentCatalog()
-const info = registry.queryScenarioInfo('scenario.leave')
-
-// 匹配用户输入到最佳场景
-const resolution = registry.resolve('请假3天')
-console.log(resolution?.scenarioId)  // 'scenario.leave'
+const info = registry.queryScenarioInfo('scenario.filter-expression-cases')
+const tools = registry.queryScenarioTools({ scenarioId: 'scenario.filter-expression-cases' })
+const schemaNode = registry.queryToolSchemaNode({
+  toolName: 'filterExpressionCases.query',
+  pointer: '/keyword',
+})
 ```
 
----
+常用查询 API：
 
-### 2️⃣ createScenarioRuntime()
+| API | 层级 | 用途 |
+| --- | --- | --- |
+| `queryIntentCatalog()` | 场景级 | 获取可匹配场景目录 |
+| `queryScenarioInfo(scenarioId)` | 场景级 | 获取场景详情和工具摘要 |
+| `queryScenarioPayload(scenarioId)` | 货载级 | 获取 payload 契约 |
+| `queryScenarioFlow(scenarioId)` | 场景级 | 获取流程步骤 |
+| `queryScenarioTools(query)` | 工具级 | 分页查询工具目录 |
+| `queryToolSchema(toolName, scenarioId?)` | 工具/货载级 | 获取完整工具参数 schema |
+| `queryToolSchemaNode(query)` | 货载级 | 通过 JSON Pointer 查询参数节点 |
+| `queryToolRegistration(toolName, scenarioId?)` | 工具级 | 获取工具规则、示例、失败码、执行宿主 |
 
-**职责**：执行场景和工具调用。
+### `createScenarioRuntime(options)`
 
-**签名**：
-
-```typescript
-function createScenarioRuntime(
-  options: AiScenarioRuntimeOptions
-): AiScenarioRuntime
-```
-
-**参数**：
-
-```typescript
-interface AiScenarioRuntimeOptions {
-  registry: AiScenarioRegistry  // 场景注册表
-  
-  // 工具解析器（必须）
-  toolResolver: (
-    call: AiScenarioToolCall,
-    context: AiScenarioContext
-  ) => Promise<AiScenarioToolExecution>
-  
-  // 可选：执行历史回调
-  onExecute?: (execution: AiScenarioToolExecution) => void | Promise<void>
-  onScenarioComplete?: (result: AiScenarioRunResult) => void | Promise<void>
-}
-```
-
-**返回值**：
-
-```typescript
-interface AiScenarioRuntime {
-  registry: AiScenarioRegistry
-  
-  run(request: AiScenarioRunRequest): Promise<AiScenarioRunResult>
-  executeTool(call: AiScenarioToolCall, ctx: AiScenarioContext): Promise<AiScenarioToolExecution>
-}
-```
-
-**使用示例**：
+runtime 执行场景或单个工具。文本 planner 的兼容路径仍通过 `runtime.run()` 执行 `toolCalls`。
 
 ```typescript
 const runtime = createScenarioRuntime({
   registry,
-  
-  toolResolver: async (call, ctx) => {
-    // 调用实际业务工具
-    console.log(`执行工具: ${call.tool}`)
-    console.log(`参数:`, call.args)
-    
-    // 例：调用后端 API
-    const response = await fetch(`/api/tools/${call.tool}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(call.args)
-    })
-    
-    if (!response.ok) {
-      return {
-        tool: call.tool,
-        success: false,
-        error: `HTTP ${response.status}`,
-        errorCode: 'TOOL_HTTP_ERROR'
-      }
+  toolResolver: async (call, context) => {
+    if (call.tool === 'local-preview.open') {
+      return { tool: call.tool, args: call.args, ok: true, result: { opened: true, context } }
     }
-    
-    const output = await response.json()
-    return {
-      tool: call.tool,
-      success: true,
-      output
-    }
+    return { tool: call.tool, args: call.args, ok: false, error: 'UNKNOWN_TOOL' }
   },
-  
-  onExecute: async (execution) => {
-    console.log(`[${execution.tool}] ${execution.success ? '成功' : '失败'}`)
-  }
 })
 
-// 执行场景
 const result = await runtime.run({
-  scenarioId: 'scenario.leave',
-  toolCalls: [
-    { tool: 'check-balance', args: { employeeId: 'emp123' } },
-    { tool: 'submit-request', args: { days: 3 } }
-  ],
-  context: { pageId: 'leave-page', user: { id: 'emp123' } }
+  scenarioId: 'scenario.filter-expression-cases',
+  userInput: '查询 status 字段的过滤案例',
+  context: { projectId: 'project-1' },
+  toolCalls: [{ tool: 'local-preview.open', args: { id: 'case-1' } }],
 })
-
-console.log(result.status)        // 'success' | 'partial-failure' | 'failure'
-console.log(result.executions)    // 每个工具的执行结果
 ```
 
----
+## 工具级 API
 
-### 3️⃣ createScenarioSystem()
+工具级是场景内的原子能力声明。它包含工具名、描述、参数 schema、注册规则和可选的前端执行函数。
 
-**职责**：统一装配所有组件（registry + runtime + llm + etc）。
-
-**签名**：
+### `AiScenarioTool`
 
 ```typescript
-function createScenarioSystem(
-  options: ScenarioSystemOptions
-): ScenarioSystem
-```
-
-**参数**：
-
-```typescript
-interface ScenarioSystemOptions {
-  definitions?: readonly AiScenarioDefinition[]
-  toolResolver: (call: AiScenarioToolCall, ctx: AiScenarioContext) => Promise<AiScenarioToolExecution>
-  onExecute?: (execution: AiScenarioToolExecution) => void | Promise<void>
-  onScenarioComplete?: (result: AiScenarioRunResult) => void | Promise<void>
-}
-```
-
-**返回值**：
-
-```typescript
-interface ScenarioSystem {
-  registry: AiScenarioRegistry
-  runtime: AiScenarioRuntime
-  prompts?: ScenarioPromptTemplateRegistry
-  history?: AiScenarioRunHistoryStore
-  planner?: AiScenarioBrowserPlanner  // 可选
-}
-```
-
-**使用示例**：
-
-```typescript
-const system = createScenarioSystem({
-  definitions: [], // 后续动态加载或注册
-  
-  toolResolver: async (call, ctx) => {
-    // 工具实现
-    if (call.tool === 'approve') {
-      return { tool: 'approve', success: true, output: { approvalId: '...' } }
-    }
-    throw new Error(`未知工具: ${call.tool}`)
+const queryCasesTool: AiScenarioTool = {
+  name: 'filterExpressionCases.query',
+  description: '按关键词、分类、分页等条件查询过滤表达式案例。',
+  parameters: {
+    type: 'object',
+    properties: {
+      keyword: { type: 'string', description: '搜索关键词' },
+      offset: { type: 'number', minimum: 0 },
+      limit: { type: 'number', minimum: 1, maximum: 100 },
+    },
   },
-  
-  onExecute: async (exec) => {
-    // 可用于日志、监控、UI 更新
-    if (!exec.success) {
-      console.warn(`工具 ${exec.tool} 执行失败: ${exec.error}`)
-    }
-  }
-})
-
-// 注册场景
-registerScenarios(system, [
-  {
-    id: 'scenario.leave',
-    // ...
-  }
-])
-
-// 执行
-const result = await system.runtime.run({
-  scenarioId: 'scenario.leave',
-  toolCalls: [...],
-  context: {...}
-})
-```
-
----
-
-### 4️⃣ createBrowserFetchLlmClient()
-
-**职责**：调用远程 OpenAI 兼容 API。
-
-**签名**：
-
-```typescript
-function createBrowserFetchLlmClient(
-  options: BrowserFetchLlmClientOptions
-): AiBrowserLlmClient
-```
-
-**参数**：
-
-```typescript
-interface BrowserFetchLlmClientOptions {
-  endpoint: string                    // API 基础 URL
-  model: string                       // 模型名称
-  apiKey?: string                     // 可选（本地 Ollama 不需要）
-  headers?: Record<string, string>    // 自定义请求头
-}
-```
-
-**返回值**：
-
-```typescript
-interface AiBrowserLlmClient {
-  generate(request: AiBrowserLlmGenerateRequest): Promise<AiBrowserLlmGenerateResponse>
-}
-```
-
-**使用示例**：
-
-```typescript
-// OpenAI
-const openaiClient = createBrowserFetchLlmClient({
-  endpoint: 'https://api.openai.com/v1',
-  model: 'gpt-4',
-  apiKey: process.env.OPENAI_API_KEY
-})
-
-// Deepseek
-const deepseekClient = createBrowserFetchLlmClient({
-  endpoint: 'https://api.deepseek.com/v1',
-  model: 'deepseek-chat',
-  apiKey: process.env.DEEPSEEK_API_KEY
-})
-
-// 本地 Ollama（localhost:11434）
-const ollamaClient = createBrowserFetchLlmClient({
-  endpoint: 'http://localhost:11434/v1',
-  model: 'llama2'
-  // apiKey 省略
-})
-
-// 调用
-const response = await openaiClient.generate({
-  messages: [
-    { role: 'system', content: '你是一个助手' },
-    { role: 'user', content: '请假3天' }
-  ],
-  temperature: 0.7,
-  maxTokens: 512
-})
-
-console.log(response.text)  // 模型输出
-console.log(response.raw)   // 原始 API 响应
-```
-
----
-
-### 5️⃣ createBrowserLocalLlmClient()
-
-**职责**：在浏览器本地进行 LLM 推理（WASM/WebGPU）。
-
-**签名**：
-
-```typescript
-function createBrowserLocalLlmClient(
-  options: BrowserLocalLlmClientOptions
-): AiBrowserLlmClient
-```
-
-**参数**：
-
-```typescript
-interface BrowserLocalLlmClientOptions {
-  model: string                    // HuggingFace 模型 ID
-  device?: 'wasm' | 'webgpu'      // 推理后端，默认 'wasm'
-  maxNewTokens?: number            // 默认 512
-  defaultTemperature?: number      // 默认 0.6
-  onProgress?: (info: {            // 下载进度回调
-    progress: number               // 0~1
-    file: string                   // 当前文件名
-  }) => void
-}
-```
-
-**返回值**：
-
-```typescript
-interface AiBrowserLlmClient {
-  generate(request: AiBrowserLlmGenerateRequest): Promise<AiBrowserLlmGenerateResponse>
-}
-```
-
-**推荐模型**：
-
-| 模型 | 大小 | 用途 |
-|-----|------|------|
-| Qwen/Qwen2.5-0.5B-Instruct | <1 GB | **推荐**，通用场景 |
-| HuggingFaceTB/SmolLM2-135M | ~270 MB | 超轻量，简单场景 |
-| microsoft/Phi-3-mini-4k | ~1.5 GB | 更强能力，需 WebGPU |
-
-**使用示例**：
-
-```typescript
-const localClient = createBrowserLocalLlmClient({
-  model: 'Qwen/Qwen2.5-0.5B-Instruct',
-  device: 'wasm',
-  maxNewTokens: 512,
-  defaultTemperature: 0.6,
-  
-  onProgress: (info) => {
-    console.log(`下载 ${info.file}: ${(info.progress * 100).toFixed(1)}%`)
-  }
-})
-
-// 首次调用较慢（下载 + 初始化），后续快速
-console.time('生成')
-const response = await localClient.generate({
-  messages: [
-    { role: 'system', content: '你是请假助手' },
-    { role: 'user', content: '我要请假3天' }
-  ],
-  temperature: 0.3  // 低温度，确保输出稳定
-})
-console.timeEnd('生成')  // 首次 ~30s，之后 ~1-3s
-
-console.log(response.text)
-```
-
----
-
-### 6️⃣ createBrowserScenarioPlanner()
-
-**职责**：LLM + Registry 结合，生成可执行的场景计划。
-
-**签名**：
-
-```typescript
-function createBrowserScenarioPlanner(
-  options: BrowserScenarioPlannerOptions
-): AiScenarioBrowserPlanner
-```
-
-**参数**：
-
-```typescript
-interface BrowserScenarioPlannerOptions {
-  runtime: AiScenarioRuntime
-  llm: AiBrowserLlmClient
-  temperature?: number      // 默认 0.6
-  maxTokens?: number        // 默认 2048
-  maxToolCalls?: number     // 单次计划最大工具数，默认 10
-}
-```
-
-**返回值**：
-
-```typescript
-interface AiScenarioBrowserPlanner {
-  plan(request: AiScenarioPlanningRequest): Promise<AiScenarioPlan>
-  runWithPlanning(request: AiScenarioPlanningRequest): Promise<AiScenarioPlan>
-}
-```
-
-**使用示例**：
-
-```typescript
-const planner = createBrowserScenarioPlanner({
-  runtime: system.runtime,
-  llm: openaiClient,  // 或 localClient
-  temperature: 0.3,
-  maxTokens: 512
-})
-
-// 仅生成计划，不执行
-const plan = await planner.plan({
-  userInput: '我要请假3天',
-  context: {
-    pageId: 'leave-page',
-    projectId: 'hr-system',
-    user: { id: 'emp123', name: '张三' }
-  }
-})
-
-console.log(plan.scenarioId)    // 'scenario.leave'
-console.log(plan.toolCalls)     // [{ tool: '...', args: {...} }, ...]
-console.log(plan.reason)        // LLM 生成的推理文本
-
-// 直接执行（先规划后执行）
-const result = await planner.runWithPlanning({
-  userInput: '我要请假3天',
-  context: {...},
-  dryRun: false  // false=执行，true=仅计划
-})
-
-console.log(result.executions)  // 每个工具的执行结果
-```
-
----
-
-### 7️⃣ createScenarioPromptTemplateRegistry()
-
-**职责**：管理提示词模板。
-
-**签名**：
-
-```typescript
-function createScenarioPromptTemplateRegistry(): ScenarioPromptTemplateRegistry
-```
-
-**返回值**：
-
-```typescript
-interface ScenarioPromptTemplateRegistry {
-  register(
-    id: string,
-    template: string | ((ctx: ScenarioPromptBuildContext) => string)
-  ): void
-  
-  render(id: string, context: ScenarioPromptBuildContext): Promise<string>
-}
-```
-
-**使用示例**：
-
-```typescript
-const promptReg = createScenarioPromptTemplateRegistry()
-
-// 静态模板
-promptReg.register('system-leave', `
-你是企业请假审批助手。
-- 规范流程，礼貌专业
-- 严格按照政策处理
-- 如遇异常，请升级人工
-`)
-
-// 动态模板
-promptReg.register('user-context', (ctx) => `
-当前用户：${ctx.user?.name} (${ctx.user?.id})
-部门：${ctx.context?.metadata?.department}
-项目：${ctx.context?.projectId}
-
-请根据上述背景信息处理请求。
-`)
-
-// 渲染
-const systemPrompt = await promptReg.render('system-leave', {})
-const userPrompt = await promptReg.render('user-context', {
-  user: { id: 'emp123', name: '张三' },
-  context: { projectId: 'hr', metadata: { department: '人力资源' } }
-})
-```
-
----
-
-### 8️⃣ createScenarioRunHistoryStore()
-
-**职责**：记录和查询场景运行历史。
-
-**签名**：
-
-```typescript
-function createScenarioRunHistoryStore(
-  options: AiScenarioRunHistoryStore
-): AiScenarioRunHistoryStore
-```
-
-**返回值**：
-
-```typescript
-interface AiScenarioRunHistoryStore {
-  recordRun(record: AiScenarioRunRecord): Promise<void>
-  queryHistory(query: AiScenarioHistoryQuery): Promise<AiScenarioHistoryPage>
-  getRecord(runId: string): Promise<AiScenarioRunRecord | undefined>
-}
-```
-
-**使用示例**：
-
-```typescript
-const historyStore = createScenarioRunHistoryStore({
-  recordRun: async (record) => {
-    // 保存到后端或本地存储
-    await fetch('/api/scenarios/history', {
-      method: 'POST',
-      body: JSON.stringify(record)
-    })
+  registration: {
+    category: 'filter-expression',
+    tags: ['query', 'case'],
+    example: { keyword: 'status', limit: 20 },
+    rules: ['执行前必须确认 tenant/project scope 已存在。'],
+    failureCodes: ['UNKNOWN_FIELD', 'INVALID_FILTER_EXPRESSION'],
+    fixHints: ['缺字段时先提示用户确认字段名。'],
+    execution: {
+      host: 'backend',
+      kind: 'query',
+      backendRoute: '/api/ai/scenario-functions/filterExpressionCases.query',
+    },
   },
-  
-  queryHistory: async (query) => {
-    // 从后端查询历史
-    const res = await fetch(`/api/scenarios/history?scenarioId=${query.scenarioId}&limit=20`)
-    return res.json()
-  },
-  
-  getRecord: async (runId) => {
-    const res = await fetch(`/api/scenarios/history/${runId}`)
-    return res.ok ? res.json() : undefined
-  }
-})
-
-// 使用
-const historyPage = await historyStore.queryHistory({
-  scenarioId: 'scenario.leave',
-  limit: 10,
-  offset: 0
-})
-
-const record = await historyStore.getRecord('run-123')
-```
-
----
-
-## 类型定义
-
-### AiScenarioDefinition
-
-```typescript
-interface AiScenarioDefinition extends AiScenarioIdentity {
-  description?: string
-  
-  // 提示词
-  prompts: AiScenarioPromptPolicy
-  
-  // 工具列表
-  tools: readonly AiScenarioTool[]
-  
-  // 工作流
-  flow?: AiScenarioFlowContract
-  
-  // 政策
-  confirmPolicy?: AiConfirmPolicy
-  recoveryPolicy?: AiRecoveryPolicy
-  
-  // 工具注册规则
-  toolRegistrations?: Record<string, AiScenarioToolRegistration>
-  
-  // 补齐参数
-  payload?: AiScenarioPayloadContract
-  
-  // 完成合约
-  completion?: AiScenarioCompletionContract
 }
 ```
 
-### AiScenarioContext
+执行宿主规则：
+
+| `execution.host` | 说明 |
+| --- | --- |
+| `frontend` | 前端 FC。适合页面 live model、人机确认、浏览器状态、可视化操作。允许 `tool.execute` 或 runtime `toolResolver` 本地执行。 |
+| `backend` | 后端 FC。适合查询类、固定 FC、通用 prompt、服务端数据访问、未来 Agent 后端执行。前端 bridge 不直接执行。 |
+
+`execution.kind` 用于调试和调度分类，可为 `query`、`prompt`、`tool`、`system`、`debug`。
+
+## 函数级 API
+
+函数级是 AI 框架看见的一等 Function Calling 协议。它把场景工具投影为 provider/Agent 可调用的函数定义，并把调用结果按 `callId` 回交给 AI 框架。
+
+### `createScenarioFunctionCallBridge(runtime, options)`
 
 ```typescript
-interface AiScenarioContext {
-  userInput: string
-  pageId?: string
-  projectId?: string
-  moduleId?: string
-  route?: string
-  user?: {
-    id?: string
-    name?: string
-    role?: string
-  }
+const bridge = createScenarioFunctionCallBridge(runtime, {
+  functionNameMapper: ({ scenarioId, toolName }) => `${scenarioId}__${toolName}`.replace(/[^A-Za-z0-9_]/g, '_'),
+})
+
+const definitions = bridge.listFunctionDefinitions()
+const resolution = bridge.resolveFunctionName(definitions[0].name)
+const fcResult = await bridge.executeFunctionCall({
+  id: 'call-1',
+  name: definitions[0].name,
+  arguments: JSON.stringify({ keyword: 'status', limit: 20 }),
+  userInput: '查询 status 的案例',
+  context: { projectId: 'project-1' },
+  session: { sessionId: 'session-1' },
+})
+```
+
+函数定义：
+
+```typescript
+interface AiScenarioFunctionDefinition {
+  name: string
+  description: string
+  parameters?: JsonSchema
+  scenarioId?: string
+  toolName?: string
+  execution: AiScenarioToolExecutionRegistration
   metadata?: Record<string, unknown>
 }
 ```
 
-### AiBrowserLlmGenerateRequest
+函数调用：
 
 ```typescript
-interface AiBrowserLlmGenerateRequest {
-  messages: Array<{
-    role: 'system' | 'user' | 'assistant'
-    content: string
-  }>
-  temperature?: number    // 0~2，默认 0.6
-  maxTokens?: number      // 默认 512
+interface AiScenarioFunctionCall {
+  id: string
+  name: string
+  arguments?: unknown
+  userInput?: string
+  context?: Omit<AiScenarioContext, 'userInput'>
+  session?: AiScenarioAgentSessionContext
 }
 ```
 
-### AiBrowserLlmGenerateResponse
+函数结果：
 
 ```typescript
-interface AiBrowserLlmGenerateResponse {
-  text: string           // 模型输出文本
-  raw: unknown          // 原始响应对象（用于调试）
+interface AiScenarioFunctionCallResult {
+  callId: string
+  functionName: string
+  ok: boolean
+  status: 'executed' | 'requires-backend' | 'failed'
+  executionHost: 'frontend' | 'backend'
+  scenarioId?: string
+  toolName?: string
+  backendRoute?: string
+  result?: unknown
+  error?: string
+  raw?: unknown
 }
 ```
 
-### AiScenarioPlanningRequest
+状态语义：
 
-```typescript
-interface AiScenarioPlanningRequest {
-  userInput: string
-  context: AiScenarioContext
-  forceScenarioId?: string  // 可强制某个场景
-  dryRun?: boolean          // true=仅计划，false=执行
+| 状态 | 说明 |
+| --- | --- |
+| `executed` | 前端 bridge 已执行工具，并返回结果。 |
+| `requires-backend` | 该工具声明为后端执行；前端 bridge 只返回路由指示。 |
+| `failed` | 参数解析、函数未注册、工具执行或后端业务执行失败。 |
+
+后端 FC 第一版接口约定：
+
+```http
+POST /api/ai/scenario-functions/{functionName}
+```
+
+对 `host='backend'` 的工具，`backendRoute` 是后端执行入口的权威来源。provider 侧 `AiScenarioFunctionDefinition.name` 可能经过 mapper 规避命名限制，不一定等于后端 executor 支持的 `{functionName}`。
+
+```json
+{
+  "protocolVersion": 3,
+  "callId": "call-1",
+  "arguments": { "keyword": "status", "limit": 20 },
+  "context": { "tenantId": "tenant-1", "projectId": "project-1" },
+  "session": { "sessionId": "session-1" }
 }
 ```
 
-### AiScenarioPlan
+后端 executor 只执行函数并返回结果，不自动 append 会话消息；append、滑动窗口和下一轮 turn 仍由 AI 框架负责。
+
+## 货载级 API
+
+货载级也称 Payload/载荷级，描述一次场景运行或函数调用需要携带的数据结构。它覆盖三类对象：
+
+1. `AiScenarioContext`：运行上下文，如 `projectId`、`pageId`、`user`、`metadata`。
+2. `AiScenarioPayloadContract`：场景级 payload 契约，声明槽位、schema、必填字段、追问文本。
+3. `AiScenarioFunctionCall.arguments`：函数级一次调用的实际参数值。
+
+### `AiScenarioPayloadContract`
 
 ```typescript
-interface AiScenarioPlan {
-  scenarioId: string
-  toolCalls: Array<{
-    tool: string
-    args?: unknown
-  }>
-  reason?: string       // LLM 的推理过程
-  dryRun?: boolean
-  executions?: Array<any>  // runWithPlanning 时包含
-}
-```
-
----
-
-## 工作流示例
-
-### 完整端到端流程
-
-```typescript
-import {
-  createScenarioSystem,
-  createBrowserLocalLlmClient,
-  createBrowserScenarioPlanner,
-  registerScenarios,
-} from '@spark-view/spark-scenario'
-
-// 1️⃣ 定义场景
-const scenarios = [
-  {
-    id: 'scenario.leave',
-    title: '请假审批',
-    scope: 'business' as const,
-    intents: ['请假', '休假'],
-    prompts: {
-      systemPrompt: '你是请假助手...'
+const payload: AiScenarioPayloadContract = {
+  description: '过滤表达式案例查询输入。',
+  schema: {
+    type: 'object',
+    properties: {
+      keyword: { type: 'string', description: '搜索关键词' },
+      category: { type: 'string', description: '案例分类' },
+      limit: { type: 'number', minimum: 1, maximum: 100 },
     },
-    tools: [
-      {
-        name: 'check-balance',
-        description: '查询假期余额',
-        parameters: {
-          type: 'object' as const,
-          properties: {
-            employeeId: { type: 'string' }
-          },
-          required: ['employeeId']
-        }
-      },
-      {
-        name: 'submit-request',
-        description: '提交请假申请',
-        parameters: {
-          type: 'object' as const,
-          properties: {
-            employeeId: { type: 'string' },
-            days: { type: 'number' },
-            reason: { type: 'string' }
-          },
-          required: ['employeeId', 'days']
-        }
-      }
-    ],
-    flow: {
-      steps: [
-        { id: 'check', title: '检查余额', kind: 'tool-call' as const, toolName: 'check-balance' },
-        { id: 'submit', title: '提交申请', kind: 'tool-call' as const, toolName: 'submit-request' }
-      ]
-    }
-  }
-]
+    required: ['keyword'],
+  },
+  required: ['keyword'],
+  slots: [
+    {
+      key: 'keyword',
+      label: '关键词',
+      description: '用于搜索案例名称、说明或表达式内容。',
+      required: true,
+      source: 'user',
+      askWhenMissing: '请提供要查询的关键词。',
+      examples: ['status', '日期范围', '金额大于'],
+    },
+  ],
+}
+```
 
-// 2️⃣ 创建系统
-const system = createScenarioSystem({
-  definitions: scenarios,
-  
-  toolResolver: async (call, ctx) => {
-    console.log(`执行工具: ${call.tool}`, call.args)
-    
-    if (call.tool === 'check-balance') {
-      // 模拟调用后端 API
-      return {
-        tool: 'check-balance',
-        success: true,
-        output: { balance: 10, unit: 'days' }
-      }
-    }
-    
-    if (call.tool === 'submit-request') {
-      return {
-        tool: 'submit-request',
-        success: true,
-        output: { requestId: 'req-' + Date.now(), status: 'pending' }
-      }
-    }
-    
-    return {
-      tool: call.tool,
-      success: false,
-      error: '未知工具',
-      errorCode: 'UNKNOWN_TOOL'
-    }
-  }
-})
+货载级字段来源：
 
-// 3️⃣ 创建 LLM 客户端
-const llm = createBrowserLocalLlmClient({
-  model: 'Qwen/Qwen2.5-0.5B-Instruct',
-  device: 'wasm',
-  onProgress: (info) => {
-    console.log(`模型下载: ${(info.progress * 100).toFixed(1)}%`)
-  }
-})
+| `source` | 说明 |
+| --- | --- |
+| `user` | 来自用户自然语言输入或追问回复 |
+| `context` | 来自页面、项目、路由、用户等上下文 |
+| `tool` | 来自前一个工具的执行输出 |
+| `system` | 来自系统默认值或 AI 框架注入值 |
 
-// 4️⃣ 创建规划器
-const planner = createBrowserScenarioPlanner({
-  runtime: system.runtime,
-  llm,
-  temperature: 0.3,
-  maxTokens: 512
-})
+Payload 与 function arguments 的区别：
 
-// 5️⃣ 处理用户请求
-async function main() {
-  console.log('=== 用户说：我要请假3天 ===')
-  
-  const result = await planner.runWithPlanning({
-    userInput: '我要请假3天，因为需要休息',
-    context: {
-      pageId: 'leave-page',
-      projectId: 'hr-system',
-      user: { id: 'emp001', name: '张三', role: 'employee' }
-    }
-  })
-  
-  console.log('\n✅ 规划结果')
-  console.log('场景:', result.scenarioId)
-  console.log('工具调用:', result.toolCalls.map(t => t.tool))
-  console.log('推理:', result.reason)
-  
-  console.log('\n✅ 执行结果')
-  if (result.executions) {
-    for (const exec of result.executions) {
-      console.log(`${exec.tool}: ${exec.success ? '✓' : '✗'} `, exec.output || exec.error)
-    }
-  }
+| 对象 | 生命周期 | 用途 |
+| --- | --- | --- |
+| `payload` | 场景运行级 | 承载一次场景运行的已补齐业务数据 |
+| `tool.args` | 工具执行级 | 给某个工具的一次执行参数 |
+| `function.arguments` | 函数调用级 | provider/Agent 发起 FC 时携带的原始参数，可为对象或 JSON 字符串 |
+| `context` | 框架/运行级 | 承载页面、项目、用户、会话相关但不属于业务参数的数据 |
+
+## 端到端接入示例
+
+下面示例展示五级对象如何串起来：
+
+```typescript
+const scenario: AiScenarioDefinition = {
+  id: 'scenario.filter-expression-cases',
+  title: '过滤表达式案例查询',
+  scope: 'business',
+  intents: ['过滤表达式案例'],
+  promptPolicy: {
+    promptTemplateId: 'filter-expression-cases',
+    confirmPolicy: 'auto',
+    recoveryPolicy: 'strict',
+  },
+  payload: {
+    required: ['keyword'],
+    slots: [{ key: 'keyword', description: '查询关键词', required: true, source: 'user' }],
+  },
+  tools: [queryCasesTool],
 }
 
-main().catch(console.error)
+const registry = createScenarioRegistry({ definitions: [scenario] })
+const runtime = createScenarioRuntime({
+  registry,
+  toolResolver: async (call) => ({ tool: call.tool, args: call.args, ok: false, error: 'BACKEND_ONLY' }),
+})
+const bridge = createScenarioFunctionCallBridge(runtime)
+
+const functions = bridge.listFunctionDefinitions()
+
+// AI 框架把 functions 投喂给 LLM。LLM 返回 function_call 后：
+const result = await bridge.executeFunctionCall({
+  id: 'call-1',
+  name: functions[0].name,
+  arguments: { keyword: 'status', limit: 20 },
+  userInput: '查询 status 过滤表达式案例',
+  context: { projectId: 'project-1' },
+  session: { sessionId: 'session-1' },
+})
+
+if (result.status === 'requires-backend') {
+  // 调用方转交 AI 框架或后端 executor：
+  // 优先使用 result.backendRoute；第一版内置后端函数为 filterExpressionCases.query。
+}
 ```
 
-**预期输出**：
+推荐接入顺序：
 
-```
-=== 用户说：我要请假3天 ===
-模型下载: 100%
+1. 先定义场景级 `AiScenarioDefinition`，明确 `promptPolicy`、`payload`、`flow`。
+2. 再定义工具级 `AiScenarioTool`，补齐 `parameters` 和 `registration.execution`。
+3. 用 `createScenarioFunctionCallBridge` 生成函数级 definitions。
+4. AI 框架负责把 definitions 交给 LLM，并处理 function_call/function_result 主循环。
+5. 前端只执行 `host='frontend'` 的 FC；`host='backend'` 交给后端 executor。
 
-✅ 规划结果
-场景: scenario.leave
-工具调用: ['check-balance', 'submit-request']
-推理: 用户要请3天假，首先检查余额确保足够，然后提交请假申请。
-
-✅ 执行结果
-check-balance: ✓ { balance: 10, unit: 'days' }
-submit-request: ✓ { requestId: 'req-1704067200000', status: 'pending' }
-```
-
----
-
-**更多文档**：查看 [ARCHITECTURE.md](./ARCHITECTURE.md) 了解设计细节和最佳实践。
+更多设计背景见 [ARCHITECTURE.md](./ARCHITECTURE.md)。

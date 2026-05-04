@@ -38,6 +38,9 @@ export type {
   AiScenarioCompletionContract,
   AiScenarioRecoveryHint,
   AiScenarioToolCall,
+  AiScenarioToolExecutionHost,
+  AiScenarioToolExecutionKind,
+  AiScenarioToolExecutionRegistration,
   AiScenarioToolRegistration,
   AiScenarioTool,
   AiScenarioStep,
@@ -83,6 +86,16 @@ export type {
   AiScenarioBrowserPlanner,
 } from './contracts/llm-contracts'
 
+export type {
+  AiScenarioAgentSessionContext,
+  AiScenarioSseEventType,
+  AiScenarioSseEventEnvelope,
+  AiScenarioFunctionDefinition,
+  AiScenarioFunctionCall,
+  AiScenarioFunctionCallStatus,
+  AiScenarioFunctionCallResult,
+} from './contracts/function-call-contracts'
+
 // ==============================================
 // prompt（提示词模板与分级约束） — 在 LLM 使用前可先定义模板
 // ==============================================
@@ -107,6 +120,15 @@ export {
   type AiScenarioRuntime,
   type AiScenarioRuntimeOptions,
 } from './runtime/scenario-runtime'
+
+export {
+  createScenarioFunctionCallBridge,
+  type AiScenarioFunctionNameMapperInput,
+  type AiScenarioFunctionNameMapper,
+  type AiScenarioFunctionCallBridgeOptions,
+  type AiScenarioFunctionResolution,
+  type AiScenarioFunctionCallBridge,
+} from './runtime/scenario-function-call-bridge'
 
 // ==============================================
 // system
@@ -135,6 +157,15 @@ export {
   createBrowserLocalLlmClient,
   type BrowserLocalLlmClientOptions,
 } from './llm/browser-local-llm-client'
+
+export {
+  createScenarioSseLlmClient,
+  type ScenarioSseFetch,
+  type ScenarioSseSessionResolver,
+  type ScenarioSseStreamUrlBuilder,
+  type ScenarioSseRequestBodyBuilder,
+  type ScenarioSseLlmClientOptions,
+} from './llm/scenario-sse-llm-client'
 
 // ==============================================
 // history

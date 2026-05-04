@@ -158,6 +158,27 @@ export interface AiScenarioToolCall {
   args?: unknown
 }
 
+/** FC/工具执行宿主：声明该工具应由前端还是后端执行。 */
+export type AiScenarioToolExecutionHost = 'frontend' | 'backend'
+
+/** FC/工具执行类别：供 Agent、调试台和后端路由分类使用。 */
+export type AiScenarioToolExecutionKind = 'query' | 'prompt' | 'tool' | 'system' | 'debug'
+
+/**
+ * 工具执行注册信息。
+ *
+ * 设计目标：
+ * - 前端 FC：人机交互、页面 live model、浏览器状态等必须在前端执行的能力。
+ * - 后端 FC：查询类、固定 FC、通用 prompt、数据库/服务端能力等未来 Agent 可完全后端执行的能力。
+ * - backendRoute 保持可序列化，便于未来场景注册入库后由后端 Agent 调度。
+ */
+export interface AiScenarioToolExecutionRegistration {
+  host: AiScenarioToolExecutionHost
+  kind?: AiScenarioToolExecutionKind
+  debugHostOverride?: AiScenarioToolExecutionHost
+  backendRoute?: string
+}
+
 /** 工具注册附加信息：用于 queryToolRegistration 暴露规则与示例。 */
 export interface AiScenarioToolRegistration {
   category?: string
@@ -166,6 +187,8 @@ export interface AiScenarioToolRegistration {
   rules?: readonly string[]
   failureCodes?: readonly string[]
   fixHints?: readonly string[]
+  /** 执行宿主与后端路由元数据；未声明时保持兼容，默认按前端工具处理。 */
+  execution?: AiScenarioToolExecutionRegistration
 }
 
 /** 可执行工具定义。
