@@ -8,6 +8,7 @@
 2. [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)：权限模型、快照与渲染规则。
 3. [PLATFORM_TENANT_ROUTING.md](PLATFORM_TENANT_ROUTING.md)：租户/项目路由与平台级路径结构。
 4. [SPARK_AI_PACKAGE_FULL_DESIGN.md](SPARK_AI_PACKAGE_FULL_DESIGN.md)：`packages/spark-ai` 完整设计方案（含与后端接口关联、风险和分阶段落地计划）。
+5. [DM-SPARK-AI-CORE-KNOWLEDGE-RUNTIME-SEPARATION-2026-05-05.md](DM-SPARK-AI-CORE-KNOWLEDGE-RUNTIME-SEPARATION-2026-05-05.md)：spark-ai core 与 `core@knowledge` 模块边界、`业务@模块@函数` 寻址与 SSoT 决策。
 
 ## 编写边界
 

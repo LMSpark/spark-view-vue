@@ -1,28 +1,36 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import {
-  clearDomains,
-  clearRegistry,
-  createSession,
-  executeStill,
-  registerEditStills,
-} from '../packages/spark-ai/src/stills'
+import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
+import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
+import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 import {
   TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
 } from '../packages/spark-data/src'
 import { getStill } from '../packages/spark-ai/src/core/stills/dispatcher'
 import { functionNameToAction, generateToolDefinitions, stillToToolDefinition } from '../packages/spark-ai/src/core/fc-schema'
+import type {
+  KnowledgeModuleSummary,
+  KnowledgeToolGuide,
+  KnowledgeToolSummary,
+} from '../packages/spark-ai/src/core/knowledge/types'
+
+interface QueryToolsResult {
+  modules: KnowledgeModuleSummary[]
+  tools: KnowledgeToolSummary[]
+  total: number
+  hint: string
+}
 
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
+  registerPageDesignEditStills()
 })
 
 describe('tool-calling schema generation', () => {
-  it('keeps nested object schema for sparkNodeTree.addNode', () => {
-    const still = getStill('sparkNodeTree.addNode')
+  it('keeps nested object schema for pageDesign@nodeTree@addNode', () => {
+    const still = getStill('pageDesign@nodeTree@addNode')
     expect(still).toBeDefined()
     if (still === undefined) return
 
@@ -37,8 +45,8 @@ describe('tool-calling schema generation', () => {
     expect(nodeProp?.properties?.['type']?.type).toBe('string')
   })
 
-  it('keeps parentComponentId optional for sparkNodeTree.listChildren', () => {
-    const still = getStill('sparkNodeTree.listChildren')
+  it('keeps parentComponentId optional for pageDesign@nodeTree@listChildren', () => {
+    const still = getStill('pageDesign@nodeTree@listChildren')
     expect(still).toBeDefined()
     if (still === undefined) return
 
@@ -49,8 +57,8 @@ describe('tool-calling schema generation', () => {
     expect(parameters.properties['parentComponentId']?.type).toBe('string')
   })
 
-  it('surfaces open-ended enum hints for datasetTool.updateTable semantic fields', () => {
-    const still = getStill('datasetTool.updateTable')
+  it('surfaces open-ended enum hints for pageDesign@dataset@updateTable semantic fields', () => {
+    const still = getStill('pageDesign@dataset@updateTable')
     expect(still).toBeDefined()
     if (still === undefined) return
 
@@ -87,19 +95,19 @@ describe('tool-calling schema generation', () => {
     expect(actions.every(action => !action.startsWith('blueprint.'))).toBe(true)
   })
 
-  it('exposes interaction.ask and validates recommended options', () => {
+  it('exposes core@interaction@ask and validates recommended options', () => {
     const actions = generateToolDefinitions().map(tool => functionNameToAction(tool.function.name))
-    expect(actions).toContain('interaction.ask')
+    expect(actions).toContain('core@interaction@ask')
 
-    const still = getStill('interaction.ask')
+    const still = getStill('core@interaction@ask')
     expect(still).toBeDefined()
     if (still === undefined) return
 
     const definition = stillToToolDefinition(still)
     expect(definition.function.parameters.required ?? []).toEqual(expect.arrayContaining(['title', 'questions']))
 
-    const session = createSession()
-    const invalid = executeStill('interaction.ask', {
+    const session = createBareSession()
+    const invalid = executeStill('core@interaction@ask', {
       title: '确认范围',
       questions: [
         {
@@ -119,7 +127,7 @@ describe('tool-calling schema generation', () => {
       expect(invalid.msg).toContain('不存在的选项')
     }
 
-    const valid = executeStill('interaction.ask', {
+    const valid = executeStill('core@interaction@ask', {
       title: '确认范围',
       questions: [
         {
@@ -141,14 +149,104 @@ describe('tool-calling schema generation', () => {
     }
   })
 
-  it('exposes only current catalog FC names', () => {
+  it('exposes only current knowledge FC names', () => {
     const functionNames = generateToolDefinitions().map(tool => tool.function.name)
-    expect(functionNames).toContain('catalog_query')
-    expect(functionNames).toContain('catalog_guide')
+    expect(functionNames).toContain('core_knowledge_queryTools')
+    expect(functionNames).toContain('core_knowledge_guideTool')
+    expect(functionNames).toContain('core_knowledge_queryPayloads')
+    expect(functionNames).toContain('core_knowledge_guidePayload')
+    expect(functionNames).not.toContain('catalog_query')
+    expect(functionNames).not.toContain('catalog_guide')
     expect(functionNames).not.toContain('queryComponentCatalog')
     expect(functionNames).not.toContain('queryComponentGuide')
 
-    expect(functionNameToAction('catalog_query')).toBe('catalog.query')
-    expect(functionNameToAction('catalog_guide')).toBe('catalog.guide')
+    expect(functionNameToAction('core_knowledge_queryTools')).toBe('core@knowledge@queryTools')
+    expect(functionNameToAction('core_knowledge_guidePayload')).toBe('core@knowledge@guidePayload')
+  })
+
+  it('keeps core@knowledge definitions business-neutral', () => {
+    const coreKnowledgeActions = [
+      'core@knowledge@queryTools',
+      'core@knowledge@guideTool',
+      'core@knowledge@queryPayloads',
+      'core@knowledge@guidePayload',
+    ]
+
+    for (const action of coreKnowledgeActions) {
+      const still = getStill(action)
+      expect(still).toBeDefined()
+      if (still === undefined) continue
+
+      const serialized = JSON.stringify({
+        description: still.description,
+        modulePrompt: still.modulePrompt,
+        usageRules: still.usageRules,
+        paramsSchema: still.paramsSchema,
+        resultSchema: still.resultSchema,
+        example: still.example,
+        failureModes: still.failureModes,
+      })
+      expect(serialized).not.toMatch(/pageDesign|page-design|SparkNode|r-table|r-text|组件/u)
+    }
+  })
+
+  it('surfaces module prompts through core@knowledge catalogs', () => {
+    const session = createBareSession()
+    const result = executeStill('core@knowledge@queryTools', {}, session, 'query-module-prompts')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const data = result.data as QueryToolsResult
+    const expectedModules = [
+      'core@knowledge',
+      'core@session',
+      'core@interaction',
+      'pageDesign@lifecycle',
+      'pageDesign@nodeTree',
+      'pageDesign@dataset',
+      'pageDesign@textModel',
+    ]
+    const moduleKeys = data.modules.map(moduleSummary => `${moduleSummary.business}@${moduleSummary.module}`)
+    const nodeTreeModule = data.modules.find(moduleSummary => moduleSummary.business === 'pageDesign' && moduleSummary.module === 'nodeTree')
+    const addNodeTool = data.tools.find(tool => tool.action === 'pageDesign@nodeTree@addNode')
+
+    expect(moduleKeys).toEqual(expect.arrayContaining(expectedModules))
+    expect(data.modules.every(moduleSummary => moduleSummary.prompt.length > 0)).toBe(true)
+    for (const moduleSummary of data.modules) {
+      const moduleTools = data.tools.filter(tool => tool.business === moduleSummary.business && tool.module === moduleSummary.module)
+      expect(moduleTools.length).toBe(moduleSummary.toolCount)
+      expect(moduleTools.every(tool => tool.modulePrompt === moduleSummary.prompt)).toBe(true)
+    }
+    expect(nodeTreeModule?.prompt).toContain('SparkNodeTree')
+    expect(nodeTreeModule?.actions).toContain('pageDesign@nodeTree@addNode')
+    expect(addNodeTool?.modulePrompt).toBe(nodeTreeModule?.prompt)
+  })
+
+  it('includes module prompt in guideTool and FC descriptions', () => {
+    const session = createBareSession()
+    const guideResult = executeStill(
+      'core@knowledge@guideTool',
+      { action: 'pageDesign@nodeTree@addNode' },
+      session,
+      'guide-module-prompt',
+    )
+
+    expect(guideResult.ok).toBe(true)
+    if (!guideResult.ok) return
+
+    const guide = guideResult.data as KnowledgeToolGuide
+    expect(guide.modulePrompt).toContain('queryPayloads/guidePayload')
+
+    const guideStill = getStill('core@knowledge@guideTool')
+    expect(guideStill?.resultSchema?.['modulePrompt']).toBeDefined()
+
+    const still = getStill('pageDesign@nodeTree@addNode')
+    expect(still).toBeDefined()
+    if (still === undefined) return
+
+    const definition = stillToToolDefinition(still)
+    expect(definition.function.description).toContain('模块提示')
+    expect(definition.function.description).toContain('queryPayloads/guidePayload')
   })
 })

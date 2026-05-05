@@ -4,29 +4,22 @@ import { flushPromises, mount } from '@vue/test-utils'
 import type { PageModelSessionHost } from '../src/views/app/dev-system/page-model-session'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
+import type {
+  OrchestratorResult,
+  PageModelEditSessionRuntime,
+  StartPageModelIterateSessionOptions,
+} from '@spark-view/spark-ai'
 
 const shared = vi.hoisted(() => {
   const runs: Array<{
-    options: Record<string, unknown>
-    resolve: (value: {
-      turns: Array<Record<string, unknown>>
-      rounds: number
-      aborted: boolean
-      completed: boolean
-      sessionId: string
-    }) => void
+    options: StartPageModelIterateSessionOptions
+    resolve: (value: OrchestratorResult) => void
   }> = []
 
-  const startIterateSession = vi.fn((options) => {
-    return new Promise<{
-      turns: Array<Record<string, unknown>>
-      rounds: number
-      aborted: boolean
-      completed: boolean
-      sessionId: string
-    }>((resolve) => {
+  const startIterateSession = vi.fn((options: StartPageModelIterateSessionOptions) => {
+    return new Promise<OrchestratorResult>((resolve) => {
       runs.push({
-        options: options as Record<string, unknown>,
+        options,
         resolve,
       })
     })
@@ -56,10 +49,10 @@ import {
   bindLiveModelAdapter,
   clearDomains,
   clearRegistry,
-  createSession,
+  createBareSession,
   type EditToolHost,
   getEditState,
-  registerEditStills,
+  registerPageDesignEditStills,
 } from '@spark-view/spark-ai'
 import { usePageModelEditSession } from '../src/views/app/dev-system/page-model-session'
 
@@ -72,9 +65,9 @@ function createRuleEditHarness(options?: {
 } {
   clearDomains()
   clearRegistry()
-  registerEditStills()
+  registerPageDesignEditStills()
 
-  const session = createSession()
+  const session = createBareSession()
   const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
   let script = ''
@@ -112,6 +105,13 @@ function createRuleEditHarness(options?: {
   }
 }
 
+function createRuntimeOverride() {
+  return {
+    startIterateSession: shared.startIterateSession as PageModelEditSessionRuntime['startIterateSession'],
+    generateToolDefinitions: shared.generateToolDefinitions as PageModelEditSessionRuntime['generateToolDefinitions'],
+  }
+}
+
 describe('usePageModelEditSession run isolation', () => {
   beforeEach(() => {
     shared.runs.length = 0
@@ -129,6 +129,7 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
+          runtime: createRuntimeOverride(),
         })
 
         return () => h('div')
@@ -170,6 +171,7 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
+          runtime: createRuntimeOverride(),
         })
 
         return () => h('div')
@@ -186,13 +188,13 @@ describe('usePageModelEditSession run isolation', () => {
     const firstRun = shared.runs[0]!
     const firstOnSseEvent = firstRun.options['onSseEvent'] as ((event: { sessionId: string; type: string; data: string }) => void) | undefined
     const firstSignal = firstRun.options['signal'] as AbortSignal
-    expect(firstRun.options['repeatDetection']).toEqual({
+    expect(firstRun.options['repeatDetection']).toMatchObject({
       maxSameSignature: 6,
       maxConsecutiveErrors: 6,
       maxCyclePeriod: 4,
       cycleRepeatThreshold: 2,
       maxReadOnlyActions: 20,
-      maxMissingComponentRetries: 2,
+      maxRepeatedFailureRetries: 2,
     })
 
     firstOnSseEvent?.({ sessionId: 'old-run', type: 'delta', data: 'before-reset' })
@@ -246,7 +248,7 @@ describe('usePageModelEditSession run isolation', () => {
           round: 1,
           timestamp: new Date().toISOString(),
           phase: 'stills-execute',
-          toolBlock: { action: 'datasetTool.createColumn' },
+          toolBlock: { action: 'pageDesign@dataset@createColumn', id: 'tool-create-column-new-run', params: {} },
           stillsResult: { ok: true, summary: '已新增列' },
         },
       ],
@@ -273,6 +275,7 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost,
+          runtime: createRuntimeOverride(),
         })
 
         return () => h('div')
@@ -292,7 +295,7 @@ describe('usePageModelEditSession run isolation', () => {
           round: 1,
           timestamp: new Date().toISOString(),
           phase: 'stills-execute',
-          toolBlock: { action: 'datasetTool.getTable' },
+          toolBlock: { action: 'pageDesign@dataset@getTable', id: 'tool-get-table-read-only', params: {} },
           stillsResult: { ok: true, summary: '已读取 Orders 表结构' },
         },
       ],
@@ -326,6 +329,7 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost: harness.sessionHost,
+          runtime: createRuntimeOverride(),
         })
 
         return () => h('div')
@@ -345,8 +349,8 @@ describe('usePageModelEditSession run isolation', () => {
           round: 1,
           timestamp: new Date().toISOString(),
           phase: 'stills-execute',
-          toolBlock: { action: 'datasetTool.createColumn' },
-          stillsResult: { ok: true, summary: 'datasetTool.createColumn 完成' },
+          toolBlock: { action: 'pageDesign@dataset@createColumn', id: 'tool-create-column-dataset-sync', params: {} },
+          stillsResult: { ok: true, summary: 'pageDesign@dataset@createColumn 完成' },
         },
       ],
       rounds: 1,
@@ -379,6 +383,7 @@ describe('usePageModelEditSession run isolation', () => {
           getSessionKey: () => 'orders-page',
           getEditToolHost: () => harness.editToolHost,
           sessionHost,
+          runtime: createRuntimeOverride(),
         })
 
         return () => h('div')

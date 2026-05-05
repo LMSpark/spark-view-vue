@@ -4,6 +4,7 @@
 // 3) Tooling (FC schema + dispatch)
 // 4) Orchestration (loop + monitors)
 // 5) Lifecycle Registry (tree + query helpers)
+// 6) Stills Runtime (registry + dispatcher + domain session)
 
 // 1) Session Contract
 export type {
@@ -82,3 +83,32 @@ export type {
   LifecycleOwnerTree,
   LifecycleConfigPath,
 } from './lifecycle-config-paths'
+
+// 6) Stills Runtime
+export {
+  registerStill,
+  registerAll,
+  getStill,
+  getAllStills,
+  clearRegistry,
+  executeStill,
+} from './stills/dispatcher'
+export {
+  registerDomain,
+  getDomain,
+  clearDomains,
+  createBareSession,
+} from './stills/domain'
+export {
+  registerCoreStills,
+} from './stills/register-core-stills'
+export type {
+  DomainState,
+  StillGuard,
+  StillResult,
+  StillDefinition,
+  PatchEntry,
+  IStillSession,
+  DomainProvider,
+  PostValidationWarning,
+} from './stills/types'

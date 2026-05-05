@@ -1,15 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
+import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
+import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
+import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 import {
   bindLiveModelAdapter,
-  clearDomains,
-  clearRegistry,
-  createSession,
-  executeStill,
   getEditState,
-  registerEditStills,
-  type IStillSession,
-  type StillResult,
-} from '../packages/spark-ai/src/stills'
+} from '../packages/spark-ai/src/business/page-design/stills'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
 
@@ -35,8 +32,8 @@ function expectInvalidAlias(result: StillResult, aliasKey: string): void {
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
-  session = createSession()
+  registerPageDesignEditStills()
+  session = createBareSession()
   seq = 0
   liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
@@ -97,15 +94,15 @@ describe('sparkNodeTree legacy alias compatibility', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap')
+    const init = exec('pageDesign@lifecycle@bootstrap')
     expect(init.ok).toBe(true)
 
-    expectInvalidAlias(exec('sparkNodeTree.getNode', { nodeId: 'root-table' }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.getLocation', { nodeId: 'name-field' }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.hasNode', { nodeId: 'name-field' }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.getParent', { nodeId: 'name-field' }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.listChildren', { parentId: 'root-table' }), 'parentId')
-    expectInvalidAlias(exec('sparkNodeTree.addNode', {
+    expectInvalidAlias(exec('pageDesign@nodeTree@getNode', { nodeId: 'root-table' }), 'nodeId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@getLocation', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@hasNode', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@getParent', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@listChildren', { parentId: 'root-table' }), 'parentId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@addNode', {
       parentId: 'root-table',
       node: {
         type: 'r-text',
@@ -113,26 +110,26 @@ describe('sparkNodeTree legacy alias compatibility', () => {
         props: { field: 'email', label: '邮箱' },
       },
     }), 'parentId')
-    expectInvalidAlias(exec('sparkNodeTree.addNodes', {
+    expectInvalidAlias(exec('pageDesign@nodeTree@addNodes', {
       parentId: 'root-table',
       nodes: [
         { type: 'r-text', id: 'legacy-b', props: { field: 'mobile', label: '手机号' } },
         { type: 'r-text', id: 'legacy-c', props: { field: 'title', label: '职位' } },
       ],
     }), 'parentId')
-    expectInvalidAlias(exec('sparkNodeTree.moveNode', { nodeId: 'name-field', parentComponentId: 'root-table' }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.moveNode', { componentId: 'name-field', parentId: 'root-table' }), 'parentId')
-    expectInvalidAlias(exec('sparkNodeTree.setProps', {
+    expectInvalidAlias(exec('pageDesign@nodeTree@moveNode', { nodeId: 'name-field', parentComponentId: 'root-table' }), 'nodeId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@moveNode', { componentId: 'name-field', parentId: 'root-table' }), 'parentId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@setProps', {
       nodeId: 'name-field',
       props: { class: 'legacy-a' },
       merge: true,
     }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.setPropsBatch', {
+    expectInvalidAlias(exec('pageDesign@nodeTree@setPropsBatch', {
       items: [
         { nodeId: 'name-field', props: { class: 'legacy-b' }, merge: true },
       ],
     }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.replaceNode', {
+    expectInvalidAlias(exec('pageDesign@nodeTree@replaceNode', {
       nodeId: 'name-field',
       node: {
         type: 'r-text',
@@ -140,7 +137,7 @@ describe('sparkNodeTree legacy alias compatibility', () => {
         props: { field: 'position', label: '岗位' },
       },
     }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.replaceNodes', {
+    expectInvalidAlias(exec('pageDesign@nodeTree@replaceNodes', {
       items: [
         {
           nodeId: 'name-field',
@@ -148,7 +145,7 @@ describe('sparkNodeTree legacy alias compatibility', () => {
         },
       ],
     }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.removeNode', { nodeId: 'name-field' }), 'nodeId')
-    expectInvalidAlias(exec('sparkNodeTree.removeNodes', { nodeIds: ['name-field'] }), 'nodeIds')
+    expectInvalidAlias(exec('pageDesign@nodeTree@removeNode', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('pageDesign@nodeTree@removeNodes', { nodeIds: ['name-field'] }), 'nodeIds')
   })
 })

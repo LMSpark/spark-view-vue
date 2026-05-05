@@ -3,7 +3,7 @@ import { getAllStills } from './stills/dispatcher'
 import type { JsonSchemaProperty, ToolDefinition } from './session/session-contracts'
 
 export function actionToFunctionName(action: string): string {
-  return action.replace(/\./g, '_')
+  return action.replace(/[@.]/g, '_')
 }
 
 export function functionNameToAction(name: string, registry?: ReadonlyMap<string, unknown>): string {
@@ -13,9 +13,12 @@ export function functionNameToAction(name: string, registry?: ReadonlyMap<string
       return action
     }
   }
-  const idx = name.indexOf('_')
-  if (idx > 0) {
-    return `${name.slice(0, idx)}.${name.slice(idx + 1)}`
+  const segments = name.split('_').filter(segment => segment.length > 0)
+  if (segments.length >= 3) {
+    return `${segments[0]}@${segments[1]}@${segments.slice(2).join('_')}`
+  }
+  if (segments.length === 2) {
+    return `${segments[0]}.${segments[1]}`
   }
   return name
 }
@@ -190,10 +193,13 @@ function inferToolParametersFromSchema(paramsSchema: unknown): { properties: Rec
   return { properties, required }
 }
 
-export function stillToToolDefinition(still: StillDefinition): ToolDefinition {
+export function stillToToolDefinition<TParams, TResult>(still: StillDefinition<TParams, TResult>): ToolDefinition {
   const { properties, required } = inferToolParametersFromSchema(still.paramsSchema)
 
   const descParts = [still.description]
+  if (still.modulePrompt) {
+    descParts.push(`模块提示: ${still.modulePrompt}`)
+  }
   if (still.guardDescription) {
     descParts.push(`前置条件: ${still.guardDescription}`)
   }

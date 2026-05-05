@@ -7,36 +7,36 @@
  */
 
 import type { StillDefinition, StillResult, IStillSession, PatchEntry } from './types'
+import { clearKnowledgeRegistry } from '../knowledge/registry'
 
 // ═══════════════════════════════════════════════════════════
 // Registry
 // ═══════════════════════════════════════════════════════════
 
-type AnyStill = StillDefinition<unknown, unknown>
+const _registry = new Map<string, StillDefinition<never, unknown>>()
 
-const _registry = new Map<string, AnyStill>()
-
-export function registerStill(still: AnyStill): void {
+export function registerStill(still: StillDefinition<never, unknown>): void {
   _registry.set(still.action, still)
 }
 
-export function registerAll(stills: AnyStill[]): void {
+export function registerAll(stills: ReadonlyArray<StillDefinition<never, unknown>>): void {
   for (const still of stills) {
     _registry.set(still.action, still)
   }
 }
 
-export function getStill(action: string): AnyStill | undefined {
+export function getStill(action: string): StillDefinition<never, unknown> | undefined {
   return _registry.get(action)
 }
 
-export function getAllStills(): ReadonlyMap<string, AnyStill> {
+export function getAllStills(): ReadonlyMap<string, StillDefinition<never, unknown>> {
   return _registry
 }
 
 /** 用于测试：清空注册表 */
 export function clearRegistry(): void {
   _registry.clear()
+  clearKnowledgeRegistry()
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -52,7 +52,7 @@ function unknownActionResult(action: string): StillResult {
     ok: false,
     code: 'UNKNOWN_ACTION',
     msg: `未知动作: ${action}`,
-    fix: `${correction}。请先调用 stills_capabilities 获取全部动作目录。`,
+    fix: `${correction}。请先调用 core_knowledge_queryTools 获取全部函数目录。`,
   }
 }
 
@@ -64,7 +64,7 @@ function invalidParamsResult(action: string, validationError: string): StillResu
     msg: validationError,
     fix: still
       ? buildStillRetryFix(still, `参数错误：${validationError}`)
-      : `请调用 stills_actionSpec({"action":"${action}"}) 获取正确参数格式`,
+      : `请调用 core_knowledge_guideTool({"action":"${action}"}) 获取正确参数格式`,
   }
 }
 
@@ -77,7 +77,7 @@ function buildActionCallExample(action: string, params: unknown): string {
   return `调用 ${action.replace(/\./g, '_')}(${JSON.stringify(params, null, 2)})`
 }
 
-function buildStillRetryFix(still: AnyStill, reason: string): string {
+function buildStillRetryFix(still: StillDefinition<never, unknown>, reason: string): string {
   const paramsSchema = still.paramsSchema ? JSON.stringify(still.paramsSchema, null, 2) : '{}'
   const example = still.example ?? {}
   const ruleText = still.usageRules && still.usageRules.length > 0
@@ -86,13 +86,13 @@ function buildStillRetryFix(still: AnyStill, reason: string): string {
   return `${reason}。请重新${buildActionCallExample(still.action, example)}。参数结构: ${paramsSchema}.${ruleText}`
 }
 
-function buildGuardRetryFix(still: AnyStill, guardCode: string, guardMessage: string): string {
+function buildGuardRetryFix(still: StillDefinition<never, unknown>, guardCode: string, guardMessage: string): string {
   const guardHint = still.guardDescription ?? `前置条件未满足（${guardCode}）`
   return `${guardMessage}。${guardHint}。${buildStillRetryFix(still, '请先满足前置条件后重试当前动作')}`
 }
 
 function tokenizeAction(action: string): string[] {
-  return action.toLowerCase().split(/[._-]+/u).filter((token) => token.length > 0)
+  return action.toLowerCase().split(/[@._-]+/u).filter((token) => token.length > 0)
 }
 
 export function scoreCandidateAction(requestedAction: string, candidateAction: string): number {
@@ -104,9 +104,9 @@ export function scoreCandidateAction(requestedAction: string, candidateAction: s
     score += 20
   }
 
-  const [requestedNamespace] = requestedTokens
-  const [candidateNamespace] = candidateTokens
-  if (requestedNamespace && candidateNamespace && requestedNamespace === candidateNamespace) {
+  const [requestedBusiness] = requestedTokens
+  const [candidateBusiness] = candidateTokens
+  if (requestedBusiness && candidateBusiness && requestedBusiness === candidateBusiness) {
     score += 10
   }
 
@@ -165,17 +165,17 @@ export function executeStill(
   }
 
   // 3. validate 只负责参数形状与最小领域约束，不做真正副作用
-  const validationError = still.validate(params)
+  const validationError = still.validate(params as never)
   if (validationError !== null) {
     return invalidParamsResult(action, validationError)
   }
 
   // 4. 执行动作；request/describe 都走同一个入口，差异只体现在 type 与 patchLog 写入规则
-  const result: StillResult = still.execute(session, params)
+  const result: StillResult = still.execute(session, params as never)
 
   // 5. postValidate：execute 成功后运行跨实体一致性校验，warnings 附着到 result
   if (result.ok && still.postValidate) {
-    const warnings = still.postValidate(session, params)
+    const warnings = still.postValidate(session, params as never)
     if (warnings.length > 0) {
       result.warnings = warnings
     }

@@ -4,9 +4,15 @@
  * 核心目标：从单一事实源 component-catalog.json 中，根据不同的消费场景提取适当且聚焦的数据子集。
  * 设计保证：本文件中所有对外暴露及内部辅助函数均严格遵守纯函数 (Pure Function) 范式，无任何副作用。
  *
+ * 消费时序（建议阅读顺序）：
+ * 1. 投影契约定义：统一声明 FC / Stills / DevSystem 的输出结构。
+ * 2. 基础解析与水合：展开 canonical 引用并补齐 schema/binding。
+ * 3. FC 投影：生成目录摘要、单组件规格、配置指南、会话目录。
+ * 4. DevSystem 投影：生成类型列表、属性名、枚举映射、默认值映射。
+ *
  * 主要消费场景：
- * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（session.describe /
- *    stills.actionSpec）提供精简、无冗余的组件视图，最小化 Token 开销。
+ * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（core@session@describe /
+ *    core@knowledge@guideTool）提供精简、无冗余的组件视图，最小化 Token 开销。
  * 2. DevSystem（开发者平台）场景——为 rule.json 内建的图形化配置编辑器提供组件选取、属性下拉、
  *    枚举推断与默认值提示等元数据结构。
  *
@@ -28,15 +34,14 @@ import type {
 } from './types'
 import type { StillsCatalog, StillsComponentEntry } from './stills-catalog-types'
 
-// ══════════════════════════════════════════════════════════════
-// 第一部分：接口定义区 (Exported Projection Types)
-// 定义各投影场景输出的结构契约，供消费层类型推导与运行时校验
-// ══════════════════════════════════════════════════════════════
+// =========================================================
+// 一、投影契约定义（Exported Projection Types）
+// =========================================================
 
 /**
  * LLM 目录摘要负载——告知大模型当前应用环境可用的全部组件总览。
  *
- * 由 `projectFcDirectory` 生成，适合作为 session.describe 的响应体直接返回。
+ * 由 `projectComponentDirectory` 生成，适合作为 core@session@describe 的响应体直接返回。
  * 包含：组件总数统计、registry 分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
  * 以及面向 LLM 的配置使用原则。
  */
@@ -76,7 +81,7 @@ export interface ComponentDirectoryPayload {
 /**
  * 单组件能力核心规格——剔除复杂 Schema 引用后的精简形态，专为 AI 生成 UI 配置设计。
  *
- * 由 `projectFcSpec` 生成，适合作为 stills.actionSpec 的消费目标。
+ * 由 `projectComponentSpec` 生成，适合作为 core@knowledge@guidePayload 的消费目标。
  * LLM 可依据此结构选择组件 type、填写 props、绑定事件。
  */
 export interface ComponentSpec {
@@ -101,7 +106,7 @@ export interface ComponentSpec {
 /**
  * 单组件详尽配置指导书——面向 LLM 的防呆配置手册。
  *
- * 由 `projectFcConfigGuide` 生成。除基本规格外，还内置：
+ * 由 `projectComponentConfigGuide` 生成。除基本规格外，还内置：
  * - 必填 / 可选属性分组；
  * - 事件参数指南；
  * - 数据绑定能力摘要；
@@ -158,6 +163,14 @@ export interface ComponentConfigGuide {
   }>
 }
 
+/**
+ * 收集组件中通过 `componentRef` 声明的子组件引用。
+ *
+ * 规则：
+ * - 仅识别 `prop.componentRef`（忽略 schemaRef=component:* 旧格式）；
+ * - 相同子组件 type 合并为一条记录，并聚合来源 prop 名；
+ * - 来源 prop 名按字母序输出，确保结果稳定。
+ */
 function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: string; fromProps: string[] }> {
   const refs = new Map<string, Set<string>>()
   for (const prop of entry.props) {
@@ -176,6 +189,14 @@ function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: s
   }))
 }
 
+/**
+ * 根据子组件引用构建可读的子组件指导信息。
+ *
+ * 解析优先级：
+ * 1. 从父 prop 展开的对象 schema 中推导结构（inline-structure）；
+ * 2. 回退到独立组件目录条目（projectComponentSpec）；
+ * 3. 均失败时返回 unresolved，并给出修复建议。
+ */
 function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedComponentEntry): Array<{
   type: string
   fromProps: string[]
@@ -287,10 +308,9 @@ export interface HydratedComponentEntry extends Omit<ComponentEntry, 'props' | '
 }
 
 
-// ══════════════════════════════════════════════════════════════
-// 第二部分：公共底层解析与水合 (Core Resolution & Hydration)
-// 将 canonical 引用模式展开为完整的聚合形态，为上层投影提供数据支撑
-// ══════════════════════════════════════════════════════════════
+// =========================================================
+// 二、基础解析与水合（Core Resolution & Hydration）
+// =========================================================
 
 /**
  * 通过 type 字符串正则判定容器类组件的快速匹配表达式。
@@ -551,13 +571,12 @@ function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSch
 }
 
 
-// ══════════════════════════════════════════════════════════════
-// 第三部分：FC 投影——Session 与 AI 动作规范 (AI FC Projections)
-// 为大语言模型的 UI 生成提供简要目录、单组件规格与配置指导书
-// ══════════════════════════════════════════════════════════════
+// =========================================================
+// 三、FC 投影（Session / ActionSpec / Guide）
+// =========================================================
 
 /**
- * AI FC 投影：生成全局组件目录摘要（适用于 session.describe）。
+ * AI FC 投影：生成全局组件目录摘要（适用于 core@session@describe）。
  *
  * 输出内容：
  * - 各分类组件数量汇总（total / containers / fields / groups / meta / features）；
@@ -599,7 +618,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     .sort((a, b) => a.localeCompare(b))
 
   return {
-    hint: 'session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 catalog.guide 查阅配置指南。',
+    hint: 'core@session@describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 core@knowledge@guidePayload 查阅配置指南。',
     summary: {
       total: catalog.componentCount,
       containers: registry.containers.length,
@@ -631,9 +650,9 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
 }
 
 /**
- * AI FC 投影：提炼单组件能力核心规格（适用于 catalog.guide）。
+ * AI FC 投影：提炼单组件能力核心规格（适用于 core@knowledge@guidePayload）。
  *
- * 输出精简的 FcComponentSpec，仅保留 LLM 构造 SparkNode 所需的最小信息：
+ * 输出精简的 ComponentSpec，仅保留 LLM 构造 SparkNode 所需的最小信息：
  * type / category / description / props（含必填标记）/ emits（含描述）。
  * 复杂的 schema 引用不展开（由消费方根据需要进一步查询）。
  *
@@ -670,8 +689,7 @@ export function projectComponentSpec(catalog: ComponentCatalog, type: string): C
 /**
  * Stills 投影：把完整 component catalog 收敛为会话可读的轻量目录。
  *
- * 该投影用于 `createSession()` 默认注入，确保 `catalog.query` 只依赖
- * session.catalog，不依赖运行时兜底分支。
+ * 该投影供业务 payload provider 持有，避免 core session 协议绑定具体组件目录。
  */
 export function projectStillsCatalog(catalog: ComponentCatalog): StillsCatalog {
   const registry = catalog.registry
@@ -763,7 +781,7 @@ function flattenRootFieldPaths(fields: RootFieldEntry[], prefix = ''): string[] 
 /**
  * AI FC 投影：生成单组件详尽配置指导书（适用于辅助 LLM 构造无误的 SparkNode）。
  *
- * 在 `projectFcSpec` 的基础上额外提供：
+ * 在 `projectComponentSpec` 的基础上额外提供：
  * - 必填 / 可选属性分组（方便 LLM 区分哪些字段必须填写）；
  * - 事件使用指南（含 payload 参数签名）；
  * - 数据绑定能力摘要（selfResolving / dataContainer 等标志位）；
@@ -858,10 +876,9 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
 }
 
 
-// ══════════════════════════════════════════════════════════════
-// 第四部分：DevSystem 投影——规则编辑器支撑 (DevSystem UI Projections)
-// 为图形化 rule.json 配置编辑器提供组件选取、属性枚举、默认值回填等元数据
-// ══════════════════════════════════════════════════════════════
+// =========================================================
+// 四、DevSystem 投影（规则编辑器支撑）
+// =========================================================
 
 /**
  * DevSystem 内部常量：SparkNode 骨架结构字段名集合。

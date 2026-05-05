@@ -9,8 +9,8 @@ import { describe, it, expect } from 'vitest'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import {
   bindLiveModelAdapter,
-  registerEditStills,
-  createSession,
+  registerPageDesignEditStills,
+  createBareSession,
   executeStill,
   getActiveNodeTree,
   getEditState,
@@ -86,8 +86,8 @@ const AUTONOMOUS_SYSTEM_PROMPT = [
 ].join(' ')
 
 const AUTONOMOUS_GUARDRAILS = `执行底线约束（稳定优先，必须遵守）：
-1) 本任务只允许以下动作：catalog.query、catalog.guide、stills.actionSpec、sparkNodeTree.hasNode、sparkNodeTree.getNode、sparkNodeTree.listChildren、sparkNodeTree.setProps、sparkNodeTree.addNode、sparkNodeTree.addNodes、sparkNodeTree.replaceNode、sparkNodeTree.replaceNodes、sparkNodeTree.removeNode、sparkNodeTree.removeNodes、sparkNodeTree.countNodes；其它动作即使在能力表中出现也视为本任务不可用；
-2) 不要求调用 stills.capabilities；查询组件目录时使用 catalog.query（可选 category），查询单组件配置指南时使用 catalog.guide（type），查询动作参数指南时才使用 stills.actionSpec（action）；禁止把三者混用；
+1) 本任务只允许以下动作：core@knowledge@queryPayloads、core@knowledge@guidePayload、core@knowledge@guideTool、pageDesign@nodeTree@hasNode、pageDesign@nodeTree@getNode、pageDesign@nodeTree@listChildren、pageDesign@nodeTree@setProps、pageDesign@nodeTree@addNode、pageDesign@nodeTree@addNodes、pageDesign@nodeTree@replaceNode、pageDesign@nodeTree@replaceNodes、pageDesign@nodeTree@removeNode、pageDesign@nodeTree@removeNodes、pageDesign@nodeTree@countNodes；其它动作即使在能力表中出现也视为本任务不可用；
+2) 不要求调用 stills.capabilities；查询组件目录时使用 core@knowledge@queryPayloads（可选 category），查询单组件配置指南时使用 core@knowledge@guidePayload（type），查询动作参数指南时才使用 core@knowledge@guideTool（action）；禁止把三者混用；
 3) 关键写动作前先确认参数结构与字段含义，不猜测、不假设未知字段；
 4) 不做同参数重复查询；仅在发生相关写入后，才允许再次读取同一目标状态；
 5) 目标态校验采用“写后统一校验”，避免每轮重复自检；
@@ -123,8 +123,8 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     console.info(`[E2E] 🔑 已获取 Token`)
 
     // 创建业务前端状态
-    registerEditStills()
-    const session = createSession()
+    registerPageDesignEditStills()
+    const session = createBareSession()
     const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
     const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
     let script = ''
@@ -156,7 +156,7 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     script = 'export default {}\n'
     style = '.page {}\n'
 
-    const seededBootstrap = executeStill('edit.bootstrap', {
+    const seededBootstrap = executeStill('pageDesign@lifecycle@bootstrap', {
       ruleJson: [
         {
           id: 'root-table',
@@ -171,7 +171,7 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     }, session, 'seed-bootstrap')
     expect(seededBootstrap.ok).toBe(true)
 
-    const seededCreateTable = executeStill('datasetTool.createTable', {
+    const seededCreateTable = executeStill('pageDesign@dataset@createTable', {
       tableName: 'Departments',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -197,7 +197,7 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
       },
     })
 
-    const prompt = `当前会话已经完成 edit.bootstrap，4 个文件已进入同一编辑会话。
+    const prompt = `当前会话已经完成 pageDesign@lifecycle@bootstrap，4 个文件已进入同一编辑会话。
 任务目标：在 root-table 下新增一个 r-text 子节点，节点为
 {
   "type": "r-text",
@@ -269,21 +269,21 @@ ${AUTONOMOUS_GUARDRAILS}
       .map((turn) => turn.toolBlock?.action)
       .filter((action): action is string => typeof action === 'string')
 
-    const usedCatalogQuery = executedActions.some((action) => action === 'catalog.query' || action === 'catalog.guide' || action === 'stills.actionSpec')
+    const usedCatalogQuery = executedActions.some((action) => action === 'core@knowledge@queryPayloads' || action === 'core@knowledge@guidePayload' || action === 'core@knowledge@guideTool')
     const usedTreeWrite = executedActions.some((action) =>
-      action === 'sparkNodeTree.addNode'
-      || action === 'sparkNodeTree.addNodes'
-      || action === 'sparkNodeTree.replaceNode'
-      || action === 'sparkNodeTree.replaceNodes',
+      action === 'pageDesign@nodeTree@addNode'
+      || action === 'pageDesign@nodeTree@addNodes'
+      || action === 'pageDesign@nodeTree@replaceNode'
+      || action === 'pageDesign@nodeTree@replaceNodes',
     )
 
     const successfulTreeWrite = result.turns.some((turn) => {
       const action = turn.toolBlock?.action
       if (action === undefined) return false
-      const isTreeWrite = action === 'sparkNodeTree.addNode'
-        || action === 'sparkNodeTree.addNodes'
-        || action === 'sparkNodeTree.replaceNode'
-        || action === 'sparkNodeTree.replaceNodes'
+      const isTreeWrite = action === 'pageDesign@nodeTree@addNode'
+        || action === 'pageDesign@nodeTree@addNodes'
+        || action === 'pageDesign@nodeTree@replaceNode'
+        || action === 'pageDesign@nodeTree@replaceNodes'
       return isTreeWrite && turn.stillsResult?.ok === true
     })
 
@@ -306,8 +306,8 @@ ${AUTONOMOUS_GUARDRAILS}
     await login()
     console.info('[E2E-Full] 🔑 已获取 Token')
 
-    registerEditStills()
-    const session = createSession()
+    registerPageDesignEditStills()
+    const session = createBareSession()
     const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
     const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
     let script = ''
@@ -339,7 +339,7 @@ ${AUTONOMOUS_GUARDRAILS}
     script = 'export default {}\n'
     style = '.page {}\n'
 
-    const seededBootstrap = executeStill('edit.bootstrap', {
+    const seededBootstrap = executeStill('pageDesign@lifecycle@bootstrap', {
       ruleJson: [
         {
           id: 'root-table',
@@ -354,7 +354,7 @@ ${AUTONOMOUS_GUARDRAILS}
     }, session, 'seed-bootstrap-fullflow')
     expect(seededBootstrap.ok).toBe(true)
 
-    const seededCreateTable = executeStill('datasetTool.createTable', {
+    const seededCreateTable = executeStill('pageDesign@dataset@createTable', {
       tableName: 'Departments',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -380,7 +380,7 @@ ${AUTONOMOUS_GUARDRAILS}
       },
     })
 
-    const prompt = `当前会话已经完成 edit.bootstrap，4 个文件已进入同一编辑会话。
+    const prompt = `当前会话已经完成 pageDesign@lifecycle@bootstrap，4 个文件已进入同一编辑会话。
   任务目标（最终状态约束）：
   - root-table.props.border = true；
   - root-table 子节点最终仅保留一个 r-text 节点：id=dept-name-b，label=部门名称B-替换；
@@ -449,11 +449,11 @@ ${AUTONOMOUS_GUARDRAILS}
       .map((turn) => turn.toolBlock?.action)
       .filter((action): action is string => typeof action === 'string')
 
-    const usedCatalogQuery = executedActions.some((action) => action === 'catalog.query' || action === 'catalog.guide' || action === 'stills.actionSpec')
-    const usedAddAction = executedActions.some((action) => action === 'sparkNodeTree.addNode' || action === 'sparkNodeTree.addNodes')
-    const usedReplaceAction = executedActions.some((action) => action === 'sparkNodeTree.replaceNode' || action === 'sparkNodeTree.replaceNodes')
-    const usedSetPropsAction = executedActions.some((action) => action === 'sparkNodeTree.setProps' || action === 'sparkNodeTree.setPropsBatch')
-    const usedRemoveAction = executedActions.some((action) => action === 'sparkNodeTree.removeNode' || action === 'sparkNodeTree.removeNodes')
+    const usedCatalogQuery = executedActions.some((action) => action === 'core@knowledge@queryPayloads' || action === 'core@knowledge@guidePayload' || action === 'core@knowledge@guideTool')
+    const usedAddAction = executedActions.some((action) => action === 'pageDesign@nodeTree@addNode' || action === 'pageDesign@nodeTree@addNodes')
+    const usedReplaceAction = executedActions.some((action) => action === 'pageDesign@nodeTree@replaceNode' || action === 'pageDesign@nodeTree@replaceNodes')
+    const usedSetPropsAction = executedActions.some((action) => action === 'pageDesign@nodeTree@setProps' || action === 'pageDesign@nodeTree@setPropsBatch')
+    const usedRemoveAction = executedActions.some((action) => action === 'pageDesign@nodeTree@removeNode' || action === 'pageDesign@nodeTree@removeNodes')
     const hasStillsExecution = result.turns.some((turn) => turn.phase === 'stills-execute' && turn.stillsResult !== undefined)
 
     const root = Array.isArray(ruleNodes) ? ruleNodes.find((node) => {

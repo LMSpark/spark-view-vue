@@ -52,7 +52,7 @@ export function buildInlineActionSpec(
       paramsSchema: fallbackFix !== undefined
         ? `请直接使用修复建议中的参数格式：${fallbackFix}`
         : '请直接使用上一条修复建议中的参数格式',
-      usageRules: ['这是降级 actionSpec；不需要再次调用 stills.actionSpec。'],
+      usageRules: ['这是降级函数指南；不需要再次调用 core@knowledge@guideTool。'],
       ...extras,
       example: null,
       failureModes: [],
@@ -79,9 +79,9 @@ export function buildErrorFollowUp(
 ): string {
   const inlineActionSpec = buildInlineActionSpec(action, fix, decorations)
   const phaseLine = decorations?.errorPhaseLine ?? ''
-  const actionSpecText = `\n对应动作 actionSpec（已内联，无需再次查询）:\n${inlineActionSpec}`
+  const actionSpecText = `\n对应函数指南（已内联，无需再次查询）:\n${inlineActionSpec}`
 
-  return `[系统即时纠错]${phaseLine}\n动作 ${action} 执行失败（${code}）。\n错误详情: ${msg}\n修复建议: ${fix}${actionSpecText}\n请直接根据上面的 actionSpec 修正参数并重试，不需要再额外调用 stills.actionSpec；不要重复原错误指令。`
+  return `[系统即时纠错]${phaseLine}\n动作 ${action} 执行失败（${code}）。\n错误详情: ${msg}\n修复建议: ${fix}${actionSpecText}\n请直接根据上面的函数指南修正参数并重试，不需要再额外调用 core@knowledge@guideTool；不要重复原错误指令。`
 }
 
 export function toParamsSignature(params: unknown): string {

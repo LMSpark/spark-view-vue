@@ -11,9 +11,14 @@ export interface RepeatDetectionConfig {
   maxConsecutiveErrors?: number
   maxReadOnlyActions?: number
   abortOnReadOnlyLimit?: boolean
-  maxMissingComponentRetries?: number
+  maxRepeatedFailureRetries?: number
   maxCyclePeriod?: number
   cycleRepeatThreshold?: number
+  isReadOnlyAction?: (action: string) => boolean
+  getRepeatedFailureKey?: (ctx: MonitorContext) => string | null
+  buildCycleFollowUp?: (cycleActions: readonly string[]) => string
+  buildRepeatedFailureFollowUp?: (key: string, count: number) => string
+  buildReadOnlyLimitFollowUp?: (count: number) => string
 }
 
 function buildSignature(action: string, params: unknown): string {
@@ -42,59 +47,6 @@ function detectActionCycle(
   return true
 }
 
-const NODE_TREE_WRITE_ACTIONS = new Set([
-  'sparkNodeTree.addNode',
-  'sparkNodeTree.addNodes',
-  'sparkNodeTree.moveNode',
-  'sparkNodeTree.setProps',
-  'sparkNodeTree.setPropsBatch',
-  'sparkNodeTree.replaceNode',
-  'sparkNodeTree.replaceNodes',
-  'sparkNodeTree.removeNode',
-  'sparkNodeTree.removeNodes',
-])
-
-function isDatasetReadAction(action: string): boolean {
-  if (action === 'dataset.export') return true
-  if (!action.startsWith('datasetTool.')) return false
-  return (
-    action === 'datasetTool.export'
-    || action === 'datasetTool.historyCursor'
-    || action.startsWith('datasetTool.can')
-    || action.startsWith('datasetTool.get')
-    || action.startsWith('datasetTool.list')
-  )
-}
-
-function isReadOnlyAction(action: string): boolean {
-  if (action.startsWith('catalog.') || action.startsWith('session.') || action.startsWith('stills.')) {
-    return true
-  }
-
-  if (action.startsWith('sparkNodeTree.')) {
-    return !NODE_TREE_WRITE_ACTIONS.has(action)
-  }
-
-  if (action.startsWith('textModel.')) {
-    return action.startsWith('textModel.read')
-  }
-
-  if (isDatasetReadAction(action)) {
-    return true
-  }
-
-  return false
-}
-
-function extractCatalogGuideType(params: unknown): string | null {
-  if (typeof params !== 'object' || params === null) return null
-  const record = params as Record<string, unknown>
-  const candidate = record['type']
-  if (typeof candidate !== 'string') return null
-  const normalized = candidate.trim()
-  return normalized.length > 0 ? normalized : null
-}
-
 export function createRepeatDetectionMonitor(
   cfg?: RepeatDetectionConfig,
 ): SessionMonitor {
@@ -102,9 +54,11 @@ export function createRepeatDetectionMonitor(
   const maxErrors = cfg?.maxConsecutiveErrors ?? 3
   const maxReadOnlyActions = cfg?.maxReadOnlyActions
   const abortOnReadOnlyLimit = cfg?.abortOnReadOnlyLimit ?? false
-  const maxMissingComponentRetries = cfg?.maxMissingComponentRetries ?? 2
+  const maxRepeatedFailureRetries = cfg?.maxRepeatedFailureRetries ?? 2
   const maxCyclePeriod = cfg?.maxCyclePeriod ?? 3
   const cycleRepeatThreshold = cfg?.cycleRepeatThreshold ?? 3
+  const isReadOnlyAction = cfg?.isReadOnlyAction ?? (() => false)
+  const getRepeatedFailureKey = cfg?.getRepeatedFailureKey ?? (() => null)
 
   let consecutiveSameCount = 0
   let lastSignature = ''
@@ -115,11 +69,28 @@ export function createRepeatDetectionMonitor(
   const actionWindow: string[] = []
   const actionWindowMaxSize = maxCyclePeriod * cycleRepeatThreshold
   let lastCycleSignature = ''
-  const missingComponentTypeCounts = new Map<string, number>()
+  const repeatedFailureCounts = new Map<string, number>()
 
   function buildCycleFollowUp(cycleActions: string[]): string {
+    const customFollowUp = cfg?.buildCycleFollowUp?.(cycleActions)
+    if (customFollowUp !== undefined) return customFollowUp
+
     const cycleText = cycleActions.join(' → ')
-    return `[系统循环修复提醒]\n检测到动作进入周期循环：${cycleText}。\n不要重复原动作序列，请立即改用另一条路径继续：\n1) 先调用 catalog.query 重新确认可用组件清单；\n2) 对不存在的组件 type 不再重复 catalog.guide 盲试；\n3) 若是节点写动作失败，先用 sparkNodeTree.findByType 或 listChildren/getNode 拿到真实 id，再执行写入。`
+    return `[系统循环修复提醒]\n检测到动作进入周期循环：${cycleText}。\n不要重复原动作序列，请切换到另一条已注册工具路径继续。`
+  }
+
+  function buildRepeatedFailureFollowUp(key: string, count: number): string {
+    const customFollowUp = cfg?.buildRepeatedFailureFollowUp?.(key, count)
+    if (customFollowUp !== undefined) return customFollowUp
+
+    return `[系统重复失败提醒]\n目标 "${key}" 已连续 ${count} 次查询失败。\n禁止继续重复同一失败查询，请先回到当前函数目录或参数目录重新选择可用目标。`
+  }
+
+  function buildReadOnlyLimitFollowUp(count: number): string {
+    const customFollowUp = cfg?.buildReadOnlyLimitFollowUp?.(count)
+    if (customFollowUp !== undefined) return customFollowUp
+
+    return `[系统执行节奏提醒]\n当前已连续 ${count} 次只读动作，尚未进入写入。\n请停止继续枚举目录，基于已确认事实执行最小写动作。`
   }
 
   return {
@@ -149,15 +120,13 @@ export function createRepeatDetectionMonitor(
         consecutiveReadOnlyCount = 0
       }
 
-      if (action === 'catalog.guide' && !result.ok && result.code === 'NOT_FOUND') {
-        const missingType = extractCatalogGuideType(ctx.params)
-        if (missingType) {
-          const count = (missingComponentTypeCounts.get(missingType) ?? 0) + 1
-          missingComponentTypeCounts.set(missingType, count)
-          if (count >= maxMissingComponentRetries) {
-            return [
-              `[系统组件替换提醒]\n组件 type "${missingType}" 已连续 ${count} 次查询失败（NOT_FOUND）。\n禁止继续对该 type 重复调用 catalog.guide。\n请先 catalog.query 重新选择可用组件，再继续后续写动作。`,
-            ]
+      if (!result.ok) {
+        const repeatedFailureKey = getRepeatedFailureKey(ctx)
+        if (repeatedFailureKey !== null) {
+          const count = (repeatedFailureCounts.get(repeatedFailureKey) ?? 0) + 1
+          repeatedFailureCounts.set(repeatedFailureKey, count)
+          if (count >= maxRepeatedFailureRetries) {
+            return [buildRepeatedFailureFollowUp(repeatedFailureKey, count)]
           }
         }
       }
@@ -175,9 +144,7 @@ export function createRepeatDetectionMonitor(
         && lastReadOnlyNudgeAt !== consecutiveReadOnlyCount
       ) {
         lastReadOnlyNudgeAt = consecutiveReadOnlyCount
-        return [
-          `[系统执行节奏提醒]\n当前已连续 ${consecutiveReadOnlyCount} 次只读动作（catalog/query/get/list/read），尚未进入写入。\n请停止继续枚举组件目录，立即基于已确认的组件执行最小写动作；若组件不存在，先替换为 catalog.query 可用组件后再写入。`,
-        ]
+        return [buildReadOnlyLimitFollowUp(consecutiveReadOnlyCount)]
       }
 
       for (let period = 2; period <= maxCyclePeriod; period++) {

@@ -136,8 +136,8 @@ const B: SparkNode = {
 ### 第 5 步：调用 SparkNodeTree FC 写入树
 
 **调用入口**：通过 Stills 系统执行 `sparkNodeTree.addNode` / `sparkNodeTree.addNodes` 等动作
-**执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts)（`EDIT_NODE_TREE_STILLS`）
-**Catalog 来源**：[packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）
+**执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts)（`EDIT_NODE_TREE_STILLS`）
+**Catalog 来源**：[packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）
 **底层 API**：[packages/spark-component/src/core/spark-node-tree.ts](../../../packages/spark-component/src/core/spark-node-tree.ts)（`SparkNodeTree` 类）
 
 典型写入调用示例：
@@ -223,9 +223,9 @@ component-catalog.json   ←──── json-catalog-generator.ts（构建期�
 
 spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
         │
-        └── spark-node-tree-tool-catalog.ts
+        └── stills/node-tree/tool-catalog.ts
                 └── SPARK_NODE_TREE_TOOL_PARAMETER_TABLE
-                        └── edit-nodeTree-stills.ts
+                        └── stills/edit/actions/edit-domain.ts
                                 └── EDIT_NODE_TREE_STILLS ─→ 执行桥接
 
 meta-methods.ts
@@ -299,8 +299,8 @@ Step 4: sparkNodeTree.addNode / sparkNodeTree.addNodes
 | 目录类型定义 | `packages/spark-ai/src/catalog/types.ts` |
 | SparkNode 树 API 本体 | `packages/spark-component/src/core/spark-node-tree.ts` |
 | FC 参数类型 | `packages/spark-component/src/core/spark-node-tree.ts`（行 ~1-200） |
-| FC Catalog 表 | `packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog.ts` |
-| FC 执行桥接 | `packages/spark-ai/src/business/page-design/stills/edit/tools/edit-nodeTree-stills.ts` |
+| FC Catalog 表 | `packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts` |
+| FC 执行桥接 | `packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts` |
 | 元动作（组件目录查询） | `packages/spark-ai/src/stills/meta-methods.ts` |
 | LLM FC 工具注册与分发 | `packages/spark-ai/src/core/fc-schema.ts` / `packages/spark-ai/src/business/page-design/fc-dispatcher.ts` |
 | 目录生成器（构建期） | `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` |

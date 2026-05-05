@@ -9,15 +9,16 @@
  */
 
 import { onUnmounted, ref, shallowRef } from 'vue'
-import * as SparkAiRuntime from '@spark-view/spark-ai'
 import {
   getActiveNodeTree,
   executeStill,
-  startIterateSession,
   generateToolDefinitions,
   functionNameToAction,
   STILLS_EDIT_RUNTIME_PROMPT,
   getEditState,
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
   type DialogueTurn,
   type EditToolHost,
   type RepeatDetectionConfig,
@@ -25,6 +26,7 @@ import {
 import {
   createPageModelEditSession,
   type PageModelEditLogEntry,
+  type PageModelEditSessionRuntime,
 } from '@spark-view/spark-ai'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
@@ -44,6 +46,8 @@ export interface PageModelEditSessionOptions {
   sessionHost?: PageModelSessionHost
   /** Ensures page context files are loaded before first bootstrap. */
   ensureContextLoaded?: () => Promise<void>
+  /** Optional runtime override for tests or host-level orchestration. */
+  runtime?: Partial<PageModelEditSessionRuntime>
 }
 
 export interface PageModelEditRunHooks {
@@ -79,18 +83,6 @@ interface PageModelEditBootstrapOptions {
 }
 
 export function usePageModelEditSession(options: PageModelEditSessionOptions) {
-  const runtimePredicates = {
-    ...((SparkAiRuntime as { isEditWriteAction?: (value: string) => boolean }).isEditWriteAction
-      ? { isEditWriteAction: (SparkAiRuntime as { isEditWriteAction: (value: string) => boolean }).isEditWriteAction }
-      : {}),
-    ...((SparkAiRuntime as { isEditNodeTreeWriteAction?: (value: string) => boolean }).isEditNodeTreeWriteAction
-      ? { isEditNodeTreeWriteAction: (SparkAiRuntime as { isEditNodeTreeWriteAction: (value: string) => boolean }).isEditNodeTreeWriteAction }
-      : {}),
-    ...((SparkAiRuntime as { isEditDataSetWriteAction?: (value: string) => boolean }).isEditDataSetWriteAction
-      ? { isEditDataSetWriteAction: (SparkAiRuntime as { isEditDataSetWriteAction: (value: string) => boolean }).isEditDataSetWriteAction }
-      : {}),
-  }
-
   const controller = createPageModelEditSession({
     getSessionKey: options.getSessionKey,
     getEditToolHost: options.getEditToolHost,
@@ -98,13 +90,15 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     ...(options.ensureContextLoaded ? { ensureContextLoaded: options.ensureContextLoaded } : {}),
     runtime: {
       executeStill,
-      startIterateSession,
       generateToolDefinitions,
       functionNameToAction,
       STILLS_EDIT_RUNTIME_PROMPT,
       getEditState,
       getActiveNodeTree,
-      ...runtimePredicates,
+      isEditWriteAction,
+      isEditNodeTreeWriteAction,
+      isEditDataSetWriteAction,
+      ...options.runtime,
     },
   })
 

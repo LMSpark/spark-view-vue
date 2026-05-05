@@ -128,7 +128,7 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
 }
 
 describe('catalog-projections', () => {
-  it('projectComponentDirectory returns directory summary for session.describe', () => {
+  it('projectComponentDirectory returns directory summary for core@session@describe', () => {
     const catalog = makeCatalog()
     const directory = projectComponentDirectory(catalog)
 
@@ -148,7 +148,7 @@ describe('catalog-projections', () => {
     expect(directory.configurationPrinciples.length).toBeGreaterThan(0)
   })
 
-  it('projectComponentSpec returns component spec for catalog.guide', () => {
+  it('projectComponentSpec returns component spec for core@knowledge@guidePayload', () => {
     const catalog = makeCatalog()
     const spec = projectComponentSpec(catalog, 'r-table')
 

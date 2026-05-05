@@ -11,21 +11,6 @@ export type {
   StreamCallbacks,
 } from './types'
 
-// ── Config Validator ────────────────────────────────────────────────────────
-export { validateGeneratedConfig } from './business/project-planning/validation/config-validator'
-export type {
-  GeneratedPageFiles,
-  ConfigValidationCategory,
-  ConfigValidationSeverity,
-  ConfigValidationIssue,
-  ConfigValidationSummary,
-  ConfigValidationReport,
-} from './business/project-planning/validation/config-validator'
-
-// ── Navigation Auto-Register ─────────────────────────────────────────────────
-export { createNavRegister } from './business/project-planning/nav-register'
-export type { NavRegister, NavRegistrationOptions, NavRegistrationResult } from './business/project-planning/nav-register'
-
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {
   createPageCache,
@@ -74,71 +59,40 @@ export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRE
 // ── Stills Catalog (Lightweight) ─────────────────────────────────────────────
 export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'
 
-// ── Shared Constants ─────────────────────────────────────────────────────────
-export { HTML_TYPES, VALID_TYPE_PREFIXES } from './business/project-planning/validation/shared-constants'
-
-// ── Nav Planner Prompt ───────────────────────────────────────────────────────
-export { NAV_PLANNER_SYSTEM_PROMPT } from './business/project-planning/nav-planner-prompt'
-
 // ── System Prompts（提示词前端 SSoT）────────────────────────────────────────
-
-export { PAGE_SYSTEM_PROMPT } from './business/project-planning/prompts/page-system-prompt'
 export {
   STILLS_PROTOCOL_BASE,
-  STILLS_DATASET_DOMAIN,
-  STILLS_RUNTIME_PROMPT,
-  STILLS_EDIT_RUNTIME_PROMPT,
-  STILLS_BLUEPRINT_PROMPT,
 } from './core/stills/stills-prompts'
-export {
-  buildPageSystemPrompt,
-  getSystemPrompt,
-  registerPromptMode,
-  detectRelevantSkillTypes,
-} from './business/project-planning/prompts/prompt-builder'
-export type {
-  PromptBuildContext,
-  ISkillMetadataProvider,
-  BuildPagePromptOptions,
-  PromptMode,
-} from './business/project-planning/prompts/prompt-builder'
+export { STILLS_EDIT_RUNTIME_PROMPT } from './business/page-design/prompts/edit-runtime-prompt'
 
-// ── Stills（动作引擎）────────────────────────────────────────────────────────
+// ── Stills Core Runtime（注册机 / dispatcher / domain）──────────────────────
 export {
-  registerAllStills,
-  registerEditStills,
   registerStill,
+  registerAll,
   getStill,
   getAllStills,
   clearRegistry,
-  clearDomains,
   executeStill,
-  createSession,
+} from './core/stills/dispatcher'
+export {
   registerDomain,
   getDomain,
-  getEditState,
-  getActiveNodeTree,
-  bindLiveModelAdapter,
-  isEditWriteAction,
-  isEditNodeTreeWriteAction,
-  isEditDataSetWriteAction,
-  isEditTextModelWriteAction,
-} from './stills'
+  clearDomains,
+  createBareSession,
+} from './core/stills/domain'
+export {
+  registerCoreStills,
+} from './core/stills/register-core-stills'
 export type {
   DomainState,
   IStillSession,
   StillGuard,
   StillResult,
   StillDefinition,
-  ExecutionBlueprint,
-  BlueprintPlanItem,
-  BlueprintCheckpoint,
   PatchEntry,
   DomainProvider,
   PostValidationWarning,
-  EditDomainState,
-  EditToolHost,
-} from './stills'
+} from './core/stills/types'
 
 // ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────
 export {
@@ -165,8 +119,16 @@ export type {
 
 // ── Session Backend（会话后端 HTTP 客户端）────────────────────────────────────
 export {
+  createSessionBackend,
   SessionBackendImpl,
 } from './core/session/session-backend'
+export type { SessionBackendImplOptions } from './core/session/session-backend'
+
+// ── Repeat Detection（核心通用监控器）────────────────────────────────────────
+export {
+  createRepeatDetectionMonitor,
+  type RepeatDetectionConfig,
+} from './core/session/repeat-detection-monitor'
 
 // ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
 export {
@@ -183,18 +145,7 @@ export {
   buildToolResultMessage,
 } from './core/fc-dispatcher'
 
-// ── Monitors（可插拔编排监控器）──────────────────────────────────────────────
-export {
-  createRepeatDetectionMonitor,
-  createBlueprintOrchestrationMonitor,
-  createTerminalActionsMonitor,
-  createExportCompletionMonitor,
-  createMonitorsForScenario,
-  createDefaultMonitors,
-  type OrchestrationScenario,
-} from './business/project-planning'
-
-// ── Follow-Up Policy（核心通用 + 业务装饰器）──────────────────────────────
+// ── Follow-Up Policy（核心通用）──────────────────────────────────────────────
 export {
   formatWarningsAsFollowUp,
   DefaultFollowUpPolicy,
@@ -202,34 +153,23 @@ export {
   type FollowUpDecorations,
 } from './core/session/default-follow-up-policy'
 
-// ── Business Orchestration（业务层编排配置工厂）─────────────────────────────
-export {
-  createBusinessFollowUpPolicy,
-  createOrchestratorConfig,
-  createGenerateConfig,
-  createIterateConfig,
-  createDebugConfig,
-  type OrchestratorConfigFactoryOptions,
-  type RepeatDetectionConfig,
-} from './business/project-planning'
-
-// ── Bootstrap（应用层一键启动入口）─────────────────────────────────────────
-export {
-  createSessionBackend,
-  startAiOrchestration,
-  startGenerateSession,
-  startIterateSession,
-  startDebugSession,
-  type BootstrapOptions,
-} from './business/project-planning'
-
 // ── Business Domains（业务域）───────────────────────────────────────────────
 export {
   PAGE_DESIGN_DOMAIN,
+  registerPageDesignEditStills,
   createPageModelSessionBackend,
   createPageModelSessionHost,
   createPageModelEditSession,
+  getEditState,
+  getActiveNodeTree,
+  bindLiveModelAdapter,
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
+  isEditTextModelWriteAction,
   type PageDesignBusinessContext,
+  type EditDomainState,
+  type EditToolHost,
   type PageModelStillsSession,
   type PageModelSessionHostRuntime,
   type PageModelSessionHostState,
@@ -245,9 +185,3 @@ export {
   type PageModelEditBootstrapOptions,
   type PageModelEditSessionController,
 } from './business/page-design'
-
-export {
-  PROJECT_PLANNING_DOMAIN,
-  type ProjectPlanningBusinessContext,
-} from './business/project-planning'
-

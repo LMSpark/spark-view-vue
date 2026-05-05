@@ -10,10 +10,10 @@ import {
   getDataSetCrudToolStillCapabilityRow,
   getDataSetCrudToolStillParameterRow,
   validateDataSetCrudToolStillParams,
-} from '../packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog'
+} from '../packages/spark-ai/src/business/page-design/stills/dataset'
 
-const REMOVED_ACTIONS = new Set(['datasetTool.listAggregates', 'datasetTool.getAggregate'])
-const LEGACY_EXAMPLE_ACTIONS = new Set(['datasetTool.getAggregate', 'datasetTool.setComputeExpression'])
+const REMOVED_ACTIONS = new Set(['pageDesign@dataset@listAggregates', 'pageDesign@dataset@getAggregate'])
+const LEGACY_EXAMPLE_ACTIONS = new Set(['pageDesign@dataset@getAggregate', 'pageDesign@dataset@setComputeExpression'])
 
 function isActiveAction(action: string): boolean {
   return !REMOVED_ACTIONS.has(action)
@@ -28,7 +28,7 @@ describe('dataset tool protocol contract', () => {
     expect(activeCapabilityRows.length).toBe(activeParameterRows.length)
 
     for (const row of activeParameterRows) {
-      expect(row.action.startsWith('datasetTool.')).toBe(true)
+      expect(row.action.startsWith('pageDesign@dataset@')).toBe(true)
       const cap = getDataSetCrudToolStillCapabilityRow(row.action)
       expect(cap).toBeDefined()
       expect(cap?.paramsRef).toBe(row.action)
@@ -45,35 +45,35 @@ describe('dataset tool protocol contract', () => {
   })
 
   it('can resolve a known action row from both indexes', () => {
-    const row = getDataSetCrudToolStillParameterRow('datasetTool.createTable')
-    const cap = getDataSetCrudToolStillCapabilityRow('datasetTool.createTable')
+    const row = getDataSetCrudToolStillParameterRow('pageDesign@dataset@createTable')
+    const cap = getDataSetCrudToolStillCapabilityRow('pageDesign@dataset@createTable')
 
     expect(row).toMatchObject({
-      action: 'datasetTool.createTable',
+      action: 'pageDesign@dataset@createTable',
       type: 'request',
       crudToolMethod: 'createTable',
     })
 
     expect(cap).toMatchObject({
-      action: 'datasetTool.createTable',
-      paramsRef: 'datasetTool.createTable',
+      action: 'pageDesign@dataset@createTable',
+      paramsRef: 'pageDesign@dataset@createTable',
       crudToolMethod: 'createTable',
     })
   })
 
   it('fails fast for unknown action in validator', () => {
-    const error = validateDataSetCrudToolStillParams('datasetTool.notExists', {})
+    const error = validateDataSetCrudToolStillParams('pageDesign@dataset@notExists', {})
     expect(error).not.toBeNull()
-    expect(error).toContain('datasetTool.notExists')
+    expect(error).toContain('pageDesign@dataset@notExists')
   })
 
   it('does not expose removed legacy signatures in protocol lookup', () => {
-    const legacyDeleteRelation = getDataSetCrudToolStillParameterRow('datasetTool.deleteRelationLegacy')
+    const legacyDeleteRelation = getDataSetCrudToolStillParameterRow('pageDesign@dataset@deleteRelationLegacy')
     expect(legacyDeleteRelation).toBeUndefined()
   })
 
   it('exposes recommended enum dictionaries for table semantic metadata fields', () => {
-    const row = getDataSetCrudToolStillParameterRow('datasetTool.updateTable')
+    const row = getDataSetCrudToolStillParameterRow('pageDesign@dataset@updateTable')
 
     expect(row?.paramsSchema).toMatchObject({
       resourceType: {
@@ -94,25 +94,25 @@ describe('dataset tool protocol contract', () => {
   })
 
   it('accepts recommended, custom, and nullable semantic metadata values while rejecting wrong types', () => {
-    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+    expect(validateDataSetCrudToolStillParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: 'database-view',
       businessCategory: 'reference',
     })).toBeNull()
 
-    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+    expect(validateDataSetCrudToolStillParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: 'erp-materialized-view',
       businessCategory: 'lookup',
     })).toBeNull()
 
-    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+    expect(validateDataSetCrudToolStillParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: null,
       businessCategory: null,
     })).toBeNull()
 
-    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+    expect(validateDataSetCrudToolStillParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: 123,
     })).toContain('resourceType')

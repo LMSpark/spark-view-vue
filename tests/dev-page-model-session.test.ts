@@ -275,14 +275,14 @@ describe('useDevPageModelSession', () => {
       round: 3,
       timestamp: '2026-04-27T02:30:00.000Z',
       phase: 'stills-execute',
-      toolBlock: { action: 'catalog.query', id: 'call-7', params: { category: 'layout' } },
+      toolBlock: { action: 'core@knowledge@queryPayloads', id: 'call-7', params: { category: 'layout' } },
       stillsResult: { ok: true, data: { count: 5 }, summary: 'container: 5 组件' },
       elapsed: 18,
     })
 
     expect(onSseEvent).toHaveBeenCalledWith({ sessionId: 'sse-session', type: 'delta', data: 'raw delta' })
     expect(onFcCall).toHaveBeenCalledWith(expect.objectContaining({
-      toolName: 'catalog.query',
+      toolName: 'core@knowledge@queryPayloads',
       args: { category: 'layout' },
       round: 3,
       callId: 'call-7',
@@ -308,7 +308,7 @@ describe('useDevPageModelSession', () => {
     await sessionConfig!.config.fcErrorReporter?.({
       id: 'fc-1',
       timestamp: '2026-04-27T03:00:00.000Z',
-      toolName: 'catalog.query',
+      toolName: 'core@knowledge@queryPayloads',
       args: { category: 'bad' },
       round: 1,
       status: 'error',
@@ -316,7 +316,7 @@ describe('useDevPageModelSession', () => {
     })
 
     expect(reportAiFcErrorMock).toHaveBeenCalledWith(expect.objectContaining({
-      toolName: 'catalog.query',
+      toolName: 'core@knowledge@queryPayloads',
       status: 'error',
     }), expect.objectContaining({
       source: 'dev-page-model-session',

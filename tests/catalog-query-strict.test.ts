@@ -1,57 +1,54 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import {
-  clearDomains,
-  clearRegistry,
-  createSession,
-  executeStill,
-  registerEditStills,
-  type IStillSession,
-  type StillResult,
-} from '../packages/spark-ai/src/stills'
+import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
+import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
+import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
+import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 
 let session: IStillSession
 
 function execQuery(params: unknown): StillResult {
-  return executeStill('catalog.query', params, session, 'catalog-query-strict')
+  return executeStill('core@knowledge@queryPayloads', params, session, 'knowledge-query-payloads-strict')
 }
 
 function execGuide(params: unknown): StillResult {
-  return executeStill('catalog.guide', params, session, 'catalog-guide-strict')
+  return executeStill('core@knowledge@guidePayload', params, session, 'knowledge-guide-payload-strict')
 }
 
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
-  session = createSession()
+  registerPageDesignEditStills()
+  session = createBareSession()
 })
 
-describe('catalog.query — Component Directory', () => {
-  it('loads catalog by default in createSession and returns full list', () => {
-    const result = execQuery({})
+describe('core@knowledge@queryPayloads — Component Payload Directory', () => {
+  it('uses registered page-design payload provider and returns full list', () => {
+    const result = execQuery({ payloadRef: 'page-design.component' })
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
     const data = result.data as Record<string, unknown>
     expect(typeof data['total']).toBe('number')
-    expect(Array.isArray(data['components'])).toBe(true)
+    expect(Array.isArray(data['payloads'])).toBe(true)
   })
 
   it('filters by category', () => {
-    const result = execQuery({ category: 'field' })
+    const result = execQuery({ payloadRef: 'page-design.component', filter: { category: 'field' } })
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
     const data = result.data as Record<string, unknown>
-    expect(data['category']).toBe('field')
+    const payloads = data['payloads'] as Array<{ category?: string }>
+    expect(payloads.length).toBeGreaterThan(0)
+    expect(payloads.every(payload => payload.category === 'field')).toBe(true)
   })
 
   it('rejects wrapped or aliased categories', () => {
-    const result = execQuery({ category: { category: 'layout' } })
+    const result = execQuery({ payloadRef: 'page-design.component', filter: { category: { category: 'layout' } } })
     expect(result.ok).toBe(false)
     if (result.ok) return
 
-    expect(result.code).toBe('INVALID_PARAMS')
+    expect(result.code).toBe('PAYLOAD_PROVIDER_ERROR')
   })
 
   it('rejects removed type/componentType shortcuts', () => {
@@ -68,36 +65,38 @@ describe('catalog.query — Component Directory', () => {
     }
   })
 
-  it('fails fast when session catalog is missing', () => {
-    session.catalog = null
-    const result = execQuery({})
-    expect(result.ok).toBe(false)
-    if (result.ok) return
+  it('keeps component catalog out of core session state', () => {
+    expect('catalog' in (session as unknown as Record<string, unknown>)).toBe(false)
 
-    expect(result.code).toBe('NO_CATALOG')
-  })
-})
-
-describe('catalog.guide — Component Config Guide', () => {
-  it('returns rich config guide for known component', () => {
-    const result = execGuide({ type: 'r-text' })
+    const result = execQuery({ payloadRef: 'page-design.component' })
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
     const data = result.data as Record<string, unknown>
-    expect(data['type']).toBe('r-text')
-    expect(Array.isArray(data['requiredProps'])).toBe(true)
-    expect(Array.isArray(data['optionalProps'])).toBe(true)
-    expect(data['minimalConfig']).toBeDefined()
-    expect(Array.isArray(data['failFastChecks'])).toBe(true)
+    expect(Array.isArray(data['payloads'])).toBe(true)
+  })
+})
+
+describe('core@knowledge@guidePayload — Component Config Guide', () => {
+  it('returns rich config guide for known component', () => {
+    const result = execGuide({ payloadRef: 'page-design.component', key: 'r-text' })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const data = result.data as Record<string, unknown>
+    expect(data['payloadRef']).toBe('page-design.component')
+    expect(data['key']).toBe('r-text')
+    expect(data['jsonSchema']).toBeDefined()
+    expect(data['minimalExample']).toBeDefined()
+    expect(Array.isArray(data['usageRules'])).toBe(true)
   })
 
   it('returns NOT_FOUND for unknown component type', () => {
-    const result = execGuide({ type: 'r-nonexistent-xyz' })
+    const result = execGuide({ payloadRef: 'page-design.component', key: 'r-nonexistent-xyz' })
     expect(result.ok).toBe(false)
     if (result.ok) return
 
-    expect(result.code).toBe('NOT_FOUND')
+    expect(result.code).toBe('PAYLOAD_NOT_FOUND')
   })
 
   it('returns INVALID_PARAMS when type is missing', () => {
@@ -117,6 +116,22 @@ describe('catalog.guide — Component Config Guide', () => {
   })
 
   it('does not register removed component query actions', () => {
+    const oldCatalogQuery = executeStill('catalog.query', {}, session, 'removed-old-catalog-query')
+    expect(oldCatalogQuery.ok).toBe(false)
+    if (!oldCatalogQuery.ok) expect(oldCatalogQuery.code).toBe('UNKNOWN_ACTION')
+
+    const oldCatalogGuide = executeStill('catalog.guide', { type: 'r-table' }, session, 'removed-old-catalog-guide')
+    expect(oldCatalogGuide.ok).toBe(false)
+    if (!oldCatalogGuide.ok) expect(oldCatalogGuide.code).toBe('UNKNOWN_ACTION')
+
+    const oldKnowledgeQuery = executeStill('knowledge.queryPayloads', {}, session, 'removed-dot-knowledge-query')
+    expect(oldKnowledgeQuery.ok).toBe(false)
+    if (!oldKnowledgeQuery.ok) expect(oldKnowledgeQuery.code).toBe('UNKNOWN_ACTION')
+
+    const oldKnowledgeGuide = executeStill('knowledge.guidePayload', { payloadRef: 'page-design.component', key: 'r-table' }, session, 'removed-dot-knowledge-guide')
+    expect(oldKnowledgeGuide.ok).toBe(false)
+    if (!oldKnowledgeGuide.ok) expect(oldKnowledgeGuide.code).toBe('UNKNOWN_ACTION')
+
     const catalog = executeStill('queryComponentCatalog', {}, session, 'removed-catalog-action')
     expect(catalog.ok).toBe(false)
     if (!catalog.ok) expect(catalog.code).toBe('UNKNOWN_ACTION')

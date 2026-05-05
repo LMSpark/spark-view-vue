@@ -7,8 +7,6 @@
  * 3. DomainProvider 描述一个 domain 如何挂接到 still 引擎。
  */
 
-import type { StillsCatalog } from '../../catalog/stills-catalog-types'
-
 // ═══════════════════════════════════════════════════════════
 // Guard / Result
 // ═══════════════════════════════════════════════════════════
@@ -43,25 +41,27 @@ export interface StillFailureMode {
 // ═══════════════════════════════════════════════════════════
 
 export interface StillDefinition<TParams = unknown, TResult = unknown> {
-  /** action 名，如 'tool.execute' */
+  /** action 地址，格式为 业务@模块@函数；函数对应实际 Agent tool。 */
   action: string
   /** 块类型 */
   type: 'request' | 'describe'
   /** 供 AI 查询的说明 */
   description: string
+  /** 模块级提示词；同一 业务@模块 下应保持一致，供 knowledge 和 FC tool 描述返回给 AI。 */
+  modulePrompt?: string
   /** 函数式准入条件；省略时视为无需 guard。 */
   guard?: StillGuard
-  /** 人类可读的 guard 描述（供 stills.capabilities / stills.actionSpec 返回给 AI） */
+  /** 人类可读的 guard 描述（供 core@knowledge@queryTools / core@knowledge@guideTool 返回给 AI） */
   guardDescription?: string
-  /** 使用约束 / 关键规则（供 stills.actionSpec 返回，减少 AI 猜测） */
+  /** 使用约束 / 关键规则（供 core@knowledge@guideTool 返回，减少 AI 猜测） */
   usageRules?: string[]
-  /** 参数结构说明（供 stills.actionSpec 返回） */
+  /** 参数结构说明（供 core@knowledge@guideTool 返回） */
   paramsSchema?: Record<string, unknown>
   /** 返回结构说明 */
   resultSchema?: Record<string, unknown>
   /** 最小参数示例 */
   example?: Record<string, unknown>
-  /** 常见失败模式（供 stills.actionSpec 返回） */
+  /** 常见失败模式（供 core@knowledge@guideTool 返回） */
   failureModes?: StillFailureMode[]
   /** 参数校验，返回 null 表示通过，否则返回错误消息 */
   validate: (params: TParams) => string | null
@@ -113,8 +113,6 @@ export interface IStillSession {
   patchLog: PatchEntry[]
   /** 各域 state 的通用容器，key = 域名 */
   domains: Record<string, SessionDomainState<string>>
-  /** Stills 组件目录（可选，presence 启用组件校验） */
-  catalog: StillsCatalog | null
 }
 
 /** 从 session.domains 中按域名读取强类型 state。 */
@@ -129,10 +127,10 @@ export function getDomainState<TState extends SessionDomainState<string>>(sessio
 export interface DomainProvider<TState extends SessionDomainState<string> = SessionDomainState<string>> {
   /** 域名（作为 session.domains 的 key） */
   name: string
-  /** AI 角色描述（session.describe 返回给 AI 的角色定义） */
+  /** AI 角色描述（core@session@describe 返回给 AI 的角色定义） */
   roleHint: string
   /** 该域提供的全部 stills */
-  stills: StillDefinition[]
+  stills: ReadonlyArray<StillDefinition<never, unknown>>
   /** 创建域 state 初始值 */
   createState(): TState
 }

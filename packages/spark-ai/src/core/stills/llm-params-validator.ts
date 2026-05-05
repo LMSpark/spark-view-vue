@@ -514,7 +514,7 @@ function validateOneOfRequiredGroups(
 // =========================================================
 
 /**
- * 校验 LLM 反序列化后的工具参数是否符合 catalog schema 声明。
+ * 校验 LLM 反序列化后的函数参数是否符合 catalog schema 声明。
  *
  * 完整校验流程（5 步）：
  *  1. 顶层必须是普通对象（非数组、非 null）

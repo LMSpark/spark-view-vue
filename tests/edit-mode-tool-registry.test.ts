@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   clearDomains,
   clearRegistry,
-  registerEditStills,
+  registerPageDesignEditStills,
   functionNameToAction,
   generateToolDefinitions,
 } from '@spark-view/spark-ai'
@@ -11,7 +11,7 @@ import {
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
+  registerPageDesignEditStills()
 })
 
 describe('edit mode tool registry', () => {

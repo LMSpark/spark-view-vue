@@ -11,7 +11,7 @@
 - `pagedata.json` 是页面数据的**序列化格式**，不是运行时直接编辑边界。
 - `DataSet` 是 `DataSetCrudTool` 内部持有和维护的**模型实例**，不是 DevSystem UI 直接操作的主入口。
 - `DevDataSetDesigner`、`pagedata.json` 文本编辑、AI stills 编辑，都应该收敛到 `DataSetCrudTool`。
-- 如果修改了 `DataSetCrudTool` 的公开编辑能力，且希望 AI 也能使用，必须同步更新 `packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog.ts`。
+- 如果修改了 `DataSetCrudTool` 的公开编辑能力，且希望 AI 也能使用，必须同步更新 `packages/spark-ai/src/business/page-design/stills/dataset/tool-catalog.ts`。
 
 ## 先把几个对象分清楚
 
@@ -152,8 +152,8 @@ AI 真正走的是下面这条链：
 ```mermaid
 flowchart TD
   A[LLM / tool calling] --> B[stills.capabilities / stills.actionSpec]
-    B --> C[dataset-crud-tool-stills-catalog.ts]
-    C --> D[edit-dataset-stills.ts]
+    B --> C[dataset/tool-catalog.ts]
+    C --> D[edit/edit-domain.ts（EDIT_DATASET_STILLS）]
     D --> E[crudToolMethod 动态分发]
     E --> F[DataSetCrudTool]
     F --> G[内部 DataSet]
@@ -167,7 +167,7 @@ flowchart TD
 也就是说：
 
 - 你在 `DataSetCrudTool` 新增了 `renameTable()`，不代表 AI 立刻会用。
-- 只有把它补进 `dataset-crud-tool-stills-catalog.ts`，AI 才能在能力目录、参数说明、运行时分发里看到它。
+- 只有把它补进 `dataset/tool-catalog.ts`，AI 才能在能力目录、参数说明、运行时分发里看到它。
 
 ## 为什么“改工具层时要同步能力目录”
 
@@ -183,8 +183,8 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    A[DataSetCrudTool 公开方法] --> B[dataset-crud-tool-stills-catalog]
-    B --> C[edit-dataset-stills 运行时 still 定义]
+    A[DataSetCrudTool 公开方法] --> B[dataset/tool-catalog]
+    B --> C[edit/edit-domain.ts（EDIT_DATASET_STILLS）]
   B --> D[meta-methods 提供 stills.capabilities / stills.actionSpec]
     C --> E[LLM 实际执行 datasetTool.*]
     D --> E
@@ -221,11 +221,11 @@ flowchart LR
 
 ### spark-ai
 
-- `packages/spark-ai/src/business/page-design/stills/edit/edit-domain.ts`
+- `packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts`
   - `edit.bootstrap` 时构造 `state.datasetEdit = DataSetCrudTool.fromJson(...)`
-- `packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog.ts`
+- `packages/spark-ai/src/business/page-design/stills/dataset/tool-catalog.ts`
   - AI 能力目录事实源
-- `packages/spark-ai/src/business/page-design/stills/edit/tools/edit-dataset-stills.ts`
+- `packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts`（`EDIT_DATASET_STILLS`）
   - 根据目录表动态分发到 `DataSetCrudTool`
 - `packages/spark-ai/src/stills/meta-methods.ts`
   - 把目录表暴露为 `stills.capabilities` / `stills.actionSpec` 等元查询能力
@@ -245,7 +245,7 @@ flowchart LR
 
 只要 AI 需要使用该方法，就必须同步更新：
 
-- `packages/spark-ai/src/business/page-design/stills/dataset-crud-tool-stills-catalog.ts`
+- `packages/spark-ai/src/business/page-design/stills/dataset/tool-catalog.ts`
 
 通常要补的内容包括：
 
@@ -291,6 +291,6 @@ flowchart LR
 
 可以把这套关系压缩成一句维护规则：
 
-> `pagedata.json` 是序列化格式，`DataSet` 是内部模型，`DataSetCrudTool` 是唯一写入口，`dataset-crud-tool-stills-catalog` 是 AI 对该写入口的能力目录投影。
+> `pagedata.json` 是序列化格式，`DataSet` 是内部模型，`DataSetCrudTool` 是唯一写入口，`dataset/tool-catalog` 是 AI 对该写入口的能力目录投影。
 
 谁绕过了这条线，谁就在制造第二事实源。

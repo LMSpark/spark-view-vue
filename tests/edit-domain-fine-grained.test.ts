@@ -1,16 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
+import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
+import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
+import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 import {
   bindLiveModelAdapter,
-  clearDomains,
-  clearRegistry,
-  createSession,
-  executeStill,
   getEditState,
   isEditDataSetWriteAction,
-  registerEditStills,
-  type IStillSession,
-  type StillResult,
-} from '../packages/spark-ai/src/stills'
+} from '../packages/spark-ai/src/business/page-design/stills'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
 
@@ -35,26 +32,26 @@ const DISABLED_EDIT_ACTIONS = [
   'edit.changedLines',
   'edit.exportFiles',
   'dataset.export',
-  'datasetTool.export',
-  'datasetTool.listAggregates',
-  'datasetTool.getAggregate',
-  'datasetTool.addAggregate',
-  'datasetTool.updateAggregate',
-  'datasetTool.removeAggregate',
+  'pageDesign@dataset@export',
+  'pageDesign@dataset@listAggregates',
+  'pageDesign@dataset@getAggregate',
+  'pageDesign@dataset@addAggregate',
+  'pageDesign@dataset@updateAggregate',
+  'pageDesign@dataset@removeAggregate',
 ] as const
 
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
-  session = createSession()
+  registerPageDesignEditStills()
+  session = createBareSession()
   seq = 0
   liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
   script = ''
   style = ''
 
-  // edit.bootstrap 现在强制要求同时存在 live NodeTree/DataSetTool 绑定。
+  // pageDesign@lifecycle@bootstrap 现在强制要求同时存在 live NodeTree/DataSetTool 绑定。
   bindLiveModelAdapter(getEditState(session), {
     getNodeTree: () => liveTree,
     getDataSetTool: () => liveDataSet,
@@ -89,10 +86,10 @@ describe('edit domain fine-grained flow', () => {
   })
 
   it('does not classify hidden aggregate dataset actions as edit writes', () => {
-    expect(isEditDataSetWriteAction('datasetTool.addAggregate')).toBe(false)
-    expect(isEditDataSetWriteAction('datasetTool.updateAggregate')).toBe(false)
-    expect(isEditDataSetWriteAction('datasetTool.removeAggregate')).toBe(false)
-    expect(isEditDataSetWriteAction('datasetTool.updateView')).toBe(true)
+    expect(isEditDataSetWriteAction('pageDesign@dataset@addAggregate')).toBe(false)
+    expect(isEditDataSetWriteAction('pageDesign@dataset@updateAggregate')).toBe(false)
+    expect(isEditDataSetWriteAction('pageDesign@dataset@removeAggregate')).toBe(false)
+    expect(isEditDataSetWriteAction('pageDesign@dataset@updateView')).toBe(true)
   })
 
   it('bootstrap rejects file snapshot payloads and uses the current live model', () => {
@@ -103,7 +100,7 @@ describe('edit domain fine-grained flow', () => {
       styleCss: '.page {}\n',
     })
 
-    const snapshotPayload = exec('edit.bootstrap', {
+    const snapshotPayload = exec('pageDesign@lifecycle@bootstrap', {
       ruleJson: [],
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
       scriptJs: 'export default {}\n',
@@ -115,7 +112,7 @@ describe('edit domain fine-grained flow', () => {
       expect(snapshotPayload.msg).toContain('不再接收文件快照 payload')
     }
 
-    const result = exec('edit.bootstrap')
+    const result = exec('pageDesign@lifecycle@bootstrap')
     expect(result.ok).toBe(true)
   })
 
@@ -128,10 +125,10 @@ describe('edit domain fine-grained flow', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap')
+    const init = exec('pageDesign@lifecycle@bootstrap')
     expect(init.ok).toBe(true)
 
-    const addTable = exec('datasetTool.createTable', {
+    const addTable = exec('pageDesign@dataset@createTable', {
       tableName: 'Users',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -140,25 +137,25 @@ describe('edit domain fine-grained flow', () => {
     })
     expect(addTable.ok).toBe(true)
 
-    const scriptWrite = exec('textModel.writeScript', { content: 'export default { immediate: true }\n' })
+    const scriptWrite = exec('pageDesign@textModel@writeScript', { content: 'export default { immediate: true }\n' })
     expect(scriptWrite.ok).toBe(true)
 
-    expectActionUnavailable('datasetTool.export')
+    expectActionUnavailable('pageDesign@dataset@export')
 
     expectActionUnavailable('edit.exportFiles')
     expectActionUnavailable('dataset.changedLines')
     expectActionUnavailable('dataset.export')
 
-    const addColumn = exec('datasetTool.createColumn', {
+    const addColumn = exec('pageDesign@dataset@createColumn', {
       tableName: 'Users',
       column: { name: 'email', type: 'string' },
     })
     expect(addColumn.ok).toBe(true)
 
-    const scriptWriteAfterDatasetChange = exec('textModel.writeScript', { content: 'export default { okAfterDatasetChange: true }\n' })
+    const scriptWriteAfterDatasetChange = exec('pageDesign@textModel@writeScript', { content: 'export default { okAfterDatasetChange: true }\n' })
     expect(scriptWriteAfterDatasetChange.ok).toBe(true)
 
-    const undo = exec('datasetTool.undo')
+    const undo = exec('pageDesign@dataset@undo')
     expect(undo.ok).toBe(true)
 
     expect(liveDataSet.toJson().tables['Users']).toBeDefined()
@@ -168,7 +165,7 @@ describe('edit domain fine-grained flow', () => {
   it('rejects script writes that use unavailable page runtime APIs', () => {
     script = 'function __init__() { console.log("ready") }\n'
 
-    const result = exec('textModel.writeScript', {
+    const result = exec('pageDesign@textModel@writeScript', {
       content: 'function __init__() { const rows = $page.getTableRows("Orders") }\n',
     })
 
@@ -230,14 +227,14 @@ describe('edit domain fine-grained flow', () => {
     style = '.page {}\n'
 
     // 初始化时已经包含表和关系，但没有视图依赖（避免约束冲突）
-    const init = exec('edit.bootstrap')
+    const init = exec('pageDesign@lifecycle@bootstrap')
     expect(init.ok).toBe(true)
 
     // 验证删除关系前 pagedata 包含关系名
     expect(JSON.stringify(seededDataSet.toJson())).toContain('DeptToEmp')
 
     // 现在删除关系 - 使用新的单一签名（零向后兼容性）
-    const deleteRel = exec('datasetTool.deleteRelation', {
+    const deleteRel = exec('pageDesign@dataset@deleteRelation', {
       parentTable: 'Department',
       childTable: 'Employee',
       parentField: 'deptId',

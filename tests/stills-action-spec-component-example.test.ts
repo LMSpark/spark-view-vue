@@ -1,13 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import {
-  clearDomains,
-  clearRegistry,
-  createSession,
-  executeStill,
-  registerEditStills,
-  type IStillSession,
-  type StillResult,
-} from '../packages/spark-ai/src/stills'
+import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
+import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
+import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
+import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 import { actionToFunctionName } from '../packages/spark-ai/src/core/fc-schema'
 
 let session: IStillSession
@@ -19,28 +14,28 @@ function exec(action: string, params: unknown = {}): StillResult {
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
-  session = createSession()
+  registerPageDesignEditStills()
+  session = createBareSession()
 })
 
-describe('stills.actionSpec component example', () => {
-  it('rejects component type query and redirects to catalog.guide', () => {
-    const result = exec('stills.actionSpec', { action: 'r-text' })
+describe('core@knowledge@guideTool component example', () => {
+  it('rejects component payload key query and redirects to core@knowledge@guidePayload', () => {
+    const result = exec('core@knowledge@guideTool', { action: 'r-text' })
     expect(result.ok).toBe(false)
     if (result.ok) return
 
-    expect(result.code).toBe('COMPONENT_QUERY_REQUIRED')
-    expect(result.msg).toContain('组件 type')
-    expect(result.fix).toContain('catalog.guide')
-    expect(result.fix).toContain('"type":"r-text"')
+    expect(result.code).toBe('PAYLOAD_QUERY_REQUIRED')
+    expect(result.msg).toContain('参数荷载 key')
+    expect(result.fix).toContain('core@knowledge@guidePayload')
+    expect(result.fix).toContain('key:"r-text"')
   })
 
   it('accepts FC function names and resolves them to canonical still actions', () => {
-    const result = exec('stills.actionSpec', { action: actionToFunctionName('datasetTool.deleteColumn') })
+    const result = exec('core@knowledge@guideTool', { action: actionToFunctionName('pageDesign@dataset@deleteColumn') })
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    expect((result.data as { action?: string }).action).toBe('datasetTool.deleteColumn')
-    expect(result.summary).toContain('datasetTool.deleteColumn')
+    expect((result.data as { action?: string }).action).toBe('pageDesign@dataset@deleteColumn')
+    expect(result.summary).toContain('pageDesign@dataset@deleteColumn')
   })
 })

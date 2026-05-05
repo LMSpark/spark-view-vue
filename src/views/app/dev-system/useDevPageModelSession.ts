@@ -168,7 +168,7 @@ export function useDevPageModelSession(options: Options) {
           maxCyclePeriod: 4,
           cycleRepeatThreshold: 3,
           maxReadOnlyActions: 0,
-          maxMissingComponentRetries: 4,
+          maxRepeatedFailureRetries: 4,
         }
       case 'strict':
         return {
@@ -178,7 +178,7 @@ export function useDevPageModelSession(options: Options) {
           cycleRepeatThreshold: 2,
           maxReadOnlyActions: 8,
           abortOnReadOnlyLimit: true,
-          maxMissingComponentRetries: 1,
+          maxRepeatedFailureRetries: 1,
         }
       case 'layered':
       default:
@@ -189,7 +189,7 @@ export function useDevPageModelSession(options: Options) {
           cycleRepeatThreshold: 2,
           maxReadOnlyActions: 12,
           abortOnReadOnlyLimit: true,
-          maxMissingComponentRetries: 2,
+          maxRepeatedFailureRetries: 2,
         }
     }
   }

@@ -1,18 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
+import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
+import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
+import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 import {
   bindLiveModelAdapter,
-  clearDomains,
-  clearRegistry,
-  createSession,
-  executeStill,
   getEditState,
-  registerEditStills,
-  type IStillSession,
-  type StillResult,
-} from '../packages/spark-ai/src/stills'
+} from '../packages/spark-ai/src/business/page-design/stills'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
-import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../packages/spark-ai/src/business/page-design/stills/spark-node-tree-tool-catalog'
+import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../packages/spark-ai/src/business/page-design/stills/node-tree'
 
 let session: IStillSession
 let seq = 0
@@ -36,8 +33,8 @@ function expectOk<T = unknown>(result: StillResult): T {
 beforeEach(() => {
   clearDomains()
   clearRegistry()
-  registerEditStills()
-  session = createSession()
+  registerPageDesignEditStills()
+  session = createBareSession()
   seq = 0
   liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
@@ -86,10 +83,10 @@ describe('sparkNodeTree stills execution coverage', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap', {})
+    const init = exec('pageDesign@lifecycle@bootstrap', {})
     expect(init.ok).toBe(true)
 
-    const failedAdd = exec('sparkNodeTree.addNode', {
+    const failedAdd = exec('pageDesign@nodeTree@addNode', {
       parentComponentId: 'root-table',
       node: {
         type: '',
@@ -155,58 +152,58 @@ describe('sparkNodeTree stills execution coverage', () => {
     }
     seedLiveModel(bootstrapPayload)
 
-    const init = exec('edit.bootstrap', {})
+    const init = exec('pageDesign@lifecycle@bootstrap', {})
     expect(init.ok).toBe(true)
 
-    const getNode = exec('sparkNodeTree.getNode', { componentId: 'root-table' })
-    executedActions.add('sparkNodeTree.getNode')
+    const getNode = exec('pageDesign@nodeTree@getNode', { componentId: 'root-table' })
+    executedActions.add('pageDesign@nodeTree@getNode')
     const node = expectOk<{ type: string }>(getNode)
     expect(node.type).toBe('r-table')
 
-    const getLocation = exec('sparkNodeTree.getLocation', { componentId: 'name-field' })
-    executedActions.add('sparkNodeTree.getLocation')
+    const getLocation = exec('pageDesign@nodeTree@getLocation', { componentId: 'name-field' })
+    executedActions.add('pageDesign@nodeTree@getLocation')
     const location = expectOk<{ depth: number; parent: { type: string } | null }>(getLocation)
     expect(location.depth).toBeGreaterThan(0)
     expect(location.parent?.type).toBe('r-table')
 
-    const hasNode = exec('sparkNodeTree.hasNode', { componentId: 'toolbar-btn' })
-    executedActions.add('sparkNodeTree.hasNode')
+    const hasNode = exec('pageDesign@nodeTree@hasNode', { componentId: 'toolbar-btn' })
+    executedActions.add('pageDesign@nodeTree@hasNode')
     const exists = expectOk<boolean>(hasNode)
     expect(exists).toBe(true)
 
-    const getParent = exec('sparkNodeTree.getParent', { componentId: 'name-field' })
-    executedActions.add('sparkNodeTree.getParent')
+    const getParent = exec('pageDesign@nodeTree@getParent', { componentId: 'name-field' })
+    executedActions.add('pageDesign@nodeTree@getParent')
     const parent = expectOk<{ type: string } | null>(getParent)
     expect(parent?.type).toBe('r-table')
 
-    const listChildren = exec('sparkNodeTree.listChildren', { parentComponentId: 'root-table' })
-    executedActions.add('sparkNodeTree.listChildren')
+    const listChildren = exec('pageDesign@nodeTree@listChildren', { parentComponentId: 'root-table' })
+    executedActions.add('pageDesign@nodeTree@listChildren')
     const initialChildren = expectOk<unknown[]>(listChildren)
     expect(initialChildren.length).toBe(2)
 
-    const countNodes = exec('sparkNodeTree.countNodes')
-    executedActions.add('sparkNodeTree.countNodes')
+    const countNodes = exec('pageDesign@nodeTree@countNodes')
+    executedActions.add('pageDesign@nodeTree@countNodes')
     const nodeCount = expectOk<number>(countNodes)
     expect(nodeCount).toBeGreaterThan(0)
 
-    const getAllData = exec('sparkNodeTree.getAllData')
-    executedActions.add('sparkNodeTree.getAllData')
+    const getAllData = exec('pageDesign@nodeTree@getAllData')
+    executedActions.add('pageDesign@nodeTree@getAllData')
     const allData = expectOk<{ type: string; children?: unknown[] }>(getAllData)
     expect(allData.type).toBe('page')
     expect(Array.isArray(allData.children)).toBe(true)
 
-    const findByType = exec('sparkNodeTree.findByType', { type: 'r-text' })
-    executedActions.add('sparkNodeTree.findByType')
+    const findByType = exec('pageDesign@nodeTree@findByType', { type: 'r-text' })
+    executedActions.add('pageDesign@nodeTree@findByType')
     const findByTypeResult = expectOk<{ total: number; matches: unknown[] }>(findByType)
     expect(findByTypeResult.total).toBeGreaterThan(0)
     expect(findByTypeResult.matches.length).toBeGreaterThan(0)
 
-    const collectHandlerNames = exec('sparkNodeTree.collectHandlerNames')
-    executedActions.add('sparkNodeTree.collectHandlerNames')
+    const collectHandlerNames = exec('pageDesign@nodeTree@collectHandlerNames')
+    executedActions.add('pageDesign@nodeTree@collectHandlerNames')
     const handlers = expectOk<Set<string>>(collectHandlerNames)
     expect(Array.from(handlers)).toEqual(expect.arrayContaining(['handleRefresh', 'handleClick']))
 
-    const addNode = exec('sparkNodeTree.addNode', {
+    const addNode = exec('pageDesign@nodeTree@addNode', {
       parentComponentId: 'root-table',
       node: {
         type: 'r-text',
@@ -214,27 +211,27 @@ describe('sparkNodeTree stills execution coverage', () => {
         props: { field: 'email', label: '邮箱' },
       },
     })
-    executedActions.add('sparkNodeTree.addNode')
+    executedActions.add('pageDesign@nodeTree@addNode')
     const addNodeResult = expectOk<{ index: number }>(addNode)
     expect(addNodeResult.index).toBeGreaterThanOrEqual(0)
 
-    const addNodes = exec('sparkNodeTree.addNodes', {
+    const addNodes = exec('pageDesign@nodeTree@addNodes', {
       parentComponentId: 'root-table',
       nodes: [
         { type: 'r-text', id: 'extra-2', props: { field: 'mobile', label: '手机号' } },
         { type: 'r-text', id: 'extra-3', props: { field: 'title', label: '职位' } },
       ],
     })
-    executedActions.add('sparkNodeTree.addNodes')
+    executedActions.add('pageDesign@nodeTree@addNodes')
     const addNodesResult = expectOk<{ indexes: number[] }>(addNodes)
     expect(addNodesResult.indexes.length).toBe(2)
 
-    const moveNode = exec('sparkNodeTree.moveNode', {
+    const moveNode = exec('pageDesign@nodeTree@moveNode', {
       componentId: 'extra-3',
       parentComponentId: 'root-table',
       index: 1,
     })
-    executedActions.add('sparkNodeTree.moveNode')
+    executedActions.add('pageDesign@nodeTree@moveNode')
     const moveNodeResult = expectOk<{
       componentId: string
       fromParentComponentId: string | null
@@ -254,26 +251,26 @@ describe('sparkNodeTree stills execution coverage', () => {
       .filter((child): child is SparkNode => typeof child !== 'string')
     expect(movedChildren.map((child) => child.id).indexOf('extra-3')).toBe(1)
 
-    const setProps = exec('sparkNodeTree.setProps', {
+    const setProps = exec('pageDesign@nodeTree@setProps', {
       componentId: 'root-table',
       props: { border: true },
       merge: true,
     })
-    executedActions.add('sparkNodeTree.setProps')
+    executedActions.add('pageDesign@nodeTree@setProps')
     const setPropsResult = expectOk<{ node: { props?: Record<string, unknown> } }>(setProps)
     expect(setPropsResult.node.props?.['border']).toBe(true)
 
-    const setPropsBatch = exec('sparkNodeTree.setPropsBatch', {
+    const setPropsBatch = exec('pageDesign@nodeTree@setPropsBatch', {
       items: [
         { componentId: 'extra-1', props: { class: 'c1' }, merge: true },
         { componentId: 'extra-2', props: { class: 'c2' }, merge: true },
       ],
     })
-    executedActions.add('sparkNodeTree.setPropsBatch')
+    executedActions.add('pageDesign@nodeTree@setPropsBatch')
     const setPropsBatchResult = expectOk<{ nodes: unknown[] }>(setPropsBatch)
     expect(setPropsBatchResult.nodes.length).toBe(2)
 
-    const replaceNode = exec('sparkNodeTree.replaceNode', {
+    const replaceNode = exec('pageDesign@nodeTree@replaceNode', {
       componentId: 'extra-3',
       node: {
         type: 'r-text',
@@ -281,11 +278,11 @@ describe('sparkNodeTree stills execution coverage', () => {
         props: { field: 'position', label: '岗位' },
       },
     })
-    executedActions.add('sparkNodeTree.replaceNode')
+    executedActions.add('pageDesign@nodeTree@replaceNode')
     const replaceNodeResult = expectOk<{ node: { props?: Record<string, unknown> } }>(replaceNode)
     expect(replaceNodeResult.node.props?.['field']).toBe('position')
 
-    const replaceNodes = exec('sparkNodeTree.replaceNodes', {
+    const replaceNodes = exec('pageDesign@nodeTree@replaceNodes', {
       items: [
         {
           componentId: 'extra-1',
@@ -297,17 +294,17 @@ describe('sparkNodeTree stills execution coverage', () => {
         },
       ],
     })
-    executedActions.add('sparkNodeTree.replaceNodes')
+    executedActions.add('pageDesign@nodeTree@replaceNodes')
     const replaceNodesResult = expectOk<{ items: unknown[] }>(replaceNodes)
     expect(replaceNodesResult.items.length).toBe(2)
 
-    const removeNode = exec('sparkNodeTree.removeNode', { componentId: 'extra-1' })
-    executedActions.add('sparkNodeTree.removeNode')
+    const removeNode = exec('pageDesign@nodeTree@removeNode', { componentId: 'extra-1' })
+    executedActions.add('pageDesign@nodeTree@removeNode')
     const removeNodeResult = expectOk<{ removed: { id?: string } }>(removeNode)
     expect(removeNodeResult.removed.id).toBe('extra-1')
 
-    const removeNodes = exec('sparkNodeTree.removeNodes', { componentIds: ['extra-2', 'extra-3'] })
-    executedActions.add('sparkNodeTree.removeNodes')
+    const removeNodes = exec('pageDesign@nodeTree@removeNodes', { componentIds: ['extra-2', 'extra-3'] })
+    executedActions.add('pageDesign@nodeTree@removeNodes')
     const removeNodesResult = expectOk<{ items: unknown[] }>(removeNodes)
     expect(removeNodesResult.items.length).toBe(2)
 

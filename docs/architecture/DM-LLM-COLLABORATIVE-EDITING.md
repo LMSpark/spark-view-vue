@@ -209,7 +209,7 @@ interface EditDomainState {
 **桥接策略**：catalog 的每个 `CapabilityRow` → 一个 `StillDefinition`，execute 委托到 SparkNodeTree / DataSetCrudTool 实例方法。
 
 ```typescript
-// packages/spark-ai/src/stills/edit-nodeTree-stills.ts
+// packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts（EDIT_NODE_TREE_STILLS）
 
 function createNodeTreeStills(): StillDefinition[] {
   return [
@@ -235,7 +235,7 @@ function createNodeTreeStills(): StillDefinition[] {
 ```
 
 ```typescript
-// packages/spark-ai/src/stills/edit-dataset-stills.ts
+// packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts（EDIT_DATASET_STILLS）
 // 同理：catalog row → StillDefinition, execute 委托 DataSetCrudTool
 ```
 
@@ -463,9 +463,9 @@ export const EDIT_MODE_PROMPT = `\
 | T1 | spark-data | `dataset-crud-tool.ts` | 新增 `fromDataSet()` / `fromJson()` 工厂 + 使用 `SnapshotHistory<IDataSetMetadata>` 实现 undo/redo |
 | T1b | spark-component | `spark-node-tree.ts` | 重构现有 `_history[]` + `_cursor` 为 `SnapshotHistory<SparkNode>(50)`（行为不变）；新增 `get historyCursor(): number`（委托 `_history.cursor`，供 EditTransaction 使用） |
 | T2 | spark-ai | `stills/edit-domain.ts` | 编辑域定义（state + createState） |
-| T3 | spark-ai | `stills/edit-nodeTree-stills.ts` | 17 个 sparkNodeTree.* stills（catalog → StillDefinition） |
-| T4 | spark-ai | `stills/edit-dataset-stills.ts` | 31 个 datasetTool.* stills（catalog → StillDefinition） |
-| T5 | spark-ai | `stills/edit-file-stills.ts` | 4 个 file.* stills |
+| T3 | spark-ai | `stills/edit/actions/edit-domain.ts` | 17 个 sparkNodeTree.* stills（`EDIT_NODE_TREE_STILLS`，catalog → StillDefinition） |
+| T4 | spark-ai | `stills/edit/actions/edit-domain.ts` | 31 个 datasetTool.* stills（`EDIT_DATASET_STILLS`，catalog → StillDefinition） |
+| T5 | spark-ai | `stills/text-model/text-model-stills.ts` | 4 个 file.* stills（`EDIT_FILE_STILLS`） |
 | T6 | spark-ai | `stills/index.ts` | `registerEditStills()` 导出 |
 | T7 | spark-ai | `prompts/edit-prompts.ts` | 编辑模式系统提示词 |
 | T8 | spark-ai | `runtime/edit-orchestrator.ts` | 编辑循环（runEditLoop）+ `EditTransaction[]` 事务标记表 + `undoTransaction` |
@@ -531,7 +531,7 @@ export const EDIT_MODE_PROMPT = `\
 | `sparkNodeTree.removeNodes` | request | `tree.removeNodes()` |
 | `sparkNodeTree.reorderChildren` | request | `tree.reorderChildren()` |
 
-8 describe + 9 request = 17 个，与 `spark-node-tree-tool-catalog.ts` 一一对应。
+8 describe + 9 request = 17 个，与 `stills/node-tree/tool-catalog.ts` 一一对应。
 
 ### 7.2 datasetTool.*（31 个，来自 catalog）
 

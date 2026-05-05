@@ -15,6 +15,11 @@ import type {
 
 const log = Logger('SessionBackend')
 
+export interface SessionBackendImplOptions {
+  getHeaders?: () => Record<string, string>
+  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
+}
+
 /**
  * 提取后端错误的可读摘要，避免上层只拿到“Network Error/null”这类弱信息。
  */
@@ -74,10 +79,7 @@ export class SessionBackendImpl implements SessionBackend {
 
   constructor(
     baseUrl = '/api/ai/sessions',
-    options: {
-      getHeaders?: () => Record<string, string>
-      onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
-    } = {},
+    options: SessionBackendImplOptions = {},
   ) {
     this.baseUrl = baseUrl
     this.getHeaders = options.getHeaders ?? null
@@ -232,4 +234,11 @@ export class SessionBackendImpl implements SessionBackend {
     }
     this.sessionIds.clear()
   }
+}
+
+export function createSessionBackend(
+  baseUrl?: string,
+  options: SessionBackendImplOptions = {},
+): SessionBackend {
+  return new SessionBackendImpl(baseUrl, options)
 }

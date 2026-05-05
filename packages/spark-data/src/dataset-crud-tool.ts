@@ -3,6 +3,7 @@ import { SnapshotHistory, deepClone } from '@spark-view/spark-utils'
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'
 import type {
+  AggregateColumnConfig,
   BatchResult,
   CrudApi,
   CrudOperationConfig,
@@ -234,6 +235,18 @@ export class DataSetCrudTool {
 
   get historyCursor(): number {
     return this._history.cursor
+  }
+
+  getCanUndo(): boolean {
+    return this.canUndo
+  }
+
+  getCanRedo(): boolean {
+    return this.canRedo
+  }
+
+  getHistoryCursor(): number {
+    return this.historyCursor
   }
 
   /**
@@ -720,6 +733,92 @@ export class DataSetCrudTool {
     }
     this.getTableOrThrow(tableName).destroyView(viewId)
     this._afterWrite()
+  }
+
+  listAggregates(params: { tableName: string; viewId?: string }): Record<string, AggregateColumnConfig> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'listAggregates.tableName')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    return { ...view.aggregates }
+  }
+
+  getAggregate(params: { tableName: string; viewId?: string; key: string }): AggregateColumnConfig | undefined {
+    const tableName = this.requireNonEmptyString(params.tableName, 'getAggregate.tableName')
+    const key = this.requireNonEmptyString(params.key, 'getAggregate.key')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    return view.aggregates[key]
+  }
+
+  addAggregate(params: { tableName: string; viewId?: string; key: string; config: AggregateColumnConfig }): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'addAggregate.tableName')
+    const key = this.requireNonEmptyString(params.key, 'addAggregate.key')
+    const config = this.requireObjectArg(params.config, 'addAggregate.config')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    if (view.aggregates[key] !== undefined) {
+      throw new Error(`Aggregate key "${key}" already exists`)
+    }
+    view.setAggregates({ ...view.aggregates, [key]: config })
+    this._afterWrite()
+  }
+
+  updateAggregate(
+    params: { tableName: string; viewId?: string; key: string; updates: Partial<AggregateColumnConfig> },
+  ): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateAggregate.tableName')
+    const key = this.requireNonEmptyString(params.key, 'updateAggregate.key')
+    const updates = this.requireObjectArg(params.updates, 'updateAggregate.updates')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    const current = view.aggregates[key]
+    if (current === undefined) {
+      throw new Error(`Aggregate key "${key}" not found`)
+    }
+    view.setAggregates({
+      ...view.aggregates,
+      [key]: {
+        ...current,
+        ...updates,
+      },
+    })
+    this._afterWrite()
+  }
+
+  removeAggregate(params: { tableName: string; viewId?: string; key: string }): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'removeAggregate.tableName')
+    const key = this.requireNonEmptyString(params.key, 'removeAggregate.key')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    if (view.aggregates[key] === undefined) {
+      throw new Error(`Aggregate key "${key}" not found`)
+    }
+      const { [key]: _removedAggregate, ...nextAggregates } = view.aggregates
+    view.setAggregates(nextAggregates)
+    this._afterWrite()
+  }
+
+  getComputeExpression(params: { tableName: string; columnName: string }): string | undefined {
+    return this.getColumn(params)?.computeExpression
+  }
+
+  setComputeExpression(params: { tableName: string; columnName: string; expression: string }): DataTable {
+    const expression = this.requireNonEmptyString(params.expression, 'setComputeExpression.expression')
+    return this.updateColumn({
+      tableName: params.tableName,
+      columnName: params.columnName,
+      updates: { computeExpression: expression },
+    })
+  }
+
+  clearComputeExpression(params: { tableName: string; columnName: string }): DataTable {
+    const tableName = this.requireNonEmptyString(params.tableName, 'clearComputeExpression.tableName')
+    const columnName = this.requireNonEmptyString(params.columnName, 'clearComputeExpression.columnName')
+    const table = this.getTableOrThrow(tableName)
+    const column = this.getColumn({ tableName, columnName })
+    if (!column) {
+      throw new Error(`Column "${columnName}" not found in table "${tableName}"`)
+    }
+
+    const { computeExpression: _removedComputeExpression, ...nextColumn } = column
+    table.updateColumn(columnName, nextColumn)
+    this._afterWrite()
+    return table
   }
 
   // ====================
