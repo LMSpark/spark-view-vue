@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
-} from '../packages/spark-ai/src/core/stills/llm-params-validator'
-import { validateDataSetCrudToolStillParams } from '../packages/spark-ai/src/business/page-design/stills'
+} from '../packages/spark-ai/src/core/protocol/function-params-validator'
+import { validateDataSetCrudToolFunctionParams } from '../packages/spark-ai/src/business/page-design/functions'
 
 describe('validateLlmDeserializedParams', () => {
   it('rejects non-object root params', () => {
@@ -161,9 +161,9 @@ describe('validateLlmDeserializedParams', () => {
   })
 })
 
-describe('validateDataSetCrudToolStillParams', () => {
+describe('validateDataSetCrudToolFunctionParams', () => {
   it('accepts valid pageDesign@dataset@createTable params', () => {
-    const error = validateDataSetCrudToolStillParams('pageDesign@dataset@createTable', {
+    const error = validateDataSetCrudToolFunctionParams('pageDesign@dataset@createTable', {
       tableName: 'Users',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -180,7 +180,7 @@ describe('validateDataSetCrudToolStillParams', () => {
   })
 
   it('rejects invalid pageDesign@dataset@createTable params after llm deserialization', () => {
-    const error = validateDataSetCrudToolStillParams('pageDesign@dataset@createTable', {
+    const error = validateDataSetCrudToolFunctionParams('pageDesign@dataset@createTable', {
       tableName: 'Users',
       columns: 'id,name',
     })
@@ -190,7 +190,7 @@ describe('validateDataSetCrudToolStillParams', () => {
 
   it('enforces single-signature for pageDesign@dataset@deleteRelation (zero backward compat)', () => {
     // 旧签名（selector 包装对象）应明确失败，避免隐式兼容历史协议。
-    const errorLegacySelector = validateDataSetCrudToolStillParams('pageDesign@dataset@deleteRelation', {
+    const errorLegacySelector = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
       selector: {
         parentTable: 'Department',
         childTable: 'Employee',
@@ -199,7 +199,7 @@ describe('validateDataSetCrudToolStillParams', () => {
     expect(errorLegacySelector).not.toBeNull()
 
     // 缺少 parentTable 应该失败（单一签名：必须提供 parentTable 和 childTable）
-    const errorMissingParent = validateDataSetCrudToolStillParams('pageDesign@dataset@deleteRelation', {
+    const errorMissingParent = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
       childTable: 'Employee',
       parentField: 'deptId',
       childField: 'orderId',
@@ -207,7 +207,7 @@ describe('validateDataSetCrudToolStillParams', () => {
     expect(errorMissingParent).toContain('parentTable')
 
     // 缺少 childTable 应该失败
-    const errorMissingChild = validateDataSetCrudToolStillParams('pageDesign@dataset@deleteRelation', {
+    const errorMissingChild = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
       parentTable: 'Department',
       parentField: 'deptId',
       childField: 'orderId',
@@ -215,7 +215,7 @@ describe('validateDataSetCrudToolStillParams', () => {
     expect(errorMissingChild).toContain('childTable')
 
     // 提供完整的单一签名应该通过
-    const noError = validateDataSetCrudToolStillParams('pageDesign@dataset@deleteRelation', {
+    const noError = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
       parentTable: 'Department',
       childTable: 'Employee',
       parentField: 'deptId',

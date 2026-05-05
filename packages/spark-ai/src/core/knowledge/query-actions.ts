@@ -1,8 +1,12 @@
-import type { IStillSession, StillDefinition, StillFailureMode } from '../stills/types'
-import { noGuard } from '../stills/types'
-import { getAllStills, getStill } from '../stills/dispatcher'
-import { actionToFunctionName, functionNameToAction } from '../fc-schema'
-import { isNonEmptyString, missingParam } from '../stills/meta-common-utils'
+import type {
+  FunctionFailureMode,
+  FunctionResult,
+  RegisteredFunctionDefinition,
+} from '../protocol/function-contracts'
+import { noGuard } from '../protocol/function-contracts'
+import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
+import { actionToFunctionName, functionNameToAction } from '../protocol/fc-schema'
+import { isNonEmptyString, missingParam } from '../protocol/function-utils'
 import {
   getKnowledgePayloadProvider,
   getKnowledgePayloadProviders,
@@ -15,7 +19,12 @@ import type {
   KnowledgeToolSummary,
 } from './types'
 
+// 核心知识模块提示词
 const CORE_KNOWLEDGE_MODULE_PROMPT = 'core@knowledge 只负责查询已注册函数事实和参数荷载规格；写动作参数不确定时先 guideTool，嵌套对象参数必须通过 queryPayloads/guidePayload 查询后再构造。'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 【功能分区1】接口定义 - 各种查询参数和返回值类型
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface QueryToolsParams {
   business?: unknown
@@ -35,6 +44,31 @@ interface GuidePayloadParams {
   payloadRef?: unknown
   key?: unknown
 }
+
+interface AskOption {
+  id: string
+  label: string
+  value?: unknown
+  description?: string
+}
+
+interface AskQuestion {
+  id: string
+  prompt: string
+  type: 'single' | 'multi'
+  options: AskOption[]
+  recommendedOptionIds: string[]
+}
+
+interface AskParams {
+  title: string
+  reason?: string
+  questions: AskQuestion[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 【功能分区2】工具函数 - 数据处理和验证辅助函数
+// ─────────────────────────────────────────────────────────────────────────────
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -72,40 +106,48 @@ function parseActionAddress(action: string): ActionAddressParts {
   return { business, module: moduleName, function: functionName }
 }
 
-function failureCodes(failureModes: readonly StillFailureMode[] | undefined): string[] | undefined {
+function failureCodes(failureModes: readonly FunctionFailureMode[] | undefined): string[] | undefined {
   if (failureModes === undefined || failureModes.length === 0) return undefined
   return failureModes.map(failureMode => failureMode.code)
 }
 
-function projectToolSummary(still: StillDefinition<never, unknown>): KnowledgeToolSummary {
-  const address = parseActionAddress(still.action)
-  const knownFailureCodes = failureCodes(still.failureModes)
+// ─────────────────────────────────────────────────────────────────────────────
+// 【功能分区3】数据投影 - 将函数定义转换为查询结果
+// ─────────────────────────────────────────────────────────────────────────────
+
+function projectToolSummary(definition: RegisteredFunctionDefinition<never, unknown>): KnowledgeToolSummary {
+  const address = parseActionAddress(definition.action)
+  const knownFailureCodes = failureCodes(definition.failureModes)
   return {
-    action: still.action,
+    action: definition.action,
     business: address.business,
     module: address.module,
     function: address.function,
-    functionName: actionToFunctionName(still.action),
-    type: still.type,
-    description: still.description,
-    ...(still.modulePrompt ? { modulePrompt: still.modulePrompt } : {}),
-    ...(still.guardDescription ? { guard: still.guardDescription } : {}),
-    ...(still.usageRules && still.usageRules.length > 0 ? { rules: still.usageRules } : {}),
+    functionName: actionToFunctionName(definition.action),
+    type: definition.type,
+    description: definition.description,
+    ...(definition.modulePrompt ? { modulePrompt: definition.modulePrompt } : {}),
+    ...(definition.guardDescription ? { guard: definition.guardDescription } : {}),
+    ...(definition.usageRules && definition.usageRules.length > 0 ? { rules: definition.usageRules } : {}),
     ...(knownFailureCodes !== undefined ? { failureCodes: knownFailureCodes } : {}),
-    ...(still.paramsSchema && Object.keys(still.paramsSchema).length > 0 ? { params: still.paramsSchema } : {}),
-    ...(still.example && Object.keys(still.example).length > 0 ? { example: still.example } : {}),
+    ...(definition.paramsSchema && Object.keys(definition.paramsSchema).length > 0 ? { params: definition.paramsSchema } : {}),
+    ...(definition.example && Object.keys(definition.example).length > 0 ? { example: definition.example } : {}),
   }
 }
 
-function projectToolGuide(still: StillDefinition<never, unknown>): KnowledgeToolGuide {
+function projectToolGuide(definition: RegisteredFunctionDefinition<never, unknown>): KnowledgeToolGuide {
   return {
-    ...projectToolSummary(still),
-    paramsSchema: still.paramsSchema ?? null,
-    resultSchema: still.resultSchema ?? null,
-    usageRules: still.usageRules ?? [],
-    failureModes: still.failureModes ?? [],
+    ...projectToolSummary(definition),
+    paramsSchema: definition.paramsSchema ?? null,
+    resultSchema: definition.resultSchema ?? null,
+    usageRules: definition.usageRules ?? [],
+    failureModes: definition.failureModes ?? [],
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 【功能分区4】参数验证 - 各种查询函数的参数验证逻辑
+// ─────────────────────────────────────────────────────────────────────────────
 
 function validateQueryToolsParams(params: unknown): string | null {
   if (params === undefined || params === null) return null
@@ -115,7 +157,7 @@ function validateQueryToolsParams(params: unknown): string | null {
   const business = readOptionalString(params, 'business')
   if (business === null) return 'business 必须是非空字符串'
   const moduleName = readOptionalString(params, 'module')
-  if (moduleName === null) return 'module 必须是非空字符串'
+  if (moduleName === null) return 'module 忄须是非空字符串'
   return null
 }
 
@@ -146,8 +188,51 @@ function validateGuidePayloadParams(params: unknown): string | null {
   return null
 }
 
+function validateAskParams(params: unknown): string | null {
+  if (!isRecord(params)) return 'core@knowledge@ask 参数必须是对象'
+  if (!isNonEmptyString(params['title'])) return missingParam('title')
+  const rawQuestions = params['questions']
+  if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) return 'questions 必须是非空数组'
+
+  for (const [questionIndex, question] of rawQuestions.entries()) {
+    const prefix = `questions[${questionIndex}]`
+    if (!isRecord(question)) return `${prefix} 必须是对象`
+    const questionType = question['type']
+    const rawOptions = question['options']
+    const rawRecommendedOptionIds = question['recommendedOptionIds']
+    if (!isNonEmptyString(question['id'])) return `${prefix}.id 必须是非空字符串`
+    if (!isNonEmptyString(question['prompt'])) return `${prefix}.prompt 必须是非空字符串`
+    if (questionType !== 'single' && questionType !== 'multi') return `${prefix}.type 必须是 single 或 multi`
+    if (!Array.isArray(rawOptions) || rawOptions.length < 2) return `${prefix}.options 至少提供 2 个备选项`
+    if (!Array.isArray(rawRecommendedOptionIds) || rawRecommendedOptionIds.length === 0) return `${prefix}.recommendedOptionIds 必须提供推荐选项`
+    if (questionType === 'single' && rawRecommendedOptionIds.length !== 1) return `${prefix}.recommendedOptionIds 单选题必须且只能推荐 1 个选项`
+
+    const optionIds = new Set<string>()
+    for (const [optionIndex, option] of rawOptions.entries()) {
+      const optionPrefix = `${prefix}.options[${optionIndex}]`
+      if (!isRecord(option)) return `${optionPrefix} 必须是对象`
+      const optionId = option['id']
+      if (!isNonEmptyString(optionId)) return `${optionPrefix}.id 必须是非空字符串`
+      if (!isNonEmptyString(option['label'])) return `${optionPrefix}.label 必须是非空字符串`
+      if (optionIds.has(optionId)) return `${prefix}.options 存在重复 id: ${optionId}`
+      optionIds.add(optionId)
+    }
+
+    for (const recommendedId of rawRecommendedOptionIds) {
+      if (!isNonEmptyString(recommendedId)) return `${prefix}.recommendedOptionIds 只能包含非空字符串`
+      if (!optionIds.has(recommendedId)) return `${prefix}.recommendedOptionIds 包含不存在的选项: ${recommendedId}`
+    }
+  }
+
+  return null
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 【功能分区5】数据收集 - 收集工具和模块信息
+// ─────────────────────────────────────────────────────────────────────────────
+
 function collectToolSummaries(): KnowledgeToolSummary[] {
-  return Array.from(getAllStills().values()).map(projectToolSummary)
+  return Array.from(getAllFunctionDefinitions().values()).map(projectToolSummary)
 }
 
 function collectModuleSummaries(tools: readonly KnowledgeToolSummary[]): KnowledgeModuleSummary[] {
@@ -179,15 +264,15 @@ function collectModuleSummaries(tools: readonly KnowledgeToolSummary[]): Knowled
 
 function findToolGuide(action: string): KnowledgeToolGuide | null {
   const canonicalAction = functionNameToAction(action)
-  const still = getStill(action) ?? getStill(canonicalAction)
-  if (still !== undefined) return projectToolGuide(still)
+  const definition = getFunctionDefinition(action) ?? getFunctionDefinition(canonicalAction)
+  if (definition !== undefined) return projectToolGuide(definition)
   return null
 }
 
-function findPayloadRefByKey(session: IStillSession, key: string): string | null {
+function findPayloadRefByKey(key: string): string | null {
   for (const provider of getKnowledgePayloadProviders()) {
     try {
-      if (provider.guidePayload(session, key) !== null) return provider.payloadRef
+      if (provider.guidePayload(key) !== null) return provider.payloadRef
     } catch {
       continue
     }
@@ -195,7 +280,11 @@ function findPayloadRefByKey(session: IStillSession, key: string): string | null
   return null
 }
 
-export const knowledgeQueryTools: StillDefinition<QueryToolsParams, unknown> = {
+// ─────────────────────────────────────────────────────────────────────────────
+// 【功能分区6】知识查询函数实现 - 实现具体的查询功能
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const knowledgeQueryTools: RegisteredFunctionDefinition<QueryToolsParams, unknown> = {
   action: 'core@knowledge@queryTools',
   type: 'describe',
   description: '查询当前会话可用 Agent tool/function 目录，可按 business/module 过滤。',
@@ -221,7 +310,7 @@ export const knowledgeQueryTools: StillDefinition<QueryToolsParams, unknown> = {
   },
   example: {},
   validate: validateQueryToolsParams,
-  execute: (session, params): ReturnType<StillDefinition<QueryToolsParams, unknown>['execute']> => {
+  execute: (_context, params): FunctionResult => {
     const business = isRecord(params) ? readOptionalString(params, 'business') : ''
     const moduleName = isRecord(params) ? readOptionalString(params, 'module') : ''
     const tools = collectToolSummaries()
@@ -242,7 +331,7 @@ export const knowledgeQueryTools: StillDefinition<QueryToolsParams, unknown> = {
   },
 }
 
-export const knowledgeGuideTool: StillDefinition<GuideToolParams, unknown> = {
+export const knowledgeGuideTool: RegisteredFunctionDefinition<GuideToolParams, unknown> = {
   action: 'core@knowledge@guideTool',
   type: 'describe',
   description: '查询单个函数/Agent tool 的完整参数指南，action 可传 业务@模块@函数 或 FC 下划线函数名。',
@@ -263,11 +352,11 @@ export const knowledgeGuideTool: StillDefinition<GuideToolParams, unknown> = {
     modulePrompt: 'string? — 目标函数所属模块的提示词',
     paramsSchema: 'Record<string, unknown> | null',
     usageRules: 'string[]',
-    failureModes: 'StillFailureMode[]',
+    failureModes: 'FunctionFailureMode[]',
   },
   example: { action: 'core@knowledge@queryTools' },
   validate: validateGuideToolParams,
-  execute: (session, params): ReturnType<StillDefinition<GuideToolParams, unknown>['execute']> => {
+  execute: (_context, params): FunctionResult => {
     if (!isRecord(params)) {
       return { ok: false, code: 'INVALID_PARAMS', msg: missingParam('action'), fix: '请传 { action:"core@knowledge@queryTools" }' }
     }
@@ -278,7 +367,7 @@ export const knowledgeGuideTool: StillDefinition<GuideToolParams, unknown> = {
 
     const guide = findToolGuide(action)
     if (guide === null) {
-      const payloadRef = findPayloadRefByKey(session, action)
+      const payloadRef = findPayloadRefByKey(action)
       if (payloadRef !== null) {
         return {
           ok: false,
@@ -303,7 +392,7 @@ export const knowledgeGuideTool: StillDefinition<GuideToolParams, unknown> = {
   },
 }
 
-export const knowledgeQueryPayloads: StillDefinition<QueryPayloadsParams, unknown> = {
+export const knowledgeQueryPayloads: RegisteredFunctionDefinition<QueryPayloadsParams, unknown> = {
   action: 'core@knowledge@queryPayloads',
   type: 'describe',
   description: '查询可用参数荷载目录；无 payloadRef 时返回已注册荷载源列表。',
@@ -326,7 +415,7 @@ export const knowledgeQueryPayloads: StillDefinition<QueryPayloadsParams, unknow
   },
   example: {},
   validate: validateQueryPayloadsParams,
-  execute: (session, params): ReturnType<StillDefinition<QueryPayloadsParams, unknown>['execute']> => {
+  execute: (_context, params): FunctionResult => {
     const payloadRef = isRecord(params) && typeof params['payloadRef'] === 'string' ? params['payloadRef'].trim() : ''
     const filter = isRecord(params) && isRecord(params['filter']) ? params['filter'] : undefined
 
@@ -354,13 +443,13 @@ export const knowledgeQueryPayloads: StillDefinition<QueryPayloadsParams, unknow
 
     let payloads: KnowledgePayloadSummary[]
     try {
-      payloads = provider.queryPayloads(session, filter)
+      payloads = provider.queryPayloads(filter)
     } catch (error) {
       return {
         ok: false,
         code: 'PAYLOAD_PROVIDER_ERROR',
         msg: error instanceof Error ? error.message : '参数荷载源查询失败',
-        fix: '请检查当前会话是否已完成对应业务域初始化，再重新调用 core@knowledge@queryPayloads。',
+        fix: '请检查对应业务模块是否已完成参数荷载源初始化，再重新调用 core@knowledge@queryPayloads。',
       }
     }
 
@@ -372,7 +461,7 @@ export const knowledgeQueryPayloads: StillDefinition<QueryPayloadsParams, unknow
   },
 }
 
-export const knowledgeGuidePayload: StillDefinition<GuidePayloadParams, unknown> = {
+export const knowledgeGuidePayload: RegisteredFunctionDefinition<GuidePayloadParams, unknown> = {
   action: 'core@knowledge@guidePayload',
   type: 'describe',
   description: '查询单个参数荷载的 JSON Schema、最小示例与使用规则。',
@@ -397,7 +486,7 @@ export const knowledgeGuidePayload: StillDefinition<GuidePayloadParams, unknown>
   },
   example: { payloadRef: '<registered-payload-ref>', key: '<payload-key>' },
   validate: validateGuidePayloadParams,
-  execute: (session, params): ReturnType<StillDefinition<GuidePayloadParams, unknown>['execute']> => {
+  execute: (_context, params): FunctionResult => {
     if (!isRecord(params)) {
       return { ok: false, code: 'INVALID_PARAMS', msg: missingParam('payloadRef'), fix: '请传 { payloadRef:"<已注册 payloadRef>", key:"<payload key>" }' }
     }
@@ -419,13 +508,13 @@ export const knowledgeGuidePayload: StillDefinition<GuidePayloadParams, unknown>
 
     let guide: KnowledgePayloadGuide | null
     try {
-      guide = provider.guidePayload(session, key)
+      guide = provider.guidePayload(key)
     } catch (error) {
       return {
         ok: false,
         code: 'PAYLOAD_PROVIDER_ERROR',
         msg: error instanceof Error ? error.message : '参数荷载指南查询失败',
-        fix: '请检查当前会话是否已完成对应业务域初始化，再重新调用 core@knowledge@guidePayload。',
+        fix: '请检查对应业务模块是否已完成参数荷载源初始化，再重新调用 core@knowledge@guidePayload。',
       }
     }
 
@@ -446,9 +535,92 @@ export const knowledgeGuidePayload: StillDefinition<GuidePayloadParams, unknown>
   },
 }
 
-export const coreKnowledgeStills = [
+export const knowledgeAsk: RegisteredFunctionDefinition<AskParams, AskParams> = {
+  action: 'core@knowledge@ask',
+  type: 'describe',
+  description: '向用户发起结构化反问；必须提供完整备选项与推荐选项。',
+  modulePrompt: CORE_KNOWLEDGE_MODULE_PROMPT,
+  guard: noGuard,
+  usageRules: [
+    '仅当关键事实无法从当前上下文或只读函数判定时调用。',
+    '每个问题必须提供完整备选项；如存在开放场景，应提供"其他/自定义"选项。',
+    '每个问题必须提供 recommendedOptionIds；推荐项只能来自 options[].id。',
+    '调用后停止继续写入或尝试，等待用户点击选项回答。',
+  ],
+  paramsSchema: {
+    kind: 'object',
+    properties: {
+      title: 'string — 反问主题，简短说明本次需要确认什么',
+      questions: {
+        kind: 'array',
+        note: '问题列表；为保证点击即回答，优先一次只问 1 个关键问题',
+        items: {
+          kind: 'object',
+          properties: {
+            id: 'string — 问题稳定 id',
+            prompt: 'string — 面向用户的问题文本',
+            type: { kind: 'enum', enum: ['single', 'multi'], note: 'single=单选；multi=多选' },
+            options: {
+              kind: 'array',
+              note: '完整备选项，至少 2 项；需要开放输入时提供 other/custom 选项',
+              items: {
+                kind: 'object',
+                properties: {
+                  id: 'string — 选项稳定 id',
+                  label: 'string — 展示给用户的选项名称',
+                },
+                optional: {
+                  value: 'string — 选项值；未提供时使用 id',
+                  description: 'string? — 选项说明或适用场景',
+                },
+              },
+            },
+            recommendedOptionIds: {
+              kind: 'array',
+              note: '推荐选项 id；single 必须 1 个，multi 可多个',
+              items: 'string — options[].id 中的值',
+            },
+          },
+        },
+      },
+    },
+    optional: {
+      reason: 'string? — 为什么需要用户确认；写清缺失事实，不要泛泛描述',
+    },
+  },
+  resultSchema: {
+    title: 'string',
+    reason: 'string?',
+    questions: 'Array<{ id; prompt; type; options; recommendedOptionIds }>',
+  },
+  example: {
+    title: '确认关键事实',
+    reason: '当前请求缺少可由用户直接确认的关键事实。',
+    questions: [
+      {
+        id: 'next-step',
+        prompt: '请选择下一步处理方式。',
+        type: 'single',
+        options: [
+          { id: 'inspect', label: '先查询当前状态' },
+          { id: 'proceed', label: '按已确认事实继续执行' },
+        ],
+        recommendedOptionIds: ['inspect'],
+      },
+    ],
+  },
+  validate: validateAskParams,
+  execute: (_context, params): FunctionResult<AskParams> => ({
+    ok: true,
+    data: params,
+    summary: `等待用户回答反问：${params.title}（${params.questions.length} 题）`,
+  }),
+}
+
+export const coreKnowledgeFunctions = [
   knowledgeQueryTools,
   knowledgeGuideTool,
   knowledgeQueryPayloads,
   knowledgeGuidePayload,
+  knowledgeAsk,
 ] as const

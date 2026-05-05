@@ -1,4 +1,4 @@
-import type { IStillSession, StillFailureMode } from '../stills/types'
+import type { FunctionFailureMode } from '../protocol/function-contracts'
 
 export interface KnowledgeToolSummary {
   action: string
@@ -28,7 +28,7 @@ export interface KnowledgeToolGuide extends KnowledgeToolSummary {
   paramsSchema: Record<string, unknown> | null
   resultSchema: Record<string, unknown> | null
   usageRules: string[]
-  failureModes: StillFailureMode[]
+  failureModes: FunctionFailureMode[]
 }
 
 export interface KnowledgePayloadSummary {
@@ -46,12 +46,12 @@ export interface KnowledgePayloadGuide {
   jsonSchema: Record<string, unknown>
   minimalExample: Record<string, unknown>
   usageRules: string[]
-  failureModes: StillFailureMode[]
+  failureModes: FunctionFailureMode[]
 }
 
 export interface KnowledgePayloadProvider {
   payloadRef: string
   description: string
-  queryPayloads(session: IStillSession, filter?: Record<string, unknown>): KnowledgePayloadSummary[]
-  guidePayload(session: IStillSession, key: string): KnowledgePayloadGuide | null
+  queryPayloads(filter?: Record<string, unknown>): KnowledgePayloadSummary[]
+  guidePayload(key: string): KnowledgePayloadGuide | null
 }

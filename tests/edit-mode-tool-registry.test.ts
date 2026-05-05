@@ -1,17 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  clearDomains,
-  clearRegistry,
-  registerPageDesignEditStills,
   functionNameToAction,
   generateToolDefinitions,
 } from '@spark-view/spark-ai'
+import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
 beforeEach(() => {
-  clearDomains()
-  clearRegistry()
-  registerPageDesignEditStills()
+  createPageDesignFunctionHarness()
 })
 
 describe('edit mode tool registry', () => {

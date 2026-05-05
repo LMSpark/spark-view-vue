@@ -330,7 +330,7 @@ describe('AiChatWidget persistence', () => {
         externalToolLogs: [
           { type: 'info', tag: 'session-ready', text: '编辑会话已挂接到当前页面模型；后续读写仅通过 FC 工具执行', timestamp: '2026-04-27T13:03:35.000Z' },
           { type: 'info', tag: '人工输入', text: '诊断一下', timestamp: '2026-04-27T13:03:36.000Z' },
-          { type: 'info', tag: 'LLM → core@session@describe', text: '读取会话状态', timestamp: '2026-04-27T13:03:36.500Z' },
+          { type: 'info', tag: 'LLM → pageDesign@lifecycle@describeProgress', text: '读取会话状态', timestamp: '2026-04-27T13:03:36.500Z' },
           { type: 'info', tag: 'SSE delta', text: 'duplicated-sse-log', timestamp: '2026-04-27T13:03:37.000Z' },
           { type: 'success', tag: 'SSE result', text: 'duplicated-result-log', timestamp: '2026-04-27T13:03:38.000Z' },
         ],
@@ -380,7 +380,7 @@ describe('AiChatWidget persistence', () => {
     expect(structured.counts.toolLogs).toBe(2)
     expect(structured.toolLogs).toEqual(expect.arrayContaining([
       expect.objectContaining({ tag: 'session-ready', title: '会话就绪', text: expect.stringContaining('编辑会话已挂接') }),
-      expect.objectContaining({ tag: 'LLM → core@session@describe', title: 'LLM → core@session@describe', text: '读取会话状态' }),
+      expect.objectContaining({ tag: 'LLM → pageDesign@lifecycle@describeProgress', title: 'LLM → pageDesign@lifecycle@describeProgress', text: '读取会话状态' }),
     ]))
     expect(structured.sseEvents).toEqual(expect.arrayContaining([
       expect.objectContaining({ type: 'reasoning', data: 'reasoning-context ', sessionId: 'session-1' }),
@@ -450,13 +450,13 @@ describe('AiChatWidget persistence', () => {
     setItemSpy.mockRestore()
   })
 
-  it('renders core@interaction@ask as clickable clarification answers', async () => {
+  it('renders core@knowledge@ask as clickable clarification answers', async () => {
     let callCount = 0
     const sender = vi.fn(async (request) => {
       callCount += 1
       if (callCount === 1) {
         request.onFcCall?.({
-          toolName: 'core@interaction@ask',
+          toolName: 'core@knowledge@ask',
           args: {},
           round: 1,
           callId: 'ask-1',

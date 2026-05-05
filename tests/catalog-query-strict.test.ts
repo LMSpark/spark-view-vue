@@ -1,24 +1,22 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
-import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
-import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
-import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
+import type { FunctionResult, FunctionRuntimeContext } from '@spark-view/spark-ai'
+import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
-let session: IStillSession
+let context: FunctionRuntimeContext
+let exec: (action: string, params?: unknown, requestId?: string) => FunctionResult
 
-function execQuery(params: unknown): StillResult {
-  return executeStill('core@knowledge@queryPayloads', params, session, 'knowledge-query-payloads-strict')
+function execQuery(params: unknown): FunctionResult {
+  return exec('core@knowledge@queryPayloads', params, 'knowledge-query-payloads-strict')
 }
 
-function execGuide(params: unknown): StillResult {
-  return executeStill('core@knowledge@guidePayload', params, session, 'knowledge-guide-payload-strict')
+function execGuide(params: unknown): FunctionResult {
+  return exec('core@knowledge@guidePayload', params, 'knowledge-guide-payload-strict')
 }
 
 beforeEach(() => {
-  clearDomains()
-  clearRegistry()
-  registerPageDesignEditStills()
-  session = createBareSession()
+  const harness = createPageDesignFunctionHarness()
+  context = harness.context
+  exec = harness.exec
 })
 
 describe('core@knowledge@queryPayloads — Component Payload Directory', () => {
@@ -65,8 +63,8 @@ describe('core@knowledge@queryPayloads — Component Payload Directory', () => {
     }
   })
 
-  it('keeps component catalog out of core session state', () => {
-    expect('catalog' in (session as unknown as Record<string, unknown>)).toBe(false)
+  it('keeps component catalog out of core runtime context', () => {
+    expect('catalog' in (context as unknown as Record<string, unknown>)).toBe(false)
 
     const result = execQuery({ payloadRef: 'page-design.component' })
     expect(result.ok).toBe(true)
@@ -116,27 +114,27 @@ describe('core@knowledge@guidePayload — Component Config Guide', () => {
   })
 
   it('does not register removed component query actions', () => {
-    const oldCatalogQuery = executeStill('catalog.query', {}, session, 'removed-old-catalog-query')
+    const oldCatalogQuery = exec('catalog.query', {}, 'removed-old-catalog-query')
     expect(oldCatalogQuery.ok).toBe(false)
     if (!oldCatalogQuery.ok) expect(oldCatalogQuery.code).toBe('UNKNOWN_ACTION')
 
-    const oldCatalogGuide = executeStill('catalog.guide', { type: 'r-table' }, session, 'removed-old-catalog-guide')
+    const oldCatalogGuide = exec('catalog.guide', { type: 'r-table' }, 'removed-old-catalog-guide')
     expect(oldCatalogGuide.ok).toBe(false)
     if (!oldCatalogGuide.ok) expect(oldCatalogGuide.code).toBe('UNKNOWN_ACTION')
 
-    const oldKnowledgeQuery = executeStill('knowledge.queryPayloads', {}, session, 'removed-dot-knowledge-query')
+    const oldKnowledgeQuery = exec('knowledge.queryPayloads', {}, 'removed-dot-knowledge-query')
     expect(oldKnowledgeQuery.ok).toBe(false)
     if (!oldKnowledgeQuery.ok) expect(oldKnowledgeQuery.code).toBe('UNKNOWN_ACTION')
 
-    const oldKnowledgeGuide = executeStill('knowledge.guidePayload', { payloadRef: 'page-design.component', key: 'r-table' }, session, 'removed-dot-knowledge-guide')
+    const oldKnowledgeGuide = exec('knowledge.guidePayload', { payloadRef: 'page-design.component', key: 'r-table' }, 'removed-dot-knowledge-guide')
     expect(oldKnowledgeGuide.ok).toBe(false)
     if (!oldKnowledgeGuide.ok) expect(oldKnowledgeGuide.code).toBe('UNKNOWN_ACTION')
 
-    const catalog = executeStill('queryComponentCatalog', {}, session, 'removed-catalog-action')
+    const catalog = exec('queryComponentCatalog', {}, 'removed-catalog-action')
     expect(catalog.ok).toBe(false)
     if (!catalog.ok) expect(catalog.code).toBe('UNKNOWN_ACTION')
 
-    const guide = executeStill('queryComponentGuide', { type: 'r-table' }, session, 'removed-guide-action')
+    const guide = exec('queryComponentGuide', { type: 'r-table' }, 'removed-guide-action')
     expect(guide.ok).toBe(false)
     if (!guide.ok) expect(guide.code).toBe('UNKNOWN_ACTION')
   })

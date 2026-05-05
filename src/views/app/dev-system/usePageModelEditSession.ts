@@ -1,28 +1,15 @@
 /**
  * usePageModelEditSession
  *
- * Tool layer for page-model stills-based editing.
- * Owns: stills session lifecycle, bootstrap, tool execution, LLM loop, SSE events, export.
+ * Tool layer for page-model function-based editing.
+ * Owns: function runtime lifecycle, bootstrap, function execution, LLM loop, SSE events, export.
  * Does NOT own: UI state (mode, requestText), emit calls (passed as callbacks).
  *
  * LLM-driven edits go through this composable.
  */
 
 import { onUnmounted, ref, shallowRef } from 'vue'
-import {
-  getActiveNodeTree,
-  executeStill,
-  generateToolDefinitions,
-  functionNameToAction,
-  STILLS_EDIT_RUNTIME_PROMPT,
-  getEditState,
-  isEditWriteAction,
-  isEditNodeTreeWriteAction,
-  isEditDataSetWriteAction,
-  type DialogueTurn,
-  type EditToolHost,
-  type RepeatDetectionConfig,
-} from '@spark-view/spark-ai'
+import type { DialogueTurn, EditToolHost, RepeatDetectionConfig } from '@spark-view/spark-ai'
 import {
   createPageModelEditSession,
   type PageModelEditLogEntry,
@@ -55,7 +42,7 @@ export interface PageModelEditRunHooks {
   onReasoning?: (reasoning: string) => void
   onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
   /**
-   * 每完成一个 stills-execute turn 回调；供 sender 转发为 AiPanelStore 事件。
+  * 每完成一个 function-execute turn 回调；供 sender 转发为 AiPanelStore 事件。
    * 仅在 runLlm 主路径产生的 turn 才会触发。
    */
   onToolTurn?: (turn: DialogueTurn) => void
@@ -88,18 +75,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     getEditToolHost: options.getEditToolHost,
     ...(options.sessionHost ? { sessionHost: options.sessionHost } : {}),
     ...(options.ensureContextLoaded ? { ensureContextLoaded: options.ensureContextLoaded } : {}),
-    runtime: {
-      executeStill,
-      generateToolDefinitions,
-      functionNameToAction,
-      STILLS_EDIT_RUNTIME_PROMPT,
-      getEditState,
-      getActiveNodeTree,
-      isEditWriteAction,
-      isEditNodeTreeWriteAction,
-      isEditDataSetWriteAction,
-      ...options.runtime,
-    },
+    ...(options.runtime ? { runtime: options.runtime } : {}),
   })
 
   const initialState = controller.getState()

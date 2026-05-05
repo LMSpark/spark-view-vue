@@ -5,13 +5,13 @@
  * 设计保证：本文件中所有对外暴露及内部辅助函数均严格遵守纯函数 (Pure Function) 范式，无任何副作用。
  *
  * 消费时序（建议阅读顺序）：
- * 1. 投影契约定义：统一声明 FC / Stills / DevSystem 的输出结构。
+ * 1. 投影契约定义：统一声明 FC / Function / DevSystem 的输出结构。
  * 2. 基础解析与水合：展开 canonical 引用并补齐 schema/binding。
  * 3. FC 投影：生成目录摘要、单组件规格、配置指南、会话目录。
  * 4. DevSystem 投影：生成类型列表、属性名、枚举映射、默认值映射。
  *
  * 主要消费场景：
- * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（core@session@describe /
+ * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（core@knowledge@queryPayloads /
  *    core@knowledge@guideTool）提供精简、无冗余的组件视图，最小化 Token 开销。
  * 2. DevSystem（开发者平台）场景——为 rule.json 内建的图形化配置编辑器提供组件选取、属性下拉、
  *    枚举推断与默认值提示等元数据结构。
@@ -32,7 +32,7 @@ import type {
   PropSchema,
   RootFieldEntry,
 } from './types'
-import type { StillsCatalog, StillsComponentEntry } from './stills-catalog-types'
+import type { FunctionCatalog, FunctionComponentEntry } from './function-catalog-types'
 
 // =========================================================
 // 一、投影契约定义（Exported Projection Types）
@@ -41,7 +41,7 @@ import type { StillsCatalog, StillsComponentEntry } from './stills-catalog-types
 /**
  * LLM 目录摘要负载——告知大模型当前应用环境可用的全部组件总览。
  *
- * 由 `projectComponentDirectory` 生成，适合作为 core@session@describe 的响应体直接返回。
+ * 由 `projectComponentDirectory` 生成，适合作为 core@knowledge@queryPayloads 的响应体直接返回。
  * 包含：组件总数统计、registry 分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
  * 以及面向 LLM 的配置使用原则。
  */
@@ -576,7 +576,7 @@ function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSch
 // =========================================================
 
 /**
- * AI FC 投影：生成全局组件目录摘要（适用于 core@session@describe）。
+ * AI FC 投影：生成全局组件目录摘要（适用于 core@knowledge@queryPayloads）。
  *
  * 输出内容：
  * - 各分类组件数量汇总（total / containers / fields / groups / meta / features）；
@@ -618,7 +618,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     .sort((a, b) => a.localeCompare(b))
 
   return {
-    hint: 'core@session@describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 core@knowledge@guidePayload 查阅配置指南。',
+    hint: 'core@knowledge@queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 core@knowledge@guidePayload 查阅配置指南。',
     summary: {
       total: catalog.componentCount,
       containers: registry.containers.length,
@@ -687,17 +687,17 @@ export function projectComponentSpec(catalog: ComponentCatalog, type: string): C
 }
 
 /**
- * Stills 投影：把完整 component catalog 收敛为会话可读的轻量目录。
+ * Function 投影：把完整 component catalog 收敛为会话可读的轻量目录。
  *
  * 该投影供业务 payload provider 持有，避免 core session 协议绑定具体组件目录。
  */
-export function projectStillsCatalog(catalog: ComponentCatalog): StillsCatalog {
+export function projectFunctionCatalog(catalog: ComponentCatalog): FunctionCatalog {
   const registry = catalog.registry
   if (registry === undefined) {
-    throw new Error('component-catalog registry 缺失：无法构建 StillsCatalog')
+    throw new Error('component-catalog registry 缺失：无法构建 FunctionCatalog')
   }
 
-  const components: Record<string, StillsComponentEntry> = {}
+  const components: Record<string, FunctionComponentEntry> = {}
 
   for (const type of Object.keys(catalog.components)) {
     const spec = projectComponentSpec(catalog, type)

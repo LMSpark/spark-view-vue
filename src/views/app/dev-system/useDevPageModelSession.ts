@@ -55,7 +55,7 @@ export function useDevPageModelSession(options: Options) {
   const { state } = options
   const panelStore = useAiPanelStore()
 
-  // pageId 级宿主：负责 stills 会话、后端 session、跨页重置。
+  // pageId 级宿主：负责函数运行时上下文、后端 session、跨页重置。
   const sessionHost = usePageModelSessionHost({
     getEditToolHost: () => state.getEditToolHost(),
     getSessionKey: () => state.activePageId.value,
@@ -230,13 +230,13 @@ export function useDevPageModelSession(options: Options) {
 
 
   // ═════════════════════════════════════════════════════════
-  // 事件转发：stills 的 DialogueTurn → AiPanelStore 总线
+  // 事件转发：函数 DialogueTurn → AiPanelStore 总线
   // AiLauncherButton 作为中继再把它们转为 Vue emits 交给 DevSystem。
   // ═════════════════════════════════════════════════════════
 
   function emitTurnAsToolEvent(turn: DialogueTurn, request: AiChatSendRequest): void {
     const action = turn.toolBlock?.action
-    const result = turn.stillsResult
+    const result = turn.functionResult
     if (!action || !result) return
     const callId = turn.toolBlock?.id
     const timestamp = turn.timestamp
@@ -289,7 +289,7 @@ export function useDevPageModelSession(options: Options) {
     storageKey: getStorageKey,
     pageId: () => state.activePageId.value,
     title: '页面模型级编辑',
-    placeholder: '支持多轮对话；会通过 stills tool 层执行 4 文件模型级编辑',
+    placeholder: '支持多轮对话；会通过函数层执行 4 文件模型级编辑',
     draftActions: [
       {
         id: 'preview-page-text',

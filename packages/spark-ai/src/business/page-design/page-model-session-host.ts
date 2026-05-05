@@ -8,24 +8,26 @@
  * 4. 通过 resume 相关方法维护跨轮次会话续跑能力。
  *
  * 角色边界：
- * - 宿主负责 stills session 生命周期与 backend sessionId 管理。
+ * - 宿主负责函数运行时上下文生命周期与 backend sessionId 管理。
  * - 宿主不直接执行 LLM 编排；编排由上层编辑会话模块触发。
  */
 
-import { SessionBackendImpl } from '../../core/session/session-backend'
-import type { SessionBackend } from '../../core/session/session-contracts'
-import type { IStillSession } from '../../core/stills/types'
-import { clearRegistry } from '../../core/stills/dispatcher'
-import { clearDomains, createBareSession as createStillSession } from '../../core/stills/domain'
-import { registerPageDesignEditStills } from './register-edit-stills'
+import { SessionBackendImpl } from '../../core/runtime/session-backend'
+import type { SessionBackend } from '../../core/protocol/session-contracts'
+import type { FunctionRuntimeContext } from '../../core/protocol/function-contracts'
+import { createFunctionRuntimeContext } from '../../core/protocol/function-contracts'
+import { clearFunctionRegistry } from '../../core/registry/function-registry'
+import { clearKnowledgeRegistry } from '../../core/knowledge/registry'
+import { registerPageDesignEditFunctions } from './register-edit-functions'
 import {
   bindLiveModelAdapter,
-  getEditState,
+  createEditState,
   type EditToolHost,
-} from './stills'
+  type EditState,
+} from './functions'
 
-/** stills 会话类型别名，明确本业务域使用的会话实体。 */
-export type PageModelStillsSession = IStillSession
+/** 函数运行时上下文类型别名，明确 core 只持有执行轨迹。 */
+export type PageModelFunctionContext = FunctionRuntimeContext
 
 /**
  * 分区 A：宿主运行时能力契约
@@ -39,7 +41,7 @@ export interface PageModelSessionHostRuntime {
    * - sessionKey 未变化时复用。
    * - sessionKey 变化时重建并返回 bootstrapped=true。
    */
-  ensureSession: () => { session: PageModelStillsSession; bootstrapped: boolean }
+  ensureSession: () => { context: PageModelFunctionContext; editState: EditState; bootstrapped: boolean }
 
   /** 异步重置：等待后端销毁完成再返回。 */
   reset: () => Promise<void>
@@ -58,8 +60,11 @@ export interface PageModelSessionHostRuntime {
 }
 
 export interface PageModelSessionHostState {
-  /** 当前 stills 会话实例；未初始化时为 null。 */
-  session: PageModelStillsSession | null
+  /** 当前函数运行时上下文；未初始化时为 null。 */
+  context: PageModelFunctionContext | null
+
+  /** 当前 page-design 业务状态；未初始化时为 null。 */
+  editState: EditState | null
 
   /** 会话锚点键，用于区分页面/上下文。 */
   sessionKey: string
@@ -69,8 +74,11 @@ export interface PageModelSessionHostState {
 }
 
 export interface PageModelSessionHostController extends PageModelSessionHostRuntime {
-  /** 获取当前会话实体（可能为 null）。 */
-  getSession: () => PageModelStillsSession | null
+  /** 获取当前函数运行时上下文（可能为 null）。 */
+  getContext: () => PageModelFunctionContext | null
+
+  /** 获取当前 page-design 业务状态（可能为 null）。 */
+  getEditState: () => EditState | null
 
   /** 获取只读状态快照。 */
   getState: () => Readonly<PageModelSessionHostState>
@@ -119,7 +127,8 @@ export function createPageModelSessionHost(
 
   /** 本地状态：会话实体、会话键、后端会话键。 */
   let state: PageModelSessionHostState = {
-    session: null,
+    context: null,
+    editState: null,
     sessionKey: '',
     backendSessionId: null,
   }
@@ -147,7 +156,8 @@ export function createPageModelSessionHost(
   function clearLocalSessionState(): string | null {
     const previousBackendSessionId = state.backendSessionId
     setState({
-      session: null,
+      context: null,
+      editState: null,
       sessionKey: '',
       backendSessionId: null,
     })
@@ -181,31 +191,33 @@ export function createPageModelSessionHost(
    *
    * 判定规则：
    * - 若当前 sessionKey 一致，则直接复用。
-   * - 若不一致，则清理旧会话、重建 stills registry/domain 并重新绑定 live adapter。
+   * - 若不一致，则清理旧上下文、重建函数注册表并重新绑定 live adapter。
    */
-  function ensureSession(): { session: PageModelStillsSession; bootstrapped: boolean } {
+  function ensureSession(): { context: PageModelFunctionContext; editState: EditState; bootstrapped: boolean } {
     const nextSessionKey = getSessionKey()
-    if (state.session && state.sessionKey === nextSessionKey) {
-      return { session: state.session, bootstrapped: false }
+    if (state.context && state.editState && state.sessionKey === nextSessionKey) {
+      return { context: state.context, editState: state.editState, bootstrapped: false }
     }
 
     const previousBackendSessionId = clearLocalSessionState()
     disposeBackendSession(previousBackendSessionId)
 
-    clearRegistry()
-    clearDomains()
-    registerPageDesignEditStills()
+    clearFunctionRegistry()
+    clearKnowledgeRegistry()
 
-    const nextSession = createStillSession()
-    const editState = getEditState(nextSession)
+    const editState = createEditState()
     bindLiveModelAdapter(editState, getEditToolHost())
+    registerPageDesignEditFunctions(editState)
+
+    const context = createFunctionRuntimeContext()
 
     setState({
-      session: nextSession,
+      context,
+      editState,
       sessionKey: nextSessionKey,
       backendSessionId: null,
     })
-    return { session: nextSession, bootstrapped: true }
+    return { context, editState, bootstrapped: true }
   }
 
   /**
@@ -215,8 +227,8 @@ export function createPageModelSessionHost(
     const previousBackendSessionId = clearLocalSessionState()
     await disposeBackendSessionSafely(previousBackendSessionId)
 
-    clearRegistry()
-    clearDomains()
+    clearFunctionRegistry()
+    clearKnowledgeRegistry()
   }
 
   /**
@@ -226,8 +238,8 @@ export function createPageModelSessionHost(
     const previousBackendSessionId = clearLocalSessionState()
     disposeBackendSession(previousBackendSessionId)
 
-    clearRegistry()
-    clearDomains()
+    clearFunctionRegistry()
+    clearKnowledgeRegistry()
   }
 
   /**
@@ -264,7 +276,8 @@ export function createPageModelSessionHost(
 
   return {
     backend,
-    getSession: () => state.session,
+    getContext: () => state.context,
+    getEditState: () => state.editState,
     getState: () => state,
     subscribe,
     ensureSession,

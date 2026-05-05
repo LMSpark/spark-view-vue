@@ -98,7 +98,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
   // vanilla-jsoneditor 3.x creates an Ajv draft-07 validator by default.
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'SPARK 标准化页面数据',
-  description: 'SPARK DataSet 的标准序列化结构。DevSystem 对象编辑器中的属性中文名与说明与 spark-data / AI still 术语保持一致。',
+  description: 'SPARK DataSet 的标准序列化结构。DevSystem 对象编辑器中的属性中文名与说明与 spark-data / AI 函数目录术语保持一致。',
   type: 'object',
   properties: {
     schemaVersion: withMeta('Schema 版本号', '当前 pagedata.json 使用的结构版本号。', { type: 'number' }),
@@ -107,11 +107,11 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       type: 'object',
       additionalProperties: { $ref: '#/$defs/tableMetadata' },
     }),
-    tableRelations: withMeta('表关系集合', '描述表与表之间的父子关系。术语与 AI still 中的 TableRelation 保持一致。', {
+    tableRelations: withMeta('表关系集合', '描述表与表之间的父子关系。术语与 AI 函数目录中的 TableRelation 保持一致。', {
       type: 'array',
       items: { $ref: '#/$defs/tableRelation' },
     }),
-    viewDependencies: withMeta('视图依赖集合', '描述父视图状态变化如何驱动子视图联动。术语与 AI still 中的 ViewDependency 保持一致。', {
+    viewDependencies: withMeta('视图依赖集合', '描述父视图状态变化如何驱动子视图联动。术语与 AI 函数目录中的 ViewDependency 保持一致。', {
       type: 'array',
       items: { $ref: '#/$defs/viewDependency' },
     }),
@@ -198,7 +198,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       required: ['url'],
       additionalProperties: false,
     }),
-    crudApi: withMeta('CRUD API 配置', '描述每个操作对应哪个接口。对象结构与 AI still / DataSetCrudTool 的 CrudApi 术语保持一致。', {
+    crudApi: withMeta('CRUD API 配置', '描述每个操作对应哪个接口。对象结构与 AI 函数目录 / DataSetCrudTool 的 CrudApi 术语保持一致。', {
       type: 'object',
       properties: {
         create: withMeta('创建端点', 'create 操作对应的接口端点。', { $ref: '#/$defs/httpEndpoint' }),
@@ -228,7 +228,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       },
       additionalProperties: false,
     }),
-    aggregateColumnConfig: withMeta('聚合列配置', '描述 aggregateResult / selectionAggregateResult 的聚合方式。对应 AI still 中的 AggregateColumnConfig。', {
+    aggregateColumnConfig: withMeta('聚合列配置', '描述 aggregateResult / selectionAggregateResult 的聚合方式。对应 AI 函数目录中的 AggregateColumnConfig。', {
       type: 'object',
       properties: {
         type: withMeta('聚合类型', '聚合类型，仅支持 sum / count / avg / min / max / join。', { type: 'string', enum: aggregateTypes }),
@@ -260,7 +260,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       },
       additionalProperties: false,
     }),
-    dataColumn: withMeta('数据列定义', '描述数据结构与渲染元信息。对应 spark-data / AI still 中的 DataColumn 术语。', {
+    dataColumn: withMeta('数据列定义', '描述数据结构与渲染元信息。对应 spark-data / AI 函数目录中的 DataColumn 术语。', {
       type: 'object',
       properties: {
         name: withMeta('列名', '列的唯一名称。', { type: 'string' }),
@@ -283,7 +283,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       required: ['name', 'type'],
       additionalProperties: false,
     }),
-    viewMetadata: withMeta('视图元数据', '描述 DataView 的运行配置。对应 AI still 中的 dataview.configure / setAggregates / setTreeConfig。', {
+    viewMetadata: withMeta('视图元数据', '描述 DataView 的运行配置。对应 AI 函数目录中的 DataView 配置函数。', {
       type: 'object',
       properties: {
         tableName: withMeta('所属表名', '视图所属的数据表名。', { type: 'string' }),
@@ -322,7 +322,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       },
       additionalProperties: false,
     }),
-    tableRelation: withMeta('表关系', '描述父表与子表之间的关联。对应 AI still 中的 relation.add / remove。', {
+    tableRelation: withMeta('表关系', '描述父表与子表之间的关联。对应 AI 函数目录中的 relation 写入函数。', {
       type: 'object',
       properties: {
         relationName: withMeta('关系名', '可选的关系名称。', { type: 'string' }),
@@ -337,7 +337,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       required: ['parentTable', 'childTable'],
       additionalProperties: false,
     }),
-    viewDependency: withMeta('视图依赖', '描述父视图状态变化如何驱动子视图联动。对应 AI still 中的 dependency.add / remove。', {
+    viewDependency: withMeta('视图依赖', '描述父视图状态变化如何驱动子视图联动。对应 AI 函数目录中的 dependency 写入函数。', {
       type: 'object',
       properties: {
         parentTable: withMeta('父表', '依赖关系中的父表名。', { type: 'string' }),
@@ -348,7 +348,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       required: ['parentTable', 'childTable'],
       additionalProperties: false,
     }),
-    tableMetadata: withMeta('数据表元数据', '描述一张表的列、资源语义、API 与视图配置。对应 AI still 中的 datatable.create / setApi / dataview.create / configure。', {
+    tableMetadata: withMeta('数据表元数据', '描述一张表的列、资源语义、API 与视图配置。对应 AI 函数目录中的 table/view 配置函数。', {
       type: 'object',
       properties: {
         tableName: withMeta('表名', '数据表名称。未设置时通常由外层对象键推导。', { type: 'string' }),

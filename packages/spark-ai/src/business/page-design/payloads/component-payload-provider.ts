@@ -1,14 +1,13 @@
 import componentCatalogJson from '../../../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../../../catalog/types'
-import { projectComponentConfigGuide, projectStillsCatalog } from '../../../catalog/catalog-projections'
+import { projectComponentConfigGuide, projectFunctionCatalog } from '../../../catalog/catalog-projections'
 import { inferJsonSchemaFromTypeText } from '../../../core/knowledge/payload-schema'
 import { registerKnowledgePayloadProvider } from '../../../core/knowledge/registry'
 import type { KnowledgePayloadGuide, KnowledgePayloadProvider, KnowledgePayloadSummary } from '../../../core/knowledge/types'
-import type { IStillSession } from '../../../core/stills/types'
 
 export const PAGE_DESIGN_COMPONENT_PAYLOAD_REF = 'page-design.component'
 
-const PAGE_DESIGN_STILLS_CATALOG = projectStillsCatalog(componentCatalogJson as ComponentCatalog)
+const PAGE_DESIGN_FUNCTION_CATALOG = projectFunctionCatalog(componentCatalogJson as ComponentCatalog)
 
 interface ComponentPayloadFilter {
   category?: string
@@ -115,9 +114,9 @@ export function createPageDesignComponentPayloadProvider(): KnowledgePayloadProv
   return {
     payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
     description: 'Page Design SparkNode 组件参数荷载目录；key 为组件 type，如 r-table。',
-    queryPayloads(_session: IStillSession, filter?: Record<string, unknown>): KnowledgePayloadSummary[] {
+    queryPayloads(filter?: Record<string, unknown>): KnowledgePayloadSummary[] {
       const normalizedFilter = normalizeFilter(filter)
-      return Object.entries(PAGE_DESIGN_STILLS_CATALOG.components)
+      return Object.entries(PAGE_DESIGN_FUNCTION_CATALOG.components)
         .map(([key, entry]) => ({
           payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
           key,
@@ -128,7 +127,7 @@ export function createPageDesignComponentPayloadProvider(): KnowledgePayloadProv
         .filter(summary => matchesFilter(summary, normalizedFilter))
         .sort((left, right) => left.key.localeCompare(right.key))
     },
-    guidePayload(_session: IStillSession, key: string): KnowledgePayloadGuide | null {
+    guidePayload(key: string): KnowledgePayloadGuide | null {
       const normalizedKey = key.trim()
       if (normalizedKey.length === 0) return null
       return buildPayloadGuide(normalizedKey)

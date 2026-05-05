@@ -282,7 +282,7 @@ export interface SparkNodeFindByTypeResult {
  * 3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。
  *
  * 因此，这个类提供的不是“组件目录”，而是“树编辑能力集合”。
- * 上层的 tool catalog / stills / FC 列表，只是在此基础上做协议投影。
+ * 上层的 tool catalog / function / FC 列表，只是在此基础上做协议投影。
  *
  * 当前公开能力大致可分为四类：
  * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。

@@ -216,7 +216,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
-const CLARIFICATION_ACTION = 'core@interaction@ask'
+const CLARIFICATION_ACTION = 'core@knowledge@ask'
 
 interface FileAttachment {
   fileId: string
@@ -676,12 +676,12 @@ function formatActionSuffix(suffix: string): string {
 
 const ACTION_TITLE_MAP: Record<string, string> = {
   'session-ready': '会话就绪',
-  'core@session@describe': '会话状态',
+  'pageDesign@lifecycle@describeProgress': '编辑进度',
   'core@knowledge@queryTools': '函数目录',
   'core@knowledge@guideTool': '函数指南',
   'core@knowledge@queryPayloads': '参数荷载目录',
   'core@knowledge@guidePayload': '参数荷载指南',
-  'core@interaction@ask': '反问确认',
+  'core@knowledge@ask': '反问确认',
   'pageDesign@lifecycle@bootstrap': '初始化编辑会话',
   'dataset.export': '导出数据集',
   'dataset.bootstrap': '初始化数据集',

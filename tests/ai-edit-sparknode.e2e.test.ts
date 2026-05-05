@@ -8,17 +8,15 @@
 import { describe, it, expect } from 'vitest'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import {
-  bindLiveModelAdapter,
-  registerPageDesignEditStills,
-  createBareSession,
-  executeStill,
+  createDefaultFollowUpPolicy,
+  createRepeatDetectionMonitor,
   getActiveNodeTree,
-  getEditState,
-  runStillsLoop,
+  runFunctionLoop,
   SessionBackendImpl,
 } from '@spark-view/spark-ai'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
+import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
 const BASE_URL = process.env['AI_BACKEND_URL']?.replace(/\/+$/, '') || 'http://localhost:8080'
 const AUTH_TENANT_ID = process.env['AI_TENANT_ID'] || 'lmspark'
@@ -87,7 +85,7 @@ const AUTONOMOUS_SYSTEM_PROMPT = [
 
 const AUTONOMOUS_GUARDRAILS = `执行底线约束（稳定优先，必须遵守）：
 1) 本任务只允许以下动作：core@knowledge@queryPayloads、core@knowledge@guidePayload、core@knowledge@guideTool、pageDesign@nodeTree@hasNode、pageDesign@nodeTree@getNode、pageDesign@nodeTree@listChildren、pageDesign@nodeTree@setProps、pageDesign@nodeTree@addNode、pageDesign@nodeTree@addNodes、pageDesign@nodeTree@replaceNode、pageDesign@nodeTree@replaceNodes、pageDesign@nodeTree@removeNode、pageDesign@nodeTree@removeNodes、pageDesign@nodeTree@countNodes；其它动作即使在能力表中出现也视为本任务不可用；
-2) 不要求调用 stills.capabilities；查询组件目录时使用 core@knowledge@queryPayloads（可选 category），查询单组件配置指南时使用 core@knowledge@guidePayload（type），查询动作参数指南时才使用 core@knowledge@guideTool（action）；禁止把三者混用；
+2) 不要求调用历史能力目录；查询组件目录时使用 core@knowledge@queryPayloads（可选 category），查询单组件配置指南时使用 core@knowledge@guidePayload（type），查询动作参数指南时才使用 core@knowledge@guideTool（action）；禁止把三者混用；
 3) 关键写动作前先确认参数结构与字段含义，不猜测、不假设未知字段；
 4) 不做同参数重复查询；仅在发生相关写入后，才允许再次读取同一目标状态；
 5) 目标态校验采用“写后统一校验”，避免每轮重复自检；
@@ -123,13 +121,11 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     console.info(`[E2E] 🔑 已获取 Token`)
 
     // 创建业务前端状态
-    registerPageDesignEditStills()
-    const session = createBareSession()
     const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
     const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
     let script = ''
     let style = ''
-    bindLiveModelAdapter(getEditState(session), {
+    const harness = createPageDesignFunctionHarness({
       getNodeTree: () => liveTree,
       getDataSetTool: () => liveDataSet,
       readScript: () => script,
@@ -156,22 +152,10 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     script = 'export default {}\n'
     style = '.page {}\n'
 
-    const seededBootstrap = executeStill('pageDesign@lifecycle@bootstrap', {
-      ruleJson: [
-        {
-          id: 'root-table',
-          type: 'r-table',
-          props: { dataKey: 'Departments@default' },
-          children: [],
-        },
-      ],
-      pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
-      scriptJs: 'export default {}\n',
-      styleCss: '.page {}\n',
-    }, session, 'seed-bootstrap')
+    const seededBootstrap = harness.exec('pageDesign@lifecycle@bootstrap', {}, 'seed-bootstrap')
     expect(seededBootstrap.ok).toBe(true)
 
-    const seededCreateTable = executeStill('pageDesign@dataset@createTable', {
+    const seededCreateTable = harness.exec('pageDesign@dataset@createTable', {
       tableName: 'Departments',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -180,7 +164,7 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
       ],
       resourceType: 'static-data',
       businessCategory: 'master',
-    }, session, 'seed-create-table')
+    }, 'seed-create-table')
     expect(seededCreateTable.ok).toBe(true)
 
     const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`, {
@@ -212,19 +196,21 @@ ${AUTONOMOUS_GUARDRAILS}
 
 你自主决策具体执行方案，达成目标后给出结构化总结。`
 
-    console.info(`[E2E] 2. 启动 LLM Stills 循环调度...\n`)
+    console.info(`[E2E] 2. 启动 LLM 函数循环调度...\n`)
 
-    const result = await runStillsLoop(prompt, session, backend, {
+    const result = await runFunctionLoop(prompt, harness.context, backend, {
       maxRounds: 8,
       slidingWindow: 30,
       systemPrompt: AUTONOMOUS_SYSTEM_PROMPT,
+      monitors: [createRepeatDetectionMonitor()],
+      followUpPolicy: createDefaultFollowUpPolicy(),
     })
 
     console.info(`\n[E2E] 3. 循环结束. rounds=${result.rounds} aborted=${result.aborted}`)
     const lastAiTurn = [...result.turns].reverse().find((turn) => typeof turn.aiText === 'string' && turn.aiText.length > 0)
     console.info(`[E2E] AI 最终回复：${lastAiTurn?.aiText ?? ''}`)
 
-    const state = getEditState(session)
+    const state = harness.editState
     const ruleNodes = getActiveNodeTree(state)?.toJSON()?.children ?? []
     const conversation = await backend.getConversation(result.sessionId)
     const conversationReadable = toReadableConversation(conversation)
@@ -284,14 +270,14 @@ ${AUTONOMOUS_GUARDRAILS}
         || action === 'pageDesign@nodeTree@addNodes'
         || action === 'pageDesign@nodeTree@replaceNode'
         || action === 'pageDesign@nodeTree@replaceNodes'
-      return isTreeWrite && turn.stillsResult?.ok === true
+      return isTreeWrite && turn.functionResult?.ok === true
     })
 
-    const hasStillsExecution = result.turns.some((turn) => turn.phase === 'stills-execute' && turn.stillsResult !== undefined)
+    const hasFunctionExecution = result.turns.some((turn) => turn.phase === 'function-execute' && turn.functionResult !== undefined)
 
     expect(usedCatalogQuery).toBe(true)
     expect(usedTreeWrite).toBe(true)
-    expect(hasStillsExecution).toBe(true)
+    expect(hasFunctionExecution).toBe(true)
     expect(result.aborted).toBe(false)
     expect(Array.isArray(ruleNodes)).toBe(true)
     expect(ruleNodes.length).toBeGreaterThan(0)
@@ -306,13 +292,11 @@ ${AUTONOMOUS_GUARDRAILS}
     await login()
     console.info('[E2E-Full] 🔑 已获取 Token')
 
-    registerPageDesignEditStills()
-    const session = createBareSession()
     const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
     const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
     let script = ''
     let style = ''
-    bindLiveModelAdapter(getEditState(session), {
+    const harness = createPageDesignFunctionHarness({
       getNodeTree: () => liveTree,
       getDataSetTool: () => liveDataSet,
       readScript: () => script,
@@ -339,22 +323,10 @@ ${AUTONOMOUS_GUARDRAILS}
     script = 'export default {}\n'
     style = '.page {}\n'
 
-    const seededBootstrap = executeStill('pageDesign@lifecycle@bootstrap', {
-      ruleJson: [
-        {
-          id: 'root-table',
-          type: 'r-table',
-          props: { dataKey: 'Departments@default' },
-          children: [],
-        },
-      ],
-      pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
-      scriptJs: 'export default {}\n',
-      styleCss: '.page {}\n',
-    }, session, 'seed-bootstrap-fullflow')
+    const seededBootstrap = harness.exec('pageDesign@lifecycle@bootstrap', {}, 'seed-bootstrap-fullflow')
     expect(seededBootstrap.ok).toBe(true)
 
-    const seededCreateTable = executeStill('pageDesign@dataset@createTable', {
+    const seededCreateTable = harness.exec('pageDesign@dataset@createTable', {
       tableName: 'Departments',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -363,7 +335,7 @@ ${AUTONOMOUS_GUARDRAILS}
       ],
       resourceType: 'static-data',
       businessCategory: 'master',
-    }, session, 'seed-create-table-fullflow')
+    }, 'seed-create-table-fullflow')
     expect(seededCreateTable.ok).toBe(true)
 
     const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`, {
@@ -391,19 +363,21 @@ ${AUTONOMOUS_GUARDRAILS}
   仅在关键写动作后进行一次统一目标态校验；未达成则继续行动，达成后再结束并回复。
   完成后仅回复：full-flow 完成。`
 
-    console.info('[E2E-Full] 2. 启动 LLM Stills 循环调度...')
+    console.info('[E2E-Full] 2. 启动 LLM 函数循环调度...')
 
-    const result = await runStillsLoop(prompt, session, backend, {
+    const result = await runFunctionLoop(prompt, harness.context, backend, {
       maxRounds: 14,
       slidingWindow: 40,
       systemPrompt: AUTONOMOUS_SYSTEM_PROMPT,
+      monitors: [createRepeatDetectionMonitor()],
+      followUpPolicy: createDefaultFollowUpPolicy(),
     })
 
     console.info(`\n[E2E-Full] 3. 循环结束. rounds=${result.rounds} aborted=${result.aborted}`)
     const lastAiTurn = [...result.turns].reverse().find((turn) => typeof turn.aiText === 'string' && turn.aiText.length > 0)
     console.info(`[E2E-Full] AI 最终回复：${lastAiTurn?.aiText ?? ''}`)
 
-    const state = getEditState(session)
+    const state = harness.editState
     const ruleNodes = getActiveNodeTree(state)?.toJSON()?.children ?? []
     const conversation = await backend.getConversation(result.sessionId)
     const conversationReadable = toReadableConversation(conversation)
@@ -454,7 +428,7 @@ ${AUTONOMOUS_GUARDRAILS}
     const usedReplaceAction = executedActions.some((action) => action === 'pageDesign@nodeTree@replaceNode' || action === 'pageDesign@nodeTree@replaceNodes')
     const usedSetPropsAction = executedActions.some((action) => action === 'pageDesign@nodeTree@setProps' || action === 'pageDesign@nodeTree@setPropsBatch')
     const usedRemoveAction = executedActions.some((action) => action === 'pageDesign@nodeTree@removeNode' || action === 'pageDesign@nodeTree@removeNodes')
-    const hasStillsExecution = result.turns.some((turn) => turn.phase === 'stills-execute' && turn.stillsResult !== undefined)
+    const hasFunctionExecution = result.turns.some((turn) => turn.phase === 'function-execute' && turn.functionResult !== undefined)
 
     const root = Array.isArray(ruleNodes) ? ruleNodes.find((node) => {
       if (typeof node !== 'object' || node === null) return false
@@ -481,7 +455,7 @@ ${AUTONOMOUS_GUARDRAILS}
     console.info(`[E2E-Full] 动作覆盖统计 add=${usedAddAction} replace=${usedReplaceAction} props=${usedSetPropsAction} remove=${usedRemoveAction}`)
 
     expect(usedCatalogQuery).toBe(true)
-    expect(hasStillsExecution).toBe(true)
+    expect(hasFunctionExecution).toBe(true)
     expect(result.aborted).toBe(false)
     expect(Array.isArray(ruleNodes)).toBe(true)
     expect(rootHasBorder).toBe(true)

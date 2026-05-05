@@ -6,7 +6,7 @@
  *
  * 不在这里处理的东西（属业务层）：
  *  - prompt 业务拼接（模型事实快照、页面上下文等强业务语义）
- *  - 后端会话恢复 / stills tool host 绑定
+ *  - 后端会话恢复 / function tool host 绑定
  *  - 跨页面状态重置
  */
 import type { AiChatSendRequest } from './useAiChat'

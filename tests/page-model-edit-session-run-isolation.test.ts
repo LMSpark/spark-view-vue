@@ -47,12 +47,12 @@ vi.mock('@spark-view/spark-ai', async (importOriginal) => {
 
 import {
   bindLiveModelAdapter,
-  clearDomains,
-  clearRegistry,
-  createBareSession,
+  clearFunctionRegistry,
+  clearKnowledgeRegistry,
+  createEditState,
+  createFunctionRuntimeContext,
   type EditToolHost,
-  getEditState,
-  registerPageDesignEditStills,
+  registerPageDesignEditFunctions,
 } from '@spark-view/spark-ai'
 import { usePageModelEditSession } from '../src/views/app/dev-system/page-model-session'
 
@@ -63,11 +63,11 @@ function createRuleEditHarness(options?: {
   liveDataSetTool: DataSetCrudTool
   sessionHost: PageModelSessionHost
 } {
-  clearDomains()
-  clearRegistry()
-  registerPageDesignEditStills()
+  clearFunctionRegistry()
+  clearKnowledgeRegistry()
 
-  const session = createBareSession()
+  const context = createFunctionRuntimeContext()
+  const editState = createEditState()
   const liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   const liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
   let script = ''
@@ -87,15 +87,16 @@ function createRuleEditHarness(options?: {
     ...(options?.onDataSetChanged ? { onDataSetChanged: options.onDataSetChanged } : {}),
   }
 
-  bindLiveModelAdapter(getEditState(session), editToolHost)
+  bindLiveModelAdapter(editState, editToolHost)
+  registerPageDesignEditFunctions(editState)
 
   return {
     editToolHost,
     liveDataSetTool: liveDataSet,
     sessionHost: {
       backend: {} as PageModelSessionHost['backend'],
-      session: shallowRef(session),
-      ensureSession: () => ({ session, bootstrapped: false }),
+      context: shallowRef(context),
+      ensureSession: () => ({ context, editState, bootstrapped: false }),
       reset: vi.fn(async () => {}),
       resetSync: vi.fn(),
       setBackendSessionId: vi.fn(),
@@ -247,9 +248,9 @@ describe('usePageModelEditSession run isolation', () => {
         {
           round: 1,
           timestamp: new Date().toISOString(),
-          phase: 'stills-execute',
+          phase: 'function-execute',
           toolBlock: { action: 'pageDesign@dataset@createColumn', id: 'tool-create-column-new-run', params: {} },
-          stillsResult: { ok: true, summary: '已新增列' },
+          functionResult: { ok: true, summary: '已新增列' },
         },
       ],
       rounds: 1,
@@ -294,9 +295,9 @@ describe('usePageModelEditSession run isolation', () => {
         {
           round: 1,
           timestamp: new Date().toISOString(),
-          phase: 'stills-execute',
+          phase: 'function-execute',
           toolBlock: { action: 'pageDesign@dataset@getTable', id: 'tool-get-table-read-only', params: {} },
-          stillsResult: { ok: true, summary: '已读取 Orders 表结构' },
+          functionResult: { ok: true, summary: '已读取 Orders 表结构' },
         },
       ],
       rounds: 1,
@@ -348,9 +349,9 @@ describe('usePageModelEditSession run isolation', () => {
         {
           round: 1,
           timestamp: new Date().toISOString(),
-          phase: 'stills-execute',
+          phase: 'function-execute',
           toolBlock: { action: 'pageDesign@dataset@createColumn', id: 'tool-create-column-dataset-sync', params: {} },
-          stillsResult: { ok: true, summary: 'pageDesign@dataset@createColumn 完成' },
+          functionResult: { ok: true, summary: 'pageDesign@dataset@createColumn 完成' },
         },
       ],
       rounds: 1,

@@ -1,28 +1,22 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
-import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
-import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
-import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
-import {
-  bindLiveModelAdapter,
-  getEditState,
-} from '../packages/spark-ai/src/business/page-design/stills'
+import type { FunctionResult } from '@spark-view/spark-ai'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
+import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
-let session: IStillSession
 let seq = 0
 let liveTree: SparkNodeTree
 let liveDataSet: DataSetCrudTool
 let script = ''
 let style = ''
+let harnessExec: (action: string, params?: unknown, requestId?: string) => FunctionResult
 
-function exec(action: string, params: unknown = {}): StillResult {
+function exec(action: string, params: unknown = {}): FunctionResult {
   seq += 1
-  return executeStill(action, params, session, `legacy-alias-${seq}`)
+  return harnessExec(action, params, `legacy-alias-${seq}`)
 }
 
-function expectInvalidAlias(result: StillResult, aliasKey: string): void {
+function expectInvalidAlias(result: FunctionResult, aliasKey: string): void {
   expect(result.ok).toBe(false)
   if (result.ok) return
   expect(result.code).toBe('INVALID_PARAMS')
@@ -30,16 +24,12 @@ function expectInvalidAlias(result: StillResult, aliasKey: string): void {
 }
 
 beforeEach(() => {
-  clearDomains()
-  clearRegistry()
-  registerPageDesignEditStills()
-  session = createBareSession()
   seq = 0
   liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
   script = ''
   style = ''
-  bindLiveModelAdapter(getEditState(session), {
+  harnessExec = createPageDesignFunctionHarness({
     getNodeTree: () => liveTree,
     getDataSetTool: () => liveDataSet,
     readScript: () => script,
@@ -50,7 +40,7 @@ beforeEach(() => {
     writeStyle(content) {
       style = content
     },
-  })
+  }).exec
 })
 
 function seedLiveModel(params: {
@@ -65,7 +55,7 @@ function seedLiveModel(params: {
   style = params.styleCss
 }
 
-describe('sparkNodeTree legacy alias compatibility', () => {
+describe('sparkNodeTree legacy alias rejection', () => {
   it('rejects nodeId/nodeIds/parentId aliases across query and write actions', () => {
     const bootstrapPayload = {
       ruleJson: [

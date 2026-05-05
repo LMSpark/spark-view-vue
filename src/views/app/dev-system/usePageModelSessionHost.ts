@@ -5,7 +5,7 @@ import {
   type SessionBackend,
   type EditToolHost,
   type PageModelSessionHostRuntime,
-  type PageModelStillsSession,
+  type PageModelFunctionContext,
 } from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
 
@@ -16,7 +16,7 @@ interface UsePageModelSessionHostOptions {
 
 export interface PageModelSessionHost extends PageModelSessionHostRuntime {
   backend: SessionBackend
-  session: ShallowRef<PageModelStillsSession | null>
+  context: ShallowRef<PageModelFunctionContext | null>
 }
 
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions) {
@@ -27,9 +27,9 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     getSessionKey,
     getHeaders: createAuthHeaders,
   })
-  const session = shallowRef<PageModelStillsSession | null>(controller.getSession())
+  const context = shallowRef<PageModelFunctionContext | null>(controller.getContext())
   const unsubscribe = controller.subscribe((state) => {
-    session.value = state.session
+    context.value = state.context
   })
 
   onUnmounted(() => {
@@ -38,7 +38,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
 
   return {
     backend: controller.backend,
-    session,
+    context,
     ensureSession: controller.ensureSession,
     reset: controller.reset,
     resetSync: controller.resetSync,

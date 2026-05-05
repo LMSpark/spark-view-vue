@@ -274,9 +274,9 @@ describe('useDevPageModelSession', () => {
     options.onToolTurn?.({
       round: 3,
       timestamp: '2026-04-27T02:30:00.000Z',
-      phase: 'stills-execute',
+      phase: 'function-execute',
       toolBlock: { action: 'core@knowledge@queryPayloads', id: 'call-7', params: { category: 'layout' } },
-      stillsResult: { ok: true, data: { count: 5 }, summary: 'container: 5 组件' },
+      functionResult: { ok: true, data: { count: 5 }, summary: 'container: 5 组件' },
       elapsed: 18,
     })
 

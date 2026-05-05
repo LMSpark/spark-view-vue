@@ -1,0 +1,6 @@
+import { registerFunctions } from '../registry/function-registry'
+import { coreKnowledgeFunctions } from './query-actions'
+
+export function registerCoreKnowledgeFunctions(): void {
+  registerFunctions(coreKnowledgeFunctions)
+}

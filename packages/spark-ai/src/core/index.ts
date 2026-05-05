@@ -1,15 +1,45 @@
-// Core Layer — AI Session Lifecycle View
-// 1) Session Contract
-// 2) Session Runtime (backend)
-// 3) Tooling (FC schema + dispatch)
-// 4) Orchestration (loop + monitors)
-// 5) Lifecycle Registry (tree + query helpers)
-// 6) Stills Runtime (registry + dispatcher + domain session)
+// Core Layer — protocol + registry + runtime + knowledge
 
-// 1) Session Contract
+// Protocol
+export {
+  createFunctionRuntimeContext,
+  noGuard,
+} from './protocol/function-contracts'
+export type {
+  FunctionKind,
+  FunctionResult,
+  FunctionFailureMode,
+  PostValidationWarning,
+  FunctionTraceEntry,
+  FunctionRuntimeContext,
+  FunctionGuard,
+  RegisteredFunctionDefinition,
+} from './protocol/function-contracts'
+export {
+  missingParam,
+  isNonEmptyString,
+  buildExecutionTraceSummary,
+} from './protocol/function-utils'
+export {
+  actionToFunctionName,
+  functionNameToAction,
+  functionToToolDefinition,
+  generateToolDefinitions,
+} from './protocol/fc-schema'
+export {
+  AI_FUNCTION_ARCHITECTURE_PROMPT,
+} from './protocol/architecture-prompt'
+export {
+  formatLlmParamValidationIssues,
+  validateLlmDeserializedParams,
+} from './protocol/function-params-validator'
+export type {
+  LlmParamValidationIssue,
+  LlmParamValidationOptions,
+} from './protocol/function-params-validator'
 export type {
   DialogueTurn,
-  StillTurnResult,
+  FunctionTurnResult,
   LlmResponse,
   SessionBackend,
   SessionBackendSseEvent,
@@ -25,49 +55,51 @@ export type {
   ToolDefinition,
   JsonSchema,
   JsonSchemaProperty,
-} from './session/session-contracts'
+} from './protocol/session-contracts'
 
-// 2) Session Runtime
-export { SessionBackendImpl } from './session/session-backend'
-
-// Session Monitors & Policies
+// Registry
 export {
-  createRepeatDetectionMonitor,
-  type RepeatDetectionConfig,
-} from './session/repeat-detection-monitor'
-export {
-  createDefaultFollowUpPolicy,
-  DefaultFollowUpPolicy,
-  formatWarningsAsFollowUp,
-  buildInlineActionSpec,
-  buildErrorFollowUp,
-  toParamsSignature,
-  countConsecutiveSameFailedSignature,
-} from './session/default-follow-up-policy'
-export type { FollowUpDecorations } from './session/default-follow-up-policy'
+  registerFunction,
+  registerFunctions,
+  getFunctionDefinition,
+  getAllFunctionDefinitions,
+  clearFunctionRegistry,
+} from './registry/function-registry'
 
-// 4) Orchestration
+// Runtime
 export {
-  runStillsLoop,
-} from './orchestration/session-orchestrator'
-
-// 3) Tooling
-export {
-  actionToFunctionName,
-  functionNameToAction,
-  stillToToolDefinition,
-  generateToolDefinitions,
-} from './fc-schema'
-
+  executeFunction,
+} from './runtime/function-dispatcher'
 export {
   dispatchToolCall,
   dispatchToolCalls,
   formatToolResultContent,
   buildAssistantToolCallMessage,
   buildToolResultMessage,
-} from './fc-dispatcher'
+} from './runtime/fc-dispatcher'
+export {
+  SessionBackendImpl,
+} from './runtime/session-backend'
+export type { SessionBackendImplOptions } from './runtime/session-backend'
+export {
+  createRepeatDetectionMonitor,
+  type RepeatDetectionConfig,
+} from './runtime/repeat-detection-monitor'
+export {
+  createDefaultFollowUpPolicy,
+  DefaultFollowUpPolicy,
+  formatWarningsAsFollowUp,
+  buildInlineFunctionGuide,
+  buildErrorFollowUp,
+  toParamsSignature,
+  countConsecutiveSameFailedSignature,
+} from './runtime/default-follow-up-policy'
+export type { FollowUpDecorations } from './runtime/default-follow-up-policy'
+export {
+  runFunctionLoop,
+} from './runtime/session-orchestrator'
 
-// 5) Lifecycle Registry
+// Lifecycle config registry
 export {
   CORE_LIFECYCLE_CONFIG_TREE,
   CORE_SESSION_LIFECYCLE_STAGES,
@@ -84,31 +116,26 @@ export type {
   LifecycleConfigPath,
 } from './lifecycle-config-paths'
 
-// 6) Stills Runtime
+// Knowledge
 export {
-  registerStill,
-  registerAll,
-  getStill,
-  getAllStills,
-  clearRegistry,
-  executeStill,
-} from './stills/dispatcher'
+  registerCoreKnowledgeFunctions,
+} from './knowledge/register-knowledge-functions'
 export {
-  registerDomain,
-  getDomain,
-  clearDomains,
-  createBareSession,
-} from './stills/domain'
+  coreKnowledgeFunctions,
+  knowledgeQueryTools,
+  knowledgeGuideTool,
+  knowledgeQueryPayloads,
+  knowledgeGuidePayload,
+  knowledgeAsk,
+} from './knowledge/query-actions'
 export {
-  registerCoreStills,
-} from './stills/register-core-stills'
+  clearKnowledgeRegistry,
+  getKnowledgePayloadProvider,
+  getKnowledgePayloadProviders,
+  registerKnowledgePayloadProvider,
+} from './knowledge/registry'
 export type {
-  DomainState,
-  StillGuard,
-  StillResult,
-  StillDefinition,
-  PatchEntry,
-  IStillSession,
-  DomainProvider,
-  PostValidationWarning,
-} from './stills/types'
+  KnowledgePayloadGuide,
+  KnowledgePayloadProvider,
+  KnowledgePayloadSummary,
+} from './knowledge/types'

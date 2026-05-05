@@ -5,7 +5,7 @@ import {
   getSparkNodeTreeToolParameterRow,
   SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE,
   SPARK_NODE_TREE_TOOL_PARAMETER_TABLE,
-} from '../packages/spark-ai/src/business/page-design/stills/node-tree'
+} from '../packages/spark-ai/src/business/page-design/functions/node-tree'
 
 describe('SparkNodeTree tool catalog', () => {
   it('应提供完整的 catalog-only 参数表与能力表', () => {
@@ -35,7 +35,7 @@ describe('SparkNodeTree tool catalog', () => {
     const addNode = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@addNode')
     const listChildren = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@listChildren')
 
-    expect(addNode?.usageRules).toContain('本 catalog 只定义核心层动作目录，不接 spark-ai stills registry，也不提供 execute 实现。')
+    expect(addNode?.usageRules).toContain('本 catalog 只定义函数目录，不接运行时 registry，也不提供 execute 实现。')
     expect(addNode?.usageRules).toContain('运行时应优先使用命名参数对象，而不是位置参数。')
     expect(addNode?.usageRules).toContain('parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。')
     expect(listChildren?.failureModes.map(item => item.code)).toContain('PARENT_NOT_FOUND')

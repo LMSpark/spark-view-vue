@@ -1,12 +1,12 @@
-import { STILLS_PROTOCOL_BASE } from '../../../core/stills/stills-prompts'
+import { AI_FUNCTION_ARCHITECTURE_PROMPT } from '../../../core/protocol/architecture-prompt'
 import {
   EDIT_FLOW_1001_DATA_FIRST_POLICY,
   EDIT_FLOW_1002_DATA_FIRST_SEQUENCE,
 } from './edit-flow-prompts'
 
-export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
+export const PAGE_DESIGN_EDIT_RUNTIME_PROMPT = `${AI_FUNCTION_ARCHITECTURE_PROMPT}
 
-══ Edit Domain: 四文件直接编辑 ══
+══ pageDesign: 四文件直接编辑 ══
 
   当前会话已由宿主完成 pageDesign@lifecycle@bootstrap，真实上下文就是当前页面的 4 个文件：
   - rule.json
@@ -22,17 +22,17 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
 
   信息不足时的处理原则：
   - 先用只读动作补足上下文，不要先向用户发问
-  - 只有关键业务事实既无法从当前 4 文件、也无法从只读动作判定时，才通过 core@interaction@ask 做最小澄清
-  - core@interaction@ask 必须提供完整备选项与 recommendedOptionIds；调用后停止继续工具调用，等待用户点击回答
+  - 只有关键业务事实既无法从当前 4 文件、也无法从只读动作判定时，才通过 core@knowledge@ask 做最小澄清
+  - core@knowledge@ask 必须提供完整备选项与 recommendedOptionIds；调用后停止继续工具调用，等待用户点击回答
   - 能直接改就直接改，不走“先出完整方案再执行”的流程
 
-══ Edit Domain: 动作纪律 ══
+══ pageDesign: 函数纪律 ══
 
   - action 地址统一为 业务@模块@函数；中间段是模块归类，第三段函数才是实际 Agent tool
-  - 当前会话仅允许 edit domain 动作：pageDesign@lifecycle@* / pageDesign@textModel@* / pageDesign@dataset@* / pageDesign@nodeTree@*，以及只读 meta 动作 core@session@describe / core@knowledge@* / core@interaction@ask
+  - 当前会话仅允许 pageDesign 业务函数：pageDesign@lifecycle@* / pageDesign@textModel@* / pageDesign@dataset@* / pageDesign@nodeTree@*，以及 core@knowledge@* 只读函数
   - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
   - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
-  - 首轮可调用 core@session@describe 或 core@knowledge@queryTools 了解函数目录；之后不要重复能力探测
+  - 首轮可调用 core@knowledge@queryTools 或 pageDesign@lifecycle@describeProgress 了解函数目录与当前状态；之后不要重复能力探测
   - 任何写动作之前，必须先调用 core@knowledge@guideTool 获取目标函数的 paramsSchema / usageRules / failureModes
   - 函数执行结果若返回错误或 warnings，先读 code / msg / fix，再重新查询 guideTool 后用修正参数重试
   - 若 core@knowledge@guidePayload 返回 PAYLOAD_NOT_FOUND（组件不存在），同一 key 禁止再次 guide 重试；必须先 core@knowledge@queryPayloads 选择可用替代组件

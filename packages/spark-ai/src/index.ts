@@ -1,4 +1,4 @@
-// ── Chat Parsing Utilities ───────────────────────────────────────────────────
+// ──【功能分区1】聊天解析工具───────────────────────────────────────────────────
 export {
   extractFirstJsonObject,
   parseTokenUsage,
@@ -11,13 +11,13 @@ export type {
   StreamCallbacks,
 } from './types'
 
-// ── Page Cache ───────────────────────────────────────────────────────────────
+// ──【功能分区2】页面缓存──────────────────────────────────────────────────────
 export {
   createPageCache,
 } from './business/page-design/page-cache'
 export type { PageCacheHandle } from './business/page-design/page-cache'
 
-// ── AI Component Catalog ─────────────────────────────────────────────────────
+// ──【功能分区3】AI组件目录────────────────────────────────────────────────────
 // 单一 SSoT JSON + 消费端投影
 export { default as COMPONENT_CATALOG_JSON } from './catalog/component-catalog.json'
 export {
@@ -56,53 +56,49 @@ export type {
 // DevSystem 预计算投影（type 下拉 + 属性名 + 枚举值 + 中文标签 + 必填属性）
 export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from './catalog/catalog-dev-exports'
 
-// ── Stills Catalog (Lightweight) ─────────────────────────────────────────────
-export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'
+// ──【功能分区4】函数目录 (轻量级)─────────────────────────────────────────────
+export type { FunctionCatalog, FunctionCatalogRegistry, FunctionComponentEntry, FunctionPropEntry } from './catalog/function-catalog-types'
 
-// ── System Prompts（提示词前端 SSoT）────────────────────────────────────────
+// ──【功能分区5】核心函数协议 / 注册表 / 运行时────────────────────────────────────
 export {
-  STILLS_PROTOCOL_BASE,
-} from './core/stills/stills-prompts'
-export { STILLS_EDIT_RUNTIME_PROMPT } from './business/page-design/prompts/edit-runtime-prompt'
-
-// ── Stills Core Runtime（注册机 / dispatcher / domain）──────────────────────
+  AI_FUNCTION_ARCHITECTURE_PROMPT,
+} from './core/protocol/architecture-prompt'
+export { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './business/page-design/prompts/edit-runtime-prompt'
 export {
-  registerStill,
-  registerAll,
-  getStill,
-  getAllStills,
-  clearRegistry,
-  executeStill,
-} from './core/stills/dispatcher'
-export {
-  registerDomain,
-  getDomain,
-  clearDomains,
-  createBareSession,
-} from './core/stills/domain'
-export {
-  registerCoreStills,
-} from './core/stills/register-core-stills'
+  createFunctionRuntimeContext,
+  noGuard,
+} from './core/protocol/function-contracts'
 export type {
-  DomainState,
-  IStillSession,
-  StillGuard,
-  StillResult,
-  StillDefinition,
-  PatchEntry,
-  DomainProvider,
+  FunctionKind,
+  FunctionResult,
+  FunctionFailureMode,
   PostValidationWarning,
-} from './core/stills/types'
-
-// ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────
+  FunctionTraceEntry,
+  FunctionRuntimeContext,
+  FunctionGuard,
+  RegisteredFunctionDefinition,
+} from './core/protocol/function-contracts'
 export {
-  runStillsLoop,
-} from './core/orchestration/session-orchestrator'
+  registerFunction,
+  registerFunctions,
+  getFunctionDefinition,
+  getAllFunctionDefinitions,
+  clearFunctionRegistry,
+} from './core/registry/function-registry'
+export {
+  executeFunction,
+} from './core/runtime/function-dispatcher'
+
+// ──【功能分区6】会话编排器（会话级工具循环编排）──────────────────────────────────
+export {
+  runFunctionLoop,
+} from './core/runtime/session-orchestrator'
 export type {
   DialogueTurn,
-  StillTurnResult,
+  FunctionTurnResult,
   LlmResponse,
   SessionBackend,
+  MonitorContext,
   MonitorContext,
   SessionMonitor,
   FollowUpBuildContext,
@@ -115,52 +111,76 @@ export type {
   ToolDefinition,
   JsonSchema,
   JsonSchemaProperty,
-} from './core/session/session-contracts'
+} from './core/protocol/session-contracts'
 
-// ── Session Backend（会话后端 HTTP 客户端）────────────────────────────────────
+// ──【功能分区7】会话后端（会话后端 HTTP 客户端）────────────────────────────────────
 export {
   createSessionBackend,
   SessionBackendImpl,
-} from './core/session/session-backend'
-export type { SessionBackendImplOptions } from './core/session/session-backend'
+} from './core/runtime/session-backend'
+export type { SessionBackendImplOptions } from './core/runtime/session-backend'
 
-// ── Repeat Detection（核心通用监控器）────────────────────────────────────────
+// ──【功能分区8】重复检测（核心通用监控器）────────────────────────────────────────
 export {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from './core/session/repeat-detection-monitor'
+} from './core/runtime/repeat-detection-monitor'
 
-// ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
+// ──【功能分区9】函数调用适配器（FC 模式工具调用适配层）─────────────────────────
 export {
   actionToFunctionName,
   functionNameToAction,
-  stillToToolDefinition,
+  functionToToolDefinition,
   generateToolDefinitions,
-} from './core/fc-schema'
+} from './core/protocol/fc-schema'
 export {
   dispatchToolCall,
   dispatchToolCalls,
   formatToolResultContent,
   buildAssistantToolCallMessage,
   buildToolResultMessage,
-} from './core/fc-dispatcher'
+} from './core/runtime/fc-dispatcher'
 
-// ── Follow-Up Policy（核心通用）──────────────────────────────────────────────
+// ──【功能分区10】后续策略（核心通用）──────────────────────────────────────────────
 export {
   formatWarningsAsFollowUp,
   DefaultFollowUpPolicy,
   createDefaultFollowUpPolicy,
   type FollowUpDecorations,
-} from './core/session/default-follow-up-policy'
+} from './core/runtime/default-follow-up-policy'
 
-// ── Business Domains（业务域）───────────────────────────────────────────────
+// ──【功能分区11】知识函数─────────────────────────────────────────────────────
 export {
-  PAGE_DESIGN_DOMAIN,
-  registerPageDesignEditStills,
+  registerCoreKnowledgeFunctions,
+} from './core/knowledge/register-knowledge-functions'
+export {
+  coreKnowledgeFunctions,
+  knowledgeAsk,
+  knowledgeGuidePayload,
+  knowledgeGuideTool,
+  knowledgeQueryPayloads,
+  knowledgeQueryTools,
+} from './core/knowledge/query-actions'
+export {
+  clearKnowledgeRegistry,
+  getKnowledgePayloadProvider,
+  getKnowledgePayloadProviders,
+  registerKnowledgePayloadProvider,
+} from './core/knowledge/registry'
+export type {
+  KnowledgePayloadGuide,
+  KnowledgePayloadProvider,
+  KnowledgePayloadSummary,
+} from './core/knowledge/types'
+
+// ──【功能分区12】业务函数（页面设计业务）────────────────────────────────────────────
+export {
+  PAGE_DESIGN_BUSINESS,
+  registerPageDesignEditFunctions,
   createPageModelSessionBackend,
   createPageModelSessionHost,
   createPageModelEditSession,
-  getEditState,
+  createEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
   isEditWriteAction,
@@ -168,9 +188,9 @@ export {
   isEditDataSetWriteAction,
   isEditTextModelWriteAction,
   type PageDesignBusinessContext,
-  type EditDomainState,
+  type EditState,
   type EditToolHost,
-  type PageModelStillsSession,
+  type PageModelFunctionContext,
   type PageModelSessionHostRuntime,
   type PageModelSessionHostState,
   type PageModelSessionHostController,

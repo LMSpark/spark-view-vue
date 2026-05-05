@@ -128,7 +128,7 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
 }
 
 describe('catalog-projections', () => {
-  it('projectComponentDirectory returns directory summary for core@session@describe', () => {
+  it('projectComponentDirectory returns component directory summary', () => {
     const catalog = makeCatalog()
     const directory = projectComponentDirectory(catalog)
 

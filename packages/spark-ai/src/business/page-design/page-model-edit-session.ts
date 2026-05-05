@@ -3,7 +3,7 @@
  *
  * 时序主线：
  * 1. 会话初始化：通过 bootstrap 读取 live page model 并执行 pageDesign@lifecycle@bootstrap。
- * 2. 编排运行：通过 runLlm 启动 stills 编排循环，接收 SSE 增量并记录日志。
+ * 2. 编排运行：通过 runLlm 启动函数编排循环，接收 SSE 增量并记录日志。
  * 3. 写入回投：识别工具写操作后同步页面模型投影，触发 NodeTree/DataSet 变更通知。
  * 4. 生命周期收束：通过 reset/dispose 中止活动运行并清理会话状态。
  *
@@ -13,31 +13,31 @@
  */
 
 import type { SparkNodeTree } from '@spark-view/spark-component'
-import type { DialogueTurn, OrchestratorResult, SessionBackend, ToolDefinition } from '../../core/session/session-contracts'
-import { runStillsLoop } from '../../core/orchestration/session-orchestrator'
-import { generateToolDefinitions, functionNameToAction } from '../../core/fc-schema'
-import { STILLS_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
-import type { IStillSession, StillResult } from '../../core/stills/types'
-import { executeStill } from '../../core/stills/dispatcher'
-import { createDefaultFollowUpPolicy } from '../../core/session/default-follow-up-policy'
+import type { DialogueTurn, OrchestratorResult, SessionBackend, ToolDefinition } from '../../core/protocol/session-contracts'
+import { runFunctionLoop } from '../../core/runtime/session-orchestrator'
+import { generateToolDefinitions, functionNameToAction } from '../../core/protocol/fc-schema'
+import { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
+import type { FunctionResult, FunctionRuntimeContext } from '../../core/protocol/function-contracts'
+import { executeFunction } from '../../core/runtime/function-dispatcher'
+import { createDefaultFollowUpPolicy } from '../../core/runtime/default-follow-up-policy'
 import {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from '../../core/session/repeat-detection-monitor'
+} from '../../core/runtime/repeat-detection-monitor'
 import {
   editInit,
-  EDIT_STILLS,
+  EDIT_FUNCTION_SUMMARIES,
   getActiveNodeTree,
-  getEditState,
   isEditDataSetWriteAction,
   isEditNodeTreeWriteAction,
   isEditWriteAction,
+  type EditState,
   type EditToolHost,
-} from './stills'
+} from './functions'
 import {
   createPageModelSessionHost,
   type PageModelSessionHostRuntime,
-  type PageModelStillsSession,
+  type PageModelFunctionContext,
 } from './page-model-session-host'
 
 const CORE_KNOWLEDGE_GUIDE_PAYLOAD_ACTION = 'core@knowledge@guidePayload'
@@ -78,8 +78,8 @@ export interface PageModelEditSessionState {
 export interface StartPageModelIterateSessionOptions {
   /** 会话后端：负责与服务端会话交互。 */
   backend: SessionBackend
-  /** stills 会话实例。 */
-  session: IStillSession
+  /** 函数运行时上下文。 */
+  context: FunctionRuntimeContext
   /** 本轮用户输入（已可包含上层拼接上下文）。 */
   userPrompt: string
   /** 系统提示词，约束本轮工具执行规则。 */
@@ -103,8 +103,8 @@ export interface StartPageModelIterateSessionOptions {
 }
 
 export interface PageModelEditSessionRuntime {
-  /** still 执行函数，可被测试替换。 */
-  executeStill: typeof executeStill
+  /** 函数执行入口，可被测试替换。 */
+  executeFunction: typeof executeFunction
   /** 编排启动函数，可被测试替换。 */
   startIterateSession: (options: StartPageModelIterateSessionOptions) => Promise<OrchestratorResult>
   /** FC 工具定义生成器。 */
@@ -112,9 +112,7 @@ export interface PageModelEditSessionRuntime {
   /** FC 名称到动作名映射器。 */
   functionNameToAction: typeof functionNameToAction
   /** 编辑运行时系统提示词。 */
-  STILLS_EDIT_RUNTIME_PROMPT: string
-  /** 从 stills session 读取编辑状态。 */
-  getEditState: typeof getEditState
+  PAGE_DESIGN_EDIT_RUNTIME_PROMPT: string
   /** 从编辑状态读取当前 NodeTree。 */
   getActiveNodeTree: typeof getActiveNodeTree
   /** 动作判定：是否写操作。 */
@@ -182,7 +180,7 @@ export interface PageModelEditSessionController {
   /** 订阅状态变更，返回取消订阅函数。 */
   subscribe: (listener: (state: Readonly<PageModelEditSessionState>) => void) => () => void
   /** 引导初始化：加载上下文并执行 pageDesign@lifecycle@bootstrap。 */
-  bootstrap: (options?: PageModelEditBootstrapOptions) => Promise<PageModelStillsSession>
+  bootstrap: (options?: PageModelEditBootstrapOptions) => Promise<PageModelFunctionContext>
   /** 运行一轮 LLM 编辑会话。 */
   runLlm: (prompt: string, hooks?: PageModelEditRunOptions) => Promise<void>
   /** 清空日志缓冲。 */
@@ -198,12 +196,12 @@ export interface PageModelEditSessionController {
  *
  * 说明：
  * - 该函数只做参数组装与默认值兜底。
- * - 真正编排逻辑在 runStillsLoop 内部。
+ * - 真正编排逻辑在 runFunctionLoop 内部。
  */
 function startPageModelIterateSession(
   options: StartPageModelIterateSessionOptions,
 ): Promise<OrchestratorResult> {
-  return runStillsLoop(options.userPrompt, options.session, options.backend, {
+  return runFunctionLoop(options.userPrompt, options.context, options.backend, {
     maxRounds: options.maxRounds ?? 20,
     slidingWindow: options.slidingWindow ?? 10,
     systemPrompt: options.systemPrompt,
@@ -223,12 +221,11 @@ function startPageModelIterateSession(
  * 通过 options.runtime 覆盖时，可定向替换单项能力（例如测试注入）。
  */
 const DEFAULT_RUNTIME: PageModelEditSessionRuntime = {
-  executeStill,
+  executeFunction,
   startIterateSession: startPageModelIterateSession,
   generateToolDefinitions,
   functionNameToAction,
-  STILLS_EDIT_RUNTIME_PROMPT,
-  getEditState,
+  PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
   getActiveNodeTree,
   isEditWriteAction,
   isEditNodeTreeWriteAction,
@@ -247,12 +244,12 @@ function readStringField(record: Record<string, unknown>, key: string): string |
 }
 
 function findEditActionByFunctionName(functionName: string): string {
-  return EDIT_STILLS.find((still) => still.action.endsWith(`@${functionName}`))?.action ?? functionName
+  return EDIT_FUNCTION_SUMMARIES.find((definition) => definition.action.endsWith(`@${functionName}`))?.action ?? functionName
 }
 
 function isPageDesignReadOnlyAction(action: string): boolean {
   if (action.startsWith('core@')) return true
-  return EDIT_STILLS.find((still) => still.action === action)?.type === 'describe'
+  return EDIT_FUNCTION_SUMMARIES.find((definition) => definition.action === action)?.type === 'describe'
 }
 
 const getPageDesignRepeatedFailureKey: NonNullable<RepeatDetectionConfig['getRepeatedFailureKey']> = (ctx) => {
@@ -403,19 +400,19 @@ export function createPageModelEditSession(
   }
 
   /**
-   * 确保 stills 会话可用，并将当前活跃 NodeTree 投影写回本地状态。
+   * 确保函数运行时与业务状态可用，并将当前活跃 NodeTree 投影写回本地状态。
    */
-  function ensureSession(): PageModelStillsSession {
+  function ensureRuntime(): { context: PageModelFunctionContext; editState: EditState } {
     const ensured = sessionHost.ensureSession()
     patchState({
       ready: true,
       dirty: false,
-      nodeTree: runtime.getActiveNodeTree(runtime.getEditState(ensured.session)),
+      nodeTree: runtime.getActiveNodeTree(ensured.editState),
     })
     if (ensured.bootstrapped) {
-      pushLog('info', 'session-ready', '编辑会话已挂接到当前页面模型；后续读写仅通过 FC 工具执行')
+      pushLog('info', 'session-ready', '编辑函数运行时已挂接到当前页面模型；后续读写仅通过 FC 函数执行')
     }
-    return ensured.session
+    return { context: ensured.context, editState: ensured.editState }
   }
 
   /**
@@ -498,9 +495,9 @@ export function createPageModelEditSession(
   }
 
   /**
-   * 统一 still 执行失败格式，保证错误输出可直接展示给用户。
+  * 统一函数执行失败格式，保证错误输出可直接展示给用户。
    */
-  function formatStillFailure(result: Extract<StillResult, { ok: false }>): string {
+  function formatFunctionFailure(result: Extract<FunctionResult, { ok: false }>): string {
     return `${result.msg}\n修复建议: ${result.fix}`
   }
 
@@ -534,9 +531,9 @@ export function createPageModelEditSession(
   /**
    * 时序步骤 1：bootstrap
    *
-   * 目标：把 live rule/script/style 注入到 stills 编辑域，建立本轮编辑基线。
+  * 目标：把 live rule/script/style 注入到 page-design 编辑状态，建立本轮编辑基线。
    */
-  async function bootstrap(bootstrapOptions?: PageModelEditBootstrapOptions): Promise<PageModelStillsSession> {
+  async function bootstrap(bootstrapOptions?: PageModelEditBootstrapOptions): Promise<PageModelFunctionContext> {
     if (!bootstrapOptions?.skipContextLoad) {
       await ensureContextLoaded?.()
     }
@@ -545,7 +542,7 @@ export function createPageModelEditSession(
       patchState({ ready: false })
     }
 
-    const session = ensureSession()
+    const { context, editState } = ensureRuntime()
     const toolHost = getEditToolHost()
     const liveTree = toolHost.getNodeTree?.()
     const readScript = toolHost.readScript
@@ -566,10 +563,10 @@ export function createPageModelEditSession(
     readScript()
     readStyle()
 
-    const result = runtime.executeStill(bootstrapAction, {}, session, 'bootstrap-page-model')
+    const result = runtime.executeFunction(bootstrapAction, {}, context, 'bootstrap-page-model')
 
     if (!result.ok) {
-      const message = formatStillFailure(result)
+      const message = formatFunctionFailure(result)
       if (!bootstrapOptions?.silent) {
         pushLog('error', bootstrapAction, message)
       }
@@ -577,14 +574,14 @@ export function createPageModelEditSession(
     }
 
     patchState({
-      nodeTree: runtime.getActiveNodeTree(runtime.getEditState(session)),
+      nodeTree: runtime.getActiveNodeTree(editState),
       ready: true,
       dirty: false,
     })
     if (!bootstrapOptions?.silent) {
       pushLog('info', bootstrapAction, result.summary)
     }
-    return session
+    return context
   }
 
   /**
@@ -609,8 +606,8 @@ export function createPageModelEditSession(
       aiBuffer: '',
     })
     try {
-      const session = hooks?.skipBootstrap === true
-        ? ensureSession()
+      const context = hooks?.skipBootstrap === true
+        ? ensureRuntime().context
         : await bootstrap({ silent: true })
       pushLog('info', '人工输入', formatHumanInputForLog(hooks?.originalUserInput ?? prompt))
       pushLog('info', '开始 LLM 编辑', '已生成本轮上下文 prompt，准备调用模型')
@@ -630,9 +627,9 @@ export function createPageModelEditSession(
       }
       const result = await runtime.startIterateSession({
         backend: sessionHost.backend,
-        session,
+        context,
         userPrompt: prompt,
-        systemPrompt: runtime.STILLS_EDIT_RUNTIME_PROMPT,
+        systemPrompt: runtime.PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
         maxRounds: hooks?.maxRounds ?? 80,
         slidingWindow: 12,
         signal: runController.signal,
@@ -647,28 +644,28 @@ export function createPageModelEditSession(
         }),
         repeatDetection,
         onTurnComplete(turn: DialogueTurn) {
-          if (turn.toolBlock?.action && turn.stillsResult) {
-            const stillsResult = turn.stillsResult
-            if (stillsResult.ok) {
+          if (turn.toolBlock?.action && turn.functionResult) {
+            const functionResult = turn.functionResult
+            if (functionResult.ok) {
               pushLog(
                 'success',
                 `✓ ${turn.toolBlock.action}`,
-                stillsResult.summary ?? JSON.stringify(stillsResult.data, null, 2).slice(0, 300),
+                functionResult.summary ?? JSON.stringify(functionResult.data, null, 2).slice(0, 300),
               )
             } else {
-              pushLog('error', `✗ ${turn.toolBlock.action}`, stillsResult.msg ?? '失败')
+              pushLog('error', `✗ ${turn.toolBlock.action}`, functionResult.msg ?? '失败')
             }
           }
 
           const action = turn.toolBlock?.action
           if (
-            turn.phase === 'stills-execute'
+            turn.phase === 'function-execute'
             && action !== undefined
-            && turn.stillsResult?.ok
+            && turn.functionResult?.ok
           ) {
             syncPageModelProjection([action])
           }
-          if (turn.phase === 'stills-execute') {
+          if (turn.phase === 'function-execute') {
             hooks?.onToolTurn?.(turn)
           }
         },
@@ -678,13 +675,13 @@ export function createPageModelEditSession(
       }
       if (result.aborted) {
         sessionHost.setBackendSessionId(result.sessionId)
-        throw new Error(`Stills 中止: ${result.abortReason}`)
+        throw new Error(`函数循环中止: ${result.abortReason}`)
       }
       sessionHost.setBackendSessionId(result.sessionId)
-      const toolTurnCount = result.turns.filter((turn) => turn.phase === 'stills-execute').length
+      const toolTurnCount = result.turns.filter((turn) => turn.phase === 'function-execute').length
       const writeActions = result.turns.flatMap((turn) => {
         const action = turn.toolBlock?.action
-        return turn.phase === 'stills-execute' && action !== undefined && isToolWriteAction(runtime, action) && turn.stillsResult?.ok
+        return turn.phase === 'function-execute' && action !== undefined && isToolWriteAction(runtime, action) && turn.functionResult?.ok
           ? [action]
           : []
       })

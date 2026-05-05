@@ -1,26 +1,25 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { clearRegistry, executeStill } from '../packages/spark-ai/src/core/stills/dispatcher'
-import { clearDomains, createBareSession } from '../packages/spark-ai/src/core/stills/domain'
-import type { IStillSession, StillResult } from '../packages/spark-ai/src/core/stills/types'
-import { registerPageDesignEditStills } from '../packages/spark-ai/src/business/page-design/register-edit-stills'
 import {
   bindLiveModelAdapter,
-  getEditState,
   isEditDataSetWriteAction,
-} from '../packages/spark-ai/src/business/page-design/stills'
+  type EditState,
+  type FunctionResult,
+} from '@spark-view/spark-ai'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
+import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
-let session: IStillSession
 let seq = 0
 let liveTree: SparkNodeTree
 let liveDataSet: DataSetCrudTool
 let script = ''
 let style = ''
+let editState: EditState
+let harnessExec: (action: string, params?: unknown, requestId?: string) => FunctionResult
 
-function exec(action: string, params: unknown = {}): StillResult {
+function exec(action: string, params: unknown = {}): FunctionResult {
   seq += 1
-  return executeStill(action, params, session, `edit-${seq}`)
+  return harnessExec(action, params, `edit-${seq}`)
 }
 
 function expectActionUnavailable(action: string, params: unknown = {}): void {
@@ -41,18 +40,13 @@ const DISABLED_EDIT_ACTIONS = [
 ] as const
 
 beforeEach(() => {
-  clearDomains()
-  clearRegistry()
-  registerPageDesignEditStills()
-  session = createBareSession()
   seq = 0
   liveTree = new SparkNodeTree({ root: { type: 'page', children: [] } })
   liveDataSet = DataSetCrudTool.fromJson({ dataSetName: 'PageDataSet', tables: {} })
   script = ''
   style = ''
 
-  // pageDesign@lifecycle@bootstrap 现在强制要求同时存在 live NodeTree/DataSetTool 绑定。
-  bindLiveModelAdapter(getEditState(session), {
+  const harness = createPageDesignFunctionHarness({
     getNodeTree: () => liveTree,
     getDataSetTool: () => liveDataSet,
     readScript: () => script,
@@ -64,6 +58,8 @@ beforeEach(() => {
       style = content
     },
   })
+  editState = harness.editState
+  harnessExec = harness.exec
 })
 
 function seedLiveModel(params: {
@@ -78,8 +74,8 @@ function seedLiveModel(params: {
   style = params.styleCss
 }
 
-describe('edit domain fine-grained flow', () => {
-  it('disables changedLines/export actions in edit domain', () => {
+describe('page-design function fine-grained flow', () => {
+  it('disables changedLines/export actions in edit functions', () => {
     for (const action of DISABLED_EDIT_ACTIONS) {
       expectActionUnavailable(action)
     }
@@ -208,7 +204,7 @@ describe('edit domain fine-grained flow', () => {
       ],
       viewDependencies: [],
     })
-    bindLiveModelAdapter(getEditState(session), {
+    bindLiveModelAdapter(editState, {
       getNodeTree: () => liveTree,
       getDataSetTool: () => seededDataSet,
       readScript: () => script,

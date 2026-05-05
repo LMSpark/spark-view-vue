@@ -1,5 +1,5 @@
 /**
- * 页面设计业务域（Page Design Domain）
+ * 页面设计业务（Page Design）
  *
  * 目标边界：
  * - 仅承载“单页面四文件编辑”运行时及其直接支撑能力。
@@ -10,21 +10,21 @@
  * - 在每个分区内按功能职责组织类型与工厂函数，便于调用方按阶段接入。
  */
 
-export const PAGE_DESIGN_DOMAIN = 'page-design'
+export const PAGE_DESIGN_BUSINESS = 'page-design'
 
-export { STILLS_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
-export { registerPageDesignEditStills } from './register-edit-stills'
+export { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
+export { registerPageDesignEditFunctions } from './register-edit-functions'
 
 export {
-  getEditState,
+  createEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
   isEditWriteAction,
   isEditNodeTreeWriteAction,
   isEditDataSetWriteAction,
   isEditTextModelWriteAction,
-} from './stills'
-export type { EditDomainState, EditToolHost } from './stills'
+} from './functions'
+export type { EditState, EditToolHost } from './functions'
 
 /**
  * 页面设计业务上下文。
@@ -45,7 +45,7 @@ export interface PageDesignBusinessContext {
  *
  * 职责说明：
  * - 在会话初始化前清理页面四文件缓存（rule / pagedata / script / style）。
- * - 仅处理缓存层，不介入 stills 会话、工具执行或 LLM 循环。
+ * - 仅处理缓存层，不介入函数运行时、工具执行或 LLM 循环。
  */
 export {
   // 缓存管理工厂：创建针对单页与全局缓存的清理句柄。
@@ -58,7 +58,7 @@ export {
  * 时序分区 2/3：会话宿主能力
  *
  * 职责说明：
- * - 托管 stills 会话实例的创建、复用与重建。
+ * - 托管函数运行时上下文的创建、复用与重建。
  * - 维护 backend sessionId 并提供 resume/reset 等生命周期能力。
  * - 提供状态订阅和会话一致性检测，但不直接执行编辑工具链。
  */
@@ -67,8 +67,8 @@ export {
   createPageModelSessionBackend,
   // 会话宿主工厂：聚合会话状态、生命周期与后端会话桥接。
   createPageModelSessionHost,
-  // stills 会话实体类型：用于跨模块传递底层会话对象。
-  type PageModelStillsSession,
+  // 函数运行时上下文类型：用于跨模块传递 core 执行轨迹。
+  type PageModelFunctionContext,
   // 宿主运行时能力类型：会话确保、重置、会话续接等核心接口。
   type PageModelSessionHostRuntime,
   // 宿主状态类型：当前会话、会话键与后端会话键的只读快照结构。
