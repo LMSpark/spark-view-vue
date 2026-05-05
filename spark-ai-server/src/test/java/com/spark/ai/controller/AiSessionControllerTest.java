@@ -1,8 +1,8 @@
 package com.spark.ai.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.stills.StillsSessionService;
-import com.spark.ai.stills.StillsSessionService.TurnResult;
+import com.spark.ai.service.AiSessionService;
+import com.spark.ai.service.AiSessionService.TurnResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,7 +36,7 @@ class AiSessionControllerTest {
     ObjectMapper objectMapper;
 
     @MockBean
-    StillsSessionService sessionService;
+    AiSessionService sessionService;
 
     @Test
     void createSession_requiresProtocolV3() throws Exception {
@@ -68,7 +68,7 @@ class AiSessionControllerTest {
                 "systemPrompt", "sys",
                 "userPrompt", "user",
                 "windowSize", 30,
-                "mode", "stills",
+                "mode", "function",
                 "tools", List.of()
         ));
 

@@ -1,7 +1,7 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.stills.StillsSessionService;
-import com.spark.ai.stills.StillsSessionService.TurnResult;
+import com.spark.ai.service.AiSessionService;
+import com.spark.ai.service.AiSessionService.TurnResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 统一 AI 会话端点 — Generate/Iterate + Stills 共用。
+ * 统一 AI 会话端点 — Generate/Iterate 统一。
  *
  * <ul>
  *   <li>POST   /api/ai/sessions           — 创建会话</li>
@@ -33,9 +33,9 @@ public class AiSessionController {
     private static final Logger log = LoggerFactory.getLogger(AiSessionController.class);
     private static final int PROTOCOL_VERSION_V3 = 3;
 
-    private final StillsSessionService sessionService;
+    private final AiSessionService sessionService;
 
-    public AiSessionController(StillsSessionService sessionService) {
+    public AiSessionController(AiSessionService sessionService) {
         this.sessionService = sessionService;
     }
 
@@ -52,7 +52,7 @@ public class AiSessionController {
      *   "userPrompt": "...",
      *   "windowSize": 30,
      *   "tools": [...],           // FC tool definitions（可选）
-     *   "mode": "generate"        // "generate" | "stills"
+     *   "mode": "generate"        // "generate" | "function"
      * }</pre>
      */
     @PostMapping

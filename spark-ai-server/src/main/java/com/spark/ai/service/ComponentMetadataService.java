@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 组件元数据存储服务。
  *
  * 前端构建时通过 POST /api/ai/component-metadata 上传 metadata JSON，
- * 服务端持久化到 data/component-metadata.json，供当前聊天与 stills 相关提示词消费。
+ * 服务端持久化到 data/component-metadata.json，供当前聊天相关提示词消费。
  * 启动时自动从文件加载，生产环境无需每次重新上传。
  */
 @Service
