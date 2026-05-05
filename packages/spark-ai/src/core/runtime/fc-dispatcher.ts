@@ -1,7 +1,8 @@
 import type { FunctionResult, FunctionRuntimeContext } from '../protocol/function-contracts'
 import { executeFunction, executeFunctionAsync } from './function-dispatcher'
-import { functionNameToAction } from '../protocol/fc-schema'
-import type { FcDispatchResult, ToolCall, ToolResult } from '../protocol/session-contracts'
+import { getAllFunctionDefinitions } from '../registry/function-registry'
+import { functionNameToAction } from '../protocol/function-call-schema'
+import type { FcDispatchResult, ToolCall } from '../protocol/session-contracts'
 
 export function formatToolResultContent(result: FunctionResult): string {
   const stringify = (value: unknown): string => {
@@ -34,7 +35,7 @@ export function dispatchToolCall(
   toolCall: ToolCall,
   context: FunctionRuntimeContext,
 ): FcDispatchResult {
-  const action = functionNameToAction(toolCall.function.name)
+  const action = functionNameToAction(toolCall.function.name, getAllFunctionDefinitions())
 
   let params: unknown
   try {
@@ -68,7 +69,7 @@ export async function dispatchToolCallAsync(
   toolCall: ToolCall,
   context: FunctionRuntimeContext,
 ): Promise<FcDispatchResult> {
-  const action = functionNameToAction(toolCall.function.name)
+  const action = functionNameToAction(toolCall.function.name, getAllFunctionDefinitions())
 
   let params: unknown
   try {
@@ -95,40 +96,5 @@ export async function dispatchToolCallAsync(
     action,
     result,
     toolResult: { tool_call_id: toolCall.id, content: formatToolResultContent(result) },
-  }
-}
-
-export function dispatchToolCalls(
-  toolCalls: ToolCall[],
-  context: FunctionRuntimeContext,
-): FcDispatchResult[] {
-  return toolCalls.map(tc => dispatchToolCall(tc, context))
-}
-
-export async function dispatchToolCallsAsync(
-  toolCalls: ToolCall[],
-  context: FunctionRuntimeContext,
-): Promise<FcDispatchResult[]> {
-  return Promise.all(toolCalls.map(tc => dispatchToolCallAsync(tc, context)))
-}
-
-export function buildAssistantToolCallMessage(
-  toolCalls: ToolCall[],
-  text?: string,
-): { role: 'assistant'; content: string | null; tool_calls: ToolCall[] } {
-  return {
-    role: 'assistant',
-    content: text ?? null,
-    tool_calls: toolCalls,
-  }
-}
-
-export function buildToolResultMessage(
-  toolResult: ToolResult,
-): { role: 'tool'; tool_call_id: string; content: string } {
-  return {
-    role: 'tool',
-    tool_call_id: toolResult.tool_call_id,
-    content: toolResult.content,
   }
 }

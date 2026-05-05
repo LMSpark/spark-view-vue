@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import {
-  createFunctionRuntimeContext,
-  type FunctionCatalogRow,
-} from '../packages/spark-ai/src/core/protocol/function-contracts'
+import type { FunctionCatalogRow } from '../packages/spark-ai/src/core/protocol/function-contracts'
+import { createFunctionRuntimeContext } from '../packages/spark-ai/src/core/runtime/function-runtime-context'
 import { createMethodBackedDefinitions } from '../packages/spark-ai/src/core/runtime/method-backed-definitions'
 
 interface TestRow extends FunctionCatalogRow {

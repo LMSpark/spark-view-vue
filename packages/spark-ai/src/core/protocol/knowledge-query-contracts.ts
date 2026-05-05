@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../protocol/function-contracts'
+import type { FunctionFailureMode } from './function-contracts'
 
 export interface KnowledgeToolSummary {
   action: string
@@ -35,29 +35,4 @@ export interface KnowledgeToolGuide extends KnowledgeToolSummary {
   resultSchema: Record<string, unknown> | null
   usageRules: string[]
   failureModes: FunctionFailureMode[]
-}
-
-export interface KnowledgePayloadSummary {
-  payloadRef: string
-  key: string
-  category?: string
-  description: string
-  tags?: string[]
-}
-
-export interface KnowledgePayloadGuide {
-  payloadRef: string
-  key: string
-  description: string
-  jsonSchema: Record<string, unknown>
-  minimalExample: Record<string, unknown>
-  usageRules: string[]
-  failureModes: FunctionFailureMode[]
-}
-
-export interface KnowledgePayloadProvider {
-  payloadRef: string
-  description: string
-  queryPayloads(filter?: Record<string, unknown>): KnowledgePayloadSummary[]
-  guidePayload(key: string): KnowledgePayloadGuide | null
 }

@@ -5,12 +5,16 @@ import {
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
 } from '../packages/spark-data/src'
 import { getFunctionDefinition } from '../packages/spark-ai/src/core/registry/function-registry'
-import { functionNameToAction, generateToolDefinitions, functionToToolDefinition } from '../packages/spark-ai/src/core/protocol/fc-schema'
+import { functionNameToAction } from '../packages/spark-ai/src/core/protocol/function-call-schema'
+import {
+  functionToToolDefinition,
+  generateToolDefinitions,
+} from '../packages/spark-ai/src/core/runtime/tool-definition-builder'
 import type {
   KnowledgeModuleSummary,
   KnowledgeToolGuide,
   KnowledgeToolSummary,
-} from '../packages/spark-ai/src/core/knowledge/types'
+} from '../packages/spark-ai/src/core/protocol/knowledge-query-contracts'
 import type { FunctionResult } from '@spark-view/spark-ai'
 import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 

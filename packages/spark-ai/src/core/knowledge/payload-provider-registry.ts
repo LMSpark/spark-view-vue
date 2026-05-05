@@ -1,4 +1,4 @@
-import type { KnowledgePayloadProvider } from './types'
+import type { KnowledgePayloadProvider } from '../protocol/knowledge-payload-contracts'
 
 const payloadProviders = new Map<string, KnowledgePayloadProvider>()
 

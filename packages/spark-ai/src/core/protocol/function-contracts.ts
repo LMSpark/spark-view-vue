@@ -277,25 +277,11 @@ export interface RegisteredFunctionDefinition<TParams = unknown, TResult = unkno
 }
 
 /**
- * 功能分区四：默认工厂与占位实现
+ * 功能分区四：占位实现
  * 时序说明：
- * 1. 新会话先创建默认运行时上下文
+ * 1. 运行时上下文实例工厂位于 runtime/function-runtime-context.ts
  * 2. 未声明 guard 的函数可直接复用默认空守卫
  */
-
-/**
- * 创建新的函数运行时上下文。
- * 输入语义：无输入。
- * 输出语义：返回一个带空 patchLog 的全新上下文对象。
- * 调用时机：每次开启新的函数执行会话，或测试中需要隔离运行时状态时调用。
- */
-export function createFunctionRuntimeContext(): FunctionRuntimeContext {
-  return {
-    patchLog: [],
-    emitBeforeExecute: (carrier, event, context) => carrier.beforeExecute?.({ context, carrier, event }) ?? null,
-    emitAfterExecute: (carrier, event, context) => carrier.afterExecute?.({ context, carrier, event }),
-  }
-}
 
 /**
  * 默认空守卫。

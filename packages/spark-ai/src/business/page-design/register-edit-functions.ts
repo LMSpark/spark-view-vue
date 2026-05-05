@@ -1,5 +1,5 @@
 import type { RegisteredFunctionDefinition } from '../../core/protocol/function-contracts'
-import { registerCoreKnowledgeFunctions } from '../../core/knowledge/register-knowledge-functions'
+import { coreKnowledgeFunctions } from '../../core/knowledge/knowledge-functions'
 import { registerFunctionCarriers } from '../../core/registry/function-carrier-registry'
 import { registerFunctions } from '../../core/registry/function-registry'
 import { registerPageDesignPayloadProviders } from './payloads'
@@ -25,5 +25,5 @@ export function registerPageDesignEditFunctions(state: EditState): void {
   ])
   registerFunctions(createPageDesignEditFunctions() as unknown as ReadonlyArray<RegisteredFunctionDefinition<unknown, unknown>>)
   registerPageDesignPayloadProviders()
-  registerCoreKnowledgeFunctions()
+  registerFunctions(coreKnowledgeFunctions as unknown as ReadonlyArray<RegisteredFunctionDefinition<unknown, unknown>>)
 }

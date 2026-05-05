@@ -1,18 +1,17 @@
 import componentCatalogJson from '../../../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../../../catalog/types'
 import { projectComponentConfigGuide, projectFunctionCatalog } from '../../../catalog/catalog-projections'
-import { inferJsonSchemaFromTypeText } from '../../../core/knowledge/payload-schema'
-import { registerKnowledgePayloadProvider } from '../../../core/knowledge/registry'
-import type { KnowledgePayloadGuide, KnowledgePayloadProvider, KnowledgePayloadSummary } from '../../../core/knowledge/types'
+import { registerKnowledgePayloadProvider } from '../../../core/knowledge/payload-provider-registry'
+import type {
+  KnowledgePayloadGuide,
+  KnowledgePayloadProvider,
+  KnowledgePayloadQueryFilter,
+  KnowledgePayloadSummary,
+} from '../../../core/protocol/knowledge-payload-contracts'
 
 export const PAGE_DESIGN_COMPONENT_PAYLOAD_REF = 'page-design.component'
 
 const PAGE_DESIGN_FUNCTION_CATALOG = projectFunctionCatalog(componentCatalogJson as ComponentCatalog)
-
-interface ComponentPayloadFilter {
-  category?: string
-  keyword?: string
-}
 
 interface ComponentPropGuide {
   name: string
@@ -21,7 +20,31 @@ interface ComponentPropGuide {
   description?: string
 }
 
-function normalizeFilter(filter: Record<string, unknown> | undefined): ComponentPayloadFilter {
+function parseLiteralUnion(typeText: string): string[] {
+  const values = typeText
+    .split('|')
+    .map(part => part.trim())
+    .filter(part => /^['"].*['"]$/u.test(part))
+    .map(part => part.slice(1, -1))
+
+  return values.length > 0 ? values : []
+}
+
+function inferJsonSchemaFromTypeText(typeText: string): Record<string, unknown> {
+  const normalized = typeText.trim().toLowerCase()
+  const enumValues = parseLiteralUnion(typeText)
+  if (enumValues.length > 0) {
+    return { type: 'string', enum: enumValues }
+  }
+
+  if (normalized.includes('boolean')) return { type: 'boolean' }
+  if (normalized.includes('number') || normalized.includes('integer') || normalized.includes('float')) return { type: 'number' }
+  if (normalized.includes('array') || normalized.includes('[]')) return { type: 'array', items: { type: 'object' } }
+  if (normalized.includes('record') || normalized.includes('object') || normalized.includes('{')) return { type: 'object' }
+  return { type: 'string' }
+}
+
+function normalizeFilter(filter: KnowledgePayloadQueryFilter | undefined): KnowledgePayloadQueryFilter {
   if (filter === undefined) return {}
   if (filter['category'] !== undefined && typeof filter['category'] !== 'string') {
     throw new Error('page-design.component filter.category 必须是字符串')
@@ -39,7 +62,7 @@ function normalizeFilter(filter: Record<string, unknown> | undefined): Component
   }
 }
 
-function matchesFilter(summary: KnowledgePayloadSummary, filter: ComponentPayloadFilter): boolean {
+function matchesFilter(summary: KnowledgePayloadSummary, filter: KnowledgePayloadQueryFilter): boolean {
   if (filter.category !== undefined && summary.category !== filter.category) return false
   if (filter.keyword !== undefined) {
     const haystack = `${summary.key} ${summary.description} ${summary.tags?.join(' ') ?? ''}`.toLowerCase()
@@ -114,7 +137,7 @@ export function createPageDesignComponentPayloadProvider(): KnowledgePayloadProv
   return {
     payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
     description: 'Page Design SparkNode 组件参数荷载目录；key 为组件 type，如 r-table。',
-    queryPayloads(filter?: Record<string, unknown>): KnowledgePayloadSummary[] {
+    queryPayloads(filter?: KnowledgePayloadQueryFilter): KnowledgePayloadSummary[] {
       const normalizedFilter = normalizeFilter(filter)
       return Object.entries(PAGE_DESIGN_FUNCTION_CATALOG.components)
         .map(([key, entry]) => ({

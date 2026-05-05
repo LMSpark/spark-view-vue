@@ -65,7 +65,6 @@ export {
 } from './core/protocol/architecture-prompt'
 export { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './business/page-design/prompts/edit-runtime-prompt'
 export {
-  createFunctionRuntimeContext,
   noGuard,
 } from './core/protocol/function-contracts'
 export type {
@@ -87,6 +86,9 @@ export type {
   FunctionGuard,
   RegisteredFunctionDefinition,
 } from './core/protocol/function-contracts'
+export {
+  createFunctionRuntimeContext,
+} from './core/runtime/function-runtime-context'
 export {
   registerFunction,
   registerFunctions,
@@ -148,17 +150,15 @@ export {
 export {
   actionToFunctionName,
   functionNameToAction,
+} from './core/protocol/function-call-schema'
+export {
   functionToToolDefinition,
   generateToolDefinitions,
-} from './core/protocol/fc-schema'
+} from './core/runtime/tool-definition-builder'
 export {
   dispatchToolCall,
   dispatchToolCallAsync,
-  dispatchToolCalls,
-  dispatchToolCallsAsync,
   formatToolResultContent,
-  buildAssistantToolCallMessage,
-  buildToolResultMessage,
 } from './core/runtime/fc-dispatcher'
 
 // ──【功能分区10】后续策略（核心通用）──────────────────────────────────────────────
@@ -171,27 +171,38 @@ export {
 
 // ──【功能分区11】知识函数─────────────────────────────────────────────────────
 export {
-  registerCoreKnowledgeFunctions,
-} from './core/knowledge/register-knowledge-functions'
-export {
   coreKnowledgeFunctions,
   knowledgeAsk,
   knowledgeGuidePayload,
   knowledgeGuideTool,
   knowledgeQueryPayloads,
   knowledgeQueryTools,
-} from './core/knowledge/query-actions'
+} from './core/knowledge/knowledge-functions'
 export {
   clearKnowledgeRegistry,
   getKnowledgePayloadProvider,
   getKnowledgePayloadProviders,
   registerKnowledgePayloadProvider,
-} from './core/knowledge/registry'
+} from './core/knowledge/payload-provider-registry'
 export type {
+  KnowledgeGuidePayloadParams,
+  KnowledgePayloadCategory,
   KnowledgePayloadGuide,
+  KnowledgePayloadKey,
   KnowledgePayloadProvider,
+  KnowledgePayloadProviderSummary,
+  KnowledgePayloadQueryFilter,
+  KnowledgePayloadRef,
   KnowledgePayloadSummary,
-} from './core/knowledge/types'
+  KnowledgeQueryPayloadCatalogResult,
+  KnowledgeQueryPayloadProvidersResult,
+  KnowledgeQueryPayloadsParams,
+} from './core/protocol/knowledge-payload-contracts'
+export type {
+  KnowledgeModuleSummary,
+  KnowledgeToolGuide,
+  KnowledgeToolSummary,
+} from './core/protocol/knowledge-query-contracts'
 
 // ──【功能分区12】业务函数（页面设计业务）────────────────────────────────────────────
 export {

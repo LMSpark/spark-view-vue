@@ -2,7 +2,6 @@
 
 // Protocol
 export {
-  createFunctionRuntimeContext,
   noGuard,
 } from './protocol/function-contracts'
 export type {
@@ -26,27 +25,22 @@ export type {
   RegisteredFunctionDefinition,
 } from './protocol/function-contracts'
 export {
-  missingParam,
-  isNonEmptyString,
-  buildExecutionTraceSummary,
-} from './protocol/function-utils'
-export {
   actionToFunctionName,
   functionNameToAction,
-  functionToToolDefinition,
-  generateToolDefinitions,
-} from './protocol/fc-schema'
+} from './protocol/function-call-schema'
 export {
   AI_FUNCTION_ARCHITECTURE_PROMPT,
 } from './protocol/architecture-prompt'
 export {
+  missingParam,
+  isNonEmptyString,
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
-} from './protocol/function-params-validator'
+} from './protocol/llm-params-validator'
 export type {
   LlmParamValidationIssue,
   LlmParamValidationOptions,
-} from './protocol/function-params-validator'
+} from './protocol/llm-params-validator'
 export type {
   DialogueTurn,
   FunctionTurnResult,
@@ -87,24 +81,23 @@ export {
 
 // Runtime
 export {
+  createFunctionRuntimeContext,
+} from './runtime/function-runtime-context'
+export {
   executeFunction,
   executeFunctionAsync,
 } from './runtime/function-dispatcher'
 export {
-  invokeNamedMethod,
-  toErrorMessage,
-} from './runtime/method-invoker'
+  functionToToolDefinition,
+  generateToolDefinitions,
+} from './runtime/tool-definition-builder'
 export {
   createMethodBackedDefinitions,
 } from './runtime/method-backed-definitions'
 export {
   dispatchToolCall,
   dispatchToolCallAsync,
-  dispatchToolCalls,
-  dispatchToolCallsAsync,
   formatToolResultContent,
-  buildAssistantToolCallMessage,
-  buildToolResultMessage,
 } from './runtime/fc-dispatcher'
 export {
   SessionBackendImpl,
@@ -147,24 +140,35 @@ export type {
 
 // Knowledge
 export {
-  registerCoreKnowledgeFunctions,
-} from './knowledge/register-knowledge-functions'
-export {
   coreKnowledgeFunctions,
   knowledgeQueryTools,
   knowledgeGuideTool,
   knowledgeQueryPayloads,
   knowledgeGuidePayload,
   knowledgeAsk,
-} from './knowledge/query-actions'
+} from './knowledge/knowledge-functions'
 export {
   clearKnowledgeRegistry,
   getKnowledgePayloadProvider,
   getKnowledgePayloadProviders,
   registerKnowledgePayloadProvider,
-} from './knowledge/registry'
+} from './knowledge/payload-provider-registry'
 export type {
+  KnowledgeGuidePayloadParams,
+  KnowledgePayloadCategory,
   KnowledgePayloadGuide,
+  KnowledgePayloadKey,
   KnowledgePayloadProvider,
+  KnowledgePayloadProviderSummary,
+  KnowledgePayloadQueryFilter,
+  KnowledgePayloadRef,
   KnowledgePayloadSummary,
-} from './knowledge/types'
+  KnowledgeQueryPayloadCatalogResult,
+  KnowledgeQueryPayloadProvidersResult,
+  KnowledgeQueryPayloadsParams,
+} from './protocol/knowledge-payload-contracts'
+export type {
+  KnowledgeModuleSummary,
+  KnowledgeToolGuide,
+  KnowledgeToolSummary,
+} from './protocol/knowledge-query-contracts'

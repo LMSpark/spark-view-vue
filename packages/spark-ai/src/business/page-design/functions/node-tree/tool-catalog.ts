@@ -3,7 +3,7 @@ import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
   type LlmParamValidationOptions,
-} from '../../../../core/protocol/function-params-validator'
+} from '../../../../core/protocol/llm-params-validator'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 
 type MethodKey<T> = Extract<{

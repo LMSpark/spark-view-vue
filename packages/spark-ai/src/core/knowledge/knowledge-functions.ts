@@ -6,19 +6,27 @@ import type {
 import { noGuard } from '../protocol/function-contracts'
 import { getFunctionCarrier, getFunctionCarrierByAction } from '../registry/function-carrier-registry'
 import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
-import { actionToFunctionName, functionNameToAction } from '../protocol/fc-schema'
-import { isNonEmptyString, missingParam } from '../protocol/function-utils'
+import { actionToFunctionName, functionNameToAction } from '../protocol/function-call-schema'
+import { isNonEmptyString, missingParam } from '../protocol/llm-params-validator'
+import type {
+  KnowledgeGuidePayloadParams,
+  KnowledgePayloadGuide,
+  KnowledgePayloadProviderSummary,
+  KnowledgePayloadQueryFilter,
+  KnowledgePayloadSummary,
+  KnowledgeQueryPayloadCatalogResult,
+  KnowledgeQueryPayloadProvidersResult,
+  KnowledgeQueryPayloadsParams,
+} from '../protocol/knowledge-payload-contracts'
+import type {
+  KnowledgeModuleSummary,
+  KnowledgeToolGuide,
+  KnowledgeToolSummary,
+} from '../protocol/knowledge-query-contracts'
 import {
   getKnowledgePayloadProvider,
   getKnowledgePayloadProviders,
-} from './registry'
-import type {
-  KnowledgeModuleSummary,
-  KnowledgePayloadGuide,
-  KnowledgePayloadSummary,
-  KnowledgeToolGuide,
-  KnowledgeToolSummary,
-} from './types'
+} from './payload-provider-registry'
 
 // 核心知识模块提示词
 const CORE_KNOWLEDGE_MODULE_PROMPT = 'core@knowledge 只负责查询已注册函数事实和参数荷载规格；写动作参数不确定时先 guideTool，嵌套对象参数必须通过 queryPayloads/guidePayload 查询后再构造。'
@@ -34,16 +42,6 @@ interface QueryToolsParams {
 
 interface GuideToolParams {
   action?: unknown
-}
-
-interface QueryPayloadsParams {
-  payloadRef?: unknown
-  filter?: unknown
-}
-
-interface GuidePayloadParams {
-  payloadRef?: unknown
-  key?: unknown
 }
 
 interface AskOption {
@@ -290,7 +288,7 @@ function collectModuleSummaries(tools: readonly KnowledgeToolSummary[]): Knowled
 }
 
 function findToolGuide(action: string): KnowledgeToolGuide | null {
-  const canonicalAction = functionNameToAction(action)
+  const canonicalAction = functionNameToAction(action, getAllFunctionDefinitions())
   const definition = getFunctionDefinition(action) ?? getFunctionDefinition(canonicalAction)
   if (definition !== undefined) return projectToolGuide(definition)
   return null
@@ -418,8 +416,10 @@ export const knowledgeGuideTool: RegisteredFunctionDefinition<GuideToolParams, u
     }
   },
 }
-
-export const knowledgeQueryPayloads: RegisteredFunctionDefinition<QueryPayloadsParams, unknown> = {
+export const knowledgeQueryPayloads: RegisteredFunctionDefinition<
+  KnowledgeQueryPayloadsParams,
+  KnowledgeQueryPayloadProvidersResult | KnowledgeQueryPayloadCatalogResult
+> = {
   action: 'core@knowledge@queryPayloads',
   type: 'describe',
   description: '查询可用参数荷载目录；无 payloadRef 时返回已注册荷载源列表。',
@@ -437,17 +437,19 @@ export const knowledgeQueryPayloads: RegisteredFunctionDefinition<QueryPayloadsP
     },
   },
   resultSchema: {
-    payloads: 'KnowledgePayloadSummary[]',
+    providers: 'KnowledgePayloadProviderSummary[]? — 省略 payloadRef 时返回已注册参数荷载源列表',
+    payloadRef: 'string? — 指定 payloadRef 查询时回显该荷载源 ID',
+    payloads: 'KnowledgePayloadSummary[]? — 指定 payloadRef 查询时返回该荷载源下的参数荷载目录',
     total: 'number',
   },
   example: {},
   validate: validateQueryPayloadsParams,
-  execute: (_context, params): FunctionResult => {
+  execute: (_context, params): FunctionResult<KnowledgeQueryPayloadProvidersResult | KnowledgeQueryPayloadCatalogResult> => {
     const payloadRef = isRecord(params) && typeof params['payloadRef'] === 'string' ? params['payloadRef'].trim() : ''
-    const filter = isRecord(params) && isRecord(params['filter']) ? params['filter'] : undefined
+    const filter = isRecord(params) && isRecord(params['filter']) ? (params['filter'] as KnowledgePayloadQueryFilter) : undefined
 
     if (payloadRef.length === 0) {
-      const providers = getKnowledgePayloadProviders().map(provider => ({
+      const providers: KnowledgePayloadProviderSummary[] = getKnowledgePayloadProviders().map(provider => ({
         payloadRef: provider.payloadRef,
         description: provider.description,
       }))
@@ -488,7 +490,7 @@ export const knowledgeQueryPayloads: RegisteredFunctionDefinition<QueryPayloadsP
   },
 }
 
-export const knowledgeGuidePayload: RegisteredFunctionDefinition<GuidePayloadParams, unknown> = {
+export const knowledgeGuidePayload: RegisteredFunctionDefinition<KnowledgeGuidePayloadParams, KnowledgePayloadGuide> = {
   action: 'core@knowledge@guidePayload',
   type: 'describe',
   description: '查询单个参数荷载的 JSON Schema、最小示例与使用规则。',
@@ -513,7 +515,7 @@ export const knowledgeGuidePayload: RegisteredFunctionDefinition<GuidePayloadPar
   },
   example: { payloadRef: '<registered-payload-ref>', key: '<payload-key>' },
   validate: validateGuidePayloadParams,
-  execute: (_context, params): FunctionResult => {
+  execute: (_context, params): FunctionResult<KnowledgePayloadGuide> => {
     if (!isRecord(params)) {
       return { ok: false, code: 'INVALID_PARAMS', msg: missingParam('payloadRef'), fix: '请传 { payloadRef:"<已注册 payloadRef>", key:"<payload key>" }' }
     }

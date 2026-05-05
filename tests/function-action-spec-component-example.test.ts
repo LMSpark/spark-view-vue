@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { FunctionResult } from '@spark-view/spark-ai'
-import { actionToFunctionName } from '../packages/spark-ai/src/core/protocol/fc-schema'
+import { actionToFunctionName } from '../packages/spark-ai/src/core/protocol/function-call-schema'
 import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
 let harnessExec: (action: string, params?: unknown, requestId?: string) => FunctionResult

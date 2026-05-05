@@ -45,9 +45,9 @@
 
 ```text
 packages/spark-ai/src/core
-  注册机: stills/dispatcher.ts, stills/domain.ts, knowledge/registry.ts
-  运行时: fc-schema.ts, fc-dispatcher.ts, session/*, orchestration/*
-  运行时内省: knowledge/query-actions.ts
+  注册机: stills/dispatcher.ts, stills/domain.ts, knowledge/payload-provider-registry.ts
+  运行时: function-call-schema.ts, fc-dispatcher.ts, session/*, orchestration/*
+  运行时内省: knowledge/knowledge-functions.ts
 
 packages/spark-ai/src/stills
   组合门面: 对外导出 core 能力，并按场景装配 core meta + page-design domain
@@ -84,9 +84,9 @@ catalog = 组件目录投影来源
 | `IStillSession.catalog` 绑定具体 `StillsCatalog` | 已从 `core/stills/types.ts` 与 `core/stills/domain.ts` 移除 | core session 只保留 `patchLog` 与 `domains`；page-design payload provider 自己持有组件目录投影。 |
 | `src/stills/meta-methods.ts` 暴露 `page-design.component` | 已迁入 `core/stills/meta-methods.ts`，并改为通用 `core@knowledge@queryPayloads({})` 入口提示 | `core@session@describe` 不再知道任何业务 payloadRef。 |
 | page-design host 反向 import `../../stills` 门面 | 已新增 `business/page-design/register-edit-stills.ts`，host 改为直接使用 core 注册机与本业务注册入口 | 避免 business -> facade -> business 的装配环。 |
-| page-design import `core/knowledge/query-actions` 的 still 对象 | 已改为业务本地协议动作字符串，不再引用 concrete still definition | 业务 follow-up 只描述协议动作，不绑定 core implementation object。 |
+| page-design import `core/knowledge/knowledge-functions` 的 still 对象 | 已改为业务本地协议动作字符串，不再引用 concrete still definition | 业务 follow-up 只描述协议动作，不绑定 core implementation object。 |
 | `business/index.ts` re-export `../stills` | 已移除，business barrel 只导出 page-design 业务入口 | 公共 facade 继续存在，但业务层不再通过 barrel 反向导出 facade。 |
-| `core/knowledge/payload-schema.ts` 通用 helper | 保留在 core | 仅用于通用 TypeScript type text -> JSON Schema 推断；一旦出现组件专用规则，立即下沉到 page-design payload provider。 |
+| `core/knowledge/json-schema-inference.ts` 通用 helper | 保留在 core | 仅用于通用 TypeScript type text -> JSON Schema 推断；一旦出现组件专用规则，立即下沉到 page-design payload provider。 |
 
 至此，core 与 page-design 的代码层物理分离完成：core 不依赖 page-design，page-design 不依赖公共 stills facade，只依赖 core 注册机/运行时协议。
 
@@ -313,7 +313,7 @@ packages/spark-ai/src/core/
     repeat-detection-monitor.ts
     session-backend.ts
     session-contracts.ts
-  fc-schema.ts
+  function-call-schema.ts
   fc-dispatcher.ts
 
 packages/spark-ai/src/stills/
@@ -429,7 +429,7 @@ registerEditStills()
 
 ## 11. 已完成的迁移结果
 
-- 新增 `core/knowledge/types.ts`、`registry.ts`、`query-actions.ts`、`payload-schema.ts`。
+- 新增 `core/knowledge/knowledge-query-types.ts`、`payload-provider-registry.ts`、`knowledge-functions.ts`、`json-schema-inference.ts`。
 - 新增 page-design payload provider，位置为 `business/page-design/payloads`。
 - core prompt 收敛为 `STILLS_PROTOCOL_BASE`。
 - page-design edit runtime prompt 迁入 `business/page-design/prompts`。
@@ -447,7 +447,7 @@ registerEditStills()
 - `core@session@describe` 已迁入 core，并只返回通用 knowledge discovery 入口。
 - page-design edit 注册入口已下沉为 `business/page-design/register-edit-stills.ts`。
 - page-design 运行时已停止依赖 `../../stills` 公共门面。
-- page-design follow-up 已停止 import `core/knowledge/query-actions` 的 concrete still 对象。
+- page-design follow-up 已停止 import `core/knowledge/knowledge-functions` 的 concrete still 对象。
 
 ---
 

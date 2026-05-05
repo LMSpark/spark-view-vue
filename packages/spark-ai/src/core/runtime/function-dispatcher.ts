@@ -8,7 +8,40 @@ import type {
 } from '../protocol/function-contracts'
 import { actionToCarrierKey, getFunctionCarrierByAction } from '../registry/function-carrier-registry'
 import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
-import { toErrorMessage } from './method-invoker'
+
+interface InvocationMissingMethod {
+  ok: false
+  code: 'METHOD_NOT_FOUND'
+  methodName: string
+}
+
+interface InvocationSucceeded {
+  ok: true
+  data: unknown
+}
+
+type InvocationResult = InvocationMissingMethod | InvocationSucceeded
+
+export function invokeNamedMethod(target: unknown, methodName: string, params: unknown): InvocationResult {
+  const member: unknown = Reflect.get(target as object, methodName)
+  if (typeof member !== 'function') {
+    return {
+      ok: false,
+      code: 'METHOD_NOT_FOUND',
+      methodName,
+    }
+  }
+
+  const dispatch = member as (this: object, payload?: unknown) => unknown
+  return {
+    ok: true,
+    data: dispatch.call(target as object, params),
+  }
+}
+
+export function toErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
+}
 
 /**
  * 未知函数错误结果生成器

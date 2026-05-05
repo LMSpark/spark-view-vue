@@ -4,7 +4,7 @@ import type {
   RegisteredFunctionDefinition,
 } from '../protocol/function-contracts'
 import { actionToCarrierKey } from '../registry/function-carrier-registry'
-import { invokeNamedMethod, toErrorMessage } from './method-invoker'
+import { invokeNamedMethod, toErrorMessage } from './function-dispatcher'
 
 /**
  * 核心方法背书定义构建器。

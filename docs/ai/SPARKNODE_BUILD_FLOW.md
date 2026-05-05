@@ -233,7 +233,7 @@ meta-methods.ts
         ├── catalog.guide()         ─→ 单组件配置指南入口
         └── stills.actionSpec()     ─→ 动作规格查询入口
 
-core/fc-schema.ts
+core/protocol/function-call-schema.ts
         └── generateToolDefinitions() ─→ LLM FC 工具注册入口
 
 business/page-design/fc-dispatcher.ts
@@ -302,5 +302,5 @@ Step 4: sparkNodeTree.addNode / sparkNodeTree.addNodes
 | FC Catalog 表 | `packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts` |
 | FC 执行桥接 | `packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts` |
 | 元动作（组件目录查询） | `packages/spark-ai/src/stills/meta-methods.ts` |
-| LLM FC 工具注册与分发 | `packages/spark-ai/src/core/fc-schema.ts` / `packages/spark-ai/src/business/page-design/fc-dispatcher.ts` |
+| LLM FC 工具注册与分发 | `packages/spark-ai/src/core/protocol/function-call-schema.ts` / `packages/spark-ai/src/core/runtime/fc-dispatcher.ts` |
 | 目录生成器（构建期） | `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` |

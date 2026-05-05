@@ -55,7 +55,7 @@ export const CORE_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
   tooling: [
       {
         key: 'tooling.fc.definition-filter',
-        target: 'core/protocol/fc-schema.ts#generateToolDefinitions',
+        target: 'core/runtime/tool-definition-builder.ts#generateToolDefinitions',
         configureWith: 'filter(types/actions/compactDescriptions)',
         description: '控制本轮暴露给 LLM 的 tool 集合。',
       },

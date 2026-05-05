@@ -1,4 +1,4 @@
-import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from '../../../../core/protocol/function-params-validator'
+import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from '../../../../core/protocol/llm-params-validator'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
 

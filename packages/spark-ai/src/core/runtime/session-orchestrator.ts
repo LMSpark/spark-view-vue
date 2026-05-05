@@ -16,7 +16,7 @@
  * 分层：
  *   Backend（会话存储 + 滑动窗口 + LLM 调用）
  *     → Orchestrator（本模块，循环 + 终止 + followUp 注入）
- *       → fc-schema/fc-dispatcher（FC schema 生成 + 调度 + 响应格式化）
+ *       → function-call-schema/fc-dispatcher（FC schema 生成 + 调度 + 响应格式化）
  *         → function-dispatcher（函数执行）
  */
 
@@ -33,7 +33,7 @@ import type {
   FollowUpPolicy,
 } from '../protocol/session-contracts'
 import { dispatchToolCallAsync } from './fc-dispatcher'
-import { generateToolDefinitions } from '../protocol/fc-schema'
+import { generateToolDefinitions } from './tool-definition-builder'
 
 // 后端 appendMessages 所用消息结构。
 // 统一为 FC 场景下 assistant/tool 双角色消息体，便于后续复用与维护。

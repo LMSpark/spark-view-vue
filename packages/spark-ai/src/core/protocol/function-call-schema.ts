@@ -1,6 +1,4 @@
 import type { RegisteredFunctionDefinition } from './function-contracts'
-import { getFunctionCarrierByAction } from '../registry/function-carrier-registry'
-import { getAllFunctionDefinitions } from '../registry/function-registry'
 import type { JsonSchemaProperty, ToolDefinition } from './session-contracts'
 import {
   isArraySchema,
@@ -9,17 +7,18 @@ import {
   isPlainRecord,
   normalizeSchemaNode,
   parseLeafDescription,
-} from './schema-ir'
+} from './parameter-schema'
 
 export function actionToFunctionName(action: string): string {
   return action.replace(/[@.]/g, '_')
 }
 
 export function functionNameToAction(name: string, registry?: ReadonlyMap<string, unknown>): string {
-  const definitions = registry ?? getAllFunctionDefinitions()
-  for (const [action] of definitions) {
-    if (actionToFunctionName(action) === name) {
-      return action
+  if (registry !== undefined) {
+    for (const [action] of registry) {
+      if (actionToFunctionName(action) === name) {
+        return action
+      }
     }
   }
 
@@ -164,11 +163,16 @@ function inferParametersFromSchema(paramsSchema: unknown): { properties: Record<
   return { properties: {}, required: [] }
 }
 
+export interface FunctionToToolDefinitionOptions {
+  modulePrompt?: string | undefined
+}
+
 export function functionToToolDefinition<TParams, TResult>(
   definition: RegisteredFunctionDefinition<TParams, TResult>,
+  options?: FunctionToToolDefinitionOptions,
 ): ToolDefinition {
   const { properties, required } = inferParametersFromSchema(definition.paramsSchema)
-  const modulePrompt = getFunctionCarrierByAction(definition.action)?.prompt ?? definition.modulePrompt
+  const modulePrompt = options?.modulePrompt ?? definition.modulePrompt
 
   const descriptionParts = [definition.description]
   if (modulePrompt) {
@@ -193,40 +197,4 @@ export function functionToToolDefinition<TParams, TResult>(
       },
     },
   }
-}
-
-export function generateToolDefinitions(
-  filter?: {
-    types?: Array<'request' | 'describe'>
-    actions?: string[]
-    compactDescriptions?: boolean
-  },
-): ToolDefinition[] {
-  const tools: ToolDefinition[] = []
-  const allowedActions = filter?.actions ? new Set(filter.actions) : null
-
-  for (const [, definition] of getAllFunctionDefinitions()) {
-    if (filter?.types && !filter.types.includes(definition.type)) {
-      continue
-    }
-    if (allowedActions && !allowedActions.has(definition.action)) {
-      continue
-    }
-
-    const toolDefinition = functionToToolDefinition(definition)
-
-    tools.push(
-      filter?.compactDescriptions
-        ? {
-            type: 'function',
-            function: {
-              ...toolDefinition.function,
-              description: definition.description,
-            },
-          }
-        : toolDefinition,
-    )
-  }
-
-  return tools
 }
