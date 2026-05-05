@@ -29,3 +29,5 @@ export {
 
 export type { EditState, EditPhase, EditToolHost } from './lifecycle'
 
+export { validateDataSetCrudToolFunctionParams } from './dataset'
+

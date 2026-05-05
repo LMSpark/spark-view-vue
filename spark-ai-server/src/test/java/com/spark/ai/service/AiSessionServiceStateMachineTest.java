@@ -1,4 +1,4 @@
-package com.spark.ai.stills;
+package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.config.OpenAiProperties;
@@ -9,19 +9,19 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class StillsSessionServiceStateMachineTest {
+class AiSessionServiceStateMachineTest {
 
-    private StillsSessionService createService() {
+    private AiSessionService createService() {
         OpenAiProperties props = new OpenAiProperties();
         props.setBaseUrl("https://api.openai.com");
         props.setApiKey("test-key");
         props.setModel("gpt-4o");
-        return new StillsSessionService(props, new ObjectMapper());
+        return new AiSessionService(props, new ObjectMapper());
     }
 
     @Test
     void stateMachine_allowsWhitelistedTransitions() {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
 
         assertTrue(service.isTransitionAllowedForTesting("READY", "PLAN"));
         assertTrue(service.isTransitionAllowedForTesting("PLAN", "CALL"));
@@ -36,7 +36,7 @@ class StillsSessionServiceStateMachineTest {
 
     @Test
     void stateMachine_rejectsNonWhitelistedTransitions() {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
 
         assertFalse(service.isTransitionAllowedForTesting("READY", "CALL"));
         assertFalse(service.isTransitionAllowedForTesting("CALL", "DONE"));
@@ -45,7 +45,7 @@ class StillsSessionServiceStateMachineTest {
 
     @Test
     void applyTransition_throwsOnInvalidTransition() {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
 
         IllegalStateException ex = assertThrows(
                 IllegalStateException.class,
@@ -56,7 +56,7 @@ class StillsSessionServiceStateMachineTest {
 
     @Test
     void handoffPayload_containsRequiredFields() {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
 
         Map<String, Object> payload = service.buildHandoffPayloadForTesting(
                 "HANDOFF_REQUIRED",

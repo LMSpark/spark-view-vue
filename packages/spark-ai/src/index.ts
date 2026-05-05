@@ -99,7 +99,6 @@ export type {
   LlmResponse,
   SessionBackend,
   MonitorContext,
-  MonitorContext,
   SessionMonitor,
   FollowUpBuildContext,
   FollowUpPolicy,

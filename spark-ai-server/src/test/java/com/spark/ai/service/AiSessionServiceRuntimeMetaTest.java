@@ -1,4 +1,4 @@
-package com.spark.ai.stills;
+package com.spark.ai.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,21 +11,21 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class StillsSessionServiceRuntimeMetaTest {
+class AiSessionServiceRuntimeMetaTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private StillsSessionService createService() {
+    private final AiSessionService createService() {
         OpenAiProperties props = new OpenAiProperties();
         props.setBaseUrl("https://api.openai.com");
         props.setApiKey("test-key");
         props.setModel("gpt-4o");
-        return new StillsSessionService(props, objectMapper);
+        return new AiSessionService(props, objectMapper);
     }
 
     @Test
     void runtimeMeta_blocksIdempotencyReplayForWindowedPolicy() throws Exception {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
         String sessionId = service.createSessionForTesting();
 
         List<Map<String, Object>> calls = List.of(
@@ -44,7 +44,7 @@ class StillsSessionServiceRuntimeMetaTest {
 
     @Test
     void runtimeMeta_blocksParallelWriteInSameGroup() throws Exception {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
         String sessionId = service.createSessionForTesting();
 
         List<Map<String, Object>> calls = List.of(
@@ -60,7 +60,7 @@ class StillsSessionServiceRuntimeMetaTest {
 
     @Test
     void runtimeMeta_blocksWhenWriteBudgetExceeded() throws Exception {
-        StillsSessionService service = createService();
+        AiSessionService service = createService();
         String sessionId = service.createSessionForTesting();
 
         List<Map<String, Object>> calls = List.of(

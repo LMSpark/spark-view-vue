@@ -1,4 +1,4 @@
-package com.spark.ai.stills;
+package com.spark.ai.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 统一会话服务 — 按 sessionId 管理对话历史 + 滑动窗口 + LLM 调用。
+ * AI 会话服务 — 按 sessionId 管理对话历史 + 滑动窗口 + LLM 调用。
  *
  * <h3>职责（通信层）</h3>
  * <ul>
@@ -32,9 +32,9 @@ import java.util.concurrent.Executors;
  * </ul>
  */
 @Service
-public class StillsSessionService {
+public class AiSessionService {
 
-    private static final Logger log = LoggerFactory.getLogger(StillsSessionService.class);
+    private static final Logger log = LoggerFactory.getLogger(AiSessionService.class);
 
     private static final int DEFAULT_WINDOW_SIZE = 30;
     private static final long SESSION_TIMEOUT_MS = 30 * 60 * 1000L;
@@ -92,7 +92,7 @@ public class StillsSessionService {
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    public StillsSessionService(OpenAiProperties props, ObjectMapper objectMapper) {
+    public AiSessionService(OpenAiProperties props, ObjectMapper objectMapper) {
         this.props = props;
         this.objectMapper = objectMapper;
 
@@ -124,7 +124,7 @@ public class StillsSessionService {
         session.windowSize = windowSize > 0 ? windowSize : DEFAULT_WINDOW_SIZE;
         session.lastActiveTime = System.currentTimeMillis();
         session.tools = tools;
-        session.mode = mode != null ? mode : "stills";
+        session.mode = mode != null ? mode : "function";
         session.state = SessionState.READY;
         session.consecutiveFailures = 0;
 
@@ -742,7 +742,7 @@ public class StillsSessionService {
 
     // 包级测试辅助：创建最小会话并返回 sessionId。
     String createSessionForTesting() {
-        return createSession("test-system", "test-user", DEFAULT_WINDOW_SIZE, null, "stills");
+        return createSession("test-system", "test-user", DEFAULT_WINDOW_SIZE, null, "function");
     }
 
     // 包级测试辅助：对给定 toolCalls 生成 runtime meta（复用真实幂等账本与并行判定）。
