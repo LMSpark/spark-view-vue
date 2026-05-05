@@ -158,6 +158,40 @@ describe('page-design function fine-grained flow', () => {
     expect(script).toContain('okAfterDatasetChange')
   })
 
+  it('keeps dataset-specific METHOD_NOT_FOUND guidance after method dispatch moved to core runtime', () => {
+    const fakeDataSetTool = {
+      toJson: () => ({ dataSetName: 'FakeDS', tables: {} }),
+    } as unknown as DataSetCrudTool
+
+    bindLiveModelAdapter(editState, {
+      getNodeTree: () => liveTree,
+      getDataSetTool: () => fakeDataSetTool,
+      readScript: () => script,
+      writeScript(content) {
+        script = content
+      },
+      readStyle: () => style,
+      writeStyle(content) {
+        style = content
+      },
+    })
+
+    const result = exec('pageDesign@dataset@createTable', {
+      tableName: 'Users',
+      columns: [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+      ],
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.code).toBe('METHOD_NOT_FOUND')
+    expect(result.msg).toContain('pageDesign@dataset@createTable')
+    expect(result.msg).toContain('DataSetCrudTool.createTable')
+    expect(result.fix).toContain('pageDesign@dataset@updateView')
+    expect(result.fix).not.toContain('参数格式')
+  })
+
   it('rejects script writes that use unavailable page runtime APIs', () => {
     script = 'function __init__() { console.log("ready") }\n'
 

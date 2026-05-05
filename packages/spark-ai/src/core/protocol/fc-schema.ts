@@ -1,4 +1,5 @@
 import type { RegisteredFunctionDefinition } from './function-contracts'
+import { getFunctionCarrierByAction } from '../registry/function-carrier-registry'
 import { getAllFunctionDefinitions } from '../registry/function-registry'
 import type { JsonSchemaProperty, ToolDefinition } from './session-contracts'
 import {
@@ -167,10 +168,11 @@ export function functionToToolDefinition<TParams, TResult>(
   definition: RegisteredFunctionDefinition<TParams, TResult>,
 ): ToolDefinition {
   const { properties, required } = inferParametersFromSchema(definition.paramsSchema)
+  const modulePrompt = getFunctionCarrierByAction(definition.action)?.prompt ?? definition.modulePrompt
 
   const descriptionParts = [definition.description]
-  if (definition.modulePrompt) {
-    descriptionParts.push(`模块提示: ${definition.modulePrompt}`)
+  if (modulePrompt) {
+    descriptionParts.push(`模块提示: ${modulePrompt}`)
   }
   if (definition.guardDescription) {
     descriptionParts.push(`前置条件: ${definition.guardDescription}`)

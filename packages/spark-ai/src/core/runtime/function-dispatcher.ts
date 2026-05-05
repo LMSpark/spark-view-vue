@@ -1,10 +1,14 @@
 import type {
+  FunctionAfterExecuteEvent,
+  FunctionCarrierContract,
   FunctionResult,
   FunctionRuntimeContext,
   FunctionTraceEntry,
   RegisteredFunctionDefinition,
 } from '../protocol/function-contracts'
+import { actionToCarrierKey, getFunctionCarrierByAction } from '../registry/function-carrier-registry'
 import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
+import { toErrorMessage } from './method-invoker'
 
 /**
  * 未知函数错误结果生成器
@@ -68,6 +72,194 @@ function buildGuardRetryFix(
 ): string {
   const guardHint = definition.guardDescription ?? `前置条件未满足（${guardCode}）`
   return `${guardMessage}。${guardHint}。${buildFunctionRetryFix(definition, '请先满足前置条件后重试当前函数')}`
+}
+
+function definitionRequiresCarrier(definition: RegisteredFunctionDefinition<unknown, unknown>): boolean {
+  return definition.guardWithCarrier !== undefined
+    || definition.validateWithCarrier !== undefined
+    || definition.executeWithCarrier !== undefined
+}
+
+function missingCarrierResult(
+  action: string,
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+): FunctionResult {
+  const carrierKey = actionToCarrierKey(action)
+  return {
+    ok: false,
+    code: 'MISSING_CARRIER',
+    msg: `${action} 缺少运行载体注入`,
+    fix: `请先为 ${carrierKey} 注册 FunctionCarrierContract。${buildFunctionRetryFix(definition, '当前函数依赖模块实例注入')}`,
+  }
+}
+
+function resolveDefinitionCarrier(
+  action: string,
+): {
+  definition: RegisteredFunctionDefinition<unknown, unknown> | undefined
+  carrier: FunctionCarrierContract<unknown> | undefined
+  missingCarrier: FunctionResult | null
+} {
+  const definition = getFunctionDefinition(action)
+  if (!definition) {
+    return { definition: undefined, carrier: undefined, missingCarrier: null }
+  }
+
+  const carrier = getFunctionCarrierByAction(action)
+  if (definitionRequiresCarrier(definition) && carrier === undefined) {
+    return {
+      definition,
+      carrier: undefined,
+      missingCarrier: missingCarrierResult(action, definition),
+    }
+  }
+
+  return { definition, carrier, missingCarrier: null }
+}
+
+function runGuardChecks(
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  context: FunctionRuntimeContext,
+  carrier: FunctionCarrierContract<unknown> | undefined,
+): { code: string; msg: string } | null {
+  const baseGuard = definition.guard?.(context) ?? null
+  if (baseGuard !== null) {
+    return baseGuard
+  }
+
+  if (carrier !== undefined && definition.guardWithCarrier !== undefined) {
+    return definition.guardWithCarrier(context, carrier.instance)
+  }
+
+  return null
+}
+
+function runValidationChecks(
+  action: string,
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  params: unknown,
+  context: FunctionRuntimeContext,
+  carrier: FunctionCarrierContract<unknown> | undefined,
+): FunctionResult | null {
+  const validationError = definition.validate(params)
+  if (validationError !== null) {
+    return invalidParamsResult(action, validationError)
+  }
+
+  if (carrier !== undefined && definition.validateWithCarrier !== undefined) {
+    const carrierValidationError = definition.validateWithCarrier(params, carrier.instance, context)
+    if (carrierValidationError !== null) {
+      return invalidParamsResult(action, carrierValidationError)
+    }
+  }
+
+  return null
+}
+
+function appendPostValidationWarnings(
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  context: FunctionRuntimeContext,
+  params: unknown,
+  result: FunctionResult,
+): void {
+  if (!result.ok || !definition.postValidate) {
+    return
+  }
+
+  const warnings = definition.postValidate(context, params)
+  if (warnings.length > 0) {
+    result.warnings = warnings
+  }
+}
+
+function appendRequestTrace(
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  context: FunctionRuntimeContext,
+  action: string,
+  requestId: string,
+  result: FunctionResult,
+): void {
+  if (result.ok && definition.type === 'request') {
+    context.patchLog.push(createTraceEntry(action, requestId, result.summary))
+  }
+}
+
+function runExecution(
+  action: string,
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  params: unknown,
+  context: FunctionRuntimeContext,
+  requestId: string,
+  carrier: FunctionCarrierContract<unknown> | undefined,
+): FunctionResult {
+  const guardResult = runGuardChecks(definition, context, carrier)
+  if (guardResult !== null) {
+    return {
+      ok: false,
+      code: guardResult.code,
+      msg: guardResult.msg,
+      fix: buildGuardRetryFix(definition, guardResult.code, guardResult.msg),
+    }
+  }
+
+  const validationResult = runValidationChecks(action, definition, params, context, carrier)
+  if (validationResult !== null) {
+    return validationResult
+  }
+
+  const result = carrier !== undefined && definition.executeWithCarrier !== undefined
+    ? definition.executeWithCarrier(context, carrier.instance, params)
+    : definition.execute(context, params)
+
+  appendPostValidationWarnings(definition, context, params, result)
+  appendRequestTrace(definition, context, action, requestId, result)
+  return result
+}
+
+function cancelledBeforeExecuteResult(
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  carrier: FunctionCarrierContract<unknown>,
+  action: string,
+  decision: { cancelled: true; code?: string; msg?: string; fix?: string },
+): FunctionResult {
+  return {
+    ok: false,
+    code: decision.code ?? 'EXECUTE_CANCELLED',
+    msg: decision.msg ?? `运行载体 ${carrier.carrierKey} 取消了 ${action}`,
+    fix: decision.fix ?? buildFunctionRetryFix(definition, `请检查运行载体 ${carrier.carrierKey} 的 beforeExecute 决策`),
+  }
+}
+
+function beforeHookErrorResult(
+  definition: RegisteredFunctionDefinition<unknown, unknown>,
+  carrier: FunctionCarrierContract<unknown>,
+  error: unknown,
+): FunctionResult {
+  return {
+    ok: false,
+    code: 'BEFORE_EXECUTE_ERROR',
+    msg: `运行载体 ${carrier.carrierKey} 的 beforeExecute 失败: ${toErrorMessage(error)}`,
+    fix: buildFunctionRetryFix(definition, `请检查运行载体 ${carrier.carrierKey} 的 beforeExecute 钩子实现`),
+  }
+}
+
+function appendAfterHookWarning(
+  result: FunctionResult,
+  carrier: FunctionCarrierContract<unknown>,
+  error: unknown,
+): void {
+  if (!result.ok) {
+    return
+  }
+
+  result.warnings = [
+    ...(result.warnings ?? []),
+    {
+      rule: 'carrier.afterExecute',
+      detail: `运行载体 ${carrier.carrierKey} 的 afterExecute 失败: ${toErrorMessage(error)}`,
+      fix: `请检查运行载体 ${carrier.carrierKey} 的 afterExecute 钩子实现。`,
+    },
+  ]
 }
 
 /**
@@ -140,42 +332,60 @@ export function executeFunction(
   context: FunctionRuntimeContext,
   requestId: string,
 ): FunctionResult {
-  const definition = getFunctionDefinition(action)
+  const { definition, carrier, missingCarrier } = resolveDefinitionCarrier(action)
   if (!definition) {
     return unknownFunctionResult(action)
   }
+  if (missingCarrier !== null) {
+    return missingCarrier
+  }
 
-  // 检查前置条件
-  const guardResult = definition.guard?.(context) ?? null
-  if (guardResult !== null) {
-    return {
-      ok: false,
-      code: guardResult.code,
-      msg: guardResult.msg,
-      fix: buildGuardRetryFix(definition, guardResult.code, guardResult.msg),
+  return runExecution(action, definition, params, context, requestId, carrier)
+}
+
+export async function executeFunctionAsync(
+  action: string,
+  params: unknown,
+  context: FunctionRuntimeContext,
+  requestId: string,
+): Promise<FunctionResult> {
+  const { definition, carrier, missingCarrier } = resolveDefinitionCarrier(action)
+  if (!definition) {
+    return unknownFunctionResult(action)
+  }
+  if (missingCarrier !== null) {
+    return missingCarrier
+  }
+
+  if (carrier !== undefined) {
+    try {
+      const decision = await context.emitBeforeExecute(carrier, {
+        action,
+        carrierKey: carrier.carrierKey,
+        params,
+      }, context)
+      if (decision?.cancelled === true) {
+        return cancelledBeforeExecuteResult(definition, carrier, action, decision)
+      }
+    } catch (error) {
+      return beforeHookErrorResult(definition, carrier, error)
     }
   }
 
-  // 验证参数
-  const validationError = definition.validate(params)
-  if (validationError !== null) {
-    return invalidParamsResult(action, validationError)
-  }
+  const result = runExecution(action, definition, params, context, requestId, carrier)
 
-  // 执行函数
-  const result: FunctionResult = definition.execute(context, params)
-
-  // 执行后置验证
-  if (result.ok && definition.postValidate) {
-    const warnings = definition.postValidate(context, params)
-    if (warnings.length > 0) {
-      result.warnings = warnings
+  if (carrier !== undefined) {
+    const afterEvent: FunctionAfterExecuteEvent = {
+      action,
+      carrierKey: carrier.carrierKey,
+      params,
+      result,
     }
-  }
-
-  // 如果是写操作且成功，则记录到跟踪日志
-  if (result.ok && definition.type === 'request') {
-    context.patchLog.push(createTraceEntry(action, requestId, result.summary))
+    try {
+      await context.emitAfterExecute(carrier, afterEvent, context)
+    } catch (error) {
+      appendAfterHookWarning(result, carrier, error)
+    }
   }
 
   return result

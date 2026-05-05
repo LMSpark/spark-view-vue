@@ -1,4 +1,4 @@
-import type { FunctionResult, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionCarrierContract, FunctionResult, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
 import {
   editInit,
   readActiveScript,
@@ -14,6 +14,7 @@ import {
 } from './tool-catalog'
 
 const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign@textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
+export const PAGE_DESIGN_TEXT_MODEL_CARRIER_KEY = 'pageDesign@textModel' as const
 
 type EditFileKey = 'script' | 'style'
 type TextModelMethod = 'readScript' | 'writeScript' | 'readStyle' | 'writeStyle'
@@ -67,6 +68,24 @@ function noTextModelResult(msg: string): FunctionResult<undefined> {
   }
 }
 
+function missingTextModelCarrierResult(action: string): FunctionResult<undefined> {
+  return {
+    ok: false,
+    code: 'MISSING_CARRIER',
+    msg: `${action} 缺少运行载体注入`,
+    fix: `请先注册 ${PAGE_DESIGN_TEXT_MODEL_CARRIER_KEY} 运行载体后再执行 ${action}。`,
+  }
+}
+
+export function createTextModelCarrier(state: EditState): FunctionCarrierContract<EditState> {
+  return {
+    carrierKey: PAGE_DESIGN_TEXT_MODEL_CARRIER_KEY,
+    prompt: PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT,
+    description: 'pageDesign 文本模型载体，负责当前 live script.js/style.css 读写。',
+    instance: state,
+  }
+}
+
 interface ScriptApiViolationRule {
   pattern: RegExp
   api: string
@@ -117,7 +136,7 @@ function validateScriptRuntimeContract(content: string): FunctionResult<undefine
   }
 }
 
-function createTextModelFunction(state: EditState, row: TextModelFunctionParameterRow): RegisteredFunctionDefinition {
+function createTextModelFunction(row: TextModelFunctionParameterRow): RegisteredFunctionDefinition {
   const mode: 'read' | 'write' = row.type === 'describe' ? 'read' : 'write'
   const runtime = FILE_RUNTIME_BY_KEY[row.fileKey]
 
@@ -125,14 +144,15 @@ function createTextModelFunction(state: EditState, row: TextModelFunctionParamet
     action: row.action,
     type: row.type,
     description: row.description,
-    modulePrompt: PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT,
     paramsSchema: row.paramsSchema,
     resultSchema: row.resultSchema,
     example: row.example,
     usageRules: row.usageRules,
     failureModes: row.failureModes,
     validate: (params) => validateTextModelFunctionParams(row.action, params),
-    execute: (_context, params): FunctionResult => {
+    execute: (): FunctionResult => missingTextModelCarrierResult(row.action),
+    executeWithCarrier: (_context, carrier, params): FunctionResult => {
+      const state = carrier as EditState
       const accessError = ensureTextModelAccess(state, row.fileKey, mode)
       if (accessError) {
         return noTextModelResult(accessError)
@@ -156,8 +176,8 @@ function createTextModelFunction(state: EditState, row: TextModelFunctionParamet
   }
 }
 
-export function createEditFileFunctions(state: EditState): RegisteredFunctionDefinition[] {
-  return TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(row => createTextModelFunction(state, row))
+export function createEditFileFunctions(): RegisteredFunctionDefinition[] {
+  return TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(row => createTextModelFunction(row))
 }
 
 export const EDIT_FILE_FUNCTION_SUMMARIES = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(row => ({

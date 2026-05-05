@@ -16,6 +16,7 @@ import { SessionBackendImpl } from '../../core/runtime/session-backend'
 import type { SessionBackend } from '../../core/protocol/session-contracts'
 import type { FunctionRuntimeContext } from '../../core/protocol/function-contracts'
 import { createFunctionRuntimeContext } from '../../core/protocol/function-contracts'
+import { clearFunctionCarrierRegistry } from '../../core/registry/function-carrier-registry'
 import { clearFunctionRegistry } from '../../core/registry/function-registry'
 import { clearKnowledgeRegistry } from '../../core/knowledge/registry'
 import { registerPageDesignEditFunctions } from './register-edit-functions'
@@ -202,6 +203,7 @@ export function createPageModelSessionHost(
     const previousBackendSessionId = clearLocalSessionState()
     disposeBackendSession(previousBackendSessionId)
 
+    clearFunctionCarrierRegistry()
     clearFunctionRegistry()
     clearKnowledgeRegistry()
 
@@ -227,6 +229,7 @@ export function createPageModelSessionHost(
     const previousBackendSessionId = clearLocalSessionState()
     await disposeBackendSessionSafely(previousBackendSessionId)
 
+    clearFunctionCarrierRegistry()
     clearFunctionRegistry()
     clearKnowledgeRegistry()
   }
@@ -238,6 +241,7 @@ export function createPageModelSessionHost(
     const previousBackendSessionId = clearLocalSessionState()
     disposeBackendSession(previousBackendSessionId)
 
+    clearFunctionCarrierRegistry()
     clearFunctionRegistry()
     clearKnowledgeRegistry()
   }

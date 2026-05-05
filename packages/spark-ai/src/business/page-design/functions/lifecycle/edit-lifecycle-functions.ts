@@ -1,4 +1,5 @@
 import type {
+  FunctionCarrierContract,
   FunctionResult,
   RegisteredFunctionDefinition,
 } from '../../../../core/protocol/function-contracts'
@@ -10,6 +11,7 @@ import {
 } from './tool-catalog'
 
 const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign@lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
+export const PAGE_DESIGN_LIFECYCLE_CARRIER_KEY = 'pageDesign@lifecycle' as const
 const PAGE_DESIGN_DESCRIBE_PROGRESS_ACTION = 'pageDesign@lifecycle@describeProgress'
 
 function getEditBootstrapFunctionRow() {
@@ -131,6 +133,25 @@ export function bindLiveModelAdapter(state: EditState, host: EditToolHost): void
   state.toolHost = host
 }
 
+function missingLifecycleCarrierResult(action: string): FunctionResult<undefined> {
+  return {
+    ok: false,
+    code: 'MISSING_CARRIER',
+    msg: `${action} 缺少运行载体注入`,
+    fix: `请先注册 ${PAGE_DESIGN_LIFECYCLE_CARRIER_KEY} 运行载体后再执行 ${action}。`,
+  }
+}
+
+export function createEditLifecycleCarrier(state: EditState): FunctionCarrierContract<EditState> {
+  return {
+    carrierKey: PAGE_DESIGN_LIFECYCLE_CARRIER_KEY,
+    isPrimary: true,
+    prompt: PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT,
+    description: 'pageDesign 编辑态生命周期载体，负责 bootstrap 与编辑状态查询。',
+    instance: state,
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 功能分区二：会话引导（bootstrap 主流程）
 // 目标：
@@ -174,31 +195,31 @@ export const editInit = {
   action: EDIT_BOOTSTRAP_FUNCTION_ROW.action,
 } as const
 
-function createEditInitFunction(state: EditState): RegisteredFunctionDefinition<EditInitParams, undefined> {
+function createEditInitFunction(): RegisteredFunctionDefinition<EditInitParams, undefined> {
   return {
     action: EDIT_BOOTSTRAP_FUNCTION_ROW.action,
     type: EDIT_BOOTSTRAP_FUNCTION_ROW.type,
     description: EDIT_BOOTSTRAP_FUNCTION_ROW.description,
-    modulePrompt: PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT,
     paramsSchema: EDIT_BOOTSTRAP_FUNCTION_ROW.paramsSchema,
     resultSchema: EDIT_BOOTSTRAP_FUNCTION_ROW.resultSchema,
     example: EDIT_BOOTSTRAP_FUNCTION_ROW.example,
     usageRules: EDIT_BOOTSTRAP_FUNCTION_ROW.usageRules,
     failureModes: EDIT_BOOTSTRAP_FUNCTION_ROW.failureModes,
     validate: (params) => validateEditLifecycleFunctionParams(EDIT_BOOTSTRAP_FUNCTION_ROW.action, params),
-    execute: (): FunctionResult<undefined> => {
+    execute: (): FunctionResult<undefined> => missingLifecycleCarrierResult(EDIT_BOOTSTRAP_FUNCTION_ROW.action),
+    executeWithCarrier: (_context, carrier): FunctionResult<undefined> => {
+      const state = carrier as EditState
       bootstrapEditSession(state)
       return { ok: true, data: undefined, summary: '编辑会话已完成函数引导（模型实例 + 函数入口），进入 editing 状态' }
     },
   }
 }
 
-function createDescribeProgressFunction(state: EditState): RegisteredFunctionDefinition<Record<string, never>, unknown> {
+function createDescribeProgressFunction(): RegisteredFunctionDefinition<Record<string, never>, unknown> {
   return {
     action: PAGE_DESIGN_DESCRIBE_PROGRESS_ACTION,
     type: 'describe',
     description: '查询当前 pageDesign 编辑运行状态、live adapter 可用性和下一步建议。',
-    modulePrompt: PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT,
     paramsSchema: {},
     resultSchema: {
       phase: 'EditPhase',
@@ -212,31 +233,35 @@ function createDescribeProgressFunction(state: EditState): RegisteredFunctionDef
     ],
     failureModes: [],
     validate: () => null,
-    execute: (): FunctionResult => ({
-      ok: true,
-      data: {
-        phase: state.phase,
-        adapters: {
-          nodeTree: getActiveNodeTree(state) !== null,
-          dataSet: getActiveDataSetTool(state) !== null,
-          readScript: typeof state.toolHost?.readScript === 'function',
-          writeScript: typeof state.toolHost?.writeScript === 'function',
-          readStyle: typeof state.toolHost?.readStyle === 'function',
-          writeStyle: typeof state.toolHost?.writeStyle === 'function',
+    execute: (): FunctionResult => missingLifecycleCarrierResult(PAGE_DESIGN_DESCRIBE_PROGRESS_ACTION),
+    executeWithCarrier: (_context, carrier): FunctionResult => {
+      const state = carrier as EditState
+      return {
+        ok: true,
+        data: {
+          phase: state.phase,
+          adapters: {
+            nodeTree: getActiveNodeTree(state) !== null,
+            dataSet: getActiveDataSetTool(state) !== null,
+            readScript: typeof state.toolHost?.readScript === 'function',
+            writeScript: typeof state.toolHost?.writeScript === 'function',
+            readStyle: typeof state.toolHost?.readStyle === 'function',
+            writeStyle: typeof state.toolHost?.writeStyle === 'function',
+          },
+          nextStep: state.phase === 'editing'
+            ? '已进入编辑态；按目标文件选择 pageDesign@nodeTree / pageDesign@dataset / pageDesign@textModel 函数。'
+            : `请先执行 ${editInit.action} 初始化编辑会话。`,
         },
-        nextStep: state.phase === 'editing'
-          ? '已进入编辑态；按目标文件选择 pageDesign@nodeTree / pageDesign@dataset / pageDesign@textModel 函数。'
-          : `请先执行 ${editInit.action} 初始化编辑会话。`,
-      },
-      summary: `pageDesign 编辑状态：${state.phase}`,
-    }),
+        summary: `pageDesign 编辑状态：${state.phase}`,
+      }
+    },
   }
 }
 
-export function createEditLifecycleFunctions(state: EditState): RegisteredFunctionDefinition[] {
+export function createEditLifecycleFunctions() {
   return [
-    createEditInitFunction(state),
-    createDescribeProgressFunction(state),
+    createEditInitFunction(),
+    createDescribeProgressFunction(),
   ]
 }
 

@@ -32,7 +32,7 @@ import type {
   OrchestratorResult,
   FollowUpPolicy,
 } from '../protocol/session-contracts'
-import { dispatchToolCall } from './fc-dispatcher'
+import { dispatchToolCallAsync } from './fc-dispatcher'
 import { generateToolDefinitions } from '../protocol/fc-schema'
 
 // 后端 appendMessages 所用消息结构。
@@ -175,7 +175,7 @@ export async function runFunctionLoop(
   }
 
   const turns: DialogueTurn[] = []
-  const dispatch = config.dispatchFc ?? dispatchToolCall
+  const dispatch = config.dispatchFc ?? dispatchToolCallAsync
   let round = 0
   let completed = false
   let aborted = false
@@ -250,7 +250,7 @@ export async function runFunctionLoop(
       // - 每个 tool 执行后都会即时记录 turn、注入 followUp、检查中止条件。
       // ─────────────────────────────────────────────────────────────────────
       for (const tc of toolCalls) {
-        const dispatched = dispatch(tc, context)
+        const dispatched = await dispatch(tc, context)
         const { action, result, toolResult } = dispatched
 
         lastResult = result

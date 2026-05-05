@@ -7,8 +7,18 @@ export {
 } from './protocol/function-contracts'
 export type {
   FunctionKind,
+  FunctionCarrierKey,
+  FunctionCarrierContract,
+  FunctionBeforeExecuteEvent,
+  FunctionAfterExecuteEvent,
+  FunctionBeforeExecuteDecision,
+  FunctionBeforeExecuteEmitter,
+  FunctionAfterExecuteEmitter,
+  FunctionCarrierBeforeExecuteHook,
+  FunctionCarrierAfterExecuteHook,
   FunctionResult,
   FunctionFailureMode,
+  FunctionCatalogRow,
   PostValidationWarning,
   FunctionTraceEntry,
   FunctionRuntimeContext,
@@ -65,14 +75,33 @@ export {
   getAllFunctionDefinitions,
   clearFunctionRegistry,
 } from './registry/function-registry'
+export {
+  actionToCarrierKey,
+  registerFunctionCarrier,
+  registerFunctionCarriers,
+  getFunctionCarrier,
+  getFunctionCarrierByAction,
+  getAllFunctionCarriers,
+  clearFunctionCarrierRegistry,
+} from './registry/function-carrier-registry'
 
 // Runtime
 export {
   executeFunction,
+  executeFunctionAsync,
 } from './runtime/function-dispatcher'
 export {
+  invokeNamedMethod,
+  toErrorMessage,
+} from './runtime/method-invoker'
+export {
+  createMethodBackedDefinitions,
+} from './runtime/method-backed-definitions'
+export {
   dispatchToolCall,
+  dispatchToolCallAsync,
   dispatchToolCalls,
+  dispatchToolCallsAsync,
   formatToolResultContent,
   buildAssistantToolCallMessage,
   buildToolResultMessage,

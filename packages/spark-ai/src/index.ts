@@ -70,6 +70,15 @@ export {
 } from './core/protocol/function-contracts'
 export type {
   FunctionKind,
+  FunctionCarrierKey,
+  FunctionCarrierContract,
+  FunctionBeforeExecuteEvent,
+  FunctionAfterExecuteEvent,
+  FunctionBeforeExecuteDecision,
+  FunctionBeforeExecuteEmitter,
+  FunctionAfterExecuteEmitter,
+  FunctionCarrierBeforeExecuteHook,
+  FunctionCarrierAfterExecuteHook,
   FunctionResult,
   FunctionFailureMode,
   PostValidationWarning,
@@ -86,7 +95,17 @@ export {
   clearFunctionRegistry,
 } from './core/registry/function-registry'
 export {
+  actionToCarrierKey,
+  registerFunctionCarrier,
+  registerFunctionCarriers,
+  getFunctionCarrier,
+  getFunctionCarrierByAction,
+  getAllFunctionCarriers,
+  clearFunctionCarrierRegistry,
+} from './core/registry/function-carrier-registry'
+export {
   executeFunction,
+  executeFunctionAsync,
 } from './core/runtime/function-dispatcher'
 
 // ──【功能分区6】会话编排器（会话级工具循环编排）──────────────────────────────────
@@ -134,7 +153,9 @@ export {
 } from './core/protocol/fc-schema'
 export {
   dispatchToolCall,
+  dispatchToolCallAsync,
   dispatchToolCalls,
+  dispatchToolCallsAsync,
   formatToolResultContent,
   buildAssistantToolCallMessage,
   buildToolResultMessage,

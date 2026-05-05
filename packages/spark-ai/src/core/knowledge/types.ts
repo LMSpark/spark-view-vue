@@ -8,7 +8,10 @@ export interface KnowledgeToolSummary {
   functionName: string
   type: 'request' | 'describe'
   description: string
+  carrierKey?: string
   modulePrompt?: string
+  moduleDescription?: string
+  isPrimaryModule?: boolean
   guard?: string
   rules?: string[]
   failureCodes?: string[]
@@ -19,7 +22,10 @@ export interface KnowledgeToolSummary {
 export interface KnowledgeModuleSummary {
   business: string
   module: string
+  carrierKey?: string
   prompt: string
+  description?: string
+  isPrimary?: boolean
   toolCount: number
   actions: string[]
 }

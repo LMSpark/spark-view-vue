@@ -127,7 +127,7 @@ export interface OrchestratorConfig {
   onRoundStart?: (round: number) => void
   onTurnComplete?: (turn: DialogueTurn) => void
   onRoundComplete?: (turn: DialogueTurn) => void
-  dispatchFc?: (toolCall: ToolCall, context: FunctionRuntimeContext) => FcDispatchResult
+  dispatchFc?: (toolCall: ToolCall, context: FunctionRuntimeContext) => FcDispatchResult | Promise<FcDispatchResult>
   followUpPolicy?: FollowUpPolicy
 }
 

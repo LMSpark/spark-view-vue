@@ -1,5 +1,5 @@
 import type { FunctionResult, FunctionRuntimeContext } from '../protocol/function-contracts'
-import { executeFunction } from './function-dispatcher'
+import { executeFunction, executeFunctionAsync } from './function-dispatcher'
 import { functionNameToAction } from '../protocol/fc-schema'
 import type { FcDispatchResult, ToolCall, ToolResult } from '../protocol/session-contracts'
 
@@ -64,11 +64,52 @@ export function dispatchToolCall(
   }
 }
 
+export async function dispatchToolCallAsync(
+  toolCall: ToolCall,
+  context: FunctionRuntimeContext,
+): Promise<FcDispatchResult> {
+  const action = functionNameToAction(toolCall.function.name)
+
+  let params: unknown
+  try {
+    params = JSON.parse(toolCall.function.arguments)
+  } catch {
+    const result: FunctionResult = {
+      ok: false,
+      code: 'INVALID_JSON',
+      msg: `参数 JSON 解析失败: ${toolCall.function.arguments.slice(0, 100)}`,
+      fix: '确保 arguments 是合法 JSON 对象',
+    }
+    return {
+      toolCall,
+      action,
+      result,
+      toolResult: { tool_call_id: toolCall.id, content: formatToolResultContent(result) },
+    }
+  }
+
+  const result = await executeFunctionAsync(action, params, context, toolCall.id)
+
+  return {
+    toolCall,
+    action,
+    result,
+    toolResult: { tool_call_id: toolCall.id, content: formatToolResultContent(result) },
+  }
+}
+
 export function dispatchToolCalls(
   toolCalls: ToolCall[],
   context: FunctionRuntimeContext,
 ): FcDispatchResult[] {
   return toolCalls.map(tc => dispatchToolCall(tc, context))
+}
+
+export async function dispatchToolCallsAsync(
+  toolCalls: ToolCall[],
+  context: FunctionRuntimeContext,
+): Promise<FcDispatchResult[]> {
+  return Promise.all(toolCalls.map(tc => dispatchToolCallAsync(tc, context)))
 }
 
 export function buildAssistantToolCallMessage(

@@ -4,6 +4,7 @@ import type {
   RegisteredFunctionDefinition,
 } from '../protocol/function-contracts'
 import { noGuard } from '../protocol/function-contracts'
+import { getFunctionCarrier, getFunctionCarrierByAction } from '../registry/function-carrier-registry'
 import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
 import { actionToFunctionName, functionNameToAction } from '../protocol/fc-schema'
 import { isNonEmptyString, missingParam } from '../protocol/function-utils'
@@ -115,9 +116,11 @@ function failureCodes(failureModes: readonly FunctionFailureMode[] | undefined):
 // 【功能分区3】数据投影 - 将函数定义转换为查询结果
 // ─────────────────────────────────────────────────────────────────────────────
 
-function projectToolSummary(definition: RegisteredFunctionDefinition<never, unknown>): KnowledgeToolSummary {
+function projectToolSummary(definition: RegisteredFunctionDefinition<unknown, unknown>): KnowledgeToolSummary {
   const address = parseActionAddress(definition.action)
   const knownFailureCodes = failureCodes(definition.failureModes)
+  const carrier = getFunctionCarrierByAction(definition.action)
+  const modulePrompt = carrier?.prompt ?? definition.modulePrompt
   return {
     action: definition.action,
     business: address.business,
@@ -126,7 +129,10 @@ function projectToolSummary(definition: RegisteredFunctionDefinition<never, unkn
     functionName: actionToFunctionName(definition.action),
     type: definition.type,
     description: definition.description,
-    ...(definition.modulePrompt ? { modulePrompt: definition.modulePrompt } : {}),
+    ...(carrier?.carrierKey ? { carrierKey: carrier.carrierKey } : {}),
+    ...(modulePrompt ? { modulePrompt } : {}),
+    ...(carrier?.description ? { moduleDescription: carrier.description } : {}),
+    ...(carrier?.isPrimary !== undefined ? { isPrimaryModule: carrier.isPrimary } : {}),
     ...(definition.guardDescription ? { guard: definition.guardDescription } : {}),
     ...(definition.usageRules && definition.usageRules.length > 0 ? { rules: definition.usageRules } : {}),
     ...(knownFailureCodes !== undefined ? { failureCodes: knownFailureCodes } : {}),
@@ -135,7 +141,7 @@ function projectToolSummary(definition: RegisteredFunctionDefinition<never, unkn
   }
 }
 
-function projectToolGuide(definition: RegisteredFunctionDefinition<never, unknown>): KnowledgeToolGuide {
+function projectToolGuide(definition: RegisteredFunctionDefinition<unknown, unknown>): KnowledgeToolGuide {
   return {
     ...projectToolSummary(definition),
     paramsSchema: definition.paramsSchema ?? null,
@@ -240,12 +246,18 @@ function collectModuleSummaries(tools: readonly KnowledgeToolSummary[]): Knowled
 
   for (const tool of tools) {
     const key = `${tool.business}@${tool.module}`
+    const carrier = getFunctionCarrier(key)
     const existing = moduleMap.get(key)
     if (existing === undefined) {
       moduleMap.set(key, {
         business: tool.business,
         module: tool.module,
-        prompt: tool.modulePrompt ?? '',
+        ...(carrier?.carrierKey ? { carrierKey: carrier.carrierKey } : {}),
+        prompt: carrier?.prompt ?? tool.modulePrompt ?? '',
+        ...(carrier?.description ?? tool.moduleDescription ? { description: carrier?.description ?? tool.moduleDescription } : {}),
+        ...(carrier?.isPrimary !== undefined || tool.isPrimaryModule !== undefined
+          ? { isPrimary: carrier?.isPrimary ?? tool.isPrimaryModule }
+          : {}),
         toolCount: 1,
         actions: [tool.action],
       })
@@ -254,8 +266,23 @@ function collectModuleSummaries(tools: readonly KnowledgeToolSummary[]): Knowled
 
     existing.toolCount += 1
     existing.actions.push(tool.action)
-    if (existing.prompt.length === 0 && tool.modulePrompt !== undefined) {
-      existing.prompt = tool.modulePrompt
+    if (existing.prompt.length === 0) {
+      const prompt = carrier?.prompt ?? tool.modulePrompt
+      if (prompt !== undefined) {
+        existing.prompt = prompt
+      }
+    }
+    if (existing.description === undefined) {
+      const description = carrier?.description ?? tool.moduleDescription
+      if (description !== undefined) {
+        existing.description = description
+      }
+    }
+    if (existing.isPrimary !== true && (carrier?.isPrimary === true || tool.isPrimaryModule === true)) {
+      existing.isPrimary = true
+    }
+    if (existing.carrierKey === undefined && carrier?.carrierKey) {
+      existing.carrierKey = carrier.carrierKey
     }
   }
 
@@ -303,7 +330,7 @@ export const knowledgeQueryTools: RegisteredFunctionDefinition<QueryToolsParams,
     },
   },
   resultSchema: {
-    modules: 'KnowledgeModuleSummary[] — 按 business@module 聚合的模块提示词、函数数和 action 列表',
+    modules: 'KnowledgeModuleSummary[] — 按 business@module 聚合的模块提示词、主模块标记、函数数和 action 列表',
     tools: 'KnowledgeToolSummary[]',
     total: 'number',
     hint: 'string',
@@ -349,7 +376,7 @@ export const knowledgeGuideTool: RegisteredFunctionDefinition<GuideToolParams, u
   },
   resultSchema: {
     action: 'string',
-    modulePrompt: 'string? — 目标函数所属模块的提示词',
+    modulePrompt: 'string? — 目标函数所属模块的提示词，优先来自 carrier.prompt',
     paramsSchema: 'Record<string, unknown> | null',
     usageRules: 'string[]',
     failureModes: 'FunctionFailureMode[]',
