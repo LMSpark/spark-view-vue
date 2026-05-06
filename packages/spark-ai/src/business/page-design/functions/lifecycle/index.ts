@@ -3,6 +3,7 @@ export {
   editInit,
   createEditLifecycleFunctions,
   EDIT_LIFECYCLE_FUNCTION_SUMMARIES,
+  createEditLifecycleCarrier,
   getActiveNodeTree,
   notifyNodeTreeChanged,
   getActiveDataSetTool,

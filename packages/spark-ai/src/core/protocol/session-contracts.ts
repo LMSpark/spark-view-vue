@@ -3,7 +3,7 @@ import type { FunctionResult, FunctionRuntimeContext, PostValidationWarning } fr
 /**
  * 会话编排协议。
  *
- * 这个文件只定义函数循环会话的公共通信契约，供后端适配器、FC 调度器、
+ * 这个文件只定义函数循环会话的公共通信契约，供后端适配器、
  * 编排器与监控器共享：
  * 1. 工具 schema 与 Function Calling 调用消息
  * 2. 会话后端的请求/响应协议
@@ -40,7 +40,7 @@ export interface JsonSchemaProperty {
  * JSON Schema 根对象。
  * 输入语义：描述单个工具参数对象的整体结构。
  * 输出语义：作为 Function Calling `parameters` 的稳定协议形状。
- * 调用时机：工具定义生成阶段由协议层或 runtime adapter 输出。
+ * 调用时机：工具定义生成阶段由协议层输出。
  */
 export interface JsonSchema {
   type: 'object'
@@ -106,13 +106,14 @@ export interface ToolResult {
 
 /**
  * 单次 FC 调度结果。
- * 输入语义：把 toolCall、本地 action、统一 FunctionResult 与序列化后的 ToolResult 聚合到一起。
+ * 输入语义：把 toolCall、本地 action、已解析参数、统一 FunctionResult 与序列化后的 ToolResult 聚合到一起。
  * 输出语义：供编排器记录 turn、喂给 monitor，并把 toolResult 回传后端。
- * 调用时机：dispatchToolCall / dispatchToolCallAsync 完成后返回。
+ * 调用时机：单次 toolCall 调度完成后返回。
  */
 export interface FcDispatchResult {
   toolCall: ToolCall
   action: string
+  params: unknown
   result: FunctionResult
   toolResult: ToolResult
 }
@@ -341,9 +342,48 @@ export interface FollowUpPolicy {
  */
 
 /**
+ * 结构化反问中的单个选项。
+ * 输入语义：由 ask 类型函数携带，描述一个可点击的备选项。
+ * 输出语义：UI 层渲染为可点击按钮或列表项；value 未提供时使用 id。
+ * 调用时机：编排器检测到 ask 类型函数成功执行时随 OrchestratorResult.pendingAsk 向上暴露。
+ */
+export interface AskOption {
+  id: string
+  label: string
+  value?: unknown
+  description?: string
+}
+
+/**
+ * 结构化反问中的单个问题。
+ * 输入语义：描述单个问题的题目、类型、选项与推荐选项。
+ * 输出语义：UI 层据此渲染单选/多选问题块。
+ * 调用时机：编排器检测到 ask 类型函数成功执行时随 OrchestratorResult.pendingAsk 向上暴露。
+ */
+export interface AskQuestion {
+  id: string
+  prompt: string
+  type: 'single' | 'multi'
+  options: AskOption[]
+  recommendedOptionIds: string[]
+}
+
+/**
+ * 结构化反问参数体。
+ * 输入语义：ask 函数的完整参数，同时也是 OrchestratorResult.pendingAsk 的形状。
+ * 输出语义：UI 层渲染为反问卡片；用户点击选项后将答案注入对话并以 resumeSessionId 继续循环。
+ * 调用时机：编排器检测到 ask 类型函数成功执行时暂停循环并携带本类型返回。
+ */
+export interface AskParams {
+  title: string
+  reason?: string
+  questions: AskQuestion[]
+}
+
+/**
  * 编排器运行配置。
  * 输入语义：声明一轮 runFunctionLoop 的所有可调参数和回调扩展点。
- * 输出语义：编排器据此决定后端会话创建方式、工具调度器、监控器与 follow-up 策略。
+ * 输出语义：编排器据此决定后端会话创建方式、监控器与 follow-up 策略。
  * 调用时机：启动一轮函数会话前由调用方构造。
  */
 export interface OrchestratorConfig {
@@ -358,8 +398,9 @@ export interface OrchestratorConfig {
   onRoundStart?: (round: number) => void
   onTurnComplete?: (turn: DialogueTurn) => void
   onRoundComplete?: (turn: DialogueTurn) => void
-  dispatchFc?: (toolCall: ToolCall, context: FunctionRuntimeContext) => FcDispatchResult | Promise<FcDispatchResult>
   followUpPolicy?: FollowUpPolicy
+  /** ask 类型函数执行成功时的 UI 回调；UI 层在此渲染反问卡片、收集用户答案后以 resumeSessionId 继续循环。 */
+  onAsk?: (ask: AskParams) => void
 }
 
 /**
@@ -375,4 +416,41 @@ export interface OrchestratorResult {
   abortReason?: string | undefined
   completed: boolean
   sessionId: string
+  /** ask 类型函数触发的待响应反问；非空时循环已暂停，UI 层应呈现反问卡片并在用户确认后继续。 */
+  pendingAsk?: AskParams
 }
+
+/**
+ * 功能分区五：通用对话与流式协议
+ * 时序说明：
+ * 1. 这些类型是 AI 对话的最基础协议层：角色、消息、token 用量与 SSE 回调。
+ * 2. 供 session-backend、session-orchestrator 以及外部消费方共同引用。
+ */
+
+/** 对话角色标识。 */
+export type ProtocolRole = 'user' | 'assistant' | 'system'
+
+/** 基础对话消息。 */
+export interface ProtocolMessage {
+  role: ProtocolRole
+  content: string
+}
+
+/** LLM Token 用量统计（标准化结构）。 */
+export interface TokenUsage {
+  promptTokens?: number
+  completionTokens?: number
+  totalTokens?: number
+  promptCacheHitTokens?: number
+  promptCacheMissTokens?: number
+}
+
+/** SSE 流式事件回调（通用，可用于任何 SSE 端点）。 */
+export interface StreamCallbacks {
+  onDelta?: (text: string) => void
+  onReasoning?: (text: string) => void
+  onPhase?: (phase: number, status: string, message: string) => void
+  onUsage?: (usage: Record<string, unknown>) => void
+  onError?: (error: string) => void
+}
+

@@ -16,14 +16,17 @@
  * 分层：
  *   Backend（会话存储 + 滑动窗口 + LLM 调用）
  *     → Orchestrator（本模块，循环 + 终止 + followUp 注入）
- *       → function-call-schema/fc-dispatcher（FC schema 生成 + 调度 + 响应格式化）
+ *       → function-call-schema（FC schema 生成 + name/action 映射）
+ *       → dispatchToolCallAsync（本模块内联参数解析 + ToolResult 序列化）
  *         → function-dispatcher（函数执行）
  */
 
 import type { FunctionResult, FunctionRuntimeContext } from '../protocol/function-contracts'
 import type {
   DialogueTurn,
+  FcDispatchResult,
   FunctionTurnResult,
+  SessionAppendMessage,
   ToolCall,
   SessionBackend,
   MonitorContext,
@@ -31,18 +34,12 @@ import type {
   OrchestratorConfig,
   OrchestratorResult,
   FollowUpPolicy,
+  AskParams,
 } from '../protocol/session-contracts'
-import { dispatchToolCallAsync } from './fc-dispatcher'
-import { generateToolDefinitions } from './tool-definition-builder'
-
-// 后端 appendMessages 所用消息结构。
-// 统一为 FC 场景下 assistant/tool 双角色消息体，便于后续复用与维护。
-type BackendMessage = {
-  role: string
-  content: string
-  tool_call_id?: string
-  tool_calls?: ToolCall[]
-}
+import { executeFunctionAsync } from './function-dispatcher'
+import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
+import { functionNameToAction } from '../protocol/function-call-schema'
+import { generateToolDefinitions } from './tool-schema-builder'
 
 // ═══════════════════════════════════════════════════════════
 // 【功能分区 1】辅助函数定义
@@ -56,6 +53,69 @@ function toTurnResult(result: FunctionResult): FunctionTurnResult {
     return { ok: true, data: result.data, summary: result.summary, warnings: result.warnings }
   }
   return { ok: false, code: result.code, msg: result.msg, fix: result.fix }
+}
+
+function formatToolResultContent(result: FunctionResult): string {
+  const stringify = (value: unknown): string => {
+    const seen = new WeakSet<object>()
+    return JSON.stringify(value, (_key, currentValue: unknown) => {
+      if (typeof currentValue === 'function') {
+        return '[Function]'
+      }
+      if (typeof currentValue === 'object' && currentValue !== null) {
+        if (seen.has(currentValue)) {
+          return '[Circular]'
+        }
+        seen.add(currentValue)
+      }
+      return currentValue
+    })
+  }
+
+  if (result.ok) {
+    const output: Record<string, unknown> = { ok: true, data: result.data, summary: result.summary }
+    if (result.warnings && result.warnings.length > 0) {
+      output['warnings'] = result.warnings
+    }
+    return stringify(output)
+  }
+  return stringify({ ok: false, code: result.code, msg: result.msg, fix: result.fix })
+}
+
+async function dispatchToolCallAsync(
+  toolCall: ToolCall,
+  context: FunctionRuntimeContext,
+): Promise<FcDispatchResult> {
+  const action = functionNameToAction(toolCall.function.name, getAllFunctionDefinitions())
+
+  let params: unknown
+  try {
+    params = JSON.parse(toolCall.function.arguments)
+  } catch {
+    const result: FunctionResult = {
+      ok: false,
+      code: 'INVALID_JSON',
+      msg: `参数 JSON 解析失败: ${toolCall.function.arguments.slice(0, 100)}`,
+      fix: '确保 arguments 是合法 JSON 对象',
+    }
+    return {
+      toolCall,
+      action,
+      params: toolCall.function.arguments,
+      result,
+      toolResult: { tool_call_id: toolCall.id, content: formatToolResultContent(result) },
+    }
+  }
+
+  const result = await executeFunctionAsync(action, params, context, toolCall.id)
+
+  return {
+    toolCall,
+    action,
+    params,
+    result,
+    toolResult: { tool_call_id: toolCall.id, content: formatToolResultContent(result) },
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -145,7 +205,7 @@ function checkAbortByMonitors(monitors: SessionMonitor[], monitorCtx: MonitorCon
  * 2. 逐个调度 toolCalls → 本地执行函数
  * 3. 构建 followUp（错误纠正 + warnings + 监控器）
  * 4. 向后端追加 assistant + tool result 消息
- * 5. 检查终止条件
+ * 5. 检查终止条件（由 monitors 协议统一判定）
  *
  * @param userPrompt  - 用户原始需求
  * @param context     - 函数运行时上下文（仅执行轨迹，不含业务状态）
@@ -175,11 +235,12 @@ export async function runFunctionLoop(
   }
 
   const turns: DialogueTurn[] = []
-  const dispatch = config.dispatchFc ?? dispatchToolCallAsync
+  const dispatch = dispatchToolCallAsync
   let round = 0
   let completed = false
   let aborted = false
   let abortReason = ''
+  let pendingAsk: AskParams | undefined
   const monitors = config.monitors ?? []
   
   // followUpPolicy 必须由调用方注入（外层装配职责）。
@@ -231,7 +292,7 @@ export async function runFunctionLoop(
       }
 
       // ── 步骤 3: 逐个调度 toolCalls ──
-      const messages: BackendMessage[] = []
+      const messages: SessionAppendMessage[] = []
 
       // 先追加 assistant 消息（含 tool_calls）
       messages.push({
@@ -251,18 +312,10 @@ export async function runFunctionLoop(
       // ─────────────────────────────────────────────────────────────────────
       for (const tc of toolCalls) {
         const dispatched = await dispatch(tc, context)
-        const { action, result, toolResult } = dispatched
+        const { action, params, result, toolResult } = dispatched
 
         lastResult = result
-        // fail-fast：tool 参数 JSON 解析失败 = LLM 协议层错误，必须暴露给上层处理。
-        // 旧实现 catch 后回填空对象会让畸形参数继续流入下游 monitors / followUp 计算，掩盖根因。
-        try {
-          lastParams = JSON.parse(tc.function.arguments)
-        } catch (err) {
-          throw new Error(
-            `tool arguments JSON 解析失败 (action=${dispatched.action}, toolCallId=${tc.id}): ${(err as Error).message}`,
-          )
-        }
+        lastParams = params
 
         // 记录每个 tool call 的执行轮次
         const turn: DialogueTurn = {
@@ -310,6 +363,12 @@ export async function runFunctionLoop(
           content: resultContent,
         })
 
+        // maxExecutionMs 非零函数成功：暂停循环等待 UI 交互
+        if ((getFunctionDefinition(action)?.maxExecutionMs ?? 0) !== 0 && result.ok) {
+          pendingAsk = result.data as AskParams
+          break
+        }
+
         // 检查监控器终止（每个 tool 执行后即时检查）。
         const monitorAbort = checkAbortByMonitors(monitors, monitorCtx)
         if (monitorAbort.abort) {
@@ -325,6 +384,13 @@ export async function runFunctionLoop(
       }
 
       if (aborted || completed) break
+
+      // ask 挂起：持久化消息（含 ask 结果）后暂停循环等待 UI
+      if (pendingAsk !== undefined) {
+        await backend.appendMessages(sessionId, messages, config.signal)
+        config.onAsk?.(pendingAsk)
+        break
+      }
 
       // ── 步骤 4: 向后端追加消息（assistant + tool results） ──
       await backend.appendMessages(sessionId, messages, config.signal)
@@ -346,5 +412,6 @@ export async function runFunctionLoop(
     abortReason: abortReason || undefined,
     completed,
     sessionId,
+    ...(pendingAsk !== undefined ? { pendingAsk } : {}),
   }
 }

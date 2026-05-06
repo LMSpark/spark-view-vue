@@ -35,19 +35,19 @@ export const CORE_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
   session: [
       {
         key: 'session.backend.base-url',
-        target: 'core/runtime/session-backend.ts#SessionBackendImpl',
-        configureWith: "new SessionBackendImpl(baseUrl, options)",
+        target: 'core/runtime/session-backend.ts#createSessionBackend',
+        configureWith: 'createSessionBackend(baseUrl, options)',
         description: '配置会话后端 API 基址。',
       },
       {
         key: 'session.backend.headers',
-        target: 'core/runtime/session-backend.ts#SessionBackendImpl',
+        target: 'core/runtime/session-backend.ts#createSessionBackend',
         configureWith: 'options.getHeaders',
         description: '注入租户/项目/鉴权请求头。',
       },
       {
         key: 'session.backend.sse-event-hook',
-        target: 'core/runtime/session-backend.ts#SessionBackendImpl',
+        target: 'core/runtime/session-backend.ts#createSessionBackend',
         configureWith: 'options.onSseEvent',
         description: '订阅后端 SSE 事件用于调试与观测。',
       },
@@ -55,7 +55,7 @@ export const CORE_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
   tooling: [
       {
         key: 'tooling.fc.definition-filter',
-        target: 'core/runtime/tool-definition-builder.ts#generateToolDefinitions',
+        target: 'core/runtime/tool-schema-builder.ts#generateToolDefinitions',
         configureWith: 'filter(types/actions/compactDescriptions)',
         description: '控制本轮暴露给 LLM 的 tool 集合。',
       },
@@ -80,12 +80,6 @@ export const CORE_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
         description: '插拔重复检测/流程推进/终止判定等监控器策略。',
       },
       {
-        key: 'orchestration.dispatch-fc',
-        target: 'core/protocol/session-contracts.ts#OrchestratorConfig.dispatchFc',
-        configureWith: 'custom dispatch function',
-        description: '覆盖默认 FC 调度策略（通常用于测试或实验）。',
-      },
-      {
         key: 'orchestration.sse-hook',
         target: 'core/protocol/session-contracts.ts#OrchestratorConfig.onSseEvent',
         configureWith: 'per-run onSseEvent callback',
@@ -95,7 +89,7 @@ export const CORE_LIFECYCLE_CONFIG_TREE: LifecycleOwnerTree = {
   teardown: [
       {
         key: 'session.destroy-all',
-        target: 'core/runtime/session-backend.ts#destroyAllSessions',
+        target: 'core/protocol/session-contracts.ts#SessionBackend.destroyAllSessions',
         configureWith: 'backend.destroyAllSessions()',
         description: '切换上下文时批量销毁会话。',
       },

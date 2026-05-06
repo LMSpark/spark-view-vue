@@ -5,7 +5,6 @@ export {
   noGuard,
 } from './protocol/function-contracts'
 export type {
-  FunctionKind,
   FunctionCarrierKey,
   FunctionCarrierContract,
   FunctionBeforeExecuteEvent,
@@ -27,7 +26,11 @@ export type {
 export {
   actionToFunctionName,
   functionNameToAction,
+  functionToToolDefinition,
 } from './protocol/function-call-schema'
+export {
+  createMethodBackedDefinitions,
+} from './protocol/method-backed-definition-builder'
 export {
   AI_FUNCTION_ARCHITECTURE_PROMPT,
 } from './protocol/architecture-prompt'
@@ -47,6 +50,9 @@ export type {
   LlmResponse,
   SessionBackend,
   SessionBackendSseEvent,
+  SessionBackendTurnOptions,
+  SessionAppendMessage,
+  SessionConversationMessage,
   MonitorContext,
   SessionMonitor,
   FollowUpBuildContext,
@@ -59,7 +65,23 @@ export type {
   ToolDefinition,
   JsonSchema,
   JsonSchemaProperty,
+  ProtocolRole,
+  ProtocolMessage,
+  TokenUsage,
+  StreamCallbacks,
+  AskOption,
+  AskQuestion,
+  AskParams,
 } from './protocol/session-contracts'
+export {
+  extractFirstJsonObject,
+  parseTokenUsage,
+  formatTokenUsage,
+  parseActionAddress,
+} from './protocol/invocation-helpers'
+export type {
+  ActionAddressParts,
+} from './protocol/invocation-helpers'
 
 // Registry
 export {
@@ -71,6 +93,8 @@ export {
 } from './registry/function-registry'
 export {
   actionToCarrierKey,
+} from './protocol/invocation-helpers'
+export {
   registerFunctionCarrier,
   registerFunctionCarriers,
   getFunctionCarrier,
@@ -88,28 +112,15 @@ export {
   executeFunctionAsync,
 } from './runtime/function-dispatcher'
 export {
-  functionToToolDefinition,
-  generateToolDefinitions,
-} from './runtime/tool-definition-builder'
-export {
-  createMethodBackedDefinitions,
-} from './runtime/method-backed-definitions'
-export {
-  dispatchToolCall,
-  dispatchToolCallAsync,
-  formatToolResultContent,
-} from './runtime/fc-dispatcher'
-export {
-  SessionBackendImpl,
+  createSessionBackend,
 } from './runtime/session-backend'
-export type { SessionBackendImplOptions } from './runtime/session-backend'
+export type { SessionBackendOptions } from './runtime/session-backend'
 export {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
 } from './runtime/repeat-detection-monitor'
 export {
   createDefaultFollowUpPolicy,
-  DefaultFollowUpPolicy,
   formatWarningsAsFollowUp,
   buildInlineFunctionGuide,
   buildErrorFollowUp,
@@ -120,6 +131,9 @@ export type { FollowUpDecorations } from './runtime/default-follow-up-policy'
 export {
   runFunctionLoop,
 } from './runtime/session-orchestrator'
+export {
+  generateToolDefinitions,
+} from './runtime/tool-schema-builder'
 
 // Lifecycle config registry
 export {
@@ -129,14 +143,14 @@ export {
   listCoreLifecycleConfigPaths,
   getLifecycleConfigTree,
   getCoreLifecycleTree,
-} from './lifecycle-config-paths'
+} from './protocol/lifecycle-config-paths'
 export type {
   LifecycleStage,
   LifecycleConfigNode,
   LifecycleConfigTree,
   LifecycleOwnerTree,
   LifecycleConfigPath,
-} from './lifecycle-config-paths'
+} from './protocol/lifecycle-config-paths'
 
 // Knowledge
 export {

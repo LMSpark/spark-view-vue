@@ -1,14 +1,15 @@
 /**
  * 会话后端 HTTP 客户端统一实现。
- *
- * - SessionBackendImpl：运行时 AI 会话客户端（基于 createRequest）
  */
 
 import { createFetchClient, createRequest, Logger } from '@spark-view/spark-utils'
 import type {
   SessionBackend,
   LlmResponse,
+  SessionAppendMessage,
+  SessionBackendTurnOptions,
   SessionBackendSseEvent,
+  SessionConversationMessage,
   ToolCall,
   ToolDefinition,
 } from '../protocol/session-contracts'
@@ -18,7 +19,7 @@ const log = Logger('SessionBackend')
 /**
  * 会话后端实现选项接口
  */
-export interface SessionBackendImplOptions {
+export interface SessionBackendOptions {
   /**
    * 获取请求头的函数
    * 用于在请求中添加认证、租户等信息
@@ -29,7 +30,7 @@ export interface SessionBackendImplOptions {
    * SSE事件回调函数
    * 用于处理从服务器发送的事件
    */
-  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
+  onSseEvent?: (event: SessionBackendSseEvent) => void
 }
 
 /**
@@ -85,13 +86,13 @@ function toBackendErrorMessage(err: unknown): string {
  * 会话后端实现类
  * 管理与AI后端服务的通信，包括会话创建、执行、消息追加和销毁
  */
-export class SessionBackendImpl implements SessionBackend {
+class SessionBackendClient implements SessionBackend {
   private http = createRequest({ timeout: 300_000 })
   private sseClient = createFetchClient({ timeout: 300_000 })
   private sessionIds = new Set<string>()
   private baseUrl: string
   private readonly getHeaders: (() => Record<string, string>) | null
-  private readonly onSseEvent: ((event: { sessionId: string; type: string; data: string }) => void) | null
+  private readonly onSseEvent: ((event: SessionBackendSseEvent) => void) | null
 
   /**
    * 构造函数
@@ -100,7 +101,7 @@ export class SessionBackendImpl implements SessionBackend {
    */
   constructor(
     baseUrl = '/api/ai/sessions',
-    options: SessionBackendImplOptions = {},
+    options: SessionBackendOptions = {},
   ) {
     this.baseUrl = baseUrl
     this.getHeaders = options.getHeaders ?? null
@@ -154,7 +155,7 @@ export class SessionBackendImpl implements SessionBackend {
    */
   async executeTurn(
     sessionId: string,
-    options: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void } = {},
+    options: SessionBackendTurnOptions = {},
   ): Promise<LlmResponse | null> {
     try {
       return await this.executeTurnViaSse(sessionId, options)
@@ -173,7 +174,7 @@ export class SessionBackendImpl implements SessionBackend {
    */
   private async executeTurnViaSse(
     sessionId: string,
-    options: { signal?: AbortSignal; onSseEvent?: (event: SessionBackendSseEvent) => void } = {},
+    options: SessionBackendTurnOptions = {},
   ): Promise<LlmResponse> {
     const headers: Record<string, string> = this.getHeaders ? this.getHeaders() : {}
     const events = await this.sseClient.streamSSE({
@@ -250,12 +251,7 @@ export class SessionBackendImpl implements SessionBackend {
    */
   async appendMessages(
     sessionId: string,
-    messages: Array<{
-      role: string
-      content: string
-      tool_call_id?: string
-      tool_calls?: ToolCall[]
-    }>,
+    messages: SessionAppendMessage[],
     signal?: AbortSignal,
   ): Promise<void> {
     await this.http.post(`${this.baseUrl}/${sessionId}/append`, {
@@ -271,8 +267,8 @@ export class SessionBackendImpl implements SessionBackend {
    */
   async getConversation(
     sessionId: string,
-  ): Promise<Array<{ role: string; content: string }>> {
-    const resp = await this.http.get<{ conversation: Array<{ role: string; content: string }> }>(
+  ): Promise<SessionConversationMessage[]> {
+    const resp = await this.http.get<{ conversation: SessionConversationMessage[] }>(
       `${this.baseUrl}/${sessionId}/conversation`
     )
 
@@ -308,7 +304,7 @@ export class SessionBackendImpl implements SessionBackend {
  */
 export function createSessionBackend(
   baseUrl?: string,
-  options: SessionBackendImplOptions = {},
+  options: SessionBackendOptions = {},
 ): SessionBackend {
-  return new SessionBackendImpl(baseUrl, options)
+  return new SessionBackendClient(baseUrl, options)
 }

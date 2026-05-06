@@ -1,4 +1,4 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core'
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'
@@ -7,11 +7,11 @@ type EditLifecycleFunctionCoreFields = Omit<
   Required<
     Pick<
       RegisteredFunctionDefinition<Record<string, unknown>, unknown>,
-      'action' | 'type' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
+      'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
   'failureModes'
->
+> & { type: 'describe' | 'request' }
 
 export type EditLifecycleFunctionParameterRow = EditLifecycleFunctionCoreFields & {
   failureModes: EditLifecycleFunctionFailureMode[]

@@ -1,20 +1,18 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
+  functionNameToAction,
+  functionToToolDefinition,
+  generateToolDefinitions,
+  getFunctionDefinition,
+  type KnowledgeModuleSummary,
+  type KnowledgeToolGuide,
+  type KnowledgeToolSummary,
+} from '../packages/spark-ai/src'
+import {
   TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
 } from '../packages/spark-data/src'
-import { getFunctionDefinition } from '../packages/spark-ai/src/core/registry/function-registry'
-import { functionNameToAction } from '../packages/spark-ai/src/core/protocol/function-call-schema'
-import {
-  functionToToolDefinition,
-  generateToolDefinitions,
-} from '../packages/spark-ai/src/core/runtime/tool-definition-builder'
-import type {
-  KnowledgeModuleSummary,
-  KnowledgeToolGuide,
-  KnowledgeToolSummary,
-} from '../packages/spark-ai/src/core/protocol/knowledge-query-contracts'
 import type { FunctionResult } from '@spark-view/spark-ai'
 import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 

@@ -1,18 +1,21 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { FunctionCatalogRow } from '../packages/spark-ai/src/core/protocol/function-contracts'
-import { createFunctionRuntimeContext } from '../packages/spark-ai/src/core/runtime/function-runtime-context'
-import { createMethodBackedDefinitions } from '../packages/spark-ai/src/core/runtime/method-backed-definitions'
+import {
+  createFunctionRuntimeContext,
+  createMethodBackedDefinitions,
+  type FunctionCatalogRow,
+} from '../packages/spark-ai/src'
 
 interface TestRow extends FunctionCatalogRow {
   method: string
+  type?: 'describe' | 'request'
 }
 
 function createRow(overrides: Partial<TestRow> = {}): TestRow {
   return {
     action: 'pageDesign@test@doThing',
     type: 'request',
-    description: 'test runtime dispatch',
+    description: 'test method-backed dispatch',
     paramsSchema: { value: 'number' },
     resultSchema: { ok: 'boolean' },
     example: { value: 1 },
@@ -66,7 +69,7 @@ function executeWithCarrier<TCarrier>(definition: ReturnType<typeof createDefini
   return definition.executeWithCarrier(createFunctionRuntimeContext(), carrier, params)
 }
 
-describe('core runtime method-backed dispatch', () => {
+describe('core method-backed definition builder', () => {
   it('forwards validate and returns missingTarget when target cannot be resolved', () => {
     const row = createRow()
     const validate = vi.fn(() => 'INVALID')

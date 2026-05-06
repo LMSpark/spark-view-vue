@@ -8,11 +8,12 @@
 import { describe, it, expect } from 'vitest'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import {
+  createSessionBackend,
   createDefaultFollowUpPolicy,
   createRepeatDetectionMonitor,
   getActiveNodeTree,
   runFunctionLoop,
-  SessionBackendImpl,
+  type SessionBackendSseEvent,
 } from '@spark-view/spark-ai'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
@@ -167,12 +168,12 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     }, 'seed-create-table')
     expect(seededCreateTable.ok).toBe(true)
 
-    const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`, {
+    const backend = createSessionBackend(`${BASE_URL}/api/ai/sessions`, {
       getHeaders: () => ({
         Authorization: `Bearer ${authToken}`,
         'X-Tenant-Id': AUTH_TENANT_ID,
       }),
-      onSseEvent: (e) => {
+      onSseEvent: (e: SessionBackendSseEvent) => {
         if (e.type === 'tool_calls') {
           console.info(`   [LLM 动作发出] ${e.data}`)
         } else if (e.type === 'message') {
@@ -338,12 +339,12 @@ ${AUTONOMOUS_GUARDRAILS}
     }, 'seed-create-table-fullflow')
     expect(seededCreateTable.ok).toBe(true)
 
-    const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`, {
+    const backend = createSessionBackend(`${BASE_URL}/api/ai/sessions`, {
       getHeaders: () => ({
         Authorization: `Bearer ${authToken}`,
         'X-Tenant-Id': AUTH_TENANT_ID,
       }),
-      onSseEvent: (e) => {
+      onSseEvent: (e: SessionBackendSseEvent) => {
         if (e.type === 'tool_calls') {
           console.info(`   [LLM 动作发出] ${e.data}`)
         } else if (e.type === 'message') {

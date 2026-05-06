@@ -2,6 +2,10 @@ export {
   createPageDesignEditFunctions,
   createEditNodeTreeFunctions,
   createEditDataSetFunctions,
+  createEditNodeTreeCarrier,
+  createEditDataSetCarrier,
+  PAGE_DESIGN_NODE_TREE_CARRIER_KEY,
+  PAGE_DESIGN_DATASET_CARRIER_KEY,
   EDIT_FUNCTION_SUMMARIES,
   isEditWriteAction,
   isEditNodeTreeWriteAction,
@@ -16,6 +20,7 @@ export {
   createEditState,
   createEditLifecycleFunctions,
   EDIT_LIFECYCLE_FUNCTION_SUMMARIES,
+  createEditLifecycleCarrier,
   getActiveNodeTree,
   notifyNodeTreeChanged,
   getActiveDataSetTool,
@@ -28,6 +33,8 @@ export {
 } from './lifecycle'
 
 export type { EditState, EditPhase, EditToolHost } from './lifecycle'
+
+export { createTextModelCarrier } from './text-model'
 
 export { validateDataSetCrudToolFunctionParams } from './dataset'
 

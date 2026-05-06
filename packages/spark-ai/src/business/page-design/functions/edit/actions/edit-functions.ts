@@ -1,5 +1,9 @@
-import { createMethodBackedDefinitions } from '../../../../../core'
-import type { FunctionCarrierContract, FunctionResult, RegisteredFunctionDefinition } from '../../../../../core/protocol/function-contracts'
+import {
+  createMethodBackedDefinitions,
+  type FunctionCarrierContract,
+  type FunctionResult,
+  type RegisteredFunctionDefinition,
+} from '../../../../../core'
 import {
   editInit,
   createEditLifecycleFunctions,
@@ -9,8 +13,8 @@ import {
   notifyDataSetChanged,
   notifyNodeTreeChanged,
   type EditState,
-} from '../../lifecycle/edit-lifecycle-functions'
-import { createEditFileFunctions, EDIT_FILE_FUNCTION_SUMMARIES } from '../../text-model/text-model-functions'
+} from '../../lifecycle'
+import { createEditFileFunctions, EDIT_FILE_FUNCTION_SUMMARIES } from '../../text-model'
 import { DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE } from '../../dataset'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE, validateSparkNodeTreeToolParams } from '../../node-tree'
 

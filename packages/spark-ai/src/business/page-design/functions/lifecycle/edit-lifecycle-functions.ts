@@ -2,7 +2,7 @@ import type {
   FunctionCarrierContract,
   FunctionResult,
   RegisteredFunctionDefinition,
-} from '../../../../core/protocol/function-contracts'
+} from '../../../../core'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
@@ -198,7 +198,6 @@ export const editInit = {
 function createEditInitFunction(): RegisteredFunctionDefinition<EditInitParams, undefined> {
   return {
     action: EDIT_BOOTSTRAP_FUNCTION_ROW.action,
-    type: EDIT_BOOTSTRAP_FUNCTION_ROW.type,
     description: EDIT_BOOTSTRAP_FUNCTION_ROW.description,
     paramsSchema: EDIT_BOOTSTRAP_FUNCTION_ROW.paramsSchema,
     resultSchema: EDIT_BOOTSTRAP_FUNCTION_ROW.resultSchema,
@@ -218,7 +217,6 @@ function createEditInitFunction(): RegisteredFunctionDefinition<EditInitParams, 
 function createDescribeProgressFunction(): RegisteredFunctionDefinition<Record<string, never>, unknown> {
   return {
     action: PAGE_DESIGN_DESCRIBE_PROGRESS_ACTION,
-    type: 'describe',
     description: '查询当前 pageDesign 编辑运行状态、live adapter 可用性和下一步建议。',
     paramsSchema: {},
     resultSchema: {

@@ -12,13 +12,16 @@
  * - 宿主不直接执行 LLM 编排；编排由上层编辑会话模块触发。
  */
 
-import { SessionBackendImpl } from '../../core/runtime/session-backend'
-import type { SessionBackend } from '../../core/protocol/session-contracts'
-import type { FunctionRuntimeContext } from '../../core/protocol/function-contracts'
-import { createFunctionRuntimeContext } from '../../core/runtime/function-runtime-context'
-import { clearFunctionCarrierRegistry } from '../../core/registry/function-carrier-registry'
-import { clearFunctionRegistry } from '../../core/registry/function-registry'
-import { clearKnowledgeRegistry } from '../../core/knowledge/payload-provider-registry'
+import {
+  clearFunctionCarrierRegistry,
+  clearFunctionRegistry,
+  clearKnowledgeRegistry,
+  createFunctionRuntimeContext,
+  createSessionBackend,
+  type FunctionRuntimeContext,
+  type SessionBackend,
+  type SessionBackendOptions,
+} from '../../core'
 import { registerPageDesignEditFunctions } from './register-edit-functions'
 import {
   bindLiveModelAdapter,
@@ -110,9 +113,9 @@ export interface CreatePageModelSessionHostOptions {
  */
 export function createPageModelSessionBackend(
   baseUrl = '/api/ai/sessions',
-  options: ConstructorParameters<typeof SessionBackendImpl>[1] = {},
+  options: SessionBackendOptions = {},
 ): SessionBackend {
-  return new SessionBackendImpl(baseUrl, options)
+  return createSessionBackend(baseUrl, options)
 }
 
 /**

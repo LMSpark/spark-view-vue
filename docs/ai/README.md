@@ -43,6 +43,8 @@ AI 配置能力的系统设计与实施规划。这里只保留当前仍存在�
 | [DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md) | **预研母版**：DevSystem AI 统一到页面级 4 文件同层编辑的背景梳理与目标架构；审核时以实施计划书为准 |
 | [DEVSYSTEM_DATASET_TOOL_SSOT.md](architecture/DEVSYSTEM_DATASET_TOOL_SSOT.md) | **当前实现**：DevSystem / `pagedata.json` / `DataSetCrudTool` / AI 能力目录之间的 SSoT 边界与调用链 |
 | [AI_FRONTEND_UNIFICATION_PLAN.md](architecture/AI_FRONTEND_UNIFICATION_PLAN.md) | 前端 AI 引擎统一与细粒度编辑主链路规划 |
+| [AI_CORE_LAYER_CONCEPT_MODEL.md](architecture/AI_CORE_LAYER_CONCEPT_MODEL.md) | **概念模型**：AI 核心层的一等对象、分层边界、注册原则与最小工作流 |
+| [AI_CORE_LAYER_LIFECYCLE_AND_EVENT_SEQUENCE.md](architecture/AI_CORE_LAYER_LIFECYCLE_AND_EVENT_SEQUENCE.md) | **时序模型**：业务实例状态机、启动运行暂停恢复停止与统一事件顺序约束 |
 
 ## 角色约定
 

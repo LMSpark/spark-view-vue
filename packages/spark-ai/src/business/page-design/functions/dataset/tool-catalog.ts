@@ -1,6 +1,10 @@
-import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from '../../../../core/protocol/llm-params-validator'
+import {
+  formatLlmParamValidationIssues,
+  validateLlmDeserializedParams,
+  type FunctionFailureMode,
+  type RegisteredFunctionDefinition,
+} from '../../../../core'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
 
 type MethodKey<T> = Extract<{
   [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
@@ -31,11 +35,11 @@ type DatasetCrudToolFunctionCoreFields = Omit<
   Required<
     Pick<
       RegisteredFunctionDefinition<Record<string, unknown>, unknown>,
-      'action' | 'type' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
+      'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
   'failureModes'
->
+> & { type: 'describe' | 'request' }
 
 export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionCoreFields & {
   failureModes: DatasetCrudToolFunctionFailureMode[]

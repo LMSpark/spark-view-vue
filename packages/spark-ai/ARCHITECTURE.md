@@ -30,7 +30,7 @@ AiChatWidget
 ### 2.2 细粒度编辑链
 
 DevDataSetDesigner / useRuleEditSession
--> registerEditStills() / runStillsLoop() / SessionBackendImpl
+-> registerPageDesignEditFunctions() / runFunctionLoop() / createSessionBackend()
 -> POST /api/ai/sessions / turn / turn/stream / append
 -> AiSessionController
 -> StillsSessionService

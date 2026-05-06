@@ -61,7 +61,6 @@ export function buildInlineFunctionGuide(
 
   return JSON.stringify({
     action: definition.action,
-    type: definition.type,
     paramsSchema: definition.paramsSchema ?? null,
     usageRules: definition.usageRules ?? [],
     ...extras,
@@ -129,29 +128,25 @@ function buildEscalatedErrorFollowUp(
   return `[系统升级纠错]\n函数 ${action} 已连续 ${failedCount} 次使用相同参数失败。\n请停止复用失败参数，直接按已内联函数指南重新组装参数后重试。${functionGuideText}`
 }
 
-export class DefaultFollowUpPolicy implements FollowUpPolicy {
-  constructor(private readonly decorations?: FollowUpDecorations) {}
-
-  buildFollowUps(ctx: FollowUpBuildContext): string[] {
-    const { action, result, monitorCtx } = ctx
-    const followUps: string[] = []
-
-    if (!result.ok) {
-      followUps.push(buildErrorFollowUp(action, result.code, result.msg, result.fix, this.decorations))
-      const failedCount = countConsecutiveSameFailedSignature(monitorCtx)
-      if (failedCount >= 2) {
-        followUps.push(buildEscalatedErrorFollowUp(action, failedCount, this.decorations))
-      }
-    }
-
-    if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
-      followUps.push(formatWarningsAsFollowUp(action, result.warnings, this.decorations))
-    }
-
-    return followUps
-  }
-}
-
 export function createDefaultFollowUpPolicy(decorations?: FollowUpDecorations): FollowUpPolicy {
-  return new DefaultFollowUpPolicy(decorations)
+  return {
+    buildFollowUps(ctx: FollowUpBuildContext): string[] {
+      const { action, result, monitorCtx } = ctx
+      const followUps: string[] = []
+
+      if (!result.ok) {
+        followUps.push(buildErrorFollowUp(action, result.code, result.msg, result.fix, decorations))
+        const failedCount = countConsecutiveSameFailedSignature(monitorCtx)
+        if (failedCount >= 2) {
+          followUps.push(buildEscalatedErrorFollowUp(action, failedCount, decorations))
+        }
+      }
+
+      if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
+        followUps.push(formatWarningsAsFollowUp(action, result.warnings, decorations))
+      }
+
+      return followUps
+    },
+  }
 }

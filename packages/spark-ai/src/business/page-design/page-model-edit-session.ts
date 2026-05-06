@@ -13,18 +13,22 @@
  */
 
 import type { SparkNodeTree } from '@spark-view/spark-component'
-import type { DialogueTurn, OrchestratorResult, SessionBackend, ToolDefinition } from '../../core/protocol/session-contracts'
-import { runFunctionLoop } from '../../core/runtime/session-orchestrator'
-import { functionNameToAction } from '../../core/protocol/function-call-schema'
-import { generateToolDefinitions } from '../../core/runtime/tool-definition-builder'
-import { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
-import type { FunctionResult, FunctionRuntimeContext } from '../../core/protocol/function-contracts'
-import { executeFunction } from '../../core/runtime/function-dispatcher'
-import { createDefaultFollowUpPolicy } from '../../core/runtime/default-follow-up-policy'
 import {
+  createDefaultFollowUpPolicy,
   createRepeatDetectionMonitor,
+  executeFunction,
+  functionNameToAction,
+  generateToolDefinitions,
+  runFunctionLoop,
+  type FunctionResult,
+  type FunctionRuntimeContext,
   type RepeatDetectionConfig,
-} from '../../core/runtime/repeat-detection-monitor'
+  type DialogueTurn,
+  type OrchestratorResult,
+  type SessionBackend,
+  type SessionBackendSseEvent,
+  type ToolDefinition,
+} from '../../core'
 import {
   editInit,
   EDIT_FUNCTION_SUMMARIES,
@@ -40,6 +44,7 @@ import {
   type PageModelSessionHostRuntime,
   type PageModelFunctionContext,
 } from './page-model-session-host'
+import { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
 
 const CORE_KNOWLEDGE_GUIDE_PAYLOAD_ACTION = 'core@knowledge@guidePayload'
 const CORE_KNOWLEDGE_QUERY_PAYLOADS_ACTION = 'core@knowledge@queryPayloads'
@@ -94,7 +99,7 @@ export interface StartPageModelIterateSessionOptions {
   /** 取消信号，用于中止当前运行。 */
   signal?: AbortSignal
   /** SSE 事件回调：用于增量文本与可观测事件透传。 */
-  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
+  onSseEvent?: (event: SessionBackendSseEvent) => void
   /** 每轮完成回调：用于消费工具执行细节。 */
   onTurnComplete?: (turn: DialogueTurn) => void
   /** 可选工具定义集合。 */
@@ -143,7 +148,7 @@ export interface PageModelEditRunHooks {
   /** 推理增量回调。 */
   onReasoning?: (reasoning: string) => void
   /** 原始 SSE 事件透传。 */
-  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
+  onSseEvent?: (event: SessionBackendSseEvent) => void
   /** 工具轮次回调。 */
   onToolTurn?: (turn: DialogueTurn) => void
   /** 运行结束回调：返回轮次和写入次数。 */
@@ -448,7 +453,7 @@ export function createPageModelEditSession(
    * - result: 解析工具调用并写入日志，随后清空 aiBuffer。
    * - error: 清空 aiBuffer，错误日志由上层异常路径统一处理。
    */
-  function onSseEvent(event: { sessionId: string; type: string; data: string }, hooks?: PageModelEditRunHooks): void {
+  function onSseEvent(event: SessionBackendSseEvent, hooks?: PageModelEditRunHooks): void {
     hooks?.onSseEvent?.(event)
 
     if (isEmptySseMonitorEvent(event)) return
@@ -641,7 +646,9 @@ export function createPageModelEditSession(
         ...sessionHost.getResumeSessionOptions(),
         tools: runtime.generateToolDefinitions({
           compactDescriptions: true,
-          ...(hooks?.toolMode === 'describe-only' ? { types: ['describe'] } : {}),
+          ...(hooks?.toolMode === 'describe-only'
+            ? { actions: EDIT_FUNCTION_SUMMARIES.filter(s => s.type === 'describe').map(s => s.action) }
+            : {}),
         }),
         repeatDetection,
         onTurnComplete(turn: DialogueTurn) {

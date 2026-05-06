@@ -13,18 +13,9 @@
 /**
  * 功能分区一：调用结果与失败语义
  * 时序说明：
- * 1. 先声明函数属于写请求还是只读描述
- * 2. 再约定成功结果、失败结果与后置警告的统一形状
- * 3. 后续运行时执行、目录投影和测试都会复用这一层协议
+ * 1. 先约定成功结果、失败结果与后置警告的统一形状
+ * 2. 后续运行时执行、目录投影和测试都会复用这一层协议
  */
-
-/**
- * 函数种类。
- * 输入语义：作为目录行和可执行定义上的 type 字段取值。
- * 输出语义：request 表示可能产生写副作用，describe 表示只读查询。
- * 调用时机：注册函数目录、生成工具定义、执行后决定是否写入 patchLog 时使用。
- */
-export type FunctionKind = 'request' | 'describe'
 
 /**
  * 后置校验警告。
@@ -224,8 +215,15 @@ export type FunctionGuard = (context: FunctionRuntimeContext) => { code: string;
  */
 export interface FunctionCatalogRow {
   action: string
-  type: FunctionKind
   description: string
+  /**
+   * 最大执行时间（毫秒）。
+   * - 0（默认）：同步有界，在当前 FC 轮次内完成并立即返回结果。
+   * - 正数/Infinity：异步无界，编排器检测到成功结果后必须暂停循环并触发 onAsk 回调，
+   *   由调用方在外部交互完成后以 resumeSessionId 继续。
+   * 调用时机：注册函数目录、dispatch 决定是否暂停循环时使用。
+   */
+  maxExecutionMs?: number
   paramsSchema?: Record<string, unknown>
   resultSchema?: Record<string, unknown>
   example?: Record<string, unknown>
@@ -242,10 +240,13 @@ export interface FunctionCatalogRow {
 export interface RegisteredFunctionDefinition<TParams = unknown, TResult = unknown> {
   /** 函数地址，格式固定为 business@module@function。 */
   action: string
-  /** 函数类型，决定它是写请求还是只读描述。 */
-  type: FunctionKind
   /** 面向人和模型的简要功能说明。 */
   description: string
+  /**
+   * 最大执行时间（毫秒）。0（默认）表示同步有界，在当前轮次内完成；
+   * 非零值（如 Infinity）表示异步无界，编排器检测到成功后须暂停循环等待外部交互。
+   */
+  maxExecutionMs?: number
   /** 可选函数级模块提示词；新模块优先改用运行载体的 prompt 承载模块提示词。 */
   modulePrompt?: string
   /** 可选前置守卫，用于在参数校验之前阻断非法执行时机。 */

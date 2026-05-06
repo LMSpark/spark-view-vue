@@ -6,7 +6,6 @@ export interface KnowledgeToolSummary {
   module: string
   function: string
   functionName: string
-  type: 'request' | 'describe'
   description: string
   carrierKey?: string
   modulePrompt?: string

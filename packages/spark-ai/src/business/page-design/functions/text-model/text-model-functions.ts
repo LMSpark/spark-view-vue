@@ -1,4 +1,4 @@
-import type { FunctionCarrierContract, FunctionResult, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionCarrierContract, FunctionResult, RegisteredFunctionDefinition } from '../../../../core'
 import {
   editInit,
   readActiveScript,
@@ -6,7 +6,7 @@ import {
   readActiveStyle,
   writeActiveStyle,
   type EditState,
-} from '../lifecycle/edit-lifecycle-functions'
+} from '../lifecycle'
 import {
   TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE,
   validateTextModelFunctionParams,
@@ -142,7 +142,6 @@ function createTextModelFunction(row: TextModelFunctionParameterRow): Registered
 
   return {
     action: row.action,
-    type: row.type,
     description: row.description,
     paramsSchema: row.paramsSchema,
     resultSchema: row.resultSchema,

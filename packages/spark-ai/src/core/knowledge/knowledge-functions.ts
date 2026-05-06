@@ -8,6 +8,8 @@ import { getFunctionCarrier, getFunctionCarrierByAction } from '../registry/func
 import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
 import { actionToFunctionName, functionNameToAction } from '../protocol/function-call-schema'
 import { isNonEmptyString, missingParam } from '../protocol/llm-params-validator'
+import { parseActionAddress } from '../protocol/invocation-helpers'
+import type { AskParams } from '../protocol/session-contracts'
 import type {
   KnowledgeGuidePayloadParams,
   KnowledgePayloadGuide,
@@ -44,27 +46,6 @@ interface GuideToolParams {
   action?: unknown
 }
 
-interface AskOption {
-  id: string
-  label: string
-  value?: unknown
-  description?: string
-}
-
-interface AskQuestion {
-  id: string
-  prompt: string
-  type: 'single' | 'multi'
-  options: AskOption[]
-  recommendedOptionIds: string[]
-}
-
-interface AskParams {
-  title: string
-  reason?: string
-  questions: AskQuestion[]
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // 【功能分区2】工具函数 - 数据处理和验证辅助函数
 // ─────────────────────────────────────────────────────────────────────────────
@@ -88,23 +69,6 @@ function readRequiredString(params: Record<string, unknown>, key: string): strin
   return normalized.length > 0 ? normalized : null
 }
 
-interface ActionAddressParts {
-  business: string
-  module: string
-  function: string
-}
-
-function parseActionAddress(action: string): ActionAddressParts {
-  const parts = action.split('@')
-  if (parts.length !== 3 || parts.some(part => part.trim().length === 0)) {
-    throw new Error(`非法 action 地址: ${action}，必须使用 业务@模块@函数`)
-  }
-  const business = parts[0] ?? ''
-  const moduleName = parts[1] ?? ''
-  const functionName = parts[2] ?? ''
-  return { business, module: moduleName, function: functionName }
-}
-
 function failureCodes(failureModes: readonly FunctionFailureMode[] | undefined): string[] | undefined {
   if (failureModes === undefined || failureModes.length === 0) return undefined
   return failureModes.map(failureMode => failureMode.code)
@@ -125,7 +89,6 @@ function projectToolSummary(definition: RegisteredFunctionDefinition<unknown, un
     module: address.module,
     function: address.function,
     functionName: actionToFunctionName(definition.action),
-    type: definition.type,
     description: definition.description,
     ...(carrier?.carrierKey ? { carrierKey: carrier.carrierKey } : {}),
     ...(modulePrompt ? { modulePrompt } : {}),
@@ -311,7 +274,6 @@ function findPayloadRefByKey(key: string): string | null {
 
 export const knowledgeQueryTools: RegisteredFunctionDefinition<QueryToolsParams, unknown> = {
   action: 'core@knowledge@queryTools',
-  type: 'describe',
   description: '查询当前会话可用 Agent tool/function 目录，可按 business/module 过滤。',
   modulePrompt: CORE_KNOWLEDGE_MODULE_PROMPT,
   guard: noGuard,
@@ -358,7 +320,6 @@ export const knowledgeQueryTools: RegisteredFunctionDefinition<QueryToolsParams,
 
 export const knowledgeGuideTool: RegisteredFunctionDefinition<GuideToolParams, unknown> = {
   action: 'core@knowledge@guideTool',
-  type: 'describe',
   description: '查询单个函数/Agent tool 的完整参数指南，action 可传 业务@模块@函数 或 FC 下划线函数名。',
   modulePrompt: CORE_KNOWLEDGE_MODULE_PROMPT,
   guard: noGuard,
@@ -421,7 +382,6 @@ export const knowledgeQueryPayloads: RegisteredFunctionDefinition<
   KnowledgeQueryPayloadProvidersResult | KnowledgeQueryPayloadCatalogResult
 > = {
   action: 'core@knowledge@queryPayloads',
-  type: 'describe',
   description: '查询可用参数荷载目录；无 payloadRef 时返回已注册荷载源列表。',
   modulePrompt: CORE_KNOWLEDGE_MODULE_PROMPT,
   guard: noGuard,
@@ -492,7 +452,6 @@ export const knowledgeQueryPayloads: RegisteredFunctionDefinition<
 
 export const knowledgeGuidePayload: RegisteredFunctionDefinition<KnowledgeGuidePayloadParams, KnowledgePayloadGuide> = {
   action: 'core@knowledge@guidePayload',
-  type: 'describe',
   description: '查询单个参数荷载的 JSON Schema、最小示例与使用规则。',
   modulePrompt: CORE_KNOWLEDGE_MODULE_PROMPT,
   guard: noGuard,
@@ -566,7 +525,7 @@ export const knowledgeGuidePayload: RegisteredFunctionDefinition<KnowledgeGuideP
 
 export const knowledgeAsk: RegisteredFunctionDefinition<AskParams, AskParams> = {
   action: 'core@knowledge@ask',
-  type: 'describe',
+  maxExecutionMs: Infinity,
   description: '向用户发起结构化反问；必须提供完整备选项与推荐选项。',
   modulePrompt: CORE_KNOWLEDGE_MODULE_PROMPT,
   guard: noGuard,

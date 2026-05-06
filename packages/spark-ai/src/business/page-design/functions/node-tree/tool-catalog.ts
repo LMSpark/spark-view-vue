@@ -1,9 +1,10 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
+  type FunctionFailureMode,
+  type RegisteredFunctionDefinition,
   type LlmParamValidationOptions,
-} from '../../../../core/protocol/llm-params-validator'
+} from '../../../../core'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 
 type MethodKey<T> = Extract<{
@@ -17,11 +18,11 @@ type SparkNodeTreeToolCoreFields = Omit<
   Required<
     Pick<
       RegisteredFunctionDefinition<Record<string, unknown>, unknown>,
-      'action' | 'type' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
+      'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
   'failureModes'
->
+> & { type: 'describe' | 'request' }
 
 export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolCoreFields & {
   failureModes: SparkNodeTreeToolFailureMode[]

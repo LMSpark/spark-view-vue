@@ -1,4 +1,4 @@
-export { createEditFileFunctions, EDIT_FILE_FUNCTION_SUMMARIES } from './text-model-functions'
+export { createEditFileFunctions, EDIT_FILE_FUNCTION_SUMMARIES, createTextModelCarrier } from './text-model-functions'
 
 export {
 	TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE,

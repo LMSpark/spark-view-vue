@@ -3,19 +3,19 @@ export {
   extractFirstJsonObject,
   parseTokenUsage,
   formatTokenUsage,
-} from './protocol-parser'
+} from './core'
 export type {
   ProtocolRole,
   ProtocolMessage,
   TokenUsage,
   StreamCallbacks,
-} from './types'
+} from './core'
 
 // ──【功能分区2】页面缓存──────────────────────────────────────────────────────
 export {
   createPageCache,
-} from './business/page-design/page-cache'
-export type { PageCacheHandle } from './business/page-design/page-cache'
+  type PageCacheHandle,
+} from './business/page-design'
 
 // ──【功能分区3】AI组件目录────────────────────────────────────────────────────
 // 单一 SSoT JSON + 消费端投影
@@ -62,13 +62,11 @@ export type { FunctionCatalog, FunctionCatalogRegistry, FunctionComponentEntry, 
 // ──【功能分区5】核心函数协议 / 注册表 / 运行时────────────────────────────────────
 export {
   AI_FUNCTION_ARCHITECTURE_PROMPT,
-} from './core/protocol/architecture-prompt'
-export { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './business/page-design/prompts/edit-runtime-prompt'
+} from './core'
 export {
   noGuard,
-} from './core/protocol/function-contracts'
+} from './core'
 export type {
-  FunctionKind,
   FunctionCarrierKey,
   FunctionCarrierContract,
   FunctionBeforeExecuteEvent,
@@ -80,22 +78,33 @@ export type {
   FunctionCarrierAfterExecuteHook,
   FunctionResult,
   FunctionFailureMode,
+  FunctionCatalogRow,
   PostValidationWarning,
   FunctionTraceEntry,
   FunctionRuntimeContext,
   FunctionGuard,
   RegisteredFunctionDefinition,
-} from './core/protocol/function-contracts'
+} from './core'
+export {
+  missingParam,
+  isNonEmptyString,
+  formatLlmParamValidationIssues,
+  validateLlmDeserializedParams,
+} from './core'
+export type {
+  LlmParamValidationIssue,
+  LlmParamValidationOptions,
+} from './core'
 export {
   createFunctionRuntimeContext,
-} from './core/runtime/function-runtime-context'
+} from './core'
 export {
   registerFunction,
   registerFunctions,
   getFunctionDefinition,
   getAllFunctionDefinitions,
   clearFunctionRegistry,
-} from './core/registry/function-registry'
+} from './core'
 export {
   actionToCarrierKey,
   registerFunctionCarrier,
@@ -104,21 +113,26 @@ export {
   getFunctionCarrierByAction,
   getAllFunctionCarriers,
   clearFunctionCarrierRegistry,
-} from './core/registry/function-carrier-registry'
+} from './core'
 export {
   executeFunction,
   executeFunctionAsync,
-} from './core/runtime/function-dispatcher'
+  createMethodBackedDefinitions,
+} from './core'
 
 // ──【功能分区6】会话编排器（会话级工具循环编排）──────────────────────────────────
 export {
   runFunctionLoop,
-} from './core/runtime/session-orchestrator'
+} from './core'
 export type {
   DialogueTurn,
   FunctionTurnResult,
   LlmResponse,
   SessionBackend,
+  SessionBackendSseEvent,
+  SessionBackendTurnOptions,
+  SessionAppendMessage,
+  SessionConversationMessage,
   MonitorContext,
   SessionMonitor,
   FollowUpBuildContext,
@@ -131,43 +145,32 @@ export type {
   ToolDefinition,
   JsonSchema,
   JsonSchemaProperty,
-} from './core/protocol/session-contracts'
+} from './core'
 
 // ──【功能分区7】会话后端（会话后端 HTTP 客户端）────────────────────────────────────
 export {
   createSessionBackend,
-  SessionBackendImpl,
-} from './core/runtime/session-backend'
-export type { SessionBackendImplOptions } from './core/runtime/session-backend'
+} from './core'
+export type { SessionBackendOptions } from './core'
 
 // ──【功能分区8】重复检测（核心通用监控器）────────────────────────────────────────
 export {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from './core/runtime/repeat-detection-monitor'
+} from './core'
 
-// ──【功能分区9】函数调用适配器（FC 模式工具调用适配层）─────────────────────────
+// ──【功能分区9】FC 工具定义与后续策略─────────────────────────────────────────
 export {
   actionToFunctionName,
   functionNameToAction,
-} from './core/protocol/function-call-schema'
-export {
   functionToToolDefinition,
   generateToolDefinitions,
-} from './core/runtime/tool-definition-builder'
-export {
-  dispatchToolCall,
-  dispatchToolCallAsync,
-  formatToolResultContent,
-} from './core/runtime/fc-dispatcher'
-
-// ──【功能分区10】后续策略（核心通用）──────────────────────────────────────────────
+} from './core'
 export {
   formatWarningsAsFollowUp,
-  DefaultFollowUpPolicy,
   createDefaultFollowUpPolicy,
   type FollowUpDecorations,
-} from './core/runtime/default-follow-up-policy'
+} from './core'
 
 // ──【功能分区11】知识函数─────────────────────────────────────────────────────
 export {
@@ -177,13 +180,13 @@ export {
   knowledgeGuideTool,
   knowledgeQueryPayloads,
   knowledgeQueryTools,
-} from './core/knowledge/knowledge-functions'
+} from './core'
 export {
   clearKnowledgeRegistry,
   getKnowledgePayloadProvider,
   getKnowledgePayloadProviders,
   registerKnowledgePayloadProvider,
-} from './core/knowledge/payload-provider-registry'
+} from './core'
 export type {
   KnowledgeGuidePayloadParams,
   KnowledgePayloadCategory,
@@ -197,16 +200,17 @@ export type {
   KnowledgeQueryPayloadCatalogResult,
   KnowledgeQueryPayloadProvidersResult,
   KnowledgeQueryPayloadsParams,
-} from './core/protocol/knowledge-payload-contracts'
+} from './core'
 export type {
   KnowledgeModuleSummary,
   KnowledgeToolGuide,
   KnowledgeToolSummary,
-} from './core/protocol/knowledge-query-contracts'
+} from './core'
 
 // ──【功能分区12】业务函数（页面设计业务）────────────────────────────────────────────
 export {
   PAGE_DESIGN_BUSINESS,
+  PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
   registerPageDesignEditFunctions,
   createPageModelSessionBackend,
   createPageModelSessionHost,

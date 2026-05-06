@@ -22,7 +22,6 @@ import {
 function createCarrierDefinition(): RegisteredFunctionDefinition<{ value?: number }, { accepted: boolean }> {
   return {
     action: 'pageDesign@carrierTest@run',
-    type: 'request',
     description: 'carrier runtime test action',
     modulePrompt: 'legacy prompt should be overridden',
     paramsSchema: { value: 'number?' },

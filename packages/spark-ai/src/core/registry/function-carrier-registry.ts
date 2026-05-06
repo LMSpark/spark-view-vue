@@ -1,4 +1,5 @@
 import type { FunctionCarrierContract, FunctionCarrierKey } from '../protocol/function-contracts'
+import { actionToCarrierKey } from '../protocol/invocation-helpers'
 
 /**
  * 运行载体注册表。
@@ -25,28 +26,7 @@ import type { FunctionCarrierContract, FunctionCarrierKey } from '../protocol/fu
 const carrierRegistry = new Map<FunctionCarrierKey, FunctionCarrierContract<unknown>>()
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 功能分区一：键推导
-// 时序：runtime 或上层调用先把 action 归一化为 business@module，再进入 carrier 查询。
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * 从完整 action 推导所属 carrierKey。
- * 输入语义：接收规范 action，格式期望为 business@module@function。
- * 输出语义：返回 business@module 形式的载体键；若 action 不完整则直接 fail-fast。
- * 调用时机：dispatcher 按 action 定位模块载体，或知识层需要把函数归并到模块载体时使用。
- */
-export function actionToCarrierKey(action: string): FunctionCarrierKey {
-  const parts = action.split('@')
-  const business = parts[0]?.trim() ?? ''
-  const moduleName = parts[1]?.trim() ?? ''
-  if (business.length === 0 || moduleName.length === 0) {
-    throw new Error(`非法 action 地址: ${action}，无法推导 carrierKey`)
-  }
-  return `${business}@${moduleName}`
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 功能分区二：注册入口
+// 功能分区一：注册入口
 // 时序：业务模块先构造 carrier，再通过单个或批量接口写入 registry。
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -73,7 +53,7 @@ export function registerFunctionCarriers<TInstance>(carriers: ReadonlyArray<Func
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 功能分区三：查询入口
+// 功能分区二：查询入口
 // 时序：注册完成后，runtime / knowledge 按 carrierKey 或 action 两种视角读取载体。
 // ─────────────────────────────────────────────────────────────────────────────
 

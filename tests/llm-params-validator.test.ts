@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
-} from '../packages/spark-ai/src/core/protocol/llm-params-validator'
+} from '../packages/spark-ai/src'
 import { validateDataSetCrudToolFunctionParams } from '../packages/spark-ai/src/business/page-design/functions'
 
 describe('validateLlmDeserializedParams', () => {

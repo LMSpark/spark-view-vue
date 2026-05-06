@@ -1,15 +1,18 @@
-import type { RegisteredFunctionDefinition } from '../../core/protocol/function-contracts'
-import { coreKnowledgeFunctions } from '../../core/knowledge/knowledge-functions'
-import { registerFunctionCarriers } from '../../core/registry/function-carrier-registry'
-import { registerFunctions } from '../../core/registry/function-registry'
-import { registerPageDesignPayloadProviders } from './payloads'
-import { createPageDesignEditFunctions, type EditState } from './functions'
-import { createEditLifecycleCarrier } from './functions/lifecycle/edit-lifecycle-functions'
-import { createTextModelCarrier } from './functions/text-model/text-model-functions'
 import {
+  coreKnowledgeFunctions,
+  registerFunctionCarriers,
+  registerFunctions,
+  type RegisteredFunctionDefinition,
+} from '../../core'
+import { registerPageDesignPayloadProviders } from './payloads'
+import {
+  createPageDesignEditFunctions,
+  createEditLifecycleCarrier,
+  createTextModelCarrier,
   createEditDataSetCarrier,
   createEditNodeTreeCarrier,
-} from './functions/edit/actions/edit-functions'
+  type EditState,
+} from './functions'
 
 /**
  * 注册 page-design 编辑态函数。
