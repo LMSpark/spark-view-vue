@@ -1,3 +1,5 @@
+import type { AiCoreAction } from './business-contracts'
+import type { FunctionCarrierKey } from './function-contracts'
 import type { TokenUsage } from './session-contracts'
 
 /**
@@ -25,20 +27,30 @@ export function parseActionAddress(action: string): ActionAddressParts {
   return { business: parts[0] ?? '', module: parts[1] ?? '', function: parts[2] ?? '' }
 }
 
+export function buildFunctionCarrierKey<TBusinessId extends string, TModuleId extends string>(
+  business: TBusinessId,
+  moduleName: TModuleId,
+): FunctionCarrierKey<TBusinessId, TModuleId> {
+  if (business.trim().length === 0 || moduleName.trim().length === 0) {
+    throw new Error(`非法 carrierKey 地址: ${business}@${moduleName}`)
+  }
+  return `${business}@${moduleName}`
+}
+
 /**
  * 从完整 action 推导所属 carrierKey（business@module）。
  * 输入语义：规范 action，格式期望为 business@module@function。
  * 输出语义：business@module 形式的载体键；action 不完整则 fail-fast。
  * 调用时机：协议层或运行时需要定位模块载体时使用。
  */
-export function actionToCarrierKey(action: string): string {
+export function actionToCarrierKey(action: AiCoreAction | string): FunctionCarrierKey {
   const parts = action.split('@')
   const business = parts[0]?.trim() ?? ''
   const moduleName = parts[1]?.trim() ?? ''
   if (business.length === 0 || moduleName.length === 0) {
     throw new Error(`非法 action 地址: ${action}，无法推导 carrierKey`)
   }
-  return `${business}@${moduleName}`
+  return buildFunctionCarrierKey(business, moduleName)
 }
 
 interface InvocationMissingMethod {

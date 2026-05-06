@@ -106,6 +106,7 @@ function cloneExposure(functions: ReadonlyArray<AiCoreFunctionExposure>): AiCore
     ...(item.resultSchema !== undefined ? { resultSchema: item.resultSchema } : {}),
     ...(item.maxExecutionMs !== undefined ? { maxExecutionMs: item.maxExecutionMs } : {}),
     ...(item.usageRules !== undefined ? { usageRules: item.usageRules } : {}),
+    ...(item.failureModes !== undefined ? { failureModes: item.failureModes } : {}),
   }))
 }
 
@@ -262,7 +263,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     return module
   }
 
-  function assertReady(instance: AiCoreInstanceState, action: string): AiCoreFunctionCallResult | null {
+  function assertReady(instance: AiCoreInstanceState, action: AiCoreAction): AiCoreFunctionCallResult | null {
     if (instance.status === 'Ready') return null
     return createFailure(
       'INSTANCE_NOT_READY',
@@ -399,7 +400,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     return { instance, module, runtime, definition, exposure }
   }
 
-  function recordFunctionCall(instance: AiCoreInstanceState, action: string, args: unknown, result: AiCoreFunctionCallResult<unknown>): void {
+  function recordFunctionCall(instance: AiCoreInstanceState, action: AiCoreAction, args: unknown, result: AiCoreFunctionCallResult<unknown>): void {
     instance.history.functionCalls.push({
       id: createRecordId('functionCall'),
       timestamp: now(),

@@ -45,6 +45,7 @@ function createLeaveFormModule(core: AiCore): IModule<LeaveFormRuntime> {
         },
         required: ['reason'],
       },
+      failureModes: [{ code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' }],
       execute(args: SetReasonArgs, context) {
         const runtime = context.moduleRuntime as LeaveFormRuntime
         runtime.draft.reason = args.reason
@@ -114,6 +115,9 @@ describe('AI core business-first runtime', () => {
     expect(started.availableFunctions.map((definition) => definition.action)).toEqual([
       'leaveApproval@form@setReason',
       'leaveApproval@form@setDays',
+    ])
+    expect(started.availableFunctions[0]?.failureModes).toEqual([
+      { code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' },
     ])
 
     const runtime = core.runtimeReader.get<LeaveFormRuntime>('leave-1', 'form')

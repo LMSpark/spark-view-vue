@@ -8,7 +8,7 @@ import { getFunctionCarrier, getFunctionCarrierByAction } from '../registry/func
 import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
 import { actionToFunctionName, functionNameToAction } from '../protocol/function-call-schema'
 import { isNonEmptyString, missingParam } from '../protocol/llm-params-validator'
-import { parseActionAddress } from '../protocol/invocation-helpers'
+import { buildFunctionCarrierKey, parseActionAddress } from '../protocol/invocation-helpers'
 import type { AskParams } from '../protocol/session-contracts'
 import type {
   KnowledgeGuidePayloadParams,
@@ -206,7 +206,7 @@ function collectModuleSummaries(tools: readonly KnowledgeToolSummary[]): Knowled
   const moduleMap = new Map<string, KnowledgeModuleSummary>()
 
   for (const tool of tools) {
-    const key = `${tool.business}@${tool.module}`
+    const key = buildFunctionCarrierKey(tool.business, tool.module)
     const carrier = getFunctionCarrier(key)
     const existing = moduleMap.get(key)
     if (existing === undefined) {

@@ -68,7 +68,8 @@ type PageDesignFunctionDefinition<
   unknown,
   typeof PAGE_DESIGN_BUSINESS,
   TModuleId,
-  PageDesignFunctionIdFromAction<TAction>
+  PageDesignFunctionIdFromAction<TAction>,
+  PageDesignModuleRuntime
 > & {
   readonly action: TAction
   readonly moduleId: TModuleId
@@ -119,7 +120,7 @@ interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
   getFunctions: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
   getInstance: (instanceId: string) => PageDesignModuleRuntime | null
   createRuntime: (context: ModulePromptContext<typeof PAGE_DESIGN_BUSINESS, TModuleId>) => PageDesignModuleRuntime
-  destroyRuntime?: (runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext<typeof PAGE_DESIGN_BUSINESS, TModuleId>) => void
+  destroyRuntime?: (runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext<typeof PAGE_DESIGN_BUSINESS, TModuleId, PageDesignModuleRuntime>) => void
 }
 
 type FunctionCatalogRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = {
@@ -444,7 +445,7 @@ export function createPageDesignBusinessDefinition(options: CreatePageDesignBusi
     return runtime
   }
 
-  function destroyLifecycleRuntime(_runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext<typeof PAGE_DESIGN_BUSINESS, typeof LIFECYCLE_MODULE_ID>): void {
+  function destroyLifecycleRuntime(_runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext<typeof PAGE_DESIGN_BUSINESS, typeof LIFECYCLE_MODULE_ID, PageDesignModuleRuntime>): void {
     runtimes.delete(context.instanceId)
   }
 

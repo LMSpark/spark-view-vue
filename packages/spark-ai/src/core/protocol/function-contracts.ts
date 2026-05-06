@@ -10,9 +10,20 @@
  * 业务状态由业务模块自行持有，这里不引入任何业务对象。
  */
 
-import type { FunctionFailureMode, PostValidationWarning } from './business-contracts'
+import type {
+  AiCoreAction,
+  AiCoreBusinessId,
+  AiCoreModuleId,
+  FunctionFailureMode,
+  PostValidationWarning,
+} from './business-contracts'
 
-export type { FunctionFailureMode, PostValidationWarning } from './business-contracts'
+export type { AiCoreAction, FunctionFailureMode, PostValidationWarning } from './business-contracts'
+
+export type FunctionAction<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+> = AiCoreAction<TBusinessId, TModuleId>
 
 /**
  * 功能分区一：调用结果与失败语义
@@ -46,7 +57,7 @@ export type FunctionResult<T = unknown> =
  * 调用时机：request 类型函数成功返回后写入运行时上下文。
  */
 export interface FunctionTraceEntry {
-  action: string
+  action: FunctionAction
   requestId: string
   timestamp: number
   summary: string
@@ -58,7 +69,10 @@ export interface FunctionTraceEntry {
  * 输出语义：运行时可据此从独立 carrier registry 中读取模块实例、提示词与事件钩子。
  * 调用时机：需要按 action 的前两段定位模块实例、模块提示词或模块事件时使用。
  */
-export type FunctionCarrierKey = string
+export type FunctionCarrierKey<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+> = `${TBusinessId}@${TModuleId}`
 
 /**
  * FC 前置事件负载。
@@ -67,7 +81,7 @@ export type FunctionCarrierKey = string
  * 调用时机：仅在异步执行链中、命中某个运行载体后发射。
  */
 export interface FunctionBeforeExecuteEvent {
-  action: string
+  action: FunctionAction
   carrierKey: FunctionCarrierKey
   params: unknown
 }
@@ -79,7 +93,7 @@ export interface FunctionBeforeExecuteEvent {
  * 调用时机：仅在异步执行链中、函数已经产出统一 FunctionResult 后发射。
  */
 export interface FunctionAfterExecuteEvent {
-  action: string
+  action: FunctionAction
   carrierKey: FunctionCarrierKey
   params: unknown
   result: FunctionResult
@@ -194,7 +208,7 @@ export type FunctionGuard = (context: FunctionRuntimeContext) => { code: string;
  * 调用时机：适用于 catalog、payload 投影和方法背书 builder 等“先目录、后执行”的场景。
  */
 export interface FunctionCatalogRow {
-  action: string
+  action: FunctionAction
   description: string
   /**
    * 最大执行时间（毫秒）。
@@ -219,7 +233,7 @@ export interface FunctionCatalogRow {
  */
 export interface RegisteredFunctionDefinition<TParams = unknown, TResult = unknown> {
   /** 函数地址，格式固定为 business@module@function。 */
-  action: string
+  action: FunctionAction
   /** 面向人和模型的简要功能说明。 */
   description: string
   /**

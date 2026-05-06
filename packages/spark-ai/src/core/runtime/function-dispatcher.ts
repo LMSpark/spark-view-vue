@@ -1,5 +1,6 @@
 import type {
   FunctionAfterExecuteEvent,
+  FunctionAction,
   FunctionCarrierContract,
   FunctionResult,
   FunctionRuntimeContext,
@@ -174,7 +175,7 @@ function appendPostValidationWarnings(
 
 function appendRequestTrace(
   context: FunctionRuntimeContext,
-  action: string,
+  action: FunctionAction,
   requestId: string,
   result: FunctionResult,
 ): void {
@@ -184,7 +185,7 @@ function appendRequestTrace(
 }
 
 function runExecution(
-  action: string,
+  action: FunctionAction,
   definition: RegisteredFunctionDefinition<unknown, unknown>,
   params: unknown,
   context: FunctionRuntimeContext,
@@ -218,7 +219,7 @@ function runExecution(
 function cancelledBeforeExecuteResult(
   definition: RegisteredFunctionDefinition<unknown, unknown>,
   carrier: FunctionCarrierContract<unknown>,
-  action: string,
+  action: FunctionAction,
   decision: { cancelled: true; code?: string; msg?: string; fix?: string },
 ): FunctionResult {
   return {
@@ -312,7 +313,7 @@ export function findCandidateActions(action: string, max = 5): string[] {
 /**
  * 创建函数执行跟踪条目
  */
-function createTraceEntry(action: string, requestId: string, summary: string): FunctionTraceEntry {
+function createTraceEntry(action: FunctionAction, requestId: string, summary: string): FunctionTraceEntry {
   return {
     action,
     requestId,
@@ -339,7 +340,8 @@ export function executeFunction(
     return missingCarrier
   }
 
-  return runExecution(action, definition, params, context, requestId, carrier)
+  const executionAction = definition.action
+  return runExecution(executionAction, definition, params, context, requestId, carrier)
 }
 
 export async function executeFunctionAsync(
@@ -358,24 +360,26 @@ export async function executeFunctionAsync(
 
   if (carrier !== undefined) {
     try {
+      const executionAction = definition.action
       const decision = await context.emitBeforeExecute(carrier, {
-        action,
+        action: executionAction,
         carrierKey: carrier.carrierKey,
         params,
       }, context)
       if (decision?.cancelled === true) {
-        return cancelledBeforeExecuteResult(definition, carrier, action, decision)
+        return cancelledBeforeExecuteResult(definition, carrier, executionAction, decision)
       }
     } catch (error) {
       return beforeHookErrorResult(definition, carrier, error)
     }
   }
 
-  const result = runExecution(action, definition, params, context, requestId, carrier)
+  const executionAction = definition.action
+  const result = runExecution(executionAction, definition, params, context, requestId, carrier)
 
   if (carrier !== undefined) {
     const afterEvent: FunctionAfterExecuteEvent = {
-      action,
+      action: executionAction,
       carrierKey: carrier.carrierKey,
       params,
       result,
