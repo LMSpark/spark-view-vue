@@ -1,84 +1,110 @@
 # spark-ai 架构全景
 
-> 更新于 2026-04-22。
+> 更新于 2026-05-06。
 
-本文只描述当前仍在仓库中生效的 spark-ai 能力边界。旧页面生成链已删除，不再属于现行架构。
+本文描述当前目标架构。旧 stills / FC 全局注册 / 会话循环编排链路不再作为兼容目标；迁移期间若仍有文件残留，只能视为待拆除实现细节，不能作为新代码依赖入口。
 
 ## 1. 包定位
 
-@spark-view/spark-ai 当前承担四类职责：
+`@spark-view/spark-ai` 的核心目标是提供业务优先的 AI 核心层：
 
-1. 通用聊天协议与 SSE 解析。
-2. stills / FC 会话编排与前端执行控制。
-3. 提示词、组件目录、校验器等知识层能力。
-4. 页面缓存、导航注册、监控器等少量运行时辅助能力。
+1. 注册业务定义，而不是注册函数、模块实例或运行载体。
+2. 按业务定义创建业务实例和模块运行态。
+3. 按 `instanceId` 管理通用历史、函数可用集和事件。
+4. 只执行 AI 会话宿主转交的一次函数调用。
+5. 不在核心层内做模型通讯、多轮编排、重试、追问或 tool schema 投喂。
 
-它不再承担“页面配置整模生成闭环”的运行时职责。
+AI 会话宿主位于核心层外。它负责模型通讯、提示词投喂、函数选择、重试、暂停和继续。
 
-## 2. 当前两条主链路
+## 2. 当前新核心入口
 
-### 2.1 通用聊天链
+公开入口：
 
-AiChatWidget
--> src/services/ai-protocol.ts
--> POST /api/ai/chat/stream
--> AiChatController
--> AiStreamService
+- `createAiCore()`
+- `AiCore.registerBusiness(definition)`
+- `AiCore.startSession({ businessId, instanceId? })`
+- `AiCore.appendMessages({ instanceId, messages })`
+- `AiCore.getAvailableFunctions(instanceId)`
+- `AiCore.executeFunctionCall({ instanceId, action, args })`
+- `AiCore.stopSession({ instanceId, mode })`
+- `AiCore.listInstances()`
+- `AiCore.getInstanceDetail(instanceId)`
+- `AiCore.getSessionHistory(instanceId)`
+- `AiCore.subscribe(listener)`
 
-用途：纯聊天、解释、问答、SSE 增量输出。
+核心 TypeScript 契约位于：
 
-### 2.2 细粒度编辑链
+- `src/core/protocol/business-contracts.ts`
+- `src/core/runtime/ai-core.ts`
+- `src/core/index.ts`
 
-DevDataSetDesigner / useRuleEditSession
--> registerPageDesignEditFunctions() / runFunctionLoop() / createSessionBackend()
--> POST /api/ai/sessions / turn / turn/stream / append
--> AiSessionController
--> StillsSessionService
+## 3. 核心对象层次
 
-用途：rule.json、pagedata.json、script.js、style.css 的细粒度编辑与回合式工具调用。
+唯一可注册对象是业务定义：
 
-## 3. 关键模块
+```text
+BusinessDefinition
+  -> ModuleDefinition
+    -> FunctionDefinition
 
-### 协议层
+BusinessInstance(instanceId)
+  -> ModuleRuntimeDirectory
+  -> History
+  -> Event stream
+  -> Available function snapshot
+```
 
-- src/protocol.ts：协议原语、消息解析、块提取等公共协议能力。
-- src/session-backend.ts：前端会话后端适配接口与实现。
+关键约束：
 
-### stills / 编辑域
+1. `businessId` 标识业务定义。
+2. `instanceId` 标识运行中的业务实例。
+3. `sessionId` 只由核心内部派生，不出现在公开 API 返回值中。
+4. `action = businessId@moduleId@functionId`。
+5. `instanceId` 是函数调用信封字段，不进入业务 `args`。
+6. 模块运行态由核心创建和索引，业务只能通过模块门面或 `runtimeReader` 按 `instanceId` 读取。
 
-- src/stills/dispatcher.ts：动作调度入口。
-- src/stills/domain.ts：domain 注册与 session state 初始化。
-- src/stills/edit-state.ts：4 文件单会话编辑状态。
-- src/stills/*-domain.ts：dataset、node tree、page config 等动作域。
+## 4. 迁移原则
 
-### 运行时辅助
+不做旧接口兼容。
 
-- src/runtime/session-orchestrator.ts：多轮工具循环编排。
-- src/runtime/page-cache.ts：页面缓存清理与统计。
-- src/runtime/nav-register.ts：导航注册辅助。
-- src/runtime/monitors/*：回合监控与诊断采样。
+旧公开口径全部下线：
 
-### 知识层
+- `registerFunction` / `registerFunctions`
+- `registerFunctionCarrier` / `registerFunctionCarriers`
+- `runFunctionLoop`
+- `createSessionBackend`
+- `functionToToolDefinition` / `generateToolDefinitions`
+- `core@knowledge@*` 作为 core 公共 API
+- `Llm*` / `Orchestrator*` 命名出现在 core 出口
 
-- src/prompts/*：system prompt 与辅助提示词。
-- src/catalog/*：组件目录与结构化元数据。
-- src/validation/*：配置校验与报告。
+如果某个业务还依赖这些入口，应该迁移为：
 
-## 4. 与后端的边界
+1. 先定义 `IBusinessDefinition`。
+2. 在业务定义内部声明 `IModule[]`。
+3. 模块通过 `getPrompt()` 提供模块提示词。
+4. 模块通过 `getFunctions()` 声明函数目录。
+5. 模块通过 `createRuntime()` 交给核心创建运行态。
+6. 函数通过 `execute(args, context)` 执行业务正文。
+7. AI 会话宿主自己把核心函数集合投影成模型工具 schema。
 
-spark-ai 依赖但不替代后端能力：
+## 5. 验证口径
 
-1. AiChatController / AiStreamService：通用聊天 SSE。
-2. AiSessionController / StillsSessionService：统一会话主干。
-3. PageConfigController：页面配置、版本、批量写入与 SSE 广播。
-4. NavigationController：导航树查询与写入。
+当前核心落地优先验证新链路：
 
-## 5. 当前约束
+```powershell
+pnpm exec vitest run tests/ai-core-business-runtime.test.ts --reporter verbose
+```
 
-1. 前端不再保留旧页面生成整模闭环，也不再调用专用页面生成端点。
-2. rule 编辑走 useRuleEditSession，DataSet 细粒度编辑走 stills 会话，不做向后兼容。
-3. 文档、测试和接线应默认围绕 chat/stream 与 /api/ai/sessions/* 建模。
+这个测试覆盖：
 
-## 6. 历史说明
+1. 只注册业务定义。
+2. 启动实例不暴露 `sessionId`。
+3. 函数调用必须显式携带 `instanceId`。
+4. action business 与 instance business 必须一致。
+5. 参数先按函数 schema 校验。
+6. 通用历史由核心记录。
+7. 暂停、恢复、停止由核心状态机管理。
+8. 模块运行态由核心释放。
+9. 事件只作为观测面发布。
 
-如需追溯 2026-04 之前的页面生成链与旧 DevSystem AI 面板方案，请直接查看 git 历史；这些内容不再保留在当前架构文档中，避免误导后续实现。
+全仓旧测试可能仍反映旧 registry / stills 口径，不作为本轮核心设计阻塞。

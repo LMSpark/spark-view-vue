@@ -1,64 +1,87 @@
 # spark-ai AI lifecycle configurable paths
 
-This document is the single reference for configurable paths across the AI lifecycle.
+This document tracks the target lifecycle configuration surface for the new business-first AI core.
 
 ## Layer split
 
-- Core layer: protocol, session transport, FC adapter, orchestration loop, runtime post-actions.
-- Business layer: prompts, stills domain, action registry, business catalogs.
+- Core layer: business registry, instance lifecycle, module runtime directory, unified history, event bus, function availability, single function execution gateway.
+- AI session host layer: model communication, prompt/tool-schema projection, retry, follow-up, pause/resume decisions, transport details.
+- Business layer: business definitions, module prompts, module runtime factories, function catalogs, function business bodies.
 
-## Lifecycle paths (tree)
+Core does not own model orchestration.
+
+## Lifecycle paths
 
 - core
-	- session
-		- session.backend.base-url -> core/runtime/session-backend.ts#createSessionBackend -> createSessionBackend(baseUrl, options)
-		- session.backend.headers -> core/runtime/session-backend.ts#createSessionBackend -> options.getHeaders
-		- session.backend.sse-event-hook -> core/runtime/session-backend.ts#createSessionBackend -> options.onSseEvent
-	- tooling
-		- tooling.fc.definition-filter -> core/protocol/function-call-schema.ts#generateToolDefinitions -> filter(types/actions/compactDescriptions)
-	- orchestration
-		- orchestration.max-rounds -> core/protocol/session-contracts.ts#OrchestratorConfig.maxRounds -> runFunctionLoop(config.maxRounds)
-		- orchestration.sliding-window -> core/protocol/session-contracts.ts#OrchestratorConfig.slidingWindow -> backend.createSession(windowSize)
-		- orchestration.monitors -> core/protocol/session-contracts.ts#OrchestratorConfig.monitors -> SessionMonitor[]
-		- orchestration.sse-hook -> core/protocol/session-contracts.ts#OrchestratorConfig.onSseEvent -> per-run onSseEvent callback
-	- teardown
-		- session.destroy-all -> core/protocol/session-contracts.ts#SessionBackend.destroyAllSessions -> backend.destroyAllSessions()
+  - business-registry
+    - business.register -> `core/runtime/ai-core.ts#createAiCore().registerBusiness`
+    - business.get -> `AiCore.getBusinessDefinition`
+    - business.list -> `AiCore.listBusinesses`
+  - instance
+    - instance.start -> `AiCore.startSession({ businessId })`
+    - instance.resume -> `AiCore.startSession({ businessId, instanceId })`
+    - instance.pause -> `AiCore.stopSession({ instanceId, mode: 'pause' })`
+    - instance.stop -> `AiCore.stopSession({ instanceId, mode: 'stop' })`
+    - instance.list -> `AiCore.listInstances`
+    - instance.detail -> `AiCore.getInstanceDetail`
+  - module-runtime
+    - module.create -> `IModule.createRuntime`
+    - module.start-hook -> `ModuleRuntime.onStart`
+    - module.before-function -> `ModuleRuntime.beforeExecute`
+    - module.after-function -> `ModuleRuntime.afterExecute`
+    - module.stop-hook -> `ModuleRuntime.onStop`
+    - module.destroy -> `IModule.destroyRuntime`
+    - module.read -> `AiCore.runtimeReader.get(instanceId, moduleId)`
+  - history
+    - history.append-message -> `AiCore.appendMessages`
+    - history.append-function-call -> `AiCore.executeFunctionCall`
+    - history.exposure-snapshot -> `AiCore.startSession` / `AiCore.executeFunctionCall`
+    - history.query -> `AiCore.getSessionHistory`
+  - function
+    - function.available -> `AiCore.getAvailableFunctions`
+    - function.execute -> `AiCore.executeFunctionCall`
+  - event
+    - event.subscribe -> `AiCore.subscribe`
 
 - business
-	- bootstrap
-		- business.stills-domain-registry -> stills/domain.ts#registerDomain -> registerDomain(domainProvider)
-		- business.stills-registry -> stills/dispatcher.ts#registerStill -> registerStill(stillDefinition)
-	- prompt
-		- prompt.mode.registry -> prompts/prompt-builder.ts#registerPromptMode -> registerPromptMode(mode, factory)
-		- prompt.page.build-options -> prompts/prompt-builder.ts#buildPageSystemPrompt -> BuildPagePromptOptions(context, metadataProvider)
-	- post-action
-		- post-action.nav-register -> business/index.ts#createNavRegister -> getNavApiUrl/getHeaders
-		- post-action.page-cache -> business/index.ts#createPageCache -> ConfigLoaderRef
+  - definition
+    - business.identity -> `IBusinessDefinition.businessId/name/description`
+    - business.modules -> `IBusinessDefinition.modules`
+  - module
+    - module.prompt -> `IModule.getPrompt`
+    - module.catalog -> `IModule.getFunctions`
+    - module.runtime -> `IModule.createRuntime`
+  - function
+    - function.schema -> `IFunctionDefinition.paramsSchema/resultSchema`
+    - function.validate -> `IFunctionDefinition.validate`
+    - function.execute -> `IFunctionDefinition.execute`
+    - function.post-validate -> `IFunctionDefinition.postValidate`
 
-## Programmatic access
+- ai-session-host
+  - prompt-projection -> host reads `startSession().promptSnapshot`
+  - tool-schema-projection -> host reads `getAvailableFunctions(instanceId)`
+  - model-turn -> host-owned transport/model call
+  - tool-call-forward -> host calls `executeFunctionCall({ instanceId, action, args })`
+  - pause-stop-decision -> host calls `stopSession`
 
-Use core API to inspect lifecycle paths:
+## Removed core paths
 
-- import from src/core/index.ts
-- CORE_LIFECYCLE_CONFIG_TREE
-- getLifecycleConfigTree()
-- listLifecycleConfigPaths(stage?)
-- CORE_SESSION_LIFECYCLE_STAGES
-- getCoreLifecycleTree()
-- listCoreLifecycleConfigPaths(stage?)
+The following old paths are no longer target core configuration paths:
 
-## Core lifecycle-first view
+- `core.session.backend.*`
+- `core.orchestration.*`
+- `core.tooling.fc.definition-filter`
+- `session.destroy-all`
+- stills domain registry paths
+- global function registry paths
+- carrier registry paths
 
-When you only care about core (AI session runtime), follow this order:
+If a caller still needs these concepts, they belong to the AI session host or business adapter migration layer, not to core.
 
-1. session
-2. tooling
-3. orchestration
-4. teardown
+## Validation
 
-This order matches the default stage sequence in CORE_SESSION_LIFECYCLE_STAGES.
+Primary new-core validation:
 
-## Notes
-
-- Lifecycle config source of truth is now tree-first (owner -> stage -> nodes).
-- When needed for query/filter, use listLifecycleConfigPaths(stage?) to flatten on demand.
+```powershell
+pnpm exec vitest run tests/ai-core-business-runtime.test.ts --reporter verbose
+```
