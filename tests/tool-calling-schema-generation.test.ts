@@ -238,11 +238,10 @@ describe('tool-calling schema generation', () => {
     const guideFunction = getFunctionDefinition('core@knowledge@guideTool')
     expect(guideFunction?.resultSchema?.['modulePrompt']).toBeDefined()
 
-    const functionDefinition = getFunctionDefinition('pageDesign@nodeTree@addNode')
-    expect(functionDefinition).toBeDefined()
-    if (functionDefinition === undefined) return
+    const definition = generateToolDefinitions({ actions: ['pageDesign@nodeTree@addNode'] })[0]
+    expect(definition).toBeDefined()
+    if (definition === undefined) return
 
-    const definition = functionToToolDefinition(functionDefinition)
     expect(definition.function.description).toContain('模块提示')
     expect(definition.function.description).toContain('queryPayloads/guidePayload')
   })

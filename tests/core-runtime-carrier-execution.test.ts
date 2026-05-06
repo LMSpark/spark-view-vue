@@ -8,7 +8,7 @@ import {
   createFunctionRuntimeContext,
   executeFunction,
   executeFunctionAsync,
-  functionToToolDefinition,
+  generateToolDefinitions,
   knowledgeQueryTools,
   registerFunction,
   registerFunctionCarrier,
@@ -176,7 +176,10 @@ describe('core runtime carrier execution', () => {
       instance: { calls: [] },
     } as FunctionCarrierContract<unknown>)
 
-    const toolDefinition = functionToToolDefinition(createCarrierDefinition())
+    const toolDefinition = generateToolDefinitions({ actions: ['pageDesign@carrierTest@run'] })[0]
+    expect(toolDefinition).toBeDefined()
+    if (toolDefinition === undefined) return
+
     expect(toolDefinition.function.description).toContain('模块提示: carrier prompt wins')
     expect(toolDefinition.function.description).not.toContain('legacy prompt should be overridden')
 
