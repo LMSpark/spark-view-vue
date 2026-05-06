@@ -58,6 +58,33 @@ type PageDesignModuleId =
   | typeof NODE_TREE_MODULE_ID
   | typeof DATASET_MODULE_ID
 type PageDesignFunctionAction<TModuleId extends PageDesignModuleId = PageDesignModuleId> = `${typeof PAGE_DESIGN_BUSINESS}@${TModuleId}@${string}`
+type PageDesignFunctionIdFromAction<TAction extends PageDesignFunctionAction> =
+  TAction extends `${typeof PAGE_DESIGN_BUSINESS}@${PageDesignModuleId}@${infer TFunctionId}` ? TFunctionId : never
+type PageDesignFunctionDefinition<
+  TModuleId extends PageDesignModuleId,
+  TAction extends PageDesignFunctionAction<TModuleId> = PageDesignFunctionAction<TModuleId>,
+> = IFunctionDefinition<
+  unknown,
+  unknown,
+  typeof PAGE_DESIGN_BUSINESS,
+  TModuleId,
+  PageDesignFunctionIdFromAction<TAction>
+> & {
+  readonly action: TAction
+  readonly moduleId: TModuleId
+}
+type PageDesignModuleDefinition<TModuleId extends PageDesignModuleId> = IModule<
+  PageDesignModuleRuntime,
+  typeof PAGE_DESIGN_BUSINESS,
+  TModuleId
+>
+type PageDesignAnyModuleDefinition = {
+  [TModuleId in PageDesignModuleId]: PageDesignModuleDefinition<TModuleId>
+}[PageDesignModuleId]
+export type PageDesignBusinessDefinition = IBusinessDefinition<
+  typeof PAGE_DESIGN_BUSINESS,
+  readonly PageDesignAnyModuleDefinition[]
+>
 
 const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign@lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
 const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign@textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
@@ -84,15 +111,15 @@ export interface CreatePageDesignBusinessDefinitionOptions {
 
 export type PageDesignModuleRuntime = EditState & ModuleRuntime
 
-interface PageDesignModuleFactoryOptions {
-  moduleId: string
+interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
+  moduleId: TModuleId
   name: string
   description: string
   prompt: string
-  getFunctions: () => ReadonlyArray<IFunctionDefinition<unknown, unknown>>
+  getFunctions: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
   getInstance: (instanceId: string) => PageDesignModuleRuntime | null
-  createRuntime: (context: ModulePromptContext) => PageDesignModuleRuntime
-  destroyRuntime?: (runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext) => void
+  createRuntime: (context: ModulePromptContext<typeof PAGE_DESIGN_BUSINESS, TModuleId>) => PageDesignModuleRuntime
+  destroyRuntime?: (runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext<typeof PAGE_DESIGN_BUSINESS, TModuleId>) => void
 }
 
 type FunctionCatalogRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = {
@@ -194,16 +221,24 @@ function failure(code: string, msg: string, fix: string): AiCoreFunctionCallResu
   return { ok: false, code, msg, fix }
 }
 
-function functionIdFromAction<TModuleId extends PageDesignModuleId>(action: PageDesignFunctionAction<TModuleId>, expectedModuleId: TModuleId): string {
+function functionIdFromAction<
+  TModuleId extends PageDesignModuleId,
+  TAction extends PageDesignFunctionAction<TModuleId>,
+>(action: TAction, expectedModuleId: TModuleId): PageDesignFunctionIdFromAction<TAction> {
   const parsed = parseActionAddress(action)
   if (parsed.business !== PAGE_DESIGN_BUSINESS || parsed.module !== expectedModuleId) {
     throw new Error(`pageDesign 函数目录 action 与模块不一致: ${action}`)
   }
-  return parsed.function
+  return parsed.function as PageDesignFunctionIdFromAction<TAction>
 }
 
-function createBaseFunctionDefinition<TModuleId extends PageDesignModuleId>(row: FunctionCatalogRow<TModuleId>, moduleId: TModuleId): Omit<IFunctionDefinition<unknown, unknown>, 'execute'> {
+function createBaseFunctionDefinition<
+  TModuleId extends PageDesignModuleId,
+  TAction extends PageDesignFunctionAction<TModuleId>,
+>(row: FunctionCatalogRow<NoInfer<TModuleId>> & { action: TAction }, moduleId: TModuleId): Omit<PageDesignFunctionDefinition<TModuleId, TAction>, 'execute'> {
   return {
+    action: row.action,
+    moduleId,
     functionId: functionIdFromAction(row.action, moduleId),
     description: row.description,
     paramsSchema: row.paramsSchema,
@@ -264,7 +299,7 @@ function bootstrapEditState(state: EditState): AiCoreFunctionCallResult<{ phase:
   return success({ phase: state.phase }, '编辑会话已完成函数引导（模型实例 + 函数入口），进入 editing 状态')
 }
 
-function createLifecycleFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>> {
+function createLifecycleFunctions(): ReadonlyArray<PageDesignFunctionDefinition<typeof LIFECYCLE_MODULE_ID>> {
   return EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map((row) => ({
     ...createBaseFunctionDefinition(row, LIFECYCLE_MODULE_ID),
     validate: (args) => validateEditLifecycleFunctionParams(row.action, args),
@@ -284,7 +319,7 @@ function ensureTextModelAccess(state: EditState, row: TextModelFunctionParameter
   return typeof state.toolHost?.[method] === 'function' ? null : `缺少 live text model: ${String(method)}`
 }
 
-function createTextModelFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>> {
+function createTextModelFunctions(): ReadonlyArray<PageDesignFunctionDefinition<typeof TEXT_MODEL_MODULE_ID>> {
   return TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map((row) => {
     const mode: 'read' | 'write' = row.type === 'describe' ? 'read' : 'write'
     const runtime = TEXT_FILE_RUNTIME_BY_KEY[row.fileKey]
@@ -335,7 +370,7 @@ function callMethodBackedTarget(row: MethodBackedRow, target: unknown, methodNam
   }
 }
 
-function createNodeTreeFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>> {
+function createNodeTreeFunctions(): ReadonlyArray<PageDesignFunctionDefinition<typeof NODE_TREE_MODULE_ID>> {
   return SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.map((row: SparkNodeTreeToolParameterRow) => ({
     ...createBaseFunctionDefinition(row, NODE_TREE_MODULE_ID),
     validate: (args) => validateSparkNodeTreeToolParams(row.action, args),
@@ -354,7 +389,7 @@ function createNodeTreeFunctions(): ReadonlyArray<IFunctionDefinition<unknown, u
   }))
 }
 
-function createDatasetFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>> {
+function createDatasetFunctions(): ReadonlyArray<PageDesignFunctionDefinition<typeof DATASET_MODULE_ID>> {
   return DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE
     .filter((row) => !HIDDEN_EDIT_DATASET_METHODS.has(row.crudToolMethod))
     .map((row: DatasetCrudToolFunctionParameterRow) => ({
@@ -375,7 +410,7 @@ function createDatasetFunctions(): ReadonlyArray<IFunctionDefinition<unknown, un
     }))
 }
 
-function createPageDesignModule(options: PageDesignModuleFactoryOptions): IModule<PageDesignModuleRuntime> {
+function createPageDesignModule<TModuleId extends PageDesignModuleId>(options: PageDesignModuleFactoryOptions<TModuleId>): PageDesignModuleDefinition<TModuleId> {
   return {
     moduleId: options.moduleId,
     name: options.name,
@@ -388,10 +423,10 @@ function createPageDesignModule(options: PageDesignModuleFactoryOptions): IModul
   }
 }
 
-export function createPageDesignBusinessDefinition(options: CreatePageDesignBusinessDefinitionOptions): IBusinessDefinition {
+export function createPageDesignBusinessDefinition(options: CreatePageDesignBusinessDefinitionOptions): PageDesignBusinessDefinition {
   const runtimes = new Map<string, PageDesignModuleRuntime>()
 
-  function createLifecycleRuntime(context: ModulePromptContext): PageDesignModuleRuntime {
+  function createLifecycleRuntime(context: ModulePromptContext<typeof PAGE_DESIGN_BUSINESS, typeof LIFECYCLE_MODULE_ID>): PageDesignModuleRuntime {
     const runtime = createEditState() as PageDesignModuleRuntime
     bindLiveModelAdapter(runtime, options.getEditToolHost({
       instanceId: context.instanceId,
@@ -401,7 +436,7 @@ export function createPageDesignBusinessDefinition(options: CreatePageDesignBusi
     return runtime
   }
 
-  function requireLifecycleRuntime(context: ModulePromptContext): PageDesignModuleRuntime {
+  function requireLifecycleRuntime(context: ModulePromptContext<typeof PAGE_DESIGN_BUSINESS, PageDesignModuleId>): PageDesignModuleRuntime {
     const runtime = runtimes.get(context.instanceId)
     if (runtime === undefined) {
       throw new Error(`pageDesign lifecycle runtime missing for instance ${context.instanceId}`)
@@ -409,7 +444,7 @@ export function createPageDesignBusinessDefinition(options: CreatePageDesignBusi
     return runtime
   }
 
-  function destroyLifecycleRuntime(_runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext): void {
+  function destroyLifecycleRuntime(_runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext<typeof PAGE_DESIGN_BUSINESS, typeof LIFECYCLE_MODULE_ID>): void {
     runtimes.delete(context.instanceId)
   }
 
@@ -417,7 +452,7 @@ export function createPageDesignBusinessDefinition(options: CreatePageDesignBusi
     return runtimes.get(instanceId) ?? null
   }
 
-  const modules: Array<IModule<PageDesignModuleRuntime>> = [
+  const modules = [
     createPageDesignModule({
       moduleId: LIFECYCLE_MODULE_ID,
       name: 'Page Design Lifecycle',
@@ -455,7 +490,7 @@ export function createPageDesignBusinessDefinition(options: CreatePageDesignBusi
       createRuntime: requireLifecycleRuntime,
       getFunctions: createDatasetFunctions,
     }),
-  ]
+  ] as const satisfies readonly PageDesignAnyModuleDefinition[]
 
   return {
     businessId: PAGE_DESIGN_BUSINESS,

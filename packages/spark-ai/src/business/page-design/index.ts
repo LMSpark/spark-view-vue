@@ -11,6 +11,7 @@ export {
 } from './page-design-business'
 export type {
   CreatePageDesignBusinessDefinitionOptions,
+  PageDesignBusinessDefinition,
   PageDesignRuntimeContext,
   PageDesignModuleRuntime,
 } from './page-design-business'

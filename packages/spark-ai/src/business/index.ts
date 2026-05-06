@@ -12,6 +12,7 @@ export {
   isEditTextModelWriteAction,
   type PageDesignBusinessContext,
   type CreatePageDesignBusinessDefinitionOptions,
+  type PageDesignBusinessDefinition,
   type PageDesignRuntimeContext,
   type PageDesignModuleRuntime,
   type EditState,

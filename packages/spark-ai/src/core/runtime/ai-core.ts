@@ -1,5 +1,6 @@
 import type {
   AiCore,
+  AiCoreAction,
   AiCoreAppendMessagesOptions,
   AiCoreEvent,
   AiCoreEventListener,
@@ -78,7 +79,11 @@ function assertId(kind: string, value: string): void {
   }
 }
 
-function actionOf(businessId: string, moduleId: string, functionId: string): string {
+function actionOf<
+  TBusinessId extends string,
+  TModuleId extends string,
+  TFunctionId extends string,
+>(businessId: TBusinessId, moduleId: TModuleId, functionId: TFunctionId): AiCoreAction<TBusinessId, TModuleId, TFunctionId> {
   return `${businessId}@${moduleId}@${functionId}`
 }
 
@@ -571,12 +576,13 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       return { result, history: createHistorySnapshot(instance) }
     }
 
+    const executionAction = actionOf(instance.businessId, exposure.moduleId, exposure.functionId)
     const executionContext: FunctionExecutionContext = {
       instanceId: instance.instanceId,
       businessId: instance.businessId,
       moduleId: exposure.moduleId,
       functionId: exposure.functionId,
-      action: options.action,
+      action: executionAction,
       moduleRuntime: runtime,
       runtimeReader,
     }

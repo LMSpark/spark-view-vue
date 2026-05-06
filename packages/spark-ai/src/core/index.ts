@@ -6,6 +6,7 @@
 
 export type {
   AiCore,
+  AiCoreAction,
   AiCoreAppendMessage,
   AiCoreAppendMessagesOptions,
   AiCoreEvent,
@@ -24,7 +25,10 @@ export type {
   AiCoreInstanceStatus,
   AiCoreLifecycleMarker,
   AiCoreMessageRole,
+  AiCoreBusinessId,
+  AiCoreFunctionId,
   AiCoreModuleRuntimeSnapshot,
+  AiCoreModuleId,
   AiCoreOptions,
   AiCoreStartSessionOptions,
   AiCoreStartSessionResult,

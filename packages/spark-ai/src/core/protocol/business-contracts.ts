@@ -12,6 +12,15 @@ export type AiCoreStopMode = 'pause' | 'stop'
 
 export type AiCoreMessageRole = 'user' | 'assistant'
 
+export type AiCoreBusinessId = string
+export type AiCoreModuleId = string
+export type AiCoreFunctionId = string
+export type AiCoreAction<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+  TFunctionId extends AiCoreFunctionId = AiCoreFunctionId,
+> = `${TBusinessId}@${TModuleId}@${TFunctionId}`
+
 export interface AiCoreAppendMessage {
   role: AiCoreMessageRole
   content: string
@@ -86,75 +95,112 @@ export interface ModuleRuntimeReader {
   get<TRuntime extends ModuleRuntime = ModuleRuntime>(instanceId: string, moduleId: string): TRuntime | null
 }
 
-export interface ModulePromptContext {
+export interface ModulePromptContext<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+> {
   readonly instanceId: string
-  readonly businessId: string
-  readonly moduleId: string
+  readonly businessId: TBusinessId
+  readonly moduleId: TModuleId
   readonly runtimeReader: ModuleRuntimeReader
 }
 
-export interface ModuleRuntimeLifecycleContext extends ModulePromptContext {
+export interface ModuleRuntimeLifecycleContext<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+> extends ModulePromptContext<TBusinessId, TModuleId> {
   readonly runtime: ModuleRuntime
 }
 
-export interface IModulePromptProvider {
-  getPrompt(context: ModulePromptContext): string | null | Promise<string | null>
+export interface IModulePromptProvider<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+> {
+  getPrompt(context: ModulePromptContext<TBusinessId, TModuleId>): string | null | Promise<string | null>
 }
 
 export interface IModuleInstanceAccessor<TRuntime extends ModuleRuntime = ModuleRuntime> {
   getInstance(instanceId: string): TRuntime | null
 }
 
-export interface IFunctionCatalogProvider {
-  getFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>>
+export interface IFunctionCatalogProvider<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+> {
+  getFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown, TBusinessId, TModuleId>>
 }
 
-export interface IModule<TRuntime extends ModuleRuntime = ModuleRuntime>
-  extends IModulePromptProvider,
+export interface IModule<
+  TRuntime extends ModuleRuntime = ModuleRuntime,
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+>
+  extends IModulePromptProvider<TBusinessId, TModuleId>,
     IModuleInstanceAccessor<TRuntime>,
-    IFunctionCatalogProvider {
-  readonly moduleId: string
+    IFunctionCatalogProvider<TBusinessId, TModuleId> {
+  readonly moduleId: TModuleId
   readonly name: string
   readonly description: string
-  createRuntime?(context: ModulePromptContext): TRuntime | Promise<TRuntime>
-  destroyRuntime?(runtime: TRuntime, context: ModuleRuntimeLifecycleContext): void | Promise<void>
+  createRuntime?(context: ModulePromptContext<TBusinessId, TModuleId>): TRuntime | Promise<TRuntime>
+  destroyRuntime?(runtime: TRuntime, context: ModuleRuntimeLifecycleContext<TBusinessId, TModuleId>): void | Promise<void>
 }
 
-export interface IBusinessDefinition {
-  readonly businessId: string
+export interface IBusinessDefinition<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModules extends readonly IModule<ModuleRuntime, TBusinessId, AiCoreModuleId>[] = readonly IModule<ModuleRuntime, TBusinessId, AiCoreModuleId>[],
+> {
+  readonly businessId: TBusinessId
   readonly name: string
   readonly description: string
-  readonly modules: ReadonlyArray<IModule<ModuleRuntime>>
+  readonly modules: TModules
 }
 
-export interface IFunctionDefinition<TArgs = unknown, TResult = unknown> {
-  readonly functionId: string
+export interface IFunctionDefinition<
+  TArgs = unknown,
+  TResult = unknown,
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+  TFunctionId extends AiCoreFunctionId = AiCoreFunctionId,
+> {
+  readonly functionId: TFunctionId
   readonly description: string
   readonly paramsSchema: Record<string, unknown>
   readonly resultSchema?: Record<string, unknown>
   readonly maxExecutionMs?: number
   readonly usageRules?: readonly string[]
   readonly failureModes?: readonly FunctionFailureMode[]
-  validate?(args: TArgs, context: FunctionExecutionContext): string | null
-  execute(args: TArgs, context: FunctionExecutionContext): TResult | AiCoreFunctionCallResult<TResult> | Promise<TResult | AiCoreFunctionCallResult<TResult>>
-  postValidate?(args: TArgs, result: TResult, context: FunctionExecutionContext): PostValidationWarning[]
+  validate?(args: TArgs, context: FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId>): string | null
+  execute(args: TArgs, context: FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId>): TResult | AiCoreFunctionCallResult<TResult> | Promise<TResult | AiCoreFunctionCallResult<TResult>>
+  postValidate?(args: TArgs, result: TResult, context: FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId>): PostValidationWarning[]
 }
 
-export interface FunctionExecutionContext {
+export interface FunctionExecutionContext<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+  TFunctionId extends AiCoreFunctionId = AiCoreFunctionId,
+> {
   readonly instanceId: string
-  readonly businessId: string
-  readonly moduleId: string
-  readonly functionId: string
-  readonly action: string
+  readonly businessId: TBusinessId
+  readonly moduleId: TModuleId
+  readonly functionId: TFunctionId
+  readonly action: AiCoreAction<TBusinessId, TModuleId, TFunctionId>
   readonly moduleRuntime: ModuleRuntime
   readonly runtimeReader: ModuleRuntimeReader
 }
 
-export interface ModuleBeforeExecuteContext extends FunctionExecutionContext {
+export interface ModuleBeforeExecuteContext<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+  TFunctionId extends AiCoreFunctionId = AiCoreFunctionId,
+> extends FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId> {
   readonly args: unknown
 }
 
-export interface ModuleAfterExecuteContext extends FunctionExecutionContext {
+export interface ModuleAfterExecuteContext<
+  TBusinessId extends AiCoreBusinessId = AiCoreBusinessId,
+  TModuleId extends AiCoreModuleId = AiCoreModuleId,
+  TFunctionId extends AiCoreFunctionId = AiCoreFunctionId,
+> extends FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId> {
   readonly args: unknown
   readonly result: AiCoreFunctionCallResult<unknown>
 }
