@@ -2,6 +2,7 @@ import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import type {
   AiCoreFunctionCallResult,
+  FunctionFailureMode,
   FunctionExecutionContext,
   IBusinessDefinition,
   IFunctionDefinition,
@@ -51,13 +52,19 @@ const LIFECYCLE_MODULE_ID = 'lifecycle'
 const TEXT_MODEL_MODULE_ID = 'textModel'
 const NODE_TREE_MODULE_ID = 'nodeTree'
 const DATASET_MODULE_ID = 'dataset'
+type PageDesignModuleId =
+  | typeof LIFECYCLE_MODULE_ID
+  | typeof TEXT_MODEL_MODULE_ID
+  | typeof NODE_TREE_MODULE_ID
+  | typeof DATASET_MODULE_ID
+type PageDesignFunctionAction<TModuleId extends PageDesignModuleId = PageDesignModuleId> = `${typeof PAGE_DESIGN_BUSINESS}@${TModuleId}@${string}`
 
 const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign@lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
 const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign@textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
 const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign@nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 core@knowledge@queryPayloads/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
 const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign@dataset 只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
 
-const HIDDEN_EDIT_DATASET_METHODS = new Set([
+const HIDDEN_EDIT_DATASET_METHODS: ReadonlySet<DatasetCrudToolFunctionParameterRow['crudToolMethod']> = new Set([
   'toJson',
   'listAggregates',
   'getAggregate',
@@ -88,16 +95,16 @@ interface PageDesignModuleFactoryOptions {
   destroyRuntime?: (runtime: PageDesignModuleRuntime, context: ModuleRuntimeLifecycleContext) => void
 }
 
-type FunctionCatalogRow = {
-  action: string
+type FunctionCatalogRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = {
+  action: PageDesignFunctionAction<TModuleId>
   description: string
   paramsSchema: Record<string, unknown>
   resultSchema?: Record<string, unknown>
   usageRules?: readonly string[]
-  failureModes?: ReadonlyArray<{ code: string; when: string; fix: string }>
+  failureModes?: readonly FunctionFailureMode[]
 }
 
-type MethodBackedRow = FunctionCatalogRow & {
+type MethodBackedRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = FunctionCatalogRow<TModuleId> & {
   type: 'describe' | 'request'
   example: Record<string, unknown>
 }
@@ -187,7 +194,7 @@ function failure(code: string, msg: string, fix: string): AiCoreFunctionCallResu
   return { ok: false, code, msg, fix }
 }
 
-function functionIdFromAction(action: string, expectedModuleId: string): string {
+function functionIdFromAction<TModuleId extends PageDesignModuleId>(action: PageDesignFunctionAction<TModuleId>, expectedModuleId: TModuleId): string {
   const parsed = parseActionAddress(action)
   if (parsed.business !== PAGE_DESIGN_BUSINESS || parsed.module !== expectedModuleId) {
     throw new Error(`pageDesign 函数目录 action 与模块不一致: ${action}`)
@@ -195,7 +202,7 @@ function functionIdFromAction(action: string, expectedModuleId: string): string 
   return parsed.function
 }
 
-function createBaseFunctionDefinition(row: FunctionCatalogRow, moduleId: string): Omit<IFunctionDefinition<unknown, unknown>, 'execute'> {
+function createBaseFunctionDefinition<TModuleId extends PageDesignModuleId>(row: FunctionCatalogRow<TModuleId>, moduleId: TModuleId): Omit<IFunctionDefinition<unknown, unknown>, 'execute'> {
   return {
     functionId: functionIdFromAction(row.action, moduleId),
     description: row.description,
@@ -283,7 +290,7 @@ function createTextModelFunctions(): ReadonlyArray<IFunctionDefinition<unknown, 
     const runtime = TEXT_FILE_RUNTIME_BY_KEY[row.fileKey]
     return {
       ...createBaseFunctionDefinition(row, TEXT_MODEL_MODULE_ID),
-      validate: (args) => validateTextModelFunctionParams(String(row.action), args),
+      validate: (args) => validateTextModelFunctionParams(row.action, args),
       execute: (args, context) => {
         const state = getRuntimeState(context)
         const accessError = ensureTextModelAccess(state, row, mode)
@@ -331,7 +338,7 @@ function callMethodBackedTarget(row: MethodBackedRow, target: unknown, methodNam
 function createNodeTreeFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>> {
   return SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.map((row: SparkNodeTreeToolParameterRow) => ({
     ...createBaseFunctionDefinition(row, NODE_TREE_MODULE_ID),
-    validate: (args) => validateSparkNodeTreeToolParams(String(row.action), args),
+    validate: (args) => validateSparkNodeTreeToolParams(row.action, args),
     execute: (args, context) => {
       const state = getRuntimeState(context)
       const tree: SparkNodeTree | null = getActiveNodeTree(state)
@@ -352,7 +359,7 @@ function createDatasetFunctions(): ReadonlyArray<IFunctionDefinition<unknown, un
     .filter((row) => !HIDDEN_EDIT_DATASET_METHODS.has(row.crudToolMethod))
     .map((row: DatasetCrudToolFunctionParameterRow) => ({
       ...createBaseFunctionDefinition(row, DATASET_MODULE_ID),
-      validate: (args) => validateDataSetCrudToolFunctionParams(String(row.action), args),
+      validate: (args) => validateDataSetCrudToolFunctionParams(row.action, args),
       execute: (args, context) => {
         const state = getRuntimeState(context)
         const tool: DataSetCrudTool | null = getActiveDataSetTool(state)

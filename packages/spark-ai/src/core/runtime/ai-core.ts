@@ -347,6 +347,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       instanceId: instance.instanceId,
       businessId: business.businessId,
       moduleId: module.moduleId,
+      runtimeReader,
       runtime,
     }
     await runtime.onStop?.(lifecycleContext)

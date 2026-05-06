@@ -173,7 +173,6 @@ function appendPostValidationWarnings(
 }
 
 function appendRequestTrace(
-  definition: RegisteredFunctionDefinition<unknown, unknown>,
   context: FunctionRuntimeContext,
   action: string,
   requestId: string,
@@ -212,7 +211,7 @@ function runExecution(
     : definition.execute(context, params)
 
   appendPostValidationWarnings(definition, context, params, result)
-  appendRequestTrace(definition, context, action, requestId, result)
+  appendRequestTrace(context, action, requestId, result)
   return result
 }
 

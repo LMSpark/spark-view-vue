@@ -17,7 +17,7 @@ import {
   type EditState,
 } from '../../lifecycle'
 import { createEditFileFunctions, EDIT_FILE_FUNCTION_SUMMARIES } from '../../text-model'
-import { DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE } from '../../dataset'
+import { DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE, validateDataSetCrudToolFunctionParams } from '../../dataset'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE, validateSparkNodeTreeToolParams } from '../../node-tree'
 
 const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign@nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 core@knowledge@queryPayloads/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
@@ -25,7 +25,9 @@ const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign@dataset 只操作当前 Da
 export const PAGE_DESIGN_NODE_TREE_CARRIER_KEY = 'pageDesign@nodeTree' as const
 export const PAGE_DESIGN_DATASET_CARRIER_KEY = 'pageDesign@dataset' as const
 
-const HIDDEN_EDIT_DATASET_METHODS = new Set([
+type EditDatasetMethod = (typeof DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE)[number]['crudToolMethod']
+
+const HIDDEN_EDIT_DATASET_METHODS: ReadonlySet<EditDatasetMethod> = new Set([
   'toJson',
   'listAggregates',
   'getAggregate',
@@ -86,7 +88,7 @@ export function createEditDataSetFunctions(): RegisteredFunctionDefinition[] {
       .filter((row) => !HIDDEN_EDIT_DATASET_METHODS.has(row.crudToolMethod)),
     resolveTarget: (state: EditState) => getActiveDataSetTool(state),
     methodName: (row) => row.crudToolMethod,
-    validate: () => null,
+    validate: (row, params: unknown) => validateDataSetCrudToolFunctionParams(row.action, params),
     missingTarget: (): FunctionResult => ({
       ok: false,
       code: 'NO_DATASET_EDIT',

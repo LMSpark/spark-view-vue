@@ -30,6 +30,7 @@ export type DatasetCrudToolFunctionTarget =
   | 'row'
   | 'relation'
   | 'dependency'
+export type DatasetCrudToolFunctionAction = `pageDesign@dataset@${string}`
 type DatasetCrudToolFunctionCoreFields = Omit<
   Required<
     Pick<
@@ -37,11 +38,11 @@ type DatasetCrudToolFunctionCoreFields = Omit<
       'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
-  'failureModes'
-> & { type: 'describe' | 'request' }
+  'action' | 'failureModes'
+> & { action: DatasetCrudToolFunctionAction; type: 'describe' | 'request' }
 
 export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionCoreFields & {
-  failureModes: DatasetCrudToolFunctionFailureMode[]
+  failureModes: readonly DatasetCrudToolFunctionFailureMode[]
   target: DatasetCrudToolFunctionTarget
   crudToolMethod: DataSetCrudToolMethodKey
   validation?: DatasetCrudToolFunctionValidationRule
@@ -52,8 +53,8 @@ export type DatasetCrudToolFunctionCapabilityRow = Pick<
 > & {
   integrationStatus: 'catalog-only' | 'runtime-wired'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }

@@ -3,6 +3,7 @@ import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../..
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionTarget = 'script' | 'style'
 export type TextModelFunctionFileKey = 'script' | 'style'
+export type TextModelFunctionAction = `pageDesign@textModel@${string}`
 
 type TextModelFunctionCoreFields = Omit<
   Required<
@@ -11,11 +12,11 @@ type TextModelFunctionCoreFields = Omit<
       'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
-  'failureModes'
-> & { type: 'describe' | 'request' }
+  'action' | 'failureModes'
+> & { action: TextModelFunctionAction; type: 'describe' | 'request' }
 
 export type TextModelFunctionParameterRow = TextModelFunctionCoreFields & {
-  failureModes: TextModelFunctionFailureMode[]
+  failureModes: readonly TextModelFunctionFailureMode[]
   target: TextModelFunctionTarget
   fileKey: TextModelFunctionFileKey
 }
@@ -26,8 +27,8 @@ export type TextModelFunctionCapabilityRow = Pick<
 > & {
   integrationStatus: 'runtime-wired'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }
@@ -67,7 +68,7 @@ function toCapabilityRow(row: TextModelFunctionParameterRow): TextModelFunctionC
   }
 }
 
-export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE: TextModelFunctionParameterRow[] = [
+export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
   defineDescribeRow({
     action: 'pageDesign@textModel@readScript',
     target: 'script',
@@ -157,9 +158,9 @@ export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE: TextModelFunctionParameterRow
       },
     ],
   }),
-]
+] as const satisfies readonly TextModelFunctionParameterRow[]
 
-export const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE: TextModelFunctionCapabilityRow[] = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
+export const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
 
 const TEXT_MODEL_FUNCTION_PARAMETER_INDEX = new Map<string, TextModelFunctionParameterRow>(
   TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map((row) => [row.action, row]),

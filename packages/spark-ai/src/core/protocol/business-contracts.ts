@@ -133,8 +133,8 @@ export interface IFunctionDefinition<TArgs = unknown, TResult = unknown> {
   readonly paramsSchema: Record<string, unknown>
   readonly resultSchema?: Record<string, unknown>
   readonly maxExecutionMs?: number
-  readonly usageRules?: ReadonlyArray<string>
-  readonly failureModes?: ReadonlyArray<FunctionFailureMode>
+  readonly usageRules?: readonly string[]
+  readonly failureModes?: readonly FunctionFailureMode[]
   validate?(args: TArgs, context: FunctionExecutionContext): string | null
   execute(args: TArgs, context: FunctionExecutionContext): TResult | AiCoreFunctionCallResult<TResult> | Promise<TResult | AiCoreFunctionCallResult<TResult>>
   postValidate?(args: TArgs, result: TResult, context: FunctionExecutionContext): PostValidationWarning[]
@@ -172,8 +172,8 @@ export interface AiCoreFunctionExposure {
   paramsSchema: Record<string, unknown>
   resultSchema?: Record<string, unknown>
   maxExecutionMs?: number
-  usageRules?: ReadonlyArray<string>
-  failureModes?: ReadonlyArray<FunctionFailureMode>
+  usageRules?: readonly string[]
+  failureModes?: readonly FunctionFailureMode[]
 }
 
 export type AiCoreFunctionCallResult<TResult = unknown> =
@@ -192,7 +192,7 @@ export interface AiCoreFunctionCallRecord {
 export interface AiCoreFunctionExposureSnapshot {
   id: string
   timestamp: number
-  functions: ReadonlyArray<AiCoreFunctionExposure>
+  functions: readonly AiCoreFunctionExposure[]
 }
 
 export interface AiCoreLifecycleMarker {
@@ -205,10 +205,10 @@ export interface AiCoreLifecycleMarker {
 export interface AiCoreHistorySnapshot {
   instanceId: string
   version: number
-  messages: ReadonlyArray<AiCoreHistoryMessage>
-  functionCalls: ReadonlyArray<AiCoreFunctionCallRecord>
-  lifecycleMarkers: ReadonlyArray<AiCoreLifecycleMarker>
-  functionExposureSnapshots: ReadonlyArray<AiCoreFunctionExposureSnapshot>
+  messages: readonly AiCoreHistoryMessage[]
+  functionCalls: readonly AiCoreFunctionCallRecord[]
+  lifecycleMarkers: readonly AiCoreLifecycleMarker[]
+  functionExposureSnapshots: readonly AiCoreFunctionExposureSnapshot[]
 }
 
 export interface AiCoreInstanceSnapshot {
@@ -216,7 +216,7 @@ export interface AiCoreInstanceSnapshot {
   businessId: string
   status: AiCoreInstanceStatus
   promptSnapshot: string
-  availableFunctions: ReadonlyArray<AiCoreFunctionExposure>
+  availableFunctions: readonly AiCoreFunctionExposure[]
 }
 
 export interface AiCoreModuleRuntimeSnapshot {
@@ -225,7 +225,7 @@ export interface AiCoreModuleRuntimeSnapshot {
 }
 
 export interface AiCoreInstanceDetail extends AiCoreInstanceSnapshot {
-  modules: ReadonlyArray<AiCoreModuleRuntimeSnapshot>
+  modules: readonly AiCoreModuleRuntimeSnapshot[]
   history: AiCoreHistorySnapshot
 }
 
@@ -252,7 +252,7 @@ export interface AiCoreStopSessionResult {
 
 export interface AiCoreAppendMessagesOptions {
   instanceId: string
-  messages: ReadonlyArray<AiCoreAppendMessage>
+  messages: readonly AiCoreAppendMessage[]
 }
 
 export interface AiCoreExecuteFunctionCallOptions {
@@ -276,13 +276,13 @@ export interface AiCore {
   readonly runtimeReader: ModuleRuntimeReader
   registerBusiness(definition: IBusinessDefinition): void
   getBusinessDefinition(businessId: string): IBusinessDefinition | undefined
-  listBusinesses(): ReadonlyArray<IBusinessDefinition>
+  listBusinesses(): readonly IBusinessDefinition[]
   startSession(options: AiCoreStartSessionOptions): Promise<AiCoreStartSessionResult>
   stopSession(options: AiCoreStopSessionOptions): Promise<AiCoreStopSessionResult>
   appendMessages(options: AiCoreAppendMessagesOptions): AiCoreHistorySnapshot
-  getAvailableFunctions(instanceId: string): ReadonlyArray<AiCoreFunctionExposure>
+  getAvailableFunctions(instanceId: string): readonly AiCoreFunctionExposure[]
   executeFunctionCall(options: AiCoreExecuteFunctionCallOptions): Promise<AiCoreExecuteFunctionCallResult>
-  listInstances(): ReadonlyArray<AiCoreInstanceSnapshot>
+  listInstances(): readonly AiCoreInstanceSnapshot[]
   getInstanceDetail(instanceId: string): AiCoreInstanceDetail | null
   getSessionHistory(instanceId: string): AiCoreHistorySnapshot | null
   subscribe(listener: AiCoreEventListener): () => void

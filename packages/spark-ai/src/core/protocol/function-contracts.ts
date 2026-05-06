@@ -207,8 +207,8 @@ export interface FunctionCatalogRow {
   paramsSchema?: Record<string, unknown>
   resultSchema?: Record<string, unknown>
   example?: Record<string, unknown>
-  usageRules?: string[]
-  failureModes?: FunctionFailureMode[]
+  usageRules?: readonly string[]
+  failureModes?: readonly FunctionFailureMode[]
 }
 
 /**
@@ -236,7 +236,7 @@ export interface RegisteredFunctionDefinition<TParams = unknown, TResult = unkno
   /** 守卫失败时的人类可读说明。 */
   guardDescription?: string
   /** 关键调用规则列表，用于知识投影和失败修复提示。 */
-  usageRules?: string[]
+  usageRules?: readonly string[]
   /** 参数结构说明，供校验提示和工具定义生成复用。 */
   paramsSchema?: Record<string, unknown>
   /** 返回结构说明，供知识查询和工具定义复用。 */
@@ -244,7 +244,7 @@ export interface RegisteredFunctionDefinition<TParams = unknown, TResult = unkno
   /** 典型调用示例，供模型重试或提示词生成参考。 */
   example?: Record<string, unknown>
   /** 静态声明的失败模式目录。 */
-  failureModes?: FunctionFailureMode[]
+  failureModes?: readonly FunctionFailureMode[]
   /** 参数校验入口，返回字符串表示阻断执行。 */
   validate(params: TParams): string | null
   /** 可选载体注入参数校验入口；在命中运行载体时优先于 validate 执行。 */

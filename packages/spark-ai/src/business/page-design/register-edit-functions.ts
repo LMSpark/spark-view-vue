@@ -1,7 +1,6 @@
 import { coreKnowledgeFunctions } from '../../core/knowledge/knowledge-functions'
 import { registerFunctionCarriers } from '../../core/registry/function-carrier-registry'
 import { registerFunctions } from '../../core/registry/function-registry'
-import type { RegisteredFunctionDefinition } from '../../core/protocol/function-contracts'
 import { registerPageDesignPayloadProviders } from './payloads'
 import { createEditLifecycleCarrier, type EditState } from './functions/lifecycle'
 import { createTextModelCarrier } from './functions/text-model/text-model-functions'
@@ -23,7 +22,7 @@ export function registerPageDesignEditFunctions(state: EditState): void {
     createEditNodeTreeCarrier(state),
     createEditDataSetCarrier(state),
   ])
-  registerFunctions(createPageDesignEditFunctions() as unknown as ReadonlyArray<RegisteredFunctionDefinition<unknown, unknown>>)
+  registerFunctions(createPageDesignEditFunctions())
   registerPageDesignPayloadProviders()
-  registerFunctions(coreKnowledgeFunctions as unknown as ReadonlyArray<RegisteredFunctionDefinition<unknown, unknown>>)
+  registerFunctions(coreKnowledgeFunctions)
 }

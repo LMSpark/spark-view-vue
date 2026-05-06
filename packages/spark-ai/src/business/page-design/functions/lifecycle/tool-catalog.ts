@@ -2,6 +2,7 @@ import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../..
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'
+export type EditLifecycleFunctionAction = `pageDesign@lifecycle@${string}`
 
 type EditLifecycleFunctionCoreFields = Omit<
   Required<
@@ -10,11 +11,11 @@ type EditLifecycleFunctionCoreFields = Omit<
       'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
-  'failureModes'
-> & { type: 'describe' | 'request' }
+  'action' | 'failureModes'
+> & { action: EditLifecycleFunctionAction; type: 'describe' | 'request' }
 
 export type EditLifecycleFunctionParameterRow = EditLifecycleFunctionCoreFields & {
-  failureModes: EditLifecycleFunctionFailureMode[]
+  failureModes: readonly EditLifecycleFunctionFailureMode[]
   target: EditLifecycleFunctionTarget
 }
 
@@ -24,8 +25,8 @@ export type EditLifecycleFunctionCapabilityRow = Pick<
 > & {
   integrationStatus: 'runtime-wired'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }
@@ -50,7 +51,7 @@ function toCapabilityRow(row: EditLifecycleFunctionParameterRow): EditLifecycleF
   }
 }
 
-export const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE: EditLifecycleFunctionParameterRow[] = [
+export const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE = [
   {
     action: 'pageDesign@lifecycle@bootstrap',
     type: 'request',
@@ -80,9 +81,27 @@ export const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE: EditLifecycleFunctionParam
       },
     ],
   },
-]
+  {
+    action: 'pageDesign@lifecycle@describeProgress',
+    type: 'describe',
+    target: 'session',
+    description: '查询当前 pageDesign 编辑运行状态、live adapter 可用性和下一步建议。',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      phase: 'EditPhase — 当前编辑阶段',
+      adapters: 'Record<string, boolean> — live adapter 可用性',
+      nextStep: 'string — 下一步建议',
+    },
+    example: {},
+    usageRules: [
+      '当不确定当前编辑是否已完成 bootstrap，或需要确认可读写能力时调用。',
+      '本函数只读业务运行状态，不修改页面内容。',
+    ],
+    failureModes: [],
+  },
+] as const satisfies readonly EditLifecycleFunctionParameterRow[]
 
-export const EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE: EditLifecycleFunctionCapabilityRow[] = EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map(toCapabilityRow)
+export const EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE = EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map(toCapabilityRow)
 
 const EDIT_LIFECYCLE_FUNCTION_PARAMETER_INDEX = new Map<string, EditLifecycleFunctionParameterRow>(
   EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map((row) => [row.action, row]),

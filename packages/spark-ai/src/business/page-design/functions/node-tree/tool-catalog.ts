@@ -13,6 +13,7 @@ type SparkNodeTreeMethodKey = MethodKey<SparkNodeTree>
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'
+export type SparkNodeTreeToolAction = `pageDesign@nodeTree@${string}`
 type SparkNodeTreeToolCoreFields = Omit<
   Required<
     Pick<
@@ -20,11 +21,11 @@ type SparkNodeTreeToolCoreFields = Omit<
       'action' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
     >
   >,
-  'failureModes'
-> & { type: 'describe' | 'request' }
+  'action' | 'failureModes'
+> & { action: SparkNodeTreeToolAction; type: 'describe' | 'request' }
 
 export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolCoreFields & {
-  failureModes: SparkNodeTreeToolFailureMode[]
+  failureModes: readonly SparkNodeTreeToolFailureMode[]
   target: SparkNodeTreeToolTarget
   coreMethod: SparkNodeTreeMethodKey
   validation?: LlmParamValidationOptions
@@ -35,8 +36,8 @@ export type SparkNodeTreeToolCapabilityRow = Pick<
 > & {
   integrationStatus: 'catalog-only'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }

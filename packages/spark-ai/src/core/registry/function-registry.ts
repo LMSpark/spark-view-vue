@@ -34,8 +34,8 @@ const registry = new Map<string, RegisteredFunctionDefinition<unknown, unknown>>
  * 输出语义：以 definition.action 作为主键写入 registry；若 action 已存在则覆盖旧值。
  * 调用时机：仅需注册单个函数，或测试中构造最小 definition 集合时使用。
  */
-export function registerFunction(definition: RegisteredFunctionDefinition<unknown, unknown>): void {
-  registry.set(definition.action, definition)
+export function registerFunction<TParams, TResult>(definition: RegisteredFunctionDefinition<TParams, TResult>): void {
+  registry.set(definition.action, definition as RegisteredFunctionDefinition<unknown, unknown>)
 }
 
 /**
@@ -44,9 +44,9 @@ export function registerFunction(definition: RegisteredFunctionDefinition<unknow
  * 输出语义：逐条写入 registry；后写入的同名 action 会覆盖先前值。
  * 调用时机：业务模块初始化时批量装配函数目录，是最常见的注册入口。
  */
-export function registerFunctions(definitions: ReadonlyArray<RegisteredFunctionDefinition<unknown, unknown>>): void {
+export function registerFunctions<TDefinition extends RegisteredFunctionDefinition<never, unknown>>(definitions: readonly TDefinition[]): void {
   for (const definition of definitions) {
-    registry.set(definition.action, definition)
+    registerFunction(definition)
   }
 }
 

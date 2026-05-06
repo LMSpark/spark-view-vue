@@ -66,7 +66,7 @@ export interface KnowledgePayloadGuide {
   jsonSchema: Record<string, unknown>
   minimalExample: Record<string, unknown>
   usageRules: string[]
-  failureModes: FunctionFailureMode[]
+  failureModes: readonly FunctionFailureMode[]
 }
 
 export interface KnowledgePayloadProvider {

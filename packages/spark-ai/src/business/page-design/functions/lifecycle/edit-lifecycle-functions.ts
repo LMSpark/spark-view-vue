@@ -230,7 +230,7 @@ function createDescribeProgressFunction(): RegisteredFunctionDefinition<Record<s
       '本函数只读业务运行状态，不修改页面内容。',
     ],
     failureModes: [],
-    validate: () => null,
+    validate: (params) => validateEditLifecycleFunctionParams(PAGE_DESIGN_DESCRIBE_PROGRESS_ACTION, params),
     execute: (): FunctionResult => missingLifecycleCarrierResult(PAGE_DESIGN_DESCRIBE_PROGRESS_ACTION),
     executeWithCarrier: (_context, carrier): FunctionResult => {
       const state = carrier as EditState

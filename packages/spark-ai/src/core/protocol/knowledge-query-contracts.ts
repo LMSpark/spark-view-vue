@@ -12,8 +12,8 @@ export interface KnowledgeToolSummary {
   moduleDescription?: string
   isPrimaryModule?: boolean
   guard?: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }
@@ -32,6 +32,6 @@ export interface KnowledgeModuleSummary {
 export interface KnowledgeToolGuide extends KnowledgeToolSummary {
   paramsSchema: Record<string, unknown> | null
   resultSchema: Record<string, unknown> | null
-  usageRules: string[]
-  failureModes: FunctionFailureMode[]
+  usageRules: readonly string[]
+  failureModes: readonly FunctionFailureMode[]
 }
