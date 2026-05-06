@@ -12,16 +12,13 @@
  * - 宿主不直接执行 LLM 编排；编排由上层编辑会话模块触发。
  */
 
-import {
-  clearFunctionCarrierRegistry,
-  clearFunctionRegistry,
-  clearKnowledgeRegistry,
-  createFunctionRuntimeContext,
-  createSessionBackend,
-  type FunctionRuntimeContext,
-  type SessionBackend,
-  type SessionBackendOptions,
-} from '../../core'
+import { clearFunctionCarrierRegistry } from '../../core/registry/function-carrier-registry'
+import { clearFunctionRegistry } from '../../core/registry/function-registry'
+import { clearKnowledgeRegistry } from '../../core/knowledge/payload-provider-registry'
+import { createFunctionRuntimeContext } from '../../core/runtime/function-runtime-context'
+import { createSessionBackend, type SessionBackendOptions } from '../../core/runtime/session-backend'
+import type { FunctionRuntimeContext } from '../../core/protocol/function-contracts'
+import type { SessionBackend } from '../../core/protocol/session-contracts'
 import { registerPageDesignEditFunctions } from './register-edit-functions'
 import {
   bindLiveModelAdapter,

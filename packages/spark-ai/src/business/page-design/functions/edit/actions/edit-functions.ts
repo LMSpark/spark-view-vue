@@ -1,9 +1,11 @@
 import {
   createMethodBackedDefinitions,
-  type FunctionCarrierContract,
-  type FunctionResult,
-  type RegisteredFunctionDefinition,
-} from '../../../../../core'
+} from '../../../../../core/protocol/method-backed-definition-builder'
+import type {
+  FunctionCarrierContract,
+  FunctionResult,
+  RegisteredFunctionDefinition,
+} from '../../../../../core/protocol/function-contracts'
 import {
   editInit,
   createEditLifecycleFunctions,

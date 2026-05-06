@@ -28,6 +28,12 @@ export interface PostValidationWarning {
   fix?: string
 }
 
+export interface FunctionFailureMode {
+  code: string
+  when: string
+  fix: string
+}
+
 export type AiCoreEventType =
   | 'instance.starting'
   | 'instance.started'
@@ -84,6 +90,7 @@ export interface ModulePromptContext {
   readonly instanceId: string
   readonly businessId: string
   readonly moduleId: string
+  readonly runtimeReader: ModuleRuntimeReader
 }
 
 export interface ModuleRuntimeLifecycleContext extends ModulePromptContext {
@@ -127,8 +134,9 @@ export interface IFunctionDefinition<TArgs = unknown, TResult = unknown> {
   readonly resultSchema?: Record<string, unknown>
   readonly maxExecutionMs?: number
   readonly usageRules?: ReadonlyArray<string>
+  readonly failureModes?: ReadonlyArray<FunctionFailureMode>
   validate?(args: TArgs, context: FunctionExecutionContext): string | null
-  execute(args: TArgs, context: FunctionExecutionContext): TResult | Promise<TResult>
+  execute(args: TArgs, context: FunctionExecutionContext): TResult | AiCoreFunctionCallResult<TResult> | Promise<TResult | AiCoreFunctionCallResult<TResult>>
   postValidate?(args: TArgs, result: TResult, context: FunctionExecutionContext): PostValidationWarning[]
 }
 
@@ -139,6 +147,7 @@ export interface FunctionExecutionContext {
   readonly functionId: string
   readonly action: string
   readonly moduleRuntime: ModuleRuntime
+  readonly runtimeReader: ModuleRuntimeReader
 }
 
 export interface ModuleBeforeExecuteContext extends FunctionExecutionContext {
@@ -164,6 +173,7 @@ export interface AiCoreFunctionExposure {
   resultSchema?: Record<string, unknown>
   maxExecutionMs?: number
   usageRules?: ReadonlyArray<string>
+  failureModes?: ReadonlyArray<FunctionFailureMode>
 }
 
 export type AiCoreFunctionCallResult<TResult = unknown> =

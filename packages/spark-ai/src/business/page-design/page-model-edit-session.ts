@@ -13,22 +13,20 @@
  */
 
 import type { SparkNodeTree } from '@spark-view/spark-component'
-import {
-  createDefaultFollowUpPolicy,
-  createRepeatDetectionMonitor,
-  executeFunction,
-  functionNameToAction,
-  generateToolDefinitions,
-  runFunctionLoop,
-  type FunctionResult,
-  type FunctionRuntimeContext,
-  type RepeatDetectionConfig,
-  type DialogueTurn,
-  type OrchestratorResult,
-  type SessionBackend,
-  type SessionBackendSseEvent,
-  type ToolDefinition,
-} from '../../core'
+import { createDefaultFollowUpPolicy } from '../../core/runtime/default-follow-up-policy'
+import { createRepeatDetectionMonitor, type RepeatDetectionConfig } from '../../core/runtime/repeat-detection-monitor'
+import { executeFunction } from '../../core/runtime/function-dispatcher'
+import { generateToolDefinitions } from '../../core/runtime/tool-schema-builder'
+import { runFunctionLoop } from '../../core/runtime/session-orchestrator'
+import { functionNameToAction } from '../../core/protocol/function-call-schema'
+import type { FunctionResult, FunctionRuntimeContext } from '../../core/protocol/function-contracts'
+import type {
+  DialogueTurn,
+  OrchestratorResult,
+  SessionBackend,
+  SessionBackendSseEvent,
+  ToolDefinition,
+} from '../../core/protocol/session-contracts'
 import {
   editInit,
   EDIT_FUNCTION_SUMMARIES,

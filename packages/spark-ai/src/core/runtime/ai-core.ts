@@ -174,10 +174,22 @@ function createFailure(code: string, msg: string, fix: string): AiCoreFunctionCa
   return { ok: false, code, msg, fix }
 }
 
+function isFunctionCallResult(value: unknown): value is AiCoreFunctionCallResult<unknown> {
+  return typeof value === 'object'
+    && value !== null
+    && 'ok' in value
+    && typeof (value as { ok: unknown }).ok === 'boolean'
+}
+
 export function createAiCore(options: AiCoreOptions = {}): AiCore {
   const businesses = new Map<string, IBusinessDefinition>()
   const instances = new Map<string, AiCoreInstanceState>()
   const listeners = new Set<AiCoreEventListener>()
+  const runtimeReader = {
+    get<TRuntime extends ModuleRuntime = ModuleRuntime>(instanceId: string, moduleId: string): TRuntime | null {
+      return (instances.get(instanceId)?.modules.get(moduleId) as TRuntime | undefined) ?? null
+    },
+  }
   const createInstanceId = options.createInstanceId ?? defaultInstanceId
   const createRecordId = options.createRecordId ?? createDefaultRecordId
   const now = options.now ?? Date.now
@@ -275,6 +287,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
           ...(definition.resultSchema !== undefined ? { resultSchema: definition.resultSchema } : {}),
           ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
           ...(definition.usageRules !== undefined ? { usageRules: definition.usageRules } : {}),
+          ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes } : {}),
         })
       }
     }
@@ -299,6 +312,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
         instanceId: instance.instanceId,
         businessId: business.businessId,
         moduleId: module.moduleId,
+        runtimeReader,
       })
       if (prompt !== null && prompt.trim().length > 0) {
         prompts.push(prompt)
@@ -310,13 +324,14 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
   async function startModuleRuntime(business: IBusinessDefinition, instance: AiCoreInstanceState, module: IModule<ModuleRuntime>): Promise<void> {
     emit(instance, 'module.starting', {}, { moduleId: module.moduleId })
     const runtime = module.createRuntime
-      ? await module.createRuntime({ instanceId: instance.instanceId, businessId: business.businessId, moduleId: module.moduleId })
+      ? await module.createRuntime({ instanceId: instance.instanceId, businessId: business.businessId, moduleId: module.moduleId, runtimeReader })
       : {}
     instance.modules.set(module.moduleId, runtime)
     const lifecycleContext: ModuleRuntimeLifecycleContext = {
       instanceId: instance.instanceId,
       businessId: business.businessId,
       moduleId: module.moduleId,
+      runtimeReader,
       runtime,
     }
     await runtime.onStart?.(lifecycleContext)
@@ -562,6 +577,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       functionId: exposure.functionId,
       action: options.action,
       moduleRuntime: runtime,
+      runtimeReader,
     }
 
     const customValidationError = definition.validate?.(options.args, executionContext) ?? null
@@ -584,13 +600,17 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
           decision.fix ?? `Inspect beforeExecute decision for module ${exposure.moduleId}.`,
         )
       } else {
-        const data = await definition.execute(options.args, executionContext)
-        const warnings = definition.postValidate?.(options.args, data, executionContext) ?? []
-        result = {
-          ok: true,
-          data,
-          summary: `${options.action} executed`,
-          ...(warnings.length > 0 ? { warnings } : {}),
+        const executed = await definition.execute(options.args, executionContext)
+        if (isFunctionCallResult(executed)) {
+          result = executed
+        } else {
+          const warnings = definition.postValidate?.(options.args, executed, executionContext) ?? []
+          result = {
+            ok: true,
+            data: executed,
+            summary: `${options.action} executed`,
+            ...(warnings.length > 0 ? { warnings } : {}),
+          }
         }
       }
     } catch (error) {
@@ -633,11 +653,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
   }
 
   const api: AiCore = {
-    runtimeReader: {
-      get<TRuntime extends ModuleRuntime = ModuleRuntime>(instanceId: string, moduleId: string): TRuntime | null {
-        return (instances.get(instanceId)?.modules.get(moduleId) as TRuntime | undefined) ?? null
-      },
-    },
+    runtimeReader,
     registerBusiness,
     getBusinessDefinition: (businessId) => businesses.get(businessId),
     listBusinesses: () => Array.from(businesses.values()),

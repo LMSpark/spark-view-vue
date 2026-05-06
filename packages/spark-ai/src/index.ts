@@ -35,6 +35,7 @@ export type {
   AiCoreStopMode,
   AiCoreStopSessionOptions,
   AiCoreStopSessionResult,
+  FunctionFailureMode,
   FunctionExecutionContext,
   IBusinessDefinition,
   IFunctionCatalogProvider,
@@ -53,11 +54,27 @@ export type {
 } from './core'
 
 export {
+  PAGE_DESIGN_BUSINESS,
+  PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
+  createPageDesignBusinessDefinition,
   createPageCache,
-} from './business/page-design/page-cache'
+  createEditState,
+  getActiveNodeTree,
+  bindLiveModelAdapter,
+  isEditWriteAction,
+  isEditNodeTreeWriteAction,
+  isEditDataSetWriteAction,
+  isEditTextModelWriteAction,
+} from './business/page-design'
 export type {
+  PageDesignBusinessContext,
+  CreatePageDesignBusinessDefinitionOptions,
+  PageDesignRuntimeContext,
+  PageDesignModuleRuntime,
+  EditState,
+  EditToolHost,
   PageCacheHandle,
-} from './business/page-design/page-cache'
+} from './business/page-design'
 
 export { default as COMPONENT_CATALOG_JSON } from './catalog/component-catalog.json'
 export {

@@ -2,7 +2,7 @@ import type {
   FunctionCarrierContract,
   FunctionResult,
   RegisteredFunctionDefinition,
-} from '../../../../core'
+} from '../../../../core/protocol/function-contracts'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {

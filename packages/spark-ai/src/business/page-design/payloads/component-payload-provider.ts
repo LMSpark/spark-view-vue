@@ -1,13 +1,13 @@
 import componentCatalogJson from '../../../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../../../catalog/types'
 import { projectComponentConfigGuide, projectFunctionCatalog } from '../../../catalog/catalog-projections'
-import { registerKnowledgePayloadProvider } from '../../../core'
+import { registerKnowledgePayloadProvider } from '../../../core/knowledge/payload-provider-registry'
 import type {
   KnowledgePayloadGuide,
   KnowledgePayloadProvider,
   KnowledgePayloadQueryFilter,
   KnowledgePayloadSummary,
-} from '../../../core'
+} from '../../../core/protocol/knowledge-payload-contracts'
 
 export const PAGE_DESIGN_COMPONENT_PAYLOAD_REF = 'page-design.component'
 

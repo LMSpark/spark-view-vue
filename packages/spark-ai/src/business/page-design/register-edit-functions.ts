@@ -1,9 +1,7 @@
-import {
-  coreKnowledgeFunctions,
-  registerFunctionCarriers,
-  registerFunctions,
-  type RegisteredFunctionDefinition,
-} from '../../core'
+import { coreKnowledgeFunctions } from '../../core/knowledge/knowledge-functions'
+import { registerFunctionCarriers } from '../../core/registry/function-carrier-registry'
+import { registerFunctions } from '../../core/registry/function-registry'
+import type { RegisteredFunctionDefinition } from '../../core/protocol/function-contracts'
 import { registerPageDesignPayloadProviders } from './payloads'
 import {
   createPageDesignEditFunctions,

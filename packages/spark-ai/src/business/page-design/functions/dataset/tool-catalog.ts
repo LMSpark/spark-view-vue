@@ -1,9 +1,8 @@
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
-  type FunctionFailureMode,
-  type RegisteredFunctionDefinition,
-} from '../../../../core'
+} from '../../../../core/protocol/llm-params-validator'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 
 type MethodKey<T> = Extract<{

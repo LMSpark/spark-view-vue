@@ -1,10 +1,9 @@
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
-  type FunctionFailureMode,
-  type RegisteredFunctionDefinition,
   type LlmParamValidationOptions,
-} from '../../../../core'
+} from '../../../../core/protocol/llm-params-validator'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
 import type { SparkNodeTree } from '@spark-view/spark-component'
 
 type MethodKey<T> = Extract<{

@@ -31,6 +31,7 @@ export type {
   AiCoreStopMode,
   AiCoreStopSessionOptions,
   AiCoreStopSessionResult,
+  FunctionFailureMode,
   FunctionExecutionContext,
   IBusinessDefinition,
   IFunctionCatalogProvider,
