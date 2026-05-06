@@ -3,14 +3,13 @@ import { registerFunctionCarriers } from '../../core/registry/function-carrier-r
 import { registerFunctions } from '../../core/registry/function-registry'
 import type { RegisteredFunctionDefinition } from '../../core/protocol/function-contracts'
 import { registerPageDesignPayloadProviders } from './payloads'
+import { createEditLifecycleCarrier, type EditState } from './functions/lifecycle'
+import { createTextModelCarrier } from './functions/text-model/text-model-functions'
 import {
   createPageDesignEditFunctions,
-  createEditLifecycleCarrier,
-  createTextModelCarrier,
   createEditDataSetCarrier,
   createEditNodeTreeCarrier,
-  type EditState,
-} from './functions'
+} from './functions/edit/actions/edit-functions'
 
 /**
  * 注册 page-design 编辑态函数。

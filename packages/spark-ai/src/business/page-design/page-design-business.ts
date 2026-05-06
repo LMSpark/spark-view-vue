@@ -22,26 +22,28 @@ import {
   readActiveStyle,
   writeActiveScript,
   writeActiveStyle,
-  EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE,
-  validateEditLifecycleFunctionParams,
   type EditState,
   type EditToolHost,
-} from './functions/lifecycle'
+} from './functions/lifecycle/edit-lifecycle-functions'
+import {
+  EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE,
+  validateEditLifecycleFunctionParams,
+} from './functions/lifecycle/tool-catalog'
 import {
   TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE,
   validateTextModelFunctionParams,
   type TextModelFunctionParameterRow,
-} from './functions/text-model'
+} from './functions/text-model/tool-catalog'
 import {
   SPARK_NODE_TREE_TOOL_PARAMETER_TABLE,
   validateSparkNodeTreeToolParams,
   type SparkNodeTreeToolParameterRow,
-} from './functions/node-tree'
+} from './functions/node-tree/tool-catalog'
 import {
   DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE,
   validateDataSetCrudToolFunctionParams,
   type DatasetCrudToolFunctionParameterRow,
-} from './functions/dataset'
+} from './functions/dataset/tool-catalog'
 
 export const PAGE_DESIGN_BUSINESS = 'pageDesign'
 
@@ -92,7 +94,7 @@ type FunctionCatalogRow = {
   paramsSchema: Record<string, unknown>
   resultSchema?: Record<string, unknown>
   usageRules?: readonly string[]
-  failureModes?: readonly { code: string; when: string; fix: string }[]
+  failureModes?: ReadonlyArray<{ code: string; when: string; fix: string }>
 }
 
 type MethodBackedRow = FunctionCatalogRow & {
@@ -281,7 +283,7 @@ function createTextModelFunctions(): ReadonlyArray<IFunctionDefinition<unknown, 
     const runtime = TEXT_FILE_RUNTIME_BY_KEY[row.fileKey]
     return {
       ...createBaseFunctionDefinition(row, TEXT_MODEL_MODULE_ID),
-      validate: (args) => validateTextModelFunctionParams(row.action, args),
+      validate: (args) => validateTextModelFunctionParams(String(row.action), args),
       execute: (args, context) => {
         const state = getRuntimeState(context)
         const accessError = ensureTextModelAccess(state, row, mode)
@@ -329,7 +331,7 @@ function callMethodBackedTarget(row: MethodBackedRow, target: unknown, methodNam
 function createNodeTreeFunctions(): ReadonlyArray<IFunctionDefinition<unknown, unknown>> {
   return SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.map((row: SparkNodeTreeToolParameterRow) => ({
     ...createBaseFunctionDefinition(row, NODE_TREE_MODULE_ID),
-    validate: (args) => validateSparkNodeTreeToolParams(row.action, args),
+    validate: (args) => validateSparkNodeTreeToolParams(String(row.action), args),
     execute: (args, context) => {
       const state = getRuntimeState(context)
       const tree: SparkNodeTree | null = getActiveNodeTree(state)
@@ -350,7 +352,7 @@ function createDatasetFunctions(): ReadonlyArray<IFunctionDefinition<unknown, un
     .filter((row) => !HIDDEN_EDIT_DATASET_METHODS.has(row.crudToolMethod))
     .map((row: DatasetCrudToolFunctionParameterRow) => ({
       ...createBaseFunctionDefinition(row, DATASET_MODULE_ID),
-      validate: (args) => validateDataSetCrudToolFunctionParams(row.action, args),
+      validate: (args) => validateDataSetCrudToolFunctionParams(String(row.action), args),
       execute: (args, context) => {
         const state = getRuntimeState(context)
         const tool: DataSetCrudTool | null = getActiveDataSetTool(state)
@@ -372,7 +374,7 @@ function createPageDesignModule(options: PageDesignModuleFactoryOptions): IModul
     name: options.name,
     description: options.description,
     createRuntime: options.createRuntime,
-    destroyRuntime: options.destroyRuntime,
+    ...(options.destroyRuntime !== undefined ? { destroyRuntime: options.destroyRuntime } : {}),
     getPrompt: () => options.prompt,
     getInstance: options.getInstance,
     getFunctions: options.getFunctions,
@@ -408,7 +410,7 @@ export function createPageDesignBusinessDefinition(options: CreatePageDesignBusi
     return runtimes.get(instanceId) ?? null
   }
 
-  const modules: IModule<PageDesignModuleRuntime>[] = [
+  const modules: Array<IModule<PageDesignModuleRuntime>> = [
     createPageDesignModule({
       moduleId: LIFECYCLE_MODULE_ID,
       name: 'Page Design Lifecycle',

@@ -25,7 +25,7 @@ import {
   createEditState,
   type EditToolHost,
   type EditState,
-} from './functions'
+} from './functions/lifecycle'
 
 /** 函数运行时上下文类型别名，明确 core 只持有执行轨迹。 */
 export type PageModelFunctionContext = FunctionRuntimeContext

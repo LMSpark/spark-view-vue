@@ -10,36 +10,16 @@
  * 业务状态由业务模块自行持有，这里不引入任何业务对象。
  */
 
+import type { FunctionFailureMode, PostValidationWarning } from './business-contracts'
+
+export type { FunctionFailureMode, PostValidationWarning } from './business-contracts'
+
 /**
  * 功能分区一：调用结果与失败语义
  * 时序说明：
  * 1. 先约定成功结果、失败结果与后置警告的统一形状
  * 2. 后续运行时执行、目录投影和测试都会复用这一层协议
  */
-
-/**
- * 后置校验警告。
- * 输入语义：由 postValidate 在主执行成功后产出，描述非阻断性问题。
- * 输出语义：调用方可据此继续提示模型或用户进行补救，但不回滚本次成功结果。
- * 调用时机：函数主逻辑 execute 成功、且定义了 postValidate 时附加到成功结果上。
- */
-export interface PostValidationWarning {
-  rule: string
-  detail: string
-  fix?: string
-}
-
-/**
- * 失败模式目录项。
- * 输入语义：由函数目录预声明可能出现的失败码、触发条件与修复建议。
- * 输出语义：供知识查询、文档投影和模型提示理解函数的失败边界。
- * 调用时机：定义函数目录时静态声明，不参与实际执行分支判断。
- */
-export interface FunctionFailureMode {
-  code: string
-  when: string
-  fix: string
-}
 
 /**
  * 函数统一返回结果。

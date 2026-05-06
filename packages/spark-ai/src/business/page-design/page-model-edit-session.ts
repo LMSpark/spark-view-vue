@@ -29,14 +29,16 @@ import type {
 } from '../../core/protocol/session-contracts'
 import {
   editInit,
-  EDIT_FUNCTION_SUMMARIES,
   getActiveNodeTree,
+  type EditState,
+  type EditToolHost,
+} from './functions/lifecycle'
+import { EDIT_FUNCTION_SUMMARIES } from './functions/edit/actions/edit-functions'
+import {
   isEditDataSetWriteAction,
   isEditNodeTreeWriteAction,
   isEditWriteAction,
-  type EditState,
-  type EditToolHost,
-} from './functions'
+} from './functions/edit/actions/edit-write-actions'
 import {
   createPageModelSessionHost,
   type PageModelSessionHostRuntime,

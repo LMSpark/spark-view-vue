@@ -21,12 +21,15 @@ export {
   createEditState,
   getActiveNodeTree,
   bindLiveModelAdapter,
+} from './functions/lifecycle'
+export type { EditState, EditToolHost } from './functions/lifecycle'
+
+export {
   isEditWriteAction,
   isEditNodeTreeWriteAction,
   isEditDataSetWriteAction,
   isEditTextModelWriteAction,
-} from './functions'
-export type { EditState, EditToolHost } from './functions'
+} from './functions/edit/actions/edit-write-actions'
 
 export interface PageDesignBusinessContext {
   pageId?: string
