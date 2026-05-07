@@ -1,25 +1,31 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
+import type { SparkNodeTree } from '@spark-view/spark-component'
+import type { FunctionFailureMode } from '../../../../core'
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
   type LlmParamValidationOptions,
-} from '../../../../core/function/params-validator'
-import type { SparkNodeTreeMethodKey } from './types'
+} from '../../../../core/protocol/llm-params-validator'
+
+type MethodKey<T> = Extract<{
+  [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
+}[keyof T], string>
+type SparkNodeTreeMethodKey = MethodKey<SparkNodeTree>
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'
-type SparkNodeTreeToolCoreFields = Omit<
-  Required<
-    Pick<
-      RegisteredFunctionDefinition<Record<string, unknown>, unknown>,
-      'action' | 'type' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
-    >
-  >,
-  'failureModes'
->
+export type SparkNodeTreeToolAction = `pageDesign@nodeTree@${string}`
+type SparkNodeTreeToolCoreFields = {
+  action: SparkNodeTreeToolAction
+  type: 'describe' | 'request'
+  description: string
+  paramsSchema: Record<string, unknown>
+  resultSchema: Record<string, unknown>
+  example: Record<string, unknown>
+  usageRules: readonly string[]
+}
 
 export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolCoreFields & {
-  failureModes: SparkNodeTreeToolFailureMode[]
+  failureModes: readonly SparkNodeTreeToolFailureMode[]
   target: SparkNodeTreeToolTarget
   coreMethod: SparkNodeTreeMethodKey
   validation?: LlmParamValidationOptions
@@ -30,8 +36,8 @@ export type SparkNodeTreeToolCapabilityRow = Pick<
 > & {
   integrationStatus: 'catalog-only'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }

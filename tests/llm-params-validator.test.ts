@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
-} from '../packages/spark-ai/src/core/function/params-validator'
-import { validateDataSetCrudToolFunctionParams } from '../packages/spark-ai/src/business/page-design/functions'
+} from '../packages/spark-ai/src/core/protocol/llm-params-validator'
+import { validateDataSetCrudToolFunctionParams } from '../packages/spark-ai/src/business/page-design/functions/dataset'
 
 describe('validateLlmDeserializedParams', () => {
   it('rejects non-object root params', () => {

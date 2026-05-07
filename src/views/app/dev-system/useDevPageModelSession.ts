@@ -24,10 +24,10 @@ import {
   type CollaborationPolicy,
   type RecoveryPolicy,
 } from '@spark-view/spark-component'
-import type { DialogueTurn } from '@spark-view/spark-ai'
 import { reportAiFcError } from '@/services/ai-fc-error-monitor'
 import { usePageModelSessionHost } from './usePageModelSessionHost'
 import { usePageModelEditSession } from './usePageModelEditSession'
+import type { DialogueTurn } from './usePageModelEditSession'
 import type { DevState, PageFileName } from './useDevState'
 
 // ═══════════════════════════════════════════════════════════
@@ -254,13 +254,13 @@ export function useDevPageModelSession(options: Options) {
         round: turn.round,
         ...(callId !== undefined ? { callId } : {}),
         status: 'success',
-        result: result.data ?? result.summary ?? null,
+        result: result.data ?? result.summary,
         durationMs: turn.elapsed ?? 0,
         timestamp,
       })
       panelStore.emit('tool:result', {
         ...base,
-        result: result.data ?? result.summary ?? null,
+        result: result.data ?? result.summary,
         durationMs: turn.elapsed ?? 0,
       })
     } else {
@@ -270,13 +270,13 @@ export function useDevPageModelSession(options: Options) {
         round: turn.round,
         ...(callId !== undefined ? { callId } : {}),
         status: 'error',
-        error: result.msg ?? `${action} 失败`,
+        error: result.msg,
         result,
         timestamp,
       })
       panelStore.emit('tool:error', {
         ...base,
-        error: new Error(result.msg ?? `${action} 失败`),
+        error: new Error(result.msg),
       })
     }
   }

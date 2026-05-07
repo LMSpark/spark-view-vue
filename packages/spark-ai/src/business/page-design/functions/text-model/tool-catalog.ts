@@ -1,21 +1,22 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
+import type { FunctionFailureMode } from '../../../../core'
 
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionTarget = 'script' | 'style'
 export type TextModelFunctionFileKey = 'script' | 'style'
+export type TextModelFunctionAction = `pageDesign@textModel@${string}`
 
-type TextModelFunctionCoreFields = Omit<
-  Required<
-    Pick<
-      RegisteredFunctionDefinition<Record<string, unknown>, unknown>,
-      'action' | 'type' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
-    >
-  >,
-  'failureModes'
->
+type TextModelFunctionCoreFields = {
+  action: TextModelFunctionAction
+  type: 'describe' | 'request'
+  description: string
+  paramsSchema: Record<string, unknown>
+  resultSchema: Record<string, unknown>
+  example: Record<string, unknown>
+  usageRules: readonly string[]
+}
 
 export type TextModelFunctionParameterRow = TextModelFunctionCoreFields & {
-  failureModes: TextModelFunctionFailureMode[]
+  failureModes: readonly TextModelFunctionFailureMode[]
   target: TextModelFunctionTarget
   fileKey: TextModelFunctionFileKey
 }
@@ -26,8 +27,8 @@ export type TextModelFunctionCapabilityRow = Pick<
 > & {
   integrationStatus: 'runtime-wired'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }
@@ -67,7 +68,7 @@ function toCapabilityRow(row: TextModelFunctionParameterRow): TextModelFunctionC
   }
 }
 
-export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE: TextModelFunctionParameterRow[] = [
+export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
   defineDescribeRow({
     action: 'pageDesign@textModel@readScript',
     target: 'script',
@@ -157,9 +158,9 @@ export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE: TextModelFunctionParameterRow
       },
     ],
   }),
-]
+] as const satisfies readonly TextModelFunctionParameterRow[]
 
-export const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE: TextModelFunctionCapabilityRow[] = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
+export const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
 
 const TEXT_MODEL_FUNCTION_PARAMETER_INDEX = new Map<string, TextModelFunctionParameterRow>(
   TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map((row) => [row.action, row]),

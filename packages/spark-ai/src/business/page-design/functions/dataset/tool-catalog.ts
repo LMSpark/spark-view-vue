@@ -1,6 +1,9 @@
-import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from '../../../../core/function/params-validator'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
+import type { FunctionFailureMode } from '../../../../core'
+import {
+  formatLlmParamValidationIssues,
+  validateLlmDeserializedParams,
+} from '../../../../core/protocol/llm-params-validator'
 
 type MethodKey<T> = Extract<{
   [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
@@ -27,18 +30,19 @@ export type DatasetCrudToolFunctionTarget =
   | 'row'
   | 'relation'
   | 'dependency'
-type DatasetCrudToolFunctionCoreFields = Omit<
-  Required<
-    Pick<
-      RegisteredFunctionDefinition<Record<string, unknown>, unknown>,
-      'action' | 'type' | 'description' | 'paramsSchema' | 'resultSchema' | 'example' | 'usageRules' | 'failureModes'
-    >
-  >,
-  'failureModes'
->
+export type DatasetCrudToolFunctionAction = `pageDesign@dataset@${string}`
+type DatasetCrudToolFunctionCoreFields = {
+  action: DatasetCrudToolFunctionAction
+  type: 'describe' | 'request'
+  description: string
+  paramsSchema: Record<string, unknown>
+  resultSchema: Record<string, unknown>
+  example: Record<string, unknown>
+  usageRules: readonly string[]
+}
 
 export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionCoreFields & {
-  failureModes: DatasetCrudToolFunctionFailureMode[]
+  failureModes: readonly DatasetCrudToolFunctionFailureMode[]
   target: DatasetCrudToolFunctionTarget
   crudToolMethod: DataSetCrudToolMethodKey
   validation?: DatasetCrudToolFunctionValidationRule
@@ -49,8 +53,8 @@ export type DatasetCrudToolFunctionCapabilityRow = Pick<
 > & {
   integrationStatus: 'catalog-only' | 'runtime-wired'
   paramsRef: string
-  rules?: string[]
-  failureCodes?: string[]
+  rules?: readonly string[]
+  failureCodes?: readonly string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }

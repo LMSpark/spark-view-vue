@@ -1,5 +1,5 @@
 /**
- * Schema IR (单一事实源)
+ * Parameter Schema（单一事实源）
  *
  * 职责
  * ────

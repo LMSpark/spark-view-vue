@@ -1,8 +1,14 @@
-import { AI_FUNCTION_ARCHITECTURE_PROMPT } from '../../../core/session/prompt'
 import {
   EDIT_FLOW_1001_DATA_FIRST_POLICY,
   EDIT_FLOW_1002_DATA_FIRST_SEQUENCE,
 } from './edit-flow-prompts'
+
+const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Core: business-first function boundary ══
+
+  - action 地址统一为 business@module@function。
+  - AI 会话宿主负责模型通讯、tool schema 投影、函数选择、重试、追问、暂停与恢复。
+  - AI Core 只负责业务实例、模块运行态、当前可用函数、单次函数执行、历史与事件。
+  - 函数调用必须显式携带 instanceId；instanceId 不进入业务 args。`
 
 export const PAGE_DESIGN_EDIT_RUNTIME_PROMPT = `${AI_FUNCTION_ARCHITECTURE_PROMPT}
 

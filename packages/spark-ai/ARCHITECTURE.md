@@ -1,89 +1,83 @@
-# spark-ai 架构全景
+# spark-ai Architecture
 
-> 更新于 2026-05-07。
+`spark-ai` is the AI runtime package for SPARK. The package now has one mainline architecture: a business-first core plus business definitions. The old global function registry, carrier registry, model session loop, and page-model session helpers have been removed instead of kept as compatibility layers.
 
-本文只描述当前仍在仓库中生效的 spark-ai 能力边界。旧页面生成链已删除，不再属于现行架构。
+## Core Boundary
 
-## 1. 包定位
+`src/core` owns only deterministic runtime concerns:
 
-@spark-view/spark-ai 当前承担四类职责：
+- register an `IBusinessDefinition`
+- start, pause, resume, and stop a business instance
+- keep per-instance history and function-call records
+- expose the currently available functions for an instance
+- execute exactly one function call through an explicit `instanceId`
+- publish lifecycle, history, and function events
 
-1. Function Calling 函数契约、注册表、tool schema 生成与本地调度。
-2. 会话后端、函数循环编排、follow-up 策略与重复检测监控。
-3. `core@knowledge` 查询函数、组件 catalog 投影与参数 payload provider。
-4. `page-design` 四文件编辑运行时与页面模型会话宿主。
+The core does not talk to an LLM, generate OpenAI tool schemas, retry model turns, ask follow-up questions, or keep a process-wide function registry.
 
-它不再承担“页面配置整模生成闭环”的运行时职责。
+## Action Address
 
-## 2. 当前主链路
+Actions use one canonical address form:
 
-### 2.1 通用聊天链
+```text
+business@module@function
+```
 
-AiChatWidget
--> src/services/ai-protocol.ts
--> POST /api/ai/chat/stream
--> AiChatController
--> AiStreamService
+For example:
 
-用途：纯聊天、解释、问答、SSE 增量输出。该链路主要由根应用和后端承载，spark-ai 只保留通用解析工具与类型。
+```text
+pageDesign@nodeTree@addNode
+pageDesign@dataset@createTable
+pageDesign@textModel@writeScript
+```
 
-### 2.2 细粒度编辑链
+`sessionId` is an implementation detail outside the business contract. Function calls must provide `instanceId` in the core envelope, not in business args.
 
-DevDataSetDesigner / useRuleEditSession
--> createPageModelSessionHost() / registerPageDesignEditFunctions()
--> runFunctionLoop() / SessionBackendImpl
--> POST /api/ai/sessions / turn / turn/stream / append
--> AiSessionController / session backend service
+## Directory Layout
 
-用途：rule.json、pagedata.json、script.js、style.css 的细粒度编辑与回合式工具调用。
+```text
+src/core/protocol/business-contracts.ts
+src/core/protocol/invocation-helpers.ts
+src/core/protocol/parameter-schema.ts
+src/core/protocol/llm-params-validator.ts
+src/core/protocol/knowledge-payload-contracts.ts
+src/core/runtime/ai-core.ts
+src/core/knowledge/payload-provider-registry.ts
+```
 
-## 3. 关键模块
+`src/business/page-design` defines the `pageDesign` business and owns page-design specific prompts, payload providers, function catalogs, and live edit-state adapters.
 
-### 核心函数域
+## Page Design Business
 
-- src/core/function/contracts.ts：函数地址、结果、guard、trace 与注册定义。
-- src/core/function/registry.ts：当前会话函数注册表。
-- src/core/function/tool-schema.ts：action/function name 映射与 tool definitions 生成。
-- src/core/function/tool-dispatch.ts：LLM tool call 到本地函数执行的适配。
-- src/core/function/params-validator.ts：LLM 参数结构校验。
+`createPageDesignBusinessDefinition()` registers four modules:
 
-### 会话域
+- `lifecycle`
+- `textModel`
+- `nodeTree`
+- `dataset`
 
-- src/core/session/contracts.ts：会话、tool call、monitor、orchestrator 契约。
-- src/core/session/backend.ts：前端会话后端 HTTP/SSE 客户端。
-- src/core/session/orchestrator.ts：多轮函数循环编排。
-- src/core/session/followup-policy.ts：失败修复与 warning follow-up 策略。
-- src/core/session/repeat-monitor.ts：重复调用、只读循环与失败重试检测。
+The business reads and writes the live model through `EditToolHost`. It does not accept old file snapshot payloads as a compatibility path, and it does not expose export/history actions through the dialogue action surface.
 
-### 知识域
+## Knowledge Payloads
 
-- src/core/knowledge/actions.ts：`core@knowledge@queryTools/guideTool/queryPayloads/guidePayload/ask`。
-- src/core/knowledge/registry.ts：payload provider 注册与查询。
-- src/catalog/catalog-projections.ts：组件目录到 LLM / DevSystem 所需视图的投影。
-- src/business/page-design/payloads/component-payload-provider.ts：page-design 组件参数荷载源。
+Knowledge payload contracts live under `core/protocol`, while the provider registry lives under `core/knowledge`. Page-design component payloads are registered by business code and queried by the model host/tool projection layer.
 
-### 页面设计业务域
+## Public Surface
 
-- src/business/page-design/page-model-session-host.ts：函数上下文、编辑状态和后端会话宿主。
-- src/business/page-design/page-model-edit-session.ts：bootstrap/run/reset/dispose 编辑会话控制器。
-- src/business/page-design/functions/*：lifecycle、textModel、nodeTree、dataset 工具目录与运行时函数。
-- src/business/page-design/prompts/*：编辑模式系统提示词与执行规则。
+The package root exports:
 
-## 4. 与后端的边界
+- `createAiCore` and core business contracts
+- protocol parsing helpers such as `extractFirstJsonObject`, `parseTokenUsage`, and `formatTokenUsage`
+- `createPageDesignBusinessDefinition` and page-design edit-state helpers
+- component catalog projection helpers and catalog types
 
-spark-ai 依赖但不替代后端能力：
+The package root intentionally does not export old APIs such as `registerFunction`, `executeFunction`, `runFunctionLoop`, `SessionBackend`, `createPageModelSessionHost`, or `createPageModelEditSession`.
 
-1. AiChatController / AiStreamService：通用聊天 SSE。
-2. AiSessionController / session backend service：统一会话主干。
-3. PageConfigController：页面配置、版本、批量写入与 SSE 广播。
-4. NavigationController：导航树查询与写入。
+## Validation
 
-## 5. 当前约束
+Focused validation for this package:
 
-1. 前端不再保留旧页面生成整模闭环，也不再调用专用页面生成端点。
-2. rule / pagedata / script / style 编辑统一走 page-model edit session，不保留旧 domain 兼容层。
-3. 文档、测试和接线应默认围绕 chat/stream 与 /api/ai/sessions/* 建模。
-
-## 6. 历史说明
-
-如需追溯 2026-04 之前的页面生成链与旧 DevSystem AI 面板方案，请直接查看 git 历史；这些内容不再保留在当前架构文档中，避免误导后续实现。
+```bash
+pnpm --filter @spark-view/spark-ai run typecheck
+pnpm exec vitest run tests/ai-core-business-runtime.test.ts tests/page-design-business-definition.test.ts tests/protocol-parser-json-extract.test.ts tests/llm-params-validator.test.ts --reporter verbose
+```

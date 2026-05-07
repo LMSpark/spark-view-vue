@@ -11,7 +11,7 @@
  * ────────
  * 1. 叶子 schema 是"面向 LLM 的可读描述字符串"，而非完整类型系统。
  *    校验采用保守启发式，只拦明显错误，不过度解释描述文本。
- * 2. 对象/数组/枚举的 IR 与归一化逻辑统一在 `./schema-ir` 维护，
+ * 2. 对象/数组/枚举的参数 schema 与归一化逻辑统一在 `./parameter-schema` 维护，
  *    本模块只消费它们，不再重复声明类型守卫与规则表。
  * 3. 通配键（<keyName>）和 additionalProperties 用于"键名动态、值类型固定"场景。
  * 4. 校验结果按 path 定位问题，方便 LLM 定点修复，而非整体拒绝。
@@ -39,7 +39,7 @@ import {
   isPlainRecord,
   isWildcardKey,
   normalizeSchemaNode,
-} from './schema-ir'
+} from './parameter-schema'
 
 // =========================================================
 // 一、公共类型定义（对外可见）
@@ -49,7 +49,7 @@ export type {
   LlmParamObjectSchema,
   LlmParamArraySchema,
   LlmParamEnumSchema,
-} from './schema-ir'
+} from './parameter-schema'
 
 /**
  * 单条校验问题。
@@ -83,6 +83,26 @@ export interface LlmParamValidationResult {
 export interface LlmParamValidationOptions {
   requiredKeys?: readonly string[]
   oneOfRequiredKeyGroups?: ReadonlyArray<readonly string[]>
+}
+
+/**
+ * 生成标准的“缺少参数”错误文案。
+ *
+ * 这里与 LLM 参数校验器合并，统一收口参数层的纯文本辅助逻辑，
+ * 避免另开一个只有两个 helper 的 protocol 文件。
+ */
+export function missingParam(name: string): string {
+  return `缺少 ${name} 参数`
+}
+
+/**
+ * 判断一个值是否为非空字符串。
+ *
+ * 该 helper 主要用于轻量参数守卫，与 validateLlmDeserializedParams
+ * 共同服务于“参数是否合法”这一协议层职责。
+ */
+export function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
 }
 
 // =========================================================
@@ -141,7 +161,7 @@ const PRIMITIVE_KIND_CHECKERS: Readonly<Record<PrimitiveKind, (value: unknown) =
 // 三、Schema 归一化与问题收集
 // =========================================================
 //
-// 类型守卫与 normalizeSchemaNode 全部从 './schema-ir' 复用（SSoT），
+// 类型守卫与 normalizeSchemaNode 全部从 './parameter-schema' 复用（SSoT），
 // 本模块只追加 issue 收集器等校验私有辅助。
 
 /**

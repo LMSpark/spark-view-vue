@@ -1,8 +1,6 @@
 export {
   createEditState,
-  editInit,
-  createEditLifecycleFunctions,
-  EDIT_LIFECYCLE_FUNCTION_SUMMARIES,
+  bindLiveModelAdapter,
   getActiveNodeTree,
   notifyNodeTreeChanged,
   getActiveDataSetTool,
@@ -11,10 +9,9 @@ export {
   writeActiveScript,
   readActiveStyle,
   writeActiveStyle,
-  bindLiveModelAdapter,
 } from './edit-lifecycle-functions'
 
-export type { EditInitParams, EditState, EditPhase, EditToolHost } from './edit-lifecycle-functions'
+export type { EditState, EditPhase, EditToolHost } from './edit-lifecycle-functions'
 
 export {
   EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE,
@@ -23,9 +20,11 @@ export {
   getEditLifecycleFunctionCapabilityRow,
   validateEditLifecycleFunctionParams,
 } from './tool-catalog'
+
 export type {
   EditLifecycleFunctionFailureMode,
   EditLifecycleFunctionTarget,
+  EditLifecycleFunctionAction,
   EditLifecycleFunctionParameterRow,
   EditLifecycleFunctionCapabilityRow,
 } from './tool-catalog'
