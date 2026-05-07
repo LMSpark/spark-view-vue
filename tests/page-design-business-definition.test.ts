@@ -11,7 +11,7 @@ import type { DataSetCrudTool } from '../packages/spark-data/src'
 function createRuntime() {
   let record = 0
   return new AiRuntime({
-    createInstanceId: () => 'page-design-1',
+    createInstanceId: (_businessId, _businessInstanceId) => 'page-design-1',
     createRecordId: (kind) => `${kind}-${++record}`,
     now: () => 1778040000000 + record,
   })
@@ -51,7 +51,10 @@ describe('pageDesign business definition', () => {
     const { host, reads } = createHost()
     core.registerBusiness(new PageDesignBusiness({ getEditToolHost: () => host }))
 
-    const start = await core.startInstance({ businessId: PageDesignBusiness.businessId })
+    const start = await core.startInstance({
+      businessId: PageDesignBusiness.businessId,
+      businessInstanceId: 'page-designer',
+    })
 
     expect(start.instanceId).toBe('page-design-1')
     expect(start.businessId).toBe(PageDesignBusiness.businessId)
@@ -106,7 +109,7 @@ describe('pageDesign business definition', () => {
       }),
     }))
 
-    const start = await core.startInstance({ businessId: PageDesignBusiness.businessId })
+    const start = await core.startInstance({ businessId: PageDesignBusiness.businessId, businessInstanceId: 'page-designer' })
     const bootstrap = await core.executeFunctionCall({
       instanceId: start.instanceId,
       action: 'pageDesign@lifecycle@bootstrap',
@@ -119,4 +122,3 @@ describe('pageDesign business definition', () => {
     })
   })
 })
-

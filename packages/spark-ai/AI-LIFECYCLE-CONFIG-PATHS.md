@@ -8,6 +8,8 @@ This document tracks the target lifecycle configuration surface for the business
 - AI session host layer: model communication, prompt/tool-schema projection, retry, follow-up, pause/resume decisions, transport details.
 - Business layer: service lifecycle, business registrations, module prompts, function catalogs, function business bodies, concrete knowledge payload providers.
 
+Runtime also enforces registration interface constraints so business modules and functions expose standardized metadata (`AiBusinessRegistration`, `AiBusinessModuleRegistration`, `AiFunctionRegistration`).
+
 Runtime does not own model orchestration or business service state.
 
 ## Lifecycle paths
@@ -18,8 +20,8 @@ Runtime does not own model orchestration or business service state.
     - business.get -> `AiRuntime.getBusinessRegistration`
     - business.list -> `AiRuntime.listBusinessRegistrations`
   - instance
-    - instance.start -> `AiRuntime.startInstance({ businessId })`
-    - instance.resume -> `AiRuntime.startInstance({ businessId, instanceId })`
+    - instance.start -> `AiRuntime.startInstance({ businessId, businessInstanceId })`
+    - instance.resume -> same entrypoint, repeated `startInstance({ businessId, businessInstanceId })` for the same running pair
     - instance.pause -> `AiRuntime.stopInstance({ instanceId, mode: 'pause' })`
     - instance.stop -> `AiRuntime.stopInstance({ instanceId, mode: 'stop' })`
     - instance.list -> `AiRuntime.listInstances`
@@ -60,7 +62,7 @@ Runtime does not own model orchestration or business service state.
     - function.post-validate -> `AiFunctionRegistration.postValidate`
   - service-state
     - service.start -> business-owned service code
-    - service.instance-state -> business-owned map/store keyed by `instanceId` when needed
+    - service.instance-state -> business-owned map/store keyed by `businessInstanceId` when needed
     - service.stop -> business-owned service code
 
 - ai-session-host

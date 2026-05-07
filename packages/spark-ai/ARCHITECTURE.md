@@ -6,9 +6,11 @@
 
 `src/core` is the deterministic runtime boundary between business services and an LLM-facing host:
 
+- define a unified AI-facing standard: business info -> module info -> function info registration
+- modules must implement `AiBusinessModuleRegistration`/`AiFunctionRegistration`; metadata is driven by the registration contract
 - register an `AiBusinessRegistration`
 - expose business -> module -> function metadata as `business@module@function`
-- start, pause, resume, and stop a runtime instance
+- start, pause, stop, and resumable start of a runtime instance by `businessId + businessInstanceId`
 - keep per-instance history and function-call records
 - expose the currently available functions for an instance
 - execute exactly one function call through an explicit `instanceId`
@@ -32,7 +34,12 @@ pageDesign@dataset@createTable
 pageDesign@textModel@writeScript
 ```
 
-`sessionId` is an implementation detail outside the business contract. Function calls must provide `instanceId` in the core envelope, not in business args.
+`startInstance` takes `{ businessId, businessInstanceId }`:
+
+- first call creates a new AI core instance and returns `instanceId`
+- same pair again resumes that same core instance (backwards compatibility removed)
+
+Function calls must provide `instanceId` in the core envelope, not in business args.
 
 ## Directory Layout
 
@@ -81,6 +88,14 @@ The package also provides layered subpath exports:
 - `@spark-view/spark-ai/catalog`
 
 The package root intentionally does not export old APIs such as `registerFunction`, `executeFunction`, `runFunctionLoop`, `SessionBackend`, `createPageModelSessionHost`, or `createPageModelEditSession`.
+
+Migrating callers should use registration-first lifecycle:
+
+- `AiRuntime.registerBusiness`
+- `AiRuntime.startInstance({ businessId, businessInstanceId })`
+- `AiRuntime.stopInstance({ instanceId, mode: 'pause' | 'stop' })`
+- `AiRuntime.getAvailableFunctions(instanceId)`
+- `AiRuntime.executeFunctionCall({ instanceId, action, args })`
 
 ## Validation
 

@@ -19,7 +19,9 @@ import type {
   AiRuntimeLifecycleMarker,
   AiRuntimeModuleExposure,
   AiRuntimeOptions,
+  AiRuntimeInstanceScope,
   AiFunctionRegistration,
+  AiRuntimeBusinessInstanceId,
 } from '../protocol/business-contracts'
 
 function cloneRuntimeValue<T>(value: T): T {
@@ -42,6 +44,7 @@ export interface AiRuntimeHistoryState {
 export interface AiRuntimeInstanceState {
   instanceId: string
   businessId: string
+  businessInstanceId: AiRuntimeBusinessInstanceId
   status: AiRuntimeInstanceStatus
   business: AiRuntimeBusinessExposure
   promptSnapshot: string
@@ -80,6 +83,7 @@ export class AiRuntimeEventHub {
       timestamp: this.now(),
       type,
       businessId: instance.businessId,
+      businessInstanceId: instance.businessInstanceId,
       instanceId: instance.instanceId,
       ...(details.moduleId !== undefined ? { moduleId: details.moduleId } : {}),
       ...(details.functionId !== undefined ? { functionId: details.functionId } : {}),
@@ -153,6 +157,8 @@ export class AiRuntimeProjector {
   createHistorySnapshot(instance: AiRuntimeInstanceState): AiRuntimeHistorySnapshot {
     return {
       instanceId: instance.instanceId,
+      businessId: instance.businessId,
+      businessInstanceId: instance.businessInstanceId,
       version: instance.history.version,
       messages: instance.history.messages.map((message) => ({ ...message })),
       functionCalls: instance.history.functionCalls.map((call) => ({
@@ -172,6 +178,7 @@ export class AiRuntimeProjector {
   createInstanceSnapshot(instance: AiRuntimeInstanceState): AiRuntimeInstanceSnapshot {
     return {
       instanceId: instance.instanceId,
+      businessInstanceId: instance.businessInstanceId,
       businessId: instance.businessId,
       status: instance.status,
       business: this.cloneBusinessExposure(instance.business),
@@ -188,7 +195,10 @@ export class AiRuntimeProjector {
     }
   }
 
-  async projectBusiness(business: AiBusinessRegistration, instanceId: string): Promise<AiRuntimeBusinessExposure> {
+  async projectBusiness(
+    business: AiBusinessRegistration,
+    instanceScope: AiRuntimeInstanceScope,
+  ): Promise<AiRuntimeBusinessExposure> {
     const modules: AiRuntimeModuleExposure[] = []
     for (const module of business.modules) {
       const functions: AiRuntimeFunctionExposure[] = []
@@ -208,7 +218,7 @@ export class AiRuntimeProjector {
         })
       }
 
-      const prompt = await this.modulePrompt(business, module.moduleId, module.prompt, instanceId)
+      const prompt = await this.modulePrompt(module.moduleId, module.prompt, instanceScope)
       modules.push({
         moduleId: module.moduleId,
         name: module.name,
@@ -260,20 +270,19 @@ export class AiRuntimeProjector {
   }
 
   async refreshInstanceExposure(instance: AiRuntimeInstanceState, business: AiBusinessRegistration): Promise<void> {
-    instance.business = await this.projectBusiness(business, instance.instanceId)
+    instance.business = await this.projectBusiness(business, instance)
     instance.promptSnapshot = this.buildPromptSnapshot(instance.business)
     instance.availableFunctions = this.flattenFunctions(instance.business)
   }
 
   private async modulePrompt(
-    business: AiBusinessRegistration,
     moduleId: string,
     prompt: AiBusinessRegistration['modules'][number]['prompt'],
-    instanceId: string,
+    instanceScope: AiRuntimeInstanceScope,
   ): Promise<string | undefined> {
     if (typeof prompt === 'string') return prompt.trim().length > 0 ? prompt : undefined
     if (prompt === undefined) return undefined
-    const resolved = await prompt({ instanceId, businessId: business.businessId, moduleId })
+    const resolved = await prompt({ ...instanceScope, moduleId })
     return resolved !== null && resolved.trim().length > 0 ? resolved : undefined
   }
 }

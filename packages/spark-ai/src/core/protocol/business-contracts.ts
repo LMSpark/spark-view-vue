@@ -15,6 +15,7 @@ export type AiRuntimeStopMode = 'pause' | 'stop'
 export type AiRuntimeMessageRole = 'user' | 'assistant'
 
 export type AiRuntimeBusinessId = string
+export type AiRuntimeBusinessInstanceId = string
 export type AiRuntimeModuleId = string
 export type AiRuntimeFunctionId = string
 export type AiRuntimeAction<
@@ -68,6 +69,7 @@ export interface AiRuntimeEvent<TPayload = unknown> {
   timestamp: number
   type: AiRuntimeEventType
   businessId: string
+  businessInstanceId: string
   instanceId: string
   moduleId?: string
   functionId?: string
@@ -78,7 +80,9 @@ export type AiRuntimeEventListener = (event: AiRuntimeEvent) => void
 
 export interface AiRuntimeInstanceScope<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
+  TBusinessInstanceId extends AiRuntimeBusinessInstanceId = AiRuntimeBusinessInstanceId,
 > {
+  readonly businessInstanceId: TBusinessInstanceId
   readonly instanceId: string
   readonly businessId: TBusinessId
 }
@@ -126,6 +130,20 @@ export interface AiFunctionRegistration<
   postValidate?(args: TArgs, result: TResult, context: FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId>): PostValidationWarning[]
 }
 
+export abstract class AiBusinessModuleRegistrationBase<
+  TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
+  TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
+> {
+  protected constructor(
+    public readonly moduleId: TModuleId,
+    public readonly name: string,
+    public readonly description: string,
+    public readonly prompt?: ModulePromptProvider<TBusinessId, TModuleId>,
+  ) {}
+
+  abstract getFunctions(): ReadonlyArray<AiFunctionRegistration<unknown, unknown, TBusinessId, TModuleId>>
+}
+
 export interface AiBusinessModuleRegistration<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
@@ -135,6 +153,21 @@ export interface AiBusinessModuleRegistration<
   readonly description: string
   readonly prompt?: ModulePromptProvider<TBusinessId, TModuleId>
   getFunctions(): ReadonlyArray<AiFunctionRegistration<unknown, unknown, TBusinessId, TModuleId, AiRuntimeFunctionId>>
+}
+
+export abstract class AiBusinessRegistrationBase<
+  TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
+> implements AiBusinessRegistration<TBusinessId> {
+  public abstract readonly businessId: TBusinessId
+  public abstract readonly name: string
+  public abstract readonly description: string
+  public abstract readonly modules: ReadonlyArray<AiBusinessModuleRegistration<TBusinessId, AiRuntimeModuleId>>
+
+  getStatus?(): AiBusinessServiceStatus {
+    return 'Ready'
+  }
+
+  releaseInstance?(_context: AiRuntimeInstanceScope<TBusinessId>): void | Promise<void> {}
 }
 
 export interface AiBusinessRegistration<
@@ -223,6 +256,8 @@ export interface AiRuntimeLifecycleMarker {
 
 export interface AiRuntimeHistorySnapshot {
   instanceId: string
+  businessId: string
+  businessInstanceId: string
   version: number
   messages: readonly AiRuntimeHistoryMessage[]
   functionCalls: readonly AiRuntimeFunctionCallRecord[]
@@ -232,6 +267,7 @@ export interface AiRuntimeHistorySnapshot {
 
 export interface AiRuntimeInstanceSnapshot {
   instanceId: string
+  businessInstanceId: string
   businessId: string
   status: AiRuntimeInstanceStatus
   business: AiRuntimeBusinessExposure
@@ -246,7 +282,7 @@ export interface AiRuntimeInstanceDetail extends AiRuntimeInstanceSnapshot {
 
 export interface AiRuntimeStartInstanceOptions {
   businessId: string
-  instanceId?: string
+  businessInstanceId: string
   restoreContext?: unknown
 }
 
@@ -282,7 +318,7 @@ export interface AiRuntimeExecuteFunctionCallResult {
 }
 
 export interface AiRuntimeOptions {
-  createInstanceId?: (businessId: string) => string
+  createInstanceId?: (businessId: string, businessInstanceId: string) => string
   createRecordId?: (kind: 'event' | 'message' | 'functionCall' | 'lifecycle' | 'exposure') => string
   now?: () => number
 }

@@ -32,7 +32,7 @@ interface LeaveFormService {
 function createDeterministicRuntime(): AiRuntimeApi {
   let record = 0
   return new AiRuntime({
-    createInstanceId: () => 'leave-1',
+    createInstanceId: (_businessId, _businessInstanceId) => 'leave-1',
     createRecordId: (kind) => `${kind}-${++record}`,
     now: () => 1778030000000 + record,
   })
@@ -118,7 +118,7 @@ describe('AI runtime business-first API', () => {
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
 
-    const started = await core.startInstance({ businessId: 'leaveApproval' })
+    const started = await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
 
     expect(started.instanceId).toBe('leave-1')
     expect(started.businessId).toBe('leaveApproval')
@@ -139,7 +139,7 @@ describe('AI runtime business-first API', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
@@ -163,7 +163,7 @@ describe('AI runtime business-first API', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
@@ -181,7 +181,7 @@ describe('AI runtime business-first API', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
@@ -200,7 +200,7 @@ describe('AI runtime business-first API', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
 
     const history = core.appendMessages({
       instanceId: 'leave-1',
@@ -219,7 +219,7 @@ describe('AI runtime business-first API', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
 
     const paused = await core.stopInstance({ instanceId: 'leave-1', mode: 'pause', reason: 'waiting for user' })
     expect(paused.instance.status).toBe('Paused')
@@ -232,7 +232,7 @@ describe('AI runtime business-first API', () => {
     expect(blocked.result.ok).toBe(false)
     if (!blocked.result.ok) expect(blocked.result.code).toBe('INSTANCE_NOT_READY')
 
-    const resumed = await core.startInstance({ businessId: 'leaveApproval', instanceId: 'leave-1' })
+    const resumed = await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
     expect(resumed.instanceId).toBe('leave-1')
     expect(resumed.status).toBe('Ready')
     expect(core.listInstances()).toHaveLength(1)
@@ -242,7 +242,7 @@ describe('AI runtime business-first API', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
     await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
@@ -254,7 +254,7 @@ describe('AI runtime business-first API', () => {
     expect(stopped.instance.status).toBe('Stopped')
     expect(service.get('leave-1')).toBeUndefined()
     expect(core.getInstanceDetail('leave-1')?.modules.map((module) => module.moduleId)).toEqual(['form'])
-    await expect(core.startInstance({ businessId: 'leaveApproval', instanceId: 'leave-1' })).rejects.toThrow('terminal runtime instance')
+    await expect(core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })).rejects.toThrow('terminal runtime instance')
   })
 
   it('publishes lifecycle and function events as an observation surface', async () => {
@@ -264,7 +264,7 @@ describe('AI runtime business-first API', () => {
     core.subscribe((event) => { eventTypes.push(event.type) })
     core.registerBusiness(createLeaveBusiness(service))
 
-    await core.startInstance({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
     await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
@@ -308,7 +308,7 @@ describe('AI runtime business-first API', () => {
       }],
     })
 
-    await core.startInstance({ businessId: 'domainResult' })
+    await core.startInstance({ businessId: 'domainResult', businessInstanceId: 'domain-instance' })
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'domainResult@form@readDomainState',
@@ -350,7 +350,7 @@ describe('AI runtime business-first API', () => {
       },
     })
 
-    await core.startInstance({ businessId: 'slowBusiness' })
+    await core.startInstance({ businessId: 'slowBusiness', businessInstanceId: 'slow-instance' })
     const running = core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'slowBusiness@form@submit',

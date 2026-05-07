@@ -8,7 +8,8 @@ const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Runtime: business-registratio
   - AI 会话宿主负责模型通讯、tool schema 投影、函数选择、重试、追问、暂停与恢复。
   - AI Runtime 只负责运行实例、业务/模块/函数曝光、单次函数分发、历史与事件。
   - 业务服务自管生命周期与状态，Runtime 不创建模块运行态。
-  - 函数调用必须显式携带 instanceId；instanceId 不进入业务 args。`
+  - 函数调用必须显式携带 instanceId（core envelope）；instanceId 不进入业务 args。
+  - 启动/恢复统一为 startInstance({ businessId, businessInstanceId })，同一业务实例 ID 重入即恢复原实例。`
 
 export class PageDesignEditRuntimePrompt {
   private readonly flowPrompts: PageDesignEditFlowPrompts

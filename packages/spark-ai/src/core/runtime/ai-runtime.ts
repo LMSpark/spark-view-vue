@@ -33,6 +33,8 @@ export class AiRuntime implements AiRuntimeApi {
 
   private readonly instances = new Map<string, AiRuntimeInstanceState>()
 
+  private readonly instancesByBusinessInstance = new Map<string, string>()
+
   private readonly createInstanceId: NonNullable<AiRuntimeOptions['createInstanceId']>
 
   private readonly projector = new AiRuntimeProjector(AiRuntime.actionOf, AiRuntime.assertId)
@@ -74,13 +76,12 @@ export class AiRuntime implements AiRuntimeApi {
       throw new Error(businessFailure.msg)
     }
 
-    if (options.instanceId !== undefined) {
-      const existing = this.getInstanceOrThrow(options.instanceId)
-      if (existing.businessId !== options.businessId) {
-        throw new Error(`Cannot resume ${options.instanceId} as ${options.businessId}; existing business is ${existing.businessId}`)
-      }
+    const businessKey = this.makeBusinessInstanceKey(options.businessId, options.businessInstanceId)
+    const existingInstanceId = this.instancesByBusinessInstance.get(businessKey)
+    if (existingInstanceId !== undefined) {
+      const existing = this.getInstanceOrThrow(existingInstanceId)
       if (existing.status === 'Stopped' || existing.status === 'Failed') {
-        throw new Error(`Cannot resume terminal runtime instance ${options.instanceId}: ${existing.status}`)
+        throw new Error(`Cannot resume terminal runtime instance ${existing.instanceId}: ${existing.status}`)
       }
 
       this.history.setStatus(existing, 'Resuming')
@@ -95,17 +96,23 @@ export class AiRuntime implements AiRuntimeApi {
       }
     }
 
-    const instanceId = this.createInstanceId(options.businessId)
+    const instanceId = this.createInstanceId(options.businessId, options.businessInstanceId)
     if (this.instances.has(instanceId)) {
       throw new Error(`Duplicate AI core instanceId: ${instanceId}`)
     }
 
-    const businessExposure = await this.projector.projectBusiness(business, instanceId)
+    const businessExposure = await this.projector.projectBusiness(business, {
+      instanceId,
+      businessId: options.businessId,
+      businessInstanceId: options.businessInstanceId,
+    })
+
     const instance: AiRuntimeInstanceState = {
       instanceId,
       businessId: options.businessId,
-      status: 'Starting',
       business: businessExposure,
+      businessInstanceId: options.businessInstanceId,
+      status: 'Starting',
       promptSnapshot: this.projector.buildPromptSnapshot(businessExposure),
       availableFunctions: this.projector.flattenFunctions(businessExposure),
       history: {
@@ -121,6 +128,7 @@ export class AiRuntime implements AiRuntimeApi {
     }
 
     this.instances.set(instanceId, instance)
+    this.instancesByBusinessInstance.set(businessKey, instanceId)
     this.history.setStatus(instance, 'Starting')
     this.eventHub.emit(instance, 'instance.starting', {})
     this.history.recordExposure(instance)
@@ -204,6 +212,7 @@ export class AiRuntime implements AiRuntimeApi {
     const executionContext: FunctionExecutionContext = {
       instanceId: instance.instanceId,
       businessId: business.businessId,
+      businessInstanceId: instance.businessInstanceId,
       moduleId: exposure.moduleId,
       functionId: exposure.functionId,
       action: executionAction,
@@ -418,7 +427,11 @@ export class AiRuntime implements AiRuntimeApi {
     }
 
     try {
-      await business.releaseInstance?.({ instanceId: instance.instanceId, businessId: instance.businessId })
+      await business.releaseInstance?.({
+        instanceId: instance.instanceId,
+        businessId: instance.businessId,
+        businessInstanceId: instance.businessInstanceId,
+      })
       this.history.setStatus(instance, 'Stopped', reason)
       this.eventHub.emit(instance, 'instance.stopped', { reason })
     } catch (error) {
@@ -428,8 +441,8 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
-  private static defaultInstanceId(businessId: string): string {
-    return `${businessId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  private static defaultInstanceId(businessId: string, businessInstanceId: string): string {
+    return `${businessId}-${businessInstanceId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
   }
 
   private static createDefaultRecordId(kind: 'event' | 'message' | 'functionCall' | 'lifecycle' | 'exposure'): string {
@@ -474,11 +487,17 @@ export class AiRuntime implements AiRuntimeApi {
   private static createEmptyHistorySnapshot(instanceId: string): AiRuntimeHistorySnapshot {
     return {
       instanceId,
+      businessId: '',
+      businessInstanceId: '',
       version: 0,
       messages: [],
       functionCalls: [],
       lifecycleMarkers: [],
       functionExposureSnapshots: [],
     }
+  }
+
+  private makeBusinessInstanceKey(businessId: string, businessInstanceId: string): string {
+    return `${businessId}::${businessInstanceId}`
   }
 }

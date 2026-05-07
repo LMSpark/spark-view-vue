@@ -20,6 +20,7 @@ export interface PageModelFunctionContext {
   sessionKey: string
   instanceId: string
   businessId: string
+  businessInstanceId: string
   availableFunctions: readonly AiRuntimeFunctionExposure[]
 }
 
@@ -63,6 +64,7 @@ function createContext(sessionKey: string, session: AiRuntimeStartInstanceResult
     sessionKey,
     instanceId: session.instanceId,
     businessId: session.businessId,
+    businessInstanceId: session.businessInstanceId,
     availableFunctions: session.availableFunctions,
   }
 }
@@ -109,7 +111,10 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
       await reset()
     }
 
-    const session = await core.startInstance({ businessId: PageDesignBusiness.businessId })
+    const session = await core.startInstance({
+      businessId: PageDesignBusiness.businessId,
+      businessInstanceId: sessionKey,
+    })
     const nextContext = createContext(sessionKey, session)
     context.value = nextContext
     return nextContext
