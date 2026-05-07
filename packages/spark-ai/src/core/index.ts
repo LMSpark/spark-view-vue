@@ -48,6 +48,11 @@ export type {
 } from './protocol/business-contracts'
 
 export {
+  AiBusinessModuleRegistrationBase,
+  AiBusinessRegistrationBase,
+} from './protocol/business-contracts'
+
+export {
   AiRuntime,
 } from './runtime/ai-runtime'
 

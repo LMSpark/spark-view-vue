@@ -1,9 +1,13 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
   AiInvocationProtocol,
+  AiBusinessModuleRegistrationBase,
+  AiBusinessRegistrationBase,
   type AiBusinessModuleRegistration,
-  type AiBusinessRegistration,
+  type ModulePromptProvider,
+  type AiRuntimeModuleId,
   type AiFunctionRegistration,
+  type AiRuntimeInstanceScope,
   type AiRuntimeFunctionCallResult,
   type FunctionFailureMode,
   type FunctionExecutionContext,
@@ -56,13 +60,6 @@ type PageDesignFunctionDefinition<
   readonly action: TAction
   readonly moduleId: TModuleId
 }
-type PageDesignModuleDefinition<TModuleId extends PageDesignModuleId> = AiBusinessModuleRegistration<
-  typeof PAGE_DESIGN_BUSINESS,
-  TModuleId
->
-type PageDesignAnyModuleDefinition = {
-  [TModuleId in PageDesignModuleId]: PageDesignModuleDefinition<TModuleId>
-}[PageDesignModuleId]
 const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign@lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
 const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign@textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
 const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign@nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 core@knowledge@queryPayloads/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
@@ -71,6 +68,7 @@ const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign@dataset 只操作当前 Da
 export interface PageDesignRuntimeContext {
   instanceId: string
   businessId: typeof PAGE_DESIGN_BUSINESS
+  businessInstanceId: string
 }
 
 export interface PageDesignBusinessOptions {
@@ -86,7 +84,7 @@ interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
   name: string
   description: string
   prompt: string
-  getFunctions: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
+  getFunctionsFromHost: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
 }
 
 type FunctionCatalogRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = {
@@ -408,17 +406,27 @@ function createDatasetFunctions(
     }))
 }
 
-function createPageDesignModule<TModuleId extends PageDesignModuleId>(options: PageDesignModuleFactoryOptions<TModuleId>): PageDesignModuleDefinition<TModuleId> {
-  return {
-    moduleId: options.moduleId,
-    name: options.name,
-    description: options.description,
-    prompt: options.prompt,
-    getFunctions: options.getFunctions,
+class PageDesignModuleRegistration<TModuleId extends PageDesignModuleId> extends AiBusinessModuleRegistrationBase<
+  typeof PAGE_DESIGN_BUSINESS,
+  string
+> {
+  constructor(
+    options: PageDesignModuleFactoryOptions<TModuleId>,
+  ) {
+    super(options.moduleId, options.name, options.description, options.prompt)
+    this.prompt = options.prompt
+    this.getFunctionsFromHost = options.getFunctionsFromHost
+  }
+
+  private readonly getFunctionsFromHost: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
+  public override readonly prompt: ModulePromptProvider<typeof PAGE_DESIGN_BUSINESS, string>
+
+  override getFunctions(): ReadonlyArray<PageDesignFunctionDefinition<TModuleId>> {
+    return this.getFunctionsFromHost()
   }
 }
 
-export class PageDesignBusiness implements AiBusinessRegistration<typeof PAGE_DESIGN_BUSINESS> {
+export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_DESIGN_BUSINESS> {
   static readonly businessId = PAGE_DESIGN_BUSINESS
 
   readonly businessId = PAGE_DESIGN_BUSINESS
@@ -427,7 +435,7 @@ export class PageDesignBusiness implements AiBusinessRegistration<typeof PAGE_DE
 
   readonly description = '单页面四文件编辑业务：rule.json、pagedata.json、script.js、style.css。'
 
-  readonly modules: readonly PageDesignAnyModuleDefinition[]
+  readonly modules: readonly AiBusinessModuleRegistration<typeof PAGE_DESIGN_BUSINESS, AiRuntimeModuleId>[]
 
   private readonly lifecycleCatalog = new PageDesignLifecycleCatalog()
 
@@ -442,52 +450,54 @@ export class PageDesignBusiness implements AiBusinessRegistration<typeof PAGE_DE
   private readonly getEditToolHost: PageDesignBusinessOptions['getEditToolHost']
 
   constructor(options: PageDesignBusinessOptions) {
+    super()
     this.getEditToolHost = options.getEditToolHost
     this.modules = [
-      createPageDesignModule({
+      new PageDesignModuleRegistration({
         moduleId: LIFECYCLE_MODULE_ID,
         name: 'Page Design Lifecycle',
         description: '页面设计编辑运行态引导与进度查询。',
         prompt: PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT,
-        getFunctions: this.lifecycleFunctions,
+        getFunctionsFromHost: this.lifecycleFunctions,
       }),
-      createPageDesignModule({
+      new PageDesignModuleRegistration({
         moduleId: TEXT_MODEL_MODULE_ID,
         name: 'Page Design Text Model',
         description: '当前页面 script.js/style.css live 文本模型读写。',
         prompt: PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT,
-        getFunctions: this.textModelFunctions,
+        getFunctionsFromHost: this.textModelFunctions,
       }),
-      createPageDesignModule({
+      new PageDesignModuleRegistration({
         moduleId: NODE_TREE_MODULE_ID,
         name: 'Page Design Node Tree',
         description: '当前页面 SparkNodeTree/rule.json 结构读写。',
         prompt: PAGE_DESIGN_NODE_TREE_MODULE_PROMPT,
-        getFunctions: this.nodeTreeFunctions,
+        getFunctionsFromHost: this.nodeTreeFunctions,
       }),
-      createPageDesignModule({
+      new PageDesignModuleRegistration({
         moduleId: DATASET_MODULE_ID,
         name: 'Page Design DataSet',
         description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
         prompt: PAGE_DESIGN_DATASET_MODULE_PROMPT,
-        getFunctions: this.datasetFunctions,
+        getFunctionsFromHost: this.datasetFunctions,
       }),
-    ] as const satisfies readonly PageDesignAnyModuleDefinition[]
+    ]
   }
 
-  releaseInstance(context: { instanceId: string }): void {
-    this.states.delete(context.instanceId)
+  override releaseInstance(context: AiRuntimeInstanceScope<typeof PAGE_DESIGN_BUSINESS>): void {
+    this.states.delete(context.businessInstanceId)
   }
 
   private readonly getState = (context: FunctionExecutionContext): PageDesignEditSession => {
-    const existing = this.states.get(context.instanceId)
+    const existing = this.states.get(context.businessInstanceId)
     if (existing !== undefined) return existing
     const state = new PageDesignEditSession()
     state.bindLiveModelAdapter(this.getEditToolHost({
       instanceId: context.instanceId,
       businessId: PAGE_DESIGN_BUSINESS,
+      businessInstanceId: context.businessInstanceId,
     }))
-    this.states.set(context.instanceId, state)
+    this.states.set(context.businessInstanceId, state)
     return state
   }
 
