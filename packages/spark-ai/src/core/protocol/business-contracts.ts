@@ -78,37 +78,37 @@ export type AiRuntimeAction<
 /** `appendMessages` 接收的消息载荷。 */
 export interface AiRuntimeAppendMessage {
   /** 消息说话方。 */
-  role: AiRuntimeMessageRole
+  readonly role: AiRuntimeMessageRole
   /** 持久化到 runtime history 的纯文本内容。 */
-  content: string
+  readonly content: string
 }
 
 /** 已持久化消息，带 runtime 生成的 ID 和时间戳。 */
 export interface AiRuntimeHistoryMessage extends AiRuntimeAppendMessage {
   /** runtime 生成的消息记录 ID。 */
-  id: string
+  readonly id: string
   /** runtime 时钟生成的毫秒时间戳。 */
-  timestamp: number
+  readonly timestamp: number
 }
 
 /** 函数成功后检测到的非致命问题。 */
 export interface PostValidationWarning {
   /** 触发 warning 的规则名或稳定标识。 */
-  rule: string
+  readonly rule: string
   /** 人类可读的问题细节。 */
-  detail: string
+  readonly detail: string
   /** 给调用方或 LLM 的可选修复建议。 */
-  fix?: string
+  readonly fix?: string
 }
 
 /** 函数定义中声明的已知失败模式。 */
 export interface FunctionFailureMode {
   /** 函数可能返回或描述的稳定错误码。 */
-  code: string
+  readonly code: string
   /** 失败触发条件。 */
-  when: string
+  readonly when: string
   /** 推荐恢复动作。 */
-  fix: string
+  readonly fix: string
 }
 
 /** runtime event hub 发出的事件名。 */
@@ -132,25 +132,25 @@ export type AiRuntimeEventType =
 /** 生命周期、函数调用、历史变更产生的 runtime 事件。 */
 export interface AiRuntimeEvent<TPayload = unknown> {
   /** runtime 生成的事件记录 ID。 */
-  eventId: string
+  readonly eventId: string
   /** 单个 runtime instance 内单调递增的序号。 */
-  seq: number
+  readonly seq: number
   /** runtime 时钟生成的毫秒时间戳。 */
-  timestamp: number
+  readonly timestamp: number
   /** 事件类别。 */
-  type: AiRuntimeEventType
+  readonly type: AiRuntimeEventType
   /** 拥有该 runtime instance 的业务 ID。 */
-  businessId: string
+  readonly businessId: string
   /** 调用方提供的业务会话 ID。 */
-  businessInstanceId: string
+  readonly businessInstanceId: string
   /** runtime 生成的实例 ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 事件关联模块；仅函数级或模块级事件存在。 */
-  moduleId?: string
+  readonly moduleId?: string
   /** 事件关联函数；仅函数级事件存在。 */
-  functionId?: string
+  readonly functionId?: string
   /** 事件专属载荷。 */
-  payload: TPayload
+  readonly payload: TPayload
 }
 
 /** `AiRuntimeApi.subscribe` 使用的观察者回调。 */
@@ -351,25 +351,25 @@ export interface AiRuntimeFunctionExposure<
   TFunctionId extends AiRuntimeFunctionId = AiRuntimeFunctionId,
 > {
   /** 调用函数时使用的完整 action 地址。 */
-  action: AiRuntimeAction<TBusinessId, TModuleId, TFunctionId>
+  readonly action: AiRuntimeAction<TBusinessId, TModuleId, TFunctionId>
   /** 拥有该函数的业务 ID。 */
-  businessId: TBusinessId
+  readonly businessId: TBusinessId
   /** 拥有该函数的模块 ID。 */
-  moduleId: TModuleId
+  readonly moduleId: TModuleId
   /** 模块内函数 ID。 */
-  functionId: TFunctionId
+  readonly functionId: TFunctionId
   /** 面向 LLM 的函数说明。 */
-  description: string
+  readonly description: string
   /** JSON-schema-like 参数 schema。 */
-  paramsSchema: Record<string, unknown>
+  readonly paramsSchema: Record<string, unknown>
   /** 可选 JSON-schema-like 结果 schema。 */
-  resultSchema?: Record<string, unknown>
+  readonly resultSchema?: Record<string, unknown>
   /** 可选执行预算。 */
-  maxExecutionMs?: number
+  readonly maxExecutionMs?: number
   /** 面向 LLM 的使用约束与调用顺序规则。 */
-  usageRules?: readonly string[]
+  readonly usageRules?: readonly string[]
   /** LLM 可据此规划修复的已知失败模式。 */
-  failureModes?: readonly FunctionFailureMode[]
+  readonly failureModes?: readonly FunctionFailureMode[]
 }
 
 /** 为某个 runtime instance 投影出的模块 metadata。 */
@@ -378,15 +378,15 @@ export interface AiRuntimeModuleExposure<
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
 > {
   /** 稳定模块 ID。 */
-  moduleId: TModuleId
+  readonly moduleId: TModuleId
   /** 人类可读模块名。 */
-  name: string
+  readonly name: string
   /** 面向 LLM 的模块说明。 */
-  description: string
+  readonly description: string
   /** 当前实例解析后的模块 prompt。 */
-  prompt?: string
+  readonly prompt?: string
   /** 当前模块可调用函数。 */
-  functions: ReadonlyArray<AiRuntimeFunctionExposure<TBusinessId, TModuleId, AiRuntimeFunctionId>>
+  readonly functions: ReadonlyArray<AiRuntimeFunctionExposure<TBusinessId, TModuleId, AiRuntimeFunctionId>>
 }
 
 /** 为某个 runtime instance 投影出的业务 metadata。 */
@@ -394,15 +394,15 @@ export interface AiRuntimeBusinessExposure<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
 > {
   /** 稳定业务 ID。 */
-  businessId: TBusinessId
+  readonly businessId: TBusinessId
   /** 人类可读业务名。 */
-  name: string
+  readonly name: string
   /** 面向 LLM 的业务说明。 */
-  description: string
+  readonly description: string
   /** 当前业务服务健康状态。 */
-  status: AiBusinessServiceStatus
+  readonly status: AiBusinessServiceStatus
   /** 当前业务暴露的模块列表。 */
-  modules: ReadonlyArray<AiRuntimeModuleExposure<TBusinessId, AiRuntimeModuleId>>
+  readonly modules: ReadonlyArray<AiRuntimeModuleExposure<TBusinessId, AiRuntimeModuleId>>
 }
 
 // =========================================================
@@ -421,17 +421,17 @@ export interface AiRuntimeFunctionCallRecord<
   TFunctionId extends AiRuntimeFunctionId = AiRuntimeFunctionId,
 > {
   /** runtime 生成的调用记录 ID。 */
-  id: string
+  readonly id: string
   /** runtime 时钟生成的毫秒时间戳。 */
-  timestamp: number
+  readonly timestamp: number
   /** 执行本次调用的 runtime instance ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 被调用的完整 action 地址。 */
-  action: AiRuntimeAction<TBusinessId, TModuleId, TFunctionId>
+  readonly action: AiRuntimeAction<TBusinessId, TModuleId, TFunctionId>
   /** runtime clone 后保存的原始参数载荷。 */
-  args: unknown
+  readonly args: unknown
   /** 函数返回结果或 runtime 归一化失败。 */
-  result: AiRuntimeFunctionCallResult<unknown>
+  readonly result: AiRuntimeFunctionCallResult<unknown>
 }
 
 /** runtime instance 某一时刻的函数暴露快照。 */
@@ -441,69 +441,69 @@ export interface AiRuntimeFunctionExposureSnapshot<
   TFunctionId extends AiRuntimeFunctionId = AiRuntimeFunctionId,
 > {
   /** runtime 生成的暴露快照 ID。 */
-  id: string
+  readonly id: string
   /** runtime 时钟生成的毫秒时间戳。 */
-  timestamp: number
+  readonly timestamp: number
   /** 此历史时刻可见的函数列表。 */
-  functions: ReadonlyArray<AiRuntimeFunctionExposure<TBusinessId, TModuleId, TFunctionId>>
+  readonly functions: ReadonlyArray<AiRuntimeFunctionExposure<TBusinessId, TModuleId, TFunctionId>>
 }
 
 /** 持久化的生命周期状态迁移记录。 */
 export interface AiRuntimeLifecycleMarker {
   /** runtime 生成的生命周期记录 ID。 */
-  id: string
+  readonly id: string
   /** runtime 时钟生成的毫秒时间戳。 */
-  timestamp: number
+  readonly timestamp: number
   /** 本条 marker 记录的状态。 */
-  status: AiRuntimeInstanceStatus
+  readonly status: AiRuntimeInstanceStatus
   /** 可选状态迁移原因。 */
-  reason?: string
+  readonly reason?: string
 }
 
 /** 返回给调用方的不可变 runtime history 快照。 */
 export interface AiRuntimeHistorySnapshot {
   /** runtime 生成的实例 ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 拥有该 runtime instance 的业务 ID。 */
-  businessId: string
+  readonly businessId: string
   /** 调用方提供的业务会话 ID。 */
-  businessInstanceId: string
+  readonly businessInstanceId: string
   /** 每次持久化变更都会递增的历史版本。 */
-  version: number
+  readonly version: number
   /** 已追加的聊天消息。 */
-  messages: readonly AiRuntimeHistoryMessage[]
+  readonly messages: readonly AiRuntimeHistoryMessage[]
   /** 函数调用记录。 */
-  functionCalls: readonly AiRuntimeFunctionCallRecord[]
+  readonly functionCalls: readonly AiRuntimeFunctionCallRecord[]
   /** 生命周期状态迁移记录。 */
-  lifecycleMarkers: readonly AiRuntimeLifecycleMarker[]
+  readonly lifecycleMarkers: readonly AiRuntimeLifecycleMarker[]
   /** 函数暴露快照列表。 */
-  functionExposureSnapshots: readonly AiRuntimeFunctionExposureSnapshot[]
+  readonly functionExposureSnapshots: readonly AiRuntimeFunctionExposureSnapshot[]
 }
 
 /** 列表与查询 API 返回的轻量 runtime instance 视图。 */
 export interface AiRuntimeInstanceSnapshot {
   /** runtime 生成的实例 ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 调用方提供的业务会话 ID。 */
-  businessInstanceId: string
+  readonly businessInstanceId: string
   /** 拥有该 runtime instance 的业务 ID。 */
-  businessId: string
+  readonly businessId: string
   /** 当前生命周期状态。 */
-  status: AiRuntimeInstanceStatus
+  readonly status: AiRuntimeInstanceStatus
   /** 当前实例投影出的业务 metadata。 */
-  business: AiRuntimeBusinessExposure
+  readonly business: AiRuntimeBusinessExposure
   /** 最近一次投影时解析并拼接的模块 prompt。 */
-  promptSnapshot: string
+  readonly promptSnapshot: string
   /** 当前实例可调用函数列表。 */
-  availableFunctions: readonly AiRuntimeFunctionExposure[]
+  readonly availableFunctions: readonly AiRuntimeFunctionExposure[]
 }
 
 /** 完整 runtime instance 视图，包含模块暴露和历史快照。 */
 export interface AiRuntimeInstanceDetail extends AiRuntimeInstanceSnapshot {
   /** 当前实例投影出的模块列表。 */
-  modules: readonly AiRuntimeModuleExposure[]
+  readonly modules: readonly AiRuntimeModuleExposure[]
   /** 不可变历史快照。 */
-  history: AiRuntimeHistorySnapshot
+  readonly history: AiRuntimeHistorySnapshot
 }
 
 // =========================================================
@@ -513,27 +513,27 @@ export interface AiRuntimeInstanceDetail extends AiRuntimeInstanceSnapshot {
 /** 创建或恢复业务域 runtime instance 的参数。 */
 export interface AiRuntimeStartInstanceOptions {
   /** 已注册业务 ID。 */
-  businessId: string
+  readonly businessId: string
   /** 调用方提供的业务会话 ID；同一 pair 重复调用会恢复现有实例。 */
-  businessInstanceId: string
+  readonly businessInstanceId: string
   /** 可选恢复上下文，会透传到 resume 事件。 */
-  restoreContext?: unknown
+  readonly restoreContext?: unknown
 }
 
 /** `startInstance` 返回值。 */
 export interface AiRuntimeStartInstanceResult extends AiRuntimeInstanceSnapshot {
   /** start 或 resume 完成后的历史快照。 */
-  history: AiRuntimeHistorySnapshot
+  readonly history: AiRuntimeHistorySnapshot
 }
 
 /** 通过 runtime 生成 ID 停止实例的参数。 */
 export interface AiRuntimeStopInstanceOptions {
   /** runtime 生成的实例 ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 暂停或终止停止模式。 */
-  mode: AiRuntimeStopMode
+  readonly mode: AiRuntimeStopMode
   /** 可选原因，会写入生命周期 marker。 */
-  reason?: string
+  readonly reason?: string
 }
 
 /** 通过业务 scope 停止实例的参数。 */
@@ -547,35 +547,35 @@ export interface AiRuntimeStopBusinessInstanceOptions extends AiRuntimeBusinessI
 /** stop 与 pause 操作返回值。 */
 export interface AiRuntimeStopInstanceResult {
   /** 操作完成后的实例快照。 */
-  instance: AiRuntimeInstanceSnapshot
+  readonly instance: AiRuntimeInstanceSnapshot
   /** 操作完成后的历史快照。 */
-  history: AiRuntimeHistorySnapshot
+  readonly history: AiRuntimeHistorySnapshot
 }
 
 /** 向活跃 runtime instance 追加聊天消息的参数。 */
 export interface AiRuntimeAppendMessagesOptions {
   /** runtime 生成的实例 ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 按顺序追加的消息。 */
-  messages: readonly AiRuntimeAppendMessage[]
+  readonly messages: readonly AiRuntimeAppendMessage[]
 }
 
 /** 调用一个已暴露函数的参数。 */
 export interface AiRuntimeExecuteFunctionCallOptions {
   /** runtime 生成的实例 ID。 */
-  instanceId: string
+  readonly instanceId: string
   /** 来自 `getAvailableFunctions` 的完整 action 地址。 */
-  action: AiRuntimeAction
+  readonly action: AiRuntimeAction
   /** 传给函数的参数载荷。 */
-  args: unknown
+  readonly args: unknown
 }
 
 /** `executeFunctionCall` 返回值。 */
 export interface AiRuntimeExecuteFunctionCallResult {
   /** 函数结果或 runtime 归一化失败。 */
-  result: AiRuntimeFunctionCallResult<unknown>
+  readonly result: AiRuntimeFunctionCallResult<unknown>
   /** 调用记录写入后的历史快照。 */
-  history: AiRuntimeHistorySnapshot
+  readonly history: AiRuntimeHistorySnapshot
 }
 
 /** 测试或宿主应用可注入的 runtime 依赖。 */

@@ -12,48 +12,51 @@
 /** 查询知识负载摘要时使用的轻量过滤条件。 */
 export interface KnowledgePayloadQueryFilter {
   /** 知识分类，例如 component、dataset、node-tree。 */
-  category?: string
+  readonly category?: string
   /** 关键词过滤，具体匹配策略由 provider 自行决定。 */
-  keyword?: string
+  readonly keyword?: string
 }
 
 /** 可展示在列表或供 LLM 初筛的知识负载摘要。 */
 export interface KnowledgePayloadSummary {
   /** 知识提供者命名空间，必须能定位到注册过的 provider。 */
-  payloadRef: string
+  readonly payloadRef: string
   /** provider 内部的知识条目 key，用于后续拉取 guide。 */
-  key: string
+  readonly key: string
   /** 面向 LLM 或 UI 的简短描述。 */
-  description: string
+  readonly description: string
   /** 可选分类，便于调用方分组展示或过滤。 */
-  category?: string
+  readonly category?: string
   /** 可选标签，补充检索和提示词上下文。 */
-  tags?: readonly string[]
+  readonly tags?: readonly string[]
+}
+
+/** 知识负载的已知失败模式。 */
+export interface KnowledgePayloadFailureMode {
+  /** 稳定错误码。 */
+  readonly code: string
+  /** 触发条件。 */
+  readonly when: string
+  /** 推荐修复方式。 */
+  readonly fix: string
 }
 
 /** 单个知识负载的完整调用指南。 */
 export interface KnowledgePayloadGuide {
   /** 知识提供者命名空间。 */
-  payloadRef: string
+  readonly payloadRef: string
   /** provider 内部的知识条目 key。 */
-  key: string
+  readonly key: string
   /** 该 payload 的用途说明。 */
-  description: string
+  readonly description: string
   /** LLM 读取或提交该 payload 时应遵守的 JSON schema。 */
-  jsonSchema: Record<string, unknown>
+  readonly jsonSchema: Record<string, unknown>
   /** 最小可用示例，帮助 LLM 减少结构猜测。 */
-  minimalExample?: unknown
+  readonly minimalExample?: unknown
   /** 使用规则、前置条件或调用顺序提示。 */
-  usageRules?: readonly string[]
+  readonly usageRules?: readonly string[]
   /** 已知失败模式，供 LLM 规划修复动作。 */
-  failureModes?: ReadonlyArray<{
-    /** 稳定错误码。 */
-    code: string
-    /** 触发条件。 */
-    when: string
-    /** 推荐修复方式。 */
-    fix: string
-  }>
+  readonly failureModes?: readonly KnowledgePayloadFailureMode[]
 }
 
 /** 知识负载提供者接口，由业务或 catalog 层实现后注册到 registry。 */

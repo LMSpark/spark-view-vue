@@ -52,11 +52,12 @@ export interface StreamCallbacks {
  * action 地址三段拆解结果。
  * 输入语义：规范 action，格式为 business@module@function。
  * 调用时机：协议层或运行时需要按段访问 action 各部分时使用。
+ * 所有字段只读：解析结果不应被外部修改。
  */
 export interface ActionAddressParts {
-  business: string
-  module: string
-  function: string
+  readonly business: string
+  readonly module: string
+  readonly function: string
 }
 
 export class AiInvocationProtocol {
@@ -95,6 +96,7 @@ export class AiInvocationProtocol {
 
     for (let i = start; i < text.length; i++) {
       const ch = text[i]
+      if (ch === undefined) break
 
       if (escape) { escape = false; continue }
       if (ch === '\\' && inString) { escape = true; continue }

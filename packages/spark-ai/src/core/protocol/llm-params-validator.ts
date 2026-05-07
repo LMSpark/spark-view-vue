@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 通用 LLM 参数校验器（llm-params-validator）
  *
  * 职责
@@ -55,26 +55,29 @@ export interface LlmParamValidationIssue {
   message: string
 }
 
+
 /**
  * 校验结果。
  *
- * - ok    : 无问题时为 true；有任意问题时为 false（fail-fast 语义）。
- * - issues: 问题列表，空数组表示通过。
+ * - ok     : true 表示无问题，false 表示有一条或多条结构问题。
+ * - issues : 结构问题列表；`ok === true` 时保证为空数组。
  */
 export interface LlmParamValidationResult {
-  ok: boolean
-  issues: LlmParamValidationIssue[]
+  readonly ok: boolean
+  readonly issues: readonly LlmParamValidationIssue[]
 }
 
 /**
  * 校验入口调用选项，允许调用方在不修改函数 schema 的前提下叠加约束。
- *
- * - requiredKeys           : 额外追加的必填字段名列表，与 schema.required 合并后统一校验。
- * - oneOfRequiredKeyGroups : 多组互斥 required 组合；至少满足其中一组即通过。
- *                            例：[['selector'], ['parentTable', 'childTable']]
  */
 export interface LlmParamValidationOptions {
+  /**
+   * 额外必填字段键名列表，在 schema 的 required 基础上追加。
+   */
   requiredKeys?: readonly string[]
+  /**
+   * “至少满足其中一组”的字段组约束，每组是一批字段名。
+   */
   oneOfRequiredKeyGroups?: ReadonlyArray<readonly string[]>
 }
 
@@ -441,23 +444,22 @@ export class LlmParamsValidator {
     const normalized = LlmParameterSchema.normalizeSchemaNode(schema)
     if (typeof normalized === 'string') {
       LlmParamsValidator.validateLeafSchema(value, normalized, path, issues)
-      return
-    }
-
-    if (LlmParameterSchema.isEnumSchema(normalized)) {
+    } else if (LlmParameterSchema.isEnumSchema(normalized)) {
       LlmParamsValidator.validateEnumSchema(value, normalized, path, issues)
-      return
-    }
-
-    if (LlmParameterSchema.isObjectSchema(normalized)) {
+    } else if (LlmParameterSchema.isObjectSchema(normalized)) {
       LlmParamsValidator.validateObjectSchema(value, normalized, path, issues, context)
-      return
-    }
-
-    if (LlmParameterSchema.isArraySchema(normalized)) {
+    } else if (LlmParameterSchema.isArraySchema(normalized)) {
       LlmParamsValidator.validateArraySchema(value, normalized, path, issues)
+    } else {
+      LlmParamsValidator.assertNeverSchemaKind(normalized)
     }
   }
+
+  /**
+   * 穷举性保护：当 normalizeSchemaNode 返回类型扩展时，TypeScript 编译器
+   * 会在此处报错，强制维护者补充新分支——"不可达"比"静默忽略"更安全。
+   */
+  private static assertNeverSchemaKind(_n: never): void {}
 
   /** 校验“至少满足一组必填字段”的跨字段约束。 */
   private static validateOneOfRequiredGroups(

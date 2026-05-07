@@ -181,8 +181,15 @@ export class LlmParameterSchema {
     return LlmParameterSchema.WILDCARD_KEY_PATTERN.test(key)
   }
 
-  /** 将任意 schema 写法归一成 validator 可消费的节点。 */
-  static normalizeSchemaNode(schema: unknown): unknown {
+  /**
+   * 将任意 schema 写法归一成 validator 可消费的判别联合节点。
+   *
+   * 返回类型已收窄为 `LlmParamObjectSchema | LlmParamArraySchema | LlmParamEnumSchema | string`，
+   * 调用方无需再重复类型守卫；exhaustive switch/if-chain 可依赖此类型。
+   */
+  static normalizeSchemaNode(
+    schema: unknown,
+  ): LlmParamObjectSchema | LlmParamArraySchema | LlmParamEnumSchema | string {
     if (typeof schema === 'string') return schema
     if (
       LlmParameterSchema.isObjectSchema(schema)
