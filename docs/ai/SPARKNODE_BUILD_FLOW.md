@@ -137,7 +137,7 @@ const B: SparkNode = {
 
 **调用入口**：通过 Stills 系统执行 `sparkNodeTree.addNode` / `sparkNodeTree.addNodes` 等动作
 **执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts)（`EDIT_NODE_TREE_STILLS`）
-**Catalog 来源**：[packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts)（`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`）
+**Catalog 来源**：[packages/spark-ai/src/business/page-design/functions/node-tree/tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/functions/node-tree/tool-catalog.ts)（`PageDesignNodeTreeCatalog.parameterTable`）
 **底层 API**：[packages/spark-component/src/core/spark-node-tree.ts](../../../packages/spark-component/src/core/spark-node-tree.ts)（`SparkNodeTree` 类）
 
 典型写入调用示例：
@@ -207,7 +207,7 @@ const B: SparkNode = {
 | `sparkNodeTree.setProps` | `setProps` | 设置或合并单个节点的 props |
 | `sparkNodeTree.setPropsBatch` | `setPropsBatch` | 批量设置多个节点的 props |
 
-> Catalog 定义来源：`SPARK_NODE_TREE_TOOL_PARAMETER_TABLE`，执行桥接：`EDIT_NODE_TREE_STILLS`。
+> Catalog 定义来源：`PageDesignNodeTreeCatalog.parameterTable`，执行桥接：`EDIT_NODE_TREE_STILLS`。
 
 ---
 
@@ -223,8 +223,8 @@ component-catalog.json   ←──── json-catalog-generator.ts（构建期�
 
 spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
         │
-        └── stills/node-tree/tool-catalog.ts
-                └── SPARK_NODE_TREE_TOOL_PARAMETER_TABLE
+        └── functions/node-tree/tool-catalog.ts
+                └── PageDesignNodeTreeCatalog.parameterTable
                         └── stills/edit/actions/edit-domain.ts
                                 └── EDIT_NODE_TREE_STILLS ─→ 执行桥接
 

@@ -46,18 +46,18 @@ src/core/knowledge/payload-provider-registry.ts
 src/core/runtime/ai-core.ts
 ```
 
-`src/business/page-design` defines the `pageDesign` business and owns page-design specific prompts, payload providers, function catalogs, and live edit-state adapters.
+`src/business/page-design` defines the `pageDesign` business and now uses class-first business components for prompts, payload providers, function catalogs, cache handles, and live edit-state adapters.
 
 ## Page Design Business
 
-`createPageDesignBusinessRegistration()` registers four modules:
+`PageDesignBusiness` registers four modules:
 
 - `lifecycle`
 - `textModel`
 - `nodeTree`
 - `dataset`
 
-The business reads and writes the live model through `EditToolHost` and owns the per-adapter-session edit state. It does not accept old file snapshot payloads as a compatibility path, and it does not expose export/history actions through the dialogue action surface.
+The business reads and writes the live model through `EditToolHost` and owns the per-adapter-session edit state through `PageDesignEditSession`. It does not accept old file snapshot payloads as a compatibility path, and it does not expose export/history actions through the dialogue action surface.
 
 ## Knowledge Payloads
 
@@ -67,9 +67,9 @@ Knowledge payload contracts and provider registry live under `core`. This is the
 
 The package root exports:
 
-- `createAiCore` and core business contracts
-- protocol parsing helpers such as `extractFirstJsonObject`, `parseTokenUsage`, and `formatTokenUsage`
-- `createPageDesignBusinessRegistration`, compatibility alias `createPageDesignBusinessDefinition`, and page-design edit-state helpers
+- `AiRuntime`, `KnowledgePayloadRegistry`, and core business contracts
+- protocol helper classes such as `AiInvocationProtocol` and `LlmParamsValidator`
+- class-first page-design exports such as `PageDesignBusiness`, `PageDesignEditSession`, `PageDesignEditActionClassifier`, `PageDesignEditRuntimePrompt`, `PageDesignPageCache`, and `PageDesignComponentPayloadProvider`
 - component catalog projection helpers and catalog types
 
 The package also provides layered subpath exports:

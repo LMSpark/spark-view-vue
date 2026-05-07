@@ -1,10 +1,13 @@
 import type { SparkNodeTree } from '@spark-view/spark-component'
-import type { FunctionFailureMode } from '../../../../core'
 import {
-  formatLlmParamValidationIssues,
-  validateLlmDeserializedParams,
+  type FunctionFailureMode,
   type LlmParamValidationOptions,
-} from '../../../../core/protocol/llm-params-validator'
+  LlmParamsValidator,
+} from '../../../../core'
+import {
+  createPageDesignCapabilityRow,
+  PageDesignToolCatalog,
+} from '../tool-catalog'
 
 type MethodKey<T> = Extract<{
   [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
@@ -116,22 +119,10 @@ const defineRequestRow = (row: SparkNodeTreeToolRowWithoutType): SparkNodeTreeTo
 })
 
 function toCapabilityRow(row: SparkNodeTreeToolParameterRow): SparkNodeTreeToolCapabilityRow {
-  return {
-    action: row.action,
-    type: row.type,
-    target: row.target,
-    coreMethod: row.coreMethod,
-    description: row.description,
-    integrationStatus: 'catalog-only',
-    paramsRef: row.action,
-    ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
-    ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
-    ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
-  }
+  return createPageDesignCapabilityRow(row, 'catalog-only', { coreMethod: row.coreMethod })
 }
 
-export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
+const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
   defineDescribeRow({
     action: 'pageDesign@nodeTree@getNode',
     target: 'node',
@@ -635,23 +626,24 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
   }),
 ] as const satisfies readonly SparkNodeTreeToolParameterRow[]
 
-export const SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE: readonly SparkNodeTreeToolCapabilityRow[] =
+const SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE: readonly SparkNodeTreeToolCapabilityRow[] =
   SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.map(toCapabilityRow)
 
-export function getSparkNodeTreeToolParameterRow(action: string): SparkNodeTreeToolParameterRow | undefined {
-  return SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.find((row) => row.action === action)
-}
-
-export function getSparkNodeTreeToolCapabilityRow(action: string): SparkNodeTreeToolCapabilityRow | undefined {
-  return SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE.find((row) => row.action === action)
-}
-
-export function validateSparkNodeTreeToolParams(action: string, params: unknown): string | null {
-  const row = getSparkNodeTreeToolParameterRow(action)
-  if (row === undefined) {
-    return `未知 nodeTree 动作: ${action}`
+export class PageDesignNodeTreeCatalog extends PageDesignToolCatalog<
+  SparkNodeTreeToolParameterRow,
+  SparkNodeTreeToolCapabilityRow
+> {
+  constructor() {
+    super(SPARK_NODE_TREE_TOOL_PARAMETER_TABLE, SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE)
   }
 
-  const result = validateLlmDeserializedParams(params, row.paramsSchema, row.validation)
-  return result.ok ? null : formatLlmParamValidationIssues(result.issues)
+  validateParams(action: string, params: unknown): string | null {
+    const row = this.getParameterRow(action)
+    if (row === undefined) {
+      return `未知 nodeTree 动作: ${action}`
+    }
+
+    const result = LlmParamsValidator.validateLlmDeserializedParams(params, row.paramsSchema, row.validation)
+    return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+  }
 }

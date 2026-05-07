@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  formatLlmParamValidationIssues,
-  validateLlmDeserializedParams,
-} from '../packages/spark-ai/src/core/protocol/llm-params-validator'
-import { validateDataSetCrudToolFunctionParams } from '../packages/spark-ai/src/business/page-design/functions/dataset'
+  LlmParamsValidator,
+  PageDesignDatasetCatalog,
+} from '../packages/spark-ai/src'
+
+const datasetCatalog = new PageDesignDatasetCatalog()
 
 describe('validateLlmDeserializedParams', () => {
   it('rejects non-object root params', () => {
-    const result = validateLlmDeserializedParams('not-an-object', {})
+    const result = LlmParamsValidator.validateLlmDeserializedParams('not-an-object', {})
 
     expect(result.ok).toBe(false)
     expect(result.issues).toEqual([
@@ -20,7 +21,7 @@ describe('validateLlmDeserializedParams', () => {
   })
 
   it('supports nested wildcard object schemas', () => {
-    const result = validateLlmDeserializedParams(
+    const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         tableName: 'Users',
         views: {
@@ -53,7 +54,7 @@ describe('validateLlmDeserializedParams', () => {
   })
 
   it('rejects llm-forbidden fields that should be omitted', () => {
-    const result = validateLlmDeserializedParams(
+    const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         crudConfig: {
           transformRequest: 'foo',
@@ -70,11 +71,11 @@ describe('validateLlmDeserializedParams', () => {
     )
 
     expect(result.ok).toBe(false)
-    expect(formatLlmParamValidationIssues(result.issues)).toContain('$.crudConfig.transformRequest 该字段在 LLM 参数中应省略')
+    expect(LlmParamsValidator.formatLlmParamValidationIssues(result.issues)).toContain('$.crudConfig.transformRequest 该字段在 LLM 参数中应省略')
   })
 
   it('accepts componentId string when description contains Chinese explanation text', () => {
-    const result = validateLlmDeserializedParams(
+    const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         componentId: 'div__0_0',
       },
@@ -91,7 +92,7 @@ describe('validateLlmDeserializedParams', () => {
   })
 
   it('accepts replaceNode node.children as array with explicit array schema', () => {
-    const result = validateLlmDeserializedParams(
+    const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         componentId: 'div__0_0',
         node: {
@@ -125,7 +126,7 @@ describe('validateLlmDeserializedParams', () => {
   })
 
   it('fails fast when leaf schema description has no recognizable type', () => {
-    const result = validateLlmDeserializedParams(
+    const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         foo: 'bar',
       },
@@ -138,11 +139,11 @@ describe('validateLlmDeserializedParams', () => {
     )
 
     expect(result.ok).toBe(false)
-    expect(formatLlmParamValidationIssues(result.issues)).toContain('schema 描述缺少可识别类型')
+    expect(LlmParamsValidator.formatLlmParamValidationIssues(result.issues)).toContain('schema 描述缺少可识别类型')
   })
 
   it('keeps explicit unknown leaf schema pass-through', () => {
-    const result = validateLlmDeserializedParams(
+    const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         payload: {
           anything: true,
@@ -163,7 +164,7 @@ describe('validateLlmDeserializedParams', () => {
 
 describe('validateDataSetCrudToolFunctionParams', () => {
   it('accepts valid pageDesign@dataset@createTable params', () => {
-    const error = validateDataSetCrudToolFunctionParams('pageDesign@dataset@createTable', {
+    const error = datasetCatalog.validateParams('pageDesign@dataset@createTable', {
       tableName: 'Users',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -180,7 +181,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
   })
 
   it('rejects invalid pageDesign@dataset@createTable params after llm deserialization', () => {
-    const error = validateDataSetCrudToolFunctionParams('pageDesign@dataset@createTable', {
+    const error = datasetCatalog.validateParams('pageDesign@dataset@createTable', {
       tableName: 'Users',
       columns: 'id,name',
     })
@@ -190,7 +191,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
 
   it('enforces single-signature for pageDesign@dataset@deleteRelation (zero backward compat)', () => {
     // 旧签名（selector 包装对象）应明确失败，避免隐式兼容历史协议。
-    const errorLegacySelector = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
+    const errorLegacySelector = datasetCatalog.validateParams('pageDesign@dataset@deleteRelation', {
       selector: {
         parentTable: 'Department',
         childTable: 'Employee',
@@ -199,7 +200,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(errorLegacySelector).not.toBeNull()
 
     // 缺少 parentTable 应该失败（单一签名：必须提供 parentTable 和 childTable）
-    const errorMissingParent = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
+    const errorMissingParent = datasetCatalog.validateParams('pageDesign@dataset@deleteRelation', {
       childTable: 'Employee',
       parentField: 'deptId',
       childField: 'orderId',
@@ -207,7 +208,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(errorMissingParent).toContain('parentTable')
 
     // 缺少 childTable 应该失败
-    const errorMissingChild = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
+    const errorMissingChild = datasetCatalog.validateParams('pageDesign@dataset@deleteRelation', {
       parentTable: 'Department',
       parentField: 'deptId',
       childField: 'orderId',
@@ -215,7 +216,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(errorMissingChild).toContain('childTable')
 
     // 提供完整的单一签名应该通过
-    const noError = validateDataSetCrudToolFunctionParams('pageDesign@dataset@deleteRelation', {
+    const noError = datasetCatalog.validateParams('pageDesign@dataset@deleteRelation', {
       parentTable: 'Department',
       childTable: 'Employee',
       parentField: 'deptId',

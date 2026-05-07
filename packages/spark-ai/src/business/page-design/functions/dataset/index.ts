@@ -1,9 +1,5 @@
 export {
-  DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE,
-  DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE,
-  getDataSetCrudToolFunctionParameterRow,
-  getDataSetCrudToolFunctionCapabilityRow,
-  validateDataSetCrudToolFunctionParams,
+  PageDesignDatasetCatalog,
 } from './tool-catalog'
 
 export type {

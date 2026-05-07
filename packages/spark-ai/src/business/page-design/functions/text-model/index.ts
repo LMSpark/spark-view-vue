@@ -1,9 +1,5 @@
 export {
-  TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE,
-  TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE,
-  getTextModelFunctionParameterRow,
-  getTextModelFunctionCapabilityRow,
-  validateTextModelFunctionParams,
+  PageDesignTextModelCatalog,
 } from './tool-catalog'
 
 export type {

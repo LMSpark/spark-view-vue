@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  createAiCore,
+  AiRuntime,
   type AiBusinessRegistration,
   type AiFunctionRegistration,
-  type AiCore,
+  type AiRuntimeApi,
   type FunctionExecutionContext,
 } from '../packages/spark-ai/src'
 
@@ -29,9 +29,9 @@ interface LeaveFormService {
   release(instanceId: string): void
 }
 
-function createDeterministicCore(): AiCore {
+function createDeterministicCore(): AiRuntimeApi {
   let record = 0
-  return createAiCore({
+  return new AiRuntime({
     createInstanceId: () => 'leave-1',
     createRecordId: (kind) => `${kind}-${++record}`,
     now: () => 1778030000000 + record,

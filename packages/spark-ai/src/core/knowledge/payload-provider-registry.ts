@@ -5,7 +5,13 @@ import type {
   KnowledgePayloadSummary,
 } from '../protocol/knowledge-payload-contracts'
 
-export class KnowledgePayloadProviderRegistry {
+export class KnowledgePayloadRegistry {
+  static readonly defaultRegistry = new KnowledgePayloadRegistry()
+
+  static register(provider: KnowledgePayloadProvider): void {
+    KnowledgePayloadRegistry.defaultRegistry.register(provider)
+  }
+
   private readonly providers = new Map<string, KnowledgePayloadProvider>()
 
   register(provider: KnowledgePayloadProvider): void {
@@ -38,18 +44,4 @@ export class KnowledgePayloadProviderRegistry {
     }
     return provider
   }
-}
-
-export function createKnowledgePayloadProviderRegistry(): KnowledgePayloadProviderRegistry {
-  return new KnowledgePayloadProviderRegistry()
-}
-
-const defaultKnowledgePayloadProviderRegistry = createKnowledgePayloadProviderRegistry()
-
-export function getKnowledgePayloadProviderRegistry(): KnowledgePayloadProviderRegistry {
-  return defaultKnowledgePayloadProviderRegistry
-}
-
-export function registerKnowledgePayloadProvider(provider: KnowledgePayloadProvider): void {
-  defaultKnowledgePayloadProviderRegistry.register(provider)
 }

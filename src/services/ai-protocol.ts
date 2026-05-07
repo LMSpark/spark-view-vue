@@ -2,21 +2,20 @@
  * AI 协议传输层
  *
  * 职责：仅负责 SSE 流式传输（依赖 spark-utils FetchClient + auth headers）
- * 文本/usage 解析工具统一委托给 @spark-view/spark-ai。
+ * 文本/usage 解析工具统一委托给 @spark-view/spark-ai 的 AiInvocationProtocol。
  *
  * 消费方直接从本模块导入即可同时获得传输 + 解析能力。
  */
 import { createFetchClient } from '@spark-view/spark-utils'
 import { createAuthHeaders } from '@/services/http'
 
-// ── Re-export 文本与 usage 解析工具（来自 spark-ai） ─────────────────────────
+// ── Re-export 协议解析类（来自 spark-ai） ─────────────────────────────────
 // 消费方无需关心实现在哪个包，统一从这里导入
 export {
-  extractFirstJsonObject,
-  parseTokenUsage,
-  formatTokenUsage,
+  AiInvocationProtocol,
 } from '@spark-view/spark-ai'
 export type {
+  ActionAddressParts,
   ProtocolRole,
   ProtocolMessage,
   TokenUsage,

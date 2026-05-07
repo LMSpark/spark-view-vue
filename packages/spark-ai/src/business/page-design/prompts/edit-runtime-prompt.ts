@@ -1,6 +1,5 @@
 import {
-  EDIT_FLOW_1001_DATA_FIRST_POLICY,
-  EDIT_FLOW_1002_DATA_FIRST_SEQUENCE,
+  PageDesignEditFlowPrompts,
 } from './edit-flow-prompts'
 
 const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Core: business-registration adapter boundary ══
@@ -11,7 +10,15 @@ const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Core: business-registration a
   - 业务服务自管生命周期与状态，Core 不创建模块运行态。
   - 函数调用必须显式携带 instanceId；instanceId 不进入业务 args。`
 
-export const PAGE_DESIGN_EDIT_RUNTIME_PROMPT = `${AI_FUNCTION_ARCHITECTURE_PROMPT}
+export class PageDesignEditRuntimePrompt {
+  private readonly flowPrompts: PageDesignEditFlowPrompts
+
+  constructor(flowPrompts = new PageDesignEditFlowPrompts()) {
+    this.flowPrompts = flowPrompts
+  }
+
+  get content(): string {
+    return `${AI_FUNCTION_ARCHITECTURE_PROMPT}
 
 ══ pageDesign: 四文件直接编辑 ══
 
@@ -81,7 +88,9 @@ export const PAGE_DESIGN_EDIT_RUNTIME_PROMPT = `${AI_FUNCTION_ARCHITECTURE_PROMP
   - 保持 4 文件之间的一致性，不做无关重写
   - 需求完成后立即停止工具调用并给出简短总结
 
-${EDIT_FLOW_1001_DATA_FIRST_POLICY}
+${this.flowPrompts.dataFirstPolicy}
 
-${EDIT_FLOW_1002_DATA_FIRST_SEQUENCE}
+${this.flowPrompts.dataFirstSequence}
 `
+  }
+}

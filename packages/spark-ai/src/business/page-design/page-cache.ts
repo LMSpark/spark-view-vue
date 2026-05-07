@@ -13,38 +13,38 @@ export interface PageCacheHandle {
   getCacheStats(): { size: number; keys: string[] }
 }
 
-export function createPageCache(loader: ConfigLoaderRef): PageCacheHandle {
-  return {
-    clearPageCache(pageId: string): void {
-      for (const file of PAGE_FILES) {
-        loader.clearCache(`/${pageId}/${file}`)
-      }
-      if (typeof localStorage === 'undefined') return
-      for (const file of PAGE_FILES) {
-        const base = `${CACHE_PREFIX}/${pageId}/${file}`
-        localStorage.removeItem(base)
-        localStorage.removeItem(`${base}:raw`)
-        localStorage.removeItem(`${base}:transform`)
-      }
-    },
+export class PageDesignPageCache implements PageCacheHandle {
+  constructor(private readonly loader: ConfigLoaderRef) {}
 
-    clearAllCache(): { size: number; keys: string[] } {
-      const stats = loader.getCacheStats?.() ?? { size: 0, keys: [] }
-      loader.clearCache()
-      if (typeof localStorage !== 'undefined') {
-        const toRemove: string[] = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i)
-          if (key?.startsWith(CACHE_PREFIX)) toRemove.push(key)
-        }
-        for (const key of toRemove) localStorage.removeItem(key)
-      }
-      return stats
-    },
+  clearPageCache(pageId: string): void {
+    for (const file of PAGE_FILES) {
+      this.loader.clearCache(`/${pageId}/${file}`)
+    }
+    if (typeof localStorage === 'undefined') return
+    for (const file of PAGE_FILES) {
+      const base = `${CACHE_PREFIX}/${pageId}/${file}`
+      localStorage.removeItem(base)
+      localStorage.removeItem(`${base}:raw`)
+      localStorage.removeItem(`${base}:transform`)
+    }
+  }
 
-    getCacheStats(): { size: number; keys: string[] } {
-      return loader.getCacheStats?.() ?? { size: 0, keys: [] }
-    },
+  clearAllCache(): { size: number; keys: string[] } {
+    const stats = this.loader.getCacheStats?.() ?? { size: 0, keys: [] }
+    this.loader.clearCache()
+    if (typeof localStorage !== 'undefined') {
+      const toRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.startsWith(CACHE_PREFIX)) toRemove.push(key)
+      }
+      for (const key of toRemove) localStorage.removeItem(key)
+    }
+    return stats
+  }
+
+  getCacheStats(): { size: number; keys: string[] } {
+    return this.loader.getCacheStats?.() ?? { size: 0, keys: [] }
   }
 }
 

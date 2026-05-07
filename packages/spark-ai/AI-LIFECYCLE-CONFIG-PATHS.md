@@ -14,34 +14,34 @@ Core does not own model orchestration or business service state.
 
 - core
   - business-registry
-    - business.register -> `core/runtime/ai-core.ts#createAiCore().registerBusiness`
-    - business.get -> `AiCore.getBusinessRegistration`
-    - business.list -> `AiCore.listBusinessRegistrations`
+    - business.register -> `new AiRuntime().registerBusiness`
+    - business.get -> `AiRuntime.getBusinessRegistration`
+    - business.list -> `AiRuntime.listBusinessRegistrations`
   - instance
-    - instance.start -> `AiCore.startSession({ businessId })`
-    - instance.resume -> `AiCore.startSession({ businessId, instanceId })`
-    - instance.pause -> `AiCore.stopSession({ instanceId, mode: 'pause' })`
-    - instance.stop -> `AiCore.stopSession({ instanceId, mode: 'stop' })`
-    - instance.list -> `AiCore.listInstances`
-    - instance.detail -> `AiCore.getInstanceDetail`
+    - instance.start -> `AiRuntime.startSession({ businessId })`
+    - instance.resume -> `AiRuntime.startSession({ businessId, instanceId })`
+    - instance.pause -> `AiRuntime.stopSession({ instanceId, mode: 'pause' })`
+    - instance.stop -> `AiRuntime.stopSession({ instanceId, mode: 'stop' })`
+    - instance.list -> `AiRuntime.listInstances`
+    - instance.detail -> `AiRuntime.getInstanceDetail`
   - exposure
-    - exposure.business -> `AiCoreStartSessionResult.business`
-    - exposure.module -> `AiCoreInstanceDetail.modules`
-    - exposure.function -> `AiCore.getAvailableFunctions(instanceId)`
+    - exposure.business -> `AiRuntimeStartSessionResult.business`
+    - exposure.module -> `AiRuntimeInstanceDetail.modules`
+    - exposure.function -> `AiRuntime.getAvailableFunctions(instanceId)`
   - history
-    - history.append-message -> `AiCore.appendMessages`
-    - history.append-function-call -> `AiCore.executeFunctionCall`
-    - history.exposure-snapshot -> `AiCore.startSession` / `AiCore.executeFunctionCall`
-    - history.query -> `AiCore.getSessionHistory`
+    - history.append-message -> `AiRuntime.appendMessages`
+    - history.append-function-call -> `AiRuntime.executeFunctionCall`
+    - history.exposure-snapshot -> `AiRuntime.startSession` / `AiRuntime.executeFunctionCall`
+    - history.query -> `AiRuntime.getSessionHistory`
   - function
-    - function.available -> `AiCore.getAvailableFunctions`
-    - function.execute -> `AiCore.executeFunctionCall`
+    - function.available -> `AiRuntime.getAvailableFunctions`
+    - function.execute -> `AiRuntime.executeFunctionCall`
   - event
-    - event.subscribe -> `AiCore.subscribe`
+    - event.subscribe -> `AiRuntime.subscribe`
   - knowledge
-    - payload.register -> `registerKnowledgePayloadProvider`
-    - payload.query -> `KnowledgePayloadProviderRegistry.queryPayloads`
-    - payload.guide -> `KnowledgePayloadProviderRegistry.guidePayload`
+    - payload.register -> `KnowledgePayloadRegistry.register`
+    - payload.query -> `KnowledgePayloadRegistry.defaultRegistry.queryPayloads`
+    - payload.guide -> `KnowledgePayloadRegistry.defaultRegistry.guidePayload`
 
 - business
   - registration

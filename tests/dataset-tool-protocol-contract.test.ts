@@ -5,12 +5,10 @@ import {
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
 } from '../packages/spark-data/src'
 import {
-  DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE,
-  DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE,
-  getDataSetCrudToolFunctionCapabilityRow,
-  getDataSetCrudToolFunctionParameterRow,
-  validateDataSetCrudToolFunctionParams,
+  PageDesignDatasetCatalog,
 } from '../packages/spark-ai/src/business/page-design/functions/dataset'
+
+const catalog = new PageDesignDatasetCatalog()
 
 const REMOVED_ACTIONS = new Set(['pageDesign@dataset@listAggregates', 'pageDesign@dataset@getAggregate'])
 const LEGACY_EXAMPLE_ACTIONS = new Set(['pageDesign@dataset@getAggregate', 'pageDesign@dataset@setComputeExpression'])
@@ -21,15 +19,15 @@ function isActiveAction(action: string): boolean {
 
 describe('dataset tool protocol contract', () => {
   it('keeps action table and capability table aligned', () => {
-    const activeParameterRows = DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE.filter(row => isActiveAction(row.action))
-    const activeCapabilityRows = DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE.filter(row => isActiveAction(row.action))
+    const activeParameterRows = catalog.parameterTable.filter(row => isActiveAction(row.action))
+    const activeCapabilityRows = catalog.capabilityTable.filter(row => isActiveAction(row.action))
 
     expect(activeParameterRows.length).toBeGreaterThan(0)
     expect(activeCapabilityRows.length).toBe(activeParameterRows.length)
 
     for (const row of activeParameterRows) {
       expect(row.action.startsWith('pageDesign@dataset@')).toBe(true)
-      const cap = getDataSetCrudToolFunctionCapabilityRow(row.action)
+      const cap = catalog.getCapabilityRow(row.action)
       expect(cap).toBeDefined()
       expect(cap?.paramsRef).toBe(row.action)
       expect(cap?.crudToolMethod).toBe(row.crudToolMethod)
@@ -37,16 +35,16 @@ describe('dataset tool protocol contract', () => {
   })
 
   it('accepts catalog examples as valid protocol payloads', () => {
-    for (const row of DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE.filter(item => isActiveAction(item.action))) {
+    for (const row of catalog.parameterTable.filter(item => isActiveAction(item.action))) {
       if (LEGACY_EXAMPLE_ACTIONS.has(row.action)) continue
-      const error = validateDataSetCrudToolFunctionParams(row.action, row.example)
+      const error = catalog.validateParams(row.action, row.example)
       expect(error, `${row.action} example should pass validator`).toBeNull()
     }
   })
 
   it('can resolve a known action row from both indexes', () => {
-    const row = getDataSetCrudToolFunctionParameterRow('pageDesign@dataset@createTable')
-    const cap = getDataSetCrudToolFunctionCapabilityRow('pageDesign@dataset@createTable')
+    const row = catalog.getParameterRow('pageDesign@dataset@createTable')
+    const cap = catalog.getCapabilityRow('pageDesign@dataset@createTable')
 
     expect(row).toMatchObject({
       action: 'pageDesign@dataset@createTable',
@@ -62,18 +60,18 @@ describe('dataset tool protocol contract', () => {
   })
 
   it('fails fast for unknown action in validator', () => {
-    const error = validateDataSetCrudToolFunctionParams('pageDesign@dataset@notExists', {})
+    const error = catalog.validateParams('pageDesign@dataset@notExists', {})
     expect(error).not.toBeNull()
     expect(error).toContain('pageDesign@dataset@notExists')
   })
 
   it('does not expose removed legacy signatures in protocol lookup', () => {
-    const legacyDeleteRelation = getDataSetCrudToolFunctionParameterRow('pageDesign@dataset@deleteRelationLegacy')
+    const legacyDeleteRelation = catalog.getParameterRow('pageDesign@dataset@deleteRelationLegacy')
     expect(legacyDeleteRelation).toBeUndefined()
   })
 
   it('exposes recommended enum dictionaries for table semantic metadata fields', () => {
-    const row = getDataSetCrudToolFunctionParameterRow('pageDesign@dataset@updateTable')
+    const row = catalog.getParameterRow('pageDesign@dataset@updateTable')
 
     expect(row?.paramsSchema).toMatchObject({
       resourceType: {
@@ -94,25 +92,25 @@ describe('dataset tool protocol contract', () => {
   })
 
   it('accepts recommended, custom, and nullable semantic metadata values while rejecting wrong types', () => {
-    expect(validateDataSetCrudToolFunctionParams('pageDesign@dataset@updateTable', {
+    expect(catalog.validateParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: 'database-view',
       businessCategory: 'reference',
     })).toBeNull()
 
-    expect(validateDataSetCrudToolFunctionParams('pageDesign@dataset@updateTable', {
+    expect(catalog.validateParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: 'erp-materialized-view',
       businessCategory: 'lookup',
     })).toBeNull()
 
-    expect(validateDataSetCrudToolFunctionParams('pageDesign@dataset@updateTable', {
+    expect(catalog.validateParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: null,
       businessCategory: null,
     })).toBeNull()
 
-    expect(validateDataSetCrudToolFunctionParams('pageDesign@dataset@updateTable', {
+    expect(catalog.validateParams('pageDesign@dataset@updateTable', {
       tableName: 'Users',
       resourceType: 123,
     })).toContain('resourceType')

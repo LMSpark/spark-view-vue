@@ -2,12 +2,11 @@ import { onUnmounted, shallowRef } from 'vue'
 import type { ShallowRef } from 'vue'
 import { createFetchClient } from '@spark-view/spark-utils'
 import {
-  PAGE_DESIGN_BUSINESS,
-  createAiCore,
-  createPageDesignBusinessRegistration,
-  type AiCore,
-  type AiCoreFunctionExposure,
-  type AiCoreStartSessionResult,
+  AiRuntime,
+  PageDesignBusiness,
+  type AiRuntimeApi,
+  type AiRuntimeFunctionExposure,
+  type AiRuntimeStartSessionResult,
   type EditToolHost,
 } from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
@@ -21,7 +20,7 @@ export interface PageModelFunctionContext {
   sessionKey: string
   instanceId: string
   businessId: string
-  availableFunctions: readonly AiCoreFunctionExposure[]
+  availableFunctions: readonly AiRuntimeFunctionExposure[]
 }
 
 export interface PageModelBackendMessage {
@@ -41,7 +40,7 @@ export interface PageModelBackendTurnResult {
 }
 
 export interface PageModelSessionHost {
-  core: AiCore
+  core: AiRuntimeApi
   context: ShallowRef<PageModelFunctionContext | null>
   ensureSession: () => Promise<PageModelFunctionContext>
   reset: () => Promise<void>
@@ -59,7 +58,7 @@ export interface PageModelSessionHost {
   executeBackendTurn: (signal?: AbortSignal) => Promise<PageModelBackendTurnResult>
 }
 
-function createContext(sessionKey: string, session: AiCoreStartSessionResult): PageModelFunctionContext {
+function createContext(sessionKey: string, session: AiRuntimeStartSessionResult): PageModelFunctionContext {
   return {
     sessionKey,
     instanceId: session.instanceId,
@@ -76,8 +75,8 @@ function createRecordIdFactory(): (kind: 'event' | 'message' | 'functionCall' | 
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions): PageModelSessionHost {
   const { getEditToolHost, getSessionKey } = options
   const http = createFetchClient()
-  const core = createAiCore({ createRecordId: createRecordIdFactory() })
-  core.registerBusiness(createPageDesignBusinessRegistration({ getEditToolHost }))
+  const core = new AiRuntime({ createRecordId: createRecordIdFactory() })
+  core.registerBusiness(new PageDesignBusiness({ getEditToolHost }))
 
   const context = shallowRef<PageModelFunctionContext | null>(null)
   let backendSessionId: string | undefined
@@ -110,7 +109,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
       await reset()
     }
 
-    const session = await core.startSession({ businessId: PAGE_DESIGN_BUSINESS })
+    const session = await core.startSession({ businessId: PageDesignBusiness.businessId })
     const nextContext = createContext(sessionKey, session)
     context.value = nextContext
     return nextContext

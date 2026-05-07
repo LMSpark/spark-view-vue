@@ -4,41 +4,41 @@
 // core 负责把业务注册事实投影给 LLM，并按 business@module@function 分发调用。
 
 export type {
-  AiCore,
-  AiCoreAction,
-  AiCoreAppendMessage,
-  AiCoreAppendMessagesOptions,
+  AiRuntimeApi,
+  AiRuntimeAction,
+  AiRuntimeAppendMessage,
+  AiRuntimeAppendMessagesOptions,
   AiBusinessRegistration,
   AiBusinessModuleRegistration,
   AiBusinessServiceStatus,
-  AiCoreEvent,
-  AiCoreEventListener,
-  AiCoreEventType,
-  AiCoreExecuteFunctionCallOptions,
-  AiCoreExecuteFunctionCallResult,
-  AiCoreBusinessExposure,
-  AiCoreFunctionCallRecord,
-  AiCoreFunctionCallResult,
-  AiCoreFunctionExposure,
-  AiCoreFunctionExposureSnapshot,
-  AiCoreHistoryMessage,
-  AiCoreHistorySnapshot,
-  AiCoreInstanceDetail,
-  AiCoreInstanceSnapshot,
-  AiCoreInstanceStatus,
-  AiCoreLifecycleMarker,
-  AiCoreMessageRole,
-  AiCoreBusinessId,
-  AiCoreFunctionId,
-  AiCoreModuleExposure,
-  AiCoreModuleId,
-  AiCoreOptions,
-  AiCoreStartSessionOptions,
-  AiCoreStartSessionResult,
-  AiCoreStopMode,
-  AiCoreStopSessionOptions,
-  AiCoreStopSessionResult,
-  AiCoreSessionScope,
+  AiRuntimeEvent,
+  AiRuntimeEventListener,
+  AiRuntimeEventType,
+  AiRuntimeExecuteFunctionCallOptions,
+  AiRuntimeExecuteFunctionCallResult,
+  AiRuntimeBusinessExposure,
+  AiRuntimeFunctionCallRecord,
+  AiRuntimeFunctionCallResult,
+  AiRuntimeFunctionExposure,
+  AiRuntimeFunctionExposureSnapshot,
+  AiRuntimeHistoryMessage,
+  AiRuntimeHistorySnapshot,
+  AiRuntimeInstanceDetail,
+  AiRuntimeInstanceSnapshot,
+  AiRuntimeInstanceStatus,
+  AiRuntimeLifecycleMarker,
+  AiRuntimeMessageRole,
+  AiRuntimeBusinessId,
+  AiRuntimeFunctionId,
+  AiRuntimeModuleExposure,
+  AiRuntimeModuleId,
+  AiRuntimeOptions,
+  AiRuntimeStartSessionOptions,
+  AiRuntimeStartSessionResult,
+  AiRuntimeStopMode,
+  AiRuntimeStopSessionOptions,
+  AiRuntimeStopSessionResult,
+  AiRuntimeSessionScope,
   AiFunctionRegistration,
   FunctionFailureMode,
   FunctionExecutionContext,
@@ -48,14 +48,33 @@ export type {
 } from './protocol/business-contracts'
 
 export {
-  createAiCore,
-} from './runtime/ai-core'
+  AiRuntime,
+} from './runtime/ai-runtime'
 
 export {
-  KnowledgePayloadProviderRegistry,
-  createKnowledgePayloadProviderRegistry,
-  getKnowledgePayloadProviderRegistry,
-  registerKnowledgePayloadProvider,
+  AiInvocationProtocol,
+} from './protocol/invocation-helpers'
+
+export type {
+  ActionAddressParts,
+  ProtocolRole,
+  ProtocolMessage,
+  TokenUsage,
+  StreamCallbacks,
+} from './protocol/invocation-helpers'
+
+export {
+  LlmParamsValidator,
+} from './protocol/llm-params-validator'
+
+export type {
+  LlmParamValidationIssue,
+  LlmParamValidationOptions,
+  LlmParamValidationResult,
+} from './protocol/llm-params-validator'
+
+export {
+  KnowledgePayloadRegistry,
 } from './knowledge/payload-provider-registry'
 
 export type {

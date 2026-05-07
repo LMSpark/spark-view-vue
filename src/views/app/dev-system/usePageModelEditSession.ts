@@ -1,11 +1,11 @@
 import { onUnmounted, ref, shallowRef } from 'vue'
 import type { ToolLogEntry } from '@spark-view/spark-component'
 import {
-  PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
-  isEditWriteAction,
-  type AiCoreAction,
-  type AiCoreFunctionCallResult,
-  type AiCoreFunctionExposure,
+  PageDesignEditActionClassifier,
+  PageDesignEditRuntimePrompt,
+  type AiRuntimeAction,
+  type AiRuntimeFunctionCallResult,
+  type AiRuntimeFunctionExposure,
   type EditToolHost,
   type PageDesignNodeTree,
 } from '@spark-view/spark-ai'
@@ -26,7 +26,7 @@ export interface DialogueTurn {
   text?: string
   reasoning?: string
   toolBlock?: DialogueToolBlock
-  functionResult?: AiCoreFunctionCallResult<unknown>
+  functionResult?: AiRuntimeFunctionCallResult<unknown>
   elapsed?: number
 }
 
@@ -149,7 +149,7 @@ function projectSchemaNode(node: unknown): Record<string, unknown> {
   }
 }
 
-function createToolProjection(functions: readonly AiCoreFunctionExposure[]): {
+function createToolProjection(functions: readonly AiRuntimeFunctionExposure[]): {
   tools: ReadonlyArray<Record<string, unknown>>
   nameToAction: ReadonlyMap<string, string>
 } {
@@ -205,7 +205,7 @@ function normalizeToolCalls(value: unknown): ParsedToolCall[] {
     .filter((item): item is ParsedToolCall => item !== null)
 }
 
-function toolResultMessage(call: ParsedToolCall, result: AiCoreFunctionCallResult<unknown>): PageModelBackendMessage {
+function toolResultMessage(call: ParsedToolCall, result: AiRuntimeFunctionCallResult<unknown>): PageModelBackendMessage {
   return {
     role: 'tool',
     content: JSON.stringify(result),
@@ -214,6 +214,8 @@ function toolResultMessage(call: ParsedToolCall, result: AiCoreFunctionCallResul
 }
 
 export function usePageModelEditSession(options: PageModelEditSessionOptions) {
+  const editActionClassifier = new PageDesignEditActionClassifier()
+  const runtimePrompt = new PageDesignEditRuntimePrompt()
   const ready = ref(false)
   const dirty = ref(false)
   const busy = ref(false)
@@ -254,7 +256,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
       return
     }
     await options.sessionHost.createBackendSession({
-      systemPrompt: PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
+      systemPrompt: runtimePrompt.content,
       userPrompt: prompt,
       tools,
       ...(signal !== undefined ? { signal } : {}),
@@ -268,7 +270,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
 
     const context = await options.sessionHost.ensureSession()
     const availableFunctions = hooks.toolMode === 'describe-only'
-      ? context.availableFunctions.filter(definition => !isEditWriteAction(definition.action))
+      ? context.availableFunctions.filter(definition => !editActionClassifier.isWriteAction(definition.action))
       : context.availableFunctions
     const projection = createToolProjection(availableFunctions)
 
@@ -312,13 +314,13 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
           if (actionText === undefined) {
             throw new Error(`未知 AI 工具调用：${call.name}`)
           }
-          const action = actionText as AiCoreAction
+          const action = actionText as AiRuntimeAction
           const output = await options.sessionHost.core.executeFunctionCall({
             instanceId: context.instanceId,
             action,
             args: call.args,
           })
-          if (isEditWriteAction(action) && output.result.ok) writeCount += 1
+          if (editActionClassifier.isWriteAction(action) && output.result.ok) writeCount += 1
           const elapsed = Math.max(0, Math.round(performance.now() - turnStartedAt))
           const dialogueTurn: DialogueTurn = {
             round: rounds,

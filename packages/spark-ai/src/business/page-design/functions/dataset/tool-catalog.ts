@@ -1,9 +1,12 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { FunctionFailureMode } from '../../../../core'
 import {
-  formatLlmParamValidationIssues,
-  validateLlmDeserializedParams,
-} from '../../../../core/protocol/llm-params-validator'
+  type FunctionFailureMode,
+  LlmParamsValidator,
+} from '../../../../core'
+import {
+  createPageDesignCapabilityRow,
+  PageDesignToolCatalog,
+} from '../tool-catalog'
 
 type MethodKey<T> = Extract<{
   [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
@@ -379,21 +382,9 @@ const defineRequestRow = (row: DatasetCrudToolFunctionRowWithoutType): DatasetCr
 })
 
 function toCapabilityRow(row: DatasetCrudToolFunctionParameterRow): DatasetCrudToolFunctionCapabilityRow {
-  return {
-    action: row.action,
-    type: row.type,
-    target: row.target,
-    crudToolMethod: row.crudToolMethod,
-    description: row.description,
-    integrationStatus: 'runtime-wired',
-    paramsRef: row.action,
-    ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
-    ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
-    ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
-  }
+  return createPageDesignCapabilityRow(row, 'runtime-wired', { crudToolMethod: row.crudToolMethod })
 }
-export const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
+const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
   defineDescribeRow({
     action: 'pageDesign@dataset@export',
     target: 'dataset',
@@ -2010,20 +2001,24 @@ export const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
 ] as const satisfies readonly DatasetCrudToolFunctionParameterRow[]
-export const DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE: readonly DatasetCrudToolFunctionCapabilityRow[] =
+const DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE: readonly DatasetCrudToolFunctionCapabilityRow[] =
   DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
-export function getDataSetCrudToolFunctionParameterRow(action: string): DatasetCrudToolFunctionParameterRow | undefined {
-  return DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE.find((row) => row.action === action)
-}
-export function getDataSetCrudToolFunctionCapabilityRow(action: string): DatasetCrudToolFunctionCapabilityRow | undefined {
-  return DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE.find((row) => row.action === action)
-}
-export function validateDataSetCrudToolFunctionParams(action: string, params: unknown): string | null {
-  const row = getDataSetCrudToolFunctionParameterRow(action)
-  if (row === undefined) {
-    return `未知 datasetTool 动作: ${action}`
+
+export class PageDesignDatasetCatalog extends PageDesignToolCatalog<
+  DatasetCrudToolFunctionParameterRow,
+  DatasetCrudToolFunctionCapabilityRow
+> {
+  constructor() {
+    super(DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE, DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE)
   }
 
-  const result = validateLlmDeserializedParams(params, row.paramsSchema, row.validation)
-  return result.ok ? null : formatLlmParamValidationIssues(result.issues)
+  validateParams(action: string, params: unknown): string | null {
+    const row = this.getParameterRow(action)
+    if (row === undefined) {
+      return `未知 datasetTool 动作: ${action}`
+    }
+
+    const result = LlmParamsValidator.validateLlmDeserializedParams(params, row.paramsSchema, row.validation)
+    return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+  }
 }

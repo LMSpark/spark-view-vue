@@ -1,15 +1,15 @@
 import componentCatalogJson from '../../../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../../../catalog/types'
 import { projectComponentConfigGuide, projectFunctionCatalog } from '../../../catalog/catalog-projections'
-import { registerKnowledgePayloadProvider } from '../../../core/knowledge/payload-provider-registry'
-import type {
-  KnowledgePayloadGuide,
-  KnowledgePayloadProvider,
-  KnowledgePayloadQueryFilter,
-  KnowledgePayloadSummary,
-} from '../../../core/protocol/knowledge-payload-contracts'
+import {
+  KnowledgePayloadRegistry,
+  type KnowledgePayloadGuide,
+  type KnowledgePayloadProvider,
+  type KnowledgePayloadQueryFilter,
+  type KnowledgePayloadSummary,
+} from '../../../core'
 
-export const PAGE_DESIGN_COMPONENT_PAYLOAD_REF = 'page-design.component'
+const PAGE_DESIGN_COMPONENT_PAYLOAD_REF = 'page-design.component'
 
 const PAGE_DESIGN_FUNCTION_CATALOG = projectFunctionCatalog(componentCatalogJson as ComponentCatalog)
 
@@ -133,31 +133,34 @@ function buildPayloadGuide(type: string): KnowledgePayloadGuide | null {
   }
 }
 
-export function createPageDesignComponentPayloadProvider(): KnowledgePayloadProvider {
-  return {
-    payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
-    description: 'Page Design SparkNode 组件参数荷载目录；key 为组件 type，如 r-table。',
-    queryPayloads(filter?: KnowledgePayloadQueryFilter): KnowledgePayloadSummary[] {
-      const normalizedFilter = normalizeFilter(filter)
-      return Object.entries(PAGE_DESIGN_FUNCTION_CATALOG.components)
-        .map(([key, entry]) => ({
-          payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
-          key,
-          category: entry.category,
-          description: entry.description,
-          tags: [entry.category],
-        }))
-        .filter(summary => matchesFilter(summary, normalizedFilter))
-        .sort((left, right) => left.key.localeCompare(right.key))
-    },
-    guidePayload(key: string): KnowledgePayloadGuide | null {
-      const normalizedKey = key.trim()
-      if (normalizedKey.length === 0) return null
-      return buildPayloadGuide(normalizedKey)
-    },
-  }
-}
+export class PageDesignComponentPayloadProvider implements KnowledgePayloadProvider {
+  static readonly payloadRef = PAGE_DESIGN_COMPONENT_PAYLOAD_REF
 
-export function registerPageDesignPayloadProviders(): void {
-  registerKnowledgePayloadProvider(createPageDesignComponentPayloadProvider())
+  readonly payloadRef = PAGE_DESIGN_COMPONENT_PAYLOAD_REF
+
+  readonly description = 'Page Design SparkNode 组件参数荷载目录；key 为组件 type，如 r-table。'
+
+  queryPayloads(filter?: KnowledgePayloadQueryFilter): KnowledgePayloadSummary[] {
+    const normalizedFilter = normalizeFilter(filter)
+    return Object.entries(PAGE_DESIGN_FUNCTION_CATALOG.components)
+      .map(([key, entry]) => ({
+        payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
+        key,
+        category: entry.category,
+        description: entry.description,
+        tags: [entry.category],
+      }))
+      .filter(summary => matchesFilter(summary, normalizedFilter))
+      .sort((left, right) => left.key.localeCompare(right.key))
+  }
+
+  guidePayload(key: string): KnowledgePayloadGuide | null {
+    const normalizedKey = key.trim()
+    if (normalizedKey.length === 0) return null
+    return buildPayloadGuide(normalizedKey)
+  }
+
+  register(): void {
+    KnowledgePayloadRegistry.register(this)
+  }
 }

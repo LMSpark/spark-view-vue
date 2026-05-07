@@ -1,4 +1,8 @@
 import type { FunctionFailureMode } from '../../../../core'
+import {
+  createPageDesignCapabilityRow,
+  PageDesignToolCatalog,
+} from '../tool-catalog'
 
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionTarget = 'script' | 'style'
@@ -53,22 +57,10 @@ const defineRequestRow = (row: TextModelFunctionRowWithoutType): TextModelFuncti
 })
 
 function toCapabilityRow(row: TextModelFunctionParameterRow): TextModelFunctionCapabilityRow {
-  return {
-    action: row.action,
-    type: row.type,
-    target: row.target,
-    fileKey: row.fileKey,
-    description: row.description,
-    integrationStatus: 'runtime-wired',
-    paramsRef: row.action,
-    ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
-    ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
-    ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
-  }
+  return createPageDesignCapabilityRow(row, 'runtime-wired', { fileKey: row.fileKey })
 }
 
-export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
+const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
   defineDescribeRow({
     action: 'pageDesign@textModel@readScript',
     target: 'script',
@@ -160,40 +152,33 @@ export const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
   }),
 ] as const satisfies readonly TextModelFunctionParameterRow[]
 
-export const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
+const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
 
-const TEXT_MODEL_FUNCTION_PARAMETER_INDEX = new Map<string, TextModelFunctionParameterRow>(
-  TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map((row) => [row.action, row]),
-)
-
-const TEXT_MODEL_FUNCTION_CAPABILITY_INDEX = new Map<string, TextModelFunctionCapabilityRow>(
-  TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE.map((row) => [row.action, row]),
-)
-
-export function getTextModelFunctionParameterRow(action: string): TextModelFunctionParameterRow | undefined {
-  return TEXT_MODEL_FUNCTION_PARAMETER_INDEX.get(action)
-}
-
-export function getTextModelFunctionCapabilityRow(action: string): TextModelFunctionCapabilityRow | undefined {
-  return TEXT_MODEL_FUNCTION_CAPABILITY_INDEX.get(action)
-}
-
-export function validateTextModelFunctionParams(action: string, params: unknown): string | null {
-  const row = getTextModelFunctionParameterRow(action)
-  if (row === undefined) {
-    return `未知 textModel 动作: ${action}`
+export class PageDesignTextModelCatalog extends PageDesignToolCatalog<
+  TextModelFunctionParameterRow,
+  TextModelFunctionCapabilityRow
+> {
+  constructor() {
+    super(TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE, TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE)
   }
 
-  if (row.type === 'describe') {
-    if (params === undefined || params === null) return null
-    if (typeof params === 'object' && !Array.isArray(params) && Object.keys(params).length === 0) return null
-    return `${action} 不接受参数，请传 {} 或留空`
-  }
+  validateParams(action: string, params: unknown): string | null {
+    const row = this.getParameterRow(action)
+    if (row === undefined) {
+      return `未知 textModel 动作: ${action}`
+    }
 
-  if (typeof params !== 'object' || params === null || Array.isArray(params)) {
-    return `${action} 参数必须是对象，且包含 content（string）`
-  }
+    if (row.type === 'describe') {
+      if (params === undefined || params === null) return null
+      if (typeof params === 'object' && !Array.isArray(params) && Object.keys(params).length === 0) return null
+      return `${action} 不接受参数，请传 {} 或留空`
+    }
 
-  const content = (params as { content?: unknown }).content
-  return typeof content === 'string' ? null : `${action} 缺少 content（string）`
+    if (typeof params !== 'object' || params === null || Array.isArray(params)) {
+      return `${action} 参数必须是对象，且包含 content（string）`
+    }
+
+    const content = (params as { content?: unknown }).content
+    return typeof content === 'string' ? null : `${action} 缺少 content（string）`
+  }
 }

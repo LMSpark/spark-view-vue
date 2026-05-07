@@ -29,81 +29,75 @@ function assertPresent<T>(value: T | null | undefined, message: string): T {
   return value
 }
 
-export function createEditState(): EditState {
-  return {
-    phase: 'idle',
-    toolHost: null,
+export class PageDesignEditSession implements EditState {
+  phase: EditPhase = 'idle'
+
+  toolHost: EditToolHost | null = null
+
+  bindLiveModelAdapter(host: EditToolHost): void {
+    this.toolHost = host
   }
-}
 
-export function bindLiveModelAdapter(state: EditState, host: EditToolHost): void {
-  state.toolHost = host
-}
+  getActiveNodeTree(): PageDesignNodeTree | null {
+    return this.toolHost?.getNodeTree?.() ?? null
+  }
 
-export function getActiveNodeTree(state: EditState): PageDesignNodeTree | null {
-  return state.toolHost?.getNodeTree?.() ?? null
-}
+  notifyNodeTreeChanged(nodeTree: PageDesignNodeTree): void {
+    this.toolHost?.onNodeTreeChanged?.(nodeTree)
+  }
 
-export function notifyNodeTreeChanged(state: EditState, nodeTree: PageDesignNodeTree): void {
-  state.toolHost?.onNodeTreeChanged?.(nodeTree)
-}
+  getActiveDataSetTool(): DataSetCrudTool | null {
+    return this.toolHost?.getDataSetTool?.() ?? null
+  }
 
-export function getActiveDataSetTool(state: EditState): DataSetCrudTool | null {
-  return state.toolHost?.getDataSetTool?.() ?? null
-}
+  notifyDataSetChanged(tool: DataSetCrudTool): void {
+    this.toolHost?.onDataSetChanged?.(tool)
+  }
 
-export function notifyDataSetChanged(state: EditState, tool: DataSetCrudTool): void {
-  state.toolHost?.onDataSetChanged?.(tool)
-}
+  readActiveScript(): string {
+    return this.readTextModel(
+      'readScript',
+      'readActiveScript 失败：缺少 live text model 读取器（EditToolHost.readScript）',
+    )
+  }
 
-function readTextModel(state: EditState, readKey: TextModelReadKey, missingMessage: string): string {
-  return assertPresent(state.toolHost?.[readKey], missingMessage)()
-}
+  writeActiveScript(content: string): void {
+    this.writeTextModel(
+      'readScript',
+      'writeScript',
+      'writeActiveScript 失败：缺少 live text model 读写器（EditToolHost.readScript/writeScript）',
+      content,
+    )
+  }
 
-function writeTextModel(
-  state: EditState,
-  readKey: TextModelReadKey,
-  writeKey: TextModelWriteKey,
-  missingMessage: string,
-  content: string,
-): void {
-  const writer = assertPresent(state.toolHost?.[writeKey], missingMessage)
-  assertPresent(state.toolHost?.[readKey], missingMessage)
-  writer(content)
-}
+  readActiveStyle(): string {
+    return this.readTextModel(
+      'readStyle',
+      'readActiveStyle 失败：缺少 live text model 读取器（EditToolHost.readStyle）',
+    )
+  }
 
-export function readActiveScript(state: EditState): string {
-  return readTextModel(
-    state,
-    'readScript',
-    'readActiveScript 失败：缺少 live text model 读取器（EditToolHost.readScript）',
-  )
-}
+  writeActiveStyle(content: string): void {
+    this.writeTextModel(
+      'readStyle',
+      'writeStyle',
+      'writeActiveStyle 失败：缺少 live text model 读写器（EditToolHost.readStyle/writeStyle）',
+      content,
+    )
+  }
 
-export function writeActiveScript(state: EditState, content: string): void {
-  writeTextModel(
-    state,
-    'readScript',
-    'writeScript',
-    'writeActiveScript 失败：缺少 live text model 读写器（EditToolHost.readScript/writeScript）',
-    content,
-  )
-}
+  private readTextModel(readKey: TextModelReadKey, missingMessage: string): string {
+    return assertPresent(this.toolHost?.[readKey], missingMessage)()
+  }
 
-export function readActiveStyle(state: EditState): string {
-  return readTextModel(
-    state,
-    'readStyle',
-    'readActiveStyle 失败：缺少 live text model 读取器（EditToolHost.readStyle）',
-  )
-}
-
-export function writeActiveStyle(state: EditState, content: string): void {
-  writeTextModel(
-    state,
-    'readStyle',
-    'writeStyle',
-    'writeActiveStyle 失败：缺少 live text model 读写器（EditToolHost.readStyle/writeStyle）',
-    content,
-  )
+  private writeTextModel(
+    readKey: TextModelReadKey,
+    writeKey: TextModelWriteKey,
+    missingMessage: string,
+    content: string,
+  ): void {
+    const writer = assertPresent(this.toolHost?.[writeKey], missingMessage)
+    assertPresent(this.toolHost?.[readKey], missingMessage)
+    writer(content)
+  }
 }

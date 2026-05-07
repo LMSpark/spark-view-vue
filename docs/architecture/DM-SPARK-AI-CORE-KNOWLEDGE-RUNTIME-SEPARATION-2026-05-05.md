@@ -403,7 +403,7 @@ registerEditStills()
   -> registerDomain(editDomain)
     -> Domain registry 记录 edit state 工厂
     -> Still registry 注册 pageDesign lifecycle/text-model/dataset/node-tree/edit stills
-  -> registerKnowledgePayloadProvider(pageDesignComponentPayloadProvider)
+  -> KnowledgePayloadRegistry.register(pageDesignComponentPayloadProvider)
   -> registerAll(metaStills)
     -> core@knowledge@queryTools / guideTool / queryPayloads / guidePayload
     -> core@session@describe / core@interaction@ask

@@ -1,4 +1,8 @@
 import type { FunctionFailureMode } from '../../../../core'
+import {
+  createPageDesignCapabilityRow,
+  PageDesignToolCatalog,
+} from '../tool-catalog'
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'
@@ -37,21 +41,10 @@ const BOOTSTRAP_RULE = 'pageDesign@lifecycle@bootstrap 仅做 live adapter 可�
 const PHASE_RULE = '执行成功后进入 editing phase。'
 
 function toCapabilityRow(row: EditLifecycleFunctionParameterRow): EditLifecycleFunctionCapabilityRow {
-  return {
-    action: row.action,
-    type: row.type,
-    target: row.target,
-    description: row.description,
-    integrationStatus: 'runtime-wired',
-    paramsRef: row.action,
-    ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
-    ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
-    ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
-  }
+  return createPageDesignCapabilityRow(row, 'runtime-wired')
 }
 
-export const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE = [
+const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE = [
   {
     action: 'pageDesign@lifecycle@bootstrap',
     type: 'request',
@@ -101,31 +94,24 @@ export const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE = [
   },
 ] as const satisfies readonly EditLifecycleFunctionParameterRow[]
 
-export const EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE = EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map(toCapabilityRow)
+const EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE = EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map(toCapabilityRow)
 
-const EDIT_LIFECYCLE_FUNCTION_PARAMETER_INDEX = new Map<string, EditLifecycleFunctionParameterRow>(
-  EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE.map((row) => [row.action, row]),
-)
-
-const EDIT_LIFECYCLE_FUNCTION_CAPABILITY_INDEX = new Map<string, EditLifecycleFunctionCapabilityRow>(
-  EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE.map((row) => [row.action, row]),
-)
-
-export function getEditLifecycleFunctionParameterRow(action: string): EditLifecycleFunctionParameterRow | undefined {
-  return EDIT_LIFECYCLE_FUNCTION_PARAMETER_INDEX.get(action)
-}
-
-export function getEditLifecycleFunctionCapabilityRow(action: string): EditLifecycleFunctionCapabilityRow | undefined {
-  return EDIT_LIFECYCLE_FUNCTION_CAPABILITY_INDEX.get(action)
-}
-
-export function validateEditLifecycleFunctionParams(action: string, params: unknown): string | null {
-  if (getEditLifecycleFunctionParameterRow(action) === undefined) {
-    return `未知 lifecycle 动作: ${action}`
+export class PageDesignLifecycleCatalog extends PageDesignToolCatalog<
+  EditLifecycleFunctionParameterRow,
+  EditLifecycleFunctionCapabilityRow
+> {
+  constructor() {
+    super(EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE, EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE)
   }
 
-  if (params === undefined || params === null) return null
-  if (typeof params !== 'object' || Array.isArray(params)) return `${action} 参数必须留空或传 {}`
-  if (Object.keys(params).length > 0) return `${action} 不再接收文件快照 payload，请传 {}`
-  return null
+  validateParams(action: string, params: unknown): string | null {
+    if (this.getParameterRow(action) === undefined) {
+      return `未知 lifecycle 动作: ${action}`
+    }
+
+    if (params === undefined || params === null) return null
+    if (typeof params !== 'object' || Array.isArray(params)) return `${action} 参数必须留空或传 {}`
+    if (Object.keys(params).length > 0) return `${action} 不再接收文件快照 payload，请传 {}`
+    return null
+  }
 }

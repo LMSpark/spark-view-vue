@@ -1,23 +1,22 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  getSparkNodeTreeToolCapabilityRow,
-  getSparkNodeTreeToolParameterRow,
-  SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE,
-  SPARK_NODE_TREE_TOOL_PARAMETER_TABLE,
+  PageDesignNodeTreeCatalog,
 } from '../packages/spark-ai/src/business/page-design/functions/node-tree'
+
+const catalog = new PageDesignNodeTreeCatalog()
 
 describe('SparkNodeTree tool catalog', () => {
   it('应提供完整的 catalog-only 参数表与能力表', () => {
-    expect(SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.length).toBeGreaterThan(0)
-    expect(SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE.length).toBe(SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.length)
-    expect(SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE.every(row => row.integrationStatus === 'catalog-only')).toBe(true)
-    expect(SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.every(row => row.action.startsWith('pageDesign@nodeTree@'))).toBe(true)
+    expect(catalog.parameterTable.length).toBeGreaterThan(0)
+    expect(catalog.capabilityTable.length).toBe(catalog.parameterTable.length)
+    expect(catalog.capabilityTable.every(row => row.integrationStatus === 'catalog-only')).toBe(true)
+    expect(catalog.parameterTable.every(row => row.action.startsWith('pageDesign@nodeTree@'))).toBe(true)
   })
 
   it('应能按 action 查询参数行和能力行', () => {
-    const paramRow = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@setProps')
-    const capabilityRow = getSparkNodeTreeToolCapabilityRow('pageDesign@nodeTree@setProps')
+    const paramRow = catalog.getParameterRow('pageDesign@nodeTree@setProps')
+    const capabilityRow = catalog.getCapabilityRow('pageDesign@nodeTree@setProps')
 
     expect(paramRow).toMatchObject({
       action: 'pageDesign@nodeTree@setProps',
@@ -32,8 +31,8 @@ describe('SparkNodeTree tool catalog', () => {
   })
 
   it('catalog 应强调核心层隔离和命名参数约束', () => {
-    const addNode = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@addNode')
-    const listChildren = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@listChildren')
+    const addNode = catalog.getParameterRow('pageDesign@nodeTree@addNode')
+    const listChildren = catalog.getParameterRow('pageDesign@nodeTree@listChildren')
 
     expect(addNode?.usageRules).toContain('本 catalog 只定义函数目录，不接运行时 registry，也不提供 execute 实现。')
     expect(addNode?.usageRules).toContain('运行时应优先使用命名参数对象，而不是位置参数。')
@@ -42,8 +41,8 @@ describe('SparkNodeTree tool catalog', () => {
   })
 
   it('catalog 应对高风险 children 写动作声明必填字段', () => {
-    const addNode = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@addNode')
-    const addNodes = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@addNodes')
+    const addNode = catalog.getParameterRow('pageDesign@nodeTree@addNode')
+    const addNodes = catalog.getParameterRow('pageDesign@nodeTree@addNodes')
 
     expect(addNode?.paramsSchema).toMatchObject({
       kind: 'object',
@@ -56,26 +55,26 @@ describe('SparkNodeTree tool catalog', () => {
   })
 
   it('catalog 应包含批量节点动作，且不暴露历史版本动作', () => {
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@getAllData')?.coreMethod).toBe('getAllData')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@addNodes')?.coreMethod).toBe('addNodes')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@moveNode')?.coreMethod).toBe('moveNode')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@setPropsBatch')?.coreMethod).toBe('setPropsBatch')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@replaceNodes')?.coreMethod).toBe('replaceNodes')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@removeNodes')?.coreMethod).toBe('removeNodes')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@findByType')?.coreMethod).toBe('findByType')
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@undo')).toBeUndefined()
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@redo')).toBeUndefined()
-    expect(getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@listVersions')).toBeUndefined()
+    expect(catalog.getParameterRow('pageDesign@nodeTree@getAllData')?.coreMethod).toBe('getAllData')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@addNodes')?.coreMethod).toBe('addNodes')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@moveNode')?.coreMethod).toBe('moveNode')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@setPropsBatch')?.coreMethod).toBe('setPropsBatch')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@replaceNodes')?.coreMethod).toBe('replaceNodes')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@removeNodes')?.coreMethod).toBe('removeNodes')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@findByType')?.coreMethod).toBe('findByType')
+    expect(catalog.getParameterRow('pageDesign@nodeTree@undo')).toBeUndefined()
+    expect(catalog.getParameterRow('pageDesign@nodeTree@redo')).toBeUndefined()
+    expect(catalog.getParameterRow('pageDesign@nodeTree@listVersions')).toBeUndefined()
   })
 
   it('findByType 应返回可直接用于 componentId 的真实 id 指引', () => {
-    const row = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@findByType')
+    const row = catalog.getParameterRow('pageDesign@nodeTree@findByType')
     const usageRules = row?.usageRules ?? []
     expect(usageRules.some(rule => rule.includes('真实 componentId'))).toBe(true)
   })
 
   it('moveNode 应声明小结果并阻止 remove/add 重建子树', () => {
-    const row = getSparkNodeTreeToolParameterRow('pageDesign@nodeTree@moveNode')
+    const row = catalog.getParameterRow('pageDesign@nodeTree@moveNode')
     expect(row?.paramsSchema).toMatchObject({
       kind: 'object',
       required: ['componentId'],

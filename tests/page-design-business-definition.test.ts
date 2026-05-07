@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  PAGE_DESIGN_BUSINESS,
-  createAiCore,
-  createPageDesignBusinessRegistration,
+  AiRuntime,
+  PageDesignBusiness,
   type EditToolHost,
 } from '../packages/spark-ai/src'
 import type { SparkNodeTree } from '../packages/spark-component/src'
@@ -11,7 +10,7 @@ import type { DataSetCrudTool } from '../packages/spark-data/src'
 
 function createCore() {
   let record = 0
-  return createAiCore({
+  return new AiRuntime({
     createInstanceId: () => 'page-design-1',
     createRecordId: (kind) => `${kind}-${++record}`,
     now: () => 1778040000000 + record,
@@ -50,12 +49,12 @@ describe('pageDesign business definition', () => {
   it('registers pageDesign as business modules and executes through ai core', async () => {
     const core = createCore()
     const { host, reads } = createHost()
-    core.registerBusiness(createPageDesignBusinessRegistration({ getEditToolHost: () => host }))
+    core.registerBusiness(new PageDesignBusiness({ getEditToolHost: () => host }))
 
-    const start = await core.startSession({ businessId: PAGE_DESIGN_BUSINESS })
+    const start = await core.startSession({ businessId: PageDesignBusiness.businessId })
 
     expect(start.instanceId).toBe('page-design-1')
-    expect(start.businessId).toBe(PAGE_DESIGN_BUSINESS)
+    expect(start.businessId).toBe(PageDesignBusiness.businessId)
     expect(start.availableFunctions.some((item) => item.action === 'pageDesign@lifecycle@bootstrap')).toBe(true)
     expect(start.availableFunctions.some((item) => item.action === 'pageDesign@textModel@writeScript')).toBe(true)
     expect(start.availableFunctions.some((item) => item.action === 'pageDesign@nodeTree@countNodes')).toBe(true)
@@ -100,14 +99,14 @@ describe('pageDesign business definition', () => {
 
   it('fails fast when live adapter is missing', async () => {
     const core = createCore()
-    core.registerBusiness(createPageDesignBusinessRegistration({
+    core.registerBusiness(new PageDesignBusiness({
       getEditToolHost: () => ({
         readScript: () => '',
         readStyle: () => '',
       }),
     }))
 
-    const start = await core.startSession({ businessId: PAGE_DESIGN_BUSINESS })
+    const start = await core.startSession({ businessId: PageDesignBusiness.businessId })
     const bootstrap = await core.executeFunctionCall({
       instanceId: start.instanceId,
       action: 'pageDesign@lifecycle@bootstrap',

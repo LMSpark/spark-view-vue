@@ -1,5 +1,3 @@
 export {
-  PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
-  createPageDesignComponentPayloadProvider,
-  registerPageDesignPayloadProviders,
+  PageDesignComponentPayloadProvider,
 } from './component-payload-provider'

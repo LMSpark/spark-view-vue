@@ -1,4 +1,4 @@
-import { createPageCache, type PageCacheHandle } from '@spark-view/spark-ai'
+import { PageDesignPageCache, type PageCacheHandle } from '@spark-view/spark-ai'
 
 interface ConfigLoaderRef {
   clearCache(key?: string): void
@@ -8,7 +8,7 @@ interface ConfigLoaderRef {
 let pageCacheHandle: PageCacheHandle | null = null
 
 export function initPageCacheHandle(loader: ConfigLoaderRef): void {
-  pageCacheHandle = createPageCache(loader)
+  pageCacheHandle = new PageDesignPageCache(loader)
 }
 
 export function clearAllPageCache(): { size: number; keys: string[] } {
