@@ -30,23 +30,47 @@ import {
   type AiRuntimeResolvedFunctionCall,
 } from './ai-runtime-support'
 
+/**
+ * 内存型 AI runtime 编排器。
+ *
+ * 功能边界：
+ * - 拥有 runtime instance、history snapshot、事件分发和函数调用分发。
+ * - 不拥有业务服务实例本身；业务服务通过 `registerBusiness` 注入 metadata 与 hook。
+ * - 所有函数调用都按 `business@module@function` 解析后路由。
+ *
+ * 主流程时序：
+ * 1. `registerBusiness` 注册业务定义。
+ * 2. `startInstance` 为某个 business scope 创建或恢复实例。
+ * 3. `appendMessages` 写入 LLM 对话历史。
+ * 4. `executeFunctionCall` 校验、执行并记录函数调用。
+ * 5. `stopInstance` 或 `stopInstanceByBusinessScope` 暂停/终止实例。
+ */
 export class AiRuntime implements AiRuntimeApi {
+  /** 已注册业务定义，按 registration.businessId 索引。 */
   private readonly businesses = new Map<string, AiBusinessRegistration>()
 
+  /** 当前进程内追踪的 runtime instance，按 runtime 生成 instanceId 索引。 */
   private readonly instances = new Map<string, AiRuntimeInstanceState>()
 
+  /** 业务 scope 到 instanceId 的索引，保证同一 scope 复用同一非终态实例。 */
   private readonly instancesByBusinessInstance = new Map<string, string>()
 
+  /** 实例 ID 生成器，允许测试或宿主应用注入稳定实现。 */
   private readonly createInstanceId: NonNullable<AiRuntimeOptions['createInstanceId']>
 
+  /** 业务投影器：负责生成 promptSnapshot、function exposure 和快照副本。 */
   private readonly projector = new AiRuntimeProjector(AiRuntime.actionOf, AiRuntime.assertId)
 
+  /** 函数执行前的轻量参数校验器。 */
   private readonly argValidator = new AiRuntimeArgValidator()
 
+  /** runtime 事件中心。 */
   private readonly eventHub: AiRuntimeEventHub
 
+  /** runtime 历史写入器。 */
   private readonly history: AiRuntimeHistory
 
+  /** 注入 ID/时钟依赖并初始化内部支持组件。 */
   constructor(options: AiRuntimeOptions = {}) {
     this.createInstanceId = options.createInstanceId ?? AiRuntime.defaultInstanceId
     const createRecordId = options.createRecordId ?? AiRuntime.createDefaultRecordId
@@ -55,6 +79,11 @@ export class AiRuntime implements AiRuntimeApi {
     this.history = new AiRuntimeHistory(createRecordId, now, this.eventHub, this.projector)
   }
 
+  /**
+   * 注册业务定义，并校验所有暴露 action 唯一。
+   *
+   * @throws 业务 ID 重复、module/function ID 非法或完整 action 冲突时抛出。
+   */
   registerBusiness(registration: AiBusinessRegistration): void {
     this.projector.assertUniqueActions(registration)
     if (this.businesses.has(registration.businessId)) {
@@ -63,14 +92,25 @@ export class AiRuntime implements AiRuntimeApi {
     this.businesses.set(registration.businessId, registration)
   }
 
+  /** 按 ID 返回已注册业务定义；不存在时返回 undefined。 */
   getBusinessRegistration(businessId: string): AiBusinessRegistration | undefined {
     return this.businesses.get(businessId)
   }
 
+  /** 按注册顺序列出业务定义。 */
   listBusinessRegistrations(): readonly AiBusinessRegistration[] {
     return Array.from(this.businesses.values())
   }
 
+  /**
+   * 为 `{ businessId, businessInstanceId }` 启动或恢复 runtime instance。
+   *
+   * 时序说明：
+   * 1. 确认业务存在且状态 Ready。
+   * 2. 若同一业务 scope 已有非终态实例，则进入 Resuming，刷新 prompt/function exposure。
+   * 3. 若不存在，则创建新实例、投影业务能力、记录初始 exposure。
+   * 4. 最终实例进入 Ready，并返回实例快照与历史快照。
+   */
   async startInstance(options: AiRuntimeStartInstanceOptions): Promise<AiRuntimeStartInstanceResult> {
     const business = this.getBusinessOrThrow(options.businessId)
     const businessFailure = this.assertBusinessReady(business)
@@ -140,6 +180,13 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /**
+   * 通过 runtime 生成 ID 暂停或终止实例。
+   *
+   * 当实例正在 Executing 时，请求不会打断当前函数：
+   * - pause 会设置 pendingPause，函数结束后进入 Paused。
+   * - stop 会设置 pendingStop，函数结束后执行 releaseInstance 并进入 Stopped/Failed。
+   */
   async stopInstance(options: AiRuntimeStopInstanceOptions): Promise<AiRuntimeStopInstanceResult> {
     const instance = this.getInstanceOrThrow(options.instanceId)
     const business = this.getBusinessOrThrow(instance.businessId)
@@ -177,6 +224,7 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /** 通过业务 scope 暂停或终止实例；内部先解析为 instanceId 再复用 stopInstance。 */
   async stopInstanceByBusinessScope(options: AiRuntimeStopBusinessInstanceOptions): Promise<AiRuntimeStopInstanceResult> {
     const instance = this.getInstanceByBusinessScopeOrThrow(options)
     const stopOptions: AiRuntimeStopInstanceOptions = {
@@ -187,6 +235,11 @@ export class AiRuntime implements AiRuntimeApi {
     return this.stopInstance(stopOptions)
   }
 
+  /**
+   * 向 Ready runtime instance 追加聊天消息。
+   *
+   * @throws 实例不存在或当前状态不是 Ready 时抛出。
+   */
   appendMessages(options: AiRuntimeAppendMessagesOptions): AiRuntimeHistorySnapshot {
     const instance = this.getInstanceOrThrow(options.instanceId)
     if (instance.status !== 'Ready') {
@@ -195,10 +248,24 @@ export class AiRuntime implements AiRuntimeApi {
     return this.history.appendMessages(instance, options)
   }
 
+  /**
+   * 返回 runtime instance 当前暴露的函数。
+   *
+   * 返回值经过 clone，调用方无法修改 runtime 内部状态。
+   */
   getAvailableFunctions(instanceId: string): readonly AiRuntimeFunctionExposure[] {
     return this.projector.cloneExposure(this.getInstanceOrThrow(instanceId).availableFunctions)
   }
 
+  /**
+   * 校验、分发、记录并返回一次函数调用结果。
+   *
+   * 失败处理时序：
+   * 1. action/instance/business/module/function 解析失败时返回结构化失败。
+   * 2. paramsSchema 或业务 validate 失败时记录失败调用。
+   * 3. execute 抛错会归一化为 EXECUTE_ERROR。
+   * 4. 执行后刷新函数暴露，处理 pending stop/pause，再返回最新历史快照。
+   */
   async executeFunctionCall(options: AiRuntimeExecuteFunctionCallOptions): Promise<AiRuntimeExecuteFunctionCallResult> {
     const resolved = this.resolveFunctionCall(options)
     if ('ok' in resolved) {
@@ -306,34 +373,41 @@ export class AiRuntime implements AiRuntimeApi {
     return { result, history: this.history.createHistorySnapshot(instance) }
   }
 
+  /** 列出当前内存中追踪的所有 runtime instance。 */
   listInstances(): readonly AiRuntimeInstanceSnapshot[] {
     return Array.from(this.instances.values()).map((instance) => this.projector.createInstanceSnapshot(instance))
   }
 
+  /** 返回完整实例详情；未知 instanceId 返回 null。 */
   getInstanceDetail(instanceId: string): AiRuntimeInstanceDetail | null {
     const instance = this.instances.get(instanceId)
     return instance ? this.projector.createInstanceDetail(instance) : null
   }
 
+  /** 返回实例历史；未知 instanceId 返回 null。 */
   getInstanceHistory(instanceId: string): AiRuntimeHistorySnapshot | null {
     const instance = this.instances.get(instanceId)
     return instance ? this.history.createHistorySnapshot(instance) : null
   }
 
+  /** 通过业务 scope 查询实例快照。 */
   getInstanceByBusinessScope(scope: AiRuntimeBusinessInstanceScope): AiRuntimeInstanceSnapshot | null {
     const instance = this.resolveInstanceByScope(scope)
     return instance ? this.projector.createInstanceSnapshot(instance) : null
   }
 
+  /** 通过业务 scope 查询实例历史。 */
   getInstanceHistoryByBusinessScope(scope: AiRuntimeBusinessInstanceScope): AiRuntimeHistorySnapshot | null {
     const instance = this.resolveInstanceByScope(scope)
     return instance ? this.history.createHistorySnapshot(instance) : null
   }
 
+  /** 订阅 runtime 事件，并返回取消订阅函数。 */
   subscribe(listener: AiRuntimeEventListener): () => void {
     return this.eventHub.subscribe(listener)
   }
 
+  /** 强制获取实例；未知 instanceId 属于调用错误，直接抛出。 */
   private getInstanceOrThrow(instanceId: string): AiRuntimeInstanceState {
     const instance = this.instances.get(instanceId)
     if (instance === undefined) {
@@ -342,6 +416,7 @@ export class AiRuntime implements AiRuntimeApi {
     return instance
   }
 
+  /** 强制获取业务注册；未知 businessId 属于配置或调用错误，直接抛出。 */
   private getBusinessOrThrow(businessId: string): AiBusinessRegistration {
     const business = this.businesses.get(businessId)
     if (business === undefined) {
@@ -350,6 +425,7 @@ export class AiRuntime implements AiRuntimeApi {
     return business
   }
 
+  /** 检查业务服务是否 Ready；非 Ready 时返回可给 LLM 的结构化失败。 */
   private assertBusinessReady(business: AiBusinessRegistration): AiRuntimeFunctionCallResult | null {
     const status = this.projector.businessStatus(business)
     if (status === 'Ready') return null
@@ -360,6 +436,7 @@ export class AiRuntime implements AiRuntimeApi {
     )
   }
 
+  /** 检查实例是否 Ready；函数调用只允许在 Ready 状态进入。 */
   private assertReady(instance: AiRuntimeInstanceState, action: AiRuntimeAction): AiRuntimeFunctionCallResult | null {
     if (instance.status === 'Ready') return null
     return AiRuntime.createFailure(
@@ -369,6 +446,12 @@ export class AiRuntime implements AiRuntimeApi {
     )
   }
 
+  /**
+   * 解析一次函数调用。
+   *
+   * 解析顺序刻意从便宜到昂贵：
+   * action 格式 -> instance 存在与状态 -> business 匹配与健康 -> module -> exposure -> definition。
+   */
   private resolveFunctionCall(options: AiRuntimeExecuteFunctionCallOptions): AiRuntimeResolvedFunctionCall | AiRuntimeFunctionCallResult {
     let address: ReturnType<typeof AiInvocationProtocol.parseActionAddress>
     try {
@@ -431,10 +514,12 @@ export class AiRuntime implements AiRuntimeApi {
     return { instance, business, definition, exposure }
   }
 
+  /** 刷新实例的业务投影、promptSnapshot 和可调用函数列表。 */
   private async refreshInstanceExposure(instance: AiRuntimeInstanceState): Promise<void> {
     await this.projector.refreshInstanceExposure(instance, this.getBusinessOrThrow(instance.businessId))
   }
 
+  /** 完成终止流程：调用业务 releaseInstance，并记录 Stopped 或 Failed。 */
   private async finishStop(
     instance: AiRuntimeInstanceState,
     business: AiBusinessRegistration,
@@ -460,14 +545,17 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /** 默认 runtime instance ID，包含 business scope、时间和随机后缀。 */
   private static defaultInstanceId(businessId: string, businessInstanceId: string): string {
     return `${businessId}-${businessInstanceId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
   }
 
+  /** 默认历史/事件记录 ID，按记录类型加时间和随机后缀生成。 */
   private static createDefaultRecordId(kind: 'event' | 'message' | 'functionCall' | 'lifecycle' | 'exposure'): string {
     return `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
   }
 
+  /** 校验 ID 非空且不包含 action 分隔符 @。 */
   private static assertId(kind: string, value: string): void {
     if (value.trim().length === 0) {
       throw new Error(`${kind} must not be empty`)
@@ -477,6 +565,7 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /** 组装完整 action 地址。 */
   private static actionOf<
     TBusinessId extends string,
     TModuleId extends string,
@@ -485,10 +574,12 @@ export class AiRuntime implements AiRuntimeApi {
     return `${businessId}@${moduleId}@${functionId}`
   }
 
+  /** 创建结构化失败结果，统一 code/msg/fix 形状。 */
   private static createFailure(code: string, msg: string, fix: string): AiRuntimeFunctionCallResult {
     return { ok: false, code, msg, fix }
   }
 
+  /** 判断业务实现返回值是否已经是结构化函数调用结果。 */
   private static isFunctionCallResult(value: unknown): value is AiRuntimeFunctionCallResult<unknown> {
     if (typeof value !== 'object' || value === null || !('ok' in value)) return false
     const candidate = value as Partial<AiRuntimeFunctionCallResult<unknown>>
@@ -503,6 +594,7 @@ export class AiRuntime implements AiRuntimeApi {
     return false
   }
 
+  /** 当 instance 不存在但需要返回 history envelope 时，创建空历史快照。 */
   private static createEmptyHistorySnapshot(instanceId: string): AiRuntimeHistorySnapshot {
     return {
       instanceId,
@@ -516,16 +608,19 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /** 业务 scope 索引键，避免和用户传入 ID 的字符空间混淆。 */
   private makeBusinessInstanceKey(businessId: string, businessInstanceId: string): string {
     return `${businessId}::${businessInstanceId}`
   }
 
+  /** 通过业务 scope 解析实例；索引缺失或实例被清理时返回 null。 */
   private resolveInstanceByScope(scope: AiRuntimeBusinessInstanceScope): AiRuntimeInstanceState | null {
     const instanceId = this.instancesByBusinessInstance.get(this.makeBusinessInstanceKey(scope.businessId, scope.businessInstanceId))
     if (instanceId === undefined) return null
     return this.instances.get(instanceId) ?? null
   }
 
+  /** 通过业务 scope 强制获取实例。 */
   private getInstanceByBusinessScopeOrThrow(scope: AiRuntimeBusinessInstanceScope): AiRuntimeInstanceState {
     const instance = this.resolveInstanceByScope(scope)
     if (instance === null) {
@@ -534,6 +629,7 @@ export class AiRuntime implements AiRuntimeApi {
     return instance
   }
 
+  /** 生成唯一 instanceId；若注入生成器产生冲突，则追加递增后缀。 */
   private createUniqueInstanceId(businessId: string, businessInstanceId: string): string {
     const base = this.createInstanceId(businessId, businessInstanceId)
     if (!this.instances.has(base)) return base

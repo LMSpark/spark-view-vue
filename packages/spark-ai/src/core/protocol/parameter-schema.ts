@@ -95,19 +95,31 @@ export interface ParsedLeafDescription {
   optional: boolean
 }
 
+/** 叶子描述到基础类型的推断规则，按数组、对象、字符串、数字、布尔的顺序匹配。 */
 export type KindRule = {
   kind: Exclude<LeafKind, 'unknown'>
   predicate: (normalized: string) => boolean
 }
 
+/** primitive 数组元素类型的推断规则，例如 string[] / number[] / boolean[]。 */
 export type ArrayItemKindRule = {
   itemKind: ArrayItemKind
   predicate: (normalized: string) => boolean
 }
 
+/**
+ * 参数 schema 归一化与叶子描述解析工具。
+ *
+ * 调用时序：
+ * 1. `normalizeSchemaNode` 把简写对象、显式 DSL、叶子字符串统一成可判别节点。
+ * 2. `isObjectSchema` / `isArraySchema` / `isEnumSchema` 帮调用方选择递归分支。
+ * 3. `parseLeafDescription` 从描述字符串中提取期望类型、nullable、optional 等信号。
+ */
 export class LlmParameterSchema {
+  /** `<keyName>` 形式代表动态键名，其值统一套用对应 schema。 */
   static readonly WILDCARD_KEY_PATTERN = /^<.+>$/u
 
+  /** 从叶子描述中推断基础类型的规则表；顺序稳定，避免校验输出抖动。 */
   static readonly EXPECTED_KIND_RULES: readonly KindRule[] = [
     {
       kind: 'array',
@@ -135,6 +147,7 @@ export class LlmParameterSchema {
     },
   ]
 
+  /** 从数组描述中推断 primitive 元素类型的规则表。 */
   static readonly ARRAY_ITEM_KIND_RULES: readonly ArrayItemKindRule[] = [
     { itemKind: 'string', predicate: normalized => normalized.includes('string[]') },
     { itemKind: 'number', predicate: normalized => normalized.includes('number[]') },
@@ -143,26 +156,32 @@ export class LlmParameterSchema {
 
   private constructor() {}
 
+  /** 判断值是否为普通对象；数组、null 都不算对象 schema。 */
   static isPlainRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 
+  /** 判断节点是否为显式 object schema。 */
   static isObjectSchema(value: unknown): value is LlmParamObjectSchema {
     return LlmParameterSchema.isPlainRecord(value) && value['kind'] === 'object'
   }
 
+  /** 判断节点是否为显式 array schema。 */
   static isArraySchema(value: unknown): value is LlmParamArraySchema {
     return LlmParameterSchema.isPlainRecord(value) && value['kind'] === 'array'
   }
 
+  /** 判断节点是否为显式 enum schema。 */
   static isEnumSchema(value: unknown): value is LlmParamEnumSchema {
     return LlmParameterSchema.isPlainRecord(value) && value['kind'] === 'enum' && Array.isArray(value['enum'])
   }
 
+  /** 判断字段名是否为动态键占位符。 */
   static isWildcardKey(key: string): boolean {
     return LlmParameterSchema.WILDCARD_KEY_PATTERN.test(key)
   }
 
+  /** 将任意 schema 写法归一成 validator 可消费的节点。 */
   static normalizeSchemaNode(schema: unknown): unknown {
     if (typeof schema === 'string') return schema
     if (
@@ -181,6 +200,7 @@ export class LlmParameterSchema {
     return 'unknown'
   }
 
+  /** 解析叶子描述字符串，提取类型、可空、可选和数组元素类型等提示。 */
   static parseLeafDescription(raw: string): ParsedLeafDescription {
     const dashIdx = raw.indexOf('—')
     const typePart = (dashIdx > 0 ? raw.slice(0, dashIdx) : raw).trim()

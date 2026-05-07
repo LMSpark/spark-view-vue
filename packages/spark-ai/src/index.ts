@@ -1,3 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * Public entry point for the SPARK AI runtime package.
+ *
+ * The package exposes the business-registration contracts, the in-memory
+ * `AiRuntime` orchestrator, page-design business tools, and component catalog
+ * projection helpers used by the SPARK configuration workflow.
+ */
+
 export {
   AiRuntime,
   AiInvocationProtocol,

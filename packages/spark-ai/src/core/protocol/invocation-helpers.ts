@@ -1,23 +1,50 @@
+/**
+ * LLM 调用协议辅助工具。
+ *
+ * 这里放置跨 provider / adapter 复用的轻量协议能力：
+ * - 标准化消息角色和 token usage 字段。
+ * - 解析 runtime action 地址。
+ * - 从模型输出文本中抽取 JSON 对象。
+ *
+ * 它不依赖具体模型 SDK，也不直接执行函数。
+ */
+
+/** 协议层支持的消息角色。 */
 export type ProtocolRole = 'user' | 'assistant' | 'system'
 
+/** 发送给 LLM 或从 LLM 读取的基础消息结构。 */
 export interface ProtocolMessage {
+  /** 消息角色。 */
   role: ProtocolRole
+  /** 纯文本内容；结构化协议块仍以字符串形式承载。 */
   content: string
 }
 
+/** 各模型 SDK usage 字段归一化后的 token 统计。 */
 export interface TokenUsage {
+  /** prompt 消耗 token 数。 */
   promptTokens?: number
+  /** completion 消耗 token 数。 */
   completionTokens?: number
+  /** 总 token 数。 */
   totalTokens?: number
+  /** 命中 prompt cache 的 token 数。 */
   promptCacheHitTokens?: number
+  /** 未命中 prompt cache 的 token 数。 */
   promptCacheMissTokens?: number
 }
 
+/** 流式响应回调集合，由上层 adapter 按模型事件触发。 */
 export interface StreamCallbacks {
+  /** 普通文本增量。 */
   onDelta?: (text: string) => void
+  /** 推理内容增量。 */
   onReasoning?: (text: string) => void
+  /** 阶段进度回调，例如规划、执行、总结。 */
   onPhase?: (phase: number, status: string, message: string) => void
+  /** 原始或归一化 usage 回调。 */
   onUsage?: (usage: Record<string, unknown>) => void
+  /** 流式过程中的错误文本。 */
   onError?: (error: string) => void
 }
 
@@ -49,6 +76,7 @@ export class AiInvocationProtocol {
     return { business: parts[0] ?? '', module: parts[1] ?? '', function: parts[2] ?? '' }
   }
 
+  /** 将 unknown 错误统一转换为可记录、可返回给调用方的字符串。 */
   static toErrorMessage(err: unknown): string {
     return err instanceof Error ? err.message : String(err)
   }

@@ -90,18 +90,23 @@ type ValidationContext = {
 type PrimitiveKind = ArrayItemKind
 
 export class LlmParamsValidator {
+  /** 嵌套对象默认不允许未知字段；根层通过入口统一传入该策略。 */
   private static readonly NESTED_CONTEXT: ValidationContext = { allowUnknownKeys: false }
 
+  /** 叶子描述中出现这些提示时，字段存在本身就是错误。 */
   private static readonly OMITTED_FIELD_HINTS = ['应省略', '不要传函数'] as const
 
+  /** primitive 数组元素类型不匹配时的中文提示表。 */
   private static readonly ARRAY_ITEM_KIND_MISMATCH_MESSAGE: Readonly<Record<PrimitiveKind, string>> = {
     string: '应为字符串',
     number: '应为数字',
     boolean: '应为布尔值',
   }
 
+  /** primitive 类型检查顺序固定，保证错误文案可预测。 */
   private static readonly PRIMITIVE_KIND_ORDER: readonly PrimitiveKind[] = ['string', 'number', 'boolean']
 
+  /** primitive 类型到运行时检查函数的映射。 */
   private static readonly PRIMITIVE_KIND_CHECKERS: Readonly<Record<PrimitiveKind, (value: unknown) => boolean>> = {
     string: value => typeof value === 'string',
     number: value => typeof value === 'number',
@@ -110,14 +115,25 @@ export class LlmParamsValidator {
 
   private constructor() {}
 
+  /** 生成缺少顶层参数的统一提示，供业务工具复用。 */
   static missingParam(name: string): string {
     return `缺少 ${name} 参数`
   }
 
+  /** 判断值是否为非空字符串；常用于 adapter 解析模型输出后的快速检查。 */
   static isNonEmptyString(value: unknown): value is string {
     return typeof value === 'string' && value.length > 0
   }
 
+  /**
+   * 校验 LLM 反序列化后的 JSON 参数。
+   *
+   * 调用时序：
+   * 1. 先确认 params 是对象，避免数组或 primitive 进入函数调用。
+   * 2. 将 schema 根节点归一成 object schema。
+   * 3. 合并调用方额外 requiredKeys 后递归校验对象树。
+   * 4. 最后校验 oneOfRequiredKeyGroups 这种跨字段约束。
+   */
   static validateLlmDeserializedParams(
     params: unknown,
     schema: Record<string, unknown>,
@@ -162,6 +178,7 @@ export class LlmParamsValidator {
     }
   }
 
+  /** 把问题列表压缩成一段适合直接反馈给 LLM 的中文修复提示。 */
   static formatLlmParamValidationIssues(
     issues: readonly LlmParamValidationIssue[],
     maxCount = 5,
@@ -172,10 +189,12 @@ export class LlmParamsValidator {
     return `参数校验失败：${head.join('；')}${suffix}`
   }
 
+  /** 统一追加问题，集中维护 path/message 结构。 */
   private static pushIssue(issues: LlmParamValidationIssue[], path: string, message: string): void {
     issues.push({ path, message })
   }
 
+  /** 校验 primitive 数组元素，逐个元素给出精确 path。 */
   private static validatePrimitiveArrayItems(
     value: unknown[],
     itemKind: PrimitiveKind,
@@ -190,6 +209,13 @@ export class LlmParamsValidator {
     }
   }
 
+  /**
+   * 校验叶子描述 schema。
+   *
+   * 叶子 schema 是给 LLM 看的描述字符串，本方法只做保守推断：
+   * 能明确识别 string/number/boolean/array/object 时才做类型拦截，
+   * 识别不到则返回“schema 描述缺少可识别类型”，提醒维护者补充说明。
+   */
   private static validateLeafSchema(
     value: unknown,
     description: string,
@@ -252,6 +278,7 @@ export class LlmParamsValidator {
     }
   }
 
+  /** 校验 enum 节点，支持 nullable、number/string 类型和 openEnded 软枚举。 */
   private static validateEnumSchema(
     value: unknown,
     schema: LlmParamEnumSchema,
@@ -285,6 +312,14 @@ export class LlmParamsValidator {
     }
   }
 
+  /**
+   * 校验 object 节点。
+   *
+   * 顺序安排：
+   * 1. 先检查对象本身和 required 字段。
+   * 2. 再递归检查显式 properties 与 optional。
+   * 3. 最后处理未知字段：优先通配键，其次 additionalProperties，再决定是否报错。
+   */
   private static validateObjectSchema(
     value: unknown,
     schema: LlmParamObjectSchema,
@@ -371,6 +406,7 @@ export class LlmParamsValidator {
     }
   }
 
+  /** 校验 array 节点；声明 items 时逐项递归，否则只检查数组外形。 */
   private static validateArraySchema(
     value: unknown,
     schema: LlmParamArraySchema,
@@ -394,6 +430,7 @@ export class LlmParamsValidator {
     }
   }
 
+  /** 根据归一化后的 schema kind 分派到叶子、枚举、对象或数组校验分支。 */
   private static validateSchemaNode(
     value: unknown,
     schema: unknown,
@@ -422,6 +459,7 @@ export class LlmParamsValidator {
     }
   }
 
+  /** 校验“至少满足一组必填字段”的跨字段约束。 */
   private static validateOneOfRequiredGroups(
     params: Record<string, unknown>,
     groups: ReadonlyArray<readonly string[]>,
