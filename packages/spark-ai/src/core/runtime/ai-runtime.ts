@@ -12,10 +12,10 @@ import type {
   AiRuntimeInstanceDetail,
   AiRuntimeInstanceSnapshot,
   AiRuntimeOptions,
-  AiRuntimeStartSessionOptions,
-  AiRuntimeStartSessionResult,
-  AiRuntimeStopSessionOptions,
-  AiRuntimeStopSessionResult,
+  AiRuntimeStartInstanceOptions,
+  AiRuntimeStartInstanceResult,
+  AiRuntimeStopInstanceOptions,
+  AiRuntimeStopInstanceResult,
   FunctionExecutionContext,
 } from '../protocol/business-contracts'
 import { AiInvocationProtocol } from '../protocol/invocation-helpers'
@@ -67,7 +67,7 @@ export class AiRuntime implements AiRuntimeApi {
     return Array.from(this.businesses.values())
   }
 
-  async startSession(options: AiRuntimeStartSessionOptions): Promise<AiRuntimeStartSessionResult> {
+  async startInstance(options: AiRuntimeStartInstanceOptions): Promise<AiRuntimeStartInstanceResult> {
     const business = this.getBusinessOrThrow(options.businessId)
     const businessFailure = this.assertBusinessReady(business)
     if (businessFailure !== null && !businessFailure.ok) {
@@ -80,7 +80,7 @@ export class AiRuntime implements AiRuntimeApi {
         throw new Error(`Cannot resume ${options.instanceId} as ${options.businessId}; existing business is ${existing.businessId}`)
       }
       if (existing.status === 'Stopped' || existing.status === 'Failed') {
-        throw new Error(`Cannot resume terminal adapter session ${options.instanceId}: ${existing.status}`)
+        throw new Error(`Cannot resume terminal runtime instance ${options.instanceId}: ${existing.status}`)
       }
 
       this.history.setStatus(existing, 'Resuming')
@@ -133,7 +133,7 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
-  async stopSession(options: AiRuntimeStopSessionOptions): Promise<AiRuntimeStopSessionResult> {
+  async stopInstance(options: AiRuntimeStopInstanceOptions): Promise<AiRuntimeStopInstanceResult> {
     const instance = this.getInstanceOrThrow(options.instanceId)
     const business = this.getBusinessOrThrow(instance.businessId)
 
@@ -150,15 +150,18 @@ export class AiRuntime implements AiRuntimeApi {
       }
     }
 
-    if (instance.status !== 'Stopped') {
-      if (instance.status === 'Executing') {
-        instance.pendingStop = true
-      }
+    if (instance.status === 'Executing') {
+      instance.pendingStop = true
       this.history.setStatus(instance, 'Stopping', options.reason)
       this.eventHub.emit(instance, 'instance.stopping', { reason: options.reason })
-      await business.releaseSession?.({ instanceId: instance.instanceId, businessId: instance.businessId })
-      this.history.setStatus(instance, 'Stopped', options.reason)
-      this.eventHub.emit(instance, 'instance.stopped', { reason: options.reason })
+      return {
+        instance: this.projector.createInstanceSnapshot(instance),
+        history: this.history.createHistorySnapshot(instance),
+      }
+    }
+
+    if (instance.status !== 'Stopped' && instance.status !== 'Failed') {
+      await this.finishStop(instance, business, options.reason)
     }
 
     return {
@@ -170,7 +173,7 @@ export class AiRuntime implements AiRuntimeApi {
   appendMessages(options: AiRuntimeAppendMessagesOptions): AiRuntimeHistorySnapshot {
     const instance = this.getInstanceOrThrow(options.instanceId)
     if (instance.status !== 'Ready') {
-      throw new Error(`appendMessages requires Ready adapter session ${options.instanceId}; current status is ${instance.status}`)
+      throw new Error(`appendMessages requires Ready runtime instance ${options.instanceId}; current status is ${instance.status}`)
     }
     return this.history.appendMessages(instance, options)
   }
@@ -206,7 +209,18 @@ export class AiRuntime implements AiRuntimeApi {
       action: executionAction,
     }
 
-    const customValidationError = definition.validate?.(options.args, executionContext) ?? null
+    let customValidationError: string | null
+    try {
+      customValidationError = definition.validate?.(options.args, executionContext) ?? null
+    } catch (error) {
+      const result = AiRuntime.createFailure(
+        'VALIDATE_ERROR',
+        AiInvocationProtocol.toErrorMessage(error),
+        `Fix ${options.action} validator or retry with arguments that satisfy the business rule.`,
+      )
+      this.history.recordFunctionCall(instance, options.action, options.args, result)
+      return { result, history: this.history.createHistorySnapshot(instance) }
+    }
     if (customValidationError !== null) {
       const result = AiRuntime.createFailure('INVALID_ARGS', customValidationError, `Fix args for ${options.action} before retrying.`)
       this.history.recordFunctionCall(instance, options.action, options.args, result)
@@ -246,12 +260,22 @@ export class AiRuntime implements AiRuntimeApi {
       moduleId: exposure.moduleId,
       functionId: exposure.functionId,
     })
-    await this.refreshInstanceExposure(instance)
-    this.history.recordExposure(instance)
+    try {
+      await this.refreshInstanceExposure(instance)
+      this.history.recordExposure(instance)
+    } catch (error) {
+      const message = AiInvocationProtocol.toErrorMessage(error)
+      this.history.setStatus(instance, 'Failed', message)
+      this.eventHub.emit(instance, 'instance.failed', {
+        reason: 'refreshInstanceExposure',
+        error: message,
+      })
+      return { result, history: this.history.createHistorySnapshot(instance) }
+    }
 
     if (instance.pendingStop) {
       instance.pendingStop = false
-      await this.stopSession({ instanceId: instance.instanceId, mode: 'stop', reason: 'pendingStop' })
+      await this.finishStop(instance, business, 'pendingStop')
     } else if (instance.pendingPause) {
       instance.pendingPause = false
       this.history.setStatus(instance, 'Paused', 'pendingPause')
@@ -273,7 +297,7 @@ export class AiRuntime implements AiRuntimeApi {
     return instance ? this.projector.createInstanceDetail(instance) : null
   }
 
-  getSessionHistory(instanceId: string): AiRuntimeHistorySnapshot | null {
+  getInstanceHistory(instanceId: string): AiRuntimeHistorySnapshot | null {
     const instance = this.instances.get(instanceId)
     return instance ? this.history.createHistorySnapshot(instance) : null
   }
@@ -285,7 +309,7 @@ export class AiRuntime implements AiRuntimeApi {
   private getInstanceOrThrow(instanceId: string): AiRuntimeInstanceState {
     const instance = this.instances.get(instanceId)
     if (instance === undefined) {
-      throw new Error(`Unknown AI core adapter session: ${instanceId}`)
+      throw new Error(`Unknown AI runtime instance: ${instanceId}`)
     }
     return instance
   }
@@ -304,7 +328,7 @@ export class AiRuntime implements AiRuntimeApi {
     return AiRuntime.createFailure(
       'BUSINESS_NOT_READY',
       `Business service ${business.businessId} is ${status}`,
-      'Start or repair the business service before exposing it to the LLM adapter session.',
+      'Start or repair the business service before exposing it to the LLM runtime instance.',
     )
   }
 
@@ -312,8 +336,8 @@ export class AiRuntime implements AiRuntimeApi {
     if (instance.status === 'Ready') return null
     return AiRuntime.createFailure(
       'INSTANCE_NOT_READY',
-      `${action} requires adapter session ${instance.instanceId} to be Ready, current status is ${instance.status}`,
-      'Call startSession to create or resume a Ready LLM adapter session before invoking business functions.',
+      `${action} requires runtime instance ${instance.instanceId} to be Ready, current status is ${instance.status}`,
+      'Call startInstance to create or resume a Ready LLM runtime instance before invoking business functions.',
     )
   }
 
@@ -329,8 +353,8 @@ export class AiRuntime implements AiRuntimeApi {
     if (instance === undefined) {
       return AiRuntime.createFailure(
         'UNKNOWN_INSTANCE',
-        `Unknown AI core adapter session: ${options.instanceId}`,
-        'Call startSession before executeFunctionCall and pass its instanceId envelope field.',
+        `Unknown AI runtime instance: ${options.instanceId}`,
+        'Call startInstance before executeFunctionCall and pass its instanceId envelope field.',
       )
     }
 
@@ -340,7 +364,7 @@ export class AiRuntime implements AiRuntimeApi {
     if (address.business !== instance.businessId) {
       return AiRuntime.createFailure(
         'BUSINESS_MISMATCH',
-        `Action ${options.action} targets business ${address.business}, but adapter session ${instance.instanceId} is bound to ${instance.businessId}.`,
+        `Action ${options.action} targets business ${address.business}, but runtime instance ${instance.instanceId} is bound to ${instance.businessId}.`,
         'Use an action from getAvailableFunctions for the same instanceId.',
       )
     }
@@ -362,7 +386,7 @@ export class AiRuntime implements AiRuntimeApi {
     if (exposure === undefined) {
       return AiRuntime.createFailure(
         'FUNCTION_NOT_AVAILABLE',
-        `Function ${options.action} is not available for adapter session ${instance.instanceId}.`,
+        `Function ${options.action} is not available for runtime instance ${instance.instanceId}.`,
         'Call getAvailableFunctions and choose one of the exposed actions for this instance.',
       )
     }
@@ -381,6 +405,27 @@ export class AiRuntime implements AiRuntimeApi {
 
   private async refreshInstanceExposure(instance: AiRuntimeInstanceState): Promise<void> {
     await this.projector.refreshInstanceExposure(instance, this.getBusinessOrThrow(instance.businessId))
+  }
+
+  private async finishStop(
+    instance: AiRuntimeInstanceState,
+    business: AiBusinessRegistration,
+    reason: string | undefined,
+  ): Promise<void> {
+    if (instance.status !== 'Stopping') {
+      this.history.setStatus(instance, 'Stopping', reason)
+      this.eventHub.emit(instance, 'instance.stopping', { reason })
+    }
+
+    try {
+      await business.releaseInstance?.({ instanceId: instance.instanceId, businessId: instance.businessId })
+      this.history.setStatus(instance, 'Stopped', reason)
+      this.eventHub.emit(instance, 'instance.stopped', { reason })
+    } catch (error) {
+      const message = AiInvocationProtocol.toErrorMessage(error)
+      this.history.setStatus(instance, 'Failed', message)
+      this.eventHub.emit(instance, 'instance.failed', { reason: 'releaseInstance', error: message })
+    }
   }
 
   private static defaultInstanceId(businessId: string): string {
@@ -413,10 +458,17 @@ export class AiRuntime implements AiRuntimeApi {
   }
 
   private static isFunctionCallResult(value: unknown): value is AiRuntimeFunctionCallResult<unknown> {
-    return typeof value === 'object'
-      && value !== null
-      && 'ok' in value
-      && typeof (value as { ok: unknown }).ok === 'boolean'
+    if (typeof value !== 'object' || value === null || !('ok' in value)) return false
+    const candidate = value as Partial<AiRuntimeFunctionCallResult<unknown>>
+    if (candidate.ok === true) {
+      return 'data' in candidate && typeof candidate.summary === 'string'
+    }
+    if (candidate.ok === false) {
+      return typeof candidate.code === 'string'
+        && typeof candidate.msg === 'string'
+        && typeof candidate.fix === 'string'
+    }
+    return false
   }
 
   private static createEmptyHistorySnapshot(instanceId: string): AiRuntimeHistorySnapshot {

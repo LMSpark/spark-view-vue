@@ -29,7 +29,7 @@ interface LeaveFormService {
   release(instanceId: string): void
 }
 
-function createDeterministicCore(): AiRuntimeApi {
+function createDeterministicRuntime(): AiRuntimeApi {
   let record = 0
   return new AiRuntime({
     createInstanceId: () => 'leave-1',
@@ -106,19 +106,19 @@ function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<
       prompt: 'Collect leave reason and leave days only.',
       getFunctions: () => functions,
     }],
-    releaseSession(context) {
+    releaseInstance(context) {
       service.release(context.instanceId)
     },
   }
 }
 
-describe('AI core business-first runtime', () => {
-  it('registers business information and starts an adapter session without exposing sessionId', async () => {
-    const core = createDeterministicCore()
+describe('AI runtime business-first API', () => {
+  it('registers business information and starts a runtime instance without exposing sessionId', async () => {
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
 
-    const started = await core.startSession({ businessId: 'leaveApproval' })
+    const started = await core.startInstance({ businessId: 'leaveApproval' })
 
     expect(started.instanceId).toBe('leave-1')
     expect(started.businessId).toBe('leaveApproval')
@@ -136,10 +136,10 @@ describe('AI core business-first runtime', () => {
   })
 
   it('executes one function call through the instanceId envelope and writes core history', async () => {
-    const core = createDeterministicCore()
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
@@ -160,10 +160,10 @@ describe('AI core business-first runtime', () => {
   })
 
   it('fails fast when action business and instance business do not match', async () => {
-    const core = createDeterministicCore()
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
@@ -178,10 +178,10 @@ describe('AI core business-first runtime', () => {
   })
 
   it('validates args from the function schema before business execution', async () => {
-    const core = createDeterministicCore()
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
@@ -197,10 +197,10 @@ describe('AI core business-first runtime', () => {
   })
 
   it('stores user and assistant messages in core history by instanceId', async () => {
-    const core = createDeterministicCore()
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
 
     const history = core.appendMessages({
       instanceId: 'leave-1',
@@ -215,13 +215,13 @@ describe('AI core business-first runtime', () => {
     expect('sessionId' in history).toBe(false)
   })
 
-  it('pauses and resumes an adapter session without creating a new instanceId', async () => {
-    const core = createDeterministicCore()
+  it('pauses and resumes a runtime instance without creating a new instanceId', async () => {
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
 
-    const paused = await core.stopSession({ instanceId: 'leave-1', mode: 'pause', reason: 'waiting for user' })
+    const paused = await core.stopInstance({ instanceId: 'leave-1', mode: 'pause', reason: 'waiting for user' })
     expect(paused.instance.status).toBe('Paused')
 
     const blocked = await core.executeFunctionCall({
@@ -232,39 +232,39 @@ describe('AI core business-first runtime', () => {
     expect(blocked.result.ok).toBe(false)
     if (!blocked.result.ok) expect(blocked.result.code).toBe('INSTANCE_NOT_READY')
 
-    const resumed = await core.startSession({ businessId: 'leaveApproval', instanceId: 'leave-1' })
+    const resumed = await core.startInstance({ businessId: 'leaveApproval', instanceId: 'leave-1' })
     expect(resumed.instanceId).toBe('leave-1')
     expect(resumed.status).toBe('Ready')
     expect(core.listInstances()).toHaveLength(1)
   })
 
-  it('stops an adapter session and asks the business service to release session state', async () => {
-    const core = createDeterministicCore()
+  it('stops a runtime instance and asks the business service to release instance state', async () => {
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
     await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
       args: { reason: 'family care' },
     })
 
-    const stopped = await core.stopSession({ instanceId: 'leave-1', mode: 'stop', reason: 'done' })
+    const stopped = await core.stopInstance({ instanceId: 'leave-1', mode: 'stop', reason: 'done' })
 
     expect(stopped.instance.status).toBe('Stopped')
     expect(service.get('leave-1')).toBeUndefined()
     expect(core.getInstanceDetail('leave-1')?.modules.map((module) => module.moduleId)).toEqual(['form'])
-    await expect(core.startSession({ businessId: 'leaveApproval', instanceId: 'leave-1' })).rejects.toThrow('terminal adapter session')
+    await expect(core.startInstance({ businessId: 'leaveApproval', instanceId: 'leave-1' })).rejects.toThrow('terminal runtime instance')
   })
 
   it('publishes lifecycle and function events as an observation surface', async () => {
-    const core = createDeterministicCore()
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     const eventTypes: string[] = []
     core.subscribe((event) => { eventTypes.push(event.type) })
     core.registerBusiness(createLeaveBusiness(service))
 
-    await core.startSession({ businessId: 'leaveApproval' })
+    await core.startInstance({ businessId: 'leaveApproval' })
     await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
@@ -282,10 +282,91 @@ describe('AI core business-first runtime', () => {
   })
 
   it('rejects duplicate business registrations instead of creating parallel registries', () => {
-    const core = createDeterministicCore()
+    const core = createDeterministicRuntime()
     const service = createLeaveFormService()
     core.registerBusiness(createLeaveBusiness(service))
 
     expect(() => core.registerBusiness(createLeaveBusiness(service))).toThrow('Duplicate AI business registration')
+  })
+
+  it('wraps domain objects that happen to contain an ok field', async () => {
+    const core = createDeterministicRuntime()
+    core.registerBusiness({
+      businessId: 'domainResult',
+      name: 'Domain result',
+      description: 'Returns domain data with an ok field.',
+      modules: [{
+        moduleId: 'form',
+        name: 'Form',
+        description: 'Domain return module.',
+        getFunctions: () => [{
+          functionId: 'readDomainState',
+          description: 'Read domain state.',
+          paramsSchema: {},
+          execute: () => ({ ok: true, accepted: true }),
+        }],
+      }],
+    })
+
+    await core.startInstance({ businessId: 'domainResult' })
+    const output = await core.executeFunctionCall({
+      instanceId: 'leave-1',
+      action: 'domainResult@form@readDomainState',
+      args: {},
+    })
+
+    expect(output.result).toEqual({
+      ok: true,
+      data: { ok: true, accepted: true },
+      summary: 'domainResult@form@readDomainState executed',
+    })
+  })
+
+  it('defers final stop and release while a function is executing', async () => {
+    const core = createDeterministicRuntime()
+    let releaseCount = 0
+    let finishExecution: ((value: { accepted: true }) => void) | undefined
+    const executionGate = new Promise<{ accepted: true }>((resolve) => {
+      finishExecution = resolve
+    })
+
+    core.registerBusiness({
+      businessId: 'slowBusiness',
+      name: 'Slow business',
+      description: 'Long running business function.',
+      modules: [{
+        moduleId: 'form',
+        name: 'Form',
+        description: 'Slow module.',
+        getFunctions: () => [{
+          functionId: 'submit',
+          description: 'Submit slowly.',
+          paramsSchema: {},
+          execute: () => executionGate,
+        }],
+      }],
+      releaseInstance: () => {
+        releaseCount += 1
+      },
+    })
+
+    await core.startInstance({ businessId: 'slowBusiness' })
+    const running = core.executeFunctionCall({
+      instanceId: 'leave-1',
+      action: 'slowBusiness@form@submit',
+      args: {},
+    })
+    await Promise.resolve()
+
+    const stopping = await core.stopInstance({ instanceId: 'leave-1', mode: 'stop', reason: 'user requested stop' })
+    expect(stopping.instance.status).toBe('Stopping')
+    expect(releaseCount).toBe(0)
+
+    finishExecution?.({ accepted: true })
+    const output = await running
+
+    expect(output.result.ok).toBe(true)
+    expect(core.getInstanceDetail('leave-1')?.status).toBe('Stopped')
+    expect(releaseCount).toBe(1)
   })
 })

@@ -8,7 +8,7 @@ import {
 import type { SparkNodeTree } from '../packages/spark-component/src'
 import type { DataSetCrudTool } from '../packages/spark-data/src'
 
-function createCore() {
+function createRuntime() {
   let record = 0
   return new AiRuntime({
     createInstanceId: () => 'page-design-1',
@@ -46,12 +46,12 @@ function createHost(): { host: EditToolHost; reads: () => { script: string; styl
 }
 
 describe('pageDesign business definition', () => {
-  it('registers pageDesign as business modules and executes through ai core', async () => {
-    const core = createCore()
+  it('registers pageDesign as business modules and executes through ai runtime', async () => {
+    const core = createRuntime()
     const { host, reads } = createHost()
     core.registerBusiness(new PageDesignBusiness({ getEditToolHost: () => host }))
 
-    const start = await core.startSession({ businessId: PageDesignBusiness.businessId })
+    const start = await core.startInstance({ businessId: PageDesignBusiness.businessId })
 
     expect(start.instanceId).toBe('page-design-1')
     expect(start.businessId).toBe(PageDesignBusiness.businessId)
@@ -98,7 +98,7 @@ describe('pageDesign business definition', () => {
   })
 
   it('fails fast when live adapter is missing', async () => {
-    const core = createCore()
+    const core = createRuntime()
     core.registerBusiness(new PageDesignBusiness({
       getEditToolHost: () => ({
         readScript: () => '',
@@ -106,7 +106,7 @@ describe('pageDesign business definition', () => {
       }),
     }))
 
-    const start = await core.startSession({ businessId: PageDesignBusiness.businessId })
+    const start = await core.startInstance({ businessId: PageDesignBusiness.businessId })
     const bootstrap = await core.executeFunctionCall({
       instanceId: start.instanceId,
       action: 'pageDesign@lifecycle@bootstrap',

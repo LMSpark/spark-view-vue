@@ -54,7 +54,6 @@ export type AiRuntimeEventType =
   | 'instance.stopping'
   | 'instance.stopped'
   | 'instance.failed'
-  | 'business.registered'
   | 'functions.exposed'
   | 'function.before'
   | 'function.succeeded'
@@ -62,9 +61,6 @@ export type AiRuntimeEventType =
   | 'history.message.appended'
   | 'history.functionCall.appended'
   | 'history.functionExposure.snapshot'
-  | 'warning'
-  | 'error'
-  | 'debug'
 
 export interface AiRuntimeEvent<TPayload = unknown> {
   eventId: string
@@ -80,7 +76,7 @@ export interface AiRuntimeEvent<TPayload = unknown> {
 
 export type AiRuntimeEventListener = (event: AiRuntimeEvent) => void
 
-export interface AiRuntimeSessionScope<
+export interface AiRuntimeInstanceScope<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
 > {
   readonly instanceId: string
@@ -90,7 +86,7 @@ export interface AiRuntimeSessionScope<
 export interface ModulePromptContext<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
-> extends AiRuntimeSessionScope<TBusinessId> {
+> extends AiRuntimeInstanceScope<TBusinessId> {
   readonly moduleId: TModuleId
 }
 
@@ -98,7 +94,7 @@ export interface FunctionExecutionContext<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
   TFunctionId extends AiRuntimeFunctionId = AiRuntimeFunctionId,
-> extends AiRuntimeSessionScope<TBusinessId> {
+> extends AiRuntimeInstanceScope<TBusinessId> {
   readonly moduleId: TModuleId
   readonly functionId: TFunctionId
   readonly action: AiRuntimeAction<TBusinessId, TModuleId, TFunctionId>
@@ -150,7 +146,7 @@ export interface AiBusinessRegistration<
   readonly description: string
   readonly modules: TModules
   getStatus?(): AiBusinessServiceStatus
-  releaseSession?(context: AiRuntimeSessionScope<TBusinessId>): void | Promise<void>
+  releaseInstance?(context: AiRuntimeInstanceScope<TBusinessId>): void | Promise<void>
 }
 
 export interface AiRuntimeFunctionExposure<
@@ -248,23 +244,23 @@ export interface AiRuntimeInstanceDetail extends AiRuntimeInstanceSnapshot {
   history: AiRuntimeHistorySnapshot
 }
 
-export interface AiRuntimeStartSessionOptions {
+export interface AiRuntimeStartInstanceOptions {
   businessId: string
   instanceId?: string
   restoreContext?: unknown
 }
 
-export interface AiRuntimeStartSessionResult extends AiRuntimeInstanceSnapshot {
+export interface AiRuntimeStartInstanceResult extends AiRuntimeInstanceSnapshot {
   history: AiRuntimeHistorySnapshot
 }
 
-export interface AiRuntimeStopSessionOptions {
+export interface AiRuntimeStopInstanceOptions {
   instanceId: string
   mode: AiRuntimeStopMode
   reason?: string
 }
 
-export interface AiRuntimeStopSessionResult {
+export interface AiRuntimeStopInstanceResult {
   instance: AiRuntimeInstanceSnapshot
   history: AiRuntimeHistorySnapshot
 }
@@ -295,13 +291,13 @@ export interface AiRuntimeApi {
   registerBusiness(registration: AiBusinessRegistration): void
   getBusinessRegistration(businessId: string): AiBusinessRegistration | undefined
   listBusinessRegistrations(): readonly AiBusinessRegistration[]
-  startSession(options: AiRuntimeStartSessionOptions): Promise<AiRuntimeStartSessionResult>
-  stopSession(options: AiRuntimeStopSessionOptions): Promise<AiRuntimeStopSessionResult>
+  startInstance(options: AiRuntimeStartInstanceOptions): Promise<AiRuntimeStartInstanceResult>
+  stopInstance(options: AiRuntimeStopInstanceOptions): Promise<AiRuntimeStopInstanceResult>
   appendMessages(options: AiRuntimeAppendMessagesOptions): AiRuntimeHistorySnapshot
   getAvailableFunctions(instanceId: string): readonly AiRuntimeFunctionExposure[]
   executeFunctionCall(options: AiRuntimeExecuteFunctionCallOptions): Promise<AiRuntimeExecuteFunctionCallResult>
   listInstances(): readonly AiRuntimeInstanceSnapshot[]
   getInstanceDetail(instanceId: string): AiRuntimeInstanceDetail | null
-  getSessionHistory(instanceId: string): AiRuntimeHistorySnapshot | null
+  getInstanceHistory(instanceId: string): AiRuntimeHistorySnapshot | null
   subscribe(listener: AiRuntimeEventListener): () => void
 }

@@ -17,7 +17,7 @@ type SparkNodeTreeMethodKey = MethodKey<SparkNodeTree>
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'
 export type SparkNodeTreeToolAction = `pageDesign@nodeTree@${string}`
-type SparkNodeTreeToolCoreFields = {
+type SparkNodeTreeToolBaseFields = {
   action: SparkNodeTreeToolAction
   type: 'describe' | 'request'
   description: string
@@ -27,7 +27,7 @@ type SparkNodeTreeToolCoreFields = {
   usageRules: readonly string[]
 }
 
-export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolCoreFields & {
+export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolBaseFields & {
   failureModes: readonly SparkNodeTreeToolFailureMode[]
   target: SparkNodeTreeToolTarget
   coreMethod: SparkNodeTreeMethodKey

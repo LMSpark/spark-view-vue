@@ -475,7 +475,7 @@ export class PageDesignBusiness implements AiBusinessRegistration<typeof PAGE_DE
     ] as const satisfies readonly PageDesignAnyModuleDefinition[]
   }
 
-  releaseSession(context: { instanceId: string }): void {
+  releaseInstance(context: { instanceId: string }): void {
     this.states.delete(context.instanceId)
   }
 

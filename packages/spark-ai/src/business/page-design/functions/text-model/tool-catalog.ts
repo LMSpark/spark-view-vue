@@ -9,7 +9,7 @@ export type TextModelFunctionTarget = 'script' | 'style'
 export type TextModelFunctionFileKey = 'script' | 'style'
 export type TextModelFunctionAction = `pageDesign@textModel@${string}`
 
-type TextModelFunctionCoreFields = {
+type TextModelFunctionBaseFields = {
   action: TextModelFunctionAction
   type: 'describe' | 'request'
   description: string
@@ -19,7 +19,7 @@ type TextModelFunctionCoreFields = {
   usageRules: readonly string[]
 }
 
-export type TextModelFunctionParameterRow = TextModelFunctionCoreFields & {
+export type TextModelFunctionParameterRow = TextModelFunctionBaseFields & {
   failureModes: readonly TextModelFunctionFailureMode[]
   target: TextModelFunctionTarget
   fileKey: TextModelFunctionFileKey

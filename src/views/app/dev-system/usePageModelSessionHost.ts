@@ -6,7 +6,7 @@ import {
   PageDesignBusiness,
   type AiRuntimeApi,
   type AiRuntimeFunctionExposure,
-  type AiRuntimeStartSessionResult,
+  type AiRuntimeStartInstanceResult,
   type EditToolHost,
 } from '@spark-view/spark-ai'
 import { createAuthHeaders } from '@/services/http'
@@ -58,7 +58,7 @@ export interface PageModelSessionHost {
   executeBackendTurn: (signal?: AbortSignal) => Promise<PageModelBackendTurnResult>
 }
 
-function createContext(sessionKey: string, session: AiRuntimeStartSessionResult): PageModelFunctionContext {
+function createContext(sessionKey: string, session: AiRuntimeStartInstanceResult): PageModelFunctionContext {
   return {
     sessionKey,
     instanceId: session.instanceId,
@@ -86,7 +86,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     context.value = null
     backendSessionId = undefined
     if (current !== null) {
-      await core.stopSession({ instanceId: current.instanceId, mode: 'stop', reason: 'reset' })
+      await core.stopInstance({ instanceId: current.instanceId, mode: 'stop', reason: 'reset' })
     }
   }
 
@@ -109,7 +109,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
       await reset()
     }
 
-    const session = await core.startSession({ businessId: PageDesignBusiness.businessId })
+    const session = await core.startInstance({ businessId: PageDesignBusiness.businessId })
     const nextContext = createContext(sessionKey, session)
     context.value = nextContext
     return nextContext

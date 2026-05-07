@@ -1,20 +1,20 @@
 # spark-ai Architecture
 
-`spark-ai` is the AI runtime package for SPARK. The package now has one mainline architecture: a business-registration core plus business-owned services. The old global function registry, carrier registry, model session loop, and page-model session helpers have been removed instead of kept as compatibility layers.
+`spark-ai` is the AI runtime package for SPARK. The package now has one mainline architecture: a business-registration runtime plus business-owned services. The old global function registry, carrier registry, model session loop, and page-model session helpers have been removed instead of kept as compatibility layers.
 
-## Core Boundary
+## Runtime Boundary
 
-`src/core` is the deterministic adapter between business services and an LLM-facing host:
+`src/core` is the deterministic runtime boundary between business services and an LLM-facing host:
 
 - register an `AiBusinessRegistration`
 - expose business -> module -> function metadata as `business@module@function`
-- start, pause, resume, and stop an adapter session
+- start, pause, resume, and stop a runtime instance
 - keep per-instance history and function-call records
 - expose the currently available functions for an instance
 - execute exactly one function call through an explicit `instanceId`
 - publish lifecycle, history, and function events
 
-The core does not own business service lifecycle, create module runtime state, talk to an LLM, retry model turns, or keep a process-wide function registry. Business services self-manage their state and optionally release per-adapter-session state through `releaseSession`.
+The runtime does not own business service lifecycle, create module runtime state, talk to an LLM, retry model turns, or keep a process-wide function registry. Business services self-manage their state and optionally release per-instance state through `releaseInstance`.
 
 ## Action Address
 
@@ -43,7 +43,8 @@ src/core/protocol/parameter-schema.ts
 src/core/protocol/llm-params-validator.ts
 src/core/protocol/knowledge-payload-contracts.ts
 src/core/knowledge/payload-provider-registry.ts
-src/core/runtime/ai-core.ts
+src/core/runtime/ai-runtime.ts
+src/core/runtime/ai-runtime-support.ts
 ```
 
 `src/business/page-design` defines the `pageDesign` business and now uses class-first business components for prompts, payload providers, function catalogs, cache handles, and live edit-state adapters.
@@ -57,7 +58,7 @@ src/core/runtime/ai-core.ts
 - `nodeTree`
 - `dataset`
 
-The business reads and writes the live model through `EditToolHost` and owns the per-adapter-session edit state through `PageDesignEditSession`. It does not accept old file snapshot payloads as a compatibility path, and it does not expose export/history actions through the dialogue action surface.
+The business reads and writes the live model through `EditToolHost` and owns per-instance edit state through `PageDesignEditSession`. It does not accept old file snapshot payloads as a compatibility path, and it does not expose export/history actions through the dialogue action surface.
 
 ## Knowledge Payloads
 
@@ -87,5 +88,5 @@ Focused validation for this package:
 
 ```bash
 pnpm --filter @spark-view/spark-ai run typecheck
-pnpm exec vitest run tests/ai-core-business-runtime.test.ts tests/page-design-business-definition.test.ts tests/protocol-parser-json-extract.test.ts tests/llm-params-validator.test.ts --reporter verbose
+pnpm exec vitest run tests/ai-runtime-business.test.ts tests/ai-runtime-public-api.test.ts tests/page-design-business-definition.test.ts tests/protocol-parser-json-extract.test.ts tests/llm-params-validator.test.ts --reporter verbose
 ```

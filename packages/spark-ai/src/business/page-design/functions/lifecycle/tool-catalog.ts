@@ -8,7 +8,7 @@ export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'
 export type EditLifecycleFunctionAction = `pageDesign@lifecycle@${string}`
 
-type EditLifecycleFunctionCoreFields = {
+type EditLifecycleFunctionBaseFields = {
   action: EditLifecycleFunctionAction
   type: 'describe' | 'request'
   description: string
@@ -18,7 +18,7 @@ type EditLifecycleFunctionCoreFields = {
   usageRules: readonly string[]
 }
 
-export type EditLifecycleFunctionParameterRow = EditLifecycleFunctionCoreFields & {
+export type EditLifecycleFunctionParameterRow = EditLifecycleFunctionBaseFields & {
   failureModes: readonly EditLifecycleFunctionFailureMode[]
   target: EditLifecycleFunctionTarget
 }

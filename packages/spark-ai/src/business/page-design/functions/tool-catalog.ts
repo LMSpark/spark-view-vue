@@ -38,7 +38,7 @@ export function createPageDesignCapabilityRow<
   integrationStatus: PageDesignCapabilityIntegrationStatus,
   extras: PageDesignCapabilityExtras = {},
 ): TCapability {
-  return {
+  const capability = {
     action: row.action,
     type: row.type,
     target: row.target,
@@ -50,7 +50,8 @@ export function createPageDesignCapabilityRow<
     ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
     ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
     ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
-  } as TCapability
+  }
+  return capability as unknown as TCapability
 }
 
 export abstract class PageDesignToolCatalog<

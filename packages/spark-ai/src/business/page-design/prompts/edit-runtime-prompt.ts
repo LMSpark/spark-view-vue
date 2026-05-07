@@ -2,12 +2,12 @@ import {
   PageDesignEditFlowPrompts,
 } from './edit-flow-prompts'
 
-const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Core: business-registration adapter boundary ══
+const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Runtime: business-registration boundary ══
 
   - action 地址统一为 business@module@function。
   - AI 会话宿主负责模型通讯、tool schema 投影、函数选择、重试、追问、暂停与恢复。
-  - AI Core 只负责适配会话、业务/模块/函数曝光、单次函数分发、历史与事件。
-  - 业务服务自管生命周期与状态，Core 不创建模块运行态。
+  - AI Runtime 只负责运行实例、业务/模块/函数曝光、单次函数分发、历史与事件。
+  - 业务服务自管生命周期与状态，Runtime 不创建模块运行态。
   - 函数调用必须显式携带 instanceId；instanceId 不进入业务 args。`
 
 export class PageDesignEditRuntimePrompt {

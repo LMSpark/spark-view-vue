@@ -309,7 +309,7 @@ export interface HydratedComponentEntry extends Omit<ComponentEntry, 'props' | '
 
 
 // =========================================================
-// 二、基础解析与水合（Core Resolution & Hydration）
+// 二、基础解析与水合（Resolution & Hydration）
 // =========================================================
 
 /**

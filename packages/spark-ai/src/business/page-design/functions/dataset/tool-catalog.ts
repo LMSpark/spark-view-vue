@@ -34,7 +34,7 @@ export type DatasetCrudToolFunctionTarget =
   | 'relation'
   | 'dependency'
 export type DatasetCrudToolFunctionAction = `pageDesign@dataset@${string}`
-type DatasetCrudToolFunctionCoreFields = {
+type DatasetCrudToolFunctionBaseFields = {
   action: DatasetCrudToolFunctionAction
   type: 'describe' | 'request'
   description: string
@@ -44,7 +44,7 @@ type DatasetCrudToolFunctionCoreFields = {
   usageRules: readonly string[]
 }
 
-export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionCoreFields & {
+export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionBaseFields & {
   failureModes: readonly DatasetCrudToolFunctionFailureMode[]
   target: DatasetCrudToolFunctionTarget
   crudToolMethod: DataSetCrudToolMethodKey

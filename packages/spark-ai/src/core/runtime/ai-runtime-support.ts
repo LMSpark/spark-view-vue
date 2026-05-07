@@ -22,6 +22,15 @@ import type {
   AiFunctionRegistration,
 } from '../protocol/business-contracts'
 
+function cloneRuntimeValue<T>(value: T): T {
+  if (value === null || value === undefined || typeof value !== 'object') return value
+  try {
+    return globalThis.structuredClone(value)
+  } catch {
+    return JSON.parse(JSON.stringify(value)) as T
+  }
+}
+
 export interface AiRuntimeHistoryState {
   version: number
   messages: AiRuntimeHistoryMessage[]
@@ -113,11 +122,11 @@ export class AiRuntimeProjector {
       moduleId: item.moduleId,
       functionId: item.functionId,
       description: item.description,
-      paramsSchema: item.paramsSchema,
-      ...(item.resultSchema !== undefined ? { resultSchema: item.resultSchema } : {}),
+      paramsSchema: cloneRuntimeValue(item.paramsSchema),
+      ...(item.resultSchema !== undefined ? { resultSchema: cloneRuntimeValue(item.resultSchema) } : {}),
       ...(item.maxExecutionMs !== undefined ? { maxExecutionMs: item.maxExecutionMs } : {}),
-      ...(item.usageRules !== undefined ? { usageRules: item.usageRules } : {}),
-      ...(item.failureModes !== undefined ? { failureModes: item.failureModes } : {}),
+      ...(item.usageRules !== undefined ? { usageRules: [...item.usageRules] } : {}),
+      ...(item.failureModes !== undefined ? { failureModes: item.failureModes.map((mode) => ({ ...mode })) } : {}),
     }))
   }
 
@@ -145,9 +154,13 @@ export class AiRuntimeProjector {
     return {
       instanceId: instance.instanceId,
       version: instance.history.version,
-      messages: [...instance.history.messages],
-      functionCalls: [...instance.history.functionCalls],
-      lifecycleMarkers: [...instance.history.lifecycleMarkers],
+      messages: instance.history.messages.map((message) => ({ ...message })),
+      functionCalls: instance.history.functionCalls.map((call) => ({
+        ...call,
+        args: cloneRuntimeValue(call.args),
+        result: cloneRuntimeValue(call.result),
+      })),
+      lifecycleMarkers: instance.history.lifecycleMarkers.map((marker) => ({ ...marker })),
       functionExposureSnapshots: instance.history.functionExposureSnapshots.map((snapshot) => ({
         id: snapshot.id,
         timestamp: snapshot.timestamp,
@@ -303,8 +316,8 @@ export class AiRuntimeHistory {
       timestamp: this.now(),
       instanceId: instance.instanceId,
       action,
-      args,
-      result,
+      args: cloneRuntimeValue(args),
+      result: cloneRuntimeValue(result),
     })
     instance.history.version += 1
     this.eventHub.emit(instance, 'history.functionCall.appended', { action, result })
