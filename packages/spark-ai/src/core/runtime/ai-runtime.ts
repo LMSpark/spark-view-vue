@@ -12,10 +12,12 @@ import type {
   AiRuntimeInstanceDetail,
   AiRuntimeInstanceSnapshot,
   AiRuntimeOptions,
+  AiRuntimeBusinessInstanceScope,
   AiRuntimeStartInstanceOptions,
   AiRuntimeStartInstanceResult,
   AiRuntimeStopInstanceOptions,
   AiRuntimeStopInstanceResult,
+  AiRuntimeStopBusinessInstanceOptions,
   FunctionExecutionContext,
 } from '../protocol/business-contracts'
 import { AiInvocationProtocol } from '../protocol/invocation-helpers'
@@ -96,10 +98,7 @@ export class AiRuntime implements AiRuntimeApi {
       }
     }
 
-    const instanceId = this.createInstanceId(options.businessId, options.businessInstanceId)
-    if (this.instances.has(instanceId)) {
-      throw new Error(`Duplicate AI core instanceId: ${instanceId}`)
-    }
+    const instanceId = this.createUniqueInstanceId(options.businessId, options.businessInstanceId)
 
     const businessExposure = await this.projector.projectBusiness(business, {
       instanceId,
@@ -176,6 +175,16 @@ export class AiRuntime implements AiRuntimeApi {
       instance: this.projector.createInstanceSnapshot(instance),
       history: this.history.createHistorySnapshot(instance),
     }
+  }
+
+  async stopInstanceByBusinessScope(options: AiRuntimeStopBusinessInstanceOptions): Promise<AiRuntimeStopInstanceResult> {
+    const instance = this.getInstanceByBusinessScopeOrThrow(options)
+    const stopOptions: AiRuntimeStopInstanceOptions = {
+      instanceId: instance.instanceId,
+      mode: options.mode,
+      ...(options.reason === undefined ? {} : { reason: options.reason }),
+    }
+    return this.stopInstance(stopOptions)
   }
 
   appendMessages(options: AiRuntimeAppendMessagesOptions): AiRuntimeHistorySnapshot {
@@ -308,6 +317,16 @@ export class AiRuntime implements AiRuntimeApi {
 
   getInstanceHistory(instanceId: string): AiRuntimeHistorySnapshot | null {
     const instance = this.instances.get(instanceId)
+    return instance ? this.history.createHistorySnapshot(instance) : null
+  }
+
+  getInstanceByBusinessScope(scope: AiRuntimeBusinessInstanceScope): AiRuntimeInstanceSnapshot | null {
+    const instance = this.resolveInstanceByScope(scope)
+    return instance ? this.projector.createInstanceSnapshot(instance) : null
+  }
+
+  getInstanceHistoryByBusinessScope(scope: AiRuntimeBusinessInstanceScope): AiRuntimeHistorySnapshot | null {
+    const instance = this.resolveInstanceByScope(scope)
     return instance ? this.history.createHistorySnapshot(instance) : null
   }
 
@@ -499,5 +518,27 @@ export class AiRuntime implements AiRuntimeApi {
 
   private makeBusinessInstanceKey(businessId: string, businessInstanceId: string): string {
     return `${businessId}::${businessInstanceId}`
+  }
+
+  private resolveInstanceByScope(scope: AiRuntimeBusinessInstanceScope): AiRuntimeInstanceState | null {
+    const instanceId = this.instancesByBusinessInstance.get(this.makeBusinessInstanceKey(scope.businessId, scope.businessInstanceId))
+    if (instanceId === undefined) return null
+    return this.instances.get(instanceId) ?? null
+  }
+
+  private getInstanceByBusinessScopeOrThrow(scope: AiRuntimeBusinessInstanceScope): AiRuntimeInstanceState {
+    const instance = this.resolveInstanceByScope(scope)
+    if (instance === null) {
+      throw new Error(`Unknown AI runtime instance for business ${scope.businessId} + ${scope.businessInstanceId}`)
+    }
+    return instance
+  }
+
+  private createUniqueInstanceId(businessId: string, businessInstanceId: string): string {
+    const base = this.createInstanceId(businessId, businessInstanceId)
+    if (!this.instances.has(base)) return base
+    let counter = 1
+    while (this.instances.has(`${base}-${counter}`)) counter += 1
+    return `${base}-${counter}`
   }
 }

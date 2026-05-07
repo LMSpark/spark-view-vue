@@ -22,6 +22,7 @@ SPARK 的 AI 运行时包，采用业务注册架构：运行时负责 LLM-facin
   - `businessInstanceId`：业务实例维度（同一能力下的不同对象），例如“张三请假”和“李四请假”是两个实例。
   - `instanceId`：由核心层统一分配/管理的运行时实例。
 - **会话归口**：同一 `(businessId, businessInstanceId)` 重入时恢复同一运行时实例；不同实例间互不污染。
+- **会话查询**：核心层同时提供按 `(businessId, businessInstanceId)` 的实例快照和历史查询，用于 UI/业务服务做生命周期侧栏联动，不需要业务侧额外维护会话索引。
 - **事件能力**：核心层通过 `subscribe` 提供统一事件流，支持 UI 与业务服务监听生命周期、函数前后置和历史变更，避免在调用方之间重复维护通知链路。
 
 ## 分层入口
@@ -37,6 +38,8 @@ SPARK 的 AI 运行时包，采用业务注册架构：运行时负责 LLM-facin
 - 组件配置规格查询、参数荷载查询与工具执行前置引导
 - AI 会话与本地编辑状态联动
 - 启动实例采用 `startInstance({ businessId, businessInstanceId })`；同一业务能力+业务实例对会恢复同一运行时实例（不保留旧的兼容入口）
+- 按业务实例维度也可直接查会话快照与历史：`getInstanceByBusinessScope`、`getInstanceHistoryByBusinessScope`
+- 支持按 `(businessId, businessInstanceId)` 关闭会话：`stopInstanceByBusinessScope`
 
 ## 开发命令
 

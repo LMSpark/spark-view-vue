@@ -11,7 +11,8 @@
 - register an `AiBusinessRegistration`
 - expose business -> module -> function metadata as `business@module@function`
 - start, pause, stop, and resumable start of a runtime instance by `businessId + businessInstanceId`
-- keep per-instance history and function-call records
+- resolve active instances and history by `businessId + businessInstanceId`
+- keep per-instance history and function-call records, and support business-instance-scoped history lookup
 - expose the currently available functions for an instance
 - execute exactly one function call through an explicit `instanceId`
 - publish lifecycle, history, and function events
@@ -33,7 +34,8 @@ Core is the standard-owner and should be read as one contract layer:
   - startup/recovery entrypoint is always `startInstance({ businessId, businessInstanceId })`
   - `businessId + businessInstanceId` is the external session identity used by callers and hosts
   - each active runtime instance maps to one `instanceId`
-  - same pair resumes the same runtime instance
+- same pair resumes the same runtime instance
+- `getInstanceByBusinessScope` / `getInstanceHistoryByBusinessScope` are the scoped query entrypoints
 - **Event semantics**
   - `AiRuntime.subscribe` is the event bridge for UI hooks and business observers
   - events include lifecycle + function + history events for state sync and audit trails
@@ -114,7 +116,9 @@ Migrating callers should use registration-first lifecycle:
 - `AiRuntime.registerBusiness`
 - `AiRuntime.startInstance({ businessId, businessInstanceId })`
 - `AiRuntime.stopInstance({ instanceId, mode: 'pause' | 'stop' })`
+- `AiRuntime.stopInstanceByBusinessScope({ businessId, businessInstanceId, mode })`
 - `AiRuntime.getAvailableFunctions(instanceId)`
+- `AiRuntime.getInstanceByBusinessScope({ businessId, businessInstanceId })`
 - `AiRuntime.executeFunctionCall({ instanceId, action, args })`
 
 ## Validation

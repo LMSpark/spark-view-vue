@@ -58,6 +58,14 @@ function createLeaveFormService(): LeaveFormService {
   }
 }
 
+function resolveByScope(
+  core: AiRuntimeApi,
+  businessId: string,
+  businessInstanceId: string,
+): ReturnType<AiRuntimeApi['getInstanceByBusinessScope']> {
+  return core.getInstanceByBusinessScope({ businessId, businessInstanceId })
+}
+
 function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<'leaveApproval'> {
   const functions: ReadonlyArray<AiFunctionRegistration<unknown, unknown, 'leaveApproval', 'form'>> = [
     {
@@ -113,6 +121,19 @@ function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<
 }
 
 describe('AI runtime business-first API', () => {
+  it('resolves active session by business instance scope', async () => {
+    const core = createDeterministicRuntime()
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
+
+    const started = await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance-a' })
+
+    const scoped = resolveByScope(core, 'leaveApproval', 'leave-instance-a')
+    expect(scoped?.instanceId).toBe(started.instanceId)
+    expect(scoped?.businessInstanceId).toBe('leave-instance-a')
+    expect(resolveByScope(core, 'leaveApproval', 'leave-instance-miss')).toBeNull()
+  })
+
   it('registers business information and starts a runtime instance without exposing sessionId', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
@@ -255,6 +276,26 @@ describe('AI runtime business-first API', () => {
     expect(service.get('leave-1')).toBeUndefined()
     expect(core.getInstanceDetail('leave-1')?.modules.map((module) => module.moduleId)).toEqual(['form'])
     await expect(core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })).rejects.toThrow('terminal runtime instance')
+  })
+
+  it('stops by business scope and keeps business-owned state aligned', async () => {
+    const core = createDeterministicRuntime()
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
+
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'stop-by-scope' })
+    const stopped = await core.stopInstanceByBusinessScope({
+      businessId: 'leaveApproval',
+      businessInstanceId: 'stop-by-scope',
+      mode: 'stop',
+      reason: 'done',
+    })
+
+    expect(stopped.instance.instanceId).toBe('leave-1')
+    expect(stopped.instance.status).toBe('Stopped')
+    expect(stopped.history.lifecycleMarkers.map((record) => record.status)).toContain('Stopped')
+    expect(service.get('leave-1')).toBeUndefined()
+    expect(core.getInstanceHistoryByBusinessScope({ businessId: 'leaveApproval', businessInstanceId: 'stop-by-scope' })).not.toBeNull()
   })
 
   it('publishes lifecycle and function events as an observation surface', async () => {
