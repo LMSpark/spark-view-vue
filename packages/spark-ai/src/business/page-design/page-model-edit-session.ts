@@ -12,18 +12,18 @@
  * - 页面文件的真实读写能力由 EditToolHost 提供并由调用方注入。
  */
 
-import type { SparkNodeTree } from '@spark-view/spark-component'
-import type { DialogueTurn, OrchestratorResult, SessionBackend, ToolDefinition } from '../../core/protocol/session-contracts'
-import { runFunctionLoop } from '../../core/runtime/session-orchestrator'
-import { generateToolDefinitions, functionNameToAction } from '../../core/protocol/fc-schema'
+import type { DialogueTurn, OrchestratorResult, SessionBackend, ToolDefinition } from '../../core/session/contracts'
+import { runFunctionLoop } from '../../core/session/orchestrator'
+import { functionNameToAction } from '../../core/function/tool-schema'
+import { generateToolDefinitions } from '../../core/function/tool-schema'
 import { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'
-import type { FunctionResult, FunctionRuntimeContext } from '../../core/protocol/function-contracts'
-import { executeFunction } from '../../core/runtime/function-dispatcher'
-import { createDefaultFollowUpPolicy } from '../../core/runtime/default-follow-up-policy'
+import type { FunctionResult, FunctionRuntimeContext } from '../../core/function/contracts'
+import { executeFunction } from '../../core/function/dispatcher'
+import { createDefaultFollowUpPolicy } from '../../core/session/followup-policy'
 import {
   createRepeatDetectionMonitor,
   type RepeatDetectionConfig,
-} from '../../core/runtime/repeat-detection-monitor'
+} from '../../core/session/repeat-monitor'
 import {
   editInit,
   EDIT_FUNCTION_SUMMARIES,
@@ -33,6 +33,7 @@ import {
   isEditWriteAction,
   type EditState,
   type EditToolHost,
+  type PageDesignNodeTree,
 } from './functions'
 import {
   createPageModelSessionHost,
@@ -69,7 +70,7 @@ export interface PageModelEditSessionState {
   /** 有界日志缓冲（内部按 LOG_LIMIT 维护）。 */
   log: PageModelEditLogEntry[]
   /** 当前激活的页面节点树投影，供 UI 即时消费。 */
-  nodeTree: SparkNodeTree | null
+  nodeTree: PageDesignNodeTree | null
 }
 
 /**

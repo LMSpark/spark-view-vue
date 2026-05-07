@@ -2,11 +2,11 @@ import type {
   FunctionFailureMode,
   FunctionResult,
   RegisteredFunctionDefinition,
-} from '../protocol/function-contracts'
-import { noGuard } from '../protocol/function-contracts'
-import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
-import { actionToFunctionName, functionNameToAction } from '../protocol/fc-schema'
-import { isNonEmptyString, missingParam } from '../protocol/function-utils'
+} from '../function/contracts'
+import { noGuard } from '../function/contracts'
+import { getAllFunctionDefinitions, getFunctionDefinition } from '../function/registry'
+import { actionToFunctionName, functionNameToAction } from '../function/tool-schema'
+import { isNonEmptyString, missingParam } from '../function/utils'
 import {
   getKnowledgePayloadProvider,
   getKnowledgePayloadProviders,

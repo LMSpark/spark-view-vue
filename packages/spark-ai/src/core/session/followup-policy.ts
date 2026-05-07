@@ -6,13 +6,13 @@
  * 业务层在不引入新策略类的前提下定制提示词内容。
  */
 
-import { getFunctionDefinition } from '../registry/function-registry'
+import { getFunctionDefinition } from '../function/registry'
 import type {
   FollowUpBuildContext,
   FollowUpPolicy,
   MonitorContext,
-} from '../protocol/session-contracts'
-import type { PostValidationWarning } from '../protocol/function-contracts'
+} from './contracts'
+import type { PostValidationWarning } from '../function/contracts'
 
 export interface FollowUpDecorations {
   /** 拼到 [系统后置校验警告] 头部之后的上下文前缀，例如 "[页面名] " */

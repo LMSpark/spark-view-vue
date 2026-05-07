@@ -1,4 +1,4 @@
-import type { RegisteredFunctionDefinition } from '../protocol/function-contracts'
+import type { RegisteredFunctionDefinition } from './contracts'
 
 const registry = new Map<string, RegisteredFunctionDefinition<unknown, unknown>>()
 

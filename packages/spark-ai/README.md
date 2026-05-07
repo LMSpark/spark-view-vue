@@ -1,18 +1,18 @@
 # @spark-view/spark-ai
 
-SPARK 的 AI 运行时包，负责把受约束的 AI 输出接入现有页面平台，而不是直接生成和接管整个前端代码仓库。
+SPARK 的 AI 运行时包，负责把 Function Calling 会话、组件知识目录和页面编辑工具接入现有页面平台。
 
 ## 主要职责
 
-- SSE 对话与事件流协同
-- Stills 执行链与 AI 页面生成闭环
-- 组件目录、提示词与 AI 运行时之间的桥接
+- Function Calling 会话循环、工具 schema 生成与本地函数调度
+- `core@knowledge` 查询函数与组件 payload 目录桥接
+- `page-design` 四文件编辑运行时：`rule.json`、`pagedata.json`、`script.js`、`style.css`
 
 ## 适用场景
 
-- 前端页面配置生成与迭代
-- AI 调试链路接入
-- Stills 约束下的消息处理和结果落盘
+- 页面模型的细粒度编辑与迭代
+- 组件配置规格查询、参数荷载查询与工具执行前置引导
+- AI 会话后端、SSE 调试事件与本地编辑状态联动
 
 ## 开发命令
 

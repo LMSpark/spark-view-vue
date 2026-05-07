@@ -1,4 +1,4 @@
-import type { FunctionResult, RegisteredFunctionDefinition } from '../../../../../core/protocol/function-contracts'
+import type { FunctionResult, RegisteredFunctionDefinition } from '../../../../../core/function/contracts'
 import {
   editInit,
   createEditLifecycleFunctions,
@@ -12,6 +12,7 @@ import {
 import { createEditFileFunctions, EDIT_FILE_FUNCTION_SUMMARIES } from '../../text-model/text-model-functions'
 import { DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE } from '../../dataset'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE, validateSparkNodeTreeToolParams } from '../../node-tree'
+import { TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE } from '../../text-model/tool-catalog'
 
 const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign@nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 core@knowledge@queryPayloads/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
 const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign@dataset 只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
@@ -162,4 +163,28 @@ export const EDIT_FUNCTION_SUMMARIES = [
     .filter((row) => !HIDDEN_EDIT_DATASET_METHODS.has(row.crudToolMethod))
     .map(row => ({ action: row.action, type: row.type })),
 ] as const
+
+export function isEditNodeTreeWriteAction(action: string): boolean {
+  return SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.some((row) => row.type === 'request' && row.action === action)
+}
+
+export function isEditDataSetWriteAction(action: string): boolean {
+  return DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE.some(
+    (row) => row.type === 'request'
+      && row.action === action
+      && !HIDDEN_EDIT_DATASET_METHODS.has(row.crudToolMethod),
+  )
+}
+
+export function isEditTextModelWriteAction(action: string): boolean {
+  return TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.some((row) => row.type === 'request' && row.action === action)
+}
+
+export function isEditWriteAction(action: string): boolean {
+  return (
+    isEditNodeTreeWriteAction(action)
+    || isEditDataSetWriteAction(action)
+    || isEditTextModelWriteAction(action)
+  )
+}
 

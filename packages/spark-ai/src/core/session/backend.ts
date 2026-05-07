@@ -11,7 +11,7 @@ import type {
   SessionBackendSseEvent,
   ToolCall,
   ToolDefinition,
-} from '../protocol/session-contracts'
+} from './contracts'
 
 const log = Logger('SessionBackend')
 

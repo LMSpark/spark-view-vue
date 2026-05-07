@@ -1,6 +1,6 @@
-import type { RegisteredFunctionDefinition } from './function-contracts'
-import { getAllFunctionDefinitions } from '../registry/function-registry'
-import type { JsonSchemaProperty, ToolDefinition } from './session-contracts'
+import type { RegisteredFunctionDefinition } from './contracts'
+import { getAllFunctionDefinitions } from './registry'
+import type { JsonSchemaProperty, ToolDefinition } from '../session/contracts'
 import {
   isArraySchema,
   isEnumSchema,
@@ -193,12 +193,14 @@ export function functionToToolDefinition<TParams, TResult>(
   }
 }
 
+export interface ToolDefinitionFilter {
+  types?: Array<'request' | 'describe'>
+  actions?: string[]
+  compactDescriptions?: boolean
+}
+
 export function generateToolDefinitions(
-  filter?: {
-    types?: Array<'request' | 'describe'>
-    actions?: string[]
-    compactDescriptions?: boolean
-  },
+  filter?: ToolDefinitionFilter,
 ): ToolDefinition[] {
   const tools: ToolDefinition[] = []
   const allowedActions = filter?.actions ? new Set(filter.actions) : null

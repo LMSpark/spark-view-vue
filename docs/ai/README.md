@@ -22,7 +22,6 @@
 | 分组 | 文件 | 角色 |
 |------|------|------|
 | **平台规则** | [API_FIRST_PROMPT.md](prompts/platform/API_FIRST_PROMPT.md) | API-first 约束（强制） |
-| | [STILLS_BLUEPRINT_PROMPT.md](prompts/platform/STILLS_BLUEPRINT_PROMPT.md) | Stills 蓝图驱动渐进执行提示词（业务无关） |
 | **数据生成** | [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md) | 生产版主入口 |
 | | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 组装模板（规则以生产版为准） |
 | | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证附录 |
@@ -33,16 +32,13 @@
 | | [R_TABLE_PROMPT.md](prompts/components/R_TABLE_PROMPT.md) | r-table 专项 |
 | | [COMPONENT_DEEP_OPTIMIZATION_PROMPT_TEMPLATE.md](prompts/components/COMPONENT_DEEP_OPTIMIZATION_PROMPT_TEMPLATE.md) | 深度优化模板 |
 
-### 第 3 层：AI 架构设计（architecture/）
+### 第 3 层：AI 架构设计
 
-AI 配置能力的系统设计与实施规划。这里只保留当前仍存在并可作为依据的文档。
+当前架构以代码包内的运行时边界文档为准。
 
 | 文件 | 说明 |
 |------|------|
-| [DEVSYSTEM_AI_4FILE_IMPLEMENTATION_REVIEW_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_IMPLEMENTATION_REVIEW_PLAN.md) | **当前实施基线**：包含已审核计划、阶段性实施回写、偏离计划项、实际验证结果与后续入口 |
-| [DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md) | **预研母版**：DevSystem AI 统一到页面级 4 文件同层编辑的背景梳理与目标架构；审核时以实施计划书为准 |
-| [DEVSYSTEM_DATASET_TOOL_SSOT.md](architecture/DEVSYSTEM_DATASET_TOOL_SSOT.md) | **当前实现**：DevSystem / `pagedata.json` / `DataSetCrudTool` / AI 能力目录之间的 SSoT 边界与调用链 |
-| [AI_FRONTEND_UNIFICATION_PLAN.md](architecture/AI_FRONTEND_UNIFICATION_PLAN.md) | 前端 AI 引擎统一与细粒度编辑主链路规划 |
+| [packages/spark-ai/ARCHITECTURE.md](../../packages/spark-ai/ARCHITECTURE.md) | spark-ai 当前职责、模块边界、后端接口边界与历史说明 |
 
 ## 角色约定
 

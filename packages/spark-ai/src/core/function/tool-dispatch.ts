@@ -1,7 +1,7 @@
-import type { FunctionResult, FunctionRuntimeContext } from '../protocol/function-contracts'
-import { executeFunction } from './function-dispatcher'
-import { functionNameToAction } from '../protocol/fc-schema'
-import type { FcDispatchResult, ToolCall, ToolResult } from '../protocol/session-contracts'
+import type { FunctionResult, FunctionRuntimeContext } from './contracts'
+import { executeFunction } from './dispatcher'
+import { functionNameToAction } from './tool-schema'
+import type { FcDispatchResult, ToolCall, ToolResult } from '../session/contracts'
 
 export function formatToolResultContent(result: FunctionResult): string {
   const stringify = (value: unknown): string => {

@@ -1,9 +1,9 @@
 import type {
   FunctionResult,
   RegisteredFunctionDefinition,
-} from '../../../../core/protocol/function-contracts'
-import type { SparkNodeTree } from '@spark-view/spark-component'
+} from '../../../../core/function/contracts'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
+import type { PageDesignNodeTree } from '../node-tree/types'
 import {
   EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE,
   validateEditLifecycleFunctionParams,
@@ -27,8 +27,8 @@ export type EditInitParams = unknown
 export type EditPhase = 'idle' | 'editing' | 'saved'
 
 export interface EditToolHost {
-  getNodeTree?: () => SparkNodeTree | null
-  onNodeTreeChanged?: (nodeTree: SparkNodeTree) => void
+  getNodeTree?: () => PageDesignNodeTree | null
+  onNodeTreeChanged?: (nodeTree: PageDesignNodeTree) => void
   getDataSetTool?: () => DataSetCrudTool | null
   onDataSetChanged?: (tool: DataSetCrudTool) => void
   readScript?: () => string
@@ -59,11 +59,11 @@ export function createEditState(): EditState {
   }
 }
 
-export function getActiveNodeTree(state: EditState): SparkNodeTree | null {
+export function getActiveNodeTree(state: EditState): PageDesignNodeTree | null {
   return state.toolHost?.getNodeTree?.() ?? null
 }
 
-export function notifyNodeTreeChanged(state: EditState, nodeTree: SparkNodeTree): void {
+export function notifyNodeTreeChanged(state: EditState, nodeTree: PageDesignNodeTree): void {
   state.toolHost?.onNodeTreeChanged?.(nodeTree)
 }
 

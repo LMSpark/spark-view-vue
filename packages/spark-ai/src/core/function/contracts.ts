@@ -1,5 +1,5 @@
 /**
- * Core function protocol.
+ * Core function domain.
  *
  * Address format is always `business@module@function`.
  * Core owns only function metadata, runtime trace, and execution contracts.

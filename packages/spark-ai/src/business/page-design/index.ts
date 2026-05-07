@@ -24,7 +24,7 @@ export {
   isEditDataSetWriteAction,
   isEditTextModelWriteAction,
 } from './functions'
-export type { EditState, EditToolHost } from './functions'
+export type { EditState, EditToolHost, PageDesignNodeTree } from './functions'
 
 /**
  * 页面设计业务上下文。

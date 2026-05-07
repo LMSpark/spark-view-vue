@@ -62,7 +62,7 @@ pnpm run dev
 
 ```
 packages/
-├── spark-ai/                    # 🤖 AI 运行时（SSE 事件、Stills 执行、Stills 协议）
+├── spark-ai/                    # 🤖 AI 运行时（Function Calling 会话、组件知识目录、页面编辑工具）
 ├── spark-app/                   # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
 ├── spark-component/             # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
 ├── spark-data/                  # 📊 数据空间（DataSet、DataView、TreeManager、关系与聚合）

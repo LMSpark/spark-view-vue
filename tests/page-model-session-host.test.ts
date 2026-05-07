@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { ref } from 'vue'
-import { clearFunctionRegistry, clearKnowledgeRegistry } from '@spark-view/spark-ai'
+import { clearFunctionRegistry } from '../packages/spark-ai/src/core/function/registry'
+import { clearKnowledgeRegistry } from '../packages/spark-ai/src/core/knowledge/registry'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
 import { usePageModelSessionHost } from '../src/views/app/dev-system/page-model-session'

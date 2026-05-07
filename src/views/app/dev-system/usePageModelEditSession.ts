@@ -9,13 +9,12 @@
  */
 
 import { onUnmounted, ref, shallowRef } from 'vue'
-import type { DialogueTurn, EditToolHost, RepeatDetectionConfig } from '@spark-view/spark-ai'
+import type { DialogueTurn, EditToolHost, PageDesignNodeTree, RepeatDetectionConfig } from '@spark-view/spark-ai'
 import {
   createPageModelEditSession,
   type PageModelEditLogEntry,
   type PageModelEditSessionRuntime,
 } from '@spark-view/spark-ai'
-import type { SparkNodeTree } from '@spark-view/spark-component'
 import type { PageModelSessionHost } from './usePageModelSessionHost'
 
 // ── Log entry type ─────────────────────────────────────────────────────────────
@@ -84,7 +83,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
   const busy = ref(initialState.busy)
   const aiBuffer = ref(initialState.aiBuffer)
   const log = ref<LogEntry[]>(initialState.log)
-  const nodeTree = shallowRef<SparkNodeTree | null>(initialState.nodeTree)
+  const nodeTree = shallowRef<PageDesignNodeTree | null>(initialState.nodeTree)
 
   const unsubscribe = controller.subscribe((state) => {
     ready.value = state.ready

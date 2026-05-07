@@ -1,4 +1,4 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
 
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionTarget = 'script' | 'style'

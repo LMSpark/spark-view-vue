@@ -1,4 +1,4 @@
-import type { FunctionResult, FunctionRuntimeContext, PostValidationWarning } from './function-contracts'
+import type { FunctionResult, FunctionRuntimeContext, PostValidationWarning } from '../function/contracts'
 
 export interface ToolCall {
   id: string

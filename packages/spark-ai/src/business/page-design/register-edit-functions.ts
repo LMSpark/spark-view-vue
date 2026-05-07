@@ -1,5 +1,5 @@
-import { registerCoreKnowledgeFunctions } from '../../core/knowledge/register-knowledge-functions'
-import { registerFunctions } from '../../core/registry/function-registry'
+import { registerCoreKnowledgeFunctions } from '../../core/knowledge/register'
+import { registerFunctions } from '../../core/function/registry'
 import { registerPageDesignPayloadProviders } from './payloads'
 import { createPageDesignEditFunctions, type EditState } from './functions'
 

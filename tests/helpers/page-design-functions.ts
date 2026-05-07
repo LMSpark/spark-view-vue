@@ -1,16 +1,14 @@
 import {
   bindLiveModelAdapter,
-  clearFunctionRegistry,
-  clearKnowledgeRegistry,
   createEditState,
-  createFunctionRuntimeContext,
-  executeFunction,
   registerPageDesignEditFunctions,
   type EditState,
   type EditToolHost,
-  type FunctionResult,
-  type FunctionRuntimeContext,
-} from '@spark-view/spark-ai'
+} from '../../packages/spark-ai/src/business/page-design'
+import { clearFunctionRegistry } from '../../packages/spark-ai/src/core/function/registry'
+import { clearKnowledgeRegistry } from '../../packages/spark-ai/src/core/knowledge/registry'
+import { createFunctionRuntimeContext, type FunctionResult, type FunctionRuntimeContext } from '../../packages/spark-ai/src/core/function/contracts'
+import { executeFunction } from '../../packages/spark-ai/src/core/function/dispatcher'
 
 export interface PageDesignFunctionHarness {
   context: FunctionRuntimeContext

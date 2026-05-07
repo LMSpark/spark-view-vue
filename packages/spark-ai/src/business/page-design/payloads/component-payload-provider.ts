@@ -1,7 +1,7 @@
 import componentCatalogJson from '../../../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../../../catalog/types'
 import { projectComponentConfigGuide, projectFunctionCatalog } from '../../../catalog/catalog-projections'
-import { inferJsonSchemaFromTypeText } from '../../../core/knowledge/payload-schema'
+import { inferJsonSchemaFromTypeText } from '../../../core/knowledge/schema'
 import { registerKnowledgePayloadProvider } from '../../../core/knowledge/registry'
 import type { KnowledgePayloadGuide, KnowledgePayloadProvider, KnowledgePayloadSummary } from '../../../core/knowledge/types'
 

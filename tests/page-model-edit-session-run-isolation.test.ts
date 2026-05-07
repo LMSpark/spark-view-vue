@@ -6,9 +6,12 @@ import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
 import type {
   OrchestratorResult,
+} from '../packages/spark-ai/src/core/session/contracts'
+import type {
   PageModelEditSessionRuntime,
   StartPageModelIterateSessionOptions,
-} from '@spark-view/spark-ai'
+  EditToolHost,
+} from '../packages/spark-ai/src/business/page-design'
 
 const shared = vi.hoisted(() => {
   const runs: Array<{
@@ -36,24 +39,14 @@ vi.mock('@/services/http', () => ({
   createAuthHeaders: vi.fn(() => ({})),
 }))
 
-vi.mock('@spark-view/spark-ai', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-ai')>()
-  return {
-    ...actual,
-    startIterateSession: shared.startIterateSession,
-    generateToolDefinitions: shared.generateToolDefinitions,
-  }
-})
-
 import {
   bindLiveModelAdapter,
-  clearFunctionRegistry,
-  clearKnowledgeRegistry,
   createEditState,
-  createFunctionRuntimeContext,
-  type EditToolHost,
   registerPageDesignEditFunctions,
-} from '@spark-view/spark-ai'
+} from '../packages/spark-ai/src/business/page-design'
+import { clearFunctionRegistry } from '../packages/spark-ai/src/core/function/registry'
+import { clearKnowledgeRegistry } from '../packages/spark-ai/src/core/knowledge/registry'
+import { createFunctionRuntimeContext } from '../packages/spark-ai/src/core/function/contracts'
 import { usePageModelEditSession } from '../src/views/app/dev-system/page-model-session'
 
 function createRuleEditHarness(options?: {

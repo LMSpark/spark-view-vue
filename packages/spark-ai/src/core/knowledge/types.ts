@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../protocol/function-contracts'
+import type { FunctionFailureMode } from '../function/contracts'
 
 export interface KnowledgeToolSummary {
   action: string

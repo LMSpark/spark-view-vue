@@ -16,9 +16,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   createSessionBackend,
   SessionBackendImpl,
-  type SessionBackend,
-  type LlmResponse,
-} from '@spark-view/spark-ai'
+} from '../packages/spark-ai/src/core/session/backend'
+import type {
+  SessionBackend,
+  LlmResponse,
+} from '../packages/spark-ai/src/core/session/contracts'
 
 const {
   mockPost,

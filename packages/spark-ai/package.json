@@ -6,13 +6,13 @@
   "types": "./dist/index.d.ts",
   "private": false,
   "license": "MIT",
-  "description": "SPARK AI Layer - AI 闭环协调、SSE 事件总线、Stills 执行引擎",
+  "description": "SPARK AI Layer - Function Calling 会话、组件知识目录、页面编辑工具运行时",
   "keywords": [
     "spark",
     "ai",
-    "sse",
-    "stills",
-    "page-loop"
+    "function-calling",
+    "page-design",
+    "component-catalog"
   ],
   "files": [
     "dist",

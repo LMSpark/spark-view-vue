@@ -224,7 +224,7 @@ export function useDevState() {
     return {
       getNodeTree: () => ruleDoc.model.value,
       onNodeTreeChanged(nodeTree) {
-        ruleDoc.replaceModel(nodeTree)
+        ruleDoc.replaceModel(nodeTree as Parameters<typeof ruleDoc.replaceModel>[0])
       },
       getDataSetTool: () => pageDataDoc.model.value,
       onDataSetChanged(tool) {

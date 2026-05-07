@@ -12,11 +12,11 @@
  * - 宿主不直接执行 LLM 编排；编排由上层编辑会话模块触发。
  */
 
-import { SessionBackendImpl } from '../../core/runtime/session-backend'
-import type { SessionBackend } from '../../core/protocol/session-contracts'
-import type { FunctionRuntimeContext } from '../../core/protocol/function-contracts'
-import { createFunctionRuntimeContext } from '../../core/protocol/function-contracts'
-import { clearFunctionRegistry } from '../../core/registry/function-registry'
+import { SessionBackendImpl } from '../../core/session/backend'
+import type { SessionBackend } from '../../core/session/contracts'
+import type { FunctionRuntimeContext } from '../../core/function/contracts'
+import { createFunctionRuntimeContext } from '../../core/function/contracts'
+import { clearFunctionRegistry } from '../../core/function/registry'
 import { clearKnowledgeRegistry } from '../../core/knowledge/registry'
 import { registerPageDesignEditFunctions } from './register-edit-functions'
 import {

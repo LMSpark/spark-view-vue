@@ -3,8 +3,8 @@
  * Core generic implementation — no business dependencies.
  */
 
-import type { MonitorContext, SessionMonitor } from '../protocol/session-contracts'
-import type { FunctionResult } from '../protocol/function-contracts'
+import type { MonitorContext, SessionMonitor } from './contracts'
+import type { FunctionResult } from '../function/contracts'
 
 export interface RepeatDetectionConfig {
   maxSameSignature?: number

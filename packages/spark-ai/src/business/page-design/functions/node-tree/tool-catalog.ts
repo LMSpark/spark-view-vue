@@ -1,15 +1,10 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
 import {
   formatLlmParamValidationIssues,
   validateLlmDeserializedParams,
   type LlmParamValidationOptions,
-} from '../../../../core/protocol/function-params-validator'
-import type { SparkNodeTree } from '@spark-view/spark-component'
-
-type MethodKey<T> = Extract<{
-  [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
-}[keyof T], string>
-type SparkNodeTreeMethodKey = MethodKey<SparkNodeTree>
+} from '../../../../core/function/params-validator'
+import type { SparkNodeTreeMethodKey } from './types'
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'

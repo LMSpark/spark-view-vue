@@ -1,4 +1,4 @@
-import type { FunctionResult, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionResult, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
 import {
   editInit,
   readActiveScript,

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { FunctionResult, FunctionRuntimeContext } from '@spark-view/spark-ai'
+import type { FunctionResult, FunctionRuntimeContext } from '../packages/spark-ai/src/core/function/contracts'
 import { createPageDesignFunctionHarness } from './helpers/page-design-functions'
 
 let context: FunctionRuntimeContext

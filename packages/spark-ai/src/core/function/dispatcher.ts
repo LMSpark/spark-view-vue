@@ -3,8 +3,8 @@ import type {
   FunctionRuntimeContext,
   FunctionTraceEntry,
   RegisteredFunctionDefinition,
-} from '../protocol/function-contracts'
-import { getAllFunctionDefinitions, getFunctionDefinition } from '../registry/function-registry'
+} from './contracts'
+import { getAllFunctionDefinitions, getFunctionDefinition } from './registry'
 
 /**
  * 未知函数错误结果生成器

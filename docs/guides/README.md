@@ -5,10 +5,9 @@
 ## 推荐顺序
 
 1. [QUICKSTART.md](QUICKSTART.md)：安装、启动、最短上手路径。
-2. [PACKAGE_USAGE.md](PACKAGE_USAGE.md)：理解 monorepo 各包各自负责什么。
-3. [CONFIG_SYSTEM.md](CONFIG_SYSTEM.md)：页面结构配置、脚本与运行时边界。
-4. [DATA_MANAGEMENT.md](DATA_MANAGEMENT.md)：DataSet、DataView、绑定与联动。
-5. [TREE_CAPABILITY.md](TREE_CAPABILITY.md)：树形场景与级联能力。
+2. [CONFIG_SYSTEM.md](CONFIG_SYSTEM.md)：页面结构配置、脚本与运行时边界。
+3. [DATA_MANAGEMENT.md](DATA_MANAGEMENT.md)：DataSet、DataView、绑定与联动。
+4. [TREE_CAPABILITY.md](TREE_CAPABILITY.md)：树形场景与级联能力。
 
 ## 常用专题
 

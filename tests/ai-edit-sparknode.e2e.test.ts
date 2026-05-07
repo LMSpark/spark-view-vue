@@ -7,13 +7,11 @@
 
 import { describe, it, expect } from 'vitest'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import {
-  createDefaultFollowUpPolicy,
-  createRepeatDetectionMonitor,
-  getActiveNodeTree,
-  runFunctionLoop,
-  SessionBackendImpl,
-} from '@spark-view/spark-ai'
+import { getActiveNodeTree } from '../packages/spark-ai/src/business/page-design'
+import { createDefaultFollowUpPolicy } from '../packages/spark-ai/src/core/session/followup-policy'
+import { createRepeatDetectionMonitor } from '../packages/spark-ai/src/core/session/repeat-monitor'
+import { runFunctionLoop } from '../packages/spark-ai/src/core/session/orchestrator'
+import { SessionBackendImpl } from '../packages/spark-ai/src/core/session/backend'
 import { SparkNodeTree } from '../packages/spark-component/src/index'
 import { DataSetCrudTool } from '../packages/spark-data/src/index'
 import { createPageDesignFunctionHarness } from './helpers/page-design-functions'

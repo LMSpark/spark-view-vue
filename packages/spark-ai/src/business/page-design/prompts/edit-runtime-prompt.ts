@@ -1,4 +1,4 @@
-import { AI_FUNCTION_ARCHITECTURE_PROMPT } from '../../../core/protocol/architecture-prompt'
+import { AI_FUNCTION_ARCHITECTURE_PROMPT } from '../../../core/session/prompt'
 import {
   EDIT_FLOW_1001_DATA_FIRST_POLICY,
   EDIT_FLOW_1002_DATA_FIRST_SEQUENCE,

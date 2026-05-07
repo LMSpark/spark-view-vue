@@ -16,11 +16,11 @@
  * 分层：
  *   Backend（会话存储 + 滑动窗口 + LLM 调用）
  *     → Orchestrator（本模块，循环 + 终止 + followUp 注入）
- *       → fc-schema/fc-dispatcher（FC schema 生成 + 调度 + 响应格式化）
- *         → function-dispatcher（函数执行）
+ *       → function/tool-schema + function/tool-dispatch（tool 暴露 + 调度 + 响应格式化）
+ *         → function/dispatcher（函数执行）
  */
 
-import type { FunctionResult, FunctionRuntimeContext } from '../protocol/function-contracts'
+import type { FunctionResult, FunctionRuntimeContext } from '../function/contracts'
 import type {
   DialogueTurn,
   FunctionTurnResult,
@@ -31,9 +31,9 @@ import type {
   OrchestratorConfig,
   OrchestratorResult,
   FollowUpPolicy,
-} from '../protocol/session-contracts'
-import { dispatchToolCall } from './fc-dispatcher'
-import { generateToolDefinitions } from '../protocol/fc-schema'
+} from './contracts'
+import { dispatchToolCall } from '../function/tool-dispatch'
+import { generateToolDefinitions } from '../function/tool-schema'
 
 // 后端 appendMessages 所用消息结构。
 // 统一为 FC 场景下 assistant/tool 双角色消息体，便于后续复用与维护。

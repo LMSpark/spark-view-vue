@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { FunctionResult } from '@spark-view/spark-ai'
+import type { FunctionResult } from '../packages/spark-ai/src/core/function/contracts'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from '../packages/spark-ai/src/business/page-design/functions/node-tree'

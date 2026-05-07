@@ -1,4 +1,4 @@
-import type { FunctionRuntimeContext } from './function-contracts'
+import type { FunctionRuntimeContext } from './contracts'
 
 export function missingParam(name: string): string {
   return `缺少 ${name} 参数`

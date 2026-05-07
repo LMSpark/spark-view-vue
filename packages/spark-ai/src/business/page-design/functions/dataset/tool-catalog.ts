@@ -1,6 +1,6 @@
-import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from '../../../../core/protocol/function-params-validator'
+import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from '../../../../core/function/params-validator'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
 
 type MethodKey<T> = Extract<{
   [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never

@@ -1,4 +1,4 @@
-import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/protocol/function-contracts'
+import type { FunctionFailureMode, RegisteredFunctionDefinition } from '../../../../core/function/contracts'
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'

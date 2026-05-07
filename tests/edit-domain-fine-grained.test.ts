@@ -3,8 +3,8 @@ import {
   bindLiveModelAdapter,
   isEditDataSetWriteAction,
   type EditState,
-  type FunctionResult,
-} from '@spark-view/spark-ai'
+} from '../packages/spark-ai/src/business/page-design'
+import type { FunctionResult } from '../packages/spark-ai/src/core/function/contracts'
 import { SparkNodeTree, type SparkNode } from '../packages/spark-component/src/index'
 import { DataSetCrudTool, type IDataSetMetadata } from '../packages/spark-data/src/index'
 import { createPageDesignFunctionHarness } from './helpers/page-design-functions'

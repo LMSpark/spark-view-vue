@@ -12,3 +12,8 @@ export type {
   SparkNodeTreeToolParameterRow,
   SparkNodeTreeToolCapabilityRow,
 } from './tool-catalog'
+
+export type {
+  PageDesignNodeTree,
+  SparkNodeTreeMethodKey,
+} from './types'
