@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   PAGE_DESIGN_BUSINESS,
   createAiCore,
-  createPageDesignBusinessDefinition,
+  createPageDesignBusinessRegistration,
   type EditToolHost,
 } from '../packages/spark-ai/src'
 import type { SparkNodeTree } from '../packages/spark-component/src'
@@ -50,7 +50,7 @@ describe('pageDesign business definition', () => {
   it('registers pageDesign as business modules and executes through ai core', async () => {
     const core = createCore()
     const { host, reads } = createHost()
-    core.registerBusiness(createPageDesignBusinessDefinition({ getEditToolHost: () => host }))
+    core.registerBusiness(createPageDesignBusinessRegistration({ getEditToolHost: () => host }))
 
     const start = await core.startSession({ businessId: PAGE_DESIGN_BUSINESS })
 
@@ -100,7 +100,7 @@ describe('pageDesign business definition', () => {
 
   it('fails fast when live adapter is missing', async () => {
     const core = createCore()
-    core.registerBusiness(createPageDesignBusinessDefinition({
+    core.registerBusiness(createPageDesignBusinessRegistration({
       getEditToolHost: () => ({
         readScript: () => '',
         readStyle: () => '',

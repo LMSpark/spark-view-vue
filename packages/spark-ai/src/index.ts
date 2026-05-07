@@ -1,5 +1,9 @@
 export {
   createAiCore,
+  KnowledgePayloadProviderRegistry,
+  createKnowledgePayloadProviderRegistry,
+  getKnowledgePayloadProviderRegistry,
+  registerKnowledgePayloadProvider,
 } from './core'
 
 export type {
@@ -7,11 +11,15 @@ export type {
   AiCoreAction,
   AiCoreAppendMessage,
   AiCoreAppendMessagesOptions,
+  AiBusinessRegistration,
+  AiBusinessModuleRegistration,
+  AiBusinessServiceStatus,
   AiCoreEvent,
   AiCoreEventListener,
   AiCoreEventType,
   AiCoreExecuteFunctionCallOptions,
   AiCoreExecuteFunctionCallResult,
+  AiCoreBusinessExposure,
   AiCoreFunctionCallRecord,
   AiCoreFunctionCallResult,
   AiCoreFunctionExposure,
@@ -25,7 +33,7 @@ export type {
   AiCoreMessageRole,
   AiCoreBusinessId,
   AiCoreFunctionId,
-  AiCoreModuleRuntimeSnapshot,
+  AiCoreModuleExposure,
   AiCoreModuleId,
   AiCoreOptions,
   AiCoreStartSessionOptions,
@@ -33,22 +41,17 @@ export type {
   AiCoreStopMode,
   AiCoreStopSessionOptions,
   AiCoreStopSessionResult,
+  AiCoreSessionScope,
+  AiFunctionRegistration,
   FunctionFailureMode,
   FunctionExecutionContext,
-  IBusinessDefinition,
-  IFunctionCatalogProvider,
-  IFunctionDefinition,
-  IModule,
-  IModuleInstanceAccessor,
-  IModulePromptProvider,
-  ModuleAfterExecuteContext,
-  ModuleBeforeExecuteContext,
-  ModuleBeforeExecuteDecision,
   ModulePromptContext,
-  ModuleRuntime,
-  ModuleRuntimeLifecycleContext,
-  ModuleRuntimeReader,
+  ModulePromptProvider,
   PostValidationWarning,
+  KnowledgePayloadGuide,
+  KnowledgePayloadProvider,
+  KnowledgePayloadQueryFilter,
+  KnowledgePayloadSummary,
 } from './core'
 
 export {
@@ -67,6 +70,7 @@ export type {
 export {
   PAGE_DESIGN_BUSINESS,
   PAGE_DESIGN_EDIT_RUNTIME_PROMPT,
+  createPageDesignBusinessRegistration,
   createPageDesignBusinessDefinition,
   createPageCache,
   createEditState,
@@ -80,17 +84,18 @@ export {
 
 export type {
   PageDesignBusinessContext,
+  CreatePageDesignBusinessRegistrationOptions,
   CreatePageDesignBusinessDefinitionOptions,
   PageDesignBusinessDefinition,
   PageDesignRuntimeContext,
-  PageDesignModuleRuntime,
+  PageDesignServiceState,
   EditState,
   EditToolHost,
   PageDesignNodeTree,
   PageCacheHandle,
 } from './business/page-design'
 
-export { default as COMPONENT_CATALOG_JSON } from './catalog/component-catalog.json'
+export { COMPONENT_CATALOG_JSON } from './catalog'
 
 export {
   projectComponentDirectory,
@@ -100,7 +105,7 @@ export {
   projectDevTypes,
   projectDevPropNames,
   projectDevPropEnums,
-} from './catalog/catalog-projections'
+} from './catalog'
 
 export type {
   ComponentDirectoryPayload,
@@ -109,7 +114,7 @@ export type {
   HydratedComponentEntry,
   HydratedPropEntry,
   HydratedEmitEntry,
-} from './catalog/catalog-projections'
+} from './catalog'
 
 export type {
   RawComponentCatalog,
@@ -125,7 +130,7 @@ export type {
   RootFieldEntry,
   CatalogBindingDescriptor,
   SharedTypeDefinition,
-} from './catalog/types'
+} from './catalog'
 
 export {
   DEV_TYPES,
@@ -133,11 +138,11 @@ export {
   DEV_PROP_ENUMS,
   DEV_TYPE_LABELS,
   DEV_REQUIRED_PROPS,
-} from './catalog/catalog-dev-exports'
+} from './catalog'
 
 export type {
   FunctionCatalog,
   FunctionCatalogRegistry,
   FunctionComponentEntry,
   FunctionPropEntry,
-} from './catalog/function-catalog-types'
+} from './catalog'

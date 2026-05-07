@@ -4,7 +4,7 @@ import { createFetchClient } from '@spark-view/spark-utils'
 import {
   PAGE_DESIGN_BUSINESS,
   createAiCore,
-  createPageDesignBusinessDefinition,
+  createPageDesignBusinessRegistration,
   type AiCore,
   type AiCoreFunctionExposure,
   type AiCoreStartSessionResult,
@@ -77,7 +77,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
   const { getEditToolHost, getSessionKey } = options
   const http = createFetchClient()
   const core = createAiCore({ createRecordId: createRecordIdFactory() })
-  core.registerBusiness(createPageDesignBusinessDefinition({ getEditToolHost }))
+  core.registerBusiness(createPageDesignBusinessRegistration({ getEditToolHost }))
 
   const context = shallowRef<PageModelFunctionContext | null>(null)
   let backendSessionId: string | undefined

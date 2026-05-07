@@ -2,14 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import {
   createAiCore,
+  type AiBusinessRegistration,
+  type AiFunctionRegistration,
   type AiCore,
-  type IBusinessDefinition,
-  type IFunctionDefinition,
-  type IModule,
-  type ModuleRuntime,
+  type FunctionExecutionContext,
 } from '../packages/spark-ai/src'
 
-interface LeaveFormRuntime extends ModuleRuntime {
+interface LeaveFormState {
   draft: {
     reason: string | null
     days: number | null
@@ -24,6 +23,12 @@ interface SetDaysArgs {
   days: number
 }
 
+interface LeaveFormService {
+  get(instanceId: string): LeaveFormState | undefined
+  ensure(context: FunctionExecutionContext<'leaveApproval', 'form'>): LeaveFormState
+  release(instanceId: string): void
+}
+
 function createDeterministicCore(): AiCore {
   let record = 0
   return createAiCore({
@@ -33,8 +38,28 @@ function createDeterministicCore(): AiCore {
   })
 }
 
-function createLeaveFormModule(core: AiCore): IModule<LeaveFormRuntime> {
-  const functions: ReadonlyArray<IFunctionDefinition<unknown, unknown>> = [
+function createLeaveFormService(): LeaveFormService {
+  const states = new Map<string, LeaveFormState>()
+  return {
+    get: (instanceId) => states.get(instanceId),
+    ensure(context) {
+      const existing = states.get(context.instanceId)
+      if (existing !== undefined) return existing
+      const state: LeaveFormState = {
+        draft: {
+          reason: null,
+          days: null,
+        },
+      }
+      states.set(context.instanceId, state)
+      return state
+    },
+    release: (instanceId) => { states.delete(instanceId) },
+  }
+}
+
+function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<'leaveApproval'> {
+  const functions: ReadonlyArray<AiFunctionRegistration<unknown, unknown, 'leaveApproval', 'form'>> = [
     {
       functionId: 'setReason',
       description: 'Set leave reason.',
@@ -47,8 +72,8 @@ function createLeaveFormModule(core: AiCore): IModule<LeaveFormRuntime> {
       },
       failureModes: [{ code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' }],
       execute(args: SetReasonArgs, context) {
-        const runtime = context.moduleRuntime as LeaveFormRuntime
-        runtime.draft.reason = args.reason
+        const state = service.ensure(context)
+        state.draft.reason = args.reason
         return { accepted: true }
       },
     },
@@ -63,50 +88,35 @@ function createLeaveFormModule(core: AiCore): IModule<LeaveFormRuntime> {
         required: ['days'],
       },
       execute(args: SetDaysArgs, context) {
-        const runtime = context.moduleRuntime as LeaveFormRuntime
-        runtime.draft.days = args.days
+        const state = service.ensure(context)
+        state.draft.days = args.days
         return { accepted: true }
       },
     },
   ]
 
   return {
-    moduleId: 'form',
-    name: 'Leave form',
-    description: 'Collects leave form fields.',
-    createRuntime: (): LeaveFormRuntime => {
-      const runtime: LeaveFormRuntime = {
-        draft: {
-          reason: null,
-          days: null,
-        },
-        toSnapshot() {
-          return { draft: { ...runtime.draft } }
-        },
-      }
-      return runtime
-    },
-    getPrompt: () => 'Collect leave reason and leave days only.',
-    getInstance(instanceId: string) {
-      return core.runtimeReader.get<LeaveFormRuntime>(instanceId, 'form')
-    },
-    getFunctions: () => functions,
-  }
-}
-
-function createLeaveBusiness(core: AiCore): IBusinessDefinition {
-  return {
     businessId: 'leaveApproval',
     name: 'Leave approval',
     description: 'Help users finish a leave request.',
-    modules: [createLeaveFormModule(core)],
+    modules: [{
+      moduleId: 'form',
+      name: 'Leave form',
+      description: 'Collects leave form fields.',
+      prompt: 'Collect leave reason and leave days only.',
+      getFunctions: () => functions,
+    }],
+    releaseSession(context) {
+      service.release(context.instanceId)
+    },
   }
 }
 
 describe('AI core business-first runtime', () => {
-  it('registers only business definitions and starts an instance without exposing sessionId', async () => {
+  it('registers business information and starts an adapter session without exposing sessionId', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
 
     const started = await core.startSession({ businessId: 'leaveApproval' })
 
@@ -122,14 +132,13 @@ describe('AI core business-first runtime', () => {
     expect(started.availableFunctions[0]?.failureModes).toEqual([
       { code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' },
     ])
-
-    const runtime = core.runtimeReader.get<LeaveFormRuntime>('leave-1', 'form')
-    expect(runtime?.draft).toEqual({ reason: null, days: null })
+    expect(service.get('leave-1')).toBeUndefined()
   })
 
   it('executes one function call through the instanceId envelope and writes core history', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
     await core.startSession({ businessId: 'leaveApproval' })
 
     const output = await core.executeFunctionCall({
@@ -143,7 +152,7 @@ describe('AI core business-first runtime', () => {
       data: { accepted: true },
       summary: 'leaveApproval@form@setReason executed',
     })
-    expect(core.runtimeReader.get<LeaveFormRuntime>('leave-1', 'form')?.draft.reason).toBe('family care')
+    expect(service.get('leave-1')?.draft.reason).toBe('family care')
     expect(output.history.functionCalls).toHaveLength(1)
     expect(output.history.functionCalls[0]?.action).toBe('leaveApproval@form@setReason')
     expect(output.history.functionCalls[0]?.args).toEqual({ reason: 'family care' })
@@ -152,7 +161,8 @@ describe('AI core business-first runtime', () => {
 
   it('fails fast when action business and instance business do not match', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
     await core.startSession({ businessId: 'leaveApproval' })
 
     const output = await core.executeFunctionCall({
@@ -169,7 +179,8 @@ describe('AI core business-first runtime', () => {
 
   it('validates args from the function schema before business execution', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
     await core.startSession({ businessId: 'leaveApproval' })
 
     const output = await core.executeFunctionCall({
@@ -182,12 +193,13 @@ describe('AI core business-first runtime', () => {
     if (output.result.ok) return
     expect(output.result.code).toBe('INVALID_ARGS')
     expect(output.result.msg).toContain('days')
-    expect(core.runtimeReader.get<LeaveFormRuntime>('leave-1', 'form')?.draft.days).toBe(null)
+    expect(service.get('leave-1')).toBeUndefined()
   })
 
   it('stores user and assistant messages in core history by instanceId', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
     await core.startSession({ businessId: 'leaveApproval' })
 
     const history = core.appendMessages({
@@ -203,9 +215,10 @@ describe('AI core business-first runtime', () => {
     expect('sessionId' in history).toBe(false)
   })
 
-  it('pauses and resumes an instance without creating a new instanceId', async () => {
+  it('pauses and resumes an adapter session without creating a new instanceId', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
     await core.startSession({ businessId: 'leaveApproval' })
 
     const paused = await core.stopSession({ instanceId: 'leave-1', mode: 'pause', reason: 'waiting for user' })
@@ -225,24 +238,31 @@ describe('AI core business-first runtime', () => {
     expect(core.listInstances()).toHaveLength(1)
   })
 
-  it('stops an instance and releases module runtime from the core directory', async () => {
+  it('stops an adapter session and asks the business service to release session state', async () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
     await core.startSession({ businessId: 'leaveApproval' })
+    await core.executeFunctionCall({
+      instanceId: 'leave-1',
+      action: 'leaveApproval@form@setReason',
+      args: { reason: 'family care' },
+    })
 
     const stopped = await core.stopSession({ instanceId: 'leave-1', mode: 'stop', reason: 'done' })
 
     expect(stopped.instance.status).toBe('Stopped')
-    expect(core.runtimeReader.get<LeaveFormRuntime>('leave-1', 'form')).toBe(null)
-    expect(core.getInstanceDetail('leave-1')?.modules).toEqual([])
-    await expect(core.startSession({ businessId: 'leaveApproval', instanceId: 'leave-1' })).rejects.toThrow('terminal instance')
+    expect(service.get('leave-1')).toBeUndefined()
+    expect(core.getInstanceDetail('leave-1')?.modules.map((module) => module.moduleId)).toEqual(['form'])
+    await expect(core.startSession({ businessId: 'leaveApproval', instanceId: 'leave-1' })).rejects.toThrow('terminal adapter session')
   })
 
   it('publishes lifecycle and function events as an observation surface', async () => {
     const core = createDeterministicCore()
+    const service = createLeaveFormService()
     const eventTypes: string[] = []
     core.subscribe((event) => { eventTypes.push(event.type) })
-    core.registerBusiness(createLeaveBusiness(core))
+    core.registerBusiness(createLeaveBusiness(service))
 
     await core.startSession({ businessId: 'leaveApproval' })
     await core.executeFunctionCall({
@@ -253,7 +273,6 @@ describe('AI core business-first runtime', () => {
 
     expect(eventTypes).toEqual(expect.arrayContaining([
       'instance.starting',
-      'module.available',
       'functions.exposed',
       'instance.ready',
       'function.before',
@@ -262,10 +281,11 @@ describe('AI core business-first runtime', () => {
     ]))
   })
 
-  it('rejects duplicate business definitions instead of creating parallel registries', () => {
+  it('rejects duplicate business registrations instead of creating parallel registries', () => {
     const core = createDeterministicCore()
-    core.registerBusiness(createLeaveBusiness(core))
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
 
-    expect(() => core.registerBusiness(createLeaveBusiness(core))).toThrow('Duplicate AI business definition')
+    expect(() => core.registerBusiness(createLeaveBusiness(service))).toThrow('Duplicate AI business registration')
   })
 })

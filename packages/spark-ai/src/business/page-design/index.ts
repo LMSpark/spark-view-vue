@@ -1,13 +1,15 @@
 export {
   PAGE_DESIGN_BUSINESS,
+  createPageDesignBusinessRegistration,
   createPageDesignBusinessDefinition,
 } from './page-design-business'
 
 export type {
+  CreatePageDesignBusinessRegistrationOptions,
   CreatePageDesignBusinessDefinitionOptions,
   PageDesignBusinessDefinition,
   PageDesignRuntimeContext,
-  PageDesignModuleRuntime,
+  PageDesignServiceState,
 } from './page-design-business'
 
 export { PAGE_DESIGN_EDIT_RUNTIME_PROMPT } from './prompts/edit-runtime-prompt'

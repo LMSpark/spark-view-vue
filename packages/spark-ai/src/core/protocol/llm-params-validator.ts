@@ -534,7 +534,7 @@ function validateOneOfRequiredGroups(
 // =========================================================
 
 /**
- * 校验 LLM 反序列化后的函数参数是否符合 catalog schema 声明。
+ * 校验 LLM 反序列化后的函数参数是否符合函数参数 schema 声明。
  *
  * 完整校验流程（5 步）：
  *  1. 顶层必须是普通对象（非数组、非 null）
@@ -544,7 +544,7 @@ function validateOneOfRequiredGroups(
  *  5. 汇总所有 issues 并返回结构化结果
  *
  * 设计约束：
- * - schema 来自 catalog 的静态声明，不可在运行时修改。
+ * - schema 来自函数注册的静态声明，不可在运行时修改。
  * - 通过 options 叠加动态约束（requiredKeys / allowUnknownKeys 等）。
  * - 仅校验参数合法性，不做任何值转换或副作用。
  */
@@ -571,7 +571,7 @@ export function validateLlmDeserializedParams(
     }
   }
 
-  // catalog 自身的 required 与调用点临时叠加的 requiredKeys 会合并后统一校验。
+  // schema 自身的 required 与调用点临时叠加的 requiredKeys 会合并后统一校验。
   const mergedRootSchema: LlmParamObjectSchema = {
     ...rootSchema,
     required: [

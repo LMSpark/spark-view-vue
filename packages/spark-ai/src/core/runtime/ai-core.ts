@@ -1,7 +1,10 @@
 import type {
+  AiBusinessRegistration,
+  AiBusinessServiceStatus,
   AiCore,
   AiCoreAction,
   AiCoreAppendMessagesOptions,
+  AiCoreBusinessExposure,
   AiCoreEvent,
   AiCoreEventListener,
   AiCoreEventType,
@@ -17,18 +20,14 @@ import type {
   AiCoreInstanceSnapshot,
   AiCoreInstanceStatus,
   AiCoreLifecycleMarker,
-  AiCoreModuleRuntimeSnapshot,
+  AiCoreModuleExposure,
   AiCoreOptions,
   AiCoreStartSessionOptions,
   AiCoreStartSessionResult,
   AiCoreStopSessionOptions,
   AiCoreStopSessionResult,
+  AiFunctionRegistration,
   FunctionExecutionContext,
-  IBusinessDefinition,
-  IFunctionDefinition,
-  IModule,
-  ModuleRuntime,
-  ModuleRuntimeLifecycleContext,
 } from '../protocol/business-contracts'
 import { parseActionAddress, toErrorMessage } from '../protocol/invocation-helpers'
 
@@ -43,9 +42,8 @@ interface AiCoreHistoryState {
 interface AiCoreInstanceState {
   instanceId: string
   businessId: string
-  sessionId: string
   status: AiCoreInstanceStatus
-  modules: Map<string, ModuleRuntime>
+  business: AiCoreBusinessExposure
   promptSnapshot: string
   availableFunctions: AiCoreFunctionExposure[]
   history: AiCoreHistoryState
@@ -56,9 +54,8 @@ interface AiCoreInstanceState {
 
 interface ResolvedFunctionCall {
   instance: AiCoreInstanceState
-  module: IModule<ModuleRuntime>
-  runtime: ModuleRuntime
-  definition: IFunctionDefinition<unknown, unknown>
+  business: AiBusinessRegistration
+  definition: AiFunctionRegistration<unknown, unknown>
   exposure: AiCoreFunctionExposure
 }
 
@@ -87,12 +84,12 @@ function actionOf<
   return `${businessId}@${moduleId}@${functionId}`
 }
 
-function createSessionId(businessId: string, instanceId: string): string {
-  return `${businessId}:${instanceId}`
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function businessStatus(business: AiBusinessRegistration): AiBusinessServiceStatus {
+  return business.getStatus?.() ?? 'Ready'
 }
 
 function cloneExposure(functions: readonly AiCoreFunctionExposure[]): AiCoreFunctionExposure[] {
@@ -108,6 +105,22 @@ function cloneExposure(functions: readonly AiCoreFunctionExposure[]): AiCoreFunc
     ...(item.usageRules !== undefined ? { usageRules: item.usageRules } : {}),
     ...(item.failureModes !== undefined ? { failureModes: item.failureModes } : {}),
   }))
+}
+
+function cloneBusinessExposure(business: AiCoreBusinessExposure): AiCoreBusinessExposure {
+  return {
+    businessId: business.businessId,
+    name: business.name,
+    description: business.description,
+    status: business.status,
+    modules: business.modules.map((module) => ({
+      moduleId: module.moduleId,
+      name: module.name,
+      description: module.description,
+      ...(module.prompt !== undefined ? { prompt: module.prompt } : {}),
+      functions: cloneExposure(module.functions),
+    })),
+  }
 }
 
 function createHistorySnapshot(instance: AiCoreInstanceState): AiCoreHistorySnapshot {
@@ -130,6 +143,7 @@ function createInstanceSnapshot(instance: AiCoreInstanceState): AiCoreInstanceSn
     instanceId: instance.instanceId,
     businessId: instance.businessId,
     status: instance.status,
+    business: cloneBusinessExposure(instance.business),
     promptSnapshot: instance.promptSnapshot,
     availableFunctions: cloneExposure(instance.availableFunctions),
   }
@@ -188,19 +202,14 @@ function isFunctionCallResult(value: unknown): value is AiCoreFunctionCallResult
 }
 
 export function createAiCore(options: AiCoreOptions = {}): AiCore {
-  const businesses = new Map<string, IBusinessDefinition>()
+  const businesses = new Map<string, AiBusinessRegistration>()
   const instances = new Map<string, AiCoreInstanceState>()
   const listeners = new Set<AiCoreEventListener>()
-  const runtimeReader = {
-    get<TRuntime extends ModuleRuntime = ModuleRuntime>(instanceId: string, moduleId: string): TRuntime | null {
-      return (instances.get(instanceId)?.modules.get(moduleId) as TRuntime | undefined) ?? null
-    },
-  }
   const createInstanceId = options.createInstanceId ?? defaultInstanceId
   const createRecordId = options.createRecordId ?? createDefaultRecordId
   const now = options.now ?? Date.now
 
-  function emit(instance: AiCoreInstanceState, type: AiCoreEventType, payload: unknown, details: { moduleId?: string; functionId?: string; causeEventId?: string } = {}): AiCoreEvent {
+  function emit(instance: AiCoreInstanceState, type: AiCoreEventType, payload: unknown, details: { moduleId?: string; functionId?: string } = {}): AiCoreEvent {
     instance.seq += 1
     const event: AiCoreEvent = {
       eventId: createRecordId('event'),
@@ -211,7 +220,6 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       instanceId: instance.instanceId,
       ...(details.moduleId !== undefined ? { moduleId: details.moduleId } : {}),
       ...(details.functionId !== undefined ? { functionId: details.functionId } : {}),
-      ...(details.causeEventId !== undefined ? { causeEventId: details.causeEventId } : {}),
       payload,
     }
     for (const listener of listeners) {
@@ -242,49 +250,58 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
   function getInstanceOrThrow(instanceId: string): AiCoreInstanceState {
     const instance = instances.get(instanceId)
     if (instance === undefined) {
-      throw new Error(`Unknown AI core instance: ${instanceId}`)
+      throw new Error(`Unknown AI core adapter session: ${instanceId}`)
     }
     return instance
   }
 
-  function getBusinessOrThrow(businessId: string): IBusinessDefinition {
+  function getBusinessOrThrow(businessId: string): AiBusinessRegistration {
     const business = businesses.get(businessId)
     if (business === undefined) {
-      throw new Error(`Unknown AI business definition: ${businessId}`)
+      throw new Error(`Unknown AI business registration: ${businessId}`)
     }
     return business
   }
 
-  function getModuleOrThrow(business: IBusinessDefinition, moduleId: string): IModule<ModuleRuntime> {
-    const module = business.modules.find((candidate) => candidate.moduleId === moduleId)
-    if (module === undefined) {
-      throw new Error(`Unknown module ${moduleId} for business ${business.businessId}`)
-    }
-    return module
+  function assertBusinessReady(business: AiBusinessRegistration): AiCoreFunctionCallResult | null {
+    const status = businessStatus(business)
+    if (status === 'Ready') return null
+    return createFailure(
+      'BUSINESS_NOT_READY',
+      `Business service ${business.businessId} is ${status}`,
+      'Start or repair the business service before exposing it to the LLM adapter session.',
+    )
   }
 
   function assertReady(instance: AiCoreInstanceState, action: AiCoreAction): AiCoreFunctionCallResult | null {
     if (instance.status === 'Ready') return null
     return createFailure(
       'INSTANCE_NOT_READY',
-      `${action} requires instance ${instance.instanceId} to be Ready, current status is ${instance.status}`,
-      'Call startSession to create or resume a Ready instance before invoking business functions.',
+      `${action} requires adapter session ${instance.instanceId} to be Ready, current status is ${instance.status}`,
+      'Call startSession to create or resume a Ready LLM adapter session before invoking business functions.',
     )
   }
 
-  function projectFunctions(business: IBusinessDefinition): AiCoreFunctionExposure[] {
-    const actions = new Set<string>()
-    const exposures: AiCoreFunctionExposure[] = []
+  async function modulePrompt(
+    business: AiBusinessRegistration,
+    moduleId: string,
+    prompt: AiBusinessRegistration['modules'][number]['prompt'],
+    instanceId: string,
+  ): Promise<string | undefined> {
+    if (typeof prompt === 'string') return prompt.trim().length > 0 ? prompt : undefined
+    if (prompt === undefined) return undefined
+    const resolved = await prompt({ instanceId, businessId: business.businessId, moduleId })
+    return resolved !== null && resolved.trim().length > 0 ? resolved : undefined
+  }
+
+  async function projectBusiness(business: AiBusinessRegistration, instanceId: string): Promise<AiCoreBusinessExposure> {
+    const modules: AiCoreModuleExposure[] = []
     for (const module of business.modules) {
+      const functions: AiCoreFunctionExposure[] = []
       for (const definition of module.getFunctions()) {
         assertId('functionId', definition.functionId)
-        const action = actionOf(business.businessId, module.moduleId, definition.functionId)
-        if (actions.has(action)) {
-          throw new Error(`Duplicate function action in business ${business.businessId}: ${action}`)
-        }
-        actions.add(action)
-        exposures.push({
-          action,
+        functions.push({
+          action: actionOf(business.businessId, module.moduleId, definition.functionId),
           businessId: business.businessId,
           moduleId: module.moduleId,
           functionId: definition.functionId,
@@ -296,8 +313,55 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
           ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes } : {}),
         })
       }
+      const prompt = await modulePrompt(business, module.moduleId, module.prompt, instanceId)
+      modules.push({
+        moduleId: module.moduleId,
+        name: module.name,
+        description: module.description,
+        ...(prompt !== undefined ? { prompt } : {}),
+        functions,
+      })
     }
-    return exposures
+
+    return {
+      businessId: business.businessId,
+      name: business.name,
+      description: business.description,
+      status: businessStatus(business),
+      modules,
+    }
+  }
+
+  function flattenFunctions(business: AiCoreBusinessExposure): AiCoreFunctionExposure[] {
+    return business.modules.flatMap(module => module.functions)
+  }
+
+  function buildPromptSnapshot(business: AiCoreBusinessExposure): string {
+    return business.modules
+      .map(module => module.prompt)
+      .filter((prompt): prompt is string => prompt !== undefined && prompt.trim().length > 0)
+      .join('\n\n')
+  }
+
+  function assertUniqueActions(business: AiBusinessRegistration): void {
+    assertId('businessId', business.businessId)
+    const moduleIds = new Set<string>()
+    const actions = new Set<string>()
+    for (const module of business.modules) {
+      assertId('moduleId', module.moduleId)
+      if (moduleIds.has(module.moduleId)) {
+        throw new Error(`Duplicate module ${module.moduleId} in business ${business.businessId}`)
+      }
+      moduleIds.add(module.moduleId)
+      for (const definition of module.getFunctions()) {
+        assertId('functionId', definition.functionId)
+        const action = actionOf(business.businessId, module.moduleId, definition.functionId)
+        if (actions.has(action)) {
+          throw new Error(`Duplicate function action in business ${business.businessId}: ${action}`)
+        }
+        actions.add(action)
+      }
+    }
   }
 
   function recordExposure(instance: AiCoreInstanceState): void {
@@ -308,58 +372,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     })
     instance.history.version += 1
     emit(instance, 'history.functionExposure.snapshot', { total: instance.availableFunctions.length })
-    emit(instance, 'functions.exposed', { functions: cloneExposure(instance.availableFunctions) })
-  }
-
-  async function buildPromptSnapshot(business: IBusinessDefinition, instance: AiCoreInstanceState): Promise<string> {
-    const prompts: string[] = []
-    for (const module of business.modules) {
-      const prompt = await module.getPrompt({
-        instanceId: instance.instanceId,
-        businessId: business.businessId,
-        moduleId: module.moduleId,
-        runtimeReader,
-      })
-      if (prompt !== null && prompt.trim().length > 0) {
-        prompts.push(prompt)
-      }
-    }
-    return prompts.join('\n\n')
-  }
-
-  async function startModuleRuntime(business: IBusinessDefinition, instance: AiCoreInstanceState, module: IModule<ModuleRuntime>): Promise<void> {
-    emit(instance, 'module.starting', {}, { moduleId: module.moduleId })
-    const runtime = module.createRuntime
-      ? await module.createRuntime({ instanceId: instance.instanceId, businessId: business.businessId, moduleId: module.moduleId, runtimeReader })
-      : {}
-    instance.modules.set(module.moduleId, runtime)
-    const lifecycleContext: ModuleRuntimeLifecycleContext = {
-      instanceId: instance.instanceId,
-      businessId: business.businessId,
-      moduleId: module.moduleId,
-      runtimeReader,
-      runtime,
-    }
-    await runtime.onStart?.(lifecycleContext)
-    emit(instance, 'module.started', {}, { moduleId: module.moduleId })
-    emit(instance, 'module.available', {}, { moduleId: module.moduleId })
-  }
-
-  async function stopModuleRuntime(business: IBusinessDefinition, instance: AiCoreInstanceState, module: IModule<ModuleRuntime>): Promise<void> {
-    const runtime = instance.modules.get(module.moduleId)
-    if (runtime === undefined) return
-    emit(instance, 'module.stopping', {}, { moduleId: module.moduleId })
-    const lifecycleContext: ModuleRuntimeLifecycleContext = {
-      instanceId: instance.instanceId,
-      businessId: business.businessId,
-      moduleId: module.moduleId,
-      runtimeReader,
-      runtime,
-    }
-    await runtime.onStop?.(lifecycleContext)
-    await module.destroyRuntime?.(runtime, lifecycleContext)
-    instance.modules.delete(module.moduleId)
-    emit(instance, 'module.stopped', {}, { moduleId: module.moduleId })
+    emit(instance, 'functions.exposed', { business: cloneBusinessExposure(instance.business), functions: cloneExposure(instance.availableFunctions) })
   }
 
   function resolveFunctionCall(callOptions: AiCoreExecuteFunctionCallOptions): ResolvedFunctionCall | AiCoreFunctionCallResult {
@@ -372,32 +385,34 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
 
     const instance = instances.get(callOptions.instanceId)
     if (instance === undefined) {
-      return createFailure('UNKNOWN_INSTANCE', `Unknown AI core instance: ${callOptions.instanceId}`, 'Call startSession before executeFunctionCall and pass its instanceId envelope field.')
+      return createFailure('UNKNOWN_INSTANCE', `Unknown AI core adapter session: ${callOptions.instanceId}`, 'Call startSession before executeFunctionCall and pass its instanceId envelope field.')
     }
     const readyFailure = assertReady(instance, callOptions.action)
     if (readyFailure !== null) return readyFailure
     if (address.business !== instance.businessId) {
-      return createFailure('BUSINESS_MISMATCH', `Action ${callOptions.action} targets business ${address.business}, but instance ${instance.instanceId} belongs to ${instance.businessId}.`, 'Use an action from getAvailableFunctions for the same instanceId.')
+      return createFailure('BUSINESS_MISMATCH', `Action ${callOptions.action} targets business ${address.business}, but adapter session ${instance.instanceId} is bound to ${instance.businessId}.`, 'Use an action from getAvailableFunctions for the same instanceId.')
     }
 
     const business = getBusinessOrThrow(instance.businessId)
-    const module = getModuleOrThrow(business, address.module)
-    const runtime = instance.modules.get(address.module)
-    if (runtime === undefined) {
-      return createFailure('MODULE_RUNTIME_MISSING', `Module runtime ${address.module} is missing for instance ${instance.instanceId}.`, 'Restart or resume the business instance so core can recreate module runtimes.')
+    const businessFailure = assertBusinessReady(business)
+    if (businessFailure !== null) return businessFailure
+
+    const module = business.modules.find((candidate) => candidate.moduleId === address.module)
+    if (module === undefined) {
+      return createFailure('MODULE_NOT_AVAILABLE', `Module ${address.module} is not registered for business ${business.businessId}.`, 'Use a module exposed by the current business registration.')
     }
 
     const exposure = instance.availableFunctions.find((candidate) => candidate.action === callOptions.action)
     if (exposure === undefined) {
-      return createFailure('FUNCTION_NOT_AVAILABLE', `Function ${callOptions.action} is not available for instance ${instance.instanceId}.`, 'Call getAvailableFunctions and choose one of the exposed actions for this instance.')
+      return createFailure('FUNCTION_NOT_AVAILABLE', `Function ${callOptions.action} is not available for adapter session ${instance.instanceId}.`, 'Call getAvailableFunctions and choose one of the exposed actions for this instance.')
     }
 
     const definition = module.getFunctions().find((candidate) => candidate.functionId === address.function)
     if (definition === undefined) {
-      return createFailure('FUNCTION_DEFINITION_MISSING', `Function definition ${callOptions.action} is missing from module ${address.module}.`, 'Fix the business definition so function catalogs and exposed actions stay aligned.')
+      return createFailure('FUNCTION_DEFINITION_MISSING', `Function definition ${callOptions.action} is missing from module ${address.module}.`, 'Fix the business registration so registered functions and exposed actions stay aligned.')
     }
 
-    return { instance, module, runtime, definition, exposure }
+    return { instance, business, definition, exposure }
   }
 
   function recordFunctionCall(instance: AiCoreInstanceState, action: AiCoreAction, args: unknown, result: AiCoreFunctionCallResult<unknown>): void {
@@ -413,44 +428,38 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     emit(instance, 'history.functionCall.appended', { action, result })
   }
 
-  function runtimeSnapshots(instance: AiCoreInstanceState): AiCoreModuleRuntimeSnapshot[] {
-    return Array.from(instance.modules.entries()).map(([moduleId, runtime]) => ({
-      moduleId,
-      runtime: runtime.toSnapshot ? runtime.toSnapshot() : runtime,
-    }))
+  function registerBusiness(registration: AiBusinessRegistration): void {
+    assertUniqueActions(registration)
+    if (businesses.has(registration.businessId)) {
+      throw new Error(`Duplicate AI business registration: ${registration.businessId}`)
+    }
+    businesses.set(registration.businessId, registration)
   }
 
-  function registerBusiness(definition: IBusinessDefinition): void {
-    assertId('businessId', definition.businessId)
-    if (businesses.has(definition.businessId)) {
-      throw new Error(`Duplicate AI business definition: ${definition.businessId}`)
-    }
-    const moduleIds = new Set<string>()
-    for (const module of definition.modules) {
-      assertId('moduleId', module.moduleId)
-      if (moduleIds.has(module.moduleId)) {
-        throw new Error(`Duplicate module ${module.moduleId} in business ${definition.businessId}`)
-      }
-      moduleIds.add(module.moduleId)
-    }
-    projectFunctions(definition)
-    businesses.set(definition.businessId, definition)
+  async function refreshInstanceExposure(instance: AiCoreInstanceState): Promise<void> {
+    const business = getBusinessOrThrow(instance.businessId)
+    instance.business = await projectBusiness(business, instance.instanceId)
+    instance.promptSnapshot = buildPromptSnapshot(instance.business)
+    instance.availableFunctions = flattenFunctions(instance.business)
   }
 
   async function startSession(sessionOptions: AiCoreStartSessionOptions): Promise<AiCoreStartSessionResult> {
     const business = getBusinessOrThrow(sessionOptions.businessId)
+    const businessFailure = assertBusinessReady(business)
+    if (businessFailure !== null && !businessFailure.ok) {
+      throw new Error(businessFailure.msg)
+    }
     if (sessionOptions.instanceId !== undefined) {
       const existing = getInstanceOrThrow(sessionOptions.instanceId)
       if (existing.businessId !== sessionOptions.businessId) {
         throw new Error(`Cannot resume ${sessionOptions.instanceId} as ${sessionOptions.businessId}; existing business is ${existing.businessId}`)
       }
       if (existing.status === 'Stopped' || existing.status === 'Failed') {
-        throw new Error(`Cannot resume terminal instance ${sessionOptions.instanceId}: ${existing.status}`)
+        throw new Error(`Cannot resume terminal adapter session ${sessionOptions.instanceId}: ${existing.status}`)
       }
       setStatus(existing, 'Resuming')
       emit(existing, 'instance.resuming', { restoreContext: sessionOptions.restoreContext })
-      existing.promptSnapshot = await buildPromptSnapshot(business, existing)
-      existing.availableFunctions = projectFunctions(business)
+      await refreshInstanceExposure(existing)
       recordExposure(existing)
       setStatus(existing, 'Ready')
       emit(existing, 'instance.ready', createInstanceSnapshot(existing))
@@ -461,14 +470,14 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     if (instances.has(instanceId)) {
       throw new Error(`Duplicate AI core instanceId: ${instanceId}`)
     }
+    const businessExposure = await projectBusiness(business, instanceId)
     const instance: AiCoreInstanceState = {
       instanceId,
       businessId: sessionOptions.businessId,
-      sessionId: createSessionId(sessionOptions.businessId, instanceId),
       status: 'Starting',
-      modules: new Map<string, ModuleRuntime>(),
-      promptSnapshot: '',
-      availableFunctions: [],
+      business: businessExposure,
+      promptSnapshot: buildPromptSnapshot(businessExposure),
+      availableFunctions: flattenFunctions(businessExposure),
       history: {
         version: 0,
         messages: [],
@@ -483,27 +492,11 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     instances.set(instanceId, instance)
     markLifecycle(instance, 'Starting')
     emit(instance, 'instance.starting', {})
-
-    try {
-      for (const module of business.modules) {
-        await startModuleRuntime(business, instance, module)
-      }
-      instance.promptSnapshot = await buildPromptSnapshot(business, instance)
-      instance.availableFunctions = projectFunctions(business)
-      recordExposure(instance)
-      emit(instance, 'instance.started', createInstanceSnapshot(instance))
-      setStatus(instance, 'Ready')
-      emit(instance, 'instance.ready', createInstanceSnapshot(instance))
-      return { ...createInstanceSnapshot(instance), history: createHistorySnapshot(instance) }
-    } catch (error) {
-      setStatus(instance, 'Failed', toErrorMessage(error))
-      emit(instance, 'instance.failed', { error: toErrorMessage(error) })
-      for (const module of [...business.modules].reverse()) {
-        await stopModuleRuntime(business, instance, module)
-      }
-      instances.delete(instanceId)
-      throw error
-    }
+    recordExposure(instance)
+    emit(instance, 'instance.started', createInstanceSnapshot(instance))
+    setStatus(instance, 'Ready')
+    emit(instance, 'instance.ready', createInstanceSnapshot(instance))
+    return { ...createInstanceSnapshot(instance), history: createHistorySnapshot(instance) }
   }
 
   async function stopSession(stopOptions: AiCoreStopSessionOptions): Promise<AiCoreStopSessionResult> {
@@ -525,9 +518,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       }
       setStatus(instance, 'Stopping', stopOptions.reason)
       emit(instance, 'instance.stopping', { reason: stopOptions.reason })
-      for (const module of [...business.modules].reverse()) {
-        await stopModuleRuntime(business, instance, module)
-      }
+      await business.releaseSession?.({ instanceId: instance.instanceId, businessId: instance.businessId })
       setStatus(instance, 'Stopped', stopOptions.reason)
       emit(instance, 'instance.stopped', { reason: stopOptions.reason })
     }
@@ -537,7 +528,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
   function appendMessages(appendOptions: AiCoreAppendMessagesOptions): AiCoreHistorySnapshot {
     const instance = getInstanceOrThrow(appendOptions.instanceId)
     if (instance.status !== 'Ready') {
-      throw new Error(`appendMessages requires Ready instance ${appendOptions.instanceId}; current status is ${instance.status}`)
+      throw new Error(`appendMessages requires Ready adapter session ${appendOptions.instanceId}; current status is ${instance.status}`)
     }
     for (const message of appendOptions.messages) {
       instance.history.messages.push({
@@ -569,7 +560,7 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       }
     }
 
-    const { instance, runtime, definition, exposure } = resolved
+    const { instance, business, definition, exposure } = resolved
     const validationError = validateArgsBySchema(definition.paramsSchema, callOptions.args)
     if (validationError !== null) {
       const result = createFailure('INVALID_ARGS', validationError, `Use paramsSchema from getAvailableFunctions for ${callOptions.action}.`)
@@ -580,12 +571,10 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
     const executionAction = actionOf(instance.businessId, exposure.moduleId, exposure.functionId)
     const executionContext: FunctionExecutionContext = {
       instanceId: instance.instanceId,
-      businessId: instance.businessId,
+      businessId: business.businessId,
       moduleId: exposure.moduleId,
       functionId: exposure.functionId,
       action: executionAction,
-      moduleRuntime: runtime,
-      runtimeReader,
     }
 
     const customValidationError = definition.validate?.(callOptions.args, executionContext) ?? null
@@ -600,49 +589,25 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
 
     let result: AiCoreFunctionCallResult<unknown>
     try {
-      const decision = await runtime.beforeExecute?.({ ...executionContext, args: callOptions.args })
-      if (decision?.cancelled === true) {
-        result = createFailure(
-          decision.code ?? 'EXECUTE_CANCELLED',
-          decision.msg ?? `Module ${exposure.moduleId} cancelled ${callOptions.action}`,
-          decision.fix ?? `Inspect beforeExecute decision for module ${exposure.moduleId}.`,
-        )
+      const executed = await definition.execute(callOptions.args, executionContext)
+      if (isFunctionCallResult(executed)) {
+        result = executed
       } else {
-        const executed = await definition.execute(callOptions.args, executionContext)
-        if (isFunctionCallResult(executed)) {
-          result = executed
-        } else {
-          const warnings = definition.postValidate?.(callOptions.args, executed, executionContext) ?? []
-          result = {
-            ok: true,
-            data: executed,
-            summary: `${callOptions.action} executed`,
-            ...(warnings.length > 0 ? { warnings } : {}),
-          }
+        const warnings = definition.postValidate?.(callOptions.args, executed, executionContext) ?? []
+        result = {
+          ok: true,
+          data: executed,
+          summary: `${callOptions.action} executed`,
+          ...(warnings.length > 0 ? { warnings } : {}),
         }
       }
     } catch (error) {
-      result = createFailure('EXECUTE_ERROR', toErrorMessage(error), `Fix ${callOptions.action} implementation or retry with valid args after checking module runtime state.`)
-    }
-
-    try {
-      await runtime.afterExecute?.({ ...executionContext, args: callOptions.args, result })
-    } catch (error) {
-      if (result.ok) {
-        result.warnings = [
-          ...(result.warnings ?? []),
-          {
-            rule: 'module.afterExecute',
-            detail: toErrorMessage(error),
-            fix: `Inspect afterExecute hook for module ${exposure.moduleId}.`,
-          },
-        ]
-      }
+      result = createFailure('EXECUTE_ERROR', toErrorMessage(error), `Fix ${callOptions.action} implementation or retry with valid args after checking business service state.`)
     }
 
     recordFunctionCall(instance, callOptions.action, callOptions.args, result)
     emit(instance, result.ok ? 'function.succeeded' : 'function.failed', { action: callOptions.action, result }, { moduleId: exposure.moduleId, functionId: exposure.functionId })
-    instance.availableFunctions = projectFunctions(getBusinessOrThrow(instance.businessId))
+    await refreshInstanceExposure(instance)
     recordExposure(instance)
 
     if (instance.pendingStop) {
@@ -661,10 +626,9 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
   }
 
   const api: AiCore = {
-    runtimeReader,
     registerBusiness,
-    getBusinessDefinition: (businessId) => businesses.get(businessId),
-    listBusinesses: () => Array.from(businesses.values()),
+    getBusinessRegistration: (businessId) => businesses.get(businessId),
+    listBusinessRegistrations: () => Array.from(businesses.values()),
     startSession,
     stopSession,
     appendMessages,
@@ -676,7 +640,13 @@ export function createAiCore(options: AiCoreOptions = {}): AiCore {
       if (instance === undefined) return null
       return {
         ...createInstanceSnapshot(instance),
-        modules: runtimeSnapshots(instance),
+        modules: instance.business.modules.map((module) => ({
+          moduleId: module.moduleId,
+          name: module.name,
+          description: module.description,
+          ...(module.prompt !== undefined ? { prompt: module.prompt } : {}),
+          functions: cloneExposure(module.functions),
+        })),
         history: createHistorySnapshot(instance),
       }
     },

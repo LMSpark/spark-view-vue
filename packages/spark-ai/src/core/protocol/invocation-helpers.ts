@@ -1,5 +1,3 @@
-export type FunctionCarrierKey<TBusinessId extends string = string, TModuleId extends string = string> = `${TBusinessId}@${TModuleId}`
-
 export type ProtocolRole = 'user' | 'assistant' | 'system'
 
 export interface ProtocolMessage {
@@ -46,62 +44,6 @@ export function parseActionAddress(action: string): ActionAddressParts {
     throw new Error(`非法 action 地址: ${action}，必须使用 业务@模块@函数`)
   }
   return { business: parts[0] ?? '', module: parts[1] ?? '', function: parts[2] ?? '' }
-}
-
-export function buildFunctionCarrierKey<TBusinessId extends string, TModuleId extends string>(
-  business: TBusinessId,
-  moduleName: TModuleId,
-): FunctionCarrierKey<TBusinessId, TModuleId> {
-  if (business.trim().length === 0 || moduleName.trim().length === 0) {
-    throw new Error(`非法 carrierKey 地址: ${business}@${moduleName}`)
-  }
-  return `${business}@${moduleName}`
-}
-
-/**
- * 从完整 action 推导所属 carrierKey（business@module）。
- * 输入语义：规范 action，格式期望为 business@module@function。
- * 输出语义：business@module 形式的载体键；action 不完整则 fail-fast。
- * 调用时机：协议层或运行时需要定位模块载体时使用。
- */
-export function actionToCarrierKey(action: string): FunctionCarrierKey {
-  const parts = action.split('@')
-  const business = parts[0]?.trim() ?? ''
-  const moduleName = parts[1]?.trim() ?? ''
-  if (business.length === 0 || moduleName.length === 0) {
-    throw new Error(`非法 action 地址: ${action}，无法推导 carrierKey`)
-  }
-  return buildFunctionCarrierKey(business, moduleName)
-}
-
-interface InvocationMissingMethod {
-  ok: false
-  code: 'METHOD_NOT_FOUND'
-  methodName: string
-}
-
-interface InvocationSucceeded {
-  ok: true
-  data: unknown
-}
-
-export type InvocationResult = InvocationMissingMethod | InvocationSucceeded
-
-export function invokeNamedMethod(target: unknown, methodName: string, params: unknown): InvocationResult {
-  const member: unknown = Reflect.get(target as object, methodName)
-  if (typeof member !== 'function') {
-    return {
-      ok: false,
-      code: 'METHOD_NOT_FOUND',
-      methodName,
-    }
-  }
-
-  const dispatch = member as (this: object, payload?: unknown) => unknown
-  return {
-    ok: true,
-    data: dispatch.call(target as object, params),
-  }
 }
 
 export function toErrorMessage(err: unknown): string {

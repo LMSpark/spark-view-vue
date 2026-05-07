@@ -1,22 +1,22 @@
 # spark-ai AI lifecycle configurable paths
 
-This document tracks the target lifecycle configuration surface for the new business-first AI core.
+This document tracks the target lifecycle configuration surface for the business-registration AI core.
 
 ## Layer split
 
-- Core layer: business registry, instance lifecycle, module runtime directory, unified history, event bus, function availability, single function execution gateway.
+- Core layer: business registry, adapter-session lifecycle, business/module/function exposure, core-owned knowledge read model, unified history, event bus, single function execution gateway.
 - AI session host layer: model communication, prompt/tool-schema projection, retry, follow-up, pause/resume decisions, transport details.
-- Business layer: business definitions, module prompts, module runtime factories, function catalogs, function business bodies.
+- Business layer: service lifecycle, business registrations, module prompts, function catalogs, function business bodies, concrete knowledge payload providers.
 
-Core does not own model orchestration.
+Core does not own model orchestration or business service state.
 
 ## Lifecycle paths
 
 - core
   - business-registry
     - business.register -> `core/runtime/ai-core.ts#createAiCore().registerBusiness`
-    - business.get -> `AiCore.getBusinessDefinition`
-    - business.list -> `AiCore.listBusinesses`
+    - business.get -> `AiCore.getBusinessRegistration`
+    - business.list -> `AiCore.listBusinessRegistrations`
   - instance
     - instance.start -> `AiCore.startSession({ businessId })`
     - instance.resume -> `AiCore.startSession({ businessId, instanceId })`
@@ -24,14 +24,10 @@ Core does not own model orchestration.
     - instance.stop -> `AiCore.stopSession({ instanceId, mode: 'stop' })`
     - instance.list -> `AiCore.listInstances`
     - instance.detail -> `AiCore.getInstanceDetail`
-  - module-runtime
-    - module.create -> `IModule.createRuntime`
-    - module.start-hook -> `ModuleRuntime.onStart`
-    - module.before-function -> `ModuleRuntime.beforeExecute`
-    - module.after-function -> `ModuleRuntime.afterExecute`
-    - module.stop-hook -> `ModuleRuntime.onStop`
-    - module.destroy -> `IModule.destroyRuntime`
-    - module.read -> `AiCore.runtimeReader.get(instanceId, moduleId)`
+  - exposure
+    - exposure.business -> `AiCoreStartSessionResult.business`
+    - exposure.module -> `AiCoreInstanceDetail.modules`
+    - exposure.function -> `AiCore.getAvailableFunctions(instanceId)`
   - history
     - history.append-message -> `AiCore.appendMessages`
     - history.append-function-call -> `AiCore.executeFunctionCall`
@@ -42,20 +38,30 @@ Core does not own model orchestration.
     - function.execute -> `AiCore.executeFunctionCall`
   - event
     - event.subscribe -> `AiCore.subscribe`
+  - knowledge
+    - payload.register -> `registerKnowledgePayloadProvider`
+    - payload.query -> `KnowledgePayloadProviderRegistry.queryPayloads`
+    - payload.guide -> `KnowledgePayloadProviderRegistry.guidePayload`
 
 - business
-  - definition
-    - business.identity -> `IBusinessDefinition.businessId/name/description`
-    - business.modules -> `IBusinessDefinition.modules`
+  - registration
+    - business.identity -> `AiBusinessRegistration.businessId/name/description`
+    - business.modules -> `AiBusinessRegistration.modules`
+    - business.release-session -> `AiBusinessRegistration.releaseSession`
   - module
-    - module.prompt -> `IModule.getPrompt`
-    - module.catalog -> `IModule.getFunctions`
-    - module.runtime -> `IModule.createRuntime`
+    - module.identity -> `AiBusinessModuleRegistration.moduleId/name/description`
+    - module.prompt -> `AiBusinessModuleRegistration.prompt`
+    - module.catalog -> `AiBusinessModuleRegistration.getFunctions`
   - function
-    - function.schema -> `IFunctionDefinition.paramsSchema/resultSchema`
-    - function.validate -> `IFunctionDefinition.validate`
-    - function.execute -> `IFunctionDefinition.execute`
-    - function.post-validate -> `IFunctionDefinition.postValidate`
+    - function.address -> `business@module@function`
+    - function.schema -> `AiFunctionRegistration.paramsSchema/resultSchema`
+    - function.validate -> `AiFunctionRegistration.validate`
+    - function.execute -> `AiFunctionRegistration.execute`
+    - function.post-validate -> `AiFunctionRegistration.postValidate`
+  - service-state
+    - service.start -> business-owned service code
+    - service.session-state -> business-owned map/store keyed by `instanceId` when needed
+    - service.stop -> business-owned service code
 
 - ai-session-host
   - prompt-projection -> host reads `startSession().promptSnapshot`
@@ -75,6 +81,7 @@ The following old paths are no longer target core configuration paths:
 - stills domain registry paths
 - global function registry paths
 - carrier registry paths
+- core-owned module runtime directory paths
 
 If a caller still needs these concepts, they belong to the AI session host or business adapter migration layer, not to core.
 

@@ -1,5 +1,7 @@
 ﻿# AI 核心层概念模型
 
+> 状态：历史设计稿，已被 `packages/spark-ai/ARCHITECTURE.md` 中的 business-registration core 取代。当前实现中 Core 是业务与 LLM 宿主之间的适配层，业务服务自管生命周期与状态；Core 不再创建或索引 ModuleRuntime。
+
 > 目标：定义一套纯概念层的 AI 核心模型，不绑定具体项目、协议、模型厂商或实现语言。
 
 ## 1. 设计目标

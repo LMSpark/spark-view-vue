@@ -1,19 +1,22 @@
-// AI Core Layer — business-first instance/runtime/function execution API.
+// AI Core Layer — business registration and LLM adapter-session API.
 //
-// 新核心公开面只暴露业务定义注册、实例生命周期、模块运行态读取、
-// 通用历史、事件订阅与单次函数执行。模型通讯、tool schema 投影、
-// 多轮编排、旧全局函数 registry / carrier registry 都不属于 core 出口。
+// 核心层不拥有业务生命周期；业务服务自管状态并注册业务/模块/函数信息。
+// core 负责把业务注册事实投影给 LLM，并按 business@module@function 分发调用。
 
 export type {
   AiCore,
   AiCoreAction,
   AiCoreAppendMessage,
   AiCoreAppendMessagesOptions,
+  AiBusinessRegistration,
+  AiBusinessModuleRegistration,
+  AiBusinessServiceStatus,
   AiCoreEvent,
   AiCoreEventListener,
   AiCoreEventType,
   AiCoreExecuteFunctionCallOptions,
   AiCoreExecuteFunctionCallResult,
+  AiCoreBusinessExposure,
   AiCoreFunctionCallRecord,
   AiCoreFunctionCallResult,
   AiCoreFunctionExposure,
@@ -27,7 +30,7 @@ export type {
   AiCoreMessageRole,
   AiCoreBusinessId,
   AiCoreFunctionId,
-  AiCoreModuleRuntimeSnapshot,
+  AiCoreModuleExposure,
   AiCoreModuleId,
   AiCoreOptions,
   AiCoreStartSessionOptions,
@@ -35,24 +38,29 @@ export type {
   AiCoreStopMode,
   AiCoreStopSessionOptions,
   AiCoreStopSessionResult,
+  AiCoreSessionScope,
+  AiFunctionRegistration,
   FunctionFailureMode,
   FunctionExecutionContext,
-  IBusinessDefinition,
-  IFunctionCatalogProvider,
-  IFunctionDefinition,
-  IModule,
-  IModuleInstanceAccessor,
-  IModulePromptProvider,
-  ModuleAfterExecuteContext,
-  ModuleBeforeExecuteContext,
-  ModuleBeforeExecuteDecision,
   ModulePromptContext,
-  ModuleRuntime,
-  ModuleRuntimeLifecycleContext,
-  ModuleRuntimeReader,
+  ModulePromptProvider,
   PostValidationWarning,
 } from './protocol/business-contracts'
 
 export {
   createAiCore,
 } from './runtime/ai-core'
+
+export {
+  KnowledgePayloadProviderRegistry,
+  createKnowledgePayloadProviderRegistry,
+  getKnowledgePayloadProviderRegistry,
+  registerKnowledgePayloadProvider,
+} from './knowledge/payload-provider-registry'
+
+export type {
+  KnowledgePayloadGuide,
+  KnowledgePayloadProvider,
+  KnowledgePayloadQueryFilter,
+  KnowledgePayloadSummary,
+} from './protocol/knowledge-payload-contracts'
