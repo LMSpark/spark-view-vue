@@ -18,6 +18,26 @@
 
 The runtime does not own business service lifecycle, create module runtime state, talk to an LLM, retry model turns, or keep a process-wide function registry. Business services self-manage their state and optionally release per-instance state through `releaseInstance`.
 
+## Core-Layer Contract Model
+
+Core is the standard-owner and should be read as one contract layer:
+
+- **Registration graph**
+  - `AiBusinessRegistration` = business identity and module list (e.g. `pageDesign`)
+  - `AiBusinessModuleRegistration` = module identity and function catalog (e.g. `nodeTree`, `dataset`)
+  - `AiFunctionRegistration` = callable action contract (params/result/validation/execution)
+- **Type-level implementation rule**
+  - classes are preferred to plain objects: standard interfaces should be implemented by TS class-based modules and business registrations.
+  - module/function metadata and behavior must remain consistent with the contract, not inferred from loose side channels.
+- **Session semantics**
+  - startup/recovery entrypoint is always `startInstance({ businessId, businessInstanceId })`
+  - `businessId + businessInstanceId` is the external session identity used by callers and hosts
+  - each active runtime instance maps to one `instanceId`
+  - same pair resumes the same runtime instance
+- **Event semantics**
+  - `AiRuntime.subscribe` is the event bridge for UI hooks and business observers
+  - events include lifecycle + function + history events for state sync and audit trails
+
 ## Action Address
 
 Actions use one canonical address form:

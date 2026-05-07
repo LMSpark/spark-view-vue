@@ -40,6 +40,9 @@ Runtime does not own model orchestration or business service state.
     - function.execute -> `AiRuntime.executeFunctionCall`
   - event
     - event.subscribe -> `AiRuntime.subscribe`
+    - event.envelope -> `businessId + businessInstanceId + instanceId` carried on every event
+    - event.types -> `instance.*` / `function.*` / `history.*` lifecycle events
+    - event.use -> UI/business notification source; no additional orchestrator path needed in core
   - knowledge
     - payload.register -> `KnowledgePayloadRegistry.register`
     - payload.query -> `KnowledgePayloadRegistry.defaultRegistry.queryPayloads`
@@ -64,6 +67,7 @@ Runtime does not own model orchestration or business service state.
     - service.start -> business-owned service code
     - service.instance-state -> business-owned map/store keyed by `businessInstanceId` when needed
     - service.stop -> business-owned service code
+    - service.state-contract -> business keeps domain state per `businessInstanceId`; core only keeps runtime lifecycle/history/function exposure
 
 - ai-session-host
   - prompt-projection -> host reads `startInstance().promptSnapshot`

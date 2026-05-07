@@ -8,6 +8,22 @@ SPARK 的 AI 运行时包，采用业务注册架构：运行时负责 LLM-facin
 - `business`：`page-design` 四文件编辑服务（`rule.json`、`pagedata.json`、`script.js`、`style.css`）和具体 knowledge payload provider
 - `catalog`：组件目录投影与 DevSystem 预计算元数据
 
+## 核心层语义（先读）
+
+- **核心层是标准制定者**：统一定义业务能力向 LLM 暴露时的形态（业务信息 → 模块信息 → 函数信息），并提供注册入口与运行时承载。
+- **标准不向后兼容**：不保留旧入口兼容层，只有新契约可用。
+- **注册语义要点**：
+  - 一个 `AiBusinessRegistration` 代表一个业务能力（如 `pageDesign`）。
+  - 一个 `AiBusinessModuleRegistration` 代表一个模块（如 `nodeTree`、`dataset`）。
+  - 一个 `AiFunctionRegistration` 代表可调用函数（如 `addNode`、`createTable`）。
+  - 模块能力和函数能力都应以 `ts` 类实现标准接口/基类，避免运行时散落的对象字典。
+- **实例语义**：
+  - `businessId`：业务能力维度（能力定义 ID），例如 `pageDesign`。
+  - `businessInstanceId`：业务实例维度（同一能力下的不同对象），例如“张三请假”和“李四请假”是两个实例。
+  - `instanceId`：由核心层统一分配/管理的运行时实例。
+- **会话归口**：同一 `(businessId, businessInstanceId)` 重入时恢复同一运行时实例；不同实例间互不污染。
+- **事件能力**：核心层通过 `subscribe` 提供统一事件流，支持 UI 与业务服务监听生命周期、函数前后置和历史变更，避免在调用方之间重复维护通知链路。
+
 ## 分层入口
 
 - `@spark-view/spark-ai/core`：核心运行时、协议类型与 knowledge provider registry
