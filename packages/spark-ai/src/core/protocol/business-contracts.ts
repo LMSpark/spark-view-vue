@@ -1,6 +1,18 @@
 /**
  * AI Runtime 业务契约总览。
  *
+ * 这个文件定义 AI 核心层的公共协议。核心层位于业务系统与 LLM 之间，
+ * 负责制定业务能力如何暴露给 AI 的标准：business -> module -> function，
+ * 以及函数参数、返回值、错误码、历史、事件与运行时查询方式。
+ *
+ * 核心层负责注册、投影、统一调用、会话与事件；不负责业务实例的真实生命周期，
+ * 也不负责编排业务函数。编排应由 LLM 或上层 orchestrator 基于这些标准协议完成。
+ *
+ * 语义边界：
+ * - businessId 表示一种业务能力，例如 leave-system。
+ * - businessInstanceId 表示该业务能力下的一个真实业务实例，例如张三的一次请假。
+ * - instanceId 是 runtime 为内部会话生成的技术 ID，不应该替代业务实例 ID。
+ *
  * 推荐阅读时序：
  * 1. 基础枚举与 ID 类型：先理解实例状态与 action 地址格式。
  * 2. 消息与事件：理解运行时如何记录对话、生命周期和函数调用变化。
@@ -44,7 +56,11 @@ export type AiRuntimeMessageRole = 'user' | 'assistant'
 /** 已注册 AI 业务的稳定 ID，会出现在 action 第一段。 */
 export type AiRuntimeBusinessId = string
 
-/** 调用方提供的业务会话 ID，例如页面 ID、编辑会话 ID 或任务 ID。 */
+/**
+ * 调用方提供的业务实例 ID，例如页面 ID、编辑会话 ID 或任务 ID。
+ *
+ * 该 ID 由业务系统定义并持有，核心层只用它定位会话与历史，不创建也不管理真实业务实例。
+ */
 export type AiRuntimeBusinessInstanceId = string
 
 /** 单个业务注册内部的稳定模块 ID，会出现在 action 第二段。 */
@@ -56,7 +72,8 @@ export type AiRuntimeFunctionId = string
 /**
  * 暴露给 LLM 的完整函数地址。
  *
- * runtime 会解析该格式，将调用路由到已注册的 business、module 和 function。
+ * action 是核心层的统一寻址协议。runtime 会解析该格式，先找到业务能力，
+ * 再找到模块和函数，最后把参数载荷交给对应函数实现。
  */
 export type AiRuntimeAction<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
@@ -122,7 +139,12 @@ export type AiRuntimeEventType =
   | 'history.functionCall.appended'
   | 'history.functionExposure.snapshot'
 
-/** 生命周期、函数调用、历史变更产生的 runtime 事件。 */
+/**
+ * 生命周期、函数调用、历史变更产生的 runtime 事件。
+ *
+ * 事件是核心层对接 UI 和业务服务的标准出口。UI 可订阅实例状态、函数调用、
+ * 历史追加等变化；业务服务也可基于事件同步外部状态。
+ */
 export interface AiRuntimeEvent<TPayload = unknown> {
   /** runtime 生成的事件记录 ID。 */
   readonly eventId: string
@@ -174,6 +196,7 @@ export interface AiRuntimeInstanceScope<
 /**
  * 面向调用方的实例定位 scope。
  *
+ * 这是业务语义下的会话主键：businessId 表示业务能力，businessInstanceId 表示业务实例。
  * 当调用方不知道 runtime 生成的 `instanceId` 时，可用这一对业务 ID 重新定位实例。
  */
 export interface AiRuntimeBusinessInstanceScope<
@@ -221,7 +244,12 @@ export type ModulePromptProvider<
   bivarianceHack(context: ModulePromptContext<TBusinessId, TModuleId>): string | null | Promise<string | null>
 }['bivarianceHack']
 
-/** 业务模块注册的函数定义。 */
+/**
+ * 业务模块注册的函数定义。
+ *
+ * function 是 LLM 能实际调用的最小业务能力单元。这里声明函数 ID、说明、参数、返回、
+ * 失败模式与执行实现，让核心层可以完成参数校验、统一调用和历史记录。
+ */
 export interface AiFunctionRegistration<
   TArgs = unknown,
   TResult = unknown,
@@ -259,7 +287,12 @@ export interface AiFunctionRegistration<
   postValidate?(args: TArgs, result: TResult, context: FunctionExecutionContext<TBusinessId, TModuleId, TFunctionId>): PostValidationWarning[]
 }
 
-/** 模块注册便捷基类：固定 module metadata，只要求子类提供函数列表。 */
+/**
+ * 模块注册便捷基类：固定 module metadata，只要求子类提供函数列表。
+ *
+ * 模块必须以 TypeScript 类或对象实现标准接口。推荐业务模块继承该基类，
+ * 让模块信息目录与模块实现保持同一套结构化协议。
+ */
 export abstract class AiBusinessModuleRegistrationBase<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
@@ -275,7 +308,12 @@ export abstract class AiBusinessModuleRegistrationBase<
   abstract getFunctions(): ReadonlyArray<AiFunctionRegistration<unknown, unknown, TBusinessId, TModuleId>>
 }
 
-/** runtime projector 消费的模块注册结构。 */
+/**
+ * runtime projector 消费的模块注册结构。
+ *
+ * module 是业务能力下的功能分组，负责把一组相关函数、模块说明和模块 prompt
+ * 交给核心层投影。核心层不会理解业务细节，只按该协议生成 LLM 可见能力目录。
+ */
 export interface AiBusinessModuleRegistration<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
@@ -322,7 +360,12 @@ export abstract class AiBusinessRegistrationBase<
   releaseInstance?(_context: AiRuntimeInstanceScope<TBusinessId>): void | Promise<void> {}
 }
 
-/** `AiRuntime.registerBusiness` 消费的业务注册结构。 */
+/**
+ * `AiRuntime.registerBusiness` 消费的业务注册结构。
+ *
+ * business 是业务能力注册入口。一个业务声明自己的稳定 ID、说明、模块列表以及可选的
+ * 实例查询函数；核心层据此让 LLM 知道业务系统存在，并能发现模块与函数能力。
+ */
 export interface AiBusinessRegistration<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModules extends ReadonlyArray<AiBusinessModuleRegistration<TBusinessId, AiRuntimeModuleId>> = ReadonlyArray<AiBusinessModuleRegistration<TBusinessId, AiRuntimeModuleId>>,
@@ -354,7 +397,12 @@ export interface AiBusinessRegistration<
 // 四、投影给 LLM 的业务、模块与函数暴露结构
 // =========================================================
 
-/** 从注册函数投影出来、面向 LLM 的函数 metadata。 */
+/**
+ * 从注册函数投影出来、面向 LLM 的函数 metadata。
+ *
+ * exposure 是注册信息的只读视图，专供 LLM、工具目录或 UI 展示消费。
+ * 外部不能通过 exposure 修改注册定义或 runtime 内存状态。
+ */
 export interface AiRuntimeFunctionExposure<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
   TModuleId extends AiRuntimeModuleId = AiRuntimeModuleId,
@@ -473,7 +521,12 @@ export interface AiRuntimeLifecycleMarker {
   readonly reason?: string
 }
 
-/** 返回给调用方的不可变 runtime history 快照。 */
+/**
+ * 返回给调用方的不可变 runtime history 快照。
+ *
+ * 历史由核心层按 businessId + businessInstanceId 统一维护，记录消息、函数调用、
+ * 生命周期和函数暴露变化；业务数据本身仍由业务系统持有。
+ */
 export interface AiRuntimeHistorySnapshot {
   /** runtime 生成的实例 ID。 */
   readonly instanceId: string
@@ -601,7 +654,12 @@ export interface AiRuntimeOptions {
   now?: () => number
 }
 
-/** 应用层和业务层消费的公共 AI runtime API。 */
+/**
+ * 应用层和业务层消费的公共 AI runtime API。
+ *
+ * 这是核心层对外边界：注册业务能力、启动或定位会话、追加历史、统一执行函数、
+ * 查询快照并订阅事件。函数调用顺序和业务流程编排不在该 API 内完成。
+ */
 export interface AiRuntimeApi {
   /**
    * 注册一个业务，并校验 action 唯一性。

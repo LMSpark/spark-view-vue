@@ -453,7 +453,7 @@ export class AiRuntime implements AiRuntimeApi {
       )
     }
 
-    const candidate = (args as Record<string, unknown>).businessInstanceId
+    const candidate = (args as Record<string, unknown>)['businessInstanceId']
     if (typeof candidate !== 'string' || candidate.trim().length === 0) {
       return AiRuntime.createFailure(
         'INVALID_ARGS',
