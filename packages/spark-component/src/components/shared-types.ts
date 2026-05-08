@@ -154,6 +154,11 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    */
   modelValue?: TValue
   /**
+   * 兼容旧配置：历史上部分字段节点使用 `value` 传值。
+   * 新配置请统一使用 `modelValue`。
+   */
+  value?: TValue
+  /**
    * 字段绑定名。
    *
    * 常见语义是从当前上下文数据中读取 `currentRow[field]`，

@@ -113,10 +113,6 @@ export class AiRuntime implements AiRuntimeApi {
    */
   async startInstance(options: AiRuntimeStartInstanceOptions): Promise<AiRuntimeStartInstanceResult> {
     const business = this.getBusinessOrThrow(options.businessId)
-    const businessFailure = this.assertBusinessReady(business)
-    if (businessFailure !== null && !businessFailure.ok) {
-      throw new Error(businessFailure.msg)
-    }
 
     const businessKey = this.makeBusinessInstanceKey(options.businessId, options.businessInstanceId)
     const existingInstanceId = this.instancesByBusinessInstance.get(businessKey)
@@ -425,17 +421,6 @@ export class AiRuntime implements AiRuntimeApi {
     return business
   }
 
-  /** 检查业务服务是否 Ready；非 Ready 时返回可给 LLM 的结构化失败。 */
-  private assertBusinessReady(business: AiBusinessRegistration): AiRuntimeFunctionCallResult | null {
-    const status = this.projector.businessStatus(business)
-    if (status === 'Ready') return null
-    return AiRuntime.createFailure(
-      'BUSINESS_NOT_READY',
-      `Business service ${business.businessId} is ${status}`,
-      'Start or repair the business service before exposing it to the LLM runtime instance.',
-    )
-  }
-
   /** 检查实例是否 Ready；函数调用只允许在 Ready 状态进入。 */
   private assertReady(instance: AiRuntimeInstanceState, action: AiRuntimeAction): AiRuntimeFunctionCallResult | null {
     if (instance.status === 'Ready') return null
@@ -444,6 +429,48 @@ export class AiRuntime implements AiRuntimeApi {
       `${action} requires runtime instance ${instance.instanceId} to be Ready, current status is ${instance.status}`,
       'Call startInstance to create or resume a Ready LLM runtime instance before invoking business functions.',
     )
+  }
+
+  /** 同业务服务的函数调用必须携带 businessInstanceId（实例发现动作除外）。 */
+  private assertBusinessInstanceArg(
+    instance: AiRuntimeInstanceState,
+    business: AiBusinessRegistration,
+    action: AiRuntimeAction,
+    args: unknown,
+  ): AiRuntimeFunctionCallResult | null {
+    const discoveryAction = business.instanceQueryAction === undefined
+      ? null
+      : `${business.businessId}@${business.instanceQueryAction}`
+    if (discoveryAction !== null && action === discoveryAction) {
+      return null
+    }
+
+    if (typeof args !== 'object' || args === null || Array.isArray(args)) {
+      return AiRuntime.createFailure(
+        'INVALID_ARGS',
+        `${action} requires args.businessInstanceId for business ${business.businessId}.`,
+        'Pass businessInstanceId in args. You can call the configured instance query action first to obtain it.',
+      )
+    }
+
+    const candidate = (args as Record<string, unknown>).businessInstanceId
+    if (typeof candidate !== 'string' || candidate.trim().length === 0) {
+      return AiRuntime.createFailure(
+        'INVALID_ARGS',
+        `${action} requires a non-empty args.businessInstanceId for business ${business.businessId}.`,
+        'Pass businessInstanceId in args. You can call the configured instance query action first to obtain it.',
+      )
+    }
+
+    if (candidate !== instance.businessInstanceId) {
+      return AiRuntime.createFailure(
+        'INVALID_ARGS',
+        `${action} received args.businessInstanceId=${candidate}, but runtime instance ${instance.instanceId} is bound to ${instance.businessInstanceId}.`,
+        'Use the same businessInstanceId as the bound runtime instance, or start/resume the target businessInstanceId first.',
+      )
+    }
+
+    return null
   }
 
   /**
@@ -481,8 +508,8 @@ export class AiRuntime implements AiRuntimeApi {
     }
 
     const business = this.getBusinessOrThrow(instance.businessId)
-    const businessFailure = this.assertBusinessReady(business)
-    if (businessFailure !== null) return businessFailure
+    const businessInstanceArgFailure = this.assertBusinessInstanceArg(instance, business, options.action, options.args)
+    if (businessInstanceArgFailure !== null) return businessInstanceArgFailure
 
     const module = business.modules.find((candidate) => candidate.moduleId === address.module)
     if (module === undefined) {

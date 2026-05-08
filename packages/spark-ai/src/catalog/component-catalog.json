@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-05-03T10:07:28.096Z",
+  "buildTime": "2026-05-07T16:42:59.717Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -9247,6 +9247,12 @@
       "category": "field",
       "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。",
       "props": [
+        {
+          "name": "value",
+          "type": "unknown",
+          "required": false,
+          "description": "遗留 value 透传兼容位：字段语义应使用 modelValue。\n这里显式声明是为了避免在 fragment 根组件上触发 Vue attrs 警告。"
+        },
         {
           "name": "displayLabel",
           "type": "string | undefined",
@@ -27368,8 +27374,8 @@
           "required": true,
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@775": {
-          "name": "__@toPrimitive@775",
+        "__@toPrimitive@777": {
+          "name": "__@toPrimitive@777",
           "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
           "required": true,
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -31848,256 +31854,262 @@
           "description": "主动作按钮文案。"
         },
         "prop_00581": {
+          "name": "value",
+          "type": "unknown",
+          "required": false,
+          "description": "遗留 value 透传兼容位：字段语义应使用 modelValue。\n这里显式声明是为了避免在 fragment 根组件上触发 Vue attrs 警告。"
+        },
+        "prop_00582": {
           "name": "displayLabel",
           "type": "string | undefined",
           "required": false,
           "description": "显示标签"
         },
-        "prop_00582": {
+        "prop_00583": {
           "name": "fieldName",
           "type": "string | undefined",
           "required": false,
           "description": "字段绑定名"
         },
-        "prop_00583": {
+        "prop_00584": {
           "name": "width",
           "type": "string | number | undefined",
           "required": false,
           "description": "列宽"
         },
-        "prop_00584": {
+        "prop_00585": {
           "name": "sortable",
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "表格列排序能力",
           "schemaRef": "schema_00490"
         },
-        "prop_00585": {
+        "prop_00586": {
           "name": "filterable",
           "type": "boolean | undefined",
           "required": false,
           "description": "表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning"
         },
-        "prop_00586": {
+        "prop_00587": {
           "name": "minWidth",
           "type": "string | number | undefined",
           "required": false,
           "description": "最小列宽"
         },
-        "prop_00587": {
+        "prop_00588": {
           "name": "fixed",
           "type": "boolean | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "固定列方向",
           "schemaRef": "schema_00500"
         },
-        "prop_00588": {
+        "prop_00589": {
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "列对齐",
           "schemaRef": "schema_00501"
         },
-        "prop_00589": {
+        "prop_00590": {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "表头对齐",
           "schemaRef": "schema_00501"
         },
-        "prop_00590": {
+        "prop_00591": {
           "name": "mergedChildren",
           "type": "SparkNode[] | undefined",
           "required": false,
           "description": "子组件配置"
         },
-        "prop_00591": {
+        "prop_00592": {
           "name": "isCurrentFieldHidden",
           "type": "boolean | undefined",
           "required": false,
           "description": "当前字段是否隐藏"
         },
-        "prop_00592": {
+        "prop_00593": {
           "name": "shouldRenderCurrentField",
           "type": "boolean | undefined",
           "required": false,
           "description": "当前宿主下字段是否应渲染"
         },
-        "prop_00593": {
+        "prop_00594": {
           "name": "currentDisplayValue",
           "type": "string | undefined",
           "required": false,
           "description": "当前显示值"
         },
-        "prop_00594": {
+        "prop_00595": {
           "name": "isTableCellHidden",
           "type": "((row: IDataRow) => boolean) | undefined",
           "required": false,
           "description": "表格行级隐藏判断"
         },
-        "prop_00595": {
+        "prop_00596": {
           "name": "getTableCellDisplayValue",
           "type": "((row: IDataRow) => string) | undefined",
           "required": false,
           "description": "表格行级显示值获取"
         },
-        "prop_00596": {
+        "prop_00597": {
           "name": "validationRules",
           "type": "FormItemRule[] | undefined",
           "required": false,
           "description": "表单验证规则"
         },
-        "prop_00597": {
+        "prop_00598": {
           "name": "titleAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "标题对齐（table/detail）",
           "schemaRef": "schema_00501"
         },
-        "prop_00598": {
+        "prop_00599": {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "值对齐（table/detail）",
           "schemaRef": "schema_00501"
         },
-        "prop_00599": {
+        "prop_00600": {
           "name": "headerCellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "表头 class（table）"
         },
-        "prop_00600": {
+        "prop_00601": {
           "name": "cellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "单元格 class（table）"
         },
-        "prop_00601": {
+        "prop_00602": {
           "name": "titleClassName",
           "type": "string | undefined",
           "required": false,
           "description": "标题 class（detail）"
         },
-        "prop_00602": {
+        "prop_00603": {
           "name": "valueClassName",
           "type": "string | undefined",
           "required": false,
           "description": "值 class（detail/table value）"
         },
-        "prop_00603": {
+        "prop_00604": {
           "name": "nameField",
           "type": "string | undefined",
           "required": false,
           "default": "\"name\"",
           "description": "名称字段名"
         },
-        "prop_00604": {
+        "prop_00605": {
           "name": "typeField",
           "type": "string | undefined",
           "required": false,
           "default": "\"type\"",
           "description": "类型字段名"
         },
-        "prop_00605": {
+        "prop_00606": {
           "name": "statusField",
           "type": "string | undefined",
           "required": false,
           "default": "\"status\"",
           "description": "状态字段名"
         },
-        "prop_00606": {
+        "prop_00607": {
           "name": "ownerField",
           "type": "string | undefined",
           "required": false,
           "default": "\"owner\"",
           "description": "负责人字段名"
         },
-        "prop_00607": {
+        "prop_00608": {
           "name": "metaField",
           "type": "string | undefined",
           "required": false,
           "default": "\"route\"",
           "description": "元信息字段名"
         },
-        "prop_00608": {
+        "prop_00609": {
           "name": "extraField",
           "type": "string | undefined",
           "required": false,
           "default": "\"childPlacement\"",
           "description": "扩展字段名"
         },
-        "prop_00609": {
+        "prop_00610": {
           "name": "showType",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示类型"
         },
-        "prop_00610": {
+        "prop_00611": {
           "name": "showStatus",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示状态"
         },
-        "prop_00611": {
+        "prop_00612": {
           "name": "showOwner",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否展示负责人"
         },
-        "prop_00612": {
+        "prop_00613": {
           "name": "showMeta",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示元信息"
         },
-        "prop_00613": {
+        "prop_00614": {
           "name": "showExtra",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否展示扩展信息"
         },
-        "prop_00614": {
+        "prop_00615": {
           "name": "config",
           "type": "SparkNode",
           "required": true,
           "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
           "schemaRef": "schema_00502"
         },
-        "prop_00615": {
+        "prop_00616": {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
           "schemaRef": "schema_00503"
         },
-        "prop_00616": {
+        "prop_00617": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "default": "'未注册的组件类型'",
           "description": "提示标题"
         },
-        "prop_00617": {
+        "prop_00618": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "default": "''",
           "description": "说明文本"
         },
-        "prop_00618": {
+        "prop_00619": {
           "name": "node",
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
           "schemaRef": "schema_00502"
         },
-        "prop_00619": {
+        "prop_00620": {
           "name": "state",
           "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; documents: PageDocumentRegistry; fileSaving: Ref<boolean, boolean>; pageDataError: ComputedRef<string | null>; pageDataDirty: ComputedRef<boolean>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"info\" | \"success\" | \"warning\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; isDocumentDirty: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; getEditToolHost: () => EditToolHost; setPreviewDiagnosticsProvider: (provider: DevPreviewDiagnosticsProvider | null) => void; buildPreviewPageTextDraft: () => Promise<string>; buildPreviewJsErrorDraft: () => Promise<string>; addStatus: (text: string, type?: \"error\" | \"info\" | \"success\" | \"warning\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; ensureActivePageFilesLoaded: (options?: { forceReload?: boolean; } | undefined) => Promise<void>; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => Promise<void>; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
           "required": true,
@@ -34779,6 +34791,7 @@
           "prop_00600",
           "prop_00601",
           "prop_00602",
+          "prop_00603",
           "prop_00057"
         ],
         "emitRefs": []
@@ -34789,7 +34802,6 @@
         "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。",
         "filePath": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.vue",
         "propRefs": [
-          "prop_00603",
           "prop_00604",
           "prop_00605",
           "prop_00606",
@@ -34800,6 +34812,7 @@
           "prop_00611",
           "prop_00612",
           "prop_00613",
+          "prop_00614",
           "prop_00057"
         ],
         "emitRefs": []
@@ -34810,8 +34823,8 @@
         "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册组件，是 SPARK 渲染引擎的核心入口。",
         "filePath": "packages/spark-component/src/components/SparkComponentRenderer.vue",
         "propRefs": [
-          "prop_00614",
-          "prop_00615"
+          "prop_00615",
+          "prop_00616"
         ],
         "emitRefs": []
       },
@@ -34821,9 +34834,9 @@
         "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
         "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
         "propRefs": [
-          "prop_00616",
           "prop_00617",
-          "prop_00618"
+          "prop_00618",
+          "prop_00619"
         ],
         "emitRefs": []
       },
@@ -34857,7 +34870,7 @@
         "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-data-set-designer\" 引用。",
         "filePath": "src/views/app/dev-system/DevDataSetDesigner.vue",
         "propRefs": [
-          "prop_00619"
+          "prop_00620"
         ],
         "emitRefs": []
       },

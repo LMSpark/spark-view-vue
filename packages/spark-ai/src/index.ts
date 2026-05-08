@@ -22,7 +22,7 @@ export type {
   AiRuntimeAppendMessagesOptions,
   AiBusinessRegistration,
   AiBusinessModuleRegistration,
-  AiBusinessServiceStatus,
+  AiBusinessInstanceSummary,
   AiRuntimeEvent,
   AiRuntimeEventListener,
   AiRuntimeEventType,

@@ -1,6 +1,5 @@
 import type {
   AiBusinessRegistration,
-  AiBusinessServiceStatus,
   AiRuntimeAction,
   AiRuntimeAppendMessagesOptions,
   AiRuntimeBusinessExposure,
@@ -135,11 +134,6 @@ export class AiRuntimeProjector {
     private readonly assertId: (kind: string, value: string) => void,
   ) {}
 
-  /** 读取业务健康状态；业务未提供 getStatus 时默认 Ready。 */
-  businessStatus(business: AiBusinessRegistration): AiBusinessServiceStatus {
-    return business.getStatus?.() ?? 'Ready'
-  }
-
   /** 深拷贝函数暴露列表，保护 runtime 内部 availableFunctions 不被外部修改。 */
   cloneExposure(functions: readonly AiRuntimeFunctionExposure[]): AiRuntimeFunctionExposure[] {
     return functions.map((item) => ({
@@ -173,7 +167,7 @@ export class AiRuntimeProjector {
       businessId: business.businessId,
       name: business.name,
       description: business.description,
-      status: business.status,
+      ...(business.instanceQueryAction !== undefined ? { instanceQueryAction: business.instanceQueryAction } : {}),
       modules: business.modules.map((module) => this.cloneModuleExposure(module)),
     }
   }
@@ -267,7 +261,7 @@ export class AiRuntimeProjector {
       businessId: business.businessId,
       name: business.name,
       description: business.description,
-      status: this.businessStatus(business),
+      ...(business.instanceQueryAction !== undefined ? { instanceQueryAction: business.instanceQueryAction } : {}),
       modules,
     }
   }
@@ -279,10 +273,17 @@ export class AiRuntimeProjector {
 
   /** 拼接当前实例可见的模块 prompt，生成传给 LLM 的 promptSnapshot。 */
   buildPromptSnapshot(business: AiRuntimeBusinessExposure): string {
-    return business.modules
+    const parts: string[] = business.modules
       .map((module) => module.prompt)
       .filter((prompt): prompt is string => prompt !== undefined && prompt.trim().length > 0)
-      .join('\n\n')
+
+    if (business.instanceQueryAction !== undefined) {
+      parts.push(
+        `To list available instances, call \`${business.businessId}@${business.instanceQueryAction}\` (no args). Returns: Array<{ businessInstanceId: string, description: string }>. Reuse the returned businessInstanceId as #sym:businessInstanceId in subsequent business calls.`,
+      )
+    }
+
+    return parts.join('\n\n')
   }
 
   /** 注册业务时校验 businessId、moduleId 和完整 action 是否唯一合法。 */
@@ -290,6 +291,7 @@ export class AiRuntimeProjector {
     this.assertId('businessId', business.businessId)
     const moduleIds = new Set<string>()
     const actions = new Set<string>()
+    const moduleFunctionPairs = new Set<string>()
     for (const module of business.modules) {
       this.assertId('moduleId', module.moduleId)
       if (moduleIds.has(module.moduleId)) {
@@ -298,11 +300,35 @@ export class AiRuntimeProjector {
       moduleIds.add(module.moduleId)
       for (const definition of module.getFunctions()) {
         this.assertId('functionId', definition.functionId)
+        moduleFunctionPairs.add(`${module.moduleId}@${definition.functionId}`)
         const action = this.actionOf(business.businessId, module.moduleId, definition.functionId)
         if (actions.has(action)) {
           throw new Error(`Duplicate function action in business ${business.businessId}: ${action}`)
         }
         actions.add(action)
+      }
+    }
+
+    if (business.instanceQueryAction !== undefined) {
+      const parts = business.instanceQueryAction.split('@')
+      if (parts.length !== 2) {
+        throw new Error(
+          `Invalid instanceQueryAction in business ${business.businessId}: ${business.instanceQueryAction}. Expected moduleId@functionId.`,
+        )
+      }
+      const moduleId = parts[0]
+      const functionId = parts[1]
+      if (moduleId === undefined || functionId === undefined) {
+        throw new Error(
+          `Invalid instanceQueryAction in business ${business.businessId}: ${business.instanceQueryAction}. Expected moduleId@functionId.`,
+        )
+      }
+      this.assertId('instanceQueryAction.moduleId', moduleId)
+      this.assertId('instanceQueryAction.functionId', functionId)
+      if (!moduleFunctionPairs.has(`${moduleId}@${functionId}`)) {
+        throw new Error(
+          `instanceQueryAction must point to a registered function in business ${business.businessId}: ${business.instanceQueryAction}`,
+        )
       }
     }
   }
@@ -325,6 +351,7 @@ export class AiRuntimeProjector {
     const resolved = await prompt({ ...instanceScope, moduleId })
     return resolved !== null && resolved.trim().length > 0 ? resolved : undefined
   }
+
 }
 
 /** 运行时历史写入器：所有会改变 history.version 的动作都集中在这里。 */

@@ -16,7 +16,7 @@
 export type {
   AiBusinessRegistration,
   AiBusinessModuleRegistration,
-  AiBusinessServiceStatus,
+  AiBusinessInstanceSummary,
   AiFunctionRegistration,
   AiRuntimeAction,
   AiRuntimeApi,

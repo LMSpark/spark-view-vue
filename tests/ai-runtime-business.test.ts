@@ -74,9 +74,10 @@ function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<
       paramsSchema: {
         type: 'object',
         properties: {
+          businessInstanceId: { type: 'string' },
           reason: { type: 'string' },
         },
-        required: ['reason'],
+        required: ['businessInstanceId', 'reason'],
       },
       failureModes: [{ code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' }],
       execute(args: SetReasonArgs, context) {
@@ -91,9 +92,10 @@ function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<
       paramsSchema: {
         type: 'object',
         properties: {
+          businessInstanceId: { type: 'string' },
           days: { type: 'number' },
         },
-        required: ['days'],
+        required: ['businessInstanceId', 'days'],
       },
       execute(args: SetDaysArgs, context) {
         const state = service.ensure(context)
@@ -156,6 +158,66 @@ describe('AI runtime business-first API', () => {
     expect(service.get('leave-1')).toBeUndefined()
   })
 
+  it('injects instance query guidance into promptSnapshot when business declares instanceQueryAction', async () => {
+    const core = createDeterministicRuntime()
+    core.registerBusiness({
+      businessId: 'instanceAware',
+      name: 'Instance aware business',
+      description: 'Business with explicit instance query entrypoint.',
+      instanceQueryAction: 'instance@list',
+      modules: [
+        {
+          moduleId: 'instance',
+          name: 'Instance module',
+          description: 'Lists available business instances.',
+          prompt: 'Operate only on known business instances.',
+          getFunctions: () => [
+            {
+              functionId: 'list',
+              description: 'List business instances.',
+              paramsSchema: {},
+              execute: () => [
+                { businessInstanceId: '0', description: '张三请假' },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const started = await core.startInstance({ businessId: 'instanceAware', businessInstanceId: 'instance-aware-1' })
+    expect(started.promptSnapshot).toContain('instanceAware@instance@list')
+    expect(started.promptSnapshot).toContain('#sym:businessInstanceId')
+    // discovery function itself must NOT get businessInstanceId injected
+    const listFn = started.availableFunctions.find((f) => f.action === 'instanceAware@instance@list')
+    expect(listFn?.paramsSchema).toEqual({})
+  })
+
+  it('fails fast when instanceQueryAction does not point to a registered function', () => {
+    const core = createDeterministicRuntime()
+    expect(() => core.registerBusiness({
+      businessId: 'brokenQueryAction',
+      name: 'Broken query action',
+      description: 'Invalid instance query action mapping.',
+      instanceQueryAction: 'instance@missing',
+      modules: [
+        {
+          moduleId: 'instance',
+          name: 'Instance module',
+          description: 'Lists available business instances.',
+          getFunctions: () => [
+            {
+              functionId: 'list',
+              description: 'List business instances.',
+              paramsSchema: {},
+              execute: () => [],
+            },
+          ],
+        },
+      ],
+    })).toThrow('instanceQueryAction must point to a registered function')
+  })
+
   it('executes one function call through the instanceId envelope and writes core history', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
@@ -165,7 +227,7 @@ describe('AI runtime business-first API', () => {
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
-      args: { reason: 'family care' },
+      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
     })
 
     expect(output.result).toEqual({
@@ -176,7 +238,7 @@ describe('AI runtime business-first API', () => {
     expect(service.get('leave-1')?.draft.reason).toBe('family care')
     expect(output.history.functionCalls).toHaveLength(1)
     expect(output.history.functionCalls[0]?.action).toBe('leaveApproval@form@setReason')
-    expect(output.history.functionCalls[0]?.args).toEqual({ reason: 'family care' })
+    expect(output.history.functionCalls[0]?.args).toEqual({ businessInstanceId: 'leave-instance', reason: 'family care' })
     expect('sessionId' in output.history).toBe(false)
   })
 
@@ -207,13 +269,32 @@ describe('AI runtime business-first API', () => {
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setDays',
-      args: { days: '3' },
+      args: { businessInstanceId: 'leave-instance', days: '3' },
     })
 
     expect(output.result.ok).toBe(false)
     if (output.result.ok) return
     expect(output.result.code).toBe('INVALID_ARGS')
     expect(output.result.msg).toContain('days')
+    expect(service.get('leave-1')).toBeUndefined()
+  })
+
+  it('fails fast when same-business call omits args.businessInstanceId', async () => {
+    const core = createDeterministicRuntime()
+    const service = createLeaveFormService()
+    core.registerBusiness(createLeaveBusiness(service))
+    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+
+    const output = await core.executeFunctionCall({
+      instanceId: 'leave-1',
+      action: 'leaveApproval@form@setReason',
+      args: { reason: 'family care' },
+    })
+
+    expect(output.result.ok).toBe(false)
+    if (output.result.ok) return
+    expect(output.result.code).toBe('INVALID_ARGS')
+    expect(output.result.msg).toContain('businessInstanceId')
     expect(service.get('leave-1')).toBeUndefined()
   })
 
@@ -248,7 +329,7 @@ describe('AI runtime business-first API', () => {
     const blocked = await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
-      args: { reason: 'family care' },
+      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
     })
     expect(blocked.result.ok).toBe(false)
     if (!blocked.result.ok) expect(blocked.result.code).toBe('INSTANCE_NOT_READY')
@@ -267,7 +348,7 @@ describe('AI runtime business-first API', () => {
     await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
-      args: { reason: 'family care' },
+      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
     })
 
     const stopped = await core.stopInstance({ instanceId: 'leave-1', mode: 'stop', reason: 'done' })
@@ -309,7 +390,7 @@ describe('AI runtime business-first API', () => {
     await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'leaveApproval@form@setReason',
-      args: { reason: 'family care' },
+      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
     })
 
     expect(eventTypes).toEqual(expect.arrayContaining([
@@ -353,7 +434,7 @@ describe('AI runtime business-first API', () => {
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'domainResult@form@readDomainState',
-      args: {},
+      args: { businessInstanceId: 'domain-instance' },
     })
 
     expect(output.result).toEqual({
@@ -395,7 +476,7 @@ describe('AI runtime business-first API', () => {
     const running = core.executeFunctionCall({
       instanceId: 'leave-1',
       action: 'slowBusiness@form@submit',
-      args: {},
+      args: { businessInstanceId: 'slow-instance' },
     })
     await Promise.resolve()
 

@@ -2,7 +2,7 @@
  * AI Runtime 业务契约总览。
  *
  * 推荐阅读时序：
- * 1. 基础枚举与 ID 类型：先理解实例状态、服务状态、action 地址格式。
+ * 1. 基础枚举与 ID 类型：先理解实例状态与 action 地址格式。
  * 2. 消息与事件：理解运行时如何记录对话、生命周期和函数调用变化。
  * 3. 业务注册：业务层通过 business/module/function 三层结构声明可调用能力。
  * 4. 运行时投影：runtime 把注册定义转换为 LLM 可见的 function exposure。
@@ -29,13 +29,6 @@ export type AiRuntimeInstanceStatus =
   | 'Stopping'
   | 'Stopped'
   | 'Failed'
-
-/**
- * 注册业务服务对 runtime 暴露的健康状态。
- *
- * runtime 在启动实例和执行函数前都会检查该状态；非 Ready 会阻止调用。
- */
-export type AiBusinessServiceStatus = 'Ready' | 'Unavailable' | 'Failed'
 
 /**
  * 停止实例时的行为模式。
@@ -299,6 +292,19 @@ export interface AiBusinessModuleRegistration<
   getFunctions(): ReadonlyArray<AiFunctionRegistration<unknown, unknown, TBusinessId, TModuleId, AiRuntimeFunctionId>>
 }
 
+/**
+ * LLM 调用 instanceQueryAction 函数时返回的单条业务实例摘要。
+ *
+ * 业务层的 instanceQueryAction 函数应返回此类型数组，
+ * LLM 据此获知可用的 businessInstanceId 后再发起业务操作。
+ */
+export interface AiBusinessInstanceSummary {
+  /** 调用方提供的业务实例 ID。 */
+  readonly businessInstanceId: string
+  /** 面向 LLM 的实例描述，如用户姓名、请假原因或任务标题。 */
+  readonly description: string
+}
+
 /** 业务注册便捷基类：业务层继承后声明基础 metadata 和模块列表。 */
 export abstract class AiBusinessRegistrationBase<
   TBusinessId extends AiRuntimeBusinessId = AiRuntimeBusinessId,
@@ -311,11 +317,6 @@ export abstract class AiBusinessRegistrationBase<
   public abstract readonly description: string
   /** 该业务暴露的模块列表。 */
   public abstract readonly modules: ReadonlyArray<AiBusinessModuleRegistration<TBusinessId, AiRuntimeModuleId>>
-
-  /** 返回当前业务服务健康状态；默认 `Ready`。 */
-  getStatus?(): AiBusinessServiceStatus {
-    return 'Ready'
-  }
 
   /** 释放停止实例时业务层持有的资源。 */
   releaseInstance?(_context: AiRuntimeInstanceScope<TBusinessId>): void | Promise<void> {}
@@ -334,8 +335,17 @@ export interface AiBusinessRegistration<
   readonly description: string
   /** 该业务暴露的模块列表。 */
   readonly modules: TModules
-  /** 返回当前业务服务健康状态。 */
-  getStatus?(): AiBusinessServiceStatus
+  /**
+   * 查询业务实例列表的函数地址（格式：`模块ID@函数ID`）。
+   *
+   * 声明后核心层会在 promptSnapshot 中自动注入调用提示，让 LLM 通过
+   * `{businessId}@{instanceQueryAction}` 获取可用实例列表，
+   * 再以 businessInstanceId 作为 args 发起后续业务操作。
+   * 对应函数应返回 `AiBusinessInstanceSummary[]`。
+   * 约束：除该实例查询函数外，同业务下所有 `business@module@function`
+   * 调用都必须在 args 中携带 `businessInstanceId`。
+   */
+  readonly instanceQueryAction?: `${string}@${string}`
   /** 释放停止实例时业务层持有的资源。 */
   releaseInstance?(context: AiRuntimeInstanceScope<TBusinessId>): void | Promise<void>
 }
@@ -399,8 +409,11 @@ export interface AiRuntimeBusinessExposure<
   readonly name: string
   /** 面向 LLM 的业务说明。 */
   readonly description: string
-  /** 当前业务服务健康状态。 */
-  readonly status: AiBusinessServiceStatus
+  /**
+   * 查询业务实例列表的函数地址（格式：`模块ID@函数ID`）。
+   * 存在时 promptSnapshot 中会自动注入实例查询提示。
+   */
+  readonly instanceQueryAction?: `${string}@${string}`
   /** 当前业务暴露的模块列表。 */
   readonly modules: ReadonlyArray<AiRuntimeModuleExposure<TBusinessId, AiRuntimeModuleId>>
 }
