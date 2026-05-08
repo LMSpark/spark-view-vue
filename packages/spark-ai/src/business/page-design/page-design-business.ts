@@ -33,17 +33,32 @@ import {
   type DatasetCrudToolFunctionParameterRow,
 } from './functions/dataset/tool-catalog'
 import { isPageDesignDatasetMethodExposed } from './functions/dataset/edit-surface'
+import {
+  PageDesignJsonDocCatalog,
+  type JsonDocFunctionParameterRow,
+} from './functions/json-doc/tool-catalog'
+import {
+  resolvePointer,
+  setAtPointer,
+  deleteAtPointer,
+  appendAtPointer,
+  listAtPointer,
+  type JsonValue,
+} from './functions/json-doc/json-pointer'
+import jmespath from 'jmespath'
 
 const PAGE_DESIGN_BUSINESS = 'pageDesign'
 const LIFECYCLE_MODULE_ID = 'lifecycle'
 const TEXT_MODEL_MODULE_ID = 'textModel'
 const NODE_TREE_MODULE_ID = 'nodeTree'
 const DATASET_MODULE_ID = 'dataset'
+const JSON_DOC_MODULE_ID = 'jsonDoc'
 type PageDesignModuleId =
   | typeof LIFECYCLE_MODULE_ID
   | typeof TEXT_MODEL_MODULE_ID
   | typeof NODE_TREE_MODULE_ID
   | typeof DATASET_MODULE_ID
+  | typeof JSON_DOC_MODULE_ID
 type PageDesignFunctionAction<TModuleId extends PageDesignModuleId = PageDesignModuleId> = `${typeof PAGE_DESIGN_BUSINESS}@${TModuleId}@${string}`
 type PageDesignFunctionIdFromAction<TAction extends PageDesignFunctionAction> =
   TAction extends `${typeof PAGE_DESIGN_BUSINESS}@${PageDesignModuleId}@${infer TFunctionId}` ? TFunctionId : never
@@ -406,6 +421,103 @@ function createDatasetFunctions(
     }))
 }
 
+function createJsonDocFunctions(
+  catalog: PageDesignJsonDocCatalog,
+  getState: GetPageDesignState,
+): ReadonlyArray<PageDesignFunctionDefinition<typeof JSON_DOC_MODULE_ID>> {
+  return catalog.parameterTable.map((row: JsonDocFunctionParameterRow) => ({
+    ...createBaseFunctionDefinition(row, JSON_DOC_MODULE_ID),
+    validate: (args) => catalog.validateParams(row.action, args),
+    execute: (args, context) => {
+      const state = getState(context)
+      // validateParams 已确保类型合法，直接解构
+      const docType = (args as { docType: 'pagedata' | 'rule' }).docType
+
+      const readDoc = state.toolHost?.readJsonDoc
+      if (typeof readDoc !== 'function') {
+        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.readJsonDoc', '先执行 pageDesign@lifecycle@bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。')
+      }
+
+      const rawDoc = readDoc.call(state.toolHost, docType)
+
+      if (row.operation === 'read') {
+        return success({ doc: rawDoc }, `${docType} 文档已读取`)
+      }
+
+      if (row.operation === 'list') {
+        const pointer = (args as { pointer: string }).pointer
+        const res = listAtPointer(rawDoc as JsonValue, pointer)
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@read 确认文档结构。')
+        return success({ entries: res.entries }, `${docType}${pointer} 列出 ${res.entries.length} 个子节点`)
+      }
+
+      if (row.operation === 'get') {
+        const pointer = (args as { pointer: string }).pointer
+        const res = resolvePointer(rawDoc as JsonValue, pointer)
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@list 确认路径。')
+        return success({ value: res.value }, `${docType}${pointer} 已读取`)
+      }
+
+      if (row.operation === 'query') {
+        const queryArgs = args as { expression: string; pointer?: string }
+        const pointer = queryArgs.pointer ?? ''
+        let target: JsonValue = rawDoc as JsonValue
+        if (pointer !== '') {
+          const res = resolvePointer(target, pointer)
+          if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@list 确认路径。')
+          target = res.value
+        }
+        try {
+          const result = jmespath.search(target, queryArgs.expression) as unknown
+          return success({ result }, `JMESPath 查询完成`)
+        } catch (e) {
+          return failure('INVALID_EXPRESSION', `JMESPath 表达式错误: ${e instanceof Error ? e.message : String(e)}`, '检查 expression 语法，参考 https://jmespath.org。')
+        }
+      }
+
+      // 写操作需要 writeJsonDoc
+      const writeDoc = state.toolHost?.writeJsonDoc
+      if (typeof writeDoc !== 'function') {
+        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.writeJsonDoc', '先执行 pageDesign@lifecycle@bootstrap 并确保宿主提供 writeJsonDoc。')
+      }
+
+      if (row.operation === 'set') {
+        const setArgs = args as { pointer: string; value: JsonValue }
+        const res = setAtPointer(rawDoc as JsonValue, setArgs.pointer, setArgs.value)
+        if (!res.ok) return failure('INVALID_POINTER', res.reason, '检查 pointer 格式。')
+        writeDoc.call(state.toolHost, docType, res.doc)
+        return success(undefined, `${docType}${setArgs.pointer} 已设置`)
+      }
+
+      if (row.operation === 'delete') {
+        const pointer = (args as { pointer: string }).pointer
+        const res = deleteAtPointer(rawDoc as JsonValue, pointer)
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@list 确认路径后再删除。')
+        writeDoc.call(state.toolHost, docType, res.doc)
+        return success(undefined, `${docType}${pointer} 已删除`)
+      }
+
+      if (row.operation === 'append') {
+        const appendArgs = args as { arrayPointer: string; element: JsonValue }
+        const res = appendAtPointer(rawDoc as JsonValue, appendArgs.arrayPointer, appendArgs.element)
+        if (!res.ok) return failure('NOT_ARRAY', res.reason, '使用 pageDesign@jsonDoc@get 确认目标是数组。')
+        writeDoc.call(state.toolHost, docType, res.doc)
+        return success(undefined, `元素已追加到 ${docType}${appendArgs.arrayPointer}`)
+      }
+
+      const patches = (args as { patches: Array<{ pointer: string; value: JsonValue }> }).patches
+      let doc = rawDoc as JsonValue
+      for (const [i, patch] of patches.entries()) {
+        const res = setAtPointer(doc, patch.pointer, patch.value)
+        if (!res.ok) return failure('INVALID_POINTER', `patches[${i}] 失败：${res.reason}`, '检查 pointer 格式，本批次全部未提交。')
+        doc = res.doc
+      }
+      writeDoc.call(state.toolHost, docType, doc)
+      return success(undefined, `${docType} 批量写入 ${patches.length} 项已完成`)
+    },
+  }))
+}
+
 class PageDesignModuleRegistration<TModuleId extends PageDesignModuleId> extends AiBusinessModuleRegistrationBase<
   typeof PAGE_DESIGN_BUSINESS,
   string
@@ -435,7 +547,7 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
 
   readonly description = '单页面四文件编辑业务：rule.json、pagedata.json、script.js、style.css。'
 
-  readonly modules: readonly AiBusinessModuleRegistration<typeof PAGE_DESIGN_BUSINESS, AiRuntimeModuleId>[]
+  readonly modules: ReadonlyArray<AiBusinessModuleRegistration<typeof PAGE_DESIGN_BUSINESS, AiRuntimeModuleId>>
 
   private readonly lifecycleCatalog = new PageDesignLifecycleCatalog()
 
@@ -444,6 +556,8 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
   private readonly nodeTreeCatalog = new PageDesignNodeTreeCatalog()
 
   private readonly datasetCatalog = new PageDesignDatasetCatalog()
+
+  private readonly jsonDocCatalog = new PageDesignJsonDocCatalog()
 
   private readonly states = new Map<string, PageDesignServiceState>()
 
@@ -481,6 +595,13 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
         prompt: PAGE_DESIGN_DATASET_MODULE_PROMPT,
         getFunctionsFromHost: this.datasetFunctions,
       }),
+      new PageDesignModuleRegistration({
+        moduleId: JSON_DOC_MODULE_ID,
+        name: 'Page Design JSON Doc',
+        description: '通过 JSON Pointer / JMESPath 直接读写 pagedata.json 或 rule.json 原始 JSON 文档。',
+        prompt: 'pageDesign@jsonDoc 通过 RFC 6901 JSON Pointer 或 JMESPath 查询直接操作 pagedata/rule JSON 文档；read/list/get/query 只读，set/delete/append/setMultiple 写入时通过 EditToolHost.writeJsonDoc 提交；构造 JSON 前需先 read/get 理解结构，禁止凭空捏造路径。',
+        getFunctionsFromHost: this.jsonDocFunctions,
+      }),
     ]
   }
 
@@ -515,5 +636,9 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
 
   private readonly datasetFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof DATASET_MODULE_ID>> => {
     return createDatasetFunctions(this.datasetCatalog, this.getState)
+  }
+
+  private readonly jsonDocFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof JSON_DOC_MODULE_ID>> => {
+    return createJsonDocFunctions(this.jsonDocCatalog, this.getState)
   }
 }

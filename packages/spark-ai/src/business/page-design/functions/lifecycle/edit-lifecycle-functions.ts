@@ -1,5 +1,6 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type { PageDesignNodeTree } from '../node-tree/types'
+import type { JsonDocType } from '../json-doc'
 
 export type EditPhase = 'idle' | 'editing' | 'saved'
 
@@ -12,6 +13,8 @@ export interface EditToolHost {
   writeScript?: (content: string) => void
   readStyle?: () => string
   writeStyle?: (content: string) => void
+  readJsonDoc?: (docType: JsonDocType) => unknown
+  writeJsonDoc?: (docType: JsonDocType, doc: unknown) => void
 }
 
 export interface EditState {

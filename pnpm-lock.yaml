@@ -174,6 +174,12 @@ importers:
       '@spark-view/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
+      '@types/jmespath':
+        specifier: ^0.15.2
+        version: 0.15.2
+      jmespath:
+        specifier: ^0.16.0
+        version: 0.16.0
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -2490,6 +2496,9 @@ packages:
 
   '@types/inquirer@9.0.9':
     resolution: {integrity: sha512-/mWx5136gts2Z2e5izdoRCo46lPp5TMs9R15GTSsgg/XnZyxDWVqoVU3R9lWnccKpqwsJLvRoxbCjoJtZB7DSw==}
+
+  '@types/jmespath@0.15.2':
+    resolution: {integrity: sha512-pegh49FtNsC389Flyo9y8AfkVIZn9MMPE9yJrO9svhq6Fks2MwymULWjZqySuxmctd3ZH4/n7Mr98D+1Qo5vGA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -10752,6 +10761,8 @@ snapshots:
     dependencies:
       '@types/through': 0.0.33
       rxjs: 7.8.2
+
+  '@types/jmespath@0.15.2': {}
 
   '@types/json-schema@7.0.15': {}
 

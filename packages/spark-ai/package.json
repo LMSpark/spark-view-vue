@@ -47,7 +47,9 @@
   "dependencies": {
     "@spark-view/spark-component": "workspace:*",
     "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*"
+    "@spark-view/spark-utils": "workspace:*",
+    "@types/jmespath": "^0.15.2",
+    "jmespath": "^0.16.0"
   },
   "scripts": {
     "clean": "rimraf dist",
