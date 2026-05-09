@@ -6,7 +6,7 @@ import {
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'
-export type EditLifecycleFunctionAction = `pageDesign@lifecycle@${string}`
+export type EditLifecycleFunctionAction = `pageDesign/lifecycle/${string}`
 
 type EditLifecycleFunctionBaseFields = {
   action: EditLifecycleFunctionAction
@@ -37,7 +37,7 @@ export type EditLifecycleFunctionCapabilityRow = Pick<
 
 const NO_PARAMS: Record<string, unknown> = {}
 
-const BOOTSTRAP_RULE = 'pageDesign@lifecycle@bootstrap 仅做 live adapter 可用性校验，不接收文件快照 payload。'
+const BOOTSTRAP_RULE = 'pageDesign/lifecycle/bootstrap 仅做 live adapter 可用性校验，不接收文件快照 payload。'
 const PHASE_RULE = '执行成功后进入 editing phase。'
 
 function toCapabilityRow(row: EditLifecycleFunctionParameterRow): EditLifecycleFunctionCapabilityRow {
@@ -46,7 +46,7 @@ function toCapabilityRow(row: EditLifecycleFunctionParameterRow): EditLifecycleF
 
 const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE = [
   {
-    action: 'pageDesign@lifecycle@bootstrap',
+    action: 'pageDesign/lifecycle/bootstrap',
     type: 'request',
     target: 'session',
     description: '引导编辑会话：校验 live adapter 能力并进入 editing phase。',
@@ -75,7 +75,7 @@ const EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE = [
     ],
   },
   {
-    action: 'pageDesign@lifecycle@describeProgress',
+    action: 'pageDesign/lifecycle/describeProgress',
     type: 'describe',
     target: 'session',
     description: '查询当前 pageDesign 编辑运行状态、live adapter 可用性和下一步建议。',

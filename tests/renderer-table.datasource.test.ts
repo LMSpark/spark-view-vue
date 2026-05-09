@@ -7,7 +7,7 @@ import { defineComponent, h, nextTick } from 'vue'
 import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import type { SparkNode } from '@spark-view/spark-component'
 import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
-import RendererFilter from '../packages/spark-component/src/components/containers/page-frame/RendererFilter.vue'
+import RendererFilter from '../packages/spark-component/src/components/containers/zones/RendererFilter.vue'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import {
@@ -28,13 +28,8 @@ function readConfigProps(config: Record<string, unknown>): Record<string, unknow
 function readConfigOnMap(config: Record<string, unknown>): Record<string, unknown> | undefined {
   const propsMap = readConfigProps(config)
   const onMap = propsMap['on']
-  if (onMap !== null && onMap !== undefined && typeof onMap === 'object' && !Array.isArray(onMap)) {
-    return onMap as Record<string, unknown>
-  }
-
-  const legacyOn = config['on']
-  return legacyOn !== null && legacyOn !== undefined && typeof legacyOn === 'object' && !Array.isArray(legacyOn)
-    ? legacyOn as Record<string, unknown>
+  return onMap !== null && onMap !== undefined && typeof onMap === 'object' && !Array.isArray(onMap)
+    ? onMap as Record<string, unknown>
     : undefined
 }
 
@@ -192,8 +187,7 @@ const SparkActionStub = defineComponent({
           void executeActionDescriptor(
             desc,
             { getDataSet: () => dataSet, getPageService: () => pageService, getRouter: () => null },
-            undefined,
-            row !== undefined ? { row, index: 0 } : undefined,
+            row !== undefined ? { scope: { row, index: 0 } } : {},
           )
         },
       })
@@ -506,8 +500,7 @@ const SparkColumnRendererStub = defineComponent({
           void executeActionDescriptor(
             desc,
             { getDataSet: () => dataSet, getPageService: () => pageService, getRouter: () => null },
-            undefined,
-            row !== undefined ? { row, index: 0 } : undefined,
+            row !== undefined ? { scope: { row, index: 0 } } : {},
           )
         },
       })

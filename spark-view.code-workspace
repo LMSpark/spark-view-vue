@@ -9,6 +9,7 @@
     "eslint.workingDirectories": [
       { "mode": "auto" }
     ],
-    "github-enterprise.uri": "https://gitee.com"
+    "github-enterprise.uri": "https://gitee.com",
+    "chatgpt.openOnStartup": false
   }
 }

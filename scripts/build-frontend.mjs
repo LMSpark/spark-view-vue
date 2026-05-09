@@ -5,16 +5,6 @@ import { resolve } from 'node:path'
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const CONFIG_TIME_BUILD_DEP_PACKAGES = ['@spark-view/spark-utils']
-const SUPPORTED_BUILD_MODES = new Set(['smart', 'classic'])
-
-function resolveBuildMode() {
-  const requested = (process.env['BUILD_MODE'] ?? 'smart').trim().toLowerCase()
-  if (SUPPORTED_BUILD_MODES.has(requested)) {
-    return requested
-  }
-  console.error(`❌ BUILD_MODE 不合法: "${requested}"，仅支持 smart 或 classic`)
-  process.exit(1)
-}
 
 function run(cmd, opts = {}) {
   console.log(`\n> ${cmd}\n`)
@@ -34,13 +24,7 @@ function buildConfigTimeDependencies() {
   console.log('✅ 配置期依赖已同步')
 }
 
-const buildMode = resolveBuildMode()
 buildConfigTimeDependencies()
 
-console.log(`\n🧩 组件注册模式: ${buildMode}（构建模式与运行时注册路径强关联）`)
-run('npx vite build', {
-  env: {
-    ...process.env,
-    BUILD_MODE: buildMode,
-  },
-})
+console.log('\n🧩 组件注册模式: 编译时注册')
+run('npx vite build')

@@ -16,7 +16,6 @@
  *
  * 环境变量（可选）：
  *   JAVA_HOME      — Java 17 路径（默认自动检测）
- *   BUILD_MODE     — Vite 构建模式（默认 smart）
  *   SKIP_JAVA      — 设为 true 跳过 Java 构建（仅前端）
  *   SKIP_FE        — 设为 true 跳过前端构建
  *   BACKEND_PORT   — 后端端口（默认 8080）
@@ -35,17 +34,6 @@ const noUpload = args.includes('--no-upload')
 const REQUESTED_BACKEND_PORT = process.env['BACKEND_PORT']?.trim() || ''
 let backendPort = REQUESTED_BACKEND_PORT || '18080'
 let backendExited = false
-
-const SUPPORTED_BUILD_MODES = new Set(['smart', 'classic'])
-
-function resolveBuildMode() {
-  const requested = (process.env['BUILD_MODE'] ?? 'smart').trim().toLowerCase()
-  if (SUPPORTED_BUILD_MODES.has(requested)) {
-    return requested
-  }
-  console.error(`❌ BUILD_MODE 不合法: "${requested}"，仅支持 smart 或 classic`)
-  process.exit(1)
-}
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
@@ -282,14 +270,7 @@ try {
     console.log('✅ 组件目录生成完成')
 
     console.log('\n🔨 构建 Vite 前端...')
-    const buildMode = resolveBuildMode()
-    run('node scripts/build-frontend.mjs', {
-      cwd: ROOT_DIR,
-      env: {
-        ...process.env,
-        BUILD_MODE: buildMode,
-      },
-    })
+    run('node scripts/build-frontend.mjs', { cwd: ROOT_DIR })
     console.log('✅ Vite 前端构建完成')
   }
 

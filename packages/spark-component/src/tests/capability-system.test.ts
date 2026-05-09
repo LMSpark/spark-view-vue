@@ -21,7 +21,8 @@ import {
   PAGE_SERVICE,
   PAGE_COMPONENT_REGISTRY,
 } from '@spark-view/spark-component'
-import type { SparkNode, IEventEmitter } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
+import type { IEventEmitter } from '@spark-view/spark-data'
 import { createPageComponentRegistry } from '../page/context/page-component-registry'
 
 describe('Capability system integration', () => {

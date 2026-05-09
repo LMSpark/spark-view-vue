@@ -3,7 +3,7 @@ import type { ShallowRef } from 'vue'
 import { createFetchClient } from '@spark-view/spark-utils'
 import {
   AiRuntime,
-  PageDesignBusiness,
+  PageDesignModule,
   type AiRuntimeApi,
   type AiRuntimeFunctionExposure,
   type AiRuntimeStartInstanceResult,
@@ -19,8 +19,8 @@ interface UsePageModelSessionHostOptions {
 export interface PageModelFunctionContext {
   sessionKey: string
   instanceId: string
-  businessId: string
-  businessInstanceId: string
+  moduleId: string
+  moduleInstanceId: string
   availableFunctions: readonly AiRuntimeFunctionExposure[]
 }
 
@@ -63,8 +63,8 @@ function createContext(sessionKey: string, session: AiRuntimeStartInstanceResult
   return {
     sessionKey,
     instanceId: session.instanceId,
-    businessId: session.businessId,
-    businessInstanceId: session.businessInstanceId,
+    moduleId: session.moduleId,
+    moduleInstanceId: session.moduleInstanceId,
     availableFunctions: session.availableFunctions,
   }
 }
@@ -78,7 +78,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
   const { getEditToolHost, getSessionKey } = options
   const http = createFetchClient()
   const core = new AiRuntime({ createRecordId: createRecordIdFactory() })
-  core.registerBusiness(new PageDesignBusiness({ getEditToolHost }))
+  core.registerModule(new PageDesignModule({ getEditToolHost }))
 
   const context = shallowRef<PageModelFunctionContext | null>(null)
   let backendSessionId: string | undefined
@@ -112,8 +112,8 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     }
 
     const session = await core.startInstance({
-      businessId: PageDesignBusiness.businessId,
-      businessInstanceId: sessionKey,
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: sessionKey,
     })
     const nextContext = createContext(sessionKey, session)
     context.value = nextContext

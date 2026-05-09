@@ -62,7 +62,6 @@ export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
   '**/src/views/app/SkillCatalog.vue',
   '**/src/views/app/dev-system/DevPreviewTab.vue',
   '**/packages/spark-component/src/components/containers/support/**/*.vue',
-  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererRowFragment.vue',
 ] as const
 
 /* ==========================================================================

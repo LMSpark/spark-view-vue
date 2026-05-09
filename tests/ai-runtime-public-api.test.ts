@@ -12,5 +12,7 @@ describe('ai runtime class-only public surface', () => {
     expect(typeof SparkAi.AiRuntime).toBe('function')
     expect(typeof SparkAi.KnowledgePayloadRegistry).toBe('function')
     expect(SparkAi.KnowledgePayloadRegistry.defaultRegistry).toBeInstanceOf(SparkAi.KnowledgePayloadRegistry)
+    expect('PageDesignBusiness' in SparkAi).toBe(false)
+    expect(typeof SparkAi.PageDesignModule).toBe('function')
   })
 })

@@ -125,22 +125,16 @@ app.mount('#app')
 
 ```typescript
 const {
-  context,              // SparkCapabilityContext — 当前能力上下文（响应式）
+  provider,             // 最近能力 provider 查询接口
   isVisible,            // ComputedRef<boolean> — 基于 config.visible
   isDisabled,           // ComputedRef<boolean> — 基于 config.disabled
+  resolvedProps,        // ComputedRef<Record<string, unknown>> — 运行时 props + DATA_ROW 占位符
 
   sparkProvide,         // (capabilityKey, impl) => void — 写入本组件能力
-  provideEvents,        // (name?) => IEventEmitter — 提供事件总线
-  getProvider,          // (capabilityKey) => unknown — 仅查本组件能力（不走 parent 链）
+  sparkRemove,          // (capabilityKey) => void — 移除本组件能力
   sparkConsume,         // <T>(capabilityKey) => T | null — 沿 parent 链向上查找
-  consumeEvents,        // (name, handlers) => IEventEmitter | null — 消费并绑定事件
 
-  initialize,           // () => void — onMounted 自动调用
-  destroy,              // () => void — onUnmounted 自动调用
-
-  logger,               // LoggerApi — 带优先级的日志代理
-  getComponent,         // (type) => unknown — 从注册表获取组件（markRaw 包装）
-  isComponentRegistered,// (type) => boolean
+  logger,               // LoggerApi — 页面级日志代理
 } = useSparkComponent(props.config)
 ```
 
@@ -416,14 +410,15 @@ await ds?.batchDeleteRecords([1, 2, 3])
 
 ```typescript
 import { defineCapability } from '@spark-view/spark-component'
-import type { IEventEmitter } from '@spark-view/spark-component'
+import { createEventEmitter } from '@spark-view/spark-data'
+import type { IEventEmitter } from '@spark-view/spark-data'
 
 // 定义自定义事件能力键
 const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
 
-const { provideEvents } = useSparkComponent(props.config)
-
-const myEvents = provideEvents(MY_EVENTS)
+const { sparkProvide } = useSparkComponent(props.config)
+const myEvents = createEventEmitter()
+sparkProvide(MY_EVENTS, myEvents)
 
 // 触发事件（内部使用）
 myEvents.emit('rowClick', { row, index })
@@ -433,13 +428,20 @@ myEvents.emit('pageChange', { page: 2 })
 ### 7.2 消费事件总线
 
 ```typescript
-const { consumeEvents } = useSparkComponent(props.config)
+const { sparkConsume } = useSparkComponent(props.config)
+const myEvents = sparkConsume(MY_EVENTS)
 
-// 自动处理挂载/卸载
-consumeEvents(MY_EVENTS, {
-  rowClick: ({ row }) => console.log('row clicked:', row),
-  pageChange: ({ page }) => console.log('page:', page),
-})
+if (myEvents) {
+  const onRowClick = ({ row }: { row: unknown }) => console.log('row clicked:', row)
+  const onPageChange = ({ page }: { page: number }) => console.log('page:', page)
+
+  myEvents.on('rowClick', onRowClick)
+  myEvents.on('pageChange', onPageChange)
+  onUnmounted(() => {
+    myEvents.off('rowClick', onRowClick)
+    myEvents.off('pageChange', onPageChange)
+  })
+}
 ```
 
 ### 7.3 手动管理生命周期
@@ -458,7 +460,6 @@ onUnmounted(() => gridEvents?.off('rowClick', onRowClick))
 
 `useSparkComponent` 返回的 `logger` 统一按以下方式解析：
 1. 页面层 `APP_SERVICES.logger`（应用层统一提供）
-2. Fallback console
 
 ```typescript
 const { logger } = useSparkComponent(props.config)

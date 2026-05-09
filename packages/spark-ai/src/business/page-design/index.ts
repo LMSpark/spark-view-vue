@@ -1,9 +1,9 @@
 export {
-  PageDesignBusiness,
+  PageDesignModule,
 } from './page-design-business'
 
 export type {
-  PageDesignBusinessOptions,
+  PageDesignModuleOptions,
   PageDesignRuntimeContext,
   PageDesignServiceState,
 } from './page-design-business'
@@ -29,7 +29,7 @@ export { PageDesignNodeTreeCatalog } from './functions/node-tree'
 
 export { PageDesignDatasetCatalog } from './functions/dataset'
 
-export interface PageDesignBusinessContext {
+export interface PageDesignModuleContext {
   pageId?: string
   pageName?: string
   phase?: string

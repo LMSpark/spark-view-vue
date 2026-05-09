@@ -216,7 +216,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
-const CLARIFICATION_ACTION = 'core@knowledge@ask'
+const CLARIFICATION_ACTION = 'pageDesign/knowledge/ask'
 
 interface FileAttachment {
   fileId: string
@@ -654,11 +654,11 @@ function formatActionTitle(action: string): string {
   const direct = ACTION_TITLE_MAP[action]
   if (direct !== undefined) return direct
 
-  if (action.startsWith('pageDesign@nodeTree@')) return `节点树${formatActionSuffix(action.slice('pageDesign@nodeTree@'.length))}`
-  if (action.startsWith('pageDesign@dataset@')) return `数据集${formatActionSuffix(action.slice('pageDesign@dataset@'.length))}`
-  if (action.startsWith('pageDesign@textModel@')) return `文本模型${formatActionSuffix(action.slice('pageDesign@textModel@'.length))}`
-  if (action.startsWith('pageDesign@lifecycle@')) return `编辑生命周期${formatActionSuffix(action.slice('pageDesign@lifecycle@'.length))}`
-  if (action.startsWith('core@knowledge@')) return `知识${formatActionSuffix(action.slice('core@knowledge@'.length))}`
+  if (action.startsWith('pageDesign/nodeTree/')) return `节点树${formatActionSuffix(action.slice('pageDesign/nodeTree/'.length))}`
+  if (action.startsWith('pageDesign/dataset/')) return `数据集${formatActionSuffix(action.slice('pageDesign/dataset/'.length))}`
+  if (action.startsWith('pageDesign/textModel/')) return `文本模型${formatActionSuffix(action.slice('pageDesign/textModel/'.length))}`
+  if (action.startsWith('pageDesign/lifecycle/')) return `编辑生命周期${formatActionSuffix(action.slice('pageDesign/lifecycle/'.length))}`
+  if (action.startsWith('pageDesign/knowledge/')) return `知识${formatActionSuffix(action.slice('pageDesign/knowledge/'.length))}`
   if (action.startsWith('datatable.')) return `数据表${formatActionSuffix(action.slice('datatable.'.length))}`
   if (action.startsWith('dataview.')) return `数据视图${formatActionSuffix(action.slice('dataview.'.length))}`
   if (action.startsWith('relation.')) return `关系${formatActionSuffix(action.slice('relation.'.length))}`
@@ -676,13 +676,11 @@ function formatActionSuffix(suffix: string): string {
 
 const ACTION_TITLE_MAP: Record<string, string> = {
   'session-ready': '会话就绪',
-  'pageDesign@lifecycle@describeProgress': '编辑进度',
-  'core@knowledge@queryTools': '函数目录',
-  'core@knowledge@guideTool': '函数指南',
-  'core@knowledge@queryPayloads': '参数荷载目录',
-  'core@knowledge@guidePayload': '参数荷载指南',
-  'core@knowledge@ask': '反问确认',
-  'pageDesign@lifecycle@bootstrap': '初始化编辑会话',
+  'pageDesign/lifecycle/describeProgress': '编辑进度',
+  'pageDesign/knowledge/queryPayloads': '参数荷载目录',
+  'pageDesign/knowledge/guidePayload': '参数荷载指南',
+  'pageDesign/knowledge/ask': '反问确认',
+  'pageDesign/lifecycle/bootstrap': '初始化编辑会话',
   'dataset.export': '导出数据集',
   'dataset.bootstrap': '初始化数据集',
   'dataset.describe': '数据集概览',

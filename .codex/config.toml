@@ -1,0 +1,8 @@
+# Codex 项目级配置 (.codex/config.toml)
+# SPARK_VIEW — Node 20 / pnpm 10 / JDK 17 / TypeScript + Spring Boot 全栈项目
+
+# ── 沙箱：允许读写整个 workspace ─────────────────────────────────────────────
+sandbox_mode = "workspace-write"
+
+# ── 审批策略：写操作前确认 ────────────────────────────────────────────────────
+approval_policy = "on-request"

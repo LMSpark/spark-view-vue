@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AiRuntime,
-  PageDesignBusiness,
+  PageDesignModule,
   type EditToolHost,
 } from '../packages/spark-ai/src'
 import type { SparkNodeTree } from '../packages/spark-component/src'
@@ -11,7 +11,7 @@ import type { DataSetCrudTool } from '../packages/spark-data/src'
 function createRuntime() {
   let record = 0
   return new AiRuntime({
-    createInstanceId: (_businessId, _businessInstanceId) => 'page-design-1',
+    createInstanceId: (_moduleId, _moduleInstanceId) => 'page-design-1',
     createRecordId: (kind) => `${kind}-${++record}`,
     now: () => 1778040000000 + record,
   })
@@ -45,41 +45,42 @@ function createHost(): { host: EditToolHost; reads: () => { script: string; styl
   }
 }
 
-describe('pageDesign business definition', () => {
-  it('registers pageDesign as business modules and executes through ai runtime', async () => {
+describe('pageDesign module definition', () => {
+  it('registers pageDesign as recursive modules and executes through ai runtime', async () => {
     const core = createRuntime()
     const { host, reads } = createHost()
-    core.registerBusiness(new PageDesignBusiness({ getEditToolHost: () => host }))
+    core.registerModule(new PageDesignModule({ getEditToolHost: () => host }))
 
     const start = await core.startInstance({
-      businessId: PageDesignBusiness.businessId,
-      businessInstanceId: 'page-designer',
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
     })
 
     expect(start.instanceId).toBe('page-design-1')
-    expect(start.businessId).toBe(PageDesignBusiness.businessId)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign@lifecycle@bootstrap')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign@textModel@writeScript')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign@nodeTree@countNodes')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign@dataset@listTables')).toBe(true)
+    expect(start.moduleId).toBe(PageDesignModule.moduleId)
+    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/lifecycle/bootstrap')).toBe(true)
+    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/textModel/writeScript')).toBe(true)
+    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/nodeTree/countNodes')).toBe(true)
+    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/knowledge/queryPayloads')).toBe(true)
+    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/dataset/listTables')).toBe(true)
 
     const bootstrap = await core.executeFunctionCall({
       instanceId: start.instanceId,
-      action: 'pageDesign@lifecycle@bootstrap',
+      action: 'pageDesign/lifecycle/bootstrap',
       args: {},
     })
     expect(bootstrap.result).toMatchObject({ ok: true, data: { phase: 'editing' } })
 
     const readScript = await core.executeFunctionCall({
       instanceId: start.instanceId,
-      action: 'pageDesign@textModel@readScript',
+      action: 'pageDesign/textModel/readScript',
       args: {},
     })
     expect(readScript.result).toMatchObject({ ok: true, data: { content: 'export default {}' } })
 
     const writeScript = await core.executeFunctionCall({
       instanceId: start.instanceId,
-      action: 'pageDesign@textModel@writeScript',
+      action: 'pageDesign/textModel/writeScript',
       args: { content: 'export default { mounted() {} }' },
     })
     expect(writeScript.result.ok).toBe(true)
@@ -87,14 +88,21 @@ describe('pageDesign business definition', () => {
 
     const countNodes = await core.executeFunctionCall({
       instanceId: start.instanceId,
-      action: 'pageDesign@nodeTree@countNodes',
+      action: 'pageDesign/nodeTree/countNodes',
       args: {},
     })
     expect(countNodes.result).toMatchObject({ ok: true, data: { count: 1 } })
 
+    const payloads = await core.executeFunctionCall({
+      instanceId: start.instanceId,
+      action: 'pageDesign/knowledge/queryPayloads',
+      args: { keyword: 'table' },
+    })
+    expect(payloads.result).toMatchObject({ ok: true })
+
     const listTables = await core.executeFunctionCall({
       instanceId: start.instanceId,
-      action: 'pageDesign@dataset@listTables',
+      action: 'pageDesign/dataset/listTables',
       args: {},
     })
     expect(listTables.result).toMatchObject({ ok: true, data: { tables: [] } })
@@ -102,17 +110,17 @@ describe('pageDesign business definition', () => {
 
   it('fails fast when live adapter is missing', async () => {
     const core = createRuntime()
-    core.registerBusiness(new PageDesignBusiness({
+    core.registerModule(new PageDesignModule({
       getEditToolHost: () => ({
         readScript: () => '',
         readStyle: () => '',
       }),
     }))
 
-    const start = await core.startInstance({ businessId: PageDesignBusiness.businessId, businessInstanceId: 'page-designer' })
+    const start = await core.startInstance({ moduleId: PageDesignModule.moduleId, moduleInstanceId: 'page-designer' })
     const bootstrap = await core.executeFunctionCall({
       instanceId: start.instanceId,
-      action: 'pageDesign@lifecycle@bootstrap',
+      action: 'pageDesign/lifecycle/bootstrap',
       args: {},
     })
 

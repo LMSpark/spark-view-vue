@@ -133,9 +133,6 @@ const logger = Logger('action-executor')
 
 // ── 公开执行入口 ──────────────────────────────────────────────────────────
 
-/**
- * 执行单个 action descriptor 的选项参数（推荐替代旧版 eventArgs 数组参数）。
- */
 export interface ActionExecutionOptions {
   /** 原始事件参数（如行数据、CancellableControl 等） */
   eventArgs?: unknown[]
@@ -150,8 +147,7 @@ export interface ActionExecutionOptions {
  *
  * @param descriptor - 要执行的动作描述符
  * @param ctx - 执行上下文（DataSet、PageService、Router 等工厂函数）
- * @param eventArgsOrOptions - 兼容旧版 eventArgs[] 或新版 ActionExecutionOptions
- * @param scope - 执行作用域（与 options.scope 等价，优先使用此参数）
+ * @param options - 执行选项，包含原始事件参数、流程控制信号和执行作用域
  *
  * 执行顺序：
  * 1. cancelDefault 预处理
@@ -161,16 +157,11 @@ export interface ActionExecutionOptions {
 export async function executeActionDescriptor(
   descriptor: ActionDescriptor,
   ctx: ActionExecutionContext,
-  eventArgsOrOptions?: unknown[] | ActionExecutionOptions,
-  scope?: ActionExecutionScope,
+  options: ActionExecutionOptions = {},
 ): Promise<void> {
-  const options = Array.isArray(eventArgsOrOptions)
-    ? { eventArgs: eventArgsOrOptions }
-    : (eventArgsOrOptions ?? {})
-
   const eventArgs = options.eventArgs
   const control = options.control
-  const effectiveScope = scope ?? options.scope
+  const effectiveScope = options.scope
 
   if (descriptor.cancelDefault && control) {
     control.cancel = true

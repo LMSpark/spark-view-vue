@@ -277,11 +277,10 @@ it('useSparkComponent returns correct interface', () => {
       // 验证返回值
       expect(typeof result.sparkConsume).toBe('function')
       expect(typeof result.sparkProvide).toBe('function')
-      expect(typeof result.provideEvents).toBe('function')
-      expect(typeof result.getProvider).toBe('function')
-      expect(typeof result.consumeEvents).toBe('function')
+      expect(typeof result.sparkRemove).toBe('function')
+      expect(typeof result.provider.nearestCapabilityProvider).toBe('function')
+      expect(typeof result.resolvedProps).toBe('object')
       expect(typeof result.logger).toBe('object')
-      expect(typeof result.getComponent).toBe('function')
       // 'use' 别名不存在
       expect('use' in result).toBe(false)
       return () => h('div')

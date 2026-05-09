@@ -1,6 +1,6 @@
 # Core 阅读顺序与功能分区
 
-这个目录是 SPARK AI runtime 的核心层。它只负责契约、协议、知识注册和内存运行时编排，不直接拥有业务服务生命周期。
+这个目录是 SPARK AI 运行时的核心层。它只负责契约、协议、知识注册和内存运行时编排，不直接拥有业务服务生命周期。
 
 ## 一、入口导出
 
@@ -11,8 +11,8 @@
 ## 二、协议与契约
 
 - `protocol/business-contracts.ts`
-  - 定义业务注册、模块注册、函数注册、运行时实例、事件、历史、快照和公共 API。
-  - 推荐先读这里，因为后续 runtime 文件都围绕这些类型工作。
+  - 定义递归模块注册、函数注册、运行时实例、事件、历史、快照和公共 API。
+  - 推荐先读这里，因为后续运行时文件都围绕这些类型工作。
 
 - `protocol/parameter-schema.ts`
   - 参数 schema 的单一事实源。
@@ -40,14 +40,14 @@
 
 - `runtime/ai-runtime-support.ts`
   - `AiRuntime` 的内部支持件。
-  - 包含事件中心、业务投影器、历史写入器和轻量参数校验器。
+  - 包含事件中心、模块投影器、历史写入器和轻量参数校验器。
 
 - `runtime/ai-runtime.ts`
   - 核心运行时编排器。
-  - 主时序是：registerBusiness -> startInstance -> appendMessages -> executeFunctionCall -> stopInstance。
+  - 主时序是：registerModule -> startInstance -> appendMessages -> executeFunctionCall -> stopInstance。
 
 ## 五、核心边界
 
 - core 会 clone 对外快照，避免调用方修改内部状态。
 - core 只校验 action、实例状态、轻量参数结构和业务健康状态。
-- 业务资源释放、真实函数逻辑和服务健康状态由业务层实现并注册进 runtime。
+- 业务资源释放、真实函数逻辑和服务健康状态由业务层实现并注册进运行时。

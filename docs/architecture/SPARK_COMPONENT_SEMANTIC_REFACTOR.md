@@ -126,7 +126,7 @@ src/
 | 2 | [permission/PermissionResolver.ts](../../packages/spark-component/src/permission/PermissionResolver.ts) | `action` 字符串 + context | `isPermittedAction(action, ctx)` |
 | 3 | [components/containers/support/actions/builtin-action-disabled.ts](../../packages/spark-component/src/components/containers/support/actions/builtin-action-disabled.ts) | SparkNode + DataView | `isBuiltinActionDisabled` |
 
-外加 [non-data-components/RendererButton.vue](../../packages/spark-component/src/components/containers/non-data-components/RendererButton.vue) 中的 `permissionAllowed` / `resolvePermissionScopeRows` 自身的判定。
+外加 [layout/RendererButton.vue](../../packages/spark-component/src/components/containers/layout/RendererButton.vue) 中的 `permissionAllowed` / `resolvePermissionScopeRows` 自身的判定。
 
 四处都需要回答“**这一行/这一动作是否被允许**”，但：
 
@@ -180,11 +180,11 @@ DataView
 ### 6.3 ❓ 半死代码：`ACTION_CAPABILITY`
 
 - 已声明：[capability-keys.ts L72](../../packages/spark-component/src/core/capability-keys.ts) — `defineCapability<SparkActionCapability>('spark:capability:action-host')`。
-- **有 3 处 consume**，全部位于 [RendererButton.vue](../../packages/spark-component/src/components/containers/non-data-components/RendererButton.vue)（L88 `resolveActionHost`；L274 `submit-current-form` 分支；L284 兜底 `actionHost.execute`）。
+- **有 3 处 consume**，全部位于 [RendererButton.vue](../../packages/spark-component/src/components/containers/layout/RendererButton.vue)（L88 `resolveActionHost`；L274 `submit-current-form` 分支；L284 兜底 `actionHost.execute`）。
 - **没有任何 provider**：仓库范围内搜索 `sparkProvide(ACTION_CAPABILITY` 零命中。
 - **运行时实际行为**：`RendererButton` 走 fail-soft 兜底——没有 host 时直接 `return`。也就是说：
   - **路径优先级**：`view 存在` → `executeBuiltinActionDirect`（`createBuiltinActionHandler` 当场创建）→ 不依赖 ACTION_CAPABILITY。
-  - **唯一依赖 ACTION_CAPABILITY 的分支**：`submit-current-form`（[RendererButton.vue L274-L277](../../packages/spark-component/src/components/containers/non-data-components/RendererButton.vue)）——但因无 provider，**该按钮在当前代码下永远不会执行**。这是一处隐性失效。
+  - **唯一依赖 ACTION_CAPABILITY 的分支**：`submit-current-form`（[RendererButton.vue L274-L277](../../packages/spark-component/src/components/containers/layout/RendererButton.vue)）——但因无 provider，**该按钮在当前代码下永远不会执行**。这是一处隐性失效。
 - **结论**：要么补 provider 并把所有内置动作迁移到 ACTION_CAPABILITY 链路；要么删掉该 capability + `submit-current-form` 分支，改为 view 直驱（`builtinActionHandler.handleToolbar`）。倾向后者：与 P1-A「统一 Action 真源」一致。
 
 ---
@@ -281,7 +281,7 @@ DataView
   - `ACTION_CAPABILITY` 实际**有 3 处 consume（全在 RendererButton.vue）但零 provider**，`submit-current-form` 走的就是这条死路；P1-C 从"若无引用则删"明确为"删 capability + RendererButton 中相关分支"。
   - P1-D 补充精确证据：仅 `PAGE_COMPONENT_REGISTRY` / `MODULE_CONTEXT` 是 `app:` 前缀（[capability-keys.ts L65-L72](../../packages/spark-component/src/core/capability-keys.ts)）。
   - PermissionResolver 直接读源码确认：`resolveNodePermAction` 把 BuiltinAction 名映射到 6 类 permAction（create / import / export / create-child / delete / edit），与 PermissionChecker 完全配套。P1-B 描述与现状对齐。
-  - RendererButton 的 `permissionAllowed` 工具栏多选行权限投影行为已直接核对（[RendererButton.vue L96-L113, L141-L154](../../packages/spark-component/src/components/containers/non-data-components/RendererButton.vue)），描述准确。
+  - RendererButton 的 `permissionAllowed` 工具栏多选行权限投影行为已直接核对（[RendererButton.vue L96-L113, L141-L154](../../packages/spark-component/src/components/containers/layout/RendererButton.vue)），描述准确。
 - **v1 (2026-04-30)**：初版，基于 Explore 子代理整体扫描产出。
 
 *文档版本：2026-04-30 v2 · 基于分支 `refactor/action-capability-cleanup-2026-04-30`。*

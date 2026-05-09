@@ -1,10 +1,10 @@
 /**
  * @packageDocumentation
  *
- * Public entry point for the SPARK AI runtime package.
+ * SPARK AI runtime package public entry point.
  *
- * The package exposes the business-registration contracts, the in-memory
- * `AiRuntime` orchestrator, page-design business tools, and component catalog
+ * The package exposes recursive module-registration contracts, the in-memory
+ * `AiRuntime` orchestrator, page-design module tools, and component catalog
  * projection helpers used by the SPARK configuration workflow.
  */
 
@@ -20,15 +20,17 @@ export type {
   AiRuntimeAction,
   AiRuntimeAppendMessage,
   AiRuntimeAppendMessagesOptions,
-  AiBusinessRegistration,
-  AiBusinessModuleRegistration,
-  AiBusinessInstanceSummary,
+  AiModuleRegistration,
+  AiModuleInstanceBinding,
+  AiModuleInstanceParam,
+  AiRuntimeActivePathSnapshot,
   AiRuntimeEvent,
   AiRuntimeEventListener,
   AiRuntimeEventType,
   AiRuntimeExecuteFunctionCallOptions,
   AiRuntimeExecuteFunctionCallResult,
-  AiRuntimeBusinessExposure,
+  AiRuntimeClearActivePathOptions,
+  AiRuntimeFunctionContextParam,
   AiRuntimeFunctionCallRecord,
   AiRuntimeFunctionCallResult,
   AiRuntimeFunctionExposure,
@@ -40,18 +42,20 @@ export type {
   AiRuntimeInstanceStatus,
   AiRuntimeLifecycleMarker,
   AiRuntimeMessageRole,
-  AiRuntimeBusinessId,
   AiRuntimeFunctionId,
   AiRuntimeModuleExposure,
   AiRuntimeModuleId,
+  AiRuntimeModuleInstanceId,
+  AiRuntimeModuleInstanceScope,
+  AiRuntimeModulePath,
   AiRuntimeOptions,
-  AiRuntimeBusinessInstanceScope,
+  AiRuntimeSetActivePathOptions,
   AiRuntimeStartInstanceOptions,
   AiRuntimeStartInstanceResult,
   AiRuntimeStopMode,
   AiRuntimeStopInstanceOptions,
   AiRuntimeStopInstanceResult,
-  AiRuntimeStopBusinessInstanceOptions,
+  AiRuntimeStopModuleInstanceOptions,
   AiRuntimeInstanceScope,
   AiFunctionRegistration,
   FunctionFailureMode,
@@ -59,7 +63,7 @@ export type {
   ModulePromptContext,
   ModulePromptProvider,
   PostValidationWarning,
-  ActionAddressParts,
+  ActionPathParts,
   ProtocolRole,
   ProtocolMessage,
   TokenUsage,
@@ -83,13 +87,13 @@ export {
   PageDesignLifecycleCatalog,
   PageDesignNodeTreeCatalog,
   PageDesignPageCache,
-  PageDesignBusiness,
+  PageDesignModule,
   PageDesignTextModelCatalog,
 } from './business/page-design'
 
 export type {
-  PageDesignBusinessContext,
-  PageDesignBusinessOptions,
+  PageDesignModuleContext,
+  PageDesignModuleOptions,
   PageDesignRuntimeContext,
   PageDesignServiceState,
   EditToolHost,

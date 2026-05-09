@@ -9,7 +9,7 @@
  *
  * 架构说明：
  *   Core      — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough（同步注册）
- *   Extended  — 扩展组件：在 classic 注册路径中同步挂载（避免与 smart 自动注册产生无效动态导入告警）
+ *   Extended  — 扩展组件：随内置注册表同步挂载
  *
  * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
  * 此文件仅导入实例，不再本地调用 `createPassthrough()`。
@@ -169,7 +169,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-watermark', RendererWatermark],
 ]
 
-/** 扩展组件：classic 路径下同步注册（避免与 smart 自动注册产生重复动态导入路径） */
+/** 扩展组件：随内置注册表同步注册。 */
 const EXTENDED_COMPONENTS: ReadonlyArray<readonly [string, RegisteredComponent]> = [
   // 扩展容器
   ['r-popconfirm', RendererPopconfirm],
@@ -225,7 +225,7 @@ export function registerAllRenderers(): void {
     Spark.register(type, component)
   }
 
-  // Extended — classic 路径下同步注册
+  // Extended
   for (const [type, component] of EXTENDED_COMPONENTS) {
     Spark.register(type, component)
   }

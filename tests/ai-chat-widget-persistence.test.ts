@@ -310,7 +310,7 @@ describe('AiChatWidget persistence', () => {
       request.onSseEvent?.({ sessionId: 'session-1', type: 'delta', data: 'raw-sse-' })
       request.onSseEvent?.({ sessionId: 'session-1', type: 'delta', data: 'delta' })
       request.onFcCall?.({
-        toolName: 'core@knowledge@queryPayloads',
+        toolName: 'pageDesign/knowledge/queryPayloads',
         args: { category: 'layout' },
         round: 2,
         callId: 'call-1',
@@ -330,7 +330,7 @@ describe('AiChatWidget persistence', () => {
         externalToolLogs: [
           { type: 'info', tag: 'session-ready', text: '编辑会话已挂接到当前页面模型；后续读写仅通过 FC 工具执行', timestamp: '2026-04-27T13:03:35.000Z' },
           { type: 'info', tag: '人工输入', text: '诊断一下', timestamp: '2026-04-27T13:03:36.000Z' },
-          { type: 'info', tag: 'LLM → pageDesign@lifecycle@describeProgress', text: '读取会话状态', timestamp: '2026-04-27T13:03:36.500Z' },
+          { type: 'info', tag: 'LLM → pageDesign/lifecycle/describeProgress', text: '读取会话状态', timestamp: '2026-04-27T13:03:36.500Z' },
           { type: 'info', tag: 'SSE delta', text: 'duplicated-sse-log', timestamp: '2026-04-27T13:03:37.000Z' },
           { type: 'success', tag: 'SSE result', text: 'duplicated-result-log', timestamp: '2026-04-27T13:03:38.000Z' },
         ],
@@ -380,7 +380,7 @@ describe('AiChatWidget persistence', () => {
     expect(structured.counts.toolLogs).toBe(2)
     expect(structured.toolLogs).toEqual(expect.arrayContaining([
       expect.objectContaining({ tag: 'session-ready', title: '会话就绪', text: expect.stringContaining('编辑会话已挂接') }),
-      expect.objectContaining({ tag: 'LLM → pageDesign@lifecycle@describeProgress', title: 'LLM → pageDesign@lifecycle@describeProgress', text: '读取会话状态' }),
+      expect.objectContaining({ tag: 'LLM → pageDesign/lifecycle/describeProgress', title: 'LLM → pageDesign/lifecycle/describeProgress', text: '读取会话状态' }),
     ]))
     expect(structured.sseEvents).toEqual(expect.arrayContaining([
       expect.objectContaining({ type: 'reasoning', data: 'reasoning-context ', sessionId: 'session-1' }),
@@ -393,12 +393,12 @@ describe('AiChatWidget persistence', () => {
     expect(structured.timeline.some((item) => item.source === 'tool-log' && item.title.startsWith('SSE '))).toBe(false)
     expect(structured.timeline.some((item) => item.kind === 'sse' && item.payload.trim() === '')).toBe(false)
     expect(structured.timeline.some((item) => item.title === 'SSE done')).toBe(false)
-    expect(structured.fcCalls[0]).toMatchObject({ toolName: 'core@knowledge@queryPayloads', status: 'success' })
+    expect(structured.fcCalls[0]).toMatchObject({ toolName: 'pageDesign/knowledge/queryPayloads', status: 'success' })
 
     await wrapper.find('.fc-call-entry').trigger('click')
 
     expect(wrapper.text()).toContain('参数')
-    expect(wrapper.text()).toContain('原始工具 core@knowledge@queryPayloads')
+    expect(wrapper.text()).toContain('原始工具 pageDesign/knowledge/queryPayloads')
     expect(wrapper.text()).toContain('"category": "layout"')
     expect(wrapper.text()).toContain('"count": 3')
   })
@@ -412,7 +412,7 @@ describe('AiChatWidget persistence', () => {
       }
       request.onSseEvent?.({ sessionId: 'session-batch', type: 'done', data: '{}' })
       request.onFcCall?.({
-        toolName: 'core@knowledge@queryPayloads',
+        toolName: 'pageDesign/knowledge/queryPayloads',
         args: { type: 'r-table' },
         round: 1,
         status: 'success',
@@ -445,18 +445,18 @@ describe('AiChatWidget persistence', () => {
     expect(snapshot.sseEvents).toHaveLength(20)
     expect(snapshot.sseEvents?.some((event) => event.type === 'done' && event.data === '')).toBe(false)
     expect(snapshot.fcCalls).toHaveLength(1)
-    expect(snapshot.fcCalls?.[0]?.toolName).toBe('core@knowledge@queryPayloads')
+    expect(snapshot.fcCalls?.[0]?.toolName).toBe('pageDesign/knowledge/queryPayloads')
 
     setItemSpy.mockRestore()
   })
 
-  it('renders core@knowledge@ask as clickable clarification answers', async () => {
+  it('renders pageDesign/knowledge/ask as clickable clarification answers', async () => {
     let callCount = 0
     const sender = vi.fn(async (request) => {
       callCount += 1
       if (callCount === 1) {
         request.onFcCall?.({
-          toolName: 'core@knowledge@ask',
+          toolName: 'pageDesign/knowledge/ask',
           args: {},
           round: 1,
           callId: 'ask-1',
@@ -514,7 +514,7 @@ describe('AiChatWidget persistence', () => {
     const reportFcError = vi.fn(async (_record: unknown) => ({ reportId: 'report-1', serverTimestamp: 1777250000000 }))
     const sender = vi.fn(async (request) => {
       request.onFcCall?.({
-        toolName: 'core@knowledge@queryPayloads',
+        toolName: 'pageDesign/knowledge/queryPayloads',
         args: { category: 'bad' },
         round: 1,
         callId: 'call-error-1',
@@ -540,7 +540,7 @@ describe('AiChatWidget persistence', () => {
 
     expect(reportFcError).toHaveBeenCalledTimes(1)
     expect(reportFcError.mock.calls[0]?.[0]).toMatchObject({
-      toolName: 'core@knowledge@queryPayloads',
+      toolName: 'pageDesign/knowledge/queryPayloads',
       status: 'error',
       error: 'INVALID_CATEGORY',
     })

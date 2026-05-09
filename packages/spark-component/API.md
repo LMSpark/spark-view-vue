@@ -105,19 +105,14 @@ const childCtx  = createContext({ type: 'child' }, parentCtx)
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const {
-  context,
+  provider,
   isVisible,
   isDisabled,
+  resolvedProps,
   sparkProvide,
-  provideEvents,
-  getProvider,
+  sparkRemove,
   sparkConsume,
-  consumeEvents,
-  initialize,
-  destroy,
   logger,
-  getComponent,
-  isComponentRegistered,
 } = useSparkComponent(props.config)
 ```
 
@@ -144,17 +139,11 @@ const dataSource = sparkConsume(DATA_SOURCE)
 
 ### 返回值
 
-#### `context: SparkCapabilityContext`
+#### `provider`
 
-纯能力上下文，包含 `id`、`type`、`capabilities`、`parent` 等最小字段。
-
-额外返回：
-- `host.context: SparkCapabilityContext | null`
-- `host.type: string | null`
-
-在轻量消费入口 `useSparkConsume()` 下，仅返回：
-- `host`
-- `sparkConsume()`
+最近能力 provider 查询接口，包含：
+- `nearestCapabilityProvider(key)`
+- `nearestCapabilityProviderByKeys(keys)`
 
 #### `isVisible: ComputedRef<boolean>`
 
@@ -177,22 +166,9 @@ sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 
 支持类型安全的 `CapabilityKey<T>`（自动推断实现类型）和裸字符串/Symbol。
 
-#### `provideEvents(name?): IEventEmitter`
+#### `sparkRemove(name)`
 
-创建事件总线并注册为能力，`name` 默认 `'events'`。
-
-```typescript
-import { defineCapability } from '@spark-view/spark-component'
-import type { IEventEmitter } from '@spark-view/spark-component'
-
-const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
-const events = provideEvents(MY_EVENTS)
-events.emit('rowClick', row)
-```
-
-#### `getProvider(name): unknown`
-
-仅在**当前组件**的 `capabilities` Map 中查找，不向父级追溯。
+显式移除当前组件上下文中的能力。
 
 #### `sparkConsume<T>(name): T | null`
 
@@ -206,28 +182,9 @@ services?.router?.push('/home')
 services?.logger?.info('navigated')
 ```
 
-#### `consumeEvents(name, handlers): IEventEmitter | null`
-
-查找事件总线并批量绑定处理器：
-
-```typescript
-consumeEvents(MY_EVENTS, {
-  rowClick: (row) => handleRowClick(row),
-  refresh: () => reload(),
-})
-```
-
-#### `initialize() / destroy()`
-
-生命周期钩子，`onMounted` / `onUnmounted` 自动调用，无需手动调用。
-`destroy()` 会清理事件订阅和 `capabilities` Map。
-
 #### `logger: LoggerApi`
 
-带优先级的日志代理。解析顺序（无需手动配置）：
-1. 最近祖先 `sparkProvide(LOGGER, impl)` 的实现
-2. 最近祖先 `sparkProvide(APP_SERVICES, { logger: ... })` 的 logger
-3. fallback console
+页面级日志代理，要求页面根能力提供 `APP_SERVICES.logger`。
 
 #### `getComponent(type): unknown`
 

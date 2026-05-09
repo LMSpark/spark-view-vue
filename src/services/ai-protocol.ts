@@ -15,7 +15,7 @@ export {
   AiInvocationProtocol,
 } from '@spark-view/spark-ai'
 export type {
-  ActionAddressParts,
+  ActionPathParts,
   ProtocolRole,
   ProtocolMessage,
   TokenUsage,

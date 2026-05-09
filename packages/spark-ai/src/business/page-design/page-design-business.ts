@@ -1,11 +1,8 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
   AiInvocationProtocol,
-  AiBusinessModuleRegistrationBase,
-  AiBusinessRegistrationBase,
-  type AiBusinessModuleRegistration,
-  type ModulePromptProvider,
-  type AiRuntimeModuleId,
+  AiModuleRegistrationBase,
+  type AiModuleRegistration,
   type AiFunctionRegistration,
   type AiRuntimeInstanceScope,
   type AiRuntimeFunctionCallResult,
@@ -37,6 +34,7 @@ import {
   PageDesignJsonDocCatalog,
   type JsonDocFunctionParameterRow,
 } from './functions/json-doc/tool-catalog'
+import { PageDesignComponentPayloadProvider } from './payloads/component-payload-provider'
 import {
   resolvePointer,
   setAtPointer,
@@ -47,46 +45,38 @@ import {
 } from './functions/json-doc/json-pointer'
 import jmespath from 'jmespath'
 
-const PAGE_DESIGN_BUSINESS = 'pageDesign'
+const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 const LIFECYCLE_MODULE_ID = 'lifecycle'
 const TEXT_MODEL_MODULE_ID = 'textModel'
 const NODE_TREE_MODULE_ID = 'nodeTree'
 const DATASET_MODULE_ID = 'dataset'
 const JSON_DOC_MODULE_ID = 'jsonDoc'
+const KNOWLEDGE_MODULE_ID = 'knowledge'
 type PageDesignModuleId =
   | typeof LIFECYCLE_MODULE_ID
   | typeof TEXT_MODEL_MODULE_ID
   | typeof NODE_TREE_MODULE_ID
   | typeof DATASET_MODULE_ID
   | typeof JSON_DOC_MODULE_ID
-type PageDesignFunctionAction<TModuleId extends PageDesignModuleId = PageDesignModuleId> = `${typeof PAGE_DESIGN_BUSINESS}@${TModuleId}@${string}`
-type PageDesignFunctionIdFromAction<TAction extends PageDesignFunctionAction> =
-  TAction extends `${typeof PAGE_DESIGN_BUSINESS}@${PageDesignModuleId}@${infer TFunctionId}` ? TFunctionId : never
-type PageDesignFunctionDefinition<
-  TModuleId extends PageDesignModuleId,
-  TAction extends PageDesignFunctionAction<TModuleId> = PageDesignFunctionAction<TModuleId>,
-> = AiFunctionRegistration<
-  unknown,
-  unknown,
-  typeof PAGE_DESIGN_BUSINESS,
-  TModuleId,
-  PageDesignFunctionIdFromAction<TAction>
-> & {
-  readonly action: TAction
+  | typeof KNOWLEDGE_MODULE_ID
+type PageDesignCatalogAction = string
+type PageDesignFunctionDefinition<TModuleId extends PageDesignModuleId> = AiFunctionRegistration & {
+  readonly action: string
   readonly moduleId: TModuleId
 }
-const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign@lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
-const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign@textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
-const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign@nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 core@knowledge@queryPayloads/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
-const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign@dataset 只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
+const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign/lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
+const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign/textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
+const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign/nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 pageDesign/knowledge/queryPayloads 与 pageDesign/knowledge/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
+const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign/dataset 只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
+const PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT = 'pageDesign/knowledge 暴露当前页面设计需要的只读知识查询能力；新增或替换 SparkNode 前先查询组件 payload，再按 guidePayload 返回的 JSON schema 构造 node。'
 
 export interface PageDesignRuntimeContext {
   instanceId: string
-  businessId: typeof PAGE_DESIGN_BUSINESS
-  businessInstanceId: string
+  moduleId: typeof PAGE_DESIGN_MODULE_ID
+  moduleInstanceId: string
 }
 
-export interface PageDesignBusinessOptions {
+export interface PageDesignModuleOptions {
   getEditToolHost: (context: PageDesignRuntimeContext) => EditToolHost
 }
 
@@ -102,8 +92,8 @@ interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
   getFunctionsFromHost: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
 }
 
-type FunctionCatalogRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = {
-  action: PageDesignFunctionAction<TModuleId>
+type FunctionCatalogRow = {
+  action: PageDesignCatalogAction
   description: string
   paramsSchema: Record<string, unknown>
   resultSchema?: Record<string, unknown>
@@ -111,7 +101,7 @@ type FunctionCatalogRow<TModuleId extends PageDesignModuleId = PageDesignModuleI
   failureModes?: readonly FunctionFailureMode[]
 }
 
-type MethodBackedRow<TModuleId extends PageDesignModuleId = PageDesignModuleId> = FunctionCatalogRow<TModuleId> & {
+type MethodBackedRow = FunctionCatalogRow & {
   type: 'describe' | 'request'
   example: Record<string, unknown>
 }
@@ -201,25 +191,30 @@ function failure(code: string, msg: string, fix: string): AiRuntimeFunctionCallR
   return { ok: false, code, msg, fix }
 }
 
+function toObject(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+}
+
 function functionIdFromAction<
   TModuleId extends PageDesignModuleId,
-  TAction extends PageDesignFunctionAction<TModuleId>,
->(action: TAction, expectedModuleId: TModuleId): PageDesignFunctionIdFromAction<TAction> {
-  const parsed = AiInvocationProtocol.parseActionAddress(action)
-  if (parsed.business !== PAGE_DESIGN_BUSINESS || parsed.module !== expectedModuleId) {
+>(action: string, expectedModuleId: TModuleId): string {
+  const parsed = AiInvocationProtocol.parseActionPath(action)
+  if (parsed.moduleIds[0] !== PAGE_DESIGN_MODULE_ID || parsed.moduleId !== expectedModuleId) {
     throw new Error(`pageDesign 函数目录 action 与模块不一致: ${action}`)
   }
-  return parsed.function as PageDesignFunctionIdFromAction<TAction>
+  return parsed.function
 }
 
 function createBaseFunctionDefinition<
   TModuleId extends PageDesignModuleId,
-  TAction extends PageDesignFunctionAction<TModuleId>,
->(row: FunctionCatalogRow<NoInfer<TModuleId>> & { action: TAction }, moduleId: TModuleId): Omit<PageDesignFunctionDefinition<TModuleId, TAction>, 'execute'> {
+>(row: FunctionCatalogRow, moduleId: TModuleId): Omit<PageDesignFunctionDefinition<TModuleId>, 'execute'> {
+  const action = row.action
   return {
-    action: row.action,
+    action,
     moduleId,
-    functionId: functionIdFromAction(row.action, moduleId),
+    functionId: functionIdFromAction(action, moduleId),
     description: row.description,
     paramsSchema: row.paramsSchema,
     ...(row.resultSchema !== undefined ? { resultSchema: row.resultSchema } : {}),
@@ -240,24 +235,24 @@ function describeProgress(state: PageDesignEditSession): Record<string, unknown>
       writeStyle: typeof state.toolHost?.writeStyle === 'function',
     },
     nextStep: state.phase === 'editing'
-      ? '已进入编辑态；按目标文件选择 pageDesign@nodeTree / pageDesign@dataset / pageDesign@textModel 函数。'
-      : '请先执行 pageDesign@lifecycle@bootstrap 初始化编辑会话。',
+      ? '已进入编辑态；按目标文件选择 pageDesign/nodeTree / pageDesign/dataset / pageDesign/textModel 函数。'
+      : '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话。',
   }
 }
 
 function bootstrapEditState(state: PageDesignEditSession): AiRuntimeFunctionCallResult<{ phase: PageDesignEditSession['phase'] }> {
   const tree = state.getActiveNodeTree()
   if (tree === null) {
-    return failure('NO_NODE_TREE', 'pageDesign@lifecycle@bootstrap 失败：缺少 nodeTree tool 实例（EditToolHost.getNodeTree）', '宿主注入可用的 nodeTree tool 实例。')
+    return failure('NO_NODE_TREE', 'pageDesign/lifecycle/bootstrap 失败：缺少 nodeTree tool 实例（EditToolHost.getNodeTree）', '宿主注入可用的 nodeTree tool 实例。')
   }
 
   const dataSetTool = state.getActiveDataSetTool()
   if (dataSetTool === null) {
-    return failure('NO_DATASET_EDIT', 'pageDesign@lifecycle@bootstrap 失败：缺少 dataset tool 实例（EditToolHost.getDataSetTool）', '宿主注入可用的 dataset tool 实例。')
+    return failure('NO_DATASET_EDIT', 'pageDesign/lifecycle/bootstrap 失败：缺少 dataset tool 实例（EditToolHost.getDataSetTool）', '宿主注入可用的 dataset tool 实例。')
   }
 
   if (typeof state.toolHost?.readScript !== 'function' || typeof state.toolHost.readStyle !== 'function') {
-    return failure('NO_TEXT_MODEL', 'pageDesign@lifecycle@bootstrap 失败：缺少 script/style 读取器', '宿主注入 EditToolHost.readScript/readStyle。')
+    return failure('NO_TEXT_MODEL', 'pageDesign/lifecycle/bootstrap 失败：缺少 script/style 读取器', '宿主注入 EditToolHost.readScript/readStyle。')
   }
 
   tree.toJSON()
@@ -277,7 +272,7 @@ function createLifecycleFunctions(
     validate: (args) => catalog.validateParams(row.action, args),
     execute: (_args, context) => {
       const state = getState(context)
-      if (row.action === 'pageDesign@lifecycle@bootstrap') {
+      if (row.action === 'pageDesign/lifecycle/bootstrap') {
         return bootstrapEditState(state)
       }
       return success(describeProgress(state), `pageDesign 编辑状态：${state.phase}`)
@@ -305,7 +300,7 @@ function createTextModelFunctions(
         const state = getState(context)
         const accessError = ensureTextModelAccess(state, row, mode)
         if (accessError !== null) {
-          return failure('NO_TEXT_MODEL', accessError, '请先执行 pageDesign@lifecycle@bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*。')
+          return failure('NO_TEXT_MODEL', accessError, '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*。')
         }
 
         if (mode === 'read') {
@@ -386,7 +381,7 @@ function createNodeTreeFunctions(
       const state = getState(context)
       const tree: PageDesignNodeTree | null = state.getActiveNodeTree()
       if (tree === null) {
-        return failure('NO_NODE_TREE', 'nodeTree 未初始化', '请先执行 pageDesign@lifecycle@bootstrap 初始化编辑会话。')
+        return failure('NO_NODE_TREE', 'nodeTree 未初始化', '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话。')
       }
       const result = callMethodBackedTarget(row, tree, row.coreMethod, args)
       if (result.ok && row.type === 'request') {
@@ -410,7 +405,7 @@ function createDatasetFunctions(
         const state = getState(context)
         const tool: DataSetCrudTool | null = state.getActiveDataSetTool()
         if (tool === null) {
-          return failure('NO_DATASET_EDIT', 'datasetEdit 未初始化', '请先执行 pageDesign@lifecycle@bootstrap 初始化编辑会话。')
+          return failure('NO_DATASET_EDIT', 'datasetEdit 未初始化', '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话。')
         }
         const result = callMethodBackedTarget(row, tool, row.crudToolMethod, args)
         if (result.ok && row.type === 'request') {
@@ -435,7 +430,7 @@ function createJsonDocFunctions(
 
       const readDoc = state.toolHost?.readJsonDoc
       if (typeof readDoc !== 'function') {
-        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.readJsonDoc', '先执行 pageDesign@lifecycle@bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。')
+        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.readJsonDoc', '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。')
       }
 
       const rawDoc = readDoc.call(state.toolHost, docType)
@@ -447,14 +442,14 @@ function createJsonDocFunctions(
       if (row.operation === 'list') {
         const pointer = (args as { pointer: string }).pointer
         const res = listAtPointer(rawDoc as JsonValue, pointer)
-        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@read 确认文档结构。')
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/read 确认文档结构。')
         return success({ entries: res.entries }, `${docType}${pointer} 列出 ${res.entries.length} 个子节点`)
       }
 
       if (row.operation === 'get') {
         const pointer = (args as { pointer: string }).pointer
         const res = resolvePointer(rawDoc as JsonValue, pointer)
-        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@list 确认路径。')
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/list 确认路径。')
         return success({ value: res.value }, `${docType}${pointer} 已读取`)
       }
 
@@ -464,7 +459,7 @@ function createJsonDocFunctions(
         let target: JsonValue = rawDoc as JsonValue
         if (pointer !== '') {
           const res = resolvePointer(target, pointer)
-          if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@list 确认路径。')
+          if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/list 确认路径。')
           target = res.value
         }
         try {
@@ -478,7 +473,7 @@ function createJsonDocFunctions(
       // 写操作需要 writeJsonDoc
       const writeDoc = state.toolHost?.writeJsonDoc
       if (typeof writeDoc !== 'function') {
-        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.writeJsonDoc', '先执行 pageDesign@lifecycle@bootstrap 并确保宿主提供 writeJsonDoc。')
+        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.writeJsonDoc', '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 writeJsonDoc。')
       }
 
       if (row.operation === 'set') {
@@ -492,7 +487,7 @@ function createJsonDocFunctions(
       if (row.operation === 'delete') {
         const pointer = (args as { pointer: string }).pointer
         const res = deleteAtPointer(rawDoc as JsonValue, pointer)
-        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign@jsonDoc@list 确认路径后再删除。')
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/list 确认路径后再删除。')
         writeDoc.call(state.toolHost, docType, res.doc)
         return success(undefined, `${docType}${pointer} 已删除`)
       }
@@ -500,7 +495,7 @@ function createJsonDocFunctions(
       if (row.operation === 'append') {
         const appendArgs = args as { arrayPointer: string; element: JsonValue }
         const res = appendAtPointer(rawDoc as JsonValue, appendArgs.arrayPointer, appendArgs.element)
-        if (!res.ok) return failure('NOT_ARRAY', res.reason, '使用 pageDesign@jsonDoc@get 确认目标是数组。')
+        if (!res.ok) return failure('NOT_ARRAY', res.reason, '使用 pageDesign/jsonDoc/get 确认目标是数组。')
         writeDoc.call(state.toolHost, docType, res.doc)
         return success(undefined, `元素已追加到 ${docType}${appendArgs.arrayPointer}`)
       }
@@ -518,36 +513,109 @@ function createJsonDocFunctions(
   }))
 }
 
-class PageDesignModuleRegistration<TModuleId extends PageDesignModuleId> extends AiBusinessModuleRegistrationBase<
-  typeof PAGE_DESIGN_BUSINESS,
-  string
-> {
+function createKnowledgeFunctions(
+  provider: PageDesignComponentPayloadProvider,
+): ReadonlyArray<PageDesignFunctionDefinition<typeof KNOWLEDGE_MODULE_ID>> {
+  return [
+    {
+      ...createBaseFunctionDefinition({
+        action: 'pageDesign/knowledge/queryPayloads',
+        description: '查询 page-design 组件参数荷载目录，返回可用于 SparkNode node 参数的组件 type 摘要。',
+        paramsSchema: {
+          category: 'string? — 组件分类过滤，例如 container / field / group / meta。',
+          keyword: 'string? — 按组件 type、描述或标签模糊搜索。',
+        },
+        resultSchema: {
+          payloadRef: 'string — 固定为 page-design.component',
+          items: 'KnowledgePayloadSummary[] — 组件参数荷载摘要列表。',
+        },
+        usageRules: [
+          '新增或替换组件前，若不确定 type，先查询目录。',
+          '无需传 payloadRef；本模块固定查询 page-design.component。',
+        ],
+        failureModes: [],
+      }, KNOWLEDGE_MODULE_ID),
+      execute: (args) => {
+        const input = toObject(args) ?? {}
+        const filter = {
+          ...(typeof input['category'] === 'string' ? { category: input['category'] } : {}),
+          ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
+        }
+        const items = provider.queryPayloads(filter)
+        return success({ payloadRef: provider.payloadRef, items }, `已返回 ${items.length} 个组件参数荷载摘要`)
+      },
+    },
+    {
+      ...createBaseFunctionDefinition({
+        action: 'pageDesign/knowledge/guidePayload',
+        description: '读取指定组件 type 的 SparkNode 参数荷载指南，返回 JSON schema、最小示例和使用规则。',
+        paramsSchema: {
+          required: ['key'],
+          key: 'string — 组件 type，例如 r-table、r-form、el-button。',
+        },
+        resultSchema: {
+          guide: 'KnowledgePayloadGuide — 组件 SparkNode 参数荷载指南。',
+        },
+        usageRules: [
+          '构造 pageDesign/nodeTree/addNode / replaceNode / addNodes / replaceNodes 的 node 参数前，必须先读取目标 type 的指南。',
+          '返回 PAYLOAD_NOT_FOUND 时改用 queryPayloads 重新选择可用组件，不要反复用同一个缺失 key 重试。',
+        ],
+        failureModes: [
+          {
+            code: 'PAYLOAD_NOT_FOUND',
+            when: 'key 不存在于 page-design.component 参数荷载目录。',
+            fix: '先调用 pageDesign/knowledge/queryPayloads 选择可用组件 type。',
+          },
+        ],
+      }, KNOWLEDGE_MODULE_ID),
+      validate: (args) => {
+        const input = toObject(args)
+        if (input === null || typeof input['key'] !== 'string' || input['key'].trim().length === 0) {
+          return 'key 必须是非空组件 type 字符串。'
+        }
+        return null
+      },
+      execute: (args) => {
+        const key = (args as { key: string }).key
+        const guide = provider.guidePayload(key)
+        if (guide === null) {
+          return failure(
+            'PAYLOAD_NOT_FOUND',
+            `组件 "${key}" 不在 page-design.component 参数荷载目录中`,
+            '先调用 pageDesign/knowledge/queryPayloads 选择可用组件 type。',
+          )
+        }
+        return success({ guide }, `${key} 组件参数荷载指南已返回`)
+      },
+    },
+  ]
+}
+
+class PageDesignModuleRegistration<TModuleId extends PageDesignModuleId> extends AiModuleRegistrationBase {
   constructor(
     options: PageDesignModuleFactoryOptions<TModuleId>,
   ) {
     super(options.moduleId, options.name, options.description, options.prompt)
-    this.prompt = options.prompt
     this.getFunctionsFromHost = options.getFunctionsFromHost
   }
 
   private readonly getFunctionsFromHost: () => ReadonlyArray<PageDesignFunctionDefinition<TModuleId>>
-  public override readonly prompt: ModulePromptProvider<typeof PAGE_DESIGN_BUSINESS, string>
 
   override getFunctions(): ReadonlyArray<PageDesignFunctionDefinition<TModuleId>> {
     return this.getFunctionsFromHost()
   }
 }
 
-export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_DESIGN_BUSINESS> {
-  static readonly businessId = PAGE_DESIGN_BUSINESS
+export class PageDesignModule implements AiModuleRegistration {
+  static readonly moduleId = PAGE_DESIGN_MODULE_ID
 
-  readonly businessId = PAGE_DESIGN_BUSINESS
+  readonly moduleId = PAGE_DESIGN_MODULE_ID
 
   readonly name = 'Page Design'
 
-  readonly description = '单页面四文件编辑业务：rule.json、pagedata.json、script.js、style.css。'
+  readonly description = '单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。'
 
-  readonly modules: ReadonlyArray<AiBusinessModuleRegistration<typeof PAGE_DESIGN_BUSINESS, AiRuntimeModuleId>>
+  readonly modules: readonly AiModuleRegistration[]
 
   private readonly lifecycleCatalog = new PageDesignLifecycleCatalog()
 
@@ -559,12 +627,13 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
 
   private readonly jsonDocCatalog = new PageDesignJsonDocCatalog()
 
+  private readonly componentPayloadProvider = new PageDesignComponentPayloadProvider()
+
   private readonly states = new Map<string, PageDesignServiceState>()
 
-  private readonly getEditToolHost: PageDesignBusinessOptions['getEditToolHost']
+  private readonly getEditToolHost: PageDesignModuleOptions['getEditToolHost']
 
-  constructor(options: PageDesignBusinessOptions) {
-    super()
+  constructor(options: PageDesignModuleOptions) {
     this.getEditToolHost = options.getEditToolHost
     this.modules = [
       new PageDesignModuleRegistration({
@@ -580,6 +649,13 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
         description: '当前页面 script.js/style.css live 文本模型读写。',
         prompt: PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT,
         getFunctionsFromHost: this.textModelFunctions,
+      }),
+      new PageDesignModuleRegistration({
+        moduleId: KNOWLEDGE_MODULE_ID,
+        name: 'Page Design Knowledge',
+        description: '当前页面设计组件参数荷载知识查询。',
+        prompt: PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT,
+        getFunctionsFromHost: this.knowledgeFunctions,
       }),
       new PageDesignModuleRegistration({
         moduleId: NODE_TREE_MODULE_ID,
@@ -599,26 +675,30 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
         moduleId: JSON_DOC_MODULE_ID,
         name: 'Page Design JSON Doc',
         description: '通过 JSON Pointer / JMESPath 直接读写 pagedata.json 或 rule.json 原始 JSON 文档。',
-        prompt: 'pageDesign@jsonDoc 通过 RFC 6901 JSON Pointer 或 JMESPath 查询直接操作 pagedata/rule JSON 文档；read/list/get/query 只读，set/delete/append/setMultiple 写入时通过 EditToolHost.writeJsonDoc 提交；构造 JSON 前需先 read/get 理解结构，禁止凭空捏造路径。',
+        prompt: 'pageDesign/jsonDoc 通过 RFC 6901 JSON Pointer 或 JMESPath 查询直接操作 pagedata/rule JSON 文档；read/list/get/query 只读，set/delete/append/setMultiple 写入时通过 EditToolHost.writeJsonDoc 提交；构造 JSON 前需先 read/get 理解结构，禁止凭空捏造路径。',
         getFunctionsFromHost: this.jsonDocFunctions,
       }),
     ]
   }
 
-  override releaseInstance(context: AiRuntimeInstanceScope<typeof PAGE_DESIGN_BUSINESS>): void {
-    this.states.delete(context.businessInstanceId)
+  releaseInstance(context: AiRuntimeInstanceScope): void {
+    this.states.delete(context.moduleInstanceId)
+  }
+
+  getFunctions(): readonly AiFunctionRegistration[] {
+    return []
   }
 
   private readonly getState = (context: FunctionExecutionContext): PageDesignEditSession => {
-    const existing = this.states.get(context.businessInstanceId)
+    const existing = this.states.get(context.moduleInstanceId)
     if (existing !== undefined) return existing
     const state = new PageDesignEditSession()
     state.bindLiveModelAdapter(this.getEditToolHost({
       instanceId: context.instanceId,
-      businessId: PAGE_DESIGN_BUSINESS,
-      businessInstanceId: context.businessInstanceId,
+      moduleId: PAGE_DESIGN_MODULE_ID,
+      moduleInstanceId: context.moduleInstanceId,
     }))
-    this.states.set(context.businessInstanceId, state)
+    this.states.set(context.moduleInstanceId, state)
     return state
   }
 
@@ -632,6 +712,10 @@ export class PageDesignBusiness extends AiBusinessRegistrationBase<typeof PAGE_D
 
   private readonly nodeTreeFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof NODE_TREE_MODULE_ID>> => {
     return createNodeTreeFunctions(this.nodeTreeCatalog, this.getState)
+  }
+
+  private readonly knowledgeFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof KNOWLEDGE_MODULE_ID>> => {
+    return createKnowledgeFunctions(this.componentPayloadProvider)
   }
 
   private readonly datasetFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof DATASET_MODULE_ID>> => {

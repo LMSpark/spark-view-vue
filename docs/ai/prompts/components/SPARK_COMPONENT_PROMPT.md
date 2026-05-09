@@ -18,8 +18,8 @@
 - **包管理**：pnpm monorepo
 - **核心包**：
   - `@spark-view/spark-component`：组件系统入口
-  - `@spark-view/spark-component`：能力键（`APP_SERVICES` 等）
-  - `@spark-view/spark-data`：数据空间（`PAGE_DATASET`、`DATA_SOURCE`、`parseDataKey`）
+  - `@spark-view/spark-component`：能力键（`APP_SERVICES`、`PAGE_DATASET`、`DATA_SOURCE` 等）
+  - `@spark-view/spark-data`：数据空间与 DataSet / DataView 类型
 - **禁止**：跨包相对路径导入（`../../packages/spark-utils/...`），必须使用包名导入
 
 ---
@@ -29,16 +29,13 @@
 ```ts
 // 1. 初始化 —— 任何 SPARK 组件的第一行 setup
 const {
-  context,          // SparkCapabilityContext（响应式能力上下文）
+  provider,         // 最近能力 provider 查询接口
   isVisible,        // ComputedRef<boolean>
   isDisabled,       // ComputedRef<boolean>
-  provide,          // (capKey, impl) => void   — SPARK 能力提供（非 Vue DI）
-                    // 重载：provide<K extends keyof CapabilityTypeMap>(name: K, impl)
-  provideEvents,    // (eventKey) => IEventEmitter
-  consume,          // <T>(capKey) => T | null   — 沿 parent 链向上查找
-                    // 重载：consume<K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
-  consumeEvents,    // (eventKey, handlers) => void
-  getComponent,     // (type) => unknown         — 从注册表取组件（markRaw）
+  resolvedProps,    // ComputedRef<Record<string, unknown>>
+  sparkProvide,     // (capKey, impl) => void   — SPARK 能力提供（非 Vue DI）
+  sparkRemove,      // (capKey) => void
+  sparkConsume,     // <T>(capKey) => T | null   — 沿 parent 链向上查找
   logger,           // LoggerApi（自动代理，无需手动注入）
 } = useSparkComponent(props.config)   // ← 传入完整 config，不是 { type: 'xxx' }
 
@@ -133,9 +130,10 @@ const childConfigs = rows.map(row => ({
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 // 仅从包名导入，禁止跨包相对路径
-import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-data'
+import type { DataView } from '@spark-view/spark-data'
 
 interface Props {
   /** SPARK 配置（主入口）—— type + props + children */
@@ -146,7 +144,7 @@ const props = defineProps<Props>()
 // 1. SPARK 上下文（setup 第一行）
 const {
   isVisible, isDisabled,
-  sparkProvide, provideEvents, sparkConsume,
+  sparkProvide, sparkConsume,
   logger
 } = useSparkComponent(props.config)
 

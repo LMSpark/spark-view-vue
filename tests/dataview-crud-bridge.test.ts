@@ -230,7 +230,7 @@ describe('DataView CRUD bridge', () => {
     })!
     const scope: ActionExecutionScope = {}
     if (view.currentRow) scope.row = view.currentRow
-    await executeActionDescriptor(desc, createActionContext(dataSet, pageService), undefined, scope)
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService), { scope })
     await flushAsync()
 
     expect(editRowSpy).toHaveBeenCalledWith(1, { name: 'Bob' })
@@ -257,7 +257,7 @@ describe('DataView CRUD bridge', () => {
       },
     })!
     const scope: ActionExecutionScope = { formApi }
-    await executeActionDescriptor(desc, createActionContext(dataSet, pageService), undefined, scope)
+    await executeActionDescriptor(desc, createActionContext(dataSet, pageService), { scope })
     await flushAsync()
 
     expect(validateSpy).toHaveBeenCalledOnce()
@@ -307,8 +307,7 @@ describe('DataView CRUD bridge', () => {
     await executeActionDescriptor(
       desc,
       { getDataSet: () => dataSet, getPageService: () => pageService, getRouter: () => null },
-      undefined,
-      { row: view.rows[0]!, index: 0 },
+      { scope: { row: view.rows[0]!, index: 0 } },
     )
     await flushAsync()
 

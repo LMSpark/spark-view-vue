@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AiRuntime,
-  type AiBusinessRegistration,
   type AiFunctionRegistration,
+  type AiModuleRegistration,
   type AiRuntimeApi,
   type FunctionExecutionContext,
 } from '../packages/spark-ai/src'
@@ -25,14 +25,14 @@ interface SetDaysArgs {
 
 interface LeaveFormService {
   get(instanceId: string): LeaveFormState | undefined
-  ensure(context: FunctionExecutionContext<'leaveApproval', 'form'>): LeaveFormState
+  ensure(context: FunctionExecutionContext): LeaveFormState
   release(instanceId: string): void
 }
 
 function createDeterministicRuntime(): AiRuntimeApi {
   let record = 0
   return new AiRuntime({
-    createInstanceId: (_businessId, _businessInstanceId) => 'leave-1',
+    createInstanceId: (_moduleId, _moduleInstanceId) => 'leave-1',
     createRecordId: (kind) => `${kind}-${++record}`,
     now: () => 1778030000000 + record,
   })
@@ -43,7 +43,7 @@ function createLeaveFormService(): LeaveFormService {
   return {
     get: (instanceId) => states.get(instanceId),
     ensure(context) {
-      const existing = states.get(context.instanceId)
+      const existing = states.get(context.runtimeInstanceId)
       if (existing !== undefined) return existing
       const state: LeaveFormState = {
         draft: {
@@ -51,38 +51,29 @@ function createLeaveFormService(): LeaveFormService {
           days: null,
         },
       }
-      states.set(context.instanceId, state)
+      states.set(context.runtimeInstanceId, state)
       return state
     },
     release: (instanceId) => { states.delete(instanceId) },
   }
 }
 
-function resolveByScope(
-  core: AiRuntimeApi,
-  businessId: string,
-  businessInstanceId: string,
-): ReturnType<AiRuntimeApi['getInstanceByBusinessScope']> {
-  return core.getInstanceByBusinessScope({ businessId, businessInstanceId })
-}
-
-function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<'leaveApproval'> {
-  const functions: ReadonlyArray<AiFunctionRegistration<unknown, unknown, 'leaveApproval', 'form'>> = [
+function createLeaveModule(service: LeaveFormService): AiModuleRegistration {
+  const functions: ReadonlyArray<AiFunctionRegistration> = [
     {
       functionId: 'setReason',
       description: 'Set leave reason.',
       paramsSchema: {
         type: 'object',
         properties: {
-          businessInstanceId: { type: 'string' },
           reason: { type: 'string' },
         },
-        required: ['businessInstanceId', 'reason'],
+        required: ['reason'],
       },
       failureModes: [{ code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' }],
-      execute(args: SetReasonArgs, context) {
+      execute(args, context) {
         const state = service.ensure(context)
-        state.draft.reason = args.reason
+        state.draft.reason = (args as SetReasonArgs).reason
         return { accepted: true }
       },
     },
@@ -92,65 +83,103 @@ function createLeaveBusiness(service: LeaveFormService): AiBusinessRegistration<
       paramsSchema: {
         type: 'object',
         properties: {
-          businessInstanceId: { type: 'string' },
           days: { type: 'number' },
         },
-        required: ['businessInstanceId', 'days'],
+        required: ['days'],
       },
-      execute(args: SetDaysArgs, context) {
+      execute(args, context) {
         const state = service.ensure(context)
-        state.draft.days = args.days
+        state.draft.days = (args as SetDaysArgs).days
         return { accepted: true }
       },
     },
   ]
 
   return {
-    businessId: 'leaveApproval',
+    moduleId: 'leaveApproval',
     name: 'Leave approval',
     description: 'Help users finish a leave request.',
-    modules: [{
-      moduleId: 'form',
-      name: 'Leave form',
-      description: 'Collects leave form fields.',
-      prompt: 'Collect leave reason and leave days only.',
-      getFunctions: () => functions,
-    }],
+    prompt: 'Collect leave reason and leave days only.',
+    getFunctions: () => functions,
     releaseInstance(context) {
-      service.release(context.instanceId)
+      service.release(context.runtimeInstanceId)
     },
   }
 }
 
-describe('AI runtime business-first API', () => {
-  it('resolves active session by business instance scope', async () => {
+function createDepartmentModule(spy: { args?: unknown; context?: FunctionExecutionContext }): AiModuleRegistration {
+  return {
+    moduleId: 'department',
+    name: 'Department',
+    description: 'Manage department information.',
+    instanceParam: { name: 'departmentId', description: '当前部门 ID' },
+    getFunctions: () => [],
+    modules: [
+      {
+        moduleId: 'personnel',
+        name: 'Personnel',
+        description: 'Manage personnel in a department.',
+        instanceParam: { name: 'personId', description: '当前人员 ID' },
+        getFunctions: () => [],
+        modules: [
+          {
+            moduleId: 'basicInfo',
+            name: 'Basic info',
+            description: 'Manage basic personnel information.',
+            getFunctions: () => [
+              {
+                functionId: 'update',
+                description: 'Update person basic info.',
+                paramsSchema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                  },
+                  required: ['name'],
+                },
+                execute(args, context) {
+                  spy.args = args
+                  spy.context = context
+                  return { updated: true }
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  }
+}
+
+describe('AI runtime recursive module API', () => {
+  it('resolves active session by module instance scope', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
+    core.registerModule(createLeaveModule(service))
 
-    const started = await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance-a' })
+    const started = await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance-a' })
 
-    const scoped = resolveByScope(core, 'leaveApproval', 'leave-instance-a')
+    const scoped = core.getInstanceByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance-a' })
     expect(scoped?.instanceId).toBe(started.instanceId)
-    expect(scoped?.businessInstanceId).toBe('leave-instance-a')
-    expect(resolveByScope(core, 'leaveApproval', 'leave-instance-miss')).toBeNull()
+    expect(scoped?.moduleInstanceId).toBe('leave-instance-a')
+    expect(core.getInstanceByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance-miss' })).toBeNull()
   })
 
-  it('registers business information and starts a runtime instance without exposing sessionId', async () => {
+  it('registers module information and starts a runtime instance without exposing sessionId', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
+    core.registerModule(createLeaveModule(service))
 
-    const started = await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    const started = await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
 
     expect(started.instanceId).toBe('leave-1')
-    expect(started.businessId).toBe('leaveApproval')
+    expect(started.moduleId).toBe('leaveApproval')
     expect(started.status).toBe('Ready')
     expect('sessionId' in started).toBe(false)
     expect(started.promptSnapshot).toContain('Collect leave reason')
     expect(started.availableFunctions.map((definition) => definition.action)).toEqual([
-      'leaveApproval@form@setReason',
-      'leaveApproval@form@setDays',
+      'leaveApproval/setReason',
+      'leaveApproval/setDays',
     ])
     expect(started.availableFunctions[0]?.failureModes).toEqual([
       { code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' },
@@ -158,118 +187,133 @@ describe('AI runtime business-first API', () => {
     expect(service.get('leave-1')).toBeUndefined()
   })
 
-  it('injects instance query guidance into promptSnapshot when business declares instanceQueryAction', async () => {
-    const core = createDeterministicRuntime()
-    core.registerBusiness({
-      businessId: 'instanceAware',
-      name: 'Instance aware business',
-      description: 'Business with explicit instance query entrypoint.',
-      instanceQueryAction: 'instance@list',
-      modules: [
-        {
-          moduleId: 'instance',
-          name: 'Instance module',
-          description: 'Lists available business instances.',
-          prompt: 'Operate only on known business instances.',
-          getFunctions: () => [
-            {
-              functionId: 'list',
-              description: 'List business instances.',
-              paramsSchema: {},
-              execute: () => [
-                { businessInstanceId: '0', description: '张三请假' },
-              ],
-            },
-          ],
-        },
-      ],
-    })
-
-    const started = await core.startInstance({ businessId: 'instanceAware', businessInstanceId: 'instance-aware-1' })
-    expect(started.promptSnapshot).toContain('instanceAware@instance@list')
-    expect(started.promptSnapshot).toContain('#sym:businessInstanceId')
-    // discovery function itself must NOT get businessInstanceId injected
-    const listFn = started.availableFunctions.find((f) => f.action === 'instanceAware@instance@list')
-    expect(listFn?.paramsSchema).toEqual({})
-  })
-
-  it('fails fast when instanceQueryAction does not point to a registered function', () => {
-    const core = createDeterministicRuntime()
-    expect(() => core.registerBusiness({
-      businessId: 'brokenQueryAction',
-      name: 'Broken query action',
-      description: 'Invalid instance query action mapping.',
-      instanceQueryAction: 'instance@missing',
-      modules: [
-        {
-          moduleId: 'instance',
-          name: 'Instance module',
-          description: 'Lists available business instances.',
-          getFunctions: () => [
-            {
-              functionId: 'list',
-              description: 'List business instances.',
-              paramsSchema: {},
-              execute: () => [],
-            },
-          ],
-        },
-      ],
-    })).toThrow('instanceQueryAction must point to a registered function')
-  })
-
   it('executes one function call through the instanceId envelope and writes core history', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    core.registerModule(createLeaveModule(service))
+    await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'leaveApproval@form@setReason',
-      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
+      action: 'leaveApproval/setReason',
+      args: { reason: 'family care' },
     })
 
     expect(output.result).toEqual({
       ok: true,
       data: { accepted: true },
-      summary: 'leaveApproval@form@setReason executed',
+      summary: 'leaveApproval/setReason executed',
     })
     expect(service.get('leave-1')?.draft.reason).toBe('family care')
     expect(output.history.functionCalls).toHaveLength(1)
-    expect(output.history.functionCalls[0]?.action).toBe('leaveApproval@form@setReason')
-    expect(output.history.functionCalls[0]?.args).toEqual({ businessInstanceId: 'leave-instance', reason: 'family care' })
-    expect('sessionId' in output.history).toBe(false)
+    expect(output.history.functionCalls[0]?.action).toBe('leaveApproval/setReason')
+    expect(output.history.functionCalls[0]?.args).toEqual({ reason: 'family care' })
   })
 
-  it('fails fast when action business and instance business do not match', async () => {
+  it('projects recursive module context params and strips them before execute', async () => {
+    const core = createDeterministicRuntime()
+    const spy: { args?: unknown; context?: FunctionExecutionContext } = {}
+    core.registerModule(createDepartmentModule(spy))
+    const started = await core.startInstance({ moduleId: 'department', moduleInstanceId: 'dept-1' })
+    core.setActivePath({
+      instanceId: started.instanceId,
+      bindings: [{ modulePath: 'department/personnel', instanceId: 'person-9' }],
+    })
+
+    const update = started.availableFunctions.find((item) => item.action === 'department/personnel/basicInfo/update')
+    expect(update?.paramsSchema).toMatchObject({
+      type: 'object',
+      properties: {
+        departmentId: { type: 'string' },
+        personId: { type: 'string' },
+        name: { type: 'string' },
+      },
+      required: ['name', 'departmentId', 'personId'],
+    })
+
+    const output = await core.executeFunctionCall({
+      instanceId: started.instanceId,
+      action: 'department/personnel/basicInfo/update',
+      args: { name: 'Ada' },
+    })
+
+    expect(output.result).toMatchObject({ ok: true, data: { updated: true } })
+    expect(spy.args).toEqual({ name: 'Ada' })
+    expect(spy.context?.moduleInstances).toEqual({ departmentId: 'dept-1', personId: 'person-9' })
+    expect(spy.context?.modulePath).toBe('department/personnel/basicInfo')
+  })
+
+  it('rejects active path conflicts and missing module instances', async () => {
+    const core = createDeterministicRuntime()
+    core.registerModule(createDepartmentModule({}))
+    const started = await core.startInstance({ moduleId: 'department', moduleInstanceId: 'dept-1' })
+    core.setActivePath({
+      instanceId: started.instanceId,
+      bindings: [{ modulePath: 'department/personnel', instanceId: 'person-1' }],
+    })
+
+    const conflict = await core.executeFunctionCall({
+      instanceId: started.instanceId,
+      action: 'department/personnel/basicInfo/update',
+      args: { personId: 'person-2', name: 'Ada' },
+    })
+    expect(conflict.result.ok).toBe(false)
+    if (!conflict.result.ok) expect(conflict.result.code).toBe('CONTEXT_MISMATCH')
+
+    core.clearActivePath({ instanceId: started.instanceId })
+    const missing = await core.executeFunctionCall({
+      instanceId: started.instanceId,
+      action: 'department/personnel/basicInfo/update',
+      args: { name: 'Ada' },
+    })
+    expect(missing.result.ok).toBe(false)
+    if (!missing.result.ok) expect(missing.result.code).toBe('MISSING_CONTEXT_INSTANCE')
+  })
+
+  it('does not update active path implicitly after function execution', async () => {
+    const core = createDeterministicRuntime()
+    const spy: { args?: unknown; context?: FunctionExecutionContext } = {}
+    core.registerModule(createDepartmentModule(spy))
+    const started = await core.startInstance({ moduleId: 'department', moduleInstanceId: 'dept-1' })
+
+    const output = await core.executeFunctionCall({
+      instanceId: started.instanceId,
+      action: 'department/personnel/basicInfo/update',
+      args: { personId: 'person-9', name: 'Ada' },
+    })
+
+    expect(output.result.ok).toBe(true)
+    expect(core.getActivePath(started.instanceId).bindings).toEqual([])
+  })
+
+  it('fails fast when action module and instance module do not match', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    core.registerModule(createLeaveModule(service))
+    await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'otherBusiness@form@setReason',
+      action: 'otherModule/setReason',
       args: { reason: 'family care' },
     })
 
     expect(output.result.ok).toBe(false)
     if (output.result.ok) return
-    expect(output.result.code).toBe('BUSINESS_MISMATCH')
+    expect(output.result.code).toBe('MODULE_MISMATCH')
     expect(output.result.fix).toContain('getAvailableFunctions')
   })
 
-  it('validates args from the function schema before business execution', async () => {
+  it('validates args from the projected function schema before module execution', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    core.registerModule(createLeaveModule(service))
+    await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
 
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'leaveApproval@form@setDays',
-      args: { businessInstanceId: 'leave-instance', days: '3' },
+      action: 'leaveApproval/setDays',
+      args: { days: '3' },
     })
 
     expect(output.result.ok).toBe(false)
@@ -279,104 +323,51 @@ describe('AI runtime business-first API', () => {
     expect(service.get('leave-1')).toBeUndefined()
   })
 
-  it('fails fast when same-business call omits args.businessInstanceId', async () => {
-    const core = createDeterministicRuntime()
-    const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
-
-    const output = await core.executeFunctionCall({
-      instanceId: 'leave-1',
-      action: 'leaveApproval@form@setReason',
-      args: { reason: 'family care' },
-    })
-
-    expect(output.result.ok).toBe(false)
-    if (output.result.ok) return
-    expect(output.result.code).toBe('INVALID_ARGS')
-    expect(output.result.msg).toContain('businessInstanceId')
-    expect(service.get('leave-1')).toBeUndefined()
-  })
-
-  it('stores user and assistant messages in core history by instanceId', async () => {
-    const core = createDeterministicRuntime()
-    const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
-
-    const history = core.appendMessages({
-      instanceId: 'leave-1',
-      messages: [
-        { role: 'user', content: 'I need leave.' },
-        { role: 'assistant', content: 'How many days?' },
-      ],
-    })
-
-    expect(history.messages.map((message) => message.role)).toEqual(['user', 'assistant'])
-    expect(history.messages.map((message) => message.content)).toEqual(['I need leave.', 'How many days?'])
-    expect('sessionId' in history).toBe(false)
-  })
-
   it('pauses and resumes a runtime instance without creating a new instanceId', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    core.registerModule(createLeaveModule(service))
+    await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
 
     const paused = await core.stopInstance({ instanceId: 'leave-1', mode: 'pause', reason: 'waiting for user' })
     expect(paused.instance.status).toBe('Paused')
 
     const blocked = await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'leaveApproval@form@setReason',
-      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
+      action: 'leaveApproval/setReason',
+      args: { reason: 'family care' },
     })
     expect(blocked.result.ok).toBe(false)
     if (!blocked.result.ok) expect(blocked.result.code).toBe('INSTANCE_NOT_READY')
 
-    const resumed = await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    const resumed = await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
     expect(resumed.instanceId).toBe('leave-1')
     expect(resumed.status).toBe('Ready')
     expect(core.listInstances()).toHaveLength(1)
   })
 
-  it('stops a runtime instance and asks the business service to release instance state', async () => {
+  it('stops by module scope and asks the module to release instance state', async () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    core.registerModule(createLeaveModule(service))
+    await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'stop-by-scope' })
     await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'leaveApproval@form@setReason',
-      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
+      action: 'leaveApproval/setReason',
+      args: { reason: 'family care' },
     })
 
-    const stopped = await core.stopInstance({ instanceId: 'leave-1', mode: 'stop', reason: 'done' })
-
-    expect(stopped.instance.status).toBe('Stopped')
-    expect(service.get('leave-1')).toBeUndefined()
-    expect(core.getInstanceDetail('leave-1')?.modules.map((module) => module.moduleId)).toEqual(['form'])
-    await expect(core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })).rejects.toThrow('terminal runtime instance')
-  })
-
-  it('stops by business scope and keeps business-owned state aligned', async () => {
-    const core = createDeterministicRuntime()
-    const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
-
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'stop-by-scope' })
-    const stopped = await core.stopInstanceByBusinessScope({
-      businessId: 'leaveApproval',
-      businessInstanceId: 'stop-by-scope',
+    const stopped = await core.stopInstanceByModuleScope({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'stop-by-scope',
       mode: 'stop',
       reason: 'done',
     })
 
-    expect(stopped.instance.instanceId).toBe('leave-1')
     expect(stopped.instance.status).toBe('Stopped')
-    expect(stopped.history.lifecycleMarkers.map((record) => record.status)).toContain('Stopped')
     expect(service.get('leave-1')).toBeUndefined()
-    expect(core.getInstanceHistoryByBusinessScope({ businessId: 'leaveApproval', businessInstanceId: 'stop-by-scope' })).not.toBeNull()
+    expect(core.getInstanceHistoryByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'stop-by-scope' })).not.toBeNull()
+    await expect(core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'stop-by-scope' })).rejects.toThrow('terminal runtime instance')
   })
 
   it('publishes lifecycle and function events as an observation surface', async () => {
@@ -384,13 +375,13 @@ describe('AI runtime business-first API', () => {
     const service = createLeaveFormService()
     const eventTypes: string[] = []
     core.subscribe((event) => { eventTypes.push(event.type) })
-    core.registerBusiness(createLeaveBusiness(service))
+    core.registerModule(createLeaveModule(service))
 
-    await core.startInstance({ businessId: 'leaveApproval', businessInstanceId: 'leave-instance' })
+    await core.startInstance({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
     await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'leaveApproval@form@setReason',
-      args: { businessInstanceId: 'leave-instance', reason: 'family care' },
+      action: 'leaveApproval/setReason',
+      args: { reason: 'family care' },
     })
 
     expect(eventTypes).toEqual(expect.arrayContaining([
@@ -403,92 +394,39 @@ describe('AI runtime business-first API', () => {
     ]))
   })
 
-  it('rejects duplicate business registrations instead of creating parallel registries', () => {
+  it('rejects duplicate module registrations instead of creating parallel registries', () => {
     const core = createDeterministicRuntime()
     const service = createLeaveFormService()
-    core.registerBusiness(createLeaveBusiness(service))
+    core.registerModule(createLeaveModule(service))
 
-    expect(() => core.registerBusiness(createLeaveBusiness(service))).toThrow('Duplicate AI business registration')
+    expect(() => core.registerModule(createLeaveModule(service))).toThrow('Duplicate AI module registration')
   })
 
   it('wraps domain objects that happen to contain an ok field', async () => {
     const core = createDeterministicRuntime()
-    core.registerBusiness({
-      businessId: 'domainResult',
+    core.registerModule({
+      moduleId: 'domainResult',
       name: 'Domain result',
       description: 'Returns domain data with an ok field.',
-      modules: [{
-        moduleId: 'form',
-        name: 'Form',
-        description: 'Domain return module.',
-        getFunctions: () => [{
-          functionId: 'readDomainState',
-          description: 'Read domain state.',
-          paramsSchema: {},
-          execute: () => ({ ok: true, accepted: true }),
-        }],
+      getFunctions: () => [{
+        functionId: 'readDomainState',
+        description: 'Read domain state.',
+        paramsSchema: {},
+        execute: () => ({ ok: true, accepted: true }),
       }],
     })
 
-    await core.startInstance({ businessId: 'domainResult', businessInstanceId: 'domain-instance' })
+    await core.startInstance({ moduleId: 'domainResult', moduleInstanceId: 'domain-instance' })
     const output = await core.executeFunctionCall({
       instanceId: 'leave-1',
-      action: 'domainResult@form@readDomainState',
-      args: { businessInstanceId: 'domain-instance' },
+      action: 'domainResult/readDomainState',
+      args: {},
     })
 
     expect(output.result).toEqual({
       ok: true,
       data: { ok: true, accepted: true },
-      summary: 'domainResult@form@readDomainState executed',
+      summary: 'domainResult/readDomainState executed',
     })
-  })
-
-  it('defers final stop and release while a function is executing', async () => {
-    const core = createDeterministicRuntime()
-    let releaseCount = 0
-    let finishExecution: ((value: { accepted: true }) => void) | undefined
-    const executionGate = new Promise<{ accepted: true }>((resolve) => {
-      finishExecution = resolve
-    })
-
-    core.registerBusiness({
-      businessId: 'slowBusiness',
-      name: 'Slow business',
-      description: 'Long running business function.',
-      modules: [{
-        moduleId: 'form',
-        name: 'Form',
-        description: 'Slow module.',
-        getFunctions: () => [{
-          functionId: 'submit',
-          description: 'Submit slowly.',
-          paramsSchema: {},
-          execute: () => executionGate,
-        }],
-      }],
-      releaseInstance: () => {
-        releaseCount += 1
-      },
-    })
-
-    await core.startInstance({ businessId: 'slowBusiness', businessInstanceId: 'slow-instance' })
-    const running = core.executeFunctionCall({
-      instanceId: 'leave-1',
-      action: 'slowBusiness@form@submit',
-      args: { businessInstanceId: 'slow-instance' },
-    })
-    await Promise.resolve()
-
-    const stopping = await core.stopInstance({ instanceId: 'leave-1', mode: 'stop', reason: 'user requested stop' })
-    expect(stopping.instance.status).toBe('Stopping')
-    expect(releaseCount).toBe(0)
-
-    finishExecution?.({ accepted: true })
-    const output = await running
-
-    expect(output.result.ok).toBe(true)
-    expect(core.getInstanceDetail('leave-1')?.status).toBe('Stopped')
-    expect(releaseCount).toBe(1)
   })
 })

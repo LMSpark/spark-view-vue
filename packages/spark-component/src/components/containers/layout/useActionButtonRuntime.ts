@@ -113,7 +113,7 @@ export function useActionButtonRuntime(options: ActionButtonRuntimeOptions): Act
     const row = resolveScopedRow()
     const scope: ActionExecutionScope = {}
     if (row !== undefined) scope.row = row
-    await executeActionDescriptor(descriptor, resolveContext(), undefined, scope)
+    await executeActionDescriptor(descriptor, resolveContext(), { scope })
   }
 
   return { hasBuiltinAction, actionDescriptor, hostActionDisabled, executeAction }

@@ -6,12 +6,12 @@
 
 const EDIT_FLOW_1001_DATA_FIRST_POLICY = `【数据优先（模型级）】
 - 数据优先是硬约束：先完成 DataSet 模型，再考虑 UI/脚本。
-- 在数据阶段完成前，不得调用 pageDesign@nodeTree@* / pageDesign@textModel@writeScript / pageDesign@textModel@writeStyle。
+- 在数据阶段完成前，不得调用 pageDesign/nodeTree/* / pageDesign/textModel/writeScript / pageDesign/textModel/writeStyle。
 - 数据阶段收敛后，直接进入页面结构与脚本阶段。`
 
 const EDIT_FLOW_1002_DATA_FIRST_SEQUENCE = `【最小执行序列】
-1) pageDesign@dataset@*（可多次）
-2) pageDesign@nodeTree@* / pageDesign@textModel@write*`
+1) pageDesign/dataset/*（可多次）
+2) pageDesign/nodeTree/* / pageDesign/textModel/write*`
 
 export class PageDesignEditFlowPrompts {
 	readonly dataFirstPolicy = EDIT_FLOW_1001_DATA_FIRST_POLICY

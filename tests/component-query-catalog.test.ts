@@ -148,7 +148,7 @@ describe('catalog-projections', () => {
     expect(directory.configurationPrinciples.length).toBeGreaterThan(0)
   })
 
-  it('projectComponentSpec returns component spec for core@knowledge@guidePayload', () => {
+  it('projectComponentSpec returns component spec for pageDesign/knowledge/guidePayload', () => {
     const catalog = makeCatalog()
     const spec = projectComponentSpec(catalog, 'r-table')
 

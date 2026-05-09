@@ -144,20 +144,11 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    */
   clearable?: boolean
   /**
-   * 直接传入的值。
-   *
-   * 适用于：
-   * - display 组件直接渲染显式值
-   * - field 组件在不依赖 `field/currentRow` 的情况下进行受控展示
+   * 直接传入的受控字段值。
    *
    * 对应 Vue v-model 标准命名，支持 `v-model="xxx"` 写法。
    */
   modelValue?: TValue
-  /**
-   * 兼容旧配置：历史上部分字段节点使用 `value` 传值。
-   * 新配置请统一使用 `modelValue`。
-   */
-  value?: TValue
   /**
    * 字段绑定名。
    *
@@ -796,4 +787,3 @@ export interface SparkVisibilityEventProps {
  * 适用于 dialog、drawer 这类公开显隐生命周期事件的容器组件。
  */
 export interface SparkVisibilityContainerProps extends SparkVisibilityEventProps {}
-

@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
 
-declare const __SPARK_CLASSIC_MODE__: boolean
 declare type SparkText = string
 
 declare module '*.vue' {

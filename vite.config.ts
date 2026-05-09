@@ -13,20 +13,7 @@ import {
   SIZE_THRESHOLD
 } from './packages/vite-plugin-spark-catalog/src/index'
 
-/**
- * 构建模式
- * - smart: 智能编译时注册（默认，性能最优）
- * - classic: 经典运行时注册（兼容模式）
- */
-const BUILD_MODE = process.env['BUILD_MODE'] || 'smart'
-const isSmartMode = BUILD_MODE === 'smart'
-
-console.log(`🔧 构建模式: ${BUILD_MODE === 'smart' ? '智能编译时注册 ⚡' : '经典运行时注册 🔄'}`)
-
 export default defineConfig({
-  define: {
-    __SPARK_CLASSIC_MODE__: JSON.stringify(!isSmartMode),
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -91,42 +78,17 @@ export default defineConfig({
       include: /\.(vue)$/,
     }),
     
-    // ✨ 智能模式：编译时组件注册 - 零运行时开销
-    // 🔄 经典模式：提供空模块以保持 import 兼容
-    ...(isSmartMode ? [
-      sparkComponentsPlugin({
-        // 使用统一配置源
-        patterns: [...COMPONENT_SCAN_PATTERNS],
-        syncComponents: [...SYNC_COMPONENTS],
-        asyncComponents: [...ASYNC_COMPONENTS],
-        sizeThreshold: SIZE_THRESHOLD,
-        exclude: [...COMPONENT_EXCLUDE_PATTERNS],
-        verbose: false
-      } satisfies Parameters<typeof sparkComponentsPlugin>[0])
-    ] : [
-      // Classic 模式：提供空的 virtual:spark-components 占位模块
-      {
-        name: 'spark-components-fallback',
-        resolveId(id: string) {
-          if (id === 'virtual:spark-components') return '\0virtual:spark-components'
-          return undefined
-        },
-        load(id: string) {
-          if (id === '\0virtual:spark-components') {
-            return `
-export function registerComponents() {
-  return { total: 0, sync: 0, async: 0 }
-}
-export function getComponentMetadata() { return [] }
-export default registerComponents
-`
-          }
-          return undefined
-        }
-      }
-    ]),
+    sparkComponentsPlugin({
+      // 使用统一配置源
+      patterns: [...COMPONENT_SCAN_PATTERNS],
+      syncComponents: [...SYNC_COMPONENTS],
+      asyncComponents: [...ASYNC_COMPONENTS],
+      sizeThreshold: SIZE_THRESHOLD,
+      exclude: [...COMPONENT_EXCLUDE_PATTERNS],
+      verbose: false
+    } satisfies Parameters<typeof sparkComponentsPlugin>[0]),
 
-    // 📋 组件 Props 目录生成（独立插件，两种模式均启用）
+    // 📋 组件 Props 目录生成（独立插件）
     sparkCatalogPlugin({
       featurePatterns: [...COMPONENT_SCAN_PATTERNS],
       exclude: [...COMPONENT_EXCLUDE_PATTERNS, ...CATALOG_FEATURE_EXCLUDE_PATTERNS],

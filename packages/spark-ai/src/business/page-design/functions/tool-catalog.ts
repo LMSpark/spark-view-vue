@@ -69,8 +69,8 @@ export abstract class PageDesignToolCatalog<
   protected constructor(parameterTable: readonly TRow[], capabilityTable: readonly TCapability[]) {
     this.parameterTable = parameterTable
     this.capabilityTable = capabilityTable
-    this.parameterIndex = new Map(parameterTable.map((row) => [row.action, row]))
-    this.capabilityIndex = new Map(capabilityTable.map((row) => [row.action, row]))
+    this.parameterIndex = new Map(this.parameterTable.map((row) => [row.action, row]))
+    this.capabilityIndex = new Map(this.capabilityTable.map((row) => [row.action, row]))
   }
 
   getParameterRow(action: string): TRow | undefined {

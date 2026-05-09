@@ -12,7 +12,7 @@ import type { AppNavRoot } from '@spark-view/spark-app'
 /**
  * 页面作用域级别
  * - platform: 平台公共页面，无需登录，不绑定租户（如首页、登录、关于）
- * - tenant:   租户级页面，需登录+租户前缀，租户内共享（如设置、缓存管理、导航管理）
+ * - tenant:   租户级页面，需登录+租户前缀，租户内共享（如设置、缓存管理）
  * - app:      应用级页面，需登录+租户前缀+绑定具体应用/项目（如仪表盘、开发系统、AI Studio）
  */
 export type PageScope = 'platform' | 'tenant' | 'app'
@@ -57,9 +57,6 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   // ── app: 应用级页面 ──
   '/dashboard':       { title: '仪表盘',      icon: 'DataBoard',    scope: 'app',      source: 'src/views/app/Dashboard.vue',                   load: () => import('../views/app/Dashboard.vue') },
   '/capability-demo': { title: '能力管理演示', icon: 'SetUp',        scope: 'app',      source: 'src/views/app/CapabilityDemo.vue',              load: () => import('../views/app/CapabilityDemo.vue') },
-  '/nav-manager':     { title: '导航管理',    icon: 'Compass',      scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（导航管理入口）' },
-  '/site-manager':    { title: '站点管理',    icon: 'Globe',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（站点管理入口）' },
-  '/page-manager':    { title: '页面管理',    icon: 'Document',     scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（页面管理入口）' },
   '/dev':             { title: '开发系统',    icon: 'Tools',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue') },
   '/skill-catalog':   { title: '组件目录',    icon: 'Notebook',     scope: 'platform',  source: 'src/views/app/SkillCatalog.vue',                 load: () => import('../views/app/SkillCatalog.vue'), description: 'SPARK 组件配置目录（Props / 能力 / 示例）', hidden: true },
 }

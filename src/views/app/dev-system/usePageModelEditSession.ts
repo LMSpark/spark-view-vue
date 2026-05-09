@@ -3,7 +3,6 @@ import type { ToolLogEntry } from '@spark-view/spark-component'
 import {
   PageDesignEditActionClassifier,
   PageDesignEditRuntimePrompt,
-  type AiRuntimeAction,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeFunctionExposure,
   type EditToolHost,
@@ -155,7 +154,7 @@ function createToolProjection(functions: readonly AiRuntimeFunctionExposure[]): 
 } {
   const nameToAction = new Map<string, string>()
   const tools = functions.map((definition) => {
-    const name = definition.action.replace(/@/g, '__')
+    const name = definition.action.replace(/[^a-zA-Z0-9_-]/g, '__')
     nameToAction.set(name, definition.action)
     const usageRules = definition.usageRules?.length ? `\n\n关键规则:\n${definition.usageRules.join('\n')}` : ''
     const failureModes = definition.failureModes?.length
@@ -234,7 +233,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     const context = await options.sessionHost.ensureSession()
     const output = await options.sessionHost.core.executeFunctionCall({
       instanceId: context.instanceId,
-      action: 'pageDesign@lifecycle@bootstrap',
+      action: 'pageDesign/lifecycle/bootstrap',
       args: {},
     })
     refreshLiveNodeTree()
@@ -314,7 +313,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
           if (actionText === undefined) {
             throw new Error(`未知 AI 工具调用：${call.name}`)
           }
-          const action = actionText as AiRuntimeAction
+          const action = actionText
           const output = await options.sessionHost.core.executeFunctionCall({
             instanceId: context.instanceId,
             action,

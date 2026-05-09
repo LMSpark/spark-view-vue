@@ -21,3 +21,18 @@ describe('extractFirstJsonObject', () => {
     expect(AiInvocationProtocol.extractFirstJsonObject('plain text only')).toBeNull()
   })
 })
+
+describe('parseActionPath', () => {
+  it('parses recursive module action paths', () => {
+    expect(AiInvocationProtocol.parseActionPath('department/personnel/basicInfo/update')).toEqual({
+      moduleIds: ['department', 'personnel', 'basicInfo'],
+      modulePath: 'department/personnel/basicInfo',
+      moduleId: 'basicInfo',
+      function: 'update',
+    })
+  })
+
+  it('rejects legacy action addresses', () => {
+    expect(() => AiInvocationProtocol.parseActionPath('department@personnel@update')).toThrow('非法 action 路径')
+  })
+})

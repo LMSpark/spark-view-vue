@@ -350,7 +350,7 @@ describe('数组折叠 — 多 handler 折叠为单函数', () => {
   })
 })
 
-// ── Section 3: string handler 透传 (向后兼容) ─────────────────────────────
+// ── Section 3: string handler 透传（脚本函数绑定）─────────────────────────
 
 describe('string handler — callFunc 透传', () => {
   it('normalizeRuleEvents: string handler calls callFunc', async () => {
@@ -441,7 +441,7 @@ describe('navigate action — 事件行插值', () => {
     // 直接测试 executeActionDescriptor
     const desc: ActionDescriptor = { action: 'navigate', path: '/user/{id}' }
     const eventRow = { id: 42, name: 'Bob' }
-    await executeActionDescriptor(desc, actionCtx, [eventRow])
+    await executeActionDescriptor(desc, actionCtx, { eventArgs: [eventRow] })
 
     // 应从 eventRow 插值 id=42，而非 currentRow
     expect(router.push).toHaveBeenCalledWith('/user/42')
@@ -477,7 +477,7 @@ describe('navigate action — 事件行插值', () => {
 
     const desc: ActionDescriptor = { action: 'navigate', path: '/user/{name}' }
     // 无事件行 → 回退到 currentRow
-    await executeActionDescriptor(desc, actionCtx, [])
+    await executeActionDescriptor(desc, actionCtx)
 
     // currentRow.name = 'Charlie'
     expect(router.push).toHaveBeenCalledWith('/user/Charlie')

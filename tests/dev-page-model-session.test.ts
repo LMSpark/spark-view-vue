@@ -275,14 +275,14 @@ describe('useDevPageModelSession', () => {
       round: 3,
       timestamp: '2026-04-27T02:30:00.000Z',
       phase: 'function-execute',
-      toolBlock: { action: 'core@knowledge@queryPayloads', id: 'call-7', params: { category: 'layout' } },
+      toolBlock: { action: 'pageDesign/knowledge/queryPayloads', id: 'call-7', params: { category: 'layout' } },
       functionResult: { ok: true, data: { count: 5 }, summary: 'container: 5 组件' },
       elapsed: 18,
     })
 
     expect(onSseEvent).toHaveBeenCalledWith({ sessionId: 'sse-session', type: 'delta', data: 'raw delta' })
     expect(onFcCall).toHaveBeenCalledWith(expect.objectContaining({
-      toolName: 'core@knowledge@queryPayloads',
+      toolName: 'pageDesign/knowledge/queryPayloads',
       args: { category: 'layout' },
       round: 3,
       callId: 'call-7',
@@ -308,7 +308,7 @@ describe('useDevPageModelSession', () => {
     await sessionConfig!.config.fcErrorReporter?.({
       id: 'fc-1',
       timestamp: '2026-04-27T03:00:00.000Z',
-      toolName: 'core@knowledge@queryPayloads',
+      toolName: 'pageDesign/knowledge/queryPayloads',
       args: { category: 'bad' },
       round: 1,
       status: 'error',
@@ -316,7 +316,7 @@ describe('useDevPageModelSession', () => {
     })
 
     expect(reportAiFcErrorMock).toHaveBeenCalledWith(expect.objectContaining({
-      toolName: 'core@knowledge@queryPayloads',
+      toolName: 'pageDesign/knowledge/queryPayloads',
       status: 'error',
     }), expect.objectContaining({
       source: 'dev-page-model-session',

@@ -1,41 +1,36 @@
 import type {
-  AiBusinessRegistration,
+  AiFunctionRegistration,
+  AiModuleInstanceBinding,
+  AiModuleRegistration,
   AiRuntimeAction,
+  AiRuntimeActivePathSnapshot,
   AiRuntimeAppendMessagesOptions,
-  AiRuntimeBusinessExposure,
   AiRuntimeEvent,
   AiRuntimeEventListener,
   AiRuntimeEventType,
   AiRuntimeFunctionCallRecord,
   AiRuntimeFunctionCallResult,
+  AiRuntimeFunctionContextParam,
   AiRuntimeFunctionExposure,
   AiRuntimeFunctionExposureSnapshot,
   AiRuntimeHistoryMessage,
   AiRuntimeHistorySnapshot,
   AiRuntimeInstanceDetail,
+  AiRuntimeInstanceScope,
   AiRuntimeInstanceSnapshot,
   AiRuntimeInstanceStatus,
   AiRuntimeLifecycleMarker,
   AiRuntimeModuleExposure,
+  AiRuntimeModuleInstanceId,
   AiRuntimeOptions,
-  AiRuntimeInstanceScope,
-  AiFunctionRegistration,
-  AiRuntimeBusinessInstanceId,
 } from '../protocol/business-contracts'
 
 /**
  * AiRuntime 内部支持模块。
  *
- * 文件按运行时处理链路排布：
- * 1. cloneRuntimeValue：所有对外快照和历史记录先深拷贝，避免外部修改内存状态。
- * 2. State/Resolved 类型：描述 runtime 私有内存状态和函数解析结果。
- * 3. AiRuntimeEventHub：负责事件序号、事件对象和订阅分发。
- * 4. AiRuntimeProjector：把业务注册定义投影成 LLM 可见 exposure。
- * 5. AiRuntimeHistory：集中写入消息、函数调用、生命周期和暴露快照。
- * 6. AiRuntimeArgValidator：运行函数前做 JSON-schema-like 的轻量参数检查。
+ * 这里集中处理快照 clone、事件、模块树投影、历史写入和轻量参数校验。
  */
 
-/** 深拷贝 runtime 值；优先 structuredClone，降级到 JSON clone。 */
 function cloneRuntimeValue<T>(value: T): T {
   if (value === null || value === undefined || typeof value !== 'object') return value
   try {
@@ -45,7 +40,10 @@ function cloneRuntimeValue<T>(value: T): T {
   }
 }
 
-/** 单个 runtime instance 的可变历史内存状态。 */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 export interface AiRuntimeHistoryState {
   version: number
   messages: AiRuntimeHistoryMessage[]
@@ -54,30 +52,28 @@ export interface AiRuntimeHistoryState {
   functionExposureSnapshots: AiRuntimeFunctionExposureSnapshot[]
 }
 
-/** 单个 runtime instance 的完整可变内存状态，仅供 runtime 内部使用。 */
 export interface AiRuntimeInstanceState {
   instanceId: string
-  businessId: string
-  businessInstanceId: AiRuntimeBusinessInstanceId
+  moduleId: string
+  moduleInstanceId: AiRuntimeModuleInstanceId
   status: AiRuntimeInstanceStatus
-  business: AiRuntimeBusinessExposure
+  module: AiRuntimeModuleExposure
   promptSnapshot: string
   availableFunctions: AiRuntimeFunctionExposure[]
+  activePath: AiModuleInstanceBinding[]
   history: AiRuntimeHistoryState
   seq: number
   pendingPause: boolean
   pendingStop: boolean
 }
 
-/** 函数调用解析成功后的上下文集合，供 executeFunctionCall 直接执行。 */
 export interface AiRuntimeResolvedFunctionCall {
   instance: AiRuntimeInstanceState
-  business: AiBusinessRegistration
-  definition: AiFunctionRegistration<unknown, unknown>
+  module: AiModuleRegistration
+  definition: AiFunctionRegistration
   exposure: AiRuntimeFunctionExposure
 }
 
-/** runtime 事件中心：维护订阅者，并为每个实例生成单调递增事件序号。 */
 export class AiRuntimeEventHub {
   private readonly listeners = new Set<AiRuntimeEventListener>()
 
@@ -86,12 +82,11 @@ export class AiRuntimeEventHub {
     private readonly now: NonNullable<AiRuntimeOptions['now']>,
   ) {}
 
-  /** 构造事件、递增实例 seq，并同步通知所有订阅者。 */
   emit(
     instance: AiRuntimeInstanceState,
     type: AiRuntimeEventType,
     payload: unknown,
-    details: { moduleId?: string; functionId?: string } = {},
+    details: { actionModulePath?: string; functionId?: string } = {},
   ): AiRuntimeEvent {
     instance.seq += 1
     const event: AiRuntimeEvent = {
@@ -99,10 +94,10 @@ export class AiRuntimeEventHub {
       seq: instance.seq,
       timestamp: this.now(),
       type,
-      businessId: instance.businessId,
-      businessInstanceId: instance.businessInstanceId,
+      moduleId: instance.moduleId,
+      moduleInstanceId: instance.moduleInstanceId,
       instanceId: instance.instanceId,
-      ...(details.moduleId !== undefined ? { moduleId: details.moduleId } : {}),
+      ...(details.actionModulePath !== undefined ? { actionModulePath: details.actionModulePath } : {}),
       ...(details.functionId !== undefined ? { functionId: details.functionId } : {}),
       payload,
     }
@@ -116,30 +111,31 @@ export class AiRuntimeEventHub {
     return event
   }
 
-  /** 注册事件监听器，返回取消订阅函数。监听器异常不会影响 runtime 主流程。 */
   subscribe(listener: AiRuntimeEventListener): () => void {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)
   }
 }
 
-/** 将业务注册定义投影成 runtime 对外快照和 LLM function exposure 的工具。 */
+interface ProjectModuleOptions {
+  module: AiModuleRegistration
+  instanceScope: AiRuntimeInstanceScope
+  parentIds: readonly string[]
+  parentContextParams: readonly AiRuntimeFunctionContextParam[]
+}
+
 export class AiRuntimeProjector {
   constructor(
-    private readonly actionOf: <
-      TBusinessId extends string,
-      TModuleId extends string,
-      TFunctionId extends string,
-    >(businessId: TBusinessId, moduleId: TModuleId, functionId: TFunctionId) => AiRuntimeAction<TBusinessId, TModuleId, TFunctionId>,
+    private readonly actionOf: (modulePath: string, functionId: string) => AiRuntimeAction,
     private readonly assertId: (kind: string, value: string) => void,
   ) {}
 
-  /** 深拷贝函数暴露列表，保护 runtime 内部 availableFunctions 不被外部修改。 */
   cloneExposure(functions: readonly AiRuntimeFunctionExposure[]): AiRuntimeFunctionExposure[] {
     return functions.map((item) => ({
       action: item.action,
-      businessId: item.businessId,
       moduleId: item.moduleId,
+      modulePath: item.modulePath,
+      moduleIds: [...item.moduleIds],
       functionId: item.functionId,
       description: item.description,
       paramsSchema: cloneRuntimeValue(item.paramsSchema),
@@ -147,37 +143,29 @@ export class AiRuntimeProjector {
       ...(item.maxExecutionMs !== undefined ? { maxExecutionMs: item.maxExecutionMs } : {}),
       ...(item.usageRules !== undefined ? { usageRules: [...item.usageRules] } : {}),
       ...(item.failureModes !== undefined ? { failureModes: item.failureModes.map((mode) => ({ ...mode })) } : {}),
+      contextParams: item.contextParams.map((param) => ({ ...param })),
     }))
   }
 
-  /** 深拷贝模块暴露。 */
   cloneModuleExposure(module: AiRuntimeModuleExposure): AiRuntimeModuleExposure {
     return {
       moduleId: module.moduleId,
+      modulePath: module.modulePath,
+      moduleIds: [...module.moduleIds],
       name: module.name,
       description: module.description,
       ...(module.prompt !== undefined ? { prompt: module.prompt } : {}),
+      ...(module.instanceParam !== undefined ? { instanceParam: { ...module.instanceParam } } : {}),
       functions: this.cloneExposure(module.functions),
+      modules: module.modules.map((child) => this.cloneModuleExposure(child)),
     }
   }
 
-  /** 深拷贝业务暴露。 */
-  cloneBusinessExposure(business: AiRuntimeBusinessExposure): AiRuntimeBusinessExposure {
-    return {
-      businessId: business.businessId,
-      name: business.name,
-      description: business.description,
-      ...(business.instanceQueryAction !== undefined ? { instanceQueryAction: business.instanceQueryAction } : {}),
-      modules: business.modules.map((module) => this.cloneModuleExposure(module)),
-    }
-  }
-
-  /** 创建不可变历史快照；所有嵌套 args/result/exposure 都会 clone。 */
   createHistorySnapshot(instance: AiRuntimeInstanceState): AiRuntimeHistorySnapshot {
     return {
       instanceId: instance.instanceId,
-      businessId: instance.businessId,
-      businessInstanceId: instance.businessInstanceId,
+      moduleId: instance.moduleId,
+      moduleInstanceId: instance.moduleInstanceId,
       version: instance.history.version,
       messages: instance.history.messages.map((message) => ({ ...message })),
       functionCalls: instance.history.functionCalls.map((call) => ({
@@ -194,167 +182,245 @@ export class AiRuntimeProjector {
     }
   }
 
-  /** 创建轻量实例快照。 */
-  createInstanceSnapshot(instance: AiRuntimeInstanceState): AiRuntimeInstanceSnapshot {
+  createActivePathSnapshot(instance: AiRuntimeInstanceState): AiRuntimeActivePathSnapshot {
     return {
       instanceId: instance.instanceId,
-      businessInstanceId: instance.businessInstanceId,
-      businessId: instance.businessId,
-      status: instance.status,
-      business: this.cloneBusinessExposure(instance.business),
-      promptSnapshot: instance.promptSnapshot,
-      availableFunctions: this.cloneExposure(instance.availableFunctions),
+      bindings: instance.activePath.map((binding) => ({ ...binding })),
+      moduleInstances: this.moduleInstancesFromBindings(instance.activePath),
     }
   }
 
-  /** 创建完整实例详情，包含模块暴露和历史快照。 */
+  createInstanceSnapshot(instance: AiRuntimeInstanceState): AiRuntimeInstanceSnapshot {
+    return {
+      instanceId: instance.instanceId,
+      moduleInstanceId: instance.moduleInstanceId,
+      moduleId: instance.moduleId,
+      status: instance.status,
+      module: this.cloneModuleExposure(instance.module),
+      promptSnapshot: instance.promptSnapshot,
+      availableFunctions: this.cloneExposure(instance.availableFunctions),
+      activePath: this.createActivePathSnapshot(instance),
+    }
+  }
+
   createInstanceDetail(instance: AiRuntimeInstanceState): AiRuntimeInstanceDetail {
     return {
       ...this.createInstanceSnapshot(instance),
-      modules: instance.business.modules.map((module) => this.cloneModuleExposure(module)),
       history: this.createHistorySnapshot(instance),
     }
   }
 
-  /**
-   * 投影业务定义。
-   *
-   * 调用时序：
-   * 1. 遍历业务模块和函数定义，校验 functionId。
-   * 2. 组装 `business@module@function` action。
-   * 3. 解析模块 prompt，生成当前实例可见的模块暴露。
-   */
-  async projectBusiness(
-    business: AiBusinessRegistration,
+  async projectModule(
+    module: AiModuleRegistration,
     instanceScope: AiRuntimeInstanceScope,
-  ): Promise<AiRuntimeBusinessExposure> {
-    const modules: AiRuntimeModuleExposure[] = []
-    for (const module of business.modules) {
-      const functions: AiRuntimeFunctionExposure[] = []
-      for (const definition of module.getFunctions()) {
-        this.assertId('functionId', definition.functionId)
-        functions.push({
-          action: this.actionOf(business.businessId, module.moduleId, definition.functionId),
-          businessId: business.businessId,
-          moduleId: module.moduleId,
-          functionId: definition.functionId,
-          description: definition.description,
-          paramsSchema: definition.paramsSchema,
-          ...(definition.resultSchema !== undefined ? { resultSchema: definition.resultSchema } : {}),
-          ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
-          ...(definition.usageRules !== undefined ? { usageRules: definition.usageRules } : {}),
-          ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes } : {}),
-        })
-      }
+  ): Promise<AiRuntimeModuleExposure> {
+    return this.projectModuleNode({
+      module,
+      instanceScope,
+      parentIds: [],
+      parentContextParams: [],
+    })
+  }
 
-      const prompt = await this.modulePrompt(module.moduleId, module.prompt, instanceScope)
-      modules.push({
+  flattenFunctions(module: AiRuntimeModuleExposure): AiRuntimeFunctionExposure[] {
+    return [
+      ...module.functions,
+      ...module.modules.flatMap((child) => this.flattenFunctions(child)),
+    ]
+  }
+
+  buildPromptSnapshot(module: AiRuntimeModuleExposure): string {
+    const parts: string[] = []
+    this.collectPrompts(module, parts)
+    return parts.join('\n\n')
+  }
+
+  assertUniqueActions(module: AiModuleRegistration): void {
+    this.assertId('moduleId', module.moduleId)
+    const modulePaths = new Set<string>()
+    const actions = new Set<string>()
+    this.collectRegistrationActions(module, [], modulePaths, actions)
+  }
+
+  async refreshInstanceExposure(instance: AiRuntimeInstanceState, module: AiModuleRegistration): Promise<void> {
+    instance.module = await this.projectModule(module, this.createScope(instance))
+    instance.promptSnapshot = this.buildPromptSnapshot(instance.module)
+    instance.availableFunctions = this.flattenFunctions(instance.module)
+  }
+
+  moduleInstancesFromBindings(bindings: readonly AiModuleInstanceBinding[]): Record<string, string> {
+    const out: Record<string, string> = {}
+    for (const binding of bindings) {
+      if (binding.paramName !== undefined && binding.paramName.trim().length > 0) {
+        out[binding.paramName] = binding.instanceId
+      }
+    }
+    return out
+  }
+
+  private async projectModuleNode(options: ProjectModuleOptions): Promise<AiRuntimeModuleExposure> {
+    const { module, instanceScope, parentIds, parentContextParams } = options
+    const moduleIds = [...parentIds, module.moduleId]
+    const modulePath = moduleIds.join('/')
+    const currentContextParam = module.instanceParam === undefined
+      ? null
+      : {
+          modulePath,
+          moduleId: module.moduleId,
+          paramName: module.instanceParam.name,
+          description: module.instanceParam.description,
+        } satisfies AiRuntimeFunctionContextParam
+
+    const functions = module.getFunctions().map((definition) => {
+      this.assertId('functionId', definition.functionId)
+      const contextParams = definition.scope === 'instance' && currentContextParam !== null
+        ? [...parentContextParams, currentContextParam]
+        : [...parentContextParams]
+      return {
+        action: this.actionOf(modulePath, definition.functionId),
         moduleId: module.moduleId,
-        name: module.name,
-        description: module.description,
-        ...(prompt !== undefined ? { prompt } : {}),
-        functions,
-      })
+        modulePath,
+        moduleIds,
+        functionId: definition.functionId,
+        description: definition.description,
+        paramsSchema: this.injectContextParamsSchema(definition.paramsSchema, contextParams),
+        ...(definition.resultSchema !== undefined ? { resultSchema: definition.resultSchema } : {}),
+        ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
+        ...(definition.usageRules !== undefined ? { usageRules: definition.usageRules } : {}),
+        ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes } : {}),
+        contextParams,
+      } satisfies AiRuntimeFunctionExposure
+    })
+
+    const prompt = await this.modulePrompt(modulePath, module.prompt, instanceScope, moduleIds)
+    const childParentParams = currentContextParam === null
+      ? parentContextParams
+      : [...parentContextParams, currentContextParam]
+    const modules: AiRuntimeModuleExposure[] = []
+    for (const child of module.modules ?? []) {
+      modules.push(await this.projectModuleNode({
+        module: child,
+        instanceScope,
+        parentIds: moduleIds,
+        parentContextParams: childParentParams,
+      }))
     }
 
     return {
-      businessId: business.businessId,
-      name: business.name,
-      description: business.description,
-      ...(business.instanceQueryAction !== undefined ? { instanceQueryAction: business.instanceQueryAction } : {}),
+      moduleId: module.moduleId,
+      modulePath,
+      moduleIds,
+      name: module.name,
+      description: module.description,
+      ...(prompt !== undefined ? { prompt } : {}),
+      ...(module.instanceParam !== undefined ? { instanceParam: module.instanceParam } : {}),
+      functions,
       modules,
     }
   }
 
-  /** 将业务模块树压平为当前实例可调用函数列表。 */
-  flattenFunctions(business: AiRuntimeBusinessExposure): AiRuntimeFunctionExposure[] {
-    return business.modules.flatMap((module) => module.functions)
-  }
+  private injectContextParamsSchema(
+    schema: Record<string, unknown>,
+    contextParams: readonly AiRuntimeFunctionContextParam[],
+  ): Record<string, unknown> {
+    if (contextParams.length === 0) return cloneRuntimeValue(schema)
 
-  /** 拼接当前实例可见的模块 prompt，生成传给 LLM 的 promptSnapshot。 */
-  buildPromptSnapshot(business: AiRuntimeBusinessExposure): string {
-    const parts: string[] = business.modules
-      .map((module) => module.prompt)
-      .filter((prompt): prompt is string => prompt !== undefined && prompt.trim().length > 0)
-
-    if (business.instanceQueryAction !== undefined) {
-      parts.push(
-        `To list available instances, call \`${business.businessId}@${business.instanceQueryAction}\` (no args). Returns: Array<{ businessInstanceId: string, description: string }>. Reuse the returned businessInstanceId as #sym:businessInstanceId in subsequent business calls.`,
-      )
-    }
-
-    return parts.join('\n\n')
-  }
-
-  /** 注册业务时校验 businessId、moduleId 和完整 action 是否唯一合法。 */
-  assertUniqueActions(business: AiBusinessRegistration): void {
-    this.assertId('businessId', business.businessId)
-    const moduleIds = new Set<string>()
-    const actions = new Set<string>()
-    const moduleFunctionPairs = new Set<string>()
-    for (const module of business.modules) {
-      this.assertId('moduleId', module.moduleId)
-      if (moduleIds.has(module.moduleId)) {
-        throw new Error(`Duplicate module ${module.moduleId} in business ${business.businessId}`)
-      }
-      moduleIds.add(module.moduleId)
-      for (const definition of module.getFunctions()) {
-        this.assertId('functionId', definition.functionId)
-        moduleFunctionPairs.add(`${module.moduleId}@${definition.functionId}`)
-        const action = this.actionOf(business.businessId, module.moduleId, definition.functionId)
-        if (actions.has(action)) {
-          throw new Error(`Duplicate function action in business ${business.businessId}: ${action}`)
+    const cloned = cloneRuntimeValue(schema)
+    if (cloned['type'] === 'object') {
+      const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
+      const required = Array.isArray(cloned['required'])
+        ? cloned['required'].filter((key): key is string => typeof key === 'string')
+        : []
+      for (const param of contextParams) {
+        properties[param.paramName] = {
+          type: 'string',
+          description: `${param.description}（模块路径: ${param.modulePath}）`,
         }
-        actions.add(action)
+        if (!required.includes(param.paramName)) required.push(param.paramName)
+      }
+      return {
+        ...cloned,
+        type: 'object',
+        properties,
+        required,
       }
     }
 
-    if (business.instanceQueryAction !== undefined) {
-      const parts = business.instanceQueryAction.split('@')
-      if (parts.length !== 2) {
-        throw new Error(
-          `Invalid instanceQueryAction in business ${business.businessId}: ${business.instanceQueryAction}. Expected moduleId@functionId.`,
-        )
-      }
-      const moduleId = parts[0]
-      const functionId = parts[1]
-      if (moduleId === undefined || functionId === undefined) {
-        throw new Error(
-          `Invalid instanceQueryAction in business ${business.businessId}: ${business.instanceQueryAction}. Expected moduleId@functionId.`,
-        )
-      }
-      this.assertId('instanceQueryAction.moduleId', moduleId)
-      this.assertId('instanceQueryAction.functionId', functionId)
-      if (!moduleFunctionPairs.has(`${moduleId}@${functionId}`)) {
-        throw new Error(
-          `instanceQueryAction must point to a registered function in business ${business.businessId}: ${business.instanceQueryAction}`,
-        )
-      }
+    const simplified = { ...cloned }
+    for (const param of contextParams) {
+      simplified[param.paramName] = `string — ${param.description}（模块路径: ${param.modulePath}）`
+    }
+    return simplified
+  }
+
+  private collectPrompts(module: AiRuntimeModuleExposure, parts: string[]): void {
+    if (module.prompt !== undefined && module.prompt.trim().length > 0) {
+      parts.push(module.prompt)
+    }
+    for (const child of module.modules) {
+      this.collectPrompts(child, parts)
     }
   }
 
-  /** 执行后或恢复实例时刷新业务投影、promptSnapshot 与函数暴露列表。 */
-  async refreshInstanceExposure(instance: AiRuntimeInstanceState, business: AiBusinessRegistration): Promise<void> {
-    instance.business = await this.projectBusiness(business, instance)
-    instance.promptSnapshot = this.buildPromptSnapshot(instance.business)
-    instance.availableFunctions = this.flattenFunctions(instance.business)
+  private collectRegistrationActions(
+    module: AiModuleRegistration,
+    parentIds: readonly string[],
+    modulePaths: Set<string>,
+    actions: Set<string>,
+  ): void {
+    this.assertId('moduleId', module.moduleId)
+    const moduleIds = [...parentIds, module.moduleId]
+    const modulePath = moduleIds.join('/')
+    if (modulePaths.has(modulePath)) {
+      throw new Error(`Duplicate module path: ${modulePath}`)
+    }
+    modulePaths.add(modulePath)
+
+    if (module.instanceParam !== undefined) {
+      this.assertId(`instanceParam ${modulePath}`, module.instanceParam.name)
+    }
+
+    const functionIds = new Set<string>()
+    for (const definition of module.getFunctions()) {
+      this.assertId('functionId', definition.functionId)
+      if (functionIds.has(definition.functionId)) {
+        throw new Error(`Duplicate function ${definition.functionId} in module ${modulePath}`)
+      }
+      functionIds.add(definition.functionId)
+      const action = this.actionOf(modulePath, definition.functionId)
+      if (actions.has(action)) {
+        throw new Error(`Duplicate function action: ${action}`)
+      }
+      actions.add(action)
+    }
+
+    for (const child of module.modules ?? []) {
+      this.collectRegistrationActions(child, moduleIds, modulePaths, actions)
+    }
   }
 
-  /** 解析模块 prompt：支持静态字符串和按实例动态生成函数。 */
   private async modulePrompt(
-    moduleId: string,
-    prompt: AiBusinessRegistration['modules'][number]['prompt'],
+    modulePath: string,
+    prompt: AiModuleRegistration['prompt'],
     instanceScope: AiRuntimeInstanceScope,
+    moduleIds: readonly string[],
   ): Promise<string | undefined> {
     if (typeof prompt === 'string') return prompt.trim().length > 0 ? prompt : undefined
     if (prompt === undefined) return undefined
-    const resolved = await prompt({ ...instanceScope, moduleId })
+    const resolved = await prompt({ ...instanceScope, modulePath, moduleIds })
     return resolved !== null && resolved.trim().length > 0 ? resolved : undefined
   }
 
+  private createScope(instance: AiRuntimeInstanceState): AiRuntimeInstanceScope {
+    return {
+      instanceId: instance.instanceId,
+      runtimeInstanceId: instance.instanceId,
+      moduleId: instance.moduleId,
+      moduleInstanceId: instance.moduleInstanceId,
+    }
+  }
 }
 
-/** 运行时历史写入器：所有会改变 history.version 的动作都集中在这里。 */
 export class AiRuntimeHistory {
   constructor(
     private readonly createRecordId: NonNullable<AiRuntimeOptions['createRecordId']>,
@@ -363,13 +429,11 @@ export class AiRuntimeHistory {
     private readonly projector: AiRuntimeProjector,
   ) {}
 
-  /** 设置实例状态，并同步写入生命周期 marker。 */
   setStatus(instance: AiRuntimeInstanceState, status: AiRuntimeInstanceStatus, reason?: string): void {
     instance.status = status
     this.markLifecycle(instance, status, reason)
   }
 
-  /** 记录一次函数暴露快照，并发出 history 与 functions 事件。 */
   recordExposure(instance: AiRuntimeInstanceState): void {
     instance.history.functionExposureSnapshots.push({
       id: this.createRecordId('exposure'),
@@ -379,12 +443,11 @@ export class AiRuntimeHistory {
     instance.history.version += 1
     this.eventHub.emit(instance, 'history.functionExposure.snapshot', { total: instance.availableFunctions.length })
     this.eventHub.emit(instance, 'functions.exposed', {
-      business: this.projector.cloneBusinessExposure(instance.business),
+      module: this.projector.cloneModuleExposure(instance.module),
       functions: this.projector.cloneExposure(instance.availableFunctions),
     })
   }
 
-  /** 记录一次函数调用，无论成功或失败都会写入 history。 */
   recordFunctionCall(
     instance: AiRuntimeInstanceState,
     action: AiRuntimeAction,
@@ -403,7 +466,6 @@ export class AiRuntimeHistory {
     this.eventHub.emit(instance, 'history.functionCall.appended', { action, result })
   }
 
-  /** 按顺序追加聊天消息，并为每条消息发出 history.message.appended 事件。 */
   appendMessages(instance: AiRuntimeInstanceState, options: AiRuntimeAppendMessagesOptions): AiRuntimeHistorySnapshot {
     for (const message of options.messages) {
       instance.history.messages.push({
@@ -418,12 +480,10 @@ export class AiRuntimeHistory {
     return this.projector.createHistorySnapshot(instance)
   }
 
-  /** 创建当前实例历史快照。 */
   createHistorySnapshot(instance: AiRuntimeInstanceState): AiRuntimeHistorySnapshot {
     return this.projector.createHistorySnapshot(instance)
   }
 
-  /** 写入生命周期 marker 并递增 history.version。 */
   private markLifecycle(instance: AiRuntimeInstanceState, status: AiRuntimeInstanceStatus, reason?: string): void {
     instance.history.lifecycleMarkers.push({
       id: this.createRecordId('lifecycle'),
@@ -435,9 +495,7 @@ export class AiRuntimeHistory {
   }
 }
 
-/** 运行函数前的轻量参数校验器，只覆盖常见 JSON schema type/required 场景。 */
 export class AiRuntimeArgValidator {
-  /** 根据 JSON-schema-like paramsSchema 校验 args；返回 null 表示通过。 */
   validateArgsBySchema(schema: Record<string, unknown>, args: unknown): string | null {
     if (Object.keys(schema).length === 0) return null
     if (schema['type'] !== 'object') return null
@@ -463,12 +521,10 @@ export class AiRuntimeArgValidator {
     return null
   }
 
-  /** 将 schema type 字段转换成可读错误描述。 */
   private readableSchemaType(type: unknown): string {
     return Array.isArray(type) ? type.join(' | ') : String(type)
   }
 
-  /** 判断单个值是否匹配 schema type；支持 union type 数组。 */
   private matchesSchemaType(value: unknown, type: unknown): boolean {
     const types = Array.isArray(type) ? type : [type]
     for (const candidate of types) {
@@ -483,8 +539,7 @@ export class AiRuntimeArgValidator {
     return false
   }
 
-  /** 判断值是否为普通对象。 */
   private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value)
+    return isRecord(value)
   }
 }

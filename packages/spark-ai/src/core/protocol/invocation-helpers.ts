@@ -3,7 +3,7 @@
  *
  * 这里放置跨 provider / adapter 复用的轻量协议能力：
  * - 标准化消息角色和 token usage 字段。
- * - 解析 runtime action 地址。
+ * - 解析 runtime action 路径。
  * - 从模型输出文本中抽取 JSON 对象。
  *
  * 它不依赖具体模型 SDK，也不直接执行函数。
@@ -49,14 +49,15 @@ export interface StreamCallbacks {
 }
 
 /**
- * action 地址三段拆解结果。
- * 输入语义：规范 action，格式为 business@module@function。
+ * action 路径拆解结果。
+ * 输入语义：规范 action，格式为 module/.../function。
  * 调用时机：协议层或运行时需要按段访问 action 各部分时使用。
  * 所有字段只读：解析结果不应被外部修改。
  */
-export interface ActionAddressParts {
-  readonly business: string
-  readonly module: string
+export interface ActionPathParts {
+  readonly moduleIds: readonly string[]
+  readonly modulePath: string
+  readonly moduleId: string
   readonly function: string
 }
 
@@ -64,17 +65,27 @@ export class AiInvocationProtocol {
   private constructor() {}
 
   /**
-   * 将 action 字符串拆解为 { business, module, function }。
-   * 输入语义：规范 action，格式必须为 业务@模块@函数 三段。
-   * 输出语义：三段拆解；格式不合法则 fail-fast 抛出。
-   * 调用时机：协议层解析 action 地址时统一调用此方法，禁止在各业务层自行 split。
+   * 将 action 字符串拆解为模块路径和函数 ID。
+   * 输入语义：规范 action，格式必须为 module/.../function，至少两段。
+   * 输出语义：模块路径和函数 ID；格式不合法则 fail-fast 抛出。
+   * 调用时机：协议层解析 action 路径时统一调用此方法，禁止在各业务层自行 split。
    */
-  static parseActionAddress(action: string): ActionAddressParts {
-    const parts = action.split('@')
-    if (parts.length !== 3 || parts.some(part => part.trim().length === 0)) {
-      throw new Error(`非法 action 地址: ${action}，必须使用 业务@模块@函数`)
+  static parseActionPath(action: string): ActionPathParts {
+    const parts = action.split('/')
+    if (parts.length < 2 || parts.some(part => part.trim().length === 0)) {
+      throw new Error(`非法 action 路径: ${action}，必须使用 module/.../function`)
     }
-    return { business: parts[0] ?? '', module: parts[1] ?? '', function: parts[2] ?? '' }
+    if (parts.some(part => part.includes('@'))) {
+      throw new Error(`非法 action 路径: ${action}，模块或函数 ID 不能包含 @`)
+    }
+    const functionId = parts[parts.length - 1] ?? ''
+    const moduleIds = parts.slice(0, -1)
+    return {
+      moduleIds,
+      modulePath: moduleIds.join('/'),
+      moduleId: moduleIds[moduleIds.length - 1] ?? '',
+      function: functionId,
+    }
   }
 
   /** 将 unknown 错误统一转换为可记录、可返回给调用方的字符串。 */

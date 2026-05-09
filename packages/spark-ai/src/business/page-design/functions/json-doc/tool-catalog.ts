@@ -7,7 +7,7 @@ import {
 export type JsonDocFunctionFailureMode = FunctionFailureMode
 export type JsonDocFunctionTarget = 'pagedata' | 'rule'
 export type JsonDocType = 'pagedata' | 'rule'
-export type JsonDocFunctionAction = `pageDesign@jsonDoc@${string}`
+export type JsonDocFunctionAction = `pageDesign/jsonDoc/${string}`
 
 type JsonDocFunctionBaseFields = {
   action: JsonDocFunctionAction
@@ -40,7 +40,7 @@ export type JsonDocFunctionCapabilityRow = Pick<
 
 // ── 常量 ──────────────────────────────────────────────────────────────────────
 
-const BOOTSTRAP_RULE = '调用 pageDesign@jsonDoc@* 前必须先执行 pageDesign@lifecycle@bootstrap，确保宿主绑定 readJsonDoc/writeJsonDoc。'
+const BOOTSTRAP_RULE = '调用 pageDesign/jsonDoc/* 前必须先执行 pageDesign/lifecycle/bootstrap，确保宿主绑定 readJsonDoc/writeJsonDoc。'
 const POINTER_FORMAT_RULE = 'pointer 遵循 RFC 6901：以 "/" 开头（"" 代表文档根）；段间以 "/" 分隔；"/" 用 ~1 转义，"~" 用 ~0 转义。'
 const IMMUTABLE_RULE = 'set/delete/append/setMultiple 不直接修改原始 JSON 文件，所有写入通过 EditToolHost.writeJsonDoc 提交并触发宿主持久化。'
 
@@ -50,7 +50,7 @@ const POINTER_PARAM = { pointer: 'string — RFC 6901 JSON Pointer，根节点�
 const NO_JSON_DOC_HOST: JsonDocFunctionFailureMode = {
   code: 'NO_JSON_DOC_HOST',
   when: '宿主未绑定 EditToolHost.readJsonDoc / writeJsonDoc',
-  fix: '先执行 pageDesign@lifecycle@bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。',
+  fix: '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。',
 }
 const INVALID_POINTER: JsonDocFunctionFailureMode = {
   code: 'INVALID_POINTER',
@@ -60,17 +60,17 @@ const INVALID_POINTER: JsonDocFunctionFailureMode = {
 const NOT_FOUND: JsonDocFunctionFailureMode = {
   code: 'NOT_FOUND',
   when: 'pointer 路径不存在',
-  fix: '先用 pageDesign@jsonDoc@get 确认路径存在，或用 pageDesign@jsonDoc@list 查看可用 key。',
+  fix: '先用 pageDesign/jsonDoc/get 确认路径存在，或用 pageDesign/jsonDoc/list 查看可用 key。',
 }
 const NOT_ARRAY: JsonDocFunctionFailureMode = {
   code: 'NOT_ARRAY',
   when: 'append 目标不是数组',
-  fix: '先用 pageDesign@jsonDoc@get 检查目标类型，再决定操作。',
+  fix: '先用 pageDesign/jsonDoc/get 检查目标类型，再决定操作。',
 }
 const SCALAR_TARGET: JsonDocFunctionFailureMode = {
   code: 'SCALAR_TARGET',
   when: 'list 目标为标量值（string/number/boolean/null）',
-  fix: '标量无子节点，改用 pageDesign@jsonDoc@get 读取完整值。',
+  fix: '标量无子节点，改用 pageDesign/jsonDoc/get 读取完整值。',
 }
 const INVALID_EXPRESSION: JsonDocFunctionFailureMode = {
   code: 'INVALID_EXPRESSION',
@@ -100,7 +100,7 @@ function toCapabilityRow(row: JsonDocFunctionParameterRow): JsonDocFunctionCapab
 
 const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[] = [
   defineDescribeRow({
-    action: 'pageDesign@jsonDoc@read',
+    action: 'pageDesign/jsonDoc/read',
     target: 'pagedata',
     operation: 'read',
     description: '读取指定文档（pagedata.json 或 rule.json）的完整 JSON 内容。',
@@ -114,7 +114,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineDescribeRow({
-    action: 'pageDesign@jsonDoc@list',
+    action: 'pageDesign/jsonDoc/list',
     target: 'pagedata',
     operation: 'list',
     description: '列出 pointer 处对象/数组的直接子节点（key、类型、预览值、子路径）。',
@@ -128,7 +128,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineDescribeRow({
-    action: 'pageDesign@jsonDoc@get',
+    action: 'pageDesign/jsonDoc/get',
     target: 'pagedata',
     operation: 'get',
     description: '读取 pointer 处的单个值（任意类型）。',
@@ -140,7 +140,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineRequestRow({
-    action: 'pageDesign@jsonDoc@set',
+    action: 'pageDesign/jsonDoc/set',
     target: 'pagedata',
     operation: 'set',
     description: '在 pointer 处写入（或创建）一个值；父路径不存在时递归创建中间节点。',
@@ -152,7 +152,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineRequestRow({
-    action: 'pageDesign@jsonDoc@delete',
+    action: 'pageDesign/jsonDoc/delete',
     target: 'pagedata',
     operation: 'delete',
     description: '删除 pointer 处的键或数组元素（数组删除后元素自动前移）。不能删除根节点。',
@@ -164,7 +164,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineRequestRow({
-    action: 'pageDesign@jsonDoc@append',
+    action: 'pageDesign/jsonDoc/append',
     target: 'pagedata',
     operation: 'append',
     description: '向 arrayPointer 处的数组末尾追加一个元素。目标必须为数组。',
@@ -176,7 +176,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineRequestRow({
-    action: 'pageDesign@jsonDoc@setMultiple',
+    action: 'pageDesign/jsonDoc/setMultiple',
     target: 'pagedata',
     operation: 'setMultiple',
     description: '批量写入多个 pointer→value 对；所有写入在同一个文档副本上顺序执行，原子提交。任一 pointer 失败则整批回滚。',
@@ -197,7 +197,7 @@ const JSON_DOC_FUNCTIONS_PARAMETER_TABLE: readonly JsonDocFunctionParameterRow[]
   }),
 
   defineDescribeRow({
-    action: 'pageDesign@jsonDoc@query',
+    action: 'pageDesign/jsonDoc/query',
     target: 'pagedata',
     operation: 'query',
     description: '对文档（或 pointer 处的子树）执行 JMESPath 查询，用于复杂筛选/投影/聚合。只读，不修改文档。',

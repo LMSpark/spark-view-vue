@@ -1,131 +1,61 @@
-# spark-ai Architecture
+# spark-ai 架构
 
-`spark-ai` is the AI runtime package for SPARK. The package now has one mainline architecture: a business-registration runtime plus business-owned services. The old global function registry, carrier registry, model session loop, and page-model session helpers have been removed instead of kept as compatibility layers.
+`spark-ai` 是 SPARK 的 AI 运行时包。当前架构由递归模块注册运行时和模块自管服务组成。
 
-## Runtime Boundary
+## 运行时边界
 
-`src/core` is the deterministic runtime boundary between business services and an LLM-facing host:
+`src/core` 是模块实现与面向 LLM 的宿主之间的确定性运行时边界：
 
-- define a unified AI-facing standard: business info -> module info -> function info registration
-- modules must implement `AiBusinessModuleRegistration`/`AiFunctionRegistration`; metadata is driven by the registration contract
-- register an `AiBusinessRegistration`
-- expose business -> module -> function metadata as `business@module@function`
-- start, pause, stop, and resumable start of a runtime instance by `businessId + businessInstanceId`
-- resolve active instances and history by `businessId + businessInstanceId`
-- keep per-instance history and function-call records, and support business-instance-scoped history lookup
-- expose the currently available functions for an instance
-- execute exactly one function call through an explicit `instanceId`
-- publish lifecycle, history, and function events
+- 定义统一的面向 AI 标准：模块信息 -> 递归模块 -> 函数信息注册。
+- 模块实现 `AiModuleRegistration`，并通过 `AiFunctionRegistration` 暴露函数。
+- 顶层模块通过 `AiRuntime.registerModule` 注册。
+- 模块路径和函数统一暴露为 `module/.../function`。
+- 通过 `moduleId + moduleInstanceId` 启动、暂停、停止和恢复运行实例。
+- 通过 `moduleId + moduleInstanceId` 定位当前实例和历史。
+- 保存每个实例的历史、函数调用记录、活动路径和函数曝光快照。
+- 通过显式运行时 `instanceId` 执行单次函数调用。
+- 发布生命周期、历史、活动路径和函数事件。
 
-The runtime does not own business service lifecycle, create module runtime state, talk to an LLM, retry model turns, or keep a process-wide function registry. Business services self-manage their state and optionally release per-instance state through `releaseInstance`.
+运行时不拥有业务服务生命周期，不创建领域服务状态，不直接调用 LLM，不重试模型轮次，也不维护进程级全局函数注册表。模块实现负责自管状态，并可通过 `releaseInstance` 释放实例级状态。
 
-## Core-Layer Contract Model
+## 契约模型
 
-Core is the standard-owner and should be read as one contract layer:
+- **注册图**
+  - `AiModuleRegistration` 表示一个模块节点；模块可以通过 `modules` 递归包含其他模块。
+  - `AiFunctionRegistration` 表示挂在某个模块路径下的可调用 action 契约。
+  - action 路径格式为 `module/.../function`，例如 `pageDesign/nodeTree/addNode`。
+- **类型规则**
+  - 公共契约使用普通接口，不使用深层泛型约束。
+  - 业务代码用本地普通接口表达 payload 类型，并在 schema 校验后自行转换。
+- **上下文参数**
+  - 模块节点可以声明 `instanceParam`，例如 `departmentId`。
+  - 运行时会把父级模块实例参数投影到面向 LLM 的 `paramsSchema`。
+  - 运行时在调用 `execute` 前剥离这些注入字段。
+  - 业务实现从 `FunctionExecutionContext.moduleInstances` 读取选中的模块实例。
+- **活动路径**
+  - 活动路径由宿主通过 `setActivePath`、`clearActivePath` 和 `getActivePath` 管理。
+  - 函数执行成功不会隐式改变活动路径。
 
-- **Registration graph**
-  - `AiBusinessRegistration` = business identity and module list (e.g. `pageDesign`)
-  - `AiBusinessModuleRegistration` = module identity and function catalog (e.g. `nodeTree`, `dataset`)
-  - `AiFunctionRegistration` = callable action contract (params/result/validation/execution)
-- **Type-level implementation rule**
-  - classes are preferred to plain objects: standard interfaces should be implemented by TS class-based modules and business registrations.
-  - module/function metadata and behavior must remain consistent with the contract, not inferred from loose side channels.
-- **Session semantics**
-  - startup/recovery entrypoint is always `startInstance({ businessId, businessInstanceId })`
-  - `businessId + businessInstanceId` is the external session identity used by callers and hosts
-  - each active runtime instance maps to one `instanceId`
-- same pair resumes the same runtime instance
-- `getInstanceByBusinessScope` / `getInstanceHistoryByBusinessScope` are the scoped query entrypoints
-- **Event semantics**
-  - `AiRuntime.subscribe` is the event bridge for UI hooks and business observers
-  - events include lifecycle + function + history events for state sync and audit trails
+## 公共入口
 
-## Action Address
+迁移后的调用方应使用：
 
-Actions use one canonical address form:
-
-```text
-business@module@function
-```
-
-For example:
-
-```text
-pageDesign@nodeTree@addNode
-pageDesign@dataset@createTable
-pageDesign@textModel@writeScript
-```
-
-`startInstance` takes `{ businessId, businessInstanceId }`:
-
-- first call creates a new AI core instance and returns `instanceId`
-- same pair again resumes that same core instance (backwards compatibility removed)
-
-Function calls must provide `instanceId` in the core envelope, not in business args.
-
-## Directory Layout
-
-```text
-src/core/protocol/business-contracts.ts
-src/core/protocol/invocation-helpers.ts
-src/core/protocol/parameter-schema.ts
-src/core/protocol/llm-params-validator.ts
-src/core/protocol/knowledge-payload-contracts.ts
-src/core/knowledge/payload-provider-registry.ts
-src/core/runtime/ai-runtime.ts
-src/core/runtime/ai-runtime-support.ts
-```
-
-`src/business/page-design` defines the `pageDesign` business and now uses class-first business components for prompts, payload providers, function catalogs, cache handles, and live edit-state adapters.
-
-## Page Design Business
-
-`PageDesignBusiness` registers four modules:
-
-- `lifecycle`
-- `textModel`
-- `nodeTree`
-- `dataset`
-
-The business reads and writes the live model through `EditToolHost` and owns per-instance edit state through `PageDesignEditSession`. It does not accept old file snapshot payloads as a compatibility path, and it does not expose export/history actions through the dialogue action surface.
-
-## Knowledge Payloads
-
-Knowledge payload contracts and provider registry live under `core`. This is the read-model side of `core@knowledge`; concrete payload providers such as `page-design.component` live with the business that owns the domain facts.
-
-## Public Surface
-
-The package root exports:
-
-- `AiRuntime`, `KnowledgePayloadRegistry`, and core business contracts
-- protocol helper classes such as `AiInvocationProtocol` and `LlmParamsValidator`
-- class-first page-design exports such as `PageDesignBusiness`, `PageDesignEditSession`, `PageDesignEditActionClassifier`, `PageDesignEditRuntimePrompt`, `PageDesignPageCache`, and `PageDesignComponentPayloadProvider`
-- component catalog projection helpers and catalog types
-
-The package also provides layered subpath exports:
-
-- `@spark-view/spark-ai/core`
-- `@spark-view/spark-ai/business`
-- `@spark-view/spark-ai/business/page-design`
-- `@spark-view/spark-ai/catalog`
-
-The package root intentionally does not export old APIs such as `registerFunction`, `executeFunction`, `runFunctionLoop`, `SessionBackend`, `createPageModelSessionHost`, or `createPageModelEditSession`.
-
-Migrating callers should use registration-first lifecycle:
-
-- `AiRuntime.registerBusiness`
-- `AiRuntime.startInstance({ businessId, businessInstanceId })`
+- `AiRuntime.registerModule`
+- `AiRuntime.startInstance({ moduleId, moduleInstanceId })`
 - `AiRuntime.stopInstance({ instanceId, mode: 'pause' | 'stop' })`
-- `AiRuntime.stopInstanceByBusinessScope({ businessId, businessInstanceId, mode })`
+- `AiRuntime.stopInstanceByModuleScope({ moduleId, moduleInstanceId, mode })`
 - `AiRuntime.getAvailableFunctions(instanceId)`
-- `AiRuntime.getInstanceByBusinessScope({ businessId, businessInstanceId })`
+- `AiRuntime.getInstanceByModuleScope({ moduleId, moduleInstanceId })`
 - `AiRuntime.executeFunctionCall({ instanceId, action, args })`
+- `AiRuntime.setActivePath({ instanceId, bindings })`
 
-## Validation
+包根入口刻意不再导出旧 API，例如 `registerBusiness`、`AiBusinessRegistration`、`AiBusinessModuleRegistration` 或 `PageDesignBusiness`。
 
-Focused validation for this package:
+## 验证
+
+本包的重点验证命令：
 
 ```bash
 pnpm --filter @spark-view/spark-ai run typecheck
-pnpm exec vitest run tests/ai-runtime-business.test.ts tests/ai-runtime-public-api.test.ts tests/page-design-business-definition.test.ts tests/protocol-parser-json-extract.test.ts tests/llm-params-validator.test.ts --reporter verbose
+pnpm run test:run -- --config vitest.spark-ai.config.ts tests/ai-runtime-business.test.ts tests/page-design-business-definition.test.ts tests/protocol-parser-json-extract.test.ts tests/llm-params-validator.test.ts --reporter verbose
 ```

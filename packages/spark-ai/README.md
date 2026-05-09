@@ -1,45 +1,32 @@
 # @spark-view/spark-ai
 
-SPARK 的 AI 运行时包，采用业务注册架构：运行时负责 LLM-facing 实例、函数曝光与调用分发，业务层负责 page-design 编辑服务与具体领域能力。
+SPARK 的 AI 运行时包。核心层采用递归模块注册架构：运行时负责面向 LLM 的实例、模块函数曝光、活动路径、函数调用分发、历史和事件；具体模块实现负责领域状态与真实执行。
 
 ## 主要职责
 
-- `core`：业务注册、运行实例生命周期、`core@knowledge` 只读模型、函数调用与历史事件
-- `business`：`page-design` 四文件编辑服务（`rule.json`、`pagedata.json`、`script.js`、`style.css`）和具体 knowledge payload provider
+- `core`：递归模块注册、运行实例生命周期、函数调用、活动路径、历史事件和知识负载提供者注册表
+- `business`：`page-design` 四文件编辑模块（`rule.json`、`pagedata.json`、`script.js`、`style.css`）和具体知识负载提供者
 - `catalog`：组件目录投影与 DevSystem 预计算元数据
 
-## 核心层语义（先读）
+## 核心层语义
 
-- **核心层是标准制定者**：统一定义业务能力向 LLM 暴露时的形态（业务信息 → 模块信息 → 函数信息），并提供注册入口与运行时承载。
-- **标准不向后兼容**：不保留旧入口兼容层，只有新契约可用。
-- **注册语义要点**：
-  - 一个 `AiBusinessRegistration` 代表一个业务能力（如 `pageDesign`）。
-  - 一个 `AiBusinessModuleRegistration` 代表一个模块（如 `nodeTree`、`dataset`）。
-  - 一个 `AiFunctionRegistration` 代表可调用函数（如 `addNode`、`createTable`）。
-  - 模块能力和函数能力都应以 `ts` 类实现标准接口/基类，避免运行时散落的对象字典。
+- **统一叫模块**：不再区分业务、根模块、子模块；模块通过 `modules` 递归形成树。
+- **函数路径**：action 使用 `module/.../function`，例如 `pageDesign/nodeTree/addNode`。
+- **简单接口**：公共契约以 `AiModuleRegistration`、`AiFunctionRegistration` 等普通接口为主，不要求业务开发者维护多层泛型约束。
 - **实例语义**：
-  - `businessId`：业务能力维度（能力定义 ID），例如 `pageDesign`。
-  - `businessInstanceId`：业务实例维度（同一能力下的不同对象），例如“张三请假”和“李四请假”是两个实例。
-  - `instanceId`：由核心层统一分配/管理的运行时实例。
-- **会话归口**：同一 `(businessId, businessInstanceId)` 重入时恢复同一运行时实例；不同实例间互不污染。
-- **会话查询**：核心层同时提供按 `(businessId, businessInstanceId)` 的实例快照和历史查询，用于 UI/业务服务做生命周期侧栏联动，不需要业务侧额外维护会话索引。
-- **事件能力**：核心层通过 `subscribe` 提供统一事件流，支持 UI 与业务服务监听生命周期、函数前后置和历史变更，避免在调用方之间重复维护通知链路。
+  - `moduleId`：顶层模块 ID，例如 `pageDesign`。
+  - `moduleInstanceId`：调用方提供的顶层模块实例 ID，例如某个页面编辑会话。
+  - `instanceId`：由核心层统一分配/管理的运行时技术实例 ID。
+- **父级实例参数**：模块可声明 `instanceParam`，运行时会把父级模块实例 ID 投影进面向 LLM 的参数 schema；执行前剥离这些字段，业务函数从 `FunctionExecutionContext.moduleInstances` 读取。
+- **活动路径**：宿主可通过 `setActivePath` / `clearActivePath` 管理当前选中的模块实例路径；函数执行不会自动改变活动路径。
 
 ## 分层入口
 
-- `@spark-view/spark-ai/core`：核心运行时、协议类型与 knowledge provider registry
-- `@spark-view/spark-ai/business`：业务能力（含 page-design）
-- `@spark-view/spark-ai/catalog`：目录投影与 catalog 类型
-- `@spark-view/spark-ai`：聚合入口（同时导出 core/business/catalog）
-
-## 适用场景
-
-- 页面模型的细粒度编辑与迭代
-- 组件配置规格查询、参数荷载查询与工具执行前置引导
-- AI 会话与本地编辑状态联动
-- 启动实例采用 `startInstance({ businessId, businessInstanceId })`；同一业务能力+业务实例对会恢复同一运行时实例（不保留旧的兼容入口）
-- 按业务实例维度也可直接查会话快照与历史：`getInstanceByBusinessScope`、`getInstanceHistoryByBusinessScope`
-- 支持按 `(businessId, businessInstanceId)` 关闭会话：`stopInstanceByBusinessScope`
+- `@spark-view/spark-ai/core`：核心运行时、协议类型与知识负载提供者注册表
+- `@spark-view/spark-ai/business`：业务模块（含 page-design）
+- `@spark-view/spark-ai/business/page-design`
+- `@spark-view/spark-ai/catalog`
+- `@spark-view/spark-ai`：聚合入口
 
 ## 开发命令
 
