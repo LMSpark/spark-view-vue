@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7f8fa"/><rect width="1200" height="18" fill="#b83280"/>
+  <rect x="72" y="72" width="1056" height="531" rx="10" fill="#fff" stroke="#d5dae3" stroke-width="2"/>
+  <text x="128" y="210" font-family="Microsoft YaHei UI, Arial, sans-serif" font-size="44" font-weight="700" fill="#18202b">组件注册与能力系统</text>
+  <text x="128" y="266" font-family="Microsoft YaHei UI, Arial, sans-serif" font-size="22" fill="#5e6673">Registry 解析 type，Capability 串联跨组件协作</text>
+  <g font-family="Microsoft YaHei UI, Arial, sans-serif" font-size="22" fill="#18202b">
+    <circle cx="290" cy="410" r="70" fill="#fff0f8" stroke="#b83280"/><text x="250" y="418">Registry</text>
+    <circle cx="600" cy="410" r="70" fill="#fff0f8" stroke="#b83280"/><text x="548" y="418">Capability</text>
+    <circle cx="910" cy="410" r="70" fill="#fff0f8" stroke="#b83280"/><text x="874" y="418">Script</text>
+    <path d="M360 410 H530 M670 410 H840" stroke="#b83280" stroke-width="4"/>
+  </g>
+</svg>

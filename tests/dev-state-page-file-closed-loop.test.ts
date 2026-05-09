@@ -1,0 +1,104 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useDevState } from '@/views/app/dev-system/useDevState'
+import { http } from '@/services/http'
+
+vi.mock('@spark-view/spark-app', () => ({
+  refreshRoutes: vi.fn(),
+}))
+
+vi.mock('@/services/api-paths', () => ({
+  getPageApi: () => '/api/pages-config',
+  getNavApi: () => '/api/navigation',
+}))
+
+vi.mock('@/services/http', () => ({
+  http: {
+    get: vi.fn(),
+    put: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
+  },
+}))
+
+const httpMock = vi.mocked(http)
+
+function notFound(): Error & { response: { status: number } } {
+  return Object.assign(new Error('not found'), { response: { status: 404 } })
+}
+
+function pageFileResponse(url: string): Record<string, unknown> {
+  if (url.endsWith('/rule.json')) return { content: '[]' }
+  if (url.endsWith('/pagedata.json')) return { content: '{"dataSetName":"TestDS","tables":{}}' }
+  if (url.endsWith('/script.js')) return { content: 'console.log("restored")' }
+  if (url.endsWith('/style.css')) return { content: '.restored { color: red; }' }
+  return { content: '' }
+}
+
+describe('DevState 页面文件闭环', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('缺失可选 script/style 不阻断四文件加载', async () => {
+    const state = useDevState()
+    state.activePageId.value = 'demo'
+    httpMock.get.mockImplementation(async (url: string) => {
+      if (url.endsWith('/script.js') || url.endsWith('/style.css')) throw notFound()
+      return pageFileResponse(url)
+    })
+
+    await state.ensureActivePageFilesLoaded()
+
+    expect(state.documents['rule.json'].loadState.value).toBe('loaded')
+    expect(state.documents['pagedata.json'].loadState.value).toBe('loaded')
+    expect(state.documents['script.js'].loadState.value).toBe('loaded')
+    expect(state.documents['style.css'].loadState.value).toBe('loaded')
+    expect(state.documents['script.js'].text.value).toBe('')
+    expect(state.documents['style.css'].text.value).toBe('')
+  })
+
+  it('缺失必需 rule/pagedata 仍然报错', async () => {
+    const state = useDevState()
+    state.activePageId.value = 'demo'
+    httpMock.get.mockImplementation(async (url: string) => {
+      if (url.endsWith('/pagedata.json')) throw notFound()
+      return pageFileResponse(url)
+    })
+
+    await expect(state.ensureActivePageFilesLoaded()).rejects.toThrow('pagedata.json')
+  })
+
+  it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {
+    const state = useDevState()
+    state.activePageId.value = 'demo'
+    httpMock.get.mockResolvedValueOnce([
+      { version: 1, createdAt: 1710000000000, isCurrent: true, modifiedBy: 'tester' },
+    ])
+
+    const versions = await state.listRemotePageVersions('script.js')
+
+    expect(versions).toEqual([
+      {
+        version: 1,
+        createdAt: new Date(1710000000000).toISOString(),
+        isCurrent: true,
+        modifiedBy: 'tester',
+      },
+    ])
+  })
+
+  it('restore 后立即强制重读并回填文档模型', async () => {
+    const state = useDevState()
+    state.activePageId.value = 'demo'
+    state.documents['script.js'].loadFromText('console.log("old")', { markSaved: true })
+    httpMock.post.mockResolvedValueOnce({ ok: true })
+    httpMock.get.mockImplementation(async (url: string) => pageFileResponse(url))
+
+    const restored = await state.restoreRemotePageVersion(1, 'script.js')
+
+    expect(restored).toBe(true)
+    expect(state.documents['script.js'].text.value).toBe('console.log("restored")')
+    expect(state.isDocumentDirty('script.js')).toBe(false)
+    expect(state.pageFilesRevision.value).toBeGreaterThan(0)
+  })
+})

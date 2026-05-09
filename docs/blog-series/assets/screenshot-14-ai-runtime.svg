@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7f8fa"/><rect width="1200" height="18" fill="#5e35b1"/>
+  <rect x="72" y="72" width="1056" height="531" rx="10" fill="#fff" stroke="#d5dae3" stroke-width="2"/>
+  <text x="128" y="210" font-family="Microsoft YaHei UI, Arial, sans-serif" font-size="44" font-weight="700" fill="#18202b">通用受约束 AI 架构</text>
+  <text x="128" y="266" font-family="Microsoft YaHei UI, Arial, sans-serif" font-size="22" fill="#5e6673">core 管协议，业务模块管领域语义</text>
+  <g font-family="Microsoft YaHei UI, Arial, sans-serif" font-size="22" fill="#18202b">
+    <rect x="156" y="360" width="230" height="86" fill="#f4efff" stroke="#5e35b1"/><text x="210" y="412">AI Core</text>
+    <rect x="486" y="360" width="260" height="86" fill="#f4efff" stroke="#5e35b1"/><text x="532" y="412">Business Module</text>
+    <rect x="846" y="360" width="200" height="86" fill="#f4efff" stroke="#5e35b1"/><text x="898" y="412">Live Model</text>
+  </g>
+</svg>
