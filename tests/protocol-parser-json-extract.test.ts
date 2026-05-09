@@ -23,8 +23,32 @@ describe('extractFirstJsonObject', () => {
 })
 
 describe('parseActionPath', () => {
-  it('parses recursive module action paths', () => {
+  it('parses LLM-facing instance action paths', () => {
+    expect(AiInvocationProtocol.parseActionPath('dept-1/person-9@basicInfo@update')).toEqual({
+      format: 'instance',
+      instanceIds: ['dept-1', 'person-9'],
+      moduleIds: ['basicInfo'],
+      modulePath: 'basicInfo',
+      moduleId: 'basicInfo',
+      function: 'update',
+    })
+  })
+
+  it('decodes URI-encoded instance path segments without treating encoded slashes as hierarchy', () => {
+    expect(AiInvocationProtocol.parseActionPath('lmspark%2Fhomepage/person%409@basicInfo@update')).toEqual({
+      format: 'instance',
+      instanceIds: ['lmspark/homepage', 'person@9'],
+      moduleIds: ['basicInfo'],
+      modulePath: 'basicInfo',
+      moduleId: 'basicInfo',
+      function: 'update',
+    })
+  })
+
+  it('keeps legacy module action paths parseable for compatibility', () => {
     expect(AiInvocationProtocol.parseActionPath('department/personnel/basicInfo/update')).toEqual({
+      format: 'legacy',
+      instanceIds: [],
       moduleIds: ['department', 'personnel', 'basicInfo'],
       modulePath: 'department/personnel/basicInfo',
       moduleId: 'basicInfo',
@@ -32,7 +56,8 @@ describe('parseActionPath', () => {
     })
   })
 
-  it('rejects legacy action addresses', () => {
-    expect(() => AiInvocationProtocol.parseActionPath('department@personnel@update')).toThrow('非法 action 路径')
+  it('rejects malformed instance action paths', () => {
+    expect(() => AiInvocationProtocol.parseActionPath('department@@update')).toThrow('非法 action 路径')
+    expect(() => AiInvocationProtocol.parseActionPath('dept-1@department/basicInfo@update')).toThrow('非法 action 路径')
   })
 })

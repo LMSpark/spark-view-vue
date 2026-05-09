@@ -35,7 +35,7 @@
  * @category container
  * @notes children 内放 r-tab-pane，每个 tab-pane 内可嵌套任意组件
  */
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar } from '../../runtime/container-ui'
@@ -52,8 +52,6 @@ const props = withDefaults(defineProps<RTabsProps>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
-
-const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
@@ -88,10 +86,6 @@ const {
 
 registerApi(tabsApi)
 
-function hasPaneChildren(pane: SparkNode): boolean {
-  return getSparkNodeChildren(pane.children).length > 0
-}
-
 function getPaneName(pane: SparkNode, index: number): string | number {
   const value = nodeInputProp(pane, 'name') ?? nodeInputProp(pane, 'value') ?? nodeId(pane)
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${index}`
@@ -116,9 +110,6 @@ function createPaneRendererConfig(pane: SparkNode, index: number): SparkNode {
     props: {
       ...getPaneComponentProps(pane),
       index,
-      ...(!hasPaneChildren(pane)
-        ? { $defaultSlot: () => slots['default']?.(getPaneScope(pane, index)) }
-        : {}),
     },
   }
 }
@@ -127,14 +118,6 @@ function handleTabClick(pane: TabsClickEvent, event: Event): void {
   props.onTabClick?.(pane, event)
 }
 
-function getPaneScope(pane: SparkNode, index: number) {
-  return {
-    pane,
-    paneIndex: index,
-    paneName: getPaneName(pane, index),
-    activeName: currentActiveName.value,
-  }
-}
 </script>
 
 <style scoped>
@@ -185,5 +168,4 @@ function getPaneScope(pane: SparkNode, index: number) {
   min-width: 0;
 }
 </style>
-
 

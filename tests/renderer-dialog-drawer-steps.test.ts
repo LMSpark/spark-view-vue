@@ -39,16 +39,13 @@ const SparkActionStub = defineComponent({
       }
 
       if (type === 'r-step') {
-        const componentProps = { ...propsMap }
-        const runtimeDefaultSlot = componentProps['$defaultSlot']
-        delete componentProps['$defaultSlot']
-        const children = Array.isArray(componentProps['children'])
-          ? componentProps['children']
+        const children = Array.isArray(propsMap['children'])
+          ? propsMap['children']
           : (Array.isArray(config['children']) ? config['children'] : [])
         return h(RendererStepItem as any, {
-          ...componentProps,
+          ...propsMap,
           children,
-        }, typeof runtimeDefaultSlot === 'function' ? { default: runtimeDefaultSlot as () => unknown } : undefined)
+        })
       }
 
       return h('button', {

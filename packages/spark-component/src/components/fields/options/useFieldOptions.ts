@@ -67,18 +67,20 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
 
   const optionLabelField = computed(() =>
     props.optionLabelField
+    ?? optionKeyView.value?.labelField
     ?? optionKeyView.value?.treeConfig?.textField
     ?? 'label'
   )
   const optionValueField = computed(() =>
     props.optionValueField
+    ?? (typeof optionKeyView.value?.valueField === 'string' ? optionKeyView.value.valueField : undefined)
     ?? optionKeyView.value?.primaryKey
     ?? optionKeyView.value?.treeConfig?.idField
     ?? 'value'
   )
   const optionDisabledField = computed(() => props.optionDisabledField ?? 'disabled')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
-  const valueSeparator = computed(() => props.valueSeparator ?? ',')
+  const valueSeparator = computed(() => props.valueSeparator ?? optionKeyView.value?.selectionDelimiter ?? ',')
 
   const options = computed<FieldOption[]>(() => {
     const view = optionKeyView.value

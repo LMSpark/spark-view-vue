@@ -7,10 +7,10 @@ import {
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionTarget = 'script' | 'style'
 export type TextModelFunctionFileKey = 'script' | 'style'
-export type TextModelFunctionAction = `pageDesign/textModel/${string}`
+export type TextModelFunctionId = 'readScript' | 'writeScript' | 'readStyle' | 'writeStyle'
 
 type TextModelFunctionBaseFields = {
-  action: TextModelFunctionAction
+  functionId: TextModelFunctionId
   type: 'describe' | 'request'
   description: string
   paramsSchema: Record<string, unknown>
@@ -27,7 +27,7 @@ export type TextModelFunctionParameterRow = TextModelFunctionBaseFields & {
 
 export type TextModelFunctionCapabilityRow = Pick<
   TextModelFunctionParameterRow,
-  'action' | 'type' | 'target' | 'description' | 'fileKey'
+  'functionId' | 'type' | 'target' | 'description' | 'fileKey'
 > & {
   integrationStatus: 'runtime-wired'
   paramsRef: string
@@ -40,9 +40,9 @@ export type TextModelFunctionCapabilityRow = Pick<
 const NO_PARAMS: Record<string, unknown> = {}
 const CONTENT_PARAM = 'string — 完整文本内容（全量覆盖写入，不支持 patch）'
 
-const BOOTSTRAP_RULE = `调用 pageDesign/textModel/* 前必须先执行 pageDesign/lifecycle/bootstrap，确保宿主绑定 read*/write*。`
+const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.bootstrap，确保宿主绑定 read*/write*。`
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
-const SCRIPT_RUNTIME_RULE = 'pageDesign/textModel/writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
+const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
 type TextModelFunctionRowWithoutType = Omit<TextModelFunctionParameterRow, 'type'>
 
@@ -62,7 +62,7 @@ function toCapabilityRow(row: TextModelFunctionParameterRow): TextModelFunctionC
 
 const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
   defineDescribeRow({
-    action: 'pageDesign/textModel/readScript',
+    functionId: 'readScript',
     target: 'script',
     fileKey: 'script',
     description: '读取 script.js 当前完整文本模型内容。',
@@ -76,12 +76,12 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 EditToolHost.readScript',
-        fix: '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 readScript。',
+        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 readScript。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/textModel/writeScript',
+    functionId: 'writeScript',
     target: 'script',
     fileKey: 'script',
     description: '覆盖写入 script.js 全量文本模型内容。',
@@ -99,7 +99,7 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 EditToolHost.writeScript',
-        fix: '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 writeScript。',
+        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 writeScript。',
       },
       {
         code: 'INVALID_SCRIPT_RUNTIME_API',
@@ -109,7 +109,7 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/textModel/readStyle',
+    functionId: 'readStyle',
     target: 'style',
     fileKey: 'style',
     description: '读取 style.css 当前完整文本模型内容。',
@@ -123,12 +123,12 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 EditToolHost.readStyle',
-        fix: '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 readStyle。',
+        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 readStyle。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/textModel/writeStyle',
+    functionId: 'writeStyle',
     target: 'style',
     fileKey: 'style',
     description: '覆盖写入 style.css 全量文本模型内容。',
@@ -146,7 +146,7 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 EditToolHost.writeStyle',
-        fix: '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 writeStyle。',
+        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 writeStyle。',
       },
     ],
   }),
@@ -162,23 +162,23 @@ export class PageDesignTextModelCatalog extends PageDesignToolCatalog<
     super(TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE, TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE)
   }
 
-  validateParams(action: string, params: unknown): string | null {
-    const row = this.getParameterRow(action)
+  validateParams(functionId: string, params: unknown): string | null {
+    const row = this.getParameterRow(functionId)
     if (row === undefined) {
-      return `未知 textModel 动作: ${action}`
+      return `未知 textModel 函数: ${functionId}`
     }
 
     if (row.type === 'describe') {
       if (params === undefined || params === null) return null
       if (typeof params === 'object' && !Array.isArray(params) && Object.keys(params).length === 0) return null
-      return `${action} 不接受参数，请传 {} 或留空`
+      return `${functionId} 不接受参数，请传 {} 或留空`
     }
 
     if (typeof params !== 'object' || params === null || Array.isArray(params)) {
-      return `${action} 参数必须是对象，且包含 content（string）`
+      return `${functionId} 参数必须是对象，且包含 content（string）`
     }
 
     const content = (params as { content?: unknown }).content
-    return typeof content === 'string' ? null : `${action} 缺少 content（string）`
+    return typeof content === 'string' ? null : `${functionId} 缺少 content（string）`
   }
 }

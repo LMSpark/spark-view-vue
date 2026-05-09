@@ -20,7 +20,9 @@
               <SparkComponentRenderer :config="child" />
             </RendererHostScope>
           </div>
-          <slot v-bind="getDefaultScope()" />
+          <RendererHostScope :row="formModel">
+            <slot v-bind="getDefaultScope()" />
+          </RendererHostScope>
         </div>
     </el-form>
   </div>
@@ -149,4 +151,3 @@ registerApi(formApi)
   min-width: 0;
 }
 </style>
-

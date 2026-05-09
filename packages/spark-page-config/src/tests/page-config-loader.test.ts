@@ -260,7 +260,8 @@ describe('PageConfigLoader', () => {
       const r = await loader.loadRule('remote-page')
       expect(r.success).toBe(true)
       expect(r.data?.[0]?.type).toBe('div')
-      expect(r.data?.[0]?.props).toEqual({ id: 'remote-root' })
+      expect(r.data?.[0]?.id).toBe('remote-root')
+      expect(r.data?.[0]?.props).toEqual({})
       expect(mockRequestClient.request).toHaveBeenCalledWith({
         url: '/pages-config/remote-page/rule.json',
         method: 'GET',
@@ -312,12 +313,18 @@ describe('PageConfigLoader', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('compileRule', () => {
-  it('解析 JSON 数组并保持结构', () => {
+  it('解析 JSON 数组并迁移 legacy props.id 到顶层 id', () => {
     const raw = JSON.stringify([{ type: 'div', props: { id: 'root' } }])
     const result = compileRule(raw)
     expect(result).toHaveLength(1)
     expect(result[0]!.type).toBe('div')
-    expect(result[0]!.props).toEqual({ id: 'root' })
+    expect(result[0]!.id).toBe('root')
+    expect(result[0]!.props).toEqual({})
+  })
+
+  it('legacy props.id 与顶层 id 冲突时抛错', () => {
+    const raw = JSON.stringify([{ type: 'div', id: 'new-id', props: { id: 'old-id' } }])
+    expect(() => compileRule(raw)).toThrow(/conflicts with legacy SparkNode\.props\.id/i)
   })
 
   it('单对象自动包装为数组', () => {

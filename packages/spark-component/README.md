@@ -21,20 +21,21 @@ pnpm add @spark-view/spark-component
 ### 1. 注册组件
 
 ```typescript
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import MyGridComponent from './MyGridComponent.vue'
+import MyFormComponent from './MyFormComponent.vue'
 
 // 静态注册
 Spark.register('my-grid', MyGridComponent)
 
 // 懒加载注册
-Spark.register('my-chart', () => import('./MyChartComponent.vue'))
+Spark.register('my-chart', defineAsyncComponent(() => import('./MyChartComponent.vue')))
 
-// 批量注册（推荐）
-const reg = Spark.createRegister(import.meta.glob('./*.vue'))
-reg.registerAll({
-  'my-grid': './MyGridComponent.vue',
-  'my-chart': './MyChartComponent.vue'
+// 批量注册
+Spark.registerAll({
+  'my-grid': MyGridComponent,
+  'my-form': MyFormComponent,
 })
 ```
 
@@ -52,29 +53,34 @@ app.use(Spark.createPlugin())
 
 ```vue
 <script setup lang="ts">
+import { defineCapability } from '@spark-view/spark-utils'
 import { useSparkComponent } from '@spark-view/spark-component'
 
+const DATA_SOURCE = defineCapability<{ getData(): Promise<unknown[]> }>('demo:data-source')
+const LOGGER = defineCapability<{ info(message: string): void }>('demo:logger')
 const { sparkProvide, sparkConsume } = useSparkComponent({
   type: 'my-grid'
 })
 
 // 提供能力（必须在 setup 同步阶段调用）
-sparkProvide('dataSource', {
+sparkProvide(DATA_SOURCE, {
   getData: () => fetchData()
 })
 
 // 消费能力（必须在 setup 同步阶段调用）
-const logger = sparkConsume('logger')
+const logger = sparkConsume(LOGGER)
 </script>
 ```
 
 只读祖先能力时，不再使用单独的 helper，统一使用同一个入口的轻量模式：
 
 ```ts
-const { sparkConsume, host } = useSparkConsume()
+import { DATA_SOURCE, useSparkConsume } from '@spark-view/spark-component'
 
-const dataSource = sparkConsume('dataSource')
-const hostType = host.type
+const { sparkConsume, provider } = useSparkConsume()
+
+const dataSource = sparkConsume(DATA_SOURCE)
+const dataProvider = provider.nearestCapabilityProvider(DATA_SOURCE)
 ```
 
 ## 核心概念
@@ -84,14 +90,21 @@ const hostType = host.type
 组件间通过能力系统通信，避免紧耦合：
 
 ```typescript
+import { defineCapability } from '@spark-view/spark-utils'
+
+const COLUMN_MANAGER = defineCapability<{
+  addColumn(col: unknown): void
+  removeColumn(id: string): void
+}>('demo:column-manager')
+
 // Provider 提供能力（setup 同步阶段）
-sparkProvide('columnManager', {
+sparkProvide(COLUMN_MANAGER, {
   addColumn: (col) => columns.value.push(col),
   removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id)
 })
 
 // Consumer 消费能力（setup 同步阶段）
-const columnManager = sparkConsume('columnManager')
+const columnManager = sparkConsume(COLUMN_MANAGER)
 // ⚠️ sparkProvide/sparkConsume 必须在 setup() 同步阶段调用，不要在 onMounted/watch/async 中使用
 ```
 

@@ -9,7 +9,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useSparkConsume, DATA_ROW, DATA_SOURCE } from '../internal'
 import { PAGE_DATASET } from '../internal'
-import { resolveRawKey } from '@spark-view/spark-data'
+import { diagnoseDataKey, resolveRawKey } from '@spark-view/spark-data'
 
 interface DisplayDataProps {
   dataKey?: string | undefined
@@ -33,6 +33,12 @@ export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSou
 
     // 值级 dataKey 绑定：支持 aggregateResult / currentRow / rows 等 DataKey 解析。
     if (typeof props.dataKey === 'string' && props.dataKey.trim().length > 0 && pageDataSet) {
+      if (import.meta.env.DEV) {
+        const diagnostic = diagnoseDataKey(props.dataKey, pageDataSet)
+        if (!diagnostic.ok) {
+          console.warn(`[DisplayDataSource] ${diagnostic.message}`)
+        }
+      }
       const boundValue = resolveRawKey(props.dataKey, pageDataSet)
       if (boundValue !== undefined) {
         // dataKey 可指向对象（如 aggregateResult），field 再选择对象内字段。

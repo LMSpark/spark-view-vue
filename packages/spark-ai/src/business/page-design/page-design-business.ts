@@ -1,11 +1,23 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
+  AiRuntime,
   AiInvocationProtocol,
   AiModuleRegistrationBase,
+  type AiRegisteredModuleApi,
   type AiModuleRegistration,
   type AiFunctionRegistration,
-  type AiRuntimeInstanceScope,
+  type AiRuntimeFunctionCallFailure,
+  type AiRuntimeFunctionCallHistoryEntry,
   type AiRuntimeFunctionCallResult,
+  type AiRuntimeFunctionCallTranslationResult,
+  type AiRuntimeHistoryEntry,
+  type AiRuntimeKnowledgeProjection,
+  type AiRuntimeMessageHistoryEntry,
+  type AiRuntimeMessageRole,
+  type AiRuntimeMessageSource,
+  type AiRuntimeSessionRecord,
+  type AiRuntimeStartInstanceResult,
+  type AiRuntimeStopInstanceResult,
   type FunctionFailureMode,
   type FunctionExecutionContext,
 } from '../../core'
@@ -59,16 +71,17 @@ type PageDesignModuleId =
   | typeof DATASET_MODULE_ID
   | typeof JSON_DOC_MODULE_ID
   | typeof KNOWLEDGE_MODULE_ID
-type PageDesignCatalogAction = string
+type PageDesignCatalogFunctionId = string
 type PageDesignFunctionDefinition<TModuleId extends PageDesignModuleId> = AiFunctionRegistration & {
-  readonly action: string
   readonly moduleId: TModuleId
+  validate?(args: unknown, context: FunctionExecutionContext): string | null
+  execute(args: unknown, context: FunctionExecutionContext): object | AiRuntimeFunctionCallResult<unknown> | Promise<object | AiRuntimeFunctionCallResult<unknown>>
 }
-const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'pageDesign/lifecycle 只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
-const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'pageDesign/textModel 只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
-const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'pageDesign/nodeTree 只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 pageDesign/knowledge/queryPayloads 与 pageDesign/knowledge/guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
-const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'pageDesign/dataset 只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
-const PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT = 'pageDesign/knowledge 暴露当前页面设计需要的只读知识查询能力；新增或替换 SparkNode 前先查询组件 payload，再按 guidePayload 返回的 JSON schema 构造 node。'
+const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'lifecycle 模块只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
+const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'textModel 模块只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
+const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'nodeTree 模块只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 knowledge.queryPayloads 与 knowledge.guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
+const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'dataset 模块只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
+const PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT = 'knowledge 模块暴露当前页面设计需要的只读知识查询能力；新增或替换 SparkNode 前先查询组件 payload，再按 guidePayload 返回的 JSON schema 构造 node。'
 
 export interface PageDesignRuntimeContext {
   instanceId: string
@@ -82,6 +95,29 @@ export interface PageDesignModuleOptions {
 
 export type PageDesignServiceState = PageDesignEditSession
 
+export interface PageDesignExecuteFunctionCallOptions extends PageDesignRuntimeContext {
+  readonly action: string
+  readonly args: unknown
+  readonly projection?: AiRuntimeKnowledgeProjection | undefined
+}
+
+export interface PageDesignAppendMessageOptions extends PageDesignRuntimeContext {
+  readonly role: AiRuntimeMessageRole
+  readonly content: string
+  readonly source?: AiRuntimeMessageSource | undefined
+  readonly metadata?: Record<string, unknown> | undefined
+}
+
+export interface PageDesignStopSessionOptions extends PageDesignRuntimeContext {
+  readonly reason?: string | undefined
+}
+
+function assertPageDesignContext(context: { readonly moduleId: string }): void {
+  if (context.moduleId !== PAGE_DESIGN_MODULE_ID) {
+    throw new Error(`PageDesign context moduleId must be ${PAGE_DESIGN_MODULE_ID}, got ${context.moduleId}`)
+  }
+}
+
 type GetPageDesignState = (context: FunctionExecutionContext) => PageDesignEditSession
 
 interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
@@ -93,7 +129,8 @@ interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
 }
 
 type FunctionCatalogRow = {
-  action: PageDesignCatalogAction
+  /** 模块内函数 ID；调用路径由 core 在会话投影时生成。 */
+  functionId: PageDesignCatalogFunctionId
   description: string
   paramsSchema: Record<string, unknown>
   resultSchema?: Record<string, unknown>
@@ -191,30 +228,32 @@ function failure(code: string, msg: string, fix: string): AiRuntimeFunctionCallR
   return { ok: false, code, msg, fix }
 }
 
+function isFunctionCallResult(value: unknown): value is AiRuntimeFunctionCallResult<unknown> {
+  if (typeof value !== 'object' || value === null || !('ok' in value)) return false
+  const candidate = value as Partial<AiRuntimeFunctionCallResult<unknown>>
+  if (candidate.ok === true) {
+    return 'data' in candidate && typeof candidate.summary === 'string'
+  }
+  if (candidate.ok === false) {
+    return typeof candidate.code === 'string'
+      && typeof candidate.msg === 'string'
+      && typeof candidate.fix === 'string'
+  }
+  return false
+}
+
 function toObject(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : null
 }
 
-function functionIdFromAction<
-  TModuleId extends PageDesignModuleId,
->(action: string, expectedModuleId: TModuleId): string {
-  const parsed = AiInvocationProtocol.parseActionPath(action)
-  if (parsed.moduleIds[0] !== PAGE_DESIGN_MODULE_ID || parsed.moduleId !== expectedModuleId) {
-    throw new Error(`pageDesign 函数目录 action 与模块不一致: ${action}`)
-  }
-  return parsed.function
-}
-
 function createBaseFunctionDefinition<
   TModuleId extends PageDesignModuleId,
 >(row: FunctionCatalogRow, moduleId: TModuleId): Omit<PageDesignFunctionDefinition<TModuleId>, 'execute'> {
-  const action = row.action
   return {
-    action,
     moduleId,
-    functionId: functionIdFromAction(action, moduleId),
+    functionId: row.functionId,
     description: row.description,
     paramsSchema: row.paramsSchema,
     ...(row.resultSchema !== undefined ? { resultSchema: row.resultSchema } : {}),
@@ -235,24 +274,24 @@ function describeProgress(state: PageDesignEditSession): Record<string, unknown>
       writeStyle: typeof state.toolHost?.writeStyle === 'function',
     },
     nextStep: state.phase === 'editing'
-      ? '已进入编辑态；按目标文件选择 pageDesign/nodeTree / pageDesign/dataset / pageDesign/textModel 函数。'
-      : '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话。',
+      ? '已进入编辑态；按目标文件选择 nodeTree / dataset / textModel 函数。'
+      : '请先执行 lifecycle.bootstrap 初始化编辑会话。',
   }
 }
 
 function bootstrapEditState(state: PageDesignEditSession): AiRuntimeFunctionCallResult<{ phase: PageDesignEditSession['phase'] }> {
   const tree = state.getActiveNodeTree()
   if (tree === null) {
-    return failure('NO_NODE_TREE', 'pageDesign/lifecycle/bootstrap 失败：缺少 nodeTree tool 实例（EditToolHost.getNodeTree）', '宿主注入可用的 nodeTree tool 实例。')
+    return failure('NO_NODE_TREE', 'lifecycle.bootstrap 失败：缺少 nodeTree tool 实例（EditToolHost.getNodeTree）', '宿主注入可用的 nodeTree tool 实例。')
   }
 
   const dataSetTool = state.getActiveDataSetTool()
   if (dataSetTool === null) {
-    return failure('NO_DATASET_EDIT', 'pageDesign/lifecycle/bootstrap 失败：缺少 dataset tool 实例（EditToolHost.getDataSetTool）', '宿主注入可用的 dataset tool 实例。')
+    return failure('NO_DATASET_EDIT', 'lifecycle.bootstrap 失败：缺少 dataset tool 实例（EditToolHost.getDataSetTool）', '宿主注入可用的 dataset tool 实例。')
   }
 
   if (typeof state.toolHost?.readScript !== 'function' || typeof state.toolHost.readStyle !== 'function') {
-    return failure('NO_TEXT_MODEL', 'pageDesign/lifecycle/bootstrap 失败：缺少 script/style 读取器', '宿主注入 EditToolHost.readScript/readStyle。')
+    return failure('NO_TEXT_MODEL', 'lifecycle.bootstrap 失败：缺少 script/style 读取器', '宿主注入 EditToolHost.readScript/readStyle。')
   }
 
   tree.toJSON()
@@ -269,10 +308,10 @@ function createLifecycleFunctions(
 ): ReadonlyArray<PageDesignFunctionDefinition<typeof LIFECYCLE_MODULE_ID>> {
   return catalog.parameterTable.map((row) => ({
     ...createBaseFunctionDefinition(row, LIFECYCLE_MODULE_ID),
-    validate: (args) => catalog.validateParams(row.action, args),
+    validate: (args) => catalog.validateParams(row.functionId, args),
     execute: (_args, context) => {
       const state = getState(context)
-      if (row.action === 'pageDesign/lifecycle/bootstrap') {
+      if (row.functionId === 'bootstrap') {
         return bootstrapEditState(state)
       }
       return success(describeProgress(state), `pageDesign 编辑状态：${state.phase}`)
@@ -295,12 +334,12 @@ function createTextModelFunctions(
     const runtime = TEXT_FILE_RUNTIME_BY_KEY[row.fileKey]
     return {
       ...createBaseFunctionDefinition(row, TEXT_MODEL_MODULE_ID),
-      validate: (args) => catalog.validateParams(row.action, args),
+      validate: (args) => catalog.validateParams(row.functionId, args),
       execute: (args, context) => {
         const state = getState(context)
         const accessError = ensureTextModelAccess(state, row, mode)
         if (accessError !== null) {
-          return failure('NO_TEXT_MODEL', accessError, '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*。')
+          return failure('NO_TEXT_MODEL', accessError, '请先执行 lifecycle.bootstrap 初始化编辑会话，并确保宿主绑定 EditToolHost.read*/write*。')
         }
 
         if (mode === 'read') {
@@ -362,9 +401,9 @@ function callMethodBackedTarget(row: MethodBackedRow, target: unknown, methodNam
   try {
     const invocation = invokeNamedMethod(target, methodName, args)
     if (!invocation.ok) {
-      return failure('METHOD_NOT_FOUND', `${row.action}: method "${methodName}" not found on target`, buildRowFixHint(row))
+      return failure('METHOD_NOT_FOUND', `${row.functionId}: method "${methodName}" not found on target`, buildRowFixHint(row))
     }
-    return success(invocation.data, `${row.action} 完成`)
+    return success(invocation.data, `${row.functionId} 完成`)
   } catch (error) {
     return failure('EXECUTE_ERROR', AiInvocationProtocol.toErrorMessage(error), buildRowFixHint(row))
   }
@@ -376,12 +415,12 @@ function createNodeTreeFunctions(
 ): ReadonlyArray<PageDesignFunctionDefinition<typeof NODE_TREE_MODULE_ID>> {
   return catalog.parameterTable.map((row: SparkNodeTreeToolParameterRow) => ({
     ...createBaseFunctionDefinition(row, NODE_TREE_MODULE_ID),
-    validate: (args) => catalog.validateParams(row.action, args),
+    validate: (args) => catalog.validateParams(row.functionId, args),
     execute: (args, context) => {
       const state = getState(context)
       const tree: PageDesignNodeTree | null = state.getActiveNodeTree()
       if (tree === null) {
-        return failure('NO_NODE_TREE', 'nodeTree 未初始化', '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话。')
+        return failure('NO_NODE_TREE', 'nodeTree 未初始化', '请先执行 lifecycle.bootstrap 初始化编辑会话。')
       }
       const result = callMethodBackedTarget(row, tree, row.coreMethod, args)
       if (result.ok && row.type === 'request') {
@@ -400,12 +439,12 @@ function createDatasetFunctions(
     .filter((row) => isPageDesignDatasetMethodExposed(row.crudToolMethod))
     .map((row: DatasetCrudToolFunctionParameterRow) => ({
       ...createBaseFunctionDefinition(row, DATASET_MODULE_ID),
-      validate: (args) => catalog.validateParams(row.action, args),
+      validate: (args) => catalog.validateParams(row.functionId, args),
       execute: (args, context) => {
         const state = getState(context)
         const tool: DataSetCrudTool | null = state.getActiveDataSetTool()
         if (tool === null) {
-          return failure('NO_DATASET_EDIT', 'datasetEdit 未初始化', '请先执行 pageDesign/lifecycle/bootstrap 初始化编辑会话。')
+          return failure('NO_DATASET_EDIT', 'datasetEdit 未初始化', '请先执行 lifecycle.bootstrap 初始化编辑会话。')
         }
         const result = callMethodBackedTarget(row, tool, row.crudToolMethod, args)
         if (result.ok && row.type === 'request') {
@@ -422,7 +461,7 @@ function createJsonDocFunctions(
 ): ReadonlyArray<PageDesignFunctionDefinition<typeof JSON_DOC_MODULE_ID>> {
   return catalog.parameterTable.map((row: JsonDocFunctionParameterRow) => ({
     ...createBaseFunctionDefinition(row, JSON_DOC_MODULE_ID),
-    validate: (args) => catalog.validateParams(row.action, args),
+    validate: (args) => catalog.validateParams(row.functionId, args),
     execute: (args, context) => {
       const state = getState(context)
       // validateParams 已确保类型合法，直接解构
@@ -430,7 +469,7 @@ function createJsonDocFunctions(
 
       const readDoc = state.toolHost?.readJsonDoc
       if (typeof readDoc !== 'function') {
-        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.readJsonDoc', '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。')
+        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.readJsonDoc', '先执行 lifecycle.bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。')
       }
 
       const rawDoc = readDoc.call(state.toolHost, docType)
@@ -442,14 +481,14 @@ function createJsonDocFunctions(
       if (row.operation === 'list') {
         const pointer = (args as { pointer: string }).pointer
         const res = listAtPointer(rawDoc as JsonValue, pointer)
-        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/read 确认文档结构。')
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 jsonDoc.read 确认文档结构。')
         return success({ entries: res.entries }, `${docType}${pointer} 列出 ${res.entries.length} 个子节点`)
       }
 
       if (row.operation === 'get') {
         const pointer = (args as { pointer: string }).pointer
         const res = resolvePointer(rawDoc as JsonValue, pointer)
-        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/list 确认路径。')
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 jsonDoc.list 确认路径。')
         return success({ value: res.value }, `${docType}${pointer} 已读取`)
       }
 
@@ -459,7 +498,7 @@ function createJsonDocFunctions(
         let target: JsonValue = rawDoc as JsonValue
         if (pointer !== '') {
           const res = resolvePointer(target, pointer)
-          if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/list 确认路径。')
+          if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 jsonDoc.list 确认路径。')
           target = res.value
         }
         try {
@@ -473,7 +512,7 @@ function createJsonDocFunctions(
       // 写操作需要 writeJsonDoc
       const writeDoc = state.toolHost?.writeJsonDoc
       if (typeof writeDoc !== 'function') {
-        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.writeJsonDoc', '先执行 pageDesign/lifecycle/bootstrap 并确保宿主提供 writeJsonDoc。')
+        return failure('NO_JSON_DOC_HOST', '宿主未绑定 EditToolHost.writeJsonDoc', '先执行 lifecycle.bootstrap 并确保宿主提供 writeJsonDoc。')
       }
 
       if (row.operation === 'set') {
@@ -487,7 +526,7 @@ function createJsonDocFunctions(
       if (row.operation === 'delete') {
         const pointer = (args as { pointer: string }).pointer
         const res = deleteAtPointer(rawDoc as JsonValue, pointer)
-        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 pageDesign/jsonDoc/list 确认路径后再删除。')
+        if (!res.ok) return failure('NOT_FOUND', res.reason, '使用 jsonDoc.list 确认路径后再删除。')
         writeDoc.call(state.toolHost, docType, res.doc)
         return success(undefined, `${docType}${pointer} 已删除`)
       }
@@ -495,7 +534,7 @@ function createJsonDocFunctions(
       if (row.operation === 'append') {
         const appendArgs = args as { arrayPointer: string; element: JsonValue }
         const res = appendAtPointer(rawDoc as JsonValue, appendArgs.arrayPointer, appendArgs.element)
-        if (!res.ok) return failure('NOT_ARRAY', res.reason, '使用 pageDesign/jsonDoc/get 确认目标是数组。')
+        if (!res.ok) return failure('NOT_ARRAY', res.reason, '使用 jsonDoc.get 确认目标是数组。')
         writeDoc.call(state.toolHost, docType, res.doc)
         return success(undefined, `元素已追加到 ${docType}${appendArgs.arrayPointer}`)
       }
@@ -519,7 +558,7 @@ function createKnowledgeFunctions(
   return [
     {
       ...createBaseFunctionDefinition({
-        action: 'pageDesign/knowledge/queryPayloads',
+        functionId: 'queryPayloads',
         description: '查询 page-design 组件参数荷载目录，返回可用于 SparkNode node 参数的组件 type 摘要。',
         paramsSchema: {
           category: 'string? — 组件分类过滤，例如 container / field / group / meta。',
@@ -547,7 +586,7 @@ function createKnowledgeFunctions(
     },
     {
       ...createBaseFunctionDefinition({
-        action: 'pageDesign/knowledge/guidePayload',
+        functionId: 'guidePayload',
         description: '读取指定组件 type 的 SparkNode 参数荷载指南，返回 JSON schema、最小示例和使用规则。',
         paramsSchema: {
           required: ['key'],
@@ -557,14 +596,14 @@ function createKnowledgeFunctions(
           guide: 'KnowledgePayloadGuide — 组件 SparkNode 参数荷载指南。',
         },
         usageRules: [
-          '构造 pageDesign/nodeTree/addNode / replaceNode / addNodes / replaceNodes 的 node 参数前，必须先读取目标 type 的指南。',
+          '构造 nodeTree.addNode / replaceNode / addNodes / replaceNodes 的 node 参数前，必须先读取目标 type 的指南。',
           '返回 PAYLOAD_NOT_FOUND 时改用 queryPayloads 重新选择可用组件，不要反复用同一个缺失 key 重试。',
         ],
         failureModes: [
           {
             code: 'PAYLOAD_NOT_FOUND',
             when: 'key 不存在于 page-design.component 参数荷载目录。',
-            fix: '先调用 pageDesign/knowledge/queryPayloads 选择可用组件 type。',
+            fix: '先调用 knowledge.queryPayloads 选择可用组件 type。',
           },
         ],
       }, KNOWLEDGE_MODULE_ID),
@@ -582,7 +621,7 @@ function createKnowledgeFunctions(
           return failure(
             'PAYLOAD_NOT_FOUND',
             `组件 "${key}" 不在 page-design.component 参数荷载目录中`,
-            '先调用 pageDesign/knowledge/queryPayloads 选择可用组件 type。',
+            '先调用 knowledge.queryPayloads 选择可用组件 type。',
           )
         }
         return success({ guide }, `${key} 组件参数荷载指南已返回`)
@@ -633,6 +672,10 @@ export class PageDesignModule implements AiModuleRegistration {
 
   private readonly getEditToolHost: PageDesignModuleOptions['getEditToolHost']
 
+  private readonly core = new AiRuntime()
+
+  private readonly ai: AiRegisteredModuleApi
+
   constructor(options: PageDesignModuleOptions) {
     this.getEditToolHost = options.getEditToolHost
     this.modules = [
@@ -675,14 +718,171 @@ export class PageDesignModule implements AiModuleRegistration {
         moduleId: JSON_DOC_MODULE_ID,
         name: 'Page Design JSON Doc',
         description: '通过 JSON Pointer / JMESPath 直接读写 pagedata.json 或 rule.json 原始 JSON 文档。',
-        prompt: 'pageDesign/jsonDoc 通过 RFC 6901 JSON Pointer 或 JMESPath 查询直接操作 pagedata/rule JSON 文档；read/list/get/query 只读，set/delete/append/setMultiple 写入时通过 EditToolHost.writeJsonDoc 提交；构造 JSON 前需先 read/get 理解结构，禁止凭空捏造路径。',
+        prompt: 'jsonDoc 模块通过 RFC 6901 JSON Pointer 或 JMESPath 查询直接操作 pagedata/rule JSON 文档；read/list/get/query 只读，set/delete/append/setMultiple 写入时通过 EditToolHost.writeJsonDoc 提交；构造 JSON 前需先 read/get 理解结构，禁止凭空捏造路径。',
         getFunctionsFromHost: this.jsonDocFunctions,
       }),
     ]
+    this.ai = this.core.registerModule(this)
   }
 
-  releaseInstance(context: AiRuntimeInstanceScope): void {
-    this.states.delete(context.moduleInstanceId)
+  async projectKnowledge(context: PageDesignRuntimeContext): Promise<AiRuntimeKnowledgeProjection> {
+    assertPageDesignContext(context)
+    return this.ai.projectModule({
+      instanceId: context.instanceId,
+      moduleInstanceId: context.moduleInstanceId,
+      runtimeInstanceId: context.instanceId,
+    })
+  }
+
+  async startSession(context: PageDesignRuntimeContext): Promise<AiRuntimeStartInstanceResult> {
+    assertPageDesignContext(context)
+    return this.ai.startInstance({
+      instanceId: context.instanceId,
+      moduleInstanceId: context.moduleInstanceId,
+      runtimeInstanceId: context.instanceId,
+    })
+  }
+
+  stopSession(options: PageDesignStopSessionOptions): AiRuntimeStopInstanceResult {
+    assertPageDesignContext(options)
+    return this.ai.stopInstance({
+      instanceId: options.instanceId,
+      moduleInstanceId: options.moduleInstanceId,
+      ...(options.reason === undefined ? {} : { reason: options.reason }),
+    })
+  }
+
+  appendMessage(options: PageDesignAppendMessageOptions): AiRuntimeMessageHistoryEntry {
+    assertPageDesignContext(options)
+    return this.ai.appendMessage({
+      instanceId: options.instanceId,
+      moduleInstanceId: options.moduleInstanceId,
+      runtimeInstanceId: options.instanceId,
+      role: options.role,
+      content: options.content,
+      ...(options.source === undefined ? {} : { source: options.source }),
+      ...(options.metadata === undefined ? {} : { metadata: options.metadata }),
+    })
+  }
+
+  getSession(context: PageDesignRuntimeContext): AiRuntimeSessionRecord | null {
+    assertPageDesignContext(context)
+    return this.ai.getSessionByModuleInstance(context.moduleInstanceId)
+  }
+
+  getSessionHistory(context: PageDesignRuntimeContext): readonly AiRuntimeHistoryEntry[] {
+    assertPageDesignContext(context)
+    return this.ai.getSessionHistoryByModuleInstance(context.moduleInstanceId)
+  }
+
+  async translateFunctionCall(options: PageDesignExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult> {
+    assertPageDesignContext(options)
+    return this.ai.translateFunctionCall({
+      instanceId: options.instanceId,
+      moduleInstanceId: options.moduleInstanceId,
+      runtimeInstanceId: options.instanceId,
+      action: options.action,
+      args: options.args,
+      ...(options.projection === undefined ? {} : { projection: options.projection }),
+    })
+  }
+
+  async executeFunctionCall(options: PageDesignExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
+    const translated = await this.translateFunctionCall(options)
+    if (!translated.ok) {
+      this.tryRecordFunctionCall(options, translated)
+      return translated
+    }
+
+    const definition = translated.translation.functionRegistration as PageDesignFunctionDefinition<PageDesignModuleId>
+    const requestEntry = this.recordFunctionCallRequest(translated.translation)
+    const validationError = definition.validate?.(
+      translated.translation.executionArgs,
+      translated.translation.context,
+    ) ?? null
+    if (validationError !== null) {
+      const failed = failure('INVALID_ARGS', validationError, `Fix args for ${options.action} before retrying.`)
+      this.recordTranslatedFunctionCall(translated.translation, failed, requestEntry.id)
+      return failed
+    }
+
+    try {
+      const executed = await definition.execute(
+        translated.translation.executionArgs,
+        translated.translation.context,
+      )
+      const result: AiRuntimeFunctionCallResult<unknown> = isFunctionCallResult(executed) ? executed : {
+        ok: true,
+        data: executed,
+        summary: `${options.action} executed`,
+      }
+      this.recordTranslatedFunctionCall(translated.translation, result, requestEntry.id)
+      return result
+    } catch (error) {
+      const failed = failure(
+        'EXECUTE_ERROR',
+        AiInvocationProtocol.toErrorMessage(error),
+        `Fix ${options.action} implementation or retry with valid args after checking page-design state.`,
+      )
+      this.recordTranslatedFunctionCall(translated.translation, failed, requestEntry.id)
+      return failed
+    }
+  }
+
+  private tryRecordFunctionCall(options: PageDesignExecuteFunctionCallOptions, error: AiRuntimeFunctionCallFailure): void {
+    try {
+      this.ai.appendFunctionCall({
+        instanceId: options.instanceId,
+        moduleInstanceId: options.moduleInstanceId,
+        runtimeInstanceId: options.instanceId,
+        action: options.action,
+        args: options.args,
+        status: 'failed',
+        error,
+      })
+    } catch {
+      // 翻译失败可能正是因为 session 不存在或已停止，此时不能再写入 session history。
+    }
+  }
+
+  private recordTranslatedFunctionCall(
+    translation: Extract<AiRuntimeFunctionCallTranslationResult, { ok: true }>['translation'],
+    result: AiRuntimeFunctionCallResult<unknown>,
+    historyEntryId: string,
+  ): void {
+    const resultMessage = this.ai.createFunctionResultMessage({
+      action: translation.action,
+      result,
+    })
+    this.ai.completeFunctionCall({
+      instanceId: translation.context.instanceId,
+      runtimeInstanceId: translation.context.runtimeInstanceId,
+      moduleInstanceId: translation.context.moduleInstanceId,
+      historyEntryId,
+      status: result.ok ? 'completed' : 'failed',
+      result,
+      resultMessage,
+      ...(!result.ok ? { error: result } : {}),
+    })
+  }
+
+  private recordFunctionCallRequest(
+    translation: Extract<AiRuntimeFunctionCallTranslationResult, { ok: true }>['translation'],
+  ): AiRuntimeFunctionCallHistoryEntry {
+    return this.ai.recordFunctionCallRequest({
+      instanceId: translation.context.instanceId,
+      runtimeInstanceId: translation.context.runtimeInstanceId,
+      moduleInstanceId: translation.context.moduleInstanceId,
+      action: translation.action,
+      args: translation.rawArgs,
+      modulePath: translation.context.modulePath,
+      functionId: translation.context.functionId,
+      activePath: translation.context.activePath,
+    })
+  }
+
+  releaseModuleInstance(moduleInstanceId: string): void {
+    this.states.delete(moduleInstanceId)
   }
 
   getFunctions(): readonly AiFunctionRegistration[] {

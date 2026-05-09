@@ -1,25 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  AiRuntime,
   PageDesignModule,
   type EditToolHost,
 } from '../packages/spark-ai/src'
 import type { SparkNodeTree } from '../packages/spark-component/src'
 import type { DataSetCrudTool } from '../packages/spark-data/src'
 
-function createRuntime() {
-  let record = 0
-  return new AiRuntime({
-    createInstanceId: (_moduleId, _moduleInstanceId) => 'page-design-1',
-    createRecordId: (kind) => `${kind}-${++record}`,
-    now: () => 1778040000000 + record,
-  })
-}
-
-function createHost(): { host: EditToolHost; reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number } } {
-  let script = 'export default {}'
-  let style = '.page { color: red; }'
+function createHost(options: { script?: string; style?: string } = {}): {
+  host: EditToolHost
+  reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number }
+} {
+  let script = options.script ?? 'export default {}'
+  let style = options.style ?? '.page { color: red; }'
   let nodeChanged = 0
   let dataChanged = 0
   const nodeTree = {
@@ -46,87 +39,247 @@ function createHost(): { host: EditToolHost; reads: () => { script: string; styl
 }
 
 describe('pageDesign module definition', () => {
-  it('registers pageDesign as recursive modules and executes through ai runtime', async () => {
-    const core = createRuntime()
+  it('registers pageDesign as recursive modules and executes through the registering module', async () => {
     const { host, reads } = createHost()
-    core.registerModule(new PageDesignModule({ getEditToolHost: () => host }))
+    const pageDesign = new PageDesignModule({ getEditToolHost: () => host })
 
-    const start = await core.startInstance({
+    const projection = await pageDesign.startSession({
       moduleId: PageDesignModule.moduleId,
       moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
     })
 
-    expect(start.instanceId).toBe('page-design-1')
-    expect(start.moduleId).toBe(PageDesignModule.moduleId)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/lifecycle/bootstrap')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/textModel/writeScript')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/nodeTree/countNodes')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/knowledge/queryPayloads')).toBe(true)
-    expect(start.availableFunctions.some((item) => item.action === 'pageDesign/dataset/listTables')).toBe(true)
+    expect(projection.scope.instanceId).toBe('page-design-1')
+    expect(projection.scope.moduleId).toBe(PageDesignModule.moduleId)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@lifecycle@bootstrap')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@textModel@writeScript')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@nodeTree@countNodes')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@knowledge@queryPayloads')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listTables')).toBe(true)
 
-    const bootstrap = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/lifecycle/bootstrap',
+    pageDesign.appendMessage({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      role: 'user',
+      content: 'Update current page files.',
+    })
+
+    const bootstrap = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@lifecycle@bootstrap',
       args: {},
+      projection,
     })
-    expect(bootstrap.result).toMatchObject({ ok: true, data: { phase: 'editing' } })
+    expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
 
-    const readScript = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/textModel/readScript',
+    const readScript = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@textModel@readScript',
       args: {},
+      projection,
     })
-    expect(readScript.result).toMatchObject({ ok: true, data: { content: 'export default {}' } })
+    expect(readScript).toMatchObject({ ok: true, data: { content: 'export default {}' } })
 
-    const writeScript = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/textModel/writeScript',
+    const writeScript = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@textModel@writeScript',
       args: { content: 'export default { mounted() {} }' },
+      projection,
     })
-    expect(writeScript.result.ok).toBe(true)
+    expect(writeScript.ok).toBe(true)
     expect(reads().script).toBe('export default { mounted() {} }')
 
-    const countNodes = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/nodeTree/countNodes',
+    const countNodes = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@nodeTree@countNodes',
       args: {},
+      projection,
     })
-    expect(countNodes.result).toMatchObject({ ok: true, data: { count: 1 } })
+    expect(countNodes).toMatchObject({ ok: true, data: { count: 1 } })
 
-    const payloads = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/knowledge/queryPayloads',
+    const payloads = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@knowledge@queryPayloads',
       args: { keyword: 'table' },
+      projection,
     })
-    expect(payloads.result).toMatchObject({ ok: true })
+    expect(payloads).toMatchObject({ ok: true })
 
-    const listTables = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/dataset/listTables',
+    const listTables = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@dataset@listTables',
       args: {},
+      projection,
     })
-    expect(listTables.result).toMatchObject({ ok: true, data: { tables: [] } })
+    expect(listTables).toMatchObject({ ok: true, data: { tables: [] } })
+
+    const history = pageDesign.getSessionHistory({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+    })
+    expect(history.map((entry) => entry.kind)).toEqual([
+      'message',
+      'functionCall',
+      'functionCall',
+      'functionCall',
+      'functionCall',
+      'functionCall',
+      'functionCall',
+    ])
+    expect(history.at(-1)).toMatchObject({
+      kind: 'functionCall',
+      action: 'page-designer@dataset@listTables',
+      status: 'completed',
+    })
   })
 
   it('fails fast when live adapter is missing', async () => {
-    const core = createRuntime()
-    core.registerModule(new PageDesignModule({
+    const pageDesign = new PageDesignModule({
       getEditToolHost: () => ({
         readScript: () => '',
         readStyle: () => '',
       }),
-    }))
-
-    const start = await core.startInstance({ moduleId: PageDesignModule.moduleId, moduleInstanceId: 'page-designer' })
-    const bootstrap = await core.executeFunctionCall({
-      instanceId: start.instanceId,
-      action: 'pageDesign/lifecycle/bootstrap',
-      args: {},
     })
 
-    expect(bootstrap.result).toMatchObject({
+    const projection = await pageDesign.startSession({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+    })
+    const bootstrap = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@lifecycle@bootstrap',
+      args: {},
+      projection,
+    })
+
+    expect(bootstrap).toMatchObject({
       ok: false,
       code: 'NO_NODE_TREE',
     })
+  })
+
+  it('isolates parallel page-design instances by root page entity id', async () => {
+    const pageA = createHost({ script: 'export default { page: "A" }' })
+    const pageB = createHost({ script: 'export default { page: "B" }' })
+    const pageDesign = new PageDesignModule({
+      getEditToolHost: (context) => context.moduleInstanceId === 'page-a' ? pageA.host : pageB.host,
+    })
+
+    const projectionA = await pageDesign.startSession({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a',
+    })
+    const projectionB = await pageDesign.startSession({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-b',
+      instanceId: 'session-b',
+    })
+
+    await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a',
+      action: 'page-a@lifecycle@bootstrap',
+      args: {},
+      projection: projectionA,
+    })
+    await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-b',
+      instanceId: 'session-b',
+      action: 'page-b@lifecycle@bootstrap',
+      args: {},
+      projection: projectionB,
+    })
+    await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a',
+      action: 'page-a@textModel@writeScript',
+      args: { content: 'export default { page: "A", changed: true }' },
+      projection: projectionA,
+    })
+
+    expect(pageA.reads().script).toBe('export default { page: "A", changed: true }')
+    expect(pageB.reads().script).toBe('export default { page: "B" }')
+    expect(pageDesign.getSessionHistory({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a',
+    })).toHaveLength(2)
+    expect(pageDesign.getSessionHistory({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-b',
+      instanceId: 'session-b',
+    })).toHaveLength(1)
+
+    pageDesign.stopSession({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a',
+    })
+    const restartedA = await pageDesign.startSession({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a-2',
+    })
+    const progressA = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-a',
+      instanceId: 'session-a-2',
+      action: 'page-a@lifecycle@describeProgress',
+      args: {},
+      projection: restartedA,
+    })
+
+    expect(progressA).toMatchObject({ ok: true, data: { phase: 'editing' } })
+  })
+
+  it('supports page entity ids that contain route separators in LLM action paths', async () => {
+    const pageHost = createHost({ script: 'export default { route: "nested" }' })
+    const pageDesign = new PageDesignModule({
+      getEditToolHost: () => pageHost.host,
+    })
+    const projection = await pageDesign.startSession({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'lmspark/homepage',
+      instanceId: 'nested-page-session',
+    })
+
+    expect(projection.availableFunctions.some((item) => item.action === 'lmspark%2Fhomepage@lifecycle@bootstrap')).toBe(true)
+
+    const bootstrap = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'lmspark/homepage',
+      instanceId: 'nested-page-session',
+      action: 'lmspark%2Fhomepage@lifecycle@bootstrap',
+      args: {},
+      projection,
+    })
+
+    expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
+    expect(pageDesign.getSessionHistory({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'lmspark/homepage',
+      instanceId: 'nested-page-session',
+    })).toHaveLength(1)
   })
 })

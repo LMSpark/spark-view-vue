@@ -94,7 +94,7 @@
         <component
           v-if="isSparkRendererRoute"
           :is="Component"
-          :key="route.path"
+          :key="sparkRendererRouteKey"
         />
         <component v-else :is="Component" :key="route.path" />
       </keep-alive>
@@ -102,7 +102,7 @@
         <component
           v-if="!contextGuard && isSparkRendererRoute"
           :is="Component"
-          :key="route.fullPath"
+          :key="sparkRendererRouteKey"
         />
         <component v-else-if="!contextGuard" :is="Component" :key="route.fullPath" />
       </transition>
@@ -149,11 +149,12 @@ import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { ChatDotRound } from '@element-plus/icons-vue'
-import { clearAllPageCache, getPageCacheStats } from '@/services/page-cache-handle'
+import { clearAllPageCache, clearPageCache, getPageCacheStats } from '@/services/page-cache-handle'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { createAuthHeaders } from '@/services/http'
 import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
 import { startSseDebugRouteBridge } from '@/services/sse-debug-route'
+import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -186,6 +187,12 @@ const { mode, setMode } = useTabPages()
 useColorScheme()
 let _stopSseDebugScreenshot: (() => void) | null = null
 let _stopSseDebugRoute: (() => void) | null = null
+let _stopPageConfigChange: (() => void) | null = null
+const pageConfigRefreshRevision = ref(0)
+const sparkRendererRouteKey = computed(() => {
+  const base = mode.value === 'multi' ? route.path : route.fullPath
+  return `${base}::page-config-${pageConfigRefreshRevision.value}`
+})
 
 interface AppContextGuardState {
   title: string
@@ -348,6 +355,22 @@ function emitModuleContextChange(
   }
 }
 
+function readRoutePageId(): string | null {
+  const pageId = route.meta['pageId']
+  return typeof pageId === 'string' && pageId.length > 0 ? pageId : null
+}
+
+function handlePageConfigChange(event: FileChangeEvent): void {
+  clearPageCache(event.pageId)
+  const refPageId = route.meta['refPageId']
+  if (
+    readRoutePageId() === event.pageId
+    || (typeof refPageId === 'string' && refPageId === event.pageId)
+  ) {
+    pageConfigRefreshRevision.value += 1
+  }
+}
+
 const moduleContextCapability: ModuleContextCapability = {
   getCurrent() {
     return cloneModuleContext(pageModuleContext.value)
@@ -399,6 +422,9 @@ onMounted(() => {
       switchProject: projectSwitchService.switchAndReload,
     })
   }
+  if (_stopPageConfigChange === null) {
+    _stopPageConfigChange = onPageConfigChange(handlePageConfigChange)
+  }
 
   // start.ts 已在 mount 前调用 registerRoutes() 注册路由 + 加载导航树
   // 此处同步读取已加载的导航树并写入 _navRoot，不发起重复 HTTP 请求
@@ -415,6 +441,8 @@ onUnmounted(() => {
   _stopSseDebugScreenshot = null
   _stopSseDebugRoute?.()
   _stopSseDebugRoute = null
+  _stopPageConfigChange?.()
+  _stopPageConfigChange = null
 })
 
 // ── 登录后自动同步导航 UI ──

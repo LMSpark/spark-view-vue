@@ -16,9 +16,27 @@ type SparkNodeTreeMethodKey = MethodKey<SparkNodeTree>
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'
-export type SparkNodeTreeToolAction = `pageDesign/nodeTree/${string}`
+export type SparkNodeTreeToolFunctionId =
+  | 'getNode'
+  | 'getLocation'
+  | 'hasNode'
+  | 'getParent'
+  | 'listChildren'
+  | 'countNodes'
+  | 'getAllData'
+  | 'collectHandlerNames'
+  | 'findByType'
+  | 'addNode'
+  | 'addNodes'
+  | 'moveNode'
+  | 'setProps'
+  | 'setPropsBatch'
+  | 'replaceNode'
+  | 'replaceNodes'
+  | 'removeNode'
+  | 'removeNodes'
 type SparkNodeTreeToolBaseFields = {
-  action: SparkNodeTreeToolAction
+  functionId: SparkNodeTreeToolFunctionId
   type: 'describe' | 'request'
   description: string
   paramsSchema: Record<string, unknown>
@@ -35,7 +53,7 @@ export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolBaseFields & {
 }
 export type SparkNodeTreeToolCapabilityRow = Pick<
   SparkNodeTreeToolParameterRow,
-  'action' | 'type' | 'target' | 'coreMethod' | 'description'
+  'functionId' | 'type' | 'target' | 'coreMethod' | 'description'
 > & {
   integrationStatus: 'catalog-only'
   paramsRef: string
@@ -124,7 +142,7 @@ function toCapabilityRow(row: SparkNodeTreeToolParameterRow): SparkNodeTreeToolC
 
 const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/getNode',
+    functionId: 'getNode',
     target: 'node',
     coreMethod: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
@@ -141,7 +159,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/getLocation',
+    functionId: 'getLocation',
     target: 'node',
     coreMethod: 'getLocation',
     description: '查找节点并返回其父节点、层级深度和直接索引位置。',
@@ -158,7 +176,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/hasNode',
+    functionId: 'hasNode',
     target: 'node',
     coreMethod: 'hasNode',
     description: '判断指定 componentId 是否存在于当前树中。',
@@ -175,7 +193,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/getParent',
+    functionId: 'getParent',
     target: 'node',
     coreMethod: 'getParent',
     description: '获取指定节点的直接父节点；当前绑定 root 或未命中时返回 null。',
@@ -192,7 +210,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/listChildren',
+    functionId: 'listChildren',
     target: 'children',
     coreMethod: 'listChildren',
     description: '读取当前组件实例或指定子组件的直接 children 数组。',
@@ -214,12 +232,12 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       {
         code: 'PARENT_NOT_FOUND',
         when: 'parentComponentId 未命中现有节点',
-        fix: '先通过 pageDesign/nodeTree/getNode 或 pageDesign/nodeTree/hasNode 确认父节点存在。',
+        fix: '先通过 nodeTree.getNode 或 nodeTree.hasNode 确认父节点存在。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/countNodes',
+    functionId: 'countNodes',
     target: 'tree',
     coreMethod: 'countNodes',
     description: '统计当前组件实例子树中的结构节点数量，不包含字符串/数字字面量子节点。',
@@ -232,7 +250,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/getAllData',
+    functionId: 'getAllData',
     target: 'tree',
     coreMethod: 'getAllData',
     description: '获取当前绑定组件实例完整子树的全部数据快照（包含递归 children）。',
@@ -245,7 +263,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/collectHandlerNames',
+    functionId: 'collectHandlerNames',
     target: 'tree',
     coreMethod: 'collectHandlerNames',
     description: '收集当前组件实例子树 props.on 中出现的全部唯一处理器名。',
@@ -258,7 +276,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/nodeTree/findByType',
+    functionId: 'findByType',
     target: 'tree',
     coreMethod: 'findByType',
     description:
@@ -295,15 +313,15 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       {
         code: 'START_NOT_FOUND',
         when: 'startComponentId 未命中现有节点',
-        fix: '先通过 pageDesign/nodeTree/hasNode 确认 startComponentId 存在，或省略 startComponentId 从根节点开始搜索。',
+        fix: '先通过 nodeTree.hasNode 确认 startComponentId 存在，或省略 startComponentId 从根节点开始搜索。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/addNode',
+    functionId: 'addNode',
     target: 'children',
     coreMethod: 'addNode',
-    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 pageDesign/knowledge/guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
+    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 knowledge.guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
     paramsSchema: {
       kind: 'object',
       required: ['node'],
@@ -339,7 +357,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/addNodes',
+    functionId: 'addNodes',
     target: 'children',
     coreMethod: 'addNodes',
     description: '向同一个子组件容器批量插入多个新节点。警告：入参 nodes 必须是由指定 type 的 props schema 组装而成的合法 SparkNode 数组。构造前必须查阅组件规格，绝对禁止凭空猜测 props。',
@@ -381,7 +399,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/moveNode',
+    functionId: 'moveNode',
     target: 'children',
     coreMethod: 'moveNode',
     description: '把已有节点移动到新的父节点或兄弟位置。用于调整布局顺序或容器归属，避免 removeNode + addNode 重建已有子树造成大块文本输出。',
@@ -423,7 +441,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       {
         code: 'NODE_NOT_FOUND',
         when: 'componentId 未命中现有节点',
-        fix: '先通过 pageDesign/nodeTree/getNode 或 pageDesign/nodeTree/findByType 获取真实 componentId。',
+        fix: '先通过 nodeTree.getNode 或 nodeTree.findByType 获取真实 componentId。',
       },
       {
         code: 'PARENT_NOT_FOUND',
@@ -443,7 +461,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/setProps',
+    functionId: 'setProps',
     target: 'props',
     coreMethod: 'setProps',
     description: '写入或替换目标节点的 props。',
@@ -465,12 +483,12 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       {
         code: 'NODE_NOT_FOUND',
         when: 'componentId 未命中现有节点',
-        fix: '先通过 pageDesign/nodeTree/getNode 或 pageDesign/nodeTree/hasNode 确认目标节点存在。',
+        fix: '先通过 nodeTree.getNode 或 nodeTree.hasNode 确认目标节点存在。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/setPropsBatch',
+    functionId: 'setPropsBatch',
     target: 'props',
     coreMethod: 'setPropsBatch',
     description: '批量写入多个节点的 props，整个批次只提交一次树状态。',
@@ -491,7 +509,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       {
         code: 'NODE_NOT_FOUND',
         when: '某个 componentId 未命中现有节点',
-        fix: '执行前先用 pageDesign/nodeTree/hasNode 批量确认目标节点存在。',
+        fix: '执行前先用 nodeTree.hasNode 批量确认目标节点存在。',
       },
       {
         code: 'DUPLICATE_NODE_ID',
@@ -501,10 +519,10 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/replaceNode',
+    functionId: 'replaceNode',
     target: 'node',
     coreMethod: 'replaceNode',
-    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 pageDesign/knowledge/guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
+    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 knowledge.guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: {
       componentId: COMPONENT_ID_PARAM,
       node: NODE_PARAM,
@@ -515,7 +533,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     example: {
       componentId: 'name-column',
-      node: { type: 'el-table-column', id: 'name-column', props: { field: 'displayName' } },
+      node: { type: 'r-row-fragment', id: 'name-column', props: { field: 'displayName' } },
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
@@ -532,7 +550,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/replaceNodes',
+    functionId: 'replaceNodes',
     target: 'node',
     coreMethod: 'replaceNodes',
     description: '批量替换多个节点，适合一次性重建多个字段或容器节点。',
@@ -544,7 +562,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     example: {
       items: [
-        { componentId: 'name-column', node: { type: 'el-table-column', id: 'name-column', props: { field: 'displayName' } } },
+        { componentId: 'name-column', node: { type: 'r-row-fragment', id: 'name-column', props: { field: 'displayName' } } },
         { componentId: 'toolbar', node: { type: 'r-toolbar', id: 'toolbar', props: { dense: true } } },
       ],
     },
@@ -563,7 +581,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/removeNode',
+    functionId: 'removeNode',
     target: 'node',
     coreMethod: 'removeNode',
     description: '删除当前组件实例子树内的指定节点，并返回被删除节点和原始索引。',
@@ -592,7 +610,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/nodeTree/removeNodes',
+    functionId: 'removeNodes',
     target: 'node',
     coreMethod: 'removeNodes',
     description: '按 componentIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态。',
@@ -637,10 +655,10 @@ export class PageDesignNodeTreeCatalog extends PageDesignToolCatalog<
     super(SPARK_NODE_TREE_TOOL_PARAMETER_TABLE, SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE)
   }
 
-  validateParams(action: string, params: unknown): string | null {
-    const row = this.getParameterRow(action)
+  validateParams(functionId: string, params: unknown): string | null {
+    const row = this.getParameterRow(functionId)
     if (row === undefined) {
-      return `未知 nodeTree 动作: ${action}`
+      return `未知 nodeTree 函数: ${functionId}`
     }
 
     const result = LlmParamsValidator.validateLlmDeserializedParams(params, row.paramsSchema, row.validation)

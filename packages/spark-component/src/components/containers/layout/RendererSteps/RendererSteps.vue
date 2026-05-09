@@ -32,7 +32,7 @@
  * @category container
  * @notes children 内放 r-step
  */
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar } from '../../runtime/container-ui'
@@ -48,8 +48,6 @@ const props = withDefaults(defineProps<RStepsProps>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
-
-const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
@@ -70,10 +68,6 @@ const activeStepIndex = computed(() => {
 })
 
 const activeStep = computed(() => stepConfigs.value[activeStepIndex.value])
-
-function hasStepChildren(step: SparkNode): boolean {
-  return getSparkNodeChildren(step.children).length > 0
-}
 
 function getStepName(step: SparkNode, index: number): string | number {
   const value = nodeInputProp(step, 'name') ?? nodeInputProp(step, 'value') ?? nodeId(step)
@@ -101,9 +95,6 @@ function createStepRendererConfig(step: SparkNode, index: number, mode: 'header'
       index,
       mode,
       ...(mode === 'header' ? { onActivate: activateStep } : {}),
-      ...(mode === 'content' && !hasStepChildren(step)
-        ? { $defaultSlot: () => slots['default']?.(getStepScope(step, index)) }
-        : {}),
     },
   }
 }
@@ -127,14 +118,6 @@ const {
 
 registerApi(stepsApi)
 
-function getStepScope(step: SparkNode, index: number) {
-  return {
-    step,
-    stepIndex: index,
-    stepName: getStepName(step, index),
-    activeStepName: activeStepName.value,
-  }
-}
 </script>
 
 <style scoped>
@@ -185,5 +168,4 @@ function getStepScope(step: SparkNode, index: number) {
   min-width: 0;
 }
 </style>
-
 

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
+import { fileURLToPath } from 'node:url'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
 import { sparkCatalogPlugin } from './packages/vite-plugin-spark-catalog/src/index'
 import {
@@ -13,18 +14,22 @@ import {
   SIZE_THRESHOLD
 } from './packages/vite-plugin-spark-catalog/src/index'
 
+const root = fileURLToPath(new URL('.', import.meta.url))
+const viteCacheDir = process.env['VITE_CACHE_DIR'] ?? path.resolve(root, 'node_modules', '.vite')
+
 export default defineConfig({
+  cacheDir: viteCacheDir,
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': path.resolve(root, 'src'),
       // monorepo 内始终指向 src 源码——Vite 直接编译 TS，无需预构建 dist JS
       // dist 仅包含 .d.ts 类型声明，供外部 npm 消费者使用
-      '@spark-view/spark-component': path.resolve(__dirname, 'packages', 'spark-component', 'src', 'index.ts'),
-      '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src', 'index.ts'),
-      '@spark-view/spark-utils': path.resolve(__dirname, 'packages', 'spark-utils', 'src', 'index.ts'),
-      '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'src', 'index.ts'),
-      '@spark-view/spark-app': path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),
-      '@spark-view/spark-ai': path.resolve(__dirname, 'packages', 'spark-ai', 'src', 'index.ts'),
+      '@spark-view/spark-component': path.resolve(root, 'packages', 'spark-component', 'src', 'index.ts'),
+      '@spark-view/spark-data': path.resolve(root, 'packages', 'spark-data', 'src', 'index.ts'),
+      '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
+      '@spark-view/spark-page-config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'index.ts'),
+      '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),
+      '@spark-view/spark-ai': path.resolve(root, 'packages', 'spark-ai', 'src', 'index.ts'),
     }
   },
   optimizeDeps: {

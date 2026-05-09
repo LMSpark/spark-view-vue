@@ -4,7 +4,7 @@ import { PageDesignNodeTreeCatalog } from './node-tree'
 import { PageDesignTextModelCatalog } from './text-model'
 import { PageDesignJsonDocCatalog } from './json-doc'
 
-export class PageDesignEditActionClassifier {
+export class PageDesignEditFunctionClassifier {
   private readonly datasetCatalog = new PageDesignDatasetCatalog()
 
   private readonly nodeTreeCatalog = new PageDesignNodeTreeCatalog()
@@ -13,33 +13,36 @@ export class PageDesignEditActionClassifier {
 
   private readonly jsonDocCatalog = new PageDesignJsonDocCatalog()
 
-  isNodeTreeWriteAction(action: string): boolean {
-    return this.nodeTreeCatalog.parameterTable.some((row) => row.type === 'request' && row.action === action)
+  isNodeTreeWriteAction(functionId: string): boolean {
+    return this.nodeTreeCatalog.parameterTable.some((row) => row.type === 'request' && row.functionId === functionId)
   }
 
-  isDataSetWriteAction(action: string): boolean {
+  isDataSetWriteAction(functionId: string): boolean {
     return this.datasetCatalog.parameterTable.some(
       (row) => row.type === 'request'
-        && row.action === action
+        && row.functionId === functionId
         && isPageDesignDatasetMethodExposed(row.crudToolMethod),
     )
   }
 
-  isTextModelWriteAction(action: string): boolean {
-    return this.textModelCatalog.parameterTable.some((row) => row.type === 'request' && row.action === action)
+  isTextModelWriteAction(functionId: string): boolean {
+    return this.textModelCatalog.parameterTable.some((row) => row.type === 'request' && row.functionId === functionId)
   }
 
-  isJsonDocWriteAction(action: string): boolean {
-    return this.jsonDocCatalog.parameterTable.some((row) => row.type === 'request' && row.action === action)
+  isJsonDocWriteAction(functionId: string): boolean {
+    return this.jsonDocCatalog.parameterTable.some((row) => row.type === 'request' && row.functionId === functionId)
   }
 
-  isWriteAction(action: string): boolean {
-    return this.isNodeTreeWriteAction(action)
-      || this.isDataSetWriteAction(action)
-      || this.isTextModelWriteAction(action)
-      || this.isJsonDocWriteAction(action)
+  isWriteAction(functionId: string): boolean {
+    return this.isNodeTreeWriteAction(functionId)
+      || this.isDataSetWriteAction(functionId)
+      || this.isTextModelWriteAction(functionId)
+      || this.isJsonDocWriteAction(functionId)
   }
 }
+
+/** @deprecated 使用 PageDesignEditFunctionClassifier；这里按 functionId 分类，不按 LLM action 路径分类。 */
+export class PageDesignEditActionClassifier extends PageDesignEditFunctionClassifier {}
 
 export { PageDesignEditSession } from './lifecycle'
 

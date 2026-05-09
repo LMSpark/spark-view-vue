@@ -6,61 +6,74 @@
  * 阅读顺序建议：
  * 1. 先看模块注册契约，理解 module/function 如何声明。
  * 2. 再看调用协议与参数校验，理解 LLM 如何定位函数、提交参数。
- * 3. 最后看知识负载与运行时编排，理解实例生命周期、历史记录和事件。
+ * 3. 最后看知识负载与 core facade，理解 LLM 知识投影和函数调用翻译。
  *
- * 核心层只负责把模块能力投影给 LLM，并按 `module/.../function`
- * 分发调用；业务服务的真实生命周期和状态仍由模块实现自己管理。
+ * 核心层只负责把模块能力投影给 LLM，并把 `rootInstance[/childInstance]@module@function`
+ * 调用翻译成注册方可执行的上下文；业务服务生命周期和函数派发由注册方管理。
  */
 
-// 一、模块注册、运行时实例、函数调用等核心契约。
+// 一、模块注册、生命周期通知、知识投影与函数调用翻译契约。
 export type {
   AiModuleRegistration,
   AiModuleInstanceBinding,
   AiModuleInstanceParam,
   AiFunctionRegistration,
+  AiRegisteredModuleApi,
+  AiRegisteredModuleAppendFunctionCallOptions,
+  AiRegisteredModuleAppendMessageOptions,
+  AiRegisteredModuleCompleteFunctionCallOptions,
+  AiRegisteredModuleProjectModuleOptions,
+  AiRegisteredModuleRecordFunctionCallRequestOptions,
+  AiRegisteredModuleStartInstanceOptions,
+  AiRegisteredModuleStopInstanceOptions,
+  AiRegisteredModuleTranslateFunctionCallOptions,
+  AiRuntimeAppendFunctionCallOptions,
+  AiRuntimeAppendMessageOptions,
+  AiRuntimeCompleteFunctionCallOptions,
   AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
   AiRuntimeApi,
-  AiRuntimeAppendMessage,
-  AiRuntimeAppendMessagesOptions,
-  AiRuntimeClearActivePathOptions,
-  AiRuntimeEvent,
-  AiRuntimeEventListener,
-  AiRuntimeEventType,
-  AiRuntimeExecuteFunctionCallOptions,
-  AiRuntimeExecuteFunctionCallResult,
+  AiRuntimeCreateFunctionResultMessageOptions,
   AiRuntimeFunctionContextParam,
   AiRuntimeFunctionExposure,
   AiRuntimeFunctionId,
-  AiRuntimeFunctionCallRecord,
+  AiRuntimeFunctionCallTranslation,
+  AiRuntimeFunctionCallTranslationResult,
+  AiRuntimeFunctionCallFailure,
+  AiRuntimeFunctionCallHistoryEntry,
+  AiRuntimeFunctionCallHistoryStatus,
   AiRuntimeFunctionCallResult,
-  AiRuntimeFunctionExposureSnapshot,
-  AiRuntimeHistoryMessage,
-  AiRuntimeHistorySnapshot,
-  AiRuntimeInstanceDetail,
+  AiRuntimeFunctionResultMessage,
+  AiRuntimeHistoryEntry,
+  AiRuntimeHistoryEntryBase,
+  AiRuntimeHistoryEntryKind,
+  AiRuntimeInstanceLifecycleSnapshot,
   AiRuntimeInstanceScope,
-  AiRuntimeInstanceSnapshot,
   AiRuntimeInstanceStatus,
-  AiRuntimeLifecycleMarker,
+  AiRuntimeKnowledgeProjection,
+  AiRuntimeMessageHistoryEntry,
   AiRuntimeMessageRole,
+  AiRuntimeMessageSource,
   AiRuntimeModuleExposure,
   AiRuntimeModuleId,
   AiRuntimeModuleInstanceId,
   AiRuntimeModuleInstanceScope,
   AiRuntimeModulePath,
   AiRuntimeOptions,
-  AiRuntimeSetActivePathOptions,
+  AiRuntimeProjectModuleOptions,
+  AiRuntimeRecordFunctionCallRequestOptions,
+  AiRuntimeSessionRecord,
+  AiRuntimeSessionLifecycleSnapshot,
+  AiRuntimeSessionStatus,
   AiRuntimeStartInstanceOptions,
   AiRuntimeStartInstanceResult,
   AiRuntimeStopInstanceOptions,
   AiRuntimeStopInstanceResult,
-  AiRuntimeStopModuleInstanceOptions,
-  AiRuntimeStopMode,
+  AiRuntimeTranslateFunctionCallOptions,
   FunctionExecutionContext,
   FunctionFailureMode,
   ModulePromptContext,
   ModulePromptProvider,
-  PostValidationWarning,
 } from './protocol/business-contracts'
 
 // 二、便捷基类：模块实现可继承它快速声明不可变 metadata。
@@ -104,7 +117,7 @@ export type {
   KnowledgePayloadSummary,
 } from './protocol/knowledge-payload-contracts'
 
-// 六、运行时编排器：管理实例生命周期、历史、事件和函数分发。
+// 六、core facade：注册模块并返回模块绑定 API，接收生命周期通知，提供知识投影和函数调用翻译。
 export {
   AiRuntime,
 } from './runtime/ai-runtime'

@@ -325,8 +325,6 @@ export interface SharedTypeProperty {
 export interface PlatformConstraints {
   /** DataKey 正则（字符串形式，校验器重建 RegExp） */
   dataKeyPattern: string
-  /** HTML 原生标签白名单 */
-  htmlTypes: string[]
   /** 合法组件类型前缀 */
   validTypePrefixes: string[]
   /** 合法聚合类型 */

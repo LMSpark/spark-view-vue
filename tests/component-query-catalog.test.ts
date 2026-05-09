@@ -18,8 +18,7 @@ import {
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
   return {
     dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
-    htmlTypes: ['div', 'span'],
-    validTypePrefixes: ['r-', 'el-', 'Render', 'spark-'],
+    validTypePrefixes: ['r-', 'spark-'],
     validAggregateTypes: ['sum', 'count', 'avg', 'min', 'max', 'join'],
     nonFieldRTypes: ['r-table', 'r-form'],
     containerContextMap: { 'r-table': 'table', 'r-form': 'form' },
@@ -200,6 +199,32 @@ describe('catalog-projections', () => {
     expect(Array.isArray(guide?.failFastChecks)).toBe(true)
     expect(guide?.rootFieldPaths).toContain('currentRow')
     expect(guide?.rootFieldPaths).toContain('currentRow.id')
+  })
+
+  it('component config projections exclude SparkNode structural props', () => {
+    const catalog = makeCatalog({
+      components: {
+        'r-text': makeEntry({
+          props: [
+            { name: 'id', type: 'string', required: true },
+            { name: 'type', type: 'string', required: false },
+            { name: 'children', type: 'SparkNode[]', required: false },
+            { name: 'field', type: 'string', required: true },
+          ],
+        }),
+      },
+    })
+
+    const spec = projectComponentSpec(catalog, 'r-text')
+    const guide = projectComponentConfigGuide(catalog, 'r-text')
+
+    expect(spec?.props.map(prop => prop.name)).toEqual(['field'])
+    expect(guide?.requiredProps.map(prop => prop.name)).toEqual(['field'])
+    expect(guide?.optionalProps.map(prop => prop.name)).toEqual([])
+    expect(guide?.minimalConfig).toEqual({
+      type: 'r-text',
+      props: { field: '<required>' },
+    })
   })
 
   it('projectComponentConfigGuide returns null for unknown component', () => {

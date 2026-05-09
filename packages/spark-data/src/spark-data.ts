@@ -153,6 +153,9 @@ export namespace SparkData {
   /** 解析 dataKey 为结构化描述符 */
   export const parseDataKey = DataKeyModule.parseDataKey
 
+  /** 诊断 DataKey 绑定链路 */
+  export const diagnoseDataKey = DataKeyModule.diagnoseDataKey
+
   /** 从 DataSet 中解析数据键对应的值 */
   export const resolveDataKey = DataKeyModule.resolveDataKey
 

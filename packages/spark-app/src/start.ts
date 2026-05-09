@@ -7,7 +7,7 @@
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import { SparkPageConfig, type ConfigLoaderOptions } from '@spark-view/spark-page-config'
-import { createSparkPlugin, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
+import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
@@ -245,7 +245,7 @@ export async function start(options: StartOptions): Promise<void> {
     if (spark?.enabled !== false) {
       logStartDebug('安装 SPARK 组件系统...')
       // 使用默认全局单例（不传参数）
-      app.use(createSparkPlugin())
+      app.use(Spark.createPlugin())
 
       // 自动导入并执行编译时组件注册
       const shouldAutoRegister = spark?.autoRegister !== false

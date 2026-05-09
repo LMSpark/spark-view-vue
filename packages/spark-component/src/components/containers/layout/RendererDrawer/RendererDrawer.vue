@@ -53,7 +53,7 @@
  * @category container
  * @notes 头部动作区与底部区域通过结构化 `header` / `footer` 声明
  */
-import { computed, useSlots } from 'vue'
+import { computed, getCurrentInstance, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
@@ -76,6 +76,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
+const instance = getCurrentInstance()
 const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
@@ -100,17 +101,28 @@ const {
   state: visibleValue,
   commitValue: commitVisibleValue,
 } = useUnifiedValueBridge<boolean>({
-  value: computed(() => props.modelValue),
+  value: computed(() => hasExplicitModelValue() ? props.modelValue : props.value),
   fallbackValue: false,
   normalize: value => value ?? false,
   emitValue: value => emit('update:modelValue', value),
 })
+const scopedVisibleValue = computed(() => (hasExplicitModelValue() ? props.modelValue : props.value) ?? visibleValue.value)
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)
 
 function closeDrawer(): void {
   commitVisibleValue(false)
+}
+
+function hasExplicitModelValue(): boolean {
+  const rawProps = instance?.vnode.props
+  return rawProps !== null &&
+    rawProps !== undefined &&
+    (
+      Object.prototype.hasOwnProperty.call(rawProps, 'modelValue') ||
+      Object.prototype.hasOwnProperty.call(rawProps, 'model-value')
+    )
 }
 
 // ── r-drawer 包装 API ────────────────────────────────────────────────────
@@ -144,7 +156,7 @@ registerApi(drawerApi)
 function getHeaderScope() {
   return {
     title: resolvedTitle.value,
-    visible: visibleValue.value,
+    visible: scopedVisibleValue.value,
     close: closeDrawer,
   }
 }
@@ -152,7 +164,7 @@ function getHeaderScope() {
 function getDefaultScope() {
   return {
     title: resolvedTitle.value,
-    visible: visibleValue.value,
+    visible: scopedVisibleValue.value,
     close: closeDrawer,
   }
 }
@@ -160,7 +172,7 @@ function getDefaultScope() {
 function getFooterScope() {
   return {
     title: resolvedTitle.value,
-    visible: visibleValue.value,
+    visible: scopedVisibleValue.value,
     close: closeDrawer,
   }
 }
@@ -197,5 +209,3 @@ function getFooterScope() {
   min-width: 0;
 }
 </style>
-
-

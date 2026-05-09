@@ -1,53 +1,101 @@
 # spark-ai 架构
 
-`spark-ai` 是 SPARK 的 AI 运行时包。当前架构由递归模块注册运行时和模块自管服务组成。
+`spark-ai` 是 SPARK 的 AI 能力包。当前架构由“core 会话历史层 + 模块自管服务 + AI 会话宿主”组成。
 
-## 运行时边界
+## Core 边界
 
-`src/core` 是模块实现与面向 LLM 的宿主之间的确定性运行时边界：
+`src/core` 是模块实现与 LLM 宿主之间的确定性协议层：
 
-- 定义统一的面向 AI 标准：模块信息 -> 递归模块 -> 函数信息注册。
-- 模块实现 `AiModuleRegistration`，并通过 `AiFunctionRegistration` 暴露函数。
-- 顶层模块通过 `AiRuntime.registerModule` 注册。
-- 模块路径和函数统一暴露为 `module/.../function`。
-- 通过 `moduleId + moduleInstanceId` 启动、暂停、停止和恢复运行实例。
-- 通过 `moduleId + moduleInstanceId` 定位当前实例和历史。
-- 保存每个实例的历史、函数调用记录、活动路径和函数曝光快照。
-- 通过显式运行时 `instanceId` 执行单次函数调用。
-- 发布生命周期、历史、活动路径和函数事件。
+- 定义统一的模块注册契约：模块信息、递归子模块、函数知识。
+- 将 `AiModuleRegistration` / `AiFunctionRegistration` 投影为 LLM 可见的 prompt 与 tool schema。
+- 将 LLM 提交的 `rootInstanceId[/childInstanceId]@moduleId@functionId` 调用翻译成注册方可执行的业务参数和 `FunctionExecutionContext`。
+- 将注册方执行函数得到的原始结果序列化为 LLM tool result 内容。
+- 接收 `startInstance` / `stopInstance` 会话通知，保存 AI session record，并返回 Started/Stopped 快照。
+- 统一保存 UI 人工输入、LLM 回复和 LLM 编排的函数调用历史。
 
-运行时不拥有业务服务生命周期，不创建领域服务状态，不直接调用 LLM，不重试模型轮次，也不维护进程级全局函数注册表。模块实现负责自管状态，并可通过 `releaseInstance` 释放实例级状态。
+core 明确不做：
+
+- 不创建、恢复、暂停、销毁模块服务实例。
+- 不保存模块业务状态，不维护 active path 业务状态，不发布事件。
+- 不执行函数体，不做函数调用编排、重试或轮次推进。
+- 不验证函数执行结果，不依据执行结果决定下一步。
+
+## 中心语义
+
+AI core 的中心不是模块实体，而是会话管理：
+
+```text
+A 业务模块实体
+  -> C 业务模块注册
+  -> B core 会话管理
+  -> LLM 函数编排
+  -> B core 记录 requested / 翻译调用 / 回填 completed 或 failed
+  -> A 业务模块实体执行真实函数
+```
+
+这条链路里，B 保存的是 AI 会话轨迹：UI 人工输入、LLM 回复、LLM 编排的函数调用、函数结果回传。A 保存的是业务状态：页面、数据集、节点树、文本模型等领域对象。两者都可以有状态，但状态语义不同。
+
+AI 会话隔离键固定为 `moduleId + moduleInstanceId`，对应“业务能力注册 ID + 根业务模块实体 ID”。`instanceId` 是技术 envelope/alias，用于兼容宿主传输和函数上下文；同一根业务实体重新 start 时可以更新 alias，但不能把它切成多条 core session。
+
+`registerModule` 不是一次性写入动作；注册成功后 core 会返回 `AiRegisteredModuleApi`。这个 API 绑定当前 `moduleId`，让注册方以同一个句柄完成 AI 会话数据链路：`startInstance/projectModule -> appendMessage -> translateFunctionCall -> recordFunctionCallRequest -> createFunctionResultMessage -> completeFunctionCall -> stopInstance`。业务服务的创建、缓存、释放仍由注册方在这个句柄外自行组合。
+
+同一个注册句柄可以并行承载多个根业务模块实体：例如 page-design 使用不同页面 ID 作为 `moduleInstanceId`，就能同时开展多个页面设计。core 按 `moduleId + moduleInstanceId` 拆分 AI session/history；page-design 模块自身也按 `moduleInstanceId` 拆分编辑状态。`stopInstance` 只结束 AI 会话，不释放页面编辑状态；释放必须由注册方显式调用自身的服务释放 API。
+
+## 数据链路反推
+
+从“多个页面设计实例并行工作”反推，链路必须满足：
+
+- 函数调用：LLM 只能使用当前 session projection 中的 `action + args`。action 必须带根业务实体 ID，例如 `page-a@textModel@writeScript`；子模块实例继续放在 `/` 路径里。实例路径段按 URI 编码，因此 `lmspark/homepage` 会投影为 `lmspark%2Fhomepage@...`，翻译时再还原为真实业务 ID。
+- 知识体系：`projectModule` / `startInstance` 基于 `moduleId + moduleInstanceId` 生成当前 session 的 promptSnapshot、模块树和 availableFunctions；这些描述、schema、usageRules、failureModes 本质上都是给 LLM 的提示词材料。
+- 注册信息：`AiModuleRegistration` 只提供模块身份、函数和子模块；core 在注册期校验同一注册树内 `moduleId` 唯一，因为 LLM action 使用 `@moduleId@functionId` 定位函数。
+- 会话账目：UI 人工输入、LLM 回复、LLM 发起的函数调用、函数执行结果都写入同一个 `moduleId + moduleInstanceId` session history。
+- 业务状态：页面编辑状态不进入 core，由 page-design 自身按 `moduleInstanceId` 维护；AI session 停止不释放页面服务状态。
+
+只要 action 中的根实例 ID、projection 的 session scope、注册树的唯一模块 ID、history 的隔离键都一致，函数调用 -> LLM 知识体系 -> 注册信息之间就不会断链。
+
+## 模块与宿主职责
+
+- **模块实现层**：维护自身业务状态，管理服务生命周期，声明函数目录，并执行真实函数体。
+- **AI 会话宿主层**：负责模型通讯、tool schema 投递、tool call 转发、重试策略、追问、暂停/停止决策和 active path 输入。
+- **core 层**：保存通用 AI 会话轨迹，消费宿主当前传入的 scope、projection、active path 和 tool call，并返回确定性的知识投影或翻译结果。
 
 ## 契约模型
 
-- **注册图**
-  - `AiModuleRegistration` 表示一个模块节点；模块可以通过 `modules` 递归包含其他模块。
-  - `AiFunctionRegistration` 表示挂在某个模块路径下的可调用 action 契约。
-  - action 路径格式为 `module/.../function`，例如 `pageDesign/nodeTree/addNode`。
-- **类型规则**
-  - 公共契约使用普通接口，不使用深层泛型约束。
-  - 业务代码用本地普通接口表达 payload 类型，并在 schema 校验后自行转换。
-- **上下文参数**
-  - 模块节点可以声明 `instanceParam`，例如 `departmentId`。
-  - 运行时会把父级模块实例参数投影到面向 LLM 的 `paramsSchema`。
-  - 运行时在调用 `execute` 前剥离这些注入字段。
-  - 业务实现从 `FunctionExecutionContext.moduleInstances` 读取选中的模块实例。
-- **活动路径**
-  - 活动路径由宿主通过 `setActivePath`、`clearActivePath` 和 `getActivePath` 管理。
-  - 函数执行成功不会隐式改变活动路径。
+- `AiModuleRegistration` 表示一个模块目录节点；它只描述当前模块身份、提示词、函数与子模块。
+- `AiFunctionRegistration` 表示挂在某个模块目录下的函数知识，只包含 `functionId`、参数、结果和使用规则，不包含函数体，也不包含调用路径。
+- LLM-facing action 不来自目录元数据，而是 core 在会话投影时生成；路径格式为 `rootInstanceId[/childInstanceId]@moduleId@functionId`，例如 `page-designer@nodeTree@addNode`。
+- 模块节点可以声明 `instanceParam`，core 会把相关模块实例参数投影到 LLM `paramsSchema`。
+- 函数调用翻译成功后，core 会从执行参数中剥离注入的上下文实例字段，注册方从 `FunctionExecutionContext.moduleInstances` 读取。
 
 ## 公共入口
 
 迁移后的调用方应使用：
 
-- `AiRuntime.registerModule`
-- `AiRuntime.startInstance({ moduleId, moduleInstanceId })`
-- `AiRuntime.stopInstance({ instanceId, mode: 'pause' | 'stop' })`
-- `AiRuntime.stopInstanceByModuleScope({ moduleId, moduleInstanceId, mode })`
-- `AiRuntime.getAvailableFunctions(instanceId)`
-- `AiRuntime.getInstanceByModuleScope({ moduleId, moduleInstanceId })`
-- `AiRuntime.executeFunctionCall({ instanceId, action, args })`
-- `AiRuntime.setActivePath({ instanceId, bindings })`
+- `const moduleApi = AiRuntime.registerModule(registration)`
+- `moduleApi.startInstance({ moduleInstanceId, instanceId })`
+- `moduleApi.projectModule({ moduleInstanceId, instanceId, runtimeInstanceId })`
+- `moduleApi.appendMessage({ moduleInstanceId, instanceId, runtimeInstanceId, role, content })`
+- `moduleApi.translateFunctionCall({ moduleInstanceId, instanceId, runtimeInstanceId, action, args, projection })`
+- `moduleApi.recordFunctionCallRequest(...)`
+- `moduleApi.createFunctionResultMessage({ action, result })`
+- `moduleApi.completeFunctionCall(...)`
+- `moduleApi.stopInstance({ moduleInstanceId, instanceId })`
+
+裸 `AiRuntime` 仍保留全局查询和兼容入口：
+
+- `AiRuntime.getModuleRegistration`
+- `AiRuntime.listModuleRegistrations`
+- `AiRuntime.getSession(instanceId)`
+- `AiRuntime.getSessionByModuleScope({ moduleId, moduleInstanceId })`
+- `AiRuntime.getSessionHistory(instanceId)`
+- `AiRuntime.getSessionHistoryByModuleScope({ moduleId, moduleInstanceId })`
+- `AiRuntime.appendMessage({ ...scope, role, content })`
+- `AiRuntime.appendFunctionCall({ ...scope, action, args, result })`
+- `AiRuntime.startInstance({ moduleId, moduleInstanceId, instanceId })`
+- `AiRuntime.stopInstance({ moduleId, moduleInstanceId, instanceId })`
+- `AiRuntime.projectModule(scope)`
+- `AiRuntime.translateFunctionCall({ ...scope, action, args, activePath, projection })`
+- `AiRuntime.createFunctionResultMessage({ action, result })`
 
 包根入口刻意不再导出旧 API，例如 `registerBusiness`、`AiBusinessRegistration`、`AiBusinessModuleRegistration` 或 `PageDesignBusiness`。
 

@@ -253,16 +253,16 @@ describe('SparkPageRenderer root props aggregation', () => {
     const children = buildPageChildren([
       {
         type: 'r-button',
+        id: 'btn__new',
         props: {
-          id: 'btn__new',
           label: '新增凭证',
           action: 'newVoucher',
         },
       },
       {
         type: 'r-button',
+        id: 'btn__refresh',
         props: {
-          id: 'btn__refresh',
           label: '刷新',
           action: 'refresh',
         },
@@ -278,6 +278,21 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(createButtonProps['onClick']).toBeUndefined()
     expect(callFunc).not.toHaveBeenCalled()
     expect(refreshButtonProps['onClick']).toBeUndefined()
+  })
+
+  it('rejects legacy props.id in page rules', () => {
+    expect(() => buildPageChildren([
+      {
+        type: 'r-button',
+        props: {
+          id: 'legacy-button',
+          label: '旧按钮',
+        },
+      },
+    ] as never, {
+      callFunc: () => undefined,
+      actionCtx: createActionContext(),
+    })).toThrow(/props\.id has been removed/)
   })
 
   it('tree-node-scope demo keeps native tree props typed and button clicks executable', () => {

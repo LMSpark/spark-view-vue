@@ -84,6 +84,11 @@ function targetEmptyFallback(target: ActionRowTarget): string {
   return target === 'selected' ? '请先选择记录' : '请先选择当前行'
 }
 
+function canRefreshRemoteList(view: DataView): boolean {
+  const table = view.dataTable
+  return table?.resourceType !== 'static-data' && table?.api?.list !== undefined
+}
+
 // ── DataView 就绪保护 ─────────────────────────────────────────────────────
 
 /**
@@ -572,6 +577,8 @@ export async function executeRefresh(
   const notifier = createActionNotifier(ctx, desc)
   const view = ensureView(desc, ctx, notifier)
   if (!view) return
+
+  if (!canRefreshRemoteList(view)) return
 
   await view.refresh()
   notifier.notify('success', desc.successMessage ?? '刷新完成')

@@ -1,36 +1,23 @@
 import type {
-  AiFunctionRegistration,
   AiModuleInstanceBinding,
   AiModuleRegistration,
   AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
-  AiRuntimeAppendMessagesOptions,
-  AiRuntimeEvent,
-  AiRuntimeEventListener,
-  AiRuntimeEventType,
-  AiRuntimeFunctionCallRecord,
-  AiRuntimeFunctionCallResult,
   AiRuntimeFunctionContextParam,
   AiRuntimeFunctionExposure,
-  AiRuntimeFunctionExposureSnapshot,
-  AiRuntimeHistoryMessage,
-  AiRuntimeHistorySnapshot,
-  AiRuntimeInstanceDetail,
   AiRuntimeInstanceScope,
-  AiRuntimeInstanceSnapshot,
-  AiRuntimeInstanceStatus,
-  AiRuntimeLifecycleMarker,
   AiRuntimeModuleExposure,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeOptions,
 } from '../protocol/business-contracts'
+import { LlmParamsValidator } from '../protocol/llm-params-validator'
 
 /**
- * AiRuntime 内部支持模块。
+ * AiRuntime 的无状态支持模块。
  *
- * 这里集中处理快照 clone、事件、模块树投影、历史写入和轻量参数校验。
+ * 这里集中处理快照 clone、模块树投影、上下文参数注入和轻量参数校验。
+ * 不保存实例，不发布事件，也不执行注册方函数。
  */
 
+/** 克隆对外返回的投影值，避免调用方意外修改 core 生成的快照。 */
 function cloneRuntimeValue<T>(value: T): T {
   if (value === null || value === undefined || typeof value !== 'object') return value
   try {
@@ -40,96 +27,37 @@ function cloneRuntimeValue<T>(value: T): T {
   }
 }
 
+/** 判断 unknown 是否为普通对象；数组和 null 不算对象。 */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export interface AiRuntimeHistoryState {
-  version: number
-  messages: AiRuntimeHistoryMessage[]
-  functionCalls: AiRuntimeFunctionCallRecord[]
-  lifecycleMarkers: AiRuntimeLifecycleMarker[]
-  functionExposureSnapshots: AiRuntimeFunctionExposureSnapshot[]
-}
-
-export interface AiRuntimeInstanceState {
-  instanceId: string
-  moduleId: string
-  moduleInstanceId: AiRuntimeModuleInstanceId
-  status: AiRuntimeInstanceStatus
-  module: AiRuntimeModuleExposure
-  promptSnapshot: string
-  availableFunctions: AiRuntimeFunctionExposure[]
-  activePath: AiModuleInstanceBinding[]
-  history: AiRuntimeHistoryState
-  seq: number
-  pendingPause: boolean
-  pendingStop: boolean
-}
-
-export interface AiRuntimeResolvedFunctionCall {
-  instance: AiRuntimeInstanceState
-  module: AiModuleRegistration
-  definition: AiFunctionRegistration
-  exposure: AiRuntimeFunctionExposure
-}
-
-export class AiRuntimeEventHub {
-  private readonly listeners = new Set<AiRuntimeEventListener>()
-
-  constructor(
-    private readonly createRecordId: NonNullable<AiRuntimeOptions['createRecordId']>,
-    private readonly now: NonNullable<AiRuntimeOptions['now']>,
-  ) {}
-
-  emit(
-    instance: AiRuntimeInstanceState,
-    type: AiRuntimeEventType,
-    payload: unknown,
-    details: { actionModulePath?: string; functionId?: string } = {},
-  ): AiRuntimeEvent {
-    instance.seq += 1
-    const event: AiRuntimeEvent = {
-      eventId: this.createRecordId('event'),
-      seq: instance.seq,
-      timestamp: this.now(),
-      type,
-      moduleId: instance.moduleId,
-      moduleInstanceId: instance.moduleInstanceId,
-      instanceId: instance.instanceId,
-      ...(details.actionModulePath !== undefined ? { actionModulePath: details.actionModulePath } : {}),
-      ...(details.functionId !== undefined ? { functionId: details.functionId } : {}),
-      payload,
-    }
-    for (const listener of this.listeners) {
-      try {
-        listener(event)
-      } catch {
-        // Event listeners are observational only.
-      }
-    }
-    return event
-  }
-
-  subscribe(listener: AiRuntimeEventListener): () => void {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
-  }
-}
-
 interface ProjectModuleOptions {
+  /** 当前要投影的模块注册。 */
   module: AiModuleRegistration
-  instanceScope: AiRuntimeInstanceScope
+  /** 调用方传入的会话 scope。 */
+  scope: AiRuntimeInstanceScope
+  /** 父级模块路径 ID，用于递归拼接 modulePath。 */
   parentIds: readonly string[]
+  /** 父级模块实例参数，用于注入子函数 schema。 */
   parentContextParams: readonly AiRuntimeFunctionContextParam[]
 }
 
+/** 负责把递归模块注册树投影成 LLM 可见知识的无状态工具。 */
 export class AiRuntimeProjector {
   constructor(
-    private readonly actionOf: (modulePath: string, functionId: string) => AiRuntimeAction,
+    /** action 拼接策略，由 facade 注入，保证路径格式集中维护。 */
+    private readonly actionOf: (
+      modulePath: string,
+      functionId: string,
+      scope: AiRuntimeInstanceScope,
+      contextParams: readonly AiRuntimeFunctionContextParam[],
+    ) => AiRuntimeAction,
+    /** ID 校验策略，由 facade 注入，保证注册校验集中维护。 */
     private readonly assertId: (kind: string, value: string) => void,
   ) {}
 
+  /** 克隆函数暴露列表；返回值可安全交给调用方读取。 */
   cloneExposure(functions: readonly AiRuntimeFunctionExposure[]): AiRuntimeFunctionExposure[] {
     return functions.map((item) => ({
       action: item.action,
@@ -147,6 +75,7 @@ export class AiRuntimeProjector {
     }))
   }
 
+  /** 克隆递归模块暴露树；返回值可安全交给调用方读取。 */
   cloneModuleExposure(module: AiRuntimeModuleExposure): AiRuntimeModuleExposure {
     return {
       moduleId: module.moduleId,
@@ -161,67 +90,32 @@ export class AiRuntimeProjector {
     }
   }
 
-  createHistorySnapshot(instance: AiRuntimeInstanceState): AiRuntimeHistorySnapshot {
+  /** 根据调用方传入的 active path 生成只读快照。 */
+  createActivePathSnapshot(
+    scope: AiRuntimeInstanceScope,
+    bindings: readonly AiModuleInstanceBinding[] = [],
+  ): AiRuntimeActivePathSnapshot {
     return {
-      instanceId: instance.instanceId,
-      moduleId: instance.moduleId,
-      moduleInstanceId: instance.moduleInstanceId,
-      version: instance.history.version,
-      messages: instance.history.messages.map((message) => ({ ...message })),
-      functionCalls: instance.history.functionCalls.map((call) => ({
-        ...call,
-        args: cloneRuntimeValue(call.args),
-        result: cloneRuntimeValue(call.result),
-      })),
-      lifecycleMarkers: instance.history.lifecycleMarkers.map((marker) => ({ ...marker })),
-      functionExposureSnapshots: instance.history.functionExposureSnapshots.map((snapshot) => ({
-        id: snapshot.id,
-        timestamp: snapshot.timestamp,
-        functions: this.cloneExposure(snapshot.functions),
-      })),
+      instanceId: scope.instanceId,
+      bindings: bindings.map((binding) => ({ ...binding })),
+      moduleInstances: this.moduleInstancesFromBindings(bindings),
     }
   }
 
-  createActivePathSnapshot(instance: AiRuntimeInstanceState): AiRuntimeActivePathSnapshot {
-    return {
-      instanceId: instance.instanceId,
-      bindings: instance.activePath.map((binding) => ({ ...binding })),
-      moduleInstances: this.moduleInstancesFromBindings(instance.activePath),
-    }
-  }
-
-  createInstanceSnapshot(instance: AiRuntimeInstanceState): AiRuntimeInstanceSnapshot {
-    return {
-      instanceId: instance.instanceId,
-      moduleInstanceId: instance.moduleInstanceId,
-      moduleId: instance.moduleId,
-      status: instance.status,
-      module: this.cloneModuleExposure(instance.module),
-      promptSnapshot: instance.promptSnapshot,
-      availableFunctions: this.cloneExposure(instance.availableFunctions),
-      activePath: this.createActivePathSnapshot(instance),
-    }
-  }
-
-  createInstanceDetail(instance: AiRuntimeInstanceState): AiRuntimeInstanceDetail {
-    return {
-      ...this.createInstanceSnapshot(instance),
-      history: this.createHistorySnapshot(instance),
-    }
-  }
-
+  /** 投影一个顶层模块注册树；不会保存任何投影状态。 */
   async projectModule(
     module: AiModuleRegistration,
-    instanceScope: AiRuntimeInstanceScope,
+    scope: AiRuntimeInstanceScope,
   ): Promise<AiRuntimeModuleExposure> {
     return this.projectModuleNode({
       module,
-      instanceScope,
+      scope,
       parentIds: [],
       parentContextParams: [],
     })
   }
 
+  /** 将递归模块树中的函数展平成 LLM tool 列表。 */
   flattenFunctions(module: AiRuntimeModuleExposure): AiRuntimeFunctionExposure[] {
     return [
       ...module.functions,
@@ -229,25 +123,23 @@ export class AiRuntimeProjector {
     ]
   }
 
+  /** 聚合模块树中的 prompt，形成会话提示词快照。 */
   buildPromptSnapshot(module: AiRuntimeModuleExposure): string {
     const parts: string[] = []
     this.collectPrompts(module, parts)
     return parts.join('\n\n')
   }
 
-  assertUniqueActions(module: AiModuleRegistration): void {
+  /** 校验注册树中的模块 ID、模块路径和“模块路径 + 函数 ID”不重复。 */
+  assertUniqueRegistrationKeys(module: AiModuleRegistration): void {
     this.assertId('moduleId', module.moduleId)
+    const moduleIdOwners = new Map<string, string>()
     const modulePaths = new Set<string>()
-    const actions = new Set<string>()
-    this.collectRegistrationActions(module, [], modulePaths, actions)
+    const functionAddresses = new Set<string>()
+    this.collectRegistrationKeys(module, [], moduleIdOwners, modulePaths, functionAddresses)
   }
 
-  async refreshInstanceExposure(instance: AiRuntimeInstanceState, module: AiModuleRegistration): Promise<void> {
-    instance.module = await this.projectModule(module, this.createScope(instance))
-    instance.promptSnapshot = this.buildPromptSnapshot(instance.module)
-    instance.availableFunctions = this.flattenFunctions(instance.module)
-  }
-
+  /** 将 active path 绑定转换为参数名到模块实例 ID 的映射。 */
   moduleInstancesFromBindings(bindings: readonly AiModuleInstanceBinding[]): Record<string, string> {
     const out: Record<string, string> = {}
     for (const binding of bindings) {
@@ -258,8 +150,9 @@ export class AiRuntimeProjector {
     return out
   }
 
+  /** 递归投影单个模块节点。 */
   private async projectModuleNode(options: ProjectModuleOptions): Promise<AiRuntimeModuleExposure> {
-    const { module, instanceScope, parentIds, parentContextParams } = options
+    const { module, scope, parentIds, parentContextParams } = options
     const moduleIds = [...parentIds, module.moduleId]
     const modulePath = moduleIds.join('/')
     const currentContextParam = module.instanceParam === undefined
@@ -271,13 +164,14 @@ export class AiRuntimeProjector {
           description: module.instanceParam.description,
         } satisfies AiRuntimeFunctionContextParam
 
+    // 函数 schema 会携带父级/当前模块实例参数，让 LLM 知道必须提供哪些上下文。
     const functions = module.getFunctions().map((definition) => {
       this.assertId('functionId', definition.functionId)
       const contextParams = definition.scope === 'instance' && currentContextParam !== null
         ? [...parentContextParams, currentContextParam]
         : [...parentContextParams]
       return {
-        action: this.actionOf(modulePath, definition.functionId),
+        action: this.actionOf(modulePath, definition.functionId, scope, contextParams),
         moduleId: module.moduleId,
         modulePath,
         moduleIds,
@@ -292,7 +186,8 @@ export class AiRuntimeProjector {
       } satisfies AiRuntimeFunctionExposure
     })
 
-    const prompt = await this.modulePrompt(modulePath, module.prompt, instanceScope, moduleIds)
+    const prompt = await this.modulePrompt(modulePath, module.prompt, scope, moduleIds)
+    // 子模块会继承父级实例参数；若当前模块声明 instanceParam，也继续向下传递。
     const childParentParams = currentContextParam === null
       ? parentContextParams
       : [...parentContextParams, currentContextParam]
@@ -300,7 +195,7 @@ export class AiRuntimeProjector {
     for (const child of module.modules ?? []) {
       modules.push(await this.projectModuleNode({
         module: child,
-        instanceScope,
+        scope,
         parentIds: moduleIds,
         parentContextParams: childParentParams,
       }))
@@ -323,9 +218,11 @@ export class AiRuntimeProjector {
     schema: Record<string, unknown>,
     contextParams: readonly AiRuntimeFunctionContextParam[],
   ): Record<string, unknown> {
+    // 没有上下文参数时仍然克隆 schema，保证对外快照不可反向修改注册源。
     if (contextParams.length === 0) return cloneRuntimeValue(schema)
 
     const cloned = cloneRuntimeValue(schema)
+    // 兼容 JSON Schema 风格的 object schema。
     if (cloned['type'] === 'object') {
       const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
       const required = Array.isArray(cloned['required'])
@@ -346,6 +243,25 @@ export class AiRuntimeProjector {
       }
     }
 
+    // 兼容 spark-ai 自有的 kind: object schema。
+    if (cloned['kind'] === 'object') {
+      const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
+      const required = Array.isArray(cloned['required'])
+        ? cloned['required'].filter((key): key is string => typeof key === 'string')
+        : []
+      for (const param of contextParams) {
+        properties[param.paramName] = `string — ${param.description}（模块路径: ${param.modulePath}）`
+        if (!required.includes(param.paramName)) required.push(param.paramName)
+      }
+      return {
+        ...cloned,
+        kind: 'object',
+        properties,
+        required,
+      }
+    }
+
+    // 简写对象 schema 直接追加字段说明。
     const simplified = { ...cloned }
     for (const param of contextParams) {
       simplified[param.paramName] = `string — ${param.description}（模块路径: ${param.modulePath}）`
@@ -362,15 +278,23 @@ export class AiRuntimeProjector {
     }
   }
 
-  private collectRegistrationActions(
+  private collectRegistrationKeys(
     module: AiModuleRegistration,
     parentIds: readonly string[],
+    moduleIdOwners: Map<string, string>,
     modulePaths: Set<string>,
-    actions: Set<string>,
+    functionAddresses: Set<string>,
   ): void {
     this.assertId('moduleId', module.moduleId)
     const moduleIds = [...parentIds, module.moduleId]
     const modulePath = moduleIds.join('/')
+    // LLM action 使用 rootInstanceId/childInstanceId@moduleId@functionId；
+    // 因此同一注册树内的 moduleId 必须唯一，否则知识投影无法生成可唯一翻译的函数调用。
+    const previousModulePath = moduleIdOwners.get(module.moduleId)
+    if (previousModulePath !== undefined) {
+      throw new Error(`Duplicate module id in registration tree: ${module.moduleId} (${previousModulePath}, ${modulePath})`)
+    }
+    moduleIdOwners.set(module.moduleId, modulePath)
     if (modulePaths.has(modulePath)) {
       throw new Error(`Duplicate module path: ${modulePath}`)
     }
@@ -380,6 +304,7 @@ export class AiRuntimeProjector {
       this.assertId(`instanceParam ${modulePath}`, module.instanceParam.name)
     }
 
+    // 同一个模块节点内 functionId 不能重复，整棵树中的目录地址也不能重复。
     const functionIds = new Set<string>()
     for (const definition of module.getFunctions()) {
       this.assertId('functionId', definition.functionId)
@@ -387,118 +312,45 @@ export class AiRuntimeProjector {
         throw new Error(`Duplicate function ${definition.functionId} in module ${modulePath}`)
       }
       functionIds.add(definition.functionId)
-      const action = this.actionOf(modulePath, definition.functionId)
-      if (actions.has(action)) {
-        throw new Error(`Duplicate function action: ${action}`)
+      const functionAddress = `${modulePath}/${definition.functionId}`
+      if (functionAddresses.has(functionAddress)) {
+        throw new Error(`Duplicate function address: ${functionAddress}`)
       }
-      actions.add(action)
+      functionAddresses.add(functionAddress)
     }
 
     for (const child of module.modules ?? []) {
-      this.collectRegistrationActions(child, moduleIds, modulePaths, actions)
+      this.collectRegistrationKeys(child, moduleIds, moduleIdOwners, modulePaths, functionAddresses)
     }
   }
 
   private async modulePrompt(
     modulePath: string,
     prompt: AiModuleRegistration['prompt'],
-    instanceScope: AiRuntimeInstanceScope,
+    scope: AiRuntimeInstanceScope,
     moduleIds: readonly string[],
   ): Promise<string | undefined> {
+    // 空字符串 prompt 不进入最终 promptSnapshot，避免污染 LLM 上下文。
     if (typeof prompt === 'string') return prompt.trim().length > 0 ? prompt : undefined
     if (prompt === undefined) return undefined
-    const resolved = await prompt({ ...instanceScope, modulePath, moduleIds })
+    const resolved = await prompt({ ...scope, modulePath, moduleIds })
     return resolved !== null && resolved.trim().length > 0 ? resolved : undefined
   }
-
-  private createScope(instance: AiRuntimeInstanceState): AiRuntimeInstanceScope {
-    return {
-      instanceId: instance.instanceId,
-      runtimeInstanceId: instance.instanceId,
-      moduleId: instance.moduleId,
-      moduleInstanceId: instance.moduleInstanceId,
-    }
-  }
 }
 
-export class AiRuntimeHistory {
-  constructor(
-    private readonly createRecordId: NonNullable<AiRuntimeOptions['createRecordId']>,
-    private readonly now: NonNullable<AiRuntimeOptions['now']>,
-    private readonly eventHub: AiRuntimeEventHub,
-    private readonly projector: AiRuntimeProjector,
-  ) {}
-
-  setStatus(instance: AiRuntimeInstanceState, status: AiRuntimeInstanceStatus, reason?: string): void {
-    instance.status = status
-    this.markLifecycle(instance, status, reason)
-  }
-
-  recordExposure(instance: AiRuntimeInstanceState): void {
-    instance.history.functionExposureSnapshots.push({
-      id: this.createRecordId('exposure'),
-      timestamp: this.now(),
-      functions: this.projector.cloneExposure(instance.availableFunctions),
-    })
-    instance.history.version += 1
-    this.eventHub.emit(instance, 'history.functionExposure.snapshot', { total: instance.availableFunctions.length })
-    this.eventHub.emit(instance, 'functions.exposed', {
-      module: this.projector.cloneModuleExposure(instance.module),
-      functions: this.projector.cloneExposure(instance.availableFunctions),
-    })
-  }
-
-  recordFunctionCall(
-    instance: AiRuntimeInstanceState,
-    action: AiRuntimeAction,
-    args: unknown,
-    result: AiRuntimeFunctionCallResult<unknown>,
-  ): void {
-    instance.history.functionCalls.push({
-      id: this.createRecordId('functionCall'),
-      timestamp: this.now(),
-      instanceId: instance.instanceId,
-      action,
-      args: cloneRuntimeValue(args),
-      result: cloneRuntimeValue(result),
-    })
-    instance.history.version += 1
-    this.eventHub.emit(instance, 'history.functionCall.appended', { action, result })
-  }
-
-  appendMessages(instance: AiRuntimeInstanceState, options: AiRuntimeAppendMessagesOptions): AiRuntimeHistorySnapshot {
-    for (const message of options.messages) {
-      instance.history.messages.push({
-        id: this.createRecordId('message'),
-        timestamp: this.now(),
-        role: message.role,
-        content: message.content,
-      })
-      instance.history.version += 1
-      this.eventHub.emit(instance, 'history.message.appended', { role: message.role })
-    }
-    return this.projector.createHistorySnapshot(instance)
-  }
-
-  createHistorySnapshot(instance: AiRuntimeInstanceState): AiRuntimeHistorySnapshot {
-    return this.projector.createHistorySnapshot(instance)
-  }
-
-  private markLifecycle(instance: AiRuntimeInstanceState, status: AiRuntimeInstanceStatus, reason?: string): void {
-    instance.history.lifecycleMarkers.push({
-      id: this.createRecordId('lifecycle'),
-      timestamp: this.now(),
-      status,
-      ...(reason !== undefined ? { reason } : {}),
-    })
-    instance.history.version += 1
-  }
-}
-
+/** 翻译阶段使用的轻量参数校验器。 */
 export class AiRuntimeArgValidator {
+  /** 根据函数投影后的 paramsSchema 校验 LLM args，返回 null 表示通过。 */
   validateArgsBySchema(schema: Record<string, unknown>, args: unknown): string | null {
     if (Object.keys(schema).length === 0) return null
-    if (schema['type'] !== 'object') return null
+    if (schema['type'] === 'object') return this.validateJsonSchemaObject(schema, args)
+
+    const result = LlmParamsValidator.validateLlmDeserializedParams(args, schema)
+    return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+  }
+
+  /** 校验 JSON Schema 风格的 object schema。 */
+  private validateJsonSchemaObject(schema: Record<string, unknown>, args: unknown): string | null {
     if (!this.isRecord(args)) return 'args must be an object'
 
     const required = Array.isArray(schema['required'])
@@ -521,10 +373,12 @@ export class AiRuntimeArgValidator {
     return null
   }
 
+  /** 将 schema type 转成人类可读文本。 */
   private readableSchemaType(type: unknown): string {
     return Array.isArray(type) ? type.join(' | ') : String(type)
   }
 
+  /** 判断值是否满足 JSON Schema 的基础 type。 */
   private matchesSchemaType(value: unknown, type: unknown): boolean {
     const types = Array.isArray(type) ? type : [type]
     for (const candidate of types) {
@@ -539,6 +393,7 @@ export class AiRuntimeArgValidator {
     return false
   }
 
+  /** 判断 unknown 是否为普通对象。 */
   private isRecord(value: unknown): value is Record<string, unknown> {
     return isRecord(value)
   }

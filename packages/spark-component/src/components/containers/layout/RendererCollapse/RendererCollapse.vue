@@ -33,7 +33,7 @@
  * @category container
  * @notes children 内放 r-collapse-item
  */
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar } from '../../runtime/container-ui'
@@ -49,8 +49,6 @@ const props = withDefaults(defineProps<RCollapseProps>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: CollapseValue]
 }>()
-
-const slots = useSlots()
 
 const { registerApi } = useSparkPageComponent(props)
 
@@ -87,10 +85,6 @@ const {
 
 registerApi(collapseApi)
 
-function hasItemChildren(item: SparkNode): boolean {
-  return getSparkNodeChildren(item.children).length > 0
-}
-
 function getItemName(item: SparkNode, index: number): string | number {
   const value = nodeInputProp(item, 'name') ?? nodeId(item)
   return typeof value === 'string' || typeof value === 'number' ? value : `collapse-${index}`
@@ -115,19 +109,7 @@ function createItemRendererConfig(item: SparkNode, index: number): SparkNode {
     props: {
       ...getItemComponentProps(item),
       index,
-      ...(!hasItemChildren(item)
-        ? { $defaultSlot: () => slots['default']?.(getItemScope(item, index)) }
-        : {}),
     },
-  }
-}
-
-function getItemScope(item: SparkNode, index: number) {
-  return {
-    item,
-    itemIndex: index,
-    itemName: getItemName(item, index),
-    activeNames: currentValue.value,
   }
 }
 </script>
@@ -159,5 +141,4 @@ function getItemScope(item: SparkNode, index: number) {
   min-width: 0;
 }
 </style>
-
 

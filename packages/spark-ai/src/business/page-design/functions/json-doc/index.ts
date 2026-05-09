@@ -6,7 +6,7 @@ export type {
   JsonDocFunctionFailureMode,
   JsonDocFunctionTarget,
   JsonDocType,
-  JsonDocFunctionAction,
+  JsonDocFunctionId,
   JsonDocFunctionParameterRow,
   JsonDocFunctionCapabilityRow,
 } from './tool-catalog'

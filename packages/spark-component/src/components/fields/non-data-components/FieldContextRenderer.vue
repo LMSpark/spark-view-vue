@@ -82,6 +82,9 @@
  * @api displayLabel - 分组标题（用于多级表头）
  * @api children - 子字段组件数组（SparkNode[]）
  */
+// FieldContextRenderer 渲染为 fragment（多分支 <template>），无法自动透传 attrs。
+// 声明 inheritAttrs: false 以避免 Vue 的 "Extraneous non-props attributes" 告警。
+defineOptions({ inheritAttrs: false })
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'

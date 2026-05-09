@@ -150,6 +150,12 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    */
   modelValue?: TValue
   /**
+   * 显式字段值别名。
+   *
+   * 保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。
+   */
+  value?: TValue
+  /**
    * 字段绑定名。
    *
    * 常见语义是从当前上下文数据中读取 `currentRow[field]`，
@@ -786,4 +792,11 @@ export interface SparkVisibilityEventProps {
  *
  * 适用于 dialog、drawer 这类公开显隐生命周期事件的容器组件。
  */
-export interface SparkVisibilityContainerProps extends SparkVisibilityEventProps {}
+export interface SparkVisibilityContainerProps extends SparkVisibilityEventProps {
+  /**
+   * 显隐值别名。
+   *
+   * `modelValue` 仍是标准受控入口；`value` 用于配置式初始值和旧页面兼容。
+   */
+  value?: boolean
+}

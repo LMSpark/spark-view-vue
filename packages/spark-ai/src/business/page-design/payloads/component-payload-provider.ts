@@ -118,7 +118,7 @@ function buildPayloadGuide(type: string): KnowledgePayloadGuide | null {
     jsonSchema: buildSparkNodeJsonSchema(guide.type, guide.requiredProps, guide.optionalProps),
     minimalExample: guide.minimalConfig,
     usageRules: [
-      '构造 pageDesign/nodeTree/* 的 node 参数前，必须以本 JSON Schema 为准。',
+      '构造 nodeTree 写函数的 node 参数前，必须以本 JSON Schema 为准。',
       'required props 必须显式传入；default 只能作为默认值提示，不能代替业务值判断。',
       '事件绑定只能使用 eventGuide / emits 中声明的事件名。',
       ...guide.failFastChecks,
@@ -127,7 +127,7 @@ function buildPayloadGuide(type: string): KnowledgePayloadGuide | null {
       {
         code: 'PAYLOAD_NOT_FOUND',
         when: 'key 不存在于 page-design.component 参数荷载目录。',
-        fix: '先调用 pageDesign/knowledge/queryPayloads 重新选择可用组件。',
+        fix: '先调用 knowledge.queryPayloads 重新选择可用组件。',
       },
     ],
   }

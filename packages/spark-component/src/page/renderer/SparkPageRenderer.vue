@@ -428,7 +428,7 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
 
   // 4. rule → SparkNodeTree → buildPageChildren → children
   _nodeTree = new SparkNodeTree({
-    root: { type: 'spark-page', props: { id: 'spark-page-root' }, children: nodeProps.rule as unknown as SparkNode[] },
+    root: { type: 'spark-page', id: 'spark-page-root', children: nodeProps.rule as unknown as SparkNode[] },
   })
   rebuildChildren()
 }

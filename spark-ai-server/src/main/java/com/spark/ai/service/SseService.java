@@ -63,10 +63,10 @@ public class SseService {
      * 与 Vite 插件的 broadcastChange 格式保持一致：{ pageId, file, timestamp }
      */
     public void broadcast(String pageId, String file) {
-        Map<String, String> payload = Map.of(
+        Map<String, Object> payload = Map.of(
                 "pageId", pageId,
                 "file", file,
-                "timestamp", String.valueOf(Instant.now().toEpochMilli())
+                "timestamp", Instant.now().toEpochMilli()
         );
         emit(EVENT_PAGE_FILE_CHANGE, payload);
     }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   getSparkNodeChildren,
   isSparkNode,
+  normalizeSparkNode,
   nodeInputProp,
   nodeInputProps,
   type SparkNode,
@@ -66,6 +67,16 @@ describe('SparkNode input helpers', () => {
     value.type = 'r-text'
 
     expect(isSparkNode(value)).toBe(false)
+  })
+
+  it('isSparkNode should reject empty type strings', () => {
+    expect(isSparkNode({ type: '' })).toBe(false)
+    expect(isSparkNode({ type: '   ' })).toBe(false)
+  })
+
+  it('normalizeSparkNode should reject missing or empty type', () => {
+    expect(() => normalizeSparkNode({ type: '' } as SparkNode)).toThrow(/type must be a non-empty string/)
+    expect(() => normalizeSparkNode({ props: {} } as SparkNode)).toThrow(/type must be a non-empty string/)
   })
 
   it('getSparkNodeChildren should filter text and invalid entries', () => {

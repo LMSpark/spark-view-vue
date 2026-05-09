@@ -231,7 +231,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
       await options.ensureContextLoaded?.()
     }
     const context = await options.sessionHost.ensureSession()
-    const output = await options.sessionHost.core.executeFunctionCall({
+    const output = await options.sessionHost.executeFunctionCall({
       instanceId: context.instanceId,
       action: 'pageDesign/lifecycle/bootstrap',
       args: {},
@@ -279,9 +279,13 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     let writeCount = 0
 
     try {
-      options.sessionHost.core.appendMessages({
+      options.sessionHost.core.appendMessage({
+        moduleId: context.moduleId,
+        moduleInstanceId: context.moduleInstanceId,
         instanceId: context.instanceId,
-        messages: [{ role: 'user', content: hooks.originalUserInput ?? prompt }],
+        runtimeInstanceId: context.instanceId,
+        role: 'user',
+        content: hooks.originalUserInput ?? prompt,
       })
       await ensureBackendSession(prompt, projection.tools, hooks.signal)
 
@@ -314,7 +318,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
             throw new Error(`未知 AI 工具调用：${call.name}`)
           }
           const action = actionText
-          const output = await options.sessionHost.core.executeFunctionCall({
+          const output = await options.sessionHost.executeFunctionCall({
             instanceId: context.instanceId,
             action,
             args: call.args,

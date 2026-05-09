@@ -13,6 +13,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { SparkData, DataSet } from '@spark-view/spark-data'
 import {
   parseDataKey,
+  diagnoseDataKey,
   resolveDataKey,
   isDataKey,
 } from '@spark-view/spark-data'
@@ -406,6 +407,67 @@ describe('DataKey 统一解析器', () => {
       const dk = parseDataKey('Users@grid@rows')!
       const result = resolveDataKey(dk, dataSet)
       expect(result).toBeUndefined()
+    })
+  })
+
+  describe('diagnoseDataKey — 绑定链路诊断', () => {
+    let dataSet: DataSet
+
+    beforeEach(() => {
+      dataSet = SparkData.createDataSet({
+        dataSetName: 'DiagnosticDS',
+        tables: {
+          Users: {
+            tableName: 'Users',
+            columns: [
+              { name: 'id', type: 'number' },
+              { name: 'name', type: 'string' },
+            ],
+            views: {
+              default: {
+                rows: [
+                  { id: 1, name: '张三' },
+                  { id: 2, name: '李四' },
+                ],
+                autoCurrentFirst: false,
+                autoSelectFirst: false,
+              },
+            },
+          },
+        },
+      })
+    })
+
+    it('合法 rows 返回 ok', () => {
+      expect(diagnoseDataKey('Users@rows', dataSet).status).toBe('ok')
+    })
+
+    it('非法 key 返回 invalid-key', () => {
+      expect(diagnoseDataKey('Users.name', dataSet).status).toBe('invalid-key')
+    })
+
+    it('缺失 DataSet 返回 missing-dataset', () => {
+      expect(diagnoseDataKey('Users@rows', null).status).toBe('missing-dataset')
+    })
+
+    it('缺失表和视图分别返回结构化状态', () => {
+      expect(diagnoseDataKey('Orders@rows', dataSet).status).toBe('missing-table')
+      expect(diagnoseDataKey('Users@grid@rows', dataSet).status).toBe('missing-view')
+    })
+
+    it('currentRow 为空返回 empty-current-row', () => {
+      expect(diagnoseDataKey('Users@currentRow.name', dataSet).status).toBe('empty-current-row')
+    })
+
+    it('字段路径缺失返回 missing-field', () => {
+      const view = dataSet.getView('Users', 'default')!
+      view.selection.setCurrentRow({ id: 1, name: '张三' })
+
+      expect(diagnoseDataKey('Users@currentRow.missing', dataSet).status).toBe('missing-field')
+    })
+
+    it('空选中行返回 empty-selection', () => {
+      expect(diagnoseDataKey('Users@selectedRows', dataSet).status).toBe('empty-selection')
     })
   })
 })

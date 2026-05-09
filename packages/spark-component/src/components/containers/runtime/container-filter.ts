@@ -71,6 +71,65 @@ function isEmptyFilterValue(value: unknown): boolean {
   return false
 }
 
+function hasNamedColumn(columns: unknown, field: string): boolean | undefined {
+  if (!Array.isArray(columns)) return undefined
+  return columns.some(column =>
+    column !== null &&
+    typeof column === 'object' &&
+    (column as { name?: unknown }).name === field,
+  )
+}
+
+function viewHasField(view: DataView | null | undefined, field: string): boolean {
+  if (!view) return true
+  const fieldView = view as {
+    columns?: unknown
+    getColumn?: (name: string) => unknown
+    rows?: unknown
+  }
+
+  if (typeof fieldView.getColumn === 'function') return fieldView.getColumn(field) !== undefined
+
+  const columnMatch = hasNamedColumn(fieldView.columns, field)
+  if (columnMatch !== undefined) return columnMatch
+
+  if (!Array.isArray(fieldView.rows) || fieldView.rows.length === 0) return true
+  return fieldView.rows.some(row =>
+    row !== null &&
+    typeof row === 'object' &&
+    Object.prototype.hasOwnProperty.call(row, field),
+  )
+}
+
+function assertResidentFieldRefs(
+  view: DataView | null | undefined,
+  descriptors: readonly FilterDescriptor[],
+): void {
+  for (const descriptor of descriptors) {
+    if (descriptor.kind !== 'field-ref') continue
+    if (!viewHasField(view, descriptor.field)) {
+      throw new Error(`RendererFilter: 过滤条件字段不存在 "${descriptor.field}"`)
+    }
+    if (!viewHasField(view, descriptor.refField)) {
+      throw new Error(`RendererFilter: 过滤值表达式引用了不存在的字段 "${descriptor.refField}"`)
+    }
+  }
+}
+
+function isRemoteListView(view: DataView): boolean {
+  const table = (view as { dataTable?: { api?: { list?: unknown }; resourceType?: string } }).dataTable
+  return table?.resourceType !== 'static-data' && table?.api?.list !== undefined
+}
+
+function isSameFilterExpression(
+  left: FilterExpression | undefined,
+  right: FilterExpression | undefined,
+): boolean {
+  if (left === right) return true
+  if (left === undefined || right === undefined) return false
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
 /** 判断节点是否为范围过滤配置（filterMode === 'range'）。 */
 function isRangeFilterConfig(config: SparkNode): boolean {
   return nodeInputProp(config, 'filterMode') === 'range'
@@ -331,7 +390,18 @@ async function applyFilterSafely(params: {
     if (mode === 'execute') {
       await view.executeFilter(expr)
     } else {
+      const filterHost = view as {
+        filterExpression?: FilterExpression
+        refresh?: () => Promise<void>
+      }
       await view.setFilter(expr)
+      if (
+        isRemoteListView(view) &&
+        !isSameFilterExpression(filterHost.filterExpression, expr) &&
+        typeof filterHost.refresh === 'function'
+      ) {
+        await filterHost.refresh()
+      }
     }
     return true
   } catch (error) {
@@ -390,7 +460,12 @@ export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState
     return nodes
   })
 
-  const filterDescriptors = computed(() => allFilterNodes.value.map(config => describeFilterNode(config)))
+  const resolvedFilterDataView = computed(() => toValue(options.dataView))
+  const filterDescriptors = computed(() => {
+    const descriptors = allFilterNodes.value.map(config => describeFilterNode(config))
+    assertResidentFieldRefs(resolvedFilterDataView.value, descriptors)
+    return descriptors
+  })
   const descriptorBuckets = computed(() => splitFilterDescriptors(filterDescriptors.value))
   const inputFilterDescriptors = computed(() => descriptorBuckets.value.input)
   const filterConfigs = computed(() => inputFilterDescriptors.value.map(descriptor => descriptor.config))
@@ -415,7 +490,6 @@ export function useFilterPanel(options: UseFilterPanelOptions): FilterPanelState
 
   const hasRenderableFilters = computed(() => filterConfigs.value.length > 0)
   const hasAnyFilterNodes = computed(() => allFilterNodes.value.length > 0)
-  const resolvedFilterDataView = computed(() => toValue(options.dataView))
 
   // DataView 切换时：将当前过滤表达式应用到新 view（用于持续过滤场景）。
   watch(resolvedFilterDataView, async (view) => {

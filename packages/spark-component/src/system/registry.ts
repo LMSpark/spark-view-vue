@@ -41,6 +41,22 @@ function createDefinition(
   return def
 }
 
+function assertResolvedComponent(type: string, component: unknown): void {
+  if (typeof component === 'string') {
+    throw new Error(
+      `[Spark] register("${type}") received a string component. `
+      + 'Path-string registration has been removed; import the component or wrap a loader with defineAsyncComponent() before registering.'
+    )
+  }
+
+  if (typeof component === 'function') {
+    throw new Error(
+      `[Spark] register("${type}") received a function component. `
+      + 'Function registration has been removed; register a component object or wrap async loaders with defineAsyncComponent().'
+    )
+  }
+}
+
 /**
  * 创建隔离的组件注册表实例。
  * 需要全局注册表请用 `getGlobalRegistry()`。
@@ -60,20 +76,10 @@ export function createComponentRegistry(): ComponentRegistry {
       options?: { silent?: boolean }
     ): void {
       if (!type) throw new Error('Component type is required')
+      assertResolvedComponent(type, component)
       if (components.has(type) && !options?.silent) logger.warn(`Overwriting component: ${type}`)
       components.set(type, createDefinition(type, component, meta))
       if (!options?.silent && shouldLogRegistryDetails()) logger.debug(`Registered: ${type}`)
-    },
-
-    /**
-     * 仅在 type 未注册时注册（幂等）。
-     * @returns true 表示本次注册成功，false 表示已存在跳过。
-     */
-    registerOnce(type: string, component: unknown, meta?: Record<string, unknown>): boolean {
-      if (components.has(type)) return false
-      components.set(type, createDefinition(type, component, meta))
-      if (shouldLogRegistryDetails()) logger.debug(`Registered: ${type}`)
-      return true
     },
 
     /** 按 type 获取组件定义，不存在返回 undefined。 */

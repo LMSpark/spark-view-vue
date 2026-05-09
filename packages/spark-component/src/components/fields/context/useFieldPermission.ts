@@ -15,8 +15,9 @@ type OptionalWithUndefined<T> = {
 }
 
 export interface FieldPermissionProps<TValue>
-  extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue'>, 'modelValue'>> {
+  extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> {
   modelValue?: TValue | undefined
+  value?: TValue | undefined
 }
 
 interface UseFieldPermissionOptions<TValue> {
@@ -61,6 +62,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const selectedRows = computed<IDataRow[]>(() => activeSelectedRows.value)
 
   const sourceFieldValue = computed<TValue>(() => {
+    if (props.value !== undefined) return props.value
     if (props.modelValue !== undefined) return props.modelValue
     const row = activeRow.value
     if (row !== null && fieldName.value && fieldName.value in row) {

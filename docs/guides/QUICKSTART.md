@@ -77,21 +77,24 @@ spark-view/
 SPARK 支持三种组件注册方式：
 
 ```typescript
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import MyGrid from './MyGrid.vue'
+import DataTable from './DataTable.vue'
+import UserForm from './UserForm.vue'
+import Dashboard from './Dashboard.vue'
 
 // 方式 1：直接注册（同步加载）
 Spark.register('my-grid', MyGrid)
 
 // 方式 2：动态导入（代码分割）
-Spark.register('user-chart', () => import('./UserChart.vue'))
+Spark.register('user-chart', defineAsyncComponent(() => import('./UserChart.vue')))
 
-// 方式 3：批量注册（推荐）
-const register = Spark.createRegister(import.meta.glob('./components/*.vue'))
-register.registerAll({
-  'data-table': './DataTable.vue',
-  'user-form': './UserForm.vue',
-  'dashboard': './Dashboard.vue'
+// 方式 3：批量注册
+Spark.registerAll({
+  'data-table': DataTable,
+  'user-form': UserForm,
+  'dashboard': Dashboard,
 })
 ```
 

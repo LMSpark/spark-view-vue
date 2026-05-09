@@ -50,8 +50,8 @@ export function registerComponents(app) {
   const registry = Spark.getRegistry()
   
   // ✅ 只注册核心组件（<50ms）
-  registry.registerOnce('page-renderer', PageRenderer)
-  registry.registerOnce('error-fallback', ErrorFallback)
+  if (!registry.has('page-renderer')) registry.register('page-renderer', PageRenderer)
+  if (!registry.has('error-fallback')) registry.register('error-fallback', ErrorFallback)
   // ... 只有 5-10 个
   
   // ✅ 其他组件懒加载

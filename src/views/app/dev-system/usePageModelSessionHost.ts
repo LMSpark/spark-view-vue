@@ -6,6 +6,7 @@ import {
   PageDesignModule,
   type AiRuntimeApi,
   type AiRuntimeFunctionExposure,
+  type AiRuntimeFunctionCallResult,
   type AiRuntimeStartInstanceResult,
   type EditToolHost,
 } from '@spark-view/spark-ai'
@@ -55,6 +56,11 @@ export interface PageModelSessionHost {
     tools: ReadonlyArray<Record<string, unknown>>
     signal?: AbortSignal
   }) => Promise<string>
+  executeFunctionCall: (options: {
+    instanceId: string
+    action: string
+    args: unknown
+  }) => Promise<{ result: AiRuntimeFunctionCallResult<unknown> }>
   appendBackendMessages: (messages: readonly PageModelBackendMessage[], signal?: AbortSignal) => Promise<void>
   executeBackendTurn: (signal?: AbortSignal) => Promise<PageModelBackendTurnResult>
 }
@@ -69,27 +75,29 @@ function createContext(sessionKey: string, session: AiRuntimeStartInstanceResult
   }
 }
 
-function createRecordIdFactory(): (kind: 'event' | 'message' | 'functionCall' | 'lifecycle' | 'exposure') => string {
-  let record = 0
-  return (kind) => `${kind}-${Date.now()}-${++record}`
-}
-
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions): PageModelSessionHost {
   const { getEditToolHost, getSessionKey } = options
   const http = createFetchClient()
-  const core = new AiRuntime({ createRecordId: createRecordIdFactory() })
-  core.registerModule(new PageDesignModule({ getEditToolHost }))
+  const core = new AiRuntime()
+  const pageDesignModule = new PageDesignModule({ getEditToolHost })
+  core.registerModule(pageDesignModule)
 
   const context = shallowRef<PageModelFunctionContext | null>(null)
   let backendSessionId: string | undefined
 
-  async function reset(): Promise<void> {
+  function reset(): Promise<void> {
     const current = context.value
     context.value = null
     backendSessionId = undefined
     if (current !== null) {
-      await core.stopInstance({ instanceId: current.instanceId, mode: 'stop', reason: 'reset' })
+      core.stopInstance({
+        moduleId: current.moduleId,
+        moduleInstanceId: current.moduleInstanceId,
+        instanceId: current.instanceId,
+        reason: 'reset',
+      })
     }
+    return Promise.resolve()
   }
 
   function resetSync(): void {
@@ -172,6 +180,25 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     })
   }
 
+  async function executeFunctionCall(callOptions: {
+    instanceId: string
+    action: string
+    args: unknown
+  }): Promise<{ result: AiRuntimeFunctionCallResult<unknown> }> {
+    const current = context.value
+    if (current === null) {
+      throw new Error('执行 AI 工具失败：页面模型会话尚未启动。')
+    }
+    const result = await pageDesignModule.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: current.moduleInstanceId,
+      instanceId: callOptions.instanceId,
+      action: callOptions.action,
+      args: callOptions.args,
+    })
+    return { result }
+  }
+
   async function executeBackendTurn(signal?: AbortSignal): Promise<PageModelBackendTurnResult> {
     if (backendSessionId === undefined) {
       throw new Error('执行 AI 会话轮次失败：后端 session 尚未创建。')
@@ -202,6 +229,7 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     getResumeSessionOptions,
     hasSessionMismatch,
     createBackendSession,
+    executeFunctionCall,
     appendBackendMessages,
     executeBackendTurn,
   }

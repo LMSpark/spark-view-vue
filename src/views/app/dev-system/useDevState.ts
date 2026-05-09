@@ -89,6 +89,27 @@ function parseOptionalNumber(value: unknown): number | null {
   return null
 }
 
+function isOptionalPageFile(name: PageFileName): boolean {
+  return name === 'script.js' || name === 'style.css'
+}
+
+function isHttpStatus(error: unknown, status: number): boolean {
+  if (error === null || error === undefined || typeof error !== 'object') return false
+  const candidate = error as { status?: unknown; response?: { status?: unknown } }
+  return candidate.status === status || candidate.response?.status === status
+}
+
+function normalizeVersionCreatedAt(value: unknown): string {
+  if (typeof value === 'string' && value.trim() !== '') {
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? value : date.toISOString()
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return new Date(value).toISOString()
+  }
+  return ''
+}
+
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
 // ═══════════════════════════════════════════════════════════
@@ -145,6 +166,7 @@ export function useDevState() {
   const activePageId = ref('')
   const documents: PageDocumentRegistry = createPageDocuments()
   const fileSaving = ref(false)
+  const pageFilesRevision = ref(0)
 
   let activePageFilesLoadPromise: Promise<void> | null = null
   let activePageFilesLoadPageId = ''
@@ -154,6 +176,13 @@ export function useDevState() {
     activePageFilesLoadPromise = null
     activePageFilesLoadPageId = ''
     activePageFilesLoadEpoch += 1
+  }
+
+  function notifyPageFileChanged(pageId: string, filename: PageFileName | '__created' | '__deleted' | '__bulk'): void {
+    if (pageId && pageId === activePageId.value) {
+      pageFilesRevision.value += 1
+    }
+    void filename
   }
 
   // ── 空导航状态 ──
@@ -613,8 +642,15 @@ export function useDevState() {
   async function fetchRemotePageFileContent(pageId: string, name: PageFileName): Promise<string> {
     try {
       const data = await http.get<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${name}`)
-      return typeof data['content'] === 'string' ? data['content'] : ''
+      const content = data['content']
+      if (typeof content !== 'string') {
+        throw new Error(`配置接口返回无效内容: ${pageId}/${name}`)
+      }
+      return content
     } catch (error) {
+      if (isOptionalPageFile(name) && isHttpStatus(error, 404)) {
+        return ''
+      }
       const detail = error instanceof Error ? error.message : String(error)
       throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
     }
@@ -718,7 +754,7 @@ export function useDevState() {
       return result
         .map((item) => ({
           version: parseOptionalNumber(item['version']) ?? 0,
-          createdAt: typeof item['createdAt'] === 'string' ? item['createdAt'] : '',
+          createdAt: normalizeVersionCreatedAt(item['createdAt']),
           isCurrent: Boolean(item['isCurrent']),
           modifiedBy: typeof item['modifiedBy'] === 'string' ? item['modifiedBy'] : null,
         }))
@@ -738,7 +774,15 @@ export function useDevState() {
         {},
       )
       invalidateActivePageFilesLoad()
-      documents[filename].reset()
+      try {
+        const restoredText = await fetchRemotePageFileContent(pageId, filename)
+        documents[filename].loadFromText(restoredText, { markSaved: true })
+      } catch (reloadError) {
+        notifyPageFileChanged(pageId, filename)
+        addStatus(`版本已恢复，但重新读取 ${filename} 失败: ${String(reloadError)}`, 'warning')
+        return true
+      }
+      notifyPageFileChanged(pageId, filename)
       addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
@@ -1017,6 +1061,7 @@ export function useDevState() {
       )
 
       doc.markSaved()
+      notifyPageFileChanged(pageId, name)
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
     } catch (e) {
@@ -1153,7 +1198,10 @@ export function useDevState() {
     }
     treeData.value.push(node)
     void http.post(`${getNavApi()}/nodes`, { node }).then(
-      () => addStatus('已添加根模块', 'info'),
+      () => {
+        notifyPageFileChanged(id, '__created')
+        addStatus('已添加根模块', 'info')
+      },
       (e: unknown) => addStatus(`添加模块失败: ${String(e)}`, 'error'),
     )
   }
@@ -1218,7 +1266,10 @@ export function useDevState() {
     }
     ;(parent.children ??= []).push(node)
     void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
-      () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
+      () => {
+        notifyPageFileChanged(id, '__created')
+        addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
+      },
       (e: unknown) => addStatus(`添加节点失败: ${String(e)}`, 'error'),
     )
   }
@@ -1242,12 +1293,17 @@ export function useDevState() {
       clearFiles()
     }
     void http.delete(`${getNavApi()}/nodes/${encodeURIComponent(data.id)}`).then(
-      () => addStatus(
-        isRootReserved
-          ? `已删除 ${data.title}（可在更多菜单中恢复）`
-          : `已删除 ${data.title}`,
-        'info',
-      ),
+      () => {
+        if (data.path) {
+          notifyPageFileChanged(data.path.replace(/^\/+/, ''), '__deleted')
+        }
+        addStatus(
+          isRootReserved
+            ? `已删除 ${data.title}（可在更多菜单中恢复）`
+            : `已删除 ${data.title}`,
+          'info',
+        )
+      },
       (e: unknown) => addStatus(`删除节点失败: ${String(e)}`, 'error'),
     )
   }
@@ -1314,6 +1370,7 @@ export function useDevState() {
     activePageId,
     documents,
     fileSaving,
+    pageFilesRevision,
     pageDataError,
     pageDataDirty,
 
@@ -1336,6 +1393,7 @@ export function useDevState() {
     setPreviewDiagnosticsProvider,
     buildPreviewPageTextDraft,
     buildPreviewJsErrorDraft,
+    notifyPageFileChanged,
 
     // 方法
     addStatus,

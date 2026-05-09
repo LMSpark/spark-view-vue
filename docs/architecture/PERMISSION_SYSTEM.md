@@ -405,7 +405,7 @@ isPermittedAction('create-child', { modelPermission: undefined, row })
 
 它的本质是：**后端返回权限快照 → 前端在 `onBeforeRender` 中调用 permission API 做同步计算 → 直接设置 `props.visible`、`props.disabled` 等值控制渲染结果**。
 
-适用于所有组件类型：数据容器、按钮、布局组件（`el-card`、`el-tabs`、`div`）、字段组件、第三方组件——只要经 `SparkComponentRenderer` 渲染的 SparkNode 均可声明。
+适用于所有已注册的 SparkNode 组件：数据容器、按钮、布局组件、字段组件，以及显式注册到 SPARK registry 的扩展组件——只要经 `SparkComponentRenderer` 渲染的 SparkNode 均可声明。
 
 #### 6.4.1 两条执行路径
 

@@ -6,7 +6,7 @@ export type {
   TextModelFunctionFailureMode,
   TextModelFunctionTarget,
   TextModelFunctionFileKey,
-  TextModelFunctionAction,
+  TextModelFunctionId,
   TextModelFunctionParameterRow,
   TextModelFunctionCapabilityRow,
 } from './tool-catalog'

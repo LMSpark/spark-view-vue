@@ -79,7 +79,7 @@ describe('SparkNodeTree', () => {
         { type: 'r-text' },
         {
           type: 'r-table',
-          props: { id: 'table' },
+          id: 'table',
           children: [{ type: 'el-table-column' }],
         },
       ],
@@ -94,10 +94,19 @@ describe('SparkNodeTree', () => {
     expect(firstChild.id).toBe('r-text__0_0')
     expect(firstChild.props?.['id']).toBeUndefined()
 
-    expect(secondChild.id).toBe('r-table__0_1')
+    expect(secondChild.id).toBe('table')
     expect(secondChild.props?.['id']).toBeUndefined()
     const column = expectNode(secondChild.children?.[0])
     expect(column.id).toBe('el-table-column__0_1_0')
+  })
+
+  it('fromJson should reject legacy props.id component ids', () => {
+    expect(() => SparkNodeTree.fromJson({
+      type: 'page-root',
+      children: [
+        { type: 'r-text', props: { id: 'legacy-text' } },
+      ],
+    })).toThrow(/props\.id has been removed/)
   })
 
   it('fromJson should drop root-level non-struct fields', () => {

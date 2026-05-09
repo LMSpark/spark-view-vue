@@ -35,6 +35,7 @@ const { registry, rootContext, createContext } = Spark.createSystem()
 
 ```typescript
 import { describe, it, expect } from 'vitest'
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 
 describe('Component Registration', () => {
@@ -45,8 +46,8 @@ describe('Component Registration', () => {
     expect(registry.has('my-component')).toBe(true)
   })
 
-  it('registers lazy component', () => {
-    registry.register('lazy-grid', () => import('./MyGrid.vue'))
+  it('registers async component', () => {
+    registry.register('lazy-grid', defineAsyncComponent(() => import('./MyGrid.vue')))
     expect(registry.has('lazy-grid')).toBe(true)
   })
 

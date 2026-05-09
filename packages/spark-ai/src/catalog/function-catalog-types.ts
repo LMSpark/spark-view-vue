@@ -25,7 +25,7 @@ export interface FunctionCatalogRegistry {
   containers: string[]
   /** 字段组件（r-text / r-number / r-select 等） */
   fields: string[]
-  /** 分组/布局组件（r-row / r-col / el-tabs 等） */
+  /** 分组/布局组件（r-tabs / r-section / r-toolbar 等） */
   groups: string[]
   /** 元组件（builtin-action / display-* 等） */
   meta: string[]

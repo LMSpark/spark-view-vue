@@ -352,16 +352,17 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
 /**
  * 生成注册语句
  */
-function generateRegisterStatement(componentName: string): string {
+function generateRegisterStatement(componentName: string, strategy: LoadStrategy): string {
   const varName = componentName
     .split('-')
     .map((part, i) => i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
 
-  // smart 模式必须走 Spark.register，确保异步 loader 被 defineAsyncComponent 正确包装。
-  // 直接 registry.register/registerOnce 会把 () => import(...) 原样塞进 registry，
-  // 渲染器随后把它当普通组件函数处理，导致按需注册完全失效。
-  return `  if (!registry.has('${componentName}')) Spark.register('${componentName}', ${varName})`
+  const componentRef = strategy === 'async'
+    ? `defineAsyncComponent(${varName})`
+    : varName
+
+  return `  if (!registry.has('${componentName}')) registry.register('${componentName}', ${componentRef})`
 }
 
 /* -----------------------------------------------------------------------------
@@ -438,7 +439,7 @@ class ComponentAnalyzer {
 
         // 生成导入和注册语句
         const importStatement = generateImportStatement(componentName, importPath, strategy)
-        const registerStatement = generateRegisterStatement(componentName)
+        const registerStatement = generateRegisterStatement(componentName, strategy)
 
         // 提取 Skill 元数据（同一次 I/O 顺带完成，无额外磁盘开销）
         const skillMeta = parseSkillMeta(absolutePath, componentName)
@@ -528,6 +529,7 @@ class ComponentAnalyzer {
  */
 
 import { Spark } from '@spark-view/spark-component'
+${asyncComponents.length > 0 ? "import { defineAsyncComponent } from 'vue'\n" : ''}
 
 /* -----------------------------------------------------------------------------
  * 同步加载组件 (${syncComponents.length} 个)

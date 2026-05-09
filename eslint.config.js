@@ -18,6 +18,7 @@ export default [
       'node_modules/**',
       'vite.config.ts',
       'vitest.config.ts',
+      'vitest.spark-ai.config.ts',
       'packages/**/vite.config.ts',
       'packages/**/vitest.config.ts',
       '.storybook/**'

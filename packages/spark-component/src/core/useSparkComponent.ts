@@ -174,12 +174,10 @@ function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknow
   return runtimeProps
 }
 
-function buildEffectiveConfig(instance: RuntimeInstance, fallbackConfig?: SparkNodeInput): SparkNode {
-  // fallbackConfig 提供静态配置骨架，vnode.props 负责补齐运行时传参，最终统一走 normalizeSparkNode。
+function buildEffectiveConfig(instance: RuntimeInstance, configInput: SparkNodeInput): SparkNode {
+  // configInput 提供静态配置骨架，vnode.props 负责补齐运行时传参，最终统一走 normalizeSparkNode。
   const runtimeProps = readRuntimeVNodeProps(instance)
-  const base = fallbackConfig === undefined
-    ? ({ type: 'unknown' } as SparkNode & Record<string, unknown>)
-    : ({ ...fallbackConfig } as SparkNode & Record<string, unknown>)
+  const base = { ...configInput } as SparkNode & Record<string, unknown>
 
   if (Object.keys(runtimeProps).length > 0) {
     base.props = base.props === undefined
@@ -187,7 +185,7 @@ function buildEffectiveConfig(instance: RuntimeInstance, fallbackConfig?: SparkN
       : { ...base.props, ...runtimeProps }
   }
 
-  return normalizeSparkNode(base, 'unknown')
+  return normalizeSparkNode(base)
 }
 
 // ===== Spark 上下文桥接与能力辅助 =====
@@ -322,13 +320,13 @@ export function useSparkConsume(): UseSparkCapabilityReaderReturn {
 }
 
 export function useSparkComponent(
-  fallbackConfig?: SparkNodeInput,
+  configInput: SparkNodeInput,
   options?: UseSparkComponentOptions
 ): UseSparkComponentReturn {
-  // 先将 Vue 当前实例和 fallbackConfig 归一化为 SparkNode，再挂接到父能力上下文之下。
+  // 先将 Vue 当前实例和 configInput 归一化为 SparkNode，再挂接到父能力上下文之下。
   const currentInstance = getCurrentInstance()
   const currentOwner = currentInstance as SparkRuntimeOwner | null
-  const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
+  const config: SparkNode = buildEffectiveConfig(currentInstance, configInput)
   const contextId = nodeId(config) ?? `spark-${++_idCounter}`
   const parentContext = resolveParentContext(
     currentOwner,
@@ -356,7 +354,7 @@ export function useSparkComponent(
 
   // 统一从归一化配置读取可视/禁用状态，避免 props 来源分散导致语义不一致。
   const logger = createPageLoggerProxy(context)
-  const effectiveConfig = computed(() => buildEffectiveConfig(currentInstance, fallbackConfig))
+  const effectiveConfig = computed(() => buildEffectiveConfig(currentInstance, configInput))
   const readNormalizedConfigProp = (propName: string): unknown => {
     return nodeInputProp(effectiveConfig.value, propName)
   }
@@ -424,19 +422,19 @@ export function useSparkComponent(
 // ===== 对外入口：页面级组件扩展 =====
 
 export function useSparkPageComponent(
-  fallbackConfig?: SparkNodeInput,
+  configInput: SparkNodeInput,
   options?: UseSparkComponentOptions,
 ): UseSparkPageComponentReturn {
   // 捕获当前 setup 期间的实例引用，供 registerApi 闭包在 setup 结束前同步使用。
   const currentInstance = getCurrentInstance()
-  const component = useSparkComponent(fallbackConfig, options)
+  const component = useSparkComponent(configInput, options)
 
   function registerApi(api: unknown): void {
     const pageComponentRegistry = component.sparkConsume(PAGE_COMPONENT_REGISTRY)
     if (!pageComponentRegistry) return
     // 重新从 vnode props 解析 config。id 可能为 null（匿名组件），此时用空字符串作 key，
     // getApisByType 按 type 过滤，仍能正确查到。
-    const config = buildEffectiveConfig(currentInstance, fallbackConfig)
+    const config = buildEffectiveConfig(currentInstance, configInput)
     const id = nodeId(config) ?? ''
     pageComponentRegistry.registerApi({ id, type: config.type, api })
   }

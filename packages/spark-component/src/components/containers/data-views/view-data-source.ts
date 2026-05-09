@@ -1,8 +1,10 @@
 import { computed, toValue, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import {
+  diagnoseDataKey,
   resolveDataCapabilitiesFromDataKey,
   type DataView,
+  type DataKeyDiagnostic,
   type IDataRow,
 } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../internal'
@@ -51,6 +53,7 @@ interface UseContainerDataSourceOptions<TSource> {
 
 interface UseContainerDataSourceEffectsOptions<TSource> {
   resolvedView: ComputedRef<TSource | null>
+  diagnostic?: ComputedRef<ReturnType<typeof diagnoseDataKey> | null>
   provideDataSource?: (source: TSource) => void
   logger: DataSourceLoggerLike
   logPrefix: string
@@ -69,6 +72,11 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
   const capabilities = computed(() =>
     resolveDataCapabilitiesFromDataKey(toValue(options.dataKey), pageDataSet),
   )
+  const diagnostic = computed(() => {
+    const rawKey = toValue(options.dataKey)
+    if (typeof rawKey !== 'string' || rawKey.trim().length === 0) return null
+    return diagnoseDataKey(rawKey, pageDataSet)
+  })
 
   const resolvedDataRow = computed<IDataRow | null>(() => {
     const provided = resolveMaybeValue(options.externalDataSource)
@@ -95,6 +103,7 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
   if (options.skipEffects !== true) {
     useContainerDataSourceEffects({
       resolvedView,
+      diagnostic,
       ...(options.provideDataSource ? { provideDataSource: options.provideDataSource } : {}),
       logger: options.logger ?? DEFAULT_DATA_SOURCE_LOGGER,
       logPrefix: options.logPrefix ?? 'useContainerDataSource',
@@ -122,7 +131,9 @@ function shouldAutoLoad(view: DataView): boolean {
   const autoLoadState = view as { autoLoad?: boolean; autoLoadConfigured?: boolean }
   if (autoLoadState.autoLoadConfigured === true && autoLoadState.autoLoad === false) return false
 
-  return true
+  const table = view.dataTable
+  if (table?.resourceType === 'static-data') return false
+  return table?.api?.list !== undefined
 }
 
 function useContainerDataSourceProvideEffect<TSource>(options: {
@@ -159,7 +170,38 @@ function useContainerDataSourceAutoLoadEffect<TSource>(options: {
   )
 }
 
+function useContainerDataSourceDiagnosticEffect(options: {
+  diagnostic: ComputedRef<ReturnType<typeof diagnoseDataKey> | null>
+  logger: DataSourceLoggerLike
+  logPrefix: string
+}): void {
+  watch(
+    options.diagnostic,
+    (diagnostic) => {
+      if (diagnostic === null || diagnostic.ok) return
+      if (!shouldLogContainerDiagnostic(diagnostic)) return
+      options.logger.warn(`${options.logPrefix}: ${diagnostic.message}`)
+    },
+    { immediate: true },
+  )
+}
+
+function shouldLogContainerDiagnostic(diagnostic: DataKeyDiagnostic): boolean {
+  // currentRow / selectedRows 在首帧为空属于常态，不应污染控制台。
+  if (diagnostic.status === 'empty-current-row') return false
+  if (diagnostic.status === 'empty-selection') return false
+  return true
+}
+
 export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>): void {
+  if (options.diagnostic !== undefined) {
+    useContainerDataSourceDiagnosticEffect({
+      diagnostic: options.diagnostic,
+      logger: options.logger,
+      logPrefix: options.logPrefix,
+    })
+  }
+
   if (options.skipProvideEffect !== true) {
     useContainerDataSourceProvideEffect({
       resolvedView: options.resolvedView,

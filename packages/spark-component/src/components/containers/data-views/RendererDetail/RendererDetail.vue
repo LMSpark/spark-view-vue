@@ -20,7 +20,9 @@
               <SparkComponentRenderer :config="child" />
             </RendererHostScope>
           </div>
-          <slot v-bind="getDefaultScope()" />
+          <RendererHostScope :row="detailData">
+            <slot v-bind="getDefaultScope()" />
+          </RendererHostScope>
         </div>
     </div>
   </div>
@@ -154,4 +156,3 @@ registerApi(detailApi)
   min-width: 0;
 }
 </style>
-

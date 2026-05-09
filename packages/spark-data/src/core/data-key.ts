@@ -336,6 +336,112 @@ export type DataKeyBinding =
   | { kind: 'view'; source: IDataSource }
   | { kind: 'value'; value: DataKeyValue }
 
+export type DataKeyDiagnosticStatus =
+  | 'ok'
+  | 'invalid-key'
+  | 'missing-dataset'
+  | 'missing-table'
+  | 'missing-view'
+  | 'empty-current-row'
+  | 'empty-selection'
+  | 'missing-field'
+  | 'unsupported-field-path'
+
+export interface DataKeyDiagnostic {
+  ok: boolean
+  status: DataKeyDiagnosticStatus
+  rawKey: string
+  descriptor: DataKeyDescriptor | null
+  message: string
+}
+
+function dataKeyDiagnostic(
+  status: DataKeyDiagnosticStatus,
+  rawKey: string,
+  descriptor: DataKeyDescriptor | null,
+  message: string,
+): DataKeyDiagnostic {
+  return {
+    ok: status === 'ok',
+    status,
+    rawKey,
+    descriptor,
+    message,
+  }
+}
+
+/**
+ * 诊断 DataKey 绑定链路，不改变 resolveDataKey/resolveDataKeyBinding 的既有行为。
+ */
+export function diagnoseDataKey(
+  rawKey: string,
+  dataSet: IDataSet | null | undefined,
+): DataKeyDiagnostic {
+  const normalizedKey = typeof rawKey === 'string' ? rawKey.trim() : ''
+  const descriptor = normalizedKey ? parseDataKey(normalizedKey) : null
+  if (!descriptor) {
+    return dataKeyDiagnostic('invalid-key', rawKey, null, `无效 DataKey: ${rawKey}`)
+  }
+  if (!dataSet) {
+    return dataKeyDiagnostic('missing-dataset', rawKey, descriptor, `DataSet 未就绪: ${rawKey}`)
+  }
+
+  const table = dataSet.getTable(descriptor.tableName)
+  if (!table) {
+    return dataKeyDiagnostic('missing-table', rawKey, descriptor, `DataKey 表不存在: ${descriptor.tableName}`)
+  }
+
+  const view = table.getView(descriptor.viewId)
+  if (!view) {
+    return dataKeyDiagnostic('missing-view', rawKey, descriptor, `DataKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}`)
+  }
+
+  let value: SparkDataView | IDataRow[] | IDataRow | AggregateResultRow | null | undefined
+  switch (descriptor.field) {
+    case 'rows':
+      value = view
+      break
+    case 'currentRow':
+      value = view.currentRow
+      if (value === null) {
+        return dataKeyDiagnostic('empty-current-row', rawKey, descriptor, `DataKey 当前行为空: ${rawKey}`)
+      }
+      break
+    case 'selectedRows':
+      value = view.selectedRows
+      if (value.length === 0) {
+        return dataKeyDiagnostic('empty-selection', rawKey, descriptor, `DataKey 选中行为空: ${rawKey}`)
+      }
+      break
+    case 'aggregateResult':
+      value = view.aggregateResult
+      break
+    case 'selectionAggregateResult':
+      value = view.selectionAggregateResult
+      break
+    default:
+      return dataKeyDiagnostic('invalid-key', rawKey, descriptor, `无效 DataKey 字段: ${rawKey}`)
+  }
+
+  const fieldPathCandidate: unknown = value
+  if (descriptor.fieldPath !== undefined) {
+    if (
+      fieldPathCandidate === null
+      || fieldPathCandidate === undefined
+      || typeof fieldPathCandidate !== 'object'
+      || Array.isArray(fieldPathCandidate)
+      || 'viewId' in fieldPathCandidate
+    ) {
+      return dataKeyDiagnostic('unsupported-field-path', rawKey, descriptor, `DataKey 字段路径不适用于当前值: ${rawKey}`)
+    }
+    if (extractFieldPath(fieldPathCandidate, descriptor.fieldPath) === undefined) {
+      return dataKeyDiagnostic('missing-field', rawKey, descriptor, `DataKey 字段不存在: ${descriptor.fieldPath}`)
+    }
+  }
+
+  return dataKeyDiagnostic('ok', rawKey, descriptor, `DataKey 可解析: ${rawKey}`)
+}
+
 /**
  * 解析 DataKey 为渲染绑定描述符（渲染层入口）
  *

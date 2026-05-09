@@ -33,9 +33,9 @@ export type DatasetCrudToolFunctionTarget =
   | 'row'
   | 'relation'
   | 'dependency'
-export type DatasetCrudToolFunctionAction = `pageDesign/dataset/${string}`
+export type DatasetCrudToolFunctionId = string
 type DatasetCrudToolFunctionBaseFields = {
-  action: DatasetCrudToolFunctionAction
+  functionId: DatasetCrudToolFunctionId
   type: 'describe' | 'request'
   description: string
   paramsSchema: Record<string, unknown>
@@ -52,7 +52,7 @@ export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionBaseFie
 }
 export type DatasetCrudToolFunctionCapabilityRow = Pick<
   DatasetCrudToolFunctionParameterRow,
-  'action' | 'type' | 'target' | 'crudToolMethod' | 'description'
+  'functionId' | 'type' | 'target' | 'crudToolMethod' | 'description'
 > & {
   integrationStatus: 'catalog-only' | 'runtime-wired'
   paramsRef: string
@@ -386,7 +386,7 @@ function toCapabilityRow(row: DatasetCrudToolFunctionParameterRow): DatasetCrudT
 }
 const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
   defineDescribeRow({
-    action: 'pageDesign/dataset/export',
+    functionId: 'export',
     target: 'dataset',
     crudToolMethod: 'toJson',
     description: '导出当前 DataSet 元数据快照',
@@ -403,39 +403,39 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/canUndo',
+    functionId: 'canUndo',
     target: 'dataset',
     crudToolMethod: 'getCanUndo',
     description: '读取当前历史栈是否可撤销',
     paramsSchema: NO_PARAMS,
     resultSchema: {
-      canUndo: 'boolean — true 表示可执行 pageDesign/dataset/undo',
+      canUndo: 'boolean — true 表示可执行 dataset.undo',
     },
     example: {},
     usageRules: [
-      '建议在调用 pageDesign/dataset/undo 前先检查该值，避免无效操作。',
+      '建议在调用 dataset.undo 前先检查该值，避免无效操作。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/canRedo',
+    functionId: 'canRedo',
     target: 'dataset',
     crudToolMethod: 'getCanRedo',
     description: '读取当前历史栈是否可重做',
     paramsSchema: NO_PARAMS,
     resultSchema: {
-      canRedo: 'boolean — true 表示可执行 pageDesign/dataset/redo',
+      canRedo: 'boolean — true 表示可执行 dataset.redo',
     },
     example: {},
     usageRules: [
-      '建议在调用 pageDesign/dataset/redo 前先检查该值，避免无效操作。',
+      '建议在调用 dataset.redo 前先检查该值，避免无效操作。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/historyCursor',
+    functionId: 'historyCursor',
     target: 'dataset',
     crudToolMethod: 'getHistoryCursor',
     description: '读取当前历史游标位置',
@@ -451,7 +451,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/undo',
+    functionId: 'undo',
     target: 'dataset',
     crudToolMethod: 'undo',
     description: '撤销最近一次写操作快照',
@@ -473,7 +473,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/redo',
+    functionId: 'redo',
     target: 'dataset',
     crudToolMethod: 'redo',
     description: '重做最近一次被撤销的写操作快照',
@@ -495,7 +495,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/clearHistory',
+    functionId: 'clearHistory',
     target: 'dataset',
     crudToolMethod: 'clearHistory',
     description: '清空历史栈并以当前状态重建基线快照',
@@ -511,7 +511,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listTables',
+    functionId: 'listTables',
     target: 'dataset',
     crudToolMethod: 'listTables',
     description: '列出当前 DataSet 的全部数据表',
@@ -527,7 +527,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getTable',
+    functionId: 'getTable',
     target: 'table',
     crudToolMethod: 'getTable',
     description: '获取指定数据表',
@@ -548,7 +548,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listColumns',
+    functionId: 'listColumns',
     target: 'column',
     crudToolMethod: 'listColumns',
     description: '列出指定表的全部列定义',
@@ -570,12 +570,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先确认表名，或先执行 pageDesign/dataset/listTables。',
+        fix: '先确认表名，或先执行 dataset.listTables。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getColumn',
+    functionId: 'getColumn',
     target: 'column',
     crudToolMethod: 'getColumn',
     description: '获取指定表中的单个列定义',
@@ -599,12 +599,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先确认表名，或先执行 pageDesign/dataset/listTables。',
+        fix: '先确认表名，或先执行 dataset.listTables。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createColumn',
+    functionId: 'createColumn',
     target: 'column',
     crudToolMethod: 'createColumn',
     description: '向指定表追加一列',
@@ -639,7 +639,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateColumn',
+    functionId: 'updateColumn',
     target: 'column',
     crudToolMethod: 'updateColumn',
     description: '更新指定列定义',
@@ -666,12 +666,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_COLUMN',
         when: '目标列不存在',
-        fix: '先执行 pageDesign/dataset/getColumn 或 pageDesign/dataset/listColumns。',
+        fix: '先执行 dataset.getColumn 或 dataset.listColumns。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/renameColumn',
+    functionId: 'renameColumn',
     target: 'column',
     crudToolMethod: 'renameColumn',
     description: '重命名指定列，并同步更新该表视图、静态 rows 与相关关系引用',
@@ -690,7 +690,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     },
     validation: { requiredKeys: ['tableName', 'columnName', 'newColumnName'] },
     usageRules: [
-      '仅用于列身份变更；普通元数据修改仍优先用 pageDesign/dataset/updateColumn。',
+      '仅用于列身份变更；普通元数据修改仍优先用 dataset.updateColumn。',
       '会同步改写当前表 views 中的字段引用、静态 rows 字段键，以及 tableRelations 中的 parentField/childField 引用。',
       CATALOG_ONLY_RULE,
     ],
@@ -698,12 +698,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先确认 tableName，或先执行 pageDesign/dataset/listTables。',
+        fix: '先确认 tableName，或先执行 dataset.listTables。',
       },
       {
         code: 'UNKNOWN_COLUMN',
         when: '目标列不存在',
-        fix: '先执行 pageDesign/dataset/getColumn 或 pageDesign/dataset/listColumns。',
+        fix: '先执行 dataset.getColumn 或 dataset.listColumns。',
       },
       {
         code: 'COLUMN_ALREADY_EXISTS',
@@ -713,7 +713,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteColumn',
+    functionId: 'deleteColumn',
     target: 'column',
     crudToolMethod: 'deleteColumn',
     description: '删除指定列',
@@ -737,12 +737,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_COLUMN',
         when: '目标列不存在',
-        fix: '先执行 pageDesign/dataset/getColumn 或 pageDesign/dataset/listColumns。',
+        fix: '先执行 dataset.getColumn 或 dataset.listColumns。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createTable',
+    functionId: 'createTable',
     target: 'table',
     crudToolMethod: 'createTable',
     description: '创建数据表，并按需初始化资源语义、API、CRUD 配置和视图',
@@ -781,7 +781,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'TABLE_ALREADY_EXISTS',
         when: '同名表已存在',
-        fix: '改用 pageDesign/dataset/updateTable 或换一个 tableName。',
+        fix: '改用 dataset.updateTable 或换一个 tableName。',
       },
       {
         code: 'INVALID_TABLE_CONFIG',
@@ -791,7 +791,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateTable',
+    functionId: 'updateTable',
     target: 'table',
     crudToolMethod: 'updateTable',
     description: '更新数据表结构、资源语义及运行配置',
@@ -844,7 +844,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/renameTable',
+    functionId: 'renameTable',
     target: 'table',
     crudToolMethod: 'renameTable',
     description: '重命名数据表，并同步更新视图、关系、依赖与布局引用',
@@ -861,7 +861,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     },
     validation: { requiredKeys: ['tableName', 'newTableName'] },
     usageRules: [
-      '仅用于表身份变更；普通资源语义、API 或列结构修改仍优先用 pageDesign/dataset/updateTable。',
+      '仅用于表身份变更；普通资源语义、API 或列结构修改仍优先用 dataset.updateTable。',
       '会同步改写表级 views.tableName、tableRelations、viewDependencies 与 layout.tablePositions 中的表名引用。',
       CATALOG_ONLY_RULE,
     ],
@@ -869,7 +869,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先确认 tableName，或先执行 pageDesign/dataset/listTables。',
+        fix: '先确认 tableName，或先执行 dataset.listTables。',
       },
       {
         code: 'TABLE_ALREADY_EXISTS',
@@ -879,7 +879,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteTable',
+    functionId: 'deleteTable',
     target: 'table',
     crudToolMethod: 'deleteTable',
     description: '删除指定数据表',
@@ -906,7 +906,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listViews',
+    functionId: 'listViews',
     target: 'view',
     crudToolMethod: 'listViews',
     description: '列出指定表下的全部视图',
@@ -928,12 +928,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先执行 pageDesign/dataset/listTables。',
+        fix: '先执行 dataset.listTables。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getView',
+    functionId: 'getView',
     target: 'view',
     crudToolMethod: 'getView',
     description: '获取指定视图',
@@ -959,7 +959,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createView',
+    functionId: 'createView',
     target: 'view',
     crudToolMethod: 'createView',
     description: '创建一个非 default 视图',
@@ -998,12 +998,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'DEFAULT_VIEW_ALREADY_EXISTS',
         when: '尝试创建 default 视图',
-        fix: '改用 pageDesign/dataset/updateView 更新 default 视图。',
+        fix: '改用 dataset.updateView 更新 default 视图。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateView',
+    functionId: 'updateView',
     target: 'view',
     crudToolMethod: 'updateView',
     description: '更新指定视图的元数据配置',
@@ -1045,12 +1045,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_VIEW',
         when: '目标视图不存在',
-        fix: '先执行 pageDesign/dataset/listViews 或 pageDesign/dataset/createView。',
+        fix: '先执行 dataset.listViews 或 dataset.createView。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteView',
+    functionId: 'deleteView',
     target: 'view',
     crudToolMethod: 'deleteView',
     description: '删除指定视图',
@@ -1079,7 +1079,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listRows',
+    functionId: 'listRows',
     target: 'row',
     crudToolMethod: 'listRows',
     description: '列出指定视图当前持有的全部行',
@@ -1104,12 +1104,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_VIEW',
         when: '目标视图不存在',
-        fix: '先执行 pageDesign/dataset/getView 或 pageDesign/dataset/createView。',
+        fix: '先执行 dataset.getView 或 dataset.createView。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getRow',
+    functionId: 'getRow',
     target: 'row',
     crudToolMethod: 'getRow',
     description: '按主键查找一条行数据，支持树形 children 递归扫描',
@@ -1135,7 +1135,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createRow',
+    functionId: 'createRow',
     target: 'row',
     crudToolMethod: 'createRow',
     description: '在指定视图中创建一条新行',
@@ -1168,7 +1168,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createRows',
+    functionId: 'createRows',
     target: 'row',
     crudToolMethod: 'createRows',
     description: '批量创建多条行数据',
@@ -1204,7 +1204,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateRow',
+    functionId: 'updateRow',
     target: 'row',
     crudToolMethod: 'updateRow',
     description: '更新指定主键的行数据',
@@ -1234,12 +1234,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'ROW_UPDATE_FAILED',
         when: '目标行不存在或远端更新失败',
-        fix: '先执行 pageDesign/dataset/getRow 确认目标主键可命中。',
+        fix: '先执行 dataset.getRow 确认目标主键可命中。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateRows',
+    functionId: 'updateRows',
     target: 'row',
     crudToolMethod: 'updateRows',
     description: '批量更新多条行数据',
@@ -1285,7 +1285,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteRow',
+    functionId: 'deleteRow',
     target: 'row',
     crudToolMethod: 'deleteRow',
     description: '删除指定主键的行数据',
@@ -1312,12 +1312,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'ROW_DELETE_FAILED',
         when: '目标行不存在或远端删除失败',
-        fix: '先执行 pageDesign/dataset/getRow 确认目标主键可命中。',
+        fix: '先执行 dataset.getRow 确认目标主键可命中。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteRows',
+    functionId: 'deleteRows',
     target: 'row',
     crudToolMethod: 'deleteRows',
     description: '批量删除多条行数据',
@@ -1349,7 +1349,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listRelations',
+    functionId: 'listRelations',
     target: 'relation',
     crudToolMethod: 'listRelations',
     description: '列出 DataSet 中的表关系，可按 parentTable 或 childTable 过滤',
@@ -1370,7 +1370,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getRelation',
+    functionId: 'getRelation',
     target: 'relation',
     crudToolMethod: 'getRelation',
     description: '获取单条表关系；命中多条关系时要求字段级消歧',
@@ -1403,7 +1403,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createRelation',
+    functionId: 'createRelation',
     target: 'relation',
     crudToolMethod: 'createRelation',
     description: '创建一条表关系',
@@ -1437,7 +1437,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateRelation',
+    functionId: 'updateRelation',
     target: 'relation',
     crudToolMethod: 'updateRelation',
     description: '更新一条表关系',
@@ -1462,12 +1462,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'RELATION_NOT_FOUND',
         when: '选择器未命中现有关系',
-        fix: '先执行 pageDesign/dataset/listRelations 或 pageDesign/dataset/getRelation。',
+        fix: '先执行 dataset.listRelations 或 dataset.getRelation。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteRelation',
+    functionId: 'deleteRelation',
     target: 'relation',
     crudToolMethod: 'deleteRelation',
     description: '删除一条表关系（单一签名：关系选择器）',
@@ -1502,7 +1502,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listDependencies',
+    functionId: 'listDependencies',
     target: 'dependency',
     crudToolMethod: 'listDependencies',
     description: '列出 DataSet 中的视图依赖，可按 parentTable 或 childTable 过滤',
@@ -1523,7 +1523,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getDependency',
+    functionId: 'getDependency',
     target: 'dependency',
     crudToolMethod: 'getDependency',
     description: '获取一条视图依赖',
@@ -1546,7 +1546,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/createDependency',
+    functionId: 'createDependency',
     target: 'dependency',
     crudToolMethod: 'createDependency',
     description: '创建一条视图依赖',
@@ -1579,7 +1579,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateDependency',
+    functionId: 'updateDependency',
     target: 'dependency',
     crudToolMethod: 'updateDependency',
     description: '更新一条视图依赖',
@@ -1606,12 +1606,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'DEPENDENCY_NOT_FOUND',
         when: '目标依赖不存在',
-        fix: '先执行 pageDesign/dataset/getDependency 或 pageDesign/dataset/createDependency。',
+        fix: '先执行 dataset.getDependency 或 dataset.createDependency。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/deleteDependency',
+    functionId: 'deleteDependency',
     target: 'dependency',
     crudToolMethod: 'deleteDependency',
     description: '删除一条视图依赖',
@@ -1635,12 +1635,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'DEPENDENCY_NOT_FOUND',
         when: '目标依赖不存在',
-        fix: '先执行 pageDesign/dataset/getDependency。',
+        fix: '先执行 dataset.getDependency。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/listAggregates',
+    functionId: 'listAggregates',
     target: 'view',
     crudToolMethod: 'listAggregates',
     description: '列出指定视图当前的全部聚合配置',
@@ -1667,12 +1667,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_VIEW',
         when: '目标视图不存在',
-        fix: '先执行 pageDesign/dataset/listViews 确认视图存在。',
+        fix: '先执行 dataset.listViews 确认视图存在。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getAggregate',
+    functionId: 'getAggregate',
     target: 'view',
     crudToolMethod: 'getAggregate',
     description: '获取指定视图中单条聚合配置',
@@ -1698,12 +1698,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_VIEW',
         when: '目标视图不存在',
-        fix: '先执行 pageDesign/dataset/listViews 确认视图存在。',
+        fix: '先执行 dataset.listViews 确认视图存在。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/addAggregate',
+    functionId: 'addAggregate',
     target: 'view',
     crudToolMethod: 'addAggregate',
     description: '向指定视图新增一条聚合配置',
@@ -1728,7 +1728,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '视图聚合新增步骤：先选 viewId（不传即 default）→ 指定 key（输出字段名）→ 设 config.type（sum/count/avg/min/max/join）与 field。',
       'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取仍用 aggregateResult.totalAmount。',
       '新增后 aggregates[key] 保留配置全貌；容器侧从 aggregateResult[key]（全量）或 selectionAggregateResult[key]（选中集）读取对应聚合结果。',
-      'key 已存在时抛错，改用 pageDesign/dataset/updateAggregate。',
+      'key 已存在时抛错，改用 dataset.updateAggregate。',
       'config.field 省略时默认与 key 同名，该字段必须在列定义中存在。',
       CATALOG_ONLY_RULE,
     ],
@@ -1736,17 +1736,17 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'AGGREGATE_KEY_EXISTS',
         when: 'key 已存在于当前视图聚合配置',
-        fix: '改用 pageDesign/dataset/updateAggregate，或先执行 pageDesign/dataset/removeAggregate。',
+        fix: '改用 dataset.updateAggregate，或先执行 dataset.removeAggregate。',
       },
       {
         code: 'UNKNOWN_FIELD',
         when: 'config.field（或 key）不在列定义中',
-        fix: '先执行 pageDesign/dataset/listColumns 确认字段存在，或补充正确 field 值。',
+        fix: '先执行 dataset.listColumns 确认字段存在，或补充正确 field 值。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/updateAggregate',
+    functionId: 'updateAggregate',
     target: 'view',
     crudToolMethod: 'updateAggregate',
     description: '更新指定视图中一条已有聚合配置（浅合并 updates）',
@@ -1777,7 +1777,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       JSON_OBJECT_RULE,
       '可通过 updates.type 在 sum/count/avg/min/max/join 间切换；join 类型可同时传 updates.separator。',
       '若修改 updates.field，只会改变聚合来源，不会改变结果引用 key；读取仍使用 aggregateResult[key]。',
-      'key 不存在时抛错，改用 pageDesign/dataset/addAggregate。',
+      'key 不存在时抛错，改用 dataset.addAggregate。',
       '只传需要修改的字段；未传字段保留原值。',
       CATALOG_ONLY_RULE,
     ],
@@ -1785,17 +1785,17 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'AGGREGATE_KEY_NOT_FOUND',
         when: 'key 不存在于当前视图聚合配置',
-        fix: '先执行 pageDesign/dataset/listAggregates，或改用 pageDesign/dataset/addAggregate 新增。',
+        fix: '先执行 dataset.listAggregates，或改用 dataset.addAggregate 新增。',
       },
       {
         code: 'UNKNOWN_FIELD',
         when: 'updates.field 不在列定义中',
-        fix: '先执行 pageDesign/dataset/listColumns 确认字段存在。',
+        fix: '先执行 dataset.listColumns 确认字段存在。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/removeAggregate',
+    functionId: 'removeAggregate',
     target: 'view',
     crudToolMethod: 'removeAggregate',
     description: '删除指定视图中一条聚合配置',
@@ -1822,12 +1822,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'AGGREGATE_KEY_NOT_FOUND',
         when: 'key 不存在于当前视图聚合配置',
-        fix: '先执行 pageDesign/dataset/listAggregates 确认 key 存在。',
+        fix: '先执行 dataset.listAggregates 确认 key 存在。',
       },
     ],
   }),
   defineDescribeRow({
-    action: 'pageDesign/dataset/getComputeExpression',
+    functionId: 'getComputeExpression',
     target: 'column',
     crudToolMethod: 'getComputeExpression',
     description: '获取指定列的计算表达式字符串',
@@ -1851,17 +1851,17 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先执行 pageDesign/dataset/listTables 确认表存在。',
+        fix: '先执行 dataset.listTables 确认表存在。',
       },
       {
         code: 'UNKNOWN_COLUMN',
         when: '目标列不存在',
-        fix: '先执行 pageDesign/dataset/listColumns 确认列存在。',
+        fix: '先执行 dataset.listColumns 确认列存在。',
       },
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/setComputeExpression',
+    functionId: 'setComputeExpression',
     target: 'column',
     crudToolMethod: 'setComputeExpression',
     description: '设置（或替换）指定列的计算表达式；设置后自动重编译并对现有行立即重算',
@@ -1876,7 +1876,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
           fieldRef: "直接写字段名（无需任何前缀）。行对象通过 with(__row) 解构，字段直接可见。例：price * qty / status === 'active' ? 1 : 0",
           ctxRef: "ctx.<key> — 引用外部上下文变量，需先调用 DataView.setComputedContext({ key: value }) 注入。例：amount * ctx.taxRate",
           childAgg: {
-            note: '子表聚合函数；需父子表已通过 pageDesign/dataset/createRelation 建立 TableRelation，否则子行为空。当前源码按 childTable 匹配并读取子表 default 视图。',
+            note: '子表聚合函数；需父子表已通过 dataset.createRelation 建立 TableRelation，否则子行为空。当前源码按 childTable 匹配并读取子表 default 视图。',
             childRef: "'子表名'；例如 'Items'。当前不要写 'Items@filtered' 这类视图后缀。",
             functions: [
               '$sum(childRef, field) → number（无行时返回 0）',
@@ -1945,19 +1945,19 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '$avg/$sum/$count 在空子表时返回 0；$min/$max 在空子表时返回 undefined；$list 返回数组；$join 返回字符串。',
       '子表聚合依赖 TableRelation；无关系时子行数组为空，$sum/$avg/$count 返回 0/$join 返回空字符串。',
       '设置后自动触发 DataTable 刷新链：计算列重编译 → 现有行立即重算 → 聚合行同步更新。',
-      '要移除表达式，改用 pageDesign/dataset/clearComputeExpression。',
+      '要移除表达式，改用 dataset.clearComputeExpression。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先执行 pageDesign/dataset/listTables 确认表存在。',
+        fix: '先执行 dataset.listTables 确认表存在。',
       },
       {
         code: 'UNKNOWN_COLUMN',
         when: '目标列不存在',
-        fix: '先执行 pageDesign/dataset/listColumns 确认列存在。',
+        fix: '先执行 dataset.listColumns 确认列存在。',
       },
       {
         code: 'EXPRESSION_COMPILE_ERROR',
@@ -1967,7 +1967,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     ],
   }),
   defineRequestRow({
-    action: 'pageDesign/dataset/clearComputeExpression',
+    functionId: 'clearComputeExpression',
     target: 'column',
     crudToolMethod: 'clearComputeExpression',
     description: '移除指定列的计算表达式，恢复为普通列（值保留，但不再重算）',
@@ -1991,12 +1991,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       {
         code: 'UNKNOWN_TABLE',
         when: '目标表不存在',
-        fix: '先执行 pageDesign/dataset/listTables 确认表存在。',
+        fix: '先执行 dataset.listTables 确认表存在。',
       },
       {
         code: 'UNKNOWN_COLUMN',
         when: '目标列不存在',
-        fix: '先执行 pageDesign/dataset/listColumns 确认列存在。',
+        fix: '先执行 dataset.listColumns 确认列存在。',
       },
     ],
   }),
@@ -2012,10 +2012,10 @@ export class PageDesignDatasetCatalog extends PageDesignToolCatalog<
     super(DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE, DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE)
   }
 
-  validateParams(action: string, params: unknown): string | null {
-    const row = this.getParameterRow(action)
+  validateParams(functionId: string, params: unknown): string | null {
+    const row = this.getParameterRow(functionId)
     if (row === undefined) {
-      return `未知 datasetTool 动作: ${action}`
+      return `未知 datasetTool 函数: ${functionId}`
     }
 
     const result = LlmParamsValidator.validateLlmDeserializedParams(params, row.paramsSchema, row.validation)

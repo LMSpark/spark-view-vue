@@ -68,6 +68,7 @@ logger.info('MyWidget initialized', { title: props.config.title })
 ### 方式一：单个注册（同步 / 懒加载）
 
 ```typescript
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import MyWidget from './MyWidget.vue'
 
@@ -75,22 +76,28 @@ import MyWidget from './MyWidget.vue'
 Spark.register('my-widget', MyWidget)
 
 // 懒加载（推荐——自动代码分割）
-Spark.register('my-widget', () => import('./MyWidget.vue'))
+Spark.register('my-widget', defineAsyncComponent(() => import('./MyWidget.vue')))
 ```
 
-### 方式二：批量注册（`createRegister` + glob，推荐）
+### 方式二：批量注册（glob + 显式异步组件）
 
 ```typescript
 // src/features/my-app/index.ts
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 
-const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))
-
-reg.registerAll({
-  'my-widget':      './components/MyWidget.vue',
-  'my-grid':        './components/MyGrid.vue',
+const modules = import.meta.glob('./components/*.vue') as Record<string, () => Promise<{ default: unknown }>>
+const entries = {
+  'my-widget': './components/MyWidget.vue',
+  'my-grid': './components/MyGrid.vue',
   'my-detail-form': './components/MyDetailForm.vue',
-})
+} as const
+
+for (const [type, path] of Object.entries(entries)) {
+  const loader = modules[path]
+  if (!loader) throw new Error(`Missing component module: ${path}`)
+  Spark.register(type, defineAsyncComponent(loader))
+}
 ```
 
 ### 方式三：一次性批量（无 glob 绑定，适合内置组件）

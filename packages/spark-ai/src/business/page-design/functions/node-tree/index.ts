@@ -5,6 +5,7 @@ export {
 export type {
   SparkNodeTreeToolFailureMode,
   SparkNodeTreeToolTarget,
+  SparkNodeTreeToolFunctionId,
   SparkNodeTreeToolParameterRow,
   SparkNodeTreeToolCapabilityRow,
 } from './tool-catalog'

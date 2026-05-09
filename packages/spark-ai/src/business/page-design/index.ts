@@ -3,9 +3,12 @@ export {
 } from './page-design-business'
 
 export type {
+  PageDesignAppendMessageOptions,
+  PageDesignExecuteFunctionCallOptions,
   PageDesignModuleOptions,
   PageDesignRuntimeContext,
   PageDesignServiceState,
+  PageDesignStopSessionOptions,
 } from './page-design-business'
 
 export {
@@ -16,6 +19,7 @@ export { PageDesignEditFlowPrompts } from './prompts/edit-flow-prompts'
 
 export {
   PageDesignEditSession,
+  PageDesignEditFunctionClassifier,
   PageDesignEditActionClassifier,
 } from './functions'
 

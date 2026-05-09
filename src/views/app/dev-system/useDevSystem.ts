@@ -7,11 +7,12 @@
  *  - UI 相关 watch（选中节点/页面切换联动 workTab）内聚在这里，
  *    消费层不再持有 workTab / previewRefreshToken / aiPanelActiveFile 等中间 ref。
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { PAGE_FILE_NAMES, useDevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { useDevPageModelSession } from './page-model-session'
+import { onPageConfigChange } from '@/services/sse-events'
 
 function isPageFileName(value: string): value is PageFileName {
   return PAGE_FILE_NAMES.includes(value as PageFileName)
@@ -49,6 +50,16 @@ export function useDevSystem() {
   // ─── AI 会话（页面模型级编辑）─────────────────────────
   const ai = useDevPageModelSession({ state, activeFile: aiPanelActiveFile })
 
+  const stopPageConfigChange = onPageConfigChange((event) => {
+    if (event.pageId !== state.activePageId.value) return
+    const file = event.file
+    state.notifyPageFileChanged(
+      event.pageId,
+      isPageFileName(file) ? file : '__bulk',
+    )
+  })
+  onScopeDispose(stopPageConfigChange)
+
   // ─── 派生能力 ──────────────────────────────────────────
   const canPreviewCurrentPage = computed(
     () => Boolean(state.editForm.path || state.activePageId.value),
@@ -70,6 +81,12 @@ export function useDevSystem() {
     }
     if (!nextPageId && hasSelectedNode) {
       workTab.value = 'props'
+    }
+  })
+
+  watch(() => state.pageFilesRevision.value, () => {
+    if (workTab.value === 'preview') {
+      previewRefreshToken.value++
     }
   })
 
@@ -104,7 +121,7 @@ export function useDevSystem() {
       state.addStatus(`AI 工具 [${payload.toolName}] 失败：${describeError(payload.error)}`, 'error')
     },
     'fc-round-end': (payload: { round: number; calls: number }) => {
-      state.addStatus(`✅ 模型级编辑完成（${payload.round} 轮 · ${payload.calls} 次写入）`, 'success')
+      state.addStatus(`模型级编辑完成（${payload.round} 轮 · ${payload.calls} 次写入），请保存全部以持久化`, 'success')
     },
     'message-error': (payload: { error: unknown }) => {
       ElMessage.error(`AI 消息失败：${describeError(payload.error)}`)

@@ -172,8 +172,7 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
  */
 const DEFAULT_CONSTRAINTS: ComponentCatalog['constraints'] = {
   dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
-  htmlTypes: ['div', 'span', 'p', 'a', 'img', 'ul', 'li'],
-  validTypePrefixes: ['r-', 'el-', 'Render', 'spark-'],
+  validTypePrefixes: ['r-', 'spark-'],
   validAggregateTypes: ['sum', 'count', 'avg', 'min', 'max', 'join'],
   nonFieldRTypes: ['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list'],
   containerContextMap: {
@@ -766,4 +765,3 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
 
   return { catalog, auditReport }
 }
-

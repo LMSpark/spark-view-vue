@@ -7,9 +7,6 @@
 // ── 1. System 层（命名空间 / 插件 / 注册表） ──
 export { Spark } from './system/index.js'
 export type {
-  ComponentLoader,
-  GlobModules,
-  RegisterContext,
   SparkSystem
 } from './system/index.js'
 
@@ -24,8 +21,7 @@ export type {
 } from './core/index.js'
 
 // ── 3. Vue 插件 + 注册表 ──
-export { createSparkPlugin, createComponentRegistry, getGlobalRegistry } from './system/index.js'
-export type { SparkPluginOptions } from './system/index.js'
+// 公共入口收束到 Spark 命名空间：Spark.createPlugin/createRegistry/getRegistry。
 
 // ── 3.5 权限渲染 API ──
 export * as permission from './permission/index.js'

@@ -50,19 +50,19 @@ app.mount('#app')
 ## 2. 组件注册
 
 ```typescript
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 
 // 单个注册（同步）
 Spark.register('my-grid', MyGrid)
 
 // 单个注册（懒加载，推荐生产环境）
-Spark.register('my-grid', () => import('./MyGrid.vue'))
+Spark.register('my-grid', defineAsyncComponent(() => import('./MyGrid.vue')))
 
-// 批量注册（推荐大型项目）
-const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))
-reg.registerAll({
-  'r-table': './data-components/RendererTable.vue',
-  'r-form': './data-components/RendererForm.vue',
+// 批量注册
+Spark.registerAll({
+  'r-table': RendererTable,
+  'r-form': RendererForm,
 })
 ```
 

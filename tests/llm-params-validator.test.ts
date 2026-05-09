@@ -163,8 +163,8 @@ describe('validateLlmDeserializedParams', () => {
 })
 
 describe('validateDataSetCrudToolFunctionParams', () => {
-  it('accepts valid pageDesign/dataset/createTable params', () => {
-    const error = datasetCatalog.validateParams('pageDesign/dataset/createTable', {
+  it('accepts valid dataset.createTable params', () => {
+    const error = datasetCatalog.validateParams('createTable', {
       tableName: 'Users',
       columns: [
         { name: 'id', type: 'number', isPrimaryKey: true },
@@ -180,8 +180,8 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(error).toBeNull()
   })
 
-  it('rejects invalid pageDesign/dataset/createTable params after llm deserialization', () => {
-    const error = datasetCatalog.validateParams('pageDesign/dataset/createTable', {
+  it('rejects invalid dataset.createTable params after llm deserialization', () => {
+    const error = datasetCatalog.validateParams('createTable', {
       tableName: 'Users',
       columns: 'id,name',
     })
@@ -189,9 +189,9 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(error).toContain('$.columns 应为数组')
   })
 
-  it('enforces single-signature for pageDesign/dataset/deleteRelation (zero backward compat)', () => {
+  it('enforces single-signature for dataset.deleteRelation (zero backward compat)', () => {
     // 旧签名（selector 包装对象）应明确失败，避免隐式兼容历史协议。
-    const errorLegacySelector = datasetCatalog.validateParams('pageDesign/dataset/deleteRelation', {
+    const errorLegacySelector = datasetCatalog.validateParams('deleteRelation', {
       selector: {
         parentTable: 'Department',
         childTable: 'Employee',
@@ -200,7 +200,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(errorLegacySelector).not.toBeNull()
 
     // 缺少 parentTable 应该失败（单一签名：必须提供 parentTable 和 childTable）
-    const errorMissingParent = datasetCatalog.validateParams('pageDesign/dataset/deleteRelation', {
+    const errorMissingParent = datasetCatalog.validateParams('deleteRelation', {
       childTable: 'Employee',
       parentField: 'deptId',
       childField: 'orderId',
@@ -208,7 +208,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(errorMissingParent).toContain('parentTable')
 
     // 缺少 childTable 应该失败
-    const errorMissingChild = datasetCatalog.validateParams('pageDesign/dataset/deleteRelation', {
+    const errorMissingChild = datasetCatalog.validateParams('deleteRelation', {
       parentTable: 'Department',
       parentField: 'deptId',
       childField: 'orderId',
@@ -216,7 +216,7 @@ describe('validateDataSetCrudToolFunctionParams', () => {
     expect(errorMissingChild).toContain('childTable')
 
     // 提供完整的单一签名应该通过
-    const noError = datasetCatalog.validateParams('pageDesign/dataset/deleteRelation', {
+    const noError = datasetCatalog.validateParams('deleteRelation', {
       parentTable: 'Department',
       childTable: 'Employee',
       parentField: 'deptId',

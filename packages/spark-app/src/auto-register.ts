@@ -8,6 +8,7 @@
  * 此处直接静态导入 Spark，避免无效动态导入告警。
  */
 
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import { createLogger } from './logger'
 
@@ -28,6 +29,8 @@ const DEFAULT_EXCLUDE = [
   '**/*.spec.vue'
 ]
 
+type ComponentModuleLoader = () => Promise<{ default: unknown }>
+
 /**
  * 运行时扫描并注册所有匹配的 Vue 组件。
  *
@@ -44,17 +47,12 @@ export function setupAutoRegister(options: AutoRegisterOptions = {}) {
   const modulesB = import.meta.glob('./features/**/components/**/*.vue')
   const modulesC = import.meta.glob('./src/components/**/*.vue')
   const modulesD = import.meta.glob('./src/views/**/*.vue')
-  // 为了让 TypeScript 识别出符合 Spark.createRegister 的类型，我们在这里显式声明
-  // 与 @spark-view/spark-component 内部的 GlobModules 等价。
   const allModules = {
     ...modulesA,
     ...modulesB,
     ...modulesC,
     ...modulesD,
-  } as Record<string, () => Promise<{ default: unknown }>>
-
-  // 生成注册器
-  const reg = Spark.createRegister(allModules)
+  } as Record<string, ComponentModuleLoader>
   const registered: string[] = []
 
   for (const path of Object.keys(allModules)) {
@@ -78,7 +76,10 @@ export function setupAutoRegister(options: AutoRegisterOptions = {}) {
       .replace(/[\s_]+/g, '-')
       .toLowerCase()
 
-    reg.register(kebab, path)
+    const loader = allModules[path]
+    if (!loader) continue
+
+    Spark.register(kebab, defineAsyncComponent(loader))
     registered.push(kebab)
   }
 

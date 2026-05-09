@@ -2,6 +2,7 @@ import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CrudApi, TableResourceType } from '@spark-view/spark-data'
 import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/data-views/view-data-source'
+import type { DataKeyDiagnostic } from '@spark-view/spark-data'
 
 interface AutoLoadViewLike {
   autoLoad?: boolean
@@ -45,6 +46,29 @@ async function mountAutoLoadEffect(source: AutoLoadViewLike | null) {
       resolvedView: computed(() => resolvedView.value),
       logger,
       logPrefix: 'test',
+    })
+  })
+
+  await nextTick()
+  return { scope, logger }
+}
+
+async function mountDiagnosticEffect(diagnostic: DataKeyDiagnostic | null) {
+  const scope = effectScope()
+  const logger = {
+    warn: vi.fn<(message: string) => void>(),
+    error: vi.fn<(message: string, error?: unknown) => void>(),
+  }
+
+  scope.run(() => {
+    const resolvedDiagnostic = ref<DataKeyDiagnostic | null>(diagnostic)
+    useContainerDataSourceEffects<AutoLoadViewLike>({
+      resolvedView: computed(() => null),
+      diagnostic: computed(() => resolvedDiagnostic.value),
+      logger,
+      logPrefix: 'test',
+      skipAutoLoadEffect: true,
+      skipProvideEffect: true,
     })
   })
 
@@ -102,6 +126,33 @@ describe('useContainerDataSourceEffects', () => {
     const { scope } = await mountAutoLoadEffect(source)
 
     expect(requestData).not.toHaveBeenCalled()
+    scope.stop()
+  })
+
+  it('不会为 empty-current-row 诊断输出 warn 噪音', async () => {
+    const { scope, logger } = await mountDiagnosticEffect({
+      ok: false,
+      status: 'empty-current-row',
+      rawKey: 'columns@currentRow',
+      descriptor: null,
+      message: 'DataKey 当前行为空: columns@currentRow',
+    })
+
+    expect(logger.warn).not.toHaveBeenCalled()
+    scope.stop()
+  })
+
+  it('会继续输出结构性 DataKey 诊断告警', async () => {
+    const { scope, logger } = await mountDiagnosticEffect({
+      ok: false,
+      status: 'missing-table',
+      rawKey: 'missing@rows',
+      descriptor: null,
+      message: 'DataKey 表不存在: missing',
+    })
+
+    expect(logger.warn).toHaveBeenCalledTimes(1)
+    expect(logger.warn).toHaveBeenCalledWith('test: DataKey 表不存在: missing')
     scope.stop()
   })
 })

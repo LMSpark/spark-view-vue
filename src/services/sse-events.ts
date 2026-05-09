@@ -29,6 +29,27 @@ export interface FileChangeEvent {
   timestamp: number
 }
 
+function normalizeFileChangeEvent(data: unknown): FileChangeEvent | null {
+  if (data === null || typeof data !== 'object') return null
+  const record = data as Record<string, unknown>
+  const pageId = record['pageId']
+  const file = record['file']
+  const timestamp = record['timestamp']
+  if (typeof pageId !== 'string' || typeof file !== 'string') return null
+
+  let normalizedTimestamp: number
+  if (typeof timestamp === 'number' && Number.isFinite(timestamp)) {
+    normalizedTimestamp = timestamp
+  } else if (typeof timestamp === 'string') {
+    const parsed = Number(timestamp)
+    normalizedTimestamp = Number.isFinite(parsed) ? parsed : Date.now()
+  } else {
+    normalizedTimestamp = Date.now()
+  }
+
+  return { pageId, file, timestamp: normalizedTimestamp }
+}
+
 // ─── 连接管理 ────────────────────────────────────────────────────────────────
 
 /** 按事件类型存储的订阅回调集合 */
@@ -151,5 +172,15 @@ export function onServerEvent<T = unknown>(
 export function onPageConfigChange(
   callback: (event: FileChangeEvent) => void,
 ): () => void {
-  return onServerEvent<FileChangeEvent>(ServerEventType.PAGE_CONFIG, callback)
+  return onServerEvent<unknown>(ServerEventType.PAGE_CONFIG, (data) => {
+    const event = normalizeFileChangeEvent(data)
+    if (event === null) {
+      _malformedEventCount += 1
+      logger.warn('丢弃畸形页面配置事件', {
+        totalMalformed: _malformedEventCount,
+      })
+      return
+    }
+    callback(event)
+  })
 }

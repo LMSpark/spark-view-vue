@@ -332,7 +332,7 @@ export class DataView implements IDataSource, IDataViewStore {
   private _shouldApplyStaticLocalFilter(): boolean {
     const table = this._dataTable
     if (!table) return false
-    return table.resourceType === 'static-data' || table.api?.list === undefined
+    return table.resourceType === 'static-data' || (table.api?.list === undefined && this.rows.length > 0)
   }
 
   private _getStaticLocalFilterSourceRows(): IDataRow[] {
@@ -1685,24 +1685,25 @@ export class DataView implements IDataSource, IDataViewStore {
     this.emitStateChanged('aggregate')
   }
 
-  /** 发射 rowsChanged 事件（防抖 16ms，合并批量更新） */
+  /** 发射 rowsChanged 事件（stateChanged 立即失效，rowsChanged 防抖 16ms 合并批量更新） */
   private emitRowsChanged(kinds?: DataViewStateChangeKind | readonly DataViewStateChangeKind[]): void {
-    this.pendingRowsStateKinds.add('rows')
+    const stateKinds = new Set<DataViewStateChangeKind>(['rows'])
     if (kinds !== undefined) {
-      const stateKinds: readonly DataViewStateChangeKind[] = Array.isArray(kinds) ? kinds : [kinds]
-      for (const kind of stateKinds) {
-        this.pendingRowsStateKinds.add(kind)
-      }
+      const nextStateKinds: readonly DataViewStateChangeKind[] = Array.isArray(kinds) ? kinds : [kinds]
+      for (const kind of nextStateKinds) stateKinds.add(kind)
     }
+
+    const normalizedKinds = [...stateKinds]
+    this.emitStateChanged(normalizedKinds)
+
+    for (const kind of normalizedKinds) this.pendingRowsStateKinds.add(kind)
 
     if (this.stateChangedDebouncer) {
       clearTimeout(this.stateChangedDebouncer)
     }
     this.stateChangedDebouncer = setTimeout(() => {
-      const stateKinds = [...this.pendingRowsStateKinds]
       this.pendingRowsStateKinds.clear()
       this.events.emit('rowsChanged')
-      this.emitStateChanged(stateKinds)
       this.stateChangedDebouncer = undefined
     }, ROWS_CHANGED_DEBOUNCE_MS)
   }

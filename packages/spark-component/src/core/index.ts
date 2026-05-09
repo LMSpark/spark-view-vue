@@ -16,8 +16,6 @@ export type {
   UseSparkComponentOptions,
   SparkNodeInput,
 } from './useSparkComponent.js'
-export type {
-} from './useSparkComponent.js'
 
 export type {
   CapabilityName,

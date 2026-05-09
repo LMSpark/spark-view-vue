@@ -11,8 +11,8 @@
  * 4. DevSystem 投影：生成类型列表、属性名、枚举映射、默认值映射。
  *
  * 主要消费场景：
- * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（pageDesign/knowledge/queryPayloads /
- *    pageDesign/knowledge/guidePayload）提供精简、无冗余的组件视图，最小化 Token 开销。
+ * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（knowledge.queryPayloads /
+ *    knowledge.guidePayload）提供精简、无冗余的组件视图，最小化 Token 开销。
  * 2. DevSystem（开发者平台）场景——为 rule.json 内建的图形化配置编辑器提供组件选取、属性下拉、
  *    枚举推断与默认值提示等元数据结构。
  *
@@ -41,7 +41,7 @@ import type { FunctionCatalog, FunctionComponentEntry } from './function-catalog
 /**
  * LLM 目录摘要负载——告知大模型当前应用环境可用的全部组件总览。
  *
- * 由 `projectComponentDirectory` 生成，适合作为 pageDesign/knowledge/queryPayloads 的响应体直接返回。
+ * 由 `projectComponentDirectory` 生成，适合作为 knowledge.queryPayloads 的响应体直接返回。
  * 包含：组件总数统计、registry 分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
  * 以及面向 LLM 的配置使用原则。
  */
@@ -81,7 +81,7 @@ export interface ComponentDirectoryPayload {
 /**
  * 单组件能力核心规格——剔除复杂 Schema 引用后的精简形态，专为 AI 生成 UI 配置设计。
  *
- * 由 `projectComponentSpec` 生成，适合作为 pageDesign/knowledge/guidePayload 的消费目标。
+ * 由 `projectComponentSpec` 生成，适合作为 knowledge.guidePayload 的消费目标。
  * LLM 可依据此结构选择组件 type、填写 props、绑定事件。
  */
 export interface ComponentSpec {
@@ -355,6 +355,18 @@ function isNotUndefined<T>(value: T | undefined): value is T {
 }
 
 /**
+ * SparkNode 骨架结构字段名集合。
+ *
+ * 这些字段属于节点本体，不属于组件业务 props；投影给 AI / DevSystem 时都必须过滤，
+ * 避免消费层继续生成 `props.id`、`props.type`、`props.children` 这类旧形态。
+ */
+const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
+
+function isConfigurableProp(prop: Pick<PropEntry, 'name'>): boolean {
+  return !STRUCT_KEYS.has(prop.name)
+}
+
+/**
  * 核心水合函数：将 catalog 中通过 canonical 引用描述的组件展开为完整的 HydratedComponentEntry。
  *
  * 处理流程：
@@ -576,7 +588,7 @@ function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSch
 // =========================================================
 
 /**
- * AI FC 投影：生成全局组件目录摘要（适用于 pageDesign/knowledge/queryPayloads）。
+ * AI FC 投影：生成全局组件目录摘要（适用于 knowledge.queryPayloads）。
  *
  * 输出内容：
  * - 各分类组件数量汇总（total / containers / fields / groups / meta / features）；
@@ -618,7 +630,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     .sort((a, b) => a.localeCompare(b))
 
   return {
-    hint: 'pageDesign/knowledge/queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 pageDesign/knowledge/guidePayload 查阅配置指南。',
+    hint: 'knowledge.queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 knowledge.guidePayload 查阅配置指南。',
     summary: {
       total: catalog.componentCount,
       containers: registry.containers.length,
@@ -650,7 +662,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
 }
 
 /**
- * AI FC 投影：提炼单组件能力核心规格（适用于 pageDesign/knowledge/guidePayload）。
+ * AI FC 投影：提炼单组件能力核心规格（适用于 knowledge.guidePayload）。
  *
  * 输出精简的 ComponentSpec，仅保留 LLM 构造 SparkNode 所需的最小信息：
  * type / category / description / props（含必填标记）/ emits（含描述）。
@@ -663,12 +675,13 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
 export function projectComponentSpec(catalog: ComponentCatalog, type: string): ComponentSpec | null {
   const entry = projectHydratedComponent(catalog, type)
   if (entry === null) return null
+  const configurableProps = entry.props.filter(isConfigurableProp)
 
   return {
     type: entry.type,
     category: inferCategory(entry),
     description: entry.description ?? '',
-    props: entry.props.map(p => ({
+    props: configurableProps.map(p => ({
       name: p.name,
       type: p.type,
       required: p.required,
@@ -795,8 +808,9 @@ function flattenRootFieldPaths(fields: RootFieldEntry[], prefix = ''): string[] 
 export function projectComponentConfigGuide(catalog: ComponentCatalog, type: string): ComponentConfigGuide | null {
   const entry = projectHydratedComponent(catalog, type)
   if (entry === null) return null
+  const configurableProps = entry.props.filter(isConfigurableProp)
 
-  const requiredProps = entry.props
+  const requiredProps = configurableProps
     .filter((prop) => prop.required)
     .map((prop) => ({
       name: prop.name,
@@ -806,7 +820,7 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
       ...(prop.schema !== undefined ? { schema: prop.schema } : {}),
     }))
 
-  const optionalProps = entry.props
+  const optionalProps = configurableProps
     .filter((prop) => !prop.required)
     .map((prop) => ({
       name: prop.name,
@@ -822,7 +836,7 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
   }))
 
   const minimalProps = Object.fromEntries(
-    entry.props
+    configurableProps
       .filter((prop) => prop.required)
       .map((prop) => [prop.name, inferExampleValue(prop.type, true)]),
   )
@@ -881,14 +895,6 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
 // =========================================================
 
 /**
- * DevSystem 内部常量：SparkNode 骨架结构字段名集合。
- *
- * 这些字段属于节点的固定骨架，不是用户可配置的业务属性，
- * 在生成属性下拉列表时需要将其过滤掉，避免让用户误操作。
- */
-const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
-
-/**
  * DevSystem 投影：获取全量组件 type 列表（按字母序排列）。
  *
  * 来源：registry.containers + registry.fields + registry.groups + registry.meta
@@ -927,7 +933,7 @@ export function projectDevPropNames(catalog: ComponentCatalog): Record<string, s
     const hydrated = projectHydratedComponent(catalog, type)
     if (hydrated === null) continue
     result[type] = hydrated.props
-      .filter(p => !STRUCT_KEYS.has(p.name))
+      .filter(isConfigurableProp)
       .map(p => p.name)
   }
   return result
@@ -953,7 +959,7 @@ export function projectDevPropEnums(catalog: ComponentCatalog): Record<string, R
     if (hydrated === null) continue
     const enumsForType: Record<string, string[]> = {}
     for (const prop of hydrated.props) {
-      if (STRUCT_KEYS.has(prop.name)) continue
+      if (!isConfigurableProp(prop)) continue
       const schema = resolvePropSchema(catalog, prop)
       const parsedFromType = parseEnumFromTypeString(prop.type)
       const parsedFromSchema = parseEnumFromSchema(schema)
@@ -1091,7 +1097,7 @@ export function projectDevRequiredProps(catalog: ComponentCatalog): Record<strin
     if (hydrated === null) continue
     const required: Record<string, unknown> = {}
     for (const prop of hydrated.props) {
-      if (!prop.required || STRUCT_KEYS.has(prop.name)) continue
+      if (!prop.required || !isConfigurableProp(prop)) continue
       required[prop.name] = inferDefaultFromPropType(prop.type, prop.default)
     }
     if (Object.keys(required).length > 0) {

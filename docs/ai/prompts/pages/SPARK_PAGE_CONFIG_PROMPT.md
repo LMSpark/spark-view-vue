@@ -55,7 +55,7 @@ rule.json 是一个 JSON 数组，每个元素是一条 Rule 对象，描述 UI 
 | `style` | object\|string | 内联样式（推荐 object 写法） |
 | `class` | string | CSS 类名（配合 style.css 使用） |
 | `on` | object | 事件处理器（见 1.4） |
-| `field` | string | 表单字段标识（仅 el-input 等表单控件用） |
+| `field` | string | 字段标识（r-* 字段组件或 r-row-fragment 用） |
 | `value` | any | 表单字段默认值（仅配合 field 使用） |
 | `key` | string | 组件唯一标识（用于查找组件实例） |
 | `dataKey` | string | **SPARK 扩展**。数据绑定键（见 1.5） |
@@ -77,35 +77,24 @@ rule.json 是一个 JSON 数组，每个元素是一条 Rule 对象，描述 UI 
 1.2  组件类型（type）速查表
 ───────────────────────────────────────────────────
 
-**HTML 原生标签**（布局 / 文本）
-div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
+**SPARK 注册组件**
 
-**Element Plus 组件**（UI 库，type 值 = 组件标签名）
+`type` 必须来自组件目录或 SPARK registry。不要生成 HTML 原生标签、Vue 全局组件名、`Render*` 或未注册的 `el-*` 组件名；需要布局、按钮、表格、字段和展示能力时，优先使用 `r-*` 组件。
 
+**内置组件**（type 值 = registry type）
 | type | 用途 | 常用 props |
 |------|------|-----------|
-| `el-table` | 数据表格 | `border, stripe, highlightCurrentRow, maxHeight, rowKey, emptyText` |
-| `el-table-column` | 表格列 | `prop, label, width, type("selection"/"index"), fixed` |
-| `el-button` | 按钮 | `type("primary"/"danger"等), size, icon, disabled` |
-| `el-input` | 输入框 | `placeholder, clearable, type("textarea"), rows, readonly` |
-| `el-card` | 卡片 | `shadow, header, bodyStyle` |
-| `el-alert` | 提示条 | `title, type, closable, showIcon, description` |
-| `el-row` | 栅格行 | `gutter` |
-| `el-col` | 栅格列 | `span(1~24)` |
-| `el-tag` | 标签 | `type, size, effect` |
-| `el-select` | 下拉选择 | `placeholder, clearable, multiple` |
-| `el-option` | 下拉选项 | `label, value` |
-| `el-pagination` | 分页 | `layout, total, pageSize` |
-| `el-descriptions` | 描述列表 | `column, border, title` |
-| `el-descriptions-item` | 描述项 | `label, span` |
-| `el-switch` | 开关 | `activeText, inactiveText` |
-| `el-radio-group` | 单选组 | `modelValue` |
-| `el-checkbox-group` | 多选组 | `modelValue` |
-| `el-form` | 表单 | `labelWidth, inline` |
-| `el-form-item` | 表单项 | `label, prop, required` |
-| `el-dialog` | 对话框 | `title, modelValue, width` |
-| `el-tabs` | 标签页 | `modelValue, type` |
-| `el-tab-pane` | 标签面板 | `label, name` |
+| `r-table` | 数据表格 | `dataKey, border, stripe, highlightCurrentRow` |
+| `r-row-fragment` | 表格列/行片段 | `field, label, width, align` |
+| `r-button` | 按钮 | `type, size, action, disabled` |
+| `r-text` / `r-textarea` | 文本输入 | `field, modelValue, placeholder, readonly` |
+| `r-select` / `r-multi-select` | 下拉选择 | `field, options, dataKey, clearable` |
+| `r-form` / `r-detail` | 表单/详情 | `dataKey, labelWidth, columns` |
+| `r-card` / `r-section` | 内容分组 | `title, bordered, header, footer` |
+| `r-row` / `r-col` | 栅格布局 | `gutter, span` |
+| `r-tabs` / `r-tab-pane` | 标签页 | `modelValue, type, label, name` |
+| `r-dialog` / `r-drawer` | 弹层容器 | `modelValue, title, width, size` |
+| `r-tag` / `r-alert` | 展示组件 | `type, size, title, description` |
 
 **SPARK 容器组件**（自解析 dataKey，provide DATA_SOURCE）
 
@@ -118,10 +107,10 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 | `r-list` | 列表/卡片容器 | `Table@rows` | 已注册的 r-* 字段组件 |
 | `r-tabs` | 标签页容器 | — | `r-tab-pane` |
 | `r-collapse` | 折叠面板容器 | — | `r-collapse-item` |
-| `r-dialog` | 对话框容器 | — | 已注册的 `r-*` 容器、已注册的 `r-*` 字段组件、`Render*` |
-| `r-drawer` | 抽屉容器 | — | 已注册的 `r-*` 容器、已注册的 `r-*` 字段组件、`Render*` |
+| `r-dialog` | 对话框容器 | — | 已注册的 `r-*` 容器、已注册的 `r-*` 字段组件 |
+| `r-drawer` | 抽屉容器 | — | 已注册的 `r-*` 容器、已注册的 `r-*` 字段组件 |
 | `r-steps` | 步骤容器 | — | `r-step` |
-| `r-section` / `r-block` | 分组块容器 | — | 已注册的 `r-*` 容器、已注册的 `r-*` 字段组件、`Render*` |
+| `r-section` / `r-block` | 分组块容器 | — | 已注册的 `r-*` 容器、已注册的 `r-*` 字段组件 |
 
 ## 块状容器网格规则
 
@@ -177,30 +166,14 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 | 树形/集合选择 | `r-cascader`, `r-tree-select`, `r-transfer` |
 | 资源展示/选择 | `r-color`, `r-icon`, `r-image`, `r-file-path`, `r-file-browser`, `r-upload` |
 
-**Render* 组件**（script.js 中定义的渲染函数，函数名即 type）
-type = Render 开头的函数名，如 `RenderTable`, `RenderToolbar`, `RenderNodeInfo`
-
-**第三方组件**
-vxe-table, vxe-column 等（需已注册）
+**扩展组件**
+只能使用已经写入 SPARK registry 的扩展组件 type；不要依赖 Vue 全局组件名或 HTML 原生标签降级。
 
 ───────────────────────────────────────────────────
 1.3  组件嵌套规范
 ───────────────────────────────────────────────────
 
-**el-table 内部只能放 el-table-column**（或 Render* 类型）：
-```json
-{
-  "type": "el-table",
-  "dataKey": "Users@rows",
-  "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
-  "children": [
-    { "type": "el-table-column", "props": { "prop": "id", "label": "ID", "width": "80" } },
-    { "type": "el-table-column", "props": { "prop": "name", "label": "姓名" } }
-  ]
-}
-```
-
-**r-table 内部只能放 r-* 字段组件**：
+**r-table 内部只能放已注册的 r-* 字段/列片段组件**：
 ```json
 {
   "type": "r-table",
@@ -253,9 +226,9 @@ vxe-table, vxe-column 等（需已注册）
     }
   },
   "children": [
-    { "type": "el-button", "dock": "toolbar", "props": { "type": "primary", "size": "small" }, "children": ["新增"] },
-    { "type": "el-button", "dock": "actions", "props": { "size": "small" }, "children": ["查看"] },
-    { "type": "el-button", "dock": "actions", "props": { "size": "small", "permAction": "delete" }, "children": ["删除"] },
+    { "type": "r-button", "dock": "toolbar", "props": { "type": "primary", "size": "small" }, "children": ["新增"] },
+    { "type": "r-button", "dock": "actions", "props": { "size": "small" }, "children": ["查看"] },
+    { "type": "r-button", "dock": "actions", "props": { "size": "small", "permAction": "delete" }, "children": ["删除"] },
     { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
     { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } },
     { "type": "r-select", "name": "status", "props": { "label": "状态", "colSpan": 8, "options": [{ "label": "启用", "value": 1 }, { "label": "停用", "value": 0 }] } },
@@ -276,7 +249,7 @@ vxe-table, vxe-column 等（需已注册）
     }
   },
   "children": [
-    { "type": "el-button", "dock": "toolbar", "props": { "size": "small", "type": "primary" }, "children": ["保存"] },
+    { "type": "r-button", "dock": "toolbar", "props": { "size": "small", "type": "primary" }, "children": ["保存"] },
     {
       "type": "r-tab-pane",
       "props": { "label": "基本信息", "name": "base", "gridGap": 12 },
@@ -314,7 +287,7 @@ vxe-table, vxe-column 等（需已注册）
     }
   },
   "children": [
-    { "type": "el-button", "dock": "toolbar", "props": { "size": "small" }, "children": ["展开全部"] },
+    { "type": "r-button", "dock": "toolbar", "props": { "size": "small" }, "children": ["展开全部"] },
     {
       "type": "r-collapse-item",
       "props": { "title": "基础信息", "name": "base", "gridGap": 12 },
@@ -352,9 +325,9 @@ vxe-table, vxe-column 等（需已注册）
     }
   },
   "children": [
-    { "type": "el-button", "dock": "header", "props": { "size": "small" }, "children": ["刷新"] },
-    { "type": "el-button", "dock": "footer", "props": { "size": "small" }, "children": ["取消"] },
-    { "type": "el-button", "dock": "footer", "props": { "size": "small", "type": "primary" }, "children": ["保存"] },
+    { "type": "r-button", "dock": "header", "props": { "size": "small" }, "children": ["刷新"] },
+    { "type": "r-button", "dock": "footer", "props": { "size": "small" }, "children": ["取消"] },
+    { "type": "r-button", "dock": "footer", "props": { "size": "small", "type": "primary" }, "children": ["保存"] },
     { "type": "r-form", "dataKey": "Users@currentRow", "props": { "colSpan": 24 }, "children": [
       { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
       { "type": "r-textarea", "name": "remark", "props": { "label": "备注", "colSpan": 24 } }
@@ -373,8 +346,8 @@ vxe-table, vxe-column 等（需已注册）
     }
   },
   "children": [
-    { "type": "el-button", "dock": "toolbar", "props": { "size": "small" }, "children": ["上一步"] },
-    { "type": "el-button", "dock": "toolbar", "props": { "size": "small", "type": "primary" }, "children": ["下一步"] },
+    { "type": "r-button", "dock": "toolbar", "props": { "size": "small" }, "children": ["上一步"] },
+    { "type": "r-button", "dock": "toolbar", "props": { "size": "small", "type": "primary" }, "children": ["下一步"] },
     {
       "type": "r-step",
       "props": { "title": "基础信息", "name": "base", "gridGap": 12 },
@@ -408,8 +381,8 @@ vxe-table, vxe-column 等（需已注册）
     }
   },
   "children": [
-    { "type": "el-button", "dock": "header", "props": { "type": "primary", "size": "small" }, "on": { "click": "handleSave" }, "children": ["保存"] },
-    { "type": "el-button", "dock": "header", "props": { "size": "small" }, "on": { "click": "handlePreview" }, "children": ["预览"] },
+    { "type": "r-button", "dock": "header", "props": { "type": "primary", "size": "small" }, "on": { "click": "handleSave" }, "children": ["保存"] },
+    { "type": "r-button", "dock": "header", "props": { "size": "small" }, "on": { "click": "handlePreview" }, "children": ["预览"] },
     { "type": "r-form", "dataKey": "Users@currentRow", "props": { "labelWidth": "88px", "colSpan": 16 }, "children": [
       { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
       { "type": "r-date", "name": "birthday", "props": { "label": "生日", "colSpan": 12 } }
@@ -454,10 +427,10 @@ vxe-table, vxe-column 等（需已注册）
 }
 ```
 
-**文本节点**：children 数组中的纯字符串会被渲染为文本：
+**文本展示**：优先使用已注册展示组件；只有注册组件的 children 需要文本时才放字符串：
 ```json
-{ "type": "h2", "children": ["用户列表"] }
-{ "type": "p", "children": ["说明文字 ", { "type": "strong", "children": ["加粗部分"] }] }
+{ "type": "r-text-display", "props": { "value": "用户列表" } }
+{ "type": "r-alert", "props": { "title": "说明文字", "type": "info" } }
 ```
 
 ───────────────────────────────────────────────────
@@ -470,7 +443,7 @@ vxe-table, vxe-column 等（需已注册）
 值为 script.js 中的**函数名字符串**：
 ```json
 {
-  "type": "el-button",
+  "type": "r-button",
   "on": { "click": "handleSubmit" },
   "children": ["提交"]
 }
@@ -489,7 +462,7 @@ vxe-table, vxe-column 等（需已注册）
 
 **框架处理**：SparkPageRenderer 自动将函数名字符串解析为 script.js 中对应的函数引用。
 
-**el-table 特殊事件**（在 `on` 中声明）：
+**r-table 特殊事件**（在 `on` 中声明）：
 
 | 事件名 | 回调参数 | 说明 |
 |--------|---------|------|
@@ -512,7 +485,7 @@ DataKey 是 SPARK 独有的数据绑定机制，在 rule 上声明 `dataKey` 字
 
 | 格式 | 示例 | 说明 |
 |------|------|------|
-| `表名@rows` | `"Users@rows"` | 绑定表的行数组（el-table / r-table 主数据） |
+| `表名@rows` | `"Users@rows"` | 绑定表的行数组（r-table 主数据） |
 | `表名@currentRow` | `"Users@currentRow"` | 绑定当前行（r-form / r-detail 主数据） |
 | `表名@selectedRows` | `"Users@selectedRows"` | 绑定选中行数组 |
 | `表名@summaryRow` | `"Users@summaryRow"` | 绑定全量聚合输出行；字段来自 `aggregates` 的 key |
@@ -520,11 +493,6 @@ DataKey 是 SPARK 独有的数据绑定机制，在 rule 上声明 `dataKey` 字
 | `表名@currentRow.字段` | `"Users@currentRow.name"` | 绑定当前行的特定字段 |
 | `表名@视图ID@rows` | `"Users@grid@rows"` | 指定视图 ID（多视图场景） |
 | `#scope@表名@rows` | `"#SharedDS@Orders@rows"` | 跨页面共享数据（极少用） |
-
-**el-table** 使用 `dataKey: "表名@rows"` 绑定数据：
-```json
-{ "type": "el-table", "dataKey": "Orders@rows", "props": { "border": true } }
-```
 
 **r-table** 使用 `dataKey: "表名@rows"` 绑定数据：
 ```json
@@ -542,26 +510,28 @@ DataKey 是 SPARK 独有的数据绑定机制，在 rule 上声明 `dataKey` 字
 1.6  布局模式
 ───────────────────────────────────────────────────
 
-**首选 flexbox**（80% 场景，通过内联 style 实现）：
+**首选 r-section / r-row / r-col 组合**（80% 场景）：
 ```json
 {
-  "type": "div",
-  "style": { "display": "flex", "gap": "16px", "alignItems": "flex-start" },
+  "type": "r-section",
+  "props": { "gridGap": 16 },
   "children": [
-    { "type": "div", "style": { "width": "300px", "flexShrink": "0" }, "children": [...] },
-    { "type": "div", "style": { "flex": "1", "minWidth": "0" }, "children": [...] }
+    { "type": "r-row", "props": { "gutter": 16 }, "children": [
+      { "type": "r-col", "props": { "span": 8 }, "children": [...] },
+      { "type": "r-col", "props": { "span": 16 }, "children": [...] }
+    ] }
   ]
 }
 ```
 
-**el-row / el-col 栅格**（适合等分布局）：
+**r-row / r-col 栅格**（适合等分布局）：
 ```json
 {
-  "type": "el-row",
+  "type": "r-row",
   "props": { "gutter": 20 },
   "children": [
-    { "type": "el-col", "props": { "span": 12 }, "children": [...] },
-    { "type": "el-col", "props": { "span": 12 }, "children": [...] }
+    { "type": "r-col", "props": { "span": 12 }, "children": [...] },
+    { "type": "r-col", "props": { "span": 12 }, "children": [...] }
   ]
 }
 ```
@@ -583,24 +553,11 @@ DataKey 是 SPARK 独有的数据绑定机制，在 rule 上声明 `dataKey` 字
 ```
 
 ───────────────────────────────────────────────────
-1.8  Render* 组件使用
+1.8  禁止使用旧 Render* / HTML 节点
 ───────────────────────────────────────────────────
 
-当需要动态渲染或复杂 UI 逻辑时，在 script.js 中定义 `Render` 开头的函数，
-在 rule.json 中用 `type` 引用它：
-
-```json
-{ "type": "RenderToolbar" }
-{ "type": "RenderTable" }
-{ "type": "RenderNodeInfo" }
-```
-
-Render* 函数使用 `h()` 创建 VNode，**只能使用原生 HTML 标签**（`table/tr/td/div/span/button/input` 等），
-**不能使用 Element Plus 组件名**（`h('el-table', ...)` 会被 Vue 当原生元素处理）。
-
-何时使用 Render* vs el-table：
-- **Render*（原生 table）**：需要操作列按钮、自定义格式化、权限驱动 UI（如 permission-render）
-- **el-table + dataKey**：标准数据展示、需要排序/选中/分页等 Element 内置功能
+不要在 rule.json 中生成 `Render*` type，也不要用 `div/table/button/input/h2` 等 HTML 标签作为节点 type。
+复杂 UI 应拆成已注册的 `r-*` 组件树；事件和业务逻辑仍放在 script.js 的普通 `handle*` 函数中。
 
 ───────────────────────────────────────────────────
 1.9  典型页面骨架
@@ -609,25 +566,22 @@ Render* 函数使用 `h()` 创建 VNode，**只能使用原生 HTML 标签**（`
 ```json
 [
   {
-    "type": "div",
+    "type": "r-section",
     "class": "page-container",
+    "props": { "title": "页面标题" },
     "style": { "padding": "20px" },
     "children": [
       {
-        "type": "h2",
-        "children": ["页面标题"]
-      },
-      {
-        "type": "el-alert",
+        "type": "r-alert",
         "props": { "title": "说明文字", "type": "info", "closable": false, "showIcon": true },
         "style": { "marginBottom": "16px" }
       },
       {
-        "type": "div",
-        "style": { "marginBottom": "10px", "display": "flex", "gap": "8px" },
+        "type": "r-toolbar",
+        "props": { "gap": 8 },
         "children": [
           {
-            "type": "el-button",
+            "type": "r-button",
             "props": { "type": "primary", "size": "small" },
             "on": { "click": "handleAdd" },
             "children": ["新增"]
@@ -635,12 +589,11 @@ Render* 函数使用 `h()` 创建 VNode，**只能使用原生 HTML 标签**（`
         ]
       },
       {
-        "type": "el-table",
-        "dataKey": "TableName@rows",
-        "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
+        "type": "r-table",
+        "props": { "dataKey": "TableName@rows", "border": true, "stripe": true, "highlightCurrentRow": true },
         "children": [
-          { "type": "el-table-column", "props": { "prop": "id", "label": "ID", "width": "80" } },
-          { "type": "el-table-column", "props": { "prop": "name", "label": "名称" } }
+          { "type": "r-row-fragment", "props": { "field": "id", "label": "ID", "width": 80 } },
+          { "type": "r-row-fragment", "props": { "field": "name", "label": "名称" } }
         ]
       }
     ]
@@ -738,7 +691,7 @@ script.js 运行在 `with(__ctx)` 沙箱中。所有依赖通过沙箱注入，*
 | `$refreshData` | (key?) => Promise | 刷新数据 |
 | `$page` | IPageService | **推荐**。UI 消息、确认框、导航 |
 | `SparkData` | namespace | createTreeManager 等工具 |
-| `h` | Vue h 函数 | Render* 函数中使用 |
+| `h` | Vue h 函数 | 保留注入，不要在新页面中依赖它生成 Render* 节点 |
 
 ───────────────────────────────────────────────────
 3.2  脚本结构模板
@@ -763,10 +716,7 @@ function __init__() {
 // ── 事件处理函数 ──
 function handleXxx() { ... }
 
-// ── Render* 渲染函数（使用 h() 返回 VNode）──
-function RenderXxx() {
-  return h('div', { style: '...' }, [...])
-}
+// 不定义 Render* 渲染函数；页面 UI 使用 rule.json 中的已注册 r-* 组件树。
 ```
 
 ───────────────────────────────────────────────────
@@ -852,44 +802,26 @@ treeManager.addNodesToCache([newNode])
 ```
 
 ───────────────────────────────────────────────────
-3.6  Render* 函数编写规范
+3.6  组件化事件编写规范
 ───────────────────────────────────────────────────
 
 ```javascript
-function RenderTable() {
-  var rows = _pageState.rows
-  if (!rows.length) {
-    return h('div', { style: 'text-align:center;color:#c0c4cc;padding:32px;' }, '暂无数据')
-  }
+function handleEdit(row) {
+  _pageState.currentEditingId = row?.id ?? null
+  $page.showMessage('已选择编辑行', 'info')
+}
 
-  var thS = 'padding:10px 12px;text-align:left;background:#f5f7fa;color:#606266;font-weight:600;border:1px solid #ebeef5;'
-  var tdS = 'padding:10px 12px;border:1px solid #ebeef5;color:#606266;'
-
-  return h('table', { style: 'width:100%;border-collapse:collapse;' }, [
-    h('thead', [h('tr', [
-      h('th', { style: thS }, 'ID'),
-      h('th', { style: thS }, '名称'),
-      h('th', { style: thS + 'text-align:center;' }, '操作'),
-    ])]),
-    h('tbody', rows.map(function(row, i) {
-      return h('tr', { style: i % 2 ? 'background:#fafafa;' : '' }, [
-        h('td', { style: tdS }, row.id),
-        h('td', { style: tdS }, row.name),
-        h('td', { style: tdS + 'text-align:center;' }, [
-          h('a', { href: 'javascript:void(0)', style: 'color:#409eff;cursor:pointer;', onClick: function() { handleEdit(row) } }, '编辑'),
-        ]),
-      ])
-    })),
-  ])
+function handleAdd() {
+  const view = $dataSet?.getView('Users', 'default')
+  view?.appendRow({ id: Date.now(), name: '新用户' })
 }
 ```
 
 关键规则：
-- **只用原生 HTML 标签**（`h('div', ...)`, `h('table', ...)`），不用 Element Plus 组件名
-- 内联样式使用字符串拼接（Render* 函数中 style 可以是字符串）
-- 事件绑定用 `onClick` / `onChange`（camelCase）
-- 从 `_pageState` 读取数据，通过 DataView 事件或 DOM 直写触发重新渲染
-- 角色/状态切换组件用原生 `<input type="radio/checkbox">`，不用 el-radio-group
+- rule.json 只绑定 `handle*` 函数名，script.js 负责业务动作，不负责拼 VNode。
+- 数据变化优先通过 DataView 方法完成，让 r-* 容器自动刷新。
+- 不使用 DOM 直写更新 r-* 组件内容；需要展示状态时，把状态写入 DataSet 或绑定组件 props。
+- 不在 script.js 中调用 `h()` 生成页面主 UI。
 
 ───────────────────────────────────────────────────
 3.7  禁止事项
@@ -912,21 +844,9 @@ function RenderTable() {
 | 场景 | 正确做法 |
 |------|---------|
 | 更新表格数据 | `view.replaceRows(newRows)` — DataView 事件自动刷新 UI |
-| 更新 Render* 组件中的纯 UI 文本 | `_flushXxxDOM()` — 直接操作 DOM |
-| 树节点点击后更新信息面板 | `_flushNodeInfoDOM()` — DOM 直写 |
-| 切换角色/模式后完全重建页面 | DataView.replaceRows() + DOM 直写 |
-
-**DOM 直写模式**：
-```javascript
-function _flushNodeInfoDOM() {
-  const container = $query('.node-info')
-  if (!container) return
-  const node = _pageState.selectedNode
-  container.innerHTML = node
-    ? `<p>${node.name}（${node.type}）</p>`
-    : '<p style="color:#909399">请选择节点</p>'
-}
-```
+| 更新 UI 状态 | 写入 DataView rows/currentRow 或组件 props 依赖的数据 |
+| 树节点点击后更新信息面板 | 更新 DataSet 中的当前行/详情表，让 r-detail/r-section 渲染 |
+| 切换角色/模式后刷新页面 | DataView.replaceRows() 或更新权限/模式数据 |
 
 ═══════════════════════════════════════════════════
 【4】style.css — 页面样式（可选）
@@ -1021,7 +941,7 @@ SPARK 页面样式通过 `[data-page="page-id"]` 选择器实现作用域隔离�
 ───────────────────────────────────────────────────
 
 - **需要**：页面有 class 引用、需要覆盖 Element Plus 默认样式、复杂布局需 CSS 辅助
-- **不需要**：纯内联 style + Render* 函数的页面（如 permission-render 基本不需要额外 CSS）
+- **不需要**：纯内联 style、组件默认样式已满足的页面
 
 ═══════════════════════════════════════════════════
 【5】跨文件一致性规则（必须严格遵守）
@@ -1039,9 +959,8 @@ SPARK 页面样式通过 `[data-page="page-id"]` 选择器实现作用域隔离�
    rule.json 中 `"onNodeClick": "handleNodeClick"` → script.js 中必须有
    `function handleNodeClick(...) { ... }`
 
-4. **Render* type ↔ script 函数**
-   rule.json 中 `{ "type": "RenderTable" }` → script.js 中必须有
-   `function RenderTable() { return h(...) }`
+4. **组件 type ↔ SPARK registry**
+   rule.json 中每个 `type` 必须来自内置 `r-*` 组件或已显式注册的扩展组件；不要生成 `Render*`、HTML 标签或未注册 `el-*`。
 
 5. **class ↔ style.css 选择器**
    rule.json 中 `"class": "page-header"` → style.css 中必须有
@@ -1055,22 +974,22 @@ SPARK 页面样式通过 `[data-page="page-id"]` 选择器实现作用域隔离�
 7. **name ↔ 行字段**
    r-* 字段组件的 `"name": "age"` 必须对应 pagedata.json 列定义中的字段名
 
-8. **el-table-column prop ↔ 列名**
-   `"prop": "email"` 必须对应 pagedata.json 列定义中的字段名
+8. **字段组件 field ↔ 列名**
+   `r-row-fragment` / `r-*` 字段的 `"field": "email"` 必须对应 pagedata.json 列定义中的字段名
 
 ═══════════════════════════════════════════════════
 【6】生成规则（必须严格遵守）
 ═══════════════════════════════════════════════════
 
 rule.json 规则：
-1. 顶层是 JSON 数组 `[...]`，通常只有一个根 `div` 元素
-2. 根 div 设置 `class` 和 `style: { "padding": "20px" }`
-3. 每个 el-table 必须声明 `"border": true`
-4. 需要行高亮的 el-table 必须声明 `"highlightCurrentRow": true`
-5. el-table-column 的 `width` 是字符串（`"100"`），r-* 的 `width` 是数字（`120`）
+1. 顶层是 JSON 数组 `[...]`，通常只有一个根 `r-section` / `r-card` / `r-container`
+2. 根容器设置 `class` 和 `style: { "padding": "20px" }`
+3. 每个 `r-table` 的 `dataKey` 写在 `props.dataKey`
+4. 需要行高亮的 `r-table` 声明 `"highlightCurrentRow": true`
+5. r-* 的 `width` 是数字（`120`），不要使用 `el-table-column`
 6. 文本和标题放在 `children` 数组中作为字符串
 7. 按钮的 `children` 是文本数组，如 `["提交"]`
-8. Render* 函数名首字母大写 + camelCase
+8. 不生成 Render* 函数或 Render* type
 9. 事件处理函数名以 `handle` 开头
 
 pagedata.json 规则：
@@ -1086,7 +1005,7 @@ script.js 规则：
 17. 事件订阅在 `__init__()` 中注册
 18. 模块状态用 `let _pageState = { ... }` 声明
 19. 使用 `$page.showMessage/showConfirm` 代替 ElMessage/ElMessageBox
-20. Render* 函数只用原生 HTML 标签
+20. 不用 `h()` 生成页面主 UI；UI 由 rule.json 的注册组件树表达
 21. 有树的页面不要在节点事件中触发全局重建
 
 style.css 规则：
@@ -1096,7 +1015,7 @@ style.css 规则：
 跨文件规则：
 24. 先写 rule.json，再对齐其他文件：
     - 从 rule.json 的 dataKey 推导 pagedata.json 的表结构
-    - 从 rule.json 的 on/Render* 推导 script.js 的函数清单
+    - 从 rule.json 的 on 推导 script.js 的函数清单
     - 从 rule.json 的 class 推导 style.css 的选择器
 
 ═══════════════════════════════════════════════════
@@ -1104,38 +1023,38 @@ style.css 规则：
 ═══════════════════════════════════════════════════
 
 A. 纯数据表格页面（最简单）
-- rule.json: el-table + el-table-column + el-button 工具栏
+- rule.json: r-table + r-row-fragment + r-toolbar/r-button
 - pagedata.json: 单表 + 内联 rows
 - script.js: `__init__()` + 数据事件订阅 + 按钮处理
 - style.css: 页面容器样式
 
 B. 主从表页面（Master-Detail）
-- rule.json: 两个 el-table（父表 highlightCurrentRow + 子表）
+- rule.json: 两个 r-table（父表 highlightCurrentRow + 子表）
 - pagedata.json: 两张表 + tableRelations（默认 currentRow，无需显式写 dependencyType）
 - script.js: `__init__()` 订阅 currentRowChanged，可选 loadFromServer
 - style.css: section 样式
 
 C. 树+详情页面
-- rule.json: r-tree + 信息面板 div（class="node-info"）+ 可选子表
+- rule.json: r-tree + r-detail/r-section 信息面板 + 可选子表
 - pagedata.json: treeData（扁平节点）+ hierarchicalTreeData（空 rows）+ 可选 childNodes
 - script.js: `__init__()` 创建 TreeManager + buildNestedTree + replaceRows；
-  `handleNodeClick` 中 `_flushNodeInfoDOM()`（DOM 直写）
+  `handleNodeClick` 中更新 DataView/currentRow
 - style.css: 树容器 + 节点样式
 
-D. 表格+操作列页面（`Render*` 模式）
-- rule.json: RenderToolbar + RenderTable 引用
-- pagedata.json: 单表（或无 DataSet，纯内联数据在 script.js）
-- script.js: `Render*` 函数，h() 渲染原生 HTML table + 操作按钮
-- style.css: 可选
+D. 表格+操作列页面
+- rule.json: r-table + r-row-fragment + actions/toolbar 区域中的 r-button
+- pagedata.json: 单表 + 操作所需字段
+- script.js: `handle*` 函数处理按钮动作
+- style.css: section/toolbar 样式
 
 E. 权限驱动页面
-- rule.json: RenderUserSwitch + RenderPermSnapshot + RenderAddButton + RenderTable
-- pagedata.json: 可选（数据在 MOCK_RESPONSES 中）
-- script.js: `_pageState` 存权限快照 + MOCK_RESPONSES + `Render*` 函数读 `_perm`
+- rule.json: r-table/r-form/r-button/r-alert 等已注册组件
+- pagedata.json: 权限快照或业务数据表
+- script.js: `_pageState` 存权限快照，事件函数刷新 DataView/权限数据
 - style.css: 可选
 
 F. 三级联动页面（用户→订单→明细）
-- rule.json: 三个 el-table 区域，Users highlightCurrentRow，Orders 可有 selection 列
+- rule.json: 三个 r-table 区域，Users highlightCurrentRow，Orders 可有 selection 列
 - pagedata.json: 三表 + 两条 relation（Users→Orders currentRow，Orders→OrderItems）
 - script.js: `__init__()` 订阅事件 + CRUD 操作用 $page 确认
 - style.css: section 样式

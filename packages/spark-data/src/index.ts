@@ -45,12 +45,13 @@ export type {
 export {
   isDataKey,
   parseDataKey,
+  diagnoseDataKey,
   resolveDataKey,
   resolveDataKeyBinding,
   resolveRawKey,
   getViewFromRawKey,
 } from './core/data-key'
-export type { DataKeyBinding } from './core/data-key'
+export type { DataKeyBinding, DataKeyDiagnostic, DataKeyDiagnosticStatus } from './core/data-key'
 export {
   resolveDataCapabilitiesFromDataKey,
   resolveViewFromDataKey,

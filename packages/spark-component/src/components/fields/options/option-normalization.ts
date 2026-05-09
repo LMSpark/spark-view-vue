@@ -51,6 +51,7 @@ export function normalizeMultiValue(value: unknown, separator = ','): FieldOptio
   if (Array.isArray(value)) return value as FieldOptionValue[]
   if (typeof value === 'string') {
     if (!value.trim()) return []
+    if (separator === '') return [value]
     return value.split(separator).map(item => item.trim())
   }
   if (value === null || value === undefined || value === '') return []

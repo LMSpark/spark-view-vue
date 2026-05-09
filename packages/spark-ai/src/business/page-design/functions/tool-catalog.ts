@@ -4,7 +4,11 @@ export type PageDesignFunctionKind = 'describe' | 'request'
 export type PageDesignCapabilityIntegrationStatus = 'catalog-only' | 'runtime-wired'
 
 export interface PageDesignFunctionCatalogRow {
-  action: string
+  /**
+   * 模块内函数 ID，只描述当前模块声明了哪个函数。
+   * LLM 可调用 action 由 core 在会话投影时生成，目录元数据不承载调用路径。
+   */
+  functionId: string
   type: PageDesignFunctionKind
   target: string
   description: string
@@ -16,7 +20,8 @@ export interface PageDesignFunctionCatalogRow {
 }
 
 export interface PageDesignCapabilityRow {
-  action: string
+  /** 模块内函数 ID，不是 LLM action 路径。 */
+  functionId: string
   type: PageDesignFunctionKind
   target: string
   description: string
@@ -39,12 +44,12 @@ export function createPageDesignCapabilityRow<
   extras: PageDesignCapabilityExtras = {},
 ): TCapability {
   const capability = {
-    action: row.action,
+    functionId: row.functionId,
     type: row.type,
     target: row.target,
     description: row.description,
     integrationStatus,
-    paramsRef: row.action,
+    paramsRef: row.functionId,
     ...extras,
     ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
     ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
@@ -69,17 +74,17 @@ export abstract class PageDesignToolCatalog<
   protected constructor(parameterTable: readonly TRow[], capabilityTable: readonly TCapability[]) {
     this.parameterTable = parameterTable
     this.capabilityTable = capabilityTable
-    this.parameterIndex = new Map(this.parameterTable.map((row) => [row.action, row]))
-    this.capabilityIndex = new Map(this.capabilityTable.map((row) => [row.action, row]))
+    this.parameterIndex = new Map(this.parameterTable.map((row) => [row.functionId, row]))
+    this.capabilityIndex = new Map(this.capabilityTable.map((row) => [row.functionId, row]))
   }
 
-  getParameterRow(action: string): TRow | undefined {
-    return this.parameterIndex.get(action)
+  getParameterRow(functionId: string): TRow | undefined {
+    return this.parameterIndex.get(functionId)
   }
 
-  getCapabilityRow(action: string): TCapability | undefined {
-    return this.capabilityIndex.get(action)
+  getCapabilityRow(functionId: string): TCapability | undefined {
+    return this.capabilityIndex.get(functionId)
   }
 
-  abstract validateParams(action: string, params: unknown): string | null
+  abstract validateParams(functionId: string, params: unknown): string | null
 }

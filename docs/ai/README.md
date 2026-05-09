@@ -40,6 +40,7 @@
 | 文件 | 说明 |
 |------|------|
 | [packages/spark-ai/ARCHITECTURE.md](../../packages/spark-ai/ARCHITECTURE.md) | spark-ai 当前 business-first core、page-design business、公共出口与删除的旧兼容 API |
+| [AI_DETAILED_DESIGN_AND_IMPLEMENTATION_CHAIN.md](AI_DETAILED_DESIGN_AND_IMPLEMENTATION_CHAIN.md) | **方案总览**：AI 详细设计方案、图文链路、模块分工、实施路线、质量门禁与交付文案 |
 | [DEVSYSTEM_AI_4FILE_IMPLEMENTATION_REVIEW_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_IMPLEMENTATION_REVIEW_PLAN.md) | **当前实施基线**：包含已审核计划、阶段性实施回写、偏离计划项、实际验证结果与后续入口 |
 | [DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md](architecture/DEVSYSTEM_AI_4FILE_UNIFICATION_PLAN.md) | **预研母版**：DevSystem AI 统一到页面级 4 文件同层编辑的背景梳理与目标架构；审核时以实施计划书为准 |
 | [DEVSYSTEM_DATASET_TOOL_SSOT.md](architecture/DEVSYSTEM_DATASET_TOOL_SSOT.md) | **当前实现**：DevSystem / `pagedata.json` / `DataSetCrudTool` / AI 能力目录之间的 SSoT 边界与调用链 |

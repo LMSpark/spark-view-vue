@@ -33,22 +33,22 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
   expect(clickSpy).toHaveBeenCalledWith('payload')
 })
 
-test('SparkComponentRenderer falls back to Vue global Render* components', () => {
-  const RenderSearchBar = defineComponent({
-    name: 'RenderSearchBar',
+test('SparkComponentRenderer requires registry registration for generic Vue global components', () => {
+  const SearchBar = defineComponent({
+    name: 'SearchBar',
     setup() {
-      return () => h('div', { class: 'render-search-bar' }, 'search')
+      return () => h('div', { class: 'search-bar' }, 'search')
     }
   })
 
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
-      config: { type: 'RenderSearchBar' },
+      config: { type: 'SearchBar' },
       parentContext: rootContext
     },
     global: {
       components: {
-        RenderSearchBar
+        SearchBar
       },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
@@ -56,86 +56,26 @@ test('SparkComponentRenderer falls back to Vue global Render* components', () =>
     }
   })
 
-  expect(wrapper.find('.render-search-bar').exists()).toBe(true)
-  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+  expect(wrapper.find('.search-bar').exists()).toBe(false)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(true)
 })
 
-test('SparkComponentRenderer resolves kebab-case el-* type from globally registered PascalCase components', () => {
-  const ElButton = defineComponent({
-    name: 'ElButton',
+test('SparkComponentRenderer resolves Render* global components for page script dynamic renderers', () => {
+  const RenderStatusAction = defineComponent({
+    name: 'RenderStatusAction',
     setup() {
-      return () => h('button', { class: 'el-button-stub' }, 'ok')
-    }
-  })
-
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
-    props: {
-      config: { type: 'el-button' },
-      parentContext: rootContext
-    },
-    global: {
-      components: {
-        ElButton
-      },
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      }
-    }
-  })
-
-  expect(wrapper.find('.el-button-global-stub, .el-button-stub').exists()).toBe(true)
-  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
-})
-
-test('SparkComponentRenderer renders children for Vue global el-* components via unified slot path', () => {
-  const ElButton = defineComponent({
-    name: 'ElButton',
-    setup(_, { slots }) {
-      return () => h('button', { class: 'el-button-slot-stub' }, slots['default']?.())
-    }
-  })
-
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
-    props: {
-      config: {
-        type: 'el-button',
-        children: ['提交'],
-      },
-      parentContext: rootContext
-    },
-    global: {
-      components: {
-        ElButton
-      },
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      }
-    }
-  })
-
-  expect(wrapper.find('.el-button-slot-stub, .el-button-global-stub').exists()).toBe(true)
-  expect(wrapper.text()).toContain('提交')
-  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
-})
-
-test('SparkComponentRenderer passes config props into Vue global Render* components', () => {
-  const RenderRowAction = defineComponent({
-    name: 'RenderRowAction',
-    inheritAttrs: false,
-    setup(_, { attrs }) {
-      const row = attrs['row'] as { name?: string } | undefined
-      return () => h('div', { class: 'render-row-action' }, row?.name ?? 'missing')
+      return () => h('div', { class: 'render-status-action' }, 'status')
     }
   })
 
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
-      config: { type: 'RenderRowAction', props: { row: { name: '王晓明' } } },
+      config: { type: 'RenderStatusAction' },
       parentContext: rootContext
     },
     global: {
       components: {
-        RenderRowAction
+        RenderStatusAction
       },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
@@ -143,80 +83,8 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
     }
   })
 
-  expect(wrapper.find('.render-row-action').text()).toBe('王晓明')
-})
-
-test('SparkComponentRenderer applies onBeforeRender to Vue global third-party components', () => {
-  const VendorButton = defineComponent({
-    name: 'VendorButton',
-    inheritAttrs: false,
-    setup(_, { attrs, slots }) {
-      return () => h('button', {
-        class: 'vendor-button-before-render',
-        disabled: attrs['disabled'] === true,
-        'data-disabled': String(attrs['disabled'] === true),
-      }, slots['default']?.())
-    }
-  })
-
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
-    props: {
-      config: {
-        type: 'VendorButton',
-        props: {
-          onBeforeRender: () => ({ disabled: true }),
-        },
-        children: ['保存'],
-      },
-      parentContext: rootContext,
-    },
-    global: {
-      components: {
-        VendorButton,
-      },
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      }
-    }
-  })
-
-  const button = wrapper.find('.vendor-button-before-render')
-  expect(button.exists()).toBe(true)
-  expect(button.attributes('data-disabled')).toBe('true')
-  expect(button.text()).toContain('保存')
-})
-
-test('SparkComponentRenderer can hide Vue global third-party components through onBeforeRender', () => {
-  const VendorButton = defineComponent({
-    name: 'VendorButton',
-    setup(_, { slots }) {
-      return () => h('button', { class: 'vendor-button-hidden-target' }, slots['default']?.())
-    }
-  })
-
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
-    props: {
-      config: {
-        type: 'VendorButton',
-        props: {
-          onBeforeRender: () => false,
-        },
-        children: ['隐藏'],
-      },
-      parentContext: rootContext,
-    },
-    global: {
-      components: {
-        VendorButton,
-      },
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      }
-    }
-  })
-
-  expect(wrapper.find('.vendor-button-hidden-target').exists()).toBe(false)
-  expect(wrapper.text()).not.toContain('隐藏')
+  expect(wrapper.find('.render-status-action').exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
 })
 
 test('SparkComponentRenderer only forwards config.props to registered components', () => {
@@ -441,7 +309,7 @@ test('SparkComponentRenderer ignores root-level non-struct fields for registered
   expect(reader.attributes('data-gap')).toBe('')
 })
 
-test('SparkComponentRenderer renders unregistered native tags with recursive children', () => {
+test('SparkComponentRenderer renders native html tags directly', () => {
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
@@ -459,11 +327,11 @@ test('SparkComponentRenderer renders unregistered native tags with recursive chi
   })
 
   expect(wrapper.find('.native-wrapper').exists()).toBe(true)
-  expect(wrapper.text()).toContain('hello')
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+  expect(wrapper.text()).toContain('hello')
 })
 
-test('SparkComponentRenderer preserves numeric literal children in unified slot rendering', () => {
+test('SparkComponentRenderer preserves numeric literal children in native rendering', () => {
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
@@ -481,10 +349,11 @@ test('SparkComponentRenderer preserves numeric literal children in unified slot 
   })
 
   expect(wrapper.find('.native-wrapper-number').exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
   expect(wrapper.text()).toContain('123')
 })
 
-test('SparkComponentRenderer does not forward $-prefixed scoped props to native elements', () => {
+test('SparkComponentRenderer renders native buttons and still filters internal props', () => {
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
@@ -507,11 +376,12 @@ test('SparkComponentRenderer does not forward $-prefixed scoped props to native 
 
   const button = wrapper.find('.native-scoped-button')
   expect(button.exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
   expect(button.attributes('$custom')).toBeUndefined()
-  expect(button.text()).toContain('action')
+  expect(wrapper.text()).toContain('action')
 })
 
-test('SparkComponentRenderer does not forward scoped row props to native elements', () => {
+test('SparkComponentRenderer keeps scoped row props away from native tags', () => {
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
@@ -535,36 +405,38 @@ test('SparkComponentRenderer does not forward scoped row props to native element
 
   const button = wrapper.find('.native-row-button')
   expect(button.exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
   expect(button.attributes('row')).toBeUndefined()
   expect(button.attributes('rowindex')).toBeUndefined()
   expect(button.attributes('data')).toBeUndefined()
+  expect(wrapper.text()).toContain('action')
 })
 
-test('SparkComponentRenderer still forwards scoped row props to Vue global components', () => {
-  const RenderRowAction = defineComponent({
-    name: 'RenderRowAction',
-    inheritAttrs: false,
-    setup(_, { attrs }) {
-      const row = attrs['row'] as { title?: string } | undefined
-      const rowIndex = attrs['rowIndex'] as number | undefined
-      return () => h('div', { class: 'render-row-action-global' }, `${row?.title ?? 'missing'}-${String(rowIndex ?? '')}`)
+test('SparkComponentRenderer renders globally registered el-* components', () => {
+  const ElButton = defineComponent({
+    name: 'ElButton',
+    setup(_, { slots, attrs }) {
+      return () => h('button', {
+        class: 'el-button-global-stub',
+        'data-kind': String(attrs['type'] ?? ''),
+      }, slots['default']?.())
     }
   })
 
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
-        type: 'RenderRowAction',
+        type: 'el-button',
         props: {
-          row: { title: '工具栏' },
-          rowIndex: 5,
+          type: 'primary',
         },
-      },
+        children: ['保存'],
+      } as unknown as Record<string, unknown>,
       parentContext: rootContext,
     },
     global: {
       components: {
-        RenderRowAction,
+        ElButton,
       },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
@@ -572,7 +444,10 @@ test('SparkComponentRenderer still forwards scoped row props to Vue global compo
     }
   })
 
-  expect(wrapper.find('.render-row-action-global').text()).toBe('工具栏-5')
+  const button = wrapper.find('.el-button-global-stub')
+  expect(button.exists()).toBe(true)
+  expect(button.text()).toContain('保存')
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
 })
 
 test('SparkComponentRenderer keeps warning fallback for unknown non-native component types', () => {

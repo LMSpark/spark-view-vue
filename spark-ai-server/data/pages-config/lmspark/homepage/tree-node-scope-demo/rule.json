@@ -3,7 +3,6 @@
     "type": "r-section",
     "id": "section-demo",
     "props": {
-      "id": "section-demo",
       "title": "Tree 组件演示",
       "description": "展示 r-tree 树形组件的完整功能，支持勾选、过滤、拖拽、节点点击等交互",
       "className": "tree-demo-container"
@@ -13,7 +12,6 @@
         "type": "r-tree",
         "id": "tree-demo",
         "props": {
-          "id": "tree-demo",
           "dataKey": "TreeData@rows",
           "nodeKey": "id",
           "onNodeClick": "handleNodeClick",
@@ -34,8 +32,8 @@
         "children": [
           {
             "type": "tree-node-summary",
+            "id": "tree-summary",
             "props": {
-              "id": "tree-summary",
               "fields": [
                 {
                   "field": "name",
@@ -58,7 +56,6 @@
         "type": "r-button",
         "id": "btn-get-current",
         "props": {
-          "id": "btn-get-current",
           "label": "获取当前选中节点",
           "onClick": "getCurrentNode",
           "buttonType": "primary",
@@ -69,7 +66,6 @@
         "type": "r-button",
         "id": "btn-get-checked",
         "props": {
-          "id": "btn-get-checked",
           "label": "获取勾选节点",
           "onClick": "getCheckedNodes",
           "buttonType": "success",

@@ -11,7 +11,7 @@ export {
 export type {
   EditLifecycleFunctionFailureMode,
   EditLifecycleFunctionTarget,
-  EditLifecycleFunctionAction,
+  EditLifecycleFunctionId,
   EditLifecycleFunctionParameterRow,
   EditLifecycleFunctionCapabilityRow,
 } from './tool-catalog'

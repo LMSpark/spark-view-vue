@@ -1,6 +1,7 @@
 [
     {
-        "type": "div",
+        "type": "r-space",
+        "class": "placeholder-demo-page",
         "style": {
             "height": "100vh",
             "display": "flex",
@@ -10,152 +11,78 @@
             "gap": "18px",
             "background": "linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%)"
         },
+        "props": {
+            "direction": "vertical",
+            "size": 18
+        },
         "children": [
             {
-                "type": "div",
+                "type": "r-section",
+                "class": "placeholder-hero",
                 "style": {
-                    "display": "flex",
-                    "flexDirection": "column",
-                    "gap": "8px",
                     "padding": "4px 0 0 0"
+                },
+                "props": {
+                    "title": "$[fieldName] 占位符演示",
+                    "description": "通过表格列模板与详情面板，展示占位符在标签、统计值和混合文本中的联动效果。",
+                    "useCard": true,
+                    "bordered": false
                 },
                 "children": [
                     {
-                        "type": "div",
-                        "style": {
-                            "display": "inline-flex",
-                            "alignItems": "center",
-                            "width": "fit-content",
-                            "padding": "4px 10px",
-                            "borderRadius": "999px",
-                            "background": "#e0e7ff",
-                            "color": "#4338ca",
-                            "fontSize": "12px",
-                            "fontWeight": "600",
-                            "letterSpacing": "0.04em"
-                        },
-                        "children": [
-                            "PLACEHOLDER DEMO"
-                        ]
-                    },
-                    {
-                        "type": "h2",
-                        "style": {
-                            "margin": "0",
-                            "fontSize": "36px",
-                            "fontWeight": "700",
-                            "color": "#1e293b",
-                            "letterSpacing": "-0.03em"
-                        },
-                        "children": [
-                            "$[fieldName] 占位符演示"
-                        ]
-                    },
-                    {
-                        "type": "div",
-                        "style": {
-                            "color": "#64748b",
-                            "fontSize": "14px",
-                            "lineHeight": "1.7"
-                        },
-                        "children": [
-                            "通过表格列模板与详情面板，展示占位符在标签、统计值和混合文本中的联动效果。"
-                        ]
+                        "type": "r-tag",
+                        "props": {
+                            "content": "PLACEHOLDER DEMO",
+                            "tagType": "info",
+                            "effect": "plain",
+                            "size": "small"
+                        }
                     }
                 ]
             },
             {
-                "type": "div",
+                "type": "r-row",
                 "style": {
                     "display": "flex",
                     "gap": "20px",
                     "flex": "1",
                     "overflow": "hidden"
                 },
+                "props": {
+                    "gutter": 20
+                },
                 "children": [
                     {
-                        "type": "div",
+                        "type": "r-col",
                         "style": {
-                            "flex": "1",
-                            "display": "flex",
-                            "flexDirection": "column",
-                            "gap": "14px",
-                            "padding": "18px",
-                            "background": "rgba(255, 255, 255, 0.86)",
-                            "border": "1px solid rgba(148, 163, 184, 0.18)",
-                            "borderRadius": "18px",
-                            "boxShadow": "0 16px 40px rgba(15, 23, 42, 0.08)",
-                            "backdropFilter": "blur(12px)",
-                            "overflow": "hidden"
+                            "height": "100%"
+                        },
+                        "props": {
+                            "span": 16
                         },
                         "children": [
                             {
-                                "type": "div",
+                                "type": "r-section",
+                                "class": "placeholder-panel placeholder-panel--table",
                                 "style": {
-                                    "display": "flex",
-                                    "justifyContent": "space-between",
-                                    "alignItems": "flex-end",
-                                    "gap": "12px"
+                                    "height": "100%"
+                                },
+                                "props": {
+                                    "title": "员工总览",
+                                    "description": "左侧表格验证行级占位符，点击任意行查看右侧详情映射。",
+                                    "useCard": true,
+                                    "bordered": false
                                 },
                                 "children": [
                                     {
-                                        "type": "div",
-                                        "style": {
-                                            "display": "flex",
-                                            "flexDirection": "column",
-                                            "gap": "4px"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "div",
-                                                "style": {
-                                                    "fontSize": "20px",
-                                                    "fontWeight": "700",
-                                                    "color": "#0f172a"
-                                                },
-                                                "children": [
-                                                    "员工总览"
-                                                ]
-                                            },
-                                            {
-                                                "type": "div",
-                                                "style": {
-                                                    "fontSize": "13px",
-                                                    "color": "#64748b"
-                                                },
-                                                "children": [
-                                                    "左侧表格验证行级占位符，点击任意行查看右侧详情映射。"
-                                                ]
-                                            }
-                                        ]
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "共 5 条示例数据",
+                                            "tagType": "info",
+                                            "effect": "plain",
+                                            "size": "small"
+                                        }
                                     },
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "padding": "6px 10px",
-                                            "borderRadius": "999px",
-                                            "background": "#eff6ff",
-                                            "color": "#1d4ed8",
-                                            "fontSize": "12px",
-                                            "fontWeight": "600"
-                                        },
-                                        "children": [
-                                            "共 5 条示例数据"
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "div",
-                                "style": {
-                                    "flex": "1",
-                                    "overflow": "hidden",
-                                    "borderRadius": "16px",
-                                    "border": "1px solid rgba(226, 232, 240, 0.95)",
-                                    "background": "#ffffff",
-                                    "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7)"
-                                },
-                                "children": [
                                     {
                                         "type": "r-table",
                                         "dataKey": "employees@rows",
@@ -208,13 +135,10 @@
                                                 },
                                                 "children": [
                                                     {
-                                                        "type": "div",
-                                                        "style": {
-                                                            "display": "flex",
-                                                            "alignItems": "center",
-                                                            "gap": "8px",
-                                                            "flexWrap": "nowrap",
-                                                            "whiteSpace": "nowrap"
+                                                        "type": "r-space",
+                                                        "props": {
+                                                            "direction": "horizontal",
+                                                            "size": 8
                                                         },
                                                         "children": [
                                                             {
@@ -259,113 +183,90 @@
                         ]
                     },
                     {
-                        "type": "div",
+                        "type": "r-col",
                         "style": {
-                            "width": "360px",
-                            "display": "flex",
-                            "flexDirection": "column",
-                            "gap": "14px",
-                            "border": "1px solid rgba(148, 163, 184, 0.18)",
-                            "borderRadius": "18px",
-                            "padding": "18px",
-                            "background": "rgba(255, 255, 255, 0.9)",
-                            "boxShadow": "0 16px 40px rgba(15, 23, 42, 0.08)",
-                            "overflow": "auto"
+                            "height": "100%"
+                        },
+                        "props": {
+                            "span": 8
                         },
                         "children": [
                             {
-                                "type": "div",
+                                "type": "r-section",
+                                "class": "placeholder-panel placeholder-panel--detail",
                                 "style": {
-                                    "display": "flex",
-                                    "flexDirection": "column",
-                                    "gap": "4px"
+                                    "height": "100%",
+                                    "overflow": "auto"
+                                },
+                                "props": {
+                                    "title": "占位符绑定详情",
+                                    "description": "右侧面板展示当前选中员工在不同组件中的占位符映射结果。",
+                                    "useCard": true,
+                                    "bordered": false
                                 },
                                 "children": [
                                     {
-                                        "type": "h3",
-                                        "style": {
-                                            "margin": "0",
-                                            "fontSize": "28px",
-                                            "fontWeight": "700",
-                                            "color": "#0f172a"
-                                        },
+                                        "type": "r-detail",
+                                        "dataKey": "employees@currentRow",
                                         "children": [
-                                            "占位符绑定详情"
-                                        ]
-                                    },
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "fontSize": "13px",
-                                            "color": "#64748b",
-                                            "lineHeight": "1.6"
-                                        },
-                                        "children": [
-                                            "右侧面板展示当前选中员工在不同组件中的占位符映射结果。"
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "r-detail",
-                                "dataKey": "employees@currentRow",
-                                "children": [
-                                    {
-                                        "type": "r-text-display",
-                                        "props": {
-                                            "field": "name",
-                                            "label": "纯占位符（保留类型）",
-                                            "suffix": "$[role]"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-text-display",
-                                        "props": {
-                                            "field": "email",
-                                            "label": "混合文本前缀",
-                                            "prefix": "$[name] 的邮箱: "
-                                        }
-                                    },
-                                    {
-                                        "type": "r-text-display",
-                                        "props": {
-                                            "field": "age",
-                                            "label": "多占位符混合后缀",
-                                            "suffix": " — $[department] / $[role]"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-tag",
-                                        "props": {
-                                            "content": "年龄阈值：$[age] 岁",
-                                            "tagType": "$[ageBadgeType]"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-statistic",
-                                        "props": {
-                                            "field": "age",
-                                            "title": "$[name] 的年龄（表格年龄列走 r-row-fragment 单元格模板）",
-                                            "suffix": "岁"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-tag",
-                                        "props": {
-                                            "content": "$[department] - $[role]",
-                                            "tagType": "info"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-tag",
-                                        "props": {
-                                            "content": "$[status]",
-                                            "dynamicType": {
-                                                "在职": "success",
-                                                "休假": "warning",
-                                                "出差": "info"
+                                            {
+                                                "type": "r-text-display",
+                                                "props": {
+                                                    "field": "name",
+                                                    "label": "纯占位符（保留类型）",
+                                                    "suffix": "$[role]"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text-display",
+                                                "props": {
+                                                    "field": "email",
+                                                    "label": "混合文本前缀",
+                                                    "prefix": "$[name] 的邮箱: "
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text-display",
+                                                "props": {
+                                                    "field": "age",
+                                                    "label": "多占位符混合后缀",
+                                                    "suffix": " — $[department] / $[role]"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-tag",
+                                                "props": {
+                                                    "content": "年龄阈值：$[age] 岁",
+                                                    "tagType": "$[ageBadgeType]"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-statistic",
+                                                "props": {
+                                                    "field": "age",
+                                                    "title": "$[name] 的年龄（表格年龄列走 r-row-fragment 单元格模板）",
+                                                    "suffix": "岁"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-tag",
+                                                "props": {
+                                                    "content": "$[department] - $[role]",
+                                                    "tagType": "info"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-tag",
+                                                "props": {
+                                                    "content": "$[status]",
+                                                    "dynamicType": {
+                                                        "在职": "success",
+                                                        "休假": "warning",
+                                                        "出差": "info"
+                                                    }
+                                                }
                                             }
-                                        }
+                                        ]
                                     }
                                 ]
                             }

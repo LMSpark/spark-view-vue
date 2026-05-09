@@ -57,8 +57,7 @@ export default function (plop) {
         message: 'DataKey 行为（组件如何处理数据绑定）：',
         choices: [
           { name: 'none         — 不接入 DataSet', value: 'none' },
-          { name: 'self-resolve — 自行消费 PAGE_DATASET', value: 'self-resolve' },
-          { name: 'injected     — 由 bindRules 外部注入', value: 'injected' }
+          { name: 'self-resolve — 自行消费 PAGE_DATASET', value: 'self-resolve' }
         ],
         default: 'none'
       }

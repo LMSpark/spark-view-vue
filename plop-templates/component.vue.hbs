@@ -9,8 +9,6 @@
         :config="child"
       />
     </template>
-    <!-- Template 驱动：向后兼容 slot -->
-    <slot v-else />
     {{else}}
     <slot />
     {{/if}}
@@ -25,8 +23,9 @@
  * 能力角色：{{capabilityRole}}
  *
  * 注册示例：
- *   const reg = Spark.createRegister(import.meta.glob('./*.vue') as GlobModules)
- *   reg.registerAll({ '{{name}}': './{{pascalName}}.vue' })
+ *   import { defineAsyncComponent } from 'vue'
+ *   import { Spark } from '@spark-view/spark-component'
+ *   Spark.register('{{name}}', defineAsyncComponent(() => import('./{{pascalName}}.vue')))
  */
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
@@ -34,7 +33,7 @@ import type { SparkNode } from '@spark-view/spark-component'
 // 从对应包导入需要消费的能力键，例如：
 // import { APP_SERVICES } from '@spark-view/spark-utils'
 // import { DATA_SOURCE } from '@spark-view/spark-component'
-// 或使用字符串键（需在 capabilities.ts 或项目自己的能力模块中通过 declare module 扩展 CapabilityTypeMap）
+// 项目自定义能力键使用 defineCapability<T>('scope:name') 声明。
 {{/if}}
 {{#if isProvider}}
 // 向子组件提供的能力键：
@@ -54,48 +53,44 @@ const props = defineProps<Props>()
 
 // ── SPARK 上下文（setup 第一行） ──────────────────────────────────────────────
 const {
-  context,
   isVisible,
   isDisabled,
-  provide,
-  provideEvents,
-  consume,
-  consumeEvents,
+  resolvedProps,
+  sparkProvide,
+  sparkConsume,
   logger,
 } = useSparkComponent(props.config)
 {{#if isProvider}}
 
 // ── Provider：父级无条件提供能力，不关心谁消费 ────────────────────────────
-// provide(DATA_SOURCE, dataView)
-// provide(SELECTION, {
+// sparkProvide(DATA_SOURCE, dataView)
+// sparkProvide(SELECTION, {
 //   isSelected: (id) => selectedIds.value.has(id),
 //   select:     (id) => { selectedIds.value.add(id) },
 //   deselect:   (id) => { selectedIds.value.delete(id) },
 //   getSelected:() => [...selectedIds.value],
 // })
-// const events = provideEvents(MY_EVENTS)
 {{/if}}
 {{#if isConsumer}}
 
 // ── Consumer：consume 返回 null 是正常 late-binding，做好防空 ─────────────
-// const src = consume(DATA_SOURCE)      // IDataSource | null
-// 字符串键示例（需先用 declare module 扩展 CapabilityTypeMap）：
-// const ctx = consume('app:field-context')  // FieldContext | null
+// const src = sparkConsume(DATA_SOURCE)      // IDataSource | null
 {{/if}}
 {{#if isDataSelfResolve}}
 
 // ── DataSet 接入（self-resolve 模式） ──────────────────────────────────────
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 const dataKey = props.config.props?.['dataKey'] as string | undefined
 // const binding = dataKey && dataSet
 //   ? SparkData.resolveDataKeyBinding(dataKey, dataSet)
 //   : null
 // if (binding?.kind === 'view') {
-//   provide(DATA_SOURCE, binding.source)
+//   sparkProvide(DATA_SOURCE, binding.source)
 // }
 {{/if}}
 
-logger.info('{{pascalName}} initialized', { id: context.id })
+void resolvedProps
+logger.info('{{pascalName}} initialized', { id: props.config.id ?? null })
 </script>
 
 <style scoped>

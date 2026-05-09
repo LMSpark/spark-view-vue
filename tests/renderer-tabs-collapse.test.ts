@@ -37,29 +37,23 @@ const SparkActionStub = defineComponent({
       }
 
       if (type === 'r-tab-pane') {
-        const componentProps = { ...propsMap }
-        const runtimeDefaultSlot = componentProps['$defaultSlot']
-        delete componentProps['$defaultSlot']
-        const children = Array.isArray(componentProps['children'])
-          ? componentProps['children']
+        const children = Array.isArray(propsMap['children'])
+          ? propsMap['children']
           : (Array.isArray(config['children']) ? config['children'] : [])
         return h(RendererTabPane as any, {
-          ...componentProps,
+          ...propsMap,
           children,
-        }, typeof runtimeDefaultSlot === 'function' ? { default: runtimeDefaultSlot as () => unknown } : undefined)
+        })
       }
 
       if (type === 'r-collapse-item') {
-        const componentProps = { ...propsMap }
-        const runtimeDefaultSlot = componentProps['$defaultSlot']
-        delete componentProps['$defaultSlot']
-        const children = Array.isArray(componentProps['children'])
-          ? componentProps['children']
+        const children = Array.isArray(propsMap['children'])
+          ? propsMap['children']
           : (Array.isArray(config['children']) ? config['children'] : [])
         return h(RendererCollapseItem as any, {
-          ...componentProps,
+          ...propsMap,
           children,
-        }, typeof runtimeDefaultSlot === 'function' ? { default: runtimeDefaultSlot as () => unknown } : undefined)
+        })
       }
 
       return h('button', {

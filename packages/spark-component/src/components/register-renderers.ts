@@ -4,7 +4,7 @@
  * 【注册策略】
  * 框架支持多条注册路径：
  *   1. 同步注册 — 本文件执行 registerAllRenderers() 方式 ← **当前生产路径**
- *   2. 动态 loader — Spark.register('type', () => import(...)) 方式 ← 框架能力，未在此处使用
+ *   2. 异步组件 — 消费层显式 defineAsyncComponent(loader) 后写入 registry
  *   3. 自动扫描 — virtual:spark-components 插件自动生成 import.meta.glob 结果
  *
  * 架构说明：
@@ -90,9 +90,7 @@ type RegistrationEntry = readonly [string, RegisteredComponent]
 /**
  * 同步注册清单：核心组件集合
  *
- * 这些组件在启动时直接导入并注册，不使用动态 loader 路径。
- * 框架支持 loader 能力（Spark.register('type', () => import(...))），
- * 但当前生产代码主要使用同步注册以确保首屏性能。
+ * 这些组件在启动时直接导入并注册，以确保首屏路径稳定。
  */
 const CORE_COMPONENTS: RegistrationEntry[] = [
   // 数据容器

@@ -10,6 +10,7 @@ export {
 export type {
   DatasetCrudToolFunctionFailureMode,
   DatasetCrudToolFunctionTarget,
+  DatasetCrudToolFunctionId,
   DatasetCrudToolFunctionParameterRow,
   DatasetCrudToolFunctionCapabilityRow,
 } from './tool-catalog'

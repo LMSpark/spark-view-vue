@@ -17,43 +17,29 @@
 
 统一 API 入口，所有注册和配置操作通过 `Spark` 完成。
 
-### `Spark.createRegister(modules)` ⭐ 推荐
-
-绑定 `import.meta.glob` 的注册器，用于路径字符串批量注册。
-
-```typescript
-const reg = Spark.createRegister(import.meta.glob('./*.vue'))
-
-// 注册单个（路径字符串 → defineAsyncComponent）
-reg.register('user-grid', './UserGrid.vue')
-reg.register('user-grid', './UserGrid.vue', { category: 'grid' }) // 带 meta
-
-// 批量注册
-reg.registerAll({
-  'user-grid': './UserGrid.vue',
-  'user-row':  './UserRow.vue',
-})
-```
-
 ### `Spark.register(type, component, meta?)`
 
-注册单个组件。支持同步组件对象和动态导入函数，**不支持路径字符串**（路径字符串请用 `createRegister`）。
+注册单个已解析组件。异步组件需要由调用方显式 `defineAsyncComponent(loader)`，`Spark.register` 不再接收路径字符串或 loader 函数。
+
+```typescript
+import { defineAsyncComponent } from 'vue'
+import UserGrid from './UserGrid.vue'
+
+Spark.register('user-grid', UserGrid)
+Spark.register('user-chart', defineAsyncComponent(() => import('./UserChart.vue')))
+```
+
+### `Spark.registerAll(components)`
+
+批量注册已解析组件。
 
 ```typescript
 import UserGrid from './UserGrid.vue'
+import UserForm from './UserForm.vue'
 
-Spark.register('user-grid', UserGrid)                         // 同步
-Spark.register('user-grid', () => import('./UserGrid.vue'))   // 懒加载（自动包装 defineAsyncComponent）
-```
-
-### `Spark.registerAll(components, modules?)`
-
-批量注册，不绑定 glob。若 `components` 值为路径字符串，需同时提供 `modules`。
-
-```typescript
 Spark.registerAll({
   'user-grid': UserGrid,
-  'user-chart': () => import('./UserChart.vue'),
+  'user-form': UserForm,
 })
 ```
 
@@ -257,7 +243,6 @@ interface ComponentDefinition {
 ```typescript
 interface ComponentRegistry {
   register(type, component, meta?, options?: { silent?: boolean }): void
-  registerOnce(type, component, meta?): boolean
   get(type): ComponentDefinition | undefined
   has(type): boolean
   unregister(type): boolean
@@ -296,25 +281,20 @@ cap?.doWork()
 | 键 | 类型 | 说明 |
 |---|---|---|
 | `APP_SERVICES` | `IAppServicesCapability` | `{ router?, logger?, tenant?, configLoader?, authService? }` |
-| `LOGGER` | `LoggerApi` | 覆盖当前子树的 logger |
 | `PAGE_SERVICE` | `IPageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
-
-来自 `@spark-view/spark-data`：
-
-| 键 | 类型 | 说明 |
-|---|---|---|
 | `PAGE_DATASET` | `IDataSet` | 页面级 DataSet，由 PageRenderer 提供 |
 | `DATA_SOURCE` | `IDataSource` | 组件级 DataView，由容器组件提供 |
+| `DATA_ROW` | `IDataRow` | 当前行作用域 |
+| `PAGE_PERMISSION_MODE` | `NavPermissionMode` | 页面权限模式 |
 
 ---
 
 ## Vue 插件
 
 ```typescript
-import { createSparkPlugin } from '@spark-view/spark-component'
+import { Spark } from '@spark-view/spark-component'
 
-// 等价于 Spark.createPlugin()
-const plugin = createSparkPlugin({ registry? })
+const plugin = Spark.createPlugin()
 app.use(plugin)
 ```
 
@@ -334,13 +314,6 @@ export { Spark }
 export { useSparkComponent }
 export type { UseSparkComponentReturn }
 
-// Vue 插件
-export { createSparkPlugin }
-export type { SparkPluginOptions }
-
-// 注册表
-export { createComponentRegistry, getGlobalRegistry }
-
 // 核心类型
 export type {
   CapabilityName,
@@ -350,6 +323,9 @@ export type {
   ComponentRegistry,
   LoggerApi,
 }
+
+// 注册表与 Vue 插件统一从 Spark 命名空间进入：
+// Spark.createPlugin / Spark.createRegistry / Spark.getRegistry
 
 // DI Keys（Vue DI 用，仅基础设施场景）
 export { SPARK_REGISTRY_KEY }

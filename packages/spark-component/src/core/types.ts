@@ -28,15 +28,6 @@ export interface ComponentDefinition {
 }
 
 /**
- * 组件 dataKey 行为声明（Registry meta.dataKey）
- *
- * - `'self-resolve'`：组件内部 sparkConsume(PAGE_DATASET) 自行解析 dataKey prop（r-table、r-form 等）
- * - `'injected'`：由渲染器/宿主层注入数据（如原生 el-* 适配场景）
- * - `'none'`：不参与 dataKey 系统
- */
-export type ComponentDataKeyBehavior = 'self-resolve' | 'injected' | 'none'
-
-/**
  * 组件 children 传输策略（Registry meta.childrenMode）
  *
  * - `auto`：渲染器按组件声明自动判断；声明了 `children` prop 则走 prop，否则走默认 slot
@@ -92,7 +83,7 @@ export type SparkCapabilityContext = ICapabilityContext
  *   },
  *   "props": { "border": true, "stripe": true },
  *   "children": [
- *     { "type": "el-table-column", "props": { "field": "name", "label": "姓名" } }
+ *     { "type": "r-row-fragment", "props": { "field": "name", "label": "姓名" } }
  *   ]
  * }
  * ```
@@ -112,7 +103,7 @@ export interface SparkNode {
   id?: string
   /** 组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项） */
   props?: Record<string, unknown>
-  /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串文本子节点数组 */
+  /** 子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点 */
   children?: SparkNodeChildren
 }
 
@@ -131,23 +122,18 @@ export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['typ
  * 归一化 SparkNode 的结构语义。
  *
  * 统一处理：
- * - 空 type → fallbackType（fallbackType 本身为空时兜底 `'unknown'`）
+ * - type 必须是非空字符串
  * - 节点定位 id：只读取顶层 id
  * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
  * - children 缺省或非数组 → `[]`
  *
  * @param node - 待归一化的 SparkNode
- * @param fallbackType - type 为空时的回退类型，默认 `'unknown'`
  * @returns 归一化后的 SparkNode，type / children 始终合法
  */
-export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): SparkNode {
-  const normalizedFallbackType = typeof fallbackType === 'string' && fallbackType.length > 0
-    ? fallbackType
-    : 'unknown'
-
-  const normalizedType = typeof node.type === 'string' && node.type.length > 0
-    ? node.type
-    : normalizedFallbackType
+export function normalizeSparkNode(node: SparkNode): SparkNode {
+  if (typeof node.type !== 'string' || node.type.trim().length === 0) {
+    throw new Error('[spark] SparkNode.type must be a non-empty string')
+  }
 
   const rawTopLevelId = (node as { id?: unknown }).id
   const normalizedId = typeof rawTopLevelId === 'string' ? rawTopLevelId : undefined
@@ -162,7 +148,7 @@ export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): S
     : undefined
 
   return {
-    type: normalizedType,
+    type: node.type,
     ...(normalizedId !== undefined ? { id: normalizedId } : {}),
     ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
     children: Array.isArray(node.children) ? node.children : [],
@@ -176,6 +162,7 @@ export function isSparkNode(value: unknown): value is SparkNode {
     && !Array.isArray(value)
     && 'type' in value
     && typeof (value as { type?: unknown }).type === 'string'
+    && ((value as { type: string }).type.trim().length > 0)
 }
 
 /** 从混合 children 中提取结构子节点。 */
@@ -247,7 +234,6 @@ export interface FilterItemConfig {
 
 export interface ComponentRegistry {
   register(type: string, component: unknown, meta?: Record<string, unknown>, options?: { silent?: boolean }): void
-  registerOnce(type: string, component: unknown, meta?: Record<string, unknown>): boolean
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean
   unregister(type: string): boolean

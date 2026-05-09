@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
   plugins: [vue()],
@@ -12,17 +15,17 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      'virtual:spark-skill-catalog': resolve(__dirname, './tests/mocks/virtual-spark-skill-catalog.ts'),
-      'virtual:spark-components': resolve(__dirname, './tests/mocks/virtual-spark-components.ts'),
+      '@': resolve(root, './src'),
+      'virtual:spark-skill-catalog': resolve(root, './tests/mocks/virtual-spark-skill-catalog.ts'),
+      'virtual:spark-components': resolve(root, './tests/mocks/virtual-spark-components.ts'),
       // 所有包 → 源码解析（测试不应依赖构建产物）
-      '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/src/index.ts'),
-      '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/src/index.ts'),
-      '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/src/index.ts'),
-      '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/src/index.ts'),
-      '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/src/index.ts'),
-      '@spark-view/spark-ai': resolve(__dirname, './packages/spark-ai/src/index.ts'),
-      '@spark-view/vite-plugin-spark-catalog': resolve(__dirname, './packages/vite-plugin-spark-catalog/src/index.ts')
+      '@spark-view/spark-component': resolve(root, './packages/spark-component/src/index.ts'),
+      '@spark-view/spark-utils': resolve(root, './packages/spark-utils/src/index.ts'),
+      '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
+      '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
+      '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
+      '@spark-view/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
+      '@spark-view/vite-plugin-spark-catalog': resolve(root, './packages/vite-plugin-spark-catalog/src/index.ts')
     }
   },
   esbuild: {

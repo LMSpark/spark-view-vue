@@ -102,9 +102,32 @@ async function executeConfirm(
  * 路由跳转：支持静态路径和从 eventArgs[0]（事件行）的 `{field}` 插值。
  * 通过 RouterLike 接口调用，不直接依赖 vue-router。
  */
+function resolveNavigateRow(
+  ctx: ActionExecutionContext,
+  scope: ActionExecutionScope | undefined,
+  eventArgs: unknown[] | undefined,
+): IDataRow | null {
+  const eventRow = eventArgs?.[0]
+  if (isRowLike(eventRow)) return eventRow
+  if (isRowLike(scope?.row)) return scope.row
+
+  const scopedView = ctx.getDataSource?.() ?? null
+  if (isRowLike(scopedView?.currentRow)) return scopedView.currentRow
+
+  const dataSet = ctx.getDataSet()
+  if (!dataSet) return null
+  for (const table of Object.values(dataSet.tables)) {
+    for (const view of Object.values(table.views)) {
+      if (isRowLike(view.currentRow)) return view.currentRow
+    }
+  }
+  return null
+}
+
 function executeNavigate(
   desc: NavigateAction,
   ctx: ActionExecutionContext,
+  scope: ActionExecutionScope | undefined,
   eventArgs?: unknown[],
 ): void {
   const router = ctx.getRouter()
@@ -112,9 +135,7 @@ function executeNavigate(
 
   let path = desc.path
   if (path.includes('{')) {
-    const eventRow = eventArgs?.[0]
-    const rowFromEvent: IDataRow | null = isRowLike(eventRow) ? eventRow : null
-    path = interpolate(path, {}, rowFromEvent)
+    path = interpolate(path, {}, resolveNavigateRow(ctx, scope, eventArgs))
   }
 
   void router.push(path)
@@ -248,7 +269,7 @@ async function dispatchAction(
       await executeAlert(descriptor, ctx)
       return
     case 'navigate':
-      executeNavigate(descriptor, ctx, eventArgs)
+      executeNavigate(descriptor, ctx, scope, eventArgs)
       return
     case 'open':
       executeOpen(descriptor)

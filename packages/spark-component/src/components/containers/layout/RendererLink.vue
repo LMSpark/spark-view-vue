@@ -22,7 +22,7 @@
  * @description 链接组件，可渲染子内容。
  */
 import { computed } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
 import {
   DATA_ROW,
   DATA_SOURCE,
@@ -55,15 +55,32 @@ function readActionNode(): SparkNode {
   }
 }
 
+function resolvePermissionScopeRows(): IDataRow[] {
+  const dataRow = sparkConsume(DATA_ROW)
+  if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
+    return [dataRow as IDataRow]
+  }
+  const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
+  if (dataSource && dataSource.isMultiSelect === true) {
+    const selected = dataSource.selectedRows ?? []
+    return selected.length > 0 ? selected.slice() : []
+  }
+  const currentRow = (dataSource as { currentRow?: IDataRow } | null)?.currentRow
+  return currentRow !== null && currentRow !== undefined ? [currentRow] : []
+}
+
 const permissionAllowed = computed(() => {
   const actionNode = readActionNode()
   const dataSource = sparkConsume(DATA_SOURCE)
-  const dataRow = sparkConsume(DATA_ROW)
   const modelPerm = extractModelPermission(dataSource)
-  const scopedRow = (dataRow ?? ((dataSource as { currentRow?: IDataRow } | null)?.currentRow)) ?? undefined
 
-  return permission.isModelActionAllowed(actionNode, modelPerm)
-    && permission.isRowActionAllowed(actionNode, scopedRow)
+  if (!permission.isModelActionAllowed(actionNode, modelPerm)) return false
+
+  const scopeRows = resolvePermissionScopeRows()
+  if (scopeRows.length === 0) {
+    return permission.isRowActionAllowed(actionNode, undefined)
+  }
+  return scopeRows.every((row) => permission.isRowActionAllowed(actionNode, row))
 })
 
 const permissionDeniedMode = computed<'disable' | 'hide'>(() => {

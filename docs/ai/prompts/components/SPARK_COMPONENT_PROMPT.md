@@ -40,11 +40,10 @@ const {
 } = useSparkComponent(props.config)   // ← 传入完整 config，不是 { type: 'xxx' }
 
 // 2. 注册（懒加载）
-Spark.register('my-comp', () => import('./MyComp.vue'))
+Spark.register('my-comp', defineAsyncComponent(() => import('./MyComp.vue')))
 
-// 3. 批量注册（推荐）
-const reg = Spark.createRegister(import.meta.glob('./*.vue') as GlobModules)
-reg.registerAll({ 'my-comp': './MyComp.vue' })
+// 3. 批量注册
+Spark.registerAll({ 'my-comp': MyComp })
 
 // 4. 通用递归渲染子树（不知道子级是谁）
 // <SparkComponentRenderer v-for="child in config.children" :config="child" />
@@ -122,8 +121,6 @@ const childConfigs = rows.map(row => ({
         :config="child"
       />
     </template>
-    <!-- Template 驱动：向后兼容 slot -->
-    <slot v-else />
   </div>
 </template>
 
@@ -195,29 +192,16 @@ const displayValue = computed(() => row.value?.[field.value])
 | 键 | 来源包 | 类型 | 典型提供方 |
 |---|---|---|---|
 | `APP_SERVICES` | spark-component | `IAppServicesCapability` | PageRenderer |
-| `LOGGER` | spark-component | `LoggerApi` | 自定义覆盖 |
 | `PAGE_SERVICE` | spark-component | `IPageServiceCapability` | 应用层 |
-| `PAGE_DATASET` | spark-data | `IDataSet` | PageRenderer |
-| `DATA_SOURCE` | spark-data | `IDataSource` | 容器组件 |
+| `PAGE_DATASET` | spark-component | `IDataSet` | PageRenderer |
+| `DATA_SOURCE` | spark-component | `IDataSource` | 容器组件 |
 
-内置能力键同时支持 **Symbol 键**（`import { DATA_SOURCE }`）和 **字符串键**（`sparkConsume('spark:capability:data-source')`）两种形式，等价互通。
+能力键使用 `defineCapability<T>()` 创建的 Symbol 键；消费侧必须导入同一个键实例，不能传字符串。
 
-自定义能力（两种方式）：
+自定义能力：
 ```ts
-// 方式一：Symbol 键（适合跨包共享）
 export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capability')
-// 平时就能用，需导入 symbol
 sparkConsume(MY_CAP)  // { doSomething(): void } | null
-
-// 方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）
-// 在项目自己的 capabilities.ts 或其他能力模块中
-declare module '@spark-view/spark-component' {
-  interface CapabilityTypeMap {
-    'app:my-capability': { doSomething(): void }
-  }
-}
-// 扩展后可直接用字符串，无需导入 symbol
-sparkConsume('app:my-capability')  // { doSomething(): void } | null（类型自动推断）
 ```
 
 ---
@@ -252,16 +236,11 @@ if (effectiveDataKey.value && pageDataSet) {
 
 ```ts
 // src/components/my-module/register.ts
+import { defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
-import type { GlobModules } from '@spark-view/spark-component'
 
-const reg = Spark.createRegister(
-  import.meta.glob('./components/*.vue') as GlobModules
-)
-reg.registerAll({
-  'my-container': './components/MyContainer.vue',
-  'my-field':     './components/MyField.vue',
-})
+Spark.register('my-container', defineAsyncComponent(() => import('./components/MyContainer.vue')))
+Spark.register('my-field', defineAsyncComponent(() => import('./components/MyField.vue')))
 ```
 
 ---
@@ -343,11 +322,10 @@ it('should provide DATA_SOURCE to children', async () => {
 - [ ] 父级 `provide` 能力，不向 `config.props` 注入数据对象
 - [ ] 子级通过 `consume` 取能力，用 `rowId` 自查数据
 - [ ] 模板使用 `SparkComponentRenderer` 递归渲染 `config.children`
-- [ ] 保留 `<slot v-else />` 向后兼容模板驱动用法
 - [ ] `sparkConsume()` 返回值做防空（`T | null`）
 - [ ] `isVisible` / `isDisabled` 绑定到根元素
-- [ ] 注册文件使用 `Spark.createRegister(glob).registerAll({...})`
+- [ ] 异步注册使用 `defineAsyncComponent(loader)` 后再写入 `Spark.register`
 - [ ] 测试使用 `flushPromises()` 等待异步组件
 - [ ] `pnpm run typecheck` 零错误
 - [ ] `pnpm run test` 全部通过
-- [ ] 自定义能力键优先用 `declare module '@spark-view/spark-component' { interface CapabilityTypeMap {...} }` 扩展，而非直接修改包源文件
+- [ ] 自定义能力键用 `defineCapability<T>('scope:name')` 声明并通过包名导出复用

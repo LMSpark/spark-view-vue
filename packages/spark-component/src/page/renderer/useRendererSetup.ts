@@ -86,7 +86,7 @@ export function useRendererSetup(
   const router = useRouter()
   const { sparkProvide, sparkConsume } = useSparkComponent({
     type: componentType,
-    props: { id: `${componentType}-root` },
+    id: `${componentType}-root`,
   })
   const componentRegistry = createPageComponentRegistry()
   const inheritedAppServices = sparkConsume(APP_SERVICES) ?? {}

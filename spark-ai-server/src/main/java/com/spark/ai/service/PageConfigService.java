@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -42,6 +43,7 @@ public class PageConfigService {
     /** 只允许读写的文件名白名单 */
     static final Set<String> ALLOWED_FILES =
             Set.of("rule.json", "pagedata.json", "script.js", "style.css");
+    private static final Pattern SAFE_SCOPE_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,127}");
 
     private final ObjectMapper objectMapper;
     private final SseService sseService;
@@ -64,11 +66,15 @@ public class PageConfigService {
 
     /** 返回页面目录路径：{configRoot}/{tenantId}/{projectId}/{pageId} */
     private Path pageDir(String tenantId, String projectId, String pageId) {
+        validateScopeId("tenantId", tenantId);
+        validateScopeId("projectId", projectId);
         return configRoot.resolve(tenantId).resolve(projectId).resolve(pageId);
     }
 
     /** 返回项目根目录：{configRoot}/{tenantId}/{projectId} */
     private Path projectDir(String tenantId, String projectId) {
+        validateScopeId("tenantId", tenantId);
+        validateScopeId("projectId", projectId);
         return configRoot.resolve(tenantId).resolve(projectId);
     }
 
@@ -699,6 +705,14 @@ public class PageConfigService {
         if (pageId == null || pageId.isBlank()
                 || pageId.contains("..") || pageId.contains("/") || pageId.contains("\\")) {
             throw new IllegalArgumentException("无效的 pageId: " + pageId);
+        }
+    }
+
+    private void validateScopeId(String label, String value) {
+        if (value == null || value.isBlank()
+                || value.contains("..") || value.contains("/") || value.contains("\\")
+                || !SAFE_SCOPE_ID.matcher(value).matches()) {
+            throw new IllegalArgumentException("无效的 " + label + ": " + value);
         }
     }
 

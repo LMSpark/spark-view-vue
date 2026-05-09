@@ -105,6 +105,7 @@ class PageConfigServiceTest {
         assertEquals(1, versions.size());
         assertEquals(1, versions.get(0).get("version"));
         assertEquals(true, versions.get(0).get("isCurrent"));
+        assertInstanceOf(Number.class, versions.get(0).get("createdAt"));
     }
 
     @Test
@@ -255,6 +256,14 @@ class PageConfigServiceTest {
 
         Map<String, Object> routesFile = service.readRootFile("t1", "p1", "routes.json", null);
         assertTrue(String.valueOf(routesFile.get("content")).contains("system-dashboard"));
+    }
+
+    @Test
+    void rejectsInvalidTenantOrProjectScope() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createPage("../tenant", "p1", "demo-page", "演示页面", "Document"));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createPage("t1", "bad/project", "demo-page", "演示页面", "Document"));
     }
 
     // ── 健康检查 ──

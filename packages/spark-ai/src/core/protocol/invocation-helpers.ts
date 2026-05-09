@@ -50,11 +50,14 @@ export interface StreamCallbacks {
 
 /**
  * action 路径拆解结果。
- * 输入语义：规范 action，格式为 module/.../function。
+ * 输入语义：规范 action，首选格式为 instance/child@module@function。
+ * 兼容旧格式 module/.../function，仅用于历史调用数据迁移。
  * 调用时机：协议层或运行时需要按段访问 action 各部分时使用。
  * 所有字段只读：解析结果不应被外部修改。
  */
 export interface ActionPathParts {
+  readonly format: 'instance' | 'legacy'
+  readonly instanceIds: readonly string[]
   readonly moduleIds: readonly string[]
   readonly modulePath: string
   readonly moduleId: string
@@ -66,14 +69,18 @@ export class AiInvocationProtocol {
 
   /**
    * 将 action 字符串拆解为模块路径和函数 ID。
-   * 输入语义：规范 action，格式必须为 module/.../function，至少两段。
+   * 输入语义：
+   * - LLM-facing 新格式：rootInstanceId/childInstanceId@moduleId@functionId。
+   * - 兼容旧格式：module/.../function，仅用于历史调用数据迁移。
    * 输出语义：模块路径和函数 ID；格式不合法则 fail-fast 抛出。
    * 调用时机：协议层解析 action 路径时统一调用此方法，禁止在各业务层自行 split。
    */
   static parseActionPath(action: string): ActionPathParts {
+    if (action.includes('@')) return AiInvocationProtocol.parseInstanceActionPath(action)
+
     const parts = action.split('/')
     if (parts.length < 2 || parts.some(part => part.trim().length === 0)) {
-      throw new Error(`非法 action 路径: ${action}，必须使用 module/.../function`)
+      throw new Error(`非法 action 路径: ${action}，必须使用 rootInstance[/childInstance]@module@function`)
     }
     if (parts.some(part => part.includes('@'))) {
       throw new Error(`非法 action 路径: ${action}，模块或函数 ID 不能包含 @`)
@@ -81,10 +88,56 @@ export class AiInvocationProtocol {
     const functionId = parts[parts.length - 1] ?? ''
     const moduleIds = parts.slice(0, -1)
     return {
+      format: 'legacy',
+      instanceIds: [],
       moduleIds,
       modulePath: moduleIds.join('/'),
       moduleId: moduleIds[moduleIds.length - 1] ?? '',
       function: functionId,
+    }
+  }
+
+  /** 解析 LLM-facing action：rootInstance[/childInstance]@moduleId@functionId。实例路径段允许 URI 编码。 */
+  private static parseInstanceActionPath(action: string): ActionPathParts {
+    const parts = action.split('@')
+    if (parts.length !== 3) {
+      throw new Error(`非法 action 路径: ${action}，必须使用 rootInstance[/childInstance]@module@function`)
+    }
+    const [instancePath = '', moduleId = '', functionId = ''] = parts
+    const encodedInstanceIds = instancePath.split('/')
+    if (encodedInstanceIds.length === 0 || encodedInstanceIds.some(part => part.trim().length === 0)) {
+      throw new Error(`非法 action 路径: ${action}，实例路径不能为空`)
+    }
+    if (encodedInstanceIds.some(part => part.includes('@'))) {
+      throw new Error(`非法 action 路径: ${action}，实例 ID 不能包含 @`)
+    }
+    const instanceIds = encodedInstanceIds.map((part) => AiInvocationProtocol.decodeActionSegment(part, action))
+    if (moduleId.trim().length === 0 || functionId.trim().length === 0) {
+      throw new Error(`非法 action 路径: ${action}，模块名和函数名不能为空`)
+    }
+    if (moduleId.includes('@') || moduleId.includes('/') || functionId.includes('@') || functionId.includes('/')) {
+      throw new Error(`非法 action 路径: ${action}，模块名或函数名包含非法字符`)
+    }
+    return {
+      format: 'instance',
+      instanceIds,
+      moduleIds: [moduleId],
+      modulePath: moduleId,
+      moduleId,
+      function: functionId,
+    }
+  }
+
+  /** 解码 action 实例路径段；编码让业务实例 ID 可以包含 `/` 或 `@` 而不破坏路径语法。 */
+  private static decodeActionSegment(segment: string, action: string): string {
+    try {
+      const decoded = decodeURIComponent(segment)
+      if (decoded.trim().length === 0) {
+        throw new Error('decoded segment is empty')
+      }
+      return decoded
+    } catch {
+      throw new Error(`非法 action 路径: ${action}，实例路径段不是合法 URI 编码`)
     }
   }
 

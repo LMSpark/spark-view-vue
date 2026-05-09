@@ -966,11 +966,37 @@ function assertNodeLike(node: unknown, fieldName: string): asserts node is Spark
   }
 }
 
+function assertNoPropsId(node: SparkNode, fieldName: string): void {
+  const props = (node as { props?: unknown }).props
+  if (
+    props !== null
+    && props !== undefined
+    && typeof props === 'object'
+    && !Array.isArray(props)
+    && Object.prototype.hasOwnProperty.call(props, 'id')
+  ) {
+    throw new Error(`${fieldName}.props.id has been removed. Use ${fieldName}.id as the top-level SparkNode id.`)
+  }
+}
+
+function assertNoPropsIdRecursive(node: SparkNode, fieldName: string): void {
+  assertNoPropsId(node, fieldName)
+
+  const children = (node as { children?: unknown }).children
+  if (!Array.isArray(children)) return
+
+  children.forEach((child, index) => {
+    if (!isSparkNode(child)) return
+    assertNoPropsIdRecursive(child, `${fieldName}.children[${index}]`)
+  })
+}
+
 /**
  * 断言并返回 SparkNode。
  */
 function requireSparkNode(value: unknown, fieldName: string): SparkNode {
   assertNodeLike(value, fieldName)
+  assertNoPropsIdRecursive(value, fieldName)
   return normalizeSparkNode(value)
 }
 
@@ -1281,9 +1307,6 @@ function normalizeSparkNodeWithComponentIdsRecursive(
     : (normalized.props !== undefined ? { ...normalized.props } : undefined)
 
   const nextProps = baseProps === undefined ? undefined : { ...baseProps }
-  if (nextProps !== undefined) {
-    delete nextProps['id']
-  }
 
   const nextNode: Record<string, unknown> = {
     type: normalized.type,
