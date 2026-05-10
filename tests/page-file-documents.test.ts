@@ -84,6 +84,21 @@ describe('PageFileDocument primitives', () => {
       expect(doc.parseError.value).not.toBeNull()
     })
 
+    it('migrates legacy props.id to top-level ids when loading rule text', () => {
+      const docs = createPageDocuments()
+      const doc = docs['rule.json']
+
+      doc.loadFromText(`${JSON.stringify([
+        { type: 'r-section', props: { id: 'legacy-section', title: '假期管理' } },
+      ], null, 2)}\n`)
+
+      expect(doc.parseError.value).toBeNull()
+      const current = doc.model.value!.toJSON()
+      const first = current.children?.[0] as { id?: string; props?: Record<string, unknown> }
+      expect(first.id).toBe('legacy-section')
+      expect(first.props?.['id']).toBeUndefined()
+    })
+
     it('replaceModel adopts an externally provided tree', () => {
       const docs = createPageDocuments()
       const ruleA = docs['rule.json']

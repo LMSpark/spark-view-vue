@@ -1,5 +1,4 @@
-import componentCatalogJson from '../../../catalog/component-catalog.json'
-import type { ComponentCatalog } from '../../../catalog/types'
+import { COMPONENT_CATALOG_JSON } from '../../../catalog'
 import { projectComponentConfigGuide, projectFunctionCatalog } from '../../../catalog/catalog-projections'
 import {
   KnowledgePayloadRegistry,
@@ -11,7 +10,7 @@ import {
 
 const PAGE_DESIGN_COMPONENT_PAYLOAD_REF = 'page-design.component'
 
-const PAGE_DESIGN_FUNCTION_CATALOG = projectFunctionCatalog(componentCatalogJson as ComponentCatalog)
+const PAGE_DESIGN_FUNCTION_CATALOG = projectFunctionCatalog(COMPONENT_CATALOG_JSON)
 
 interface ComponentPropGuide {
   name: string
@@ -108,7 +107,7 @@ function buildSparkNodeJsonSchema(type: string, requiredProps: ComponentPropGuid
 }
 
 function buildPayloadGuide(type: string): KnowledgePayloadGuide | null {
-  const guide = projectComponentConfigGuide(componentCatalogJson as ComponentCatalog, type)
+  const guide = projectComponentConfigGuide(COMPONENT_CATALOG_JSON, type)
   if (guide === null) return null
 
   return {

@@ -9,6 +9,7 @@ import { computed, ref, shallowRef, triggerRef } from 'vue'
 import { SparkNodeTree, type SparkNode } from '@spark-view/spark-component'
 import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
+import { normalizeRuleNode } from '@spark-view/spark-page-config'
 import { canonicalizePageDataValue } from './policies/pageDataJsonSchema'
 
 export const PAGE_FILE_NAMES = [
@@ -220,13 +221,16 @@ function createModelBackedDocument<TModel>(
 function parseRuleChildren(rawText: string): SparkNode[] {
   if (!rawText.trim()) return []
   const parsed = JSON.parse(rawText) as unknown
-  if (Array.isArray(parsed)) return parsed as SparkNode[]
+  if (Array.isArray(parsed)) {
+    return parsed.map(node => normalizeRuleNode(node) as unknown as SparkNode)
+  }
   if (
     typeof parsed === 'object'
     && parsed !== null
     && Array.isArray((parsed as Record<string, unknown>)['children'])
   ) {
-    return (parsed as Record<string, unknown>)['children'] as SparkNode[]
+    return ((parsed as Record<string, unknown>)['children'] as unknown[])
+      .map(node => normalizeRuleNode(node) as unknown as SparkNode)
   }
   throw new Error('rule.json 必须是数组或含 children 的根对象')
 }

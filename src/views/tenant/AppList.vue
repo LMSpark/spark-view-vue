@@ -21,7 +21,7 @@
           >
             <div class="app-card-header">
               <span class="app-icon"><NavIcon :name="project.icon" :size="32" /></span>
-              <el-tag v-if="project.projectType === 'homepage'" type="warning" size="small">管理平台</el-tag>
+              <el-tag v-if="project.projectType === 'homepage'" type="warning" size="small">应用工场</el-tag>
               <el-tag v-else type="info" size="small">应用</el-tag>
             </div>
             <h3 class="app-name">{{ project.name }}</h3>

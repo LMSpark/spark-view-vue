@@ -361,9 +361,86 @@ function isNotUndefined<T>(value: T | undefined): value is T {
  * 避免消费层继续生成 `props.id`、`props.type`、`props.children` 这类旧形态。
  */
 const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
+const VUE_MODEL_PROP = 'modelValue'
+const CONFIG_MODEL_PROP = 'value'
+const VUE_MODEL_UPDATE_EVENT = 'update:modelValue'
 
 function isConfigurableProp(prop: Pick<PropEntry, 'name'>): boolean {
   return !STRUCT_KEYS.has(prop.name)
+}
+
+/**
+ * 将从具体前端实现抽取出的 API 名称投影为页面配置层的跨框架语义。
+ *
+ * 当前组件目录的物理来源是 Vue SFC，因此原始 catalog 中会出现 `modelValue`
+ * 和 `update:modelValue`。这两个名字属于 Vue 渲染适配层，不能直接暴露给
+ * AI 生成的 rule.json；配置侧统一使用 `value`，再由各前端 renderer 映射。
+ */
+function sanitizeFrameworkText(text: string | undefined): string | undefined {
+  if (text === undefined) return undefined
+  return text
+    .replaceAll('update:modelValue', 'valueChange')
+    .replaceAll('modelValue', 'value')
+    .replaceAll('Vue 渲染适配层', '前端渲染适配层')
+    .replaceAll('Vue renderer', 'frontend renderer')
+}
+
+function normalizeConfigProp(prop: PropEntry): PropEntry {
+  const name = prop.name === VUE_MODEL_PROP ? CONFIG_MODEL_PROP : prop.name
+  const description = prop.name === VUE_MODEL_PROP
+    ? '跨框架配置模型值。页面配置使用 `value` 表达当前值；具体前端渲染器负责映射到自身模型属性。'
+    : sanitizeFrameworkText(prop.description)
+
+  return {
+    ...prop,
+    name,
+    ...(description !== undefined ? { description } : {}),
+  }
+}
+
+function normalizeConfigProps(props: PropEntry[]): PropEntry[] {
+  const merged = new Map<string, PropEntry>()
+  for (const rawProp of props) {
+    const prop = normalizeConfigProp(rawProp)
+    const existing = merged.get(prop.name)
+    if (existing === undefined) {
+      merged.set(prop.name, prop)
+      continue
+    }
+
+    if (rawProp.name === VUE_MODEL_PROP) {
+      const next: PropEntry = { ...prop, ...existing }
+      const description = existing.description ?? prop.description
+      if (description !== undefined) next.description = description
+      else delete next.description
+      merged.set(prop.name, next)
+      continue
+    }
+
+    const next: PropEntry = { ...existing, ...prop }
+    const description = prop.description ?? existing.description
+    if (description !== undefined) next.description = description
+    else delete next.description
+    merged.set(prop.name, next)
+  }
+  return [...merged.values()]
+}
+
+function normalizeConfigEmit(emit: EmitEntry): EmitEntry | undefined {
+  if (emit.name === VUE_MODEL_UPDATE_EVENT) return undefined
+  const description = sanitizeFrameworkText(emit.description)
+  const type = sanitizeFrameworkText(emit.type)
+  return {
+    ...emit,
+    ...(type !== undefined ? { type } : {}),
+    ...(description !== undefined ? { description } : {}),
+  }
+}
+
+function normalizeConfigEmits(emits: EmitEntry[]): EmitEntry[] {
+  return emits
+    .map(normalizeConfigEmit)
+    .filter(isNotUndefined)
 }
 
 /**
@@ -393,8 +470,8 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
   const canonicalProps = resolveCanonicalProps(catalog, type, canonicalEntry)
   const canonicalEmits = resolveCanonicalEmits(catalog, type, canonicalEntry)
 
-  const mergedPropsRaw = mergePropsByName(canonicalProps, entry.props)
-  const mergedEmitsRaw = mergeEmitsByName(canonicalEmits, entry.emits ?? [])
+  const mergedPropsRaw = normalizeConfigProps(mergePropsByName(canonicalProps, entry.props))
+  const mergedEmitsRaw = normalizeConfigEmits(mergeEmitsByName(canonicalEmits, entry.emits ?? []))
 
   const props: HydratedPropEntry[] = mergedPropsRaw.map((prop) => {
     const schema = resolvePropSchema(catalog, prop)
@@ -535,9 +612,10 @@ function resolveBindingDescriptor(catalog: ComponentCatalog, type: string, entry
  * @returns       true 表示该组件声明了至少一个 emits 事件
  */
 function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEntry): boolean {
-  if ((entry.emits ?? []).length > 0) return true
+  if (normalizeConfigEmits(entry.emits ?? []).length > 0) return true
   const canonicalEntry = catalog.canonical?.components[type]
-  return (canonicalEntry?.emitRefs.length ?? 0) > 0
+  if ((canonicalEntry?.emitRefs.length ?? 0) === 0) return false
+  return resolveCanonicalEmits(catalog, type, canonicalEntry).some(emit => normalizeConfigEmit(emit) !== undefined)
 }
 
 /**
@@ -580,6 +658,73 @@ function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSch
 
   const schemas = emit.schemaRefs.map((ref) => catalog.schemaPool?.[ref]).filter(isNotUndefined)
   return schemas.length > 0 ? schemas : undefined
+}
+
+function toPlainPropEntry(prop: HydratedPropEntry): PropEntry {
+  const { schema: _schema, ...plain } = prop
+  return plain
+}
+
+function toPlainEmitEntry(emit: HydratedEmitEntry): EmitEntry {
+  const { schema: _schema, payload: _payload, ...plain } = emit
+  return plain
+}
+
+/**
+ * 公开 catalog 投影：把构建产物中的具体前端实现细节收敛为配置层 catalog。
+ *
+ * - `modelValue` prop 统一投影为 `value`；
+ * - `update:modelValue` 事件不作为页面配置事件暴露；
+ * - canonical/vue-component-meta 等构建中间结构不进入公开配置目录。
+ */
+export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): ComponentCatalog {
+  const components: Record<string, ComponentEntry> = {}
+
+  for (const type of Object.keys(catalog.components)) {
+    const entry = projectHydratedComponent(catalog, type)
+    if (entry === null) continue
+    const {
+      props,
+      emits,
+      description,
+      notes,
+      filePath: _filePath,
+      source: _source,
+      ...rest
+    } = entry
+
+    const next: ComponentEntry = {
+      ...rest,
+      props: props.map(toPlainPropEntry),
+      emits: emits.map(toPlainEmitEntry),
+    }
+    const sanitizedDescription = sanitizeFrameworkText(description)
+    const sanitizedNotes = sanitizeFrameworkText(notes)
+    if (sanitizedDescription !== undefined) next.description = sanitizedDescription
+    if (sanitizedNotes !== undefined) next.notes = sanitizedNotes
+    components[type] = next
+  }
+
+  return {
+    version: catalog.version,
+    buildTime: catalog.buildTime,
+    componentCount: Object.keys(components).length,
+    components,
+    ...(catalog.registry !== undefined
+      ? {
+          registry: {
+            containers: [...catalog.registry.containers],
+            fields: [...catalog.registry.fields],
+            groups: [...catalog.registry.groups],
+            meta: [...catalog.registry.meta],
+          },
+        }
+      : {}),
+    ...(catalog.schemaPool !== undefined ? { schemaPool: catalog.schemaPool } : {}),
+    ...(catalog.constraints !== undefined ? { constraints: catalog.constraints } : {}),
+    ...(catalog.bindingDescriptors !== undefined ? { bindingDescriptors: catalog.bindingDescriptors } : {}),
+    ...(catalog.governance !== undefined ? { governance: catalog.governance } : {}),
+  }
 }
 
 

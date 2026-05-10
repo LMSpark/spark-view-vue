@@ -19,11 +19,12 @@ export const RULE_JSON_SCHEMA: Record<string, unknown> = {
   type: 'array',
   items: { $ref: '#/$defs/sparkNode' },
   $defs: {
-    sparkNode: withMeta('组件节点 Component Node', '严格对齐 h(type, props, children) 三字段。id / dataKey / field / on 等业务属性均在 props 内声明。', {
+    sparkNode: withMeta('组件节点 Component Node', '严格对齐 SparkNode 结构：type / id / props / children。id 是节点顶层稳定标识，禁止写入 props.id。', {
       type: 'object',
       properties: {
         type: withMeta('组件类型 Component Type', '组件注册名（kebab-case），如 r-table / el-button / div。', { type: 'string', enum: DEV_TYPES }),
-        props: withMeta('组件属性 Props', '传给组件的全部属性。id / dataKey / field / label / on / visible / disabled 均在此声明。', {
+        id: withMeta('节点标识 Component ID', 'SparkNode 顶层稳定 id，用于脚本寻址、AI 编辑和渲染 key。不要放到 props.id。', { type: 'string' }),
+        props: withMeta('组件属性 Props', '传给组件的业务属性。dataKey / field / label / on / visible / disabled 等在此声明；id 必须写在节点顶层。', {
           type: 'object',
           additionalProperties: true,
         }),

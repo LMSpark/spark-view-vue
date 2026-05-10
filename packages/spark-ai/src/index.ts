@@ -112,9 +112,11 @@ export type {
 export { COMPONENT_CATALOG_JSON } from './catalog'
 
 export {
+  projectFrameworkNeutralCatalog,
   projectComponentDirectory,
   projectComponentSpec,
   projectComponentConfigGuide,
+  projectFunctionCatalog,
   projectHydratedComponent,
   projectDevTypes,
   projectDevPropNames,

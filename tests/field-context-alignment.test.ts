@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
-import { Spark, PAGE_COMPONENT_REGISTRY, FieldText, useSparkContextScope } from '@spark-view/spark-component'
+import { Spark, PAGE_COMPONENT_REGISTRY, FieldSelect, FieldText, useSparkContextScope } from '@spark-view/spark-component'
 import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
 import { useResolvedFieldContext } from '../packages/spark-component/src/components/fields/context/useResolvedFieldContext'
@@ -49,6 +49,33 @@ const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
   setup(_, { slots }) {
     return () => h('div', { class: 'el-form-item-stub' }, slots['default']?.())
+  },
+})
+
+const ElInputModelProbe = defineComponent({
+  props: ['modelValue'],
+  setup(props) {
+    return () => h('input', {
+      class: 'el-input-model-probe',
+      'data-model-value': String(props.modelValue ?? ''),
+    })
+  },
+})
+
+const ElSelectModelProbe = defineComponent({
+  props: ['modelValue'],
+  setup(props, { slots }) {
+    return () => h('div', {
+      class: 'el-select-model-probe',
+      'data-model-value': String(props.modelValue ?? ''),
+    }, slots['default']?.())
+  },
+})
+
+const ElOptionStub = defineComponent({
+  props: ['label', 'value', 'disabled'],
+  setup() {
+    return () => h('span')
   },
 })
 
@@ -136,6 +163,44 @@ describe('FieldContextRenderer CSS class 传递', () => {
     const wrapper = mountFCR({ titleAlign: 'right' })
     const col = wrapper.find('.el-table-column-test-stub')
     expect(col.attributes('data-label-class-name')).toBe('spark-col-header--center')
+  })
+})
+
+describe('字段模型值解析', () => {
+  it('未显式传入 modelValue 时从行模型取值，不把 Vue Boolean value 默认值当作字段值', () => {
+    const textWrapper = mountFieldInContext({
+      component: FieldText,
+      type: 'r-text',
+      model: {},
+      fieldName: 'department',
+      global: {
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputModelProbe,
+        },
+      },
+    })
+    expect(textWrapper.get('.el-input-model-probe').attributes('data-model-value')).toBe('')
+
+    const selectWrapper = mountFieldInContext({
+      component: FieldSelect,
+      type: 'r-select',
+      model: {},
+      fieldName: 'status',
+      componentProps: {
+        options: [
+          { label: '待审批', value: 'pending' },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-select': ElSelectModelProbe,
+          'el-option': ElOptionStub,
+        },
+      },
+    })
+    expect(selectWrapper.get('.el-select-model-probe').attributes('data-model-value')).toBe('')
   })
 })
 

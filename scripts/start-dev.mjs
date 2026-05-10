@@ -72,14 +72,58 @@ function waitForBackend(timeoutMs = 120_000) {
   })
 }
 
-function isPortAvailable(port) {
+function probeBackend(url, timeoutMs = 3000) {
   return new Promise((resolveP) => {
+    const req = http.get(url, { timeout: timeoutMs }, (res) => {
+      const ok = res.statusCode === 200
+      res.resume()
+      resolveP(ok)
+    })
+    req.on('error', () => resolveP(false))
+    req.on('timeout', () => {
+      req.destroy()
+      resolveP(false)
+    })
+  })
+}
+
+function canConnectPort(host, port, timeoutMs = 400) {
+  return new Promise((resolveP) => {
+    const socket = new net.Socket()
+    let settled = false
+
+    const done = (value) => {
+      if (settled) return
+      settled = true
+      socket.destroy()
+      resolveP(value)
+    }
+
+    socket.setTimeout(timeoutMs)
+    socket.once('connect', () => done(true))
+    socket.once('timeout', () => done(false))
+    socket.once('error', () => done(false))
+    socket.connect(port, host)
+  })
+}
+
+function isPortAvailable(port) {
+  return new Promise(async (resolveP) => {
+    // 先连接探测：若 localhost 已可连接，视为端口已占用。
+    const inUseByIpv4 = await canConnectPort('127.0.0.1', port)
+    const inUseByIpv6 = await canConnectPort('::1', port)
+    if (inUseByIpv4 || inUseByIpv6) {
+      resolveP(false)
+      return
+    }
+
+    // 再绑定验证：避免仅靠 connect 导致误判。
     const server = net.createServer()
     server.once('error', () => resolveP(false))
     server.once('listening', () => {
       server.close(() => resolveP(true))
     })
-    server.listen(port, '0.0.0.0')
+    server.listen(port)
   })
 }
 
@@ -101,6 +145,22 @@ if (loadedFiles.length > 0) {
   console.log(`   本地环境文件: ${loadedFiles.join(', ')}`)
 }
 
+const backendPortNumber = Number(BACKEND_PORT)
+if (!Number.isInteger(backendPortNumber) || backendPortNumber <= 0 || backendPortNumber > 65535) {
+  console.error(`❌ BACKEND_PORT 非法: ${BACKEND_PORT}`)
+  process.exit(1)
+}
+
+const portAvailable = await isPortAvailable(backendPortNumber)
+const backendProbeUrl = `${BACKEND_URL}/api/config/default`
+const canReuseExistingBackend = !portAvailable && await probeBackend(backendProbeUrl)
+
+if (!portAvailable && !canReuseExistingBackend) {
+  console.error(`\n❌ 端口 ${BACKEND_PORT} 已被占用，且现有进程不是可用 SPARK 后端（${backendProbeUrl} 不可达）`)
+  console.error('   请先释放端口，或设置 BACKEND_PORT 为其他端口后重试。')
+  process.exit(1)
+}
+
 const mvnCmd = process.platform === 'win32' ? 'mvn.cmd' : 'mvn'
 const javaEnv = {
   ...mergedEnv,
@@ -108,32 +168,39 @@ const javaEnv = {
   PATH: `${resolve(javaHome, 'bin')}${process.platform === 'win32' ? ';' : ':'}${existingPath}`,
 }
 
-const backend = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
-  cwd: SERVER_DIR,
-  env: javaEnv,
-  stdio: ['ignore', 'pipe', 'pipe'],
-  shell: true,
-})
+let backend = null
+if (canReuseExistingBackend) {
+  console.warn(`⚠️ 检测到 ${BACKEND_URL} 已有可用后端，将复用现有进程，不重复拉起 Java。`)
+} else {
+  backend = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
+    cwd: SERVER_DIR,
+    env: javaEnv,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: true,
+  })
 
-backend.stdout.on('data', (d) => process.stdout.write(`[java] ${d}`))
-backend.stderr.on('data', (d) => process.stderr.write(`[java] ${d}`))
-backend.on('error', (err) => {
-  console.error(`❌ Java 启动失败: ${err.message}`)
-  process.exit(1)
-})
-backend.on('exit', (code) => {
-  if (code !== null && code !== 0) {
-    console.error(`❌ Java 进程退出 code=${code}`)
-    process.exit(code)
-  }
-})
+  backend.stdout.on('data', (d) => process.stdout.write(`[java] ${d}`))
+  backend.stderr.on('data', (d) => process.stderr.write(`[java] ${d}`))
+  backend.on('error', (err) => {
+    console.error(`❌ Java 启动失败: ${err.message}`)
+    process.exit(1)
+  })
+  backend.on('exit', (code) => {
+    if (code !== null && code !== 0) {
+      console.error(`❌ Java 进程退出 code=${code}`)
+      process.exit(code)
+    }
+  })
+}
 
 // ── 等后端就绪后启动 Vite ────────────────────────────────────────────────────
 try {
-  await waitForBackend()
+  if (!canReuseExistingBackend) {
+    await waitForBackend()
+  }
 } catch (e) {
   console.error(`\n❌ ${e.message}`)
-  backend.kill()
+  backend?.kill()
   process.exit(1)
 }
 
@@ -156,13 +223,13 @@ const vite = spawn('npx', ['vite', '--port', String(vitePort)], {
 // ── 优雅退出：关闭两个进程 ──────────────────────────────────────────────────
 function cleanup() {
   vite.kill()
-  backend.kill()
+  backend?.kill()
 }
 process.on('SIGINT', cleanup)
 process.on('SIGTERM', cleanup)
 vite.on('exit', (code, signal) => {
   if (code === 0 || signal) {
-    backend.kill()
+    backend?.kill()
     process.exit(code ?? 0)
     return
   }

@@ -150,9 +150,9 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    */
   modelValue?: TValue
   /**
-   * 显式字段值别名。
+   * 跨框架配置模型值。
    *
-   * 保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。
+   * 页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。
    */
   value?: TValue
   /**
@@ -794,9 +794,9 @@ export interface SparkVisibilityEventProps {
  */
 export interface SparkVisibilityContainerProps extends SparkVisibilityEventProps {
   /**
-   * 显隐值别名。
+   * 跨框架显隐配置值。
    *
-   * `modelValue` 仍是标准受控入口；`value` 用于配置式初始值和旧页面兼容。
+   * 页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。
    */
   value?: boolean
 }

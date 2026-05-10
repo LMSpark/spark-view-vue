@@ -92,5 +92,6 @@ describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
 
     expect(enums).toEqual(DEV_TYPES)
     expect(enums.length).toBeGreaterThan(0)
+    expect(properties['id']).toBeDefined()
   })
 })

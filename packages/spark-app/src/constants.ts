@@ -96,7 +96,7 @@ export type Environment = typeof Environments[keyof typeof Environments]
  */
 export const DefaultConfig = {
   // 应用配置
-  APP_NAME: 'SPARK View',
+  APP_NAME: 'SPARK AppWorks',
   APP_VERSION: '1.0.0',
   
   // 超时配置

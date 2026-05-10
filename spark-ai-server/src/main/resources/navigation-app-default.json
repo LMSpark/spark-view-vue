@@ -12,7 +12,7 @@
         {
             "id": "back-to-homepage",
             "nodeKind": "system-page",
-            "title": "返回管理平台",
+            "title": "返回应用工场",
             "icon": "HomeFilled",
             "path": "/app-list"
         },

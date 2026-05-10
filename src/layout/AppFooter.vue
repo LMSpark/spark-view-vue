@@ -10,7 +10,7 @@
 withDefaults(defineProps<{
   text?: string
 }>(), {
-  text: `© ${new Date().getFullYear()} SPARK View — Powered by spark-view`,
+  text: `© ${new Date().getFullYear()} SPARK AppWorks — SPARK 融合平台 · 应用工场`,
 })
 </script>
 

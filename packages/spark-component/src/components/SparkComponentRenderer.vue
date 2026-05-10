@@ -106,6 +106,47 @@ import { resolvePlaceholderProps } from '../core/useSparkComponent.js'
 // h() 模型下，以下字段属于渲染器/布局层语义，不直接透传到业务组件。
 const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'onBeforeRender', 'order'])
 const FILTERED_NATIVE_SCOPE_KEYS = new Set(['row', 'rowIndex', 'data', 'dataSource'])
+const MODEL_VALUE_PROP_COMPONENT_TYPES = new Set([
+  'r-text',
+  'r-textarea',
+  'r-number',
+  'r-date',
+  'r-select',
+  'r-multi-select',
+  'r-radio',
+  'r-checkbox',
+  'r-checkbox-group',
+  'r-switch',
+  'r-html-editor',
+  'r-slider',
+  'r-rate',
+  'r-color',
+  'r-icon',
+  'r-image',
+  'r-file-path',
+  'r-file-browser',
+  'r-upload',
+  'r-entity-picker',
+  'r-user-picker',
+  'r-dept-picker',
+  'r-product-picker',
+  'r-cascader',
+  'r-tree-select',
+  'r-transfer',
+  'r-segmented',
+  'r-check-tag',
+  'r-mention',
+  'r-time-picker',
+  'r-time-select',
+  'r-autocomplete',
+  'r-dialog',
+  'r-drawer',
+  'r-tabs',
+  'r-collapse',
+  'r-steps',
+  'code-editor',
+  'json-editor',
+])
 
 type RenderableChild = SparkNode | string | number
 type RecursiveChildrenList = RenderableChild[]
@@ -361,14 +402,38 @@ function buildBeforeRenderContext({ rawProps, parentContext }: ScopedRuntimeInpu
  * - 把 on.xxx 映射成 Vue listener props
  * - 保留 fast-path，尽量复用原始对象引用
  */
-function buildNodeForwardedProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
-  const onMap = rawProps['on']
+function normalizeConfigValuePropForVueModel(nodeType: string | null, rawProps: NodeRuntimeProps): NodeRuntimeProps {
+  if (
+    nodeType === null ||
+    !MODEL_VALUE_PROP_COMPONENT_TYPES.has(nodeType) ||
+    !Object.prototype.hasOwnProperty.call(rawProps, 'value')
+  ) {
+    return rawProps
+  }
+
+  const { value, ...rest } = rawProps
+  if (
+    Object.prototype.hasOwnProperty.call(rest, 'modelValue') ||
+    Object.prototype.hasOwnProperty.call(rest, 'model-value')
+  ) {
+    return rest
+  }
+
+  return {
+    ...rest,
+    modelValue: value,
+  }
+}
+
+function buildNodeForwardedProps(rawProps: NodeRuntimeProps, nodeType: string | null): NodeRuntimeProps {
+  const normalizedProps = normalizeConfigValuePropForVueModel(nodeType, rawProps)
+  const onMap = normalizedProps['on']
   const hasEvents = isNonEmptyRecord(onMap)
 
   // fast-path：叶子节点通常无事件且无框架保留键，直接复用原引用即可。
-  if (!hasEvents && !hasFilteredKeys(rawProps)) return rawProps
+  if (!hasEvents && !hasFilteredKeys(normalizedProps)) return normalizedProps
 
-  const filteredProps = filterForwardableProps(rawProps)
+  const filteredProps = filterForwardableProps(normalizedProps)
   if (!hasEvents) return filteredProps
 
   return {
@@ -682,7 +747,9 @@ const shouldRenderRegistryChildrenViaSlot = computed(() =>
 // ── props 透传：SparkNode.props → 目标组件运行时 props ───────────────────────
 
 // 所有组件共享的基础 props：从 SparkNode.props 过滤并规范化后得到。
-const nodeForwardedProps = computed(() => buildNodeForwardedProps(effectiveNode.value.props ?? EMPTY_RUNTIME_PROPS))
+const nodeForwardedProps = computed(() =>
+  buildNodeForwardedProps(effectiveNode.value.props ?? EMPTY_RUNTIME_PROPS, resolvedNodeType.value)
+)
 
 const nativeNodeForwardedProps = computed(() =>
   filterNativeForwardableProps(nodeForwardedProps.value)

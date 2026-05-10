@@ -53,7 +53,7 @@ export default defineConfig({
         // 把整个流缓冲到连接关闭后才一次性转发，导致前端无法逐 token 接收。
         configure: (proxy) => {
           const isSSE = (url?: string) =>
-            url?.includes('/chat/stream') || url === '/api/events'
+            url?.includes('/chat/stream') || url?.includes('/turn/stream') || url === '/api/events'
           // 移除 Accept-Encoding 防止后端压缩 SSE（压缩会触发代理缓冲）
           proxy.on('proxyReq', (proxyReq, req) => {
             if (isSSE(req.url)) {

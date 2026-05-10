@@ -1,6 +1,6 @@
-# SPARK View
+# SPARK AppWorks
 
-> 面向 Vue 3 和 Element Plus 的深度配置平台，内置数据视图、权限策略和受约束的 AI 配置生成能力
+> SPARK 融合平台的应用工场，面向 Vue 3 和 Element Plus，内置数据视图、权限策略和受约束的 AI 配置生成能力
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![Vue 3](https://img.shields.io/badge/Vue-3.5-brightgreen.svg)](https://vuejs.org/)
@@ -237,4 +237,4 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 
 ---
 
-**SPARK View** - 构建稳定、可控、可验证的配置驱动应用
+**SPARK AppWorks** - SPARK 融合平台的应用工场，构建稳定、可控、可验证的配置驱动应用

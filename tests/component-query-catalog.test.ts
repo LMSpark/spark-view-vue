@@ -9,6 +9,7 @@ import {
   projectComponentDirectory,
   projectComponentConfigGuide,
   projectComponentSpec,
+  projectFrameworkNeutralCatalog,
   projectDevTypes,
   projectDevPropNames,
   projectDevPropEnums,
@@ -225,6 +226,39 @@ describe('catalog-projections', () => {
       type: 'r-text',
       props: { field: '<required>' },
     })
+  })
+
+  it('component config projections expose framework-neutral value instead of Vue modelValue', () => {
+    const catalog = makeCatalog({
+      components: {
+        'r-text': makeEntry({
+          props: [
+            { name: 'field', type: 'string', required: true },
+            { name: 'modelValue', type: 'string', required: false, description: 'Vue modelValue' },
+          ],
+          emits: [
+            { name: 'update:modelValue', description: 'Vue model update' },
+            { name: 'change', description: '业务变更' },
+          ],
+        }),
+      },
+    })
+
+    const spec = projectComponentSpec(catalog, 'r-text')
+    const guide = projectComponentConfigGuide(catalog, 'r-text')
+    const propNames = projectDevPropNames(catalog)
+    const neutralCatalog = projectFrameworkNeutralCatalog(catalog)
+    const neutralEntry = neutralCatalog.components['r-text']
+
+    expect(spec?.props.map(prop => prop.name)).toContain('value')
+    expect(spec?.props.map(prop => prop.name)).not.toContain('modelValue')
+    expect(spec?.emits.map(emit => emit.name)).toEqual(['change'])
+    expect(guide?.optionalProps.map(prop => prop.name)).toContain('value')
+    expect(propNames['r-text']).toContain('value')
+    expect(propNames['r-text']).not.toContain('modelValue')
+    expect(neutralEntry?.props.map(prop => prop.name)).toContain('value')
+    expect(neutralEntry?.emits?.map(emit => emit.name) ?? []).toEqual(['change'])
+    expect('canonical' in neutralCatalog).toBe(false)
   })
 
   it('projectComponentConfigGuide returns null for unknown component', () => {

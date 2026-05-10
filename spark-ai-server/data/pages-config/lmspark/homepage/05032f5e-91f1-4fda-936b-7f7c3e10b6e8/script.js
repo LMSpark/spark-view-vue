@@ -36,7 +36,8 @@ function getRowId(row) {
 function findRowById(view, id) {
   var rows = getViewRows(view)
   for (var i = 0; i < rows.length; i += 1) {
-    if (rows[i] && rows[i].id === id) {
+    var rowId = getRowId(rows[i])
+    if (rowId === id || String(rowId) === String(id)) {
       return rows[i]
     }
   }
@@ -110,6 +111,10 @@ function syncVoucherSelection(rowId) {
   for (var i = 0; i < viewIds.length; i += 1) {
     var view = mustGetView('Voucher', viewIds[i])
     if (rowId === null || rowId === undefined) {
+      view.setCurrentRow(null)
+      continue
+    }
+    if (!findRowById(view, rowId)) {
       view.setCurrentRow(null)
       continue
     }

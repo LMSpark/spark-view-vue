@@ -313,20 +313,82 @@ describe('PageConfigLoader', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('compileRule', () => {
-  it('解析 JSON 数组（保持 props 原样，不做 legacy id 自动迁移）', () => {
+  it('解析 JSON 数组并将 legacy props.id 迁移为顶层 id', () => {
     const raw = JSON.stringify([{ type: 'div', props: { id: 'root' } }])
     const result = compileRule(raw)
     expect(result).toHaveLength(1)
     expect(result[0]!.type).toBe('div')
-    expect(result[0]!.id).toBeUndefined()
-    expect(result[0]!.props).toEqual({ id: 'root' })
+    expect(result[0]!.id).toBe('root')
+    expect(result[0]!.props).toEqual({})
   })
 
-  it('legacy props.id 与顶层 id 同时存在时，不在编译层做冲突裁决', () => {
+  it('legacy props.id 与顶层 id 同时存在时，保留顶层 id 并移除 props.id', () => {
     const raw = JSON.stringify([{ type: 'div', id: 'new-id', props: { id: 'old-id' } }])
     const result = compileRule(raw)
     expect(result[0]!.id).toBe('new-id')
-    expect(result[0]!.props).toEqual({ id: 'old-id' })
+    expect(result[0]!.props).toEqual({})
+  })
+
+  it('递归迁移 props 内嵌 SparkNode 的 legacy props.id', () => {
+    const raw = JSON.stringify([{
+      type: 'r-table',
+      props: {
+        toolbar: {
+          type: 'r-toolbar',
+          props: { id: 'leave-toolbar' },
+          children: [
+            { type: 'r-button', props: { id: 'btn-refresh', label: '刷新' } },
+          ],
+        },
+      },
+    }])
+    const result = compileRule(raw)
+    const toolbar = result[0]!.props!['toolbar'] as { id?: string; props?: Record<string, unknown>; children?: unknown[] }
+    const button = toolbar.children![0] as { id?: string; props?: Record<string, unknown> }
+
+    expect(toolbar.id).toBe('leave-toolbar')
+    expect(toolbar.props?.['id']).toBeUndefined()
+    expect(button.id).toBe('btn-refresh')
+    expect(button.props?.['id']).toBeUndefined()
+  })
+
+  it('保留跨框架 value 配置，不在 page-config 编译层绑定 Vue modelValue', () => {
+    const raw = JSON.stringify([
+      {
+        type: 'r-tabs',
+        props: { value: 'list' },
+      },
+      {
+        type: 'r-select',
+        props: {
+          field: 'status',
+          value: 'pending',
+          options: [
+            { label: '待审批', value: 'pending' },
+          ],
+        },
+      },
+      {
+        type: 'r-text-display',
+        props: { value: '-' },
+      },
+      {
+        type: 'r-dialog',
+        props: { value: true, modelValue: false },
+      },
+    ])
+    const result = compileRule(raw)
+
+    expect(result[0]!.props).toEqual({ value: 'list' })
+    expect(result[1]!.props).toEqual({
+      field: 'status',
+      value: 'pending',
+      options: [
+        { label: '待审批', value: 'pending' },
+      ],
+    })
+    expect(result[2]!.props).toEqual({ value: '-' })
+    expect(result[3]!.props).toEqual({ value: true, modelValue: false })
   })
 
   it('单对象自动包装为数组', () => {

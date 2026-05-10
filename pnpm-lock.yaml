@@ -165,9 +165,6 @@ importers:
 
   packages/spark-ai:
     dependencies:
-      '@spark-view/spark-component':
-        specifier: workspace:*
-        version: link:../spark-component
       '@spark-view/spark-data':
         specifier: workspace:*
         version: link:../spark-data

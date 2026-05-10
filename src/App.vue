@@ -169,7 +169,7 @@ const platformPaths = getPlatformPaths()
 const currentUsername = computed(() => getUser()?.displayName ?? getUser()?.username ?? '管理员')
 const activeProjectId = ref(getUser()?.defaultProjectId ?? 'homepage')
 const headerTitle = computed(() =>
-  activeProjectId.value === 'homepage' ? 'SPARK 管理后台' : `SPARK · ${activeProjectId.value}`
+  activeProjectId.value === 'homepage' ? 'SPARK 应用工场' : `SPARK · ${activeProjectId.value}`
 )
 const theme = useTheme()
 const isDark = computed(() => theme?.isDark ?? false)

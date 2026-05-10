@@ -9,8 +9,7 @@
     "noEmit": true,
     "paths": {
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
-      "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
-      "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"]
+      "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"]
     }
   },
   "include": ["src/**/*"],

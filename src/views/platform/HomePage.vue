@@ -3,7 +3,7 @@
     <!-- ── Hero 区域 ── -->
     <header class="hero">
       <nav class="hero-nav">
-        <span class="hero-logo"><NavIcon name="Lightning" :size="20" /> SPARK View</span>
+        <span class="hero-logo"><NavIcon name="Lightning" :size="20" /> SPARK AppWorks</span>
         <div class="hero-nav-right">
           <router-link to="/login" class="nav-link">登录</router-link>
           <router-link to="/login" class="nav-link nav-link--primary" @click="setRegisterTab">
@@ -13,13 +13,13 @@
       </nav>
 
       <div class="hero-body">
-        <p class="hero-eyebrow">For Multi-Tenant SaaS And Enterprise Delivery</p>
+        <p class="hero-eyebrow">SPARK 融合平台 · 应用工场</p>
         <h1 class="hero-title">
           企业应用系统<br>是 <span class="hero-highlight">AI 配</span>出来的
         </h1>
         <p class="hero-desc">
           不是让 AI 无边界写代码，而是让 AI 在受约束的配置空间里生成页面结构、数据模型、权限策略和最小化脚本。<br>
-          SPARK 用稳定运行时承接多租户、多系统 SaaS 场景，把交付效率和维护升级成本控制放在同一条链路里。
+          SPARK AppWorks 用稳定运行时承接多租户、多系统 SaaS 场景，把交付效率和维护升级成本控制放在同一条链路里。
         </p>
         <div class="hero-metrics">
           <div class="metric">
@@ -110,7 +110,7 @@
         </div>
         <div class="paradigm-vs">VS</div>
         <div class="paradigm-card paradigm-card--new">
-          <div class="paradigm-badge">SPARK View</div>
+          <div class="paradigm-badge">SPARK AppWorks</div>
           <div class="paradigm-flow">
             <div class="flow-step">用户需求 → LLM</div>
             <div class="flow-step ok">页面结构 + 数据模型 + 权限配置</div>
@@ -316,14 +316,14 @@
     <!-- ── 全景对比表 ── -->
     <section class="comparison">
       <h2 class="section-title">全景对比</h2>
-      <p class="section-desc">SPARK View vs 传统 AI 开发平台（Copilot / Cursor / v0）</p>
+      <p class="section-desc">SPARK AppWorks vs 传统 AI 开发平台（Copilot / Cursor / v0）</p>
       <div class="table-wrapper">
         <table class="compare-table">
           <thead>
             <tr>
               <th>对比维度</th>
               <th>传统 AI 平台</th>
-              <th class="highlight-col">SPARK View</th>
+              <th class="highlight-col">SPARK AppWorks</th>
             </tr>
           </thead>
           <tbody>
@@ -481,7 +481,7 @@
       <p class="section-desc">用 SPARK 处理 80% 的"高度同质"页面，把精力释放给真正需要创造力的工作</p>
       <div class="fit-grid">
         <div class="fit-card fit-card--spark">
-          <h4>SPARK View 主场</h4>
+          <h4>SPARK AppWorks 主场</h4>
           <ul>
             <li><span class="fit-star">★★★★★</span> 中后台 CRUD</li>
             <li><span class="fit-star">★★★★★</span> 数据看板 / 聚合</li>
@@ -513,7 +513,7 @@
 
     <!-- ── 页脚 ── -->
     <footer class="home-footer">
-      <span>© {{ year }} SPARK View — 深度配置 · 多租户多系统 · 低维护升级成本</span>
+      <span>© {{ year }} SPARK AppWorks — SPARK 融合平台 · 应用工场</span>
     </footer>
   </div>
 </template>

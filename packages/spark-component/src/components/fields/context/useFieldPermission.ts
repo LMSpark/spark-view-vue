@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, getCurrentInstance } from 'vue'
 import { FieldVisibility } from '@spark-view/spark-data'
 import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
@@ -40,6 +40,7 @@ interface UseFieldPermissionOptions<TValue> {
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
   const { props, fallbackValue, formatDisplay } = options
   const { sparkConsume } = useSparkConsume()
+  const instance = getCurrentInstance()
 
   const fieldName = computed(() => props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
@@ -61,9 +62,18 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const currentRow = computed<IDataRow | null>(() => activeRow.value)
   const selectedRows = computed<IDataRow[]>(() => activeSelectedRows.value)
 
+  function hasRawProp(...keys: string[]): boolean {
+    const rawProps = instance?.vnode.props
+    if (rawProps === null || rawProps === undefined) return false
+    return keys.some(key => Object.prototype.hasOwnProperty.call(rawProps, key))
+  }
+
+  const hasExplicitModelValue = computed(() => hasRawProp('modelValue', 'model-value'))
+  const hasExplicitValue = computed(() => hasRawProp('value'))
+
   const sourceFieldValue = computed<TValue>(() => {
-    if (props.value !== undefined) return props.value
-    if (props.modelValue !== undefined) return props.modelValue
+    if (hasExplicitModelValue.value && props.modelValue !== undefined) return props.modelValue
+    if (hasExplicitValue.value && props.value !== undefined) return props.value
     const row = activeRow.value
     if (row !== null && fieldName.value && fieldName.value in row) {
       return row[fieldName.value] as TValue

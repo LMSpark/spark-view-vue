@@ -26,6 +26,8 @@ export type {
 
 import type { StreamCallbacks } from '@spark-view/spark-ai'
 
+const AI_STREAM_TIMEOUT_MS = 300_000
+
 interface StreamAiChatOptions extends StreamCallbacks {
   messages: Array<{ role: string; content: string }>
   mode?: 'single' | 'multi'
@@ -36,7 +38,7 @@ interface StreamAiChatOptions extends StreamCallbacks {
 export type { StreamAiChatOptions }
 
 export async function streamAiChatText(options: StreamAiChatOptions): Promise<string> {
-  const sseClient = createFetchClient()
+  const sseClient = createFetchClient({ timeout: AI_STREAM_TIMEOUT_MS })
   const events = await sseClient.streamSSE({
     url: '/api/ai/chat/stream',
     method: 'POST',

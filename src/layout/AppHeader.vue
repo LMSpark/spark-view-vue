@@ -119,7 +119,7 @@
                 <el-icon><Setting /></el-icon>系统设置
               </el-dropdown-item>
               <el-dropdown-item divided command="home">
-                <el-icon><HomeFilled /></el-icon>平台主页
+                <el-icon><HomeFilled /></el-icon>应用工场主页
               </el-dropdown-item>
             </template>
             <el-dropdown-item divided command="logout">
@@ -154,7 +154,7 @@ const props = withDefaults(defineProps<{
   /** 用户菜单导航项（由导航配置驱动，path 匹配内置命令） */
   userMenuItems?: NavNode[]
 }>(), {
-  title: 'SPARK 管理后台',
+  title: 'SPARK 应用工场',
   isDark: false,
   collapsed: false,
   collapsible: true,

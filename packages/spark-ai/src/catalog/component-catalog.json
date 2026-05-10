@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-05-09T21:44:08.135Z",
+  "buildTime": "2026-05-10T07:32:36.557Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -1388,7 +1388,7 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
-          "description": "显隐值别名。\n\n`modelValue` 仍是标准受控入口；`value` 用于配置式初始值和旧页面兼容。"
+          "description": "跨框架显隐配置值。\n\n页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "onOpen",
@@ -1536,7 +1536,7 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
-          "description": "显隐值别名。\n\n`modelValue` 仍是标准受控入口；`value` 用于配置式初始值和旧页面兼容。"
+          "description": "跨框架显隐配置值。\n\n页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "onOpen",
@@ -4382,7 +4382,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -4550,7 +4550,7 @@
           "name": "value",
           "type": "CascaderValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -4723,7 +4723,7 @@
           "name": "value",
           "type": "boolean | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -4880,7 +4880,7 @@
           "name": "value",
           "type": "CheckboxGroupMultiValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -5059,7 +5059,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -5214,7 +5214,7 @@
           "name": "value",
           "type": "string | Date | (string | Date)[] | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -5545,7 +5545,7 @@
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -5726,7 +5726,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -5882,7 +5882,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -6018,7 +6018,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -6191,7 +6191,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -6358,7 +6358,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -6547,7 +6547,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -6734,7 +6734,7 @@
           "name": "value",
           "type": "MultiValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -6885,7 +6885,7 @@
           "name": "value",
           "type": "number | [number | undefined, number | undefined] | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -7210,7 +7210,7 @@
           "name": "value",
           "type": "string | number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -7368,7 +7368,7 @@
           "name": "value",
           "type": "number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -7547,7 +7547,7 @@
           "name": "value",
           "type": "string | number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -7730,7 +7730,7 @@
           "name": "value",
           "type": "string | number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -7889,7 +7889,7 @@
           "name": "value",
           "type": "number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8031,7 +8031,7 @@
           "name": "value",
           "type": "boolean | null | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8145,7 +8145,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8279,7 +8279,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8444,7 +8444,7 @@
           "name": "value",
           "type": "string | Date | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8593,7 +8593,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8774,7 +8774,7 @@
           "name": "value",
           "type": "TransferValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -8978,7 +8978,7 @@
           "name": "value",
           "type": "TreeSelectValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -9173,7 +9173,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         {
           "name": "field",
@@ -29128,7 +29128,7 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
-          "description": "显隐值别名。\n\n`modelValue` 仍是标准受控入口；`value` 用于配置式初始值和旧页面兼容。"
+          "description": "跨框架显隐配置值。\n\n页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00146": {
           "name": "onOpen",
@@ -31020,7 +31020,7 @@
           "name": "value",
           "type": "string | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00431": {
           "name": "field",
@@ -31160,7 +31160,7 @@
           "name": "value",
           "type": "CascaderValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00453": {
           "name": "placeholder",
@@ -31243,7 +31243,7 @@
           "name": "value",
           "type": "boolean | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00466": {
           "name": "placeholder",
@@ -31273,7 +31273,7 @@
           "name": "value",
           "type": "CheckboxGroupMultiValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00471": {
           "name": "buttonStyle",
@@ -31345,7 +31345,7 @@
           "name": "value",
           "type": "string | Date | (string | Date)[] | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00482": {
           "name": "placeholder",
@@ -31534,7 +31534,7 @@
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00509": {
           "name": "buttonText",
@@ -31765,7 +31765,7 @@
           "name": "value",
           "type": "MultiValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00543": {
           "name": "precision",
@@ -31783,7 +31783,7 @@
           "name": "value",
           "type": "number | [number | undefined, number | undefined] | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00546": {
           "name": "min",
@@ -31807,7 +31807,7 @@
           "name": "value",
           "type": "string | number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00550": {
           "name": "allowHalf",
@@ -31826,7 +31826,7 @@
           "name": "value",
           "type": "number | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00553": {
           "name": "max",
@@ -31900,7 +31900,7 @@
           "name": "value",
           "type": "boolean | null | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00564": {
           "name": "autosize",
@@ -31981,7 +31981,7 @@
           "name": "value",
           "type": "string | Date | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00576": {
           "name": "placeholder",
@@ -32055,7 +32055,7 @@
           "name": "value",
           "type": "TransferValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00587": {
           "name": "defaultExpandAll",
@@ -32081,7 +32081,7 @@
           "name": "value",
           "type": "TreeSelectValue | undefined",
           "required": false,
-          "description": "显式字段值别名。\n\n保留给配置式运行时和旧调用方使用；当同时存在时，优先级高于 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
         "prop_00591": {
           "name": "autoUpload",

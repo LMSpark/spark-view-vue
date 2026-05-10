@@ -131,6 +131,89 @@ test('SparkComponentRenderer only forwards config.props to registered components
   expect(reader.attributes('data-gap')).toBe('18')
 })
 
+test('SparkComponentRenderer maps cross-framework config value to Vue modelValue before forwarding', () => {
+  const system = Spark.createSystem()
+  const ModelValueReader = defineComponent({
+    inheritAttrs: false,
+    props: {
+      modelValue: [String, Boolean],
+    },
+    setup(componentProps, { attrs }) {
+      return () => h('div', {
+        class: 'model-value-reader',
+        'data-model-value': String(componentProps.modelValue ?? ''),
+        'data-has-value-attr': String(Object.prototype.hasOwnProperty.call(attrs, 'value')),
+        'data-value-attr': String(attrs['value'] ?? ''),
+      }, 'model')
+    },
+  })
+  system.registry.register('r-text', ModelValueReader)
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'r-text',
+        props: {
+          value: 'config-value',
+        },
+      } as unknown as Record<string, unknown>,
+      parentContext: system.rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: system.registry,
+      },
+    },
+  })
+
+  const reader = wrapper.find('.model-value-reader')
+  expect(reader.attributes('data-model-value')).toBe('config-value')
+  expect(reader.attributes('data-has-value-attr')).toBe('false')
+  expect(reader.attributes('data-value-attr')).toBe('')
+})
+
+test('SparkComponentRenderer drops config value when Vue modelValue is already present', () => {
+  const system = Spark.createSystem()
+  const ModelValueReader = defineComponent({
+    inheritAttrs: false,
+    props: {
+      modelValue: [String, Boolean],
+    },
+    setup(componentProps, { attrs }) {
+      return () => h('div', {
+        class: 'model-value-reader',
+        'data-model-value': String(componentProps.modelValue ?? ''),
+        'data-has-value-attr': String(Object.prototype.hasOwnProperty.call(attrs, 'value')),
+        'data-value-attr': String(attrs['value'] ?? ''),
+      }, 'model')
+    },
+  })
+  system.registry.register('r-text', ModelValueReader)
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'r-text',
+        props: {
+          value: 'config-value',
+          modelValue: 'vue-model',
+        },
+      } as unknown as Record<string, unknown>,
+      parentContext: system.rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: system.registry,
+      },
+    },
+  })
+
+  const reader = wrapper.find('.model-value-reader')
+  expect(reader.attributes('data-model-value')).toBe('vue-model')
+  expect(reader.attributes('data-has-value-attr')).toBe('false')
+  expect(reader.attributes('data-value-attr')).toBe('')
+})
+
 test('SparkComponentRenderer does not forward empty children prop to registered components', () => {
   const AttrReader = defineComponent({
     inheritAttrs: false,

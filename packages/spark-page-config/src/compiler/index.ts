@@ -143,6 +143,20 @@ export function compileRule(raw: string): RuleConfig[] {
  */
 const HOIST_TO_PROPS_KEYS: ReadonlySet<string> = new Set(['dataKey', 'field'])
 
+function normalizeRuleValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeRuleValue)
+  if (value === null || typeof value !== 'object') return value
+
+  const candidate = value as Record<string, unknown>
+  if (typeof candidate['type'] === 'string') return normalizeRuleNode(candidate)
+
+  const normalized: Record<string, unknown> = {}
+  for (const [key, nestedValue] of Object.entries(candidate)) {
+    normalized[key] = normalizeRuleValue(nestedValue)
+  }
+  return normalized
+}
+
 export function normalizeRuleNode(node: unknown): RuleConfig {
   if (typeof node === 'string') return { type: node }
   if (node === null || node === undefined || typeof node !== 'object') return { type: String(node) }
@@ -157,17 +171,34 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
           typeof c === 'string' ? c : normalizeRuleNode(c)
         )
   // 从顶层提升到 props（props 已有值时不覆盖）
-  const rawProps = (nextRest['props'] as Record<string, unknown> | undefined) ?? {}
+  const rawPropsSource = nextRest['props'] !== null && typeof nextRest['props'] === 'object' && !Array.isArray(nextRest['props'])
+    ? nextRest['props'] as Record<string, unknown>
+    : {}
+  const rawProps: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(rawPropsSource)) {
+    if (key === 'id') continue
+    rawProps[key] = normalizeRuleValue(value)
+  }
+  const legacyPropsId = rawPropsSource['id']
+  if (
+    !hasOwn(nextRest, 'id')
+    && typeof legacyPropsId === 'string'
+    && legacyPropsId.trim() !== ''
+  ) {
+    nextRest['id'] = legacyPropsId
+  }
   const hoistedProps: Record<string, unknown> = {}
   for (const key of HOIST_TO_PROPS_KEYS) {
     if (key in nextRest && !(key in rawProps)) {
       hoistedProps[key] = nextRest[key]
     }
   }
+  const type = String(nextRest['type'] ?? 'div')
+  const props = Object.keys(hoistedProps).length > 0 ? { ...hoistedProps, ...rawProps } : rawProps
   return {
     ...nextRest,
-    type: String(nextRest['type'] ?? 'div'),
-    props: Object.keys(hoistedProps).length > 0 ? { ...hoistedProps, ...rawProps } : rawProps,
+    type,
+    props,
     ...(children !== undefined && { children })
   } as RuleConfig
 }

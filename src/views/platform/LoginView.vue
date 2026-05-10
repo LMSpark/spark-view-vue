@@ -1,8 +1,8 @@
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1 class="login-title">SPARK 管理平台</h1>
-      <p class="login-subtitle">配置驱动，零代码</p>
+      <h1 class="login-title">SPARK 应用工场</h1>
+      <p class="login-subtitle">配置驱动，AI 配系统</p>
 
       <el-tabs v-model="activeTab" class="login-tabs">
         <!-- ── 登录 ── -->

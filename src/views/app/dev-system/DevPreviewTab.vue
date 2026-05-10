@@ -197,6 +197,12 @@ async function ensureAllFilesLoaded() {
 }
 
 function buildPreviewConfig(): Omit<PageConfig, 'pageId'> | null {
+  const documentParseErrors = Object.values(props.state.documents)
+    .flatMap(doc => doc.parseError.value ? [`${doc.name}: ${doc.parseError.value}`] : [])
+  if (documentParseErrors.length > 0) {
+    throw new Error(documentParseErrors.join('\n'))
+  }
+
   const ruleText = props.state.documents['rule.json'].text.value
   const dataText = props.state.documents['pagedata.json'].text.value
   const scriptText = props.state.documents['script.js'].text.value

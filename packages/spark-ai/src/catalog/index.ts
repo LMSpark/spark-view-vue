@@ -1,9 +1,15 @@
-export { default as COMPONENT_CATALOG_JSON } from './component-catalog.json'
+import rawComponentCatalogJson from './component-catalog.json'
+import { projectFrameworkNeutralCatalog } from './catalog-projections'
+import type { ComponentCatalog } from './types'
+
+export const COMPONENT_CATALOG_JSON = projectFrameworkNeutralCatalog(rawComponentCatalogJson as ComponentCatalog)
 
 export {
+  projectFrameworkNeutralCatalog,
   projectComponentDirectory,
   projectComponentSpec,
   projectComponentConfigGuide,
+  projectFunctionCatalog,
   projectHydratedComponent,
   projectDevTypes,
   projectDevPropNames,
