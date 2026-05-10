@@ -86,6 +86,7 @@ public class AiSessionService {
             }
 
     private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> sessionIdsByScopeKey = new ConcurrentHashMap<>();
     private final ExecutorService streamExecutor = Executors.newCachedThreadPool();
 
     private final OpenAiProperties props;
@@ -117,9 +118,37 @@ public class AiSessionService {
      */
     public String createSession(String systemPrompt, String userPrompt, int windowSize,
                                 List<Map<String, Object>> tools, String mode) {
+        return createSession(systemPrompt, userPrompt, windowSize, tools, mode, null);
+    }
+
+    /**
+     * 创建会话（支持 tools + mode），可绑定前端 AI Core 的模块实例 scope。
+     */
+    public String createSession(String systemPrompt, String userPrompt, int windowSize,
+                                List<Map<String, Object>> tools, String mode,
+                                Map<String, Object> scope) {
+        SessionScope normalizedScope = normalizeScope(scope);
+        if (normalizedScope.scopeKey != null) {
+            String existingSessionId = sessionIdsByScopeKey.get(normalizedScope.scopeKey);
+            if (existingSessionId != null && sessions.containsKey(existingSessionId)) {
+                log.info("[SESSION] reused sessionId={} scope={}/{}",
+                        existingSessionId, normalizedScope.moduleId, normalizedScope.moduleInstanceId);
+                return existingSessionId;
+            }
+            if (existingSessionId != null) {
+                sessionIdsByScopeKey.remove(normalizedScope.scopeKey, existingSessionId);
+            }
+        }
+
         String sessionId = UUID.randomUUID().toString();
 
         Session session = new Session();
+        session.moduleId = normalizedScope.moduleId;
+        session.moduleInstanceId = normalizedScope.moduleInstanceId;
+        session.instanceId = normalizedScope.instanceId;
+        session.runtimeInstanceId = normalizedScope.runtimeInstanceId;
+        session.scopeKey = normalizedScope.scopeKey;
+        session.scope = normalizedScope.toMap();
         session.systemPrompt = systemPrompt;
         session.windowSize = windowSize > 0 ? windowSize : DEFAULT_WINDOW_SIZE;
         session.lastActiveTime = System.currentTimeMillis();
@@ -133,9 +162,12 @@ public class AiSessionService {
         session.conversation.add(userMsg);
 
         sessions.put(sessionId, session);
+        if (session.scopeKey != null) {
+            sessionIdsByScopeKey.put(session.scopeKey, sessionId);
+        }
 
-        log.info("[SESSION] created sessionId={} windowSize={} mode={} tools={}",
-                sessionId, session.windowSize, session.mode,
+        log.info("[SESSION] created sessionId={} scope={} windowSize={} mode={} tools={}",
+                sessionId, session.scopeKey, session.windowSize, session.mode,
                 tools != null ? tools.size() : 0);
         return sessionId;
     }
@@ -144,8 +176,22 @@ public class AiSessionService {
      * 执行一轮对话（非流式），支持 Function Calling。
      */
     public TurnResult executeTurn(String sessionId) {
+        return executeTurn(sessionId, null);
+    }
+
+    /**
+     * 执行一轮对话（非流式），并校验请求 scope 是否匹配后端 session。
+     */
+    public TurnResult executeTurn(String sessionId, Map<String, Object> scope) {
         Session session = sessions.get(sessionId);
         if (session == null) return null;
+        if (!matchesScope(session, scope)) {
+            return TurnResult.error(
+                    session.state != null ? session.state.name() : null,
+                    null,
+                    "SESSION_SCOPE_MISMATCH",
+                    buildScopeMismatchPayload(session, scope));
+        }
 
         try {
             int round = ++session.roundCounter;
@@ -274,8 +320,18 @@ public class AiSessionService {
      */
     public boolean appendMessage(String sessionId, String role, String content,
                                   String toolCallId, List<Map<String, Object>> toolCalls) {
+        return appendMessage(sessionId, role, content, toolCallId, toolCalls, null) == AppendMessageResult.OK;
+    }
+
+    /**
+     * 向对话追加消息（支持 FC 消息格式），并校验请求 scope。
+     */
+    public AppendMessageResult appendMessage(String sessionId, String role, String content,
+                                             String toolCallId, List<Map<String, Object>> toolCalls,
+                                             Map<String, Object> scope) {
         Session session = sessions.get(sessionId);
-        if (session == null) return false;
+        if (session == null) return AppendMessageResult.SESSION_NOT_FOUND;
+        if (!matchesScope(session, scope)) return AppendMessageResult.SCOPE_MISMATCH;
 
         session.lastActiveTime = System.currentTimeMillis();
         Message msg = new Message(role);
@@ -283,7 +339,7 @@ public class AiSessionService {
         msg.toolCallId = toolCallId;
         msg.toolCalls = toolCalls;
         session.conversation.add(msg);
-        return true;
+        return AppendMessageResult.OK;
     }
 
     /**
@@ -301,7 +357,10 @@ public class AiSessionService {
     }
 
     public void destroySession(String sessionId) {
-        sessions.remove(sessionId);
+        Session removed = sessions.remove(sessionId);
+        if (removed != null && removed.scopeKey != null) {
+            sessionIdsByScopeKey.remove(removed.scopeKey, sessionId);
+        }
         log.info("[SESSION] destroyed sessionId={}", sessionId);
     }
 
@@ -321,7 +380,11 @@ public class AiSessionService {
         while (it.hasNext()) {
             var entry = it.next();
             if (now - entry.getValue().lastActiveTime > SESSION_TIMEOUT_MS) {
+                Session expired = entry.getValue();
                 it.remove();
+                if (expired.scopeKey != null) {
+                    sessionIdsByScopeKey.remove(expired.scopeKey, entry.getKey());
+                }
                 cleaned++;
                 log.info("[SESSION] expired sessionId={}", entry.getKey());
             }
@@ -662,6 +725,12 @@ public class AiSessionService {
 
     private static class Session {
         String systemPrompt;
+        String moduleId;
+        String moduleInstanceId;
+        String instanceId;
+        String runtimeInstanceId;
+        String scopeKey;
+        Map<String, Object> scope;
         int windowSize;
         long lastActiveTime;
         String mode;
@@ -831,10 +900,85 @@ public class AiSessionService {
 
         Map<String, Object> meta = new LinkedHashMap<>();
         meta.put("round", round);
+        if (session.scope != null && !session.scope.isEmpty()) {
+            meta.put("scope", session.scope);
+        }
         meta.put("idempotency", idempotency);
         meta.put("scheduling", scheduling);
         meta.put("guard", guard);
         return meta;
+    }
+
+    public enum AppendMessageResult {
+        OK,
+        SESSION_NOT_FOUND,
+        SCOPE_MISMATCH
+    }
+
+    private static SessionScope normalizeScope(Map<String, Object> raw) {
+        if (raw == null || raw.isEmpty()) return SessionScope.empty();
+        String moduleId = stringValue(raw.get("moduleId"));
+        String moduleInstanceId = stringValue(raw.get("moduleInstanceId"));
+        String instanceId = stringValue(raw.get("instanceId"));
+        String runtimeInstanceId = stringValue(raw.get("runtimeInstanceId"));
+        if (moduleId == null || moduleInstanceId == null) return SessionScope.empty();
+        if (instanceId == null) instanceId = moduleInstanceId;
+        if (runtimeInstanceId == null) runtimeInstanceId = instanceId;
+        return new SessionScope(moduleId, moduleInstanceId, instanceId, runtimeInstanceId);
+    }
+
+    private static String stringValue(Object value) {
+        if (!(value instanceof String text)) return null;
+        String trimmed = text.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static boolean matchesScope(Session session, Map<String, Object> rawScope) {
+        if (session.scopeKey == null) return true;
+        SessionScope requested = normalizeScope(rawScope);
+        return session.scopeKey.equals(requested.scopeKey);
+    }
+
+    private static Map<String, Object> buildScopeMismatchPayload(Session session, Map<String, Object> rawScope) {
+        SessionScope requested = normalizeScope(rawScope);
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("reasonCode", "SESSION_SCOPE_MISMATCH");
+        payload.put("nextAction", "重新创建或切换到匹配当前 moduleId/moduleInstanceId 的 AI 后端会话");
+        payload.put("expected", session.scope != null ? session.scope : Map.of());
+        payload.put("actual", requested.toMap());
+        return payload;
+    }
+
+    private static final class SessionScope {
+        final String moduleId;
+        final String moduleInstanceId;
+        final String instanceId;
+        final String runtimeInstanceId;
+        final String scopeKey;
+
+        private SessionScope(String moduleId, String moduleInstanceId, String instanceId, String runtimeInstanceId) {
+            this.moduleId = moduleId;
+            this.moduleInstanceId = moduleInstanceId;
+            this.instanceId = instanceId;
+            this.runtimeInstanceId = runtimeInstanceId;
+            this.scopeKey = moduleId == null || moduleInstanceId == null
+                    ? null
+                    : moduleId + "\u0000" + moduleInstanceId;
+        }
+
+        static SessionScope empty() {
+            return new SessionScope(null, null, null, null);
+        }
+
+        Map<String, Object> toMap() {
+            if (scopeKey == null) return Map.of();
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("moduleId", moduleId);
+            out.put("moduleInstanceId", moduleInstanceId);
+            out.put("instanceId", instanceId);
+            out.put("runtimeInstanceId", runtimeInstanceId);
+            return out;
+        }
     }
 
     private Map<String, Object> getRuntimeGuard(Map<String, Object> runtimeMeta) {

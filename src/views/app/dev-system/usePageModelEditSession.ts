@@ -8,7 +8,7 @@ import {
   type EditToolHost,
   type PageDesignNodeTree,
 } from '@spark-view/spark-ai'
-import type { PageModelBackendMessage, PageModelSessionHost } from './usePageModelSessionHost'
+import type { PageModelBackendMessage, PageModelFunctionContext, PageModelSessionHost } from './usePageModelSessionHost'
 
 export type LogEntry = ToolLogEntry
 
@@ -172,6 +172,18 @@ function createToolProjection(functions: readonly AiRuntimeFunctionExposure[]): 
   return { tools, nameToAction }
 }
 
+function findProjectedAction(
+  functions: readonly AiRuntimeFunctionExposure[],
+  moduleId: string,
+  functionId: string,
+): string {
+  const found = functions.find(definition => definition.moduleId === moduleId && definition.functionId === functionId)
+  if (found === undefined) {
+    throw new Error(`AI 工具未投影：${moduleId}@${functionId}`)
+  }
+  return found.action
+}
+
 function parseToolCall(raw: Record<string, unknown>): ParsedToolCall | null {
   const functionBlock = toObject(raw['function'])
   if (functionBlock === null) return null
@@ -231,9 +243,11 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
       await options.ensureContextLoaded?.()
     }
     const context = await options.sessionHost.ensureSession()
+    const bootstrapAction = findProjectedAction(context.availableFunctions, 'lifecycle', 'bootstrap')
     const output = await options.sessionHost.executeFunctionCall({
+      scopeKey: context.scopeKey,
       instanceId: context.instanceId,
-      action: 'pageDesign/lifecycle/bootstrap',
+      action: bootstrapAction,
       args: {},
     })
     refreshLiveNodeTree()
@@ -248,13 +262,19 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     throw new Error(output.result.msg)
   }
 
-  async function ensureBackendSession(prompt: string, tools: ReadonlyArray<Record<string, unknown>>, signal?: AbortSignal): Promise<void> {
-    const resume = options.sessionHost.getResumeSessionOptions()
+  async function ensureBackendSession(
+    context: PageModelFunctionContext,
+    prompt: string,
+    tools: ReadonlyArray<Record<string, unknown>>,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const resume = options.sessionHost.getResumeSessionOptions(context.scopeKey)
     if (resume.resumeSessionId !== undefined) {
-      await options.sessionHost.appendBackendMessages([{ role: 'user', content: prompt }], signal)
+      await options.sessionHost.appendBackendMessages([{ role: 'user', content: prompt }], signal, context.scopeKey)
       return
     }
     await options.sessionHost.createBackendSession({
+      context,
       systemPrompt: runtimePrompt.content,
       userPrompt: prompt,
       tools,
@@ -287,13 +307,13 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
         role: 'user',
         content: hooks.originalUserInput ?? prompt,
       })
-      await ensureBackendSession(prompt, projection.tools, hooks.signal)
+      await ensureBackendSession(context, prompt, projection.tools, hooks.signal)
 
       const maxRounds = hooks.maxRounds ?? 8
       while (rounds < maxRounds) {
         rounds += 1
         const turnStartedAt = performance.now()
-        const turn = await options.sessionHost.executeBackendTurn(hooks.signal)
+        const turn = await options.sessionHost.executeBackendTurn(hooks.signal, context.scopeKey)
         if (turn.reasoning !== undefined && turn.reasoning !== '') {
           hooks.onReasoning?.(turn.reasoning)
         }
@@ -303,7 +323,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
           appendLog(log, { type: 'info', tag: 'assistant', text: turn.text })
         }
         hooks.onSseEvent?.({
-          sessionId: options.sessionHost.getResumeSessionOptions().resumeSessionId ?? context.instanceId,
+          sessionId: options.sessionHost.getResumeSessionOptions(context.scopeKey).resumeSessionId ?? context.instanceId,
           type: 'turn',
           data: JSON.stringify(turn),
         })
@@ -319,6 +339,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
           }
           const action = actionText
           const output = await options.sessionHost.executeFunctionCall({
+            scopeKey: context.scopeKey,
             instanceId: context.instanceId,
             action,
             args: call.args,
@@ -346,7 +367,7 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
           toolMessages.push(toolResultMessage(call, output.result))
         }
 
-        await options.sessionHost.appendBackendMessages(toolMessages, hooks.signal)
+        await options.sessionHost.appendBackendMessages(toolMessages, hooks.signal, context.scopeKey)
       }
 
       if (rounds >= maxRounds) {

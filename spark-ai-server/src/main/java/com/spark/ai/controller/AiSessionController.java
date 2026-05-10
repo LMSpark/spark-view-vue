@@ -1,6 +1,7 @@
 package com.spark.ai.controller;
 
 import com.spark.ai.service.AiSessionService;
+import com.spark.ai.service.AiSessionService.AppendMessageResult;
 import com.spark.ai.service.AiSessionService.TurnResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,12 +78,17 @@ public class AiSessionController {
         List<Map<String, Object>> tools = request.get("tools") instanceof List<?> list
                 ? (List<Map<String, Object>>) list : null;
 
+        Map<String, Object> scope = extractScope(request);
         String sessionId = sessionService.createSession(
-                systemPrompt, userPrompt, windowSize, tools, mode);
+                systemPrompt, userPrompt, windowSize, tools, mode, scope);
 
-        return ResponseEntity.ok(Map.of(
-            "sessionId", sessionId,
-            "protocolVersion", PROTOCOL_VERSION_V3));
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("sessionId", sessionId);
+        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        if (scope != null && !scope.isEmpty()) {
+            body.put("scope", scope);
+        }
+        return ResponseEntity.ok(body);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -109,7 +115,7 @@ public class AiSessionController {
             return requestError("INVALID_STREAM_ENDPOINT", "流式请求请使用 SSE 端点");
         }
 
-        TurnResult result = sessionService.executeTurn(sessionId);
+        TurnResult result = sessionService.executeTurn(sessionId, extractScope(request));
         if (result == null) {
             return notFoundError("SESSION_NOT_FOUND", "会话不存在或 LLM 调用失败", sessionId);
         }
@@ -193,10 +199,13 @@ public class AiSessionController {
             List<Map<String, Object>> toolCalls = msg.get("tool_calls") instanceof List<?> list
                     ? (List<Map<String, Object>>) list : null;
 
-            boolean ok = sessionService.appendMessage(
-                    sessionId, role, content, toolCallId, toolCalls);
-            if (!ok) {
+            AppendMessageResult appendResult = sessionService.appendMessage(
+                    sessionId, role, content, toolCallId, toolCalls, extractScope(request));
+            if (appendResult == AppendMessageResult.SESSION_NOT_FOUND) {
                 return notFoundError("SESSION_NOT_FOUND", "会话不存在", sessionId);
+            }
+            if (appendResult == AppendMessageResult.SCOPE_MISMATCH) {
+                return scopeMismatchError(sessionId);
             }
         }
 
@@ -271,6 +280,23 @@ public class AiSessionController {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> extractScope(Map<String, Object> request) {
+        if (request == null) return null;
+        Object scope = request.get("scope");
+        if (scope instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
+        }
+        Object metadata = request.get("metadata");
+        if (metadata instanceof Map<?, ?> metadataMap) {
+            Object trace = metadataMap.get("trace");
+            if (trace instanceof Map<?, ?> traceMap) {
+                return (Map<String, Object>) traceMap;
+            }
+        }
+        return null;
+    }
+
     private static ResponseEntity<Map<String, Object>> requestError(
             String code,
             String message) {
@@ -306,6 +332,21 @@ public class AiSessionController {
         );
     }
 
+    private static ResponseEntity<Map<String, Object>> scopeMismatchError(String sessionId) {
+        return errorEnvelope(
+                HttpStatus.CONFLICT,
+                "session-scope",
+                "SESSION_SCOPE_MISMATCH",
+                "recreate-session",
+                "后端 AI 会话与当前模块实例不匹配",
+                sessionId,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
     private static ResponseEntity<Map<String, Object>> errorEnvelopeFromTurnResult(
             TurnResult result,
             String sessionId) {
@@ -313,7 +354,8 @@ public class AiSessionController {
         HttpStatus status = switch (code) {
             case "INVALID_STATE_TRANSITION", "HANDOFF_REQUIRED",
                     "IDEMPOTENCY_REPLAY_BLOCKED", "DUPLICATE_TOOL_CALL_ID",
-                    "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> HttpStatus.CONFLICT;
+                    "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1",
+                    "SESSION_SCOPE_MISMATCH" -> HttpStatus.CONFLICT;
             case "LLM_CALL_FAILED" -> HttpStatus.BAD_GATEWAY;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
@@ -322,6 +364,7 @@ public class AiSessionController {
             case "INVALID_STATE_TRANSITION" -> "state-transition";
             case "HANDOFF_REQUIRED" -> "handoff";
             case "LLM_CALL_FAILED" -> "llm-call";
+            case "SESSION_SCOPE_MISMATCH" -> "session-scope";
             case "IDEMPOTENCY_REPLAY_BLOCKED" -> "idempotency";
             case "DUPLICATE_TOOL_CALL_ID" -> "tool-call";
             case "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> "parallelism";
@@ -331,6 +374,7 @@ public class AiSessionController {
         String retryPolicy = switch (code) {
             case "INVALID_STATE_TRANSITION", "HANDOFF_REQUIRED" -> "manual";
             case "LLM_CALL_FAILED" -> "safe-retry";
+            case "SESSION_SCOPE_MISMATCH" -> "recreate-session";
             case "IDEMPOTENCY_REPLAY_BLOCKED", "DUPLICATE_TOOL_CALL_ID" -> "regenerate-plan";
             case "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> "serialize-or-split";
             default -> "none";

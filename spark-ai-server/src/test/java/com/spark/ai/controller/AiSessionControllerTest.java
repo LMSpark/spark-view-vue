@@ -2,6 +2,7 @@ package com.spark.ai.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.service.AiSessionService;
+import com.spark.ai.service.AiSessionService.AppendMessageResult;
 import com.spark.ai.service.AiSessionService.TurnResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,12 +53,12 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
                 .andExpect(jsonPath("$.protocolVersion").value(3));
 
-        verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString());
+        verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString(), nullable(Map.class));
     }
 
     @Test
     void createSession_acceptsProtocolV3() throws Exception {
-        when(sessionService.createSession(anyString(), anyString(), anyInt(), anyList(), anyString()))
+        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), nullable(Map.class)))
                 .thenReturn("sid-1");
 
         String body = objectMapper.writeValueAsString(Map.of(
@@ -81,6 +79,32 @@ class AiSessionControllerTest {
     }
 
     @Test
+    void createSession_forwardsScope() throws Exception {
+        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), anyMap()))
+                .thenReturn("sid-scoped");
+
+        String body = objectMapper.writeValueAsString(Map.of(
+                "protocolVersion", 3,
+                "systemPrompt", "sys",
+                "userPrompt", "user",
+                "scope", Map.of(
+                        "moduleId", "pageDesign",
+                        "moduleInstanceId", "page-a",
+                        "instanceId", "page-a",
+                        "runtimeInstanceId", "page-a"
+                )
+        ));
+
+        mockMvc.perform(post("/api/ai/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sessionId").value("sid-scoped"))
+                .andExpect(jsonPath("$.scope.moduleId").value("pageDesign"))
+                .andExpect(jsonPath("$.scope.moduleInstanceId").value("page-a"));
+    }
+
+    @Test
     void executeTurn_requiresProtocolV3() throws Exception {
         mockMvc.perform(post("/api/ai/sessions/sid-1/turn")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,7 +115,7 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
                 .andExpect(jsonPath("$.protocolVersion").value(3));
 
-        verify(sessionService, never()).executeTurn(anyString());
+        verify(sessionService, never()).executeTurn(anyString(), nullable(Map.class));
     }
 
     @Test
@@ -109,12 +133,31 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
                 .andExpect(jsonPath("$.protocolVersion").value(3));
 
-        verify(sessionService, never()).appendMessage(eq("sid-1"), anyString(), anyString(), anyString(), anyList());
+        verify(sessionService, never()).appendMessage(eq("sid-1"), anyString(), anyString(), anyString(), nullable(List.class), nullable(Map.class));
+    }
+
+    @Test
+    void append_scopeMismatchReturnsConflict() throws Exception {
+        when(sessionService.appendMessage(eq("sid-1"), anyString(), anyString(), nullable(String.class), nullable(List.class), anyMap()))
+                .thenReturn(AppendMessageResult.SCOPE_MISMATCH);
+
+        String body = objectMapper.writeValueAsString(Map.of(
+                "protocolVersion", 3,
+                "scope", Map.of("moduleId", "pageDesign", "moduleInstanceId", "page-b"),
+                "messages", List.of(Map.of("role", "user", "content", "next"))
+        ));
+
+        mockMvc.perform(post("/api/ai/sessions/sid-1/append")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code").value("SESSION_SCOPE_MISMATCH"))
+                .andExpect(jsonPath("$.error.category").value("session-scope"));
     }
 
     @Test
     void executeTurn_withProtocolV3_returnsPayload() throws Exception {
-        when(sessionService.executeTurn("sid-2"))
+        when(sessionService.executeTurn(eq("sid-2"), nullable(Map.class)))
                 .thenReturn(new TurnResult("ok", null, null));
 
         String body = objectMapper.writeValueAsString(Map.of("protocolVersion", 3));
@@ -127,9 +170,30 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.protocolVersion").value(3));
     }
 
+    @Test
+    void executeTurn_scopeMismatchReturnsConflict() throws Exception {
+        when(sessionService.executeTurn(eq("sid-scope"), anyMap()))
+                .thenReturn(TurnResult.error("READY", null, "SESSION_SCOPE_MISMATCH", Map.of(
+                        "reasonCode", "SESSION_SCOPE_MISMATCH"
+                )));
+
+        String body = objectMapper.writeValueAsString(Map.of(
+                "protocolVersion", 3,
+                "scope", Map.of("moduleId", "pageDesign", "moduleInstanceId", "page-b")
+        ));
+
+        mockMvc.perform(post("/api/ai/sessions/sid-scope/turn")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code").value("SESSION_SCOPE_MISMATCH"))
+                .andExpect(jsonPath("$.error.category").value("session-scope"))
+                .andExpect(jsonPath("$.handoff.reasonCode").value("SESSION_SCOPE_MISMATCH"));
+    }
+
         @Test
         void executeTurn_llmCallFailed_returnsErrorEnvelope() throws Exception {
-                when(sessionService.executeTurn("sid-3"))
+                when(sessionService.executeTurn(eq("sid-3"), nullable(Map.class)))
                                 .thenReturn(TurnResult.error("FAILED", "CALL->FAILED", "LLM_CALL_FAILED", null));
 
                 String body = objectMapper.writeValueAsString(Map.of("protocolVersion", 3));
@@ -156,7 +220,7 @@ class AiSessionControllerTest {
                                 ),
                                 "idempotency", List.of(Map.of("toolCallId", "call_1", "replayed", false, "ruleSource", "exact"))
                         );
-                        when(sessionService.executeTurn("sid-4"))
+                        when(sessionService.executeTurn(eq("sid-4"), nullable(Map.class)))
                                 .thenReturn(new TurnResult("ok", null, null, "READY", "VERIFY->DONE", null, null, runtime));
 
                         String body = objectMapper.writeValueAsString(Map.of("protocolVersion", 3));
@@ -184,7 +248,7 @@ class AiSessionControllerTest {
                                         "details", List.of(Map.of("toolCallId", "call_dup"))
                                 )
                         );
-                        when(sessionService.executeTurn("sid-5"))
+                        when(sessionService.executeTurn(eq("sid-5"), nullable(Map.class)))
                                 .thenReturn(TurnResult.error(
                                         "FAILED",
                                         "CALL->FAILED",
@@ -213,7 +277,7 @@ class AiSessionControllerTest {
                                 ),
                                 "scheduling", Map.of("decision", "block")
                         );
-                        when(sessionService.executeTurn("sid-6"))
+                        when(sessionService.executeTurn(eq("sid-6"), nullable(Map.class)))
                                 .thenReturn(TurnResult.error(
                                         "FAILED",
                                         "CALL->FAILED",
@@ -234,7 +298,7 @@ class AiSessionControllerTest {
 
                                         @Test
                                         void executeTurn_sessionNotFound_returnsSessionEnvelope() throws Exception {
-                                                when(sessionService.executeTurn("sid-missing")).thenReturn(null);
+                                                when(sessionService.executeTurn(eq("sid-missing"), nullable(Map.class))).thenReturn(null);
 
                                                 String body = objectMapper.writeValueAsString(Map.of("protocolVersion", 3));
 
