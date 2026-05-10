@@ -43,4 +43,23 @@ describe('API error capture', () => {
     expect(errLog?.meta?.['status']).toBe(500)
     expect(errLog?.meta?.['code']).toBe('ERR_HTTP_500')
   })
+
+  it('should avoid duplicated /api prefix when baseURL and url both start with /api', async () => {
+    addLogTransport(transport)
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ rows: [] }), {
+        status: 200,
+        statusText: 'OK',
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    const client = new FetchClient({ baseURL: '/api', timeout: 1000 })
+    await client.get('/api/vouchers', { page: 1, pageSize: 20, treeMode: 'flat' })
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const firstArg = fetchSpy.mock.calls[0]?.[0]
+    expect(String(firstArg)).toBe('/api/vouchers?page=1&pageSize=20&treeMode=flat')
+  })
 })

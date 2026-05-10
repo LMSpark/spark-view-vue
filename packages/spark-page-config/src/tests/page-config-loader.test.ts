@@ -313,18 +313,20 @@ describe('PageConfigLoader', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('compileRule', () => {
-  it('解析 JSON 数组并迁移 legacy props.id 到顶层 id', () => {
+  it('解析 JSON 数组（保持 props 原样，不做 legacy id 自动迁移）', () => {
     const raw = JSON.stringify([{ type: 'div', props: { id: 'root' } }])
     const result = compileRule(raw)
     expect(result).toHaveLength(1)
     expect(result[0]!.type).toBe('div')
-    expect(result[0]!.id).toBe('root')
-    expect(result[0]!.props).toEqual({})
+    expect(result[0]!.id).toBeUndefined()
+    expect(result[0]!.props).toEqual({ id: 'root' })
   })
 
-  it('legacy props.id 与顶层 id 冲突时抛错', () => {
+  it('legacy props.id 与顶层 id 同时存在时，不在编译层做冲突裁决', () => {
     const raw = JSON.stringify([{ type: 'div', id: 'new-id', props: { id: 'old-id' } }])
-    expect(() => compileRule(raw)).toThrow(/conflicts with legacy SparkNode\.props\.id/i)
+    const result = compileRule(raw)
+    expect(result[0]!.id).toBe('new-id')
+    expect(result[0]!.props).toEqual({ id: 'old-id' })
   })
 
   it('单对象自动包装为数组', () => {

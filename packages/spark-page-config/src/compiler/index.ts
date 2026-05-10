@@ -148,26 +148,7 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
   if (node === null || node === undefined || typeof node !== 'object') return { type: String(node) }
   // 先把 children 从展开中排除，避免 null 被带入结果
   const { children: rawChildren, ...rest } = node as Record<string, unknown>
-
-  // 兼容历史结构：props.id -> 顶层 id（若两者冲突则显式报错）。
   const nextRest = { ...rest }
-  const existingId = typeof nextRest['id'] === 'string' ? nextRest['id'] : undefined
-  const rawPropsForId = nextRest['props']
-  const propsForId = rawPropsForId !== null && typeof rawPropsForId === 'object' && !Array.isArray(rawPropsForId)
-    ? { ...(rawPropsForId as Record<string, unknown>) }
-    : {}
-  if (Object.prototype.hasOwnProperty.call(propsForId, 'id')) {
-    const legacyId = propsForId['id']
-    if (typeof legacyId !== 'string' || legacyId.trim().length === 0) {
-      throw new Error('[spark] Legacy SparkNode.props.id must be a non-empty string when provided.')
-    }
-    if (existingId !== undefined && existingId !== legacyId) {
-      throw new Error(`[spark] SparkNode.id conflicts with legacy SparkNode.props.id: "${existingId}" vs "${legacyId}".`)
-    }
-    nextRest['id'] = existingId ?? legacyId
-    delete propsForId['id']
-    nextRest['props'] = propsForId
-  }
 
   const children =
     rawChildren === null || rawChildren === undefined

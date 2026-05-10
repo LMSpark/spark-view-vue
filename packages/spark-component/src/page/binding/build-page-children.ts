@@ -128,18 +128,8 @@ export function buildPageChildren(
       ? { ...(current['props'] as Record<string, unknown>) }
       : {}
 
-    // 兼容历史结构：将 props.id 迁移到顶层 id（与 compileRule 编译层保持一致）。
-    let migratedId: string | undefined
     if (Object.prototype.hasOwnProperty.call(propsObj, 'id')) {
-      const legacyId = propsObj['id']
-      if (typeof legacyId === 'string' && legacyId.trim().length > 0) {
-        const existingId = typeof current['id'] === 'string' ? current['id'] : undefined
-        if (existingId !== undefined && existingId !== legacyId) {
-          throw new Error(`[spark] SparkNode.id conflicts with legacy SparkNode.props.id: "${existingId}" vs "${legacyId}".`)
-        }
-        migratedId = existingId ?? legacyId
-      }
-      delete propsObj['id']
+      throw new Error('[spark] SparkNode.props.id has been removed. Use top-level SparkNode.id instead.')
     }
 
     // props 内的 onXxx 先归一化，避免后续递归时把字符串事件名当普通值透传。
@@ -184,8 +174,8 @@ export function buildPageChildren(
       cloned.props = propsObj
     }
 
-    // id 去重放在最后；仅接受顶层 id（含从 props.id 迁移而来的 migratedId）。
-    const rawId = migratedId ?? (typeof current['id'] === 'string' ? current['id'] : undefined)
+    // id 去重放在最后；仅接受顶层 id。
+    const rawId = typeof current['id'] === 'string' ? current['id'] : undefined
     if (rawId !== undefined) {
       const nodeType = cloned.type
       const finalId = ensureUniqueId(nodeType, rawId)

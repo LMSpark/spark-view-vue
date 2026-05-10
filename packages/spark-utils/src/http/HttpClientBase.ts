@@ -37,6 +37,7 @@ const MAX_CACHE_SIZE = 500
 
 /** 缓存默认过期时间（5分钟） */
 const DEFAULT_CACHE_EXPIRY = 5 * 60 * 1000
+const ABSOLUTE_URL_RE = /^[a-z][a-z\d+\-.]*:\/\//i
 
 // ==================== 抽象基类 ====================
 
@@ -256,7 +257,35 @@ export abstract class HttpClientBase implements HttpClient {
     if (this.defaults.params !== undefined && config.params !== undefined) {
       result.params = { ...this.defaults.params, ...config.params }
     }
+    // 兼容历史 endpoint 写法：当 url 已包含 baseURL 前缀时，避免拼出 /api/api/*。
+    const normalizedUrl = this.stripDuplicatedBasePrefix(result.baseURL, result.url)
+    if (normalizedUrl !== null) {
+      result.url = normalizedUrl
+    }
     return result
+  }
+
+  private stripDuplicatedBasePrefix(baseURL: unknown, url: unknown): string | null {
+    if (typeof baseURL !== 'string' || typeof url !== 'string') return null
+    const trimmedBase = baseURL.trim()
+    const trimmedUrl = url.trim()
+    if (trimmedBase === '' || trimmedUrl === '') return null
+    if (ABSOLUTE_URL_RE.test(trimmedUrl)) return null
+
+    const normalizedBase = this.normalizePathPrefix(trimmedBase)
+    const normalizedUrl = this.normalizePathPrefix(trimmedUrl)
+    if (normalizedBase === null || normalizedUrl === null) return null
+
+    if (normalizedUrl === normalizedBase) return '/'
+    if (!normalizedUrl.startsWith(`${normalizedBase}/`)) return null
+
+    const stripped = normalizedUrl.slice(normalizedBase.length)
+    return stripped.length > 0 ? stripped : '/'
+  }
+
+  private normalizePathPrefix(value: string): string | null {
+    if (value.startsWith('/') === false) return null
+    return value.replace(/\/+$/, '') || '/'
   }
 
   // ==================== 错误工具（单一来源） ====================

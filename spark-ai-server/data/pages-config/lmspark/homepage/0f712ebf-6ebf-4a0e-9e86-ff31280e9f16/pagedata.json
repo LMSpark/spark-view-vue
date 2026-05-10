@@ -72,8 +72,8 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true
+          "autoLoad": false,
+          "autoRefresh": false
         }
       },
       "resourceType": "database-table",
@@ -164,8 +164,8 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true
+          "autoLoad": false,
+          "autoRefresh": false
         }
       },
       "resourceType": "database-table",
@@ -256,8 +256,8 @@
           "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
-          "autoLoad": true,
-          "autoRefresh": true
+          "autoLoad": false,
+          "autoRefresh": false
         }
       },
       "resourceType": "database-table",
