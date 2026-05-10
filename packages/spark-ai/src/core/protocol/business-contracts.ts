@@ -703,6 +703,8 @@ export interface AiRuntimeApi {
   getSessionHistory(instanceId: string): readonly AiRuntimeHistoryEntry[]
   /** 按业务能力注册 ID + 根业务模块实体 ID 读取 AI 会话历史；未知 session 返回空数组。 */
   getSessionHistoryByModuleScope(scope: AiRuntimeModuleInstanceScope): readonly AiRuntimeHistoryEntry[]
+  /** 获取核心层知识投影器（统一的函数目录、模块目录、知识负载查询入口）。 */
+  getKnowledgeProjection(): unknown // AiKnowledgeProjection（需要通过 @spark-view/spark-ai 导出）
   /** 追加 UI/LLM/system 消息历史。 */
   appendMessage(options: AiRuntimeAppendMessageOptions): AiRuntimeMessageHistoryEntry
   /** 记录 LLM 编排出的一次函数调用请求，形成 requested 历史条目。 */

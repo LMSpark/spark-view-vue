@@ -10,6 +10,7 @@ export interface FieldContextProps {
   displayLabel: string
   fieldName: string
   width: number | undefined
+  resizable?: boolean
   titleAlign?: 'left' | 'center' | 'right'
   valueAlign?: 'left' | 'center' | 'right'
   headerCellClassName?: string
@@ -45,6 +46,7 @@ type FieldContextInputProps = OptionalWithUndefined<Pick<SparkNodeProps,
   | 'type' | 'children'
 >> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
   | 'width'
+  | 'resizable'
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
@@ -68,6 +70,7 @@ export function useFieldContext(
       displayLabel: permission.displayLabel.value,
       fieldName: permission.fieldName.value,
       width: fieldProps.width,
+      ...(fieldProps.resizable !== undefined ? { resizable: fieldProps.resizable } : {}),
       ...(fieldProps.titleAlign !== undefined && { titleAlign: fieldProps.titleAlign }),
       ...(fieldProps.valueAlign !== undefined && { valueAlign: fieldProps.valueAlign }),
       ...(fieldProps.headerCellClassName !== undefined && { headerCellClassName: fieldProps.headerCellClassName }),

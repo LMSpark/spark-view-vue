@@ -9,6 +9,7 @@
  */
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAiPanelStore } from '@spark-view/spark-component'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { PAGE_FILE_NAMES, useDevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { useDevPageModelSession } from './page-model-session'
@@ -49,6 +50,7 @@ export function useDevSystem() {
 
   // ─── AI 会话（页面模型级编辑）─────────────────────────
   const ai = useDevPageModelSession({ state, activeFile: aiPanelActiveFile })
+  const aiPanelStore = useAiPanelStore()
 
   const stopPageConfigChange = onPageConfigChange((event) => {
     if (event.pageId !== state.activePageId.value) return
@@ -111,35 +113,33 @@ export function useDevSystem() {
   }
 
   // ─── AI 事件 → 状态栏 / 消息投影 ───────────────────────
-  // 把原本散落在消费层的 6 个 handler 内聚到编排器，消费层通过 `v-on="aiEvents"`
-  // 一次性绑定，不再需要声明 onAiXxx 函数。
-  const aiEvents = {
-    'tool-call': (payload: { toolName: string; round: number }) => {
+  // 直接订阅 AI 核心层事件，不再经 AiLauncherButton 中继。
+  const stopAiListeners = [
+    aiPanelStore.on('tool:call', (payload) => {
       state.addStatus(`AI 调用工具 [${payload.toolName}] · 第 ${payload.round} 轮`, 'success')
-    },
-    'tool-error': (payload: { toolName: string; error: unknown }) => {
+    }),
+    aiPanelStore.on('tool:error', (payload) => {
       state.addStatus(`AI 工具 [${payload.toolName}] 失败：${describeError(payload.error)}`, 'error')
-    },
-    'fc-round-end': (payload: { round: number; calls: number }) => {
+    }),
+    aiPanelStore.on('fc:round:end', (payload) => {
       state.addStatus(`模型级编辑完成（${payload.round} 轮 · ${payload.calls} 次写入），请保存全部以持久化`, 'success')
-    },
-    'message-error': (payload: { error: unknown }) => {
+    }),
+    aiPanelStore.on('message:error', (payload) => {
       ElMessage.error(`AI 消息失败：${describeError(payload.error)}`)
-    },
-    'shortcut-trigger': () => {
-      console.info('[DevSystem] AI 快捷键触发', { pageId: state.activePageId.value })
-    },
-    'snapshot-restore': (payload: { storageKey: string; size: number }) => {
+    }),
+    aiPanelStore.on('snapshot:restore', (payload) => {
       if (payload.size > 0) {
         state.addStatus(`AI 会话已恢复 ${payload.size} 条历史（${payload.storageKey}）`, 'success')
       }
-    },
-  }
+    }),
+  ]
+  onScopeDispose(() => {
+    for (const stop of stopAiListeners) stop()
+  })
 
   return {
     state,
     ai,
-    aiEvents,
     workTab,
     previewRefreshToken,
     currentWorkspaceFile,

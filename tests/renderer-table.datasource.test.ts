@@ -210,6 +210,26 @@ const ElTableStub = defineComponent({
       type: Object,
       default: undefined,
     },
+    border: {
+      type: Boolean,
+      default: undefined,
+    },
+    stripe: {
+      type: Boolean,
+      default: undefined,
+    },
+    highlightCurrentRow: {
+      type: Boolean,
+      default: undefined,
+    },
+    size: {
+      type: String,
+      default: undefined,
+    },
+    resizable: {
+      type: Boolean,
+      default: undefined,
+    },
   },
   setup(props, { slots, emit }) {
     return () => {
@@ -221,6 +241,11 @@ const ElTableStub = defineComponent({
         'data-row-count': String(rows.length),
         'data-row-key': typeof props.rowKey === 'string' ? props.rowKey : '',
         'data-tree-children-field': String((props.treeProps as Record<string, unknown> | undefined)?.['children'] ?? ''),
+        'data-border': String(props.border ?? ''),
+        'data-stripe': String(props.stripe ?? ''),
+        'data-highlight-current-row': String(props.highlightCurrentRow ?? ''),
+        'data-size': String(props.size ?? ''),
+        'data-resizable': String(props.resizable ?? ''),
         'data-first-row-id': String(firstRow?.['id'] ?? ''),
         'data-first-children-count': String(firstChildren.length),
       }, [
@@ -251,6 +276,10 @@ const ElTableColumnStub = defineComponent({
     sortable: [Boolean, String],
     width: [String, Number],
     minWidth: [String, Number],
+    resizable: {
+      type: Boolean,
+      default: undefined,
+    },
     align: String,
     headerAlign: String,
     className: String,
@@ -264,6 +293,7 @@ const ElTableColumnStub = defineComponent({
       'data-sortable': String(props.sortable ?? ''),
       'data-width': String(props.width ?? ''),
       'data-min-width': String(props.minWidth ?? ''),
+      'data-resizable': String(props.resizable ?? ''),
       'data-align': String(props.align ?? ''),
       'data-header-align': String(props.headerAlign ?? ''),
       'data-class-name': String(props.className ?? ''),
@@ -758,6 +788,134 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     expect(wrapper.find('.el-table-column-stub[data-label="姓名"]').exists()).toBe(true)
     expect(wrapper.find('.field-display').exists()).toBe(false)
+  })
+
+  it('should merge legacy tableProps and pass resizable to generated field columns', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'TableLegacyPropsDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
+        },
+      },
+    })
+
+    const DirectTableColumns = defineComponent({
+      name: 'DirectTableColumnsWithResize',
+      setup() {
+        return () => h(FieldText as any, {
+          type: 'r-text',
+          field: 'name',
+          label: '姓名',
+          width: 120,
+        })
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        tableProps: {
+          rowKey: 'id',
+          highlightCurrentRow: true,
+          stripe: true,
+          border: false,
+          size: 'small',
+          resizable: true,
+        },
+      },
+      slots: {
+        default: () => h(DirectTableColumns),
+      },
+      global: {
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+        },
+      },
+    })
+
+    const table = wrapper.find('.el-table-stub')
+    expect(table.attributes('data-row-key')).toBe('id')
+    expect(table.attributes('data-highlight-current-row')).toBe('true')
+    expect(table.attributes('data-stripe')).toBe('true')
+    expect(table.attributes('data-size')).toBe('small')
+    expect(table.attributes('data-border')).toBe('true')
+    expect(table.attributes('data-resizable')).toBe('true')
+
+    const column = wrapper.find('.el-table-column-stub[data-label="姓名"]')
+    expect(column.attributes('data-width')).toBe('120')
+    expect(column.attributes('data-resizable')).toBe('true')
+  })
+
+  it('should let top-level resizable override legacy tableProps for field columns', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'TableTopLevelResizeDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
+        },
+      },
+    })
+
+    const DirectTableColumns = defineComponent({
+      name: 'DirectTableColumnsWithoutResize',
+      setup() {
+        return () => h(FieldText as any, {
+          type: 'r-text',
+          field: 'name',
+          label: '姓名',
+        })
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        resizable: false,
+        tableProps: {
+          resizable: true,
+          border: false,
+        },
+      },
+      slots: {
+        default: () => h(DirectTableColumns),
+      },
+      global: {
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.el-table-stub').attributes('data-resizable')).toBe('false')
+    expect(wrapper.find('.el-table-stub').attributes('data-border')).toBe('false')
+    expect(wrapper.find('.el-table-column-stub[data-label="姓名"]').attributes('data-resizable')).toBe('false')
   })
 
   it('should bind dataKey and react to DataView changes', async () => {

@@ -84,6 +84,31 @@ class AiSessionServiceRuntimeMetaTest {
         assertEquals("block", scheduling.get("decision"));
     }
 
+    @Test
+    void runtimeMeta_treatsProjectedPageDesignReadsAsReadOnly() throws Exception {
+        AiSessionService service = createService();
+        String sessionId = service.createSessionForTesting();
+
+        List<Map<String, Object>> calls = List.of(
+                toolCall("call_read_1", "page-a__nodeTree__getNode", Map.of("componentId", "stats-card")),
+                toolCall("call_read_2", "page-a__textModel__readStyle", Map.of())
+        );
+
+        Map<String, Object> meta = service.analyzeRuntimeMetaForTesting(sessionId, 4, calls);
+        Map<String, Object> guard = map(meta.get("guard"));
+        assertEquals(false, guard.get("blocked"));
+
+        Map<String, Object> scheduling = map(meta.get("scheduling"));
+        assertEquals(0L, ((Number) scheduling.get("writeCalls")).longValue());
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> idempotency = (List<Map<String, Object>>) meta.get("idempotency");
+        assertEquals("describe-only", idempotency.get(0).get("policy"));
+        assertEquals("low", idempotency.get(0).get("riskLevel"));
+        assertEquals("describe-only", idempotency.get(1).get("policy"));
+        assertEquals("low", idempotency.get(1).get("riskLevel"));
+    }
+
     @SuppressWarnings("unchecked")
     private Map<String, Object> map(Object value) {
         assertInstanceOf(Map.class, value);

@@ -29,7 +29,7 @@ class FcErrorReportServiceTest {
         Map<String, Object> report = service.record(Map.of(
                 "source", "test",
                 "fcCall", Map.of(
-                        "toolName", "catalog.query",
+                        "toolName", "queryPayloads",
                         "status", "error",
                         "error", "INVALID_CATEGORY"
                 )
@@ -49,7 +49,7 @@ class FcErrorReportServiceTest {
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> service.record(Map.of(
                 "source", "test",
                 "fcCall", Map.of(
-                        "toolName", "catalog.query",
+                        "toolName", "queryPayloads",
                         "status", "success",
                         "result", Map.of("count", 1)
                 )
@@ -64,7 +64,7 @@ class FcErrorReportServiceTest {
         service.record(Map.of(
                 "source", "test",
                 "fcCall", Map.of(
-                        "toolName", "catalog.query",
+                        "toolName", "queryPayloads",
                         "status", "error",
                         "error", "boom"
                 )

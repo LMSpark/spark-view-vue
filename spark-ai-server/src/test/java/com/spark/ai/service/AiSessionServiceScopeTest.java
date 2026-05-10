@@ -36,6 +36,34 @@ class AiSessionServiceScopeTest {
     }
 
     @Test
+    void doesNotReuseScopeSessionWhenReuseFlagDisabled() {
+        AiSessionService service = createService();
+        Map<String, Object> scope = scope("page-a");
+
+        String first = service.createSession("sys", "user", 30, List.of(), "function", scope, false);
+        String second = service.createSession("sys2", "user2", 30, List.of(), "function", scope, false);
+
+        assertNotEquals(first, second);
+        assertEquals(1, service.getConversationFull(first).size());
+        assertEquals(1, service.getConversationFull(second).size());
+    }
+
+    @Test
+    void replacesBackendSessionWhenExistingScopeSessionIsNotReady() {
+        AiSessionService service = createService();
+        Map<String, Object> scope = scope("page-a");
+
+        String first = service.createSession("sys", "user", 30, List.of(), "function", scope);
+        service.setSessionStateForTesting(first, "CALL");
+
+        String second = service.createSession("sys2", "user2", 30, List.of(), "function", scope);
+
+        assertNotEquals(first, second);
+        assertTrue(service.getConversationFull(first).isEmpty());
+        assertEquals(1, service.getConversationFull(second).size());
+    }
+
+    @Test
     void appendRejectsMismatchedModuleScope() {
         AiSessionService service = createService();
         String sessionId = service.createSession("sys", "user", 30, List.of(), "function", scope("page-a"));

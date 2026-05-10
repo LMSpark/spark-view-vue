@@ -126,7 +126,7 @@ function buildPayloadGuide(type: string): KnowledgePayloadGuide | null {
       {
         code: 'PAYLOAD_NOT_FOUND',
         when: 'key 不存在于 page-design.component 参数荷载目录。',
-        fix: '先调用 knowledge.queryPayloads 重新选择可用组件。',
+        fix: '先调用 queryPayloads 重新选择可用组件。',
       },
     ],
   }
@@ -160,6 +160,12 @@ export class PageDesignComponentPayloadProvider implements KnowledgePayloadProvi
   }
 
   register(): void {
-    KnowledgePayloadRegistry.register(this)
+    const existing = KnowledgePayloadRegistry.defaultRegistry.getProvider(this.payloadRef)
+    if (existing === null) {
+      KnowledgePayloadRegistry.register(this)
+      return
+    }
+    if (existing instanceof PageDesignComponentPayloadProvider) return
+    throw new Error(`Duplicate knowledge payload provider: ${this.payloadRef}`)
   }
 }

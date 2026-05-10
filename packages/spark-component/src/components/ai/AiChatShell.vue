@@ -3,6 +3,9 @@
     <div class="chat-header">
       <span class="chat-title">{{ title ?? 'AI 助手' }}</span>
       <div class="chat-header-actions">
+        <span v-if="showTurnStatus" class="turn-status" :title="turnStatusTitle">
+          并行 {{ activeTurnCountDisplay }}/{{ maxParallelTurnsDisplay }}<template v-if="queuedTurnCountDisplay > 0"> · 队列 {{ queuedTurnCountDisplay }}</template>
+        </span>
         <template v-if="toolLogs !== undefined">
           <button
             v-for="opt in RECOVERY_OPTIONS"
@@ -82,7 +85,7 @@
                   :key="option.id"
                   class="clarification-option"
                   :class="{ 'clarification-option--recommended': isRecommendedOption(question, option) }"
-                  :disabled="isStreaming || isClarificationAnswered(item.id)"
+                  :disabled="!canSendForUi || isClarificationAnswered(item.id)"
                   @click="answerClarificationOption(item, question, option)"
                 >
                   <span class="clarification-option__label">{{ option.label }}</span>
@@ -95,7 +98,7 @@
               <button
                 v-if="hasRecommendedAnswers(item.clarification)"
                 class="clarification-recommend-btn"
-                :disabled="isStreaming || isClarificationAnswered(item.id)"
+                :disabled="!canSendForUi || isClarificationAnswered(item.id)"
                 @click="answerClarificationRecommended(item)"
               >按推荐项回答</button>
               <span v-if="isClarificationAnswered(item.id)" class="clarification-answered">已回答</span>
@@ -167,7 +170,7 @@
           v-for="action in draftActions"
           :key="action.id"
           class="draft-action-btn"
-          :disabled="isStreaming || draftLoadingId === action.id"
+          :disabled="!canSendForUi || draftLoadingId === action.id"
           @click="emit('triggerDraftAction', action.id)"
         >
           <span v-if="action.icon" class="draft-action-btn__icon">{{ action.icon }}</span>
@@ -183,13 +186,13 @@
       </div>
 
       <div class="input-row">
-        <button class="icon-btn" title="上传文件" :disabled="isStreaming" @click="emit('triggerFileInput')">
+        <button class="icon-btn" title="上传文件" :disabled="!canSendForUi" @click="emit('triggerFileInput')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
           </svg>
         </button>
 
-        <button class="icon-btn" :class="{ recording: isRecording }" :title="isRecording ? '停止录音' : '语音输入'" :disabled="isStreaming" @click="emit('toggleVoice')">
+        <button class="icon-btn" :class="{ recording: isRecording }" :title="isRecording ? '停止录音' : '语音输入'" :disabled="!canSendForUi" @click="emit('toggleVoice')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
           </svg>
@@ -199,13 +202,13 @@
           ref="textareaRef"
           :value="inputText"
           class="chat-textarea"
-          :placeholder="isRecording ? '正在录音...' : (isStreaming ? 'AI 编辑中，可先输入下一条指令...' : (placeholder ?? '输入消息...'))"
+          :placeholder="inputPlaceholder"
           rows="1"
           @keydown.enter.exact.prevent="emit('send')"
           @input="handleInput"
         />
 
-        <button class="send-btn" :disabled="isStreaming || (inputText.trim() === '' && pendingFiles.length === 0)" @click="emit('send')">
+        <button class="send-btn" :disabled="!canSendForUi || (inputText.trim() === '' && pendingFiles.length === 0)" @click="emit('send')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
         </button>
       </div>
@@ -215,8 +218,6 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-
-const CLARIFICATION_ACTION = 'pageDesign/knowledge/ask'
 
 interface FileAttachment {
   fileId: string
@@ -241,6 +242,8 @@ interface ChatMessageLike {
   attachments?: FileAttachment[]
   timestamp?: Date | string
   streaming?: boolean
+  turnSeq?: number
+  turnStatus?: 'queued' | 'running' | 'done' | 'error' | 'cancelled'
   usage?: TokenUsageLike
 }
 
@@ -394,6 +397,10 @@ const props = defineProps<{
   pendingFiles: FileAttachment[]
   inputText: string
   isStreaming: boolean
+  activeTurnCount?: number
+  queuedTurnCount?: number
+  maxParallelTurns?: number
+  canSend?: boolean
   isRecording: boolean
   error: string | null
   title?: string
@@ -408,6 +415,9 @@ const props = defineProps<{
   draftLoadingId?: string | null
   recoveryPolicy?: RecoveryPolicyLike
   collaborationPolicy?: CollaborationPolicyLike
+  actionTitleMap?: Record<string, string>
+  actionPrefixTitleMap?: Record<string, string>
+  actionSuffixTitleMap?: Record<string, string>
 }>()
 
 const emit = defineEmits<{
@@ -427,6 +437,22 @@ const emit = defineEmits<{
 
 const draftActions = computed(() => props.draftActions ?? [])
 const draftLoadingId = computed(() => props.draftLoadingId ?? null)
+const activeTurnCountDisplay = computed(() => props.activeTurnCount ?? (props.isStreaming ? 1 : 0))
+const queuedTurnCountDisplay = computed(() => props.queuedTurnCount ?? 0)
+const maxParallelTurnsDisplay = computed(() => Math.max(1, props.maxParallelTurns ?? 1))
+const canSendForUi = computed(() => props.canSend ?? !props.isStreaming)
+const showTurnStatus = computed(() => (
+  maxParallelTurnsDisplay.value > 1 ||
+  activeTurnCountDisplay.value > 0 ||
+  queuedTurnCountDisplay.value > 0
+))
+const turnStatusTitle = computed(() => `当前运行 ${activeTurnCountDisplay.value} 个 turn，排队 ${queuedTurnCountDisplay.value} 个，最大并行 ${maxParallelTurnsDisplay.value}`)
+const inputPlaceholder = computed(() => {
+  if (props.isRecording) return '正在录音...'
+  if (props.isStreaming && !canSendForUi.value) return 'AI 编辑中，可先输入下一条指令...'
+  if (props.isStreaming) return 'AI 执行中，可继续输入下一条指令...'
+  return props.placeholder ?? '输入消息...'
+})
 
 type RecoveryPolicyLike = 'layered' | 'manual' | 'strict'
 type CollaborationPolicyLike = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
@@ -495,7 +521,7 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
       kind: 'message',
       source: isHumanInput ? 'human' : 'assistant',
       kindLabel: isHumanInput ? '人工输入' : '助手',
-      title: isHumanInput ? '用户消息' : (message.streaming === true ? 'AI 响应中' : 'AI 响应'),
+      title: isHumanInput ? '用户消息' : formatAssistantMessageTitle(message),
       payload: formatMessagePayload(message),
       openByDefault: message.streaming === true || message.role === 'user',
       order: order++,
@@ -651,101 +677,77 @@ function formatDiagnosticLogTitle(tag: string): string {
 }
 
 function formatActionTitle(action: string): string {
-  const direct = ACTION_TITLE_MAP[action]
+  const direct = actionTitleMap.value[action]
   if (direct !== undefined) return direct
 
-  if (action.startsWith('pageDesign/nodeTree/')) return `节点树${formatActionSuffix(action.slice('pageDesign/nodeTree/'.length))}`
-  if (action.startsWith('pageDesign/dataset/')) return `数据集${formatActionSuffix(action.slice('pageDesign/dataset/'.length))}`
-  if (action.startsWith('pageDesign/textModel/')) return `文本模型${formatActionSuffix(action.slice('pageDesign/textModel/'.length))}`
-  if (action.startsWith('pageDesign/lifecycle/')) return `编辑生命周期${formatActionSuffix(action.slice('pageDesign/lifecycle/'.length))}`
-  if (action.startsWith('pageDesign/knowledge/')) return `知识${formatActionSuffix(action.slice('pageDesign/knowledge/'.length))}`
-  if (action.startsWith('datatable.')) return `数据表${formatActionSuffix(action.slice('datatable.'.length))}`
-  if (action.startsWith('dataview.')) return `数据视图${formatActionSuffix(action.slice('dataview.'.length))}`
-  if (action.startsWith('relation.')) return `关系${formatActionSuffix(action.slice('relation.'.length))}`
-  if (action.startsWith('blueprint.')) return `蓝图${formatActionSuffix(action.slice('blueprint.'.length))}`
-  if (action.startsWith('schema.')) return `模型结构${formatActionSuffix(action.slice('schema.'.length))}`
+  const sortedPrefixes = Object.entries(actionPrefixTitleMap.value).sort((a, b) => b[0].length - a[0].length)
+  for (const [prefix, label] of sortedPrefixes) {
+    if (action.startsWith(prefix)) {
+      return `${label}${formatActionSuffix(action.slice(prefix.length))}`
+    }
+  }
+
+  const signature = parseActionSignature(action)
+  if (signature !== null) {
+    return `${signature.moduleLabel}${formatActionSuffix(signature.functionPart)}`
+  }
 
   return action
 }
 
 function formatActionSuffix(suffix: string): string {
-  const direct = ACTION_SUFFIX_TITLE_MAP[suffix]
+  const direct = actionSuffixTitleMap.value[suffix]
   if (direct !== undefined) return direct
   return `操作 ${suffix}`
 }
 
-const ACTION_TITLE_MAP: Record<string, string> = {
-  'session-ready': '会话就绪',
-  'pageDesign/lifecycle/describeProgress': '编辑进度',
-  'pageDesign/knowledge/queryPayloads': '参数荷载目录',
-  'pageDesign/knowledge/guidePayload': '参数荷载指南',
-  'pageDesign/knowledge/ask': '反问确认',
-  'pageDesign/lifecycle/bootstrap': '初始化编辑会话',
-  'dataset.export': '导出数据集',
-  'dataset.bootstrap': '初始化数据集',
-  'dataset.describe': '数据集概览',
-  'dataset.validate': '校验数据集',
-  'dataset.reset': '重置数据集',
-  'fc-error-report': 'FC 错误回传',
-  '人工输入': '人工输入',
-  '开始 LLM 编辑': '开始 LLM 编辑',
-  '未写入': '未写入',
-  '编辑失败': '编辑失败',
+function parseActionSignature(action: string): { moduleLabel: string; functionPart: string } | null {
+  if (action.includes('@')) {
+    const parts = action.split('@').filter((part) => part.length > 0)
+    if (parts.length >= 3) {
+      return { moduleLabel: parts[parts.length - 2] ?? '', functionPart: parts[parts.length - 1] ?? '' }
+    }
+  }
+  if (action.includes('/')) {
+    const parts = action.split('/').filter((part) => part.length > 0)
+    if (parts.length >= 2) {
+      return { moduleLabel: parts[parts.length - 2] ?? '', functionPart: parts[parts.length - 1] ?? '' }
+    }
+  }
+  if (action.includes('.')) {
+    const parts = action.split('.').filter((part) => part.length > 0)
+    if (parts.length >= 2) {
+      return { moduleLabel: parts[parts.length - 2] ?? '', functionPart: parts[parts.length - 1] ?? '' }
+    }
+  }
+  return null
 }
 
-const ACTION_SUFFIX_TITLE_MAP: Record<string, string> = {
+const DEFAULT_ACTION_SUFFIX_TITLE_MAP: Record<string, string> = {
   bootstrap: '初始化',
   describe: '概览',
   validate: '校验',
   export: '导出',
-  reset: '重置',
-  listTables: '表列表',
-  getTable: '读取表',
-  updateTable: '更新表',
-  addTable: '添加表',
-  removeTable: '删除表',
-  listColumns: '列列表',
-  addColumns: '添加列',
-  updateColumn: '更新列',
-  removeColumn: '删除列',
-  addRows: '添加行',
-  readRule: '读取规则',
-  readPageData: '读取页面数据',
-  readScript: '读取脚本',
-  readStyle: '读取样式',
-  writeRule: '写入规则',
-  writePageData: '写入页面数据',
-  writeScript: '写入脚本',
-  writeStyle: '写入样式',
-  countNodes: '统计节点',
-  getAllData: '读取全量结构',
-  getNode: '读取节点',
-  getLocation: '定位节点',
-  hasNode: '检查节点',
-  getParent: '读取父节点',
-  listChildren: '子节点列表',
-  findByType: '按类型查找',
-  collectDataKeys: '收集数据键',
-  collectHandlerNames: '收集处理函数',
-  addNode: '添加节点',
-  addNodes: '批量添加节点',
-  moveNode: '移动节点',
-  setProps: '设置属性',
-  setPropsBatch: '批量设置属性',
-  replaceNode: '替换节点',
-  replaceNodes: '批量替换节点',
-  removeNode: '删除节点',
-  removeNodes: '批量删除节点',
   create: '创建',
-  advance: '推进',
-  revise: '修订',
-  validateCoverage: '校验覆盖范围',
-  selfCheck: '自检',
-  lock: '锁定',
+  guide: '指南',
+  query: '查询',
+  read: '读取',
+  write: '写入',
+  update: '更新',
   add: '添加',
   remove: '删除',
   list: '列表',
+  reset: '重置',
 }
+
+const actionTitleMap = computed(() => props.actionTitleMap ?? {})
+
+const actionPrefixTitleMap = computed(() => props.actionPrefixTitleMap ?? {})
+
+const actionSuffixTitleMap = computed(() => ({
+  ...DEFAULT_ACTION_SUFFIX_TITLE_MAP,
+  ...(props.actionSuffixTitleMap ?? {}),
+}))
 
 function toIsoTimestamp(value: Date | string | undefined): string {
   if (value instanceof Date) return value.toISOString()
@@ -808,7 +810,7 @@ function normalizeClarificationPayload(raw: unknown): ClarificationPayload | nul
 }
 
 function extractClarificationPayload(call: FcCallLike): ClarificationPayload | null {
-  if (call.toolName !== CLARIFICATION_ACTION || call.status !== 'success') return null
+  if (call.status !== 'success') return null
   return normalizeClarificationPayload(call.result) ?? normalizeClarificationPayload(call.args)
 }
 
@@ -852,7 +854,7 @@ function submitClarificationAnswer(
   item: DiagnosticItem,
   selections: Array<{ question: ClarificationQuestion; optionIds: string[] }>,
 ): void {
-  if (props.isStreaming || item.clarification === undefined || isClarificationAnswered(item.id)) return
+  if (!canSendForUi.value || item.clarification === undefined || isClarificationAnswered(item.id)) return
   const answer = buildClarificationAnswer(item, selections)
   if (answer.trim() === '') return
   answeredClarifications.value = { ...answeredClarifications.value, [item.id]: true }
@@ -884,6 +886,13 @@ function formatTimestamp(value: string | Date | undefined): string {
   return date.toLocaleTimeString('zh-CN', { hour12: false })
 }
 
+function formatAssistantMessageTitle(message: ChatMessageLike): string {
+  if (message.turnStatus === 'queued') return 'AI 排队中'
+  if (message.streaming === true) return 'AI 响应中'
+  if (message.turnStatus === 'cancelled') return 'AI 已取消'
+  return 'AI 响应'
+}
+
 function formatMessagePayload(message: ChatMessageLike): string {
   const lines: string[] = []
   if (message.content.trim() !== '') lines.push(message.content)
@@ -896,7 +905,10 @@ function formatMessagePayload(message: ChatMessageLike): string {
   if (message.attachments !== undefined && message.attachments.length > 0) {
     lines.push(`[attachments]\n${stringifyPayload(message.attachments)}`)
   }
-  return lines.length > 0 ? lines.join('\n\n') : '(empty)'
+  if (lines.length > 0) return lines.join('\n\n')
+  if (message.turnStatus === 'queued') return '排队中...'
+  if (message.streaming === true) return '等待响应...'
+  return '(empty)'
 }
 
 function stringifyPayload(value: unknown): string {
@@ -1079,7 +1091,8 @@ watch(
 }
 .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f5f7fa; border-bottom: 1px solid #e4e7ed; }
 .chat-title { font-weight: 600; font-size: 14px; color: #303133; }
-.chat-header-actions { display: flex; gap: 4px; }
+.chat-header-actions { display: flex; align-items: center; gap: 4px; }
+.turn-status { flex-shrink: 0; padding: 2px 7px; border-radius: 999px; background: #ecf5ff; color: #409eff; font-size: 11px; line-height: 1.6; white-space: nowrap; }
 .chat-messages-shell { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .chat-region-toolbar { display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 10px 0 12px; border-bottom: 1px solid #ebeef5; background: #fafafa; flex-shrink: 0; gap: 8px; }
 .chat-region-title { font-size: 11px; font-weight: 600; color: #909399; }

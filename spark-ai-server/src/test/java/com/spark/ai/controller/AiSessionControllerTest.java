@@ -263,6 +263,7 @@ class AiSessionControllerTest {
                                         .content(body))
                                 .andExpect(status().isConflict())
                                 .andExpect(jsonPath("$.error.category").value("idempotency"))
+                                .andExpect(jsonPath("$.error.message").value("AI 生成了重复的工具调用，已阻止执行，请重新生成计划"))
                                 .andExpect(jsonPath("$.error.retryPolicy").value("regenerate-plan"))
                                 .andExpect(jsonPath("$.runtime.guard.reasonCode").value("IDEMPOTENCY_REPLAY_BLOCKED"));
                     }
@@ -292,6 +293,7 @@ class AiSessionControllerTest {
                                         .content(body))
                                 .andExpect(status().isConflict())
                                 .andExpect(jsonPath("$.error.category").value("parallelism"))
+                                .andExpect(jsonPath("$.error.message").value("AI 本轮包含并行写入计划，请改为串行或拆分执行"))
                                 .andExpect(jsonPath("$.error.retryPolicy").value("serialize-or-split"))
                                 .andExpect(jsonPath("$.runtime.scheduling.decision").value("block"));
                     }

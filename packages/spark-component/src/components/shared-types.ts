@@ -137,6 +137,12 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    */
   width?: number
   /**
+   * 表格列是否允许拖动列宽。
+   *
+   * 字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。
+   */
+  resizable?: boolean
+  /**
    * 是否允许清空当前值。
    *
    * 适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。

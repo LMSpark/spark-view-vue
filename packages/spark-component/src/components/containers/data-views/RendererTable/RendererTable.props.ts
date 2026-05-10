@@ -14,6 +14,11 @@ import type { RendererFilterProps } from '../../zones/RendererFilter.types'
 export interface RTableProps
   extends SparkNodeProps,
     SparkInteractiveDataContainerProps {
+  /**
+   * 透传给 el-table 的原生属性（兼容 JSON 规则里常见的 tableProps 写法）。
+   * 顶层同名 props（如 resizable / border / rowKey）优先级更高。
+   */
+  tableProps?: Record<string, unknown>
   /** 显式收窄为表格容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 是否显示纵向边框。默认 true（resizable 启用时强制开启）。 */

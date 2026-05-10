@@ -117,6 +117,16 @@ export type {
   KnowledgePayloadSummary,
 } from './protocol/knowledge-payload-contracts'
 
+// 五.五、核心层知识投影统一窗口：为 LLM FC、后端 API 提供统一的知识查询入口（函数、模块、负载目录）。
+export {
+  AiKnowledgeProjector,
+} from './knowledge/knowledge-projection'
+
+export type {
+  AiKnowledgeScope,
+  AiKnowledgeProjection,
+} from './knowledge/knowledge-projection'
+
 // 六、core facade：注册模块并返回模块绑定 API，接收生命周期通知，提供知识投影和函数调用翻译。
 export {
   AiRuntime,

@@ -51,7 +51,7 @@ class AiDiagnosticsControllerTest {
                         .header("X-Tenant-Id", "tenant-a")
                         .header("X-Project-Id", "project-a")
                         .header("User-Agent", "JUnit")
-                        .content("{\"source\":\"test\",\"fcCall\":{\"toolName\":\"catalog.query\",\"status\":\"error\",\"error\":\"boom\"}}"))
+                        .content("{\"source\":\"test\",\"fcCall\":{\"toolName\":\"queryPayloads\",\"status\":\"error\",\"error\":\"boom\"}}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
                 .andExpect(jsonPath("$.eventType").value(SseService.EVENT_DEBUG_FC_ERROR_REPORT))

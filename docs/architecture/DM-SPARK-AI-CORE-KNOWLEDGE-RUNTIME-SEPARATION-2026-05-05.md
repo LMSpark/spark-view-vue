@@ -21,7 +21,7 @@
 
 - **业务**：业务域，例如 `core`、`pageDesign`。
 - **模块**：语义分组，例如 `knowledge`、`lifecycle`、`nodeTree`、`dataset`、`textModel`。
-- **函数**：实际可调用的 Agent tool/function，例如 `queryTools`、`addNode`、`createTable`。
+- **函数**：实际可调用的 Agent tool/function，例如 `queryFunctions`、`addNode`、`createTable`。
 
 ---
 
@@ -82,7 +82,7 @@ catalog = 组件目录投影来源
 | 边界点 | 收敛结果 | 说明 |
 |--------|----------|------|
 | `IStillSession.catalog` 绑定具体 `StillsCatalog` | 已从 `core/stills/types.ts` 与 `core/stills/domain.ts` 移除 | core session 只保留 `patchLog` 与 `domains`；page-design payload provider 自己持有组件目录投影。 |
-| `src/stills/meta-methods.ts` 暴露 `page-design.component` | 已迁入 `core/stills/meta-methods.ts`，并改为通用 `core@knowledge@queryPayloads({})` 入口提示 | `core@session@describe` 不再知道任何业务 payloadRef。 |
+| `src/stills/meta-methods.ts` 暴露 `page-design.component` | 已迁入 `core/stills/meta-methods.ts`，并改为通用 `queryPayloads({ category, keyword })` 入口提示 | `core@session@describe` 不再知道任何业务 payloadRef。 |
 | page-design host 反向 import `../../stills` 门面 | 已新增 `business/page-design/register-edit-stills.ts`，host 改为直接使用 core 注册机与本业务注册入口 | 避免 business -> facade -> business 的装配环。 |
 | page-design import `core/knowledge/knowledge-functions` 的 still 对象 | 已改为业务本地协议动作字符串，不再引用 concrete still definition | 业务 follow-up 只描述协议动作，不绑定 core implementation object。 |
 | `business/index.ts` re-export `../stills` | 已移除，business barrel 只导出 page-design 业务入口 | 公共 facade 继续存在，但业务层不再通过 barrel 反向导出 facade。 |
@@ -104,7 +104,7 @@ catalog = 组件目录投影来源
 | D6 | **payload 与 function 分线** | 函数说明解决“调用什么”；payload provider 只解决“嵌套 JSON 参数如何构造”。 |
 | D7 | **prompt 分层** | core 只保留 L1/L2 协议纪律；page-design 编辑规则进入业务 prompt。 |
 | D8 | **repeat monitor 策略注入** | core 只保留重复检测状态机；业务域提供只读判断、失败 key 和 follow-up 文案。 |
-| D9 | **旧动作强切** | 旧 `catalog.query`、`catalog.guide`、`stills.actionSpec`、`stills.capabilities` 不注册、不兼容。 |
+| D9 | **历史别名动作强切** | 历史别名动作不注册、不兼容，统一由 `core@knowledge` 标准动作承载。 |
 | D10 | **模块提示词挂在函数定义上** | `StillDefinition.modulePrompt` 是模块提示词 SSoT；同一 `业务@模块` 下应保持一致，由 `core@knowledge` 聚合为 `modules[]`，不新增模块注册器。 |
 
 ---
@@ -116,7 +116,7 @@ catalog = 组件目录投影来源
 - still 协议：`StillDefinition`、`IStillSession`、`DomainProvider`、`StillResult`。
 - 注册器：action registry、domain registry、payload provider registry。
 - 运行时：FC schema 生成、FC dispatch、session backend、session orchestrator。
-- 注册事实读模型：`core@knowledge@queryTools`、`guideTool`、`queryPayloads`、`guidePayload`，只能读取 registry/provider registry。
+- 注册事实读模型：`queryFunctions`、`guideFunction`、`queryPayloads`、`guidePayload`，只能读取 registry/provider registry。
 - 通用监控算法：重复签名、连续错误、循环检测、只读上限。
 
 ### 4.2 Core 禁止知道
@@ -151,10 +151,10 @@ catalog = 组件目录投影来源
 
 | 地址 | 语义 |
 |------|------|
-| `core@knowledge@queryTools` | 查询当前会话可用函数目录 |
-| `core@knowledge@guideTool` | 查询单个函数调用指南 |
-| `core@knowledge@queryPayloads` | 查询参数荷载目录 |
-| `core@knowledge@guidePayload` | 查询单个参数荷载 JSON Schema 指南 |
+| `queryFunctions` | 查询当前会话可用函数目录 |
+| `guideFunction` | 查询单个函数调用指南 |
+| `queryPayloads` | 查询参数荷载目录 |
+| `guidePayload` | 查询单个参数荷载 JSON Schema 指南 |
 | `core@session@describe` | 查询会话状态 |
 | `core@interaction@ask` | 向用户发起澄清问题 |
 
@@ -201,19 +201,19 @@ StillDefinition.action + StillDefinition.modulePrompt -> core@knowledge 查询�
 
 | 动作 | 返回内容 |
 |------|----------|
-| `core@knowledge@queryTools` | 当前会话可用函数列表，包含 `modules[]` 模块提示词聚合，以及 `business`、`module`、`function`、`functionName`、描述和摘要参数 |
-| `core@knowledge@guideTool` | 单个函数的完整参数 schema、结果 schema、usageRules、failureModes、example、`modulePrompt` |
-| `core@knowledge@queryPayloads` | 某个 `payloadRef` 下可构造的嵌套 payload 类型列表 |
-| `core@knowledge@guidePayload` | 某个 payload 的 JSON Schema、最小示例、约束和失败模式 |
+| `queryFunctions` | 当前会话可用函数列表，包含 `modules[]` 模块提示词聚合，以及 `business`、`module`、`function`、`functionName`、描述和摘要参数 |
+| `guideFunction` | 单个函数的完整参数 schema、结果 schema、usageRules、failureModes、example、`modulePrompt` |
+| `queryPayloads` | 当前业务域下可构造的嵌套 payload 类型列表 |
+| `guidePayload` | 某个 payload 的 JSON Schema、最小示例、约束和失败模式 |
 
 旧动作全部删除，不提供 alias：
 
-| 删除动作 | 新动作 |
+| 删除动作类型 | 现行动作 |
 |----------|--------|
-| `stills.capabilities` | `core@knowledge@queryTools` |
-| `stills.actionSpec` | `core@knowledge@guideTool` |
-| `catalog.query` | `core@knowledge@queryPayloads` |
-| `catalog.guide` | `core@knowledge@guidePayload` |
+| 历史函数目录查询别名 | `queryFunctions` |
+| 历史函数指南查询别名 | `guideFunction` |
+| 历史 payload 目录查询别名 | `queryPayloads` |
+| 历史 payload 指南查询别名 | `guidePayload` |
 
 ### 6.2 函数目录投影
 
@@ -251,8 +251,8 @@ interface KnowledgeModuleSummary {
 当前约束：
 
 - `modulePrompt` 挂在 `StillDefinition`，由业务域在构造运行时 still 时填写。
-- 同一 `business@module` 下的 `modulePrompt` 应保持一致；`core@knowledge@queryTools` 取聚合后的第一条非空提示作为 `modules[].prompt`。
-- `core@knowledge@guideTool` 返回目标函数自身的 `modulePrompt`，便于模型在查看单函数指南时仍能看到模块级约束。
+- 同一 `business@module` 下的 `modulePrompt` 应保持一致；`queryFunctions` 取聚合后的第一条非空提示作为 `modules[].prompt`。
+- `guideFunction` 返回目标函数自身的 `modulePrompt`，便于模型在查看单函数指南时仍能看到模块级约束。
 - `stillToToolDefinition` 会把 `modulePrompt` 注入 FC function description，格式为 `模块提示: ...`，确保不显式查询 knowledge 时模型仍能看到模块边界。
 - 禁止新增 `module-registry.ts` 或类似第二事实源；模块只是 action 地址的第二段，提示词事实仍从函数定义行进入 registry。
 
@@ -405,7 +405,7 @@ registerEditStills()
     -> Still registry 注册 pageDesign lifecycle/text-model/dataset/node-tree/edit stills
   -> KnowledgePayloadRegistry.register(pageDesignComponentPayloadProvider)
   -> registerAll(metaStills)
-    -> core@knowledge@queryTools / guideTool / queryPayloads / guidePayload
+    -> queryFunctions / guideFunction / queryPayloads / guidePayload
     -> core@session@describe / core@interaction@ask
 ```
 
@@ -438,7 +438,7 @@ registerEditStills()
 - page-design lifecycle/text-model/dataset/node-tree action 已迁移到 `pageDesign@模块@函数`。
 - `knowledge` 已收口为 `core@knowledge` 模块。
 - `StillDefinition` 已新增 `modulePrompt` 字段，作为模块提示词唯一事实源。
-- `core@knowledge@queryTools` 已返回 `modules[]` 聚合视图，`core@knowledge@guideTool` 已返回单函数 `modulePrompt`。
+- `queryFunctions` 已返回 `modules[]` 聚合视图，`guideFunction` 已返回单函数 `modulePrompt`。
 - FC function description 已注入 `模块提示: ...`，无需新增模块注册器。
 - core 模块 `knowledge/session/interaction` 与 page-design 模块 `lifecycle/nodeTree/dataset/textModel` 已补齐模块提示词。
 - repeat monitor 已策略化，core 不再硬编码 page-design action。
@@ -457,15 +457,15 @@ registerEditStills()
 
 ### 12.1 必须证明
 
-- 编辑会话中可调用 `core@knowledge@queryTools` 获取函数目录。
-- `core@knowledge@queryTools` 返回的 `modules[]` 必须按 `business@module` 聚合模块提示词，并覆盖 core/pageDesign 当前注册模块。
-- 可调用 `core@knowledge@guideTool` 获取 `pageDesign@nodeTree@addNode` 等函数的完整指南。
-- `core@knowledge@guideTool` 返回的函数指南必须包含对应 `modulePrompt`。
-- 可调用 `core@knowledge@queryPayloads` 查询 `page-design.component` payload 目录。
-- 可调用 `core@knowledge@guidePayload` 获取 `r-table` 等 payload 的 JSON Schema 指南。
+- 编辑会话中可调用 `queryFunctions` 获取函数目录。
+- `queryFunctions` 返回的 `modules[]` 必须按 `business@module` 聚合模块提示词，并覆盖 core/pageDesign 当前注册模块。
+- 可调用 `guideFunction` 获取 `pageDesign@nodeTree@addNode` 等函数的完整指南。
+- `guideFunction` 返回的函数指南必须包含对应 `modulePrompt`。
+- 可调用 `queryPayloads` 查询 `page-design.component` payload 目录。
+- 可调用 `guidePayload` 获取 `r-table` 等 payload 的 JSON Schema 指南。
 - FC function name 能从 `业务@模块@函数` 派生，并能反查回 canonical action。
 - FC function description 必须包含 `模块提示`，保证模型在仅看 FC tool schema 时也能读取模块约束。
-- 旧动作 `stills.capabilities`、`stills.actionSpec`、`catalog.query`、`catalog.guide` 不再注册。
+- 历史别名动作不再注册。
 
 ### 12.2 当前聚焦验证
 
@@ -484,7 +484,7 @@ pnpm run typecheck
 
 - Knowledge 查询强切和 payload provider。
 - FC schema 与 `functionNameToAction` 映射。
-- `modules[]` 模块提示词聚合、`guideTool.modulePrompt` 和 FC description 注入。
+- `modules[]` 模块提示词聚合、`guideFunction.modulePrompt` 和 FC description 注入。
 - node-tree / dataset 模块函数目录。
 - edit-domain 隐藏函数和四文件 live model 绑定。
 
@@ -526,7 +526,7 @@ pnpm run typecheck
                    |                         |
                    |                         v
                    |              core@knowledge read model
-                   |        queryTools / guideTool / queryPayloads / guidePayload
+                   |        queryFunctions / guideFunction / queryPayloads / guidePayload
                    v                         |
               registered function facts          v
                    |                registered payload providers

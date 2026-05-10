@@ -29,6 +29,7 @@ interface FieldControlProps extends OptionalWithUndefined<Pick<SparkNodeProps,
   | 'type' | 'children'
 >>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
   | 'width'
+  | 'resizable'
   | 'onChange'
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
@@ -48,6 +49,7 @@ export function useFieldControlState<TValue>(options: UseFieldControlStateOption
   const fieldCtx = useFieldContext({
     type: options.props.type ?? options.fieldType,
     width: options.props.width,
+    ...(options.props.resizable !== undefined ? { resizable: options.props.resizable } : {}),
     ...(options.props.children !== undefined ? { children: options.props.children } : {}),
     ...(options.props.titleAlign !== undefined ? { titleAlign: options.props.titleAlign } : {}),
     ...(options.props.valueAlign !== undefined ? { valueAlign: options.props.valueAlign } : {}),

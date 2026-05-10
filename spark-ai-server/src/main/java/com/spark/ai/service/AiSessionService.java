@@ -127,16 +127,37 @@ public class AiSessionService {
     public String createSession(String systemPrompt, String userPrompt, int windowSize,
                                 List<Map<String, Object>> tools, String mode,
                                 Map<String, Object> scope) {
+        return createSession(systemPrompt, userPrompt, windowSize, tools, mode, scope, true);
+    }
+
+    /**
+     * 创建会话（支持 tools + mode），可控制是否复用同 scope 的 READY 会话。
+     */
+    public String createSession(String systemPrompt, String userPrompt, int windowSize,
+                                List<Map<String, Object>> tools, String mode,
+                                Map<String, Object> scope,
+                                boolean reuseScopeSession) {
         SessionScope normalizedScope = normalizeScope(scope);
-        if (normalizedScope.scopeKey != null) {
+        if (reuseScopeSession && normalizedScope.scopeKey != null) {
             String existingSessionId = sessionIdsByScopeKey.get(normalizedScope.scopeKey);
-            if (existingSessionId != null && sessions.containsKey(existingSessionId)) {
-                log.info("[SESSION] reused sessionId={} scope={}/{}",
-                        existingSessionId, normalizedScope.moduleId, normalizedScope.moduleInstanceId);
-                return existingSessionId;
-            }
             if (existingSessionId != null) {
+                Session existingSession = sessions.get(existingSessionId);
+                if (existingSession != null && existingSession.state == SessionState.READY) {
+                    log.info("[SESSION] reused sessionId={} scope={}/{}",
+                            existingSessionId, normalizedScope.moduleId, normalizedScope.moduleInstanceId);
+                    return existingSessionId;
+                }
+
+                // 旧会话不在可复用状态（如 CALL/FAILED/HANDOFF）时，替换为新会话以避免恢复死循环。
+                sessions.remove(existingSessionId);
                 sessionIdsByScopeKey.remove(normalizedScope.scopeKey, existingSessionId);
+                if (existingSession != null) {
+                    log.warn("[SESSION] replaced stale sessionId={} state={} scope={}/{}",
+                            existingSessionId,
+                            existingSession.state != null ? existingSession.state.name() : "null",
+                            normalizedScope.moduleId,
+                            normalizedScope.moduleInstanceId);
+                }
             }
         }
 
@@ -162,7 +183,7 @@ public class AiSessionService {
         session.conversation.add(userMsg);
 
         sessions.put(sessionId, session);
-        if (session.scopeKey != null) {
+        if (reuseScopeSession && session.scopeKey != null) {
             sessionIdsByScopeKey.put(session.scopeKey, sessionId);
         }
 
@@ -232,14 +253,6 @@ public class AiSessionService {
                         null);
             }
 
-            // 记录 assistant 回复到对话历史
-            Message assistantMsg = new Message("assistant");
-            assistantMsg.content = llmResult.text;
-            if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
-                assistantMsg.toolCalls = llmResult.toolCalls;
-            }
-            session.conversation.add(assistantMsg);
-
             Map<String, Object> runtimeMeta = null;
             if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
                 runtimeMeta = buildRuntimeMeta(sessionId, round, session, llmResult.toolCalls);
@@ -257,6 +270,16 @@ public class AiSessionService {
                             runtimeMeta);
                 }
             }
+
+            // Only persist assistant tool_calls after runtime guards allow them. Persisting
+            // blocked tool_calls without matching tool messages leaves the chat history invalid
+            // for the next LLM request.
+            Message assistantMsg = new Message("assistant");
+            assistantMsg.content = llmResult.text;
+            if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
+                assistantMsg.toolCalls = llmResult.toolCalls;
+            }
+            session.conversation.add(assistantMsg);
 
             transition(session, SessionState.APPLY);
             transition(session, SessionState.VERIFY);
@@ -776,7 +799,7 @@ public class AiSessionService {
             case APPLY -> to == SessionState.VERIFY || to == SessionState.FAILED;
             case VERIFY -> to == SessionState.DONE || to == SessionState.PLAN || to == SessionState.FAILED;
             case DONE -> to == SessionState.READY;
-            case FAILED -> to == SessionState.HANDOFF;
+            case FAILED -> to == SessionState.PLAN || to == SessionState.HANDOFF;
             case HANDOFF -> to == SessionState.PLAN;
         };
     }
@@ -812,6 +835,15 @@ public class AiSessionService {
     // 包级测试辅助：创建最小会话并返回 sessionId。
     String createSessionForTesting() {
         return createSession("test-system", "test-user", DEFAULT_WINDOW_SIZE, null, "function");
+    }
+
+    // 包级测试辅助：直接设置会话状态，便于覆盖 scope 复用与恢复场景。
+    void setSessionStateForTesting(String sessionId, String state) {
+        Session session = sessions.get(sessionId);
+        if (session == null) {
+            throw new IllegalArgumentException("session not found: " + sessionId);
+        }
+        session.state = SessionState.valueOf(state);
     }
 
     // 包级测试辅助：对给定 toolCalls 生成 runtime meta（复用真实幂等账本与并行判定）。
@@ -1198,11 +1230,35 @@ public class AiSessionService {
     }
 
     private String actionDomain(String action) {
+        String projectedDomain = projectedActionDomain(action);
+        if (projectedDomain != null) {
+            return projectedDomain;
+        }
         int idx = action.indexOf('.');
         if (idx <= 0) {
             return "global";
         }
         return action.substring(0, idx);
+    }
+
+    private String projectedActionDomain(String action) {
+        String[] encodedSegments = action.split("__");
+        if (encodedSegments.length >= 2) {
+            String domain = encodedSegments[encodedSegments.length - 2];
+            if (!domain.isBlank()) {
+                return domain;
+            }
+        }
+
+        String[] addressSegments = action.split("@");
+        if (addressSegments.length >= 2) {
+            String domain = addressSegments[addressSegments.length - 2];
+            if (!domain.isBlank()) {
+                return domain;
+            }
+        }
+
+        return null;
     }
 
     private EntityResolution resolveEntity(String action, String args, String mode) {
@@ -1300,12 +1356,57 @@ public class AiSessionService {
 
     private String modeByHeuristic(String action) {
         String lower = action.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("get") || lower.startsWith("list") || lower.startsWith("query")
-                || lower.startsWith("describe") || lower.contains(".get")
-                || lower.contains(".list") || lower.contains(".query") || lower.contains(".describe")) {
+        String leaf = actionLeaf(action).toLowerCase(Locale.ROOT);
+        if (isReadLikeAction(lower) || isReadLikeAction(leaf)) {
             return "read";
         }
         return "write";
+    }
+
+    private boolean isReadLikeAction(String value) {
+        return value.startsWith("get")
+                || value.startsWith("list")
+                || value.startsWith("query")
+                || value.startsWith("describe")
+                || value.startsWith("read")
+                || value.startsWith("count")
+                || value.startsWith("find")
+                || value.startsWith("has")
+                || value.startsWith("collect")
+                || value.startsWith("can")
+                || value.startsWith("history")
+                || value.startsWith("export")
+                || value.contains(".get")
+                || value.contains(".list")
+                || value.contains(".query")
+                || value.contains(".describe")
+                || value.contains(".read")
+                || value.contains(".count")
+                || value.contains(".find");
+    }
+
+    private String actionLeaf(String action) {
+        int encodedIdx = action.lastIndexOf("__");
+        if (encodedIdx >= 0 && encodedIdx + 2 < action.length()) {
+            return action.substring(encodedIdx + 2);
+        }
+
+        int atIdx = action.lastIndexOf('@');
+        if (atIdx >= 0 && atIdx + 1 < action.length()) {
+            return action.substring(atIdx + 1);
+        }
+
+        int dotIdx = action.lastIndexOf('.');
+        if (dotIdx >= 0 && dotIdx + 1 < action.length()) {
+            return action.substring(dotIdx + 1);
+        }
+
+        int slashIdx = action.lastIndexOf('/');
+        if (slashIdx >= 0 && slashIdx + 1 < action.length()) {
+            return action.substring(slashIdx + 1);
+        }
+
+        return action;
     }
 
     private static class ActionRule {

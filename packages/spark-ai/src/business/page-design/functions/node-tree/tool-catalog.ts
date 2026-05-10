@@ -316,7 +316,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     functionId: 'addNode',
     target: 'children',
     coreMethod: 'addNode',
-    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 knowledge.guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
+    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
     paramsSchema: {
       kind: 'object',
       required: ['node'],
@@ -517,7 +517,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     functionId: 'replaceNode',
     target: 'node',
     coreMethod: 'replaceNode',
-    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 knowledge.guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
+    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: {
       componentId: COMPONENT_ID_PARAM,
       node: NODE_PARAM,

@@ -72,6 +72,7 @@ public class AiSessionController {
         }
         int windowSize = request.get("windowSize") instanceof Number n ? n.intValue() : 30;
         String mode = request.get("mode") instanceof String s ? s : "generate";
+        boolean reuseScopeSession = !(request.get("reuseScopeSession") instanceof Boolean b) || b;
 
         // tools 是 JSON Array，直接存储转发给 LLM
         @SuppressWarnings("unchecked")
@@ -80,7 +81,7 @@ public class AiSessionController {
 
         Map<String, Object> scope = extractScope(request);
         String sessionId = sessionService.createSession(
-                systemPrompt, userPrompt, windowSize, tools, mode, scope);
+            systemPrompt, userPrompt, windowSize, tools, mode, scope, reuseScopeSession);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("sessionId", sessionId);
@@ -385,7 +386,7 @@ public class AiSessionController {
                 category,
                 code,
                 retryPolicy,
-                null,
+                errorMessageForCode(code),
                 sessionId,
                 result.getState(),
                 result.getStateTransition(),
@@ -435,5 +436,19 @@ public class AiSessionController {
         }
 
         return ResponseEntity.status(status).body(body);
+    }
+
+    private static String errorMessageForCode(String code) {
+        return switch (code) {
+            case "INVALID_STATE_TRANSITION" -> "AI 会话状态不可直接进入下一轮，请重新生成计划或重建会话";
+            case "HANDOFF_REQUIRED" -> "AI 会话已进入人工接管状态，请先确认上次失败后再继续";
+            case "LLM_CALL_FAILED" -> "LLM 调用失败，请稍后重试或检查模型服务配置";
+            case "SESSION_SCOPE_MISMATCH" -> "后端 AI 会话与当前页面实例不匹配，请重建会话后继续";
+            case "IDEMPOTENCY_REPLAY_BLOCKED" -> "AI 生成了重复的工具调用，已阻止执行，请重新生成计划";
+            case "DUPLICATE_TOOL_CALL_ID" -> "AI 返回了重复的工具调用 ID，已阻止执行，请重新生成计划";
+            case "PARALLEL_WRITE_BUDGET_EXCEEDED" -> "AI 本轮写入工具调用过多，请拆成更小步骤执行";
+            case "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> "AI 本轮包含并行写入计划，请改为串行或拆分执行";
+            default -> null;
+        };
     }
 }

@@ -17,7 +17,7 @@
  */
 import { computed, ref, shallowRef, toValue, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import type { AiChatSender, AiFcErrorReporter } from './useAiChat'
+import type { AiChatSender, AiFcErrorReporter, AiTurnConcurrencyConfig } from './useAiChat'
 
 const logger = Logger('AiPanel')
 
@@ -172,6 +172,8 @@ export interface AiSessionConfig {
   readonly clearExternalToolLogs?: () => void
   /** FC 调用失败时的诊断回传器。 */
   readonly fcErrorReporter?: AiFcErrorReporter
+  /** turn 并发配置；默认由 AiChatWidget 保持 1 个在途 turn。 */
+  readonly turnConcurrency?: MaybeRefOrGetter<AiTurnConcurrencyConfig | undefined>
   /** 打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。 */
   readonly beforeOpen?: () => void | Promise<void>
 
@@ -190,6 +192,12 @@ export interface AiSessionConfig {
   readonly feedback?: AiFeedbackConfig
   /** 人工触发的诊断草稿按钮。 */
   readonly draftActions?: MaybeRefOrGetter<readonly AiDraftActionConfig[]>
+  /** action 精确标题映射（可选，业务侧注入）。 */
+  readonly actionTitleMap?: MaybeRefOrGetter<Record<string, string> | undefined>
+  /** action 前缀标题映射（可选，业务侧注入）。 */
+  readonly actionPrefixTitleMap?: MaybeRefOrGetter<Record<string, string> | undefined>
+  /** action 后缀标题映射（可选，业务侧注入）。 */
+  readonly actionSuffixTitleMap?: MaybeRefOrGetter<Record<string, string> | undefined>
   /** 声明式生命周期 hooks（事件名即字段名）。 */
   readonly hooks?: AiSessionHooks
 }
@@ -235,8 +243,24 @@ const toolInstances = computed<Record<string, AiToolHandler> | undefined>(() => 
 })
 const fcLoop = computed<AiFcLoopConfig | undefined>(() => configRef.value?.fcLoop)
 const feedback = computed<AiFeedbackConfig | undefined>(() => configRef.value?.feedback)
+const turnConcurrency = computed<AiTurnConcurrencyConfig | undefined>(() => {
+  const v = configRef.value?.turnConcurrency
+  return v !== undefined ? toValue(v) : undefined
+})
 const draftActions = computed<readonly AiDraftActionConfig[] | undefined>(() => {
   const v = configRef.value?.draftActions
+  return v !== undefined ? toValue(v) : undefined
+})
+const actionTitleMap = computed<Record<string, string> | undefined>(() => {
+  const v = configRef.value?.actionTitleMap
+  return v !== undefined ? toValue(v) : undefined
+})
+const actionPrefixTitleMap = computed<Record<string, string> | undefined>(() => {
+  const v = configRef.value?.actionPrefixTitleMap
+  return v !== undefined ? toValue(v) : undefined
+})
+const actionSuffixTitleMap = computed<Record<string, string> | undefined>(() => {
+  const v = configRef.value?.actionSuffixTitleMap
   return v !== undefined ? toValue(v) : undefined
 })
 
@@ -365,7 +389,11 @@ export function useAiPanelStore() {
     toolInstances,
     fcLoop,
     feedback,
+    turnConcurrency,
     draftActions,
+    actionTitleMap,
+    actionPrefixTitleMap,
+    actionSuffixTitleMap,
     // 操作
     open,
     sync,

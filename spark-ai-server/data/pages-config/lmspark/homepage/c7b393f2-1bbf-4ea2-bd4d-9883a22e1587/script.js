@@ -34,21 +34,53 @@ function setCurrentLeaveRow(row) {
 // ========== 统计刷新 ==========
 function refreshStats() {
   const rows = getRows('LeaveRequests')
-  const now = new Date()
-  const thisMonth = now.getMonth()
-  const thisYear = now.getFullYear()
+  const view = getLeaveView()
 
-  const monthRows = rows.filter(r => {
-    const d = new Date(r.createdAt || r.startDate)
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear
-  })
+  let pendingCount = rows.filter(r => r.status === 'pending').length
+  let approvedCount = rows.filter(r => r.status === 'approved').length
+  let rejectedCount = rows.filter(r => r.status === 'rejected').length
+  let totalCount = rows.length
 
-  const pendingCount = rows.filter(r => r.status === 'pending').length
-  const approvedCount = monthRows.filter(r => r.status === 'approved').length
-  const rejectedCount = monthRows.filter(r => r.status === 'rejected').length
-  const totalCount = monthRows.length
+  // 优先使用视图聚合数据（如果运行时已有计算结果）
+  try {
+    const aggregateResult =
+      (view && view.aggregateResult && view.aggregateResult.values) ||
+      (view && view.aggregateResult) ||
+      (view && view.getAggregateResult ? view.getAggregateResult() : null)
 
-  console.log('[请假管理] 统计', { pendingCount, approvedCount, rejectedCount, totalCount })
+    if (aggregateResult) {
+      const pendingAgg = Number(aggregateResult.pendingCount)
+      const approvedAgg = Number(aggregateResult.approvedCount)
+      const rejectedAgg = Number(aggregateResult.rejectedCount)
+      const totalAgg = Number(aggregateResult.totalCount)
+
+      if (Number.isFinite(pendingAgg)) pendingCount = pendingAgg
+      if (Number.isFinite(approvedAgg)) approvedCount = approvedAgg
+      if (Number.isFinite(rejectedAgg)) rejectedCount = rejectedAgg
+      if (Number.isFinite(totalAgg)) totalCount = totalAgg
+    }
+  } catch (e) {
+    console.warn('[请假管理] 聚合统计读取失败，使用手动计算结果', e)
+  }
+
+  const stats = { pendingCount, approvedCount, rejectedCount, totalCount }
+
+  const setStatValue = (id, value) => {
+    try {
+      const api = getComponentApi(id)
+      api?.setProps?.({ value })
+    } catch (e) {
+      console.warn('[请假管理] 统计卡片回填失败', id, e)
+    }
+  }
+
+  setStatValue('stats-pending-count', String(stats.pendingCount))
+  setStatValue('stats-approved-count', String(stats.approvedCount))
+  setStatValue('stats-rejected-count', String(stats.rejectedCount))
+  setStatValue('stats-total-count', String(stats.totalCount))
+
+  console.log('[请假管理] 统计', stats)
+  return stats
 }
 
 // ========== 新增请假 ==========

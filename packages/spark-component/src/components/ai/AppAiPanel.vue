@@ -56,7 +56,11 @@
           :parse-token-usage="parseTokenUsage"
           :upload-file="uploadFile"
           :report-fc-error="fcErrorReporter"
+          :turn-concurrency="turnConcurrency"
           :draft-actions="draftActions"
+          :action-title-map="actionTitleMap"
+          :action-prefix-title-map="actionPrefixTitleMap"
+          :action-suffix-title-map="actionSuffixTitleMap"
           v-bind="externalToolLogProps"
           :compact="false"
           mode="multi"
@@ -112,7 +116,11 @@ const placeholder = store.placeholder
 const externalToolLogs = store.externalToolLogs
 const clearExternalToolLogs = store.clearExternalToolLogs
 const fcErrorReporter = store.fcErrorReporter
+const turnConcurrency = store.turnConcurrency
 const draftActions = store.draftActions
+const actionTitleMap = store.actionTitleMap
+const actionPrefixTitleMap = store.actionPrefixTitleMap
+const actionSuffixTitleMap = store.actionSuffixTitleMap
 const sender = store.sender
 
 const externalToolLogProps = computed(() => {

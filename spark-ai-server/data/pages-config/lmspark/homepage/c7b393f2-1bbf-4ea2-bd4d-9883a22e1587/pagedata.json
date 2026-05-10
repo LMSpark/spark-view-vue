@@ -72,6 +72,30 @@
           "name": "createdAt",
           "type": "datetime",
           "label": "创建时间"
+        },
+        {
+          "name": "pendingCountFlag",
+          "type": "number",
+          "label": "待审批统计",
+          "computeExpression": "status === 'pending' ? 1 : 0"
+        },
+        {
+          "name": "approvedCountFlag",
+          "type": "number",
+          "label": "已通过统计",
+          "computeExpression": "status === 'approved' ? 1 : 0"
+        },
+        {
+          "name": "rejectedCountFlag",
+          "type": "number",
+          "label": "已拒绝统计",
+          "computeExpression": "status === 'rejected' ? 1 : 0"
+        },
+        {
+          "name": "totalCountFlag",
+          "type": "number",
+          "label": "总数统计",
+          "computeExpression": "1"
         }
       ],
       "views": {
@@ -189,7 +213,28 @@
           "autoCurrentFirst": true,
           "autoSelectFirst": true,
           "autoLoad": true,
-          "autoRefresh": true
+          "aggregates": {
+            "pendingCount": {
+              "type": "sum",
+              "field": "pendingCountFlag",
+              "label": "待审批"
+            },
+            "approvedCount": {
+              "type": "sum",
+              "field": "approvedCountFlag",
+              "label": "已通过"
+            },
+            "rejectedCount": {
+              "type": "sum",
+              "field": "rejectedCountFlag",
+              "label": "已拒绝"
+            },
+            "totalCount": {
+              "type": "sum",
+              "field": "totalCountFlag",
+              "label": "请假总计"
+            }
+          }
         }
       },
       "resourceType": "static-data",
@@ -309,5 +354,17 @@
       "dependencyType": "currentRow",
       "autoLoad": true
     }
-  ]
+  ],
+  "layout": {
+    "tablePositions": {
+      "LeaveRequests": {
+        "x": 40,
+        "y": 40
+      },
+      "LeaveTypes": {
+        "x": 360,
+        "y": 40
+      }
+    }
+  }
 }

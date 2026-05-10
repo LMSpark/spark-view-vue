@@ -16,7 +16,6 @@
           :disabled="ai.disabled.value"
           shortcut="ctrl+shift+a"
           label="AI 面板"
-          v-on="aiEvents"
         />
         <el-button
           v-if="state.hasAnyDirty.value"
@@ -138,7 +137,6 @@ import NavIcon from '@/components/NavIcon.vue'
 const {
   state,
   ai,
-  aiEvents,
   workTab,
   previewRefreshToken,
   currentWorkspaceFile,

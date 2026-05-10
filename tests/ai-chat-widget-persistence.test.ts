@@ -208,6 +208,105 @@ describe('AiChatWidget persistence', () => {
     expect((wrapper.find('.chat-textarea').element as HTMLTextAreaElement).value).toBe('第二条')
   })
 
+  it('runs configured turns concurrently with isolated base history snapshots', async () => {
+    const releases = new Map<string, () => void>()
+    const sender = vi.fn(async (request) => {
+      const prompt = request.historyMsgs.at(-1)?.content ?? ''
+      request.onDelta?.(`开始:${prompt};`)
+      await new Promise<void>((resolve) => {
+        releases.set(prompt, resolve)
+      })
+      request.onDelta?.(`结束:${prompt};`)
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-concurrent-turns',
+        turnConcurrency: { maxParallelTurns: 2 },
+      },
+    })
+
+    const textarea = wrapper.find('.chat-textarea')
+    await textarea.setValue('第一条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(sender).toHaveBeenCalledTimes(1)
+    expect(sender.mock.calls[0]?.[0].turn).toMatchObject({ seq: 1, baseRevision: 0, maxParallelTurns: 2 })
+
+    await textarea.setValue('第二条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(sender).toHaveBeenCalledTimes(2)
+    expect(sender.mock.calls[1]?.[0].turn).toMatchObject({ seq: 2, baseRevision: 0, maxParallelTurns: 2 })
+    expect(sender.mock.calls[1]?.[0].historyMsgs.map((msg: { content: string }) => msg.content)).toEqual(['第二条'])
+    expect(wrapper.text()).toContain('第一条')
+    expect(wrapper.text()).toContain('第二条')
+    expect(wrapper.text()).toContain('并行 2/2')
+
+    releases.get('第二条')?.()
+    await flushPromises()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+
+    expect(wrapper.text()).toContain('结束:第二条')
+    expect(sender).toHaveBeenCalledTimes(2)
+
+    releases.get('第一条')?.()
+    await flushPromises()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+
+    expect(wrapper.text()).toContain('结束:第一条')
+  })
+
+  it('queues overflow turns when configured and starts them after a slot frees', async () => {
+    const releases = new Map<string, () => void>()
+    const sender = vi.fn(async (request) => {
+      const prompt = request.historyMsgs.at(-1)?.content ?? ''
+      request.onDelta?.(`运行:${prompt};`)
+      await new Promise<void>((resolve) => {
+        releases.set(prompt, resolve)
+      })
+      request.onDelta?.(`完成:${prompt};`)
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-queued-turns',
+        turnConcurrency: { maxParallelTurns: 1, overflow: 'queue' },
+      },
+    })
+
+    const textarea = wrapper.find('.chat-textarea')
+    await textarea.setValue('第一条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    await textarea.setValue('第二条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(sender).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).toContain('AI 排队中')
+    expect(wrapper.text()).toContain('队列 1')
+
+    releases.get('第一条')?.()
+    await flushPromises()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+
+    expect(sender).toHaveBeenCalledTimes(2)
+    expect(sender.mock.calls[1]?.[0].historyMsgs.map((msg: { content: string }) => msg.content)).toEqual(['第二条'])
+    expect(sender.mock.calls[1]?.[0].turn).toMatchObject({ seq: 2, baseRevision: 0, maxParallelTurns: 1 })
+
+    releases.get('第二条')?.()
+    await flushPromises()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+
+    expect(wrapper.text()).toContain('完成:第二条')
+  })
+
   it('passes selected recovery and collaboration policies to the sender', async () => {
     const sender = vi.fn(async (request) => {
       request.onDelta?.('ok')

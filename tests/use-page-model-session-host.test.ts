@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const shared = vi.hoisted(() => ({
   createFetchClient: vi.fn(),
   post: vi.fn(),
+  del: vi.fn(),
   registerModule: vi.fn(),
   startInstance: vi.fn(),
   stopInstance: vi.fn(),
@@ -80,8 +81,9 @@ function mockStartedSession(moduleInstanceId: string) {
 describe('usePageModelSessionHost transport', () => {
   beforeEach(() => {
     shared.createFetchClient.mockReset()
-    shared.createFetchClient.mockReturnValue({ post: shared.post })
+    shared.createFetchClient.mockReturnValue({ post: shared.post, delete: shared.del })
     shared.post.mockReset()
+    shared.del.mockReset()
     shared.registerModule.mockReset()
     shared.startInstance.mockReset()
     shared.stopInstance.mockReset()
@@ -238,5 +240,34 @@ describe('usePageModelSessionHost transport', () => {
     expect(shared.post.mock.calls[4]?.[1]).toMatchObject({
       scope: { moduleId: 'pageDesign', moduleInstanceId: 'page-b' },
     })
+  })
+
+  it('destroys backend session before recreate to avoid stale scope reuse', async () => {
+    shared.post.mockResolvedValueOnce({ sessionId: 'backend-stale' })
+    shared.del.mockResolvedValueOnce({ ok: true })
+    shared.post.mockResolvedValueOnce({ sessionId: 'backend-new' })
+
+    const host = usePageModelSessionHost({
+      getEditToolHost: () => ({}) as never,
+      getSessionKey: () => 'orders-page',
+    })
+
+    await host.createBackendSession({
+      systemPrompt: 'system',
+      userPrompt: 'first',
+      tools: [],
+    })
+    await host.destroyBackendSession()
+    await expect(host.createBackendSession({
+      systemPrompt: 'system',
+      userPrompt: 'second',
+      tools: [],
+    })).resolves.toBe('backend-new')
+
+    expect(shared.del).toHaveBeenCalledWith(
+      '/api/ai/sessions/backend-stale',
+      undefined,
+      expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer test-token' }) }),
+    )
   })
 })

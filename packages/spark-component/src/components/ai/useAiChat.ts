@@ -1,4 +1,4 @@
-import { ref, onBeforeUnmount } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { readCache, writeCache } from './aiSessionCache'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -28,11 +28,37 @@ export interface ChatMessage {
   timestamp: Date
   /** true 表示 AI 仍在流式输出中 */
   streaming?: boolean
+  /** 归属的并发 turn。用户消息和助手占位共用同一个 turnId。 */
+  turnId?: string
+  /** 发送顺序，用于 UI 展示和上下文快照裁剪。 */
+  turnSeq?: number
+  /** turn 生命周期状态。 */
+  turnStatus?: AiTurnStatus
+  /** 本轮使用的已提交上下文修订号。 */
+  baseRevision?: number
   /** token 用量统计（流完成后填入） */
   usage?: TokenUsage
 }
 
 export type ChatMode = 'multi' | 'single'
+export type AiTurnStatus = 'queued' | 'running' | 'done' | 'error' | 'cancelled'
+export type AiTurnOverflowPolicy = 'reject' | 'queue' | 'cancel-oldest'
+
+export interface AiTurnConcurrencyConfig {
+  /** 允许同时请求 LLM 的最大 turn 数。默认 1，保持旧的串行行为。 */
+  maxParallelTurns?: number
+  /** 达到并发上限后的策略。默认 reject；queue 会排队等待空闲槽位。 */
+  overflow?: AiTurnOverflowPolicy
+}
+
+export interface AiTurnRequestMeta {
+  turnId: string
+  seq: number
+  baseRevision: number
+  queuedAt: string
+  startedAt: string
+  maxParallelTurns: number
+}
 
 export type RecoveryPolicy = 'layered' | 'manual' | 'strict'
 export type CollaborationPolicy = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
@@ -132,6 +158,7 @@ type MaybeGetter<T> = T | (() => T)
 export interface AiChatSendRequest {
   historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
   mode: ChatMode
+  turn?: AiTurnRequestMeta
   policies?: AiSessionPolicies
   systemPrompt?: string
   signal?: AbortSignal
@@ -147,6 +174,7 @@ export type AiChatSender = (request: AiChatSendRequest) => Promise<void>
 export interface StreamAiChatTextRequest {
   messages: Array<{ role: string; content: string }>
   mode?: ChatMode
+  turn?: AiTurnRequestMeta
   systemPrompt?: string
   signal?: AbortSignal
   onReasoning?: (reasoning: string) => void
@@ -165,6 +193,7 @@ export interface UseAiChatOptions {
   sessionConfig?: MaybeGetter<AiSessionMetaConfig | undefined>
   defaultRecoveryPolicy?: MaybeGetter<RecoveryPolicy | undefined>
   defaultCollaborationPolicy?: MaybeGetter<CollaborationPolicy | undefined>
+  turnConcurrency?: MaybeGetter<AiTurnConcurrencyConfig | undefined>
   streamAiChatText?: StreamAiChatText | undefined
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
@@ -405,14 +434,60 @@ export function useAiChat(options?: UseAiChatOptions) {
   const recoveryPolicy = ref<RecoveryPolicy>(initialSnapshot.policies.recovery)
   const collaborationPolicy = ref<CollaborationPolicy>(initialSnapshot.policies.collaboration)
   const isStreaming = ref(false)
+  const activeTurnCount = ref(0)
+  const queuedTurnCount = ref(0)
   const error = ref<string | null>(null)
   const PERSIST_DEBOUNCE_MS = 80
   const TYPEWRITER_INTERVAL_MS = 16
   const TYPEWRITER_CHARS_PER_TICK = 4
   let persistTimer: ReturnType<typeof setTimeout> | undefined
-  let typewriterTimer: ReturnType<typeof setTimeout> | undefined
-  let typewriterQueue = ''
-  let typewriterTarget: ChatMessage | null = null
+  const typewriterStates = new Map<string, {
+    target: ChatMessage
+    queue: string
+    timer: ReturnType<typeof setTimeout> | undefined
+  }>()
+  const runningTurns = new Map<string, {
+    turnId: string
+    seq: number
+    abortController: AbortController
+    userMsg: ChatMessage
+    assistantMsg: ChatMessage
+  }>()
+  const queuedTurns: PendingTurn[] = []
+  let nextTurnSeq = Math.max(0, ...messages.value.map((message) => message.turnSeq ?? 0)) + 1
+
+  interface NormalizedTurnConcurrency {
+    maxParallelTurns: number
+    overflow: AiTurnOverflowPolicy
+  }
+
+  interface PendingTurn {
+    turnId: string
+    seq: number
+    baseRevision: number
+    queuedAt: string
+    mode: ChatMode
+    systemPrompt?: string
+    sender: AiChatSender | undefined
+    historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
+    userMsg: ChatMessage
+    assistantMsg: ChatMessage
+    resolve?: () => void
+  }
+
+  function getTurnConcurrency(): NormalizedTurnConcurrency {
+    const raw = resolveOption(options?.turnConcurrency)
+    const maxParallelTurns = Math.max(1, Math.floor(raw?.maxParallelTurns ?? 1))
+    const overflow = raw?.overflow ?? 'reject'
+    return { maxParallelTurns, overflow }
+  }
+
+  const maxParallelTurns = computed(() => getTurnConcurrency().maxParallelTurns)
+  const canSend = computed(() => {
+    const concurrency = getTurnConcurrency()
+    if (concurrency.overflow !== 'reject') return true
+    return activeTurnCount.value < concurrency.maxParallelTurns
+  })
 
   function buildSessionSnapshot(): AiSessionSnapshot {
     return {
@@ -477,47 +552,75 @@ export function useAiChat(options?: UseAiChatOptions) {
     schedulePersistedSession(persistOptions?.delayMs)
   }
 
-  function clearTypewriterTimer(): void {
-    if (typewriterTimer === undefined) return
-    clearTimeout(typewriterTimer)
-    typewriterTimer = undefined
+  function syncTurnCounters(): void {
+    activeTurnCount.value = runningTurns.size
+    queuedTurnCount.value = queuedTurns.length
+    isStreaming.value = runningTurns.size > 0 || queuedTurns.length > 0
   }
 
-  function drainTypewriterQueue(): void {
-    typewriterTimer = undefined
-    if (typewriterTarget === null || typewriterQueue === '') return
+  function clearTypewriterTimer(messageId: string): void {
+    const state = typewriterStates.get(messageId)
+    if (state?.timer === undefined) return
+    clearTimeout(state.timer)
+    state.timer = undefined
+  }
 
-    const chunk = typewriterQueue.slice(0, TYPEWRITER_CHARS_PER_TICK)
-    typewriterQueue = typewriterQueue.slice(chunk.length)
-    typewriterTarget.content += chunk
+  function drainTypewriterQueue(messageId: string): void {
+    const state = typewriterStates.get(messageId)
+    if (state === undefined) return
+    state.timer = undefined
+    if (state.queue === '') return
+
+    const chunk = state.queue.slice(0, TYPEWRITER_CHARS_PER_TICK)
+    state.queue = state.queue.slice(chunk.length)
+    state.target.content += chunk
     syncPersistedSession()
 
-    if (typewriterQueue !== '') {
-      typewriterTimer = setTimeout(drainTypewriterQueue, TYPEWRITER_INTERVAL_MS)
+    if (state.queue !== '') {
+      state.timer = setTimeout(() => drainTypewriterQueue(messageId), TYPEWRITER_INTERVAL_MS)
     }
+  }
+
+  function getTypewriterState(target: ChatMessage): {
+    target: ChatMessage
+    queue: string
+    timer: ReturnType<typeof setTimeout> | undefined
+  } {
+    const existing = typewriterStates.get(target.id)
+    if (existing !== undefined) return existing
+    const next = { target, queue: '', timer: undefined }
+    typewriterStates.set(target.id, next)
+    return next
   }
 
   function enqueueAssistantDelta(target: ChatMessage, delta: string): void {
     if (delta === '') return
-    typewriterTarget = target
-    typewriterQueue += delta
-    typewriterTimer ??= setTimeout(drainTypewriterQueue, TYPEWRITER_INTERVAL_MS)
+    const state = getTypewriterState(target)
+    state.queue += delta
+    state.timer ??= setTimeout(() => drainTypewriterQueue(target.id), TYPEWRITER_INTERVAL_MS)
   }
 
-  function flushAssistantTypewriter(): void {
-    clearTypewriterTimer()
-    if (typewriterTarget !== null && typewriterQueue !== '') {
-      typewriterTarget.content += typewriterQueue
-      typewriterQueue = ''
-      syncPersistedSession()
+  function flushAssistantTypewriter(target?: ChatMessage): void {
+    const ids = target !== undefined ? [target.id] : Array.from(typewriterStates.keys())
+    for (const id of ids) {
+      const state = typewriterStates.get(id)
+      if (state === undefined) continue
+      clearTypewriterTimer(id)
+      if (state.queue !== '') {
+        state.target.content += state.queue
+        state.queue = ''
+        syncPersistedSession()
+      }
+      typewriterStates.delete(id)
     }
-    typewriterTarget = null
   }
 
-  function cancelAssistantTypewriter(): void {
-    clearTypewriterTimer()
-    typewriterQueue = ''
-    typewriterTarget = null
+  function cancelAssistantTypewriter(target?: ChatMessage): void {
+    const ids = target !== undefined ? [target.id] : Array.from(typewriterStates.keys())
+    for (const id of ids) {
+      clearTypewriterTimer(id)
+      typewriterStates.delete(id)
+    }
   }
 
   function appendToolLog(entry: Omit<ToolLogEntry, 'timestamp'>): void {
@@ -608,88 +711,88 @@ export function useAiChat(options?: UseAiChatOptions) {
     syncPersistedSession()
   }
 
-  /** 当前活跃 SSE 流的 AbortController（用于取消在途请求） */
-  let abortController: AbortController | null = null
+  function getFirstUnsettledSeq(): number | undefined {
+    const seqs = [
+      ...Array.from(runningTurns.values()).map((turn) => turn.seq),
+      ...queuedTurns.map((turn) => turn.seq),
+    ]
+    return seqs.length > 0 ? Math.min(...seqs) : undefined
+  }
 
-  /** 组件卸载时中止活跃流 */
-  onBeforeUnmount(() => {
-    flushAssistantTypewriter()
-    flushPersistedSession()
-    abortController?.abort()
-    abortController = null
-  })
+  function isCommittedHistoryMessage(message: ChatMessage, firstUnsettledSeq: number | undefined): boolean {
+    if (message.content.trim() === '') return false
+    if (message.streaming === true) return false
+    if (message.turnStatus === 'queued' || message.turnStatus === 'running') return false
+    if (firstUnsettledSeq !== undefined && (message.turnSeq ?? 0) >= firstUnsettledSeq) return false
+    return true
+  }
 
-  // ── 发送文本消息（可携带附件） ────────────────────────────────────────────
+  function withAttachmentText(content: string, attachments?: FileAttachment[]): string {
+    if (attachments === undefined || attachments.length === 0) return content
+    const attachDesc = attachments.map((attachment) => `[附件: ${attachment.name}]`).join(' ')
+    return content.trim() === '' ? attachDesc : `${content}\n${attachDesc}`
+  }
 
-  async function send(text: string, attachments?: FileAttachment[]) {
-    const trimmed = text.trim()
-    if (!trimmed && !attachments?.length) return
-    if (isStreaming.value) return
-
-    const mode = getMode()
-    const systemPrompt = getSystemPrompt()
-    const sender = getSender()
-
-    error.value = null
-    isStreaming.value = true
-
-    // 添加用户消息
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: trimmed,
-      ...(attachments !== undefined ? { attachments } : {}),
-      timestamp: new Date(),
+  function buildHistoryMsgs(
+    mode: ChatMode,
+    content: string,
+    attachments?: FileAttachment[],
+  ): Array<{ role: 'user' | 'assistant' | 'system'; content: string }> {
+    const currentUserContent = withAttachmentText(content, attachments)
+    if (mode === 'single') {
+      return [{ role: 'user', content: currentUserContent }]
     }
-    messages.value.push(userMsg)
+
+    const firstUnsettledSeq = getFirstUnsettledSeq()
+    const committed = messages.value
+      .filter((message) => isCommittedHistoryMessage(message, firstUnsettledSeq))
+      .map((message) => ({ role: message.role, content: message.content }))
+    return [...committed, { role: 'user', content: currentUserContent }]
+  }
+
+  function findOldestRunningTurn() {
+    return Array.from(runningTurns.values()).sort((a, b) => a.seq - b.seq)[0]
+  }
+
+  function drainQueuedTurns(): void {
+    const concurrency = getTurnConcurrency()
+    while (runningTurns.size < concurrency.maxParallelTurns && queuedTurns.length > 0) {
+      const next = queuedTurns.shift()
+      if (next === undefined) break
+      void startTurn(next)
+    }
+    syncTurnCounters()
+  }
+
+  async function startTurn(turn: PendingTurn): Promise<void> {
+    const concurrency = getTurnConcurrency()
+    const abortController = new AbortController()
+    const startedAt = new Date().toISOString()
+    turn.userMsg.turnStatus = 'running'
+    turn.assistantMsg.turnStatus = 'running'
+    turn.assistantMsg.streaming = true
+    runningTurns.set(turn.turnId, {
+      turnId: turn.turnId,
+      seq: turn.seq,
+      abortController,
+      userMsg: turn.userMsg,
+      assistantMsg: turn.assistantMsg,
+    })
+    syncTurnCounters()
     syncPersistedSession()
 
-    // 准备 AI 回复占位
-    const assistantMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      streaming: true,
-    }
-    messages.value.push(assistantMsg)
-    syncPersistedSession()
-    // 从 reactive 数组取回 proxy 引用，确保后续属性修改触发 Vue 响应式更新
-    const reactiveMsg = messages.value[messages.value.length - 1] as ChatMessage
-
+    let failed = false
+    let cancelled = false
     try {
-      // 多轮模式：把所有历史（除最后一条助手占位）发给后端
-      // 单轮模式：只发当前用户消息
-      const historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> =
-        mode === 'multi'
-          ? messages.value
-              .slice(0, -1) // 去掉刚插入的助手占位
-              .map((m) => ({ role: m.role, content: m.content }))
-          : [{ role: 'user', content: trimmed }]
-
-      // 附件信息拼接到最后一条用户消息内容（文本化描述，LLM 无法理解二进制附件）
-      if (attachments !== undefined && attachments.length > 0) {
-        const lastUserIdx = historyMsgs.length - 1
-        const last = historyMsgs[lastUserIdx]
-        if (last !== undefined) {
-          const attachDesc = attachments.map((a) => `[附件: ${a.name}]`).join(' ')
-          historyMsgs[lastUserIdx] = {
-            ...last,
-            content: `${last.content}\n${attachDesc}`,
-          }
-        }
-      }
-
-      abortController = new AbortController()
       const onReasoning = (reasoning: string) => {
-        reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
+        turn.assistantMsg.reasoning = (turn.assistantMsg.reasoning ?? '') + reasoning
         syncPersistedSession()
       }
       const onDelta = (delta: string) => {
-        enqueueAssistantDelta(reactiveMsg, delta)
+        enqueueAssistantDelta(turn.assistantMsg, delta)
       }
       const onUsage = (usageRaw: Record<string, unknown>) => {
-        reactiveMsg.usage = getParseTokenUsage()(usageRaw)
+        turn.assistantMsg.usage = getParseTokenUsage()(usageRaw)
         syncPersistedSession()
       }
       const onSseEvent = (event: AiSseEventInput) => {
@@ -699,16 +802,24 @@ export function useAiChat(options?: UseAiChatOptions) {
         appendFcCall(record)
       }
 
-      if (sender !== undefined) {
-        await sender({
-          historyMsgs,
-          mode,
+      if (turn.sender !== undefined) {
+        await turn.sender({
+          historyMsgs: turn.historyMsgs,
+          mode: turn.mode,
+          turn: {
+            turnId: turn.turnId,
+            seq: turn.seq,
+            baseRevision: turn.baseRevision,
+            queuedAt: turn.queuedAt,
+            startedAt,
+            maxParallelTurns: concurrency.maxParallelTurns,
+          },
           policies: {
             recovery: recoveryPolicy.value,
             collaboration: collaborationPolicy.value,
           },
           signal: abortController.signal,
-          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          ...(turn.systemPrompt !== undefined ? { systemPrompt: turn.systemPrompt } : {}),
           onReasoning,
           onDelta,
           onUsage,
@@ -717,10 +828,18 @@ export function useAiChat(options?: UseAiChatOptions) {
         })
       } else if (options?.streamAiChatText) {
         await options.streamAiChatText({
-          messages: historyMsgs,
-          mode,
+          messages: turn.historyMsgs,
+          mode: turn.mode,
+          turn: {
+            turnId: turn.turnId,
+            seq: turn.seq,
+            baseRevision: turn.baseRevision,
+            queuedAt: turn.queuedAt,
+            startedAt,
+            maxParallelTurns: concurrency.maxParallelTurns,
+          },
           signal: abortController.signal,
-          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          ...(turn.systemPrompt !== undefined ? { systemPrompt: turn.systemPrompt } : {}),
           onReasoning,
           onDelta,
           onUsage,
@@ -729,20 +848,139 @@ export function useAiChat(options?: UseAiChatOptions) {
         throw new Error('[useAiChat] 缺少 sender 或 streamAiChatText 依赖。')
       }
     } catch (e) {
-      cancelAssistantTypewriter()
-      const msg = e instanceof Error ? e.message : '请求失败'
-      error.value = msg
-      reactiveMsg.content = `⚠️ ${msg}`
-      appendToolLog({ type: 'error', tag: 'chat-error', text: msg })
-      syncPersistedSession()
+      cancelled = abortController.signal.aborted
+      if (!cancelled) {
+        failed = true
+        cancelAssistantTypewriter(turn.assistantMsg)
+        const msg = e instanceof Error ? e.message : '请求失败'
+        error.value = msg
+        turn.assistantMsg.content = `⚠️ ${msg}`
+        appendToolLog({ type: 'error', tag: 'chat-error', text: msg })
+        syncPersistedSession()
+      }
     } finally {
-      flushAssistantTypewriter()
-      abortController = null
-      reactiveMsg.streaming = false
-      isStreaming.value = false
-      // 每轮会话结束后立即落盘，确保关闭面板前已持久化本轮完整结果。
-      syncPersistedSession({ flush: true })
+      flushAssistantTypewriter(turn.assistantMsg)
+      runningTurns.delete(turn.turnId)
+      turn.assistantMsg.streaming = false
+      const status: AiTurnStatus = failed ? 'error' : (cancelled ? 'cancelled' : 'done')
+      turn.userMsg.turnStatus = status
+      turn.assistantMsg.turnStatus = status
+      syncTurnCounters()
+      // 所有在途/排队 turn 都结束后立即落盘，确保关闭面板前已持久化完整结果。
+      syncPersistedSession({ flush: runningTurns.size === 0 && queuedTurns.length === 0 })
+      drainQueuedTurns()
+      turn.resolve?.()
     }
+  }
+
+  function queueTurn(turn: PendingTurn): Promise<void> {
+    return new Promise((resolve) => {
+      turn.resolve = resolve
+      queuedTurns.push(turn)
+      turn.userMsg.turnStatus = 'queued'
+      turn.assistantMsg.turnStatus = 'queued'
+      turn.assistantMsg.streaming = true
+      syncTurnCounters()
+      syncPersistedSession()
+    })
+  }
+
+  function scheduleTurn(turn: PendingTurn): Promise<void> {
+    const concurrency = getTurnConcurrency()
+    if (runningTurns.size < concurrency.maxParallelTurns) {
+      return startTurn(turn)
+    }
+    if (concurrency.overflow === 'queue') {
+      return queueTurn(turn)
+    }
+    if (concurrency.overflow === 'cancel-oldest') {
+      findOldestRunningTurn()?.abortController.abort()
+      return queueTurn(turn)
+    }
+    turn.userMsg.turnStatus = 'cancelled'
+    turn.assistantMsg.turnStatus = 'cancelled'
+    turn.assistantMsg.streaming = false
+    return Promise.resolve()
+  }
+
+  /** 组件卸载时中止所有活跃流 */
+  onBeforeUnmount(() => {
+    flushAssistantTypewriter()
+    flushPersistedSession()
+    for (const turn of runningTurns.values()) {
+      turn.abortController.abort()
+    }
+    for (const turn of queuedTurns) {
+      turn.userMsg.turnStatus = 'cancelled'
+      turn.assistantMsg.turnStatus = 'cancelled'
+      turn.assistantMsg.streaming = false
+      turn.resolve?.()
+    }
+    runningTurns.clear()
+    queuedTurns.length = 0
+    syncTurnCounters()
+  })
+
+  // ── 发送文本消息（可携带附件） ────────────────────────────────────────────
+
+  async function send(text: string, attachments?: FileAttachment[]) {
+    const trimmed = text.trim()
+    if (!trimmed && !attachments?.length) return
+
+    const concurrency = getTurnConcurrency()
+    if (concurrency.overflow === 'reject' && runningTurns.size >= concurrency.maxParallelTurns) return
+
+    const mode = getMode()
+    const systemPrompt = getSystemPrompt()
+    const sender = getSender()
+    const historyMsgs = buildHistoryMsgs(mode, trimmed, attachments)
+    const turnId = crypto.randomUUID()
+    const seq = nextTurnSeq++
+    const baseRevision = Math.max(0, historyMsgs.length - 1)
+    const queuedAt = new Date().toISOString()
+
+    error.value = null
+
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmed,
+      ...(attachments !== undefined ? { attachments } : {}),
+      timestamp: new Date(),
+      turnId,
+      turnSeq: seq,
+      turnStatus: 'queued',
+      baseRevision,
+    }
+    messages.value.push(userMsg)
+
+    const assistantMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      streaming: true,
+      turnId,
+      turnSeq: seq,
+      turnStatus: 'queued',
+      baseRevision,
+    }
+    messages.value.push(assistantMsg)
+    const reactiveUserMsg = messages.value[messages.value.length - 2] as ChatMessage
+    const reactiveAssistantMsg = messages.value[messages.value.length - 1] as ChatMessage
+
+    await scheduleTurn({
+      turnId,
+      seq,
+      baseRevision,
+      queuedAt,
+      mode,
+      ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+      sender,
+      historyMsgs,
+      userMsg: reactiveUserMsg,
+      assistantMsg: reactiveAssistantMsg,
+    })
   }
 
   // ── 文件上传 ─────────────────────────────────────────────────────────────
@@ -757,14 +995,20 @@ export function useAiChat(options?: UseAiChatOptions) {
   // ── 清空会话 ─────────────────────────────────────────────────────────────
 
   function clearMessages() {
-    // 中止活跃 SSE 流，防止 orphaned 写入（流仍持有旧 reactiveMsg 引用）
-    abortController?.abort()
-    abortController = null
+    // 中止全部活跃 SSE 流，防止 orphaned 写入（流仍持有旧 reactiveMsg 引用）
+    for (const turn of runningTurns.values()) {
+      turn.abortController.abort()
+    }
+    for (const turn of queuedTurns) {
+      turn.resolve?.()
+    }
+    runningTurns.clear()
+    queuedTurns.length = 0
     cancelAssistantTypewriter()
     messages.value = []
     sseEvents.value = []
     error.value = null
-    isStreaming.value = false
+    syncTurnCounters()
     syncPersistedSession({ flush: true })
   }
 
@@ -788,6 +1032,10 @@ export function useAiChat(options?: UseAiChatOptions) {
     collaborationPolicy,
     messages,
     isStreaming,
+    activeTurnCount,
+    queuedTurnCount,
+    maxParallelTurns,
+    canSend,
     error,
     appendToolLog,
     appendSseEvent,

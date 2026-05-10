@@ -284,13 +284,100 @@ export class FetchClient extends HttpClientBase implements FetchHttpClient {
 
   private async buildHttpError(response: Response, config: RequestConfig): Promise<RequestError> {
     let body: unknown
-    try { body = await response.json() } catch { /* 非 JSON 响应体 */ }
+    try {
+      body = await response.clone().json()
+    } catch {
+      try {
+        body = await response.clone().text()
+      } catch {
+        body = undefined
+      }
+    }
+
+    const message = this.extractErrorMessage(body) ?? `HTTP ${response.status}: ${response.statusText}`
 
     return this.buildRequestError(
-      `HTTP ${response.status}: ${response.statusText}`,
+      message,
       config,
       { code: `ERR_HTTP_${response.status}`, status: response.status, response: body },
     )
+  }
+
+  private extractErrorMessage(body: unknown): string | undefined {
+    if (typeof body === 'string') {
+      const trimmed = body.trim()
+      return trimmed.length > 0 ? trimmed : undefined
+    }
+
+    if (body === null || typeof body !== 'object') {
+      return undefined
+    }
+
+    const record = body as Record<string, unknown>
+    const message = record['message']
+    if (typeof message === 'string' && message.trim() !== '') {
+      return message.trim()
+    }
+
+    const error = record['error']
+    if (error !== null && typeof error === 'object') {
+      const errorRecord = error as Record<string, unknown>
+      const nestedMessage = errorRecord['message']
+      if (typeof nestedMessage === 'string' && nestedMessage.trim() !== '') {
+        return nestedMessage.trim()
+      }
+
+      const synthesized = this.synthesizeEnvelopeErrorMessage(record, errorRecord)
+      if (synthesized !== undefined) {
+        return synthesized
+      }
+    }
+
+    return undefined
+  }
+
+  private synthesizeEnvelopeErrorMessage(
+    body: Record<string, unknown>,
+    error: Record<string, unknown>,
+  ): string | undefined {
+    const code = typeof error['code'] === 'string' ? error['code'] : undefined
+    if (code === undefined) {
+      return undefined
+    }
+
+    const base = this.describeErrorCode(code)
+    const handoff = body['handoff']
+    const nextAction = handoff !== null && typeof handoff === 'object'
+      ? (handoff as Record<string, unknown>)['nextAction']
+      : undefined
+
+    if (typeof nextAction === 'string' && nextAction.trim() !== '') {
+      return `${base}：${nextAction.trim()}`
+    }
+    return base
+  }
+
+  private describeErrorCode(code: string): string {
+    switch (code) {
+      case 'SESSION_SCOPE_MISMATCH':
+        return '后端 AI 会话与当前模块实例不匹配'
+      case 'HANDOFF_REQUIRED':
+        return 'AI 会话已进入人工接管状态'
+      case 'INVALID_STATE_TRANSITION':
+        return 'AI 会话状态迁移非法'
+      case 'PARALLEL_WRITE_BUDGET_EXCEEDED':
+        return '本轮写操作超出并行预算'
+      case 'PARALLEL_WRITE_NOT_ALLOWED_STAGE1':
+        return '当前阶段不允许并行写操作'
+      case 'IDEMPOTENCY_REPLAY_BLOCKED':
+        return '请求被幂等保护阻止重放'
+      case 'DUPLICATE_TOOL_CALL_ID':
+        return '检测到重复的工具调用 ID'
+      case 'LLM_CALL_FAILED':
+        return 'LLM 调用失败'
+      default:
+        return code
+    }
   }
 
   private extractHeaders(headers: Headers): Record<string, string> {

@@ -4,6 +4,10 @@
     :pending-files="pendingFiles"
     :input-text="inputText"
     :is-streaming="isStreaming"
+    :active-turn-count="activeTurnCount"
+    :queued-turn-count="queuedTurnCount"
+    :max-parallel-turns="maxParallelTurns"
+    :can-send="canSend"
     :is-recording="isRecording"
     :error="error"
     :sse-events="sseEvents"
@@ -37,6 +41,7 @@ import type {
   ChatMode,
   FileAttachment,
   AiChatSender,
+  AiTurnConcurrencyConfig,
   AiFcErrorReporter,
   StreamAiChatText,
   TokenUsage,
@@ -57,16 +62,23 @@ const props = defineProps<{
   externalToolLogs?: Array<{ type: 'info' | 'success' | 'error'; tag: string; text: string; timestamp?: string }>
   clearExternalToolLogs?: (() => void) | undefined
   reportFcError?: AiFcErrorReporter | undefined
+  turnConcurrency?: AiTurnConcurrencyConfig | undefined
   streamAiChatText?: StreamAiChatText | undefined
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
   draftActions?: readonly AiDraftActionConfig[] | undefined
+  actionTitleMap?: Record<string, string> | undefined
+  actionPrefixTitleMap?: Record<string, string> | undefined
+  actionSuffixTitleMap?: Record<string, string> | undefined
 }>()
 
 const optionalShellProps = computed(() => ({
   ...(props.title !== undefined ? { title: props.title } : {}),
   ...(props.placeholder !== undefined ? { placeholder: props.placeholder } : {}),
   ...(props.compact !== undefined ? { compact: props.compact } : {}),
+  ...(props.actionTitleMap !== undefined ? { actionTitleMap: props.actionTitleMap } : {}),
+  ...(props.actionPrefixTitleMap !== undefined ? { actionPrefixTitleMap: props.actionPrefixTitleMap } : {}),
+  ...(props.actionSuffixTitleMap !== undefined ? { actionSuffixTitleMap: props.actionSuffixTitleMap } : {}),
 }))
 
 const shellProps = computed(() => ({
@@ -88,6 +100,10 @@ const toolLogProps = computed(() => {
 const {
   messages,
   isStreaming,
+  activeTurnCount,
+  queuedTurnCount,
+  maxParallelTurns,
+  canSend,
   error,
   send,
   uploadFile,
@@ -108,6 +124,7 @@ const {
   sender: () => props.sender,
   pageId: () => props.pageId,
   storageKey: () => props.storageKey,
+  turnConcurrency: () => props.turnConcurrency,
   streamAiChatText: props.streamAiChatText,
   parseTokenUsage: props.parseTokenUsage,
   uploadFile: props.uploadFile,
@@ -212,7 +229,7 @@ async function handleSend() {
   const files = pendingFiles.value.length > 0 ? [...pendingFiles.value] : undefined
 
   if (text === '' && files === undefined) return
-  if (isStreaming.value) return
+  if (!canSend.value) return
 
   inputText.value = ''
   pendingFiles.value = []

@@ -11,8 +11,8 @@
  * 4. DevSystem 投影：生成类型列表、属性名、枚举映射、默认值映射。
  *
  * 主要消费场景：
- * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（knowledge.queryPayloads /
- *    knowledge.guidePayload）提供精简、无冗余的组件视图，最小化 Token 开销。
+ * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（queryPayloads /
+ *    guidePayload）提供精简、无冗余的组件视图，最小化 Token 开销。
  * 2. DevSystem（开发者平台）场景——为 rule.json 内建的图形化配置编辑器提供组件选取、属性下拉、
  *    枚举推断与默认值提示等元数据结构。
  *
@@ -41,7 +41,7 @@ import type { FunctionCatalog, FunctionComponentEntry } from './function-catalog
 /**
  * LLM 目录摘要负载——告知大模型当前应用环境可用的全部组件总览。
  *
- * 由 `projectComponentDirectory` 生成，适合作为 knowledge.queryPayloads 的响应体直接返回。
+ * 由 `projectComponentDirectory` 生成，适合作为 queryPayloads 的响应体直接返回。
  * 包含：组件总数统计、registry 分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
  * 以及面向 LLM 的配置使用原则。
  */
@@ -81,7 +81,7 @@ export interface ComponentDirectoryPayload {
 /**
  * 单组件能力核心规格——剔除复杂 Schema 引用后的精简形态，专为 AI 生成 UI 配置设计。
  *
- * 由 `projectComponentSpec` 生成，适合作为 knowledge.guidePayload 的消费目标。
+ * 由 `projectComponentSpec` 生成，适合作为 guidePayload 的消费目标。
  * LLM 可依据此结构选择组件 type、填写 props、绑定事件。
  */
 export interface ComponentSpec {
@@ -733,7 +733,7 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
 // =========================================================
 
 /**
- * AI FC 投影：生成全局组件目录摘要（适用于 knowledge.queryPayloads）。
+ * AI FC 投影：生成全局组件目录摘要（适用于 queryPayloads）。
  *
  * 输出内容：
  * - 各分类组件数量汇总（total / containers / fields / groups / meta / features）；
@@ -775,7 +775,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     .sort((a, b) => a.localeCompare(b))
 
   return {
-    hint: 'knowledge.queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 knowledge.guidePayload 查阅配置指南。',
+    hint: 'queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 guidePayload 查阅配置指南。',
     summary: {
       total: catalog.componentCount,
       containers: registry.containers.length,
@@ -807,7 +807,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
 }
 
 /**
- * AI FC 投影：提炼单组件能力核心规格（适用于 knowledge.guidePayload）。
+ * AI FC 投影：提炼单组件能力核心规格（适用于 guidePayload）。
  *
  * 输出精简的 ComponentSpec，仅保留 LLM 构造 SparkNode 所需的最小信息：
  * type / category / description / props（含必填标记）/ emits（含描述）。

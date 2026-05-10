@@ -63,6 +63,8 @@ export interface PageModelSessionHost {
     metadata?: Record<string, unknown>
   }) => Promise<AiRuntimeMessageHistoryEntry>
   setBackendSessionId: (sessionId: string | undefined, scopeKey?: string) => void
+  destroyBackendSession: (scopeKey?: string, signal?: AbortSignal) => Promise<void>
+  destroyBackendSessionById: (sessionId: string, signal?: AbortSignal) => Promise<void>
   getResumeSessionOptions: (scopeKey?: string) => { resumeSessionId?: string }
   hasSessionMismatch: (sessionKey?: string) => boolean
   createBackendSession: (options: {
@@ -70,6 +72,8 @@ export interface PageModelSessionHost {
     systemPrompt: string
     userPrompt: string
     tools: ReadonlyArray<Record<string, unknown>>
+    reuseScopeSession?: boolean
+    bindToScope?: boolean
     signal?: AbortSignal
   }) => Promise<string>
   executeFunctionCall: (options: {
@@ -78,8 +82,13 @@ export interface PageModelSessionHost {
     action: string
     args: unknown
   }) => Promise<{ result: AiRuntimeFunctionCallResult<unknown> }>
-  appendBackendMessages: (messages: readonly PageModelBackendMessage[], signal?: AbortSignal, scopeKey?: string) => Promise<void>
-  executeBackendTurn: (signal?: AbortSignal, scopeKey?: string) => Promise<PageModelBackendTurnResult>
+  appendBackendMessages: (
+    messages: readonly PageModelBackendMessage[],
+    signal?: AbortSignal,
+    scopeKey?: string,
+    backendSessionId?: string,
+  ) => Promise<void>
+  executeBackendTurn: (signal?: AbortSignal, scopeKey?: string, backendSessionId?: string) => Promise<PageModelBackendTurnResult>
 }
 
 function createScopeKey(moduleId: string, moduleInstanceId: string): string {
@@ -203,6 +212,28 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     backendSessionIdsByScopeKey.set(scopeKey, sessionId)
   }
 
+  async function destroyBackendSession(scopeKey = getCurrentScopeKey(), signal?: AbortSignal): Promise<void> {
+    if (scopeKey === undefined) return
+    const backendSessionId = backendSessionIdsByScopeKey.get(scopeKey)
+    backendSessionIdsByScopeKey.delete(scopeKey)
+    if (backendSessionId === undefined) return
+    try {
+      await http.delete(`/api/ai/sessions/${backendSessionId}`, undefined, {
+        headers: {
+          ...createAuthHeaders(),
+        },
+        ...(signal !== undefined ? { signal } : {}),
+      })
+    } catch (error) {
+      const status = typeof error === 'object' && error !== null && 'status' in error
+        ? (error as { status?: unknown }).status
+        : undefined
+      if (status !== 404) {
+        throw error
+      }
+    }
+  }
+
   function getResumeSessionOptions(scopeKey = getCurrentScopeKey()): { resumeSessionId?: string } {
     if (scopeKey === undefined) return {}
     const backendSessionId = backendSessionIdsByScopeKey.get(scopeKey)
@@ -218,12 +249,17 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     systemPrompt: string
     userPrompt: string
     tools: ReadonlyArray<Record<string, unknown>>
+    reuseScopeSession?: boolean
+    bindToScope?: boolean
     signal?: AbortSignal
   }): Promise<string> {
     const sessionContext = backendOptions.context ?? context.value ?? await ensureSession()
     const trace = createTraceScope(sessionContext)
+    const reuseScopeSession = backendOptions.reuseScopeSession ?? true
+    const bindToScope = backendOptions.bindToScope ?? true
     const response = await http.post<{ sessionId: string }>('/api/ai/sessions', {
       protocolVersion: 3,
+      reuseScopeSession,
       scope: trace,
       metadata: {
         source: 'dev-system-page-model',
@@ -241,21 +277,51 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
       },
       ...(backendOptions.signal !== undefined ? { signal: backendOptions.signal } : {}),
     })
-    backendSessionIdsByScopeKey.set(sessionContext.scopeKey, response.sessionId)
+    if (bindToScope) {
+      backendSessionIdsByScopeKey.set(sessionContext.scopeKey, response.sessionId)
+    }
     return response.sessionId
   }
 
-  async function appendBackendMessages(messages: readonly PageModelBackendMessage[], signal?: AbortSignal, scopeKey = getCurrentScopeKey()): Promise<void> {
+  async function destroyBackendSessionById(sessionId: string, signal?: AbortSignal): Promise<void> {
+    for (const [scopeKey, value] of backendSessionIdsByScopeKey.entries()) {
+      if (value === sessionId) {
+        backendSessionIdsByScopeKey.delete(scopeKey)
+      }
+    }
+    try {
+      await http.delete(`/api/ai/sessions/${sessionId}`, undefined, {
+        headers: {
+          ...createAuthHeaders(),
+        },
+        ...(signal !== undefined ? { signal } : {}),
+      })
+    } catch (error) {
+      const status = typeof error === 'object' && error !== null && 'status' in error
+        ? (error as { status?: unknown }).status
+        : undefined
+      if (status !== 404) {
+        throw error
+      }
+    }
+  }
+
+  async function appendBackendMessages(
+    messages: readonly PageModelBackendMessage[],
+    signal?: AbortSignal,
+    scopeKey = getCurrentScopeKey(),
+    backendSessionId?: string,
+  ): Promise<void> {
     const sessionContext = resolveContext(scopeKey)
     if (sessionContext === null) {
       throw new Error('追加 AI 会话消息失败：页面模型会话尚未启动。')
     }
-    const backendSessionId = backendSessionIdsByScopeKey.get(sessionContext.scopeKey)
-    if (backendSessionId === undefined) {
+    const targetSessionId = backendSessionId ?? backendSessionIdsByScopeKey.get(sessionContext.scopeKey)
+    if (targetSessionId === undefined) {
       throw new Error('追加 AI 会话消息失败：后端 session 尚未创建。')
     }
     const trace = createTraceScope(sessionContext)
-    await http.post(`/api/ai/sessions/${backendSessionId}/append`, {
+    await http.post(`/api/ai/sessions/${targetSessionId}/append`, {
       protocolVersion: 3,
       scope: trace,
       messages,
@@ -288,17 +354,21 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     return { result }
   }
 
-  async function executeBackendTurn(signal?: AbortSignal, scopeKey = getCurrentScopeKey()): Promise<PageModelBackendTurnResult> {
+  async function executeBackendTurn(
+    signal?: AbortSignal,
+    scopeKey = getCurrentScopeKey(),
+    backendSessionId?: string,
+  ): Promise<PageModelBackendTurnResult> {
     const sessionContext = resolveContext(scopeKey)
     if (sessionContext === null) {
       throw new Error('执行 AI 会话轮次失败：页面模型会话尚未启动。')
     }
-    const backendSessionId = backendSessionIdsByScopeKey.get(sessionContext.scopeKey)
-    if (backendSessionId === undefined) {
+    const targetSessionId = backendSessionId ?? backendSessionIdsByScopeKey.get(sessionContext.scopeKey)
+    if (targetSessionId === undefined) {
       throw new Error('执行 AI 会话轮次失败：后端 session 尚未创建。')
     }
     const trace = createTraceScope(sessionContext)
-    return await http.post<PageModelBackendTurnResult>(`/api/ai/sessions/${backendSessionId}/turn`, {
+    return await http.post<PageModelBackendTurnResult>(`/api/ai/sessions/${targetSessionId}/turn`, {
       protocolVersion: 3,
       scope: trace,
       stream: false,
@@ -322,6 +392,8 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     resetSync,
     appendRuntimeMessage,
     setBackendSessionId,
+    destroyBackendSession,
+    destroyBackendSessionById,
     getResumeSessionOptions,
     hasSessionMismatch,
     createBackendSession,

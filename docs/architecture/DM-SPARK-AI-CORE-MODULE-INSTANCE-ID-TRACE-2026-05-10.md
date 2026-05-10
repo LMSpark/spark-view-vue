@@ -777,6 +777,37 @@ flowchart TD
   O --> R["Tool call returns to Page B Core scope"]
 ```
 
+### 6.4 同一 UI 会话内的并发 turn 流程图
+
+通用 `AiChatWidget` 需要同时支持两类隔离：
+
+1. 不同业务实例通过 `moduleId + moduleInstanceId` 隔离。
+2. 同一 UI 会话内多个未完成 turn 通过 `turnId + turnSeq + baseRevision` 隔离显示与上下文快照。
+
+默认行为仍是 `maxParallelTurns = 1` 且 `overflow = reject`，保持旧串行语义；业务显式配置后才允许并发或排队。
+
+```mermaid
+flowchart TD
+  A["User sends turn N"] --> B["Capture committed history snapshot"]
+  B --> C["Create turnId, turnSeq, baseRevision"]
+  C --> D{"active turns < maxParallelTurns?"}
+  D -->|"Yes"| E["Start sender with per-turn AbortController"]
+  D -->|"No + reject"| F["Keep draft/input, do not start new turn"]
+  D -->|"No + queue"| G["Render queued assistant placeholder"]
+  G --> H["Start when a slot frees"]
+  E --> I["Per-turn typewriter writes assistant message"]
+  H --> I
+  I --> J["Mark turn done/error/cancelled"]
+  J --> K["Persist snapshot after all active/queued turns settle"]
+```
+
+上下文快照规则：
+
+- 新 turn 构造 `historyMsgs` 时，只读取已提交消息。
+- `queued` / `running` 的 user 与 assistant 消息都不会进入后续 turn 的上下文。
+- 如果 turn 2 在 turn 1 未返回时发送，turn 2 的基础上下文与 turn 1 相同，再追加 turn 2 自己的用户输入。
+- UI 按发送顺序保留多条 assistant 占位，每条响应独立流式更新。
+
 ---
 
 ## 7. 测试计划
@@ -831,6 +862,15 @@ flowchart TD
 1. bootstrap 不再调用旧 action `pageDesign/lifecycle/bootstrap`。
 2. bootstrap 从 `context.availableFunctions` 中选择投影 action。
 3. 当缺少 `lifecycle/bootstrap` 投影时给出明确错误。
+
+### 7.4 通用 AI Chat turn 并发单测
+
+文件：`tests/ai-chat-widget-persistence.test.ts`
+
+1. 默认不配置时仍拒绝并发发送，保持旧行为。
+2. `turnConcurrency.maxParallelTurns = 2` 时可同时启动两轮 sender。
+3. 第二轮 sender 收到的 `historyMsgs` 不包含第一轮未完成的 user/assistant 消息。
+4. `overflow = queue` 时 UI 显示排队状态，并在空闲槽位出现后启动下一轮。
 
 ---
 
@@ -921,6 +961,9 @@ flowchart TD
 | `packages/spark-ai/src/business/page-design/prompts/edit-runtime-prompt.ts` | prompt 中对 action 和 instanceId 语义的说明 |
 | `src/views/app/dev-system/usePageModelSessionHost.ts` | 前端 Core session 与后端 AI session 桥接 |
 | `src/views/app/dev-system/usePageModelEditSession.ts` | 前端 LLM 轮次、tool projection、bootstrap 和函数调用 |
+| `packages/spark-component/src/components/ai/useAiChat.ts` | 通用 AI Chat 消息、turn 并发、上下文快照与持久化 |
+| `packages/spark-component/src/components/ai/AiChatWidget.vue` | turn 并发配置透传与发送入口 |
+| `packages/spark-component/src/components/ai/AiChatShell.vue` | 多 turn 并发/排队 UI 展示 |
 | `tests/ai-runtime-business.test.ts` | Core 实例隔离与 action/activePath 测试 |
 | `tests/page-design-business-definition.test.ts` | PageDesign 模块执行与 history 测试 |
 | `tests/use-page-model-session-host.test.ts` | DevSystem session host transport 测试 |

@@ -6,8 +6,7 @@
  *  - 产出标准 {@link AiSessionConfig}，由业务组件以 `:config` 传入
  *    {@link AiLauncherButton}，或直接调用 `aiPanelStore.open(config)` 接入全局 AI 面板。
  *  - 会话过程中的 tool 调用 / FC 轮次 / 消息生命周期，均经 `useAiPanelStore().emit`
- *    往总线上出；AiLauncherButton 作为中继把它们映射为 Vue emits，供消费层
- *    完全声明式参与。
+ *    往总线上出；消费层直接订阅核心事件总线参与状态投影。
  *  - activePageId 变化时自动重置会话。
  */
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
@@ -230,8 +229,7 @@ export function useDevPageModelSession(options: Options) {
 
 
   // ═════════════════════════════════════════════════════════
-  // 事件转发：函数 DialogueTurn → AiPanelStore 总线
-  // AiLauncherButton 作为中继再把它们转为 Vue emits 交给 DevSystem。
+  // 事件转发：函数 DialogueTurn → AiPanelStore 总线（供消费层直接订阅）
   // ═════════════════════════════════════════════════════════
 
   function emitTurnAsToolEvent(turn: DialogueTurn, request: AiChatSendRequest): void {
@@ -285,6 +283,44 @@ export function useDevPageModelSession(options: Options) {
   // 对外导出层（AiSessionConfig）
   // ═════════════════════════════════════════════════════════
 
+  const PAGE_MODEL_ACTION_TITLE_MAP: Record<string, string> = {
+    'pageDesign/lifecycle/describeProgress': '编辑进度',
+    'pageDesign/lifecycle/bootstrap': '初始化编辑会话',
+    'pageDesign/knowledge/queryFunctions': '函数目录',
+    'pageDesign/knowledge/queryModules': '模块目录',
+    'pageDesign/knowledge/queryPayloads': '参数荷载目录',
+    'pageDesign/knowledge/guideFunction': '函数指南',
+    'pageDesign/knowledge/guidePayload': '参数荷载指南',
+    'pageDesign/knowledge/ask': '反问确认',
+    'dataset.export': '导出数据集',
+    'dataset.bootstrap': '初始化数据集',
+    'dataset.describe': '数据集概览',
+    'dataset.validate': '校验数据集',
+    'dataset.reset': '重置数据集',
+  }
+
+  const PAGE_MODEL_ACTION_PREFIX_TITLE_MAP: Record<string, string> = {
+    'pageDesign/nodeTree/': '节点树',
+    'pageDesign/dataset/': '数据集',
+    'pageDesign/textModel/': '文本模型',
+    'pageDesign/lifecycle/': '编辑生命周期',
+    'pageDesign/knowledge/': '知识',
+    'datatable.': '数据表',
+    'dataview.': '数据视图',
+    'relation.': '关系',
+    'blueprint.': '蓝图',
+    'schema.': '模型结构',
+  }
+
+  const PAGE_MODEL_ACTION_SUFFIX_TITLE_MAP: Record<string, string> = {
+    queryFunctions: '函数目录',
+    queryModules: '模块目录',
+    queryPayloads: '参数荷载目录',
+    guideFunction: '函数指南',
+    guidePayload: '参数荷载指南',
+    describeProgress: '编辑进度',
+  }
+
   const config: AiSessionConfig = {
     storageKey: getStorageKey,
     pageId: () => state.activePageId.value,
@@ -308,6 +344,9 @@ export function useDevPageModelSession(options: Options) {
     ],
     externalToolLogs: editSession.log,
     clearExternalToolLogs: () => editSession.clearLog(),
+    actionTitleMap: PAGE_MODEL_ACTION_TITLE_MAP,
+    actionPrefixTitleMap: PAGE_MODEL_ACTION_PREFIX_TITLE_MAP,
+    actionSuffixTitleMap: PAGE_MODEL_ACTION_SUFFIX_TITLE_MAP,
     fcErrorReporter: reportFcError,
     beforeOpen: async () => {
       await state.ensureActivePageFilesLoaded()
@@ -318,7 +357,7 @@ export function useDevPageModelSession(options: Options) {
      *  1) 提取本轮用户输入；
      *  2) 确保页面模型就绪；
      *  3) 走 streamWithFallback 执行 runLlm，并把 turn / run / 消息级事件 emit 到
-     *     AiPanelStore 总线，AiLauncherButton 消费其中继。
+     *     AiPanelStore 总线。
      */
     sender: async (request: AiChatSendRequest) => {
       const prompt = findLatestUserPrompt(request.historyMsgs)
@@ -344,6 +383,7 @@ export function useDevPageModelSession(options: Options) {
           runLoop: async (pushDelta) => {
             await editSession.runLlm(buildContinuationPrompt(prompt, request.historyMsgs, policies), {
               originalUserInput: prompt,
+              maxParallelTurns: request.turn?.maxParallelTurns ?? 1,
               ...(request.signal ? { signal: request.signal } : {}),
               skipBootstrap: true,
               repeatDetection: buildRecoveryRepeatDetection(policies?.recovery),

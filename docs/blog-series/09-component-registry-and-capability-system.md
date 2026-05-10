@@ -24,7 +24,7 @@ SparkNode 的 `type` 只有在注册表里有对应实现时才有意义。组�
 
 ## 组件目录也是 AI 的知识来源
 
-在 PageDesign 这个业务样例里，AI 不能靠猜测组件名完成页面编辑。组件注册和 catalog 构成基础事实，而 PageDesign 业务模块再把这些事实投影为组件参数荷载指南。注意这里的归属：核心层只提供通用 AI 协议和注册机制；`PageDesignComponentPayloadProvider`、`knowledge.queryPayloads`、`knowledge.guidePayload` 属于 PageDesign 业务模块。
+在 PageDesign 这个业务样例里，AI 不能靠猜测组件名完成页面编辑。组件注册和 catalog 构成基础事实，而 PageDesign 业务模块再把这些事实投影为组件参数荷载指南。注意这里的归属：核心层只提供通用 AI 协议和注册机制；`PageDesignComponentPayloadProvider`、`queryPayloads`、`guidePayload` 属于 PageDesign 业务模块。
 
 这条归属边界能避免 core 吸收业务语义。core 不知道 `r-table` 怎么写；PageDesign 知道当前页面设计支持哪些组件、组件 props 怎么构造、失败时应该如何修复。
 

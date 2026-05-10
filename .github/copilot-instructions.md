@@ -39,8 +39,8 @@ High-value entry points:
 ## Non-Negotiable Rules
 
 - **UI 组装强制 SOP**（AI Tool 调用规范）：
-  1. 需要构造组件时，先调用 `core@knowledge@queryPayloads({ payloadRef: 'page-design.component' })` 或 `core@knowledge@queryPayloads({ payloadRef: 'page-design.component', filter: { category: 'container' } })` 查全量/分类参数荷载列表。
-  2. 选定组件类型（如 r-table）后，必定调用 `core@knowledge@guidePayload({ payloadRef: 'page-design.component', key: 'r-table' })` 拉取该型 SparkNode JSON Schema (配置规格)。
+  1. 需要构造组件时，先调用 `queryPayloads({})` 或 `queryPayloads({ category: 'container' })` / `queryPayloads({ keyword: '...' })` 查全量/分类/关键词参数荷载列表。
+  2. 选定组件类型（如 r-table）后，必定调用 `guidePayload({ key: 'r-table' })` 拉取该型 SparkNode JSON Schema (配置规格)。
   3. 基于拉取到的合法规格在本地拼接 SparkNode (`{ type, props, children }`)。
   4. 最后调用 `pageDesign@nodeTree@addNode` 或 `pageDesign@nodeTree@addNodes` 实施写入。**绝对禁止不看 specs 凭空构造 props！**
 - Config-first: prefer `rule.json`, `pagedata.json`, view metadata, and existing renderer capabilities. Use `script.js` only when config cannot express the behavior.

@@ -12,6 +12,7 @@ interface BasicFieldProps<TValue>
     | 'type' | 'children'
   >>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
     | 'width'
+    | 'resizable'
     | 'titleAlign' | 'valueAlign'
     | 'headerCellClassName' | 'cellClassName'
     | 'titleClassName' | 'valueClassName'

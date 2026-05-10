@@ -136,8 +136,8 @@ flowchart TB
 
 知识先行是通用纪律：写入前先读取当前业务事实，再查询相关工具、schema、规则和 payload 指南。以 PageDesign 为例，新增或替换页面组件前，AI 必须先查询知识：
 
-1. `knowledge.queryPayloads` 选择合法组件 type。
-2. `knowledge.guidePayload` 获取该组件的 SparkNode 参数荷载指南。
+1. `queryPayloads` 选择合法组件 type。
+2. `guidePayload` 获取该组件的 SparkNode 参数荷载指南。
 3. `nodeTree.addNode` / `replaceNode` 使用真实 schema 构造节点。
 
 这能避免模型凭空猜测 props、把类型名当 componentId、或生成旧字段。
@@ -273,7 +273,7 @@ sequenceDiagram
   U->>H: “修改当前业务对象”
   H->>C: appendMessage(role=user)
   H->>M: 当前上下文 + tools
-  M-->>H: tool_call: knowledge.queryPayloads
+  M-->>H: tool_call: queryPayloads
   H->>P: executeFunctionCall(action,args,projection)
   P->>C: translateFunctionCall(...)
   C-->>P: translation
@@ -296,8 +296,8 @@ sequenceDiagram
 flowchart TB
   A["用户提出页面修改目标<br/>PageDesign 样例"] --> B["lifecycle.bootstrap<br/>确认 live adapter"]
   B --> C{"是否需要新增/替换组件？"}
-  C -- "是" --> D["knowledge.queryPayloads<br/>查询候选组件"]
-  D --> E["knowledge.guidePayload<br/>读取 schema 与最小示例"]
+  C -- "是" --> D["queryPayloads<br/>查询候选组件"]
+  D --> E["guidePayload<br/>读取 schema 与最小示例"]
   E --> F["nodeTree.addNode / replaceNode / setProps"]
   C -- "否" --> G{"是否需要数据模型变更？"}
   G -- "是" --> H["dataset.*<br/>表、列、视图、关系、聚合"]
@@ -320,7 +320,7 @@ flowchart TB
 - `lifecycle` 和 `textModel` 采用轻量手写校验。
 - `nodeTree` 和 `dataset` 通过 `LlmParamsValidator` 校验 schema。
 - `jsonDoc` 对 `docType`、`pointer`、`patches`、`expression` 做针对性校验。
-- `knowledge.guidePayload` 要求 `key` 为非空组件 type 字符串。
+- `guidePayload` 要求 `key` 为非空组件 type 字符串。
 
 ```mermaid
 flowchart LR
@@ -360,7 +360,7 @@ flowchart LR
 | `NO_NODE_TREE` | 未绑定 SparkNodeTree | 先执行 `lifecycle.bootstrap` 并注入 nodeTree adapter |
 | `NO_DATASET_EDIT` | 未绑定 DataSetCrudTool | 注入 dataset tool 后重试 |
 | `NO_TEXT_MODEL` | 缺少 script/style 读写器 | 注入 `readScript/writeScript/readStyle/writeStyle` |
-| `PAYLOAD_NOT_FOUND` | 组件 payload key 不存在 | 先调用 `knowledge.queryPayloads` 重新选择组件 |
+| `PAYLOAD_NOT_FOUND` | 组件 payload key 不存在 | 先调用 `queryPayloads` 重新选择组件 |
 | `INVALID_ARGS` | 参数结构不符合 schema | 按函数指南修正参数 |
 | `INVALID_SCRIPT_RUNTIME_API` | script.js 使用伪 API | 改用受支持的 `$page`、`$dataSet`、`$components.getApi` |
 
@@ -437,7 +437,7 @@ flowchart LR
   Discover["能力发现<br/>projectModule + tools"]
   Plan["模型规划<br/>选择模块和函数"]
   Read["读取事实<br/>list/get/query"]
-  Guide["查询指南<br/>guidePayload/guideTool"]
+  Guide["查询指南<br/>guidePayload/guideFunction"]
   Write["执行写操作<br/>业务函数 / PageDesign 工具"]
   Verify["读取验证<br/>describe/get/export"]
   Summarize["总结交付<br/>变更说明/风险/后续建议"]
@@ -535,8 +535,8 @@ flowchart TB
   B["lifecycle.bootstrap"]
   C["dataset.listTables / listColumns"]
   D["dataset.addAggregate<br/>totalAmount = sum(amount)"]
-  E["knowledge.queryPayloads<br/>查找筛选/表格相关组件"]
-  F["knowledge.guidePayload<br/>读取目标组件 schema"]
+  E["queryPayloads<br/>查找筛选/表格相关组件"]
+  F["guidePayload<br/>读取目标组件 schema"]
   G["nodeTree.findByType<br/>定位现有 r-table / toolbar"]
   H["nodeTree.addNode 或 setProps<br/>加入筛选控件和绑定 DataKey"]
   I["textModel.readScript / writeScript<br/>如需交互逻辑，全量更新"]

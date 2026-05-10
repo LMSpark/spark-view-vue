@@ -30,6 +30,7 @@ class AiSessionServiceStateMachineTest {
         assertTrue(service.isTransitionAllowedForTesting("VERIFY", "DONE"));
         assertTrue(service.isTransitionAllowedForTesting("VERIFY", "PLAN"));
         assertTrue(service.isTransitionAllowedForTesting("FAILED", "HANDOFF"));
+        assertTrue(service.isTransitionAllowedForTesting("FAILED", "PLAN"));
         assertTrue(service.isTransitionAllowedForTesting("HANDOFF", "PLAN"));
         assertTrue(service.isTransitionAllowedForTesting("DONE", "READY"));
     }

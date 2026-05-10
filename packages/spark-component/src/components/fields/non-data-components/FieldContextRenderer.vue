@@ -7,6 +7,7 @@
       :label="resolvedDisplayLabel"
       :width="width"
       :min-width="minWidth"
+      :resizable="resolvedResizable"
       :fixed="fixed"
       :align="resolvedValueAlign"
       :header-align="resolvedHeaderAlign"
@@ -27,6 +28,7 @@
       :sortable="resolvedSortable"
       :width="width"
       :min-width="minWidth"
+      :resizable="resolvedResizable"
       :fixed="fixed"
       :header-align="resolvedHeaderAlign"
       :align="resolvedValueAlign"
@@ -85,13 +87,14 @@
 // FieldContextRenderer 渲染为 fragment（多分支 <template>），无法自动透传 attrs。
 // 声明 inheritAttrs: false 以避免 Vue 的 "Extraneous non-props attributes" 告警。
 defineOptions({ inheritAttrs: false })
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNodeProps } from '../../shared-types.js'
 import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from '../context/useResolvedFieldContext'
+import { TABLE_COLUMN_RESIZABLE_KEY } from '../context/tableColumnContext'
 
 type TextAlign = 'left' | 'center' | 'right'
 
@@ -102,6 +105,8 @@ interface Props extends SparkNodeProps {
   fieldName?: string | undefined
   /** 列宽 */
   width?: string | number | undefined
+  /** 表格列是否允许拖动列宽 */
+  resizable?: boolean | undefined
   /** 表格列排序能力 */
   sortable?: boolean | 'custom' | undefined
   /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */
@@ -145,6 +150,7 @@ interface Props extends SparkNodeProps {
 const props = defineProps<Props>()
 
 const resolvedContext = useResolvedFieldContext()
+const tableColumnResizable = inject(TABLE_COLUMN_RESIZABLE_KEY, undefined)
 const resolvedDisplayLabel = computed(() => props.displayLabel ?? '')
 const resolvedFieldName = computed(() => props.fieldName ?? '')
 const resolvedChildren = computed<SparkNode[]>(() => {
@@ -158,6 +164,7 @@ const resolvedValidationRules = computed<FormItemRule[]>(() => props.validationR
 const resolvedHeaderAlign = computed(() => props.headerAlign ?? 'center')
 const resolvedValueAlign = computed(() => props.valueAlign ?? 'left')
 const resolvedSortable = computed<boolean | 'custom'>(() => props.sortable ?? true)
+const resolvedResizable = computed(() => props.resizable ?? tableColumnResizable?.value ?? true)
 
 const tableHeaderClassName = computed(() => props.headerCellClassName ?? `spark-col-header--${resolvedHeaderAlign.value}`)
 

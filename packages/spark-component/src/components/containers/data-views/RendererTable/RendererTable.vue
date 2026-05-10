@@ -21,6 +21,7 @@
           v-if="isMultiSelect"
           type="selection"
           :width="52"
+          :resizable="tableColumnResizable"
         />
 
         <!-- 行操作列（左） -->
@@ -28,6 +29,7 @@
           v-if="hasLeftActions"
           label="操作"
           :width="220"
+          :resizable="tableColumnResizable"
           header-align="center"
         >
           <template #default="scope">
@@ -47,6 +49,7 @@
             :label="rowFragmentLabel(child)"
             :width="rowFragmentStringOrNumberProp(child, 'width')"
             :min-width="rowFragmentStringOrNumberProp(child, 'minWidth')"
+            :resizable="rowFragmentResizable(child)"
             :align="rowFragmentStringProp(child, 'align')"
             :header-align="rowFragmentStringProp(child, 'headerAlign')"
             :class-name="rowFragmentStringProp(child, 'class')"
@@ -70,6 +73,7 @@
           v-if="hasRightActions"
           label="操作"
           :width="220"
+          :resizable="tableColumnResizable"
           header-align="center"
         >
           <template #default="scope">
@@ -109,7 +113,7 @@
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
  * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
  */
-import { computed, nextTick, ref, toRef, watch } from 'vue'
+import { computed, nextTick, provide, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren,
@@ -125,6 +129,7 @@ import { buildTreeTableRows } from '../view-tree-state'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { deriveSiblingFieldDataKey } from '@spark-view/spark-data'
+import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnContext'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
 
@@ -230,15 +235,35 @@ function rowFragmentStringOrNumberProp(node: SparkNode, key: string): string | n
   return typeof value === 'string' || typeof value === 'number' ? value : undefined
 }
 
+function rowFragmentBooleanProp(node: SparkNode, key: string): boolean | undefined {
+  const value = rowFragmentRawProp(node, key)
+  return typeof value === 'boolean' ? value : undefined
+}
+
 function rowFragmentChildren(node: SparkNode): SparkNode[] {
   return getSparkNodeChildren(node.children)
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function readBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
+
 // ── 基础 el-table props：resizable 默认 true，且与 border 联动 ──────────────────────────
 const baseElTableProps = computed<Record<string, unknown>>(() => {
-  const resolvedResizable = props.resizable !== undefined ? props.resizable : true
-  const resolvedBorder = resolvedResizable === true ? true : (props.border ?? true)
+  const legacyTableProps = asRecord(props.tableProps)
+  const resolvedResizable = props.resizable ?? readBoolean(legacyTableProps['resizable']) ?? true
+  const resolvedBorder = resolvedResizable === true
+    ? true
+    : (props.border ?? readBoolean(legacyTableProps['border']) ?? true)
+
   return {
+    ...legacyTableProps,
     ...(props.stripe !== undefined ? { stripe: props.stripe } : {}),
     ...(props.highlightCurrentRow !== undefined ? { highlightCurrentRow: props.highlightCurrentRow } : {}),
     ...(props.rowKey !== undefined ? { rowKey: props.rowKey } : {}),
@@ -246,6 +271,17 @@ const baseElTableProps = computed<Record<string, unknown>>(() => {
     resizable: resolvedResizable,
   }
 })
+
+const tableColumnResizable = computed(() => {
+  const value = baseElTableProps.value['resizable']
+  return typeof value === 'boolean' ? value : true
+})
+
+provide(TABLE_COLUMN_RESIZABLE_KEY, tableColumnResizable)
+
+function rowFragmentResizable(node: SparkNode): boolean {
+  return rowFragmentBooleanProp(node, 'resizable') ?? tableColumnResizable.value
+}
 
 const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freeze({
   children: 'children',

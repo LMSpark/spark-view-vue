@@ -51,14 +51,14 @@ export class PageDesignEditRuntimePrompt {
   - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
   - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
   - 首轮可调用 lifecycle.describeProgress 了解当前状态；函数参数以当前投影的 tool schema 和 description 为准，之后不要重复能力探测
-  - 构造或替换 SparkNode 前，必须先调用 knowledge.guidePayload 获取目标组件 type 的参数荷载指南
+  - 构造或替换 SparkNode 前，必须先调用 guidePayload 获取目标组件 type 的参数荷载指南
   - 函数执行结果由当前 LLM 轮次自行解读；若返回错误，先读 code / msg / fix，再按当前 tool schema 和修复建议重试
-  - 若 knowledge.guidePayload 返回 PAYLOAD_NOT_FOUND（组件不存在），同一 key 禁止再次 guide 重试；必须先 knowledge.queryPayloads 选择可用替代组件
+  - 若 guidePayload 返回 PAYLOAD_NOT_FOUND（组件不存在），同一 key 禁止再次 guide 重试；必须先 queryPayloads 选择可用替代组件
   - 若 nodeTree.listChildren/getNode 报“节点不存在”，禁止据此宣称 rule.json 为空；必须先用 listChildren(parentComponentId:null) 或 countNodes/getAllData 做根级核验
   - 只有在 countNodes=1 且 listChildren(parentComponentId:null) 返回 0 个子节点时，才可认定 rule.json 为空；否则禁止输出“无页面结构/空页面”结论
 
   按目标文件选择动作：
-  - 修改 rule.json：使用 nodeTree 函数；新增组件前先 knowledge.queryPayloads({ category: 'container' }) 或按 keyword 查询，选定 type 后再 knowledge.guidePayload({ key: type })；调整已有节点位置优先用 nodeTree.moveNode，禁止用 removeNode + addNode 重建整段子树
+  - 修改 rule.json：使用 nodeTree 函数；新增组件前先 queryPayloads({ category: 'container' }) 或 queryPayloads({ keyword: '...' })，选定 type 后再 guidePayload({ key: type })；调整已有节点位置优先用 nodeTree.moveNode，禁止用 removeNode + addNode 重建整段子树
     ⚠ componentId 规则（违反则工具返回 null，造成死循环）：
       • componentId / parentComponentId 必须是节点的真实 id 值
         （即 listChildren 返回 SparkNode 中的顶层 id 字段）

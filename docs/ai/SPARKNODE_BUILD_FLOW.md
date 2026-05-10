@@ -47,7 +47,7 @@
 
 ### 第 1 步：查询组件列表
 
-**调用入口**：`catalog.query({})`
+**调用入口**：`queryPayloads({})`
 **响应来源**：`catalog-projections.ts → projectComponentDirectory()`
 **响应结构**：`FcDirectoryPayload`
 **包含内容**：
@@ -59,9 +59,9 @@
 这一步的目的是让 LLM 知道"能选什么组件"，不暴露 props 细节，减少 Token 消耗。
 
 **关键源码**：
-- 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectComponentDirectory`）
-- 事实源：[packages/spark-ai/src/catalog/component-catalog.json](../../../packages/spark-ai/src/catalog/component-catalog.json)
-- 查询分发：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery` / `catalogGuide`）
+- 业务 Provider：[packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts](../../../packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts)
+- 协议契约：[packages/spark-ai/src/core/protocol/knowledge-payload-contracts.ts](../../../packages/spark-ai/src/core/protocol/knowledge-payload-contracts.ts)
+- 注册与分发：[packages/spark-ai/src/core/knowledge/payload-provider-registry.ts](../../../packages/spark-ai/src/core/knowledge/payload-provider-registry.ts)
 
 ---
 
@@ -79,7 +79,7 @@ A = 'r-table'
 
 ### 第 3 步：查询 A 的配置规格
 
-**调用入口**：`catalog.guide({ type: 'r-table' })`
+**调用入口**：`guidePayload({ key: 'r-table' })`
 **响应来源**：`catalog-projections.ts → projectComponentConfigGuide() / projectComponentSpec()`
 **响应结构**：`FcComponentConfigGuide` / `FcComponentSpec`
 **包含内容**：
@@ -94,8 +94,9 @@ A = 'r-table'
 这一步的目的是让 LLM 知道"这个组件怎么配"，给出完整约束以防止幻觉。**这仍然属于组件目录层，不是能力层。**
 
 **关键源码**：
-- 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectComponentSpec`、`projectComponentConfigGuide`、`projectHydratedComponent`）
-- 查询入口：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery`、`catalogGuide`）
+- 业务 Provider：[packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts](../../../packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts)
+- 业务编排：[packages/spark-ai/src/business/page-design/page-design-business.ts](../../../packages/spark-ai/src/business/page-design/page-design-business.ts)
+- 注册与分发：[packages/spark-ai/src/core/knowledge/payload-provider-registry.ts](../../../packages/spark-ai/src/core/knowledge/payload-provider-registry.ts)
 
 ---
 
@@ -228,10 +229,9 @@ spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
                         └── stills/edit/actions/edit-domain.ts
                                 └── EDIT_NODE_TREE_STILLS ─→ 执行桥接
 
-meta-methods.ts
-        ├── catalog.query()         ─→ 组件目录查询入口
-        ├── catalog.guide()         ─→ 单组件配置指南入口
-        └── stills.actionSpec()     ─→ 动作规格查询入口
+payload-provider-registry.ts
+        ├── queryPayloads()         ─→ 组件目录查询入口
+        └── guidePayload()          ─→ 单组件配置指南入口
 
 core/protocol/function-call-schema.ts
         └── generateToolDefinitions() ─→ LLM FC 工具注册入口
@@ -248,7 +248,7 @@ business/page-design/fc-dispatcher.ts
 
 - 事实源唯一：`component-catalog.json` 是唯一来源，任何代码不得手写维护组件列表；
 - 投影只读：`catalog-projections.ts` 全部为纯函数，无副作用；
-- LLM 访问口三个：`catalog.query({})` 查组件目录；`catalog.guide({ type })` 查单组件规格；`stills.actionSpec({ action })` 查动作参数与约束。
+- LLM 访问口三个：`queryPayloads({ category, keyword })` 查组件目录；`guidePayload({ key })` 查单组件规格；`stills.actionSpec({ action })` 查动作参数与约束。
 
 ### SparkNode 实例层（第 4 步）
 
@@ -271,10 +271,10 @@ business/page-design/fc-dispatcher.ts
 ### 查询阶段（两步，必须先执行）
 
 ```
-Step 1: catalog.query({})
+Step 1: queryPayloads({})
         ↳ 拿到全部组件 type + category + description 轻量目录
 
-Step 2: catalog.guide({ type: 'r-table' })  // 按需查，不必全查
+Step 2: guidePayload({ key: 'r-table' })  // 按需查，不必全查
         ↳ 拿到 r-table 的 requiredProps / minimalConfig / failFastChecks
 ```
 

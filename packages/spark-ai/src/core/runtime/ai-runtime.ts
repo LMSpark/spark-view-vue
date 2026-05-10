@@ -36,6 +36,9 @@ import {
   AiRuntimeArgValidator,
   AiRuntimeProjector,
 } from './ai-runtime-support'
+import { KnowledgePayloadRegistry } from '../knowledge/payload-provider-registry'
+import { AiKnowledgeProjector } from '../knowledge/knowledge-projection'
+import type { AiKnowledgeProjection } from '../knowledge/knowledge-projection'
 
 /** 克隆 runtime 对外返回值，避免调用方修改 core 保存的 session/history 快照。 */
 function cloneRuntimeValue<T>(value: T): T {
@@ -88,9 +91,13 @@ export class AiRuntime implements AiRuntimeApi {
   /** 时间源仅用于 start/stop 返回快照，不用于生命周期决策。 */
   private readonly now: NonNullable<AiRuntimeOptions['now']>
 
+  /** 核心层知识投影器：统一暴露函数目录、模块目录、知识负载查询能力。 */
+  private readonly knowledgeProjector: AiKnowledgeProjector
+
   /** 创建一个 core facade；options 不会引入任何模块服务实例管理。 */
   constructor(options: AiRuntimeOptions = {}) {
     this.now = options.now ?? Date.now
+    this.knowledgeProjector = new AiKnowledgeProjector(KnowledgePayloadRegistry.defaultRegistry)
   }
 
   /** 注册顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
@@ -134,6 +141,11 @@ export class AiRuntime implements AiRuntimeApi {
   getSessionHistoryByModuleScope(scope: { moduleId: string; moduleInstanceId: string }): readonly AiRuntimeHistoryEntry[] {
     const session = this.sessions.get(AiRuntime.moduleScopeKey(scope.moduleId, scope.moduleInstanceId))
     return session?.history.map((entry) => this.cloneHistoryEntry(entry)) ?? []
+  }
+
+  /** 获取核心知识投影器。用于统一的知识查询（函数目录、模块目录、负载指南）。 */
+  getKnowledgeProjection(): AiKnowledgeProjection {
+    return this.knowledgeProjector
   }
 
   /** 追加 UI/LLM/system 消息历史。 */
@@ -291,18 +303,27 @@ export class AiRuntime implements AiRuntimeApi {
    *
    * prompt provider 可能依赖 scope 动态生成 prompt，因此本方法是异步的。
    * 返回值是快照；调用方可以把它固定在同一轮 LLM 交互中使用。
+   *
+   * 副作用：更新核心知识投影器，使其后续 queryFunctions/guideModule 查询可用。
    */
   async projectModule(options: AiRuntimeProjectModuleOptions): Promise<AiRuntimeKnowledgeProjection> {
     const scope = this.normalizeScope(options)
     const module = this.getModuleOrThrow(scope.moduleId)
     const exposure = await this.projector.projectModule(module, scope)
     const availableFunctions = this.projector.flattenFunctions(exposure)
-    return {
+    const projection = {
       scope,
       module: this.projector.cloneModuleExposure(exposure),
       promptSnapshot: this.projector.buildPromptSnapshot(exposure),
       availableFunctions: this.projector.cloneExposure(availableFunctions),
     }
+    // 更新核心知识投影器，使其可以响应后续的 queryFunctions/guideModule 查询
+    this.knowledgeProjector.updateProjection({
+      scope,
+      availableFunctions: projection.availableFunctions,
+      module: projection.module,
+    })
+    return projection
   }
 
   /**

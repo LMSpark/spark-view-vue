@@ -12,6 +12,7 @@ import {
   type AiRuntimeFunctionCallTranslationResult,
   type AiRuntimeHistoryEntry,
   type AiRuntimeKnowledgeProjection,
+  type AiKnowledgeProjection,
   type AiRuntimeMessageHistoryEntry,
   type AiRuntimeMessageRole,
   type AiRuntimeMessageSource,
@@ -79,9 +80,9 @@ type PageDesignFunctionDefinition<TModuleId extends PageDesignModuleId> = AiFunc
 }
 const PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT = 'lifecycle 模块只负责读取当前编辑运行状态、绑定宿主提供的 live adapter，并验证 nodeTree、dataset、script、style 能力齐全；bootstrap 不复制第二份页面事实，也不修改页面内容。'
 const PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT = 'textModel 模块只读写 live script.js/style.css 文本模型；写入必须提交完整文件内容，script.js 遵守 sandbox API 边界，禁止 ESM import、window 全局和不可用 $page 伪 API。'
-const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'nodeTree 模块只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 knowledge.queryPayloads 与 knowledge.guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
+const PAGE_DESIGN_NODE_TREE_MODULE_PROMPT = 'nodeTree 模块只操作当前 live SparkNodeTree/rule.json 结构；构造或替换组件前必须先用 queryPayloads 与 guidePayload 查询合法 SparkNode schema，并使用真实 componentId/parentId。'
 const PAGE_DESIGN_DATASET_MODULE_PROMPT = 'dataset 模块只操作当前 DataSetCrudTool/pagedata.json 数据空间；DataSet 是内存数据与视图配置，不是数据库，禁止套用 FK、索引、约束等 RDBMS 假设。'
-const PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT = 'knowledge 模块暴露当前页面设计需要的只读知识查询能力；新增或替换 SparkNode 前先查询组件 payload，再按 guidePayload 返回的 JSON schema 构造 node。'
+const PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT = 'knowledge 模块只暴露 core 统一知识查询：queryFunctions/queryModules/queryPayloads/guideFunction/guidePayload；新增或替换 SparkNode 前先查询组件 payload，再按 guidePayload 返回的 JSON schema 构造 node。'
 
 export interface PageDesignRuntimeContext {
   instanceId: string
@@ -386,6 +387,27 @@ function invokeNamedMethod(target: unknown, methodName: string, params: unknown)
   }
 }
 
+function toSerializableFunctionData(value: unknown): unknown {
+  if (value === null || typeof value !== 'object') return value
+  if (typeof (value as { toJson?: unknown }).toJson === 'function') {
+    return toSerializableFunctionData((value as { toJson: () => unknown }).toJson())
+  }
+  if (Array.isArray(value)) return value.map(toSerializableFunctionData)
+
+  const seen = new WeakSet<object>()
+  const serialized = JSON.stringify(value, (_key, nested: unknown) => {
+    if (typeof nested === 'bigint') return nested.toString()
+    if (nested === null || typeof nested !== 'object') return nested
+    if (typeof (nested as { toJson?: unknown }).toJson === 'function') {
+      return toSerializableFunctionData((nested as { toJson: () => unknown }).toJson())
+    }
+    if (seen.has(nested)) return '[Circular]'
+    seen.add(nested)
+    return nested
+  })
+  return serialized === undefined ? String(value) : JSON.parse(serialized)
+}
+
 function buildRowFixHint(row: MethodBackedRow): string {
   const parts = [`参数格式: ${JSON.stringify(row.paramsSchema)}`]
   if (Object.keys(row.example).length > 0) {
@@ -403,7 +425,7 @@ function callMethodBackedTarget(row: MethodBackedRow, target: unknown, methodNam
     if (!invocation.ok) {
       return failure('METHOD_NOT_FOUND', `${row.functionId}: method "${methodName}" not found on target`, buildRowFixHint(row))
     }
-    return success(invocation.data, `${row.functionId} 完成`)
+    return success(toSerializableFunctionData(invocation.data), `${row.functionId} 完成`)
   } catch (error) {
     return failure('EXECUTE_ERROR', AiInvocationProtocol.toErrorMessage(error), buildRowFixHint(row))
   }
@@ -553,9 +575,110 @@ function createJsonDocFunctions(
 }
 
 function createKnowledgeFunctions(
-  provider: PageDesignComponentPayloadProvider,
+  knowledge: AiKnowledgeProjection,
 ): ReadonlyArray<PageDesignFunctionDefinition<typeof KNOWLEDGE_MODULE_ID>> {
+  const payloadRef = PageDesignComponentPayloadProvider.payloadRef
   return [
+    {
+      ...createBaseFunctionDefinition({
+        functionId: 'queryFunctions',
+        description: '查询当前 AI 会话可调用的函数目录（按 modulePath/moduleId/keyword 过滤）。',
+        paramsSchema: {
+          modulePath: 'string? — 按模块路径过滤，例如 knowledge、nodeTree、dataset。',
+          moduleId: 'string? — 按模块 ID 精确过滤。',
+          keyword: 'string? — 按 functionId/description/modulePath 模糊搜索。',
+        },
+        resultSchema: {
+          items: 'AiRuntimeFunctionExposure[] — 函数目录（action、参数 schema、规则、失败模式）。',
+        },
+        usageRules: [
+          '需要确认某个能力是否可调用，先查函数目录。',
+          '再用 guideFunction(action) 查看单函数完整指南。',
+        ],
+        failureModes: [],
+      }, KNOWLEDGE_MODULE_ID),
+      execute: (args, context) => {
+        const input = toObject(args) ?? {}
+        const scope = {
+          moduleId: context.moduleId,
+          moduleInstanceId: context.moduleInstanceId,
+        }
+        const items = knowledge.queryFunctions(scope, {
+          ...(typeof input['modulePath'] === 'string' ? { modulePath: input['modulePath'] } : {}),
+          ...(typeof input['moduleId'] === 'string' ? { moduleId: input['moduleId'] } : {}),
+          ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
+        })
+        return success({ items }, `已返回 ${items.length} 个函数目录项`)
+      },
+    },
+    {
+      ...createBaseFunctionDefinition({
+        functionId: 'queryModules',
+        description: '查询当前 AI 会话的模块目录（含根模块与子模块）。',
+        paramsSchema: {},
+        resultSchema: {
+          items: 'AiRuntimeModuleExposure[] — 模块目录（moduleId/modulePath/name/description）。',
+        },
+        usageRules: [
+          '用于确认模块边界与模块路径。',
+        ],
+        failureModes: [],
+      }, KNOWLEDGE_MODULE_ID),
+      execute: (_args, context) => {
+        const scope = {
+          moduleId: context.moduleId,
+          moduleInstanceId: context.moduleInstanceId,
+        }
+        const items = knowledge.queryModules(scope)
+        return success({ items }, `已返回 ${items.length} 个模块目录项`)
+      },
+    },
+    {
+      ...createBaseFunctionDefinition({
+        functionId: 'guideFunction',
+        description: '查询单个函数指南（按 action 精确查询）。',
+        paramsSchema: {
+          required: ['action'],
+          action: 'string — 函数 action，例如 page-1@nodeTree@addNode。',
+        },
+        resultSchema: {
+          guide: 'AiRuntimeFunctionExposure — 函数完整指南（参数 schema、规则、失败模式）。',
+        },
+        usageRules: [
+          '执行函数前先查 guideFunction，避免参数结构猜测。',
+        ],
+        failureModes: [
+          {
+            code: 'FUNCTION_NOT_FOUND',
+            when: 'action 不在当前会话函数目录中。',
+            fix: '先调用 queryFunctions 确认 action，再重试。',
+          },
+        ],
+      }, KNOWLEDGE_MODULE_ID),
+      validate: (args) => {
+        const input = toObject(args)
+        if (input === null || typeof input['action'] !== 'string' || input['action'].trim().length === 0) {
+          return 'action 必须是非空字符串。'
+        }
+        return null
+      },
+      execute: (args, context) => {
+        const action = (args as { action: string }).action
+        const scope = {
+          moduleId: context.moduleId,
+          moduleInstanceId: context.moduleInstanceId,
+        }
+        const guide = knowledge.guideFunction(scope, action)
+        if (guide === null) {
+          return failure(
+            'FUNCTION_NOT_FOUND',
+            `函数 "${action}" 不在当前会话函数目录中`,
+            '先调用 queryFunctions 确认 action，再重试。',
+          )
+        }
+        return success({ guide }, `${action} 函数指南已返回`)
+      },
+    },
     {
       ...createBaseFunctionDefinition({
         functionId: 'queryPayloads',
@@ -565,12 +688,12 @@ function createKnowledgeFunctions(
           keyword: 'string? — 按组件 type、描述或标签模糊搜索。',
         },
         resultSchema: {
-          payloadRef: 'string — 固定为 page-design.component',
+          payloadRef: `string — 固定为 ${PageDesignComponentPayloadProvider.payloadRef}`,
           items: 'KnowledgePayloadSummary[] — 组件参数荷载摘要列表。',
         },
         usageRules: [
           '新增或替换组件前，若不确定 type，先查询目录。',
-          '无需传 payloadRef；本模块固定查询 page-design.component。',
+          `无需传 payloadRef；本模块固定查询 ${PageDesignComponentPayloadProvider.payloadRef}。`,
         ],
         failureModes: [],
       }, KNOWLEDGE_MODULE_ID),
@@ -580,8 +703,8 @@ function createKnowledgeFunctions(
           ...(typeof input['category'] === 'string' ? { category: input['category'] } : {}),
           ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
         }
-        const items = provider.queryPayloads(filter)
-        return success({ payloadRef: provider.payloadRef, items }, `已返回 ${items.length} 个组件参数荷载摘要`)
+        const items = knowledge.queryPayloads(payloadRef, filter)
+        return success({ payloadRef, items }, `已返回 ${items.length} 个组件参数荷载摘要`)
       },
     },
     {
@@ -602,8 +725,8 @@ function createKnowledgeFunctions(
         failureModes: [
           {
             code: 'PAYLOAD_NOT_FOUND',
-            when: 'key 不存在于 page-design.component 参数荷载目录。',
-            fix: '先调用 knowledge.queryPayloads 选择可用组件 type。',
+            when: `key 不存在于 ${PageDesignComponentPayloadProvider.payloadRef} 参数荷载目录。`,
+            fix: '先调用 queryPayloads 选择可用组件 type。',
           },
         ],
       }, KNOWLEDGE_MODULE_ID),
@@ -616,12 +739,12 @@ function createKnowledgeFunctions(
       },
       execute: (args) => {
         const key = (args as { key: string }).key
-        const guide = provider.guidePayload(key)
+        const guide = knowledge.guidePayload(payloadRef, key)
         if (guide === null) {
           return failure(
             'PAYLOAD_NOT_FOUND',
-            `组件 "${key}" 不在 page-design.component 参数荷载目录中`,
-            '先调用 knowledge.queryPayloads 选择可用组件 type。',
+            `组件 "${key}" 不在 ${PageDesignComponentPayloadProvider.payloadRef} 参数荷载目录中`,
+            '先调用 queryPayloads 选择可用组件 type。',
           )
         }
         return success({ guide }, `${key} 组件参数荷载指南已返回`)
@@ -678,6 +801,7 @@ export class PageDesignModule implements AiModuleRegistration {
 
   constructor(options: PageDesignModuleOptions) {
     this.getEditToolHost = options.getEditToolHost
+    this.componentPayloadProvider.register()
     this.modules = [
       new PageDesignModuleRegistration({
         moduleId: LIFECYCLE_MODULE_ID,
@@ -915,7 +1039,7 @@ export class PageDesignModule implements AiModuleRegistration {
   }
 
   private readonly knowledgeFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof KNOWLEDGE_MODULE_ID>> => {
-    return createKnowledgeFunctions(this.componentPayloadProvider)
+    return createKnowledgeFunctions(this.core.getKnowledgeProjection())
   }
 
   private readonly datasetFunctions = (): ReadonlyArray<PageDesignFunctionDefinition<typeof DATASET_MODULE_ID>> => {
