@@ -299,11 +299,8 @@ export function usePageModelEditSession(options: PageModelEditSessionOptions) {
     let writeCount = 0
 
     try {
-      options.sessionHost.core.appendMessage({
-        moduleId: context.moduleId,
-        moduleInstanceId: context.moduleInstanceId,
-        instanceId: context.instanceId,
-        runtimeInstanceId: context.instanceId,
+      await options.sessionHost.appendRuntimeMessage({
+        context,
         role: 'user',
         content: hooks.originalUserInput ?? prompt,
       })

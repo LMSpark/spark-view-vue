@@ -39,6 +39,9 @@ vi.mock('@spark-view/spark-ai', () => ({
   },
   PageDesignModule: class {
     static moduleId = 'pageDesign'
+    startSession = shared.startInstance
+    stopSession = shared.stopInstance
+    appendMessage = shared.appendMessage
     executeFunctionCall = shared.executeFunctionCall
   },
 }))
@@ -110,6 +113,11 @@ describe('usePageModelSessionHost transport', () => {
       tools: [],
     })).resolves.toBe('session-1')
 
+    expect(shared.startInstance).toHaveBeenCalledWith({
+      moduleId: 'pageDesign',
+      moduleInstanceId: 'orders-page',
+      instanceId: 'orders-page',
+    })
     expect(shared.post.mock.calls[0]?.[1]).toMatchObject({
       protocolVersion: 3,
       scope: {
@@ -149,6 +157,35 @@ describe('usePageModelSessionHost transport', () => {
         moduleInstanceId: 'orders-page',
       },
       stream: false,
+    })
+  })
+
+  it('appends runtime messages through the page design module session', async () => {
+    shared.appendMessage.mockReturnValueOnce({
+      id: 'orders-page:history:1',
+      kind: 'message',
+      role: 'user',
+      content: 'hello',
+    })
+
+    const host = usePageModelSessionHost({
+      getEditToolHost: () => ({}) as never,
+      getSessionKey: () => 'orders-page',
+    })
+
+    const context = await host.ensureSession()
+    await expect(host.appendRuntimeMessage({
+      context,
+      role: 'user',
+      content: 'hello',
+    })).resolves.toMatchObject({ id: 'orders-page:history:1' })
+
+    expect(shared.appendMessage).toHaveBeenCalledWith({
+      moduleId: 'pageDesign',
+      moduleInstanceId: 'orders-page',
+      instanceId: 'orders-page',
+      role: 'user',
+      content: 'hello',
     })
   })
 

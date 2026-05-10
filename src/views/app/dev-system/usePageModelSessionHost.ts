@@ -2,11 +2,12 @@ import { onUnmounted, shallowRef } from 'vue'
 import type { ShallowRef } from 'vue'
 import { createFetchClient } from '@spark-view/spark-utils'
 import {
-  AiRuntime,
   PageDesignModule,
-  type AiRuntimeApi,
   type AiRuntimeFunctionExposure,
   type AiRuntimeFunctionCallResult,
+  type AiRuntimeMessageHistoryEntry,
+  type AiRuntimeMessageRole,
+  type AiRuntimeMessageSource,
   type AiRuntimeStartInstanceResult,
   type EditToolHost,
 } from '@spark-view/spark-ai'
@@ -50,11 +51,17 @@ export interface PageModelBackendTurnResult {
 }
 
 export interface PageModelSessionHost {
-  core: AiRuntimeApi
   context: ShallowRef<PageModelFunctionContext | null>
   ensureSession: () => Promise<PageModelFunctionContext>
   reset: () => Promise<void>
   resetSync: () => void
+  appendRuntimeMessage: (message: {
+    context?: PageModelFunctionContext
+    role: AiRuntimeMessageRole
+    content: string
+    source?: AiRuntimeMessageSource
+    metadata?: Record<string, unknown>
+  }) => Promise<AiRuntimeMessageHistoryEntry>
   setBackendSessionId: (sessionId: string | undefined, scopeKey?: string) => void
   getResumeSessionOptions: (scopeKey?: string) => { resumeSessionId?: string }
   hasSessionMismatch: (sessionKey?: string) => boolean
@@ -105,9 +112,7 @@ function createContext(sessionKey: string, session: AiRuntimeStartInstanceResult
 export function usePageModelSessionHost(options: UsePageModelSessionHostOptions): PageModelSessionHost {
   const { getEditToolHost, getSessionKey } = options
   const http = createFetchClient({ timeout: PAGE_MODEL_AI_SESSION_TIMEOUT_MS })
-  const core = new AiRuntime()
   const pageDesignModule = new PageDesignModule({ getEditToolHost })
-  core.registerModule(pageDesignModule)
 
   const context = shallowRef<PageModelFunctionContext | null>(null)
   const contextsByScopeKey = new Map<string, PageModelFunctionContext>()
@@ -128,8 +133,8 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
     if (current !== null) {
       contextsByScopeKey.delete(current.scopeKey)
       backendSessionIdsByScopeKey.delete(current.scopeKey)
-      core.stopInstance({
-        moduleId: current.moduleId,
+      pageDesignModule.stopSession({
+        moduleId: PageDesignModule.moduleId,
         moduleInstanceId: current.moduleInstanceId,
         instanceId: current.instanceId,
         reason: 'reset',
@@ -159,14 +164,34 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
       return existing
     }
 
-    const session = await core.startInstance({
+    const session = await pageDesignModule.startSession({
       moduleId: PageDesignModule.moduleId,
       moduleInstanceId: sessionKey,
+      instanceId: sessionKey,
     })
     const nextContext = createContext(sessionKey, session)
     contextsByScopeKey.set(nextContext.scopeKey, nextContext)
     context.value = nextContext
     return nextContext
+  }
+
+  async function appendRuntimeMessage(message: {
+    context?: PageModelFunctionContext
+    role: AiRuntimeMessageRole
+    content: string
+    source?: AiRuntimeMessageSource
+    metadata?: Record<string, unknown>
+  }): Promise<AiRuntimeMessageHistoryEntry> {
+    const sessionContext = message.context ?? context.value ?? await ensureSession()
+    return pageDesignModule.appendMessage({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: sessionContext.moduleInstanceId,
+      instanceId: sessionContext.instanceId,
+      role: message.role,
+      content: message.content,
+      ...(message.source === undefined ? {} : { source: message.source }),
+      ...(message.metadata === undefined ? {} : { metadata: message.metadata }),
+    })
   }
 
   function setBackendSessionId(sessionId: string | undefined, scopeKey = getCurrentScopeKey()): void {
@@ -291,11 +316,11 @@ export function usePageModelSessionHost(options: UsePageModelSessionHostOptions)
   })
 
   return {
-    core,
     context,
     ensureSession,
     reset,
     resetSync,
+    appendRuntimeMessage,
     setBackendSessionId,
     getResumeSessionOptions,
     hasSessionMismatch,
