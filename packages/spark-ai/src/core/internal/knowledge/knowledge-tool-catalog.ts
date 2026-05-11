@@ -1,4 +1,5 @@
 import type { FunctionFailureMode } from '../../protocol/runtime-contracts'
+import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 
 export type AiKnowledgeFunctionFailureMode = FunctionFailureMode
 export type AiKnowledgeFunctionTarget = 'knowledge'
@@ -13,9 +14,9 @@ type AiKnowledgeFunctionBaseFields = {
   functionId: AiKnowledgeFunctionId
   type: 'describe'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -32,8 +33,8 @@ export type AiKnowledgeFunctionCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
 export type AiKnowledgeCatalogRowOptions = Omit<

@@ -1,6 +1,8 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
   type FunctionFailureMode,
+  type LlmJsonObject,
+  type LlmParameterSchemaRoot,
   LlmParamsValidator,
 } from '../../../core'
 import {
@@ -40,9 +42,9 @@ type DatasetCrudToolFunctionBaseFields = {
   functionId: DatasetCrudToolFunctionId
   type: 'describe' | 'request'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -62,10 +64,10 @@ export type DatasetCrudToolFunctionCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
-const NO_PARAMS: Record<string, unknown> = {}
+const NO_PARAMS: LlmParameterSchemaRoot = {}
 const TABLE_NAME_PARAM = 'string — 表名'
 const VIEW_ID_PARAM = 'string — 视图 ID；省略时默认 default'
 const COLUMN_NAME_PARAM = 'string — 列名'

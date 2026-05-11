@@ -192,6 +192,171 @@ describe('AI core module projection and translation API', () => {
     })
   })
 
+  it('exports registration as JSON-persistable data without runtime methods', () => {
+    const core = createDeterministicRuntime()
+    const departmentApi = core.registerModule(createDepartmentModule())
+
+    const data = departmentApi.getRegistrationData()
+    const storeSnapshot = departmentApi.getRegistrationStoreSnapshot()
+    const roundTripped = JSON.parse(JSON.stringify(data))
+    const storeRoundTripped = JSON.parse(JSON.stringify(storeSnapshot))
+
+    expect(core.getModuleRegistrationData('department')).toEqual(data)
+    expect(core.listModuleRegistrationData()).toEqual([data])
+    expect(core.getModuleRegistrationStoreSnapshot('department')).toEqual(storeSnapshot)
+    expect(core.listModuleRegistrationStoreSnapshots()).toEqual([storeSnapshot])
+    expect(roundTripped).toEqual(data)
+    expect(storeRoundTripped).toEqual(storeSnapshot)
+    expect(data).not.toHaveProperty('getFunctions')
+    expect(data.modules[0]).not.toHaveProperty('getFunctions')
+    expect(data.modules[0]?.modules[0]?.functions[0]).toMatchObject({
+      functionId: 'update',
+      description: 'Update person basic info.',
+      paramsSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+        required: ['name'],
+      },
+    })
+    expect(data.functions).toEqual([])
+    expect(storeSnapshot.modules.map((item) => item.modulePath)).toEqual([
+      'department',
+      'department/personnel',
+      'department/personnel/basicInfo',
+    ])
+    expect(storeSnapshot.functions).toMatchObject([{
+      modulePath: 'department/personnel/basicInfo',
+      functionId: 'update',
+      sortOrder: 0,
+    }])
+    expect(storeSnapshot.modules[0]).not.toHaveProperty('modules')
+    expect(storeSnapshot.modules[0]).not.toHaveProperty('functions')
+    expect(storeSnapshot.functions[0]).not.toHaveProperty('usageRules')
+    expect(storeSnapshot.functions[0]).not.toHaveProperty('failureModes')
+  })
+
+  it('splits function rules and failure modes into structured store rows', () => {
+    const core = createDeterministicRuntime()
+    const snapshot = core.registerModule(createLeaveModule()).getRegistrationStoreSnapshot()
+
+    expect(snapshot.modules).toEqual([{
+      modulePath: 'leaveApproval',
+      moduleId: 'leaveApproval',
+      sortOrder: 0,
+      name: 'Leave approval',
+      description: 'Help users finish a leave request.',
+      prompt: 'Collect leave reason only.',
+    }])
+    expect(snapshot.functions[0]).toMatchObject({
+      modulePath: 'leaveApproval',
+      functionId: 'setReason',
+      sortOrder: 0,
+      description: 'Set leave reason.',
+    })
+    expect(snapshot.functions[0]).not.toHaveProperty('failureModes')
+    expect(snapshot.failureModes).toEqual([{
+      modulePath: 'leaveApproval',
+      functionId: 'setReason',
+      sortOrder: 0,
+      code: 'REASON_REQUIRED',
+      when: 'reason is empty',
+      fix: 'Provide a non-empty reason.',
+    }])
+  })
+
+  it('registers pure registration data as a database-loaded module source', async () => {
+    const sourceCore = createDeterministicRuntime()
+    const data = sourceCore.registerModule(createDepartmentModule()).getRegistrationData()
+    const core = createDeterministicRuntime()
+    core.registerModule(data)
+
+    const projection = await core.startInstance({
+      moduleId: 'department',
+      moduleInstanceId: 'dept-1',
+      instanceId: 'department-session-from-data',
+    })
+
+    expect(core.getModuleRegistrationData('department')).toEqual(data)
+    expect(projection.availableFunctions.map((item) => item.action)).toEqual([
+      'dept-1/{personId}@basicInfo@update',
+    ])
+    expect(projection.availableFunctions[0]).not.toHaveProperty('functionId')
+
+    const translated = await core.translateFunctionCall({
+      moduleId: 'department',
+      moduleInstanceId: 'dept-1',
+      instanceId: 'department-session-from-data',
+      runtimeInstanceId: 'department-session-from-data',
+      action: 'dept-1/person-9@basicInfo@update',
+      args: { name: 'Ada' },
+      activePath: [{ modulePath: 'department/personnel', instanceId: 'person-9' }],
+      projection,
+    })
+
+    expect(translated.ok).toBe(true)
+    if (!translated.ok) return
+    expect(translated.translation.executionArgs).toEqual({ name: 'Ada' })
+    expect(translated.translation.functionRegistration).not.toHaveProperty('execute')
+  })
+
+  it('registers store snapshots as a database-loaded module source', async () => {
+    const sourceCore = createDeterministicRuntime()
+    const data = sourceCore.registerModule(createDepartmentModule()).getRegistrationData()
+    const snapshot = sourceCore.getModuleRegistrationStoreSnapshot('department')
+    const core = createDeterministicRuntime()
+    expect(snapshot).toBeDefined()
+    if (snapshot === undefined) return
+
+    core.registerModule(snapshot)
+
+    const projection = await core.startInstance({
+      moduleId: 'department',
+      moduleInstanceId: 'dept-1',
+      instanceId: 'department-session-from-store',
+    })
+
+    expect(core.getModuleRegistrationData('department')).toEqual(data)
+    expect(core.getModuleRegistrationStoreSnapshot('department')).toEqual(snapshot)
+    expect(projection.availableFunctions.map((item) => item.action)).toEqual([
+      'dept-1/{personId}@basicInfo@update',
+    ])
+    expect(projection.availableFunctions[0]).not.toHaveProperty('functionId')
+  })
+
+  it('rejects runtime providers when exporting registration data for persistence', () => {
+    const core = createDeterministicRuntime()
+    const dynamicApi = core.registerModule({
+      moduleId: 'dynamicPrompt',
+      name: 'Dynamic prompt',
+      description: 'Uses session data to render prompt.',
+      prompt: () => 'runtime-only prompt',
+      getFunctions: () => [],
+    })
+
+    expect(() => dynamicApi.getRegistrationData()).toThrow('Dynamic module prompt provider cannot be persisted')
+    expect(() => core.getModuleRegistrationData('dynamicPrompt')).toThrow('Dynamic module prompt provider cannot be persisted')
+  })
+
+  it('rejects registration schemas that would be lossy in JSON persistence', () => {
+    const core = createDeterministicRuntime()
+    const invalidApi = core.registerModule({
+      moduleId: 'invalidSchema',
+      name: 'Invalid schema',
+      description: 'Contains runtime values in schema.',
+      getFunctions: () => [{
+        functionId: 'run',
+        description: 'Run invalid function.',
+        paramsSchema: {
+          createdAt: new Date('2026-05-11T00:00:00.000Z'),
+        } as unknown as AiFunctionRegistration['paramsSchema'],
+      }],
+    })
+
+    expect(() => invalidApi.getRegistrationData()).toThrow('must be JSON-persistable')
+  })
+
   it('isolates AI sessions by module registration id and root module entity id', async () => {
     const core = createDeterministicRuntime()
     core.registerModule(createLeaveModule())

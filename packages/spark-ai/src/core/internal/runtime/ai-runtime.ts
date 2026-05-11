@@ -5,6 +5,8 @@ import type {
   AiModuleInstanceBinding,
   AiModuleRegistration,
   AiRegisteredModuleApi,
+  AiModuleRegistrationData,
+  AiModuleRegistrationStoreSnapshot,
   AiRuntimeAction,
   AiRuntimeApi,
   AiRuntimeCreateFunctionResultMessageOptions,
@@ -104,7 +106,8 @@ export class AiRuntime implements AiRuntimeApi {
   }
 
   /** 注册顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
-  registerModule(registration: AiModuleRegistration): AiRegisteredModuleApi {
+  registerModule(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi {
+    const registration = this.projector.createRuntimeRegistration(source)
     this.projector.assertUniqueRegistrationKeys(registration)
     if (this.modules.has(registration.moduleId)) {
       throw new Error(`Duplicate AI module registration: ${registration.moduleId}`)
@@ -121,6 +124,28 @@ export class AiRuntime implements AiRuntimeApi {
   /** 列出已注册模块知识树；列表不代表服务实例或会话状态。 */
   listModuleRegistrations(): readonly AiModuleRegistration[] {
     return Array.from(this.modules.values())
+  }
+
+  /** 按 moduleId 读取可持久化模块注册数据；未知模块返回 undefined。 */
+  getModuleRegistrationData(moduleId: string): AiModuleRegistrationData | undefined {
+    const registration = this.modules.get(moduleId)
+    return registration === undefined ? undefined : this.projector.createRegistrationData(registration)
+  }
+
+  /** 列出已注册模块的可持久化数据快照。 */
+  listModuleRegistrationData(): readonly AiModuleRegistrationData[] {
+    return Array.from(this.modules.values()).map((registration) => this.projector.createRegistrationData(registration))
+  }
+
+  /** 按 moduleId 读取结构化持久化快照；未知模块返回 undefined。 */
+  getModuleRegistrationStoreSnapshot(moduleId: string): AiModuleRegistrationStoreSnapshot | undefined {
+    const registration = this.modules.get(moduleId)
+    return registration === undefined ? undefined : this.projector.createRegistrationStoreSnapshot(registration)
+  }
+
+  /** 列出已注册模块的结构化持久化快照。 */
+  listModuleRegistrationStoreSnapshots(): readonly AiModuleRegistrationStoreSnapshot[] {
+    return Array.from(this.modules.values()).map((registration) => this.projector.createRegistrationStoreSnapshot(registration))
   }
 
   /** 按技术 instanceId 读取会话记录；真实隔离仍以 moduleId + moduleInstanceId 为准。 */
@@ -757,6 +782,8 @@ export class AiRuntime implements AiRuntimeApi {
       moduleId,
       registration,
       getRegistration: () => this.getModuleOrThrow(moduleId),
+      getRegistrationData: () => this.projector.createRegistrationData(this.getModuleOrThrow(moduleId)),
+      getRegistrationStoreSnapshot: () => this.projector.createRegistrationStoreSnapshot(this.getModuleOrThrow(moduleId)),
       getSession: (instanceId) => this.getSession(instanceId),
       getSessionByModuleInstance: (moduleInstanceId) => this.getSessionByModuleScope({ moduleId, moduleInstanceId }),
       getSessionHistory: (instanceId) => this.getSessionHistory(instanceId),

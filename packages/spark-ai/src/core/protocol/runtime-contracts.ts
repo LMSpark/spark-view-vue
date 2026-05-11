@@ -1,4 +1,4 @@
-import type { LlmParameterSchemaRoot } from './parameter-schema'
+import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
 
 /**
  * AI Core 运行时协议总览。
@@ -166,7 +166,7 @@ export interface AiFunctionRegistration {
   /** 面向 LLM 的参数 schema；core 会注入必要的上下文参数。 */
   readonly paramsSchema: LlmParameterSchemaRoot
   /** 面向 LLM 的结果 schema；仅用于说明，不由 core 校验执行结果。 */
-  readonly resultSchema?: Record<string, unknown> | undefined
+  readonly resultSchema?: LlmJsonObject | undefined
   /** 建议的最长执行时间；core 不解释该值，只透传给上层或落点。 */
   readonly maxExecutionMs?: number | undefined
   /** 面向 LLM 的调用规则。 */
@@ -179,6 +179,128 @@ export interface AiFunctionRegistration {
    * - `instance`：需要父级模块实例 ID，并额外需要当前模块自己的 instanceParam。
    */
   readonly scope?: 'collection' | 'instance'
+}
+
+/** 可直接持久化的函数注册数据；只保留描述，不保留执行器或运行时 provider。 */
+export interface AiFunctionRegistrationData {
+  /** 模块内唯一函数 ID；属于注册目录，不投影给 LLM。 */
+  readonly functionId: AiRuntimeFunctionId
+  /** 面向 LLM 的函数说明。 */
+  readonly description: string
+  /** 面向 LLM 的参数 schema；必须是 JSON 可持久化对象。 */
+  readonly paramsSchema: LlmParameterSchemaRoot
+  /** 面向 LLM 的结果 schema；仅用于说明，不由 core 校验执行结果。 */
+  readonly resultSchema?: LlmJsonObject | undefined
+  /** 建议的最长执行时间；core 不解释该值，只透传给上层或落点。 */
+  readonly maxExecutionMs?: number | undefined
+  /** 面向 LLM 的调用规则。 */
+  readonly usageRules?: readonly string[] | undefined
+  /** 预声明失败模式。 */
+  readonly failureModes?: readonly FunctionFailureMode[] | undefined
+  /** 函数作用域。 */
+  readonly scope?: 'collection' | 'instance'
+}
+
+/** 可直接持久化的递归模块注册数据；运行时方法、动态 prompt provider 都不属于这里。 */
+export interface AiModuleRegistrationData {
+  /** 模块 ID。 */
+  readonly moduleId: AiRuntimeModuleId
+  /** 模块名称。 */
+  readonly name: string
+  /** 模块职责说明。 */
+  readonly description: string
+  /** 静态模块 prompt；动态 provider 必须先在运行时解析，不能作为注册数据落库。 */
+  readonly prompt?: string | undefined
+  /** 当前模块自身实例参数声明。 */
+  readonly instanceParam?: AiModuleInstanceParam | undefined
+  /** 当前模块直接注册的函数数据。 */
+  readonly functions: readonly AiFunctionRegistrationData[]
+  /** 子模块注册数据。 */
+  readonly modules: readonly AiModuleRegistrationData[]
+}
+
+/** 模块注册持久化快照中的模块行；可直接映射到数据库 module 表。 */
+export interface AiModuleRegistrationStoreModule {
+  /** 模块路径，例如 `pageDesign/nodeTree`；同一个快照内唯一。 */
+  readonly modulePath: AiRuntimeModulePath
+  /** 父模块路径；根模块为空。 */
+  readonly parentModulePath?: AiRuntimeModulePath | undefined
+  /** 模块 ID。 */
+  readonly moduleId: AiRuntimeModuleId
+  /** 同级排序号。 */
+  readonly sortOrder: number
+  /** 模块名称。 */
+  readonly name: string
+  /** 模块职责说明。 */
+  readonly description: string
+  /** 静态模块 prompt。 */
+  readonly prompt?: string | undefined
+  /** 当前模块自身实例参数字段名。 */
+  readonly instanceParamName?: string | undefined
+  /** 当前模块自身实例参数说明。 */
+  readonly instanceParamDescription?: string | undefined
+}
+
+/** 模块注册持久化快照中的函数行；可直接映射到数据库 function 表。 */
+export interface AiFunctionRegistrationStoreFunction {
+  /** 函数所属模块路径。 */
+  readonly modulePath: AiRuntimeModulePath
+  /** 模块内唯一函数 ID。 */
+  readonly functionId: AiRuntimeFunctionId
+  /** 同模块内排序号。 */
+  readonly sortOrder: number
+  /** 面向 LLM 的函数说明。 */
+  readonly description: string
+  /** 面向 LLM 的参数 schema；属于参数协议数据。 */
+  readonly paramsSchema: LlmParameterSchemaRoot
+  /** 面向 LLM 的结果 schema。 */
+  readonly resultSchema?: LlmJsonObject | undefined
+  /** 建议最长执行时间。 */
+  readonly maxExecutionMs?: number | undefined
+  /** 函数作用域。 */
+  readonly scope?: 'collection' | 'instance'
+}
+
+/** 模块注册持久化快照中的函数使用规则行。 */
+export interface AiFunctionRegistrationUsageRule {
+  /** 函数所属模块路径。 */
+  readonly modulePath: AiRuntimeModulePath
+  /** 模块内唯一函数 ID。 */
+  readonly functionId: AiRuntimeFunctionId
+  /** 同函数内排序号。 */
+  readonly sortOrder: number
+  /** 规则文本。 */
+  readonly rule: string
+}
+
+/** 模块注册持久化快照中的函数失败模式行。 */
+export interface AiFunctionRegistrationFailureMode {
+  /** 函数所属模块路径。 */
+  readonly modulePath: AiRuntimeModulePath
+  /** 模块内唯一函数 ID。 */
+  readonly functionId: AiRuntimeFunctionId
+  /** 同函数内排序号。 */
+  readonly sortOrder: number
+  /** 稳定错误码。 */
+  readonly code: string
+  /** 什么时候会触发该失败模式。 */
+  readonly when: string
+  /** 出错后 LLM 或宿主应如何修复。 */
+  readonly fix: string
+}
+
+/** 完全结构化的模块注册持久化快照；不包含嵌套树、运行时方法或执行器。 */
+export interface AiModuleRegistrationStoreSnapshot {
+  /** 根模块路径。 */
+  readonly rootModulePath: AiRuntimeModulePath
+  /** 模块行。 */
+  readonly modules: readonly AiModuleRegistrationStoreModule[]
+  /** 函数行。 */
+  readonly functions: readonly AiFunctionRegistrationStoreFunction[]
+  /** 函数使用规则行。 */
+  readonly usageRules: readonly AiFunctionRegistrationUsageRule[]
+  /** 函数失败模式行。 */
+  readonly failureModes: readonly AiFunctionRegistrationFailureMode[]
 }
 
 /** 模块注册便捷基类：只帮助模块声明“函数 + 子模块”metadata，不提供生命周期管理。 */
@@ -251,7 +373,7 @@ export interface AiRuntimeFunctionExposure {
   /** 注入上下文参数后的 LLM 参数 schema。 */
   readonly paramsSchema: LlmParameterSchemaRoot
   /** 函数结果说明。 */
-  readonly resultSchema?: Record<string, unknown> | undefined
+  readonly resultSchema?: LlmJsonObject | undefined
   /** 建议最长执行时间，只透传给上层。 */
   readonly maxExecutionMs?: number | undefined
   /** 调用规则。 */
@@ -703,6 +825,10 @@ export interface AiRegisteredModuleApi {
   readonly registration: AiModuleRegistration
   /** 读取当前模块注册。 */
   getRegistration(): AiModuleRegistration
+  /** 读取当前模块注册的纯数据快照；可直接 JSON 序列化后由上层写入数据库。 */
+  getRegistrationData(): AiModuleRegistrationData
+  /** 读取当前模块注册的结构化持久化快照；可拆表写库，由上层持久化。 */
+  getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot
   /** 按技术 instanceId alias 读取会话记录。 */
   getSession(instanceId: string): AiRuntimeSessionRecord | null
   /** 按根模块实例 ID 读取当前模块的 AI 会话记录。 */
@@ -736,11 +862,19 @@ export interface AiRegisteredModuleApi {
 /** core 对外 API：注册模块知识、管理 AI 会话历史、投影知识、翻译函数调用。 */
 export interface AiRuntimeApi {
   /** 注册一个顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
-  registerModule(registration: AiModuleRegistration): AiRegisteredModuleApi
+  registerModule(registration: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi
   /** 读取已注册模块；未知模块返回 undefined。 */
   getModuleRegistration(moduleId: string): AiModuleRegistration | undefined
   /** 列出当前 core facade 持有的模块注册。只包含知识注册，不代表服务状态。 */
   listModuleRegistrations(): readonly AiModuleRegistration[]
+  /** 读取已注册模块的纯数据快照；未知模块返回 undefined。 */
+  getModuleRegistrationData(moduleId: string): AiModuleRegistrationData | undefined
+  /** 列出当前 core facade 持有的模块注册纯数据快照。 */
+  listModuleRegistrationData(): readonly AiModuleRegistrationData[]
+  /** 读取已注册模块的结构化持久化快照；未知模块返回 undefined。 */
+  getModuleRegistrationStoreSnapshot(moduleId: string): AiModuleRegistrationStoreSnapshot | undefined
+  /** 列出当前 core facade 持有的模块注册结构化持久化快照。 */
+  listModuleRegistrationStoreSnapshots(): readonly AiModuleRegistrationStoreSnapshot[]
   /** 按技术 instanceId alias 读取会话记录；真实隔离仍以 moduleId + moduleInstanceId 为准。 */
   getSession(instanceId: string): AiRuntimeSessionRecord | null
   /** 按模块注册 ID + 根模块实例 ID 读取 AI 会话记录；未知时返回 null。 */

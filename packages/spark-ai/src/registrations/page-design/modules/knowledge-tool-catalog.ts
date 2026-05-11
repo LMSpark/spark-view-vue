@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../../../core'
+import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 import { SPARK_COMPONENT_PAYLOAD_REF } from '../payloads/component-payload-catalog'
 import {
   createPageDesignCapabilityRow,
@@ -20,9 +20,9 @@ type PageDesignKnowledgeFunctionBaseFields = {
   functionId: PageDesignKnowledgeFunctionId
   type: 'describe'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -41,8 +41,8 @@ export type PageDesignKnowledgeFunctionCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
 const KNOWLEDGE_TARGET = 'knowledge'

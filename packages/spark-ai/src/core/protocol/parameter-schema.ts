@@ -19,6 +19,18 @@
 // 一、对外类型定义
 // =========================================================
 
+/** 参数协议允许直接持久化的 JSON 原子值。 */
+export type LlmJsonPrimitive = string | number | boolean | null
+
+/** 参数协议允许直接持久化的 JSON 值；不包含 function、undefined、symbol、bigint 等运行时形态。 */
+export type LlmJsonValue =
+  | LlmJsonPrimitive
+  | readonly LlmJsonValue[]
+  | LlmJsonObject
+
+/** 参数协议中的 JSON 对象。 */
+export type LlmJsonObject = { readonly [key: string]: LlmJsonValue }
+
 /**
  * 显式对象 schema 节点。
  *
@@ -32,9 +44,9 @@
 export interface LlmParamObjectSchema {
   kind: 'object'
   required?: readonly string[]
-  properties?: Record<string, unknown>
-  optional?: Record<string, unknown>
-  additionalProperties?: unknown
+  properties?: LlmJsonObject
+  optional?: LlmJsonObject
+  additionalProperties?: LlmJsonValue
   note?: string
 }
 
@@ -46,7 +58,7 @@ export interface LlmParamObjectSchema {
  */
 export interface LlmParamArraySchema {
   kind: 'array'
-  items?: unknown
+  items?: LlmJsonValue
   note?: string
 }
 
@@ -76,10 +88,10 @@ export type LlmParameterSchemaNode =
   | LlmParamArraySchema
   | LlmParamEnumSchema
   | string
-  | Record<string, unknown>
+  | LlmJsonObject
 
 /** 函数 paramsSchema / 参数 payload guide 共用的根 schema。 */
-export type LlmParameterSchemaRoot = Record<string, unknown>
+export type LlmParameterSchemaRoot = LlmJsonObject
 
 /** 叶子描述能推断出的所有基础类型，包含特殊值 'unknown'。 */
 export type LeafKind = 'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'
@@ -212,7 +224,7 @@ export class LlmParameterSchema {
     if (LlmParameterSchema.isPlainRecord(schema)) {
       return {
         kind: 'object',
-        properties: schema,
+        properties: schema as LlmJsonObject,
       } satisfies LlmParamObjectSchema
     }
     return 'unknown'

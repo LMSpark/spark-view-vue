@@ -5,6 +5,8 @@ import {
   type AiRegisteredModuleApi,
   type AiKnowledgeProjection,
   type AiModuleRegistration,
+  type AiModuleRegistrationData,
+  type AiModuleRegistrationStoreSnapshot,
   type AiFunctionRegistration,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeFunctionCallTranslationResult,
@@ -563,6 +565,14 @@ export class PageDesignModule implements AiModuleRegistration {
   getSessionHistory(context: PageDesignRuntimeContext): readonly AiRuntimeHistoryEntry[] {
     assertPageDesignContext(context)
     return this.ai.getSessionHistoryByModuleInstance(context.moduleInstanceId)
+  }
+
+  getRegistrationData(): AiModuleRegistrationData {
+    return this.ai.getRegistrationData()
+  }
+
+  getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot {
+    return this.ai.getRegistrationStoreSnapshot()
   }
 
   async translateFunctionCall(options: PageDesignExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult> {

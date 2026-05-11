@@ -9,7 +9,7 @@
  * 该层只定义“可复用参数如何被发现和描述”，参数结构统一使用 `parameter-schema.ts`。
  */
 
-import type { LlmParameterSchemaRoot } from './parameter-schema'
+import type { LlmJsonValue, LlmParameterSchemaRoot } from './parameter-schema'
 
 /** 查询参数 payload 摘要时使用的轻量过滤条件。 */
 export interface ParameterPayloadQueryFilter {
@@ -54,7 +54,7 @@ export interface ParameterPayloadGuide {
   /** LLM 提交该参数 payload 时应遵守的参数 schema；与函数 paramsSchema 同源。 */
   readonly paramsSchema: LlmParameterSchemaRoot
   /** 最小可用参数示例，帮助 LLM 减少结构猜测。 */
-  readonly minimalParams?: unknown
+  readonly minimalParams?: LlmJsonValue
   /** 使用规则、前置条件或调用顺序提示。 */
   readonly usageRules?: readonly string[]
   /** 已知失败模式，供 LLM 规划修复动作。 */

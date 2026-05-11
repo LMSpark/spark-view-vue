@@ -32,6 +32,7 @@ import {
   type LlmParamArraySchema,
   type LlmParamEnumSchema,
   type LlmParamObjectSchema,
+  type LlmParameterSchemaRoot,
 } from './parameter-schema'
 
 // =========================================================
@@ -139,7 +140,7 @@ export class LlmParamsValidator {
    */
   static validateLlmDeserializedParams(
     params: unknown,
-    schema: Record<string, unknown>,
+    schema: LlmParameterSchemaRoot,
     options: LlmParamValidationOptions = {},
   ): LlmParamValidationResult {
     const issues: LlmParamValidationIssue[] = []

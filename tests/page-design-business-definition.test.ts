@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  AiRuntime,
   PageDesignModule,
   PageDesignService,
   type PageDesignEditHost,
@@ -82,6 +83,42 @@ describe('pageDesign module definition', () => {
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@export')).toBe(false)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listAggregates')).toBe(false)
     expect(projection.availableFunctions.every((item) => !('functionId' in item))).toBe(true)
+
+    const registrationData = pageDesign.getRegistrationData()
+    expect(JSON.parse(JSON.stringify(registrationData))).toEqual(registrationData)
+    expect(registrationData.functions).toEqual([])
+    expect(registrationData.modules.every((module) => !('getFunctions' in module))).toBe(true)
+    expect(registrationData.modules.map((module) => module.moduleId)).toEqual([
+      'lifecycle',
+      'textModel',
+      'knowledge',
+      'nodeTree',
+      'dataset',
+      'jsonDoc',
+    ])
+    expect(registrationData.modules
+      .find((module) => module.moduleId === 'lifecycle')
+      ?.functions.some((definition) => definition.functionId === 'bootstrap')).toBe(true)
+
+    const registrationStoreSnapshot = pageDesign.getRegistrationStoreSnapshot()
+    expect(JSON.parse(JSON.stringify(registrationStoreSnapshot))).toEqual(registrationStoreSnapshot)
+    expect(registrationStoreSnapshot.modules.every((module) => !('modules' in module) && !('functions' in module))).toBe(true)
+    expect(registrationStoreSnapshot.functions.every((definition) => !('usageRules' in definition) && !('failureModes' in definition))).toBe(true)
+    expect(registrationStoreSnapshot.modules.map((module) => module.modulePath)).toContain('pageDesign/lifecycle')
+    expect(registrationStoreSnapshot.functions.some((definition) => (
+      definition.modulePath === 'pageDesign/lifecycle'
+      && definition.functionId === 'bootstrap'
+    ))).toBe(true)
+
+    const dataOnlyCore = new AiRuntime()
+    dataOnlyCore.registerModule(registrationStoreSnapshot)
+    const dataOnlyProjection = await dataOnlyCore.startInstance({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer-data-only',
+      instanceId: 'page-design-data-only',
+    })
+    expect(dataOnlyProjection.availableFunctions.some((item) => item.action === 'page-designer-data-only@lifecycle@bootstrap')).toBe(true)
+    expect(dataOnlyProjection.availableFunctions.every((item) => !('functionId' in item))).toBe(true)
 
     pageDesign.appendMessage({
       moduleId: PageDesignModule.moduleId,

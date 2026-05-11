@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../../../core'
+import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 import {
   createPageDesignCapabilityRow,
   type PageDesignFunctionRuntimeBinding,
@@ -14,9 +14,9 @@ type TextModelFunctionBaseFields = {
   functionId: TextModelFunctionId
   type: 'describe' | 'request'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -36,11 +36,11 @@ export type TextModelFunctionCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
-const NO_PARAMS: Record<string, unknown> = {}
+const NO_PARAMS: LlmParameterSchemaRoot = {}
 const CONTENT_PARAM = 'string — 完整文本内容（全量覆盖写入，不支持 patch）'
 
 const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.bootstrap，确保宿主绑定 read*/write*。`

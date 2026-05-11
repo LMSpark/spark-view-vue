@@ -1,5 +1,7 @@
 import {
   type FunctionFailureMode,
+  type LlmJsonObject,
+  type LlmParameterSchemaRoot,
   type LlmParamValidationOptions,
   LlmParamsValidator,
 } from '../../../core'
@@ -34,9 +36,9 @@ type SparkNodeTreeToolBaseFields = {
   functionId: SparkNodeTreeToolFunctionId
   type: 'describe' | 'request'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -56,11 +58,11 @@ export type SparkNodeTreeToolCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
-const NO_PARAMS: Record<string, unknown> = {}
+const NO_PARAMS: LlmParameterSchemaRoot = {}
 const COMPONENT_ID_PARAM =
   'string — 节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段）；' +
   '绝对禁止使用组件类型名（r-table、r-tabs、r-text、r-select 等）作为 componentId，类型名不是 id'

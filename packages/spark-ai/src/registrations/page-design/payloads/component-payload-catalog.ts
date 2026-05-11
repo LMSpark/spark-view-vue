@@ -2,6 +2,8 @@ import rawComponentCatalogJson from './component-catalog.json'
 import { projectComponentConfigGuide, projectFunctionCatalog, projectFrameworkNeutralCatalog } from './catalog-projections'
 import type { ComponentCatalog } from './types'
 import type {
+  LlmJsonObject,
+  LlmJsonValue,
   LlmParameterSchemaNode,
   LlmParameterSchemaRoot,
   ParameterPayloadGuide,
@@ -124,7 +126,7 @@ function buildSparkNodeParamsSchema(type: string, requiredProps: ComponentPropGu
       props: {
         kind: 'object',
         required: requiredProps.map(prop => prop.name),
-        properties: propsProperties,
+        properties: propsProperties as LlmJsonObject,
         additionalProperties: 'unknown — 组件扩展 props',
         note: '组件 props 参数；required props 必须显式传入。',
       },
@@ -150,7 +152,7 @@ export function guidePageDesignComponentPayload(key: string): ParameterPayloadGu
     key: guide.type,
     description: `${guide.type} SparkNode 参数荷载指南`,
     paramsSchema: buildSparkNodeParamsSchema(guide.type, guide.requiredProps, guide.optionalProps),
-    minimalParams: guide.minimalConfig,
+    minimalParams: guide.minimalConfig as LlmJsonValue,
     usageRules: [
       '构造 nodeTree 写函数的 node 参数前，必须以本 paramsSchema 为准。',
       'required props 必须显式传入；default 只能作为默认值提示，不能代替业务值判断。',

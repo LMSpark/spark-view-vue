@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../../../core'
+import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 
 export type PageDesignFunctionKind = 'describe' | 'request'
 export type PageDesignCapabilityIntegrationStatus = 'catalog-only' | 'runtime-wired'
@@ -40,9 +40,9 @@ export interface PageDesignFunctionCatalogRow {
   type: PageDesignFunctionKind
   target: string
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
   failureModes: readonly FunctionFailureMode[]
   runtimeBinding: PageDesignFunctionRuntimeBinding
@@ -59,11 +59,11 @@ export interface PageDesignCapabilityRow {
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
-export type PageDesignCapabilityExtras = Record<string, unknown>
+export type PageDesignCapabilityExtras = LlmJsonObject
 
 export function createPageDesignCapabilityRow<
   TRow extends PageDesignFunctionCatalogRow,

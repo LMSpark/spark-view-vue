@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../../../core'
+import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 import {
   createPageDesignCapabilityRow,
   type PageDesignFunctionRuntimeBinding,
@@ -15,9 +15,9 @@ type JsonDocFunctionBaseFields = {
   functionId: JsonDocFunctionId
   type: 'describe' | 'request'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -38,8 +38,8 @@ export type JsonDocFunctionCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
 // ── 常量 ──────────────────────────────────────────────────────────────────────

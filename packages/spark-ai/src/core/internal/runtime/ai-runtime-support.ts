@@ -1,6 +1,14 @@
 import type {
+  AiFunctionRegistration,
+  AiFunctionRegistrationData,
+  AiFunctionRegistrationFailureMode,
+  AiFunctionRegistrationStoreFunction,
+  AiFunctionRegistrationUsageRule,
   AiModuleInstanceBinding,
   AiModuleRegistration,
+  AiModuleRegistrationData,
+  AiModuleRegistrationStoreModule,
+  AiModuleRegistrationStoreSnapshot,
   AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
   AiRuntimeFunctionContextParam,
@@ -8,6 +16,7 @@ import type {
   AiRuntimeInstanceScope,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
+import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../../protocol/llm-params-validator'
 
 /**
@@ -32,6 +41,49 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/** 判断值是否为可直接 JSON 持久化的普通对象。 */
+function isPlainJsonRecord(value: unknown): value is Record<string, unknown> {
+  if (!isRecord(value)) return false
+  const prototype: unknown = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
+}
+
+/** 校验注册快照中的任意值能无损写入 JSON 数据库字段。 */
+function assertRegistrationJsonValue(value: unknown, path: string): void {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      throw new Error(`Registration data ${path} must be a finite JSON number`)
+    }
+    return
+  }
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      if (!(index in value)) {
+        throw new Error(`Registration data ${path}[${index}] must not be a sparse array slot`)
+      }
+      assertRegistrationJsonValue(value[index], `${path}[${index}]`)
+    }
+    return
+  }
+  if (isPlainJsonRecord(value)) {
+    for (const [key, child] of Object.entries(value)) {
+      assertRegistrationJsonValue(child, `${path}.${key}`)
+    }
+    return
+  }
+  throw new Error(`Registration data ${path} must be JSON-persistable`)
+}
+
+/** 克隆 JSON 对象，确保返回值没有运行时引用。 */
+function cloneRegistrationJsonObject(value: unknown, path: string): LlmJsonObject {
+  if (!isPlainJsonRecord(value)) {
+    throw new Error(`Registration data ${path} must be a JSON object`)
+  }
+  assertRegistrationJsonValue(value, path)
+  return JSON.parse(JSON.stringify(value)) as LlmJsonObject
+}
+
 interface ProjectModuleOptions {
   /** 当前要投影的模块注册。 */
   module: AiModuleRegistration
@@ -41,6 +93,13 @@ interface ProjectModuleOptions {
   parentIds: readonly string[]
   /** 父级模块实例参数，用于注入子函数 schema。 */
   parentContextParams: readonly AiRuntimeFunctionContextParam[]
+}
+
+interface RegistrationStoreBuildState {
+  readonly modules: AiModuleRegistrationStoreModule[]
+  readonly functions: AiFunctionRegistrationStoreFunction[]
+  readonly usageRules: AiFunctionRegistrationUsageRule[]
+  readonly failureModes: AiFunctionRegistrationFailureMode[]
 }
 
 /** 负责把递归模块注册树投影成 LLM 可见知识的无状态工具。 */
@@ -87,6 +146,48 @@ export class AiRuntimeProjector {
       functions: this.cloneExposure(module.functions),
       modules: module.modules.map((child) => this.cloneModuleExposure(child)),
     }
+  }
+
+  /** 从运行时模块注册生成纯数据快照；结果可 JSON 序列化后交给上层持久化。 */
+  createRegistrationData(module: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiModuleRegistrationData {
+    const registration = this.createRuntimeRegistration(module)
+    return this.createRegistrationDataNode(registration, registration.moduleId)
+  }
+
+  /** 把运行时注册或数据库纯数据注册统一成 core 可消费的运行时注册。 */
+  createRuntimeRegistration(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiModuleRegistration {
+    if (this.isRuntimeRegistration(source)) return source
+    const data = this.isStoreSnapshot(source)
+      ? this.createRegistrationDataFromStoreSnapshot(source)
+      : this.cloneRegistrationData(source, source.moduleId)
+    return this.runtimeRegistrationFromData(data, data.moduleId)
+  }
+
+  /** 从注册源生成完全结构化的持久化快照；调用方可将数组行映射到数据库表。 */
+  createRegistrationStoreSnapshot(
+    source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot,
+  ): AiModuleRegistrationStoreSnapshot {
+    if (this.isStoreSnapshot(source)) {
+      const data = this.createRegistrationDataFromStoreSnapshot(source)
+      return this.createRegistrationStoreSnapshot(data)
+    }
+    const data = this.createRegistrationData(source)
+    const state: RegistrationStoreBuildState = {
+      modules: [],
+      functions: [],
+      usageRules: [],
+      failureModes: [],
+    }
+    this.collectRegistrationStoreRows(data, undefined, data.moduleId, 0, state)
+    const snapshot: AiModuleRegistrationStoreSnapshot = {
+      rootModulePath: data.moduleId,
+      modules: state.modules,
+      functions: state.functions,
+      usageRules: state.usageRules,
+      failureModes: state.failureModes,
+    }
+    assertRegistrationJsonValue(snapshot, `registrationStore.${data.moduleId}`)
+    return snapshot
   }
 
   /** 根据调用方传入的 active path 生成只读快照。 */
@@ -212,14 +313,326 @@ export class AiRuntimeProjector {
     }
   }
 
+  /** 递归生成可持久化注册数据。 */
+  private createRegistrationDataNode(module: AiModuleRegistration, modulePath: string): AiModuleRegistrationData {
+    const prompt = this.staticRegistrationPrompt(module.prompt, modulePath)
+    const data: AiModuleRegistrationData = {
+      moduleId: module.moduleId,
+      name: module.name,
+      description: module.description,
+      ...(prompt !== undefined ? { prompt } : {}),
+      ...(module.instanceParam !== undefined ? { instanceParam: { ...module.instanceParam } } : {}),
+      functions: module.getFunctions().map((definition): AiFunctionRegistrationData => ({
+        functionId: definition.functionId,
+        description: definition.description,
+        paramsSchema: cloneRegistrationJsonObject(definition.paramsSchema, `${modulePath}.${definition.functionId}.paramsSchema`),
+        ...(definition.resultSchema !== undefined ? {
+          resultSchema: cloneRegistrationJsonObject(definition.resultSchema, `${modulePath}.${definition.functionId}.resultSchema`),
+        } : {}),
+        ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
+        ...(definition.usageRules !== undefined ? { usageRules: [...definition.usageRules] } : {}),
+        ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes.map((mode) => ({ ...mode })) } : {}),
+        ...(definition.scope !== undefined ? { scope: definition.scope } : {}),
+      })),
+      modules: (module.modules ?? []).map((child) => this.createRegistrationDataNode(child, `${modulePath}/${child.moduleId}`)),
+    }
+    assertRegistrationJsonValue(data, `registration.${modulePath}`)
+    return data
+  }
+
+  /** 克隆并校验已是纯数据形态的注册树。 */
+  private cloneRegistrationData(data: AiModuleRegistrationData, modulePath: string): AiModuleRegistrationData {
+    const cloned: AiModuleRegistrationData = {
+      moduleId: data.moduleId,
+      name: data.name,
+      description: data.description,
+      ...(data.prompt !== undefined ? { prompt: data.prompt } : {}),
+      ...(data.instanceParam !== undefined ? { instanceParam: { ...data.instanceParam } } : {}),
+      functions: data.functions.map((definition) => this.cloneFunctionData(definition, modulePath)),
+      modules: data.modules.map((child) => this.cloneRegistrationData(child, `${modulePath}/${child.moduleId}`)),
+    }
+    assertRegistrationJsonValue(cloned, `registration.${modulePath}`)
+    return cloned
+  }
+
+  /** 克隆并校验纯数据形态的函数注册。 */
+  private cloneFunctionData(definition: AiFunctionRegistrationData, modulePath: string): AiFunctionRegistrationData {
+    return {
+      functionId: definition.functionId,
+      description: definition.description,
+      paramsSchema: cloneRegistrationJsonObject(definition.paramsSchema, `${modulePath}.${definition.functionId}.paramsSchema`),
+      ...(definition.resultSchema !== undefined ? {
+        resultSchema: cloneRegistrationJsonObject(definition.resultSchema, `${modulePath}.${definition.functionId}.resultSchema`),
+      } : {}),
+      ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
+      ...(definition.usageRules !== undefined ? { usageRules: [...definition.usageRules] } : {}),
+      ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes.map((mode) => ({ ...mode })) } : {}),
+      ...(definition.scope !== undefined ? { scope: definition.scope } : {}),
+    }
+  }
+
+  /** 将数据库纯数据注册适配成运行时注册；适配器只补 `getFunctions`，不引入执行器。 */
+  private runtimeRegistrationFromData(data: AiModuleRegistrationData, modulePath: string): AiModuleRegistration {
+    const modules = data.modules.map((child) => this.runtimeRegistrationFromData(child, `${modulePath}/${child.moduleId}`))
+    const functions = data.functions.map((definition) => this.functionRegistrationFromData(definition, modulePath))
+    return {
+      moduleId: data.moduleId,
+      name: data.name,
+      description: data.description,
+      ...(data.prompt !== undefined ? { prompt: data.prompt } : {}),
+      ...(data.instanceParam !== undefined ? { instanceParam: { ...data.instanceParam } } : {}),
+      modules,
+      getFunctions: () => functions.map((definition) => this.cloneFunctionRegistration(definition, modulePath)),
+    }
+  }
+
+  /** 将纯数据函数注册适配成运行时函数注册。 */
+  private functionRegistrationFromData(definition: AiFunctionRegistrationData, modulePath: string): AiFunctionRegistration {
+    return this.cloneFunctionRegistration(definition, modulePath)
+  }
+
+  /** 克隆运行时函数注册中的可持久化字段。 */
+  private cloneFunctionRegistration(definition: AiFunctionRegistration, modulePath: string): AiFunctionRegistration {
+    return {
+      functionId: definition.functionId,
+      description: definition.description,
+      paramsSchema: cloneRegistrationJsonObject(definition.paramsSchema, `${modulePath}.${definition.functionId}.paramsSchema`),
+      ...(definition.resultSchema !== undefined ? {
+        resultSchema: cloneRegistrationJsonObject(definition.resultSchema, `${modulePath}.${definition.functionId}.resultSchema`),
+      } : {}),
+      ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
+      ...(definition.usageRules !== undefined ? { usageRules: [...definition.usageRules] } : {}),
+      ...(definition.failureModes !== undefined ? { failureModes: definition.failureModes.map((mode) => ({ ...mode })) } : {}),
+      ...(definition.scope !== undefined ? { scope: definition.scope } : {}),
+    }
+  }
+
+  private collectRegistrationStoreRows(
+    data: AiModuleRegistrationData,
+    parentModulePath: string | undefined,
+    modulePath: string,
+    sortOrder: number,
+    state: RegistrationStoreBuildState,
+  ): void {
+    this.assertId('moduleId', data.moduleId)
+    state.modules.push({
+      modulePath,
+      ...(parentModulePath !== undefined ? { parentModulePath } : {}),
+      moduleId: data.moduleId,
+      sortOrder,
+      name: data.name,
+      description: data.description,
+      ...(data.prompt !== undefined ? { prompt: data.prompt } : {}),
+      ...(data.instanceParam !== undefined ? {
+        instanceParamName: data.instanceParam.name,
+        instanceParamDescription: data.instanceParam.description,
+      } : {}),
+    })
+
+    data.functions.forEach((definition, functionIndex) => {
+      this.assertId('functionId', definition.functionId)
+      state.functions.push({
+        modulePath,
+        functionId: definition.functionId,
+        sortOrder: functionIndex,
+        description: definition.description,
+        paramsSchema: cloneRegistrationJsonObject(definition.paramsSchema, `${modulePath}.${definition.functionId}.paramsSchema`),
+        ...(definition.resultSchema !== undefined ? {
+          resultSchema: cloneRegistrationJsonObject(definition.resultSchema, `${modulePath}.${definition.functionId}.resultSchema`),
+        } : {}),
+        ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
+        ...(definition.scope !== undefined ? { scope: definition.scope } : {}),
+      })
+      definition.usageRules?.forEach((rule, ruleIndex) => {
+        state.usageRules.push({
+          modulePath,
+          functionId: definition.functionId,
+          sortOrder: ruleIndex,
+          rule,
+        })
+      })
+      definition.failureModes?.forEach((mode, modeIndex) => {
+        state.failureModes.push({
+          modulePath,
+          functionId: definition.functionId,
+          sortOrder: modeIndex,
+          code: mode.code,
+          when: mode.when,
+          fix: mode.fix,
+        })
+      })
+    })
+
+    data.modules.forEach((child, childIndex) => {
+      this.collectRegistrationStoreRows(child, modulePath, `${modulePath}/${child.moduleId}`, childIndex, state)
+    })
+  }
+
+  private createRegistrationDataFromStoreSnapshot(snapshot: AiModuleRegistrationStoreSnapshot): AiModuleRegistrationData {
+    assertRegistrationJsonValue(snapshot, `registrationStore.${snapshot.rootModulePath}`)
+    const moduleRows = new Map<string, AiModuleRegistrationStoreModule>()
+    const childRowsByParent = new Map<string, AiModuleRegistrationStoreModule[]>()
+    const functionRowsByModule = new Map<string, AiFunctionRegistrationStoreFunction[]>()
+    const usageRulesByFunction = new Map<string, AiFunctionRegistrationUsageRule[]>()
+    const failureModesByFunction = new Map<string, AiFunctionRegistrationFailureMode[]>()
+
+    for (const row of snapshot.modules) {
+      if (moduleRows.has(row.modulePath)) {
+        throw new Error(`Duplicate registration store module path: ${row.modulePath}`)
+      }
+      moduleRows.set(row.modulePath, row)
+    }
+
+    const root = moduleRows.get(snapshot.rootModulePath)
+    if (root === undefined) {
+      throw new Error(`Registration store root module not found: ${snapshot.rootModulePath}`)
+    }
+    if (root.parentModulePath !== undefined || root.modulePath !== root.moduleId) {
+      throw new Error(`Registration store root module path must equal root moduleId: ${snapshot.rootModulePath}`)
+    }
+
+    for (const row of snapshot.modules) {
+      if (row.modulePath === snapshot.rootModulePath) continue
+      if (row.parentModulePath === undefined) {
+        throw new Error(`Registration store module ${row.modulePath} must declare parentModulePath`)
+      }
+      if (!moduleRows.has(row.parentModulePath)) {
+        throw new Error(`Registration store module ${row.modulePath} references unknown parent ${row.parentModulePath}`)
+      }
+      const expectedPath = `${row.parentModulePath}/${row.moduleId}`
+      if (row.modulePath !== expectedPath) {
+        throw new Error(`Registration store module path ${row.modulePath} must equal ${expectedPath}`)
+      }
+      const siblings = childRowsByParent.get(row.parentModulePath) ?? []
+      siblings.push(row)
+      childRowsByParent.set(row.parentModulePath, siblings)
+    }
+
+    const knownFunctions = new Set<string>()
+    for (const row of snapshot.functions) {
+      if (!moduleRows.has(row.modulePath)) {
+        throw new Error(`Registration store function ${row.modulePath}.${row.functionId} references unknown module`)
+      }
+      const key = this.storeFunctionKey(row.modulePath, row.functionId)
+      if (knownFunctions.has(key)) {
+        throw new Error(`Duplicate registration store function: ${row.modulePath}.${row.functionId}`)
+      }
+      knownFunctions.add(key)
+      const functions = functionRowsByModule.get(row.modulePath) ?? []
+      functions.push(row)
+      functionRowsByModule.set(row.modulePath, functions)
+    }
+
+    for (const row of snapshot.usageRules) {
+      const key = this.storeFunctionKey(row.modulePath, row.functionId)
+      if (!knownFunctions.has(key)) {
+        throw new Error(`Registration store row references unknown function: ${row.modulePath}.${row.functionId}`)
+      }
+      const rules = usageRulesByFunction.get(key) ?? []
+      rules.push(row)
+      usageRulesByFunction.set(key, rules)
+    }
+
+    for (const row of snapshot.failureModes) {
+      const key = this.storeFunctionKey(row.modulePath, row.functionId)
+      if (!knownFunctions.has(key)) {
+        throw new Error(`Registration store row references unknown function: ${row.modulePath}.${row.functionId}`)
+      }
+      const modes = failureModesByFunction.get(key) ?? []
+      modes.push(row)
+      failureModesByFunction.set(key, modes)
+    }
+
+    const buildModule = (row: AiModuleRegistrationStoreModule): AiModuleRegistrationData => {
+      const modulePath = row.modulePath
+      const functions = [...(functionRowsByModule.get(modulePath) ?? [])]
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((definition): AiFunctionRegistrationData => {
+          const key = this.storeFunctionKey(modulePath, definition.functionId)
+          const usageRules = [...(usageRulesByFunction.get(key) ?? [])]
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((rule) => rule.rule)
+          const failureModes = [...(failureModesByFunction.get(key) ?? [])]
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((mode) => ({
+              code: mode.code,
+              when: mode.when,
+              fix: mode.fix,
+            }))
+          return {
+            functionId: definition.functionId,
+            description: definition.description,
+            paramsSchema: cloneRegistrationJsonObject(definition.paramsSchema, `${modulePath}.${definition.functionId}.paramsSchema`),
+            ...(definition.resultSchema !== undefined ? {
+              resultSchema: cloneRegistrationJsonObject(definition.resultSchema, `${modulePath}.${definition.functionId}.resultSchema`),
+            } : {}),
+            ...(definition.maxExecutionMs !== undefined ? { maxExecutionMs: definition.maxExecutionMs } : {}),
+            ...(usageRules.length > 0 ? { usageRules } : {}),
+            ...(failureModes.length > 0 ? { failureModes } : {}),
+            ...(definition.scope !== undefined ? { scope: definition.scope } : {}),
+          }
+        })
+
+      const modules = [...(childRowsByParent.get(modulePath) ?? [])]
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((child) => buildModule(child))
+
+      if ((row.instanceParamName === undefined) !== (row.instanceParamDescription === undefined)) {
+        throw new Error(`Registration store module ${row.modulePath} must store both instanceParamName and instanceParamDescription`)
+      }
+      return {
+        moduleId: row.moduleId,
+        name: row.name,
+        description: row.description,
+        ...(row.prompt !== undefined ? { prompt: row.prompt } : {}),
+        ...(row.instanceParamName !== undefined ? {
+          instanceParam: {
+            name: row.instanceParamName,
+            description: row.instanceParamDescription as string,
+          },
+        } : {}),
+        functions,
+        modules,
+      }
+    }
+
+    return this.cloneRegistrationData(buildModule(root), snapshot.rootModulePath)
+  }
+
+  private storeFunctionKey(modulePath: string, functionId: string): string {
+    return `${modulePath}\u0000${functionId}`
+  }
+
+  private isStoreSnapshot(source: unknown): source is AiModuleRegistrationStoreSnapshot {
+    return isRecord(source)
+      && typeof source['rootModulePath'] === 'string'
+      && Array.isArray(source['modules'])
+      && Array.isArray(source['functions'])
+      && Array.isArray(source['usageRules'])
+      && Array.isArray(source['failureModes'])
+  }
+
+  private isRuntimeRegistration(
+    source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot,
+  ): source is AiModuleRegistration {
+    return typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function'
+  }
+
+  /** 动态 prompt provider 是运行时能力，不是可落库的注册内容。 */
+  private staticRegistrationPrompt(prompt: AiModuleRegistration['prompt'], modulePath: string): string | undefined {
+    if (typeof prompt === 'string') return prompt
+    if (prompt === undefined) return undefined
+    throw new Error(`Dynamic module prompt provider cannot be persisted as registration data: ${modulePath}.prompt`)
+  }
+
   private injectContextParamsSchema(
-    schema: Record<string, unknown>,
+    schema: LlmParameterSchemaRoot,
     contextParams: readonly AiRuntimeFunctionContextParam[],
-  ): Record<string, unknown> {
+  ): LlmParameterSchemaRoot {
     // 没有上下文参数时仍然克隆 schema，保证对外快照不可反向修改注册源。
     if (contextParams.length === 0) return cloneRuntimeValue(schema)
 
-    const cloned = cloneRuntimeValue(schema)
+    const cloned = cloneRuntimeValue(schema) as Record<string, unknown>
     // 兼容 JSON Schema 风格的 object schema。
     if (cloned['type'] === 'object') {
       const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
@@ -238,7 +651,7 @@ export class AiRuntimeProjector {
         type: 'object',
         properties,
         required,
-      }
+      } as LlmParameterSchemaRoot
     }
 
     // 兼容 spark-ai 自有的 kind: object schema。
@@ -256,7 +669,7 @@ export class AiRuntimeProjector {
         kind: 'object',
         properties,
         required,
-      }
+      } as LlmParameterSchemaRoot
     }
 
     // 简写对象 schema 直接追加字段说明。
@@ -264,7 +677,7 @@ export class AiRuntimeProjector {
     for (const param of contextParams) {
       simplified[param.paramName] = `string — ${param.description}（模块路径: ${param.modulePath}）`
     }
-    return simplified
+    return simplified as LlmParameterSchemaRoot
   }
 
   private collectPrompts(module: AiRuntimeModuleExposure, parts: string[]): void {
@@ -339,7 +752,7 @@ export class AiRuntimeProjector {
 /** 翻译阶段使用的轻量参数校验器。 */
 export class AiRuntimeArgValidator {
   /** 根据函数投影后的 paramsSchema 校验 LLM args，返回 null 表示通过。 */
-  validateArgsBySchema(schema: Record<string, unknown>, args: unknown): string | null {
+  validateArgsBySchema(schema: LlmParameterSchemaRoot, args: unknown): string | null {
     if (Object.keys(schema).length === 0) return null
     if (schema['type'] === 'object') return this.validateJsonSchemaObject(schema, args)
 
@@ -348,7 +761,7 @@ export class AiRuntimeArgValidator {
   }
 
   /** 校验 JSON Schema 风格的 object schema。 */
-  private validateJsonSchemaObject(schema: Record<string, unknown>, args: unknown): string | null {
+  private validateJsonSchemaObject(schema: LlmParameterSchemaRoot, args: unknown): string | null {
     if (!this.isRecord(args)) return 'args must be an object'
 
     const required = Array.isArray(schema['required'])

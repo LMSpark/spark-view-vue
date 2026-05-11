@@ -1,4 +1,4 @@
-import type { FunctionFailureMode } from '../../../core'
+import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 import {
   createPageDesignCapabilityRow,
   type PageDesignFunctionRuntimeBinding,
@@ -13,9 +13,9 @@ type EditLifecycleFunctionBaseFields = {
   functionId: EditLifecycleFunctionId
   type: 'describe' | 'request'
   description: string
-  paramsSchema: Record<string, unknown>
-  resultSchema: Record<string, unknown>
-  example: Record<string, unknown>
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema: LlmJsonObject
+  example: LlmJsonObject
   usageRules: readonly string[]
 }
 
@@ -34,11 +34,11 @@ export type EditLifecycleFunctionCapabilityRow = Pick<
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
-  params?: Record<string, unknown>
-  example?: Record<string, unknown>
+  params?: LlmParameterSchemaRoot
+  example?: LlmJsonObject
 }
 
-const NO_PARAMS: Record<string, unknown> = {}
+const NO_PARAMS: LlmParameterSchemaRoot = {}
 
 const BOOTSTRAP_RULE = 'bootstrap 仅做 live binding 可用性校验，不接收文件快照参数。'
 const PHASE_RULE = '执行成功后进入 editing phase。'
