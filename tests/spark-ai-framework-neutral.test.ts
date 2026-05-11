@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
   COMPONENT_CATALOG_JSON,
-  DEV_PROP_NAMES,
   guidePageDesignComponentPayload,
   projectFunctionCatalog,
   type ComponentCatalog,
@@ -24,8 +23,9 @@ function walkFiles(dir: string): string[] {
 
 describe('@spark-view/spark-ai framework boundary', () => {
   const packageRoot = path.resolve(__dirname, '../packages/spark-ai')
+  const repoRoot = path.resolve(__dirname, '..')
 
-  it('does not depend on the Vue renderer package', () => {
+  it('isolates the Vue renderer package dependency to the page-file editing service', () => {
     const files = [
       path.join(packageRoot, 'package.json'),
       path.join(packageRoot, 'tsconfig.json'),
@@ -34,8 +34,45 @@ describe('@spark-view/spark-ai framework boundary', () => {
         .filter(file => file.endsWith('.ts')),
     ]
 
-    const offenders = files.filter((file) => fs.readFileSync(file, 'utf8').includes('@spark-view/spark-component'))
+    const allowed = new Set([
+      'package.json',
+      'tsconfig.json',
+      'tsconfig.build.json',
+      path.join('src', 'services', 'page-design', 'page-file-documents.ts'),
+    ])
+    const offenders = files.filter((file) => {
+      const relative = path.relative(packageRoot, file)
+      return !allowed.has(relative) && fs.readFileSync(file, 'utf8').includes('@spark-view/spark-component')
+    })
     expect(offenders.map(file => path.relative(packageRoot, file))).toEqual([])
+  })
+
+  it('keeps DevSystem editing independent from the AI core runtime', () => {
+    const devSystemRoot = path.join(repoRoot, 'src', 'views', 'app', 'dev-system')
+    const serviceRoot = path.join(packageRoot, 'src', 'services')
+    const files = [
+      ...walkFiles(devSystemRoot),
+      ...walkFiles(serviceRoot),
+    ].filter(file => /\.(ts|vue)$/.test(file))
+
+    const forbiddenPatterns = [
+      /@spark-view\/spark-ai\/core/,
+      /from\s+['"][^'"]*\/core(?:\/|['"])/,
+      /\bAiRuntime\b/,
+      /\bAiModule[A-Z]\w*\b/,
+      /\bAiRegistered[A-Z]\w*\b/,
+      /\bAiInvocation\b/,
+      /\bFunctionExecutionContext\b/,
+    ]
+
+    const offenders = files.flatMap((file) => {
+      const content = fs.readFileSync(file, 'utf8')
+      return forbiddenPatterns
+        .filter(pattern => pattern.test(content))
+        .map(pattern => `${path.relative(repoRoot, file)} :: ${pattern.source}`)
+    })
+
+    expect(offenders).toEqual([])
   })
 
   it('publishes a framework-neutral component catalog surface', () => {
@@ -58,9 +95,6 @@ describe('@spark-view/spark-ai framework boundary', () => {
       expect(entry.emits?.map(emit => emit.name) ?? []).not.toContain('update:modelValue')
     }
 
-    for (const names of Object.values(DEV_PROP_NAMES)) {
-      expect(names).not.toContain('modelValue')
-    }
   })
 
   it('publishes component payload guides as parameter schema', () => {

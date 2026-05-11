@@ -1,6 +1,8 @@
 /**
  * DevSystem 全局共享状态 — 跨面板的响应式数据中心。
  *
+ * 编辑能力是普通业务能力，不依赖 AI core；AI 只能在更外层复用这些 service 能力做会话编排。
+ *
  * SSOT 设计：
  * - 页面 4 文件（rule / pagedata / script / style）的真源是 `documents` 注册表。
  *   每个文件封装为 PageFileDocument，以域模型为真源、text 为派生投影，
@@ -14,16 +16,18 @@ import { refreshRoutes } from '@spark-view/spark-app'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   PAGE_FILE_NAMES,
+  PageDesignPageFileApi,
   createPageDocuments,
   forEachDocument,
   isPageFileDocumentDirty,
+  type BackendPageVersionSummary,
   type PageDocumentRegistry,
   type PageFileName,
-} from './page-file-documents'
+} from '@spark-view/spark-ai/services/page-design'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
-export type { PageFileDocument } from './page-file-documents'
+export type { BackendPageVersionSummary, PageFileDocument } from '@spark-view/spark-ai/services/page-design'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -60,47 +64,12 @@ export interface DevContextConfig {
   paramName: string
 }
 
-export interface BackendPageVersionSummary {
-  version: number
-  createdAt: string
-  isCurrent: boolean
-  modifiedBy: string | null
-}
-
 export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
-function parseOptionalNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  if (typeof value === 'string') {
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : null
-  }
-  return null
-}
-
-function isOptionalPageFile(name: PageFileName): boolean {
-  return name === 'script.js' || name === 'style.css'
-}
-
-function isHttpStatus(error: unknown, status: number): boolean {
-  if (error === null || error === undefined || typeof error !== 'object') return false
-  const candidate = error as { status?: unknown; response?: { status?: unknown } }
-  return candidate.status === status || candidate.response?.status === status
-}
-
-function normalizeVersionCreatedAt(value: unknown): string {
-  if (typeof value === 'string' && value.trim() !== '') {
-    const date = new Date(value)
-    return Number.isNaN(date.getTime()) ? value : date.toISOString()
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return new Date(value).toISOString()
-  }
-  return ''
-}
+const pageFileApi = new PageDesignPageFileApi({ getPageApi, http })
 
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
@@ -557,20 +526,7 @@ export function useDevState() {
   }
 
   async function fetchRemotePageFileContent(pageId: string, name: PageFileName): Promise<string> {
-    try {
-      const data = await http.get<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${name}`)
-      const content = data['content']
-      if (typeof content !== 'string') {
-        throw new Error(`配置接口返回无效内容: ${pageId}/${name}`)
-      }
-      return content
-    } catch (error) {
-      if (isOptionalPageFile(name) && isHttpStatus(error, 404)) {
-        return ''
-      }
-      const detail = error instanceof Error ? error.message : String(error)
-      throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
-    }
+    return pageFileApi.fetchFileContent(pageId, name)
   }
 
   function areAllActivePageFilesLoaded(): boolean {
@@ -665,17 +621,7 @@ export function useDevState() {
     const pageId = activePageId.value
     if (!pageId) return []
     try {
-      const result = await http.get<Array<Record<string, unknown>>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions`,
-      )
-      return result
-        .map((item) => ({
-          version: parseOptionalNumber(item['version']) ?? 0,
-          createdAt: normalizeVersionCreatedAt(item['createdAt']),
-          isCurrent: Boolean(item['isCurrent']),
-          modifiedBy: typeof item['modifiedBy'] === 'string' ? item['modifiedBy'] : null,
-        }))
-        .filter((item) => item.version > 0)
+      return await pageFileApi.listVersions(pageId, filename)
     } catch (e) {
       addStatus(`读取后端版本失败: ${String(e)}`, 'error')
       return []
@@ -686,10 +632,7 @@ export function useDevState() {
     const pageId = activePageId.value
     if (!pageId) return false
     try {
-      await http.post<Record<string, unknown>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}/__restore`,
-        {},
-      )
+      await pageFileApi.restoreVersion(pageId, filename, version)
       invalidateActivePageFilesLoad()
       try {
         const restoredText = await fetchRemotePageFileContent(pageId, filename)
@@ -712,10 +655,7 @@ export function useDevState() {
     const pageId = activePageId.value
     if (!pageId) return false
     try {
-      await http.post<Record<string, unknown>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions`,
-        {},
-      )
+      await pageFileApi.createVersion(pageId, filename)
       addStatus(`${filename} 已创建新版本快照`, 'success')
       return true
     } catch (e) {
@@ -728,7 +668,7 @@ export function useDevState() {
     const pageId = activePageId.value
     if (!pageId) return false
     try {
-      await http.delete(`${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}`)
+      await pageFileApi.deleteVersion(pageId, filename, version)
       addStatus(`${filename} 版本 v${version} 已删除`, 'success')
       return true
     } catch (e) {
@@ -971,11 +911,7 @@ export function useDevState() {
       const doc = documents[name]
       const content = doc.text.value
 
-      await http.put<Record<string, unknown>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/${name}`,
-        content,
-        { headers: { 'Content-Type': 'text/plain' } },
-      )
+      await pageFileApi.saveFileContent(pageId, name, content)
 
       doc.markSaved()
       notifyPageFileChanged(pageId, name)

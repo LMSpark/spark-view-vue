@@ -12,11 +12,38 @@ export {
   PageDesignEditSession,
 } from './edit-session'
 
+export {
+  PAGE_FILE_NAMES,
+  canonicalizePageDataJson,
+  canonicalizePageDataValue,
+  createPageDocuments,
+  forEachDocument,
+  isPageFileDocumentDirty,
+} from './page-file-documents'
+
+export {
+  PageDesignPageFileApi,
+} from './page-file-api'
+
 export type {
   PageDesignEditPhase,
   PageDesignEditHost,
   PageDesignEditState,
 } from './edit-session'
+
+export type {
+  LoadFromTextOptions,
+  PageDocumentRegistry,
+  PageFileDocument,
+  PageFileLoadState,
+  PageFileName,
+} from './page-file-documents'
+
+export type {
+  BackendPageVersionSummary,
+  PageDesignPageFileApiOptions,
+  PageDesignPageFileHttpClient,
+} from './page-file-api'
 
 export type {
   PageDesignSparkNode,

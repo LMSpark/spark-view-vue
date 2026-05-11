@@ -39,7 +39,7 @@ Page Design AI 的正确执行方式是小步闭环。先 `lifecycle.bootstrap`�
 ```mermaid
 sequenceDiagram
   participant U as 用户
-  participant H as DevSystem AI 宿主
+  participant H as 业务 AI 宿主
   participant P as PageDesignModule
   participant K as PageDesign knowledge
   participant N as nodeTree/dataset/textModel/jsonDoc
@@ -68,4 +68,4 @@ sequenceDiagram
 
 ## 小结
 
-PageDesign 样例说明了一件事：通用 AI Runtime 只有和业务模块化、工具目录化、知识前置化、live model 闭环化结合，才会真正可用。下一篇收束到 DevSystem，看这些运行时能力如何变成生产工具链。
+PageDesign 样例说明了一件事：通用 AI Runtime 只有和业务模块化、工具目录化、知识前置化、live model 闭环化结合，才会真正可用。下一篇收束到 DevSystem，看运行时能力如何变成生产工具链。

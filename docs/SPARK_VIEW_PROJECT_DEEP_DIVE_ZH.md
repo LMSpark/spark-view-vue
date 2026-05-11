@@ -4,11 +4,11 @@
 
 ## 1. 执行摘要
 
-SPARK View 是一个面向 Vue 3、Element Plus 和企业后台场景的深度配置平台。它的核心目标不是再做一个 JSON 表单生成器，也不是让 AI 无边界生成 Vue 代码，而是把页面结构、数据模型、页面行为、样式、权限、导航和 AI 编辑能力收束到一条稳定运行时链路中。
+SPARK View 是一个面向 Vue 3、Element Plus 和企业后台场景的深度配置平台。它的核心目标不是再做一个 JSON 表单生成器，也不是让 AI 无边界生成 Vue 代码，而是把页面结构、数据模型、页面行为、样式、权限和导航收束到一条稳定运行时链路中。
 
 一句话概括：
 
-> SPARK View 用配置描述复杂后台页面，用 DataSet 管理业务数据，用组件运行时解释页面结构，用权限和导航治理应用边界，用受约束 AI 辅助生成和修改页面资产。
+> SPARK View 用配置描述复杂后台页面，用 DataSet 管理业务数据，用组件运行时解释页面结构，用权限和导航治理应用边界，并通过 DevSystem 管理设计时编辑、预览和版本流程。
 
 从产品视角看，它适合这些场景：
 
@@ -18,12 +18,13 @@ SPARK View 是一个面向 Vue 3、Element Plus 和企业后台场景的深度�
 | 复杂表单表格 | DataSet/DataView 统一处理数据源、选择、联动、请求和状态 |
 | 主从联动和树形编辑 | 关系、级联、当前行和树管理进入平台模型 |
 | 权限可视化 | 字段、按钮、页面模式和行权限能进入同一套判断链 |
-| AI 辅助页面搭建 | AI 主要编辑配置资产，运行可靠性由固定 runtime 保证 |
 | 多租户页面平台 | 后端承载租户、项目、导航、页面配置、版本和 AI 会话 |
 
-项目当前已经具备平台雏形：前端使用 pnpm workspace 组织多个运行时包，根应用只做装配；Java 后端提供配置、导航、认证、AI 会话和调试能力；DevSystem 承担配置编辑、预览和页面模型工作台职责；测试与架构验证脚本开始约束包边界。
+项目当前已经具备平台雏形：前端使用 pnpm workspace 组织多个运行时包，根应用只做装配；Java 后端提供配置、导航、认证、AI 会话和调试能力。
 
-下一阶段最重要的工作，不是继续增加更多 renderer，而是把诊断、设计时体验、AI 审计、配置版本治理和后端生产化补齐。这样 SPARK View 才会从“能渲染配置页面的框架”进一步变成“能被团队长期使用的页面生产平台”。
+DevSystem 承担配置编辑、预览、数据设计和版本管理职责；测试与架构验证脚本开始约束包边界。
+
+下一阶段最重要的工作，不是继续增加更多 renderer，而是把诊断、设计时体验、配置版本治理和后端生产化补齐。这样 SPARK View 才会从“能渲染配置页面的框架”进一步变成“能被团队长期使用的页面生产平台”。
 
 ## 2. 项目心智模型
 
@@ -572,7 +573,7 @@ flowchart TD
 
 ### 12.3 组件知识目录
 
-`vite-plugin-spark-catalog` 在构建期从组件源码提取元数据，生成 AI 和 DevSystem 可用的组件目录。它连接真实组件 API 与 AI 可用知识，是避免 prompt 与源码漂移的关键机制。
+`vite-plugin-spark-catalog` 在构建期从组件源码提取元数据，生成可供业务 AI 模块和 DevSystem 使用的组件目录。它连接真实组件 API 与上层工具知识，是避免手写目录与源码漂移的关键机制。
 
 后续建议在目录生成中加入质量审计：
 
@@ -583,7 +584,7 @@ flowchart TD
 
 ## 13. DevSystem：设计时闭环
 
-根应用下 [src/views/app/dev-system](../src/views/app/dev-system) 是项目非常关键的产品能力区。它包含站点树、文件编辑器、预览、DataSet 设计器、节点属性面板、页面模型 session、策略文件和多个 composable。
+根应用下 [src/views/app/dev-system](../src/views/app/dev-system) 是项目非常关键的产品能力区。它包含站点树、文件编辑器、预览、DataSet 设计器、节点属性面板、策略文件和多个 composable。
 
 ```mermaid
 flowchart LR
@@ -592,15 +593,13 @@ flowchart LR
   DataDesigner["DevDataSetDesigner"]
   NodeProps["DevNodeProps"]
   Preview["DevPreviewTab"]
-  Session["page-model-session"]
   Renderer["SparkPageRenderer"]
   Backend["PageConfigController"]
 
   SiteTree --> Backend
   FileEditor --> Backend
-  DataDesigner --> Session
-  NodeProps --> Session
-  Session --> Renderer
+  DataDesigner --> Renderer
+  NodeProps --> Renderer
   Renderer --> Preview
 ```
 

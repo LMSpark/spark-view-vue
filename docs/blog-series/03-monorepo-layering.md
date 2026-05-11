@@ -22,7 +22,7 @@
 
 ## AI 与构建知识库独立演进
 
-`spark-ai` 不直接依赖页面运行时去执行渲染，它定义 AI 会话、模块注册和函数调用翻译。`vite-plugin-spark-catalog` 则把组件知识提取成 catalog，供 AI 和 DevSystem 查询。这样 AI 能力扩展时，不需要反向污染组件运行时。
+`spark-ai` 不直接依赖页面运行时去执行渲染，它定义 AI 会话、模块注册和函数调用翻译。`vite-plugin-spark-catalog` 则把组件知识提取成 catalog，供业务智能模块和设计时工具查询。这样 AI 能力扩展时，不需要反向污染组件运行时。
 
 构建知识库还有一个隐藏价值：它让组件系统对 AI 可见。模型不是凭空猜一个 `r-table` 应该有哪些 props，而是通过 catalog 和 payload guide 获取结构化知识。monorepo 分层最终服务的是可演进性，而不是目录洁癖。
 

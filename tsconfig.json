@@ -39,6 +39,8 @@
       "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
+      "@spark-view/spark-ai/services": ["./packages/spark-ai/src/services/index.ts"],
+      "@spark-view/spark-ai/services/page-design": ["./packages/spark-ai/src/services/page-design/index.ts"],
       "@spark-view/spark-ai/registrations/page-design/payloads": ["./packages/spark-ai/src/registrations/page-design/payloads/index.ts"],
       "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"]
     },

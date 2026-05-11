@@ -1,4 +1,12 @@
-import { DataSetCrudTool } from '@spark-view/spark-data'
+import {
+  canonicalizePageDataJson,
+  canonicalizePageDataValue,
+} from '@spark-view/spark-ai/services/page-design'
+
+export {
+  canonicalizePageDataJson,
+  canonicalizePageDataValue,
+}
 
 export type PageDataEditorMode = 'tree' | 'text' | 'table'
 
@@ -37,37 +45,6 @@ const resourceTypes = [
   'logical-view',
 ]
 const businessCategories = ['master', 'child', 'reference']
-
-function parsePageDataText(rawText: string): Record<string, unknown> {
-  const parsed: unknown = JSON.parse(rawText)
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new Error('pagedata.json 顶层必须是 JSON 对象')
-  }
-  return parsed as Record<string, unknown>
-}
-
-export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
-  text: string
-  value: Record<string, unknown>
-  tool: DataSetCrudTool
-} {
-  const tool = DataSetCrudTool.fromJson(rawValue)
-  const value = tool.toJson() as unknown as Record<string, unknown>
-
-  return {
-    text: `${JSON.stringify(value, null, 2)}\n`,
-    value,
-    tool,
-  }
-}
-
-export function canonicalizePageDataJson(rawText: string): {
-  text: string
-  value: Record<string, unknown>
-  tool: DataSetCrudTool
-} {
-  return canonicalizePageDataValue(parsePageDataText(rawText))
-}
 
 export function canUseStructuredPageDataEditor(rawText: string): boolean {
   if (rawText.trim() === '') return false

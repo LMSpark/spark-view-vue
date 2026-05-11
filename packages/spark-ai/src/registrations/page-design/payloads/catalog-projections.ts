@@ -5,16 +5,13 @@
  * 设计保证：本文件中所有对外暴露及内部辅助函数均严格遵守纯函数 (Pure Function) 范式，无任何副作用。
  *
  * 消费时序（建议阅读顺序）：
- * 1. 投影契约定义：统一声明 FC / Function / DevSystem 的输出结构。
+ * 1. 投影契约定义：统一声明 FC / Function 的输出结构。
  * 2. 基础解析与水合：展开 canonical 引用并补齐 schema/binding。
  * 3. FC 投影：生成目录摘要、单组件规格、配置指南、会话目录。
- * 4. DevSystem 投影：生成类型列表、属性名、枚举映射、默认值映射。
  *
  * 主要消费场景：
  * 1. AI Function Calling (FC) 场景——为 LLM 在分析页面上下文与组装 UI 时（queryPayloads /
  *    guidePayload）提供精简、无冗余的组件视图，最小化 Token 开销。
- * 2. DevSystem（开发者平台）场景——为 rule.json 内建的图形化配置编辑器提供组件选取、属性下拉、
- *    枚举推断与默认值提示等元数据结构。
  *
  * 依赖关系：本文件仅依赖 ./types 与 component-catalog.json，不引入任何框架或运行时副作用。
  *
@@ -357,7 +354,7 @@ function isNotUndefined<T>(value: T | undefined): value is T {
 /**
  * SparkNode 骨架结构字段名集合。
  *
- * 这些字段属于节点本体，不属于组件业务 props；投影给 AI / DevSystem 时都必须过滤，
+ * 这些字段属于节点本体，不属于组件业务 props；投影给 AI payload 时必须过滤，
  * 避免消费层继续生成 `props.id`、`props.type`、`props.children` 这类旧形态。
  */
 const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
@@ -1032,222 +1029,4 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
     minimalConfig,
     failFastChecks,
   }
-}
-
-
-// =========================================================
-// 四、DevSystem 投影（规则编辑器支撑）
-// =========================================================
-
-/**
- * DevSystem 投影：获取全量组件 type 列表（按字母序排列）。
- *
- * 来源：registry.containers + registry.fields + registry.groups + registry.meta
- * 以及 catalog.components 中的全部 type（保证不遗漏未归类的组件）。
- * 结果用于 DevSystem 的组件类型选择下拉框。
- *
- * @param catalog 全局组件目录
- * @returns       去重并按字母序排列的全量组件 type 数组
- */
-export function projectDevTypes(catalog: ComponentCatalog): string[] {
-  const reg = catalog.registry
-  const allTypes = new Set<string>([
-    ...(reg?.containers ?? []),
-    ...(reg?.fields ?? []),
-    ...(reg?.groups ?? []),
-    ...(reg?.meta ?? []),
-  ])
-  for (const type of Object.keys(catalog.components)) {
-    allTypes.add(type)
-  }
-  return [...allTypes].sort()
-}
-
-/**
- * DevSystem 投影：生成「组件 type -> 可配置属性名列表」映射表。
- *
- * 属性名列表已过滤掉骨架字段（STRUCT_KEYS），只保留业务可配置的属性。
- * 用于 DevSystem 的属性名选择下拉框，以及 rule.json 编辑器的属性补全。
- *
- * @param catalog 全局组件目录
- * @returns       `{ [type]: string[] }` 形式的属性名映射表
- */
-export function projectDevPropNames(catalog: ComponentCatalog): Record<string, string[]> {
-  const result: Record<string, string[]> = {}
-  for (const type of Object.keys(catalog.components)) {
-    const hydrated = projectHydratedComponent(catalog, type)
-    if (hydrated === null) continue
-    result[type] = hydrated.props
-      .filter(isConfigurableProp)
-      .map(p => p.name)
-  }
-  return result
-}
-
-/**
- * DevSystem 投影：生成「组件 type -> 属性名 -> 枚举值列表」三层嵌套映射表。
- *
- * 枚举值来源（优先级从高到低）：
- * 1. 属性类型字符串中的字面量联合（如 `"left" | "right" | "center"`）；
- * 2. 属性 schema.kind === 'enum' 时的 variants 数组。
- *
- * 无可用枚举值的属性不会出现在结果中（而非以空数组出现）。
- * 用于 DevSystem 中属性值的下拉选择器。
- *
- * @param catalog 全局组件目录
- * @returns       `{ [type]: { [propName]: string[] } }` 形式的枚举映射表
- */
-export function projectDevPropEnums(catalog: ComponentCatalog): Record<string, Record<string, string[]>> {
-  const result: Record<string, Record<string, string[]>> = {}
-  for (const type of Object.keys(catalog.components)) {
-    const hydrated = projectHydratedComponent(catalog, type)
-    if (hydrated === null) continue
-    const enumsForType: Record<string, string[]> = {}
-    for (const prop of hydrated.props) {
-      if (!isConfigurableProp(prop)) continue
-      const schema = resolvePropSchema(catalog, prop)
-      const parsedFromType = parseEnumFromTypeString(prop.type)
-      const parsedFromSchema = parseEnumFromSchema(schema)
-      const parsed = parsedFromType.length > 0 ? parsedFromType : parsedFromSchema
-      if (parsed.length > 0) {
-        enumsForType[prop.name] = parsed
-      }
-    }
-    if (Object.keys(enumsForType).length > 0) {
-      result[type] = enumsForType
-    }
-  }
-  return result
-}
-
-/**
- * 内部辅助：从属性的类型字符串中提取字面量联合枚举值。
- *
- * 匹配规则：查找所有 `"..."` 格式的双引号字面量（非空字符串）。
- * 例：`'"left" | "right" | "center"'` -> `['left', 'right', 'center']`
- *
- * 结果少于 2 个枚举值时视为无效（可能是普通字符串类型），返回空数组。
- *
- * @param typeStr 属性的 type 字段字符串
- * @returns       提取到的枚举值数组（至少 2 个才有效），否则返回 `[]`
- */
-function parseEnumFromTypeString(typeStr: string): string[] {
-  const re = /"([^"]*)"/g
-  const values: string[] = []
-  let m: RegExpExecArray | null
-  while ((m = re.exec(typeStr)) !== null) {
-    const v = m[1]
-    if (v !== undefined && v.length > 0) values.push(v)
-  }
-  return values.length >= 2 ? values : []
-}
-
-/**
- * 内部辅助：从 PropSchema 中提取 enum 类型的 variants 列表。
- *
- * 仅当 schema.kind === 'enum' 时有效，其他 schema 类型或 undefined 均返回空数组。
- * 过滤空字符串变体，保证输出的枚举项均有实际意义。
- *
- * @param schema 已解析的 PropSchema（可能为 undefined）
- * @returns      枚举变体字符串数组；不适用时返回 `[]`
- */
-function parseEnumFromSchema(schema: PropSchema | undefined): string[] {
-  if (schema?.kind !== 'enum') return []
-  return schema.variants.filter((variant) => variant.length > 0)
-}
-
-/**
- * 内部辅助：从组件描述文本中萃取适合用作 UI 短标签的中文前缀词。
- *
- * 萃取规则：
- * 1. 取描述文本最开头的连续中文字符序列；
- * 2. 去除末尾的通用性后缀词（'容器' / '组件' / '字段' / '节点' / '页面'）；
- * 3. 剩余长度 >= 2 才返回，否则返回空字符串（避免单字无意义标签）。
- *
- * 例：`'图表分析组件，基于...'` -> `'图表分析'`
- *
- * @param description 组件描述字符串
- * @returns           短标签字符串（长度 >= 2）；无法萃取则返回 `''`
- */
-function extractShortLabel(description: string): string {
-  const match = /^([\u4e00-\u9fff]+)/.exec(description)
-  if (!match?.[1]) return ''
-  const label = match[1].replace(/(?:容器|组件|字段|节点|页面)$/, '')
-  return label.length >= 2 ? label : ''
-}
-
-/**
- * DevSystem 投影：生成「组件 type -> '[短标签] type'」展示标签映射表。
- *
- * 短标签通过 `extractShortLabel` 从组件描述中萃取。若无法萃取，则直接使用 type 值。
- * 例：`r-chart` -> `'[图表分析] r-chart'`
- *
- * 用于 DevSystem 的组件选择器，在下拉列表中提供更易识别的中文语义前缀。
- *
- * @param catalog 全局组件目录
- * @returns       `{ [type]: string }` 形式的展示标签映射表
- */
-export function projectDevTypeLabels(catalog: ComponentCatalog): Record<string, string> {
-  const result: Record<string, string> = {}
-  for (const type of Object.keys(catalog.components)) {
-    const hydrated = projectHydratedComponent(catalog, type)
-    if (hydrated === null) continue
-    const label = extractShortLabel(hydrated.description ?? '')
-    result[type] = label.length > 0 ? `[${label}] ${type}` : type
-  }
-  return result
-}
-
-/**
- * 内部辅助：根据属性类型字符串和显式声明的默认值，推断 DevSystem 回填时的初始值。
- *
- * 推断优先级：
- * 1. declaredDefault 非空时优先使用：先尝试 JSON.parse，失败则直接作为字符串返回；
- * 2. 类型字符串包含 'number' -> 0；
- * 3. 类型字符串包含 'boolean' -> false；
- * 4. 类型字符串包含 '[]' 或 'Array' -> []；
- * 5. 降级为 `''`（空字符串，适用于大多数文本类属性）。
- *
- * @param typeStr        属性类型字符串（如 'string', 'number', 'boolean[]'）
- * @param declaredDefault 属性声明的 default 字段（可能为 undefined）
- * @returns              推断得到的初始值
- */
-function inferDefaultFromPropType(typeStr: string, declaredDefault?: string): unknown {
-  if (declaredDefault !== undefined) {
-    try { return JSON.parse(declaredDefault) as unknown } catch { /* fall through */ }
-    return declaredDefault
-  }
-  if (typeStr.includes('number')) return 0
-  if (typeStr.includes('boolean')) return false
-  if (typeStr.includes('[]') || typeStr.includes('Array')) return []
-  return ''
-}
-
-/**
- * DevSystem 投影：生成「组件 type -> 必填属性名 -> 默认值」映射表。
- *
- * 仅包含 required 标记为 true 且不属于骨架字段（STRUCT_KEYS）的属性。
- * 默认值通过 `inferDefaultFromPropType` 推断，优先使用 catalog 中的声明值。
- *
- * 用于 DevSystem 在新建规则节点时自动批量回填必填属性的初始值，
- * 减少用户手动填写的工作量并降低漏填风险。
- *
- * @param catalog 全局组件目录
- * @returns       `{ [type]: { [propName]: unknown } }` 形式的必填属性默认值映射表
- */
-export function projectDevRequiredProps(catalog: ComponentCatalog): Record<string, Record<string, unknown>> {
-  const result: Record<string, Record<string, unknown>> = {}
-  for (const type of Object.keys(catalog.components)) {
-    const hydrated = projectHydratedComponent(catalog, type)
-    if (hydrated === null) continue
-    const required: Record<string, unknown> = {}
-    for (const prop of hydrated.props) {
-      if (!prop.required || !isConfigurableProp(prop)) continue
-      required[prop.name] = inferDefaultFromPropType(prop.type, prop.default)
-    }
-    if (Object.keys(required).length > 0) {
-      result[type] = required
-    }
-  }
-  return result
 }

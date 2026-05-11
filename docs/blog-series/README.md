@@ -22,7 +22,7 @@ SPARK_VIEW 的答案不是单点能力，而是一组互相咬合的工程边界
 
 第四步是治理边界。权限系统必须说清楚：前端只是装饰层，真正安全边界在后端鉴权。`_modelPerm` / `_perm` 是权限快照事实源，`permAction`、`permissionMode`、字段渲染和按钮显隐只是消费端。
 
-第五步是 AI 和生产化。SPARK AI 不是 PageDesign 专属助手，而是一套通用受约束业务智能体架构：core 管会话、注册、投影、翻译和历史；业务模块管领域语义、函数目录、知识 payload 和执行器。PageDesign 只是第一个完整样例。最终，DevSystem 把编辑、预览、数据设计、AI 会话和四文件资产接成生产闭环。
+第五步是 AI 和生产化。SPARK AI 不是 PageDesign 专属助手，而是一套通用受约束业务智能体架构：core 管会话、注册、投影、翻译和历史；业务模块管领域语义、函数目录、知识 payload 和执行器。PageDesign 只是第一个完整样例。最终，DevSystem 把编辑、预览、数据设计、版本管理和四文件资产接成生产闭环。
 
 ```mermaid
 flowchart LR
@@ -61,7 +61,7 @@ flowchart LR
 | 13 | [权限别演戏：前端只是装饰，后端鉴权才是边界](13-permission-boundary-frontend-decoration.md) | `_modelPerm` / `_perm` 的事实源地位，以及前端权限的真实边界。 |
 | 14 | [给 AI 上护栏：SPARK_VIEW 的通用受约束智能体架构](14-constrained-ai-architecture.md) | AI Runtime 如何作为通用协议层服务不同业务模块。 |
 | 15 | [业务 AI 落地样例：以 Page Design 为第一块试金石](15-page-design-ai-implementation-path.md) | PageDesign 如何作为首个业务样例接入通用 AI 架构。 |
-| 16 | [DevSystem：把运行时框架推进生产车间](16-devsystem-production-toolchain.md) | DevSystem 如何把编辑、预览、数据设计和 AI 会话连成闭环。 |
+| 16 | [DevSystem：把运行时框架推进生产车间](16-devsystem-production-toolchain.md) | DevSystem 如何把编辑、预览、数据设计和版本管理连成闭环。 |
 
 ## 两条读法
 
@@ -79,7 +79,7 @@ flowchart LR
 - AI Runtime：AI 会话、知识投影、函数调用翻译和历史记录的通用协议层。
 - Business AI Module：接入 AI Runtime 的业务模块，负责自己的状态、函数目录、知识 payload 和执行器。
 - PageDesign Knowledge：PageDesign 业务模块维护的只读知识能力；Component PayloadProvider 组件参数荷载指南归属这里，是业务样例能力，不归属 core 层业务能力。
-- EditToolHost：PageDesign 样例里由 DevSystem 暴露给 AI 的 live 编辑工具宿主。
+- PageDesign Host Adapter：PageDesign 样例里由业务宿主暴露给 AI 的 live 编辑适配层。
 
 ## 发布说明
 

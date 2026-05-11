@@ -21,7 +21,7 @@ $items = @(
   @{ File = 'screenshot-13-permission.png'; Title = '权限系统真实边界'; Subtitle = '前端只是装饰层，后端鉴权才是安全边界'; Accent = '#B00020' },
   @{ File = 'screenshot-14-ai-runtime.png'; Title = '受约束 AI 架构'; Subtitle = 'core 管协议，PageDesign 管页面设计语义'; Accent = '#5E35B1' },
   @{ File = 'screenshot-15-page-design-ai.png'; Title = 'Page Design AI'; Subtitle = '组件参数荷载指南属于 PageDesign knowledge 模块'; Accent = '#00695C' },
-  @{ File = 'screenshot-16-devsystem.png'; Title = 'DevSystem 生产工具链'; Subtitle = '编辑、预览、数据设计、AI 会话与四文件资产闭环'; Accent = '#455A64' }
+  @{ File = 'screenshot-16-devsystem.png'; Title = 'DevSystem 生产工具链'; Subtitle = '编辑、预览、数据设计、版本管理与四文件资产闭环'; Accent = '#455A64' }
 )
 
 function New-SolidBrush([string]$hex) {

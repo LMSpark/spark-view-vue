@@ -25,7 +25,7 @@
 - **Permission Snapshot**：后端鉴权后下发的模型级 `_modelPerm` 与行级 `_perm` 快照；前端只消费快照做 UI 显隐、禁用、脱敏等装饰性渲染。
 - **AI Runtime**：AI 会话、函数暴露、函数调用翻译与记录的通用核心运行时。
 - **Business AI Module**：接入 AI Runtime 的业务模块，负责自己的状态、函数目录、知识 payload 和执行器。
-- **EditToolHost**：PageDesign 样例中，DevSystem 暴露给 AI 的编辑工具宿主。
+- **PageDesign Host Adapter**：PageDesign 样例中，业务宿主暴露给 AI 的 live 编辑适配层。
 
 ### 系列核心图
 
@@ -38,7 +38,7 @@ flowchart LR
   C --> D["数据空间<br/>DataSet/DataView"]
   D --> E["治理能力<br/>Permission Snapshot Consumer + Capability"]
   E --> F["受约束 AI<br/>AiRuntime + Business Module"]
-  F --> G["DevSystem<br/>编辑/预览/版本/AI 闭环"]
+  F --> G["DevSystem<br/>编辑/预览/版本闭环"]
   G --> C
 ```
 
@@ -600,11 +600,10 @@ flowchart LR
 - `packages/spark-ai/src/core/protocol/runtime-contracts.ts`
 - `packages/spark-ai/ARCHITECTURE.md`
 - `docs/ai/README.md`
-- `src/views/app/dev-system/usePageModelSessionHost.ts`
 
 **配图方案**
 
-- 架构图：LLM、Backend Session、AiRuntime、BusinessModule、PageDesign 样例、EditToolHost。
+- 架构图：LLM、Backend Session、AiRuntime、BusinessModule、PageDesign 样例、Host Adapter。
 - 时序图：模型发起 tool call 到 Runtime 翻译执行。
 - 表格：AiRuntime 做什么/不做什么。
 
@@ -656,26 +655,26 @@ flowchart LR
 
 **结尾落点**
 
-引出第 16 篇：PageDesign 这组 AI 工具最终被 DevSystem 编排成一个真实的页面生产工作台，也给其他业务 AI 模块提供接入范式。
+引出第 16 篇：AI Runtime 与 PageDesign 证明业务工具可以受约束行动，而 DevSystem 则展示页面生产工具链如何复用运行时。
 
 ---
 
 ### 第 16 篇：DevSystem：从运行时框架到生产工具链
 
-**一句话核心论点**：DevSystem 把站点树、四文件编辑、模型化文档、实时预览、版本管理和 AI 会话连接起来，让设计时与运行时复用同一条解释链路。
+**一句话核心论点**：DevSystem 把站点树、四文件编辑、模型化文档、实时预览和版本管理连接起来，让设计时与运行时复用同一条解释链路。
 
 **目标读者与收益**
 
-- 适合关注低代码编辑器、可视化设计器、AI 工作台落地的人。
+- 适合关注低代码编辑器、可视化设计器、页面生产平台落地的人。
 - 读完能理解 SPARK_VIEW 如何从“运行时框架”变成“页面生产平台”。
 
 **正文大纲**
 
-1. DevSystem 的三栏结构：站点树、工作区、状态栏/AI 入口。
+1. DevSystem 的三栏结构：站点树、工作区、状态栏与版本入口。
 2. PageFileDocument：`rule.json` 和 `pagedata.json` 以领域模型为真源，script/style 以文本为真源。
-3. 手工编辑与 AI 编辑共享 EditToolHost：同一模型、同一 undo 链、同一 dirty 状态。
+3. 手工编辑与模型化编辑共享 PageFileDocument：同一模型、同一 undo 链、同一 dirty 状态。
 4. 实时预览：直接复用 `SparkPageRenderer`，保证设计时看到的就是运行时路径。
-5. 版本与诊断：文件版本、预览页面文本快照、JS 错误快照如何服务 AI 和人工排查。
+5. 版本与诊断：文件版本、预览错误和状态栏如何服务人工排查。
 
 **源码锚点**
 
@@ -683,18 +682,16 @@ flowchart LR
 - `src/views/app/dev-system/useDevState.ts`
 - `src/views/app/dev-system/page-file-documents.ts`
 - `src/views/app/dev-system/DevPreviewTab.vue`
-- `src/views/app/dev-system/usePageModelSessionHost.ts`
-- `src/views/app/dev-system/usePageModelEditSession.ts`
 
 **配图方案**
 
-- 架构图：DevSystem 编辑、预览、AI、保存、版本的闭环。
-- 时序图：手工/AI 修改文档 -> preview -> save -> version。
+- 架构图：DevSystem 编辑、预览、保存、版本的闭环。
+- 时序图：手工/模型化修改文档 -> preview -> save -> version。
 - 截图：DevSystem 工作台、实时预览、DataSet 可视化设计器、版本侧栏。
 
 **开篇角度**
 
-> 一个低代码系统的分水岭，不是有没有运行时，而是有没有能让人和 AI 一起安全修改页面的设计时工具。
+> 一个低代码系统的分水岭，不是有没有运行时，而是有没有能让人安全修改、预览和版本化页面的设计时工具。
 
 **结尾落点**
 
@@ -738,7 +735,7 @@ flowchart LR
 7. 典型数据表页面。
 8. 主从表页面。
 9. 权限装饰渲染页面。
-10. AI 面板工具调用日志。
+10. 版本侧栏与状态栏反馈。
 
 ## 4. 推荐写作顺序
 

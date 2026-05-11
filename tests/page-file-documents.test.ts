@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPageDocuments, isPageFileDocumentDirty } from '../src/views/app/dev-system/page-file-documents'
+import { createPageDocuments, isPageFileDocumentDirty } from '@spark-view/spark-ai/services/page-design'
 
 function makePageDataText(label: string): string {
   return JSON.stringify({

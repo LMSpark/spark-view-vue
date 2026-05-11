@@ -165,9 +165,15 @@ importers:
 
   packages/spark-ai:
     dependencies:
+      '@spark-view/spark-component':
+        specifier: workspace:*
+        version: link:../spark-component
       '@spark-view/spark-data':
         specifier: workspace:*
         version: link:../spark-data
+      '@spark-view/spark-page-config':
+        specifier: workspace:*
+        version: link:../spark-page-config
       '@spark-view/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
@@ -177,6 +183,9 @@ importers:
       jmespath:
         specifier: ^0.16.0
         version: 0.16.0
+      vue:
+        specifier: 3.5.32
+        version: 3.5.32(typescript@6.0.2)
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1

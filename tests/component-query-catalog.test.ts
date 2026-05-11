@@ -10,10 +10,6 @@ import {
   projectComponentConfigGuide,
   projectComponentSpec,
   projectFrameworkNeutralCatalog,
-  projectDevTypes,
-  projectDevPropNames,
-  projectDevPropEnums,
-  projectDevRequiredProps,
 } from '../packages/spark-ai/src/registrations/page-design/payloads/catalog-projections'
 
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
@@ -246,7 +242,6 @@ describe('catalog-projections', () => {
 
     const spec = projectComponentSpec(catalog, 'r-text')
     const guide = projectComponentConfigGuide(catalog, 'r-text')
-    const propNames = projectDevPropNames(catalog)
     const neutralCatalog = projectFrameworkNeutralCatalog(catalog)
     const neutralEntry = neutralCatalog.components['r-text']
 
@@ -254,8 +249,6 @@ describe('catalog-projections', () => {
     expect(spec?.props.map(prop => prop.name)).not.toContain('modelValue')
     expect(spec?.emits.map(emit => emit.name)).toEqual(['change'])
     expect(guide?.optionalProps.map(prop => prop.name)).toContain('value')
-    expect(propNames['r-text']).toContain('value')
-    expect(propNames['r-text']).not.toContain('modelValue')
     expect(neutralEntry?.props.map(prop => prop.name)).toContain('value')
     expect(neutralEntry?.emits?.map(emit => emit.name) ?? []).toEqual(['change'])
     expect('canonical' in neutralCatalog).toBe(false)
@@ -263,61 +256,5 @@ describe('catalog-projections', () => {
 
   it('projectComponentConfigGuide returns null for unknown component', () => {
     expect(projectComponentConfigGuide(makeCatalog(), 'missing')).toBeNull()
-  })
-
-  it('projectDevTypes returns sorted type list', () => {
-    const types = projectDevTypes(makeCatalog())
-    expect(types).toContain('r-table')
-    expect(types).toContain('r-text')
-    expect(types).toEqual([...types].sort())
-  })
-
-  it('projectDevPropNames returns prop name lists per type', () => {
-    const propNames = projectDevPropNames(makeCatalog())
-    expect(propNames['r-table']).toContain('dataKey')
-    expect(propNames['r-table']).toContain('border')
-    expect(propNames['r-table']).toContain('density')
-  })
-
-  it('projectDevPropEnums parses enum values from type strings', () => {
-    const catalog = makeCatalog({
-      components: {
-        'r-text': makeEntry({
-          props: [
-            { name: 'size', type: '"small" | "default" | "large"', required: false },
-          ],
-        }),
-      },
-    })
-    const enums = projectDevPropEnums(catalog)
-    expect(enums['r-text']?.['size']).toEqual(['small', 'default', 'large'])
-  })
-
-  it('projectDevPropEnums resolves enum values from schemaPool references', () => {
-    const catalog = makeCatalog({
-      schemaPool: {
-        schema_00001: {
-          kind: 'enum',
-          type: 'EnumInputSchema',
-          variants: ['input', 'textarea'],
-        },
-      },
-      components: {
-        'r-text': makeEntry({
-          props: [
-            { name: 'mode', type: 'string', required: false, schemaRef: 'schema_00001' },
-          ],
-        }),
-      },
-    })
-
-    const enums = projectDevPropEnums(catalog)
-    expect(enums['r-text']?.['mode']).toEqual(['input', 'textarea'])
-  })
-
-  it('projectDevRequiredProps includes required props merged from canonical refs', () => {
-    const required = projectDevRequiredProps(makeCatalog())
-    expect(required['r-table']).toBeDefined()
-    expect(required['r-table']?.['density']).toBe('')
   })
 })

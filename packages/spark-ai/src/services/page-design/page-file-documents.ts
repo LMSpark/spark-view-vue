@@ -1,8 +1,8 @@
 /**
- * DevSystem 页面四文件文档注册表。
+ * PageDesign 页面四文件编辑文档注册表。
  *
  * rule.json / pagedata.json 使用领域模型作为真源，script.js / style.css 使用文本模型作为真源；
- * DevSystem 手工编辑和预览都通过同一组 PageFileDocument 读写。
+ * 设计时编辑、预览和版本保存都通过同一组 PageFileDocument 读写。
  */
 import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import { computed, ref, shallowRef, triggerRef } from 'vue'
@@ -10,7 +10,37 @@ import { SparkNodeTree, type SparkNode } from '@spark-view/spark-component'
 import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 import { normalizeRuleNode } from '@spark-view/spark-page-config'
-import { canonicalizePageDataValue } from './policies/pageDataJsonSchema'
+
+function parsePageDataText(rawText: string): Record<string, unknown> {
+  const parsed: unknown = JSON.parse(rawText)
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error('pagedata.json 顶层必须是 JSON 对象')
+  }
+  return parsed as Record<string, unknown>
+}
+
+export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
+  text: string
+  value: Record<string, unknown>
+  tool: DataSetCrudTool
+} {
+  const tool = DataSetCrudTool.fromJson(rawValue)
+  const value = tool.toJson() as unknown as Record<string, unknown>
+
+  return {
+    text: `${JSON.stringify(value, null, 2)}\n`,
+    value,
+    tool,
+  }
+}
+
+export function canonicalizePageDataJson(rawText: string): {
+  text: string
+  value: Record<string, unknown>
+  tool: DataSetCrudTool
+} {
+  return canonicalizePageDataValue(parsePageDataText(rawText))
+}
 
 export const PAGE_FILE_NAMES = [
   'rule.json',

@@ -12,6 +12,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(root, './src'),
+      '@spark-view/spark-ai/services/page-design': resolve(root, './packages/spark-ai/src/services/page-design/index.ts'),
+      '@spark-view/spark-ai/services': resolve(root, './packages/spark-ai/src/services/index.ts'),
       '@spark-view/spark-ai/registrations/page-design/payloads': resolve(root, './packages/spark-ai/src/registrations/page-design/payloads/index.ts'),
       '@spark-view/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
       '@spark-view/spark-component': resolve(root, './packages/spark-component/src/index.ts'),
