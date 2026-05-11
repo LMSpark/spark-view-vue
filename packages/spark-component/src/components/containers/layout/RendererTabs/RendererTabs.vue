@@ -37,7 +37,7 @@
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeId, nodeInputProp, nodeInputProps, type SparkNode } from '../../../internal'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
@@ -100,7 +100,7 @@ function getPaneComponentProps(pane: SparkNode): Record<string, unknown> {
   return {
     ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(pane.children !== undefined ? { children: pane.children } : {}),
-    ...(pane.props ?? {}),
+    ...nodeInputProps(pane),
   }
 }
 
@@ -168,4 +168,3 @@ function handleTabClick(pane: TabsClickEvent, event: Event): void {
   min-width: 0;
 }
 </style>
-

@@ -44,6 +44,7 @@ import {
   SparkComponentRenderer,
   getSparkNodeChildren,
   nodeId,
+  nodeInputProp,
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
@@ -147,13 +148,13 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
 const startChildren = computed(() =>
   getSparkNodeChildren(props.children)
     .map(resolveToolbarActionNode)
-    .filter((node) => node.props?.['visible'] !== false)
+    .filter((node) => nodeInputProp(node, 'visible') !== false)
 )
 
 const endChildren = computed(() =>
   getSparkNodeChildren(props.tail?.children)
     .map(resolveToolbarActionNode)
-    .filter((node) => node.props?.['visible'] !== false)
+    .filter((node) => nodeInputProp(node, 'visible') !== false)
 )
 
 // ============================================================================

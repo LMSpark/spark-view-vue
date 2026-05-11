@@ -79,6 +79,7 @@ import {
   useSparkPageComponent,
   SparkComponentRenderer,
   nodeId,
+  nodeInputProp,
   DATA_SOURCE,
   type SparkNode,
 } from '../../../internal'
@@ -178,7 +179,7 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
 const visibleToolbarConfigs = computed<SparkNode[]>(() =>
   toolbarConfigs.value
     .map(resolveToolbarActionNode)
-    .filter(node => node.props?.['visible'] !== false)
+    .filter(node => nodeInputProp(node, 'visible') !== false)
 )
 const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 

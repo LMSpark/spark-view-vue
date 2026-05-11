@@ -35,7 +35,7 @@
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeId, nodeInputProp, nodeInputProps, type SparkNode } from '../../../internal'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
@@ -99,7 +99,7 @@ function getItemComponentProps(item: SparkNode): Record<string, unknown> {
   return {
     ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(item.children !== undefined ? { children: item.children } : {}),
-    ...(item.props ?? {}),
+    ...nodeInputProps(item),
   }
 }
 
@@ -141,4 +141,3 @@ function createItemRendererConfig(item: SparkNode, index: number): SparkNode {
   min-width: 0;
 }
 </style>
-

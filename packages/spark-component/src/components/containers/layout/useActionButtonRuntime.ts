@@ -107,7 +107,7 @@ export function useActionButtonRuntime(options: ActionButtonRuntimeOptions): Act
   async function executeAction(): Promise<void> {
     const descriptor = actionDescriptor.value
     if (!descriptor) {
-      warn(`r-button 内置动作未识别: ${String(currentNode.value.props?.['action'])}`)
+      warn(`r-button 内置动作未识别: ${String(getActionProps(currentNode.value)['action'])}`)
       return
     }
     const row = resolveScopedRow()

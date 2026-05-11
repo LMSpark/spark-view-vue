@@ -117,7 +117,9 @@ import { computed, nextTick, provide, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren,
-  nodeId, type SparkNode,
+  nodeId,
+  nodeInputProps,
+  type SparkNode,
   DATA_SOURCE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
@@ -139,7 +141,7 @@ const props = withDefaults(defineProps<RTableProps>(), {
 
 const normalizedContentChildNodes = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(props.children).map((rawNode) => {
-    const sourceProps = rawNode.props ?? {}
+    const sourceProps = nodeInputProps(rawNode)
     const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
     return (
       rawNode.type === 'r-row-fragment'
@@ -216,9 +218,9 @@ const filterSparkNode = computed<SparkNode>(() => {
   }
 })
 
-// row-fragment 列元信息统一存在 node.props（title/width/minWidth/align/...），以下为类型安全读取工具。
+// row-fragment 列元信息统一从 props 读取（title/width/minWidth/align/...），以下为类型安全读取工具。
 function rowFragmentRawProp(node: SparkNode, key: string): unknown {
-  return (node.props as Record<string, unknown> | undefined)?.[key]
+  return nodeInputProps(node)[key]
 }
 
 function rowFragmentLabel(node: SparkNode): string {

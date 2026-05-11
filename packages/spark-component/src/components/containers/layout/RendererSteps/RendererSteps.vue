@@ -34,7 +34,7 @@
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeId, nodeInputProp, nodeInputProps, type SparkNode } from '../../../internal'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
@@ -83,7 +83,7 @@ function getStepComponentProps(step: SparkNode): Record<string, unknown> {
   return {
     ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(step.children !== undefined ? { children: step.children } : {}),
-    ...(step.props ?? {}),
+    ...nodeInputProps(step),
   }
 }
 
@@ -168,4 +168,3 @@ registerApi(stepsApi)
   min-width: 0;
 }
 </style>
-
