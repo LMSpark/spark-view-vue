@@ -1,7 +1,6 @@
 [
   {
     "type": "div",
-    "class": "toolbar-layout-demo",
     "children": [
       {
         "type": "h1",
@@ -17,15 +16,9 @@
       },
       {
         "type": "div",
-        "props": {
-          "class": "dock-legend-panel"
-        },
         "children": [
           {
             "type": "div",
-            "props": {
-              "class": "dock-legend-copy"
-            },
             "children": [
               {
                 "type": "h3",
@@ -39,19 +32,16 @@
                   "这页把 dock 区域直接标出来：上方 r-toolbar 与 r-menu 会显示 default / tail 分区，表格内部继续沿用 toolbar / actions 语义。"
                 ]
               }
-            ]
+            ],
+            "props": {
+              "class": "dock-legend-copy"
+            }
           },
           {
             "type": "div",
-            "props": {
-              "class": "dock-legend-grid"
-            },
             "children": [
               {
                 "type": "div",
-                "props": {
-                  "class": "dock-legend-card dock-legend-card--default"
-                },
                 "children": [
                   {
                     "type": "strong",
@@ -65,13 +55,13 @@
                       "未声明 dock 的子节点，落在主区，通常放标题、筛选入口、说明文字。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "dock-legend-card dock-legend-card--default"
+                }
               },
               {
                 "type": "div",
-                "props": {
-                  "class": "dock-legend-card dock-legend-card--tail"
-                },
                 "children": [
                   {
                     "type": "strong",
@@ -85,13 +75,13 @@
                       "页级次级动作区，当前示例用来承载新增、刷新、导出，以及筛选摘要。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "dock-legend-card dock-legend-card--tail"
+                }
               },
               {
                 "type": "div",
-                "props": {
-                  "class": "dock-legend-card dock-legend-card--toolbar"
-                },
                 "children": [
                   {
                     "type": "strong",
@@ -105,13 +95,13 @@
                       "r-table 内部顶部工具条区域，适合 append-row、refresh 这类表级动作。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "dock-legend-card dock-legend-card--toolbar"
+                }
               },
               {
                 "type": "div",
-                "props": {
-                  "class": "dock-legend-card dock-legend-card--actions"
-                },
                 "children": [
                   {
                     "type": "strong",
@@ -125,277 +115,215 @@
                       "r-table 行操作区，和字段列分离，适合 message-row、delete-row 这类逐行动作。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "dock-legend-card dock-legend-card--actions"
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "dock-legend-grid"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "dock-legend-panel"
+        }
       },
       {
         "type": "r-toolbar",
+        "children": [
+          {
+            "type": "div",
+            "children": [
+              "LM SPARK / DOCK TOOLBAR"
+            ],
+            "props": {
+              "class": "brand-chip"
+            }
+          },
+          {
+            "type": "div",
+            "children": [
+              "父级容器决定子集如何渲染：default 区承载内容，tail 区承载次级动作。"
+            ],
+            "props": {
+              "class": "brand-copy"
+            }
+          },
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "button",
+                "children": [
+                  "新增任务"
+                ],
+                "props": {
+                  "type": "button",
+                  "on": {
+                    "click": "handleCreateTask"
+                  },
+                  "class": "toolbar-action toolbar-action--primary"
+                }
+              },
+              {
+                "type": "button",
+                "children": [
+                  "刷新数据"
+                ],
+                "props": {
+                  "type": "button",
+                  "on": {
+                    "click": "handleRefresh"
+                  },
+                  "class": "toolbar-action"
+                }
+              },
+              {
+                "type": "button",
+                "children": [
+                  "导出摘要"
+                ],
+                "props": {
+                  "type": "button",
+                  "on": {
+                    "click": "handleExport"
+                  },
+                  "class": "toolbar-action"
+                }
+              }
+            ],
+            "props": {
+              "class": "page-toolbar-tail"
+            }
+          }
+        ],
         "props": {
           "gap": 12,
           "zoneGap": 24,
           "align": "center"
-        },
-        "children": [
-          {
-            "type": "div",
-            "props": {
-              "class": "brand-chip"
-            },
-            "children": [
-              "LM SPARK / DOCK TOOLBAR"
-            ]
-          },
-          {
-            "type": "div",
-            "props": {
-              "class": "brand-copy"
-            },
-            "children": [
-              "父级容器决定子集如何渲染：default 区承载内容，tail 区承载次级动作。"
-            ]
-          },
-          {
-            "type": "r-tail",
-            "props": {
-              "class": "page-toolbar-tail"
-            },
-            "children": [
-              {
-                "type": "button",
-                "props": {
-                  "class": "toolbar-action toolbar-action--primary",
-                  "type": "button"
-                },
-                "on": {
-                  "click": "handleCreateTask"
-                },
-                "children": [
-                  "新增任务"
-                ]
-              },
-              {
-                "type": "button",
-                "props": {
-                  "class": "toolbar-action",
-                  "type": "button"
-                },
-                "on": {
-                  "click": "handleRefresh"
-                },
-                "children": [
-                  "刷新数据"
-                ]
-              },
-              {
-                "type": "button",
-                "props": {
-                  "class": "toolbar-action",
-                  "type": "button"
-                },
-                "on": {
-                  "click": "handleExport"
-                },
-                "children": [
-                  "导出摘要"
-                ]
-              }
-            ]
-          }
-        ]
+        }
       },
       {
         "type": "r-toolbar",
+        "children": [
+          {
+            "type": "button",
+            "children": [
+              "全部任务"
+            ],
+            "props": {
+              "type": "button",
+              "on": {
+                "click": "filterAllTasks"
+              },
+              "class": "menu-button is-active",
+              "data-menu-filter": "all"
+            }
+          },
+          {
+            "type": "button",
+            "children": [
+              "待处理"
+            ],
+            "props": {
+              "type": "button",
+              "on": {
+                "click": "filterTodoTasks"
+              },
+              "class": "menu-button",
+              "data-menu-filter": "todo"
+            }
+          },
+          {
+            "type": "button",
+            "children": [
+              "进行中"
+            ],
+            "props": {
+              "type": "button",
+              "on": {
+                "click": "filterDoingTasks"
+              },
+              "class": "menu-button",
+              "data-menu-filter": "doing"
+            }
+          },
+          {
+            "type": "button",
+            "children": [
+              "已完成"
+            ],
+            "props": {
+              "type": "button",
+              "on": {
+                "click": "filterDoneTasks"
+              },
+              "class": "menu-button",
+              "data-menu-filter": "done"
+            }
+          },
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "div",
+                "children": [
+                  "当前筛选：全部 · 6 条"
+                ],
+                "props": {
+                  "class": "menu-summary"
+                },
+                "id": "taskFilterSummary"
+              }
+            ],
+            "props": {
+              "class": "page-menu-tail"
+            }
+          }
+        ],
         "props": {
           "gap": 10,
           "zoneGap": 18,
           "align": "center"
-        },
-        "children": [
-          {
-            "type": "button",
-            "props": {
-              "class": "menu-button is-active",
-              "type": "button",
-              "data-menu-filter": "all"
-            },
-            "on": {
-              "click": "filterAllTasks"
-            },
-            "children": [
-              "全部任务"
-            ]
-          },
-          {
-            "type": "button",
-            "props": {
-              "class": "menu-button",
-              "type": "button",
-              "data-menu-filter": "todo"
-            },
-            "on": {
-              "click": "filterTodoTasks"
-            },
-            "children": [
-              "待处理"
-            ]
-          },
-          {
-            "type": "button",
-            "props": {
-              "class": "menu-button",
-              "type": "button",
-              "data-menu-filter": "doing"
-            },
-            "on": {
-              "click": "filterDoingTasks"
-            },
-            "children": [
-              "进行中"
-            ]
-          },
-          {
-            "type": "button",
-            "props": {
-              "class": "menu-button",
-              "type": "button",
-              "data-menu-filter": "done"
-            },
-            "on": {
-              "click": "filterDoneTasks"
-            },
-            "children": [
-              "已完成"
-            ]
-          },
-          {
-            "type": "r-tail",
-            "props": {
-              "class": "page-menu-tail"
-            },
-            "children": [
-              {
-                "type": "div",
-                "props": {
-                  "class": "menu-summary",
-                  "id": "taskFilterSummary"
-                },
-                "children": [
-                  "当前筛选：全部 · 6 条"
-                ]
-              }
-            ]
-          }
-        ]
+        }
       },
       {
         "type": "div",
-        "props": {
-          "class": "dashboard-grid"
-        },
         "children": [
           {
             "type": "r-section",
-            "props": {
-              "title": "任务列表",
-              "description": "顶部保留页级 r-toolbar / r-menu，表格内部仍可继续使用 dock=toolbar/actions。",
-              "useCard": true,
-              "cardShadow": "hover"
-            },
             "children": [
               {
                 "type": "r-table",
-                "dataKey": "Tasks@rows",
-                "props": {
-                  "border": true,
-                  "stripe": true,
-                  "highlightCurrentRow": true,
-                  "toolbar": {
-                    "type": "r-toolbar",
-                    "props": {
-                      "position": "top"
-                    },
-                    "children": [
-                      {
-                        "type": "r-button",
-                        "order": 1,
-                        "props": {
-                          "action": "append-row",
-                          "type": "primary",
-                          "size": "small"
-                        }
-                      },
-                      {
-                        "type": "r-button",
-                        "order": 2,
-                        "props": {
-                          "action": "refresh",
-                          "size": "small"
-                        }
-                      }
-                    ]
-                  },
-                  "actions": {
-                    "type": "r-toolbar",
-                    "children": [
-                      {
-                        "type": "r-button",
-                        "order": 1,
-                        "props": {
-                          "action": "message-row",
-                          "type": "primary",
-                          "size": "small",
-                          "link": true
-                        }
-                      },
-                      {
-                        "type": "r-button",
-                        "order": 2,
-                        "props": {
-                          "action": "delete-row",
-                          "type": "danger",
-                          "size": "small",
-                          "link": true
-                        }
-                      }
-                    ],
-                    "props": {
-                      "width": 220,
-                      "align": "center",
-                      "label": "操作"
-                    }
-                  }
-                },
                 "children": [
                   {
                     "type": "r-text",
-                    "field": "id",
                     "props": {
                       "label": "ID",
-                      "width": 80
+                      "width": 80,
+                      "field": "id"
                     }
                   },
                   {
                     "type": "r-text",
-                    "field": "title",
                     "props": {
                       "label": "任务标题",
-                      "width": 220
+                      "width": 220,
+                      "field": "title"
                     }
                   },
                   {
                     "type": "r-text",
-                    "field": "owner",
                     "props": {
                       "label": "负责人",
-                      "width": 120
+                      "width": 120,
+                      "field": "owner"
                     }
                   },
                   {
                     "type": "r-select",
-                    "field": "status",
                     "props": {
                       "label": "状态",
                       "width": 120,
@@ -412,12 +340,12 @@
                           "label": "已完成",
                           "value": "done"
                         }
-                      ]
+                      ],
+                      "field": "status"
                     }
                   },
                   {
                     "type": "r-select",
-                    "field": "priority",
                     "props": {
                       "label": "优先级",
                       "width": 120,
@@ -434,107 +362,181 @@
                           "label": "低",
                           "value": "low"
                         }
-                      ]
+                      ],
+                      "field": "priority"
                     }
                   },
                   {
                     "type": "r-number",
-                    "field": "progress",
                     "props": {
                       "label": "进度",
-                      "width": 100
+                      "width": 100,
+                      "field": "progress"
                     }
                   },
                   {
                     "type": "r-date",
-                    "field": "dueDate",
                     "props": {
                       "label": "截止日期",
-                      "width": 140
+                      "width": 140,
+                      "field": "dueDate"
                     }
                   }
-                ]
+                ],
+                "props": {
+                  "border": true,
+                  "stripe": true,
+                  "highlightCurrentRow": true,
+                  "toolbar": {
+                    "type": "r-toolbar",
+                    "children": [
+                      {
+                        "type": "r-button",
+                        "props": {
+                          "type": "primary",
+                          "order": 1,
+                          "action": "append-row",
+                          "size": "small"
+                        }
+                      },
+                      {
+                        "type": "r-button",
+                        "props": {
+                          "action": "refresh",
+                          "size": "small",
+                          "order": 2
+                        }
+                      }
+                    ],
+                    "props": {
+                      "position": "top"
+                    }
+                  },
+                  "actions": {
+                    "type": "r-toolbar",
+                    "children": [
+                      {
+                        "type": "r-button",
+                        "props": {
+                          "type": "primary",
+                          "order": 1,
+                          "action": "message-row",
+                          "size": "small",
+                          "link": true
+                        }
+                      },
+                      {
+                        "type": "r-button",
+                        "props": {
+                          "type": "danger",
+                          "order": 2,
+                          "action": "delete-row",
+                          "size": "small",
+                          "link": true
+                        }
+                      }
+                    ],
+                    "props": {
+                      "width": 220,
+                      "align": "center",
+                      "label": "操作"
+                    }
+                  },
+                  "dataKey": "Tasks@rows"
+                }
               }
-            ]
+            ],
+            "props": {
+              "title": "任务列表",
+              "description": "顶部保留页级 r-toolbar / r-menu，表格内部仍可继续使用 dock=toolbar/actions。",
+              "useCard": true,
+              "cardShadow": "hover"
+            }
           },
           {
             "type": "r-section",
+            "children": [
+              {
+                "type": "r-detail",
+                "children": [
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "label": "任务标题",
+                      "colSpan": 24,
+                      "field": "title"
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "label": "负责人",
+                      "colSpan": 12,
+                      "field": "owner"
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "props": {
+                      "label": "状态",
+                      "colSpan": 12,
+                      "field": "status"
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "props": {
+                      "label": "优先级",
+                      "colSpan": 12,
+                      "field": "priority"
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "props": {
+                      "label": "进度",
+                      "colSpan": 12,
+                      "field": "progress"
+                    }
+                  },
+                  {
+                    "type": "r-date",
+                    "props": {
+                      "label": "截止日期",
+                      "colSpan": 12,
+                      "field": "dueDate"
+                    }
+                  },
+                  {
+                    "type": "r-textarea",
+                    "props": {
+                      "label": "任务摘要",
+                      "colSpan": 24,
+                      "field": "summary"
+                    }
+                  }
+                ],
+                "props": {
+                  "gridGap": 12,
+                  "dataKey": "Tasks@currentRow"
+                }
+              }
+            ],
             "props": {
               "title": "当前任务详情",
               "description": "右侧详情区跟随当前行切换，展示与父级分区无关的字段内容。",
               "useCard": true,
               "cardShadow": "hover"
-            },
-            "children": [
-              {
-                "type": "r-detail",
-                "dataKey": "Tasks@currentRow",
-                "props": {
-                  "gridGap": 12
-                },
-                "children": [
-                  {
-                    "type": "r-text",
-                    "field": "title",
-                    "props": {
-                      "label": "任务标题",
-                      "colSpan": 24
-                    }
-                  },
-                  {
-                    "type": "r-text",
-                    "field": "owner",
-                    "props": {
-                      "label": "负责人",
-                      "colSpan": 12
-                    }
-                  },
-                  {
-                    "type": "r-select",
-                    "field": "status",
-                    "props": {
-                      "label": "状态",
-                      "colSpan": 12
-                    }
-                  },
-                  {
-                    "type": "r-select",
-                    "field": "priority",
-                    "props": {
-                      "label": "优先级",
-                      "colSpan": 12
-                    }
-                  },
-                  {
-                    "type": "r-number",
-                    "field": "progress",
-                    "props": {
-                      "label": "进度",
-                      "colSpan": 12
-                    }
-                  },
-                  {
-                    "type": "r-date",
-                    "field": "dueDate",
-                    "props": {
-                      "label": "截止日期",
-                      "colSpan": 12
-                    }
-                  },
-                  {
-                    "type": "r-textarea",
-                    "field": "summary",
-                    "props": {
-                      "label": "任务摘要",
-                      "colSpan": 24
-                    }
-                  }
-                ]
-              }
-            ]
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "dashboard-grid"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "toolbar-layout-demo"
+    }
   }
 ]

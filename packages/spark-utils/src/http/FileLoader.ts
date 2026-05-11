@@ -219,7 +219,7 @@ export class FileLoader {
         }
 
         // 文件不存在或响应体为空（如可选的 style.css）——静默返回
-        if (!result.content || !result.timestamp) {
+        if (typeof result.content !== 'string' || !result.timestamp) {
           this.emit('file-error', { fileName, error: '响应格式错误：缺少 content 或 timestamp', reason: 'invalid-response' })
           return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }
         }
@@ -421,7 +421,7 @@ export class FileLoader {
         return { success: false, error: 'notModified 但无本地缓存', fromCache: false, reason: 'invalid-response' }
       }
 
-      if (!result.content || !result.timestamp) {
+      if (typeof result.content !== 'string' || !result.timestamp) {
         // 文件不存在或响应体为空（如可选的 style.css）——静默返回，不抛异常避免 logger.error
         this.emit('file-error', { fileName, error: '响应格式错误：缺少 content 或 timestamp', reason: 'invalid-response' })
         return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }

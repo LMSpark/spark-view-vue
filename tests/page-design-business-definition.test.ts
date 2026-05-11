@@ -80,8 +80,8 @@ describe('pageDesign module definition', () => {
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@nodeTree@countNodes')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@knowledge@queryPayloads')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listTables')).toBe(true)
-    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@export')).toBe(false)
-    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listAggregates')).toBe(false)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@export')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listAggregates')).toBe(true)
     expect(projection.availableFunctions.every((item) => !('functionId' in item))).toBe(true)
 
     const registrationData = pageDesign.getRegistrationData()
@@ -94,7 +94,6 @@ describe('pageDesign module definition', () => {
       'knowledge',
       'nodeTree',
       'dataset',
-      'jsonDoc',
     ])
     expect(registrationData.modules
       .find((module) => module.moduleId === 'lifecycle')

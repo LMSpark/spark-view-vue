@@ -5,26 +5,14 @@
 
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClient } from '@spark-view/spark-utils'
+import type { SparkNode } from '../spark-node'
 
 /**
- * 页面规则配置（rule.json）
- *
- * 这是 spark-page-config 侧的声明式组件树，只表达“页面想渲染什么”。
- * 它不直接等同 spark-component 运行时的 SparkNode：
- * - 根级业务字段仍保留在声明位置
- * - on 仍是配置值，不是闭包
- * - props 合并 / 事件绑定 / id 去重由 spark-component 的 binding 层完成
+ * 页面规则配置（rule.json）。
  */
-export interface RuleConfig {
-  type: string // 组件类型，如 'div', 'el-button', 'r-table'
-  props?: Record<string, unknown>
-  children?: Array<RuleConfig | string>
-  style?: Record<string, string | number>
-  class?: string | string[]
-  on?: Record<string, string> // 事件名 -> 脚本函数名
-  slots?: Record<string, RuleConfig[]>
-  [key: string]: unknown
-}
+export type RuleConfig = SparkNode
+
+export type { SparkNode, SparkNodeChildren } from '../spark-node'
 
 /**
  * 页面数据配置（pagedata.json）编译结果
@@ -65,6 +53,24 @@ export interface PageConfigFiles {
   data: PageDataConfig
   script: PageScriptConfig | undefined
   css: PageCssConfig | undefined
+}
+
+/**
+ * 页面配置四文件名。
+ */
+export const PAGE_CONFIG_FILE_NAMES = [
+  'rule.json',
+  'pagedata.json',
+  'script.js',
+  'style.css',
+] as const
+export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
+
+export interface PageConfigFileLoadOptions {
+  /**
+   * 跳过本地缓存，强制重新请求后端文件接口。
+   */
+  forceReload?: boolean
 }
 
 /**
@@ -154,6 +160,18 @@ export interface ConfigLoader {
    * 加载页面样式
    */
   loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>>
+
+  /**
+   * 加载单个页面配置文件原文。
+   *
+   * DevSystem / 编辑器等设计时入口需要拿到原文，再交给各自的
+   * PageFileDocument 维护 dirty、undo/redo 和领域模型同步。
+   */
+  loadPageFileContent(
+    pageId: string,
+    filename: PageConfigFileName,
+    options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>>
   
   /**
    * 清除缓存

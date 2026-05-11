@@ -1,9 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-page-header",
@@ -12,47 +9,38 @@
           "content": "以看板视图管理任务状态"
         }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "div",
-    "style": {
-      "display": "flex",
-      "gap": "16px",
-      "height": "calc(100vh - 200px)"
-    },
     "children": [
       {
         "type": "el-card",
-        "style": {
-          "flex": 1,
-          "overflow": "auto"
-        },
         "children": [
           {
             "type": "div",
-            "props": {
-              "slot": "header"
-            },
             "children": [
               {
                 "type": "el-tag",
-                "props": {
-                  "type": "info"
-                },
                 "children": [
                   "待处理 (3)"
-                ]
+                ],
+                "props": {
+                  "type": "info"
+                }
               }
-            ]
+            ],
+            "props": {
+              "slot": "header"
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "TodoTasks@rows",
-            "props": {
-              "border": false,
-              "stripe": false
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -70,41 +58,43 @@
                   "width": 80
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": false,
+              "stripe": false,
+              "dataKey": "TodoTasks@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "flex": 1,
+            "overflow": "auto"
+          }
+        }
       },
       {
         "type": "el-card",
-        "style": {
-          "flex": 1,
-          "overflow": "auto"
-        },
         "children": [
           {
             "type": "div",
-            "props": {
-              "slot": "header"
-            },
             "children": [
               {
                 "type": "el-tag",
-                "props": {
-                  "type": "warning"
-                },
                 "children": [
                   "进行中 (3)"
-                ]
+                ],
+                "props": {
+                  "type": "warning"
+                }
               }
-            ]
+            ],
+            "props": {
+              "slot": "header"
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "InProgressTasks@rows",
-            "props": {
-              "border": false,
-              "stripe": false
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -122,41 +112,43 @@
                   "width": 80
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": false,
+              "stripe": false,
+              "dataKey": "InProgressTasks@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "flex": 1,
+            "overflow": "auto"
+          }
+        }
       },
       {
         "type": "el-card",
-        "style": {
-          "flex": 1,
-          "overflow": "auto"
-        },
         "children": [
           {
             "type": "div",
-            "props": {
-              "slot": "header"
-            },
             "children": [
               {
                 "type": "el-tag",
-                "props": {
-                  "type": "success"
-                },
                 "children": [
                   "已完成 (2)"
-                ]
+                ],
+                "props": {
+                  "type": "success"
+                }
               }
-            ]
+            ],
+            "props": {
+              "slot": "header"
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "DoneTasks@rows",
-            "props": {
-              "border": false,
-              "stripe": false
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -174,10 +166,28 @@
                   "width": 110
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": false,
+              "stripe": false,
+              "dataKey": "DoneTasks@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "flex": 1,
+            "overflow": "auto"
+          }
+        }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "display": "flex",
+        "gap": "16px",
+        "height": "calc(100vh - 200px)"
+      }
+    }
   }
 ]

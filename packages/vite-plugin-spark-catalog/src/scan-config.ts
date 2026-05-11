@@ -40,11 +40,8 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
   '**/*.test.vue',
   '**/*.spec.vue',
   '**/__tests__/**',
-  // dev-system 仅暴露顶层 dev-system 视图；其内部编辑器/面板/节点配置组件属于实现细节。
-  '**/src/views/app/dev-system/DevFileEditor.vue',
-  '**/src/views/app/dev-system/DevNodeProps.vue',
-  '**/src/views/app/dev-system/DevSiteTree.vue',
-  '**/src/views/app/dev-system/components/**/*.vue',
+  // dev-system 是设计器内部工具，不进入运行组件目录、AI 组件知识或自动注册扫描。
+  '**/src/views/app/dev-system/**/*.vue',
 ] as const
 
 /**
@@ -60,7 +57,6 @@ export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
   '**/src/components/ModuleContextBadge.vue',
   '**/src/components/NavIcon.vue',
   '**/src/views/app/SkillCatalog.vue',
-  '**/src/views/app/dev-system/DevPreviewTab.vue',
   '**/packages/spark-component/src/components/containers/support/**/*.vue',
 ] as const
 

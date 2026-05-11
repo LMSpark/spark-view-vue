@@ -7,6 +7,16 @@
  */
 
 import type { ICapabilityContext } from '@spark-view/spark-utils'
+export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config'
+export {
+  SPARK_NODE_STRUCT_KEYS,
+  normalizeSparkNode,
+  isSparkNode,
+  getSparkNodeChildren,
+  nodeId,
+  nodeInputProp,
+  nodeInputProps,
+} from '@spark-view/spark-page-config'
 
 // 能力名称类型（从 spark-utils 重新导出）
 export type { CapabilityName } from '@spark-view/spark-utils'
@@ -47,152 +57,6 @@ export type ComponentChildrenMode = 'auto' | 'prop' | 'slot'
  * 不再承载 Vue 组件 props、children、state、logger 等运行时字段。
  */
 export type SparkCapabilityContext = ICapabilityContext
-
-// ============================================================================
-// 组件配置（输入类型）
-// ============================================================================
-
-/**
- * SparkNode - 组件配置的最小输入类型
- *
- * 结构键 `type / id / props / children` 对齐 Vue `h(type, props, children)` 三段式。
- *
- * `props` 放置组件自有的配置项（如 border / stripe / highlightCurrentRow 等）。
- *
- * 停靠区域（toolbar / actions / filter / header / footer / editor / tail）
- * 作为顶层字段直接声明在节点上，由页面配置编译器映射为组件 prop，例如：
- * `toolbar: { type: 'r-toolbar', children: [...] }`。
- *
- * @example
- * ```jsonc
- * {
- *   "type": "r-table",
- *   "id": "orders-table",
- *   "dataKey": "Orders@rows",
- *   "toolbar": {
- *     "type": "r-toolbar",
- *     "children": [
- *       { "type": "r-button", "props": { "action": "append-row" } }
- *     ]
- *   },
- *   "actions": {
- *     "type": "r-toolbar",
- *     "children": [
- *       { "type": "r-button", "props": { "action": "delete-row" } }
- *     ]
- *   },
- *   "props": { "border": true, "stripe": true },
- *   "children": [
- *     { "type": "r-row-fragment", "props": { "field": "name", "label": "姓名" } }
- *   ]
- * }
- * ```
- */
-
-/**
- * SparkNode 子节点数组。
- *
- * 允许混合结构节点与纯文本子节点（string / number）；消费侧可用 `getSparkNodeChildren()` 过滤出结构节点。
- */
-export type SparkNodeChildren = Array<SparkNode | string | number>
-
-export interface SparkNode {
-  /** 组件类型（对应 ComponentDefinition.type） */
-  type: string
-  /** 节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准） */
-  id?: string
-  /** 组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项） */
-  props?: Record<string, unknown>
-  /** 子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点 */
-  children?: SparkNodeChildren
-}
-
-// ── SparkNode 结构键（运行时） ────────────────────────────────────────────
-
-/**
- * SparkNode 结构键集合（type / id / props / children）
- *
- * `id` 属于运行时结构键，不再视为普通业务属性。
- */
-export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'id', 'props', 'children'])
-
-// ── SparkNode 归一化 ────────────────────────────────────────────
-
-/**
- * 归一化 SparkNode 的结构语义。
- *
- * 统一处理：
- * - type 必须是非空字符串
- * - 节点定位 id：只读取顶层 id
- * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
- * - children 缺省或非数组 → `[]`
- *
- * @param node - 待归一化的 SparkNode
- * @returns 归一化后的 SparkNode，type / children 始终合法
- */
-export function normalizeSparkNode(node: SparkNode): SparkNode {
-  if (typeof node.type !== 'string' || node.type.trim().length === 0) {
-    throw new Error('[spark] SparkNode.type must be a non-empty string')
-  }
-
-  const rawTopLevelId = (node as { id?: unknown }).id
-  const normalizedId = typeof rawTopLevelId === 'string' ? rawTopLevelId : undefined
-  const rawProps = (node as { props?: unknown }).props
-  const hasObjectProps = rawProps !== undefined
-    && rawProps !== null
-    && typeof rawProps === 'object'
-    && !Array.isArray(rawProps)
-
-  const normalizedProps = hasObjectProps
-    ? { ...(rawProps as Record<string, unknown>) }
-    : undefined
-
-  return {
-    type: node.type,
-    ...(normalizedId !== undefined ? { id: normalizedId } : {}),
-    ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
-    children: Array.isArray(node.children) ? node.children : [],
-  }
-}
-
-/** 判断值是否为 SparkNode 配置对象 */
-export function isSparkNode(value: unknown): value is SparkNode {
-  return value !== null
-    && typeof value === 'object'
-    && !Array.isArray(value)
-    && 'type' in value
-    && typeof (value as { type?: unknown }).type === 'string'
-    && ((value as { type: string }).type.trim().length > 0)
-}
-
-/** 从混合 children 中提取结构子节点。 */
-export function getSparkNodeChildren(children: SparkNodeChildren | undefined): SparkNode[] {
-  if (!Array.isArray(children) || children.length === 0) return []
-  return children.filter(isSparkNode)
-}
-
-/**
- * 读取节点 id。
- */
-export function nodeId(node: { id?: unknown; props?: Record<string, unknown> }): string | undefined {
-  const topLevelId = node.id
-  if (typeof topLevelId === 'string') return topLevelId
-  return undefined
-}
-
-/**
- * 读取节点输入属性。
- */
-export function nodeInputProp(node: SparkNode, key: string): unknown {
-  return node.props?.[key]
-}
-
-/**
- * 收集节点可传递输入属性。
- */
-export function nodeInputProps(node: SparkNode): Record<string, unknown> {
-  return node.props ?? {}
-}
 
 // ============================================================================
 // 筛选项配置（RendererFilter.vue 使用）

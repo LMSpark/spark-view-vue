@@ -25,8 +25,10 @@ describe('SparkPageRenderer root props aggregation', () => {
       rule: [
         {
           type: 'r-table',
-          dataKey: 'Users@rows',
-          label,
+          props: {
+            dataKey: 'Users@rows',
+            label,
+          },
         },
       ],
       data: SparkData.createDataSet({
@@ -52,7 +54,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     }
   }
 
-  it('moves root-level node inputs into props before rendering registered components', async () => {
+  it('passes SparkNode props through before rendering registered components', async () => {
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined)
 

@@ -39,7 +39,7 @@
  *
  * spark-component 负责运行时物化：
  *   rule.json 是"声明式 children"
- *   加载 → buildPageChildren（根级字段收入 props、事件绑定、ID 去重）
+ *   加载 → buildPageChildren（严格 SparkNode 校验、事件绑定、ID 去重）
  *   → children（SparkNode[]）→ SparkComponentRenderer 递归渲染
  *
  * spark-page props 应用流水线（applyNodeProps）：

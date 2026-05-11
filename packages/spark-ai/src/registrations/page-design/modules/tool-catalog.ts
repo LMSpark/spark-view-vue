@@ -1,10 +1,9 @@
 import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 
 export type PageDesignFunctionKind = 'describe' | 'request'
-export type PageDesignCapabilityIntegrationStatus = 'catalog-only' | 'runtime-wired'
-export type PageDesignFunctionRegistrationStatus = 'registered' | 'catalog-only'
+export type PageDesignCapabilityIntegrationStatus = 'runtime-wired'
+export type PageDesignFunctionRegistrationStatus = 'registered'
 export type PageDesignTextModelFileKey = 'script' | 'style'
-export type PageDesignJsonDocOperation = 'read' | 'list' | 'get' | 'set' | 'delete' | 'append' | 'setMultiple' | 'query'
 export type PageDesignServiceRuntimeBinding =
   | {
     readonly kind: 'page-design-service'
@@ -19,11 +18,6 @@ export type PageDesignServiceRuntimeBinding =
     readonly kind: 'page-design-service'
     readonly method: 'useNodeTreeMethod' | 'useDatasetMethod'
     readonly targetMethod: string
-  }
-  | {
-    readonly kind: 'page-design-service'
-    readonly method: 'useJsonDocOperation'
-    readonly jsonDocOperation: PageDesignJsonDocOperation
   }
 export type PageDesignKnowledgeRuntimeBinding = {
   readonly kind: 'page-design-knowledge'

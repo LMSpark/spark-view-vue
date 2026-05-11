@@ -7,16 +7,43 @@
 
 // 类型导出
 export type {
+  SparkNode,
+  SparkNodeChildren,
   RuleConfig,
   PageDataConfig,
   PageScriptConfig,
   PageCssConfig,
   PageConfigFiles,
+  PageConfigFileName,
+  PageConfigFileLoadOptions,
   PageConfig,
   ConfigLoaderOptions,
   ConfigLoadResult,
   ConfigLoader,
 } from './types'
+
+export {
+  PAGE_CONFIG_FILE_NAMES,
+} from './types'
+
+export type {
+  PageConfigFileApiOptions,
+  PageConfigFileVersionSummary,
+} from './files'
+
+export {
+  PageConfigFileApi,
+} from './files'
+
+export {
+  SPARK_NODE_STRUCT_KEYS,
+  normalizeSparkNode,
+  nodeId,
+  nodeInputProp,
+  nodeInputProps,
+  isSparkNode,
+  getSparkNodeChildren,
+} from './spark-node'
 
 // 配置加载器
 export {

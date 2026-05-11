@@ -2,13 +2,6 @@
   {
     "type": "r-section",
     "id": "stats-section",
-    "props": {
-      "title": "📊 请假概览",
-      "description": "实时统计 · 一目了然",
-      "useCard": true,
-      "bordered": false,
-      "bodyClass": "stats-card-grid"
-    },
     "children": [
       {
         "type": "r-card",
@@ -34,18 +27,6 @@
       {
         "type": "r-card",
         "id": "stats-approved",
-        "props": {
-          "header": "已通过",
-          "bodyClass": "stats-card stats-card-approved",
-          "shadow": "hover",
-          "bodyStyle": {
-            "textAlign": "center",
-            "borderLeft": "4px solid #67c23a",
-            "background": "linear-gradient(135deg, #f0f9eb, #fff)",
-            "borderRadius": "8px",
-            "padding": "16px"
-          }
-        },
         "children": [
           {
             "type": "r-statistic",
@@ -57,23 +38,23 @@
               "precision": 0
             }
           }
-        ]
+        ],
+        "props": {
+          "header": "已通过",
+          "bodyClass": "stats-card stats-card-approved",
+          "shadow": "hover",
+          "bodyStyle": {
+            "textAlign": "center",
+            "borderLeft": "4px solid #67c23a",
+            "background": "linear-gradient(135deg, #f0f9eb, #fff)",
+            "borderRadius": "8px",
+            "padding": "16px"
+          }
+        }
       },
       {
         "type": "r-card",
         "id": "stats-rejected",
-        "props": {
-          "header": "已拒绝",
-          "bodyClass": "stats-card stats-card-rejected",
-          "shadow": "hover",
-          "bodyStyle": {
-            "textAlign": "center",
-            "borderLeft": "4px solid #f56c6c",
-            "background": "linear-gradient(135deg, #fef0f0, #fff)",
-            "borderRadius": "8px",
-            "padding": "16px"
-          }
-        },
         "children": [
           {
             "type": "r-statistic",
@@ -85,23 +66,23 @@
               "precision": 0
             }
           }
-        ]
+        ],
+        "props": {
+          "header": "已拒绝",
+          "bodyClass": "stats-card stats-card-rejected",
+          "shadow": "hover",
+          "bodyStyle": {
+            "textAlign": "center",
+            "borderLeft": "4px solid #f56c6c",
+            "background": "linear-gradient(135deg, #fef0f0, #fff)",
+            "borderRadius": "8px",
+            "padding": "16px"
+          }
+        }
       },
       {
         "type": "r-card",
         "id": "stats-total",
-        "props": {
-          "header": "请假总计",
-          "bodyClass": "stats-card stats-card-total",
-          "shadow": "hover",
-          "bodyStyle": {
-            "textAlign": "center",
-            "borderLeft": "4px solid #409eff",
-            "background": "linear-gradient(135deg, #ecf5ff, #fff)",
-            "borderRadius": "8px",
-            "padding": "16px"
-          }
-        },
         "children": [
           {
             "type": "r-statistic",
@@ -113,172 +94,32 @@
               "precision": 0
             }
           }
-        ]
+        ],
+        "props": {
+          "header": "请假总计",
+          "bodyClass": "stats-card stats-card-total",
+          "shadow": "hover",
+          "bodyStyle": {
+            "textAlign": "center",
+            "borderLeft": "4px solid #409eff",
+            "background": "linear-gradient(135deg, #ecf5ff, #fff)",
+            "borderRadius": "8px",
+            "padding": "16px"
+          }
+        }
       }
-    ]
+    ],
+    "props": {
+      "title": "📊 请假概览",
+      "description": "实时统计 · 一目了然",
+      "useCard": true,
+      "bordered": false,
+      "bodyClass": "stats-card-grid"
+    }
   },
   {
     "type": "r-table",
     "id": "leave-requests-table",
-    "props": {
-      "dataKey": "LeaveRequests@rows",
-      "rowKey": "id",
-      "highlightCurrentRow": true,
-      "stripe": true,
-      "border": true,
-      "resizable": true,
-      "filterCollapsible": true,
-      "filterDefaultCollapsed": true,
-      "filter": {
-        "type": "r-filter",
-        "props": {
-          "collapsible": true,
-          "defaultCollapsed": true,
-          "itemSpan": 6
-        },
-        "id": "leave-filter",
-        "children": [
-          {
-            "type": "r-select",
-            "props": {
-              "field": "status",
-              "label": "状态",
-              "placeholder": "全部状态",
-              "clearable": true,
-              "options": [
-                {
-                  "label": "待审批",
-                  "value": "pending"
-                },
-                {
-                  "label": "已通过",
-                  "value": "approved"
-                },
-                {
-                  "label": "已拒绝",
-                  "value": "rejected"
-                },
-                {
-                  "label": "已取消",
-                  "value": "cancelled"
-                }
-              ],
-              "optionLabelField": "label",
-              "optionValueField": "value"
-            },
-            "id": "filter-status",
-            "children": []
-          },
-          {
-            "type": "r-text",
-            "props": {
-              "field": "department",
-              "label": "部门",
-              "placeholder": "请输入部门",
-              "clearable": true
-            },
-            "id": "filter-department",
-            "children": []
-          },
-          {
-            "type": "r-date",
-            "props": {
-              "field": "startDate",
-              "label": "日期范围",
-              "dateType": "daterange",
-              "startPlaceholder": "开始日期",
-              "endPlaceholder": "结束日期",
-              "rangeSeparator": "至",
-              "filterMode": "range"
-            },
-            "id": "filter-date-range",
-            "children": []
-          }
-        ]
-      },
-      "toolbar": {
-        "type": "r-toolbar",
-        "props": {},
-        "id": "leave-toolbar",
-        "children": [
-          {
-            "type": "r-button",
-            "props": {
-              "label": "新增请假",
-              "action": "append-row",
-              "template": "primary",
-              "icon": "Plus"
-            },
-            "id": "btn-add",
-            "children": []
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "label": "刷新",
-              "action": "refresh",
-              "template": "default",
-              "icon": "Refresh"
-            },
-            "id": "btn-refresh",
-            "children": []
-          }
-        ]
-      },
-      "actions": {
-        "type": "r-toolbar",
-        "id": "leave-actions",
-        "props": {
-          "width": 400,
-          "align": "center",
-          "fixed": "right"
-        },
-        "children": [
-          {
-            "type": "r-button",
-            "id": "action-view",
-            "props": {
-              "label": "查看",
-              "action": "onActionViewClick",
-              "template": "text"
-            },
-            "children": []
-          },
-          {
-            "type": "r-button",
-            "id": "action-approve",
-            "props": {
-              "label": "审批",
-              "action": "onActionApproveClick",
-              "template": "text",
-              "color": "#409EFF"
-            },
-            "children": []
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "label": "编辑",
-              "action": "prompt-edit",
-              "template": "text"
-            },
-            "id": "action-edit",
-            "children": []
-          },
-          {
-            "type": "r-button",
-            "props": {
-              "label": "删除",
-              "action": "delete-row",
-              "template": "text",
-              "color": "#F56C6C"
-            },
-            "id": "action-delete",
-            "children": []
-          }
-        ]
-      }
-    },
     "children": [
       {
         "type": "r-text",
@@ -388,7 +229,165 @@
           "format": "YYYY-MM-DD HH:mm"
         }
       }
-    ]
+    ],
+    "props": {
+      "dataKey": "LeaveRequests@rows",
+      "rowKey": "id",
+      "highlightCurrentRow": true,
+      "stripe": true,
+      "border": true,
+      "resizable": true,
+      "filterCollapsible": true,
+      "filterDefaultCollapsed": true,
+      "filter": {
+        "type": "r-filter",
+        "id": "leave-filter",
+        "children": [
+          {
+            "type": "r-select",
+            "id": "filter-status",
+            "children": [],
+            "props": {
+              "field": "status",
+              "label": "状态",
+              "placeholder": "全部状态",
+              "clearable": true,
+              "options": [
+                {
+                  "label": "待审批",
+                  "value": "pending"
+                },
+                {
+                  "label": "已通过",
+                  "value": "approved"
+                },
+                {
+                  "label": "已拒绝",
+                  "value": "rejected"
+                },
+                {
+                  "label": "已取消",
+                  "value": "cancelled"
+                }
+              ],
+              "optionLabelField": "label",
+              "optionValueField": "value"
+            }
+          },
+          {
+            "type": "r-text",
+            "id": "filter-department",
+            "children": [],
+            "props": {
+              "field": "department",
+              "label": "部门",
+              "placeholder": "请输入部门",
+              "clearable": true
+            }
+          },
+          {
+            "type": "r-date",
+            "id": "filter-date-range",
+            "children": [],
+            "props": {
+              "field": "startDate",
+              "label": "日期范围",
+              "dateType": "daterange",
+              "startPlaceholder": "开始日期",
+              "endPlaceholder": "结束日期",
+              "rangeSeparator": "至",
+              "filterMode": "range"
+            }
+          }
+        ],
+        "props": {
+          "collapsible": true,
+          "defaultCollapsed": true,
+          "itemSpan": 6
+        }
+      },
+      "toolbar": {
+        "type": "r-toolbar",
+        "id": "leave-toolbar",
+        "children": [
+          {
+            "type": "r-button",
+            "id": "btn-add",
+            "children": [],
+            "props": {
+              "label": "新增请假",
+              "action": "append-row",
+              "template": "primary",
+              "icon": "Plus"
+            }
+          },
+          {
+            "type": "r-button",
+            "id": "btn-refresh",
+            "children": [],
+            "props": {
+              "label": "刷新",
+              "action": "refresh",
+              "template": "default",
+              "icon": "Refresh"
+            }
+          }
+        ]
+      },
+      "actions": {
+        "type": "r-toolbar",
+        "id": "leave-actions",
+        "children": [
+          {
+            "type": "r-button",
+            "id": "action-view",
+            "children": [],
+            "props": {
+              "label": "查看",
+              "action": "onActionViewClick",
+              "template": "text"
+            }
+          },
+          {
+            "type": "r-button",
+            "id": "action-approve",
+            "children": [],
+            "props": {
+              "label": "审批",
+              "action": "onActionApproveClick",
+              "template": "text",
+              "color": "#409EFF"
+            }
+          },
+          {
+            "type": "r-button",
+            "id": "action-edit",
+            "children": [],
+            "props": {
+              "label": "编辑",
+              "action": "prompt-edit",
+              "template": "text"
+            }
+          },
+          {
+            "type": "r-button",
+            "id": "action-delete",
+            "children": [],
+            "props": {
+              "label": "删除",
+              "action": "delete-row",
+              "template": "text",
+              "color": "#F56C6C"
+            }
+          }
+        ],
+        "props": {
+          "width": 400,
+          "align": "center",
+          "fixed": "right"
+        }
+      }
+    }
   },
   {
     "type": "r-dialog",

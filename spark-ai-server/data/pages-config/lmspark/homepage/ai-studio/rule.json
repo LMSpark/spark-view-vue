@@ -1,8 +1,10 @@
 [
   {
     "type": "ai-studio-panel",
-    "style": {
-      "height": "calc(100vh - 60px)"
+    "props": {
+      "style": {
+        "height": "calc(100vh - 60px)"
+      }
     }
   }
 ]

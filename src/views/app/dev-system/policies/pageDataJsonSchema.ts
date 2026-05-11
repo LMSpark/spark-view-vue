@@ -336,13 +336,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
         resourceType: withMeta('资源类型', '描述该表背后对应的资源来源或承载形态。static-data 是当前约定下唯一允许直接声明静态 rows 的资源类型。', { type: 'string', enum: resourceTypes }),
         resourceId: withMeta('资源 ID', '对应外部资源系统中的稳定标识，例如库表名、字典编码或第三方资源编码。', { type: 'string' }),
         businessCategory: withMeta('业务分类', '描述该表在当前业务模型中的角色，如主表 / 从表 / 引用表。', { type: 'string', enum: businessCategories }),
-        api: withMeta('API 配置', '表级 API 配置。新配置优先使用 CrudApi 对象结构；boolean / string 仅作兼容保留。', {
-          oneOf: [
-            { type: 'boolean' },
-            { type: 'string' },
-            { $ref: '#/$defs/crudApi' },
-          ],
-        }),
+        api: withMeta('API 配置', '表级 API 配置，必须使用 CrudApi 对象结构。', { $ref: '#/$defs/crudApi' }),
         crudConfig: withMeta('CRUD 运行配置', 'CRUD 运行策略配置对象。', { $ref: '#/$defs/jsonObject' }),
         views: withMeta('视图集合', '当前表下的全部视图配置。default 视图是必需项。', {
           type: 'object',

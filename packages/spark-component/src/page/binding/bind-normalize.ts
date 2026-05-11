@@ -130,6 +130,12 @@ function normalizeOnProps(
   actionCtx?: ActionExecutionContext,
 ): void {
   for (const [key, value] of Object.entries(props)) {
+    if (key === 'on') {
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        props[key] = normalizeRuleEvents(value as Record<string, unknown>, callFunc, actionCtx)
+      }
+      continue
+    }
     if (!key.startsWith('on')) continue
     if (typeof value === 'string') {
       props[key] = wrapStringHandler(value, callFunc)

@@ -58,6 +58,9 @@ function createConfigLoader(httpClient: HttpClient): ConfigLoader {
     async loadCss() {
       return { success: true, data: '', source: 'remote' }
     },
+    async loadPageFileContent() {
+      return { success: false }
+    },
     clearCache() {},
     getCacheStats() {
       return { size: 0, keys: [] }

@@ -6,7 +6,7 @@ SPARK 的 AI 能力包。核心层采用递归模块注册架构：core 统一�
 
 - `core`：递归模块注册、AI 会话历史、LLM 知识投影、函数调用翻译、函数结果回传协议、参数 payload 提供者注册表。
 - `registrations`：`page-design` 四文件编辑注册入口（`rule.json`、`pagedata.json`、`script.js`、`style.css`）、模块自有状态和真实函数执行。
-- `registrations/page-design/payloads`：page-design payload provider、目录投影与 DevSystem 预计算元数据。
+- `registrations/page-design/payloads`：page-design payload provider、组件目录投影与参数荷载查询。
 
 ## 核心层语义
 

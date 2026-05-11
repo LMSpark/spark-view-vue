@@ -2,17 +2,8 @@ import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
   PageDesignEditSession,
   type PageDesignEditHost,
-} from './edit-session'
-import type { PageDesignNodeTree } from './node-tree-types'
-import {
-  resolvePointer,
-  setAtPointer,
-  deleteAtPointer,
-  appendAtPointer,
-  listAtPointer,
-  type JsonValue,
-} from './json-doc-json-pointer'
-import jmespath from 'jmespath'
+} from '../editing/edit-session'
+import type { PageDesignNodeTree } from '../editing/node-tree-types'
 
 export interface PageDesignServiceContext {
   requestId: string
@@ -246,16 +237,6 @@ function useMethodBackedTarget(options: PageDesignServiceMethodBinding, target: 
 
 export type PageDesignTextFileKey = 'script' | 'style'
 
-export type PageDesignJsonDocOperation =
-  | 'read'
-  | 'list'
-  | 'get'
-  | 'set'
-  | 'delete'
-  | 'append'
-  | 'setMultiple'
-  | 'query'
-
 export interface PageDesignServiceMethodBinding {
   serviceLabel: string
   methodName: string
@@ -345,97 +326,6 @@ export class PageDesignService {
       state.notifyDataSetChanged(tool)
     }
     return result
-  }
-
-  useJsonDocOperation(
-    context: PageDesignServiceContext,
-    args: unknown,
-    operation: PageDesignJsonDocOperation,
-  ): PageDesignServiceResult<unknown> {
-    const state = this.getState(context)
-    const docType = (args as { docType: 'pagedata' | 'rule' }).docType
-
-    const host = state.host
-    const readDoc = host?.readJsonDoc
-    if (typeof readDoc !== 'function') {
-      return pageDesignServiceFailure('NO_JSON_DOC_HOST', '宿主未绑定 PageDesignEditHost.readJsonDoc', '先调用 PageDesignService.bootstrap 并确保宿主提供 readJsonDoc/writeJsonDoc。')
-    }
-
-    const rawDoc = readDoc(docType)
-
-    if (operation === 'read') {
-      return success({ doc: rawDoc }, `${docType} 文档已读取`)
-    }
-
-    if (operation === 'list') {
-      const pointer = (args as { pointer: string }).pointer
-      const res = listAtPointer(rawDoc as JsonValue, pointer)
-      if (!res.ok) return pageDesignServiceFailure('NOT_FOUND', res.reason, '使用 jsonDoc.read 确认文档结构。')
-      return success({ entries: res.entries }, `${docType}${pointer} 列出 ${res.entries.length} 个子节点`)
-    }
-
-    if (operation === 'get') {
-      const pointer = (args as { pointer: string }).pointer
-      const res = resolvePointer(rawDoc as JsonValue, pointer)
-      if (!res.ok) return pageDesignServiceFailure('NOT_FOUND', res.reason, '使用 jsonDoc.list 确认路径。')
-      return success({ value: res.value }, `${docType}${pointer} 已读取`)
-    }
-
-    if (operation === 'query') {
-      const queryArgs = args as { expression: string; pointer?: string }
-      const pointer = queryArgs.pointer ?? ''
-      let target: JsonValue = rawDoc as JsonValue
-      if (pointer !== '') {
-        const res = resolvePointer(target, pointer)
-        if (!res.ok) return pageDesignServiceFailure('NOT_FOUND', res.reason, '使用 jsonDoc.list 确认路径。')
-        target = res.value
-      }
-      try {
-        const result = jmespath.search(target, queryArgs.expression) as unknown
-        return success({ result }, 'JMESPath 查询完成')
-      } catch (e) {
-        return pageDesignServiceFailure('INVALID_EXPRESSION', `JMESPath 表达式错误: ${e instanceof Error ? e.message : String(e)}`, '检查 expression 语法，参考 https://jmespath.org。')
-      }
-    }
-
-    const writeDoc = host?.writeJsonDoc
-    if (typeof writeDoc !== 'function') {
-      return pageDesignServiceFailure('NO_JSON_DOC_HOST', '宿主未绑定 PageDesignEditHost.writeJsonDoc', '先调用 PageDesignService.bootstrap 并确保宿主提供 writeJsonDoc。')
-    }
-
-    if (operation === 'set') {
-      const setArgs = args as { pointer: string; value: JsonValue }
-      const res = setAtPointer(rawDoc as JsonValue, setArgs.pointer, setArgs.value)
-      if (!res.ok) return pageDesignServiceFailure('INVALID_POINTER', res.reason, '检查 pointer 格式。')
-      writeDoc(docType, res.doc)
-      return success(undefined, `${docType}${setArgs.pointer} 已设置`)
-    }
-
-    if (operation === 'delete') {
-      const pointer = (args as { pointer: string }).pointer
-      const res = deleteAtPointer(rawDoc as JsonValue, pointer)
-      if (!res.ok) return pageDesignServiceFailure('NOT_FOUND', res.reason, '使用 jsonDoc.list 确认路径后再删除。')
-      writeDoc(docType, res.doc)
-      return success(undefined, `${docType}${pointer} 已删除`)
-    }
-
-    if (operation === 'append') {
-      const appendArgs = args as { arrayPointer: string; element: JsonValue }
-      const res = appendAtPointer(rawDoc as JsonValue, appendArgs.arrayPointer, appendArgs.element)
-      if (!res.ok) return pageDesignServiceFailure('NOT_ARRAY', res.reason, '使用 jsonDoc.get 确认目标是数组。')
-      writeDoc(docType, res.doc)
-      return success(undefined, `元素已追加到 ${docType}${appendArgs.arrayPointer}`)
-    }
-
-    const patches = (args as { patches: Array<{ pointer: string; value: JsonValue }> }).patches
-    let doc = rawDoc as JsonValue
-    for (const [i, patch] of patches.entries()) {
-      const res = setAtPointer(doc, patch.pointer, patch.value)
-      if (!res.ok) return pageDesignServiceFailure('INVALID_POINTER', `patches[${i}] 失败：${res.reason}`, '检查 pointer 格式，本批次全部未提交。')
-      doc = res.doc
-    }
-    writeDoc(docType, doc)
-    return success(undefined, `${docType} 批量写入 ${patches.length} 项已完成`)
   }
 
   releasePage(pageId: string): void {

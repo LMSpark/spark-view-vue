@@ -1,696 +1,754 @@
 [
-    {
-        "type": "div",
-        "style": {
-            "padding": "20px",
-            "maxWidth": "1400px",
-            "margin": "0 auto"
-        },
+  {
+    "type": "div",
+    "children": [
+      {
+        "type": "h1",
         "children": [
-            {
-                "type": "h1",
-                "children": [
-                    "r-list 组件全功能演示"
-                ]
-            },
-            {
-                "type": "p",
-                "style": {
-                    "color": "#909399",
-                    "marginBottom": "24px"
-                },
-                "children": [
-                    "演示 r-list 的卡片布局、多列网格、项操作区、工具栏、计算列汇总、行点击选中、自定义渲染等全部能力。"
-                ]
-            },
-            {
-                "type": "r-section",
-                "props": {
-                    "title": "① 产品卡片列表（3 列 · 卡片模式 · 工具栏 · 项操作）",
-                    "description": "useCard + 3 列布局 + 工具栏（新增/刷新/删除勾选）+ 右侧项操作（删除/查看）+ 计算列汇总"
-                },
-                "children": [
-                    {
-                        "type": "r-list",
-                        "id": "productCards",
-                        "dataKey": "Products@cards@rows",
-                        "props": {
-                            "columns": 3,
-                            "gap": "16px",
-                            "useCard": true,
-                            "cardShadow": "hover",
-                            "rowKey": "id",
-                            "emptyText": "暂无产品数据",
-                            "gridColumns": 24,
-                            "gridGap": "8px"
-                        },
-                        "children": [
-                            {
-                                "type": "r-toolbar",
-                                "props": {
-                                    "position": "top"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "append-row",
-                                            "label": "新增产品",
-                                            "appendPayload": {
-                                                "name": "新产品",
-                                                "category": "未分类",
-                                                "price": 0,
-                                                "stock": 0,
-                                                "status": "预售",
-                                                "image": "https://picsum.photos/seed/newprod/400/250",
-                                                "rating": 0,
-                                                "description": "待编辑",
-                                                "tags": ""
-                                            },
-                                            "successMessage": "已新增产品"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "refresh",
-                                            "label": "刷新"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "delete-selected",
-                                            "label": "批量删除"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-tail",
-                                        "children": [
-                                            {
-                                                "type": "r-statistic",
-                                                "props": {
-                                                    "title": "产品数",
-                                                    "dataKey": "Products@cards@aggregateResult",
-                                                    "field": "stock",
-                                                    "prefix": "库存合计：",
-                                                    "valueStyle": {
-                                                        "fontSize": "16px",
-                                                        "fontWeight": "bold",
-                                                        "color": "#409EFF"
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "r-toolbar",
-                                "props": {
-                                    "position": "right"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "message-row",
-                                            "label": "详情",
-                                            "message": "{name} | ¥{price} | 库存 {stock} | {description}"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "delete-row",
-                                            "label": "删除",
-                                            "confirmMessage": "确定删除 {name} 吗？"
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "display-image",
-                                "field": "image",
-                                "props": {
-                                    "colSpan": 24,
-                                    "width": "100%",
-                                    "height": "160px",
-                                    "fit": "cover",
-                                    "style": {
-                                        "borderRadius": "4px",
-                                        "marginBottom": "8px"
-                                    }
-                                }
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 24
-                                },
-                                "style": {
-                                    "display": "flex",
-                                    "justifyContent": "space-between",
-                                    "alignItems": "center"
-                                },
-                                "children": [
-                                    {
-                                        "type": "span",
-                                        "style": {
-                                            "fontSize": "16px",
-                                            "fontWeight": "bold"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "name"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "r-tag",
-                                        "field": "status",
-                                        "props": {
-                                            "effect": "dark",
-                                            "dynamicType": {
-                                                "在售": "success",
-                                                "预售": "warning",
-                                                "缺货": "danger"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 24
-                                },
-                                "style": {
-                                    "color": "#909399",
-                                    "fontSize": "13px",
-                                    "margin": "4px 0",
-                                    "lineHeight": "1.5"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-text-display",
-                                        "field": "description"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 24
-                                },
-                                "style": {
-                                    "display": "flex",
-                                    "justifyContent": "space-between",
-                                    "alignItems": "center",
-                                    "marginTop": "8px"
-                                },
-                                "children": [
-                                    {
-                                        "type": "span",
-                                        "style": {
-                                            "fontSize": "20px",
-                                            "fontWeight": "bold",
-                                            "color": "#F56C6C"
-                                        },
-                                        "children": [
-                                            "¥",
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "price"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "span",
-                                        "style": {
-                                            "fontSize": "13px",
-                                            "color": "#909399"
-                                        },
-                                        "children": [
-                                            "库存 ",
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "stock"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 24
-                                },
-                                "style": {
-                                    "display": "flex",
-                                    "justifyContent": "space-between",
-                                    "alignItems": "center",
-                                    "marginTop": "4px"
-                                },
-                                "children": [
-                                    {
-                                        "type": "span",
-                                        "style": {
-                                            "fontSize": "13px",
-                                            "color": "#E6A23C"
-                                        },
-                                        "children": [
-                                            "★ ",
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "rating"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "span",
-                                        "style": {
-                                            "fontSize": "12px",
-                                            "color": "#C0C4CC"
-                                        },
-                                        "children": [
-                                            "分类: ",
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "category"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "r-divider"
-            },
-            {
-                "type": "r-section",
-                "props": {
-                    "title": "② 团队成员列表（2 列 · 无卡片 · 左侧操作 · 自定义项样式）",
-                    "description": "columns=2 + 项样式 + 左侧操作区 + 自定义 itemClass + 行点击"
-                },
-                "children": [
-                    {
-                        "type": "r-list",
-                        "id": "teamList",
-                        "dataKey": "TeamMembers@rows",
-                        "props": {
-                            "columns": 2,
-                            "gap": "12px",
-                            "useCard": false,
-                            "rowKey": "id",
-                            "itemClass": "team-member-item",
-                            "itemStyle": {
-                                "padding": "16px",
-                                "borderRadius": "8px",
-                                "border": "1px solid #EBEEF5",
-                                "transition": "box-shadow 0.2s"
-                            },
-                            "gridColumns": 24,
-                            "gridGap": "8px"
-                        },
-                        "children": [
-                            {
-                                "type": "r-toolbar",
-                                "props": {
-                                    "position": "top"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "append-row",
-                                            "label": "添加成员",
-                                            "appendPayload": {
-                                                "name": "新成员",
-                                                "role": "待分配",
-                                                "email": "new@spark.dev",
-                                                "avatar": "/config/default-avatar.svg?seed=newmember",
-                                                "status": "离线"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "r-toolbar",
-                                "props": {
-                                    "position": "left"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "message-row",
-                                            "label": "查看",
-                                            "template": "text",
-                                            "message": "{name} ({role}) — {email}"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "delete-row",
-                                            "label": "移除",
-                                            "template": "text",
-                                            "confirmMessage": "确定移除 {name} 吗？"
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "r-avatar",
-                                "field": "avatar",
-                                "props": {
-                                    "colSpan": 4,
-                                    "size": 48,
-                                    "shape": "circle"
-                                }
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 20
-                                },
-                                "children": [
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "display": "flex",
-                                            "alignItems": "center",
-                                            "gap": "8px",
-                                            "marginBottom": "4px"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "span",
-                                                "style": {
-                                                    "fontWeight": "bold",
-                                                    "fontSize": "15px"
-                                                },
-                                                "children": [
-                                                    {
-                                                        "type": "r-text-display",
-                                                        "field": "name"
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "type": "r-tag",
-                                                "field": "status",
-                                                "props": {
-                                                    "size": "small",
-                                                    "dynamicType": {
-                                                        "在线": "success",
-                                                        "忙碌": "warning",
-                                                        "离线": "info"
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "fontSize": "13px",
-                                            "color": "#606266"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "role"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "fontSize": "12px",
-                                            "color": "#909399"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "email"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "r-divider"
-            },
-            {
-                "type": "r-section",
-                "props": {
-                    "title": "③ 单列列表（紧凑模式 · 无操作区 · 纯展示）",
-                    "description": "columns=1 + 无操作区 + 极简配置 + emptyText 自定义"
-                },
-                "children": [
-                    {
-                        "type": "r-list",
-                        "id": "simpleList",
-                        "dataKey": "Products@simple@rows",
-                        "props": {
-                            "columns": 1,
-                            "gap": "0",
-                            "useCard": false,
-                            "rowKey": "id",
-                            "itemStyle": {
-                                "padding": "12px 16px",
-                                "borderBottom": "1px solid #F2F6FC"
-                            },
-                            "gridColumns": 24
-                        },
-                        "children": [
-                            {
-                                "type": "span",
-                                "props": {
-                                    "colSpan": 6
-                                },
-                                "style": {
-                                    "fontWeight": "500"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-text-display",
-                                        "field": "name"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "r-tag",
-                                "field": "category",
-                                "props": {
-                                    "colSpan": 4,
-                                    "type": "info",
-                                    "effect": "plain"
-                                }
-                            },
-                            {
-                                "type": "span",
-                                "props": {
-                                    "colSpan": 4
-                                },
-                                "style": {
-                                    "color": "#F56C6C",
-                                    "fontWeight": "bold"
-                                },
-                                "children": [
-                                    "¥",
-                                    {
-                                        "type": "r-text-display",
-                                        "field": "price"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "span",
-                                "props": {
-                                    "colSpan": 4
-                                },
-                                "style": {
-                                    "color": "#909399",
-                                    "fontSize": "13px"
-                                },
-                                "children": [
-                                    "库存: ",
-                                    {
-                                        "type": "r-text-display",
-                                        "field": "stock"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "r-tag",
-                                "field": "status",
-                                "props": {
-                                    "colSpan": 4,
-                                    "size": "small",
-                                    "dynamicType": {
-                                        "在售": "success",
-                                        "预售": "warning",
-                                        "缺货": "danger"
-                                    }
-                                }
-                            },
-                            {
-                                "type": "span",
-                                "props": {
-                                    "colSpan": 2
-                                },
-                                "style": {
-                                    "color": "#E6A23C",
-                                    "textAlign": "right"
-                                },
-                                "children": [
-                                    "★",
-                                    {
-                                        "type": "r-text-display",
-                                        "field": "rating"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "r-divider"
-            },
-            {
-                "type": "r-section",
-                "props": {
-                    "title": "④ 4 列宽卡片（卡片阴影 always · 工具栏底部）",
-                    "description": "columns=4 + cardShadow=always + toolbar position=bottom + 紧凑卡片"
-                },
-                "children": [
-                    {
-                        "type": "r-list",
-                        "id": "miniCards",
-                        "dataKey": "Products@rows",
-                        "props": {
-                            "columns": 4,
-                            "gap": "12px",
-                            "useCard": true,
-                            "cardShadow": "always",
-                            "rowKey": "id",
-                            "gridColumns": 24,
-                            "gridGap": "4px"
-                        },
-                        "children": [
-                            {
-                                "type": "r-toolbar",
-                                "props": {
-                                    "position": "bottom"
-                                },
-                                "children": [
-                                    {
-                                        "type": "r-button",
-                                        "props": {
-                                            "action": "refresh",
-                                            "label": "刷新产品列表"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-tail",
-                                        "children": [
-                                            {
-                                                "type": "span",
-                                                "style": {
-                                                    "fontSize": "13px",
-                                                    "color": "#909399"
-                                                },
-                                                "children": [
-                                                    "共 12 件产品"
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 24
-                                },
-                                "style": {
-                                    "textAlign": "center"
-                                },
-                                "children": [
-                                    {
-                                        "type": "display-image",
-                                        "field": "image",
-                                        "props": {
-                                            "width": "100%",
-                                            "height": "100px",
-                                            "fit": "cover",
-                                            "style": {
-                                                "borderRadius": "4px"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "div",
-                                "props": {
-                                    "colSpan": 24
-                                },
-                                "style": {
-                                    "textAlign": "center",
-                                    "marginTop": "8px"
-                                },
-                                "children": [
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "fontWeight": "bold",
-                                            "fontSize": "14px",
-                                            "whiteSpace": "nowrap",
-                                            "overflow": "hidden",
-                                            "textOverflow": "ellipsis"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "name"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "type": "div",
-                                        "style": {
-                                            "color": "#F56C6C",
-                                            "fontWeight": "bold",
-                                            "marginTop": "4px"
-                                        },
-                                        "children": [
-                                            "¥",
-                                            {
-                                                "type": "r-text-display",
-                                                "field": "price"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
+          "r-list 组件全功能演示"
         ]
+      },
+      {
+        "type": "p",
+        "children": [
+          "演示 r-list 的卡片布局、多列网格、项操作区、工具栏、计算列汇总、行点击选中、自定义渲染等全部能力。"
+        ],
+        "props": {
+          "style": {
+            "color": "#909399",
+            "marginBottom": "24px"
+          }
+        }
+      },
+      {
+        "type": "r-section",
+        "children": [
+          {
+            "type": "r-list",
+            "id": "productCards",
+            "children": [
+              {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "append-row",
+                      "label": "新增产品",
+                      "appendPayload": {
+                        "name": "新产品",
+                        "category": "未分类",
+                        "price": 0,
+                        "stock": 0,
+                        "status": "预售",
+                        "image": "https://picsum.photos/seed/newprod/400/250",
+                        "rating": 0,
+                        "description": "待编辑",
+                        "tags": ""
+                      },
+                      "successMessage": "已新增产品"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "refresh",
+                      "label": "刷新"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "delete-selected",
+                      "label": "批量删除"
+                    }
+                  },
+                  {
+                    "type": "r-tail",
+                    "children": [
+                      {
+                        "type": "r-statistic",
+                        "props": {
+                          "title": "产品数",
+                          "dataKey": "Products@cards@aggregateResult",
+                          "field": "stock",
+                          "prefix": "库存合计：",
+                          "valueStyle": {
+                            "fontSize": "16px",
+                            "fontWeight": "bold",
+                            "color": "#409EFF"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "props": {
+                  "position": "top"
+                }
+              },
+              {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "message-row",
+                      "label": "详情",
+                      "message": "{name} | ¥{price} | 库存 {stock} | {description}"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "delete-row",
+                      "label": "删除",
+                      "confirmMessage": "确定删除 {name} 吗？"
+                    }
+                  }
+                ],
+                "props": {
+                  "position": "right"
+                }
+              },
+              {
+                "type": "display-image",
+                "props": {
+                  "colSpan": 24,
+                  "width": "100%",
+                  "height": "160px",
+                  "fit": "cover",
+                  "style": {
+                    "borderRadius": "4px",
+                    "marginBottom": "8px"
+                  },
+                  "field": "image"
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "name"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "16px",
+                        "fontWeight": "bold"
+                      }
+                    }
+                  },
+                  {
+                    "type": "r-tag",
+                    "props": {
+                      "effect": "dark",
+                      "dynamicType": {
+                        "在售": "success",
+                        "预售": "warning",
+                        "缺货": "danger"
+                      },
+                      "field": "status"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 24,
+                  "style": {
+                    "display": "flex",
+                    "justifyContent": "space-between",
+                    "alignItems": "center"
+                  }
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "r-text-display",
+                    "props": {
+                      "field": "description"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 24,
+                  "style": {
+                    "color": "#909399",
+                    "fontSize": "13px",
+                    "margin": "4px 0",
+                    "lineHeight": "1.5"
+                  }
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "¥",
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "20px",
+                        "fontWeight": "bold",
+                        "color": "#F56C6C"
+                      }
+                    }
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "库存 ",
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "stock"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "13px",
+                        "color": "#909399"
+                      }
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 24,
+                  "style": {
+                    "display": "flex",
+                    "justifyContent": "space-between",
+                    "alignItems": "center",
+                    "marginTop": "8px"
+                  }
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "★ ",
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "rating"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "13px",
+                        "color": "#E6A23C"
+                      }
+                    }
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "分类: ",
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "category"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "12px",
+                        "color": "#C0C4CC"
+                      }
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 24,
+                  "style": {
+                    "display": "flex",
+                    "justifyContent": "space-between",
+                    "alignItems": "center",
+                    "marginTop": "4px"
+                  }
+                }
+              }
+            ],
+            "props": {
+              "columns": 3,
+              "gap": "16px",
+              "useCard": true,
+              "cardShadow": "hover",
+              "rowKey": "id",
+              "emptyText": "暂无产品数据",
+              "gridColumns": 24,
+              "gridGap": "8px",
+              "dataKey": "Products@cards@rows"
+            }
+          }
+        ],
+        "props": {
+          "title": "① 产品卡片列表（3 列 · 卡片模式 · 工具栏 · 项操作）",
+          "description": "useCard + 3 列布局 + 工具栏（新增/刷新/删除勾选）+ 右侧项操作（删除/查看）+ 计算列汇总"
+        }
+      },
+      {
+        "type": "r-divider"
+      },
+      {
+        "type": "r-section",
+        "children": [
+          {
+            "type": "r-list",
+            "id": "teamList",
+            "children": [
+              {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "append-row",
+                      "label": "添加成员",
+                      "appendPayload": {
+                        "name": "新成员",
+                        "role": "待分配",
+                        "email": "new@spark.dev",
+                        "avatar": "/config/default-avatar.svg?seed=newmember",
+                        "status": "离线"
+                      }
+                    }
+                  }
+                ],
+                "props": {
+                  "position": "top"
+                }
+              },
+              {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "message-row",
+                      "label": "查看",
+                      "template": "text",
+                      "message": "{name} ({role}) — {email}"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "delete-row",
+                      "label": "移除",
+                      "template": "text",
+                      "confirmMessage": "确定移除 {name} 吗？"
+                    }
+                  }
+                ],
+                "props": {
+                  "position": "left"
+                }
+              },
+              {
+                "type": "r-avatar",
+                "props": {
+                  "colSpan": 4,
+                  "size": 48,
+                  "shape": "circle",
+                  "field": "avatar"
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "div",
+                    "children": [
+                      {
+                        "type": "span",
+                        "children": [
+                          {
+                            "type": "r-text-display",
+                            "props": {
+                              "field": "name"
+                            }
+                          }
+                        ],
+                        "props": {
+                          "style": {
+                            "fontWeight": "bold",
+                            "fontSize": "15px"
+                          }
+                        }
+                      },
+                      {
+                        "type": "r-tag",
+                        "props": {
+                          "size": "small",
+                          "dynamicType": {
+                            "在线": "success",
+                            "忙碌": "warning",
+                            "离线": "info"
+                          },
+                          "field": "status"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": "8px",
+                        "marginBottom": "4px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "children": [
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "role"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "13px",
+                        "color": "#606266"
+                      }
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "children": [
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "email"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontSize": "12px",
+                        "color": "#909399"
+                      }
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 20
+                }
+              }
+            ],
+            "props": {
+              "columns": 2,
+              "gap": "12px",
+              "useCard": false,
+              "rowKey": "id",
+              "itemClass": "team-member-item",
+              "itemStyle": {
+                "padding": "16px",
+                "borderRadius": "8px",
+                "border": "1px solid #EBEEF5",
+                "transition": "box-shadow 0.2s"
+              },
+              "gridColumns": 24,
+              "gridGap": "8px",
+              "dataKey": "TeamMembers@rows"
+            }
+          }
+        ],
+        "props": {
+          "title": "② 团队成员列表（2 列 · 无卡片 · 左侧操作 · 自定义项样式）",
+          "description": "columns=2 + 项样式 + 左侧操作区 + 自定义 itemClass + 行点击"
+        }
+      },
+      {
+        "type": "r-divider"
+      },
+      {
+        "type": "r-section",
+        "children": [
+          {
+            "type": "r-list",
+            "id": "simpleList",
+            "children": [
+              {
+                "type": "span",
+                "children": [
+                  {
+                    "type": "r-text-display",
+                    "props": {
+                      "field": "name"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 6,
+                  "style": {
+                    "fontWeight": "500"
+                  }
+                }
+              },
+              {
+                "type": "r-tag",
+                "props": {
+                  "type": "info",
+                  "field": "category",
+                  "colSpan": 4,
+                  "effect": "plain"
+                }
+              },
+              {
+                "type": "span",
+                "children": [
+                  "¥",
+                  {
+                    "type": "r-text-display",
+                    "props": {
+                      "field": "price"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 4,
+                  "style": {
+                    "color": "#F56C6C",
+                    "fontWeight": "bold"
+                  }
+                }
+              },
+              {
+                "type": "span",
+                "children": [
+                  "库存: ",
+                  {
+                    "type": "r-text-display",
+                    "props": {
+                      "field": "stock"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 4,
+                  "style": {
+                    "color": "#909399",
+                    "fontSize": "13px"
+                  }
+                }
+              },
+              {
+                "type": "r-tag",
+                "props": {
+                  "colSpan": 4,
+                  "size": "small",
+                  "dynamicType": {
+                    "在售": "success",
+                    "预售": "warning",
+                    "缺货": "danger"
+                  },
+                  "field": "status"
+                }
+              },
+              {
+                "type": "span",
+                "children": [
+                  "★",
+                  {
+                    "type": "r-text-display",
+                    "props": {
+                      "field": "rating"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 2,
+                  "style": {
+                    "color": "#E6A23C",
+                    "textAlign": "right"
+                  }
+                }
+              }
+            ],
+            "props": {
+              "columns": 1,
+              "gap": "0",
+              "useCard": false,
+              "rowKey": "id",
+              "itemStyle": {
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #F2F6FC"
+              },
+              "gridColumns": 24,
+              "dataKey": "Products@simple@rows"
+            }
+          }
+        ],
+        "props": {
+          "title": "③ 单列列表（紧凑模式 · 无操作区 · 纯展示）",
+          "description": "columns=1 + 无操作区 + 极简配置 + emptyText 自定义"
+        }
+      },
+      {
+        "type": "r-divider"
+      },
+      {
+        "type": "r-section",
+        "children": [
+          {
+            "type": "r-list",
+            "id": "miniCards",
+            "children": [
+              {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "refresh",
+                      "label": "刷新产品列表"
+                    }
+                  },
+                  {
+                    "type": "r-tail",
+                    "children": [
+                      {
+                        "type": "span",
+                        "children": [
+                          "共 12 件产品"
+                        ],
+                        "props": {
+                          "style": {
+                            "fontSize": "13px",
+                            "color": "#909399"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "props": {
+                  "position": "bottom"
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "display-image",
+                    "props": {
+                      "width": "100%",
+                      "height": "100px",
+                      "fit": "cover",
+                      "style": {
+                        "borderRadius": "4px"
+                      },
+                      "field": "image"
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 24,
+                  "style": {
+                    "textAlign": "center"
+                  }
+                }
+              },
+              {
+                "type": "div",
+                "children": [
+                  {
+                    "type": "div",
+                    "children": [
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "name"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "fontWeight": "bold",
+                        "fontSize": "14px",
+                        "whiteSpace": "nowrap",
+                        "overflow": "hidden",
+                        "textOverflow": "ellipsis"
+                      }
+                    }
+                  },
+                  {
+                    "type": "div",
+                    "children": [
+                      "¥",
+                      {
+                        "type": "r-text-display",
+                        "props": {
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "props": {
+                      "style": {
+                        "color": "#F56C6C",
+                        "fontWeight": "bold",
+                        "marginTop": "4px"
+                      }
+                    }
+                  }
+                ],
+                "props": {
+                  "colSpan": 24,
+                  "style": {
+                    "textAlign": "center",
+                    "marginTop": "8px"
+                  }
+                }
+              }
+            ],
+            "props": {
+              "columns": 4,
+              "gap": "12px",
+              "useCard": true,
+              "cardShadow": "always",
+              "rowKey": "id",
+              "gridColumns": 24,
+              "gridGap": "4px",
+              "dataKey": "Products@rows"
+            }
+          }
+        ],
+        "props": {
+          "title": "④ 4 列宽卡片（卡片阴影 always · 工具栏底部）",
+          "description": "columns=4 + cardShadow=always + toolbar position=bottom + 紧凑卡片"
+        }
+      }
+    ],
+    "props": {
+      "style": {
+        "padding": "20px",
+        "maxWidth": "1400px",
+        "margin": "0 auto"
+      }
     }
+  }
 ]

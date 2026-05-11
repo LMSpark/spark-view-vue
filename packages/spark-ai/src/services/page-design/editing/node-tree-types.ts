@@ -1,9 +1,4 @@
-export interface PageDesignSparkNode {
-  type?: string
-  id?: string
-  props?: Record<string, unknown>
-  children?: unknown[]
-}
+import type { SparkNode } from '@spark-view/spark-page-config'
 
 export type SparkNodeTreeMethodKey =
   | 'getNode'
@@ -32,8 +27,8 @@ export interface PageDesignNodeTree {
   getParent(params: unknown): unknown
   listChildren(params?: unknown): unknown
   countNodes(params?: unknown): unknown
-  toJSON(params?: unknown): PageDesignSparkNode
-  getAllData(params?: unknown): PageDesignSparkNode
+  toJSON(params?: unknown): SparkNode
+  getAllData(params?: unknown): SparkNode
   collectHandlerNames(params?: unknown): unknown
   findByType(params: unknown): unknown
   addNode(params: unknown): unknown

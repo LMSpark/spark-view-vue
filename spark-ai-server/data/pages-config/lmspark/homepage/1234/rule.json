@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -15,29 +11,20 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "管理客户信息、联系人、跟进记录等",
           "type": "info",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "管理客户信息、联系人、跟进记录等",
           "closable": false,
           "showIcon": true
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
         "type": "div",
-        "style": {
-          "display": "flex",
-          "gap": "16px",
-          "alignItems": "flex-start"
-        },
         "children": [
           {
             "type": "div",
-            "style": {
-              "width": "300px",
-              "flexShrink": "0"
-            },
             "children": [
               {
                 "type": "h3",
@@ -47,15 +34,6 @@
               },
               {
                 "type": "el-table",
-                "dataKey": "Customers@rows",
-                "props": {
-                  "border": true,
-                  "stripe": true,
-                  "highlightCurrentRow": true
-                },
-                "on": {
-                  "currentChange": "handleCustomerSelect"
-                },
                 "children": [
                   {
                     "type": "el-table-column",
@@ -80,83 +58,82 @@
                       "width": "100"
                     }
                   }
-                ]
+                ],
+                "props": {
+                  "border": true,
+                  "stripe": true,
+                  "highlightCurrentRow": true,
+                  "dataKey": "Customers@rows",
+                  "on": {
+                    "currentChange": "handleCustomerSelect"
+                  }
+                }
               }
-            ]
+            ],
+            "props": {
+              "style": {
+                "width": "300px",
+                "flexShrink": "0"
+              }
+            }
           },
           {
             "type": "div",
-            "style": {
-              "flex": "1",
-              "minWidth": "0"
-            },
             "children": [
               {
                 "type": "el-tabs",
-                "props": {
-                  "modelValue": "detail"
-                },
                 "children": [
                   {
                     "type": "el-tab-pane",
-                    "props": {
-                      "label": "客户详情",
-                      "name": "detail"
-                    },
                     "children": [
                       {
                         "type": "r-detail",
-                        "dataKey": "Customers@currentRow",
-                        "props": {
-                          "labelWidth": "100px"
-                        },
                         "children": [
                           {
                             "type": "r-text",
-                            "field": "name",
                             "props": {
-                              "label": "客户名称"
+                              "label": "客户名称",
+                              "field": "name"
                             }
                           },
                           {
                             "type": "r-text",
-                            "field": "level",
                             "props": {
-                              "label": "客户等级"
+                              "label": "客户等级",
+                              "field": "level"
                             }
                           },
                           {
                             "type": "r-text",
-                            "field": "industry",
                             "props": {
-                              "label": "所属行业"
+                              "label": "所属行业",
+                              "field": "industry"
                             }
                           },
                           {
                             "type": "r-text",
-                            "field": "address",
                             "props": {
-                              "label": "地址"
+                              "label": "地址",
+                              "field": "address"
                             }
                           }
-                        ]
+                        ],
+                        "props": {
+                          "labelWidth": "100px",
+                          "dataKey": "Customers@currentRow"
+                        }
                       }
-                    ]
+                    ],
+                    "props": {
+                      "label": "客户详情",
+                      "name": "detail"
+                    }
                   },
                   {
                     "type": "el-tab-pane",
-                    "props": {
-                      "label": "联系人",
-                      "name": "contacts"
-                    },
                     "children": [
                       {
                         "type": "el-table",
-                        "dataKey": "Contacts@rows",
-                        "props": {
-                          "border": true,
-                          "stripe": true
-                        },
                         "children": [
                           {
                             "type": "el-table-column",
@@ -187,24 +164,24 @@
                               "label": "邮箱"
                             }
                           }
-                        ]
+                        ],
+                        "props": {
+                          "border": true,
+                          "stripe": true,
+                          "dataKey": "Contacts@rows"
+                        }
                       }
-                    ]
+                    ],
+                    "props": {
+                      "label": "联系人",
+                      "name": "contacts"
+                    }
                   },
                   {
                     "type": "el-tab-pane",
-                    "props": {
-                      "label": "跟进记录",
-                      "name": "followups"
-                    },
                     "children": [
                       {
                         "type": "el-table",
-                        "dataKey": "Followups@rows",
-                        "props": {
-                          "border": true,
-                          "stripe": true
-                        },
                         "children": [
                           {
                             "type": "el-table-column",
@@ -235,16 +212,47 @@
                               "label": "结果"
                             }
                           }
-                        ]
+                        ],
+                        "props": {
+                          "border": true,
+                          "stripe": true,
+                          "dataKey": "Followups@rows"
+                        }
                       }
-                    ]
+                    ],
+                    "props": {
+                      "label": "跟进记录",
+                      "name": "followups"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "modelValue": "detail"
+                }
               }
-            ]
+            ],
+            "props": {
+              "style": {
+                "flex": "1",
+                "minWidth": "0"
+              }
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "display": "flex",
+            "gap": "16px",
+            "alignItems": "flex-start"
+          }
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

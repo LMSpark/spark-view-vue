@@ -134,12 +134,6 @@ export type {
   EditLifecycleFunctionId,
   EditLifecycleFunctionParameterRow,
   EditLifecycleFunctionTarget,
-  JsonDocFunctionCapabilityRow,
-  JsonDocFunctionFailureMode,
-  JsonDocFunctionId,
-  JsonDocFunctionParameterRow,
-  JsonDocFunctionTarget,
-  JsonDocType,
   PageDesignAppendMessageOptions,
   PageDesignKnowledgeFunctionCapabilityRow,
   PageDesignKnowledgeFunctionFailureMode,
@@ -167,8 +161,6 @@ export type {
 
 export {
   PageDesignEditSession,
-  PageDesignPageFileApi,
-  PageDesignPageCache,
   PageDesignService,
   PAGE_FILE_NAMES,
   canonicalizePageDataJson,
@@ -179,23 +171,18 @@ export {
 } from './services/page-design'
 
 export type {
-  BackendPageVersionSummary,
   LoadFromTextOptions,
   PageDocumentRegistry,
-  PageDesignPageFileApiOptions,
-  PageDesignPageFileHttpClient,
   PageDesignEditPhase,
   PageDesignEditHost,
   PageDesignEditState,
   PageFileDocument,
   PageFileLoadState,
   PageFileName,
-  PageCacheHandle,
   PageDesignNodeTree,
   PageDesignServiceContext,
   PageDesignServiceResult,
   PageDesignServiceState,
   PageDesignTextFileKey,
-  PageDesignJsonDocOperation,
   PageDesignServiceMethodBinding,
 } from './services/page-design'

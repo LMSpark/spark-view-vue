@@ -1,9 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "padding": "12px"
-    },
     "children": [
       {
         "type": "h3",
@@ -20,38 +17,32 @@
       },
       {
         "type": "el-alert",
-        "style": {
-          "marginTop": "12px",
-          "marginBottom": "12px"
-        },
         "props": {
-          "title": "Projects 视图开启 autoLoad=true：页面加载后自动 requestData() 拉取远程数据",
           "type": "success",
+          "style": {
+            "marginTop": "12px",
+            "marginBottom": "12px"
+          },
+          "title": "Projects 视图开启 autoLoad=true：页面加载后自动 requestData() 拉取远程数据",
           "showIcon": true,
           "closable": false
         }
       },
       {
         "type": "el-button",
-        "props": {
-          "type": "primary",
-          "size": "small"
-        },
-        "on": {
-          "click": "refreshProjects"
-        },
         "children": [
           "手动刷新远程数据"
-        ]
+        ],
+        "props": {
+          "type": "primary",
+          "on": {
+            "click": "refreshProjects"
+          },
+          "size": "small"
+        }
       },
       {
         "type": "r-table",
-        "dataKey": "Projects@rows",
-        "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
-        },
         "children": [
           {
             "type": "el-table-column",
@@ -93,8 +84,19 @@
               "minWidth": "180"
             }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "dataKey": "Projects@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "padding": "12px"
+      }
+    }
   }
 ]

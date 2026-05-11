@@ -38,13 +38,44 @@ describe('@spark-view/spark-ai framework boundary', () => {
       'package.json',
       'tsconfig.json',
       'tsconfig.build.json',
-      path.join('src', 'services', 'page-design', 'page-file-documents.ts'),
+      path.join('src', 'services', 'page-design', 'documents', 'page-file-documents.ts'),
     ])
     const offenders = files.filter((file) => {
       const relative = path.relative(packageRoot, file)
       return !allowed.has(relative) && fs.readFileSync(file, 'utf8').includes('@spark-view/spark-component')
     })
     expect(offenders.map(file => path.relative(packageRoot, file))).toEqual([])
+  })
+
+  it('keeps page-design services grouped by responsibility', () => {
+    const serviceRoot = path.join(packageRoot, 'src', 'services', 'page-design')
+    const allowedRootEntries = new Set([
+      'index.ts',
+      'editing',
+      'documents',
+      'files',
+      'operations',
+    ])
+
+    const rootEntries = fs.readdirSync(serviceRoot)
+    expect(rootEntries.filter(entry => !allowedRootEntries.has(entry))).toEqual([])
+
+    const expectedLayerEntrypoints = [
+      path.join('editing', 'index.ts'),
+      path.join('documents', 'index.ts'),
+      path.join('files', 'index.ts'),
+      path.join('operations', 'index.ts'),
+    ]
+    for (const entrypoint of expectedLayerEntrypoints) {
+      expect(fs.existsSync(path.join(serviceRoot, entrypoint))).toBe(true)
+    }
+  })
+
+  it('keeps DevSystem out of the generated component catalog', () => {
+    const serializedCatalog = JSON.stringify(COMPONENT_CATALOG_JSON)
+
+    expect(serializedCatalog).not.toContain('src/views/app/dev-system')
+    expect(serializedCatalog).not.toContain('dev-system')
   })
 
   it('keeps DevSystem editing independent from the AI core runtime', () => {

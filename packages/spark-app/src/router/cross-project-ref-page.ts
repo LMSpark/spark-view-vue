@@ -11,6 +11,7 @@ import type {
   ConfigLoader,
   ConfigLoadResult,
   PageConfig,
+  PageConfigFileName,
   PageCssConfig,
   PageDataConfig,
   PageScriptConfig,
@@ -310,6 +311,24 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
 
   async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
     return this.loadOptional(pageId, 'style.css', parseCss)
+  }
+
+  async loadPageFileContent(
+    pageId: string,
+    filename: PageConfigFileName,
+  ): Promise<ConfigLoadResult<string>> {
+    try {
+      return { success: true, data: await this.readFile(pageId, filename), source: 'remote', timestamp: Date.now() }
+    } catch (error: unknown) {
+      if (isNotFoundError(error) && (filename === 'script.js' || filename === 'style.css')) {
+        return { success: true, data: '', source: 'remote', timestamp: Date.now() }
+      }
+      if (isNotFoundError(error)) {
+        return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
+      }
+      const message = error instanceof Error ? error.message : String(error)
+      return { success: false, error: message, timestamp: Date.now() }
+    }
   }
 
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {

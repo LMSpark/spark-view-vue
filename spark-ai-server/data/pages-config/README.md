@@ -93,9 +93,9 @@ POST /api/pages-config/{pageId}/__batch    # 批量写入 + 自动注册路由
 GET  /api/pages-config/__list              # 列出所有页面
 ```
 
-## 开发工作流
+## 编辑工作流
 
-在 DevSystem (`/dev`) 中：
+通过页面配置编辑器或后端 API：
 1. 点击「➕ 新建页面」
 2. 填写 Page ID 和标题
 3. 在文件编辑 Tab 中编辑 rule.json / pagedata.json / script.js / style.css

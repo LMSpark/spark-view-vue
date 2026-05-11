@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -15,59 +11,55 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "这是一个示例页面，已增加性别字段和邮箱列。",
           "type": "info",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "这是一个示例页面，已增加性别字段和邮箱列。",
           "closable": false,
           "showIcon": true
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
         "type": "div",
-        "style": {
-          "marginBottom": "10px",
-          "display": "flex",
-          "gap": "8px"
-        },
         "children": [
           {
             "type": "el-button",
-            "props": {
-              "type": "primary",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleAdd"
-            },
             "children": [
               "新增"
-            ]
+            ],
+            "props": {
+              "type": "primary",
+              "on": {
+                "click": "handleAdd"
+              },
+              "size": "small"
+            }
           },
           {
             "type": "el-button",
-            "props": {
-              "type": "default",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleRefresh"
-            },
             "children": [
               "刷新"
-            ]
+            ],
+            "props": {
+              "type": "default",
+              "on": {
+                "click": "handleRefresh"
+              },
+              "size": "small"
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "marginBottom": "10px",
+            "display": "flex",
+            "gap": "8px"
+          }
+        }
       },
       {
         "type": "el-table",
-        "dataKey": "Users@rows",
-        "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
-        },
         "children": [
           {
             "type": "el-table-column",
@@ -106,8 +98,20 @@
               "width": "200"
             }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "dataKey": "Users@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

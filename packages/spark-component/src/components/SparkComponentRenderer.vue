@@ -451,6 +451,9 @@ function buildRegistryStructuralProps(
   const structuralProps: NodeRuntimeProps = {
     type: node.type,
   }
+  if (node.id !== undefined) {
+    structuralProps['id'] = node.id
+  }
 
   if (consumesChildrenProp && Array.isArray(node.children) && node.children.length > 0) {
     structuralProps['children'] = node.children

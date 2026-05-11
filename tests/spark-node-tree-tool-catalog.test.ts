@@ -7,10 +7,10 @@ import {
 const catalog = new PageDesignNodeTreeCatalog()
 
 describe('SparkNodeTree tool catalog', () => {
-  it('应提供完整的 catalog-only 参数表与能力表', () => {
+  it('应提供完整的 runtime-wired 参数表与能力表', () => {
     expect(catalog.parameterTable.length).toBeGreaterThan(0)
     expect(catalog.capabilityTable.length).toBe(catalog.parameterTable.length)
-    expect(catalog.capabilityTable.every(row => row.integrationStatus === 'catalog-only')).toBe(true)
+    expect(catalog.capabilityTable.every(row => row.integrationStatus === 'runtime-wired')).toBe(true)
     expect(catalog.parameterTable.every(row => !row.functionId.includes('/'))).toBe(true)
   })
 
@@ -31,16 +31,16 @@ describe('SparkNodeTree tool catalog', () => {
     })
     expect(capabilityRow).toMatchObject({
       functionId: 'setProps',
-      integrationStatus: 'catalog-only',
+      integrationStatus: 'runtime-wired',
       paramsRef: 'setProps',
     })
   })
 
-  it('catalog 应强调核心层隔离和命名参数约束', () => {
+  it('catalog 应强调 SparkNodeTree 业务模型和命名参数约束', () => {
     const addNode = catalog.getParameterRow('addNode')
     const listChildren = catalog.getParameterRow('listChildren')
 
-    expect(addNode?.usageRules).toContain('本 catalog 只定义函数目录，不接运行时 registry，也不提供 execute 实现。')
+    expect(addNode?.usageRules).toContain('该动作直接作用于当前 PageDesignEditHost.getNodeTree() 返回的 SparkNodeTree/rule.json 模型。')
     expect(addNode?.usageRules).toContain('运行时应优先使用命名参数对象，而不是位置参数。')
     expect(addNode?.usageRules).toContain('parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。')
     expect(listChildren?.failureModes.map(item => item.code)).toContain('PARENT_NOT_FOUND')

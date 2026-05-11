@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "my-page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -17,10 +13,6 @@
       },
       {
         "type": "r-section",
-        "props": {
-          "title": "权限列表",
-          "description": "管理用户或角色的数据访问权限"
-        },
         "children": [
           {
             "type": "r-header",
@@ -38,50 +30,24 @@
           },
           {
             "type": "r-table",
-            "dataKey": "Permissions@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true,
-              "actions": {
-                "type": "r-toolbar",
-                "children": [
-                  {
-                    "type": "RenderActions"
-                  }
-                ]
-              },
-              "toolbar": {
-                "type": "r-toolbar",
-                "props": {
-                  "position": "top"
-                },
-                "children": [
-                  {
-                    "type": "RenderSearchBar"
-                  }
-                ]
-              }
-            },
             "children": [
               {
                 "type": "r-text",
-                "field": "id",
                 "props": {
                   "label": "ID",
-                  "width": 80
+                  "width": 80,
+                  "field": "id"
                 }
               },
               {
                 "type": "r-text",
-                "field": "name",
                 "props": {
-                  "label": "权限名称"
+                  "label": "权限名称",
+                  "field": "name"
                 }
               },
               {
                 "type": "r-select",
-                "field": "type",
                 "props": {
                   "label": "权限类型",
                   "width": 120,
@@ -98,20 +64,20 @@
                       "label": "部门权限",
                       "value": "dept"
                     }
-                  ]
+                  ],
+                  "field": "type"
                 }
               },
               {
                 "type": "r-text",
-                "field": "target",
                 "props": {
                   "label": "目标对象",
-                  "width": 150
+                  "width": 150,
+                  "field": "target"
                 }
               },
               {
                 "type": "r-select",
-                "field": "status",
                 "props": {
                   "label": "状态",
                   "width": 100,
@@ -124,27 +90,53 @@
                       "label": "禁用",
                       "value": "inactive"
                     }
-                  ]
+                  ],
+                  "field": "status"
                 }
               },
               {
                 "type": "r-date",
-                "field": "createdAt",
                 "props": {
                   "label": "创建时间",
-                  "width": 150
+                  "width": 150,
+                  "field": "createdAt"
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "actions": {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "RenderActions"
+                  }
+                ]
+              },
+              "toolbar": {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "RenderSearchBar"
+                  }
+                ],
+                "props": {
+                  "position": "top"
+                }
+              },
+              "dataKey": "Permissions@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "title": "权限列表",
+          "description": "管理用户或角色的数据访问权限"
+        }
       },
       {
         "type": "r-drawer",
-        "props": {
-          "title": "权限详情",
-          "size": "40%"
-        },
         "children": [
           {
             "type": "r-header",
@@ -159,20 +151,18 @@
           },
           {
             "type": "r-form",
-            "dataKey": "Permissions@currentRow",
             "children": [
               {
                 "type": "r-text",
-                "field": "name",
                 "props": {
                   "label": "权限名称",
                   "colSpan": 24,
-                  "required": true
+                  "required": true,
+                  "field": "name"
                 }
               },
               {
                 "type": "r-select",
-                "field": "type",
                 "props": {
                   "label": "权限类型",
                   "colSpan": 12,
@@ -190,20 +180,20 @@
                       "label": "部门权限",
                       "value": "dept"
                     }
-                  ]
+                  ],
+                  "field": "type"
                 }
               },
               {
                 "type": "r-text",
-                "field": "target",
                 "props": {
                   "label": "目标对象",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "target"
                 }
               },
               {
                 "type": "r-select",
-                "field": "status",
                 "props": {
                   "label": "状态",
                   "colSpan": 12,
@@ -216,22 +206,36 @@
                       "label": "禁用",
                       "value": "inactive"
                     }
-                  ]
+                  ],
+                  "field": "status"
                 }
               },
               {
                 "type": "r-textarea",
-                "field": "description",
                 "props": {
                   "label": "描述",
                   "colSpan": 24,
-                  "rows": 3
+                  "rows": 3,
+                  "field": "description"
                 }
               }
-            ]
+            ],
+            "props": {
+              "dataKey": "Permissions@currentRow"
+            }
           }
-        ]
+        ],
+        "props": {
+          "title": "权限详情",
+          "size": "40%"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "my-page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

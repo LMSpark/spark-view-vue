@@ -1,34 +1,111 @@
 [
   {
     "type": "div",
-    "style": {
-      "padding": "20px",
-      "maxWidth": "1000px"
-    },
     "children": [
       {
         "type": "el-alert",
         "props": {
-          "title": "表格演示 —— DataSet 数据 + r-table 零代码操作列",
           "type": "info",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "表格演示 —— DataSet 数据 + r-table 零代码操作列",
           "closable": false,
           "description": "数据来自 pagedata.json（DataSet），表格通过 r-table 零代码渲染。操作列包含详情/编辑/删除按钮。"
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
         "type": "el-card",
-        "props": {
-          "bodyStyle": "padding:16px;"
-        },
         "children": [
           {
             "type": "r-table",
             "id": "usersTable",
+            "children": [
+              {
+                "type": "r-number",
+                "id": "colId",
+                "children": [],
+                "props": {
+                  "field": "id",
+                  "label": "ID",
+                  "width": 60,
+                  "sortable": true,
+                  "readonly": true
+                }
+              },
+              {
+                "type": "r-text",
+                "id": "colName",
+                "children": [],
+                "props": {
+                  "field": "name",
+                  "label": "姓名",
+                  "width": 90,
+                  "sortable": true,
+                  "readonly": true
+                }
+              },
+              {
+                "type": "r-text",
+                "id": "colEmail",
+                "children": [],
+                "props": {
+                  "field": "email",
+                  "label": "邮箱",
+                  "minWidth": 220,
+                  "readonly": true
+                }
+              },
+              {
+                "type": "r-text",
+                "id": "colDepartment",
+                "children": [],
+                "props": {
+                  "field": "department",
+                  "label": "部门",
+                  "width": 110,
+                  "readonly": true
+                }
+              },
+              {
+                "type": "r-number",
+                "id": "colSalary",
+                "children": [],
+                "props": {
+                  "field": "salary",
+                  "label": "薪资",
+                  "width": 110,
+                  "readonly": true,
+                  "align": "right"
+                }
+              },
+              {
+                "type": "r-date",
+                "id": "colJoinDate",
+                "children": [],
+                "props": {
+                  "field": "joinDate",
+                  "label": "入职日期",
+                  "dateType": "date",
+                  "valueFormat": "YYYY-MM-DD",
+                  "width": 150,
+                  "readonly": true
+                }
+              },
+              {
+                "type": "r-text",
+                "id": "colIsActive",
+                "children": [],
+                "props": {
+                  "field": "isActive",
+                  "label": "在职",
+                  "width": 90,
+                  "readonly": true,
+                  "align": "center"
+                }
+              }
+            ],
             "props": {
-              "id": "usersTable",
               "dataKey": "Users@default@rows",
               "tableProps": {
                 "rowKey": "id",
@@ -38,39 +115,33 @@
               },
               "toolbar": {
                 "type": "r-toolbar",
-                "props": {
-                  "id": "usersToolbar"
-                },
                 "children": [
                   {
                     "type": "r-button",
                     "props": {
-                      "id": "btnAdd",
                       "label": "新增",
                       "template": "toolbar-primary",
                       "icon": "Plus",
                       "action": "append-row"
-                    }
+                    },
+                    "id": "btnAdd"
                   },
                   {
                     "type": "r-button",
                     "props": {
-                      "id": "btnRefresh",
                       "label": "刷新",
                       "template": "toolbar-default",
                       "icon": "Refresh",
                       "action": "refresh"
-                    }
+                    },
+                    "id": "btnRefresh"
                   }
-                ]
+                ],
+                "props": {},
+                "id": "usersToolbar"
               },
               "actions": {
                 "type": "r-toolbar",
-                "props": {
-                  "width": 180,
-                  "fixed": "right",
-                  "align": "center"
-                },
                 "children": [
                   {
                     "type": "r-button",
@@ -96,104 +167,26 @@
                       "action": "delete-row"
                     }
                   }
-                ]
-              }
-            },
-            "children": [
-              {
-                "type": "r-number",
-                "id": "colId",
+                ],
                 "props": {
-                  "id": "colId",
-                  "field": "id",
-                  "label": "ID",
-                  "width": 60,
-                  "sortable": true,
-                  "readonly": true
-                },
-                "children": []
-              },
-              {
-                "type": "r-text",
-                "id": "colName",
-                "props": {
-                  "id": "colName",
-                  "field": "name",
-                  "label": "姓名",
-                  "width": 90,
-                  "sortable": true,
-                  "readonly": true
-                },
-                "children": []
-              },
-              {
-                "type": "r-text",
-                "id": "colEmail",
-                "props": {
-                  "id": "colEmail",
-                  "field": "email",
-                  "label": "邮箱",
-                  "minWidth": 220,
-                  "readonly": true
-                },
-                "children": []
-              },
-              {
-                "type": "r-text",
-                "id": "colDepartment",
-                "props": {
-                  "id": "colDepartment",
-                  "field": "department",
-                  "label": "部门",
-                  "width": 110,
-                  "readonly": true
-                },
-                "children": []
-              },
-              {
-                "type": "r-number",
-                "id": "colSalary",
-                "props": {
-                  "id": "colSalary",
-                  "field": "salary",
-                  "label": "薪资",
-                  "width": 110,
-                  "readonly": true,
-                  "align": "right"
-                },
-                "children": []
-              },
-              {
-                "type": "r-date",
-                "id": "colJoinDate",
-                "props": {
-                  "id": "colJoinDate",
-                  "field": "joinDate",
-                  "label": "入职日期",
-                  "dateType": "date",
-                  "valueFormat": "YYYY-MM-DD",
-                  "width": 150,
-                  "readonly": true
-                },
-                "children": []
-              },
-              {
-                "type": "r-text",
-                "id": "colIsActive",
-                "props": {
-                  "id": "colIsActive",
-                  "field": "isActive",
-                  "label": "在职",
-                  "width": 90,
-                  "readonly": true,
+                  "width": 180,
+                  "fixed": "right",
                   "align": "center"
-                },
-                "children": []
+                }
               }
-            ]
+            }
           }
-        ]
+        ],
+        "props": {
+          "bodyStyle": "padding:16px;"
+        }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "padding": "20px",
+        "maxWidth": "1000px"
+      }
+    }
   }
 ]

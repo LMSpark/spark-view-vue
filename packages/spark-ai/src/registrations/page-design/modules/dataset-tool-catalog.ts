@@ -7,7 +7,6 @@ import {
 } from '../../../core'
 import {
   createPageDesignCapabilityRow,
-  type PageDesignFunctionRegistrationStatus,
   type PageDesignFunctionRuntimeBinding,
   PageDesignToolCatalog,
 } from './tool-catalog'
@@ -54,13 +53,13 @@ export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionBaseFie
   crudToolMethod: DataSetCrudToolMethodKey
   validation?: DatasetCrudToolFunctionValidationRule
   runtimeBinding: PageDesignFunctionRuntimeBinding
-  runtimeRegistration: PageDesignFunctionRegistrationStatus
+  runtimeRegistration: 'registered'
 }
 export type DatasetCrudToolFunctionCapabilityRow = Pick<
   DatasetCrudToolFunctionParameterRow,
   'functionId' | 'type' | 'target' | 'crudToolMethod' | 'description'
 > & {
-  integrationStatus: 'catalog-only' | 'runtime-wired'
+  integrationStatus: 'runtime-wired'
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
@@ -367,27 +366,14 @@ const DEFAULT_VIEW_RULE = '省略 viewId 时默认作用于 default 视图。'
 const DEFAULT_VIEW_LIFECYCLE_RULE = 'default 视图不能通过 createView 创建，也不能通过 deleteView 删除。'
 const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可能返回 CrudResult，本地模式返回本地对象或布尔值。'
 const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条关系时，必须补 parentField 与 childField 做消歧。'
-const CATALOG_ONLY_RULE = '该动作已由 edit 域运行时直接消费；目录定义与运行时行为需保持一致。'
+const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool/pagedata.json 模型。'
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
-const DATASET_CATALOG_ONLY_METHODS: ReadonlySet<DataSetCrudToolMethodKey> = new Set([
-  'toJson',
-  'listAggregates',
-  'getAggregate',
-  'addAggregate',
-  'updateAggregate',
-  'removeAggregate',
-])
-
 type DatasetCrudToolFunctionValidationRule = {
   requiredKeys?: readonly string[]
   oneOfRequiredKeyGroups?: ReadonlyArray<readonly string[]>
 }
 
 type DatasetCrudToolFunctionRowWithoutType = Omit<DatasetCrudToolFunctionParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
-
-function getDatasetRuntimeRegistration(method: DataSetCrudToolMethodKey): PageDesignFunctionRegistrationStatus {
-  return DATASET_CATALOG_ONLY_METHODS.has(method) ? 'catalog-only' : 'registered'
-}
 
 const defineDescribeRow = (row: DatasetCrudToolFunctionRowWithoutType): DatasetCrudToolFunctionParameterRow => ({
   type: 'describe',
@@ -396,7 +382,7 @@ const defineDescribeRow = (row: DatasetCrudToolFunctionRowWithoutType): DatasetC
     method: 'useDatasetMethod',
     targetMethod: row.crudToolMethod,
   },
-  runtimeRegistration: getDatasetRuntimeRegistration(row.crudToolMethod),
+  runtimeRegistration: 'registered',
   ...row,
 })
 
@@ -407,7 +393,7 @@ const defineRequestRow = (row: DatasetCrudToolFunctionRowWithoutType): DatasetCr
     method: 'useDatasetMethod',
     targetMethod: row.crudToolMethod,
   },
-  runtimeRegistration: getDatasetRuntimeRegistration(row.crudToolMethod),
+  runtimeRegistration: 'registered',
   ...row,
 })
 
@@ -428,7 +414,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       '返回值应作为只读快照消费，不应直接修改后假定自动回写运行时。',
       'AI 侧不处理布局字段；layout 由设计器内部维护。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -444,7 +430,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '建议在调用 dataset.undo 前先检查该值，避免无效操作。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -460,7 +446,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '建议在调用 dataset.redo 前先检查该值，避免无效操作。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -476,7 +462,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '该值用于调试与可观测性，不建议作为业务分支唯一依据。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -492,7 +478,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '当 canUndo 为 false 时返回 false，不抛错；调用方应按返回值判断。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -514,7 +500,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '当 canRedo 为 false 时返回 false，不抛错；调用方应按返回值判断。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -536,7 +522,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '清空后 undo/redo 都会回到不可用状态。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -552,7 +538,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     example: {},
     usageRules: [
       '适合先做能力探测，再决定后续针对哪张表执行 create/update/delete。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -573,7 +559,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '不存在时返回 undefined，而不是抛错。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -594,7 +580,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '表不存在时抛错。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -623,7 +609,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '表不存在时抛错；列不存在时返回 undefined。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -653,7 +639,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       JSON_OBJECT_RULE,
       '底层统一走 DataTable.addColumns，保证 validator 和 DataView 列缓存同步刷新。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -690,7 +676,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       JSON_OBJECT_RULE,
       '列更新会触发 DataTable 内部运行时刷新链。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -722,7 +708,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       '仅用于列身份变更；普通元数据修改仍优先用 dataset.updateColumn。',
       '会同步改写当前表 views 中的字段引用、静态 rows 字段键，以及 tableRelations 中的 parentField/childField 引用。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -761,7 +747,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '删除后会同步刷新 DataView 列缓存。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -805,7 +791,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       STATIC_ROWS_ONLY_RULE,
       'LLM 场景下 crudConfig 中的 transformRequest/transformResponse 应省略，不要尝试传函数。',
       'views.default 不会新建，只会复用建表时自动创建的 default 视图。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -858,7 +844,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '结构变更优先于 api/crudConfig/defaultRows 更新执行。',
       STATIC_ROWS_ONLY_RULE,
       'LLM 场景下 crudConfig 中的 transformRequest/transformResponse 应省略，不要尝试传函数。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -893,7 +879,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       '仅用于表身份变更；普通资源语义、API 或列结构修改仍优先用 dataset.updateTable。',
       '会同步改写表级 views.tableName、tableRelations、viewDependencies 与 layout.tablePositions 中的表名引用。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -925,7 +911,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '当表仍被 relation 或 dependency 引用时，底层会 fail-fast 拒绝删除。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -952,7 +938,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '返回值包含 default 视图。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -984,7 +970,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '若该视图配置了 aggregates，运行时汇总结果位于 view.aggregateResult / view.selectionAggregateResult。',
       'UI 侧引用聚合结果时，优先使用 DataKey：TableName@aggregateResult、TableName@selectionAggregateResult、TableName@viewId@aggregateResult，或继续追加字段路径如 Orders@aggregateResult.totalAmount。',
       '不存在时返回 undefined，而不是抛错。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -1022,7 +1008,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_LIFECYCLE_RULE,
       STATIC_ROWS_ONLY_RULE,
       '如需配置聚合，请在 config.aggregates 中声明输出键 -> 聚合配置；这是对象映射（Record/Map-like），不是数组；不要把 aggregateResult 当作可直接写入 rows 的静态字段。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1069,7 +1055,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '如果 updates.rows 存在，会先 replaceRows，再 applyViewConfig。',
       '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 aggregateResult / selectionAggregateResult 上的字段名。',
       '聚合配置生效后，UI 侧可用 TableName@aggregateResult、TableName@selectionAggregateResult、TableName@viewId@aggregateResult，或字段路径 TableName@aggregateResult.totalScore 进行绑定。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1098,7 +1084,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName', 'viewId'] },
     usageRules: [
       DEFAULT_VIEW_LIFECYCLE_RULE,
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1128,7 +1114,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       '读取的是当前视图行集，不一定等于 DataTable.rows 全量源数据。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1160,7 +1146,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       '树形 children 会递归扫描，不需要调用方区分平铺表和树表。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -1187,7 +1173,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       REMOTE_ROW_RESULT_RULE,
       '无远端 API 的 default 视图会同步回 DataTable.rows。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1223,7 +1209,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       'immediate + API 模式优先走远端 batchCreate；其余模式逐条本地 addRow 并汇总结果。',
       '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1258,7 +1244,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       REMOTE_ROW_RESULT_RULE,
       '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1304,7 +1290,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       'immediate + API 模式优先走远端 batchUpdate；其余模式逐条本地 editRowById 并汇总结果。',
       '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1336,7 +1322,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       REMOTE_ROW_RESULT_RULE,
       '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1368,7 +1354,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       'immediate + API 模式优先走远端 batchDelete；其余模式逐条本地 removeRow 并汇总结果。',
       '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1395,7 +1381,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     },
     usageRules: [
       'filter 只支持按 parentTable 和 childTable 过滤。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -1422,7 +1408,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       RELATION_AMBIGUITY_RULE,
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1456,7 +1442,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['parentTable', 'childTable', 'parentField', 'childField'] },
     usageRules: [
       '父表、子表和字段都必须已经存在。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1486,7 +1472,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       JSON_OBJECT_RULE,
       RELATION_AMBIGUITY_RULE,
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1521,7 +1507,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       JSON_OBJECT_RULE,
       RELATION_AMBIGUITY_RULE,
       '同一父子表存在多条关系时，必须补 parentField 与 childField 消歧。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1548,7 +1534,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     },
     usageRules: [
       'filter 只支持按 parentTable 和 childTable 过滤。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -1571,7 +1557,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '不存在时返回 undefined。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
   }),
@@ -1598,7 +1584,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '底层 relation 必须已经存在，否则依赖创建会失败。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1630,7 +1616,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       JSON_OBJECT_RULE,
       '只更新现有依赖，不会隐式创建新依赖。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1659,7 +1645,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '依赖不存在时底层会抛错。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1691,7 +1677,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '聚合配置按 viewId 隔离：同一 table 在不同视图可维护不同 aggregates，不会互相覆盖。',
       'aggregates 是 MAP 结构：{ [key]: config }；key 是输出字段名，config 只记录 type/field/separator，运行时结果按 aggregateResult[key] / selectionAggregateResult[key] 读取。',
       '返回值是配置态快照，不含运行时计算结果（aggregateResult / selectionAggregateResult）。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1722,7 +1708,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       '不存在时返回 undefined，而不是抛错。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1760,7 +1746,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '新增后 aggregates[key] 保留配置全貌；容器侧从 aggregateResult[key]（全量）或 selectionAggregateResult[key]（选中集）读取对应聚合结果。',
       'key 已存在时抛错，改用 dataset.updateAggregate。',
       'config.field 省略时默认与 key 同名，该字段必须在列定义中存在。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1809,7 +1795,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '若修改 updates.field，只会改变聚合来源，不会改变结果引用 key；读取仍使用 aggregateResult[key]。',
       'key 不存在时抛错，改用 dataset.addAggregate。',
       '只传需要修改的字段；未传字段保留原值。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1846,7 +1832,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       'key 不存在时抛错。',
       '删除后对应 aggregateResult / selectionAggregateResult 字段会立即消失。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1875,7 +1861,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '未配置计算表达式时返回 undefined，而不是抛错。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -1976,7 +1962,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       '子表聚合依赖 TableRelation；无关系时子行数组为空，$sum/$avg/$count 返回 0/$join 返回空字符串。',
       '设置后自动触发 DataTable 刷新链：计算列重编译 → 现有行立即重算 → 聚合行同步更新。',
       '要移除表达式，改用 dataset.clearComputeExpression。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -2015,7 +2001,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '移除表达式后列变为普通列，现有行的列值保留最后一次计算结果，不再自动重算。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {

@@ -17,6 +17,7 @@ import type {
   PageCssConfig
 } from '../types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
+import { isSparkNode, normalizeSparkNode } from '../spark-node'
 
 type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
 
@@ -121,12 +122,12 @@ function createDataSetFromInput(input: Record<string, unknown>): PageDataConfig 
 // ── Rule 编译 ────────────────────────────────────────────────────────
 
 /**
- * rule.json 原始字符串 → 规范化 RuleConfig[]
+ * rule.json 原始字符串 → 规范化 SparkNode[]
  *
  * 规范化内容：
  * - 顶层确保是 Array（单对象自动包装）
- * - 每条规则：type 强制 string；props 缺省 {}；children null→undefined，递归规范化
- * - 后续可在此加：类型别名展开、dataKey 格式校验、props 默认值注入
+ * - 每条规则必须是合法 SparkNode
+ * - `props.id`、根级业务字段提升等旧兼容逻辑已移除
  */
 export function compileRule(raw: string): RuleConfig[] {
   const parsed: unknown = JSON.parse(raw)
@@ -134,73 +135,11 @@ export function compileRule(raw: string): RuleConfig[] {
   return arr.map(normalizeRuleNode)
 }
 
-/**
- * 需要从节点顶层自动提升到 props 的字段集合。
- *
- * SparkComponentRenderer 只透传 node.props，顶层额外字段会被 normalizeSparkNode 丢弃。
- * 在编译阶段将这些字段提升到 props，兼容历史 rule.json 中未规范写入 props 的配置。
- * 提升规则：props 内已有同名字段时保留 props 内的值（不覆盖）。
- */
-const HOIST_TO_PROPS_KEYS: ReadonlySet<string> = new Set(['dataKey', 'field'])
-
-function normalizeRuleValue(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(normalizeRuleValue)
-  if (value === null || typeof value !== 'object') return value
-
-  const candidate = value as Record<string, unknown>
-  if (typeof candidate['type'] === 'string') return normalizeRuleNode(candidate)
-
-  const normalized: Record<string, unknown> = {}
-  for (const [key, nestedValue] of Object.entries(candidate)) {
-    normalized[key] = normalizeRuleValue(nestedValue)
-  }
-  return normalized
-}
-
 export function normalizeRuleNode(node: unknown): RuleConfig {
-  if (typeof node === 'string') return { type: node }
-  if (node === null || node === undefined || typeof node !== 'object') return { type: String(node) }
-  // 先把 children 从展开中排除，避免 null 被带入结果
-  const { children: rawChildren, ...rest } = node as Record<string, unknown>
-  const nextRest = { ...rest }
-
-  const children =
-    rawChildren === null || rawChildren === undefined
-      ? undefined
-      : (Array.isArray(rawChildren) ? rawChildren : [rawChildren]).map((c: unknown) =>
-          typeof c === 'string' ? c : normalizeRuleNode(c)
-        )
-  // 从顶层提升到 props（props 已有值时不覆盖）
-  const rawPropsSource = nextRest['props'] !== null && typeof nextRest['props'] === 'object' && !Array.isArray(nextRest['props'])
-    ? nextRest['props'] as Record<string, unknown>
-    : {}
-  const rawProps: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(rawPropsSource)) {
-    if (key === 'id') continue
-    rawProps[key] = normalizeRuleValue(value)
+  if (!isSparkNode(node)) {
+    throw new Error('rule.json 节点必须是 SparkNode：需要非空字符串 type')
   }
-  const legacyPropsId = rawPropsSource['id']
-  if (
-    !hasOwn(nextRest, 'id')
-    && typeof legacyPropsId === 'string'
-    && legacyPropsId.trim() !== ''
-  ) {
-    nextRest['id'] = legacyPropsId
-  }
-  const hoistedProps: Record<string, unknown> = {}
-  for (const key of HOIST_TO_PROPS_KEYS) {
-    if (key in nextRest && !(key in rawProps)) {
-      hoistedProps[key] = nextRest[key]
-    }
-  }
-  const type = String(nextRest['type'] ?? 'div')
-  const props = Object.keys(hoistedProps).length > 0 ? { ...hoistedProps, ...rawProps } : rawProps
-  return {
-    ...nextRest,
-    type,
-    props,
-    ...(children !== undefined && { children })
-  } as RuleConfig
+  return normalizeSparkNode(node)
 }
 
 // ── PageData 编译 ────────────────────────────────────────────────────

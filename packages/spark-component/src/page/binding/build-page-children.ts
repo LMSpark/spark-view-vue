@@ -1,12 +1,11 @@
 /**
- * RuleConfig → page children 归并器
+ * RuleConfig/SparkNode → page children 绑定器
  *
  * 边界约束：
- * - spark-page-config 负责提供声明式 RuleConfig 树
+ * - spark-page-config 负责提供声明式 SparkNode 树
  * - spark-component 负责将其物化为运行时 children（SparkNode[]）
  *
- * 归并内容：
- * - 根级业务字段收入 props
+ * 绑定内容：
  * - on / ActionDescriptor 绑定为可执行闭包
  * - children 递归转换
  * - props 内嵌 SparkNode 递归归并
@@ -16,7 +15,7 @@
 import type { RuleConfig } from '@spark-view/spark-page-config'
 import { SPARK_NODE_STRUCT_KEYS, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
 import type { ActionExecutionContext } from '../actions'
-import { normalizeRuleEvents, normalizeOnProps } from './bind-normalize.js'
+import { normalizeOnProps } from './bind-normalize.js'
 
 // ── 导出类型 ───────────────────────────────────────────────────────────────
 
@@ -34,10 +33,9 @@ export interface BuildPageChildrenOptions {
 // ── 公开入口 ───────────────────────────────────────────────────────────────
 
 /**
- * 将 RuleConfig 树物化为运行时 SparkNode[]。
+ * 将 SparkNode 树物化为运行时 SparkNode[]。
  *
- * 这里做的是“绑定层归并”，不是渲染：
- * - 统一把根级业务字段收入 props
+ * 这里做的是“绑定层”，不是渲染：
  * - 统一绑定 on / on* 事件
  * - 递归处理 children 与 props 中嵌套的 SparkNode
  * - 保证顶层 id 在同一次构建内唯一
@@ -116,12 +114,16 @@ export function buildPageChildren(
    * 1. 复制并规范化 props
    * 2. 先处理 props 内的 on* 事件
    * 3. 递归绑定 props 中的普通业务值
-   * 4. 再把根级字段并入 props（含根级 on）
-   * 5. 绑定 children
-  * 6. 最后统一处理顶层 id 去重
+   * 4. 绑定 children
+   * 5. 最后统一处理顶层 id 去重
    */
   function bindNode(current: Record<string, unknown>): SparkNode {
     const cloned: SparkNode = { type: current['type'] as string }
+
+    for (const key of Object.keys(current)) {
+      if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
+      throw new Error(`[spark] RuleConfig root field "${key}" has been removed. Put it under SparkNode.props.`)
+    }
 
     // 仅复制合法 props 对象；数组/null/原始值都视为无 props。
     const propsObj = current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])
@@ -132,35 +134,13 @@ export function buildPageChildren(
       throw new Error('[spark] SparkNode.props.id has been removed. Use top-level SparkNode.id instead.')
     }
 
-    // props 内的 onXxx 先归一化，避免后续递归时把字符串事件名当普通值透传。
+    // props 内的 on / onXxx 先归一化，避免后续递归时把字符串事件名当普通值透传。
     normalizeOnProps(propsObj, callFunc, actionCtx)
 
     // 递归绑定 props 里的业务值；事件类 key 已在上一步处理，这里跳过。
     for (const [propName, propValue] of Object.entries(propsObj)) {
-      if (propName.startsWith('on')) continue
+      if (propName === 'on' || propName.startsWith('on')) continue
       propsObj[propName] = bindValue(propValue)
-    }
-
-    // 把根级声明字段收入 props，形成统一的运行时节点形态。
-    for (const [key, value] of Object.entries(current)) {
-      if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
-
-      if (key === 'on') {
-        // 根级 on 统一折叠到 props.on；若 props.on 已存在，则以 props.on 为最终覆盖层。
-        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-          const normalizedRootOn = normalizeRuleEvents(value as Record<string, unknown>, callFunc, actionCtx)
-          const existingOn = propsObj['on']
-          propsObj['on'] = existingOn !== null && typeof existingOn === 'object' && !Array.isArray(existingOn)
-            ? { ...normalizedRootOn, ...(existingOn as Record<string, unknown>) }
-            : normalizedRootOn
-        }
-        continue
-      }
-
-      // props 已显式声明的字段优先级更高；根级同名字段不覆盖。
-      if (key in propsObj) continue
-
-      propsObj[key] = bindValue(value)
     }
 
     // children 保持结构位置，不在绑定层做额外结构提升；这里只做递归绑定与类型收敛。

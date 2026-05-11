@@ -29,7 +29,6 @@ import {
   type PageDesignServiceContext,
 } from '../../services/page-design'
 import { PageDesignDatasetCatalog } from './modules/dataset-tool-catalog'
-import { PageDesignJsonDocCatalog } from './modules/json-doc-tool-catalog'
 import { PageDesignLifecycleCatalog } from './modules/lifecycle-tool-catalog'
 import { PageDesignNodeTreeCatalog } from './modules/node-tree-tool-catalog'
 import { PageDesignTextModelCatalog } from './modules/text-model-tool-catalog'
@@ -58,7 +57,6 @@ export const LIFECYCLE_MODULE_ID = 'lifecycle'
 export const TEXT_MODEL_MODULE_ID = 'textModel'
 export const NODE_TREE_MODULE_ID = 'nodeTree'
 export const DATASET_MODULE_ID = 'dataset'
-export const JSON_DOC_MODULE_ID = 'jsonDoc'
 export const KNOWLEDGE_MODULE_ID = 'knowledge'
 
 export type PageDesignModuleId =
@@ -66,7 +64,6 @@ export type PageDesignModuleId =
   | typeof TEXT_MODEL_MODULE_ID
   | typeof NODE_TREE_MODULE_ID
   | typeof DATASET_MODULE_ID
-  | typeof JSON_DOC_MODULE_ID
   | typeof KNOWLEDGE_MODULE_ID
 
 export interface PageDesignRuntimeContext {
@@ -217,10 +214,6 @@ function registerPageDesignPayloadProvider(provider: ParameterPayloadProvider): 
   throw new Error(`Duplicate parameter payload provider: ${provider.payloadRef}`)
 }
 
-function isRuntimeRegistered(row: PageDesignFunctionCatalogRow): boolean {
-  return row.runtimeRegistration === 'registered'
-}
-
 function toObject(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -232,8 +225,6 @@ const TEXT_MODEL_CATALOG = new PageDesignTextModelCatalog()
 const KNOWLEDGE_CATALOG = new PageDesignKnowledgeCatalog()
 const NODE_TREE_CATALOG = new PageDesignNodeTreeCatalog()
 const DATASET_CATALOG = new PageDesignDatasetCatalog()
-const DATASET_REGISTRATION_ROWS = DATASET_CATALOG.parameterTable.filter(isRuntimeRegistered)
-const JSON_DOC_CATALOG = new PageDesignJsonDocCatalog()
 
 class PageDesignModuleRegistration<TModuleId extends PageDesignModuleId> extends AiModuleRegistrationBase {
   constructor(options: PageDesignModuleFactoryOptions<TModuleId>) {
@@ -294,11 +285,6 @@ function getTargetMethod(binding: PageDesignServiceRuntimeBinding): string {
   throw new Error(`Service binding ${binding.method} must declare targetMethod`)
 }
 
-function getJsonDocOperation(binding: PageDesignServiceRuntimeBinding): Parameters<PageDesignService['useJsonDocOperation']>[2] {
-  if ('jsonDocOperation' in binding) return binding.jsonDocOperation
-  throw new Error(`Service binding ${binding.method} must declare jsonDocOperation`)
-}
-
 type PageDesignServiceBindingApplier = (input: PageDesignServiceBindingApplyInput) => PageDesignFunctionApplyResult
 type PageDesignKnowledgeBindingApplier = (input: PageDesignKnowledgeBindingApplyInput) => PageDesignFunctionApplyResult
 
@@ -323,11 +309,6 @@ const PAGE_DESIGN_SERVICE_BINDING_APPLIERS: Record<PageDesignServiceRuntimeBindi
     toServiceContext(context),
     args,
     toServiceMethodBinding(row, getTargetMethod(binding)),
-  ),
-  useJsonDocOperation: ({ runtime, binding, args, context }) => runtime.service.useJsonDocOperation(
-    toServiceContext(context),
-    args,
-    getJsonDocOperation(binding),
   ),
 }
 
@@ -494,22 +475,10 @@ export class PageDesignModule implements AiModuleRegistration {
         name: 'Page Design DataSet',
         description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
         prompt: PAGE_DESIGN_DATASET_MODULE_PROMPT,
-        catalogRows: DATASET_REGISTRATION_ROWS,
+        catalogRows: DATASET_CATALOG.parameterTable,
         getRuntimeHandlers: () => createFunctionHandlers(
           DATASET_CATALOG,
-          DATASET_REGISTRATION_ROWS,
-          this.getFunctionBindingRuntime(),
-        ),
-      }),
-      new PageDesignModuleRegistration({
-        moduleId: JSON_DOC_MODULE_ID,
-        name: 'Page Design JSON Doc',
-        description: '通过 JSON Pointer / JMESPath 直接读写 pagedata.json 或 rule.json 原始 JSON 文档。',
-        prompt: 'jsonDoc 模块通过 RFC 6901 JSON Pointer 或 JMESPath 查询直接操作 pagedata/rule JSON 文档；read/list/get/query 只读，set/delete/append/setMultiple 写入时通过 PageDesignEditHost.writeJsonDoc 提交；构造 JSON 前需先 read/get 理解结构，禁止凭空捏造路径。',
-        catalogRows: JSON_DOC_CATALOG.parameterTable,
-        getRuntimeHandlers: () => createFunctionHandlers(
-          JSON_DOC_CATALOG,
-          JSON_DOC_CATALOG.parameterTable,
+          DATASET_CATALOG.parameterTable,
           this.getFunctionBindingRuntime(),
         ),
       }),

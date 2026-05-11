@@ -1,9 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-page-header",
@@ -12,123 +9,115 @@
           "content": "项目详情"
         }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "el-descriptions",
+    "children": [
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "智慧园区综合管理平台"
+        ],
+        "props": {
+          "label": "项目名称"
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "PRJ-2026-001"
+        ],
+        "props": {
+          "label": "项目编号"
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "张工"
+        ],
+        "props": {
+          "label": "项目经理"
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "2026-01-15"
+        ],
+        "props": {
+          "label": "开始日期"
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "2026-06-30"
+        ],
+        "props": {
+          "label": "计划结束"
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          {
+            "type": "el-tag",
+            "children": [
+              "进行中"
+            ],
+            "props": {
+              "type": "primary"
+            }
+          }
+        ],
+        "props": {
+          "label": "当前状态"
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "¥ 2,500,000"
+        ],
+        "props": {
+          "label": "项目预算",
+          "span": 2
+        }
+      },
+      {
+        "type": "el-descriptions-item",
+        "children": [
+          "65%"
+        ],
+        "props": {
+          "label": "完成度"
+        }
+      }
+    ],
     "props": {
       "title": "基本信息",
       "border": true,
       "column": 3
-    },
-    "children": [
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "项目名称"
-        },
-        "children": [
-          "智慧园区综合管理平台"
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "项目编号"
-        },
-        "children": [
-          "PRJ-2026-001"
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "项目经理"
-        },
-        "children": [
-          "张工"
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "开始日期"
-        },
-        "children": [
-          "2026-01-15"
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "计划结束"
-        },
-        "children": [
-          "2026-06-30"
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "当前状态"
-        },
-        "children": [
-          {
-            "type": "el-tag",
-            "props": {
-              "type": "primary"
-            },
-            "children": [
-              "进行中"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "项目预算",
-          "span": 2
-        },
-        "children": [
-          "¥ 2,500,000"
-        ]
-      },
-      {
-        "type": "el-descriptions-item",
-        "props": {
-          "label": "完成度"
-        },
-        "children": [
-          "65%"
-        ]
-      }
-    ]
+    }
   },
   {
     "type": "el-divider"
   },
   {
     "type": "el-tabs",
-    "props": {
-      "modelValue": "tasks"
-    },
     "children": [
       {
         "type": "el-tab-pane",
-        "props": {
-          "label": "任务列表",
-          "name": "tasks"
-        },
         "children": [
           {
             "type": "r-table",
-            "dataKey": "ProjectTasks@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -170,23 +159,25 @@
                   "width": 120
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "dataKey": "ProjectTasks@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "label": "任务列表",
+          "name": "tasks"
+        }
       },
       {
         "type": "el-tab-pane",
-        "props": {
-          "label": "里程碑",
-          "name": "milestones"
-        },
         "children": [
           {
             "type": "r-table",
-            "dataKey": "Milestones@rows",
-            "props": {
-              "border": true
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -212,16 +203,20 @@
                   "width": 100
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "dataKey": "Milestones@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "label": "里程碑",
+          "name": "milestones"
+        }
       },
       {
         "type": "el-tab-pane",
-        "props": {
-          "label": "文档",
-          "name": "docs"
-        },
         "children": [
           {
             "type": "el-empty",
@@ -229,8 +224,15 @@
               "description": "暂无关联文档"
             }
           }
-        ]
+        ],
+        "props": {
+          "label": "文档",
+          "name": "docs"
+        }
       }
-    ]
+    ],
+    "props": {
+      "modelValue": "tasks"
+    }
   }
 ]

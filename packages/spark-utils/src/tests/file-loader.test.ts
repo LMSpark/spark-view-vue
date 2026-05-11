@@ -423,6 +423,24 @@ describe('FileLoader', () => {
       expect(result.success).toBe(false)
       expect(result.error).toContain('响应格式错误')
     })
+
+    it('应该接受空字符串文件内容', async () => {
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
+          content: '',
+          timestamp: '2024-02-11T10:00:00Z'
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
+      })
+
+      const result = await loader.load<string>('empty.css', { parseJSON: false })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toBe('')
+    })
     
     it('应该处理 JSON 解析错误', async () => {
       mockAxiosInstance.request.mockResolvedValue({

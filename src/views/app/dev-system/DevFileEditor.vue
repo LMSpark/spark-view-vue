@@ -154,7 +154,7 @@ import { useDevFileEditor } from './composables/useDevFileEditor'
 import { rulePolicy } from './policies/rulePolicy'
 import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
 import { PAGE_FILE_NAMES } from './useDevState'
-import type { BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
+import type { DevState, PageConfigFileVersionSummary, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
@@ -175,7 +175,7 @@ const showVersionPanel = ref(false)
 const remoteVersionLoading = ref(false)
 const restoringVersion = ref<number | null>(null)
 const creatingVersion = ref(false)
-const remotePageVersions = ref<BackendPageVersionSummary[]>([])
+const remotePageVersions = ref<PageConfigFileVersionSummary[]>([])
 const pageDataViewMode = ref<'visual' | 'text'>('visual')
 const pageDataViewModePinned = ref(false)
 const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
@@ -287,7 +287,7 @@ async function createVersion() {
   }
 }
 
-async function confirmDeleteVersion(row: BackendPageVersionSummary) {
+async function confirmDeleteVersion(row: PageConfigFileVersionSummary) {
   try {
     await ElMessageBox.confirm(
       `确定删除版本 v${row.version} 吗？此操作不可撤销。`,

@@ -10,11 +10,10 @@ import {
 
 const catalog = new PageDesignDatasetCatalog()
 
-const REMOVED_FUNCTIONS = new Set(['listAggregates', 'getAggregate'])
 const LEGACY_EXAMPLE_FUNCTIONS = new Set(['getAggregate', 'setComputeExpression'])
 
 function isActiveFunction(functionId: string): boolean {
-  return !REMOVED_FUNCTIONS.has(functionId)
+  return functionId.length > 0
 }
 
 describe('dataset tool protocol contract', () => {
@@ -70,7 +69,7 @@ describe('dataset tool protocol contract', () => {
     })
 
     expect(catalog.getParameterRow('export')).toMatchObject({
-      runtimeRegistration: 'catalog-only',
+      runtimeRegistration: 'registered',
       runtimeBinding: {
         kind: 'page-design-service',
         method: 'useDatasetMethod',

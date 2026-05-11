@@ -10,33 +10,35 @@
       },
       {
         "type": "r-form",
-        "dataKey": "settings@currentRow",
-        "style": {
-          "marginTop": "20px"
-        },
         "children": [
           {
             "type": "r-text",
-            "field": "siteName",
             "props": {
-              "label": "站点名称"
+              "label": "站点名称",
+              "field": "siteName"
             }
           },
           {
             "type": "r-text",
-            "field": "siteUrl",
             "props": {
-              "label": "站点URL"
+              "label": "站点URL",
+              "field": "siteUrl"
             }
           },
           {
             "type": "r-switch",
-            "field": "maintenance",
             "props": {
-              "label": "维护模式"
+              "label": "维护模式",
+              "field": "maintenance"
             }
           }
-        ]
+        ],
+        "props": {
+          "dataKey": "settings@currentRow",
+          "style": {
+            "marginTop": "20px"
+          }
+        }
       }
     ]
   }

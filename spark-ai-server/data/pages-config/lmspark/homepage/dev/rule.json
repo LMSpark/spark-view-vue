@@ -1,20 +1,9 @@
 [
   {
     "type": "div",
-    "props": {
-      "class": "leave-application-page",
-      "style": {
-        "padding": "20px",
-        "backgroundColor": "#f5f7fa"
-      }
-    },
     "children": [
       {
         "type": "r-section",
-        "props": {
-          "title": "请假申请",
-          "description": "填写请假信息并提交审批"
-        },
         "children": [
           {
             "type": "r-header",
@@ -26,11 +15,6 @@
           },
           {
             "type": "r-form",
-            "props": {
-              "dataKey": "LeaveApplications@currentRow",
-              "labelWidth": "100px",
-              "labelPosition": "right"
-            },
             "children": [
               {
                 "type": "r-text",
@@ -123,31 +107,24 @@
                   "colSpan": 24
                 }
               }
-            ]
+            ],
+            "props": {
+              "dataKey": "LeaveApplications@currentRow",
+              "labelWidth": "100px",
+              "labelPosition": "right"
+            }
           }
-        ]
+        ],
+        "props": {
+          "title": "请假申请",
+          "description": "填写请假信息并提交审批"
+        }
       },
       {
         "type": "r-section",
-        "props": {
-          "title": "审批记录",
-          "collapsible": true,
-          "defaultCollapsed": false
-        },
         "children": [
           {
             "type": "r-table",
-            "props": {
-              "dataKey": "ApprovalRecords@rows",
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true,
-              "rowActions": [
-                {
-                  "type": "RenderApprovalActions"
-                }
-              ]
-            },
             "children": [
               {
                 "type": "r-text",
@@ -185,10 +162,33 @@
                   "valueFormat": "YYYY-MM-DD HH:mm"
                 }
               }
-            ]
+            ],
+            "props": {
+              "dataKey": "ApprovalRecords@rows",
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "rowActions": [
+                {
+                  "type": "RenderApprovalActions"
+                }
+              ]
+            }
           }
-        ]
+        ],
+        "props": {
+          "title": "审批记录",
+          "collapsible": true,
+          "defaultCollapsed": false
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "leave-application-page",
+      "style": {
+        "padding": "20px",
+        "backgroundColor": "#f5f7fa"
+      }
+    }
   }
 ]

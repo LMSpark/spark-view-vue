@@ -53,6 +53,9 @@ const DUMMY_CONFIG_LOADER: ConfigLoader = {
   async loadCss() {
     return { success: true, data: '' }
   },
+  async loadPageFileContent() {
+    return { success: false }
+  },
   clearCache() {},
   getCacheStats() {
     return { size: 0, keys: [] }

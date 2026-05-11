@@ -60,7 +60,9 @@ describe('SparkNodeTree', () => {
     expect(tree.countNodes()).toBe(4)
     expect([...tree.collectDataKeys()]).toEqual(['Users@rows'])
     expect([...tree.collectHandlerNames()]).toEqual(['handleToolbarClick'])
-    expect(tree.root).toEqual(root)
+    expect(tree.root).toMatchObject(root)
+    expect(expectNode(tree.root.children?.[0]).children).toEqual([])
+    expect(expectNode(expectNode(tree.root.children?.[1]).children?.[0]).children).toEqual([])
     expect(tree.root).not.toBe(root)
   })
 
@@ -109,8 +111,8 @@ describe('SparkNodeTree', () => {
     })).toThrow(/props\.id has been removed/)
   })
 
-  it('fromJson should drop root-level non-struct fields', () => {
-    const tree = SparkNodeTree.fromJson({
+  it('fromJson should reject root-level non-struct fields', () => {
+    expect(() => SparkNodeTree.fromJson({
       type: 'page-root',
       children: [
         {
@@ -119,14 +121,7 @@ describe('SparkNodeTree', () => {
           children: [{ type: 'h1', children: ['title'] }],
         } as unknown as SparkNode,
       ],
-    })
-
-    const root = tree.getAllData()
-    const firstChild = expectNode(root.children?.[0])
-
-    expect(firstChild.id).toBe('div__0_0')
-    expect((firstChild as unknown as Record<string, unknown>)['class']).toBeUndefined()
-    expect(firstChild.props?.['class']).toBeUndefined()
+    })).toThrow(/root field "class" is invalid/)
   })
 
   it('fromJson 遇到重复组件 id 时应 fail-fast', () => {

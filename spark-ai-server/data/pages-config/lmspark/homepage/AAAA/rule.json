@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -15,29 +11,20 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "这是一个用户管理页面，展示用户列表和详情",
           "type": "info",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "这是一个用户管理页面，展示用户列表和详情",
           "closable": false,
           "showIcon": true
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
         "type": "div",
-        "style": {
-          "display": "flex",
-          "gap": "16px",
-          "alignItems": "flex-start"
-        },
         "children": [
           {
             "type": "div",
-            "style": {
-              "width": "300px",
-              "flexShrink": "0"
-            },
             "children": [
               {
                 "type": "h3",
@@ -47,12 +34,6 @@
               },
               {
                 "type": "el-table",
-                "dataKey": "Users@rows",
-                "props": {
-                  "border": true,
-                  "stripe": true,
-                  "highlightCurrentRow": true
-                },
                 "children": [
                   {
                     "type": "el-table-column",
@@ -76,16 +57,24 @@
                       "label": "邮箱"
                     }
                   }
-                ]
+                ],
+                "props": {
+                  "border": true,
+                  "stripe": true,
+                  "highlightCurrentRow": true,
+                  "dataKey": "Users@rows"
+                }
               }
-            ]
+            ],
+            "props": {
+              "style": {
+                "width": "300px",
+                "flexShrink": "0"
+              }
+            }
           },
           {
             "type": "div",
-            "style": {
-              "flex": "1",
-              "minWidth": "0"
-            },
             "children": [
               {
                 "type": "h3",
@@ -95,40 +84,59 @@
               },
               {
                 "type": "r-detail",
-                "dataKey": "Users@currentRow",
-                "props": {
-                  "labelWidth": "100px"
-                },
                 "children": [
                   {
                     "type": "r-text",
-                    "field": "name",
                     "props": {
-                      "label": "姓名"
+                      "label": "姓名",
+                      "field": "name"
                     }
                   },
                   {
                     "type": "r-text",
-                    "field": "email",
                     "props": {
-                      "label": "邮箱"
+                      "label": "邮箱",
+                      "field": "email"
                     }
                   },
                   {
                     "type": "r-number",
-                    "field": "age",
                     "props": {
                       "label": "年龄",
                       "min": 0,
-                      "max": 150
+                      "max": 150,
+                      "field": "age"
                     }
                   }
-                ]
+                ],
+                "props": {
+                  "labelWidth": "100px",
+                  "dataKey": "Users@currentRow"
+                }
               }
-            ]
+            ],
+            "props": {
+              "style": {
+                "flex": "1",
+                "minWidth": "0"
+              }
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "display": "flex",
+            "gap": "16px",
+            "alignItems": "flex-start"
+          }
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

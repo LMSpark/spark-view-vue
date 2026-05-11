@@ -1,13 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "padding": "20px",
-      "display": "flex",
-      "flexDirection": "column",
-      "gap": "16px",
-      "height": "100%"
-    },
     "children": [
       {
         "type": "h2",
@@ -26,33 +19,83 @@
       },
       {
         "type": "div",
-        "style": {
-          "display": "flex",
-          "gap": "16px",
-          "alignItems": "stretch",
-          "minHeight": "420px"
-        },
         "children": [
           {
             "type": "div",
-            "style": {
-              "flex": "1",
-              "minWidth": "0"
-            },
             "children": [
               {
                 "type": "r-table",
                 "id": "tableConfiguratorColumns",
-                "dataKey": "columns@rows",
+                "children": [
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "label": "字段名",
+                      "width": 180,
+                      "field": "field"
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "label": "标题",
+                      "width": 160,
+                      "field": "label"
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "props": {
+                      "label": "宽度",
+                      "width": 110,
+                      "field": "width"
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "props": {
+                      "label": "对齐",
+                      "width": 110,
+                      "options": [
+                        {
+                          "label": "左",
+                          "value": "left"
+                        },
+                        {
+                          "label": "中",
+                          "value": "center"
+                        },
+                        {
+                          "label": "右",
+                          "value": "right"
+                        }
+                      ],
+                      "field": "align"
+                    }
+                  },
+                  {
+                    "type": "r-switch",
+                    "props": {
+                      "label": "可排序",
+                      "width": 110,
+                      "field": "sortable"
+                    }
+                  },
+                  {
+                    "type": "r-switch",
+                    "props": {
+                      "label": "可见",
+                      "width": 110,
+                      "field": "visible"
+                    }
+                  }
+                ],
                 "props": {
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
                   "toolbar": {
                     "type": "r-toolbar",
-                    "props": {
-                      "position": "top"
-                    },
                     "children": [
                       {
                         "type": "r-button",
@@ -82,7 +125,10 @@
                           "successMessage": "当前列配置已删除"
                         }
                       }
-                    ]
+                    ],
+                    "props": {
+                      "position": "top"
+                    }
                   },
                   "actions": {
                     "type": "r-toolbar",
@@ -91,123 +137,61 @@
                       "width": 140,
                       "label": "操作"
                     }
-                  }
-                },
-                "children": [
-                  {
-                    "type": "r-text",
-                    "field": "field",
-                    "props": {
-                      "label": "字段名",
-                      "width": 180
-                    }
                   },
-                  {
-                    "type": "r-text",
-                    "field": "label",
-                    "props": {
-                      "label": "标题",
-                      "width": 160
-                    }
-                  },
-                  {
-                    "type": "r-number",
-                    "field": "width",
-                    "props": {
-                      "label": "宽度",
-                      "width": 110
-                    }
-                  },
-                  {
-                    "type": "r-select",
-                    "field": "align",
-                    "props": {
-                      "label": "对齐",
-                      "width": 110,
-                      "options": [
-                        {
-                          "label": "左",
-                          "value": "left"
-                        },
-                        {
-                          "label": "中",
-                          "value": "center"
-                        },
-                        {
-                          "label": "右",
-                          "value": "right"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "type": "r-switch",
-                    "field": "sortable",
-                    "props": {
-                      "label": "可排序",
-                      "width": 110
-                    }
-                  },
-                  {
-                    "type": "r-switch",
-                    "field": "visible",
-                    "props": {
-                      "label": "可见",
-                      "width": 110
-                    }
-                  }
-                ]
+                  "dataKey": "columns@rows"
+                }
               }
-            ]
+            ],
+            "props": {
+              "style": {
+                "flex": "1",
+                "minWidth": "0"
+              }
+            }
           },
           {
             "type": "div",
-            "style": {
-              "width": "320px",
-              "border": "1px solid #e4e7ed",
-              "borderRadius": "8px",
-              "padding": "12px"
-            },
             "children": [
               {
                 "type": "h3",
-                "style": {
-                  "margin": "0 0 12px"
-                },
                 "children": [
                   "当前列详情"
-                ]
+                ],
+                "props": {
+                  "style": {
+                    "margin": "0 0 12px"
+                  }
+                }
               },
               {
                 "type": "r-detail",
-                "dataKey": "columns@currentRow",
                 "children": [
                   {
                     "type": "r-text-display",
-                    "field": "field",
                     "props": {
-                      "label": "字段名"
+                      "label": "字段名",
+                      "field": "field"
                     }
                   },
                   {
                     "type": "r-text-display",
-                    "field": "label",
                     "props": {
-                      "label": "标题"
+                      "label": "标题",
+                      "field": "label"
                     }
                   },
                   {
                     "type": "r-text-display",
-                    "field": "width",
                     "props": {
-                      "label": "宽度"
+                      "label": "宽度",
+                      "field": "width"
                     }
                   },
                   {
                     "type": "r-text-display",
-                    "field": "align",
                     "props": {
-                      "label": "对齐"
+                      "label": "对齐",
+                      "field": "align"
                     }
                   },
                   {
@@ -222,12 +206,40 @@
                       "content": "可见: $[visible]"
                     }
                   }
-                ]
+                ],
+                "props": {
+                  "dataKey": "columns@currentRow"
+                }
               }
-            ]
+            ],
+            "props": {
+              "style": {
+                "width": "320px",
+                "border": "1px solid #e4e7ed",
+                "borderRadius": "8px",
+                "padding": "12px"
+              }
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "display": "flex",
+            "gap": "16px",
+            "alignItems": "stretch",
+            "minHeight": "420px"
+          }
+        }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "padding": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "gap": "16px",
+        "height": "100%"
+      }
+    }
   }
 ]

@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -15,72 +11,68 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "管理系统中所有页面的配置信息",
           "type": "info",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "管理系统中所有页面的配置信息",
           "closable": false,
           "showIcon": true
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
         "type": "div",
-        "style": {
-          "marginBottom": "10px",
-          "display": "flex",
-          "gap": "8px"
-        },
         "children": [
           {
             "type": "el-button",
-            "props": {
-              "type": "primary",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleAdd"
-            },
             "children": [
               "新增页面"
-            ]
+            ],
+            "props": {
+              "type": "primary",
+              "on": {
+                "click": "handleAdd"
+              },
+              "size": "small"
+            }
           },
           {
             "type": "el-button",
-            "props": {
-              "type": "success",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleEdit"
-            },
             "children": [
               "编辑"
-            ]
+            ],
+            "props": {
+              "type": "success",
+              "on": {
+                "click": "handleEdit"
+              },
+              "size": "small"
+            }
           },
           {
             "type": "el-button",
-            "props": {
-              "type": "danger",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleDelete"
-            },
             "children": [
               "删除"
-            ]
+            ],
+            "props": {
+              "type": "danger",
+              "on": {
+                "click": "handleDelete"
+              },
+              "size": "small"
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "marginBottom": "10px",
+            "display": "flex",
+            "gap": "8px"
+          }
+        }
       },
       {
         "type": "el-table",
-        "dataKey": "Pages@rows",
-        "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
-        },
         "children": [
           {
             "type": "el-table-column",
@@ -118,8 +110,20 @@
               "label": "类型"
             }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "dataKey": "Pages@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

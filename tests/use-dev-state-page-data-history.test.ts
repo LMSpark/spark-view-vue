@@ -7,8 +7,41 @@ const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
 }))
 
 vi.mock('@/services/http', () => ({
+  createAuthHeaders: () => ({}),
   http: { get: httpGet, post: httpPost, put: httpPut },
 }))
+
+vi.mock('@spark-view/spark-page-config', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-page-config')>()
+  const isStatus = (error: unknown, status: number): boolean => {
+    if (error === null || typeof error !== 'object') return false
+    const candidate = error as { status?: unknown; response?: { status?: unknown } }
+    return candidate.status === status || candidate.response?.status === status
+  }
+  return {
+    ...actual,
+    createConfigLoader: vi.fn(() => ({
+      loadPageFileContent: async (pageId: string, filename: string) => {
+        try {
+          const data = await httpGet(`/api/pages-config/${pageId}/${filename}`) as Record<string, unknown>
+          return { success: true, data: String(data['content'] ?? ''), source: 'remote', timestamp: Date.now() }
+        } catch (error) {
+          if ((filename === 'script.js' || filename === 'style.css') && isStatus(error, 404)) {
+            return { success: true, data: '', source: 'remote', timestamp: Date.now() }
+          }
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+            reason: isStatus(error, 404) ? 'not-found' : 'unknown',
+            timestamp: Date.now(),
+          }
+        }
+      },
+      clearCache: vi.fn(),
+      getCacheStats: () => ({ size: 0, keys: [] }),
+    })),
+  }
+})
 
 vi.mock('@/services/api-paths', () => ({
   getPageApi: () => '/api/pages-config',

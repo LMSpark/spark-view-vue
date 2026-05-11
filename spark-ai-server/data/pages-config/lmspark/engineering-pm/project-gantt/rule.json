@@ -1,9 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-page-header",
@@ -12,29 +9,28 @@
           "content": "可视化项目进度与时间线"
         }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "el-alert",
     "props": {
+      "type": "info",
+      "style": {
+        "marginBottom": "16px"
+      },
       "title": "甘特图视图",
       "description": "以时间线形式展示项目各阶段进度（完整甘特图组件开发中）",
-      "type": "info",
       "showIcon": true,
       "closable": false
-    },
-    "style": {
-      "marginBottom": "16px"
     }
   },
   {
     "type": "r-table",
-    "dataKey": "GanttData@rows",
-    "props": {
-      "border": true,
-      "stripe": true,
-      "highlightCurrentRow": true
-    },
     "children": [
       {
         "type": "el-table-column",
@@ -92,6 +88,12 @@
           "width": 140
         }
       }
-    ]
+    ],
+    "props": {
+      "border": true,
+      "stripe": true,
+      "highlightCurrentRow": true,
+      "dataKey": "GanttData@rows"
+    }
   }
 ]

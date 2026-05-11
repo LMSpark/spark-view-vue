@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "section-grid-demo",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h1",
@@ -20,106 +16,12 @@
       },
       {
         "type": "r-section",
-        "props": {
-          "title": "⬡ 用户数据矩阵",
-          "description": "DATA_MATRIX :: SELECT * FROM users — 实时数据流 · 霓虹对齐 · 全息详情"
-        },
         "children": [
           {
             "type": "r-table",
-            "dataKey": "Users@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true,
-              "toolbar": {
-                "type": "r-toolbar",
-                "props": {
-                  "position": "top"
-                },
-                "children": [
-                  {
-                    "type": "r-button",
-                    "order": 1,
-                    "props": {
-                      "action": "append-row",
-                      "label": "✚ 新增",
-                      "type": "primary",
-                      "size": "small"
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "order": 2,
-                    "props": {
-                      "action": "delete-selected",
-                      "label": "✖ 删除勾选",
-                      "type": "danger",
-                      "size": "small",
-                      "plain": true
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "order": 3,
-                    "props": {
-                      "action": "refresh",
-                      "label": "↻ 刷新",
-                      "size": "small"
-                    }
-                  }
-                ]
-              },
-              "actions": {
-                "type": "r-toolbar",
-                "children": [
-                  {
-                    "type": "r-button",
-                    "order": 1,
-                    "props": {
-                      "action": "message-row",
-                      "type": "primary",
-                      "size": "small",
-                      "link": true
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "order": 2,
-                    "props": {
-                      "action": "prompt-edit",
-                      "type": "warning",
-                      "size": "small",
-                      "link": true
-                    }
-                  },
-                  {
-                    "type": "RenderStatusAction",
-                    "order": 3
-                  },
-                  {
-                    "type": "r-button",
-                    "order": 4,
-                    "props": {
-                      "action": "delete-row",
-                      "type": "danger",
-                      "size": "small",
-                      "link": true
-                    }
-                  }
-                ],
-                "props": {
-                  "width": 360,
-                  "fixed": "right",
-                  "align": "center",
-                  "label": "⚙ 操作"
-                }
-              }
-            },
             "children": [
               {
                 "type": "r-text",
-                "field": "id",
                 "props": {
                   "label": "ID",
                   "width": 80,
@@ -127,12 +29,12 @@
                   "valueAlign": "center",
                   "headerCellClassName": "demo-col-header-center",
                   "cellClassName": "demo-col-cell-center",
-                  "valueClassName": "demo-value-center"
+                  "valueClassName": "demo-value-center",
+                  "field": "id"
                 }
               },
               {
                 "type": "r-text",
-                "field": "name",
                 "props": {
                   "label": "姓名",
                   "width": 120,
@@ -140,12 +42,12 @@
                   "valueAlign": "right",
                   "headerCellClassName": "demo-col-header-right",
                   "cellClassName": "demo-col-cell-right",
-                  "valueClassName": "demo-value-right"
+                  "valueClassName": "demo-value-right",
+                  "field": "name"
                 }
               },
               {
                 "type": "r-select",
-                "field": "gender",
                 "props": {
                   "label": "性别",
                   "width": 100,
@@ -158,28 +60,28 @@
                       "label": "女",
                       "value": "female"
                     }
-                  ]
+                  ],
+                  "field": "gender"
                 }
               },
               {
                 "type": "r-number",
-                "field": "age",
                 "props": {
                   "label": "年龄",
-                  "width": 100
+                  "width": 100,
+                  "field": "age"
                 }
               },
               {
                 "type": "r-date",
-                "field": "joinDate",
                 "props": {
                   "label": "入职日期",
-                  "width": 150
+                  "width": 150,
+                  "field": "joinDate"
                 }
               },
               {
                 "type": "r-select",
-                "field": "department",
                 "props": {
                   "label": "部门",
                   "width": 150,
@@ -200,95 +102,198 @@
                       "label": "财务部",
                       "value": "finance"
                     }
-                  ]
+                  ],
+                  "field": "department"
                 }
               },
               {
                 "type": "r-switch",
-                "field": "active",
                 "props": {
                   "label": "状态",
                   "width": 100,
                   "activeText": "启用",
-                  "inactiveText": "禁用"
+                  "inactiveText": "禁用",
+                  "field": "active"
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "toolbar": {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "type": "primary",
+                      "order": 1,
+                      "action": "append-row",
+                      "label": "✚ 新增",
+                      "size": "small"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "type": "danger",
+                      "order": 2,
+                      "action": "delete-selected",
+                      "label": "✖ 删除勾选",
+                      "size": "small",
+                      "plain": true
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "refresh",
+                      "label": "↻ 刷新",
+                      "size": "small",
+                      "order": 3
+                    }
+                  }
+                ],
+                "props": {
+                  "position": "top"
+                }
+              },
+              "actions": {
+                "type": "r-toolbar",
+                "children": [
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "type": "primary",
+                      "order": 1,
+                      "action": "message-row",
+                      "size": "small",
+                      "link": true
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "type": "warning",
+                      "order": 2,
+                      "action": "prompt-edit",
+                      "size": "small",
+                      "link": true
+                    }
+                  },
+                  {
+                    "type": "RenderStatusAction",
+                    "props": {
+                      "order": 3
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "type": "danger",
+                      "order": 4,
+                      "action": "delete-row",
+                      "size": "small",
+                      "link": true
+                    }
+                  }
+                ],
+                "props": {
+                  "width": 360,
+                  "fixed": "right",
+                  "align": "center",
+                  "label": "⚙ 操作"
+                }
+              },
+              "dataKey": "Users@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "title": "⬡ 用户数据矩阵",
+          "description": "DATA_MATRIX :: SELECT * FROM users — 实时数据流 · 霓虹对齐 · 全息详情"
+        }
       },
       {
         "type": "r-section",
-        "props": {
-          "title": "⬡ 选中实体详情",
-          "description": "ENTITY_DETAIL :: 点击表格行查看实体全息数据投影"
-        },
         "children": [
           {
             "type": "r-detail",
-            "dataKey": "Users@currentRow",
-            "props": {},
             "children": [
               {
                 "type": "r-text",
-                "field": "id",
                 "props": {
                   "label": "用户ID",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "id"
                 }
               },
               {
                 "type": "r-text",
-                "field": "name",
                 "props": {
                   "label": "姓名",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "name"
                 }
               },
               {
                 "type": "r-select",
-                "field": "gender",
                 "props": {
                   "label": "性别",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "gender"
                 }
               },
               {
                 "type": "r-number",
-                "field": "age",
                 "props": {
                   "label": "年龄",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "age"
                 }
               },
               {
                 "type": "r-date",
-                "field": "joinDate",
                 "props": {
                   "label": "入职日期",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "joinDate"
                 }
               },
               {
                 "type": "r-select",
-                "field": "department",
                 "props": {
                   "label": "部门",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "field": "department"
                 }
               },
               {
                 "type": "r-switch",
-                "field": "active",
                 "props": {
                   "label": "状态",
-                  "colSpan": 24
+                  "colSpan": 24,
+                  "field": "active"
                 }
               }
-            ]
+            ],
+            "props": {
+              "dataKey": "Users@currentRow"
+            }
           }
-        ]
+        ],
+        "props": {
+          "title": "⬡ 选中实体详情",
+          "description": "ENTITY_DETAIL :: 点击表格行查看实体全息数据投影"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "section-grid-demo",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

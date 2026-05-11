@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "master-detail-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h1",
@@ -14,20 +10,18 @@
       },
       {
         "type": "p",
-        "style": {
-          "color": "#666",
-          "marginBottom": "20px"
-        },
         "children": [
           "点击用户行，自动加载该用户的订单（零代码，内核自动处理）"
-        ]
+        ],
+        "props": {
+          "style": {
+            "color": "#666",
+            "marginBottom": "20px"
+          }
+        }
       },
       {
         "type": "div",
-        "class": "section",
-        "style": {
-          "marginBottom": "30px"
-        },
         "children": [
           {
             "type": "h2",
@@ -37,46 +31,48 @@
           },
           {
             "type": "r-table",
-            "dataKey": "Users@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true
-            },
             "children": [
               {
                 "type": "r-text",
-                "field": "id",
                 "props": {
                   "label": "用户ID",
-                  "width": 100
+                  "width": 100,
+                  "field": "id"
                 }
               },
               {
                 "type": "r-text",
-                "field": "name",
                 "props": {
                   "label": "姓名",
-                  "width": 150
+                  "width": 150,
+                  "field": "name"
                 }
               },
               {
                 "type": "r-text",
-                "field": "email",
                 "props": {
-                  "label": "邮箱"
+                  "label": "邮箱",
+                  "field": "email"
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "dataKey": "Users@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "section",
+          "style": {
+            "marginBottom": "30px"
+          }
+        }
       },
       {
         "type": "div",
-        "class": "section",
-        "style": {
-          "marginBottom": "30px"
-        },
         "children": [
           {
             "type": "h2",
@@ -86,39 +82,46 @@
           },
           {
             "type": "r-detail",
-            "dataKey": "Users@currentRow",
             "children": [
               {
                 "type": "r-text",
-                "field": "id",
                 "props": {
                   "label": "用户ID",
-                  "colSpan": 8
+                  "colSpan": 8,
+                  "field": "id"
                 }
               },
               {
                 "type": "r-text",
-                "field": "name",
                 "props": {
                   "label": "姓名",
-                  "colSpan": 8
+                  "colSpan": 8,
+                  "field": "name"
                 }
               },
               {
                 "type": "r-text",
-                "field": "email",
                 "props": {
                   "label": "邮箱",
-                  "colSpan": 8
+                  "colSpan": 8,
+                  "field": "email"
                 }
               }
-            ]
+            ],
+            "props": {
+              "dataKey": "Users@currentRow"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "section",
+          "style": {
+            "marginBottom": "30px"
+          }
+        }
       },
       {
         "type": "div",
-        "class": "section",
         "children": [
           {
             "type": "h2",
@@ -128,51 +131,62 @@
           },
           {
             "type": "p",
-            "style": {
-              "color": "#999",
-              "fontSize": "14px"
-            },
             "children": [
               "自动加载 + 自动过滤（基于 Users.currentRow）"
-            ]
+            ],
+            "props": {
+              "style": {
+                "color": "#999",
+                "fontSize": "14px"
+              }
+            }
           },
           {
             "type": "r-table",
-            "dataKey": "Orders@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "emptyText": "请先选择用户"
-            },
             "children": [
               {
                 "type": "r-text",
-                "field": "id",
                 "props": {
                   "label": "订单ID",
-                  "width": 100
+                  "width": 100,
+                  "field": "id"
                 }
               },
               {
                 "type": "r-text",
-                "field": "product",
                 "props": {
                   "label": "产品",
-                  "width": 200
+                  "width": 200,
+                  "field": "product"
                 }
               },
               {
                 "type": "r-number",
-                "field": "amount",
                 "props": {
                   "label": "金额",
-                  "width": 120
+                  "width": 120,
+                  "field": "amount"
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "emptyText": "请先选择用户",
+              "dataKey": "Orders@rows"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "section"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "master-detail-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

@@ -2,15 +2,11 @@ export {
   PageDesignService,
   isPageDesignServiceResult,
   pageDesignServiceFailure,
-} from './page-design-service'
-
-export {
-  PageDesignPageCache,
-} from './page-cache'
+} from './operations'
 
 export {
   PageDesignEditSession,
-} from './edit-session'
+} from './editing'
 
 export {
   PAGE_FILE_NAMES,
@@ -19,17 +15,24 @@ export {
   createPageDocuments,
   forEachDocument,
   isPageFileDocumentDirty,
-} from './page-file-documents'
-
-export {
-  PageDesignPageFileApi,
-} from './page-file-api'
+} from './documents'
 
 export type {
   PageDesignEditPhase,
   PageDesignEditHost,
   PageDesignEditState,
-} from './edit-session'
+  PageDesignNodeTree,
+  SparkNodeTreeMethodKey,
+} from './editing'
+
+export type {
+  PageDesignServiceMethodBinding,
+  PageDesignServiceContext,
+  PageDesignServiceOptions,
+  PageDesignServiceResult,
+  PageDesignServiceState,
+  PageDesignTextFileKey,
+} from './operations'
 
 export type {
   LoadFromTextOptions,
@@ -37,53 +40,4 @@ export type {
   PageFileDocument,
   PageFileLoadState,
   PageFileName,
-} from './page-file-documents'
-
-export type {
-  BackendPageVersionSummary,
-  PageDesignPageFileApiOptions,
-  PageDesignPageFileHttpClient,
-} from './page-file-api'
-
-export type {
-  PageDesignSparkNode,
-  PageDesignNodeTree,
-  SparkNodeTreeMethodKey,
-} from './node-tree-types'
-
-export type {
-  PageCacheHandle,
-} from './page-cache'
-
-export {
-  parsePointer,
-  resolvePointer,
-  setAtPointer,
-  deleteAtPointer,
-  appendAtPointer,
-  listAtPointer,
-  typeLabel,
-  encodePointerToken,
-  decodePointerToken,
-  JsonPointerError,
-} from './json-doc-json-pointer'
-
-export type {
-  JsonValue,
-  JsonObject,
-  JsonArray,
-  ResolveResult,
-  MutateResult,
-  ListEntry,
-  ListResult,
-} from './json-doc-json-pointer'
-
-export type {
-  PageDesignJsonDocOperation,
-  PageDesignServiceMethodBinding,
-  PageDesignServiceContext,
-  PageDesignServiceOptions,
-  PageDesignServiceResult,
-  PageDesignServiceState,
-  PageDesignTextFileKey,
-} from './page-design-service'
+} from './documents'

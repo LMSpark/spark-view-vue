@@ -1,99 +1,6 @@
 [
   {
     "type": "r-table",
-    "dataKey": "TeamMembers@rows",
-    "props": {
-      "border": true,
-      "stripe": true,
-      "highlightCurrentRow": true,
-      "filter": {
-        "type": "r-filter",
-        "children": [
-          {
-            "type": "r-text",
-            "field": "name",
-            "props": {
-              "label": "姓名",
-              "placeholder": "搜索姓名..."
-            }
-          },
-          {
-            "type": "r-text",
-            "field": "skills",
-            "props": {
-              "label": "技能关键词",
-              "placeholder": "搜索技能..."
-            }
-          },
-          {
-            "type": "r-select",
-            "field": "role",
-            "props": {
-              "label": "角色",
-              "placeholder": "按角色筛选",
-              "options": [
-                {
-                  "label": "项目经理",
-                  "value": "项目经理"
-                },
-                {
-                  "label": "开发工程师",
-                  "value": "开发工程师"
-                },
-                {
-                  "label": "设计师",
-                  "value": "设计师"
-                },
-                {
-                  "label": "测试工程师",
-                  "value": "测试工程师"
-                }
-              ]
-            }
-          }
-        ]
-      },
-      "toolbar": {
-        "type": "r-toolbar",
-        "props": {
-          "position": "top"
-        },
-        "children": [
-          {
-            "type": "r-tail",
-            "children": [
-              {
-                "type": "r-button",
-                "props": {
-                  "label": "新增成员",
-                  "buttonType": "primary",
-                  "icon": "Plus"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "actions": {
-        "type": "r-toolbar",
-        "props": {
-          "label": "操作",
-          "width": 120,
-          "fixed": "right"
-        },
-        "children": [
-          {
-            "type": "r-button",
-            "props": {
-              "action": "message-row",
-              "label": "查看",
-              "buttonSize": "small",
-              "message": "成员 {name} | 角色 {role} | 部门 {department} | 电话 {phone}"
-            }
-          }
-        ]
-      }
-    },
     "children": [
       {
         "type": "el-table-column",
@@ -151,6 +58,99 @@
           "width": 120
         }
       }
-    ]
+    ],
+    "props": {
+      "border": true,
+      "stripe": true,
+      "highlightCurrentRow": true,
+      "filter": {
+        "type": "r-filter",
+        "children": [
+          {
+            "type": "r-text",
+            "props": {
+              "label": "姓名",
+              "placeholder": "搜索姓名...",
+              "field": "name"
+            }
+          },
+          {
+            "type": "r-text",
+            "props": {
+              "label": "技能关键词",
+              "placeholder": "搜索技能...",
+              "field": "skills"
+            }
+          },
+          {
+            "type": "r-select",
+            "props": {
+              "label": "角色",
+              "placeholder": "按角色筛选",
+              "options": [
+                {
+                  "label": "项目经理",
+                  "value": "项目经理"
+                },
+                {
+                  "label": "开发工程师",
+                  "value": "开发工程师"
+                },
+                {
+                  "label": "设计师",
+                  "value": "设计师"
+                },
+                {
+                  "label": "测试工程师",
+                  "value": "测试工程师"
+                }
+              ],
+              "field": "role"
+            }
+          }
+        ]
+      },
+      "toolbar": {
+        "type": "r-toolbar",
+        "children": [
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "r-button",
+                "props": {
+                  "label": "新增成员",
+                  "buttonType": "primary",
+                  "icon": "Plus"
+                }
+              }
+            ]
+          }
+        ],
+        "props": {
+          "position": "top"
+        }
+      },
+      "actions": {
+        "type": "r-toolbar",
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "action": "message-row",
+              "label": "查看",
+              "buttonSize": "small",
+              "message": "成员 {name} | 角色 {role} | 部门 {department} | 电话 {phone}"
+            }
+          }
+        ],
+        "props": {
+          "label": "操作",
+          "width": 120,
+          "fixed": "right"
+        }
+      },
+      "dataKey": "TeamMembers@rows"
+    }
   }
 ]

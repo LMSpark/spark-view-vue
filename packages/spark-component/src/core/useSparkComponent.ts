@@ -22,7 +22,7 @@ import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 import { DATA_ROW } from './capability-keys.js'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
-import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
+import { SPARK_NODE_STRUCT_KEYS, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from './capability-context.js'
 
 // ===== 类型与返回值约定 =====
@@ -168,7 +168,18 @@ function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknow
   // 只保留真实传入组件、且应该进入 SparkNode.props 的运行时字段。
   const runtimeProps: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(rawProps)) {
+    if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
     if (isVueInternalVNodeProp(key) || isVueListenerProp(key)) continue
+    runtimeProps[key] = value
+  }
+  return runtimeProps
+}
+
+function readInlineRuntimeProps(configInput: SparkNodeInput): Record<string, unknown> {
+  const source = configInput as unknown as Record<string, unknown>
+  const runtimeProps: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(source)) {
+    if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
     runtimeProps[key] = value
   }
   return runtimeProps
@@ -176,13 +187,22 @@ function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknow
 
 function buildEffectiveConfig(instance: RuntimeInstance, configInput: SparkNodeInput): SparkNode {
   // configInput 提供静态配置骨架，vnode.props 负责补齐运行时传参，最终统一走 normalizeSparkNode。
+  const inlineProps = readInlineRuntimeProps(configInput)
   const runtimeProps = readRuntimeVNodeProps(instance)
-  const base = { ...configInput } as SparkNode & Record<string, unknown>
+  const base: SparkNode = {
+    type: configInput.type,
+    ...(configInput.id !== undefined ? { id: configInput.id } : {}),
+    ...(configInput.children !== undefined ? { children: configInput.children } : {}),
+  }
 
-  if (Object.keys(runtimeProps).length > 0) {
-    base.props = base.props === undefined
-      ? runtimeProps
-      : { ...base.props, ...runtimeProps }
+  const props = {
+    ...inlineProps,
+    ...(configInput.props ?? {}),
+    ...runtimeProps,
+  }
+
+  if (Object.keys(props).length > 0) {
+    base.props = props
   }
 
   return normalizeSparkNode(base)

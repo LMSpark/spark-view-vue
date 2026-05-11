@@ -350,7 +350,7 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
   expect(wrapper.text()).toContain('slot-forced-content')
 })
 
-test('SparkComponentRenderer ignores root-level non-struct fields for registered components', () => {
+test('SparkComponentRenderer rejects root-level non-struct fields for registered components', () => {
   const RootFieldReader = defineComponent({
     props: {
       label: String,
@@ -369,7 +369,7 @@ test('SparkComponentRenderer ignores root-level non-struct fields for registered
 
   registry.register('root-field-reader-ignored', RootFieldReader)
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  expect(() => mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
         type: 'root-field-reader-ignored',
@@ -384,12 +384,7 @@ test('SparkComponentRenderer ignores root-level non-struct fields for registered
         [SPARK_REGISTRY_KEY as symbol]: registry,
       }
     }
-  })
-
-  const reader = wrapper.find('.root-field-reader-ignored')
-  expect(reader.attributes('data-label')).toBe('')
-  expect(reader.attributes('data-status')).toBe('')
-  expect(reader.attributes('data-gap')).toBe('')
+  })).toThrow(/root field "label" is invalid/)
 })
 
 test('SparkComponentRenderer renders native html tags directly', () => {
@@ -554,8 +549,8 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
     props: {
       config: {
         type: 'unknown-widget',
+        id: 'unknown-node-1',
         props: {
-          id: 'unknown-node-1',
           title: '测试节点',
           visible: true,
         },

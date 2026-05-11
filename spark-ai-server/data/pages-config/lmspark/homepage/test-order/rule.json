@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -17,31 +13,24 @@
       },
       {
         "type": "r-table",
-        "dataKey": "test-order@rows",
-        "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
-        },
         "children": [
           {
             "type": "r-text",
-            "field": "id",
             "props": {
               "label": "ID",
-              "width": 80
+              "width": 80,
+              "field": "id"
             }
           },
           {
             "type": "r-text",
-            "field": "name",
             "props": {
-              "label": "名称"
+              "label": "名称",
+              "field": "name"
             }
           },
           {
             "type": "r-select",
-            "field": "status",
             "props": {
               "label": "状态",
               "width": 120,
@@ -62,20 +51,33 @@
                   "label": "已取消",
                   "value": "cancelled"
                 }
-              ]
+              ],
+              "field": "status"
             }
           },
           {
             "type": "r-number",
-            "field": "price",
             "props": {
               "label": "价格",
               "width": 120,
-              "min": 0
+              "min": 0,
+              "field": "price"
             }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "dataKey": "test-order@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

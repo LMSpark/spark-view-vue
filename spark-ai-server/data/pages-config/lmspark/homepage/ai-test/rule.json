@@ -1,21 +1,17 @@
 [
   {
     "type": "div",
-    "style": {
-      "padding": "20px",
-      "maxWidth": "900px"
-    },
     "children": [
       {
         "type": "el-alert",
         "props": {
-          "title": "AI 迭代测试页",
           "type": "warning",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "AI 迭代测试页",
           "closable": false,
           "description": "这是一个简单的初始页面，等待 AI 迭代完善。"
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
@@ -23,12 +19,6 @@
         "children": [
           {
             "type": "el-table",
-            "dataKey": "employees@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -54,10 +44,22 @@
                   "width": "100"
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "dataKey": "employees@rows"
+            }
           }
         ]
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "padding": "20px",
+        "maxWidth": "900px"
+      }
+    }
   }
 ]

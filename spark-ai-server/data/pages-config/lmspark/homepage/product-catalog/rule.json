@@ -1,82 +1,92 @@
 [
-    {
-        "type": "r-page-header",
-        "props": {
-            "content": "产品目录"
-        }
-    },
-    {
-        "type": "r-card",
-        "class": "catalog-hero",
-        "children": [
-            "导航入口已恢复",
-            "这是产品目录页面的默认内容。后续可以替换为真实商品数据或接入商品 API。"
-        ]
-    },
-    {
-        "type": "r-row",
-        "props": {
-            "gutter": 20
-        },
-        "children": [
-            {
-                "type": "r-col",
-                "props": {
-                    "span": 8
-                },
-                "children": [
-                    {
-                        "type": "r-card",
-                        "class": "catalog-card",
-                        "children": [
-                            "办公设备",
-                            "键盘、鼠标、显示器、耳机等常用办公硬件。",
-                            "4 个分类 · 16 个 SKU"
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "r-col",
-                "props": {
-                    "span": 8
-                },
-                "children": [
-                    {
-                        "type": "r-card",
-                        "class": "catalog-card",
-                        "children": [
-                            "企业软件",
-                            "CRM、协同办公、项目管理等业务系统。",
-                            "3 个方案 · 持续上架"
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "r-col",
-                "props": {
-                    "span": 8
-                },
-                "children": [
-                    {
-                        "type": "r-card",
-                        "class": "catalog-card",
-                        "children": [
-                            "数据看板",
-                            "面向管理后台的统计图表与分析组件。",
-                            "8 个模板 · 即开即用"
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": "r-card",
-        "class": "catalog-footnote",
-        "children": [
-            "下一步：如果你希望这个页面展示真实商品表，可以继续把导航或数据源接到后端商品接口。"
-        ]
+  {
+    "type": "r-page-header",
+    "props": {
+      "content": "产品目录"
     }
+  },
+  {
+    "type": "r-card",
+    "children": [
+      "导航入口已恢复",
+      "这是产品目录页面的默认内容。后续可以替换为真实商品数据或接入商品 API。"
+    ],
+    "props": {
+      "class": "catalog-hero"
+    }
+  },
+  {
+    "type": "r-row",
+    "children": [
+      {
+        "type": "r-col",
+        "children": [
+          {
+            "type": "r-card",
+            "children": [
+              "办公设备",
+              "键盘、鼠标、显示器、耳机等常用办公硬件。",
+              "4 个分类 · 16 个 SKU"
+            ],
+            "props": {
+              "class": "catalog-card"
+            }
+          }
+        ],
+        "props": {
+          "span": 8
+        }
+      },
+      {
+        "type": "r-col",
+        "children": [
+          {
+            "type": "r-card",
+            "children": [
+              "企业软件",
+              "CRM、协同办公、项目管理等业务系统。",
+              "3 个方案 · 持续上架"
+            ],
+            "props": {
+              "class": "catalog-card"
+            }
+          }
+        ],
+        "props": {
+          "span": 8
+        }
+      },
+      {
+        "type": "r-col",
+        "children": [
+          {
+            "type": "r-card",
+            "children": [
+              "数据看板",
+              "面向管理后台的统计图表与分析组件。",
+              "8 个模板 · 即开即用"
+            ],
+            "props": {
+              "class": "catalog-card"
+            }
+          }
+        ],
+        "props": {
+          "span": 8
+        }
+      }
+    ],
+    "props": {
+      "gutter": 20
+    }
+  },
+  {
+    "type": "r-card",
+    "children": [
+      "下一步：如果你希望这个页面展示真实商品表，可以继续把导航或数据源接到后端商品接口。"
+    ],
+    "props": {
+      "class": "catalog-footnote"
+    }
+  }
 ]

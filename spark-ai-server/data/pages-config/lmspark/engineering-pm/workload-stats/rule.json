@@ -1,9 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-page-header",
@@ -12,28 +9,21 @@
           "content": "团队成员工作量分析与趋势"
         }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "el-row",
-    "props": {
-      "gutter": 16
-    },
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-col",
-        "props": {
-          "span": 6
-        },
         "children": [
           {
             "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
             "children": [
               {
                 "type": "el-statistic",
@@ -42,21 +32,21 @@
                   "value": 168
                 }
               }
-            ]
+            ],
+            "props": {
+              "shadow": "hover"
+            }
           }
-        ]
+        ],
+        "props": {
+          "span": 6
+        }
       },
       {
         "type": "el-col",
-        "props": {
-          "span": 6
-        },
         "children": [
           {
             "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
             "children": [
               {
                 "type": "el-statistic",
@@ -65,21 +55,21 @@
                   "value": 21
                 }
               }
-            ]
+            ],
+            "props": {
+              "shadow": "hover"
+            }
           }
-        ]
+        ],
+        "props": {
+          "span": 6
+        }
       },
       {
         "type": "el-col",
-        "props": {
-          "span": 6
-        },
         "children": [
           {
             "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
             "children": [
               {
                 "type": "el-statistic",
@@ -88,21 +78,21 @@
                   "value": 12
                 }
               }
-            ]
+            ],
+            "props": {
+              "shadow": "hover"
+            }
           }
-        ]
+        ],
+        "props": {
+          "span": 6
+        }
       },
       {
         "type": "el-col",
-        "props": {
-          "span": 6
-        },
         "children": [
           {
             "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
             "children": [
               {
                 "type": "el-statistic",
@@ -112,26 +102,29 @@
                   "suffix": "%"
                 }
               }
-            ]
+            ],
+            "props": {
+              "shadow": "hover"
+            }
           }
-        ]
+        ],
+        "props": {
+          "span": 6
+        }
       }
-    ]
+    ],
+    "props": {
+      "gutter": 16,
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "el-card",
-    "props": {
-      "header": "成员工作量明细"
-    },
     "children": [
       {
         "type": "r-table",
-        "dataKey": "WorkloadDetail@rows",
-        "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
-        },
         "children": [
           {
             "type": "el-table-column",
@@ -197,8 +190,17 @@
               "width": 100
             }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "dataKey": "WorkloadDetail@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "header": "成员工作量明细"
+    }
   }
 ]

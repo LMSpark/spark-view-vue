@@ -1,52 +1,25 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "height": "100vh",
-      "display": "flex",
-      "flexDirection": "column",
-      "overflow": "hidden"
-    },
     "children": [
       {
         "type": "h2",
-        "style": {
-          "margin": "0",
-          "padding": "20px 20px 16px 20px",
-          "borderBottom": "1px solid #e4e7ed"
-        },
         "children": [
           "用户管理"
-        ]
+        ],
+        "props": {
+          "style": {
+            "margin": "0",
+            "padding": "20px 20px 16px 20px",
+            "borderBottom": "1px solid #e4e7ed"
+          }
+        }
       },
       {
         "type": "div",
-        "class": "content-section",
-        "style": {
-          "flex": "1",
-          "display": "flex",
-          "flexDirection": "column",
-          "overflow": "hidden",
-          "padding": "20px"
-        },
         "children": [
           {
             "type": "el-table",
-            "dataKey": "users@rows",
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true,
-              "height": "100%",
-              "style": {
-                "width": "100%"
-              }
-            },
-            "on": {
-              "currentChange": "handleRowChange",
-              "selectionChange": "handleSelection"
-            },
             "children": [
               {
                 "type": "el-table-column",
@@ -112,10 +85,43 @@
                   "minWidth": "100"
                 }
               }
-            ]
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "height": "100%",
+              "style": {
+                "width": "100%"
+              },
+              "dataKey": "users@rows",
+              "on": {
+                "currentChange": "handleRowChange",
+                "selectionChange": "handleSelection"
+              }
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "content-section",
+          "style": {
+            "flex": "1",
+            "display": "flex",
+            "flexDirection": "column",
+            "overflow": "hidden",
+            "padding": "20px"
+          }
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "height": "100vh",
+        "display": "flex",
+        "flexDirection": "column",
+        "overflow": "hidden"
+      }
+    }
   }
 ]

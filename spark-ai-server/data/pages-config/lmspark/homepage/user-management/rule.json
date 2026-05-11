@@ -1,121 +1,127 @@
 [
-    {
+  {
+    "type": "div",
+    "children": [
+      {
+        "type": "h2",
+        "children": [
+          "用户管理"
+        ],
+        "props": {
+          "style": {
+            "margin": "0",
+            "padding": "20px 20px 16px 20px",
+            "borderBottom": "1px solid #e4e7ed"
+          }
+        }
+      },
+      {
         "type": "div",
-        "class": "page-container",
-        "style": {
-            "height": "100vh",
+        "children": [
+          {
+            "type": "r-table",
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "ID",
+                  "width": 80,
+                  "field": "id"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "用户名",
+                  "minWidth": 120,
+                  "field": "name"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "姓名",
+                  "minWidth": 120,
+                  "field": "fullName"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "邮箱",
+                  "minWidth": 180,
+                  "field": "email"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "部门",
+                  "minWidth": 120,
+                  "field": "department"
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "label": "年龄",
+                  "width": 100,
+                  "field": "age"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "角色",
+                  "minWidth": 120,
+                  "field": "role"
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "label": "状态",
+                  "minWidth": 100,
+                  "field": "status"
+                }
+              }
+            ],
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "height": "100%",
+              "style": {
+                "width": "100%"
+              },
+              "dataKey": "users@rows",
+              "on": {
+                "currentChange": "handleRowChange",
+                "selectionChange": "handleSelection"
+              }
+            }
+          }
+        ],
+        "props": {
+          "class": "content-section",
+          "style": {
+            "flex": "1",
             "display": "flex",
             "flexDirection": "column",
-            "overflow": "hidden"
-        },
-        "children": [
-            {
-                "type": "h2",
-                "style": {
-                    "margin": "0",
-                    "padding": "20px 20px 16px 20px",
-                    "borderBottom": "1px solid #e4e7ed"
-                },
-                "children": [
-                    "用户管理"
-                ]
-            },
-            {
-                "type": "div",
-                "class": "content-section",
-                "style": {
-                    "flex": "1",
-                    "display": "flex",
-                    "flexDirection": "column",
-                    "overflow": "hidden",
-                    "padding": "20px"
-                },
-                "children": [
-                    {
-                        "type": "r-table",
-                        "dataKey": "users@rows",
-                        "props": {
-                            "border": true,
-                            "stripe": true,
-                            "highlightCurrentRow": true,
-                            "height": "100%",
-                            "style": {
-                                "width": "100%"
-                            }
-                        },
-                        "on": {
-                            "currentChange": "handleRowChange",
-                            "selectionChange": "handleSelection"
-                        },
-                        "children": [
-                            {
-                                "type": "r-text",
-                                "field": "id",
-                                "props": {
-                                    "label": "ID",
-                                    "width": 80
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "name",
-                                "props": {
-                                    "label": "用户名",
-                                    "minWidth": 120
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "fullName",
-                                "props": {
-                                    "label": "姓名",
-                                    "minWidth": 120
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "email",
-                                "props": {
-                                    "label": "邮箱",
-                                    "minWidth": 180
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "department",
-                                "props": {
-                                    "label": "部门",
-                                    "minWidth": 120
-                                }
-                            },
-                            {
-                                "type": "r-number",
-                                "field": "age",
-                                "props": {
-                                    "label": "年龄",
-                                    "width": 100
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "role",
-                                "props": {
-                                    "label": "角色",
-                                    "minWidth": 120
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "status",
-                                "props": {
-                                    "label": "状态",
-                                    "minWidth": 100
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+            "overflow": "hidden",
+            "padding": "20px"
+          }
+        }
+      }
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "height": "100vh",
+        "display": "flex",
+        "flexDirection": "column",
+        "overflow": "hidden"
+      }
     }
+  }
 ]

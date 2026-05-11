@@ -54,7 +54,7 @@ export type SparkNodeTreeToolCapabilityRow = Pick<
   SparkNodeTreeToolParameterRow,
   'functionId' | 'type' | 'target' | 'coreMethod' | 'description'
 > & {
-  integrationStatus: 'catalog-only'
+  integrationStatus: 'runtime-wired'
   paramsRef: string
   rules?: readonly string[]
   failureCodes?: readonly string[]
@@ -116,7 +116,7 @@ const REPLACE_NODES_ITEMS_SCHEMA = {
   items: REPLACE_NODES_ITEM_SCHEMA,
 } as const
 
-const CATALOG_ONLY_RULE = '本 catalog 只定义函数目录，不接运行时 registry，也不提供 execute 实现。'
+const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getNodeTree() 返回的 SparkNodeTree/rule.json 模型。'
 const INSTANCE_RULE = '需先通过 new SparkNodeTree({ root }) 绑定一个当前组件实例（SparkNode）；该实例既可以是页面组件，也可以是任意子组件，后续动作都作用于它的当前子树状态。'
 const NAMED_PARAM_RULE = '运行时应优先使用命名参数对象，而不是位置参数。'
 const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点，不递归跨层修改。'
@@ -148,7 +148,7 @@ const defineRequestRow = (row: SparkNodeTreeToolRowWithoutType): SparkNodeTreeTo
 })
 
 function toCapabilityRow(row: SparkNodeTreeToolParameterRow): SparkNodeTreeToolCapabilityRow {
-  return createPageDesignCapabilityRow(row, 'catalog-only', { coreMethod: row.coreMethod })
+  return createPageDesignCapabilityRow(row, 'runtime-wired', { coreMethod: row.coreMethod })
 }
 
 const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
@@ -166,7 +166,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       componentId: 'table',
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -183,7 +183,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       componentId: 'name-column',
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -200,7 +200,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       componentId: 'toolbar',
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -217,7 +217,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       componentId: 'name-column',
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -238,7 +238,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       parentComponentId: null,
     },
-    usageRules: [INSTANCE_RULE, DIRECT_CHILDREN_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, DIRECT_CHILDREN_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
@@ -257,7 +257,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       count: 'number — 结构节点总数',
     },
     example: NO_PARAMS,
-    usageRules: [INSTANCE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -270,7 +270,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       root: 'SparkNode — 当前绑定组件实例完整子树快照（等价 toJSON 返回值）',
     },
     example: NO_PARAMS,
-    usageRules: [INSTANCE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -283,7 +283,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       handlers: 'Set<string> — 唯一处理器名集合',
     },
     example: NO_PARAMS,
-    usageRules: [INSTANCE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
   }),
   defineDescribeRow({
@@ -316,7 +316,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     usageRules: [
       INSTANCE_RULE,
       NAMED_PARAM_RULE,
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
       '返回的 matches[n].id 即为真实 componentId，可直接传给 getNode / setProps / removeNode；' +
         '仅当 id 为 undefined 时表示该节点未设置 id，需改用 index 定位。',
     ],
@@ -353,7 +353,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       parentComponentId: 'toolbar',
       node: { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
     },
-    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
@@ -395,7 +395,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         { type: 'r-button', id: 'export-action', props: { action: 'export' } },
       ],
     },
-    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
@@ -446,7 +446,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       '调整已有节点位置时优先使用 moveNode，不要用 removeNode + addNode 复制完整子树。',
       'moveNode 返回移动摘要，不返回完整 SparkNode 子树，避免上下文膨胀。',
       '不能移动根节点，也不能把节点移动到自身或其后代节点下面。',
-      CATALOG_ONLY_RULE,
+      RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
@@ -489,7 +489,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       props: { stripe: true },
       merge: true,
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -515,7 +515,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         { componentId: 'toolbar', props: { class: 'toolbar-wide' }, merge: true },
       ],
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -546,7 +546,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       componentId: 'name-column',
       node: { type: 'r-row-fragment', id: 'name-column', props: { field: 'displayName' } },
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -577,7 +577,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         { componentId: 'toolbar', node: { type: 'r-toolbar', id: 'toolbar', props: { dense: true } } },
       ],
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -606,7 +606,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       componentId: 'toolbar',
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, '不能删除根节点。', CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, '不能删除根节点。', RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -634,7 +634,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       componentIds: ['toolbar', 'name-column'],
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, '不能删除根节点。', CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, '不能删除根节点。', RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',

@@ -17,7 +17,6 @@ export {
 
 export {
   DATASET_MODULE_ID,
-  JSON_DOC_MODULE_ID,
   KNOWLEDGE_MODULE_ID,
   LIFECYCLE_MODULE_ID,
   NODE_TREE_MODULE_ID,
@@ -26,8 +25,6 @@ export {
   TEXT_MODEL_MODULE_ID,
   assertPageDesignContext,
 } from './page-design-module'
-
-export { PageDesignJsonDocCatalog } from './modules/json-doc-tool-catalog'
 
 export { PageDesignLifecycleCatalog } from './modules/lifecycle-tool-catalog'
 
@@ -95,11 +92,3 @@ export type {
   TextModelFunctionCapabilityRow,
 } from './modules/text-model-tool-catalog'
 
-export type {
-  JsonDocFunctionFailureMode,
-  JsonDocFunctionTarget,
-  JsonDocType,
-  JsonDocFunctionId,
-  JsonDocFunctionParameterRow,
-  JsonDocFunctionCapabilityRow,
-} from './modules/json-doc-tool-catalog'

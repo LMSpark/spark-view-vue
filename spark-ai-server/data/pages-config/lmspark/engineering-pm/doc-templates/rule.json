@@ -1,137 +1,173 @@
 [
   {
     "type": "div",
-    "class": "doc-templates-page",
     "children": [
       {
         "type": "div",
-        "class": "doc-templates-hero",
         "children": [
           {
             "type": "div",
-            "class": "doc-templates-hero__main",
             "children": [
               {
                 "type": "div",
-                "class": "doc-templates-hero__eyebrow",
                 "children": [
                   "TEMPLATE CENTER"
-                ]
+                ],
+                "props": {
+                  "class": "doc-templates-hero__eyebrow"
+                }
               },
               {
                 "type": "h1",
-                "class": "doc-templates-hero__title",
                 "children": [
                   "工程文档模板中心"
-                ]
+                ],
+                "props": {
+                  "class": "doc-templates-hero__title"
+                }
               },
               {
                 "type": "p",
-                "class": "doc-templates-hero__desc",
                 "children": [
                   "把常用工程文档收敛为统一模板入口，减少重复搭建和文档结构不一致的问题。当前页保持纯配置实现，不依赖自定义脚本组件。"
-                ]
+                ],
+                "props": {
+                  "class": "doc-templates-hero__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "doc-templates-hero__tags",
                 "children": [
                   {
                     "type": "span",
-                    "class": "doc-tag",
                     "children": [
                       "标准结构"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-tag"
+                    }
                   },
                   {
                     "type": "span",
-                    "class": "doc-tag",
                     "children": [
                       "快速复用"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-tag"
+                    }
                   },
                   {
                     "type": "span",
-                    "class": "doc-tag",
                     "children": [
                       "零代码维护"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-tag"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-templates-hero__tags"
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "doc-templates-hero__main"
+            }
           },
           {
             "type": "div",
-            "class": "doc-templates-hero__side",
             "children": [
               {
                 "type": "div",
-                "class": "doc-hero-metric",
                 "children": [
                   {
                     "type": "div",
-                    "class": "doc-hero-metric__value",
                     "children": [
                       "6"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-hero-metric__value"
+                    }
                   },
                   {
                     "type": "div",
-                    "class": "doc-hero-metric__label",
                     "children": [
                       "核心模板"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-hero-metric__label"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-hero-metric"
+                }
               },
               {
                 "type": "div",
-                "class": "doc-hero-metric",
                 "children": [
                   {
                     "type": "div",
-                    "class": "doc-hero-metric__value",
                     "children": [
                       "3"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-hero-metric__value"
+                    }
                   },
                   {
                     "type": "div",
-                    "class": "doc-hero-metric__label",
                     "children": [
                       "使用阶段"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-hero-metric__label"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-hero-metric"
+                }
               },
               {
                 "type": "div",
-                "class": "doc-hero-callout",
                 "children": [
                   {
                     "type": "div",
-                    "class": "doc-hero-callout__title",
                     "children": [
                       "推荐路径"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-hero-callout__title"
+                    }
                   },
                   {
                     "type": "p",
-                    "class": "doc-hero-callout__text",
                     "children": [
                       "先选模板，再按项目场景补充业务字段，尽量复用既有结构。"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-hero-callout__text"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-hero-callout"
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "doc-templates-hero__side"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "doc-templates-hero"
+        }
       },
       {
         "type": "div",
-        "class": "doc-templates-section-head",
         "children": [
           {
             "type": "h2",
@@ -145,22 +181,25 @@
               "覆盖需求、设计、测试、会议、周报与验收六类高频场景。"
             ]
           }
-        ]
+        ],
+        "props": {
+          "class": "doc-templates-section-head"
+        }
       },
       {
         "type": "div",
-        "class": "doc-templates-grid",
         "children": [
           {
             "type": "div",
-            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "class": "template-badge template-badge--blue",
                 "children": [
                   "SRS"
-                ]
+                ],
+                "props": {
+                  "class": "template-badge template-badge--blue"
+                }
               },
               {
                 "type": "h3",
@@ -170,14 +209,15 @@
               },
               {
                 "type": "p",
-                "class": "template-card__desc",
                 "children": [
                   "标准 SRS 模板，适合梳理功能范围、角色场景和非功能约束。"
-                ]
+                ],
+                "props": {
+                  "class": "template-card__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "template-card__meta",
                 "children": [
                   {
                     "type": "span",
@@ -191,31 +231,38 @@
                       "推荐：产品 / BA"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "template-card__meta"
+                }
               },
               {
                 "type": "el-button",
+                "children": [
+                  "使用模板"
+                ],
                 "props": {
                   "type": "primary",
                   "size": "small",
                   "plain": true
-                },
-                "children": [
-                  "使用模板"
-                ]
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "template-card"
+            }
           },
           {
             "type": "div",
-            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "class": "template-badge template-badge--green",
                 "children": [
                   "SD"
-                ]
+                ],
+                "props": {
+                  "class": "template-badge template-badge--green"
+                }
               },
               {
                 "type": "h3",
@@ -225,14 +272,15 @@
               },
               {
                 "type": "p",
-                "class": "template-card__desc",
                 "children": [
                   "覆盖总体架构、模块划分、接口约定和数据模型，适合研发交付前统一设计口径。"
-                ]
+                ],
+                "props": {
+                  "class": "template-card__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "template-card__meta",
                 "children": [
                   {
                     "type": "span",
@@ -246,31 +294,38 @@
                       "推荐：架构 / 开发"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "template-card__meta"
+                }
               },
               {
                 "type": "el-button",
+                "children": [
+                  "使用模板"
+                ],
                 "props": {
                   "type": "success",
                   "size": "small",
                   "plain": true
-                },
-                "children": [
-                  "使用模板"
-                ]
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "template-card"
+            }
           },
           {
             "type": "div",
-            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "class": "template-badge template-badge--amber",
                 "children": [
                   "QA"
-                ]
+                ],
+                "props": {
+                  "class": "template-badge template-badge--amber"
+                }
               },
               {
                 "type": "h3",
@@ -280,14 +335,15 @@
               },
               {
                 "type": "p",
-                "class": "template-card__desc",
                 "children": [
                   "用于测试范围、用例计划、执行结果和缺陷统计的统一沉淀。"
-                ]
+                ],
+                "props": {
+                  "class": "template-card__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "template-card__meta",
                 "children": [
                   {
                     "type": "span",
@@ -301,31 +357,38 @@
                       "推荐：测试 / 交付"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "template-card__meta"
+                }
               },
               {
                 "type": "el-button",
+                "children": [
+                  "使用模板"
+                ],
                 "props": {
                   "type": "warning",
                   "size": "small",
                   "plain": true
-                },
-                "children": [
-                  "使用模板"
-                ]
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "template-card"
+            }
           },
           {
             "type": "div",
-            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "class": "template-badge template-badge--red",
                 "children": [
                   "MT"
-                ]
+                ],
+                "props": {
+                  "class": "template-badge template-badge--red"
+                }
               },
               {
                 "type": "h3",
@@ -335,14 +398,15 @@
               },
               {
                 "type": "p",
-                "class": "template-card__desc",
                 "children": [
                   "适合记录议题、结论、责任人和待办清单，保证会议输出可跟踪。"
-                ]
+                ],
+                "props": {
+                  "class": "template-card__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "template-card__meta",
                 "children": [
                   {
                     "type": "span",
@@ -356,31 +420,38 @@
                       "推荐：PM / 团队负责人"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "template-card__meta"
+                }
               },
               {
                 "type": "el-button",
+                "children": [
+                  "使用模板"
+                ],
                 "props": {
                   "type": "danger",
                   "size": "small",
                   "plain": true
-                },
-                "children": [
-                  "使用模板"
-                ]
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "template-card"
+            }
           },
           {
             "type": "div",
-            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "class": "template-badge template-badge--slate",
                 "children": [
                   "WB"
-                ]
+                ],
+                "props": {
+                  "class": "template-badge template-badge--slate"
+                }
               },
               {
                 "type": "h3",
@@ -390,14 +461,15 @@
               },
               {
                 "type": "p",
-                "class": "template-card__desc",
                 "children": [
                   "用于输出周进展、风险、阻塞项和下周计划，适合项目例行同步。"
-                ]
+                ],
+                "props": {
+                  "class": "template-card__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "template-card__meta",
                 "children": [
                   {
                     "type": "span",
@@ -411,30 +483,37 @@
                       "推荐：PM / 交付经理"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "template-card__meta"
+                }
               },
               {
                 "type": "el-button",
+                "children": [
+                  "使用模板"
+                ],
                 "props": {
                   "size": "small",
                   "plain": true
-                },
-                "children": [
-                  "使用模板"
-                ]
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "template-card"
+            }
           },
           {
             "type": "div",
-            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "class": "template-badge template-badge--indigo",
                 "children": [
                   "ACC"
-                ]
+                ],
+                "props": {
+                  "class": "template-badge template-badge--indigo"
+                }
               },
               {
                 "type": "h3",
@@ -444,14 +523,15 @@
               },
               {
                 "type": "p",
-                "class": "template-card__desc",
                 "children": [
                   "支持沉淀功能验收、性能结论和签字确认结果，适合阶段性交付归档。"
-                ]
+                ],
+                "props": {
+                  "class": "template-card__desc"
+                }
               },
               {
                 "type": "div",
-                "class": "template-card__meta",
                 "children": [
                   {
                     "type": "span",
@@ -465,30 +545,37 @@
                       "推荐：交付 / 客户接口人"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "template-card__meta"
+                }
               },
               {
                 "type": "el-button",
+                "children": [
+                  "使用模板"
+                ],
                 "props": {
                   "type": "primary",
                   "size": "small",
                   "plain": true
-                },
-                "children": [
-                  "使用模板"
-                ]
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "template-card"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "doc-templates-grid"
+        }
       },
       {
         "type": "div",
-        "class": "doc-flow-panel",
         "children": [
           {
             "type": "div",
-            "class": "doc-flow-panel__head",
             "children": [
               {
                 "type": "h2",
@@ -502,22 +589,25 @@
                   "把常见动作收敛成固定路径，降低协作成本。"
                 ]
               }
-            ]
+            ],
+            "props": {
+              "class": "doc-flow-panel__head"
+            }
           },
           {
             "type": "div",
-            "class": "doc-flow-grid",
             "children": [
               {
                 "type": "div",
-                "class": "doc-flow-step",
                 "children": [
                   {
                     "type": "span",
-                    "class": "doc-flow-step__index",
                     "children": [
                       "01"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-flow-step__index"
+                    }
                   },
                   {
                     "type": "h3",
@@ -531,18 +621,22 @@
                       "按场景选择标准模板，优先复用已有结构，而不是重新起草。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-flow-step"
+                }
               },
               {
                 "type": "div",
-                "class": "doc-flow-step",
                 "children": [
                   {
                     "type": "span",
-                    "class": "doc-flow-step__index",
                     "children": [
                       "02"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-flow-step__index"
+                    }
                   },
                   {
                     "type": "h3",
@@ -556,18 +650,22 @@
                       "将模板中的通用章节替换为项目实际信息，补齐责任人、时间点与边界条件。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-flow-step"
+                }
               },
               {
                 "type": "div",
-                "class": "doc-flow-step",
                 "children": [
                   {
                     "type": "span",
-                    "class": "doc-flow-step__index",
                     "children": [
                       "03"
-                    ]
+                    ],
+                    "props": {
+                      "class": "doc-flow-step__index"
+                    }
                   },
                   {
                     "type": "h3",
@@ -581,12 +679,24 @@
                       "完成评审后再归档沉淀，后续同类项目继续沿用同一模板链路。"
                     ]
                   }
-                ]
+                ],
+                "props": {
+                  "class": "doc-flow-step"
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "doc-flow-grid"
+            }
           }
-        ]
+        ],
+        "props": {
+          "class": "doc-flow-panel"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "doc-templates-page"
+    }
   }
 ]

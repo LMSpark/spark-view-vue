@@ -13,21 +13,26 @@ import { ref, reactive, computed } from 'vue'
 import { deepClone } from '@spark-view/spark-utils'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
+import {
+  PageConfigFileApi,
+  createConfigLoader,
+  type ConfigLoader,
+  type PageConfigFileVersionSummary,
+} from '@spark-view/spark-page-config'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   PAGE_FILE_NAMES,
-  PageDesignPageFileApi,
   createPageDocuments,
   forEachDocument,
   isPageFileDocumentDirty,
-  type BackendPageVersionSummary,
   type PageDocumentRegistry,
   type PageFileName,
 } from '@spark-view/spark-ai/services/page-design'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
-export type { BackendPageVersionSummary, PageFileDocument } from '@spark-view/spark-ai/services/page-design'
+export type { PageConfigFileVersionSummary }
+export type { PageFileDocument } from '@spark-view/spark-ai/services/page-design'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -67,9 +72,38 @@ export interface DevContextConfig {
 export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
-import { http } from '@/services/http'
+import { createAuthHeaders, http } from '@/services/http'
 
-const pageFileApi = new PageDesignPageFileApi({ getPageApi, http })
+const pageFileApi = new PageConfigFileApi({ getPageConfigApi: getPageApi, http })
+let pageConfigLoader: ConfigLoader | null = null
+let pageConfigLoaderApiBaseUrl = ''
+
+function getPageConfigLoader(): ConfigLoader {
+  const apiBaseUrl = toPageConfigApiBaseUrl(getPageApi())
+  if (pageConfigLoader === null || pageConfigLoaderApiBaseUrl !== apiBaseUrl) {
+    pageConfigLoader = createConfigLoader({
+      source: 'remote',
+      apiBaseUrl,
+      fileStorage: 'localStorage',
+      getHeaders: createAuthHeaders,
+    })
+    pageConfigLoaderApiBaseUrl = apiBaseUrl
+  }
+  return pageConfigLoader
+}
+
+function toPageConfigApiBaseUrl(pageApi: string): string {
+  const normalized = pageApi.replace(/\/+$/, '')
+  const suffix = '/pages-config'
+  if (normalized.endsWith(suffix)) {
+    return normalized.slice(0, -suffix.length) || '/'
+  }
+  return normalized || '/'
+}
+
+function toPageConfigLoaderPath(pageId: string, name: PageFileName): string {
+  return `/${encodeURIComponent(pageId)}/${encodeURIComponent(name)}`
+}
 
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
@@ -140,10 +174,26 @@ export function useDevState() {
   }
 
   function notifyPageFileChanged(pageId: string, filename: PageFileName | '__created' | '__deleted' | '__bulk'): void {
+    if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
+      clearPageConfigCache(pageId)
+      invalidateActivePageFilesLoad()
+    } else {
+      clearPageConfigCache(pageId, filename)
+    }
     if (pageId && pageId === activePageId.value) {
       pageFilesRevision.value += 1
     }
-    void filename
+  }
+
+  function clearPageConfigCache(pageId: string, filename?: PageFileName): void {
+    const loader = getPageConfigLoader()
+    if (filename !== undefined) {
+      loader.clearCache(toPageConfigLoaderPath(pageId, filename))
+      return
+    }
+    for (const name of PAGE_FILE_NAMES) {
+      loader.clearCache(toPageConfigLoaderPath(pageId, name))
+    }
   }
 
   // ── 空导航状态 ──
@@ -525,8 +575,17 @@ export function useDevState() {
     } catch { /* ignore */ }
   }
 
-  async function fetchRemotePageFileContent(pageId: string, name: PageFileName): Promise<string> {
-    return pageFileApi.fetchFileContent(pageId, name)
+  async function fetchRemotePageFileContent(
+    pageId: string,
+    name: PageFileName,
+    options?: { forceReload?: boolean },
+  ): Promise<string> {
+    const result = await getPageConfigLoader().loadPageFileContent(pageId, name, {
+      forceReload: options?.forceReload === true,
+    })
+    if (result.success) return result.data ?? ''
+    const detail = result.error ?? result.reason ?? 'unknown'
+    throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
   }
 
   function areAllActivePageFilesLoaded(): boolean {
@@ -576,7 +635,10 @@ export function useDevState() {
       let loadedSnapshots: ReadonlyArray<readonly [PageFileName, string]>
       try {
         loadedSnapshots = await Promise.all(
-          PAGE_FILE_NAMES.map(async (entry) => [entry, await fetchRemotePageFileContent(pageId, entry)] as const),
+          PAGE_FILE_NAMES.map(async (entry) => [
+            entry,
+            await fetchRemotePageFileContent(pageId, entry, { forceReload }),
+          ] as const),
         )
       } catch (error) {
         if (activePageFilesLoadEpoch === loadEpoch && activePageId.value === pageId) {
@@ -617,7 +679,7 @@ export function useDevState() {
   // 后端版本 API
   // ═══════════════════════════════════════════════════════════
 
-  async function listRemotePageVersions(filename: PageFileName): Promise<BackendPageVersionSummary[]> {
+  async function listRemotePageVersions(filename: PageFileName): Promise<PageConfigFileVersionSummary[]> {
     const pageId = activePageId.value
     if (!pageId) return []
     try {
@@ -633,9 +695,10 @@ export function useDevState() {
     if (!pageId) return false
     try {
       await pageFileApi.restoreVersion(pageId, filename, version)
+      clearPageConfigCache(pageId, filename)
       invalidateActivePageFilesLoad()
       try {
-        const restoredText = await fetchRemotePageFileContent(pageId, filename)
+        const restoredText = await fetchRemotePageFileContent(pageId, filename, { forceReload: true })
         documents[filename].loadFromText(restoredText, { markSaved: true })
       } catch (reloadError) {
         notifyPageFileChanged(pageId, filename)

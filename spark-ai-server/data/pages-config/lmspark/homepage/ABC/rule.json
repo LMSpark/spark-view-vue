@@ -1,10 +1,6 @@
 [
   {
     "type": "div",
-    "class": "page-container",
-    "style": {
-      "padding": "20px"
-    },
     "children": [
       {
         "type": "h2",
@@ -15,75 +11,68 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "管理学生成绩信息，支持查看、新增、编辑和删除操作。",
           "type": "info",
+          "style": {
+            "marginBottom": "16px"
+          },
+          "title": "管理学生成绩信息，支持查看、新增、编辑和删除操作。",
           "closable": false,
           "showIcon": true
-        },
-        "style": {
-          "marginBottom": "16px"
         }
       },
       {
         "type": "div",
-        "style": {
-          "marginBottom": "16px",
-          "display": "flex",
-          "gap": "8px"
-        },
         "children": [
           {
             "type": "el-button",
-            "props": {
-              "type": "primary",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleAdd"
-            },
             "children": [
               "新增成绩"
-            ]
+            ],
+            "props": {
+              "type": "primary",
+              "on": {
+                "click": "handleAdd"
+              },
+              "size": "small"
+            }
           },
           {
             "type": "el-button",
-            "props": {
-              "type": "success",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleEdit"
-            },
             "children": [
               "编辑成绩"
-            ]
+            ],
+            "props": {
+              "type": "success",
+              "on": {
+                "click": "handleEdit"
+              },
+              "size": "small"
+            }
           },
           {
             "type": "el-button",
-            "props": {
-              "type": "danger",
-              "size": "small"
-            },
-            "on": {
-              "click": "handleDelete"
-            },
             "children": [
               "删除成绩"
-            ]
+            ],
+            "props": {
+              "type": "danger",
+              "on": {
+                "click": "handleDelete"
+              },
+              "size": "small"
+            }
           }
-        ]
+        ],
+        "props": {
+          "style": {
+            "marginBottom": "16px",
+            "display": "flex",
+            "gap": "8px"
+          }
+        }
       },
       {
         "type": "el-table",
-        "dataKey": "Students@rows",
-        "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
-        },
-        "on": {
-          "currentChange": "handleCurrentChange"
-        },
         "children": [
           {
             "type": "el-table-column",
@@ -149,77 +138,92 @@
               "width": "120"
             }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "dataKey": "Students@rows",
+          "on": {
+            "currentChange": "handleCurrentChange"
+          }
+        }
       },
       {
         "type": "el-divider",
-        "props": {
-          "contentPosition": "left"
-        },
         "children": [
           "成绩详情"
-        ]
+        ],
+        "props": {
+          "contentPosition": "left"
+        }
       },
       {
         "type": "r-detail",
-        "dataKey": "Students@currentRow",
-        "props": {
-          "labelWidth": "100px"
-        },
         "children": [
           {
             "type": "r-text",
-            "field": "name",
             "props": {
-              "label": "学生姓名"
+              "label": "学生姓名",
+              "field": "name"
             }
           },
           {
             "type": "r-text",
-            "field": "gender",
             "props": {
-              "label": "性别"
+              "label": "性别",
+              "field": "gender"
             }
           },
           {
             "type": "r-text",
-            "field": "subject",
             "props": {
-              "label": "科目"
+              "label": "科目",
+              "field": "subject"
             }
           },
           {
             "type": "r-number",
-            "field": "score",
             "props": {
               "label": "成绩",
               "min": 0,
-              "max": 100
+              "max": 100,
+              "field": "score"
             }
           },
           {
             "type": "r-text",
-            "field": "grade",
             "props": {
-              "label": "等级"
+              "label": "等级",
+              "field": "grade"
             }
           },
           {
             "type": "r-text",
-            "field": "examDate",
             "props": {
-              "label": "考试日期"
+              "label": "考试日期",
+              "field": "examDate"
             }
           },
           {
             "type": "r-text",
-            "field": "teacher",
             "props": {
-              "label": "授课教师"
+              "label": "授课教师",
+              "field": "teacher"
             }
           }
-        ]
+        ],
+        "props": {
+          "labelWidth": "100px",
+          "dataKey": "Students@currentRow"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "page-container",
+      "style": {
+        "padding": "20px"
+      }
+    }
   }
 ]

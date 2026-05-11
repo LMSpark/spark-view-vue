@@ -84,7 +84,29 @@ describe('PageFileDocument primitives', () => {
       expect(doc.parseError.value).not.toBeNull()
     })
 
-    it('migrates legacy props.id to top-level ids when loading rule text', () => {
+    it('uses SparkNodeTree.fromJson to fill missing ids for edit addressing', () => {
+      const docs = createPageDocuments()
+      const doc = docs['rule.json']
+
+      doc.loadFromText(`${JSON.stringify([
+        {
+          type: 'r-section',
+          children: [
+            { type: 'r-text', props: { field: 'name' } },
+          ],
+        },
+      ], null, 2)}\n`)
+
+      expect(doc.parseError.value).toBeNull()
+      const root = doc.model.value!.toJSON()
+      const section = root.children?.[0] as { id?: string; children?: unknown[] }
+      const text = section.children?.[0] as { id?: string }
+      expect(root.id).toBe('page__0')
+      expect(section.id).toBe('r-section__0_0')
+      expect(text.id).toBe('r-text__0_0_0')
+    })
+
+    it('rejects legacy props.id when loading rule text', () => {
       const docs = createPageDocuments()
       const doc = docs['rule.json']
 
@@ -92,11 +114,8 @@ describe('PageFileDocument primitives', () => {
         { type: 'r-section', props: { id: 'legacy-section', title: '假期管理' } },
       ], null, 2)}\n`)
 
-      expect(doc.parseError.value).toBeNull()
-      const current = doc.model.value!.toJSON()
-      const first = current.children?.[0] as { id?: string; props?: Record<string, unknown> }
-      expect(first.id).toBe('legacy-section')
-      expect(first.props?.['id']).toBeUndefined()
+      expect(doc.parseError.value).toContain('props.id has been removed')
+      expect(doc.model.value).toBeNull()
     })
 
     it('replaceModel adopts an externally provided tree', () => {

@@ -1,18 +1,12 @@
 [
   {
     "type": "div",
-    "class": "nav-editor-page",
     "children": [
       {
         "type": "el-card",
-        "class": "nav-editor-toolbar-card",
-        "props": {
-          "shadow": "hover"
-        },
         "children": [
           {
             "type": "div",
-            "class": "nav-editor-panel__head",
             "children": [
               {
                 "type": "h3",
@@ -26,31 +20,26 @@
                   "按关键词、节点类型和子项布局缩小树范围；重置会重新拉取远端快照。"
                 ]
               }
-            ]
+            ],
+            "props": {
+              "class": "nav-editor-panel__head"
+            }
           },
           {
             "type": "r-form",
-            "dataKey": "EditorFilters@currentRow",
-            "props": {
-              "gridColumns": 24,
-              "gridGap": 12,
-              "labelWidth": "88px"
-            },
             "children": [
               {
                 "type": "r-toolbar",
-                "props": {
-                  "position": "top",
-                  "class": "nav-editor-toolbar__actions"
-                },
                 "children": [
                   {
                     "type": "button",
                     "children": [
                       "应用筛选"
                     ],
-                    "on": {
-                      "click": "applyTreeFilters"
+                    "props": {
+                      "on": {
+                        "click": "applyTreeFilters"
+                      }
                     }
                   },
                   {
@@ -58,8 +47,10 @@
                     "children": [
                       "重置筛选"
                     ],
-                    "on": {
-                      "click": "resetTreeFilters"
+                    "props": {
+                      "on": {
+                        "click": "resetTreeFilters"
+                      }
                     }
                   },
                   {
@@ -67,57 +58,68 @@
                     "children": [
                       "定位当前节点"
                     ],
-                    "on": {
-                      "click": "focusCurrentNode"
+                    "props": {
+                      "on": {
+                        "click": "focusCurrentNode"
+                      }
                     }
                   }
-                ]
+                ],
+                "props": {
+                  "position": "top",
+                  "class": "nav-editor-toolbar__actions"
+                }
               },
               {
                 "type": "r-text",
-                "field": "searchKeyword",
                 "props": {
                   "label": "关键词",
                   "placeholder": "标题 / 路径 / 描述",
-                  "colSpan": 10
+                  "colSpan": 10,
+                  "field": "searchKeyword"
                 }
               },
               {
                 "type": "r-select",
-                "field": "nodeKindFilter",
                 "props": {
                   "label": "节点类型",
                   "optionKey": "NodeKindFilterOptions@rows",
                   "optionLabelField": "label",
                   "optionValueField": "value",
-                  "colSpan": 7
+                  "colSpan": 7,
+                  "field": "nodeKindFilter"
                 }
               },
               {
                 "type": "r-select",
-                "field": "placementFilter",
                 "props": {
                   "label": "子项布局",
                   "optionKey": "PlacementFilterOptions@rows",
                   "optionLabelField": "label",
                   "optionValueField": "value",
-                  "colSpan": 7
+                  "colSpan": 7,
+                  "field": "placementFilter"
                 }
               }
-            ]
+            ],
+            "props": {
+              "gridColumns": 24,
+              "gridGap": 12,
+              "labelWidth": "88px",
+              "dataKey": "EditorFilters@currentRow"
+            }
           }
-        ]
+        ],
+        "props": {
+          "shadow": "hover",
+          "class": "nav-editor-toolbar-card"
+        }
       },
       {
         "type": "el-card",
-        "class": "nav-editor-panel nav-editor-panel--tree",
-        "props": {
-          "shadow": "never"
-        },
         "children": [
           {
             "type": "div",
-            "class": "nav-editor-panel__head",
             "children": [
               {
                 "type": "h3",
@@ -131,16 +133,33 @@
                   "左侧负责树结构浏览、拖拽、增删，右侧直接编辑当前节点属性。"
                 ]
               }
-            ]
+            ],
+            "props": {
+              "class": "nav-editor-panel__head"
+            }
           },
           {
             "type": "div",
-            "class": "nav-editor-tree-shell",
             "children": [
               {
                 "type": "r-tree",
                 "id": "treeEditor",
-                "dataKey": "NavigationNodes@rows",
+                "children": [
+                  {
+                    "type": "r-tree-node-summary",
+                    "props": {
+                      "nameField": "title",
+                      "typeField": "nodeKind",
+                      "metaField": "path",
+                      "extraField": "childPlacement",
+                      "showType": true,
+                      "showMeta": true,
+                      "showExtra": true,
+                      "showStatus": false,
+                      "showOwner": false
+                    }
+                  }
+                ],
                 "props": {
                   "node-key": "id",
                   "highlight-current": true,
@@ -179,8 +198,10 @@
                         "children": [
                           "刷新导航树"
                         ],
-                        "on": {
-                          "click": "reloadTreeFromServer"
+                        "props": {
+                          "on": {
+                            "click": "reloadTreeFromServer"
+                          }
                         }
                       },
                       {
@@ -188,8 +209,10 @@
                         "children": [
                           "展开当前节点"
                         ],
-                        "on": {
-                          "click": "focusCurrentNode"
+                        "props": {
+                          "on": {
+                            "click": "focusCurrentNode"
+                          }
                         }
                       }
                     ]
@@ -260,28 +283,13 @@
                     "children": [
                       {
                         "type": "el-card",
-                        "class": "nav-editor-panel",
-                        "props": {
-                          "shadow": "never",
-                          "header": "节点属性"
-                        },
                         "children": [
                           {
                             "type": "r-form",
                             "id": "nodeEditorForm",
-                            "dataKey": "NavigationNodes@currentRow",
-                            "props": {
-                              "gridColumns": 24,
-                              "gridGap": 18,
-                              "labelWidth": "108px"
-                            },
                             "children": [
                               {
                                 "type": "r-toolbar",
-                                "props": {
-                                  "position": "top",
-                                  "class": "nav-editor-toolbar__actions"
-                                },
                                 "children": [
                                   {
                                     "type": "r-button",
@@ -302,8 +310,10 @@
                                     "children": [
                                       "重新拉取树"
                                     ],
-                                    "on": {
-                                      "click": "reloadTreeFromServer"
+                                    "props": {
+                                      "on": {
+                                        "click": "reloadTreeFromServer"
+                                      }
                                     }
                                   },
                                   {
@@ -316,159 +326,169 @@
                                       "emptyMessage": "请先选中一个节点"
                                     }
                                   }
-                                ]
+                                ],
+                                "props": {
+                                  "position": "top",
+                                  "class": "nav-editor-toolbar__actions"
+                                }
                               },
                               {
                                 "type": "r-text",
-                                "field": "title",
                                 "props": {
                                   "label": "标题",
-                                  "colSpan": 24
+                                  "colSpan": 24,
+                                  "field": "title"
                                 }
                               },
                               {
                                 "type": "r-text",
-                                "field": "id",
                                 "props": {
                                   "label": "节点 ID",
-                                  "colSpan": 12
+                                  "colSpan": 12,
+                                  "field": "id"
                                 }
                               },
                               {
                                 "type": "r-text",
-                                "field": "parentId",
                                 "props": {
                                   "label": "父节点 ID",
-                                  "colSpan": 12
+                                  "colSpan": 12,
+                                  "field": "parentId"
                                 }
                               },
                               {
                                 "type": "r-text",
-                                "field": "icon",
                                 "props": {
                                   "label": "图标",
-                                  "colSpan": 12
+                                  "colSpan": 12,
+                                  "field": "icon"
                                 }
                               },
                               {
                                 "type": "r-number",
-                                "field": "sortOrder",
                                 "props": {
                                   "label": "排序",
-                                  "colSpan": 12
+                                  "colSpan": 12,
+                                  "field": "sortOrder"
                                 }
                               },
                               {
                                 "type": "r-radio",
-                                "field": "nodeKind",
                                 "props": {
                                   "label": "节点类型",
                                   "buttonStyle": true,
                                   "optionKey": "NodeKindOptions@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
-                                  "colSpan": 24
+                                  "colSpan": 24,
+                                  "field": "nodeKind"
                                 }
                               },
                               {
                                 "type": "r-text",
-                                "field": "path",
                                 "props": {
                                   "label": "路径 / URL",
-                                  "colSpan": 24
+                                  "colSpan": 24,
+                                  "field": "path"
                                 }
                               },
                               {
                                 "type": "r-select",
-                                "field": "linkTarget",
                                 "props": {
                                   "label": "链接打开方式",
                                   "optionKey": "LinkTargetOptions@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
-                                  "colSpan": 12
+                                  "colSpan": 12,
+                                  "field": "linkTarget"
                                 }
                               },
                               {
                                 "type": "r-select",
-                                "field": "childPlacement",
                                 "props": {
                                   "label": "子项布局",
                                   "optionKey": "ChildPlacementOptions@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
-                                  "colSpan": 12
+                                  "colSpan": 12,
+                                  "field": "childPlacement"
                                 }
                               },
                               {
                                 "type": "r-switch",
-                                "field": "dividerAfter",
                                 "props": {
                                   "label": "后置分隔线",
-                                  "colSpan": 8
+                                  "colSpan": 8,
+                                  "field": "dividerAfter"
                                 }
                               },
                               {
                                 "type": "r-switch",
-                                "field": "hidden",
                                 "props": {
                                   "label": "隐藏",
-                                  "colSpan": 8
+                                  "colSpan": 8,
+                                  "field": "hidden"
                                 }
                               },
                               {
                                 "type": "r-switch",
-                                "field": "disabled",
                                 "props": {
                                   "label": "禁用",
-                                  "colSpan": 8
+                                  "colSpan": 8,
+                                  "field": "disabled"
                                 }
                               },
                               {
                                 "type": "r-text",
-                                "field": "refId",
                                 "props": {
                                   "label": "引用节点 ID",
-                                  "colSpan": 24
+                                  "colSpan": 24,
+                                  "field": "refId"
                                 }
                               },
                               {
                                 "type": "r-textarea",
-                                "field": "description",
                                 "props": {
                                   "label": "描述",
                                   "rows": 4,
-                                  "colSpan": 24
+                                  "colSpan": 24,
+                                  "field": "description"
                                 }
                               }
-                            ]
+                            ],
+                            "props": {
+                              "gridColumns": 24,
+                              "gridGap": 18,
+                              "labelWidth": "108px",
+                              "dataKey": "NavigationNodes@currentRow"
+                            }
                           }
-                        ]
+                        ],
+                        "props": {
+                          "shadow": "never",
+                          "header": "节点属性",
+                          "class": "nav-editor-panel"
+                        }
                       }
                     ]
-                  }
-                },
-                "children": [
-                  {
-                    "type": "r-tree-node-summary",
-                    "props": {
-                      "nameField": "title",
-                      "typeField": "nodeKind",
-                      "metaField": "path",
-                      "extraField": "childPlacement",
-                      "showType": true,
-                      "showMeta": true,
-                      "showExtra": true,
-                      "showStatus": false,
-                      "showOwner": false
-                    }
-                  }
-                ]
+                  },
+                  "dataKey": "NavigationNodes@rows"
+                }
               }
-            ]
+            ],
+            "props": {
+              "class": "nav-editor-tree-shell"
+            }
           }
-        ]
+        ],
+        "props": {
+          "shadow": "never",
+          "class": "nav-editor-panel nav-editor-panel--tree"
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "nav-editor-page"
+    }
   }
 ]

@@ -1,9 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-page-header",
@@ -12,22 +9,18 @@
           "content": "查看团队成员在各项目中的分配情况"
         }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "el-row",
-    "props": {
-      "gutter": 16
-    },
-    "style": {
-      "marginBottom": "16px"
-    },
     "children": [
       {
         "type": "el-col",
-        "props": {
-          "span": 8
-        },
         "children": [
           {
             "type": "el-statistic",
@@ -36,13 +29,13 @@
               "value": 5
             }
           }
-        ]
+        ],
+        "props": {
+          "span": 8
+        }
       },
       {
         "type": "el-col",
-        "props": {
-          "span": 8
-        },
         "children": [
           {
             "type": "el-statistic",
@@ -51,13 +44,13 @@
               "value": 8
             }
           }
-        ]
+        ],
+        "props": {
+          "span": 8
+        }
       },
       {
         "type": "el-col",
-        "props": {
-          "span": 8
-        },
         "children": [
           {
             "type": "el-statistic",
@@ -67,18 +60,21 @@
               "suffix": "%"
             }
           }
-        ]
+        ],
+        "props": {
+          "span": 8
+        }
       }
-    ]
+    ],
+    "props": {
+      "gutter": 16,
+      "style": {
+        "marginBottom": "16px"
+      }
+    }
   },
   {
     "type": "r-table",
-    "dataKey": "ResourceAlloc@rows",
-    "props": {
-      "border": true,
-      "stripe": true,
-      "highlightCurrentRow": true
-    },
     "children": [
       {
         "type": "el-table-column",
@@ -146,6 +142,12 @@
           "fixed": "right"
         }
       }
-    ]
+    ],
+    "props": {
+      "border": true,
+      "stripe": true,
+      "highlightCurrentRow": true,
+      "dataKey": "ResourceAlloc@rows"
+    }
   }
 ]

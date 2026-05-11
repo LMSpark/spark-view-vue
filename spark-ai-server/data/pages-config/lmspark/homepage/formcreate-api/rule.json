@@ -1,7 +1,6 @@
 [
   {
     "type": "div",
-    "class": "form-card-test-page",
     "children": [
       {
         "type": "h2",
@@ -17,29 +16,15 @@
       },
       {
         "type": "r-row",
-        "props": {
-          "gutter": 16
-        },
         "children": [
           {
             "type": "r-col",
-            "props": {
-              "span": 14,
-              "xs": 24
-            },
             "children": [
               {
                 "type": "r-card",
-                "props": {
-                  "header": "表单测试"
-                },
                 "children": [
                   {
                     "type": "r-form",
-                    "props": {
-                      "dataKey": "profile@currentRow",
-                      "labelWidth": "100px"
-                    },
                     "children": [
                       {
                         "type": "r-text",
@@ -91,30 +76,31 @@
                           "rows": 3
                         }
                       }
-                    ]
+                    ],
+                    "props": {
+                      "dataKey": "profile@currentRow",
+                      "labelWidth": "100px"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "header": "表单测试"
+                }
               }
-            ]
+            ],
+            "props": {
+              "span": 14,
+              "xs": 24
+            }
           },
           {
             "type": "r-col",
-            "props": {
-              "span": 10,
-              "xs": 24
-            },
             "children": [
               {
                 "type": "r-card",
-                "props": {
-                  "header": "卡片测试"
-                },
                 "children": [
                   {
                     "type": "r-detail",
-                    "props": {
-                      "dataKey": "profile@currentRow"
-                    },
                     "children": [
                       {
                         "type": "r-text",
@@ -144,14 +130,30 @@
                           "label": "启用"
                         }
                       }
-                    ]
+                    ],
+                    "props": {
+                      "dataKey": "profile@currentRow"
+                    }
                   }
-                ]
+                ],
+                "props": {
+                  "header": "卡片测试"
+                }
               }
-            ]
+            ],
+            "props": {
+              "span": 10,
+              "xs": 24
+            }
           }
-        ]
+        ],
+        "props": {
+          "gutter": 16
+        }
       }
-    ]
+    ],
+    "props": {
+      "class": "form-card-test-page"
+    }
   }
 ]

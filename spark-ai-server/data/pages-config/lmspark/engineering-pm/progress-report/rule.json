@@ -1,12 +1,6 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px",
-      "display": "flex",
-      "justifyContent": "space-between",
-      "alignItems": "center"
-    },
     "children": [
       {
         "type": "el-page-header",
@@ -17,80 +11,116 @@
       },
       {
         "type": "el-button",
+        "children": [
+          "导出报告"
+        ],
         "props": {
           "type": "primary",
           "icon": "Printer"
-        },
-        "children": ["导出报告"]
+        }
       }
-    ]
+    ],
+    "props": {
+      "style": {
+        "marginBottom": "16px",
+        "display": "flex",
+        "justifyContent": "space-between",
+        "alignItems": "center"
+      }
+    }
   },
   {
     "type": "el-card",
-    "props": { "header": "项目列表（点击选择项目）", "style": "margin-bottom:16px" },
     "children": [
       {
         "type": "r-table",
-        "dataKey": "Projects@rows",
+        "children": [
+          {
+            "type": "r-text",
+            "props": {
+              "label": "项目名称",
+              "minWidth": 200,
+              "field": "name"
+            }
+          },
+          {
+            "type": "r-text",
+            "props": {
+              "label": "状态",
+              "width": 100,
+              "field": "status"
+            }
+          }
+        ],
         "props": {
           "border": true,
           "stripe": true,
-          "highlightCurrentRow": true
-        },
-        "children": [
-          {
-            "type": "r-text",
-            "field": "name",
-            "props": { "label": "项目名称", "minWidth": 200 }
-          },
-          {
-            "type": "r-text",
-            "field": "status",
-            "props": { "label": "状态", "width": 100 }
-          }
-        ]
+          "highlightCurrentRow": true,
+          "dataKey": "Projects@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "header": "项目列表（点击选择项目）",
+      "style": "margin-bottom:16px"
+    }
   },
   {
     "type": "el-card",
-    "props": { "header": "周进度明细" },
     "children": [
       {
         "type": "r-table",
-        "dataKey": "WeeklyProgress@rows",
-        "props": {
-          "border": true,
-          "stripe": true
-        },
         "children": [
           {
             "type": "r-text",
-            "field": "week",
-            "props": { "label": "周次", "width": 100 }
+            "props": {
+              "label": "周次",
+              "width": 100,
+              "field": "week"
+            }
           },
           {
             "type": "r-text",
-            "field": "planned",
-            "props": { "label": "计划完成", "minWidth": 180 }
+            "props": {
+              "label": "计划完成",
+              "minWidth": 180,
+              "field": "planned"
+            }
           },
           {
             "type": "r-text",
-            "field": "actual",
-            "props": { "label": "实际完成", "width": 120 }
+            "props": {
+              "label": "实际完成",
+              "width": 120,
+              "field": "actual"
+            }
           },
           {
             "type": "r-text",
-            "field": "deviation",
-            "props": { "label": "偏差", "width": 100 }
+            "props": {
+              "label": "偏差",
+              "width": 100,
+              "field": "deviation"
+            }
           },
           {
             "type": "r-text",
-            "field": "risks",
-            "props": { "label": "风险备注", "minWidth": 200 }
+            "props": {
+              "label": "风险备注",
+              "minWidth": 200,
+              "field": "risks"
+            }
           }
-        ]
+        ],
+        "props": {
+          "border": true,
+          "stripe": true,
+          "dataKey": "WeeklyProgress@rows"
+        }
       }
-    ]
+    ],
+    "props": {
+      "header": "周进度明细"
+    }
   }
 ]

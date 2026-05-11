@@ -9,7 +9,11 @@ import { computed, ref, shallowRef, triggerRef } from 'vue'
 import { SparkNodeTree, type SparkNode } from '@spark-view/spark-component'
 import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
-import { normalizeRuleNode } from '@spark-view/spark-page-config'
+import {
+  PAGE_CONFIG_FILE_NAMES,
+  normalizeRuleNode,
+  type PageConfigFileName,
+} from '@spark-view/spark-page-config'
 
 function parsePageDataText(rawText: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(rawText)
@@ -42,13 +46,8 @@ export function canonicalizePageDataJson(rawText: string): {
   return canonicalizePageDataValue(parsePageDataText(rawText))
 }
 
-export const PAGE_FILE_NAMES = [
-  'rule.json',
-  'pagedata.json',
-  'script.js',
-  'style.css',
-] as const
-export type PageFileName = typeof PAGE_FILE_NAMES[number]
+export const PAGE_FILE_NAMES = PAGE_CONFIG_FILE_NAMES
+export type PageFileName = PageConfigFileName
 
 export type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 
