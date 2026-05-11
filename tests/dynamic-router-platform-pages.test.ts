@@ -3,6 +3,7 @@ import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { createDynamicRouter } from '../packages/spark-app/src/router/dynamic'
+import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',
@@ -124,6 +125,7 @@ describe('DynamicRouter platform pages', () => {
     const route = router.getRoutes().find(item => item.name === 'nav-06c56d10-4ff6-4c4d-a6ce-772536592c75')
     expect(route?.meta['type']).toBe('config-page')
     expect(route?.meta['pageId']).toBe('tree-demo')
+    expect(route?.props['default']).toMatchObject({ pageId: 'tree-demo' })
   })
 
   it('keeps ref nodes on their stable host route even when node.path points at the target page', async () => {
@@ -349,5 +351,53 @@ describe('DynamicRouter platform pages', () => {
     expect(routes).toHaveLength(1)
     expect(routes[0]?.name).toBe('nav-06c56d10-4ff6-4c4d-a6ce-772536592c75')
     expect(router.getRoutes().some(item => item.name === 'stale-cross-project-ref')).toBe(false)
+  })
+
+  it('replaces stale same-name cross-project host route before registering refs', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/t/:tenantId/:projectId/__ref/:refNodeId',
+          name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
+          component: DummyPage,
+          meta: {
+            type: 'config-page',
+            pageId: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
+          },
+        },
+      ],
+    })
+    const loadNavigation = vi.fn().mockResolvedValue({
+      id: 'tenant-root',
+      title: 'tenant-root',
+      childPlacement: 'header',
+      children: [
+        {
+          id: '06c56d10-4ff6-4c4d-a6ce-772536592c75',
+          title: 'ref page',
+          nodeKind: 'ref',
+          refId: 'project-list',
+          refPath: '@app:engineering-pm/project-list',
+          refProjectId: 'engineering-pm',
+          children: [],
+        },
+      ],
+    } satisfies AppNavRoot)
+
+    const dynamicRouter = createDynamicRouter({
+      router,
+      configLoader: {} as never,
+      pageComponent: DummyPage,
+      loadNavigation,
+      isAuthenticated: () => true,
+      tenantPathPrefix: '/t/:tenantId/:projectId',
+    })
+
+    await expect(dynamicRouter.registerRoutes()).resolves.toBeUndefined()
+
+    const hostRoute = router.getRoutes().find(item => item.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
+    expect(hostRoute?.meta['type']).toBe('cross-project-ref')
+    expect(hostRoute?.meta['crossProjectRefHost']).toBe(true)
   })
 })

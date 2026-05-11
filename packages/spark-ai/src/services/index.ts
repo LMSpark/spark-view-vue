@@ -3,11 +3,6 @@ export {
 } from './page-design'
 
 export type {
-  LoadFromTextOptions,
-  PageDocumentRegistry,
-  PageFileDocument,
-  PageFileLoadState,
-  PageFileName,
   PageDesignEditPhase,
   PageDesignEditHost,
   PageDesignEditState,

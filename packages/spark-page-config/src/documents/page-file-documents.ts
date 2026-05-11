@@ -1,19 +1,71 @@
 /**
- * PageDesign 页面四文件编辑文档注册表。
+ * 页面四文件编辑文档注册表。
  *
  * rule.json / pagedata.json 使用领域模型作为真源，script.js / style.css 使用文本模型作为真源；
  * 设计时编辑、预览和版本保存都通过同一组 PageFileDocument 读写。
  */
-import type { ComputedRef, Ref, ShallowRef } from 'vue'
-import { computed, ref, shallowRef, triggerRef } from 'vue'
-import { SparkNodeTree, type SparkNode } from '@spark-view/spark-component'
 import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
-import {
-  PAGE_CONFIG_FILE_NAMES,
-  normalizeRuleNode,
-  type PageConfigFileName,
-} from '@spark-view/spark-page-config'
+import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName } from '../types'
+import { SparkNodeTree } from '../spark-node-tree'
+import type { SparkNode } from '../spark-node'
+
+export interface PageConfigValueRef<T> {
+  value: T
+}
+
+export interface PageConfigComputedRef<T> {
+  readonly value: T
+}
+
+export type PageFileDocumentListener = () => void
+
+function createValueRef<T>(initialValue: T, onChange?: PageFileDocumentListener): PageConfigValueRef<T> {
+  let current = initialValue
+  return {
+    get value() {
+      return current
+    },
+    set value(next) {
+      if (Object.is(current, next)) return
+      current = next
+      onChange?.()
+    },
+  }
+}
+
+function createComputedValue<T>(getter: () => T): PageConfigComputedRef<T> {
+  return {
+    get value() {
+      return getter()
+    },
+  }
+}
+
+function createDocumentChangeNotifier(): {
+  revision: PageConfigValueRef<number>
+  notify: () => void
+  subscribe: (listener: PageFileDocumentListener) => () => void
+} {
+  const revision = createValueRef(0)
+  const listeners = new Set<PageFileDocumentListener>()
+
+  function notify(): void {
+    revision.value += 1
+    for (const listener of listeners) {
+      listener()
+    }
+  }
+
+  function subscribe(listener: PageFileDocumentListener): () => void {
+    listeners.add(listener)
+    return () => {
+      listeners.delete(listener)
+    }
+  }
+
+  return { revision, notify, subscribe }
+}
 
 function parsePageDataText(rawText: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(rawText)
@@ -57,13 +109,15 @@ export interface LoadFromTextOptions {
 
 export interface PageFileDocument<TModel = unknown> {
   readonly name: PageFileName
-  readonly model: ShallowRef<TModel | null>
-  readonly text: ComputedRef<string>
-  readonly savedText: Ref<string>
-  readonly loadState: Ref<PageFileLoadState>
-  readonly parseError: Ref<string | null>
-  readonly canUndo: ComputedRef<boolean>
-  readonly canRedo: ComputedRef<boolean>
+  readonly model: PageConfigValueRef<TModel | null>
+  readonly text: PageConfigComputedRef<string>
+  readonly savedText: PageConfigValueRef<string>
+  readonly loadState: PageConfigValueRef<PageFileLoadState>
+  readonly parseError: PageConfigValueRef<string | null>
+  readonly canUndo: PageConfigComputedRef<boolean>
+  readonly canRedo: PageConfigComputedRef<boolean>
+  readonly revision: PageConfigValueRef<number>
+  subscribe(listener: PageFileDocumentListener): () => void
   loadFromText(text: string, options?: LoadFromTextOptions): void
   setText(text: string): void
   mutate(fn: (model: TModel) => void): boolean
@@ -115,27 +169,28 @@ function createModelBackedDocument<TModel>(
   name: 'rule.json' | 'pagedata.json',
   options: ModelDocumentFactoryOptions<TModel>,
 ): PageFileDocument<TModel> {
-  const model = shallowRef<TModel | null>(null)
-  const savedText = ref('')
-  const loadState = ref<PageFileLoadState>('idle')
-  const parseError = ref<string | null>(null)
+  const changes = createDocumentChangeNotifier()
+  const model = createValueRef<TModel | null>(null, changes.notify)
+  const savedText = createValueRef('', changes.notify)
+  const loadState = createValueRef<PageFileLoadState>('idle', changes.notify)
+  const parseError = createValueRef<string | null>(null, changes.notify)
 
   function getCurrentModel(): TModel | null {
-    return model.value as TModel | null
+    return model.value
   }
 
-  const text = computed(() => {
+  const text = createComputedValue(() => {
     const currentModel = getCurrentModel()
     if (currentModel === null) return ''
     return options.toText(currentModel)
   })
 
-  const canUndo = computed(() => {
+  const canUndo = createComputedValue(() => {
     const currentModel = getCurrentModel()
     return currentModel === null ? false : options.canUndo(currentModel)
   })
 
-  const canRedo = computed(() => {
+  const canRedo = createComputedValue(() => {
     const currentModel = getCurrentModel()
     return currentModel === null ? false : options.canRedo(currentModel)
   })
@@ -143,7 +198,7 @@ function createModelBackedDocument<TModel>(
   function applyParsedResult(result: ModelParseResult<TModel>): void {
     model.value = result.model
     if (result.model !== null && result.touchModelRef) {
-      triggerRef(model)
+      changes.notify()
     }
     parseError.value = null
   }
@@ -187,7 +242,7 @@ function createModelBackedDocument<TModel>(
     const currentModel = getCurrentModel()
     if (currentModel === null) return false
     fn(currentModel)
-    triggerRef(model)
+    changes.notify()
     return true
   }
 
@@ -195,7 +250,7 @@ function createModelBackedDocument<TModel>(
     const currentModel = getCurrentModel()
     if (currentModel === null) return false
     if (!options.undo(currentModel)) return false
-    triggerRef(model)
+    changes.notify()
     return true
   }
 
@@ -203,7 +258,7 @@ function createModelBackedDocument<TModel>(
     const currentModel = getCurrentModel()
     if (currentModel === null) return false
     if (!options.redo(currentModel)) return false
-    triggerRef(model)
+    changes.notify()
     return true
   }
 
@@ -223,7 +278,7 @@ function createModelBackedDocument<TModel>(
     parseError.value = null
     loadState.value = next === null ? 'idle' : 'loaded'
     if (next !== null) {
-      triggerRef(model)
+      changes.notify()
     }
   }
 
@@ -236,6 +291,8 @@ function createModelBackedDocument<TModel>(
     parseError,
     canUndo,
     canRedo,
+    revision: changes.revision,
+    subscribe: changes.subscribe,
     loadFromText,
     setText,
     mutate,
@@ -247,25 +304,9 @@ function createModelBackedDocument<TModel>(
   }
 }
 
-function parseRuleChildren(rawText: string): SparkNode[] {
-  if (!rawText.trim()) return []
-  const parsed = JSON.parse(rawText) as unknown
-  if (Array.isArray(parsed)) {
-    return parsed.map(node => normalizeRuleNode(node) as unknown as SparkNode)
-  }
-  if (
-    typeof parsed === 'object'
-    && parsed !== null
-    && Array.isArray((parsed as Record<string, unknown>)['children'])
-  ) {
-    return ((parsed as Record<string, unknown>)['children'] as unknown[])
-      .map(node => normalizeRuleNode(node) as unknown as SparkNode)
-  }
-  throw new Error('rule.json 必须是数组或含 children 的根对象')
-}
-
 function serializeRuleChildren(children: SparkNode[]): string {
-  return `${JSON.stringify(children, null, 2)}\n`
+  const rootValue = children.length === 1 ? children[0] : children
+  return `${JSON.stringify(rootValue, null, 2)}\n`
 }
 
 function readChildrenFromTree(tree: SparkNodeTree): SparkNode[] {
@@ -275,8 +316,10 @@ function readChildrenFromTree(tree: SparkNodeTree): SparkNode[] {
 
 function createRuleDocument(): PageFileDocument<SparkNodeTree> {
   function parseRule(rawText: string, current: SparkNodeTree | null, preserveHistory: boolean): ModelParseResult<SparkNodeTree> {
-    const children = parseRuleChildren(rawText)
-    const normalizedRoot = SparkNodeTree.fromJson({ type: 'page', children }).toJSON()
+    if (!rawText.trim()) {
+      return { model: null, touchModelRef: false }
+    }
+    const normalizedRoot = SparkNodeTree.fromRuleJson(rawText).toJSON()
     if (current) {
       if (preserveHistory) {
         current.replaceRoot(normalizedRoot)
@@ -337,19 +380,19 @@ function createPageDataDocument(): PageFileDocument<DataSetCrudTool> {
 const HISTORY_LIMIT = 100
 
 function createTextDocument(name: 'script.js' | 'style.css'): PageFileDocument<string> {
-  const model = shallowRef<string | null>(null)
-  const savedText = ref('')
-  const loadState = ref<PageFileLoadState>('idle')
-  const parseError = ref<string | null>(null)
+  const changes = createDocumentChangeNotifier()
+  const model = createValueRef<string | null>(null, changes.notify)
+  const savedText = createValueRef('', changes.notify)
+  const loadState = createValueRef<PageFileLoadState>('idle', changes.notify)
+  const parseError = createValueRef<string | null>(null, changes.notify)
   const history = new SnapshotHistory<string>(HISTORY_LIMIT)
-  const text = computed(() => model.value ?? '')
-  const canUndo = computed(() => model.value !== null && history.canUndo)
-  const canRedo = computed(() => model.value !== null && history.canRedo)
+  const text = createComputedValue(() => model.value ?? '')
+  const canUndo = createComputedValue(() => model.value !== null && history.canUndo)
+  const canRedo = createComputedValue(() => model.value !== null && history.canRedo)
 
   function setLoadedText(nextText: string): void {
     model.value = nextText
     loadState.value = 'loaded'
-    triggerRef(model)
   }
 
   function pushSnapshot(next: string): void {
@@ -408,7 +451,6 @@ function createTextDocument(name: 'script.js' | 'style.css'): PageFileDocument<s
     savedText.value = ''
     parseError.value = null
     loadState.value = 'idle'
-    triggerRef(model)
   }
 
   function replaceModel(next: string | null): void {
@@ -432,6 +474,8 @@ function createTextDocument(name: 'script.js' | 'style.css'): PageFileDocument<s
     parseError,
     canUndo,
     canRedo,
+    revision: changes.revision,
+    subscribe: changes.subscribe,
     loadFromText,
     setText,
     mutate,

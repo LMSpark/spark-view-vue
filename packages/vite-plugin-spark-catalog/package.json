@@ -18,7 +18,7 @@
     "dependencies": {
         "@spark-view/spark-utils": "workspace:*",
         "glob": "^13.0.6",
-        "vue-component-meta": "^3.2.6"
+        "vue-component-meta": "3.2.6"
     },
     "peerDependencies": {
         "typescript": ">=5.0.0",

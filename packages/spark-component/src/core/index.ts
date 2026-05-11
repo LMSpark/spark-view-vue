@@ -28,25 +28,6 @@ export type {
   LoggerApi,
 } from './types.js'
 
-export type {
-  SparkNodeTreeRootParams,
-  SparkNodeTreeFromJsonOptions,
-  SparkNodeTreeLookupParams,
-  SparkNodeTreeChildrenParams,
-  SparkNodeTreeAddParams,
-  SparkNodeTreeSetPropsParams,
-  SparkNodeTreeReplaceParams,
-  SparkNodeTreeRemoveParams,
-  SparkNodeLocation,
-  SparkNodeAddResult,
-  SparkNodeSetPropsResult,
-  SparkNodeReplaceResult,
-  SparkNodeRemoveResult,
-  SparkNodeFindByTypeParams,
-  SparkNodeFindByTypeMatch,
-  SparkNodeFindByTypeResult,
-} from './spark-node-tree.js'
-
 export { SPARK_REGISTRY_KEY } from '../system/keys.js'
 
 export {
@@ -58,8 +39,6 @@ export {
   isSparkNode,
   getSparkNodeChildren,
 } from './types.js'
-
-export { SparkNodeTree } from './spark-node-tree.js'
 
 export type {
   IAppServicesCapability,

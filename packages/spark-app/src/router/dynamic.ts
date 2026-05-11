@@ -10,7 +10,7 @@ import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
 import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
-import { CrossProjectRefPage } from './cross-project-ref-page'
+import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 import { InvalidSystemPage } from './invalid-system-page'
@@ -194,17 +194,30 @@ export class DynamicRouter {
     if (skipTenantPrefix) return
 
     const routePath = this.addTenantPrefix('/__ref/:refNodeId')
-    if (this.router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)) {
+    const existing = this.router.getRoutes().find(route => route.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
+    const existingProps = existing?.props as Record<string, unknown> | undefined
+    if (existing?.meta['crossProjectRefHost'] === true && typeof existingProps?.['default'] === 'function') {
       return
+    }
+    if (existing?.name !== undefined) {
+      this.router.removeRoute(existing.name)
+      this.registeredRoutes.delete(existing.path)
+      if (shouldLogDynamicRouteDetails()) {
+        routerLogger.debug('移除旧跨项目引用 host 路由', {
+          path: existing.path,
+          previousType: existing.meta['type'],
+        })
+      }
     }
 
     this.router.addRoute({
       path: routePath,
       name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
       component: CrossProjectRefPage,
-      props: { configLoader: this.configLoader },
+      props: createCrossProjectRefRouteProps(this.configLoader),
       meta: {
         type: 'cross-project-ref',
+        crossProjectRefHost: true,
       },
     })
     this.registeredRoutes.add(routePath)
@@ -443,7 +456,7 @@ export class DynamicRouter {
               path: routePath,
               name: routeName,
               component: CrossProjectRefPage,
-              props: { configLoader: this.configLoader },
+              props: createCrossProjectRefRouteProps(this.configLoader),
               meta: {
                 type: 'cross-project-ref',
                 pageId,
@@ -524,7 +537,7 @@ export class DynamicRouter {
           path: routePath,
           name: routeName,
           component: this.pageComponent,
-          props: { configLoader: this.configLoader },
+          props: { configLoader: this.configLoader, pageId },
           meta: {
             type: 'config-page',
             pageId,

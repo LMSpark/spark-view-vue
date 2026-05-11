@@ -147,7 +147,7 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 列名→列定义缓存 */
   private _columnMap?: Map<string, DataColumn>
 
-  /** 所属 DataTable（赋值时自动重编译计算列）。返回 null 而非抛出（Vue reactive proxy 安全） */
+  /** 所属 DataTable（赋值时自动重编译计算列）。未 attach 时返回 null，便于任意响应式代理安全读取。 */
   get dataTable(): DataTable | null {
     return this._dataTable
   }

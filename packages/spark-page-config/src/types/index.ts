@@ -68,7 +68,7 @@ export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
 
 export interface PageConfigFileLoadOptions {
   /**
-   * 跳过本地缓存，强制重新请求后端文件接口。
+   * 跳过客户端缓存，强制重新请求后端文件接口。
    */
   forceReload?: boolean
 }
@@ -85,19 +85,22 @@ export interface PageConfig extends PageConfigFiles {
  */
 export interface ConfigLoaderOptions {
   /**
-   * 配置源类型
-  * - 'local': 从本地 pages-config 静态目录加载
-  * - 'remote': 从服务器 pages-config API 加载
-   */
-  source: 'local' | 'remote'
-  
-  /**
-   * 远程 API 基础路径
+   * 远程 API 基础路径。
+   *
+   * 用于 DataSet、跨项目引用等共享 HTTP client，通常为 `/api`。
    */
   apiBaseUrl?: string
+
+  /**
+   * 页面配置四文件 API 基础路径。
+   *
+   * 必须指向 `.../pages-config`，用于 rule.json / pagedata.json / script.js / style.css。
+   * 多租户项目下应传入 `/api/tenants/{tenantId}/projects/{projectId}/pages-config`。
+   */
+  pagesConfigBaseUrl?: string
   
   /**
-   * FileLoader 缓存存储方式（本地模式使用）
+   * FileLoader 客户端缓存存储方式
    * @default 'localStorage'
    */
   fileStorage?: 'localStorage' | 'sessionStorage' | 'memory'
@@ -128,7 +131,7 @@ export interface ConfigLoadResult<T = unknown> {
   error?: string
   /** 失败原因：'not-found' 表示页面/文件不存在（404），与其他加载错误区分 */
   reason?: string
-  source?: 'local' | 'remote'
+  source?: 'remote'
   timestamp?: number
 }
 

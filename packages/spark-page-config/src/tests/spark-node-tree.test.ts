@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { SparkNode } from '../index'
-import { SparkNodeTree } from '../index'
+import { SPARK_PAGE_NODE_TYPE, SPARK_PAGE_ROOT_ID, SparkNodeTree, type SparkNode } from '@spark-view/spark-page-config'
 
 function createSparkNodeTree(): SparkNode {
   return {
@@ -102,13 +101,36 @@ describe('SparkNodeTree', () => {
     expect(column.id).toBe('el-table-column__0_1_0')
   })
 
-  it('fromJson should reject legacy props.id component ids', () => {
-    expect(() => SparkNodeTree.fromJson({
+  it('fromJson should promote legacy props.id component ids', () => {
+    const tree = SparkNodeTree.fromJson({
       type: 'page-root',
       children: [
         { type: 'r-text', props: { id: 'legacy-text' } },
       ],
-    })).toThrow(/props\.id has been removed/)
+    })
+    const child = expectNode(tree.root.children?.[0])
+    expect(child.id).toBe('legacy-text')
+    expect(child.props?.['id']).toBeUndefined()
+  })
+
+  it('fromRuleJson wraps a single rule node into the spark-page root', () => {
+    const tree = SparkNodeTree.fromRuleJson(JSON.stringify({ type: 'r-section' }))
+    const root = tree.toJSON()
+    const child = expectNode(root.children?.[0])
+
+    expect(root.type).toBe(SPARK_PAGE_NODE_TYPE)
+    expect(root.id).toBe(SPARK_PAGE_ROOT_ID)
+    expect(child.type).toBe('r-section')
+    expect(child.id).toBe('r-section__0_0')
+  })
+
+  it('fromPageChildren creates the same single page root used by the renderer', () => {
+    const tree = SparkNodeTree.fromPageChildren([{ type: 'r-text', id: 'text-1' }])
+    const root = tree.toJSON()
+
+    expect(root.type).toBe(SPARK_PAGE_NODE_TYPE)
+    expect(root.id).toBe(SPARK_PAGE_ROOT_ID)
+    expect(expectNode(root.children?.[0]).id).toBe('text-1')
   })
 
   it('fromJson should reject root-level non-struct fields', () => {

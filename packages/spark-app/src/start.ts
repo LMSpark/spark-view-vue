@@ -70,10 +70,14 @@ export interface SparkOptions {
  * 页面配置系统配置
  */
 export interface PageConfigOptions {
-  /** 配置来源 */
-  source: 'local' | 'remote'
   /** API 基础路径 */
   apiBaseUrl: string
+  /**
+   * 页面配置四文件 API 基础路径。
+   *
+   * apiBaseUrl 保持为通用 HTTP client 基址；四文件加载在多租户项目下使用该 scoped 路径。
+   */
+  pagesConfigBaseUrl?: string
   /** 请求超时时间 */
   timeout?: number
   /** 动态请求头回调（每次请求时调用，注入租户上下文） */
@@ -291,10 +295,10 @@ export async function start(options: StartOptions): Promise<void> {
       logStartDebug('配置动态路由系统...')
       
       const configLoaderOptions: Partial<ConfigLoaderOptions> = {
-        source: pageConfig.source,
         apiBaseUrl: pageConfig.apiBaseUrl
       }
       
+      if (pageConfig.pagesConfigBaseUrl !== undefined) configLoaderOptions.pagesConfigBaseUrl = pageConfig.pagesConfigBaseUrl
       if (pageConfig.timeout !== undefined) configLoaderOptions.timeout = pageConfig.timeout
       if (pageConfig.getHeaders) configLoaderOptions.getHeaders = pageConfig.getHeaders
       

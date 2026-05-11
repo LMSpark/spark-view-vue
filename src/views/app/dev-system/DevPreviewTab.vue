@@ -149,6 +149,7 @@ watch(() => props.refreshToken, () => {
 
 // 监听 4 个文档文本变化，debounce 500ms 实时重建预览（不需要重新拉服务器）
 const _docTexts = computed(() => [
+  props.state.pageFilesRevision.value,
   props.state.documents['rule.json'].text.value,
   props.state.documents['pagedata.json'].text.value,
   props.state.documents['script.js'].text.value,

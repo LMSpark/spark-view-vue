@@ -1,7 +1,7 @@
 /**
  * 配置加载器 - 统一页面配置加载
  *
- * 职责：**从哪里加载**（本地/远程 + 缓存策略）。
+ * 职责：通过后端页面配置文件 API 加载四文件，并管理客户端缓存策略。
  * 编译函数（**如何解析**）拆分到 `../compiler/index.ts`。
  *
  * ## 数据流
@@ -13,7 +13,7 @@
  *
  * ## 缓存策略
  * - FileLoader 时间戳协议（localStorage / sessionStorage / memory）
- * - 远程 API 也走 timestamp/notModified + 本地缓存
+ * - 后端 API 走 timestamp/notModified + 客户端缓存
  */
 
 import type {
@@ -28,12 +28,13 @@ import type {
   PageScriptConfig,
   PageCssConfig
 } from '../types'
+import { PAGE_CONFIG_FILE_NAMES } from '../types'
 import {
   Logger,
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, DerivedLoader, HttpClient, FileLoaderEventMap } from '@spark-view/spark-utils'
+import type { FileLoader, DerivedLoader, HttpClient, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
 
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
@@ -48,22 +49,75 @@ const MISSING_REMOTE_RULE_NODE_TYPE = 'section'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** 必填字段默认值（getHeaders 可选，不在此列） */
+export function createMissingPageConfigFileRule(pageId: string, filename: PageConfigFileName): RuleConfig[] {
+  const target = `${pageId}/${filename}`
+  const safeFilename = filename.replace(/[^a-zA-Z0-9_-]/g, '-')
+  return [{
+    type: MISSING_REMOTE_RULE_NODE_TYPE,
+    id: `missing-${safeFilename}`,
+    props: {
+      class: 'spark-page-config-missing-file',
+      style: {
+        padding: '24px',
+        border: '1px solid #f56c6c',
+        borderRadius: '6px',
+        color: '#9f1239',
+        background: '#fff1f2',
+      },
+    },
+    children: [
+      {
+        type: 'h3',
+        id: `missing-${safeFilename}-title`,
+        children: ['远程页面配置文件不存在'],
+      },
+      {
+        type: 'p',
+        id: `missing-${safeFilename}-path`,
+        children: [`${target} 不存在。`],
+      },
+      {
+        type: 'p',
+        id: `missing-${safeFilename}-policy`,
+        children: ['请在页面配置服务中创建该文件后重新加载。'],
+      },
+    ],
+  }]
+}
+
+/** 必填字段默认值（getHeaders / pagesConfigBaseUrl 可选，不在此列） */
 const DEFAULT_OPTIONS = {
-  source: 'remote' as const,
   apiBaseUrl: '/api',
   fileStorage: 'localStorage' as const,
   enableValidation: false,
   timeout: REQUEST_TIMEOUT,
-} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders'>
+} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl'>
+
+type ResolvedConfigLoaderOptions =
+  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl'>
+  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl'>
+
+function trimTrailingSlash(path: string): string {
+  return path.replace(/\/+$/, '')
+}
+
+function resolvePagesConfigBaseUrl(options: ResolvedConfigLoaderOptions): string {
+  if (options.pagesConfigBaseUrl !== undefined) {
+    return trimTrailingSlash(options.pagesConfigBaseUrl)
+  }
+  return `${trimTrailingSlash(options.apiBaseUrl)}/pages-config`
+}
 
 export class PageConfigLoader implements ConfigLoader {
-  private opts: Required<Omit<ConfigLoaderOptions, 'getHeaders'>> & Pick<ConfigLoaderOptions, 'getHeaders'>
+  private opts: ResolvedConfigLoaderOptions
   private fileLoader: FileLoader
   /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
   private request: HttpClient
+  /** 页面配置文件 API 请求实例，baseURL 固定到 .../pages-config。 */
+  private fileApiRequest: HttpClient
   private readonly pagesConfigBase: string
   private readonly recentMissingFiles = new Set<string>()
+  private pageFileManifest: Map<string, Set<PageConfigFileName>> | null = null
 
   /**
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
@@ -76,8 +130,12 @@ export class PageConfigLoader implements ConfigLoader {
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
-    this.pagesConfigBase = `${this.opts.apiBaseUrl}/pages-config`
+    this.pagesConfigBase = resolvePagesConfigBaseUrl(this.opts)
 
+    this.fileApiRequest = createRequest({
+      baseURL: this.pagesConfigBase,
+      timeout: this.opts.timeout,
+    })
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
     this.request = createRequest({
       baseURL: this.opts.apiBaseUrl,
@@ -86,14 +144,15 @@ export class PageConfigLoader implements ConfigLoader {
     // 动态请求头注入（auth / tenant headers）
     if (this.opts.getHeaders) {
       const getHeaders = this.opts.getHeaders
-      this.request.interceptors.request.use({
+      const headerInterceptor: RequestInterceptor = {
         onRequest: (config) => {
           config.headers = { ...config.headers, ...getHeaders() }
           return config
         }
-      })
+      }
+      this.fileApiRequest.interceptors.request.use(headerInterceptor)
+      this.request.interceptors.request.use(headerInterceptor)
     }
-
     this.fileLoader = createFileLoader({
       baseUrl: this.pagesConfigBase,
       storage: this.opts.fileStorage,
@@ -126,7 +185,7 @@ export class PageConfigLoader implements ConfigLoader {
 
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
-    pageLogger.info('加载页面规则', { pageId, source: this.opts.source })
+    pageLogger.info('加载页面规则', { pageId })
     const path = this.toPageFilePath(pageId, 'rule.json')
     const result = await this.loadRequiredPageFile(pageId, 'rule.json', this.ruleLoader)
     if (this.isRemoteFileNotFound(result, path)) {
@@ -136,42 +195,54 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
-    pageLogger.info('加载页面数据', { pageId, source: this.opts.source })
+    pageLogger.info('加载页面数据', { pageId })
     return this.loadRequiredPageFile(pageId, 'pagedata.json', this.dataLoader)
   }
 
   async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
-    pageLogger.debug('加载页面样式', { pageId, source: this.opts.source })
+    pageLogger.debug('加载页面样式', { pageId })
     return this.loadRequiredPageFile(pageId, 'style.css', this.cssLoader)
   }
 
   async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
-    pageLogger.debug('加载页面脚本', { pageId, source: this.opts.source })
+    pageLogger.debug('加载页面脚本', { pageId })
     return this.loadRequiredPageFile(pageId, 'script.js', this.scriptLoader)
   }
 
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
     pageLogger.info('加载完整页面配置', { pageId })
+    const knownFiles = await this.getKnownPageFiles(pageId)
 
     // rule 先加载：缺失时直接生成可渲染占位；其他错误 fail-fast。
-    const ruleResult = await this.loadRule(pageId)
+    const ruleResult = this.isKnownMissing(knownFiles, 'rule.json')
+      ? this.remoteMissingRuleResult(pageId, 'rule.json')
+      : await this.loadRule(pageId)
     if (!ruleResult.success) return this.failFrom(ruleResult.error, ruleResult.reason)
 
     const dataPath = this.toPageFilePath(pageId, 'pagedata.json')
-    const dataResult = await this.loadPageData(pageId)
-    const dataMissing = this.isRemoteFileNotFound(dataResult, dataPath)
+    const dataMissingByManifest = this.isKnownMissing(knownFiles, 'pagedata.json')
+    const dataResult = dataMissingByManifest
+      ? this.remoteMissingFileResult<PageDataConfig>(pageId, 'pagedata.json')
+      : await this.loadPageData(pageId)
+    const dataMissing = dataMissingByManifest || this.isRemoteFileNotFound(dataResult, dataPath)
     if (!dataResult.success && !dataMissing) return this.failFrom(dataResult.error, dataResult.reason)
 
     // 附加资源并行校验：远程缺失继续渲染可见占位，其他错误 fail-fast。
+    const scriptMissingByManifest = this.isKnownMissing(knownFiles, 'script.js')
+    const cssMissingByManifest = this.isKnownMissing(knownFiles, 'style.css')
     const [scriptResult, cssResult] = await Promise.all([
-      this.loadRequiredPageFile(pageId, 'script.js', this.scriptLoader),
-      this.loadRequiredPageFile(pageId, 'style.css', this.cssLoader),
+      scriptMissingByManifest
+        ? Promise.resolve(this.remoteMissingFileResult<PageScriptConfig>(pageId, 'script.js'))
+        : this.loadRequiredPageFile(pageId, 'script.js', this.scriptLoader),
+      cssMissingByManifest
+        ? Promise.resolve(this.remoteMissingFileResult<PageCssConfig>(pageId, 'style.css'))
+        : this.loadRequiredPageFile(pageId, 'style.css', this.cssLoader),
     ])
 
     const scriptPath = this.toPageFilePath(pageId, 'script.js')
     const cssPath = this.toPageFilePath(pageId, 'style.css')
-    const scriptMissing = this.isRemoteFileNotFound(scriptResult, scriptPath)
-    const cssMissing = this.isRemoteFileNotFound(cssResult, cssPath)
+    const scriptMissing = scriptMissingByManifest || this.isRemoteFileNotFound(scriptResult, scriptPath)
+    const cssMissing = cssMissingByManifest || this.isRemoteFileNotFound(cssResult, cssPath)
     if (!scriptResult.success && !scriptMissing) return this.failFrom(scriptResult.error, scriptResult.reason)
     if (!cssResult.success && !cssMissing) return this.failFrom(cssResult.error, cssResult.reason)
 
@@ -214,20 +285,17 @@ export class PageConfigLoader implements ConfigLoader {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
     })
-    if (filename === 'rule.json' && this.isRemoteFileNotFound(result, path)) {
-      return {
-        success: true,
-        data: this.createMissingRemoteRuleText(pageId, filename),
-        source: this.opts.source,
-        timestamp: Date.now(),
-      }
-    }
     return this.pageFileContentResultFromData(result, path)
   }
 
   clearCache(key?: string): void {
     this.fileLoader.clearCache(key)
-    if (!key) this.recentMissingFiles.clear()
+    if (!key) {
+      this.recentMissingFiles.clear()
+      this.pageFileManifest = null
+      return
+    }
+    this.invalidatePageFileManifest(key)
   }
 
   getCacheStats(): { size: number; keys: string[] } {
@@ -244,6 +312,61 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   // ── 私有辅助 ──────────────────────────────────────────────────────
+
+  private async getKnownPageFiles(pageId: string): Promise<Set<PageConfigFileName> | null> {
+    const manifest = await this.getPageFileManifest()
+    return manifest?.get(pageId) ?? (manifest === null ? null : new Set<PageConfigFileName>())
+  }
+
+  private async getPageFileManifest(): Promise<Map<string, Set<PageConfigFileName>> | null> {
+    if (this.pageFileManifest !== null) return this.pageFileManifest
+
+    try {
+      const rows = await this.fileApiRequest.get<unknown>('/__list', undefined, {
+        meta: { silentHttpError: true },
+      })
+      if (!Array.isArray(rows)) return null
+
+      const manifest = new Map<string, Set<PageConfigFileName>>()
+      for (const row of rows) {
+        if (row === null || typeof row !== 'object') continue
+        const item = row as Record<string, unknown>
+        const pageId = item['pageId']
+        if (typeof pageId !== 'string' || pageId.trim() === '') continue
+        const files = Array.isArray(item['files'])
+          ? item['files'].filter((name): name is PageConfigFileName => this.isPageConfigFileName(name))
+          : []
+        manifest.set(pageId, new Set(files))
+      }
+      this.pageFileManifest = manifest
+      return manifest
+    } catch (error) {
+      pageLogger.debug('页面文件清单不可用，回退逐文件加载', { error })
+      return null
+    }
+  }
+
+  private isPageConfigFileName(value: unknown): value is PageConfigFileName {
+    return typeof value === 'string'
+      && (PAGE_CONFIG_FILE_NAMES as readonly string[]).includes(value)
+  }
+
+  private isKnownMissing(
+    knownFiles: Set<PageConfigFileName> | null,
+    filename: PageConfigFileName,
+  ): boolean {
+    return knownFiles !== null && !knownFiles.has(filename)
+  }
+
+  private invalidatePageFileManifest(key: string): void {
+    if (this.pageFileManifest === null) return
+    const pageId = key.replace(/^\/+/, '').split('/')[0]
+    if (pageId === undefined || pageId === '') {
+      this.pageFileManifest = null
+      return
+    }
+    this.pageFileManifest.delete(decodeURIComponent(pageId))
+  }
 
   /**
    * 加载页面四文件。
@@ -270,13 +393,9 @@ export class PageConfigLoader implements ConfigLoader {
       const fromEvent = this.recentMissingFiles.has(path)
       const isNotFound = r.reason === 'not-found' || fromEvent || /404|not\s*found/i.test(rawError)
       if (isNotFound) {
-        if (this.opts.source === 'remote') {
-          pageLogger.debug('远程页面配置文件不存在', { path })
-        } else {
-          pageLogger.warn('页面配置文件不存在', { source: this.opts.source, path })
-        }
+        pageLogger.debug('远程页面配置文件不存在', { path })
       } else {
-        pageLogger.error('页面配置加载失败', { source: this.opts.source, path, error: r.error })
+        pageLogger.error('页面配置加载失败', { path, error: r.error })
       }
       return {
         success: false,
@@ -285,8 +404,8 @@ export class PageConfigLoader implements ConfigLoader {
         timestamp: Date.now()
       }
     }
-    pageLogger.debug('页面配置加载成功', { path, source: this.opts.source, fromCache: r.fromCache })
-    return { success: true, ...(r.data !== undefined && { data: r.data }), source: this.opts.source, timestamp: Date.now() }
+    pageLogger.debug('页面配置加载成功', { path, source: 'remote', fromCache: r.fromCache })
+    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'remote', timestamp: Date.now() }
   }
 
   /**
@@ -304,7 +423,7 @@ export class PageConfigLoader implements ConfigLoader {
     result: { success: boolean; error?: string; reason?: string },
     path: string,
   ): boolean {
-    if (this.opts.source !== 'remote' || result.success) return false
+    if (result.success) return false
     const rawError = result.error ?? ''
     return result.reason === 'not-found'
       || this.recentMissingFiles.has(path)
@@ -312,42 +431,7 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   private createMissingRemoteFileRule(pageId: string, filename: PageConfigFileName): RuleConfig[] {
-    const target = `${pageId}/${filename}`
-    return [{
-      type: MISSING_REMOTE_RULE_NODE_TYPE,
-      id: `missing-${filename.replace(/[^a-zA-Z0-9_-]/g, '-')}`,
-      props: {
-        class: 'spark-page-config-missing-file',
-        style: {
-          padding: '24px',
-          border: '1px solid #f56c6c',
-          borderRadius: '6px',
-          color: '#9f1239',
-          background: '#fff1f2',
-        },
-      },
-      children: [
-        {
-          type: 'h3',
-          id: `missing-${filename.replace(/[^a-zA-Z0-9_-]/g, '-')}-title`,
-          children: ['远程页面配置文件不存在'],
-        },
-        {
-          type: 'p',
-          id: `missing-${filename.replace(/[^a-zA-Z0-9_-]/g, '-')}-path`,
-          children: [`${target} 不存在。`],
-        },
-        {
-          type: 'p',
-          id: `missing-${filename.replace(/[^a-zA-Z0-9_-]/g, '-')}-policy`,
-          children: ['请在页面配置服务中创建该文件后重新加载。'],
-        },
-      ],
-    }]
-  }
-
-  private createMissingRemoteRuleText(pageId: string, filename: PageConfigFileName): string {
-    return `${JSON.stringify(this.createMissingRemoteFileRule(pageId, filename), null, 2)}\n`
+    return createMissingPageConfigFileRule(pageId, filename)
   }
 
   private remoteMissingRuleResult(pageId: string, filename: PageConfigFileName): ConfigLoadResult<RuleConfig[]> {
@@ -355,7 +439,18 @@ export class PageConfigLoader implements ConfigLoader {
     return {
       success: true,
       data: this.createMissingRemoteFileRule(pageId, filename),
-      source: this.opts.source,
+      source: 'remote',
+      timestamp: Date.now(),
+    }
+  }
+
+  private remoteMissingFileResult<T>(pageId: string, filename: PageConfigFileName): ConfigLoadResult<T> {
+    pageLogger.debug('远程页面配置文件不存在，跳过文件 GET', { pageId, filename })
+    return {
+      success: false,
+      error: `${this.pagesConfigBase}${this.toPageFilePath(pageId, filename)}: not found`,
+      reason: 'not-found',
+      source: 'remote',
       timestamp: Date.now(),
     }
   }
@@ -369,7 +464,7 @@ export class PageConfigLoader implements ConfigLoader {
     path: string,
   ): ConfigLoadResult<string> {
     if (result.success) {
-      return { success: true, data: result.data ?? '', source: this.opts.source, timestamp: Date.now() }
+      return { success: true, data: result.data ?? '', source: 'remote', timestamp: Date.now() }
     }
 
     return {
@@ -381,9 +476,6 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   private toPageFilePath(pageId: string, filename: string): string {
-    if (this.opts.source === 'local') {
-      return `/${pageId}/${filename}`
-    }
     return `/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
   }
 

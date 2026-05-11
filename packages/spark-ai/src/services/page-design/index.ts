@@ -8,15 +8,6 @@ export {
   PageDesignEditSession,
 } from './editing'
 
-export {
-  PAGE_FILE_NAMES,
-  canonicalizePageDataJson,
-  canonicalizePageDataValue,
-  createPageDocuments,
-  forEachDocument,
-  isPageFileDocumentDirty,
-} from './documents'
-
 export type {
   PageDesignEditPhase,
   PageDesignEditHost,
@@ -33,11 +24,3 @@ export type {
   PageDesignServiceState,
   PageDesignTextFileKey,
 } from './operations'
-
-export type {
-  LoadFromTextOptions,
-  PageDocumentRegistry,
-  PageFileDocument,
-  PageFileLoadState,
-  PageFileName,
-} from './documents'

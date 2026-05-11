@@ -213,7 +213,7 @@ async function startApp() {
     const platformPaths = getPlatformPaths()
     startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
 
-    const { getNavApi } = await import('./services/api-paths')
+    const { getNavApi, getPageApi } = await import('./services/api-paths')
 
     // 5.1 URL → localStorage 项目上下文预同步
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
@@ -257,6 +257,7 @@ async function startApp() {
       // === 页面配置系统（路由从 DB 动态加载）===
       pageConfig: {
         ...appConfig.pageConfig,
+        pagesConfigBaseUrl: getPageApi(),
         pageComponent: SparkPageRenderer,
         componentMap,
         // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）

@@ -1,8 +1,9 @@
 import { computed, defineComponent, h, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import {
   compileRule,
+  createMissingPageConfigFileRule,
   parseCss,
   parsePageData,
   parseScript,
@@ -38,6 +39,14 @@ interface ResolvedRefTarget {
   pageId: string | null
 }
 
+export interface CrossProjectRefPageRouteProps {
+  configLoader: ConfigLoader
+  tenantId?: string
+  hostProjectId?: string
+  routePath?: string
+  routeMeta?: Record<string, unknown>
+}
+
 type FileResponse = {
   content?: unknown
   timestamp?: unknown
@@ -50,6 +59,20 @@ function asNonEmptyString(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
   return trimmed === '' ? null : trimmed
+}
+
+export function createCrossProjectRefRouteProps(configLoader: ConfigLoader) {
+  return (route: RouteLocationNormalizedLoaded): CrossProjectRefPageRouteProps => {
+    const tenantId = asNonEmptyString(route.params['tenantId'])
+    const hostProjectId = asNonEmptyString(route.params['projectId'])
+    return {
+      configLoader,
+      routePath: route.path,
+      routeMeta: { ...route.meta },
+      ...(tenantId !== null && { tenantId }),
+      ...(hostProjectId !== null && { hostProjectId }),
+    }
+  }
 }
 
 function isNotFoundError(error: unknown): boolean {
@@ -298,7 +321,16 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
   }
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return this.loadRequired(pageId, 'rule.json', compileRule)
+    const result = await this.loadRequired(pageId, 'rule.json', compileRule)
+    if (this.isFileNotFound(result)) {
+      return {
+        success: true,
+        data: createMissingPageConfigFileRule(pageId, 'rule.json'),
+        source: 'remote',
+        timestamp: Date.now(),
+      }
+    }
+    return result
   }
 
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
@@ -320,14 +352,11 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
     try {
       return { success: true, data: await this.readFile(pageId, filename), source: 'remote', timestamp: Date.now() }
     } catch (error: unknown) {
-      if (isNotFoundError(error) && (filename === 'script.js' || filename === 'style.css')) {
-        return { success: true, data: '', source: 'remote', timestamp: Date.now() }
+      if (!isNotFoundError(error)) {
+        const message = error instanceof Error ? error.message : String(error)
+        return { success: false, error: message, timestamp: Date.now() }
       }
-      if (isNotFoundError(error)) {
-        return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
-      }
-      const message = error instanceof Error ? error.message : String(error)
-      return { success: false, error: message, timestamp: Date.now() }
+      return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
     }
   }
 
@@ -343,7 +372,8 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
     }
 
     const dataResult = await this.loadPageData(pageId)
-    if (!dataResult.success || !dataResult.data) {
+    const dataMissing = this.isFileNotFound(dataResult)
+    if ((!dataResult.success || !dataResult.data) && !dataMissing) {
       return {
         success: false,
         ...(dataResult.reason !== undefined && { reason: dataResult.reason }),
@@ -356,15 +386,40 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
       this.loadScript(pageId),
       this.loadCss(pageId),
     ])
+    const scriptMissing = this.isFileNotFound(scriptResult)
+    const cssMissing = this.isFileNotFound(cssResult)
+    if (!scriptResult.success && !scriptMissing) {
+      return {
+        success: false,
+        ...(scriptResult.reason !== undefined && { reason: scriptResult.reason }),
+        ...(scriptResult.error !== undefined && { error: scriptResult.error }),
+        timestamp: scriptResult.timestamp ?? Date.now(),
+      }
+    }
+    if (!cssResult.success && !cssMissing) {
+      return {
+        success: false,
+        ...(cssResult.reason !== undefined && { reason: cssResult.reason }),
+        ...(cssResult.error !== undefined && { error: cssResult.error }),
+        timestamp: cssResult.timestamp ?? Date.now(),
+      }
+    }
+
+    const rules = [
+      ...ruleResult.data,
+      ...(dataMissing ? createMissingPageConfigFileRule(pageId, 'pagedata.json') : []),
+      ...(scriptMissing ? createMissingPageConfigFileRule(pageId, 'script.js') : []),
+      ...(cssMissing ? createMissingPageConfigFileRule(pageId, 'style.css') : []),
+    ]
 
     return {
       success: true,
       data: {
         pageId,
-        rule: ruleResult.data,
-        data: dataResult.data,
-        script: scriptResult.data,
-        css: cssResult.data,
+        rule: rules,
+        data: dataMissing ? this.createEmptyPageData() : dataResult.data as PageDataConfig,
+        script: scriptMissing ? '' : scriptResult.data,
+        css: cssMissing ? '' : cssResult.data,
       },
       source: 'remote',
       timestamp: Date.now(),
@@ -401,7 +456,7 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
       return { success: true, data: transform(text), source: 'remote', timestamp: Date.now() }
     } catch (error: unknown) {
       if (isNotFoundError(error)) {
-        return { success: true, data: transform(''), source: 'remote', timestamp: Date.now() }
+        return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
       }
       const message = error instanceof Error ? error.message : String(error)
       return { success: false, error: message, timestamp: Date.now() }
@@ -422,6 +477,14 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
     }
     return content
   }
+
+  private isFileNotFound(result: ConfigLoadResult<unknown>): boolean {
+    return !result.success && result.reason === 'not-found'
+  }
+
+  private createEmptyPageData(): PageDataConfig {
+    return parsePageData('{"dataSetName":"MissingRemotePageData","tables":{}}')
+  }
 }
 
 export const CrossProjectRefPage = defineComponent({
@@ -431,9 +494,25 @@ export const CrossProjectRefPage = defineComponent({
       type: Object as () => ConfigLoader,
       required: true,
     },
+    tenantId: {
+      type: String,
+      required: false,
+    },
+    hostProjectId: {
+      type: String,
+      required: false,
+    },
+    routePath: {
+      type: String,
+      required: false,
+    },
+    routeMeta: {
+      type: Object as () => Record<string, unknown>,
+      required: false,
+      default: () => ({}),
+    },
   },
   setup(props, { expose }) {
-    const route = useRoute()
     const pageRendererRef = ref<ReloadableRenderer | null>(null)
     let lastLoggedErrorKey: string | null = null
 
@@ -443,10 +522,15 @@ export const CrossProjectRefPage = defineComponent({
       },
     })
 
-    const tenantId = computed(() => asNonEmptyString(route.params['tenantId']))
-    const hostProjectId = computed(() => asNonEmptyString(route.params['projectId']))
+    const tenantId = computed(() => asNonEmptyString(props.tenantId))
+    const hostProjectId = computed(() => asNonEmptyString(props.hostProjectId))
+    const routePath = computed(() => {
+      const resolved = asNonEmptyString(props.routePath)
+      return resolved ?? '/'
+    })
+    const routeMeta = computed(() => props.routeMeta)
     const refTarget = computed(() =>
-      resolveRefTarget(getNavTree(), route.path, route.meta, hostProjectId.value)
+      resolveRefTarget(getNavTree(), routePath.value, routeMeta.value, hostProjectId.value)
     )
     const targetProjectId = computed(() => refTarget.value.targetProjectId)
     const targetPageId = computed(() => refTarget.value.pageId)
@@ -478,7 +562,7 @@ export const CrossProjectRefPage = defineComponent({
     function logInitError(message: string): void {
       const target = refTarget.value
       const logKey = JSON.stringify({
-        route: route.fullPath,
+        route: routePath.value,
         hostRefNodeId: target.hostRefNodeId,
         refProjectId: target.targetProjectId,
         refPath: target.refPath,
@@ -489,7 +573,7 @@ export const CrossProjectRefPage = defineComponent({
 
       lastLoggedErrorKey = logKey
       logger.error('跨项目引用页初始化失败', {
-        route: route.fullPath,
+        route: routePath.value,
         tenantId: tenantId.value,
         hostRefNodeId: target.hostRefNodeId,
         refProjectId: target.targetProjectId,

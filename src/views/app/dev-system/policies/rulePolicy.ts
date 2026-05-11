@@ -2,9 +2,8 @@
 // rulePolicy.ts — rule.json (SparkNode) 领域策略
 // ══════════════════════════════════════════════════════════════
 
-import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
-import type { AutoPopulateEntry } from '@spark-view/spark-component'
-import { ensureUniqueObjectKey } from '@spark-view/spark-component'
+import type { AutoPopulateEntry, JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-page-config'
+import { ensureUniqueObjectKey } from '@spark-view/spark-page-config'
 import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from './devComponentMetadata'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────

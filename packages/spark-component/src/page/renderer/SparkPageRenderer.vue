@@ -59,16 +59,15 @@
  * ```
  */
 import {
-  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, onErrorCaptured, onUnmounted,
+  computed, ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, onErrorCaptured, onUnmounted,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import type { ConfigLoader, IPageRoute, PageConfig } from '@spark-view/spark-page-config'
+import { SparkNodeTree, type ConfigLoader, type IPageRoute, type PageConfig } from '@spark-view/spark-page-config'
 import { nodeId, type SparkNode } from '../../core/types'
-import { SparkNodeTree } from '../../core/spark-node-tree'
 import { PAGE_DATASET } from '../../core/capability-keys'
 import {
   PAGE_SERVICE,
@@ -249,10 +248,11 @@ const currentPageId = ref('')
 const children = shallowRef<SparkNode[]>([])
 const pageFunctions = shallowRef<Record<string, (...args: unknown[]) => unknown>>({})
 let _inFlightPageId: string | null = null
-
-// ── SparkNodeTree：rule.json 的 SSoT（AI 编辑入口）──
+let _loadObjectKeySeq = 0
+const _loadObjectKeys = new WeakMap<object, number>()
+// ── SparkNodeTree：rule.json 的 SSoT（设计时编辑入口）──
 let _nodeTree: SparkNodeTree | null = null
-// ── DataSetCrudTool：pagedata.json 的 SSoT（AI 编辑入口）──
+// ── DataSetCrudTool：pagedata.json 的 SSoT（设计时编辑入口）──
 let _crudTool: DataSetCrudTool | null = null
 const pageContainer = ref<HTMLElement | null>(null)
 const currentCapabilityContext = currentInstance
@@ -288,6 +288,52 @@ const actionCtx = {
   getRouter: () => router,
 }
 const reportedRuntimeErrorObjects = new WeakSet<object>()
+
+function loadObjectKey(value: object): string {
+  const existing = _loadObjectKeys.get(value)
+  if (existing !== undefined) return `o:${existing}`
+  const next = ++_loadObjectKeySeq
+  _loadObjectKeys.set(value, next)
+  return `o:${next}`
+}
+
+function loadValueKey(value: unknown): string {
+  if ((typeof value === 'object' || typeof value === 'function') && value !== null) {
+    return loadObjectKey(value)
+  }
+  return `${typeof value}:${String(value ?? '')}`
+}
+
+function resolveLoadKey(pageId: string): string {
+  return [
+    pageId,
+    loadValueKey(props.configLoader ?? null),
+    loadValueKey(props.pageConfig ?? null),
+    loadValueKey(props.pageConfig?.rule ?? null),
+    loadValueKey(props.pageConfig?.data ?? null),
+    loadValueKey(props.pageConfig?.script ?? null),
+    loadValueKey(props.pageConfig?.css ?? null),
+  ].join('|')
+}
+
+function shouldSkipImplicitConfigLoad(): boolean {
+  if (props.pageConfig || props.pageId !== undefined) return false
+
+  // 非配置页路由不走隐式 PageRenderer，防止 transition out-in 期间误触发。
+  // cross-project-ref 的真实渲染器由 CrossProjectRefPage 创建，并显式传入目标 pageId。
+  // 但 pageConfig 直传模式不受此限制（如 DevPreviewTab 嵌入预览）
+  return (
+    route.meta['type'] === 'system-page'
+    || route.meta['type'] === 'cross-project-ref'
+    || route.matched.length === 0
+  )
+}
+
+const loadSourceKey = computed(() => {
+  if (shouldSkipImplicitConfigLoad()) return ''
+  const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageConfig?.pageId)
+  return resolveLoadKey(targetPageId)
+})
 
 function formatRuntimeError(errorLike: unknown): string {
   if (errorLike instanceof Error) return errorLike.stack ?? errorLike.message
@@ -427,44 +473,44 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
   }
 
   // 4. rule → SparkNodeTree → buildPageChildren → children
-  _nodeTree = new SparkNodeTree({
-    root: { type: 'spark-page', id: 'spark-page-root', children: nodeProps.rule as unknown as SparkNode[] },
-  })
+  _nodeTree = SparkNodeTree.fromPageChildren(nodeProps.rule as unknown as SparkNode[])
   rebuildChildren()
 }
 
 // ==================== 加载入口 ====================
 
 /** 完整加载流程：解析当前 pageId → beforeLoad → loadNodeProps → applyNodeProps → afterLoad。 */
-async function loadConfig(): Promise<void> {
-  // system-page 路由不走 PageRenderer，防止 transition out-in 期间误触发
-  // 但 pageConfig 直传模式不受此限制（如 DevPreviewTab 嵌入预览）
-  if (!props.pageConfig && route.meta['type'] === 'system-page') return
-  if (!props.pageConfig && route.matched.length === 0) return
+async function loadConfig(options: { force?: boolean } = {}): Promise<void> {
+  if (shouldSkipImplicitConfigLoad()) return
 
   const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageConfig?.pageId)
-  if (loading.value && _inFlightPageId === targetPageId) return
+  if (!options.force && loading.value && _inFlightPageId === targetPageId) return
+
   _inFlightPageId = targetPageId
+  let didApply = false
 
-  await runLoad(async (isStale) => {
-    currentPageId.value = targetPageId
-    if (props.beforeLoad) await props.beforeLoad(targetPageId)
-    if (isStale()) return
-    const nodeProps = await loadNodeProps(targetPageId)
-    if (isStale()) return
-    applyNodeProps(targetPageId, nodeProps)
-    if (isStale()) return
-    if (props.afterLoad) await props.afterLoad(nodeProps)
-  }, (error) => {
-    reportRuntimeError('load', targetPageId, error)
-    props.onError?.(error)
-  })
-
-  _inFlightPageId = null
+  try {
+    await runLoad(async (isStale) => {
+      currentPageId.value = targetPageId
+      if (props.beforeLoad) await props.beforeLoad(targetPageId)
+      if (isStale()) return
+      const nodeProps = await loadNodeProps(targetPageId)
+      if (isStale()) return
+      applyNodeProps(targetPageId, nodeProps)
+      didApply = true
+      if (isStale()) return
+      if (props.afterLoad) await props.afterLoad(nodeProps)
+    }, (error) => {
+      reportRuntimeError('load', targetPageId, error)
+      props.onError?.(error)
+    })
+  } finally {
+    if (_inFlightPageId === targetPageId) _inFlightPageId = null
+  }
 
   // loading=false 后等待 DOM 渲染完成，再执行 __init__ + initAutoSelection
   // 此时组件已挂载、DataSet 已就绪
-  if (!error.value) {
+  if (!error.value && didApply) {
     await nextTick()
     const init = pageFunctions.value['__init__']
     if (typeof init === 'function') {
@@ -485,7 +531,7 @@ async function loadConfig(): Promise<void> {
 /**
  * 从 SparkNodeTree 重建渲染用 children。
  *
- * AI 编辑 nodeTree 后调用此方法即可刷新 UI，无需重新加载四文件。
+ * 设计时编辑 nodeTree 后调用此方法即可刷新 UI，无需重新加载四文件。
  */
 function rebuildChildren(): void {
   if (!_nodeTree) {
@@ -510,22 +556,12 @@ function requestLoad(): void {
 // DOM 依赖在 await nextTick() 之后才访问，此时组件已挂载，无需等 onMounted。
 // 同 pageId 下的 pageConfig 替换也会触发重载，避免“页面 ID 没变但四文件已更新”时 UI 停留旧状态。
 watch(
-  [
-    () => props.pageId,
-    () => props.pageConfig?.pageId,
-    () => route.meta['pageId'],
-    () => route.params['id'],
-    () => route.name,
-    () => props.pageConfig?.rule,
-    () => props.pageConfig?.data,
-    () => props.pageConfig?.script,
-    () => props.pageConfig?.css,
-    () => props.configLoader,
-  ],
-  () => {
+  loadSourceKey,
+  (nextKey) => {
+    if (nextKey === '') return
     requestLoad()
   },
-  { immediate: true },
+  { immediate: true, flush: 'post' },
 )
 
 watch(
@@ -550,15 +586,15 @@ onUnmounted(() => {
 // ==================== Expose ====================
 
 defineExpose({
-  reload: loadConfig,
+  reload: () => loadConfig({ force: true }),
   loadConfig,
   pageContext,
   get dataSet(): DataSet | null { return pds.dataSet },
-  /** rule.json 的 SSoT 节点树（AI 编辑入口）。页面未加载时为 null。 */
+  /** rule.json 的 SSoT 节点树（设计时编辑入口）。页面未加载时为 null。 */
   get nodeTree(): SparkNodeTree | null { return _nodeTree },
-  /** 从 nodeTree 重建渲染 children。AI 编辑 nodeTree 后调用以刷新 UI。 */
+  /** 从 nodeTree 重建渲染 children。设计时编辑 nodeTree 后调用以刷新 UI。 */
   rebuildChildren,
-  /** pagedata.json 的 SSoT CRUD 工具（AI 编辑入口）。页面未加载时为 null。 */
+  /** pagedata.json 的 SSoT CRUD 工具（设计时编辑入口）。页面未加载时为 null。 */
   get crudTool(): DataSetCrudTool | null { return _crudTool },
 })
 </script>

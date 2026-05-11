@@ -212,7 +212,7 @@ describe('useDevState documents SSOT', () => {
     expect(doc.undo()).toBe(true)
     const treeUndo = doc.model.value!.toJSON()
     expect((treeUndo.children?.[0] as { type?: string }).type).toBe('div')
-    expect(JSON.parse(doc.text.value)[0]).toMatchObject({ type: 'div' })
+    expect(JSON.parse(doc.text.value)).toMatchObject({ type: 'div' })
   })
 
   it('script.js undo stays in sync with the page model', () => {

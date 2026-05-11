@@ -1,7 +1,7 @@
 import {
   canonicalizePageDataJson,
   canonicalizePageDataValue,
-} from '@spark-view/spark-ai/services/page-design'
+} from '@spark-view/spark-page-config'
 
 export {
   canonicalizePageDataJson,

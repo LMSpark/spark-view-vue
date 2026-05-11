@@ -268,7 +268,6 @@ export class ConfigLoader {
       },
       spark: { enabled: true },
       pageConfig: {
-        source: 'local',
         apiBaseUrl: '/api',
         homePath: '/home'
       },

@@ -13,7 +13,7 @@
  */
 
 import type { RuleConfig } from '@spark-view/spark-page-config'
-import { SPARK_NODE_STRUCT_KEYS, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
+import { normalizeSparkNode, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeOnProps } from './bind-normalize.js'
 
@@ -118,21 +118,13 @@ export function buildPageChildren(
    * 5. 最后统一处理顶层 id 去重
    */
   function bindNode(current: Record<string, unknown>): SparkNode {
-    const cloned: SparkNode = { type: current['type'] as string }
-
-    for (const key of Object.keys(current)) {
-      if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
-      throw new Error(`[spark] RuleConfig root field "${key}" has been removed. Put it under SparkNode.props.`)
-    }
+    const normalized = normalizeSparkNode(current as unknown as SparkNode)
+    const cloned: SparkNode = { type: normalized.type }
 
     // 仅复制合法 props 对象；数组/null/原始值都视为无 props。
-    const propsObj = current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])
-      ? { ...(current['props'] as Record<string, unknown>) }
+    const propsObj = typeof normalized.props === 'object' && !Array.isArray(normalized.props)
+      ? { ...normalized.props }
       : {}
-
-    if (Object.prototype.hasOwnProperty.call(propsObj, 'id')) {
-      throw new Error('[spark] SparkNode.props.id has been removed. Use top-level SparkNode.id instead.')
-    }
 
     // props 内的 on / onXxx 先归一化，避免后续递归时把字符串事件名当普通值透传。
     normalizeOnProps(propsObj, callFunc, actionCtx)
@@ -144,8 +136,8 @@ export function buildPageChildren(
     }
 
     // children 保持结构位置，不在绑定层做额外结构提升；这里只做递归绑定与类型收敛。
-    if (Array.isArray(current['children'])) {
-      const children = (current['children'] as unknown[]).map(bindValue).filter(isSparkChild)
+    if (Array.isArray(normalized.children)) {
+      const children = (normalized.children as unknown[]).map(bindValue).filter(isSparkChild)
       if (children.length > 0) cloned.children = children
     }
 
@@ -155,7 +147,7 @@ export function buildPageChildren(
     }
 
     // id 去重放在最后；仅接受顶层 id。
-    const rawId = typeof current['id'] === 'string' ? current['id'] : undefined
+    const rawId = normalized.id
     if (rawId !== undefined) {
       const nodeType = cloned.type
       const finalId = ensureUniqueId(nodeType, rawId)

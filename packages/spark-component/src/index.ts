@@ -33,18 +33,6 @@ export type {
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,
-  SparkNodeTreeRootParams,
-  SparkNodeTreeLookupParams,
-  SparkNodeTreeChildrenParams,
-  SparkNodeTreeAddParams,
-  SparkNodeTreeSetPropsParams,
-  SparkNodeTreeReplaceParams,
-  SparkNodeTreeRemoveParams,
-  SparkNodeLocation,
-  SparkNodeAddResult,
-  SparkNodeSetPropsResult,
-  SparkNodeReplaceResult,
-  SparkNodeRemoveResult,
   FilterItemConfig,
   ComponentDefinition,
   ComponentRegistry,
@@ -62,7 +50,6 @@ export {
   nodeInputProps,
   isSparkNode,
   getSparkNodeChildren,
-  SparkNodeTree,
 } from './core/index.js'
 
 // ── 6. 数据 + Renderer 能力键 ──

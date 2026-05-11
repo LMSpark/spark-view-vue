@@ -82,7 +82,7 @@ describe('DevState 页面文件闭环', () => {
       return pageFileResponse(url)
     })
 
-    await state.ensureActivePageFilesLoaded()
+    await state.ensureActivePageFilesLoaded({ forceReload: true })
 
     expect(state.documents['rule.json'].loadState.value).toBe('loaded')
     expect(state.documents['pagedata.json'].loadState.value).toBe('loaded')
@@ -92,15 +92,21 @@ describe('DevState 页面文件闭环', () => {
     expect(state.documents['style.css'].text.value).toBe('')
   })
 
-  it('缺失必需 rule/pagedata 仍然报错', async () => {
+  it('缺失 rule/pagedata 以空文本进入编辑态，不写入占位内容', async () => {
     const state = useDevState()
     state.activePageId.value = 'demo'
     httpMock.get.mockImplementation(async (url: string) => {
+      if (url.endsWith('/rule.json')) throw notFound()
       if (url.endsWith('/pagedata.json')) throw notFound()
       return pageFileResponse(url)
     })
 
-    await expect(state.ensureActivePageFilesLoaded()).rejects.toThrow('pagedata.json')
+    await state.ensureActivePageFilesLoaded()
+
+    expect(state.documents['rule.json'].loadState.value).toBe('loaded')
+    expect(state.documents['pagedata.json'].loadState.value).toBe('loaded')
+    expect(state.documents['rule.json'].text.value).toBe('')
+    expect(state.documents['pagedata.json'].text.value).toBe('')
   })
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {

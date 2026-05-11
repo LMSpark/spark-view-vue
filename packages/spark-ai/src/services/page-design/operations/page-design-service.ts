@@ -19,28 +19,25 @@ export type PageDesignServiceResult<TResult> =
   | { ok: true; data: TResult; summary: string }
   | { ok: false; code: string; msg: string; fix: string }
 
+type PageDesignTextReadMethod = 'readScript' | 'readStyle'
+type PageDesignTextWriteMethod = 'writeScript' | 'writeStyle'
+
 interface PageDesignTextFileBinding {
   label: string
-  read(state: PageDesignEditSession): string
-  write(state: PageDesignEditSession, content: string): void
-  readMethod: keyof PageDesignEditHost
-  writeMethod: keyof PageDesignEditHost
+  readMethod: PageDesignTextReadMethod
+  writeMethod: PageDesignTextWriteMethod
   validateWrite?: (content: string) => PageDesignServiceResult<undefined> | null
 }
 
 const TEXT_FILE_BINDING_BY_KEY: Record<'script' | 'style', PageDesignTextFileBinding> = {
   script: {
     label: 'script.js',
-    read: (state) => state.readActiveScript(),
-    write: (state, content) => state.writeActiveScript(content),
     readMethod: 'readScript',
     writeMethod: 'writeScript',
     validateWrite: validateScriptServiceContract,
   },
   style: {
     label: 'style.css',
-    read: (state) => state.readActiveStyle(),
-    write: (state, content) => state.writeActiveStyle(content),
     readMethod: 'readStyle',
     writeMethod: 'writeStyle',
   },
@@ -146,14 +143,24 @@ function bootstrapEditState(state: PageDesignEditSession): PageDesignServiceResu
     return pageDesignServiceFailure('NO_DATASET_EDIT', 'PageDesignService.bootstrap 失败：缺少 dataset 实例（PageDesignEditHost.getDataSetTool）', '宿主注入可用的 dataset 实例。')
   }
 
-  if (typeof state.host?.readScript !== 'function' || typeof state.host.readStyle !== 'function') {
-    return pageDesignServiceFailure('NO_TEXT_MODEL', 'PageDesignService.bootstrap 失败：缺少 script/style 读取器', '宿主注入 PageDesignEditHost.readScript/readStyle。')
+  const missingTextBindings = Object.values(TEXT_FILE_BINDING_BY_KEY).flatMap((binding) => {
+    const missing: string[] = []
+    if (typeof state.host?.[binding.readMethod] !== 'function') missing.push(String(binding.readMethod))
+    if (typeof state.host?.[binding.writeMethod] !== 'function') missing.push(String(binding.writeMethod))
+    return missing
+  })
+  if (missingTextBindings.length > 0) {
+    return pageDesignServiceFailure(
+      'NO_TEXT_MODEL',
+      `PageDesignService.bootstrap 失败：缺少文本模型绑定 ${missingTextBindings.join(', ')}`,
+      '宿主注入 PageDesignEditHost.readScript/writeScript/readStyle/writeStyle。',
+    )
   }
 
   tree.toJSON()
   dataSetTool.toJson()
-  state.host.readScript()
-  state.host.readStyle()
+  readBoundTextModel(state, TEXT_FILE_BINDING_BY_KEY.script)
+  readBoundTextModel(state, TEXT_FILE_BINDING_BY_KEY.style)
   state.phase = 'editing'
   return success({ phase: state.phase }, '编辑会话已完成宿主检查，进入 editing 状态')
 }
@@ -166,6 +173,22 @@ function ensureTextModelAccess(
   const binding = TEXT_FILE_BINDING_BY_KEY[fileKey]
   const method = mode === 'read' ? binding.readMethod : binding.writeMethod
   return typeof state.host?.[method] === 'function' ? null : `缺少 live text model: ${String(method)}`
+}
+
+function readBoundTextModel(state: PageDesignEditSession, binding: PageDesignTextFileBinding): string {
+  const reader = state.host?.[binding.readMethod]
+  if (typeof reader !== 'function') {
+    throw new Error(`缺少 live text model: ${String(binding.readMethod)}`)
+  }
+  return reader()
+}
+
+function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTextFileBinding, content: string): void {
+  const writer = state.host?.[binding.writeMethod]
+  if (typeof writer !== 'function') {
+    throw new Error(`缺少 live text model: ${String(binding.writeMethod)}`)
+  }
+  writer(content)
 }
 
 interface TargetMethodMissing {
@@ -278,7 +301,7 @@ export class PageDesignService {
     if (accessError !== null) {
       return pageDesignServiceFailure('NO_TEXT_MODEL', accessError, '请先调用 PageDesignService.bootstrap 初始化编辑会话，并确保宿主绑定 PageDesignEditHost.read*/write*。')
     }
-    return success({ content: binding.read(state) }, `${binding.label} 内容已返回`)
+    return success({ content: readBoundTextModel(state, binding) }, `${binding.label} 内容已返回`)
   }
 
   writeTextModel(context: PageDesignServiceContext, fileKey: PageDesignTextFileKey, content: string): PageDesignServiceResult<undefined> {
@@ -290,7 +313,7 @@ export class PageDesignService {
     }
     const scriptContractError = binding.validateWrite?.(content) ?? null
     if (scriptContractError !== null) return scriptContractError
-    binding.write(state, content)
+    writeBoundTextModel(state, binding, content)
     return success(undefined, `${binding.label} 已更新`)
   }
 

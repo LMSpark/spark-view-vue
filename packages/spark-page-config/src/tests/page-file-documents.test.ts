@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPageDocuments, isPageFileDocumentDirty } from '@spark-view/spark-ai/services/page-design'
+import { createPageDocuments, isPageFileDocumentDirty } from '@spark-view/spark-page-config'
 
 function makePageDataText(label: string): string {
   return JSON.stringify({
@@ -84,6 +84,34 @@ describe('PageFileDocument primitives', () => {
       expect(doc.parseError.value).not.toBeNull()
     })
 
+    it('emits framework-neutral revision changes', () => {
+      const docs = createPageDocuments()
+      const doc = docs['rule.json']
+      let changes = 0
+      const unsubscribe = doc.subscribe(() => { changes += 1 })
+
+      doc.loadFromText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+      const firstRevision = doc.revision.value
+      doc.setText(`${JSON.stringify([{ type: 'span' }], null, 2)}\n`)
+
+      expect(changes).toBeGreaterThan(0)
+      expect(doc.revision.value).toBeGreaterThan(firstRevision)
+      unsubscribe()
+    })
+
+    it('accepts a single root SparkNode as page children', () => {
+      const docs = createPageDocuments()
+      const doc = docs['rule.json']
+      doc.loadFromText(JSON.stringify({ type: 'r-section', children: [] }))
+
+      expect(doc.parseError.value).toBeNull()
+      const root = doc.model.value!.toJSON()
+      expect(root.type).toBe('spark-page')
+      expect(root.id).toBe('spark-page-root')
+      expect((root.children?.[0] as { type?: string }).type).toBe('r-section')
+      expect(JSON.parse(doc.text.value)).toMatchObject({ type: 'r-section' })
+    })
+
     it('uses SparkNodeTree.fromJson to fill missing ids for edit addressing', () => {
       const docs = createPageDocuments()
       const doc = docs['rule.json']
@@ -101,12 +129,12 @@ describe('PageFileDocument primitives', () => {
       const root = doc.model.value!.toJSON()
       const section = root.children?.[0] as { id?: string; children?: unknown[] }
       const text = section.children?.[0] as { id?: string }
-      expect(root.id).toBe('page__0')
+      expect(root.id).toBe('spark-page-root')
       expect(section.id).toBe('r-section__0_0')
       expect(text.id).toBe('r-text__0_0_0')
     })
 
-    it('rejects legacy props.id when loading rule text', () => {
+    it('promotes legacy props.id when loading rule text', () => {
       const docs = createPageDocuments()
       const doc = docs['rule.json']
 
@@ -114,8 +142,10 @@ describe('PageFileDocument primitives', () => {
         { type: 'r-section', props: { id: 'legacy-section', title: '假期管理' } },
       ], null, 2)}\n`)
 
-      expect(doc.parseError.value).toContain('props.id has been removed')
-      expect(doc.model.value).toBeNull()
+      expect(doc.parseError.value).toBeNull()
+      const section = doc.model.value!.toJSON().children?.[0] as { id?: string; props?: Record<string, unknown> }
+      expect(section.id).toBe('legacy-section')
+      expect(section.props).toEqual({ title: '假期管理' })
     })
 
     it('replaceModel adopts an externally provided tree', () => {

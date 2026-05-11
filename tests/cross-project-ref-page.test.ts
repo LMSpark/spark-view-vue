@@ -142,7 +142,16 @@ describe('CrossProjectRefPage', () => {
     await router.isReady()
 
     mount(CrossProjectRefPage, {
-      props: { configLoader: createConfigLoader(httpClient) },
+      props: {
+        configLoader: createConfigLoader(httpClient),
+        tenantId: 'lmspark',
+        hostProjectId: 'homepage',
+        routePath: `/t/lmspark/homepage/__ref/${hostRefNodeId}`,
+        routeMeta: {
+          type: 'cross-project-ref',
+          pageId: hostRefNodeId,
+        },
+      },
       global: {
         plugins: [router],
       },

@@ -217,7 +217,7 @@ import {
   type MutationResult,
   type TreeModel,
   type TreeDisplayNode,
-} from './jsonTreeEditor'
+} from '@spark-view/spark-page-config'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 

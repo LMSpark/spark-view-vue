@@ -27,4 +27,4 @@ function buildConfigTimeDependencies() {
 buildConfigTimeDependencies()
 
 console.log('\n🧩 组件注册模式: 编译时注册')
-run('npx vite build')
+run('pnpm exec vite build')

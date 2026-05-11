@@ -16,23 +16,21 @@ import { refreshRoutes } from '@spark-view/spark-app'
 import {
   PageConfigFileApi,
   createConfigLoader,
-  type ConfigLoader,
-  type PageConfigFileVersionSummary,
-} from '@spark-view/spark-page-config'
-import { demoNavRoot } from '@/layout/demo-nav'
-import {
   PAGE_FILE_NAMES,
   createPageDocuments,
   forEachDocument,
   isPageFileDocumentDirty,
+  type ConfigLoader,
   type PageDocumentRegistry,
+  type PageConfigFileVersionSummary,
   type PageFileName,
-} from '@spark-view/spark-ai/services/page-design'
+} from '@spark-view/spark-page-config'
+import { demoNavRoot } from '@/layout/demo-nav'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
 export type { PageConfigFileVersionSummary }
-export type { PageFileDocument } from '@spark-view/spark-ai/services/page-design'
+export type { PageFileDocument } from '@spark-view/spark-page-config'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -82,7 +80,6 @@ function getPageConfigLoader(): ConfigLoader {
   const apiBaseUrl = toPageConfigApiBaseUrl(getPageApi())
   if (pageConfigLoader === null || pageConfigLoaderApiBaseUrl !== apiBaseUrl) {
     pageConfigLoader = createConfigLoader({
-      source: 'remote',
       apiBaseUrl,
       fileStorage: 'localStorage',
       getHeaders: createAuthHeaders,
@@ -163,6 +160,12 @@ export function useDevState() {
   const fileSaving = ref(false)
   const pageFilesRevision = ref(0)
 
+  forEachDocument(documents, (_name, doc) => {
+    doc.subscribe(() => {
+      pageFilesRevision.value += 1
+    })
+  })
+
   let activePageFilesLoadPromise: Promise<void> | null = null
   let activePageFilesLoadPageId = ''
   let activePageFilesLoadEpoch = 0
@@ -213,6 +216,7 @@ export function useDevState() {
   const AUTO_SAVE_DELAY = 800
 
   function isDocumentDirty(name: PageFileName): boolean {
+    void pageFilesRevision.value
     return isPageFileDocumentDirty(documents[name])
   }
 
@@ -224,7 +228,10 @@ export function useDevState() {
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
   const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
-  const pageDataError = computed(() => documents['pagedata.json'].parseError.value)
+  const pageDataError = computed(() => {
+    void pageFilesRevision.value
+    return documents['pagedata.json'].parseError.value
+  })
 
   // ═══════════════════════════════════════════════════════════
   // 工具：地址 / 持久化 pageId
@@ -584,6 +591,7 @@ export function useDevState() {
       forceReload: options?.forceReload === true,
     })
     if (result.success) return result.data ?? ''
+    if (result.reason === 'not-found') return ''
     const detail = result.error ?? result.reason ?? 'unknown'
     throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
   }

@@ -18,6 +18,7 @@ import type {
 } from '../types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
 import { isSparkNode, normalizeSparkNode } from '../spark-node'
+import { SparkNodeTree } from '../spark-node-tree'
 
 type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
 
@@ -125,14 +126,18 @@ function createDataSetFromInput(input: Record<string, unknown>): PageDataConfig 
  * rule.json 原始字符串 → 规范化 SparkNode[]
  *
  * 规范化内容：
- * - 顶层确保是 Array（单对象自动包装）
+ * - 顶层可以是单个 SparkNode，也可以是 SparkNode[]
  * - 每条规则必须是合法 SparkNode
- * - `props.id`、根级业务字段提升等旧兼容逻辑已移除
+ * - 旧 `props.id` 只作为输入兼容读取，输出统一为顶层 `id`
+ * - 根级业务字段提升等旧兼容逻辑已移除
  */
 export function compileRule(raw: string): RuleConfig[] {
-  const parsed: unknown = JSON.parse(raw)
-  const arr = Array.isArray(parsed) ? parsed : [parsed]
-  return arr.map(normalizeRuleNode)
+  if (raw.trim() === '') return []
+  const tree = SparkNodeTree.fromRuleJson(raw, {
+    fillMissingComponentId: false,
+    historyLimit: 0,
+  })
+  return (tree.root.children ?? []) as RuleConfig[]
 }
 
 export function normalizeRuleNode(node: unknown): RuleConfig {
@@ -154,6 +159,7 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
  * 同一页面多次访问跳过重建，冷启动仍需跑一次（但无网络请求）。
  */
 export function parsePageData(raw: string): PageDataConfig {
+  if (raw.trim() === '') return createDefaultDataSet()
   const parsed: unknown = JSON.parse(raw)
   if (parsed === null || parsed === undefined) {
     return createDefaultDataSet()

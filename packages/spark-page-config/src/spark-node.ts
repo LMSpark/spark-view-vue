@@ -45,12 +45,20 @@ function normalizeSparkNodeChildren(children: SparkNodeChildren | undefined): Sp
   })
 }
 
+function normalizeSparkNodeIdentity(node: SparkNode, props: Record<string, unknown> | undefined): string | undefined {
+  const rawTopLevelId = (node as { id?: unknown }).id
+  if (typeof rawTopLevelId === 'string') return rawTopLevelId
+
+  const legacyPropsId = props?.['id']
+  return typeof legacyPropsId === 'string' ? legacyPropsId : undefined
+}
+
 /**
  * 归一化 SparkNode 的结构语义。
  *
  * 统一处理：
  * - type 必须是非空字符串
- * - 节点定位 id：只读取顶层 id
+ * - 节点定位 id：输出统一为顶层 id，旧输入 `props.id` 会被提升后移除
  * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
  * - children 缺省或非数组 → `[]`
  */
@@ -61,8 +69,6 @@ export function normalizeSparkNode(node: SparkNode): SparkNode {
     throw new Error('[spark] SparkNode.type must be a non-empty string')
   }
 
-  const rawTopLevelId = (node as { id?: unknown }).id
-  const normalizedId = typeof rawTopLevelId === 'string' ? rawTopLevelId : undefined
   const rawProps = (node as { props?: unknown }).props
   const hasObjectProps = rawProps !== undefined
     && rawProps !== null
@@ -72,14 +78,18 @@ export function normalizeSparkNode(node: SparkNode): SparkNode {
   const normalizedProps = hasObjectProps
     ? { ...(rawProps as Record<string, unknown>) }
     : undefined
-  if (normalizedProps !== undefined && Object.prototype.hasOwnProperty.call(normalizedProps, 'id')) {
-    throw new Error('[spark] SparkNode.props.id has been removed. Use top-level SparkNode.id instead.')
+
+  const normalizedId = normalizeSparkNodeIdentity(node, normalizedProps)
+
+  // 兼容旧 rule.json：props.id 只作为输入时的定位 id，规范化后不再向下游传播。
+  if (normalizedProps !== undefined) {
+    delete normalizedProps['id']
   }
 
   return {
     type: node.type,
     ...(normalizedId !== undefined ? { id: normalizedId } : {}),
-    ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
+    ...(normalizedProps !== undefined && Object.keys(normalizedProps).length > 0 ? { props: normalizedProps } : {}),
     children: normalizeSparkNodeChildren(node.children),
   }
 }

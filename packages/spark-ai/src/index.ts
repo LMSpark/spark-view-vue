@@ -162,23 +162,12 @@ export type {
 export {
   PageDesignEditSession,
   PageDesignService,
-  PAGE_FILE_NAMES,
-  canonicalizePageDataJson,
-  canonicalizePageDataValue,
-  createPageDocuments,
-  forEachDocument,
-  isPageFileDocumentDirty,
 } from './services/page-design'
 
 export type {
-  LoadFromTextOptions,
-  PageDocumentRegistry,
   PageDesignEditPhase,
   PageDesignEditHost,
   PageDesignEditState,
-  PageFileDocument,
-  PageFileLoadState,
-  PageFileName,
   PageDesignNodeTree,
   PageDesignServiceContext,
   PageDesignServiceResult,

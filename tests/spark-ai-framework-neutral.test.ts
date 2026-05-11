@@ -23,28 +23,45 @@ function walkFiles(dir: string): string[] {
 
 describe('@spark-view/spark-ai framework boundary', () => {
   const packageRoot = path.resolve(__dirname, '../packages/spark-ai')
+  const pageConfigPackageRoot = path.resolve(__dirname, '../packages/spark-page-config')
+  const dataPackageRoot = path.resolve(__dirname, '../packages/spark-data')
   const repoRoot = path.resolve(__dirname, '..')
 
-  it('isolates the Vue renderer package dependency to the page-file editing service', () => {
+  function packageBoundaryFiles(root: string): string[] {
     const files = [
-      path.join(packageRoot, 'package.json'),
-      path.join(packageRoot, 'tsconfig.json'),
-      path.join(packageRoot, 'tsconfig.build.json'),
-      ...walkFiles(path.join(packageRoot, 'src'))
+      path.join(root, 'package.json'),
+      path.join(root, 'tsconfig.json'),
+      path.join(root, 'tsconfig.build.json'),
+      ...walkFiles(path.join(root, 'src'))
         .filter(file => file.endsWith('.ts')),
     ]
+    return files.filter(file => fs.existsSync(file))
+  }
 
-    const allowed = new Set([
-      'package.json',
-      'tsconfig.json',
-      'tsconfig.build.json',
-      path.join('src', 'services', 'page-design', 'documents', 'page-file-documents.ts'),
-    ])
-    const offenders = files.filter((file) => {
-      const relative = path.relative(packageRoot, file)
-      return !allowed.has(relative) && fs.readFileSync(file, 'utf8').includes('@spark-view/spark-component')
+  it('keeps AI, page-config and DataSet packages free of frontend framework dependencies', () => {
+    const forbiddenPatterns = [
+      /@spark-view\/spark-component/u,
+      /(?:^|['"])vue(?:['"]|$)/u,
+      /@vue\//u,
+      /(?:^|['"])react(?:['"]|$)/u,
+      /(?:^|['"])svelte(?:['"]|$)/u,
+      /(?:^|['"])@angular\//u,
+    ]
+
+    const files = [
+      ...packageBoundaryFiles(packageRoot),
+      ...packageBoundaryFiles(pageConfigPackageRoot),
+      ...packageBoundaryFiles(dataPackageRoot),
+    ]
+
+    const offenders = files.flatMap((file) => {
+      const content = fs.readFileSync(file, 'utf8')
+      return forbiddenPatterns
+        .filter(pattern => pattern.test(content))
+        .map(pattern => `${path.relative(repoRoot, file)} :: ${pattern.source}`)
     })
-    expect(offenders.map(file => path.relative(packageRoot, file))).toEqual([])
+
+    expect(offenders).toEqual([])
   })
 
   it('keeps page-design services grouped by responsibility', () => {
@@ -52,8 +69,6 @@ describe('@spark-view/spark-ai framework boundary', () => {
     const allowedRootEntries = new Set([
       'index.ts',
       'editing',
-      'documents',
-      'files',
       'operations',
     ])
 
@@ -62,8 +77,6 @@ describe('@spark-view/spark-ai framework boundary', () => {
 
     const expectedLayerEntrypoints = [
       path.join('editing', 'index.ts'),
-      path.join('documents', 'index.ts'),
-      path.join('files', 'index.ts'),
       path.join('operations', 'index.ts'),
     ]
     for (const entrypoint of expectedLayerEntrypoints) {

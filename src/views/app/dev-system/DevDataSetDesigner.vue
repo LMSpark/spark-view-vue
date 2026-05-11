@@ -349,7 +349,8 @@ function buildColumnIdMap(table: DesignerTable): Record<string, string> {
 }
 
 const projectedMetadata = computed<IDataSetMetadata | null>(() => {
-  // 以 DataSetCrudTool 为唯一数据源；pagedata 文档的 shallowRef 在 mutate/undo/redo 时会被显式触发刷新。
+  void props.state.pageFilesRevision.value
+  // 以 DataSetCrudTool 为唯一数据源；pagedata 文档变更由 app 层 pageFilesRevision 接入 Vue 响应式。
   return getPageDataDocument().model.value?.toJson() ?? null
 })
 

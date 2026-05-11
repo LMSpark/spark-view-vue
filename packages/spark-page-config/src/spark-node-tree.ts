@@ -1,5 +1,24 @@
-import { isSparkNode, normalizeSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './types.js'
+import { isSparkNode, normalizeSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './spark-node.js'
 import { SnapshotHistory } from '@spark-view/spark-utils'
+
+export const SPARK_PAGE_NODE_TYPE = 'spark-page'
+export const SPARK_PAGE_ROOT_ID = 'spark-page-root'
+
+export type SparkNodeTreeJsonInput = SparkNode | Record<string, unknown> | string
+export type SparkNodeTreeRuleJsonInput =
+  | SparkNode
+  | readonly SparkNode[]
+  | Record<string, unknown>
+  | ReadonlyArray<Record<string, unknown>>
+  | string
+
+function createSparkPageRoot(children: readonly SparkNode[] = []): SparkNode {
+  return {
+    type: SPARK_PAGE_NODE_TYPE,
+    id: SPARK_PAGE_ROOT_ID,
+    children: [...children],
+  }
+}
 
 // ====================
 // 公共参数与结果类型
@@ -264,8 +283,29 @@ export interface SparkNodeFindByTypeResult {
   total: number
 }
 
+export type SparkNodeTreeMethodKey =
+  | 'getNode'
+  | 'getLocation'
+  | 'hasNode'
+  | 'getParent'
+  | 'listChildren'
+  | 'countNodes'
+  | 'getAllData'
+  | 'collectDataKeys'
+  | 'collectHandlerNames'
+  | 'findByType'
+  | 'addNode'
+  | 'addNodes'
+  | 'moveNode'
+  | 'setProps'
+  | 'setPropsBatch'
+  | 'replaceNode'
+  | 'replaceNodes'
+  | 'removeNode'
+  | 'removeNodes'
+
 // ====================
-// 公共 API（SparkNodeTree FC 本体）
+// 公共 API（SparkNodeTree 编辑模型本体）
 // ====================
 
 /**
@@ -276,13 +316,13 @@ export interface SparkNodeFindByTypeResult {
  * 这里的 root 表示“当前被编辑的组件实例”。
  * 它既可以是页面组件，也可以是页面中的任意子组件；页面只是递归 SparkNode 模型里的一个更大组件。
  *
- * 在上层设计里，SparkNodeTree 可以视为一组 FC（Function Calling）能力的真实本体：
- * 1. LLM 先查询组件列表，选择合适的组件 type；
+ * 在上层设计里，SparkNodeTree 是设计时编辑能力的真实本体：
+ * 1. 调用方先查询组件列表，选择合适的组件 type；
  * 2. 再根据组件规格构造一个 SparkNode 节点对象；
  * 3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。
  *
  * 因此，这个类提供的不是“组件目录”，而是“树编辑能力集合”。
- * 上层的 tool catalog / function / FC 列表，只是在此基础上做协议投影。
+ * 上层的 tool catalog / function 列表，只是在此基础上做协议投影。
  *
  * 当前公开能力大致可分为四类：
  * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。
@@ -308,7 +348,7 @@ export class SparkNodeTree {
    * - 默认会在反序列化过程中补齐缺失组件 id
    */
   static fromJson(
-    json: SparkNode | Record<string, unknown> | string,
+    json: SparkNodeTreeJsonInput,
     options: SparkNodeTreeFromJsonOptions = {},
   ): SparkNodeTree {
     const next = normalizeFromJsonOptions(options)
@@ -317,6 +357,38 @@ export class SparkNodeTree {
       root,
       ...(next.historyLimit !== undefined ? { historyLimit: next.historyLimit } : {}),
     })
+  }
+
+  /**
+   * 从 rule.json 输入创建页面树。
+   *
+   * rule.json 可以是：
+   * - 单个 SparkNode：作为页面唯一顶层组件
+   * - SparkNode[]：作为页面 children
+   * - spark-page 根节点：作为完整页面树
+   *
+   * 进入 SparkNodeTree 后统一为单根 `spark-page`。
+   */
+  static fromRuleJson(
+    json: SparkNodeTreeRuleJsonInput,
+    options: SparkNodeTreeFromJsonOptions = {},
+  ): SparkNodeTree {
+    const next = normalizeFromJsonOptions(options)
+    const root = normalizeRuleRootFromJsonInput(json, next.fillMissingComponentId)
+    return new SparkNodeTree({
+      root,
+      ...(next.historyLimit !== undefined ? { historyLimit: next.historyLimit } : {}),
+    })
+  }
+
+  /**
+   * 从页面 children 创建单根页面树。
+   */
+  static fromPageChildren(
+    children: readonly SparkNode[],
+    options: SparkNodeTreeFromJsonOptions = {},
+  ): SparkNodeTree {
+    return SparkNodeTree.fromJson(createSparkPageRoot(children), options)
   }
 
   /**
@@ -451,7 +523,7 @@ export class SparkNodeTree {
     this._history.push(this._root)
   }
 
-  // ─── 查询 / 统计 API：供 FC 做读操作、定位目标节点、推导下一步修改策略 ───────────
+  // ─── 查询 / 统计 API：供设计时工具读取、定位目标节点、推导下一步修改策略 ───────────
 
   /**
    * 按 componentId 查找节点；未命中时返回 null。
@@ -519,12 +591,12 @@ export class SparkNodeTree {
     return handlers
   }
 
-  // ─── 写入 API：供 FC 把新 SparkNode 写入树中，或修改既有节点结构 / 属性 ─────────
+  // ─── 写入 API：供设计时工具把新 SparkNode 写入树中，或修改既有节点结构 / 属性 ─────────
 
   /**
    * 按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父 id。
    *
-   * 典型用法：当 LLM 知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，
+   * 典型用法：当调用方知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，
    * 调用此方法可一步获取可直接用于 getNode / setProps / removeNode 的真实 id。
    */
   findByType(params: SparkNodeFindByTypeParams): SparkNodeFindByTypeResult {
@@ -587,7 +659,7 @@ export class SparkNodeTree {
   /**
    * 把已有节点移动到当前组件实例或指定子组件的 children 中。
    *
-   * 返回值只包含移动摘要，不回传完整节点子树，避免 FC 结果膨胀。
+   * 返回值只包含移动摘要，不回传完整节点子树，避免结果膨胀。
    */
   moveNode(params: SparkNodeTreeMoveParams): SparkNodeMoveResult {
     const next = normalizeMoveParams(params)
@@ -966,37 +1038,11 @@ function assertNodeLike(node: unknown, fieldName: string): asserts node is Spark
   }
 }
 
-function assertNoPropsId(node: SparkNode, fieldName: string): void {
-  const props = (node as { props?: unknown }).props
-  if (
-    props !== null
-    && props !== undefined
-    && typeof props === 'object'
-    && !Array.isArray(props)
-    && Object.prototype.hasOwnProperty.call(props, 'id')
-  ) {
-    throw new Error(`${fieldName}.props.id has been removed. Use ${fieldName}.id as the top-level SparkNode id.`)
-  }
-}
-
-function assertNoPropsIdRecursive(node: SparkNode, fieldName: string): void {
-  assertNoPropsId(node, fieldName)
-
-  const children = (node as { children?: unknown }).children
-  if (!Array.isArray(children)) return
-
-  children.forEach((child, index) => {
-    if (!isSparkNode(child)) return
-    assertNoPropsIdRecursive(child, `${fieldName}.children[${index}]`)
-  })
-}
-
 /**
  * 断言并返回 SparkNode。
  */
 function requireSparkNode(value: unknown, fieldName: string): SparkNode {
   assertNodeLike(value, fieldName)
-  assertNoPropsIdRecursive(value, fieldName)
   return normalizeSparkNode(value)
 }
 
@@ -1235,7 +1281,7 @@ function normalizeFindByTypeParams(params: SparkNodeFindByTypeParams): SparkNode
  * 归一化 fromJson 输入，并按需补齐缺失组件 id。
  */
 function normalizeRootFromJsonInput(
-  json: SparkNode | Record<string, unknown> | string,
+  json: SparkNodeTreeJsonInput,
   fillMissingComponentId: boolean,
 ): SparkNode {
   const parsed = parseSparkNodeJsonInput(json)
@@ -1243,10 +1289,47 @@ function normalizeRootFromJsonInput(
   return normalizeSparkNodeWithComponentIds(root, fillMissingComponentId)
 }
 
+function normalizeRuleRootFromJsonInput(
+  json: SparkNodeTreeRuleJsonInput,
+  fillMissingComponentId: boolean,
+): SparkNode {
+  const parsed = parseSparkNodeJsonInput(json)
+  if (Array.isArray(parsed)) {
+    return normalizeSparkNodeWithComponentIds(createSparkPageRoot(requireRuleChildren(parsed)), fillMissingComponentId)
+  }
+  if (!isSparkNode(parsed)) {
+    throw new Error('rule.json 顶层必须是 SparkNode 或 SparkNode[]')
+  }
+
+  const normalized = requireSparkNode(parsed, 'rule.json.root')
+  if (normalized.type === SPARK_PAGE_NODE_TYPE) {
+    return normalizeSparkNodeWithComponentIds(normalizeSparkPageRoot(normalized), fillMissingComponentId)
+  }
+  return normalizeSparkNodeWithComponentIds(createSparkPageRoot([normalized]), fillMissingComponentId)
+}
+
+function normalizeSparkPageRoot(root: SparkNode): SparkNode {
+  const children = Array.isArray(root.children) ? requireRuleChildren(root.children) : []
+  return {
+    ...root,
+    id: readNodeId(root) ?? SPARK_PAGE_ROOT_ID,
+    children,
+  }
+}
+
+function requireRuleChildren(children: readonly unknown[]): SparkNode[] {
+  return children.map((child, index) => {
+    if (!isSparkNode(child)) {
+      throw new Error(`rule.json 节点必须是 SparkNode：第 ${index} 项需要非空字符串 type`)
+    }
+    return requireSparkNode(child, `rule.json[${index}]`)
+  })
+}
+
 /**
  * 解析 SparkNode JSON 输入。
  */
-function parseSparkNodeJsonInput(json: SparkNode | Record<string, unknown> | string): unknown {
+function parseSparkNodeJsonInput(json: SparkNodeTreeJsonInput | SparkNodeTreeRuleJsonInput): unknown {
   if (typeof json !== 'string') return json
   const trimmed = json.trim()
   if (trimmed.length === 0) {
@@ -1298,15 +1381,7 @@ function normalizeSparkNodeWithComponentIdsRecursive(
     usedIds.add(componentId)
   }
 
-  const sourceProps = source['props']
-  const baseProps = sourceProps !== null
-    && sourceProps !== undefined
-    && typeof sourceProps === 'object'
-    && !Array.isArray(sourceProps)
-    ? { ...(sourceProps as Record<string, unknown>) }
-    : (normalized.props !== undefined ? { ...normalized.props } : undefined)
-
-  const nextProps = baseProps === undefined ? undefined : { ...baseProps }
+  const nextProps = normalized.props !== undefined ? { ...normalized.props } : undefined
 
   const nextNode: Record<string, unknown> = {
     type: normalized.type,

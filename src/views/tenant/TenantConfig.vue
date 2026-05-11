@@ -144,7 +144,7 @@
  * 租户配置结构：
  * - **租户信息**：tenantId, tenantName, tenantCode, theme
  * - **应用配置**：apiBaseUrl, version, logLevel, enableMock, features
- * - **页面配置**：source, apiBaseUrl, localPrefix, homePath
+ * - **页面配置**：apiBaseUrl, homePath
  * 
  * @example
  * 路由配置：
@@ -188,7 +188,6 @@ const config = ref<AppFullConfig['config']>({
   features: {}
 })
 const pageConfig = ref<AppFullConfig['pageConfig']>({
-  source: 'local',
   apiBaseUrl: '/api',
   homePath: '/home'
 })

@@ -54,10 +54,8 @@
   },
   "dependencies": {
     "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-component": "workspace:*",
     "@spark-view/spark-page-config": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*",
-    "vue": "3.5.32"
+    "@spark-view/spark-utils": "workspace:*"
   },
   "scripts": {
     "clean": "rimraf dist",

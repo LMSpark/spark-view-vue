@@ -16,7 +16,7 @@ import type {
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
 import { refreshRoutes } from './nav-access'
-import { CrossProjectRefPage } from '../router/cross-project-ref-page'
+import { CrossProjectRefPage, createCrossProjectRefRouteProps } from '../router/cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../router/cross-project-ref-route'
 
 /* ══════════════════════════════════════════════════════════
@@ -451,18 +451,24 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   }
 
   function ensureCrossProjectRefHostRoute(): boolean {
-    if (router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)) return true
+    const existing = router.getRoutes().find(routeRecord => routeRecord.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
+    const existingProps = existing?.props as Record<string, unknown> | undefined
+    if (existing?.meta['crossProjectRefHost'] === true && typeof existingProps?.['default'] === 'function') return true
 
     const configLoader = findRegisteredConfigLoader()
     if (configLoader === null) return false
+    if (existing?.name !== undefined) {
+      router.removeRoute(existing.name)
+    }
 
     router.addRoute({
       path: '/t/:tenantId/:projectId/__ref/:refNodeId',
       name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
       component: CrossProjectRefPage,
-      props: { configLoader },
+      props: createCrossProjectRefRouteProps(configLoader),
       meta: {
         type: 'cross-project-ref',
+        crossProjectRefHost: true,
       },
     })
     return router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)

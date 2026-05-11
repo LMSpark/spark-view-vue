@@ -3,11 +3,11 @@
  *
  * 策略：
  * - createFileLoader 被 mock，直接控制 fileLoader.load() 返回值
- * - 远程与本地读取都委托 FileLoader，以覆盖统一缓存路径
+ * - 页面四文件读取都委托 FileLoader，以覆盖统一缓存路径
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { FileLoadResult } from '@spark-view/spark-utils'
+import { createFileLoader, createRequest, type FileLoadResult } from '@spark-view/spark-utils'
 import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
 import type { RuleConfig, SparkNode } from '@spark-view/spark-page-config'
 import { DataSet } from '@spark-view/spark-data'
@@ -101,14 +101,14 @@ describe('PageConfigLoader', () => {
   })
 
   // ─────────────────────────────────────────────────────────────────
-  // source: 'local'（使用 FileLoader）
+  // 默认远程文件 API（使用 FileLoader）
   // ─────────────────────────────────────────────────────────────────
 
-  describe("source: 'local'", () => {
+  describe('default remote source', () => {
     let loader: PageConfigLoader
 
     beforeEach(() => {
-      loader = new PageConfigLoader({ source: 'local' })
+      loader = new PageConfigLoader()
     })
 
     it('loadRule: 成功返回规则数组', async () => {
@@ -242,14 +242,33 @@ describe('PageConfigLoader', () => {
   })
 
   // ─────────────────────────────────────────────────────────────────
-  // source: 'remote'（同样使用 FileLoader，获得本地缓存）
+  // 显式 API 基础路径
   // ─────────────────────────────────────────────────────────────────
 
-  describe("source: 'remote'", () => {
+  describe('custom apiBaseUrl', () => {
     let loader: PageConfigLoader
 
     beforeEach(() => {
-      loader = new PageConfigLoader({ source: 'remote', apiBaseUrl: '/api' })
+      loader = new PageConfigLoader({ apiBaseUrl: '/api' })
+    })
+
+    it('pagesConfigBaseUrl: 四文件加载使用项目 scoped 地址，通用 HTTP client 保持 apiBaseUrl', () => {
+      const pagesConfigBaseUrl = '/api/tenants/lmspark/projects/homepage/pages-config'
+      const getHeaders = () => ({ Authorization: 'Bearer token' })
+
+      loader = new PageConfigLoader({
+        apiBaseUrl: '/api',
+        pagesConfigBaseUrl,
+        getHeaders,
+      })
+
+      expect(vi.mocked(createFileLoader)).toHaveBeenLastCalledWith(expect.objectContaining({
+        baseUrl: pagesConfigBaseUrl,
+        getHeaders,
+      }))
+      expect(vi.mocked(createRequest)).toHaveBeenLastCalledWith(expect.objectContaining({
+        baseURL: '/api',
+      }))
     })
 
     it('loadRule: 远程读取 pages-config 文件接口并编译规则', async () => {
@@ -291,6 +310,29 @@ describe('PageConfigLoader', () => {
       expect(r.success).toBe(true)
       expect(r.data?.rule[0]).toMatchObject({ type: 'section', id: 'missing-rule-json' })
       expect(JSON.stringify(r.data?.rule)).toContain('missing-page/rule.json 不存在')
+    })
+
+    it('loadPageConfig: 文件清单确认缺失时直接生成占位，不触发四文件 GET', async () => {
+      mockRequestClient.get.mockResolvedValue([
+        { pageId: 'data-report', files: [] },
+      ])
+
+      const r = await loader.loadPageConfig('data-report')
+
+      expect(r.success).toBe(true)
+      expect(mockRequestClient.get).toHaveBeenCalledWith('/__list', undefined, {
+        meta: { silentHttpError: true },
+      })
+      expect(mockFileLoader.load).not.toHaveBeenCalled()
+      expect(r.data?.data).toBeInstanceOf(DataSet)
+      expect(r.data?.script).toBe('')
+      expect(r.data?.css).toBe('')
+      expect(r.data?.rule).toEqual([
+        expect.objectContaining({ id: 'missing-rule-json' }),
+        expect.objectContaining({ id: 'missing-pagedata-json' }),
+        expect.objectContaining({ id: 'missing-script-js' }),
+        expect.objectContaining({ id: 'missing-style-css' }),
+      ])
     })
 
     it('loadPageConfig: 远程 pagedata.json 不存在时用空 DataSet 并追加缺失占位 SparkNode', async () => {
@@ -380,16 +422,14 @@ describe('PageConfigLoader', () => {
       })
     })
 
-    it('loadPageFileContent: 远程 rule.json 不存在时返回缺失占位 SparkNode 文本', async () => {
+    it('loadPageFileContent: 远程 rule.json 不存在时返回 not-found，不伪造编辑文本', async () => {
       mockFileLoader.load.mockResolvedValue({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadPageFileContent('missing-page', 'rule.json')
 
-      expect(r.success).toBe(true)
-      expect(r.source).toBe('remote')
-      expect(r.data).toContain('"type": "section"')
-      expect(r.data).toContain('missing-page/rule.json 不存在')
-      expect(() => compileRule(r.data ?? '')).not.toThrow()
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(r.data).toBeUndefined()
     })
 
     it('loadPageFileContent: 远程 script/style 不存在时返回失败，不生成空文本', async () => {
@@ -469,6 +509,11 @@ describe('PageConfigFileApi', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('compileRule', () => {
+  it('空 rule.json 作为空规则树处理', () => {
+    expect(compileRule('')).toEqual([])
+    expect(compileRule('   \n')).toEqual([])
+  })
+
   it('解析 JSON 数组为 SparkNode[]', () => {
     const raw = JSON.stringify([{ type: 'div', id: 'root', props: { class: 'page-root' } }])
     const result = compileRule(raw)
@@ -479,15 +524,31 @@ describe('compileRule', () => {
     expect(result[0]!.children).toEqual([])
   })
 
-  it('拒绝 props.id，RuleConfig 与 SparkNode 结构保持一致', () => {
+  it('兼容 props.id 输入，规范化后只保留顶层 id', () => {
+    const raw = JSON.stringify([{
+      type: 'r-table',
+      props: {
+        id: 'legacy-table',
+        dataKey: 'Orders@rows',
+      },
+    }])
+    const result = compileRule(raw)
+    expect(result[0]!.id).toBe('legacy-table')
+    expect(result[0]!.props).toEqual({ dataKey: 'Orders@rows' })
+  })
+
+  it('props.id 与顶层 id 同时存在时以顶层 id 为准', () => {
     const raw = JSON.stringify([{
       type: 'r-table',
       id: 'orders-table',
       props: {
         id: 'legacy-table',
+        dataKey: 'Orders@rows',
       },
     }])
-    expect(() => compileRule(raw)).toThrow(/props\.id has been removed/)
+    const result = compileRule(raw)
+    expect(result[0]!.id).toBe('orders-table')
+    expect(result[0]!.props).toEqual({ dataKey: 'Orders@rows' })
   })
 
   it('RuleConfig 与 SparkNode 可直接互换', () => {
@@ -542,11 +603,18 @@ describe('compileRule', () => {
     expect(result[3]!.props).toEqual({ value: true, modelValue: false })
   })
 
-  it('单对象自动包装为数组', () => {
+  it('单根 SparkNode 作为规则树处理', () => {
     const raw = JSON.stringify({ type: 'el-button', props: { text: 'OK' } })
     const result = compileRule(raw)
-    expect(Array.isArray(result)).toBe(true)
+
+    expect(result).toHaveLength(1)
     expect(result[0]!.type).toBe('el-button')
+    expect(result[0]!.props).toEqual({ text: 'OK' })
+  })
+
+  it('非法 rule.json 根结构抛错', () => {
+    const raw = JSON.stringify('not-a-node')
+    expect(() => compileRule(raw)).toThrow(/SparkNode 或 SparkNode\[\]/)
   })
 
   it('type 缺失时抛错', () => {
@@ -603,6 +671,11 @@ describe('normalizeRuleNode', () => {
 describe('parsePageData', () => {
   const makeRaw = (name: string, tables: Record<string, unknown> = {}) =>
     JSON.stringify({ dataSetName: name, tables, version: undefined, pageId: undefined })
+
+  it('空 pagedata.json 作为空 DataSet 处理', () => {
+    const result = parsePageData('')
+    expect(result).toBeInstanceOf(DataSet)
+  })
 
   it('返回 DataSet 实例', () => {
     const result = parsePageData(makeRaw('OrderDS'))

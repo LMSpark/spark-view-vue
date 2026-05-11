@@ -8,12 +8,27 @@ import type { DevState, PageFileName } from '../useDevState'
 export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageFileName>>) {
   const doc = computed(() => state.documents[activeFile.value])
 
-  const isReady = computed(() => doc.value.loadState.value === 'loaded')
+  const isReady = computed(() => {
+    void state.pageFilesRevision.value
+    return doc.value.loadState.value === 'loaded'
+  })
   const isDirty = computed(() => state.isDocumentDirty(activeFile.value))
-  const canUndo = computed(() => doc.value.canUndo.value)
-  const canRedo = computed(() => doc.value.canRedo.value)
-  const text = computed(() => doc.value.text.value)
-  const parseError = computed(() => doc.value.parseError.value)
+  const canUndo = computed(() => {
+    void state.pageFilesRevision.value
+    return doc.value.canUndo.value
+  })
+  const canRedo = computed(() => {
+    void state.pageFilesRevision.value
+    return doc.value.canRedo.value
+  })
+  const text = computed(() => {
+    void state.pageFilesRevision.value
+    return doc.value.text.value
+  })
+  const parseError = computed(() => {
+    void state.pageFilesRevision.value
+    return doc.value.parseError.value
+  })
 
   async function ensureLoaded(options?: { forceReload?: boolean }) {
     if (!state.activePageId.value) return

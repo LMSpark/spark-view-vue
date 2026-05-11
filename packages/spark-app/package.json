@@ -43,8 +43,8 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },
   "peerDependencies": {
-    "@vueuse/core": ">=10.0.0",
-    "vue": "^3.5.27",
+    "@vueuse/core": "^14.2.1",
+    "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {

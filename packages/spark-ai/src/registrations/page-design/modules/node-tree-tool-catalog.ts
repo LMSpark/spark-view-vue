@@ -10,28 +10,11 @@ import {
   type PageDesignFunctionRuntimeBinding,
   PageDesignToolCatalog,
 } from './tool-catalog'
+import type { SparkNodeTreeMethodKey } from '@spark-view/spark-page-config'
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'
-export type SparkNodeTreeToolFunctionId =
-  | 'getNode'
-  | 'getLocation'
-  | 'hasNode'
-  | 'getParent'
-  | 'listChildren'
-  | 'countNodes'
-  | 'getAllData'
-  | 'collectHandlerNames'
-  | 'findByType'
-  | 'addNode'
-  | 'addNodes'
-  | 'moveNode'
-  | 'setProps'
-  | 'setPropsBatch'
-  | 'replaceNode'
-  | 'replaceNodes'
-  | 'removeNode'
-  | 'removeNodes'
+export type SparkNodeTreeToolFunctionId = SparkNodeTreeMethodKey
 type SparkNodeTreeToolBaseFields = {
   functionId: SparkNodeTreeToolFunctionId
   type: 'describe' | 'request'
@@ -268,6 +251,19 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     paramsSchema: NO_PARAMS,
     resultSchema: {
       root: 'SparkNode — 当前绑定组件实例完整子树快照（等价 toJSON 返回值）',
+    },
+    example: NO_PARAMS,
+    usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
+    failureModes: [],
+  }),
+  defineDescribeRow({
+    functionId: 'collectDataKeys',
+    target: 'tree',
+    coreMethod: 'collectDataKeys',
+    description: '收集当前组件实例子树中出现过的全部唯一 dataKey，用于确认页面现有数据绑定。',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      dataKeys: 'Set<string> — 唯一 dataKey 集合',
     },
     example: NO_PARAMS,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],

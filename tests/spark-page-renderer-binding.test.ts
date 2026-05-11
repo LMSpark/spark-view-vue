@@ -282,8 +282,168 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(refreshButtonProps['onClick']).toBeUndefined()
   })
 
-  it('rejects legacy props.id in page rules', () => {
-    expect(() => buildPageChildren([
+  it('does not infer host route name as pageId on cross-project-ref routes', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/t/:tenantId/:projectId/__ref/:refNodeId',
+          name: 'spark-cross-project-ref-host',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+          meta: {
+            type: 'cross-project-ref',
+            crossProjectRefHost: true,
+          },
+        },
+      ],
+    })
+    const loadPageConfig = vi.fn()
+
+    await router.push('/t/lmspark/homepage/__ref/ref-node')
+    await router.isReady()
+
+    mount(SparkPageRenderer, {
+      props: {
+        configLoader: {
+          loadPageConfig,
+          loadRule: vi.fn(),
+          loadPageData: vi.fn(),
+          loadScript: vi.fn(),
+          loadCss: vi.fn(),
+          loadPageFileContent: vi.fn(),
+          clearCache: vi.fn(),
+          getCacheStats: () => ({ size: 0, keys: [] }),
+        },
+      },
+      global: {
+        plugins: [Spark.createPlugin(), router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(loadPageConfig).not.toHaveBeenCalled()
+  })
+
+  it('loads explicit target pageId inside cross-project-ref routes', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/t/:tenantId/:projectId/__ref/:refNodeId',
+          name: 'spark-cross-project-ref-host',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+          meta: {
+            type: 'cross-project-ref',
+            crossProjectRefHost: true,
+          },
+        },
+      ],
+    })
+    const pageConfig = createPageConfig('跨项目目标')
+    const loadPageConfig = vi.fn(async () => ({
+      success: true,
+      data: {
+        ...pageConfig,
+        pageId: 'project-list',
+      },
+      source: 'remote' as const,
+      timestamp: Date.now(),
+    }))
+
+    await router.push('/t/lmspark/homepage/__ref/ref-node')
+    await router.isReady()
+
+    mount(SparkPageRenderer, {
+      props: {
+        pageId: 'project-list',
+        configLoader: {
+          loadPageConfig,
+          loadRule: vi.fn(),
+          loadPageData: vi.fn(),
+          loadScript: vi.fn(),
+          loadCss: vi.fn(),
+          loadPageFileContent: vi.fn(),
+          clearCache: vi.fn(),
+          getCacheStats: () => ({ size: 0, keys: [] }),
+        },
+      },
+      global: {
+        plugins: [Spark.createPlugin(), router],
+      },
+      slots: {
+        content: ({ children }: { children: unknown }) => h('pre', { class: 'children-json' }, JSON.stringify(children)),
+      },
+    })
+
+    await flushPromises()
+
+    expect(loadPageConfig).toHaveBeenCalledWith('project-list')
+  })
+
+  it('does not reload an explicit pageId when the global route changes', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/pages/old',
+          name: 'old-page',
+          component: defineComponent({ name: 'OldRouteStub', render: () => h('div') }),
+          meta: { type: 'config-page', pageId: 'old-page' },
+        },
+        {
+          path: '/pages/new',
+          name: 'new-page',
+          component: defineComponent({ name: 'NewRouteStub', render: () => h('div') }),
+          meta: { type: 'config-page', pageId: 'new-page' },
+        },
+      ],
+    })
+    const loadPageConfig = vi.fn(async (pageId: string) => ({
+      success: true,
+      data: {
+        ...createPageConfig(pageId),
+        pageId,
+      },
+      source: 'remote' as const,
+      timestamp: Date.now(),
+    }))
+
+    await router.push('/pages/old')
+    await router.isReady()
+
+    mount(SparkPageRenderer, {
+      props: {
+        pageId: 'old-page',
+        configLoader: {
+          loadPageConfig,
+          loadRule: vi.fn(),
+          loadPageData: vi.fn(),
+          loadScript: vi.fn(),
+          loadCss: vi.fn(),
+          loadPageFileContent: vi.fn(),
+          clearCache: vi.fn(),
+          getCacheStats: () => ({ size: 0, keys: [] }),
+        },
+      },
+      global: {
+        plugins: [Spark.createPlugin(), router],
+      },
+    })
+
+    await flushPromises()
+    expect(loadPageConfig).toHaveBeenCalledTimes(1)
+    expect(loadPageConfig).toHaveBeenLastCalledWith('old-page')
+
+    await router.push('/pages/new')
+    await router.isReady()
+    await flushPromises()
+
+    expect(loadPageConfig).toHaveBeenCalledTimes(1)
+  })
+
+  it('promotes legacy props.id in page rules', () => {
+    const children = buildPageChildren([
       {
         type: 'r-button',
         props: {
@@ -294,7 +454,10 @@ describe('SparkPageRenderer root props aggregation', () => {
     ] as never, {
       callFunc: () => undefined,
       actionCtx: createActionContext(),
-    })).toThrow(/props\.id has been removed/)
+    })
+
+    expect(children[0]?.id).toBe('legacy-button')
+    expect(children[0]?.props).toEqual({ label: '旧按钮' })
   })
 
   it('tree-node-scope demo keeps native tree props typed and button clicks executable', () => {

@@ -72,7 +72,6 @@ export interface AppFullConfig {
 
   /** 页面配置系统 */
   pageConfig: {
-    source: 'local' | 'remote'
     apiBaseUrl: string
     timeout?: number
     homePath: string
