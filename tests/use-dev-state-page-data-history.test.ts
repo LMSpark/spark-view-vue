@@ -310,18 +310,6 @@ describe('useDevState documents SSOT', () => {
     expect(state.pageDataDirty.value).toBe(true)
   })
 
-  it('edit tool host returns null for empty pagedata', () => {
-    const state = useDevState()
-    state.activePageId.value = 'orders-page'
-
-    const toolHost = state.getEditToolHost()
-    const first = toolHost.getDataSetTool?.()
-    const second = toolHost.getDataSetTool?.()
-
-    expect(first).toBeNull()
-    expect(second).toBe(first)
-    expect(state.documents['pagedata.json'].model.value).toBeNull()
-  })
 })
 
 function isDocumentDirty(doc: { text: { value: string }; savedText: { value: string } }): boolean {

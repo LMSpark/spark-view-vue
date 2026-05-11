@@ -118,7 +118,7 @@ export class LlmParamsValidator {
 
   private constructor() {}
 
-  /** 生成缺少顶层参数的统一提示，供业务工具复用。 */
+  /** 生成缺少顶层参数的统一提示，供注册方工具复用。 */
   static missingParam(name: string): string {
     return `缺少 ${name} 参数`
   }

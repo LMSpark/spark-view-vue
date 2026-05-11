@@ -66,12 +66,12 @@ describe('useAiPanelStore', () => {
   it('supports reactive storageKey via Ref, used for per-page history', async () => {
     const store = useAiPanelStore()
     const pageId = ref('page-1')
-    const storageKey = ref(`devsystem-ai-chat:${pageId.value}`)
+    const storageKey = ref(`panel-session:${pageId.value}`)
     const descriptor = makeConfig({ storageKey })
     await store.open(descriptor)
-    expect(store.storageKey.value).toBe('devsystem-ai-chat:page-1')
-    storageKey.value = 'devsystem-ai-chat:page-2'
-    expect(store.storageKey.value).toBe('devsystem-ai-chat:page-2')
+    expect(store.storageKey.value).toBe('panel-session:page-1')
+    storageKey.value = 'panel-session:page-2'
+    expect(store.storageKey.value).toBe('panel-session:page-2')
   })
 
   it('externalToolLogs proxies a Ref and updates reactively', async () => {
@@ -119,19 +119,19 @@ describe('useAiPanelStore', () => {
     const pageId = ref('page-1')
     const beforeOpen = vi.fn(async () => {})
     const descriptor = makeConfig({
-      storageKey: () => `devsystem-ai-chat:${pageId.value}`,
+      storageKey: () => `panel-session:${pageId.value}`,
       beforeOpen,
     })
     await store.open(descriptor)
     expect(store.visible.value).toBe(true)
-    expect(store.storageKey.value).toBe('devsystem-ai-chat:page-1')
+    expect(store.storageKey.value).toBe('panel-session:page-1')
 
     pageId.value = 'page-2'
     await store.sync(descriptor)
 
     expect(beforeOpen).toHaveBeenCalledTimes(2)
     expect(store.visible.value).toBe(true)
-    expect(store.storageKey.value).toBe('devsystem-ai-chat:page-2')
+    expect(store.storageKey.value).toBe('panel-session:page-2')
   })
 
   it('toggle() flips visibility without descriptor (empty-state allowed)', () => {

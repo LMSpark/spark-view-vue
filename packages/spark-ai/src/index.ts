@@ -11,8 +11,9 @@
 export {
   AiRuntime,
   AiInvocationProtocol,
+  LlmParameterSchema,
   LlmParamsValidator,
-  KnowledgePayloadRegistry,
+  ParameterPayloadRegistry,
 } from './core'
 
 export type {
@@ -33,6 +34,10 @@ export type {
   AiRuntimeFunctionCallTranslation,
   AiRuntimeFunctionCallTranslationResult,
   AiRuntimeFunctionCallResult,
+  AiRuntimeFunctionCallResultNormalizer,
+  AiRuntimeFunctionCallRunInput,
+  AiRuntimeFunctionCallRunner,
+  AiRuntimeFunctionCallValidator,
   AiRuntimeFunctionExposure,
   AiRuntimeFunctionResultMessage,
   AiRuntimeHistoryEntry,
@@ -52,6 +57,7 @@ export type {
   AiRuntimeModulePath,
   AiRuntimeOptions,
   AiRuntimeProjectModuleOptions,
+  AiRuntimeExecuteFunctionCallOptions,
   AiRuntimeRecordFunctionCallRequestOptions,
   AiRuntimeSessionRecord,
   AiRuntimeSessionLifecycleSnapshot,
@@ -61,6 +67,7 @@ export type {
   AiRuntimeStopInstanceOptions,
   AiRuntimeStopInstanceResult,
   AiRuntimeTranslateFunctionCallOptions,
+  AiRegisteredModuleExecuteFunctionCallOptions,
   AiRuntimeInstanceScope,
   AiFunctionRegistration,
   FunctionFailureMode,
@@ -72,93 +79,98 @@ export type {
   ProtocolMessage,
   TokenUsage,
   StreamCallbacks,
+  ArrayItemKind,
+  LeafKind,
+  LlmParamArraySchema,
+  LlmParamEnumSchema,
+  LlmParamObjectSchema,
+  LlmParameterSchemaNode,
+  LlmParameterSchemaRoot,
   LlmParamValidationIssue,
   LlmParamValidationOptions,
   LlmParamValidationResult,
-  KnowledgePayloadGuide,
-  KnowledgePayloadProvider,
-  KnowledgePayloadQueryFilter,
-  KnowledgePayloadSummary,
+  ParsedLeafDescription,
+  ParameterPayloadFailureMode,
+  ParameterPayloadGuide,
+  ParameterPayloadProvider,
+  ParameterPayloadQueryFilter,
+  ParameterPayloadSummary,
 } from './core'
 
 export {
-  PageDesignComponentPayloadProvider,
+  PageDesignModule,
+  SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
+  SPARK_COMPONENT_PAYLOAD_REF,
+  guidePageDesignComponentPayload,
+  queryPageDesignComponentPayloads,
   PageDesignDatasetCatalog,
   PageDesignEditActionClassifier,
-  PageDesignEditFunctionClassifier,
   PageDesignEditFlowPrompts,
   PageDesignEditRuntimePrompt,
-  PageDesignEditSession,
+  PageDesignKnowledgeCatalog,
   PageDesignLifecycleCatalog,
   PageDesignNodeTreeCatalog,
-  PageDesignPageCache,
-  PageDesignModule,
   PageDesignTextModelCatalog,
-} from './business/page-design'
+} from './registrations/page-design'
 
 export type {
+  DatasetCrudToolFunctionCapabilityRow,
+  DatasetCrudToolFunctionFailureMode,
+  DatasetCrudToolFunctionId,
+  DatasetCrudToolFunctionParameterRow,
+  DatasetCrudToolFunctionTarget,
+  EditLifecycleFunctionCapabilityRow,
+  EditLifecycleFunctionFailureMode,
+  EditLifecycleFunctionId,
+  EditLifecycleFunctionParameterRow,
+  EditLifecycleFunctionTarget,
+  JsonDocFunctionCapabilityRow,
+  JsonDocFunctionFailureMode,
+  JsonDocFunctionId,
+  JsonDocFunctionParameterRow,
+  JsonDocFunctionTarget,
+  JsonDocType,
   PageDesignAppendMessageOptions,
-  PageDesignExecuteFunctionCallOptions,
+  PageDesignKnowledgeFunctionCapabilityRow,
+  PageDesignKnowledgeFunctionFailureMode,
+  PageDesignKnowledgeFunctionId,
+  PageDesignKnowledgeFunctionParameterRow,
+  PageDesignKnowledgeFunctionTarget,
   PageDesignModuleContext,
+  PageDesignExecuteFunctionCallOptions,
+  PageDesignModuleId,
   PageDesignModuleOptions,
   PageDesignRuntimeContext,
-  PageDesignServiceState,
   PageDesignStopSessionOptions,
-  EditToolHost,
-  PageDesignNodeTree,
+  SparkNodeTreeToolCapabilityRow,
+  SparkNodeTreeToolFailureMode,
+  SparkNodeTreeToolFunctionId,
+  SparkNodeTreeToolParameterRow,
+  SparkNodeTreeToolTarget,
+  TextModelFunctionCapabilityRow,
+  TextModelFunctionFailureMode,
+  TextModelFunctionFileKey,
+  TextModelFunctionId,
+  TextModelFunctionParameterRow,
+  TextModelFunctionTarget,
+} from './registrations/page-design'
+
+export {
+  PageDesignEditSession,
+  PageDesignPageCache,
+  PageDesignService,
+} from './services/page-design'
+
+export type {
+  PageDesignEditPhase,
+  PageDesignEditHost,
+  PageDesignEditState,
   PageCacheHandle,
-} from './business/page-design'
-
-export { COMPONENT_CATALOG_JSON } from './catalog'
-
-export {
-  projectFrameworkNeutralCatalog,
-  projectComponentDirectory,
-  projectComponentSpec,
-  projectComponentConfigGuide,
-  projectFunctionCatalog,
-  projectHydratedComponent,
-  projectDevTypes,
-  projectDevPropNames,
-  projectDevPropEnums,
-} from './catalog'
-
-export type {
-  ComponentDirectoryPayload,
-  ComponentSpec,
-  ComponentConfigGuide,
-  HydratedComponentEntry,
-  HydratedPropEntry,
-  HydratedEmitEntry,
-} from './catalog'
-
-export type {
-  RawComponentCatalog,
-  RawComponentEntry,
-  ComponentCatalog,
-  ComponentEntry,
-  ComponentRegistry,
-  PropEntry,
-  PropSchema,
-  EmitEntry,
-  PlatformConstraints,
-  NestingRule,
-  RootFieldEntry,
-  CatalogBindingDescriptor,
-  SharedTypeDefinition,
-} from './catalog'
-
-export {
-  DEV_TYPES,
-  DEV_PROP_NAMES,
-  DEV_PROP_ENUMS,
-  DEV_TYPE_LABELS,
-  DEV_REQUIRED_PROPS,
-} from './catalog'
-
-export type {
-  FunctionCatalog,
-  FunctionCatalogRegistry,
-  FunctionComponentEntry,
-  FunctionPropEntry,
-} from './catalog'
+  PageDesignNodeTree,
+  PageDesignServiceContext,
+  PageDesignServiceResult,
+  PageDesignServiceState,
+  PageDesignTextFileKey,
+  PageDesignJsonDocOperation,
+  PageDesignServiceMethodBinding,
+} from './services/page-design'

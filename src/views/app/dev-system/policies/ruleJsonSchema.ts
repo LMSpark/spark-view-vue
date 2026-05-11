@@ -1,6 +1,6 @@
 // rule.json JSON Schema — 描述 SparkNode[] 配置数组的结构
 
-import { DEV_TYPES } from '@spark-view/spark-ai'
+import { DEV_TYPES } from './devComponentMetadata'
 
 type JsonSchemaNode = Record<string, unknown>
 
@@ -23,7 +23,7 @@ export const RULE_JSON_SCHEMA: Record<string, unknown> = {
       type: 'object',
       properties: {
         type: withMeta('组件类型 Component Type', '组件注册名（kebab-case），如 r-table / el-button / div。', { type: 'string', enum: DEV_TYPES }),
-        id: withMeta('节点标识 Component ID', 'SparkNode 顶层稳定 id，用于脚本寻址、AI 编辑和渲染 key。不要放到 props.id。', { type: 'string' }),
+        id: withMeta('节点标识 Component ID', 'SparkNode 顶层稳定 id，用于脚本寻址和渲染 key。不要放到 props.id。', { type: 'string' }),
         props: withMeta('组件属性 Props', '传给组件的业务属性。dataKey / field / label / on / visible / disabled 等在此声明；id 必须写在节点顶层。', {
           type: 'object',
           additionalProperties: true,

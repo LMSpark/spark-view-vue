@@ -6,7 +6,7 @@ import {
 } from '../packages/spark-data/src'
 import {
   PageDesignDatasetCatalog,
-} from '../packages/spark-ai/src/business/page-design/functions/dataset'
+} from '../packages/spark-ai/src/registrations/page-design/modules/dataset-tool-catalog'
 
 const catalog = new PageDesignDatasetCatalog()
 
@@ -56,6 +56,26 @@ describe('dataset tool protocol contract', () => {
       functionId: 'createTable',
       paramsRef: 'createTable',
       crudToolMethod: 'createTable',
+    })
+  })
+
+  it('declares runtime binding and registration status on parameter rows', () => {
+    expect(catalog.getParameterRow('createTable')).toMatchObject({
+      runtimeRegistration: 'registered',
+      runtimeBinding: {
+        kind: 'page-design-service',
+        method: 'useDatasetMethod',
+        targetMethod: 'createTable',
+      },
+    })
+
+    expect(catalog.getParameterRow('export')).toMatchObject({
+      runtimeRegistration: 'catalog-only',
+      runtimeBinding: {
+        kind: 'page-design-service',
+        method: 'useDatasetMethod',
+        targetMethod: 'toJson',
+      },
     })
   })
 

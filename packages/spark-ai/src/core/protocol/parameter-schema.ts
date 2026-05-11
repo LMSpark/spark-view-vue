@@ -9,7 +9,7 @@
  *
  * 设计约束
  * ────────
- * 1. 这里只做 **结构归一化** 与 **描述字符串解析**，不做任何业务级语义校验。
+ * 1. 这里只做 **结构归一化** 与 **描述字符串解析**，不做任何领域级语义校验。
  * 2. 输出必须保持 fail-fast：找不到类型的描述返回空 `expectedKinds`，
  *    具体如何报错由调用方决定。
  * 3. 不依赖 Vue / 其他 UI 框架，仅依赖纯 TS。
@@ -69,6 +69,17 @@ export interface LlmParamEnumSchema {
   openEnded?: boolean
   note?: string
 }
+
+/** 归一化前可接受的参数 schema 节点写法。 */
+export type LlmParameterSchemaNode =
+  | LlmParamObjectSchema
+  | LlmParamArraySchema
+  | LlmParamEnumSchema
+  | string
+  | Record<string, unknown>
+
+/** 函数 paramsSchema / 参数 payload guide 共用的根 schema。 */
+export type LlmParameterSchemaRoot = Record<string, unknown>
 
 /** 叶子描述能推断出的所有基础类型，包含特殊值 'unknown'。 */
 export type LeafKind = 'string' | 'number' | 'boolean' | 'array' | 'object' | 'unknown'

@@ -59,9 +59,9 @@
 这一步的目的是让 LLM 知道"能选什么组件"，不暴露 props 细节，减少 Token 消耗。
 
 **关键源码**：
-- 业务 Provider：[packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts](../../../packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts)
-- 协议契约：[packages/spark-ai/src/core/protocol/knowledge-payload-contracts.ts](../../../packages/spark-ai/src/core/protocol/knowledge-payload-contracts.ts)
-- 注册与分发：[packages/spark-ai/src/core/knowledge/payload-provider-registry.ts](../../../packages/spark-ai/src/core/knowledge/payload-provider-registry.ts)
+- 业务 Provider：[packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts](../../../packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts)
+- 协议契约：[packages/spark-ai/src/core/protocol/parameter-payload-contracts.ts](../../../packages/spark-ai/src/core/protocol/parameter-payload-contracts.ts)
+- 注册与分发：[packages/spark-ai/src/core/internal/knowledge/parameter-payload-registry.ts](../../../packages/spark-ai/src/core/internal/knowledge/parameter-payload-registry.ts)
 
 ---
 
@@ -94,9 +94,9 @@ A = 'r-table'
 这一步的目的是让 LLM 知道"这个组件怎么配"，给出完整约束以防止幻觉。**这仍然属于组件目录层，不是能力层。**
 
 **关键源码**：
-- 业务 Provider：[packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts](../../../packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts)
-- 业务编排：[packages/spark-ai/src/business/page-design/page-design-business.ts](../../../packages/spark-ai/src/business/page-design/page-design-business.ts)
-- 注册与分发：[packages/spark-ai/src/core/knowledge/payload-provider-registry.ts](../../../packages/spark-ai/src/core/knowledge/payload-provider-registry.ts)
+- 业务 Provider：[packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts](../../../packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts)
+- 业务编排：[packages/spark-ai/src/registrations/page-design/page-design-business.ts](../../../packages/spark-ai/src/registrations/page-design/page-design-business.ts)
+- 注册与分发：[packages/spark-ai/src/core/internal/knowledge/parameter-payload-registry.ts](../../../packages/spark-ai/src/core/internal/knowledge/parameter-payload-registry.ts)
 
 ---
 
@@ -137,8 +137,8 @@ const B: SparkNode = {
 ### 第 5 步：调用 SparkNodeTree FC 写入树
 
 **调用入口**：通过 Stills 系统执行 `sparkNodeTree.addNode` / `sparkNodeTree.addNodes` 等动作
-**执行桥接**：[packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts](../../../packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts)（`EDIT_NODE_TREE_STILLS`）
-**Catalog 来源**：[packages/spark-ai/src/business/page-design/functions/node-tree/tool-catalog.ts](../../../packages/spark-ai/src/business/page-design/functions/node-tree/tool-catalog.ts)（`PageDesignNodeTreeCatalog.parameterTable`）
+**执行桥接**：[packages/spark-ai/src/registrations/page-design/stills/edit/actions/edit-domain.ts](../../../packages/spark-ai/src/registrations/page-design/stills/edit/actions/edit-domain.ts)（`EDIT_NODE_TREE_STILLS`）
+**Catalog 来源**：[packages/spark-ai/src/registrations/page-design/functions/node-tree/tool-catalog.ts](../../../packages/spark-ai/src/registrations/page-design/functions/node-tree/tool-catalog.ts)（`PageDesignNodeTreeCatalog.parameterTable`）
 **底层 API**：[packages/spark-component/src/core/spark-node-tree.ts](../../../packages/spark-component/src/core/spark-node-tree.ts)（`SparkNodeTree` 类）
 
 典型写入调用示例：
@@ -229,14 +229,14 @@ spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
                         └── stills/edit/actions/edit-domain.ts
                                 └── EDIT_NODE_TREE_STILLS ─→ 执行桥接
 
-payload-provider-registry.ts
+core/internal/knowledge/parameter-payload-registry.ts
         ├── queryPayloads()         ─→ 组件目录查询入口
         └── guidePayload()          ─→ 单组件配置指南入口
 
 core/protocol/function-call-schema.ts
         └── generateToolDefinitions() ─→ LLM FC 工具注册入口
 
-business/page-design/fc-dispatcher.ts
+registrations/page-design/fc-dispatcher.ts
         └── dispatchToolCall() ─→ 本地 still 执行分发入口
 ```
 
@@ -294,13 +294,13 @@ Step 4: sparkNodeTree.addNode / sparkNodeTree.addNodes
 
 | 模块职责 | 文件路径 |
 |----------|----------|
-| 组件目录事实源 | `packages/spark-ai/src/catalog/component-catalog.json` |
-| 目录投影层（纯函数） | `packages/spark-ai/src/catalog/catalog-projections.ts` |
-| 目录类型定义 | `packages/spark-ai/src/catalog/types.ts` |
+| 组件目录事实源 | `packages/spark-ai/src/registrations/page-design/payloads/component-catalog.json` |
+| 目录投影层（纯函数） | `packages/spark-ai/src/registrations/page-design/payloads/catalog-projections.ts` |
+| 目录类型定义 | `packages/spark-ai/src/registrations/page-design/payloads/types.ts` |
 | SparkNode 树 API 本体 | `packages/spark-component/src/core/spark-node-tree.ts` |
 | FC 参数类型 | `packages/spark-component/src/core/spark-node-tree.ts`（行 ~1-200） |
-| FC Catalog 表 | `packages/spark-ai/src/business/page-design/stills/node-tree/tool-catalog.ts` |
-| FC 执行桥接 | `packages/spark-ai/src/business/page-design/stills/edit/actions/edit-domain.ts` |
+| FC Catalog 表 | `packages/spark-ai/src/registrations/page-design/stills/node-tree/tool-catalog.ts` |
+| FC 执行桥接 | `packages/spark-ai/src/registrations/page-design/stills/edit/actions/edit-domain.ts` |
 | 元动作（组件目录查询） | `packages/spark-ai/src/stills/meta-methods.ts` |
-| LLM FC 工具注册与分发 | `packages/spark-ai/src/core/protocol/function-call-schema.ts` / `packages/spark-ai/src/core/runtime/fc-dispatcher.ts` |
+| LLM FC 工具注册与翻译 | `packages/spark-ai/src/core/protocol/runtime-contracts.ts` / `packages/spark-ai/src/core/internal/runtime/ai-runtime.ts` |
 | 目录生成器（构建期） | `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` |

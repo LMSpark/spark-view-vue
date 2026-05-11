@@ -169,7 +169,6 @@ interface TargetOption {
 }
 
 const actionTargetOptions: TargetOption[] = [
-  { value: 'action:ai-chat', label: '动作 · AI 对话' },
   { value: 'action:search', label: '动作 · 搜索' },
   { value: 'action:fullscreen', label: '动作 · 全屏' },
   { value: 'action:notifications', label: '动作 · 通知' },

@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import {
   PageDesignModule,
-  type EditToolHost,
+  PageDesignService,
+  type PageDesignEditHost,
 } from '../packages/spark-ai/src'
 import type { SparkNodeTree } from '../packages/spark-component/src'
 import type { DataSetCrudTool } from '../packages/spark-data/src'
 
 function createHost(options: { script?: string; style?: string } = {}): {
-  host: EditToolHost
+  host: PageDesignEditHost
   reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number }
 } {
   let script = options.script ?? 'export default {}'
@@ -39,6 +40,28 @@ function createHost(options: { script?: string; style?: string } = {}): {
 }
 
 describe('pageDesign module definition', () => {
+  it('lets the page-design service be manually orchestrated without an AI session', () => {
+    const { host, reads } = createHost()
+    const service = new PageDesignService({ getEditHost: () => host })
+    const context = {
+      pageId: 'manual-page',
+      requestId: 'manual-run',
+    }
+
+    expect(service.bootstrap(context)).toMatchObject({ ok: true, data: { phase: 'editing' } })
+    expect(service.readTextModel(context, 'script')).toMatchObject({ ok: true, data: { content: 'export default {}' } })
+    expect(service.writeTextModel(context, 'script', 'export default { manual: true }')).toMatchObject({ ok: true })
+    expect(reads().script).toBe('export default { manual: true }')
+
+    const counted = service.useNodeTreeMethod(context, {}, {
+      serviceLabel: 'countNodes',
+      methodName: 'countNodes',
+      mutates: false,
+    })
+    expect(counted).toMatchObject({ ok: true, data: { count: 1 } })
+    expect(service.getState(context).phase).toBe('editing')
+  })
+
   it('registers pageDesign as recursive modules and executes through the registering module', async () => {
     const { host, reads } = createHost()
     const pageDesign = new PageDesignModule({ getEditToolHost: () => host })
@@ -56,6 +79,9 @@ describe('pageDesign module definition', () => {
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@nodeTree@countNodes')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@knowledge@queryPayloads')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listTables')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@export')).toBe(false)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listAggregates')).toBe(false)
+    expect(projection.availableFunctions.every((item) => !('functionId' in item))).toBe(true)
 
     pageDesign.appendMessage({
       moduleId: PageDesignModule.moduleId,

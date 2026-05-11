@@ -29,6 +29,7 @@ export default defineConfig({
       '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
       '@spark-view/spark-page-config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'index.ts'),
       '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),
+      '@spark-view/spark-ai/registrations/page-design/payloads': path.resolve(root, 'packages', 'spark-ai', 'src', 'registrations', 'page-design', 'payloads', 'index.ts'),
       '@spark-view/spark-ai': path.resolve(root, 'packages', 'spark-ai', 'src', 'index.ts'),
     }
   },

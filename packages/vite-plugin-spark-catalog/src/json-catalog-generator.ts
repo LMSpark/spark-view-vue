@@ -79,7 +79,7 @@ export interface JsonCatalogOptions {
  * component-catalog.json 是当前仓库组件目录的单一事实源，所有消费者都应从该路径读取。
  */
 export function getCanonicalCatalogOutputPath(root: string): string {
-  return resolve(root, 'packages/spark-ai/src/catalog', CANONICAL_CATALOG_FILE)
+  return resolve(root, 'packages/spark-ai/src/registrations/page-design/payloads', CANONICAL_CATALOG_FILE)
 }
 
 type SchemaOwner = 'workspace' | 'external'

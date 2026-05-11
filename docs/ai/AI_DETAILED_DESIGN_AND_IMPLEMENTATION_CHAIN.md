@@ -150,10 +150,10 @@ flowchart TB
 
 | 能力 | 关键文件 | 设计说明 |
 |------|----------|----------|
-| 协议契约 | `protocol/business-contracts.ts` | 定义模块注册、函数注册、会话记录、知识投影、函数调用翻译 |
+| 协议契约 | `protocol/runtime-contracts.ts` | 定义模块注册、函数注册、会话记录、知识投影、函数调用翻译 |
 | 参数协议 | `protocol/parameter-schema.ts`、`protocol/llm-params-validator.ts` | 归一化并校验 LLM 反序列化后的 JSON 参数 |
-| 知识负载协议 | `protocol/knowledge-payload-contracts.ts`、`knowledge/payload-provider-registry.ts` | 定义并注册通用知识 payload provider；不承载组件参数语义 |
-| Runtime Facade | `runtime/ai-runtime.ts`、`runtime/ai-runtime-support.ts` | 注册模块、投影知识、翻译调用、记录历史 |
+| 参数 payload 协议 | `protocol/parameter-payload-contracts.ts`、`internal/knowledge/parameter-payload-registry.ts` | 定义并注册通用参数 payload provider；组件等领域只提供具体参数目录 |
+| Runtime Facade | `internal/runtime/ai-runtime.ts`、`internal/runtime/ai-runtime-support.ts` | 注册模块、投影知识、翻译调用、记录历史 |
 
 Core 的主链路：
 
@@ -173,7 +173,7 @@ flowchart LR
 
 ### 4.2 业务模块与 PageDesign 样例
 
-`packages/spark-ai/src/business/page-design` 是通用 AI 架构下的首个业务样例。它证明一个业务域可以把自己的状态、函数、知识和执行器封装成可投影给 LLM 的模块树。当前 PageDesign 样例围绕六个子模块展开。
+`packages/spark-ai/src/registrations/page-design` 是通用 AI 架构下的首个业务样例。它证明一个业务域可以把自己的状态、函数、知识和执行器封装成可投影给 LLM 的模块树。当前 PageDesign 样例围绕六个子模块展开。
 
 | 子模块 | 职责 | 典型函数 |
 |--------|------|----------|
@@ -407,7 +407,7 @@ gantt
 
   section 能力闭环
   业务 lifecycle 接线        :active, p4, 2026-05-09, 2d
-  业务 knowledge payload 指南 :p5, after p4, 2d
+  模块参数 payload 指南 :p5, after p4, 2d
   业务写函数闭环            :p6, after p5, 4d
   宿主适配与验证闭环         :p7, after p6, 3d
 
@@ -421,7 +421,7 @@ gantt
 
 | 阶段 | 输入 | 工作项 | 输出 | 验收 |
 |------|------|--------|------|------|
-| 1. 协议冻结 | `business-contracts.ts` | 明确 core 不执行、不保存业务状态、不维护 active path | 稳定接口与边界说明 | `@spark-view/spark-ai typecheck` |
+| 1. 协议冻结 | `runtime-contracts.ts` | 明确 core 不执行、不保存模块运行状态、不维护 active path | 稳定接口与边界说明 | `@spark-view/spark-ai typecheck` |
 | 2. 模块注册 | 业务函数目录；PageDesign 样例为 lifecycle、knowledge、nodeTree、dataset、textModel、jsonDoc | 注册模块树、函数目录、prompt 和失败模式 | `availableFunctions` 投影完整 | 函数目录契约测试 |
 | 3. 宿主接入 | 业务 host adapter；PageDesign 样例为 `EditToolHost` | 注入 live adapter，打通 bootstrap | 业务 edit/session state 可被函数访问 | bootstrap 失败/成功场景测试 |
 | 4. 知识查询 | 业务知识源；PageDesign 样例为 component catalog | 查询 payload 摘要与指南 | AI 可按 schema 生成合法业务参数 | payload guide 测试 |

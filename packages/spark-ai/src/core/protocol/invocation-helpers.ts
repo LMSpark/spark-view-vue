@@ -50,7 +50,7 @@ export interface StreamCallbacks {
 
 /**
  * action 路径拆解结果。
- * 输入语义：规范 action，首选格式为 instance/child@module@function。
+ * 输入语义：规范 action，首选格式为 instance/child@module@actionName。
  * 兼容旧格式 module/.../function，仅用于历史调用数据迁移。
  * 调用时机：协议层或运行时需要按段访问 action 各部分时使用。
  * 所有字段只读：解析结果不应被外部修改。
@@ -70,17 +70,17 @@ export class AiInvocationProtocol {
   /**
    * 将 action 字符串拆解为模块路径和函数 ID。
    * 输入语义：
-   * - LLM-facing 新格式：rootInstanceId/childInstanceId@moduleId@functionId。
+   * - LLM-facing 新格式：rootInstanceId/childInstanceId@moduleId@actionName。
    * - 兼容旧格式：module/.../function，仅用于历史调用数据迁移。
    * 输出语义：模块路径和函数 ID；格式不合法则 fail-fast 抛出。
-   * 调用时机：协议层解析 action 路径时统一调用此方法，禁止在各业务层自行 split。
+   * 调用时机：协议层解析 action 路径时统一调用此方法，避免调用方自行 split。
    */
   static parseActionPath(action: string): ActionPathParts {
     if (action.includes('@')) return AiInvocationProtocol.parseInstanceActionPath(action)
 
     const parts = action.split('/')
     if (parts.length < 2 || parts.some(part => part.trim().length === 0)) {
-      throw new Error(`非法 action 路径: ${action}，必须使用 rootInstance[/childInstance]@module@function`)
+      throw new Error(`非法 action 路径: ${action}，必须使用 rootInstance[/childInstance]@module@actionName`)
     }
     if (parts.some(part => part.includes('@'))) {
       throw new Error(`非法 action 路径: ${action}，模块或函数 ID 不能包含 @`)
@@ -97,11 +97,11 @@ export class AiInvocationProtocol {
     }
   }
 
-  /** 解析 LLM-facing action：rootInstance[/childInstance]@moduleId@functionId。实例路径段允许 URI 编码。 */
+  /** 解析 LLM-facing action：rootInstance[/childInstance]@moduleId@actionName。实例路径段允许 URI 编码。 */
   private static parseInstanceActionPath(action: string): ActionPathParts {
     const parts = action.split('@')
     if (parts.length !== 3) {
-      throw new Error(`非法 action 路径: ${action}，必须使用 rootInstance[/childInstance]@module@function`)
+      throw new Error(`非法 action 路径: ${action}，必须使用 rootInstance[/childInstance]@module@actionName`)
     }
     const [instancePath = '', moduleId = '', functionId = ''] = parts
     const encodedInstanceIds = instancePath.split('/')
@@ -128,7 +128,7 @@ export class AiInvocationProtocol {
     }
   }
 
-  /** 解码 action 实例路径段；编码让业务实例 ID 可以包含 `/` 或 `@` 而不破坏路径语法。 */
+  /** 解码 action 实例路径段；编码让模块实例 ID 可以包含 `/` 或 `@` 而不破坏路径语法。 */
   private static decodeActionSegment(segment: string, action: string): string {
     try {
       const decoded = decodeURIComponent(segment)

@@ -5,9 +5,10 @@ import { describe, expect, it } from 'vitest'
 import {
   COMPONENT_CATALOG_JSON,
   DEV_PROP_NAMES,
+  guidePageDesignComponentPayload,
   projectFunctionCatalog,
   type ComponentCatalog,
-} from '../packages/spark-ai/src/catalog'
+} from '../packages/spark-ai/src/registrations/page-design/payloads'
 
 function walkFiles(dir: string): string[] {
   const entries = fs.readdirSync(dir, { withFileTypes: true })
@@ -60,5 +61,24 @@ describe('@spark-view/spark-ai framework boundary', () => {
     for (const names of Object.values(DEV_PROP_NAMES)) {
       expect(names).not.toContain('modelValue')
     }
+  })
+
+  it('publishes component payload guides as parameter schema', () => {
+    const guide = guidePageDesignComponentPayload('r-table')
+
+    expect(guide).not.toBeNull()
+    expect(guide).not.toHaveProperty('jsonSchema')
+    expect(guide).not.toHaveProperty('minimalExample')
+    expect(guide).toHaveProperty('minimalParams')
+    expect(guide?.paramsSchema).toMatchObject({
+      kind: 'object',
+      required: ['type', 'props'],
+    })
+
+    const schema = guide?.paramsSchema as { properties?: Record<string, unknown> } | undefined
+    expect(schema?.properties?.['type']).toMatchObject({
+      kind: 'enum',
+      enum: ['r-table'],
+    })
   })
 })

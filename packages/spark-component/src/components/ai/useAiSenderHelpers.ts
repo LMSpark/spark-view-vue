@@ -2,7 +2,7 @@
  * AI Sender 通用助手——从业务 AiChatSender 实现中反复出现的模式抽取而来。
  *
  * 定位：**纯函数 / 模式模板**，不持有状态、不依赖 Vue 响应式。
- * 业务层（例如 DevSystem 的 useDevPageModelSession）组装 sender 时可直接复用。
+ * 业务层组装 sender 时可直接复用。
  *
  * 不在这里处理的东西（属业务层）：
  *  - prompt 业务拼接（模型事实快照、页面上下文等强业务语义）

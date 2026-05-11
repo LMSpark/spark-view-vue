@@ -59,9 +59,9 @@ flowchart TB
 
 ## 源码锚点
 
-- [../../packages/spark-ai/src/core/protocol/business-contracts.ts](../../packages/spark-ai/src/core/protocol/business-contracts.ts)
-- [../../packages/spark-ai/src/core/runtime/ai-runtime.ts](../../packages/spark-ai/src/core/runtime/ai-runtime.ts)
-- [../../packages/spark-ai/src/business/page-design/page-design-business.ts](../../packages/spark-ai/src/business/page-design/page-design-business.ts)
+- [../../packages/spark-ai/src/core/protocol/runtime-contracts.ts](../../packages/spark-ai/src/core/protocol/runtime-contracts.ts)
+- [../../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)
+- [../../packages/spark-ai/src/registrations/page-design/page-design-business.ts](../../packages/spark-ai/src/registrations/page-design/page-design-business.ts)
 - [../ai/AI_DETAILED_DESIGN_AND_IMPLEMENTATION_CHAIN.md](../ai/AI_DETAILED_DESIGN_AND_IMPLEMENTATION_CHAIN.md)
 
 ## 小结

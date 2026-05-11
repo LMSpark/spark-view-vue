@@ -14,7 +14,7 @@ import {
   projectDevPropNames,
   projectDevPropEnums,
   projectDevRequiredProps,
-} from '../packages/spark-ai/src/catalog/catalog-projections'
+} from '../packages/spark-ai/src/registrations/page-design/payloads/catalog-projections'
 
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
   return {

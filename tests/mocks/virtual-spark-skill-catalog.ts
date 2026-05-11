@@ -23,6 +23,7 @@ export const skillCatalog: SkillMeta[] = [
     props: [
       { name: 'dataKey', type: 'string', required: false, description: '数据绑定键' },
       { name: 'stripe', type: 'boolean', required: false, description: '斑马纹' },
+      { name: 'size', type: '"small" | "default" | "large"', required: false, description: '尺寸' },
     ],
     provides: ['DATA_SOURCE'],
     consumes: ['PAGE_DATASET'],
@@ -31,7 +32,7 @@ export const skillCatalog: SkillMeta[] = [
     type: 'r-text',
     description: '文本字段',
     props: [
-      { name: 'field', type: 'string', required: false, description: '字段名' },
+      { name: 'field', type: 'string', required: true, description: '字段名' },
       { name: 'label', type: 'string', required: false, description: '标签' },
     ],
     provides: [],

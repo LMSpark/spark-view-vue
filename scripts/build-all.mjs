@@ -141,9 +141,9 @@ function waitForBackend(timeoutMs = 120_000) {
 
 // ── 上传组件元数据 ──────────────────────────────────────────────────────────
 async function uploadMetadata() {
-  const metadataPath = resolve(ROOT_DIR, 'packages', 'spark-ai', 'src', 'catalog', 'component-catalog.json')
+  const metadataPath = resolve(ROOT_DIR, 'packages', 'spark-ai', 'src', 'registrations', 'page-design', 'payloads', 'component-catalog.json')
   if (!existsSync(metadataPath)) {
-    console.warn('⚠️  未找到 packages/spark-ai/src/catalog/component-catalog.json，跳过上传')
+    console.warn('⚠️  未找到 packages/spark-ai/src/registrations/page-design/payloads/component-catalog.json，跳过上传')
     return
   }
 

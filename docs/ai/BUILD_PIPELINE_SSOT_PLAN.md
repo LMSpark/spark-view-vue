@@ -94,7 +94,7 @@
 当前真实控制点已经很明确：
 
 1. 组件目录的实际写出动作发生在 packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts。
-2. 当前 canonical 输出路径已经固定为 packages/spark-ai/src/catalog/component-catalog.json。
+2. 当前 canonical 输出路径已经固定为 packages/spark-ai/src/registrations/page-design/payloads/component-catalog.json。
 3. plugin.ts 与 cli.ts 是生成器的两个主要入口，但目前主要是“调用 generateJsonCatalog”，对单一出口约束没有独立的保护逻辑。
 4. 当前仓库代码中虽然旧产物引用已大体清理，但生成器本身仍缺少“看到历史产物就自纠正/自清理”的收口动作。
 
@@ -214,7 +214,7 @@
 通过标准：
 
 1. 命令成功退出。
-2. packages/spark-ai/src/catalog/component-catalog.json 正常生成或更新。
+2. packages/spark-ai/src/registrations/page-design/payloads/component-catalog.json 正常生成或更新。
 3. 若近邻旧产物存在，则被按预期清理。
 
 ### 后续验证
@@ -229,7 +229,7 @@
 ### 人工验证场景
 
 1. 在 canonical 输出目录旁手动放置 component-catalog.ai.json，执行 pnpm run generate:catalog，确认文件被清理。
-2. 确认 component-catalog.json 仍然落在 packages/spark-ai/src/catalog/。
+2. 确认 component-catalog.json 仍然落在 packages/spark-ai/src/registrations/page-design/payloads/。
 3. 确认 CLI / HMR 日志不再暗示多输出口或历史产物名。
 
 ---

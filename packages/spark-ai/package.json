@@ -31,17 +31,25 @@
       "import": "./dist/core/index.js",
       "types": "./dist/core/index.d.ts"
     },
-    "./business": {
-      "import": "./dist/business/index.js",
-      "types": "./dist/business/index.d.ts"
+    "./services": {
+      "import": "./dist/services/index.js",
+      "types": "./dist/services/index.d.ts"
     },
-    "./business/page-design": {
-      "import": "./dist/business/page-design/index.js",
-      "types": "./dist/business/page-design/index.d.ts"
+    "./services/page-design": {
+      "import": "./dist/services/page-design/index.js",
+      "types": "./dist/services/page-design/index.d.ts"
     },
-    "./catalog": {
-      "import": "./dist/catalog/index.js",
-      "types": "./dist/catalog/index.d.ts"
+    "./registrations": {
+      "import": "./dist/registrations/index.js",
+      "types": "./dist/registrations/index.d.ts"
+    },
+    "./registrations/page-design": {
+      "import": "./dist/registrations/page-design/index.js",
+      "types": "./dist/registrations/page-design/index.d.ts"
+    },
+    "./registrations/page-design/payloads": {
+      "import": "./dist/registrations/page-design/payloads/index.js",
+      "types": "./dist/registrations/page-design/payloads/index.d.ts"
     }
   },
   "dependencies": {

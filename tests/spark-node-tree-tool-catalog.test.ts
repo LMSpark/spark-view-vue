@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   PageDesignNodeTreeCatalog,
-} from '../packages/spark-ai/src/business/page-design/functions/node-tree'
+} from '../packages/spark-ai/src/registrations/page-design/modules/node-tree-tool-catalog'
 
 const catalog = new PageDesignNodeTreeCatalog()
 
@@ -22,6 +22,12 @@ describe('SparkNodeTree tool catalog', () => {
       functionId: 'setProps',
       type: 'request',
       coreMethod: 'setProps',
+      runtimeRegistration: 'registered',
+      runtimeBinding: {
+        kind: 'page-design-service',
+        method: 'useNodeTreeMethod',
+        targetMethod: 'setProps',
+      },
     })
     expect(capabilityRow).toMatchObject({
       functionId: 'setProps',

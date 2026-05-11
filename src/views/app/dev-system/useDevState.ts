@@ -6,14 +6,11 @@
  *   每个文件封装为 PageFileDocument，以域模型为真源、text 为派生投影，
  *   undo/redo 委托给 SparkNodeTree / DataSetCrudTool / SnapshotHistory<string>。
  * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件注册表合一暴露。
- * - 页面模型 AI 编辑统一走 EditToolHost；该 host 从 documents 读写，
- *   保证手工编辑与 AI 编辑共享同一模型、同一 undo 链。
  */
 import { ref, reactive, computed } from 'vue'
 import { deepClone } from '@spark-view/spark-utils'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
-import type { EditToolHost } from '@spark-view/spark-ai'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   PAGE_FILE_NAMES,
@@ -61,11 +58,6 @@ export interface DevContextConfig {
   placeholder: string
   defaultValue: string
   paramName: string
-}
-
-export interface DevPreviewDiagnosticsProvider {
-  getPageTextDraft: () => string | Promise<string>
-  getJsErrorDraft: () => string | Promise<string>
 }
 
 export interface BackendPageVersionSummary {
@@ -200,31 +192,9 @@ export function useDevState() {
   const autoSaveStatus = ref<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle')
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
-  let previewDiagnosticsProvider: DevPreviewDiagnosticsProvider | null = null
 
   function isDocumentDirty(name: PageFileName): boolean {
     return isPageFileDocumentDirty(documents[name])
-  }
-
-  function setPreviewDiagnosticsProvider(provider: DevPreviewDiagnosticsProvider | null): void {
-    previewDiagnosticsProvider = provider
-  }
-
-  function requirePreviewDiagnosticsProvider(): DevPreviewDiagnosticsProvider {
-    if (previewDiagnosticsProvider === null) {
-      throw new Error('预览诊断能力未就绪：请先打开预览页并刷新后重试。')
-    }
-    return previewDiagnosticsProvider
-  }
-
-  async function buildPreviewPageTextDraft(): Promise<string> {
-    const provider = requirePreviewDiagnosticsProvider()
-    return await provider.getPageTextDraft()
-  }
-
-  async function buildPreviewJsErrorDraft(): Promise<string> {
-    const provider = requirePreviewDiagnosticsProvider()
-    return await provider.getJsErrorDraft()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -236,57 +206,6 @@ export function useDevState() {
 
   const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
   const pageDataError = computed(() => documents['pagedata.json'].parseError.value)
-
-  // ═══════════════════════════════════════════════════════════
-  // Edit Tool Host（单例 per page）
-  // ═══════════════════════════════════════════════════════════
-
-  let toolHostPageId = ''
-  let toolHost: EditToolHost | null = null
-
-  function buildEditToolHost(): EditToolHost {
-    const ruleDoc = documents['rule.json']
-    const pageDataDoc = documents['pagedata.json']
-    const scriptDoc = documents['script.js']
-    const styleDoc = documents['style.css']
-
-    return {
-      getNodeTree: () => ruleDoc.model.value,
-      onNodeTreeChanged(nodeTree) {
-        ruleDoc.replaceModel(nodeTree as Parameters<typeof ruleDoc.replaceModel>[0])
-      },
-      getDataSetTool: () => pageDataDoc.model.value,
-      onDataSetChanged(tool) {
-        pageDataDoc.replaceModel(tool)
-      },
-      readScript: () => scriptDoc.text.value,
-      writeScript(content) {
-        scriptDoc.setText(content)
-      },
-      readStyle: () => styleDoc.text.value,
-      writeStyle(content) {
-        styleDoc.setText(content)
-      },
-    }
-  }
-
-  /**
-  * 获取当前 pageId 对应的长寿单例 EditToolHost。
-   * 同一 pageId 生命周期内返回同一实例；pageId 切换时自动换新。
-   */
-  function getEditToolHost(): EditToolHost {
-    if (toolHost && toolHostPageId === activePageId.value) {
-      return toolHost
-    }
-    toolHost = buildEditToolHost()
-    toolHostPageId = activePageId.value
-    return toolHost
-  }
-
-  function invalidateEditToolHost(): void {
-    toolHost = null
-    toolHostPageId = ''
-  }
 
   // ═══════════════════════════════════════════════════════════
   // 工具：地址 / 持久化 pageId
@@ -362,7 +281,6 @@ export function useDevState() {
     if (shouldReset) {
       invalidateActivePageFilesLoad()
       resetAllDocuments()
-      invalidateEditToolHost()
     }
 
     activePageId.value = pageId
@@ -375,7 +293,6 @@ export function useDevState() {
     activePageId.value = ''
     persistActivePageId('')
     resetAllDocuments()
-    invalidateEditToolHost()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1388,11 +1305,6 @@ export function useDevState() {
     hasAnyDirty,
     isDocumentDirty,
 
-    // AI Tool Host
-    getEditToolHost,
-    setPreviewDiagnosticsProvider,
-    buildPreviewPageTextDraft,
-    buildPreviewJsErrorDraft,
     notifyPageFileChanged,
 
     // 方法

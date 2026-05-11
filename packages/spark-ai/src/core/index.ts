@@ -6,10 +6,10 @@
  * 阅读顺序建议：
  * 1. 先看模块注册契约，理解 module/function 如何声明。
  * 2. 再看调用协议与参数校验，理解 LLM 如何定位函数、提交参数。
- * 3. 最后看知识负载与 core facade，理解 LLM 知识投影和函数调用翻译。
+ * 3. 最后看参数 payload 与 core facade，理解 LLM 知识投影、函数调用翻译和执行翻译链路。
  *
- * 核心层只负责把模块能力投影给 LLM，并把 `rootInstance[/childInstance]@module@function`
- * 调用翻译成注册方可执行的上下文；业务服务生命周期和函数派发由注册方管理。
+ * 核心层只负责把模块能力投影给 LLM，并把 `rootInstance[/childInstance]@module@actionName`
+ * 调用翻译成可运行上下文，再统一记录 requested/completed/failed；模块服务生命周期和落点绑定由注册方管理。
  */
 
 // 一、模块注册、生命周期通知、知识投影与函数调用翻译契约。
@@ -22,6 +22,7 @@ export type {
   AiRegisteredModuleAppendFunctionCallOptions,
   AiRegisteredModuleAppendMessageOptions,
   AiRegisteredModuleCompleteFunctionCallOptions,
+  AiRegisteredModuleExecuteFunctionCallOptions,
   AiRegisteredModuleProjectModuleOptions,
   AiRegisteredModuleRecordFunctionCallRequestOptions,
   AiRegisteredModuleStartInstanceOptions,
@@ -30,6 +31,7 @@ export type {
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeAppendMessageOptions,
   AiRuntimeCompleteFunctionCallOptions,
+  AiRuntimeExecuteFunctionCallOptions,
   AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
   AiRuntimeApi,
@@ -42,7 +44,11 @@ export type {
   AiRuntimeFunctionCallFailure,
   AiRuntimeFunctionCallHistoryEntry,
   AiRuntimeFunctionCallHistoryStatus,
+  AiRuntimeFunctionCallResultNormalizer,
   AiRuntimeFunctionCallResult,
+  AiRuntimeFunctionCallRunInput,
+  AiRuntimeFunctionCallRunner,
+  AiRuntimeFunctionCallValidator,
   AiRuntimeFunctionResultMessage,
   AiRuntimeHistoryEntry,
   AiRuntimeHistoryEntryBase,
@@ -74,12 +80,12 @@ export type {
   FunctionFailureMode,
   ModulePromptContext,
   ModulePromptProvider,
-} from './protocol/business-contracts'
+} from './protocol/runtime-contracts'
 
 // 二、便捷基类：模块实现可继承它快速声明不可变 metadata。
 export {
   AiModuleRegistrationBase,
-} from './protocol/business-contracts'
+} from './protocol/runtime-contracts'
 
 // 三、LLM 调用协议：action 地址、消息、流式回调与 token usage。
 export {
@@ -105,29 +111,59 @@ export type {
   LlmParamValidationResult,
 } from './protocol/llm-params-validator'
 
-// 五、知识负载注册中心：把组件目录、数据集等外部知识按 payloadRef 暴露。
 export {
-  KnowledgePayloadRegistry,
-} from './knowledge/payload-provider-registry'
+  LlmParameterSchema,
+} from './protocol/parameter-schema'
 
 export type {
-  KnowledgePayloadGuide,
-  KnowledgePayloadProvider,
-  KnowledgePayloadQueryFilter,
-  KnowledgePayloadSummary,
-} from './protocol/knowledge-payload-contracts'
+  ArrayItemKind,
+  LeafKind,
+  LlmParamArraySchema,
+  LlmParamEnumSchema,
+  LlmParamObjectSchema,
+  LlmParameterSchemaNode,
+  LlmParameterSchemaRoot,
+  ParsedLeafDescription,
+} from './protocol/parameter-schema'
 
-// 五.五、核心层知识投影统一窗口：为 LLM FC、后端 API 提供统一的知识查询入口（函数、模块、负载目录）。
+// 五、参数 payload 注册中心：把外部参数源按 payloadRef 暴露。
+export {
+  ParameterPayloadRegistry,
+} from './internal/knowledge/parameter-payload-registry'
+
+export type {
+  ParameterPayloadFailureMode,
+  ParameterPayloadGuide,
+  ParameterPayloadProvider,
+  ParameterPayloadQueryFilter,
+  ParameterPayloadSummary,
+} from './protocol/parameter-payload-contracts'
+
+// 五.五、核心层知识投影统一窗口：为 LLM FC、后端 API 提供统一的知识查询入口（函数、模块、参数目录）。
 export {
   AiKnowledgeProjector,
-} from './knowledge/knowledge-projection'
+} from './internal/knowledge/knowledge-projection'
+
+export {
+  AiKnowledgeCatalog,
+} from './internal/knowledge/knowledge-tool-catalog'
 
 export type {
   AiKnowledgeScope,
   AiKnowledgeProjection,
-} from './knowledge/knowledge-projection'
+} from './internal/knowledge/knowledge-projection'
+
+export type {
+  AiKnowledgeCatalogOptions,
+  AiKnowledgeCatalogRowOptions,
+  AiKnowledgeFunctionCapabilityRow,
+  AiKnowledgeFunctionFailureMode,
+  AiKnowledgeFunctionId,
+  AiKnowledgeFunctionParameterRow,
+  AiKnowledgeFunctionTarget,
+} from './internal/knowledge/knowledge-tool-catalog'
 
 // 六、core facade：注册模块并返回模块绑定 API，接收生命周期通知，提供知识投影和函数调用翻译。
 export {
   AiRuntime,
-} from './runtime/ai-runtime'
+} from './internal/runtime/ai-runtime'

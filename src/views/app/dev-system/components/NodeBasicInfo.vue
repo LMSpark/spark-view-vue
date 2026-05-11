@@ -35,7 +35,7 @@
         v-model="state.editForm.description"
         type="textarea"
         :autosize="{ minRows: 4, maxRows: 12 }"
-        placeholder="节点的业务用途与功能说明，供 AI 理解页面语义、生成配置时参考。&#10;示例：级联操作演示页 — 展示 DataSet 主从表联动，父表选中行变更自动驱动子表数据过滤与刷新。"
+        placeholder="节点的业务用途与功能说明。&#10;示例：级联操作演示页 — 展示 DataSet 主从表联动，父表选中行变更自动驱动子表数据过滤与刷新。"
         @change="state.markNavDirty"
       />
     </el-form-item>

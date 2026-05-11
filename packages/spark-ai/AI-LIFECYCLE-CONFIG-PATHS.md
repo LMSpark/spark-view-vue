@@ -6,11 +6,11 @@
 
 - core 层：模块知识注册表、AI session/history ledger、递归模块/函数曝光、LLM 函数调用翻译、函数结果回传协议、core 自有知识只读模型。
 - AI 会话宿主层：模型通信、提示词/tool schema 投递、重试、追问、暂停/停止决策、active path 维护和传输细节。
-- 模块实现层：服务生命周期、模块提示词、函数目录、函数体、业务状态和具体知识负载提供者。
+- 模块实现层：服务生命周期、模块提示词、函数目录、函数体、模块运行状态和具体参数 payload 提供者。
 
 core 只强制模块和函数按标准元数据暴露注册接口（`AiModuleRegistration`、`AiFunctionRegistration`）。core 拥有通用 AI 会话记录，不拥有模型编排，不拥有模块服务状态，也不依据函数执行结果做编排。
 
-AI 会话隔离键是 `moduleId + moduleInstanceId`，即业务能力注册 ID + 根业务模块实体 ID。`instanceId` 只作为技术 envelope/alias，不作为隔离主键。
+AI 会话隔离键是 `moduleId + moduleInstanceId`，即模块注册 ID + 根模块实例 ID。`instanceId` 只作为技术 envelope/alias，不作为隔离主键。
 
 ## 生命周期路径
 
@@ -28,8 +28,8 @@ AI 会话隔离键是 `moduleId + moduleInstanceId`，即业务能力注册 ID +
     - api.result-message -> `AiRegisteredModuleApi.createFunctionResultMessage({ action, result })`
     - api.complete -> `AiRegisteredModuleApi.completeFunctionCall(...)`
     - api.stop -> `AiRegisteredModuleApi.stopInstance({ moduleInstanceId, instanceId })`
-    - 该 API 只补齐 moduleId 并维护 AI session/history 链路，不创建、停止或释放业务服务实例。
-    - 同一个 API 可服务多个 `moduleInstanceId`；每个根业务实体拥有独立 AI session/history。
+    - 该 API 只补齐 moduleId 并维护 AI session/history 链路，不创建、停止或释放模块服务实例。
+    - 同一个 API 可服务多个 `moduleInstanceId`；每个根模块实例拥有独立 AI session/history。
   - session-notification
     - session.started -> `AiRuntime.startInstance({ moduleId, moduleInstanceId, instanceId })`
     - session.stopped -> `AiRuntime.stopInstance({ moduleId, moduleInstanceId, instanceId })`
@@ -50,9 +50,9 @@ AI 会话隔离键是 `moduleId + moduleInstanceId`，即业务能力注册 ID +
     - function.result-message -> `AiRuntime.createFunctionResultMessage({ action, result })`
     - core 不执行函数体，不读取执行结果做编排；函数调用轨迹写入 session history。
   - knowledge
-    - payload.register -> `KnowledgePayloadRegistry.register`
-    - payload.query -> `KnowledgePayloadRegistry.defaultRegistry.queryPayloads`
-    - payload.guide -> `KnowledgePayloadRegistry.defaultRegistry.guidePayload`
+    - payload.register -> `ParameterPayloadRegistry.register`
+    - payload.query -> `ParameterPayloadRegistry.defaultRegistry.queryPayloads`
+    - payload.guide -> `ParameterPayloadRegistry.defaultRegistry.guidePayload`
 
 - module
   - registration
@@ -62,15 +62,15 @@ AI 会话隔离键是 `moduleId + moduleInstanceId`，即业务能力注册 ID +
     - module.instance-param -> `AiModuleRegistration.instanceParam`
     - module.catalog -> `AiModuleRegistration.getFunctions`
   - function
-    - function.id -> `AiFunctionRegistration.functionId`
-    - function.address -> 由 core 在会话投影时生成 `rootInstanceId[/childInstanceId]@moduleId@functionId`
+    - function.id -> 注册内部函数键
+    - function.address -> 由 core 在会话投影时生成 `rootInstanceId[/childInstanceId]@moduleId@actionName`
     - function.schema -> `AiFunctionRegistration.paramsSchema/resultSchema`
     - function.execute -> 模块自有执行器；不属于 core 契约。
   - service-state
     - service.start -> 模块自有服务代码
-    - service.instance-state -> 模块自有 map/store，按 `moduleInstanceId` 或业务实例 ID 建索引
+    - service.instance-state -> 模块自有 map/store，按 `moduleInstanceId` 或领域实例 ID 建索引
     - service.stop -> 模块自有服务代码
-    - service.state-contract -> 模块保存领域状态；core 只保存 AI session/history，不保存模块运行态或 active path 业务状态
+    - service.state-contract -> 模块保存领域状态；core 只保存 AI session/history，不保存模块运行态或 active path 状态
 
 - ai-session-host
   - prompt-projection -> 宿主读取 `projectModule().promptSnapshot` 或 `startInstance().promptSnapshot`
@@ -85,7 +85,7 @@ AI 会话隔离键是 `moduleId + moduleInstanceId`，即业务能力注册 ID +
 
 以下旧路径不再作为 core 配置目标：
 
-- 业务注册路径
+- 模块注册路径
 - `core.session.backend.*` 中与模块服务生命周期绑定的旧后端路径
 - `core.orchestration.*`
 - `core.tooling.fc.definition-filter`

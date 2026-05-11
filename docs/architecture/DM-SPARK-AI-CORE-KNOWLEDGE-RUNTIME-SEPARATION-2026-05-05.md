@@ -2,7 +2,7 @@
 
 > **状态**：已实施，持续验证  
 > **日期**：2026-05-05  
-> **范围**：`packages/spark-ai/src/core`、`packages/spark-ai/src/stills`、`packages/spark-ai/src/business/page-design`  
+> **范围**：`packages/spark-ai/src/core`、`packages/spark-ai/src/stills`、`packages/spark-ai/src/registrations/page-design`  
 > **目标**：core 只负责注册机和运行时；`core@knowledge` 只能作为注册机读模型和运行时内省入口存在，业务语义、函数定义、模块提示词、参数荷载来源、业务 prompt 由业务域维护。
 
 ---
@@ -32,7 +32,7 @@
 | 文件 | 问题 | 新归属 |
 |------|------|--------|
 | `core/stills/stills-prompts.ts` | 混入 UI 组装、DataKey、script.js、四文件编辑等业务规则 | core 只保留协议基座，业务规则进入 page-design prompt |
-| `core/stills/edit-flow-prompts.ts` | page-design edit-flow 策略放在 core | `business/page-design/prompts` |
+| `core/stills/edit-flow-prompts.ts` | page-design edit-flow 策略放在 core | `registrations/page-design/prompts` |
 | `core/stills/action-names.ts` | 用全局常量混合 core/page-design/project-planning action | 删除常量层，action 地址只在函数定义行上出现 |
 | `core/session/repeat-detection-monitor.ts` | 硬编码旧业务 action、组件替换文案 | core 保留算法，业务域注入策略 |
 | `stills/meta-methods.ts` | 单文件耦合函数目录、组件目录、旧 blueprint/page-design 语义 | `core@knowledge` 模块函数 + 参数荷载 provider |
@@ -45,14 +45,15 @@
 
 ```text
 packages/spark-ai/src/core
-  注册机: stills/dispatcher.ts, stills/domain.ts, knowledge/payload-provider-registry.ts
-  运行时: function-call-schema.ts, fc-dispatcher.ts, session/*, orchestration/*
-  运行时内省: knowledge/knowledge-functions.ts
+  协议: protocol/runtime-contracts.ts, protocol/parameter-schema.ts, protocol/parameter-payload-contracts.ts
+  内部参数 payload 注册: internal/knowledge/parameter-payload-registry.ts
+  内部运行时: internal/runtime/ai-runtime.ts, internal/runtime/ai-runtime-support.ts
+  内部运行时内省: internal/knowledge/knowledge-projection.ts, internal/knowledge/knowledge-tool-catalog.ts
 
 packages/spark-ai/src/stills
   组合门面: 对外导出 core 能力，并按场景装配 core meta + page-design domain
 
-packages/spark-ai/src/business/page-design
+packages/spark-ai/src/registrations/page-design
   业务域: prompt / payload provider / lifecycle / nodeTree / dataset / textModel / edit session
 
 packages/spark-ai/src/catalog
@@ -61,8 +62,8 @@ packages/spark-ai/src/catalog
 
 当前依赖方向：
 
-- `core/**` 没有直接 import `business/page-design/**`，也未在源码中出现 `pageDesign@`、`r-table`、`DataKey`、`script.js`、`SparkNode` 等业务关键字。
-- `business/page-design/**` 依赖 core 的协议和运行时：`StillDefinition`、`IStillSession`、`DomainProvider`、`runStillsLoop`、FC schema、repeat monitor、follow-up policy、knowledge payload provider API。
+- `core/**` 没有直接 import `registrations/page-design/**`，也未在源码中出现 `pageDesign@`、`r-table`、`DataKey`、`script.js`、`SparkNode` 等业务关键字。
+- `registrations/page-design/**` 依赖 core 的协议和运行时：`StillDefinition`、`IStillSession`、`DomainProvider`、`runStillsLoop`、FC schema、repeat monitor、follow-up policy、knowledge payload provider API。
 - `packages/spark-ai/src/stills/index.ts` 同时 import core 与 page-design，它是场景装配/公共门面，不应再被理解为 core 内核。
 - `catalog/stills-session.ts` 负责把默认组件 catalog 投影放入 session，支撑 page-design payload provider 查询组件荷载。
 
@@ -71,7 +72,7 @@ packages/spark-ai/src/catalog
 ```text
 core = 注册机 + 运行时 + 注册事实读模型
 stills = 组合门面 / installer
-business/page-design = 业务语义与运行时适配
+registrations/page-design = 业务语义与运行时适配
 catalog = 组件目录投影来源
 ```
 
@@ -83,10 +84,10 @@ catalog = 组件目录投影来源
 |--------|----------|------|
 | `IStillSession.catalog` 绑定具体 `StillsCatalog` | 已从 `core/stills/types.ts` 与 `core/stills/domain.ts` 移除 | core session 只保留 `patchLog` 与 `domains`；page-design payload provider 自己持有组件目录投影。 |
 | `src/stills/meta-methods.ts` 暴露 `page-design.component` | 已迁入 `core/stills/meta-methods.ts`，并改为通用 `queryPayloads({ category, keyword })` 入口提示 | `core@session@describe` 不再知道任何业务 payloadRef。 |
-| page-design host 反向 import `../../stills` 门面 | 已新增 `business/page-design/register-edit-stills.ts`，host 改为直接使用 core 注册机与本业务注册入口 | 避免 business -> facade -> business 的装配环。 |
-| page-design import `core/knowledge/knowledge-functions` 的 still 对象 | 已改为业务本地协议动作字符串，不再引用 concrete still definition | 业务 follow-up 只描述协议动作，不绑定 core implementation object。 |
+| page-design host 反向 import `../../stills` 门面 | 已新增 `registrations/page-design/register-edit-stills.ts`，host 改为直接使用 core 注册机与本业务注册入口 | 避免 registrations -> facade -> registrations 的装配环。 |
+| page-design import `core/internal/knowledge/knowledge-tool-catalog` 的具体对象 | 已改为业务本地协议动作字符串，不再引用 concrete core implementation | 业务 follow-up 只描述协议动作，不绑定 core implementation object。 |
 | `business/index.ts` re-export `../stills` | 已移除，business barrel 只导出 page-design 业务入口 | 公共 facade 继续存在，但业务层不再通过 barrel 反向导出 facade。 |
-| `core/knowledge/json-schema-inference.ts` 通用 helper | 保留在 core | 仅用于通用 TypeScript type text -> JSON Schema 推断；一旦出现组件专用规则，立即下沉到 page-design payload provider。 |
+| `core/protocol/parameter-schema.ts` 通用 helper | 保留在 core | 仅用于通用 paramsSchema 归一化与叶子描述解析；一旦出现组件专用规则，立即下沉到 page-design payload provider。 |
 
 至此，core 与 page-design 的代码层物理分离完成：core 不依赖 page-design，page-design 不依赖公共 stills facade，只依赖 core 注册机/运行时协议。
 
@@ -154,7 +155,7 @@ catalog = 组件目录投影来源
 | `queryFunctions` | 查询当前会话可用函数目录 |
 | `guideFunction` | 查询单个函数调用指南 |
 | `queryPayloads` | 查询参数荷载目录 |
-| `guidePayload` | 查询单个参数荷载 JSON Schema 指南 |
+| `guidePayload` | 查询单个参数荷载 paramsSchema 指南 |
 | `core@session@describe` | 查询会话状态 |
 | `core@interaction@ask` | 向用户发起澄清问题 |
 
@@ -204,7 +205,7 @@ StillDefinition.action + StillDefinition.modulePrompt -> core@knowledge 查询�
 | `queryFunctions` | 当前会话可用函数列表，包含 `modules[]` 模块提示词聚合，以及 `business`、`module`、`function`、`functionName`、描述和摘要参数 |
 | `guideFunction` | 单个函数的完整参数 schema、结果 schema、usageRules、failureModes、example、`modulePrompt` |
 | `queryPayloads` | 当前业务域下可构造的嵌套 payload 类型列表 |
-| `guidePayload` | 某个 payload 的 JSON Schema、最小示例、约束和失败模式 |
+| `guidePayload` | 某个 payload 的 paramsSchema、最小参数示例、约束和失败模式 |
 
 旧动作全部删除，不提供 alias：
 
@@ -260,7 +261,7 @@ interface KnowledgeModuleSummary {
 
 payload 不是 Vue 组件专用概念，而是函数参数里的嵌套 JSON 构造知识。
 
-第一阶段 provider：`business/page-design/payloads/component-payload-provider.ts`。
+第一阶段 provider：`registrations/page-design/payloads/component-payload-provider.ts`。
 
 ```json
 {
@@ -323,7 +324,7 @@ packages/spark-ai/src/catalog/
   stills-session.ts
   catalog-projections.ts
 
-packages/spark-ai/src/business/page-design/
+packages/spark-ai/src/registrations/page-design/
   register-edit-stills.ts
   payloads/
     component-payload-provider.ts
@@ -340,11 +341,11 @@ packages/spark-ai/src/business/page-design/
 
 说明：
 
-- `core/knowledge` 是 registry read model，不含业务数据；payload provider API 属于 core，payload provider 实现属于业务域。
+- `core/internal/knowledge` 是 registry read model 的内部实现，不含业务数据；payload provider API 属于 core protocol，payload provider 实现属于业务域。
 - `src/stills` 是组合门面/installer，不是 core 内核；它只转调 core 与业务域注册入口，不承载业务事实源。
 - `catalog/stills-session.ts` 保留兼容入口；组件目录不再注入 core session，改由 page-design payload provider 持有。
-- `business/page-design/stills/*/tool-catalog.ts` 的文件名沿用历史命名，但语义上 catalog row 定义的是“模块内函数”。
-- `business/page-design/payloads` 注册参数荷载 provider，不负责替代 stills registry。
+- `registrations/page-design/stills/*/tool-catalog.ts` 的文件名沿用历史命名，但语义上 catalog row 定义的是“模块内函数”。
+- `registrations/page-design/payloads` 注册参数荷载 provider，不负责替代 stills registry。
 
 ---
 
@@ -363,7 +364,7 @@ core prompt 禁止出现 DataSet、SparkNodeTree、DataKey、script.js、组件 
 
 ### 8.2 Page-design prompt
 
-`business/page-design/prompts/edit-runtime-prompt.ts` 负责：
+`registrations/page-design/prompts/edit-runtime-prompt.ts` 负责：
 
 - 四文件编辑模式。
 - `core@knowledge@*` 查询纪律。
@@ -403,7 +404,7 @@ registerEditStills()
   -> registerDomain(editDomain)
     -> Domain registry 记录 edit state 工厂
     -> Still registry 注册 pageDesign lifecycle/text-model/dataset/node-tree/edit stills
-  -> KnowledgePayloadRegistry.register(pageDesignComponentPayloadProvider)
+  -> ParameterPayloadRegistry.register(pageDesignComponentPayloadProvider)
   -> registerAll(metaStills)
     -> queryFunctions / guideFunction / queryPayloads / guidePayload
     -> core@session@describe / core@interaction@ask
@@ -420,7 +421,7 @@ registerEditStills()
 `src/stills/index.ts` 的职责是 installer/facade：
 
 - `registerAllStills()` 只注册 core meta stills。
-- `registerEditStills()` 只转调 `business/page-design/register-edit-stills.ts`。
+- `registerEditStills()` 只转调 `registrations/page-design/register-edit-stills.ts`。
 - 对外透传 core dispatcher/domain 类型和运行能力，方便旧调用方迁移。
 
 禁止把 `src/stills/index.ts` 当成新的业务层；新增业务域应提供自己的注册入口，再由门面按场景组合。
@@ -429,10 +430,10 @@ registerEditStills()
 
 ## 11. 已完成的迁移结果
 
-- 新增 `core/knowledge/knowledge-query-types.ts`、`payload-provider-registry.ts`、`knowledge-functions.ts`、`json-schema-inference.ts`。
-- 新增 page-design payload provider，位置为 `business/page-design/payloads`。
+- 新增 `core/internal/knowledge/parameter-payload-registry.ts`、`knowledge-projection.ts`、`knowledge-tool-catalog.ts`。
+- 新增 page-design payload provider，位置为 `registrations/page-design/payloads`。
 - core prompt 收敛为 `STILLS_PROTOCOL_BASE`。
-- page-design edit runtime prompt 迁入 `business/page-design/prompts`。
+- page-design edit runtime prompt 迁入 `registrations/page-design/prompts`。
 - `core/stills/action-names.ts` 已删除。
 - 临时的 action 地址常量文件已删除。
 - page-design lifecycle/text-model/dataset/node-tree action 已迁移到 `pageDesign@模块@函数`。
@@ -445,9 +446,9 @@ registerEditStills()
 - edit-domain 不注册 dataset export/aggregate 这类隐藏函数；协议目录仍保留参数事实。
 - `IStillSession.catalog` 已移除，core session 不再持有具体组件目录。
 - `core@session@describe` 已迁入 core，并只返回通用 knowledge discovery 入口。
-- page-design edit 注册入口已下沉为 `business/page-design/register-edit-stills.ts`。
+- page-design edit 注册入口已下沉为 `registrations/page-design/register-edit-stills.ts`。
 - page-design 运行时已停止依赖 `../../stills` 公共门面。
-- page-design follow-up 已停止 import `core/knowledge/knowledge-functions` 的 concrete still 对象。
+- page-design follow-up 已停止 import `core/internal/knowledge/knowledge-tool-catalog` 的 concrete core 对象。
 
 ---
 
@@ -462,7 +463,7 @@ registerEditStills()
 - 可调用 `guideFunction` 获取 `pageDesign@nodeTree@addNode` 等函数的完整指南。
 - `guideFunction` 返回的函数指南必须包含对应 `modulePrompt`。
 - 可调用 `queryPayloads` 查询 `page-design.component` payload 目录。
-- 可调用 `guidePayload` 获取 `r-table` 等 payload 的 JSON Schema 指南。
+- 可调用 `guidePayload` 获取 `r-table` 等 payload 的 paramsSchema 指南。
 - FC function name 能从 `业务@模块@函数` 派生，并能反查回 canonical action。
 - FC function description 必须包含 `模块提示`，保证模型在仅看 FC tool schema 时也能读取模块约束。
 - 历史别名动作不再注册。
@@ -531,7 +532,7 @@ pnpm run typecheck
               registered function facts          v
                    |                registered payload providers
                    v                         |
-              business/page-design --------------+
+              registrations/page-design --------------+
           lifecycle / nodeTree / dataset / textModel / prompts / payloads
                    ^
                    |
@@ -539,4 +540,4 @@ pnpm run typecheck
              registerAllStills / registerEditStills
 ```
 
-核心原则：**core 负责机制，business 负责语义；函数定义行是 action 的唯一事实来源。**
+核心原则：**core 负责机制，registrations 负责语义；函数定义行是 action 的唯一事实来源。**

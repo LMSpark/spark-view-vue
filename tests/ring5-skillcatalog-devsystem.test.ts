@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
-import { DEV_PROP_ENUMS, DEV_REQUIRED_PROPS, DEV_TYPES } from '@spark-view/spark-ai'
+import { DEV_PROP_ENUMS, DEV_REQUIRED_PROPS, DEV_TYPES } from '@/views/app/dev-system/policies/devComponentMetadata'
 import { rulePolicy } from '@/views/app/dev-system/policies/rulePolicy'
 import { RULE_JSON_SCHEMA } from '@/views/app/dev-system/policies/ruleJsonSchema'
 

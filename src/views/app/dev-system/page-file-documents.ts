@@ -2,7 +2,7 @@
  * DevSystem 页面四文件文档注册表。
  *
  * rule.json / pagedata.json 使用领域模型作为真源，script.js / style.css 使用文本模型作为真源；
- * DevSystem 手工编辑、预览和 AI 编辑都通过同一组 PageFileDocument 读写。
+ * DevSystem 手工编辑和预览都通过同一组 PageFileDocument 读写。
  */
 import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import { computed, ref, shallowRef, triggerRef } from 'vue'

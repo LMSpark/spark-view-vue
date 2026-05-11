@@ -511,7 +511,7 @@ flowchart TD
 
 ### 12.1 AI runtime
 
-[packages/spark-ai/src/core/runtime/ai-runtime.ts](../packages/spark-ai/src/core/runtime/ai-runtime.ts) 中的 `AiRuntime` 是内存型 AI 编排器。它管理业务注册、运行实例、函数暴露、历史记录、生命周期事件和参数校验。
+[packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts) 中的 `AiRuntime` 是内存型 AI 编排器。它管理业务注册、运行实例、函数暴露、历史记录、生命周期事件和参数校验。
 
 ```mermaid
 stateDiagram-v2
@@ -533,7 +533,7 @@ stateDiagram-v2
 
 ### 12.2 page-design 业务
 
-`spark-ai/src/business/page-design` 围绕页面四文件编辑组织业务能力，包括节点树、dataset、json-doc、lifecycle、text-model 等函数模块。它和 `SparkPageRenderer` 暴露的节点树、CRUD 工具形成闭环：
+`spark-ai/src/registrations/page-design` 围绕页面四文件编辑组织业务能力，包括节点树、dataset、json-doc、lifecycle、text-model 等函数模块。它和 `SparkPageRenderer` 暴露的节点树、CRUD 工具形成闭环：
 
 ```mermaid
 flowchart TD
@@ -880,7 +880,7 @@ flowchart LR
 8. [packages/spark-component/src/core/spark-node-tree.ts](../packages/spark-component/src/core/spark-node-tree.ts)：理解节点树模型。
 9. [packages/spark-data/src/dataset.ts](../packages/spark-data/src/dataset.ts)：理解数据空间协调器。
 10. [packages/spark-data/src/core/data-key.ts](../packages/spark-data/src/core/data-key.ts)：理解组件到 DataView 的绑定协议。
-11. [packages/spark-ai/src/core/runtime/ai-runtime.ts](../packages/spark-ai/src/core/runtime/ai-runtime.ts)：理解 AI runtime 和函数调用边界。
+11. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解 AI runtime 和函数调用边界。
 12. [src/views/app/dev-system/DevSystem.vue](../src/views/app/dev-system/DevSystem.vue)：理解设计时工作台。
 13. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
 14. [docs/ai/README.md](ai/README.md)：理解 AI 文档体系。

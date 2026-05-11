@@ -597,7 +597,7 @@ flowchart LR
 **源码锚点**
 
 - `packages/spark-ai/src/core/runtime/ai-runtime.ts`
-- `packages/spark-ai/src/core/protocol/business-contracts.ts`
+- `packages/spark-ai/src/core/protocol/runtime-contracts.ts`
 - `packages/spark-ai/ARCHITECTURE.md`
 - `docs/ai/README.md`
 - `src/views/app/dev-system/usePageModelSessionHost.ts`
@@ -638,9 +638,9 @@ flowchart LR
 
 **源码锚点**
 
-- `packages/spark-ai/src/business/page-design/page-design-business.ts`
-- `packages/spark-ai/src/business/page-design/functions/tool-catalog.ts`
-- `packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts`
+- `packages/spark-ai/src/registrations/page-design/page-design-business.ts`
+- `packages/spark-ai/src/registrations/page-design/functions/tool-catalog.ts`
+- `packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts`
 - `packages/spark-ai/src/catalog/catalog-projections.ts`
 - `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts`
 

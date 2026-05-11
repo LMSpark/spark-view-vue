@@ -11,12 +11,6 @@
         <el-button size="small" @click="switchToPreview" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
-        <AiLauncherButton
-          :config="ai.config"
-          :disabled="ai.disabled.value"
-          shortcut="ctrl+shift+a"
-          label="AI 面板"
-        />
         <el-button
           v-if="state.hasAnyDirty.value"
           size="small"
@@ -91,8 +85,6 @@
         </div>
       </div>
 
-      <!-- 中栏右侧预留：右栏 AI 面板已上移至 APP 层（AppAiPanel drawer） -->
-
     </div>
 
     <!-- ═══ 底部状态栏 ═══ -->
@@ -106,13 +98,6 @@
         </template>
       </div>
       <div class="status-right">
-        <AiLauncherButton
-          :config="ai.config"
-          :disabled="ai.disabled.value"
-          :link="true"
-          label="AI"
-          :icon-size="13"
-        />
         <span class="status-count"><NavIcon name="Tickets" :size="13" /> {{ state.pageList.value.length }} 页面</span>
       </div>
     </div>
@@ -131,12 +116,10 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
-import { AiLauncherButton } from '@spark-view/spark-component'
 import NavIcon from '@/components/NavIcon.vue'
 
 const {
   state,
-  ai,
   workTab,
   previewRefreshToken,
   currentWorkspaceFile,

@@ -5,7 +5,7 @@
 import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
 import type { AutoPopulateEntry } from '@spark-view/spark-component'
 import { ensureUniqueObjectKey } from '@spark-view/spark-component'
-import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from '@spark-view/spark-ai'
+import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from './devComponentMetadata'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────
 //
@@ -124,10 +124,6 @@ const EXTRA_TYPE_LABELS: Record<string, string> = {
   'module-context-badge': '[模块徽章] module-context-badge',
   'icon-picker': '[图标选择器] icon-picker',
   'error-fallback': '[错误回退] error-fallback',
-  'ai-chat-widget': '[AI对话挂件] ai-chat-widget',
-  'ai-chat-panel': '[AI对话面板] ai-chat-panel',
-  'ai-assistant-hub': '[AI助手中心] ai-assistant-hub',
-  'ai-studio-panel': '[AI工作室] ai-studio-panel',
   'spark-json-editor': '[JSON编辑器] spark-json-editor',
   'json-tree-editor': '[JSON树编辑器] json-tree-editor',
   'r-column-group': '[分组列] r-column-group',

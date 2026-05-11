@@ -109,6 +109,7 @@ describe('AI core module projection and translation API', () => {
     expect(started.availableFunctions.map((definition) => definition.action)).toEqual([
       'leave-instance@leaveApproval@setReason',
     ])
+    expect(started.availableFunctions[0]).not.toHaveProperty('functionId')
     expect(started.availableFunctions[0]?.failureModes).toEqual([
       { code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' },
     ])

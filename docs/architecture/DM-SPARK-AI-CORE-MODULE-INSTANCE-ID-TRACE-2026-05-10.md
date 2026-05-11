@@ -2,7 +2,7 @@
 
 > **状态**：已实施前后端 scope-aware 非流式会话链路，持续验证  
 > **日期**：2026-05-10  
-> **范围**：`packages/spark-ai/src/core`、`packages/spark-ai/src/business/page-design`、`src/views/app/dev-system`  
+> **范围**：`packages/spark-ai/src/core`、`packages/spark-ai/src/registrations/page-design`、`src/views/app/dev-system`  
 > **目标**：把 AI Core 中 `moduleInstanceId`、`instanceId`、`runtimeInstanceId` 的职责彻底分清，并建立从前端宿主、后端 AI session、LLM tool call、Core history 到业务函数执行上下文的一致追踪方案。
 
 ---
@@ -47,7 +47,7 @@ AI Core 的模块实例追踪应以 **`moduleId + moduleInstanceId`** 作为唯�
 
 ### 3.1 合约层
 
-文件：`packages/spark-ai/src/core/protocol/business-contracts.ts`
+文件：`packages/spark-ai/src/core/protocol/runtime-contracts.ts`
 
 关键定义：
 
@@ -60,7 +60,7 @@ AI Core 的模块实例追踪应以 **`moduleId + moduleInstanceId`** 作为唯�
 
 ### 3.2 Core 会话表
 
-文件：`packages/spark-ai/src/core/runtime/ai-runtime.ts`
+文件：`packages/spark-ai/src/core/internal/runtime/ai-runtime.ts`
 
 当前实现：
 
@@ -80,7 +80,7 @@ private readonly sessionScopesByInstanceId = new Map<string, string>()
 
 ### 3.3 start/stop 生命周期
 
-文件：`packages/spark-ai/src/core/runtime/ai-runtime.ts`
+文件：`packages/spark-ai/src/core/internal/runtime/ai-runtime.ts`
 
 `startInstance(options)` 当前流程：
 
@@ -103,7 +103,7 @@ runtimeInstanceId = options.runtimeInstanceId ?? previous?.runtimeInstanceId ?? 
 
 ### 3.4 action 投影
 
-文件：`packages/spark-ai/src/core/runtime/ai-runtime.ts`
+文件：`packages/spark-ai/src/core/internal/runtime/ai-runtime.ts`
 
 LLM 可见 action 由 `actionOf` 生成：
 
@@ -126,7 +126,7 @@ dept-1/{personId}@basicInfo@update
 ### 3.5 action 解析与 translate
 
 文件：`packages/spark-ai/src/core/protocol/invocation-helpers.ts`  
-文件：`packages/spark-ai/src/core/runtime/ai-runtime.ts`
+文件：`packages/spark-ai/src/core/internal/runtime/ai-runtime.ts`
 
 `AiInvocationProtocol.parseActionPath` 支持两种格式：
 
@@ -167,7 +167,7 @@ if (address.format === 'instance' && address.instanceIds[0] !== session.moduleIn
 
 ### 3.6 activePath 与子模块实例
 
-文件：`packages/spark-ai/src/core/runtime/ai-runtime-support.ts`
+文件：`packages/spark-ai/src/core/internal/runtime/ai-runtime-support.ts`
 
 `AiRuntimeProjector.createActivePathSnapshot` 当前返回：
 
@@ -192,7 +192,7 @@ if (address.format === 'instance' && address.instanceIds[0] !== session.moduleIn
 
 ### 3.7 PageDesign 业务层
 
-文件：`packages/spark-ai/src/business/page-design/page-design-business.ts`
+文件：`packages/spark-ai/src/registrations/page-design/page-design-business.ts`
 
 当前实现：
 
@@ -953,12 +953,12 @@ flowchart TD
 
 | 文件 | 作用 |
 |------|------|
-| `packages/spark-ai/src/core/protocol/business-contracts.ts` | ID 合约、session record、function context、history envelope |
+| `packages/spark-ai/src/core/protocol/runtime-contracts.ts` | ID 合约、session record、function context、history envelope |
 | `packages/spark-ai/src/core/protocol/invocation-helpers.ts` | action path 解析 |
-| `packages/spark-ai/src/core/runtime/ai-runtime.ts` | session 隔离、start/stop、action 投影、translate、history |
-| `packages/spark-ai/src/core/runtime/ai-runtime-support.ts` | module projection、activePath snapshot、context param 注入 |
-| `packages/spark-ai/src/business/page-design/page-design-business.ts` | pageDesign 业务模块、状态隔离、函数执行 |
-| `packages/spark-ai/src/business/page-design/prompts/edit-runtime-prompt.ts` | prompt 中对 action 和 instanceId 语义的说明 |
+| `packages/spark-ai/src/core/internal/runtime/ai-runtime.ts` | session 隔离、start/stop、action 投影、translate、history |
+| `packages/spark-ai/src/core/internal/runtime/ai-runtime-support.ts` | module projection、activePath snapshot、context param 注入 |
+| `packages/spark-ai/src/registrations/page-design/page-design-business.ts` | pageDesign 业务模块、状态隔离、函数执行 |
+| `packages/spark-ai/src/registrations/page-design/prompts/edit-runtime-prompt.ts` | prompt 中对 action 和 instanceId 语义的说明 |
 | `src/views/app/dev-system/usePageModelSessionHost.ts` | 前端 Core session 与后端 AI session 桥接 |
 | `src/views/app/dev-system/usePageModelEditSession.ts` | 前端 LLM 轮次、tool projection、bootstrap 和函数调用 |
 | `packages/spark-component/src/components/ai/useAiChat.ts` | 通用 AI Chat 消息、turn 并发、上下文快照与持久化 |

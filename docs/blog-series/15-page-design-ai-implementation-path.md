@@ -18,9 +18,9 @@ SPARK_VIEW 的通用实现路径是：每个业务域维护自己的子模块、
 
 ## Component PayloadProvider 属于 PageDesign knowledge
 
-这里必须明确归属：Component PayloadProvider 组件参数荷载指南不是 AI core 层能力，而是 PageDesign 业务模块的 knowledge 能力。core 可以定义通用 `KnowledgePayloadProvider` 协议和 `KnowledgePayloadRegistry`，但它不拥有组件目录语义，也不解释 `r-table`、`r-form`、`el-button` 的 props。
+这里必须明确归属：Component PayloadProvider 组件参数荷载指南不是 AI core 层能力，而是 PageDesign 模块的参数 payload 能力。core 可以定义通用 `ParameterPayloadProvider` 协议和 `ParameterPayloadRegistry`，但它不拥有组件目录语义，也不解释 `r-table`、`r-form`、`el-button` 的 props。
 
-PageDesign 通过 `PageDesignComponentPayloadProvider` 把组件 catalog 投影成 `page-design.component` 参数荷载目录。AI 新增或替换 SparkNode 前，应调用 `pageDesign/knowledge/queryPayloads` 选择组件 type，再调用 `pageDesign/knowledge/guidePayload` 获取 JSON schema、最小示例、规则和失败模式。换到其他业务模块时，对应的 payload provider 也应由该业务模块维护，而不是由 core 统一内置。
+PageDesign 通过 `PageDesignComponentPayloadProvider` 把组件 catalog 投影成 `page-design.component` 参数荷载目录。AI 新增或替换 SparkNode 前，应调用 `pageDesign/knowledge/queryPayloads` 选择组件 type，再调用 `pageDesign/knowledge/guidePayload` 获取 paramsSchema、最小参数示例、规则和失败模式。换到其他业务模块时，对应的 payload provider 也应由该业务模块维护，而不是由 core 统一内置。
 
 ## 工具目录比 prompt 更可靠
 
@@ -60,9 +60,9 @@ sequenceDiagram
 
 ## 源码锚点
 
-- [../../packages/spark-ai/src/business/page-design/page-design-business.ts](../../packages/spark-ai/src/business/page-design/page-design-business.ts)
-- [../../packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts](../../packages/spark-ai/src/business/page-design/payloads/component-payload-provider.ts)
-- [../../packages/spark-ai/src/business/page-design/functions/lifecycle/tool-catalog.ts](../../packages/spark-ai/src/business/page-design/functions/lifecycle/tool-catalog.ts)
+- [../../packages/spark-ai/src/registrations/page-design/page-design-business.ts](../../packages/spark-ai/src/registrations/page-design/page-design-business.ts)
+- [../../packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts](../../packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts)
+- [../../packages/spark-ai/src/registrations/page-design/functions/lifecycle/tool-catalog.ts](../../packages/spark-ai/src/registrations/page-design/functions/lifecycle/tool-catalog.ts)
 - [../../packages/spark-ai/src/catalog/catalog-projections.ts](../../packages/spark-ai/src/catalog/catalog-projections.ts)
 - [../../packages/spark-ai/src/catalog/json-catalog-generator.ts](../../packages/spark-ai/src/catalog/json-catalog-generator.ts)
 

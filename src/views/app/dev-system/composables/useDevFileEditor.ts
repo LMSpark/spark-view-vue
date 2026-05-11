@@ -3,7 +3,7 @@ import type { DevState, PageFileName } from '../useDevState'
 
 /**
  * 手动编辑器绑定器 — 将任意 PageFileName 接入 state.documents 注册表。
- * 所有读写/undo/redo 都经由对应的 PageFileDocument，和 AI 编辑共享同一模型与历史。
+ * 所有读写/undo/redo 都经由对应的 PageFileDocument，共享同一模型与历史。
  */
 export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageFileName>>) {
   const doc = computed(() => state.documents[activeFile.value])
@@ -46,7 +46,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
       if (!pageId) return
       // immediate=true 触发时 previousPageId 为 undefined：不能视作"页面变化"，
       // 否则切换 tab 时（DevFileEditor 由 v-if 重新挂载）会强制 reload，
-      // 把内存中已编辑但未保存的 model（含拖拽布局、AI 写入等）擦回远端原始内容。
+      // 把内存中已编辑但未保存的 model（含拖拽布局）擦回远端原始内容。
       const isPageSwitch = previousPageId !== undefined && pageId !== previousPageId
       void ensureLoaded({ forceReload: isPageSwitch })
     },
