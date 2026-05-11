@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   AiRuntime,
   PageDesignModule,
+} from '../packages/spark-ai/src'
+import {
   PageDesignService,
   type PageDesignEditHost,
-} from '../packages/spark-ai/src'
+} from '../packages/spark-page-config/src'
 import type { SparkNodeTree } from '../packages/spark-page-config/src'
 import type { DataSetCrudTool } from '../packages/spark-data/src'
 

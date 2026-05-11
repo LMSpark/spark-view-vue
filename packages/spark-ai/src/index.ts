@@ -158,20 +158,3 @@ export type {
   TextModelFunctionParameterRow,
   TextModelFunctionTarget,
 } from './registrations/page-design'
-
-export {
-  PageDesignEditSession,
-  PageDesignService,
-} from './services/page-design'
-
-export type {
-  PageDesignEditPhase,
-  PageDesignEditHost,
-  PageDesignEditState,
-  PageDesignNodeTree,
-  PageDesignServiceContext,
-  PageDesignServiceResult,
-  PageDesignServiceState,
-  PageDesignTextFileKey,
-  PageDesignServiceMethodBinding,
-} from './services/page-design'

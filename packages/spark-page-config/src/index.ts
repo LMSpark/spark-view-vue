@@ -87,6 +87,7 @@ export {
 
 export * from './json-document'
 export * from './documents'
+export * from './page-design'
 
 // 配置加载器
 export {

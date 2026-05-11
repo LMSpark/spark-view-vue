@@ -27,7 +27,7 @@ import {
   pageDesignServiceFailure,
   type PageDesignEditHost,
   type PageDesignServiceContext,
-} from '../../services/page-design'
+} from '@spark-view/spark-page-config'
 import { PageDesignDatasetCatalog } from './modules/dataset-tool-catalog'
 import { PageDesignLifecycleCatalog } from './modules/lifecycle-tool-catalog'
 import { PageDesignNodeTreeCatalog } from './modules/node-tree-tool-catalog'

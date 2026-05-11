@@ -64,8 +64,8 @@ describe('@spark-view/spark-ai framework boundary', () => {
     expect(offenders).toEqual([])
   })
 
-  it('keeps page-design services grouped by responsibility', () => {
-    const serviceRoot = path.join(packageRoot, 'src', 'services', 'page-design')
+  it('keeps page-design services in page-config grouped by responsibility', () => {
+    const serviceRoot = path.join(pageConfigPackageRoot, 'src', 'page-design')
     const allowedRootEntries = new Set([
       'index.ts',
       'editing',
@@ -84,6 +84,16 @@ describe('@spark-view/spark-ai framework boundary', () => {
     }
   })
 
+  it('does not publish legacy spark-ai services entrypoints', () => {
+    expect(fs.existsSync(path.join(packageRoot, 'src', 'services'))).toBe(false)
+
+    const packageJson = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')) as {
+      exports?: Record<string, unknown>
+    }
+    expect(Object.keys(packageJson.exports ?? {})).not.toContain('./services')
+    expect(Object.keys(packageJson.exports ?? {})).not.toContain('./services/page-design')
+  })
+
   it('keeps DevSystem out of the generated component catalog', () => {
     const serializedCatalog = JSON.stringify(COMPONENT_CATALOG_JSON)
 
@@ -93,7 +103,7 @@ describe('@spark-view/spark-ai framework boundary', () => {
 
   it('keeps DevSystem editing independent from the AI core runtime', () => {
     const devSystemRoot = path.join(repoRoot, 'src', 'views', 'app', 'dev-system')
-    const serviceRoot = path.join(packageRoot, 'src', 'services')
+    const serviceRoot = path.join(pageConfigPackageRoot, 'src', 'page-design')
     const files = [
       ...walkFiles(devSystemRoot),
       ...walkFiles(serviceRoot),
