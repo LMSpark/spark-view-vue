@@ -57,6 +57,8 @@ export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
   '**/src/components/ModuleContextBadge.vue',
   '**/src/components/NavIcon.vue',
   '**/src/views/app/SkillCatalog.vue',
+  // AI 助手面板属于宿主展示层，不作为页面配置可生成组件进入 AI payload 目录。
+  '**/packages/spark-component/src/components/ai/**/*.vue',
   '**/packages/spark-component/src/components/containers/support/**/*.vue',
 ] as const
 

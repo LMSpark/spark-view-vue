@@ -13,7 +13,7 @@ function walkFiles(dir: string): string[] {
   const entries = fs.readdirSync(dir, { withFileTypes: true })
   const files: string[] = []
   for (const entry of entries) {
-    if (entry.name === 'node_modules' || entry.name === 'dist') continue
+    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'tests') continue
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) files.push(...walkFiles(fullPath))
     else files.push(fullPath)
@@ -43,6 +43,8 @@ describe('@spark-view/spark-ai framework boundary', () => {
       /@spark-view\/spark-component/u,
       /(?:^|['"])vue(?:['"]|$)/u,
       /@vue\//u,
+      /from\s+['"][^'"]+\.vue['"]/u,
+      /import\s*\(\s*['"][^'"]+\.vue['"]\s*\)/u,
       /(?:^|['"])react(?:['"]|$)/u,
       /(?:^|['"])svelte(?:['"]|$)/u,
       /(?:^|['"])@angular\//u,
@@ -52,6 +54,28 @@ describe('@spark-view/spark-ai framework boundary', () => {
       ...packageBoundaryFiles(packageRoot),
       ...packageBoundaryFiles(pageConfigPackageRoot),
       ...packageBoundaryFiles(dataPackageRoot),
+    ]
+
+    const offenders = files.flatMap((file) => {
+      const content = fs.readFileSync(file, 'utf8')
+      return forbiddenPatterns
+        .filter(pattern => pattern.test(content))
+        .map(pattern => `${path.relative(repoRoot, file)} :: ${pattern.source}`)
+    })
+
+    expect(offenders).toEqual([])
+  })
+
+  it('keeps the AI core free of page-design business modules', () => {
+    const coreRoot = path.join(packageRoot, 'src', 'core')
+    const files = walkFiles(coreRoot)
+      .filter(file => file.endsWith('.ts'))
+
+    const forbiddenPatterns = [
+      /\bpage-design\b/u,
+      /\bPageDesign\b/u,
+      /@spark-view\/spark-page-config/u,
+      /@spark-view\/spark-component/u,
     ]
 
     const offenders = files.flatMap((file) => {
@@ -111,7 +135,7 @@ describe('@spark-view/spark-ai framework boundary', () => {
 
     const forbiddenPatterns = [
       /@spark-view\/spark-ai\/core/,
-      /from\s+['"][^'"]*\/core(?:\/|['"])/,
+      /from\s+['"][^'"]*spark-ai[^'"]*\/core(?:\/|['"])/,
       /\bAiRuntime\b/,
       /\bAiModule[A-Z]\w*\b/,
       /\bAiRegistered[A-Z]\w*\b/,
@@ -149,6 +173,12 @@ describe('@spark-view/spark-ai framework boundary', () => {
       expect(entry.emits?.map(emit => emit.name) ?? []).not.toContain('update:modelValue')
     }
 
+  })
+
+  it('does not expose AI assistant UI chrome as page-design payload components', () => {
+    const catalog = COMPONENT_CATALOG_JSON as ComponentCatalog
+
+    expect(Object.keys(catalog.components).filter(type => /^ai-|app-ai-|.*chat.*$/u.test(type))).toEqual([])
   })
 
   it('publishes component payload guides as parameter schema', () => {

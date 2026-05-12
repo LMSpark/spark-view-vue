@@ -194,7 +194,7 @@ type SparkPageNodePropsInput = Omit<PageConfig, 'pageId'> & { pageId?: string }
  * - props    = configLoader / pageId / pageConfig / enable* / 钩子等（本接口所有字段）
  * - children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入
  */
-interface Props extends Omit<SparkNode, 'type'> {
+interface Props extends /* @vue-ignore */ Omit<SparkNode, 'type'> {
   /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */
   type?: string
   /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */

@@ -84,13 +84,13 @@ function handleClick() {
 
 ## 使用方式
 
-页面配置通过 Java 后端 RESTful API 加载，前端无需直接引用文件路径：
+页面配置通过 Java 后端 RESTful API 加载，前端无需直接引用文件路径。API 只保留租户/项目作用域路径：
 
 ```
-GET  /api/pages-config/{pageId}/{file}     # 读取单个文件
-PUT  /api/pages-config/{pageId}/{file}     # 写入单个文件
-POST /api/pages-config/{pageId}/__batch    # 批量写入 + 自动注册路由
-GET  /api/pages-config/__list              # 列出所有页面
+GET  /api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{file}
+PUT  /api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{file}
+POST /api/tenants/{tenantId}/projects/{projectId}/pages-config/__create
+GET  /api/tenants/{tenantId}/projects/{projectId}/pages-config/__list
 ```
 
 ## 编辑工作流

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,11 +152,16 @@ public class AiSessionController {
      */
     @PostMapping(value = "/{sessionId}/turn/stream",
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter executeTurnStream(@PathVariable String sessionId) {
+    public SseEmitter executeTurnStream(
+            @PathVariable String sessionId,
+            @RequestBody(required = false) Map<String, Object> request) {
         SseEmitter emitter = new SseEmitter(300_000L); // 5 min timeout
+        if (!isProtocolV3(request)) {
+            sendSseError(emitter, "仅支持 protocolVersion=3");
+            return emitter;
+        }
 
-        sessionService.executeTurnStream(sessionId, emitter);
-
+        sessionService.executeTurnStream(sessionId, emitter, extractScope(request));
         return emitter;
     }
 
@@ -296,6 +302,13 @@ public class AiSessionController {
             }
         }
         return null;
+    }
+
+    private static void sendSseError(SseEmitter emitter, String message) {
+        try {
+            emitter.send(SseEmitter.event().name("error").data(message));
+            emitter.complete();
+        } catch (IOException ignored) {}
     }
 
     private static ResponseEntity<Map<String, Object>> requestError(

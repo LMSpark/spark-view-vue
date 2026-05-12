@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 
 vi.mock('vue-markdown-render', () => ({
@@ -14,7 +14,8 @@ vi.mock('vue-markdown-render', () => ({
   }),
 }))
 
-import { AiChatWidget, AppAiPanel, useAiPanelStore } from '@spark-view/spark-component'
+import { AppAiPanel, useAiPanelStore } from '@spark-view/spark-component'
+import AiChatWidget from '../packages/spark-component/src/components/ai/AiChatWidget.vue'
 
 function resetAiPanelStore() {
   const store = useAiPanelStore()
@@ -408,6 +409,7 @@ describe('AiChatWidget persistence', () => {
       request.onSseEvent?.({ sessionId: 'session-1', type: 'reasoning', data: 'more-reasoning ' })
       request.onSseEvent?.({ sessionId: 'session-1', type: 'delta', data: 'raw-sse-' })
       request.onSseEvent?.({ sessionId: 'session-1', type: 'delta', data: 'delta' })
+      request.onSseEvent?.({ sessionId: 'session-1', type: 'tool-call', data: '{"toolName":"pageDesign/knowledge/queryPayloads"}' })
       request.onFcCall?.({
         toolName: 'pageDesign/knowledge/queryPayloads',
         args: { category: 'layout' },
@@ -446,9 +448,12 @@ describe('AiChatWidget persistence', () => {
       .find((entry) => entry.find('.diagnostic-entry__kind').text() === '人工输入')
     expect(humanEntry?.find('.diagnostic-entry__title').text()).toBe('用户消息')
     expect(wrapper.findAll('.diagnostic-entry__title').filter((entry) => entry.text() === '人工输入')).toHaveLength(0)
-    expect(wrapper.text()).not.toContain('SSE 文本增量')
-    expect(wrapper.text()).not.toContain('SSE 推理')
-    expect(wrapper.text()).not.toContain('raw-sse-delta')
+    expect(wrapper.text()).toContain('SSE 文本增量 (2片)')
+    expect(wrapper.text()).toContain('SSE 推理 (2片)')
+    expect(wrapper.text()).toContain('raw-sse-delta')
+    expect(wrapper.text()).toContain('reasoning-context more-reasoning')
+    expect(wrapper.text()).toContain('SSE 事件 tool-call')
+    expect(wrapper.text()).toContain('"toolName":"pageDesign/knowledge/queryPayloads"')
     expect(wrapper.text()).not.toContain('duplicated-sse-log')
     expect(wrapper.text()).not.toContain('duplicated-result-log')
     expect(wrapper.text()).not.toContain('编辑会话已挂接到当前页面模型')
@@ -456,9 +461,10 @@ describe('AiChatWidget persistence', () => {
     expect(wrapper.text()).not.toContain('SSE done')
     expect(wrapper.text()).not.toContain('(empty)')
     const sseTextEntries = wrapper.findAll('.diagnostic-entry--sse-text')
-    expect(sseTextEntries).toHaveLength(0)
+    expect(sseTextEntries).toHaveLength(2)
+    const sseEventEntries = wrapper.findAll('.diagnostic-entry--sse')
+    expect(sseEventEntries).toHaveLength(1)
     expect(wrapper.text()).toContain('FC 调用记录 (1)')
-    expect(wrapper.text()).toContain('参数荷载目录')
 
     await wrapper.find('button[title="复制结构化诊断数据"]').trigger('click')
 
@@ -474,20 +480,23 @@ describe('AiChatWidget persistence', () => {
     expect(structured.pageId).toBe('orders-page')
     expect(structured.counts.humanInputs).toBe(1)
     expect(structured.counts.fcCalls).toBe(1)
-    expect(structured.counts.sseEvents).toBe(4)
+    expect(structured.counts.sseEvents).toBe(5)
     expect(structured.counts.sseTextSegments).toBe(2)
     expect(structured.counts.toolLogs).toBe(2)
     expect(structured.toolLogs).toEqual(expect.arrayContaining([
-      expect.objectContaining({ tag: 'session-ready', title: '会话就绪', text: expect.stringContaining('编辑会话已挂接') }),
-      expect.objectContaining({ tag: 'LLM → pageDesign/lifecycle/describeProgress', title: 'LLM → pageDesign/lifecycle/describeProgress', text: '读取会话状态' }),
+      expect.objectContaining({ tag: 'session-ready', text: expect.stringContaining('编辑会话已挂接') }),
+      expect.objectContaining({ tag: 'LLM → pageDesign/lifecycle/describeProgress', text: '读取会话状态' }),
     ]))
     expect(structured.sseEvents).toEqual(expect.arrayContaining([
       expect.objectContaining({ type: 'reasoning', data: 'reasoning-context ', sessionId: 'session-1' }),
       expect.objectContaining({ type: 'reasoning', data: 'more-reasoning ', sessionId: 'session-1' }),
       expect.objectContaining({ type: 'delta', data: 'raw-sse-', sessionId: 'session-1' }),
       expect.objectContaining({ type: 'delta', data: 'delta', sessionId: 'session-1' }),
+      expect.objectContaining({ type: 'tool-call', data: '{"toolName":"pageDesign/knowledge/queryPayloads"}', sessionId: 'session-1' }),
     ]))
     expect(structured.timeline.filter((item) => item.source === 'human' && item.payload.includes('诊断一下'))).toHaveLength(1)
+    expect(structured.timeline.filter((item) => item.source === 'sse' && item.kind === 'sse-text')).toHaveLength(2)
+    expect(structured.timeline.filter((item) => item.source === 'sse' && item.kind === 'sse')).toHaveLength(1)
     expect(structured.timeline.some((item) => item.source === 'tool-log' && item.title === '人工输入')).toBe(false)
     expect(structured.timeline.some((item) => item.source === 'tool-log' && item.title.startsWith('SSE '))).toBe(false)
     expect(structured.timeline.some((item) => item.kind === 'sse' && item.payload.trim() === '')).toBe(false)
@@ -500,6 +509,50 @@ describe('AiChatWidget persistence', () => {
     expect(wrapper.text()).toContain('原始工具 pageDesign/knowledge/queryPayloads')
     expect(wrapper.text()).toContain('"category": "layout"')
     expect(wrapper.text()).toContain('"count": 3')
+  })
+
+  it('shows SSE stream chunks before streamAiChatText resolves', async () => {
+    let releaseStream!: () => void
+    let markFirstChunk!: () => void
+    const firstChunkSeen = new Promise<void>((resolve) => {
+      markFirstChunk = resolve
+    })
+    const streamGate = new Promise<void>((resolve) => {
+      releaseStream = resolve
+    })
+    const streamAiChatText = vi.fn(async (request) => {
+      request.onSseEvent?.({ sessionId: 'live-session', type: 'delta', data: 'first-' })
+      request.onDelta?.('first-')
+      markFirstChunk()
+      await streamGate
+      request.onSseEvent?.({ sessionId: 'live-session', type: 'delta', data: 'second' })
+      request.onDelta?.('second')
+      return 'first-second'
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        streamAiChatText,
+        storageKey: 'ai-chat-widget-live-sse-stream',
+      },
+    })
+
+    await wrapper.find('.chat-textarea').setValue('开始流式输出')
+    const clickPromise = wrapper.find('.send-btn').trigger('click')
+    await firstChunkSeen
+    await nextTick()
+
+    expect(wrapper.text()).toContain('SSE 文本增量 (1片)')
+    expect(wrapper.text()).toContain('first-')
+    expect(wrapper.text()).not.toContain('second')
+
+    releaseStream()
+    await clickPromise
+    await flushPromises()
+    await nextTick()
+
+    expect(wrapper.text()).toContain('SSE 文本增量 (2片)')
+    expect(wrapper.text()).toContain('first-second')
   })
 
   it('batches SSE cache writes and persists the final structured snapshot', async () => {

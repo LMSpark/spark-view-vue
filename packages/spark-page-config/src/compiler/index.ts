@@ -17,8 +17,8 @@ import type {
   PageCssConfig
 } from '../types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
-import { isSparkNode, normalizeSparkNode } from '../spark-node'
-import { SparkNodeTree } from '../spark-node-tree'
+import { isSparkNode, normalizeSparkNode } from '../core/spark-node'
+import { SparkNodeTree } from '../core/spark-node-tree'
 
 type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
 

@@ -12,7 +12,7 @@
     "noEmitOnError": true,
     "composite": false,
     "paths": {
-      "@spark-view/spark-page-config": ["../spark-page-config/dist/index"],
+      "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"]
     }

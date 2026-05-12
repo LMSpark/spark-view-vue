@@ -26,6 +26,12 @@ export {
   assertPageDesignContext,
 } from './page-design-module'
 
+export {
+  pageDesignParamsToJsonSchema,
+  projectPageDesignTools,
+  runPageDesignHeadless,
+} from './headless-runner'
+
 export { PageDesignLifecycleCatalog } from './modules/lifecycle-tool-catalog'
 
 export { PageDesignKnowledgeCatalog } from './modules/knowledge-tool-catalog'
@@ -50,6 +56,20 @@ export type {
   PageDesignRuntimeContext,
   PageDesignStopSessionOptions,
 } from './page-design-module'
+
+export type {
+  PageDesignHeadlessRunOptions,
+  PageDesignHeadlessRunResult,
+  PageDesignHeadlessToolEvent,
+  PageDesignHeadlessToolResultEvent,
+  PageDesignLlmMessage,
+  PageDesignLlmToolCall,
+  PageDesignLlmToolDefinition,
+  PageDesignLlmTurn,
+  PageDesignLlmTurnRequest,
+  PageDesignLlmTurnResult,
+  PageDesignToolCatalogProjection,
+} from './headless-runner'
 
 export type {
   DatasetCrudToolFunctionFailureMode,

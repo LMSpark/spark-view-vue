@@ -20,7 +20,8 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./style.css": "./dist/spark-component.css"
   },
   "scripts": {
     "clean": "rimraf dist",

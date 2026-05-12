@@ -221,7 +221,7 @@ export interface AiModuleRegistrationData {
 
 /** 模块注册持久化快照中的模块行；可直接映射到数据库 module 表。 */
 export interface AiModuleRegistrationStoreModule {
-  /** 模块路径，例如 `pageDesign/nodeTree`；同一个快照内唯一。 */
+  /** 模块路径，例如 `rootModule/childModule`；同一个快照内唯一。 */
   readonly modulePath: AiRuntimeModulePath
   /** 父模块路径；根模块为空。 */
   readonly parentModulePath?: AiRuntimeModulePath | undefined
@@ -523,6 +523,16 @@ export interface AiRuntimeSessionRecord extends AiRuntimeInstanceScope {
   readonly history: readonly AiRuntimeHistoryEntry[]
 }
 
+/** 可由宿主持久化的 core AI 会话快照。 */
+export interface AiRuntimeSessionSnapshot {
+  /** 快照协议版本；后续恢复格式演进时用于兼容。 */
+  readonly version: 1
+  /** 单条 core session 记录。 */
+  readonly session: AiRuntimeSessionRecord
+  /** 恢复后继续追加历史时使用的最小全局序号。 */
+  readonly nextHistorySeq: number
+}
+
 /** 追加 UI/LLM/system 消息历史的输入。 */
 export interface AiRuntimeAppendMessageOptions extends AiRuntimeInstanceScope {
   /** 消息角色。 */
@@ -715,6 +725,8 @@ export interface AiRuntimeExecuteFunctionCallOptions extends AiRuntimeTranslateF
   readonly normalizeResult?: AiRuntimeFunctionCallResultNormalizer | undefined
   /** 落点抛错时给 LLM/宿主的修复建议。 */
   readonly errorFix?: string | undefined
+  /** 宿主可选附加信息；会写入 requested/completed/failed 函数调用历史。 */
+  readonly metadata?: Record<string, unknown> | undefined
 }
 
 /** AI 会话开始通知。core 返回投影、生命周期快照，并保存 AI session record。 */
@@ -778,10 +790,71 @@ export interface AiRuntimeStopInstanceResult {
   readonly session: AiRuntimeSessionRecord
 }
 
+/** core 向 APP/宿主发布的框架无关事件类型。 */
+export type AiRuntimeEventType =
+  | 'module.registered'
+  | 'session.started'
+  | 'session.stopped'
+  | 'session.hydrated'
+  | 'history.message.appended'
+  | 'history.function.requested'
+  | 'history.function.completed'
+  | 'history.function.failed'
+
+/** core 事件公共 envelope；事件只描述 AI 账本变化，不包含 UI 框架对象。 */
+export interface AiRuntimeEventBase {
+  readonly type: AiRuntimeEventType
+  readonly timestamp: number
+  readonly moduleId: AiRuntimeModuleId
+}
+
+/** 模块知识注册事件。 */
+export interface AiRuntimeModuleRegisteredEvent extends AiRuntimeEventBase {
+  readonly type: 'module.registered'
+}
+
+/** AI session 生命周期事件。 */
+export interface AiRuntimeSessionEvent extends AiRuntimeEventBase {
+  readonly type: 'session.started' | 'session.stopped' | 'session.hydrated'
+  readonly scope: AiRuntimeInstanceScope
+  readonly session: AiRuntimeSessionRecord
+}
+
+/** AI session 消息历史事件。 */
+export interface AiRuntimeMessageHistoryEvent extends AiRuntimeEventBase {
+  readonly type: 'history.message.appended'
+  readonly scope: AiRuntimeInstanceScope
+  readonly entry: AiRuntimeMessageHistoryEntry
+  readonly session: AiRuntimeSessionRecord
+}
+
+/** AI session 函数调用历史事件。 */
+export interface AiRuntimeFunctionCallHistoryEvent extends AiRuntimeEventBase {
+  readonly type: 'history.function.requested' | 'history.function.completed' | 'history.function.failed'
+  readonly scope: AiRuntimeInstanceScope
+  readonly entry: AiRuntimeFunctionCallHistoryEntry
+  readonly session: AiRuntimeSessionRecord
+}
+
+/** APP/宿主可订阅的 core 事件联合类型。 */
+export type AiRuntimeEvent =
+  | AiRuntimeModuleRegisteredEvent
+  | AiRuntimeSessionEvent
+  | AiRuntimeMessageHistoryEvent
+  | AiRuntimeFunctionCallHistoryEvent
+
+/** core 事件监听器；返回值不参与 core 流程。 */
+export type AiRuntimeEventListener = (event: AiRuntimeEvent) => void
+
+/** 取消事件订阅。 */
+export type AiRuntimeEventUnsubscribe = () => void
+
 /** AiRuntime 配置项。 */
 export interface AiRuntimeOptions {
   /** 可注入时间源，仅用于会话生命周期通知快照；不参与模块生命周期决策。 */
   now?: () => number
+  /** APP/宿主事件入口；可用于持久化、诊断、UI 展示。 */
+  onEvent?: AiRuntimeEventListener | readonly AiRuntimeEventListener[] | undefined
 }
 
 /** 注册器返回的模块绑定 start options；moduleId 已由注册句柄补齐。 */
@@ -829,6 +902,8 @@ export interface AiRegisteredModuleApi {
   getRegistrationData(): AiModuleRegistrationData
   /** 读取当前模块注册的结构化持久化快照；可拆表写库，由上层持久化。 */
   getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot
+  /** 订阅当前模块的 core 事件；只转发 moduleId 相同的事件。 */
+  subscribe(listener: AiRuntimeEventListener): AiRuntimeEventUnsubscribe
   /** 按技术 instanceId alias 读取会话记录。 */
   getSession(instanceId: string): AiRuntimeSessionRecord | null
   /** 按根模块实例 ID 读取当前模块的 AI 会话记录。 */
@@ -837,6 +912,10 @@ export interface AiRegisteredModuleApi {
   getSessionHistory(instanceId: string): readonly AiRuntimeHistoryEntry[]
   /** 按根模块实例 ID 读取当前模块的 AI 会话历史。 */
   getSessionHistoryByModuleInstance(moduleInstanceId: AiRuntimeModuleInstanceId): readonly AiRuntimeHistoryEntry[]
+  /** 导出当前模块某个根实例的 core session 快照。 */
+  exportSessionSnapshot(moduleInstanceId: AiRuntimeModuleInstanceId): AiRuntimeSessionSnapshot | null
+  /** 恢复当前模块的 core session 快照。 */
+  hydrateSessionSnapshot(snapshot: AiRuntimeSessionSnapshot): AiRuntimeSessionRecord
   /** 追加 UI/LLM/system 消息历史。 */
   appendMessage(options: AiRegisteredModuleAppendMessageOptions): AiRuntimeMessageHistoryEntry
   /** 记录 LLM 编排出的一次函数调用请求。 */
@@ -863,6 +942,8 @@ export interface AiRegisteredModuleApi {
 export interface AiRuntimeApi {
   /** 注册一个顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
   registerModule(registration: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi
+  /** 订阅 core 事件；APP 通过事件观察 AI 包内部账本变化。 */
+  subscribe(listener: AiRuntimeEventListener): AiRuntimeEventUnsubscribe
   /** 读取已注册模块；未知模块返回 undefined。 */
   getModuleRegistration(moduleId: string): AiModuleRegistration | undefined
   /** 列出当前 core facade 持有的模块注册。只包含知识注册，不代表服务状态。 */
@@ -883,6 +964,10 @@ export interface AiRuntimeApi {
   getSessionHistory(instanceId: string): readonly AiRuntimeHistoryEntry[]
   /** 按模块注册 ID + 根模块实例 ID 读取 AI 会话历史；未知 session 返回空数组。 */
   getSessionHistoryByModuleScope(scope: AiRuntimeModuleInstanceScope): readonly AiRuntimeHistoryEntry[]
+  /** 导出单条 core session 快照，供宿主持久化或诊断。 */
+  exportSessionSnapshot(scope: AiRuntimeModuleInstanceScope): AiRuntimeSessionSnapshot | null
+  /** 恢复一条 core session 快照；调用方仍需确保对应模块已注册。 */
+  hydrateSessionSnapshot(snapshot: AiRuntimeSessionSnapshot): AiRuntimeSessionRecord
   /** 获取核心层知识投影器（统一的函数目录、模块目录、参数 payload 查询入口）。 */
   getKnowledgeProjection(): unknown // AiKnowledgeProjection（需要通过 @spark-view/spark-ai 导出）
   /** 追加 UI/LLM/system 消息历史。 */

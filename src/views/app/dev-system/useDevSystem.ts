@@ -8,12 +8,13 @@
  *    消费层不再持有 workTab / previewRefreshToken 等中间 ref。
  */
 import { computed, onScopeDispose, ref, watch } from 'vue'
+import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName } from '@spark-view/spark-page-config'
+import { onPageConfigChange } from '@spark-view/spark-page-config/services'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { PAGE_FILE_NAMES, useDevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
-import { onPageConfigChange } from '@/services/sse-events'
+import { useDevState, type DevWorkspaceTab } from './useDevState'
 
-function isPageFileName(value: string): value is PageFileName {
-  return PAGE_FILE_NAMES.includes(value as PageFileName)
+function isPageConfigFileName(value: string): value is PageConfigFileName {
+  return PAGE_CONFIG_FILE_NAMES.includes(value as PageConfigFileName)
 }
 
 export function useDevSystem() {
@@ -24,8 +25,8 @@ export function useDevSystem() {
   const workTab = ref<DevWorkspaceTab>('props')
   const previewRefreshToken = ref(0)
 
-  const currentWorkspaceFile = computed<PageFileName | null>(() =>
-    isPageFileName(workTab.value) ? workTab.value : null,
+  const currentWorkspaceFile = computed<PageConfigFileName | null>(() =>
+    isPageConfigFileName(workTab.value) ? workTab.value : null,
   )
 
   const stopPageConfigChange = onPageConfigChange((event) => {
@@ -33,7 +34,7 @@ export function useDevSystem() {
     const file = event.file
     state.notifyPageFileChanged(
       event.pageId,
-      isPageFileName(file) ? file : '__bulk',
+      isPageConfigFileName(file) ? file : '__bulk',
     )
   })
   onScopeDispose(stopPageConfigChange)
@@ -75,16 +76,18 @@ export function useDevSystem() {
 
   function switchToPreview() {
     if (!canPreviewCurrentPage.value) return
+    state.flushAllPageFileDrafts()
     workTab.value = 'preview'
     previewRefreshToken.value++
   }
 
   function saveAll() {
     if (!state.hasAnyDirty.value) return
+    state.flushAllPageFileDrafts()
     void state.saveAll()
   }
 
-  function isWorkspaceTabDirty(name: PageFileName): boolean {
+  function isWorkspaceTabDirty(name: PageConfigFileName): boolean {
     return state.isDocumentDirty(name)
   }
 

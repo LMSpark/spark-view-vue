@@ -62,7 +62,7 @@
       </div>
 
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
-        <el-tab-pane v-for="f in PAGE_FILE_NAMES" :key="f" :name="f">
+        <el-tab-pane v-for="f in PAGE_CONFIG_FILE_NAMES" :key="f" :name="f">
           <template #label>
             <span class="file-tab-label" :class="{ 'file-dirty': state.isDocumentDirty(f) }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
@@ -84,7 +84,8 @@
             type="textarea"
             resize="none"
             class="code-input code-input--pagedata-text"
-            @update:model-value="editor.updateText"
+            @update:model-value="editor.updateDraftText"
+            @change="editor.commitText"
           />
         </div>
 
@@ -97,7 +98,7 @@
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="editor.updateText"
+            @update:model-value="editor.commitText"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
@@ -106,6 +107,7 @@
             class="code-input code-input--code"
             height="100%"
             @update:model-value="editor.updateText"
+            @blur="editor.flushPendingText"
           />
           <el-input
             v-else
@@ -113,7 +115,8 @@
             type="textarea"
             :autosize="{ minRows: 30, maxRows: 60 }"
             class="code-input"
-            @update:model-value="editor.updateText"
+            @update:model-value="editor.updateDraftText"
+            @change="editor.commitText"
           />
         </div>
 
@@ -153,24 +156,25 @@ import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import { rulePolicy } from './policies/rulePolicy'
 import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
-import { PAGE_FILE_NAMES } from './useDevState'
-import type { DevState, PageConfigFileVersionSummary, PageFileName } from './useDevState'
+import { PAGE_CONFIG_FILE_NAMES } from '@spark-view/spark-page-config'
+import type { PageConfigFileVersionSummary, PageConfigFileName } from '@spark-view/spark-page-config'
+import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
 const props = withDefaults(defineProps<{
   state: DevState
-  activeFile?: PageFileName
+  activeFile?: PageConfigFileName
   showTabs?: boolean
 }>(), {
   showTabs: true,
 })
 
 const emit = defineEmits<{
-  (e: 'active-file-change', file: PageFileName): void
+  (e: 'active-file-change', file: PageConfigFileName): void
 }>()
 
-const localActiveFile = ref<PageFileName>('rule.json')
+const localActiveFile = ref<PageConfigFileName>('rule.json')
 const showVersionPanel = ref(false)
 const remoteVersionLoading = ref(false)
 const restoringVersion = ref<number | null>(null)
@@ -178,7 +182,7 @@ const creatingVersion = ref(false)
 const remotePageVersions = ref<PageConfigFileVersionSummary[]>([])
 const pageDataViewMode = ref<'visual' | 'text'>('visual')
 const pageDataViewModePinned = ref(false)
-const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
+const resolvedActiveFile = computed<PageConfigFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs)
 const editor = useDevFileEditor(props.state, resolvedActiveFile)
 

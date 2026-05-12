@@ -52,6 +52,8 @@
           :sender="sender"
           :title="title"
           :placeholder="placeholder"
+          :auto-start-message="autoStartMessage"
+          :auto-start-key="autoStartKey"
           :stream-ai-chat-text="streamAiChatText"
           :parse-token-usage="parseTokenUsage"
           :upload-file="uploadFile"
@@ -113,6 +115,8 @@ const storageKey = store.storageKey
 const pageId = store.pageId
 const title = store.title
 const placeholder = store.placeholder
+const autoStartMessage = store.autoStartMessage
+const autoStartKey = store.autoStartKey
 const externalToolLogs = store.externalToolLogs
 const clearExternalToolLogs = store.clearExternalToolLogs
 const fcErrorReporter = store.fcErrorReporter

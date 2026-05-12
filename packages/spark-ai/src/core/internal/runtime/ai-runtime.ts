@@ -11,6 +11,9 @@ import type {
   AiRuntimeApi,
   AiRuntimeCreateFunctionResultMessageOptions,
   AiRuntimeExecuteFunctionCallOptions,
+  AiRuntimeEvent,
+  AiRuntimeEventListener,
+  AiRuntimeEventUnsubscribe,
   AiRuntimeFunctionCallFailure,
   AiRuntimeFunctionCallHistoryEntry,
   AiRuntimeFunctionCallResult,
@@ -22,6 +25,7 @@ import type {
   AiRuntimeHistoryEntry,
   AiRuntimeHistoryEntryBase,
   AiRuntimeInstanceLifecycleSnapshot,
+  AiRuntimeInstanceScope,
   AiRuntimeKnowledgeProjection,
   AiRuntimeMessageHistoryEntry,
   AiRuntimeModuleExposure,
@@ -29,6 +33,7 @@ import type {
   AiRuntimeProjectModuleOptions,
   AiRuntimeRecordFunctionCallRequestOptions,
   AiRuntimeSessionRecord,
+  AiRuntimeSessionSnapshot,
   AiRuntimeStartInstanceOptions,
   AiRuntimeStartInstanceResult,
   AiRuntimeStopInstanceOptions,
@@ -84,6 +89,9 @@ export class AiRuntime implements AiRuntimeApi {
   /** 技术 instanceId 到模块隔离键的兼容索引；instanceId 不决定 session 隔离。 */
   private readonly sessionScopesByInstanceId = new Map<string, string>()
 
+  /** APP/宿主订阅的框架无关事件监听器。 */
+  private readonly eventListeners = new Set<AiRuntimeEventListener>()
+
   /** 全局单调递增历史序号。序号只用于 core ledger，不参与模块侧排序。 */
   private nextHistorySeq = 1
 
@@ -103,6 +111,12 @@ export class AiRuntime implements AiRuntimeApi {
   constructor(options: AiRuntimeOptions = {}) {
     this.now = options.now ?? Date.now
     this.knowledgeProjector = new AiKnowledgeProjector(ParameterPayloadRegistry.defaultRegistry)
+    const listeners = options.onEvent === undefined
+      ? []
+      : Array.isArray(options.onEvent)
+        ? (options.onEvent as readonly AiRuntimeEventListener[])
+        : [options.onEvent]
+    listeners.forEach((listener) => this.eventListeners.add(listener))
   }
 
   /** 注册顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
@@ -113,7 +127,20 @@ export class AiRuntime implements AiRuntimeApi {
       throw new Error(`Duplicate AI module registration: ${registration.moduleId}`)
     }
     this.modules.set(registration.moduleId, registration)
+    this.emitEvent({
+      type: 'module.registered',
+      timestamp: this.now(),
+      moduleId: registration.moduleId,
+    })
     return this.createRegisteredModuleApi(registration)
+  }
+
+  /** 订阅 core 事件；APP 通过事件观察 AI 包内部账本变化。 */
+  subscribe(listener: AiRuntimeEventListener): AiRuntimeEventUnsubscribe {
+    this.eventListeners.add(listener)
+    return () => {
+      this.eventListeners.delete(listener)
+    }
   }
 
   /** 按 moduleId 读取模块知识注册；未知模块返回 undefined。 */
@@ -171,6 +198,48 @@ export class AiRuntime implements AiRuntimeApi {
     return session?.history.map((entry) => this.cloneHistoryEntry(entry)) ?? []
   }
 
+  /** 导出单条 core session 快照，供宿主持久化或诊断。 */
+  exportSessionSnapshot(scope: { moduleId: string; moduleInstanceId: string }): AiRuntimeSessionSnapshot | null {
+    const session = this.sessions.get(AiRuntime.moduleScopeKey(scope.moduleId, scope.moduleInstanceId))
+    if (session === undefined) return null
+    return {
+      version: 1,
+      session: this.cloneSession(session),
+      nextHistorySeq: Math.max(this.nextHistorySeq, AiRuntime.nextHistorySeqAfter(session)),
+    }
+  }
+
+  /** 恢复一条 core session 快照；恢复前要求对应模块知识已注册。 */
+  hydrateSessionSnapshot(snapshot: AiRuntimeSessionSnapshot): AiRuntimeSessionRecord {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (snapshot.version !== 1) {
+      throw new Error(`Unsupported AI session snapshot version: ${String(snapshot.version)}`)
+    }
+    const session = this.cloneSession(snapshot.session)
+    this.getModuleOrThrow(session.moduleId)
+    const scope = this.normalizeScope(session)
+    const restored: AiRuntimeSessionRecord = {
+      ...session,
+      ...scope,
+      history: session.history.map((entry) => this.cloneHistoryEntry(entry)),
+      ...(session.latestProjection === undefined ? {} : { latestProjection: this.cloneProjection(session.latestProjection) }),
+    }
+    this.nextHistorySeq = Math.max(
+      this.nextHistorySeq,
+      snapshot.nextHistorySeq,
+      AiRuntime.nextHistorySeqAfter(restored),
+    )
+    this.storeSession(restored)
+    this.emitEvent({
+      type: 'session.hydrated',
+      timestamp: this.now(),
+      moduleId: restored.moduleId,
+      scope: AiRuntime.scopeOf(restored),
+      session: this.cloneSession(restored),
+    })
+    return this.cloneSession(restored)
+  }
+
   /** 获取核心知识投影器。用于统一的知识查询（函数目录、模块目录、参数指南）。 */
   getKnowledgeProjection(): AiKnowledgeProjection {
     return this.knowledgeProjector
@@ -187,7 +256,15 @@ export class AiRuntime implements AiRuntimeApi {
       content: options.content,
       ...(options.metadata === undefined ? {} : { metadata: cloneRuntimeValue(options.metadata) }),
     }
-    this.storeHistoryEntry(session, entry, timestamp)
+    const updatedSession = this.storeHistoryEntry(session, entry, timestamp)
+    this.emitEvent({
+      type: 'history.message.appended',
+      timestamp,
+      moduleId: entry.moduleId,
+      scope: AiRuntime.scopeOf(entry),
+      entry: this.cloneHistoryEntry(entry) as AiRuntimeMessageHistoryEntry,
+      session: this.cloneSession(updatedSession),
+    })
     return this.cloneHistoryEntry(entry) as AiRuntimeMessageHistoryEntry
   }
 
@@ -210,9 +287,13 @@ export class AiRuntime implements AiRuntimeApi {
     if (previous?.kind !== 'functionCall') {
       throw new Error(`AI history entry ${options.historyEntryId} is not a function call`)
     }
+    if (previous.status !== 'requested') {
+      throw new Error(`AI function call history entry ${options.historyEntryId} is already ${previous.status}`)
+    }
 
     const timestamp = this.now()
     const status = options.status ?? (options.error === undefined ? 'completed' : 'failed')
+    const metadata = AiRuntime.mergeMetadata(previous.metadata, options.metadata)
     const updated: AiRuntimeFunctionCallHistoryEntry = {
       ...previous,
       status,
@@ -220,9 +301,17 @@ export class AiRuntime implements AiRuntimeApi {
       ...(options.result === undefined ? {} : { result: cloneRuntimeValue(options.result) }),
       ...(options.resultMessage === undefined ? {} : { resultMessage: cloneRuntimeValue(options.resultMessage) }),
       ...(options.error === undefined ? {} : { error: { ...options.error } }),
-      ...(options.metadata === undefined ? {} : { metadata: cloneRuntimeValue(options.metadata) }),
+      ...(metadata === undefined ? {} : { metadata }),
     }
-    this.replaceHistoryEntry(session, index, updated, timestamp)
+    const updatedSession = this.replaceHistoryEntry(session, index, updated, timestamp)
+    this.emitEvent({
+      type: status === 'failed' ? 'history.function.failed' : 'history.function.completed',
+      timestamp,
+      moduleId: updated.moduleId,
+      scope: AiRuntime.scopeOf(updated),
+      entry: this.cloneHistoryEntry(updated) as AiRuntimeFunctionCallHistoryEntry,
+      session: this.cloneSession(updatedSession),
+    })
     return this.cloneHistoryEntry(updated) as AiRuntimeFunctionCallHistoryEntry
   }
 
@@ -244,7 +333,19 @@ export class AiRuntime implements AiRuntimeApi {
       ...(options.activePath === undefined ? {} : { activePath: cloneRuntimeValue(options.activePath) }),
       ...(options.metadata === undefined ? {} : { metadata: cloneRuntimeValue(options.metadata) }),
     }
-    this.storeHistoryEntry(session, entry, timestamp)
+    const updatedSession = this.storeHistoryEntry(session, entry, timestamp)
+    this.emitEvent({
+      type: entry.status === 'requested'
+        ? 'history.function.requested'
+        : entry.status === 'failed'
+          ? 'history.function.failed'
+          : 'history.function.completed',
+      timestamp,
+      moduleId: entry.moduleId,
+      scope: AiRuntime.scopeOf(entry),
+      entry: this.cloneHistoryEntry(entry) as AiRuntimeFunctionCallHistoryEntry,
+      session: this.cloneSession(updatedSession),
+    })
     return this.cloneHistoryEntry(entry) as AiRuntimeFunctionCallHistoryEntry
   }
 
@@ -266,9 +367,18 @@ export class AiRuntime implements AiRuntimeApi {
     this.assertInstanceAliasesAvailable(scope)
     const projection = await this.projectModule(scope)
     const timestamp = this.now()
+    const latestPrevious = this.sessions.get(sessionKey)
+    if (latestPrevious !== undefined) this.assertSameSessionScope(latestPrevious, scope)
     const lifecycle = this.createLifecycleSnapshot(scope, 'Started', options.reason, timestamp)
-    const session = this.createStartedSession(scope, projection, previous, timestamp, options.reason)
+    const session = this.createStartedSession(scope, projection, latestPrevious ?? previous, timestamp, options.reason)
     this.storeSession(session)
+    this.emitEvent({
+      type: 'session.started',
+      timestamp,
+      moduleId: session.moduleId,
+      scope: AiRuntime.scopeOf(session),
+      session: this.cloneSession(session),
+    })
     return {
       ...projection,
       status: 'Started',
@@ -316,6 +426,13 @@ export class AiRuntime implements AiRuntimeApi {
       ...(options.reason === undefined ? {} : { reason: options.reason }),
     }
     this.storeSession(session)
+    this.emitEvent({
+      type: 'session.stopped',
+      timestamp,
+      moduleId: session.moduleId,
+      scope: AiRuntime.scopeOf(session),
+      session: this.cloneSession(session),
+    })
     return {
       status: 'Stopped',
       instanceId: scope.instanceId,
@@ -562,12 +679,13 @@ export class AiRuntime implements AiRuntimeApi {
       modulePath: translation.context.modulePath,
       functionId: translation.context.functionId,
       activePath: translation.context.activePath,
+      ...(options.metadata === undefined ? {} : { metadata: options.metadata }),
     })
 
     const validationError = options.validate?.(runInput) ?? null
     if (validationError !== null) {
       const failed = AiRuntime.createFailure('INVALID_ARGS', validationError, `Fix args for ${translation.action} before retrying.`)
-      this.completeTranslatedFunctionCall(translation, failed, requestEntry.id)
+      this.completeTranslatedFunctionCall(translation, failed, requestEntry.id, options.metadata)
       return failed
     }
 
@@ -575,7 +693,7 @@ export class AiRuntime implements AiRuntimeApi {
       const rawResult = await options.run(runInput)
       const result = options.normalizeResult?.(rawResult, runInput)
         ?? AiRuntime.normalizeFunctionCallResult(rawResult, translation.action)
-      this.completeTranslatedFunctionCall(translation, result, requestEntry.id)
+      this.completeTranslatedFunctionCall(translation, result, requestEntry.id, options.metadata)
       return result
     } catch (error) {
       const failed = AiRuntime.createFailure(
@@ -583,7 +701,7 @@ export class AiRuntime implements AiRuntimeApi {
         AiInvocationProtocol.toErrorMessage(error),
         options.errorFix ?? `Fix ${translation.action} implementation or retry with valid args after checking runtime state.`,
       )
-      this.completeTranslatedFunctionCall(translation, failed, requestEntry.id)
+      this.completeTranslatedFunctionCall(translation, failed, requestEntry.id, options.metadata)
       return failed
     }
   }
@@ -599,6 +717,7 @@ export class AiRuntime implements AiRuntimeApi {
         args: options.args,
         status: 'failed',
         error,
+        ...(options.metadata === undefined ? {} : { metadata: options.metadata }),
       })
     } catch {
       // 翻译失败可能正是因为 session 不存在或已停止，此时不能再写入 session history。
@@ -609,6 +728,7 @@ export class AiRuntime implements AiRuntimeApi {
     translation: AiRuntimeFunctionCallTranslation,
     result: AiRuntimeFunctionCallResult<unknown>,
     historyEntryId: string,
+    metadata: Record<string, unknown> | undefined,
   ): void {
     const resultMessage = this.createFunctionResultMessage({
       action: translation.action,
@@ -624,6 +744,7 @@ export class AiRuntime implements AiRuntimeApi {
       result,
       resultMessage,
       ...(!result.ok ? { error: result } : {}),
+      ...(metadata === undefined ? {} : { metadata }),
     })
   }
 
@@ -647,7 +768,7 @@ export class AiRuntime implements AiRuntimeApi {
   }
 
   /** 将一条历史写入 session，并刷新 updatedAt。 */
-  private storeHistoryEntry(session: AiRuntimeSessionRecord, entry: AiRuntimeHistoryEntry, timestamp: number): void {
+  private storeHistoryEntry(session: AiRuntimeSessionRecord, entry: AiRuntimeHistoryEntry, timestamp: number): AiRuntimeSessionRecord {
     const updated: AiRuntimeSessionRecord = {
       ...session,
       updatedAt: timestamp,
@@ -657,6 +778,7 @@ export class AiRuntime implements AiRuntimeApi {
       ],
     }
     this.storeSession(updated)
+    return updated
   }
 
   /** 原地更新一条历史记录的快照；用于 requested -> completed/failed 的会话账本流转。 */
@@ -665,14 +787,16 @@ export class AiRuntime implements AiRuntimeApi {
     index: number,
     entry: AiRuntimeHistoryEntry,
     timestamp: number,
-  ): void {
+  ): AiRuntimeSessionRecord {
     const history = session.history.map((item) => this.cloneHistoryEntry(item))
     history[index] = this.cloneHistoryEntry(entry)
-    this.storeSession({
+    const updated: AiRuntimeSessionRecord = {
       ...session,
       updatedAt: timestamp,
       history,
-    })
+    }
+    this.storeSession(updated)
+    return updated
   }
 
   /** 创建历史条目的公共 envelope。 */
@@ -775,6 +899,18 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /** 向 APP/宿主发布框架无关事件；监听器异常不影响 core 状态流转。 */
+  private emitEvent(event: AiRuntimeEvent): void {
+    if (this.eventListeners.size === 0) return
+    for (const listener of Array.from(this.eventListeners)) {
+      try {
+        listener(cloneRuntimeValue(event))
+      } catch {
+        // Event consumers are observers; their failures must not mutate core behavior.
+      }
+    }
+  }
+
   /** 创建注册方使用的模块绑定 API；只补齐 moduleId，不持有模块服务实例。 */
   private createRegisteredModuleApi(registration: AiModuleRegistration): AiRegisteredModuleApi {
     const moduleId = registration.moduleId
@@ -784,10 +920,20 @@ export class AiRuntime implements AiRuntimeApi {
       getRegistration: () => this.getModuleOrThrow(moduleId),
       getRegistrationData: () => this.projector.createRegistrationData(this.getModuleOrThrow(moduleId)),
       getRegistrationStoreSnapshot: () => this.projector.createRegistrationStoreSnapshot(this.getModuleOrThrow(moduleId)),
+      subscribe: (listener) => this.subscribe((event) => {
+        if (event.moduleId === moduleId) listener(event)
+      }),
       getSession: (instanceId) => this.getSession(instanceId),
       getSessionByModuleInstance: (moduleInstanceId) => this.getSessionByModuleScope({ moduleId, moduleInstanceId }),
       getSessionHistory: (instanceId) => this.getSessionHistory(instanceId),
       getSessionHistoryByModuleInstance: (moduleInstanceId) => this.getSessionHistoryByModuleScope({ moduleId, moduleInstanceId }),
+      exportSessionSnapshot: (moduleInstanceId) => this.exportSessionSnapshot({ moduleId, moduleInstanceId }),
+      hydrateSessionSnapshot: (snapshot) => {
+        if (snapshot.session.moduleId !== moduleId) {
+          throw new Error(`AI session snapshot moduleId must be ${moduleId}, got ${snapshot.session.moduleId}`)
+        }
+        return this.hydrateSessionSnapshot(snapshot)
+      },
       appendMessage: (options) => this.appendMessage({ ...options, moduleId }),
       recordFunctionCallRequest: (options) => this.recordFunctionCallRequest({ ...options, moduleId }),
       completeFunctionCall: (options) => this.completeFunctionCall({ ...options, moduleId }),
@@ -1125,6 +1271,33 @@ export class AiRuntime implements AiRuntimeApi {
   /** 顶层模块实例 scope 的索引键；只用于 AI session 查找，不代表模块状态。 */
   private static moduleScopeKey(moduleId: string, moduleInstanceId: string): string {
     return `${moduleId}\u0000${moduleInstanceId}`
+  }
+
+  /** 从 session/history entry 中取出 APP 可关联的通用 scope。 */
+  private static scopeOf(scope: AiRuntimeInstanceScope): AiRuntimeInstanceScope {
+    return {
+      moduleId: scope.moduleId,
+      moduleInstanceId: scope.moduleInstanceId,
+      instanceId: scope.instanceId,
+      runtimeInstanceId: scope.runtimeInstanceId,
+    }
+  }
+
+  /** 恢复 session 快照后，继续追加历史时应使用的最小序号。 */
+  private static nextHistorySeqAfter(session: AiRuntimeSessionRecord): number {
+    return session.history.reduce((next, entry) => Math.max(next, entry.seq + 1), 1)
+  }
+
+  /** requested -> completed/failed 时合并宿主 metadata，避免覆盖 run/round 等诊断字段。 */
+  private static mergeMetadata(
+    previous: Record<string, unknown> | undefined,
+    next: Record<string, unknown> | undefined,
+  ): Record<string, unknown> | undefined {
+    if (previous === undefined && next === undefined) return undefined
+    return {
+      ...(previous === undefined ? {} : cloneRuntimeValue(previous)),
+      ...(next === undefined ? {} : cloneRuntimeValue(next)),
+    }
   }
 
   /** 将实例路径、模块 ID 和函数 ID 拼成 LLM-facing action。 */

@@ -154,7 +154,8 @@ import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app
 import { createAuthHeaders } from '@/services/http'
 import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
 import { startSseDebugRouteBridge } from '@/services/sse-debug-route'
-import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
+import { onPageConfigChange, type PageConfigFileChangeEvent } from '@spark-view/spark-page-config/services'
+import { createPageDesignAiSessionConfig } from '@/services/page-design-ai-session'
 import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -180,7 +181,7 @@ const showFooter = ref(true)
 const showConfigurator = ref(false)
 const aiPanelStore = useAiPanelStore()
 const hasAiChatAction = computed(() =>
-  nav.regionItems.value.toolbar.some(item => item.path === 'ai-chat')
+  nav.regionItems.value.toolbar.some(item => item.path === 'ai-chat') || canUseRouteAiSession()
 )
 
 const { mode, setMode } = useTabPages()
@@ -355,12 +356,60 @@ function emitModuleContextChange(
   }
 }
 
-function readRoutePageId(): string | null {
-  const pageId = route.meta['pageId']
-  return typeof pageId === 'string' && pageId.length > 0 ? pageId : null
+function readScopedRoutePageId(path: string): string | null {
+  const match = /^\/t\/[^/]+\/[^/]+\/([^/?#]+)/.exec(path)
+  if (!match?.[1]) return null
+  return decodeURIComponent(match[1])
 }
 
-function handlePageConfigChange(event: FileChangeEvent): void {
+function readRoutePageId(): string | null {
+  const routeType = route.meta['type']
+  const pathPageId = readScopedRoutePageId(route.path)
+  if (routeType === 'cross-project-ref') {
+    const refPageId = route.meta['refPageId']
+    if (typeof refPageId === 'string' && refPageId.length > 0) return refPageId
+  }
+  if (pathPageId !== null) return pathPageId
+
+  const pageId = route.meta['pageId']
+  if (typeof pageId === 'string' && pageId.length > 0) return pageId
+  const refPageId = route.meta['refPageId']
+  if (typeof refPageId === 'string' && refPageId.length > 0) return refPageId
+  return null
+}
+
+function canUseRouteAiSession(): boolean {
+  if (isLoginPage.value || contextGuard.value !== null) return false
+  const routeType = route.meta['type']
+  return (routeType === 'config-page' || routeType === 'cross-project-ref') && readRoutePageId() !== null
+}
+
+function readRoutePageTitle(pageId: string): string {
+  const title = route.meta['title']
+  if (typeof title === 'string' && title.trim() !== '') return title
+  return pageId === 'work-evaluation' ? '工作评价' : pageId
+}
+
+async function syncRouteAiSessionConfig(): Promise<void> {
+  if (!canUseRouteAiSession()) return
+  const pageId = readRoutePageId()
+  if (pageId === null) return
+  const config = createPageDesignAiSessionConfig({
+    pageId,
+    title: readRoutePageTitle(pageId),
+  })
+  await aiPanelStore.sync(config)
+}
+
+watch(
+  () => [route.fullPath, route.meta['type'], route.meta['pageId'], route.meta['refPageId'], contextGuard.value === null] as const,
+  () => {
+    void syncRouteAiSessionConfig()
+  },
+  { immediate: true },
+)
+
+function handlePageConfigChange(event: PageConfigFileChangeEvent): void {
   clearPageCache(event.pageId)
   const refPageId = route.meta['refPageId']
   if (

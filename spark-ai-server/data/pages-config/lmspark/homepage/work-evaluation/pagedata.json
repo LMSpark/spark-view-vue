@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "workEvaluations": {
+      "tableName": "workEvaluations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "评价ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "projectName",
+          "type": "string",
+          "label": "项目名称",
+          "required": true
+        },
+        {
+          "name": "teamName",
+          "type": "string",
+          "label": "团队/人员",
+          "required": true
+        },
+        {
+          "name": "evaluationPeriod",
+          "type": "string",
+          "label": "评价周期",
+          "required": true
+        },
+        {
+          "name": "overallScore",
+          "type": "number",
+          "label": "总体评分"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "defaultValue": "待评价"
+        },
+        {
+          "name": "evaluator",
+          "type": "string",
+          "label": "评价人"
+        },
+        {
+          "name": "evaluationDate",
+          "type": "date",
+          "label": "评价日期"
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "label": "评价意见"
+        },
+        {
+          "name": "improvements",
+          "type": "string",
+          "label": "改进建议"
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "label": "创建时间"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "workEvaluations",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "EVAL-001",
+              "projectName": "智慧园区平台",
+              "teamName": "前端团队",
+              "evaluationPeriod": "2025 Q1",
+              "overallScore": 88,
+              "status": "已完成",
+              "evaluator": "张经理",
+              "evaluationDate": "2025-04-01",
+              "comments": "前端团队在Q1完成了核心模块开发，代码质量良好，交付及时。",
+              "improvements": "建议加强单元测试覆盖率和组件文档建设。",
+              "createdAt": "2025-04-01T10:00:00Z"
+            },
+            {
+              "id": "EVAL-002",
+              "projectName": "数据中台",
+              "teamName": "后端团队",
+              "evaluationPeriod": "2025 Q1",
+              "overallScore": 92,
+              "status": "已完成",
+              "evaluator": "李总监",
+              "evaluationDate": "2025-04-02",
+              "comments": "后端团队在数据中台建设中表现突出，架构设计合理，性能优化到位。",
+              "improvements": "建议进一步优化API文档自动生成流程。",
+              "createdAt": "2025-04-02T10:00:00Z"
+            },
+            {
+              "id": "EVAL-003",
+              "projectName": "移动办公APP",
+              "teamName": "移动端团队",
+              "evaluationPeriod": "2025 Q1",
+              "overallScore": 73,
+              "status": "进行中",
+              "evaluator": "王主管",
+              "evaluationDate": "2025-04-03",
+              "comments": "移动端团队完成了基础框架搭建，但部分功能进度滞后。",
+              "improvements": "需加快开发节奏，加强跨团队沟通协调。",
+              "createdAt": "2025-04-03T10:00:00Z"
+            },
+            {
+              "id": "EVAL-004",
+              "projectName": "智能运维系统",
+              "teamName": "测试团队",
+              "evaluationPeriod": "2025 Q1",
+              "overallScore": 0,
+              "status": "待评价",
+              "evaluator": "",
+              "evaluationDate": "",
+              "comments": "",
+              "improvements": "",
+              "createdAt": "2025-04-05T10:00:00Z"
+            },
+            {
+              "id": "EVAL-005",
+              "projectName": "客户关系管理",
+              "teamName": "全栈团队",
+              "evaluationPeriod": "2025 Q2",
+              "overallScore": 0,
+              "status": "待评价",
+              "evaluator": "",
+              "evaluationDate": "",
+              "comments": "",
+              "improvements": "",
+              "createdAt": "2025-04-06T10:00:00Z"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "aggregates": {
+            "totalCount": {
+              "type": "count",
+              "field": "id"
+            },
+            "avgScore": {
+              "type": "avg",
+              "field": "overallScore"
+            },
+            "completedCount": {
+              "type": "count",
+              "field": "id"
+            },
+            "inProgressCount": {
+              "type": "count",
+              "field": "id"
+            },
+            "pendingCount": {
+              "type": "count",
+              "field": "id"
+            }
+          }
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "master"
+    },
+    "evaluationDimensions": {
+      "tableName": "evaluationDimensions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "维度ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "evaluationId",
+          "type": "string",
+          "label": "所属评价ID",
+          "required": true
+        },
+        {
+          "name": "dimensionName",
+          "type": "string",
+          "label": "维度名称",
+          "required": true
+        },
+        {
+          "name": "score",
+          "type": "number",
+          "label": "评分"
+        },
+        {
+          "name": "maxScore",
+          "type": "number",
+          "label": "满分",
+          "defaultValue": 10
+        },
+        {
+          "name": "weight",
+          "type": "number",
+          "label": "权重"
+        },
+        {
+          "name": "remark",
+          "type": "string",
+          "label": "备注"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "evaluationDimensions",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "DIM-001001",
+              "evaluationId": "EVAL-001",
+              "dimensionName": "工作质量",
+              "score": 9,
+              "maxScore": 10,
+              "weight": 0.3,
+              "remark": "代码质量优秀，Bug率低"
+            },
+            {
+              "id": "DIM-001002",
+              "evaluationId": "EVAL-001",
+              "dimensionName": "交付效率",
+              "score": 8.5,
+              "maxScore": 10,
+              "weight": 0.25,
+              "remark": "按时交付，略有延期"
+            },
+            {
+              "id": "DIM-001003",
+              "evaluationId": "EVAL-001",
+              "dimensionName": "团队协作",
+              "score": 9,
+              "maxScore": 10,
+              "weight": 0.2,
+              "remark": "跨团队沟通顺畅"
+            },
+            {
+              "id": "DIM-001004",
+              "evaluationId": "EVAL-001",
+              "dimensionName": "创新能力",
+              "score": 8,
+              "maxScore": 10,
+              "weight": 0.15,
+              "remark": "引入新技术方案"
+            },
+            {
+              "id": "DIM-001005",
+              "evaluationId": "EVAL-001",
+              "dimensionName": "文档规范",
+              "score": 8.5,
+              "maxScore": 10,
+              "weight": 0.1,
+              "remark": "文档完整，可读性好"
+            },
+            {
+              "id": "DIM-002001",
+              "evaluationId": "EVAL-002",
+              "dimensionName": "工作质量",
+              "score": 9.5,
+              "maxScore": 10,
+              "weight": 0.3,
+              "remark": "架构设计优秀"
+            },
+            {
+              "id": "DIM-002002",
+              "evaluationId": "EVAL-002",
+              "dimensionName": "交付效率",
+              "score": 9,
+              "maxScore": 10,
+              "weight": 0.25,
+              "remark": "提前完成关键节点"
+            },
+            {
+              "id": "DIM-002003",
+              "evaluationId": "EVAL-002",
+              "dimensionName": "团队协作",
+              "score": 9.5,
+              "maxScore": 10,
+              "weight": 0.2,
+              "remark": "主动协助其他团队"
+            },
+            {
+              "id": "DIM-002004",
+              "evaluationId": "EVAL-002",
+              "dimensionName": "创新能力",
+              "score": 8.5,
+              "maxScore": 10,
+              "weight": 0.15,
+              "remark": "提出数据治理新方案"
+            },
+            {
+              "id": "DIM-002005",
+              "evaluationId": "EVAL-002",
+              "dimensionName": "文档规范",
+              "score": 9,
+              "maxScore": 10,
+              "weight": 0.1,
+              "remark": "API文档自动化"
+            },
+            {
+              "id": "DIM-003001",
+              "evaluationId": "EVAL-003",
+              "dimensionName": "工作质量",
+              "score": 7.5,
+              "maxScore": 10,
+              "weight": 0.3,
+              "remark": "基础框架质量尚可"
+            },
+            {
+              "id": "DIM-003002",
+              "evaluationId": "EVAL-003",
+              "dimensionName": "交付效率",
+              "score": 6,
+              "maxScore": 10,
+              "weight": 0.25,
+              "remark": "进度滞后，需加快"
+            },
+            {
+              "id": "DIM-003003",
+              "evaluationId": "EVAL-003",
+              "dimensionName": "团队协作",
+              "score": 7,
+              "maxScore": 10,
+              "weight": 0.2,
+              "remark": "沟通有待加强"
+            },
+            {
+              "id": "DIM-003004",
+              "evaluationId": "EVAL-003",
+              "dimensionName": "创新能力",
+              "score": 7.5,
+              "maxScore": 10,
+              "weight": 0.15,
+              "remark": "有一定技术探索"
+            },
+            {
+              "id": "DIM-003005",
+              "evaluationId": "EVAL-003",
+              "dimensionName": "文档规范",
+              "score": 6.5,
+              "maxScore": 10,
+              "weight": 0.1,
+              "remark": "文档需补充完善"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "child"
+    }
+  },
+  "tableRelations": [
+    {
+      "parentTable": "workEvaluations",
+      "childTable": "evaluationDimensions",
+      "parentField": "id",
+      "childField": "evaluationId",
+      "relationName": "评价-维度"
+    }
+  ],
+  "viewDependencies": [
+    {
+      "parentTable": "workEvaluations",
+      "childTable": "evaluationDimensions",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    }
+  ]
+}

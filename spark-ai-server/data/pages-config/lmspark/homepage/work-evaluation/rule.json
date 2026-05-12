@@ -1,0 +1,658 @@
+[
+  {
+    "type": "r-table",
+    "id": "eval-table",
+    "props": {
+      "dataKey": "workEvaluations@rows",
+      "border": true,
+      "stripe": true,
+      "highlightCurrentRow": true,
+      "rowKey": "id",
+      "toolbar": "新增评价 / 刷新 / 导出",
+      "actions": "查看详情 / 删除评价",
+      "filter": "项目名称 / 团队人员 / 状态 / 评价周期",
+      "onRowClick": "handleRowClick",
+      "onCurrentChange": "handleCurrentChange",
+      "onAddRow": "handleAddEvaluation",
+      "onEditRow": "handleRowClick",
+      "onRemoveRow": "handleDeleteEvaluation",
+      "onSelectionChange": "handleSelectionChange",
+      "defaultSort": "createdAt",
+      "pageSize": 10,
+      "showPagination": true
+    },
+    "children": [
+      {
+        "type": "r-text",
+        "id": "r-text__0_0_0",
+        "props": {
+          "field": "id",
+          "label": "评价ID",
+          "width": 100,
+          "readonly": true
+        },
+        "children": []
+      },
+      {
+        "type": "r-text",
+        "id": "r-text__0_0_1",
+        "props": {
+          "field": "projectName",
+          "label": "项目名称",
+          "width": 150
+        },
+        "children": []
+      },
+      {
+        "type": "r-text",
+        "id": "r-text__0_0_2",
+        "props": {
+          "field": "teamName",
+          "label": "团队/人员",
+          "width": 130
+        },
+        "children": []
+      },
+      {
+        "type": "r-text",
+        "id": "r-text__0_0_3",
+        "props": {
+          "field": "evaluationPeriod",
+          "label": "评价周期",
+          "width": 120
+        },
+        "children": []
+      },
+      {
+        "type": "r-number",
+        "id": "r-number__0_0_4",
+        "props": {
+          "field": "overallScore",
+          "label": "总体评分",
+          "width": 100,
+          "precision": 0,
+          "sortable": "custom",
+          "cellClassName": "score-cell",
+          "valueClassName": "score-value"
+        },
+        "children": []
+      },
+      {
+        "type": "r-select",
+        "id": "r-select__0_0_5",
+        "props": {
+          "field": "status",
+          "label": "状态",
+          "width": 110,
+          "options": [
+            {
+              "label": "待评价",
+              "value": "待评价"
+            },
+            {
+              "label": "进行中",
+              "value": "进行中"
+            },
+            {
+              "label": "已完成",
+              "value": "已完成"
+            }
+          ],
+          "cellClassName": "status-cell"
+        },
+        "children": []
+      },
+      {
+        "type": "r-text",
+        "id": "r-text__0_0_6",
+        "props": {
+          "field": "evaluator",
+          "label": "评价人",
+          "width": 100
+        },
+        "children": []
+      },
+      {
+        "type": "r-date",
+        "id": "r-date__0_0_7",
+        "props": {
+          "field": "evaluationDate",
+          "label": "评价日期",
+          "width": 120
+        },
+        "children": []
+      }
+    ]
+  },
+  {
+    "type": "r-dialog",
+    "id": "eval-dialog",
+    "props": {
+      "title": "评价详情",
+      "value": false,
+      "width": "750px",
+      "onOpen": "handleDialogOpen",
+      "onClose": "handleDialogClose",
+      "gridColumns": 24,
+      "gridGap": 12,
+      "closeOnClickModal": false
+    },
+    "children": [
+      {
+        "type": "r-form",
+        "id": "eval-form",
+        "props": {
+          "dataKey": "workEvaluations@currentRow",
+          "labelWidth": "100px",
+          "gridColumns": 24,
+          "gridGap": 12
+        },
+        "children": [
+          {
+            "type": "r-text",
+            "id": "r-text__0_1_0_0",
+            "props": {
+              "field": "id",
+              "label": "评价ID",
+              "width": 200,
+              "readonly": true,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-text",
+            "id": "r-text__0_1_0_1",
+            "props": {
+              "field": "projectName",
+              "label": "项目名称",
+              "width": 200,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-text",
+            "id": "r-text__0_1_0_2",
+            "props": {
+              "field": "teamName",
+              "label": "团队/人员",
+              "width": 200,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-text",
+            "id": "r-text__0_1_0_3",
+            "props": {
+              "field": "evaluationPeriod",
+              "label": "评价周期",
+              "width": 200,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-select",
+            "id": "r-select__0_1_0_4",
+            "props": {
+              "field": "status",
+              "label": "状态",
+              "width": 200,
+              "options": [
+                {
+                  "label": "待评价",
+                  "value": "待评价"
+                },
+                {
+                  "label": "进行中",
+                  "value": "进行中"
+                },
+                {
+                  "label": "已完成",
+                  "value": "已完成"
+                }
+              ],
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-text",
+            "id": "r-text__0_1_0_5",
+            "props": {
+              "field": "evaluator",
+              "label": "评价人",
+              "width": 200,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-date",
+            "id": "r-date__0_1_0_6",
+            "props": {
+              "field": "evaluationDate",
+              "label": "评价日期",
+              "width": 200,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "r-number__0_1_0_7",
+            "props": {
+              "field": "overallScore",
+              "label": "总体评分",
+              "width": 200,
+              "min": 0,
+              "max": 100,
+              "precision": 0,
+              "span": 8
+            },
+            "children": []
+          },
+          {
+            "type": "r-textarea",
+            "id": "r-textarea__0_1_0_8",
+            "props": {
+              "field": "comments",
+              "label": "评价意见",
+              "width": "100%",
+              "rows": 3,
+              "autosize": true,
+              "span": 24
+            },
+            "children": []
+          },
+          {
+            "type": "r-textarea",
+            "id": "r-textarea__0_1_0_9",
+            "props": {
+              "field": "improvements",
+              "label": "改进建议",
+              "width": "100%",
+              "rows": 3,
+              "autosize": true,
+              "span": 24
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-toolbar",
+        "id": "r-toolbar__0_1_1",
+        "props": {
+          "position": "bottom",
+          "justify": "end",
+          "gap": 8
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "id": "btn-cancel",
+            "props": {
+              "label": "取消",
+              "buttonType": "default",
+              "action": "close-dialog"
+            },
+            "children": []
+          },
+          {
+            "type": "r-button",
+            "id": "btn-save",
+            "props": {
+              "label": "保存",
+              "buttonType": "primary",
+              "template": "primary",
+              "onClick": "handleSaveEvaluation"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "r-section",
+    "id": "dimension-section",
+    "props": {
+      "title": "📊 评分维度明细",
+      "description": "多维度评分（工作质量、交付效率、团队协作等），加权自动计算总体评分",
+      "collapsible": true,
+      "bordered": true,
+      "gridColumns": 24,
+      "gridGap": 12
+    },
+    "children": [
+      {
+        "type": "r-table",
+        "id": "dim-table",
+        "props": {
+          "dataKey": "evaluationDimensions@rows",
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "rowKey": "id",
+          "toolbar": "新增维度 / 刷新",
+          "actions": "编辑维度 / 删除维度",
+          "filter": "维度名称",
+          "onAddRow": "handleAddDimension",
+          "onRemoveRow": "handleDeleteDimension",
+          "onEditRow": "handleEditDimension",
+          "onRowClick": "handleDimensionRowClick",
+          "pageSize": 20,
+          "showPagination": false
+        },
+        "children": [
+          {
+            "type": "r-text",
+            "id": "r-text__0_2_0_0",
+            "props": {
+              "field": "dimensionName",
+              "label": "维度名称",
+              "width": 140
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "r-number__0_2_0_1",
+            "props": {
+              "field": "score",
+              "label": "评分",
+              "width": 100,
+              "min": 0,
+              "max": 10,
+              "precision": 1,
+              "sortable": "custom",
+              "cellClassName": "dim-score-cell"
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "r-number__0_2_0_2",
+            "props": {
+              "field": "maxScore",
+              "label": "满分",
+              "width": 80,
+              "precision": 0
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "r-number__0_2_0_3",
+            "props": {
+              "field": "weight",
+              "label": "权重",
+              "width": 100,
+              "precision": 2,
+              "cellClassName": "dim-weight-cell"
+            },
+            "children": []
+          },
+          {
+            "type": "r-text",
+            "id": "r-text__0_2_0_4",
+            "props": {
+              "field": "remark",
+              "label": "备注",
+              "width": 220
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "r-section",
+    "id": "stats-section",
+    "props": {
+      "title": "📈 评价统计",
+      "description": "总体评价数据概览，含各状态分布与平均分",
+      "collapsible": true,
+      "bordered": true,
+      "gridColumns": 24,
+      "gridGap": 12
+    },
+    "children": [
+      {
+        "type": "r-card",
+        "id": "stats-card",
+        "props": {
+          "header": "评价概览",
+          "shadow": "always",
+          "gridColumns": 24,
+          "gridGap": 12
+        },
+        "children": [
+          {
+            "type": "r-space",
+            "id": "r-space__0_3_0_0",
+            "props": {
+              "direction": "horizontal",
+              "size": 24,
+              "wrap": true,
+              "alignment": "center"
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "id": "r-text__0_3_0_0_0",
+                "props": {
+                  "field": "totalCount",
+                  "label": "📋 总评价数",
+                  "value": "",
+                  "readonly": true,
+                  "dataKey": "workEvaluations@aggregateResult.totalCount",
+                  "valueAlign": "center",
+                  "titleAlign": "center",
+                  "valueClassName": "stat-value stat-total"
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "r-text__0_3_0_0_1",
+                "props": {
+                  "field": "completedCount",
+                  "label": "✅ 已完成",
+                  "value": "2",
+                  "readonly": true,
+                  "dataKey": "workEvaluations@aggregateResult.completedCount",
+                  "valueAlign": "center",
+                  "titleAlign": "center",
+                  "valueClassName": "stat-value stat-completed"
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "r-text__0_3_0_0_2",
+                "props": {
+                  "field": "inProgressCount",
+                  "label": "🔄 进行中",
+                  "value": "1",
+                  "readonly": true,
+                  "dataKey": "workEvaluations@aggregateResult.inProgressCount",
+                  "valueAlign": "center",
+                  "titleAlign": "center",
+                  "valueClassName": "stat-value stat-progress"
+                },
+                "children": []
+              },
+              {
+                "type": "r-text",
+                "id": "r-text__0_3_0_0_3",
+                "props": {
+                  "field": "pendingCount",
+                  "label": "⏳ 待评价",
+                  "value": "2",
+                  "readonly": true,
+                  "dataKey": "workEvaluations@aggregateResult.pendingCount",
+                  "valueAlign": "center",
+                  "titleAlign": "center",
+                  "valueClassName": "stat-value stat-pending"
+                },
+                "children": []
+              },
+              {
+                "type": "r-number",
+                "id": "r-number__0_3_0_0_4",
+                "props": {
+                  "field": "avgScore",
+                  "label": "⭐ 平均分",
+                  "value": "",
+                  "precision": 1,
+                  "readonly": true,
+                  "dataKey": "workEvaluations@aggregateResult.avgScore",
+                  "valueAlign": "center",
+                  "titleAlign": "center",
+                  "valueClassName": "stat-value stat-avg"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "r-dialog",
+    "id": "dim-dialog",
+    "props": {
+      "title": "编辑评分维度",
+      "value": false,
+      "width": "550px",
+      "onOpen": "handleDimDialogOpen",
+      "onClose": "handleDimDialogClose",
+      "closeOnClickModal": false,
+      "gridColumns": 24,
+      "gridGap": 12
+    },
+    "children": [
+      {
+        "type": "r-form",
+        "id": "dim-form",
+        "props": {
+          "dataKey": "evaluationDimensions@currentRow",
+          "labelWidth": "100px",
+          "gridColumns": 24,
+          "gridGap": 12
+        },
+        "children": [
+          {
+            "type": "r-text",
+            "id": "dim-form-name",
+            "props": {
+              "field": "dimensionName",
+              "label": "维度名称",
+              "width": "100%",
+              "placeholder": "请输入维度名称",
+              "span": 12
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "dim-form-score",
+            "props": {
+              "field": "score",
+              "label": "评分",
+              "width": "100%",
+              "min": 0,
+              "max": 10,
+              "precision": 1,
+              "placeholder": "0-10分",
+              "span": 12
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "dim-form-maxscore",
+            "props": {
+              "field": "maxScore",
+              "label": "满分",
+              "width": "100%",
+              "min": 1,
+              "max": 100,
+              "precision": 0,
+              "placeholder": "默认10分",
+              "span": 12
+            },
+            "children": []
+          },
+          {
+            "type": "r-number",
+            "id": "dim-form-weight",
+            "props": {
+              "field": "weight",
+              "label": "权重",
+              "width": "100%",
+              "min": 0,
+              "max": 1,
+              "precision": 2,
+              "step": 0.05,
+              "placeholder": "0.00-1.00",
+              "span": 12
+            },
+            "children": []
+          },
+          {
+            "type": "r-textarea",
+            "id": "dim-form-remark",
+            "props": {
+              "field": "remark",
+              "label": "备注",
+              "width": "100%",
+              "rows": 3,
+              "placeholder": "请输入备注说明",
+              "span": 24
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "type": "r-toolbar",
+        "id": "dim-dialog-toolbar",
+        "props": {
+          "position": "bottom",
+          "justify": "end",
+          "gap": 8
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "id": "dim-btn-cancel",
+            "props": {
+              "label": "取消",
+              "buttonType": "default",
+              "action": "close-dialog"
+            },
+            "children": []
+          },
+          {
+            "type": "r-button",
+            "id": "dim-btn-save",
+            "props": {
+              "label": "保存",
+              "buttonType": "primary",
+              "template": "primary",
+              "onClick": "handleSaveDimension"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

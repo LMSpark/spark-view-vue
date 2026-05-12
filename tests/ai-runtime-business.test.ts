@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   AiRuntime,
+  type AiRuntimeEvent,
   type AiFunctionRegistration,
   type AiModuleRegistration,
   type AiRuntimeApi,
@@ -50,6 +51,19 @@ function createLeaveModule(execute = vi.fn()): AiModuleRegistration {
     description: 'Help users finish a leave request.',
     prompt: 'Collect leave reason only.',
     getFunctions: () => functions,
+  }
+}
+
+function createDelayedPromptLeaveModule(waitForSecondStart: () => Promise<void>): AiModuleRegistration {
+  let promptCalls = 0
+  const base = createLeaveModule()
+  return {
+    ...base,
+    prompt: async () => {
+      promptCalls += 1
+      if (promptCalls > 1) await waitForSecondStart()
+      return 'Collect leave reason only.'
+    },
   }
 }
 
@@ -562,6 +576,83 @@ describe('AI core module projection and translation API', () => {
     ])
   })
 
+  it('publishes framework-neutral events for APP hosts through the runtime API', async () => {
+    const events: AiRuntimeEvent[] = []
+    const moduleEvents: AiRuntimeEvent[] = []
+    const core = new AiRuntime({
+      now: () => 1778030000000,
+      onEvent: (event) => events.push(event),
+    })
+    const leaveApi = core.registerModule(createLeaveModule())
+    const unsubscribe = core.subscribe((event) => events.push(event))
+    const unsubscribeModule = leaveApi.subscribe((event) => moduleEvents.push(event))
+    const projection = await leaveApi.startInstance({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+    })
+    leaveApi.appendMessage({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      role: 'user',
+      content: 'I need family leave.',
+      metadata: { source: 'app' },
+    })
+    await leaveApi.executeFunctionCall({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      action: 'leave-instance@leaveApproval@setReason',
+      args: { reason: 'family care' },
+      projection,
+      metadata: { runId: 'run-1' },
+      run: () => ({ accepted: true }),
+    })
+    const snapshot = leaveApi.exportSessionSnapshot('leave-instance')
+    if (snapshot === null) throw new Error('snapshot missing')
+    leaveApi.stopInstance({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      reason: 'done',
+    })
+
+    expect(events.map((event) => event.type)).toEqual([
+      'module.registered',
+      'session.started',
+      'session.started',
+      'history.message.appended',
+      'history.message.appended',
+      'history.function.requested',
+      'history.function.requested',
+      'history.function.completed',
+      'history.function.completed',
+      'session.stopped',
+      'session.stopped',
+    ])
+    expect(moduleEvents.map((event) => event.type)).toEqual([
+      'session.started',
+      'history.message.appended',
+      'history.function.requested',
+      'history.function.completed',
+      'session.stopped',
+    ])
+    expect(moduleEvents[2]).toMatchObject({
+      type: 'history.function.requested',
+      moduleId: 'leaveApproval',
+      scope: {
+        moduleId: 'leaveApproval',
+        moduleInstanceId: 'leave-instance',
+        instanceId: 'leave-session-1',
+      },
+    })
+
+    unsubscribe()
+    unsubscribeModule()
+    leaveApi.hydrateSessionSnapshot(snapshot)
+    expect(events.filter((event) => event.type === 'session.hydrated')).toHaveLength(1)
+    expect(moduleEvents.filter((event) => event.type === 'session.hydrated')).toHaveLength(0)
+  })
+
   it('projects recursive module context params and strips them from execution args', async () => {
     const core = createDeterministicRuntime()
     core.registerModule(createDepartmentModule())
@@ -737,6 +828,126 @@ describe('AI core module projection and translation API', () => {
       args: { reason: 'family care' },
     })
     expect(resumed.ok).toBe(true)
+  })
+
+  it('does not overwrite history appended while restart projection is pending', async () => {
+    let releaseProjection!: () => void
+    const projectionPending = new Promise<void>((resolve) => {
+      releaseProjection = resolve
+    })
+    const core = createDeterministicRuntime()
+    core.registerModule(createDelayedPromptLeaveModule(() => projectionPending))
+
+    await core.startInstance({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+    })
+
+    const restarting = core.startInstance({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-2',
+    })
+    core.appendMessage({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      role: 'user',
+      content: 'message while restart is pending',
+    })
+    releaseProjection()
+    await restarting
+
+    expect(core.getSessionByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })?.history)
+      .toHaveLength(1)
+    expect(core.getSession('leave-session-1')?.instanceId).toBe('leave-session-2')
+  })
+
+  it('exports and hydrates core session snapshots without changing module scope isolation', async () => {
+    const core = createDeterministicRuntime()
+    core.registerModule(createLeaveModule())
+    const projection = await core.startInstance({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+    })
+
+    await core.executeFunctionCall({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      action: 'leave-instance@leaveApproval@setReason',
+      args: { reason: 'family care' },
+      projection,
+      metadata: { runId: 'run-1', round: 2, callId: 'call-2' },
+      run: () => ({ accepted: true }),
+    })
+
+    const snapshot = core.exportSessionSnapshot({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
+    expect(snapshot?.version).toBe(1)
+    expect(snapshot?.session.history).toHaveLength(1)
+    expect(snapshot?.session.history[0]).toMatchObject({
+      kind: 'functionCall',
+      status: 'completed',
+      metadata: { runId: 'run-1', round: 2, callId: 'call-2' },
+    })
+
+    const restoredCore = createDeterministicRuntime()
+    restoredCore.registerModule(createLeaveModule())
+    if (snapshot === null) throw new Error('snapshot missing')
+    const restored = restoredCore.hydrateSessionSnapshot(snapshot)
+    restoredCore.appendMessage({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-restored',
+      runtimeInstanceId: 'leave-session-restored',
+      role: 'user',
+      content: 'continue',
+    })
+
+    const history = restoredCore.getSessionHistoryByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })
+    expect(restored.moduleInstanceId).toBe('leave-instance')
+    expect(history.map((entry) => entry.kind)).toEqual(['functionCall', 'message'])
+    expect(history[1]?.seq).toBeGreaterThan(history[0]?.seq ?? 0)
+  })
+
+  it('rejects completing the same function call history entry twice', async () => {
+    const core = createDeterministicRuntime()
+    core.registerModule(createLeaveModule())
+    await core.startInstance({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+    })
+    const requested = core.recordFunctionCallRequest({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      action: 'leave-instance@leaveApproval@setReason',
+      args: { reason: 'family care' },
+    })
+
+    core.completeFunctionCall({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      historyEntryId: requested.id,
+      result: { ok: true, data: { accepted: true }, summary: 'accepted' },
+    })
+
+    expect(() => core.completeFunctionCall({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      historyEntryId: requested.id,
+      result: { ok: true, data: { accepted: true }, summary: 'accepted again' },
+    })).toThrow('is already completed')
   })
 
   it('rejects duplicate module registrations instead of creating parallel registries', () => {

@@ -22,17 +22,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(root, 'src'),
-      // monorepo 内始终指向 src 源码——Vite 直接编译 TS，无需预构建 dist JS
-      // dist 仅包含 .d.ts 类型声明，供外部 npm 消费者使用
-      '@spark-view/spark-component': path.resolve(root, 'packages', 'spark-component', 'src', 'index.ts'),
-      '@spark-view/spark-data': path.resolve(root, 'packages', 'spark-data', 'src', 'index.ts'),
-      '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
-      '@spark-view/spark-page-config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'index.ts'),
-      '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),
-      '@spark-view/spark-ai/services/page-design': path.resolve(root, 'packages', 'spark-ai', 'src', 'services', 'page-design', 'index.ts'),
-      '@spark-view/spark-ai/services': path.resolve(root, 'packages', 'spark-ai', 'src', 'services', 'index.ts'),
-      '@spark-view/spark-ai/registrations/page-design/payloads': path.resolve(root, 'packages', 'spark-ai', 'src', 'registrations', 'page-design', 'payloads', 'index.ts'),
-      '@spark-view/spark-ai': path.resolve(root, 'packages', 'spark-ai', 'src', 'index.ts'),
     }
   },
   optimizeDeps: {

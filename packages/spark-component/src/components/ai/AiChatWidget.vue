@@ -32,11 +32,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import AiChatShell from './AiChatShell.vue'
 import { useAiChat } from './useAiChat'
 import type { AiDraftActionConfig } from './useAiPanelStore'
+import { readCache, writeCache, removeCache } from './aiSessionCache'
 import type {
   ChatMode,
   FileAttachment,
@@ -48,12 +49,15 @@ import type {
 } from './useAiChat'
 
 const logger = Logger('AiChatWidget')
+const AUTO_START_PREFIX = 'spark-ai-autostart:'
 
 const props = defineProps<{
   mode?: ChatMode
   systemPrompt?: string
   title?: string
   placeholder?: string
+  autoStartMessage?: string | undefined
+  autoStartKey?: string | undefined
   compact?: boolean
   sender?: AiChatSender
   storageKey?: string
@@ -137,6 +141,47 @@ const isRecording = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const draftLoadingActionId = ref<string | null>(null)
 const draftActions = computed(() => props.draftActions ?? [])
+const autoStartRunning = ref(false)
+
+function resolveAutoStartCacheKey(): string | null {
+  const message = props.autoStartMessage?.trim()
+  if (!message) return null
+  const explicit = props.autoStartKey?.trim()
+  const key = explicit && explicit !== ''
+    ? explicit
+    : `${props.storageKey ?? props.pageId ?? 'global'}:${message}`
+  return `${AUTO_START_PREFIX}${key}`
+}
+
+async function maybeAutoStart(): Promise<void> {
+  const message = props.autoStartMessage?.trim()
+  if (!message || autoStartRunning.value) return
+  if (props.sender === undefined && props.streamAiChatText === undefined) return
+
+  const cacheKey = resolveAutoStartCacheKey()
+  if (cacheKey !== null && readCache(cacheKey) !== null) return
+
+  autoStartRunning.value = true
+  try {
+    if (cacheKey !== null) {
+      writeCache(cacheKey, JSON.stringify({ startedAt: new Date().toISOString() }))
+    }
+    await send(message)
+  } catch (error) {
+    if (cacheKey !== null) removeCache(cacheKey)
+    logger.error('auto start failed', error)
+  } finally {
+    autoStartRunning.value = false
+  }
+}
+
+watch(
+  () => [props.autoStartMessage, props.autoStartKey, props.storageKey, props.pageId] as const,
+  () => {
+    void maybeAutoStart()
+  },
+  { immediate: true },
+)
 
 // ── 语音识别（Web Speech API，浏览器能力检测） ──────────────────────────
 

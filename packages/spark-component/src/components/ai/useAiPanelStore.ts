@@ -6,7 +6,7 @@
  *                                          ▲
  *                                          │ open(config)
  *                                          │
- *   AiLauncherButton（通用入口）◄── 生产 ── 业务 composable / 业务组件
+ *   业务 composable / 业务组件 ── 生产 ─────┘
  *
  * ── 标准化的"配置"概念 ──
  *   所有 AI 入口（包括 App 头部、业务按钮、快捷键等）统一通过 {@link AiSessionConfig}
@@ -21,7 +21,7 @@ import type { AiChatSender, AiFcErrorReporter, AiTurnConcurrencyConfig } from '.
 
 const logger = Logger('AiPanel')
 
-/** 工具调用日志（透传给 AiChatWidget 的 externalToolLogs）。 */
+/** 工具调用日志（透传给 AppAiPanel 内部会话视图的 externalToolLogs）。 */
 export interface AiSessionToolLog {
   type: 'info' | 'success' | 'error'
   tag: string
@@ -112,7 +112,7 @@ export interface AiSessionEventMap {
   /** 业务 dispose：config 被释放。 */
   'dispose': { config: AiSessionConfig }
 
-  // 缓存出入（由 AiChatWidget 在 localStorage 读写时触发）
+  // 缓存出入（由 AppAiPanel 内部会话视图在 localStorage 读写时触发）
   'snapshot:restore': { storageKey: string; size: number }
   'snapshot:persist': { storageKey: string; size: number }
   'snapshot:clear': { storageKey: string }
@@ -156,7 +156,7 @@ export type AiSessionHooks = {
  * externalToolLogs 必须是 Ref/ComputedRef，面板通过它驱动工具日志视图。
  */
 export interface AiSessionConfig {
-  /** 持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。 */
+  /** 持久化 key。AppAiPanel 内部会话视图按此从 localStorage 恢复历史；用作重挂载 :key。 */
   readonly storageKey: MaybeRefOrGetter<string>
   /** 业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。 */
   readonly pageId?: MaybeRefOrGetter<string | undefined>
@@ -166,13 +166,17 @@ export interface AiSessionConfig {
   readonly title?: MaybeRefOrGetter<string>
   /** 输入框 placeholder。 */
   readonly placeholder?: MaybeRefOrGetter<string>
+  /** 首次进入会话时自动发送的消息；业务层决定是否提供。 */
+  readonly autoStartMessage?: MaybeRefOrGetter<string | undefined>
+  /** 自动发送去重 key；相同 key 在本地缓存存在时不会重复触发。 */
+  readonly autoStartKey?: MaybeRefOrGetter<string | undefined>
   /** 外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。 */
   readonly externalToolLogs?: Ref<AiSessionToolLog[]> | ComputedRef<AiSessionToolLog[]>
   /** 清空外部工具日志。若未提供，面板只清空自身内部日志。 */
   readonly clearExternalToolLogs?: () => void
   /** FC 调用失败时的诊断回传器。 */
   readonly fcErrorReporter?: AiFcErrorReporter
-  /** turn 并发配置；默认由 AiChatWidget 保持 1 个在途 turn。 */
+  /** turn 并发配置；默认由 AppAiPanel 内部会话视图保持 1 个在途 turn。 */
   readonly turnConcurrency?: MaybeRefOrGetter<AiTurnConcurrencyConfig | undefined>
   /** 打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。 */
   readonly beforeOpen?: () => void | Promise<void>
@@ -216,6 +220,14 @@ const pageId = computed(() => {
 })
 const title = computed(() => toValue(configRef.value?.title ?? DEFAULT_TITLE))
 const placeholder = computed(() => toValue(configRef.value?.placeholder ?? DEFAULT_PLACEHOLDER))
+const autoStartMessage = computed<string | undefined>(() => {
+  const v = configRef.value?.autoStartMessage
+  return v !== undefined ? toValue(v) : undefined
+})
+const autoStartKey = computed<string | undefined>(() => {
+  const v = configRef.value?.autoStartKey
+  return v !== undefined ? toValue(v) : undefined
+})
 const externalToolLogs = computed<AiSessionToolLog[] | undefined>(() => {
   const logs = configRef.value?.externalToolLogs
   return logs ? logs.value : undefined
@@ -377,6 +389,8 @@ export function useAiPanelStore() {
     pageId,
     title,
     placeholder,
+    autoStartMessage,
+    autoStartKey,
     externalToolLogs,
     clearExternalToolLogs,
     fcErrorReporter,

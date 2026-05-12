@@ -157,6 +157,25 @@ describe('DataSetCrudTool', () => {
     expect(exported?.businessCategory).toBe('reference')
   })
 
+  it('should not push undo history for no-op table updates', () => {
+    const tool = new DataSetCrudTool('NoopDS')
+    tool.createTable({
+      tableName: 'StatusOptions',
+      columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
+      resourceType: 'static-data',
+    })
+    tool.clearHistory()
+
+    tool.updateTable({
+      tableName: 'StatusOptions',
+      resourceType: 'static-data',
+    })
+    tool.replaceFromJson(tool.toJson(), { commitHistory: true })
+
+    expect(tool.historyCursor).toBe(0)
+    expect(tool.canUndo).toBe(false)
+  })
+
   it('should support relation and dependency CRUD including ambiguous pair disambiguation', () => {
     const tool = new DataSetCrudTool('RelationDS')
 

@@ -96,6 +96,18 @@
           "type": "number",
           "label": "总数统计",
           "computeExpression": "1"
+        },
+        {
+          "name": "field_16",
+          "label": "",
+          "type": "string",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "field_17",
+          "label": "",
+          "type": "string",
+          "isPrimaryKey": false
         }
       ],
       "views": {
@@ -358,12 +370,12 @@
   "layout": {
     "tablePositions": {
       "LeaveRequests": {
-        "x": 40,
-        "y": 40
+        "x": 50,
+        "y": 50
       },
       "LeaveTypes": {
-        "x": 360,
-        "y": 40
+        "x": 523,
+        "y": 58
       }
     }
   }

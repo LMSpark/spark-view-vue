@@ -4,6 +4,10 @@ import { SnapshotHistory } from '@spark-view/spark-utils'
 export const SPARK_PAGE_NODE_TYPE = 'spark-page'
 export const SPARK_PAGE_ROOT_ID = 'spark-page-root'
 
+function isSameSparkNodeSnapshot(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
 export type SparkNodeTreeJsonInput = SparkNode | Record<string, unknown> | string
 export type SparkNodeTreeRuleJsonInput =
   | SparkNode
@@ -518,6 +522,7 @@ export class SparkNodeTree {
    * 写操作确认成功后调用：更新 root 并追加历史快照。
    */
   private _commitWrite(nextRoot: SparkNode, _label: string): void {
+    if (isSameSparkNodeSnapshot(this._root, nextRoot)) return
     this._root = nextRoot
     this._version++
     this._history.push(this._root)

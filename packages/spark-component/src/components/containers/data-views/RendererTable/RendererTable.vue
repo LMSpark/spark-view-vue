@@ -137,6 +137,10 @@ import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnC
 
 const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
+  border: undefined,
+  stripe: undefined,
+  highlightCurrentRow: undefined,
+  resizable: undefined,
 })
 
 const normalizedContentChildNodes = computed<SparkNode[]>(() => {

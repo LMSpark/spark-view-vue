@@ -43,7 +43,7 @@ export {
   nodeInputProps,
   isSparkNode,
   getSparkNodeChildren,
-} from './spark-node'
+} from './core/spark-node'
 
 export type {
   SparkNodeTreeJsonInput,
@@ -77,15 +77,15 @@ export type {
   SparkNodeFindByTypeParams,
   SparkNodeFindByTypeMatch,
   SparkNodeFindByTypeResult,
-} from './spark-node-tree'
+} from './core/spark-node-tree'
 
 export {
   SparkNodeTree,
   SPARK_PAGE_NODE_TYPE,
   SPARK_PAGE_ROOT_ID,
-} from './spark-node-tree'
+} from './core/spark-node-tree'
 
-export * from './json-document'
+export * from './core/json-document'
 export * from './documents'
 export * from './page-design'
 
@@ -112,4 +112,4 @@ export type {
   IPageServiceInScript,
   IModuleContextInScript,
   IModuleContextItemInScript,
-} from './script-context-types'
+} from './runtime/script-context-types'

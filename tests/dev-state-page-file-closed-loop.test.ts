@@ -1,61 +1,97 @@
+import { effectScope, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDevState } from '@/views/app/dev-system/useDevState'
-import { http } from '@/services/http'
+import { useDevFileEditor } from '@/views/app/dev-system/composables/useDevFileEditor'
+import type { PageConfigFileName, PageConfigFileVersionSummary } from '@spark-view/spark-page-config'
 
-const httpFns = vi.hoisted(() => ({
-  get: vi.fn(),
-  put: vi.fn(),
-  post: vi.fn(),
-  delete: vi.fn(),
-}))
-
-vi.mock('@spark-view/spark-app', () => ({
-  refreshRoutes: vi.fn(),
-}))
-
-vi.mock('@/services/api-paths', () => ({
-  getPageApi: () => '/api/pages-config',
-  getNavApi: () => '/api/navigation',
-}))
-
-vi.mock('@/services/http', () => ({
-  createAuthHeaders: () => ({}),
-  http: httpFns,
-}))
-
-vi.mock('@spark-view/spark-page-config', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config')>()
+const { httpFns, pageConfigWorkspaceDataService } = vi.hoisted(() => {
+  const httpFns = {
+    get: vi.fn(),
+    put: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
+  }
+  const pageApi = '/api/tenants/t1/projects/p1/pages-config'
+  const navApi = '/api/tenants/t1/projects/p1/navigation'
+  const fileNames = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
+  type FileName = typeof fileNames[number]
   const isStatus = (error: unknown, status: number): boolean => {
     if (error === null || typeof error !== 'object') return false
     const candidate = error as { status?: unknown; response?: { status?: unknown } }
     return candidate.status === status || candidate.response?.status === status
   }
+  const readFileText = async (
+    pageId: string,
+    filename: FileName,
+    options?: { missing?: 'throw' | 'empty' },
+  ): Promise<string> => {
+    try {
+      const data = await httpFns.get(`${pageApi}/${pageId}/${filename}`) as Record<string, unknown>
+      return String(data['content'] ?? '')
+    } catch (error) {
+      if (options?.missing === 'empty' && isStatus(error, 404)) return ''
+      const reason = isStatus(error, 404) ? 'not-found' : 'unknown'
+      throw new Error(`读取页面文件失败: ${pageId}/${filename} (${reason})`)
+    }
+  }
+  const normalizeCreatedAt = (value: unknown): string => {
+    if (typeof value === 'number' && Number.isFinite(value)) return new Date(value).toISOString()
+    if (typeof value !== 'string' || value.trim() === '') return ''
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? value : date.toISOString()
+  }
+  const normalizeVersion = (item: Record<string, unknown>): PageConfigFileVersionSummary => ({
+    version: Number(item['version'] ?? 0),
+    createdAt: normalizeCreatedAt(item['createdAt']),
+    isCurrent: item['isCurrent'] === true,
+    modifiedBy: typeof item['modifiedBy'] === 'string' ? item['modifiedBy'] : null,
+  })
   return {
-    ...actual,
-    createConfigLoader: vi.fn(() => ({
-      loadPageFileContent: async (pageId: string, filename: string) => {
-        try {
-          const data = await httpFns.get(`/api/pages-config/${pageId}/${filename}`) as Record<string, unknown>
-          return { success: true, data: String(data['content'] ?? ''), source: 'remote', timestamp: Date.now() }
-        } catch (error) {
-          if ((filename === 'script.js' || filename === 'style.css') && isStatus(error, 404)) {
-            return { success: true, data: '', source: 'remote', timestamp: Date.now() }
-          }
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-            reason: isStatus(error, 404) ? 'not-found' : 'unknown',
-            timestamp: Date.now(),
-          }
-        }
+    httpFns,
+    pageConfigWorkspaceDataService: {
+      pageConfig: {
+        listPages: () => httpFns.get(`${pageApi}/__list`),
+        readFileText,
+        readFiles: async (pageId: string, options?: { missing?: 'throw' | 'empty' }) => Object.fromEntries(
+          await Promise.all(fileNames.map(async filename => [
+            filename,
+            await readFileText(pageId, filename, options),
+          ])),
+        ),
+        saveFileContent: (pageId: string, filename: FileName, content: string) =>
+          httpFns.put(`${pageApi}/${pageId}/${filename}`, content, { headers: { 'Content-Type': 'text/plain' } }),
+        listFileVersions: async (pageId: string, filename: FileName) => {
+          const rows = await httpFns.get(`${pageApi}/${pageId}/${filename}/__versions`) as Array<Record<string, unknown>>
+          return rows.map(normalizeVersion).filter(item => item.version > 0)
+        },
+        restoreFileVersion: (pageId: string, filename: FileName, version: number) =>
+          httpFns.post(`${pageApi}/${pageId}/${filename}/__versions/${version}/__restore`, {}),
+        createFileVersion: (pageId: string, filename: FileName) =>
+          httpFns.post(`${pageApi}/${pageId}/${filename}/__versions`, {}),
+        deleteFileVersion: (pageId: string, filename: FileName, version: number) =>
+          httpFns.delete(`${pageApi}/${pageId}/${filename}/__versions/${version}`),
+        clearCache: vi.fn(),
       },
-      clearCache: vi.fn(),
-      getCacheStats: () => ({ size: 0, keys: [] }),
-    })),
+      navigation: {
+        loadConfig: () => httpFns.get(navApi),
+        saveConfig: (root: unknown) => httpFns.put(navApi, root),
+        saveNode: (nodeId: string, patch: unknown) => httpFns.put(`${navApi}/nodes/${encodeURIComponent(nodeId)}`, patch),
+        createNode: (input: unknown) => httpFns.post(`${navApi}/nodes`, input),
+        deleteNode: (nodeId: string) => httpFns.delete(`${navApi}/nodes/${encodeURIComponent(nodeId)}`),
+        probeLinkTarget: async (url: string) => {
+          const result = await httpFns.post(`${navApi}/link-probe`, { url }) as Record<string, unknown>
+          return { embeddable: Boolean(result['embeddable']), reason: String(result['reason'] ?? '') }
+        },
+      },
+    },
   }
 })
 
-const httpMock = vi.mocked(http)
+vi.mock('@/services/page-config-workspace-data-service', () => ({
+  pageConfigWorkspaceDataService,
+}))
+
+const httpMock = httpFns
 
 function notFound(): Error & { response: { status: number } } {
   return Object.assign(new Error('not found'), { response: { status: 404 } })
@@ -141,5 +177,75 @@ describe('DevState 页面文件闭环', () => {
     expect(state.documents['script.js'].text.value).toBe('console.log("restored")')
     expect(state.isDocumentDirty('script.js')).toBe(false)
     expect(state.pageFilesRevision.value).toBeGreaterThan(0)
+  })
+
+  it('代码编辑草稿不逐键进入 undo 历史，flush 后才提交一次', () => {
+    const scope = effectScope()
+    scope.run(() => {
+      const state = useDevState()
+      state.activePageId.value = 'demo'
+      const doc = state.documents['script.js']
+      doc.loadFromText('const a = 1\n', { markSaved: true })
+
+      const activeFile = ref<PageConfigFileName>('script.js')
+      const editor = useDevFileEditor(state, activeFile)
+      editor.updateText('const a = 12\n')
+      editor.updateText('const a = 123\n')
+
+      expect(editor.text.value).toBe('const a = 123\n')
+      expect(doc.text.value).toBe('const a = 1\n')
+      expect(doc.canUndo.value).toBe(false)
+      expect(state.isDocumentDirty('script.js')).toBe(true)
+
+      editor.flushPendingText()
+
+      expect(doc.text.value).toBe('const a = 123\n')
+      expect(doc.canUndo.value).toBe(true)
+      expect(state.hasPageFileDraft('script.js')).toBe(false)
+    })
+    scope.stop()
+  })
+
+  it('pagedata 文本草稿解析失败时保留草稿并阻止保存', async () => {
+    const scope = effectScope()
+    await scope.run(async () => {
+      const state = useDevState()
+      state.activePageId.value = 'demo'
+      const doc = state.documents['pagedata.json']
+      doc.loadFromText('{"dataSetName":"TestDS","tables":{}}', { markSaved: true })
+
+      const activeFile = ref<PageConfigFileName>('pagedata.json')
+      const editor = useDevFileEditor(state, activeFile)
+      editor.updateDraftText('{"dataSetName":')
+
+      await state.savePageFile('pagedata.json')
+
+      expect(httpMock.put).not.toHaveBeenCalled()
+      expect(state.hasPageFileDraft('pagedata.json')).toBe(true)
+      expect(editor.text.value).toBe('{"dataSetName":')
+      expect(doc.parseError.value).toBeTruthy()
+    })
+    scope.stop()
+  })
+
+  it('undo invalid pagedata draft restores the last valid document without adding history', () => {
+    const scope = effectScope()
+    scope.run(() => {
+      const state = useDevState()
+      state.activePageId.value = 'demo'
+      const doc = state.documents['pagedata.json']
+      doc.loadFromText('{"dataSetName":"TestDS","tables":{}}', { markSaved: true })
+
+      const activeFile = ref<PageConfigFileName>('pagedata.json')
+      const editor = useDevFileEditor(state, activeFile)
+      editor.updateDraftText('{"dataSetName":')
+      editor.undo()
+
+      expect(state.hasPageFileDraft('pagedata.json')).toBe(false)
+      expect(doc.parseError.value).toBeNull()
+      expect(doc.canUndo.value).toBe(false)
+      expect(editor.text.value).toContain('"TestDS"')
+    })
+    scope.stop()
   })
 })
