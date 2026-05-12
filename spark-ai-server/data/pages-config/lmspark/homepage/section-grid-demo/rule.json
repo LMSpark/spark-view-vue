@@ -1,299 +1,698 @@
-[
-  {
-    "type": "div",
-    "children": [
-      {
-        "type": "h1",
-        "children": [
-          "⚡ CYBER GRID ⚡"
-        ]
-      },
-      {
-        "type": "p",
-        "children": [
-          "[ SYSTEM.ONLINE ] — 赛博数据矩阵 · 列级对齐演示 · 霓虹辉光引擎 · 配置驱动零代码"
-        ]
-      },
-      {
-        "type": "r-section",
-        "children": [
-          {
-            "type": "r-table",
-            "children": [
-              {
-                "type": "r-text",
-                "props": {
-                  "label": "ID",
-                  "width": 80,
-                  "titleAlign": "center",
-                  "valueAlign": "center",
-                  "headerCellClassName": "demo-col-header-center",
-                  "cellClassName": "demo-col-cell-center",
-                  "valueClassName": "demo-value-center",
-                  "field": "id"
-                }
-              },
-              {
-                "type": "r-text",
-                "props": {
-                  "label": "姓名",
-                  "width": 120,
-                  "titleAlign": "right",
-                  "valueAlign": "right",
-                  "headerCellClassName": "demo-col-header-right",
-                  "cellClassName": "demo-col-cell-right",
-                  "valueClassName": "demo-value-right",
-                  "field": "name"
-                }
-              },
-              {
-                "type": "r-select",
-                "props": {
-                  "label": "性别",
-                  "width": 100,
-                  "options": [
-                    {
-                      "label": "男",
-                      "value": "male"
-                    },
-                    {
-                      "label": "女",
-                      "value": "female"
-                    }
-                  ],
-                  "field": "gender"
-                }
-              },
-              {
-                "type": "r-number",
-                "props": {
-                  "label": "年龄",
-                  "width": 100,
-                  "field": "age"
-                }
-              },
-              {
-                "type": "r-date",
-                "props": {
-                  "label": "入职日期",
-                  "width": 150,
-                  "field": "joinDate"
-                }
-              },
-              {
-                "type": "r-select",
-                "props": {
-                  "label": "部门",
-                  "width": 150,
-                  "options": [
-                    {
-                      "label": "技术部",
-                      "value": "tech"
-                    },
-                    {
-                      "label": "市场部",
-                      "value": "market"
-                    },
-                    {
-                      "label": "人事部",
-                      "value": "hr"
-                    },
-                    {
-                      "label": "财务部",
-                      "value": "finance"
-                    }
-                  ],
-                  "field": "department"
-                }
-              },
-              {
-                "type": "r-switch",
-                "props": {
-                  "label": "状态",
-                  "width": 100,
-                  "activeText": "启用",
-                  "inactiveText": "禁用",
-                  "field": "active"
-                }
-              }
-            ],
-            "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true,
-              "toolbar": {
-                "type": "r-toolbar",
-                "children": [
-                  {
-                    "type": "r-button",
-                    "props": {
-                      "type": "primary",
-                      "order": 1,
-                      "action": "append-row",
-                      "label": "✚ 新增",
-                      "size": "small"
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "props": {
-                      "type": "danger",
-                      "order": 2,
-                      "action": "delete-selected",
-                      "label": "✖ 删除勾选",
-                      "size": "small",
-                      "plain": true
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "props": {
-                      "action": "refresh",
-                      "label": "↻ 刷新",
-                      "size": "small",
-                      "order": 3
-                    }
-                  }
-                ],
-                "props": {
-                  "position": "top"
-                }
-              },
-              "actions": {
-                "type": "r-toolbar",
-                "children": [
-                  {
-                    "type": "r-button",
-                    "props": {
-                      "type": "primary",
-                      "order": 1,
-                      "action": "message-row",
-                      "size": "small",
-                      "link": true
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "props": {
-                      "type": "warning",
-                      "order": 2,
-                      "action": "prompt-edit",
-                      "size": "small",
-                      "link": true
-                    }
-                  },
-                  {
-                    "type": "RenderStatusAction",
-                    "props": {
-                      "order": 3
-                    }
-                  },
-                  {
-                    "type": "r-button",
-                    "props": {
-                      "type": "danger",
-                      "order": 4,
-                      "action": "delete-row",
-                      "size": "small",
-                      "link": true
-                    }
-                  }
-                ],
-                "props": {
-                  "width": 360,
-                  "fixed": "right",
-                  "align": "center",
-                  "label": "⚙ 操作"
-                }
-              },
-              "dataKey": "Users@rows"
-            }
-          }
-        ],
-        "props": {
-          "title": "⬡ 用户数据矩阵",
-          "description": "DATA_MATRIX :: SELECT * FROM users — 实时数据流 · 霓虹对齐 · 全息详情"
-        }
-      },
-      {
-        "type": "r-section",
-        "children": [
-          {
-            "type": "r-detail",
-            "children": [
-              {
-                "type": "r-text",
-                "props": {
-                  "label": "用户ID",
-                  "colSpan": 12,
-                  "field": "id"
-                }
-              },
-              {
-                "type": "r-text",
-                "props": {
-                  "label": "姓名",
-                  "colSpan": 12,
-                  "field": "name"
-                }
-              },
-              {
-                "type": "r-select",
-                "props": {
-                  "label": "性别",
-                  "colSpan": 12,
-                  "field": "gender"
-                }
-              },
-              {
-                "type": "r-number",
-                "props": {
-                  "label": "年龄",
-                  "colSpan": 12,
-                  "field": "age"
-                }
-              },
-              {
-                "type": "r-date",
-                "props": {
-                  "label": "入职日期",
-                  "colSpan": 12,
-                  "field": "joinDate"
-                }
-              },
-              {
-                "type": "r-select",
-                "props": {
-                  "label": "部门",
-                  "colSpan": 12,
-                  "field": "department"
-                }
-              },
-              {
-                "type": "r-switch",
-                "props": {
-                  "label": "状态",
-                  "colSpan": 24,
-                  "field": "active"
-                }
-              }
-            ],
-            "props": {
-              "dataKey": "Users@currentRow"
-            }
-          }
-        ],
-        "props": {
-          "title": "⬡ 选中实体详情",
-          "description": "ENTITY_DETAIL :: 点击表格行查看实体全息数据投影"
-        }
-      }
-    ],
-    "props": {
-      "class": "section-grid-demo",
-      "style": {
-        "padding": "20px"
-      }
+{
+  "type": "div",
+  "id": "div__0_0",
+  "props": {
+    "class": "section-grid-demo",
+    "style": {
+      "padding": "20px"
     }
-  }
-]
+  },
+  "children": [
+    {
+      "type": "h1",
+      "id": "h1__0_0_0",
+      "children": [
+        "⚡ CYBER GRID ⚡"
+      ]
+    },
+    {
+      "type": "p",
+      "id": "p__0_0_1",
+      "children": [
+        "[ SYSTEM.ONLINE ] — 赛博数据矩阵 · 列级对齐演示 · 霓虹辉光引擎 · 配置驱动零代码"
+      ]
+    },
+    {
+      "type": "r-section",
+      "id": "r-section__0_0_2",
+      "props": {
+        "title": "⬡ 用户数据矩阵",
+        "description": "DATA_MATRIX :: SELECT * FROM users — 实时数据流 · 霓虹对齐 · 全息详情"
+      },
+      "children": [
+        {
+          "type": "r-filter",
+          "id": "r-filter-users",
+          "props": {
+            "dataKey": "Users@rows",
+            "collapsible": true,
+            "itemSpan": 6,
+            "gridColumns": 24,
+            "gridGap": 16
+          },
+          "children": [
+            {
+              "type": "r-text",
+              "props": {
+                "label": "姓名",
+                "field": "name",
+                "width": 160
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "props": {
+                "label": "部门",
+                "field": "department",
+                "width": 160,
+                "options": [
+                  {
+                    "label": "全部",
+                    "value": ""
+                  },
+                  {
+                    "label": "技术部",
+                    "value": "tech"
+                  },
+                  {
+                    "label": "市场部",
+                    "value": "market"
+                  },
+                  {
+                    "label": "人事部",
+                    "value": "hr"
+                  },
+                  {
+                    "label": "财务部",
+                    "value": "finance"
+                  }
+                ]
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "props": {
+                "label": "状态",
+                "field": "active",
+                "width": 120,
+                "options": [
+                  {
+                    "label": "全部",
+                    "value": ""
+                  },
+                  {
+                    "label": "启用",
+                    "value": true
+                  },
+                  {
+                    "label": "禁用",
+                    "value": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "r-table",
+          "id": "r-table__0_0_2_0",
+          "props": {
+            "border": true,
+            "stripe": true,
+            "highlightCurrentRow": true,
+            "toolbar": {
+              "type": "r-toolbar",
+              "children": [
+                {
+                  "type": "r-button",
+                  "props": {
+                    "type": "primary",
+                    "order": 1,
+                    "action": "open-add-dialog",
+                    "label": "✚ 新增用户",
+                    "size": "small"
+                  }
+                },
+                {
+                  "type": "r-button",
+                  "props": {
+                    "type": "danger",
+                    "order": 2,
+                    "action": "delete-selected",
+                    "label": "✖ 删除勾选",
+                    "size": "small",
+                    "plain": true
+                  }
+                },
+                {
+                  "type": "r-button",
+                  "props": {
+                    "action": "refresh",
+                    "label": "↻ 刷新",
+                    "size": "small",
+                    "order": 3
+                  }
+                }
+              ],
+              "props": {
+                "position": "top"
+              }
+            },
+            "actions": {
+              "type": "r-toolbar",
+              "children": [
+                {
+                  "type": "r-button",
+                  "props": {
+                    "type": "primary",
+                    "order": 1,
+                    "action": "open-edit-dialog",
+                    "size": "small",
+                    "link": true,
+                    "label": "✎ 编辑"
+                  }
+                },
+                {
+                  "type": "RenderStatusAction",
+                  "props": {
+                    "order": 2
+                  }
+                },
+                {
+                  "type": "r-button",
+                  "props": {
+                    "type": "danger",
+                    "order": 3,
+                    "action": "delete-row",
+                    "size": "small",
+                    "link": true,
+                    "label": "✕ 删除"
+                  }
+                }
+              ],
+              "props": {
+                "width": 280,
+                "fixed": "right",
+                "align": "center",
+                "label": "⚙ 操作"
+              }
+            },
+            "dataKey": "Users@rows"
+          },
+          "children": [
+            {
+              "type": "r-text",
+              "id": "r-text__0_0_2_0_0",
+              "props": {
+                "label": "ID",
+                "width": 80,
+                "titleAlign": "center",
+                "valueAlign": "center",
+                "headerCellClassName": "demo-col-header-center",
+                "cellClassName": "demo-col-cell-center",
+                "valueClassName": "demo-value-center",
+                "field": "id"
+              },
+              "children": []
+            },
+            {
+              "type": "r-text",
+              "id": "r-text__0_0_2_0_1",
+              "props": {
+                "label": "姓名",
+                "width": 120,
+                "titleAlign": "right",
+                "valueAlign": "right",
+                "headerCellClassName": "demo-col-header-right",
+                "cellClassName": "demo-col-cell-right",
+                "valueClassName": "demo-value-right",
+                "field": "name"
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "id": "r-select__0_0_2_0_2",
+              "props": {
+                "label": "性别",
+                "width": 100,
+                "options": [
+                  {
+                    "label": "男",
+                    "value": "male"
+                  },
+                  {
+                    "label": "女",
+                    "value": "female"
+                  }
+                ],
+                "field": "gender"
+              },
+              "children": []
+            },
+            {
+              "type": "r-number",
+              "id": "r-number__0_0_2_0_3",
+              "props": {
+                "label": "年龄",
+                "width": 100,
+                "field": "age"
+              },
+              "children": []
+            },
+            {
+              "type": "r-date",
+              "id": "r-date__0_0_2_0_4",
+              "props": {
+                "label": "入职日期",
+                "width": 150,
+                "field": "joinDate"
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "id": "r-select__0_0_2_0_5",
+              "props": {
+                "label": "部门",
+                "width": 150,
+                "options": [
+                  {
+                    "label": "技术部",
+                    "value": "tech"
+                  },
+                  {
+                    "label": "市场部",
+                    "value": "market"
+                  },
+                  {
+                    "label": "人事部",
+                    "value": "hr"
+                  },
+                  {
+                    "label": "财务部",
+                    "value": "finance"
+                  }
+                ],
+                "field": "department"
+              },
+              "children": []
+            },
+            {
+              "type": "r-switch",
+              "id": "r-switch__0_0_2_0_6",
+              "props": {
+                "label": "状态",
+                "width": 100,
+                "activeText": "启用",
+                "inactiveText": "禁用",
+                "field": "active"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "r-section",
+      "id": "r-section__0_0_3",
+      "props": {
+        "title": "⬡ 选中实体详情",
+        "description": "ENTITY_DETAIL :: 点击表格行查看实体全息数据投影"
+      },
+      "children": [
+        {
+          "type": "r-detail",
+          "id": "r-detail__0_0_3_0",
+          "props": {
+            "dataKey": "Users@currentRow"
+          },
+          "children": [
+            {
+              "type": "r-text",
+              "id": "r-text__0_0_3_0_0",
+              "props": {
+                "label": "用户ID",
+                "colSpan": 12,
+                "field": "id"
+              },
+              "children": []
+            },
+            {
+              "type": "r-text",
+              "id": "r-text__0_0_3_0_1",
+              "props": {
+                "label": "姓名",
+                "colSpan": 12,
+                "field": "name"
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "id": "r-select__0_0_3_0_2",
+              "props": {
+                "label": "性别",
+                "colSpan": 12,
+                "field": "gender"
+              },
+              "children": []
+            },
+            {
+              "type": "r-number",
+              "id": "r-number__0_0_3_0_3",
+              "props": {
+                "label": "年龄",
+                "colSpan": 12,
+                "field": "age"
+              },
+              "children": []
+            },
+            {
+              "type": "r-date",
+              "id": "r-date__0_0_3_0_4",
+              "props": {
+                "label": "入职日期",
+                "colSpan": 12,
+                "field": "joinDate"
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "id": "r-select__0_0_3_0_5",
+              "props": {
+                "label": "部门",
+                "colSpan": 12,
+                "field": "department"
+              },
+              "children": []
+            },
+            {
+              "type": "r-switch",
+              "id": "r-switch__0_0_3_0_6",
+              "props": {
+                "label": "状态",
+                "colSpan": 24,
+                "field": "active"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "r-dialog",
+      "id": "dialog-add-user",
+      "props": {
+        "title": "✚ 新增用户",
+        "value": false,
+        "gridColumns": 24,
+        "gridGap": 16
+      },
+      "children": [
+        {
+          "type": "r-header",
+          "children": [
+            {
+              "type": "r-text",
+              "props": {
+                "label": "",
+                "value": "✚ 新增用户 — 录入用户信息"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "r-form",
+          "id": "form-add-user",
+          "props": {
+            "dataKey": "Users@rows",
+            "labelWidth": "80px",
+            "gridColumns": 24,
+            "gridGap": 16
+          },
+          "children": [
+            {
+              "type": "r-text",
+              "props": {
+                "label": "姓名",
+                "field": "name",
+                "colSpan": 12,
+                "required": true
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "props": {
+                "label": "性别",
+                "field": "gender",
+                "colSpan": 12,
+                "options": [
+                  {
+                    "label": "男",
+                    "value": "male"
+                  },
+                  {
+                    "label": "女",
+                    "value": "female"
+                  }
+                ],
+                "required": true
+              },
+              "children": []
+            },
+            {
+              "type": "r-number",
+              "props": {
+                "label": "年龄",
+                "field": "age",
+                "colSpan": 12,
+                "min": 0,
+                "max": 150
+              },
+              "children": []
+            },
+            {
+              "type": "r-date",
+              "props": {
+                "label": "入职日期",
+                "field": "joinDate",
+                "colSpan": 12
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "props": {
+                "label": "部门",
+                "field": "department",
+                "colSpan": 12,
+                "options": [
+                  {
+                    "label": "技术部",
+                    "value": "tech"
+                  },
+                  {
+                    "label": "市场部",
+                    "value": "market"
+                  },
+                  {
+                    "label": "人事部",
+                    "value": "hr"
+                  },
+                  {
+                    "label": "财务部",
+                    "value": "finance"
+                  }
+                ]
+              },
+              "children": []
+            },
+            {
+              "type": "r-switch",
+              "props": {
+                "label": "状态",
+                "field": "active",
+                "colSpan": 12,
+                "activeText": "启用",
+                "inactiveText": "禁用"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "r-footer",
+          "children": [
+            {
+              "type": "r-button",
+              "props": {
+                "action": "confirm-add-user",
+                "label": "✓ 确认新增",
+                "type": "primary",
+                "size": "small"
+              },
+              "children": []
+            },
+            {
+              "type": "r-button",
+              "props": {
+                "action": "cancel-add-user",
+                "label": "✕ 取消",
+                "size": "small"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "r-dialog",
+      "id": "dialog-edit-user",
+      "props": {
+        "title": "✎ 编辑用户",
+        "value": false,
+        "gridColumns": 24,
+        "gridGap": 16
+      },
+      "children": [
+        {
+          "type": "r-header",
+          "children": [
+            {
+              "type": "r-text",
+              "props": {
+                "label": "",
+                "value": "✎ 编辑用户 — 修改用户信息"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "r-form",
+          "id": "form-edit-user",
+          "props": {
+            "dataKey": "Users@currentRow",
+            "labelWidth": "80px",
+            "gridColumns": 24,
+            "gridGap": 16
+          },
+          "children": [
+            {
+              "type": "r-text",
+              "props": {
+                "label": "姓名",
+                "field": "name",
+                "colSpan": 12,
+                "required": true
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "props": {
+                "label": "性别",
+                "field": "gender",
+                "colSpan": 12,
+                "options": [
+                  {
+                    "label": "男",
+                    "value": "male"
+                  },
+                  {
+                    "label": "女",
+                    "value": "female"
+                  }
+                ],
+                "required": true
+              },
+              "children": []
+            },
+            {
+              "type": "r-number",
+              "props": {
+                "label": "年龄",
+                "field": "age",
+                "colSpan": 12,
+                "min": 0,
+                "max": 150
+              },
+              "children": []
+            },
+            {
+              "type": "r-date",
+              "props": {
+                "label": "入职日期",
+                "field": "joinDate",
+                "colSpan": 12
+              },
+              "children": []
+            },
+            {
+              "type": "r-select",
+              "props": {
+                "label": "部门",
+                "field": "department",
+                "colSpan": 12,
+                "options": [
+                  {
+                    "label": "技术部",
+                    "value": "tech"
+                  },
+                  {
+                    "label": "市场部",
+                    "value": "market"
+                  },
+                  {
+                    "label": "人事部",
+                    "value": "hr"
+                  },
+                  {
+                    "label": "财务部",
+                    "value": "finance"
+                  }
+                ]
+              },
+              "children": []
+            },
+            {
+              "type": "r-switch",
+              "props": {
+                "label": "状态",
+                "field": "active",
+                "colSpan": 12,
+                "activeText": "启用",
+                "inactiveText": "禁用"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "r-footer",
+          "children": [
+            {
+              "type": "r-button",
+              "props": {
+                "action": "confirm-edit-user",
+                "label": "✓ 保存修改",
+                "type": "primary",
+                "size": "small"
+              },
+              "children": []
+            },
+            {
+              "type": "r-button",
+              "props": {
+                "action": "cancel-edit-user",
+                "label": "✕ 取消",
+                "size": "small"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
