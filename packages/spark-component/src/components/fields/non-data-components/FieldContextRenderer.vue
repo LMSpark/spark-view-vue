@@ -147,7 +147,10 @@ interface Props extends SparkNodeProps {
   valueClassName?: string | undefined
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  resizable: undefined,
+  sortable: undefined,
+})
 
 const resolvedContext = useResolvedFieldContext()
 const tableColumnResizable = inject(TABLE_COLUMN_RESIZABLE_KEY, undefined)
