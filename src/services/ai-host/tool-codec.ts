@@ -36,6 +36,19 @@ function toolNameForExposure(exposure: AiRuntimeFunctionExposure, index: number)
   return `ai_${index}_${modulePart}_${actionPart}`.slice(0, 64)
 }
 
+function buildToolDescription(exposure: AiRuntimeFunctionExposure): string {
+  const parts = [exposure.description]
+  if (exposure.usageRules !== undefined && exposure.usageRules.length > 0) {
+    parts.push(`使用规则:\n${exposure.usageRules.map((rule) => `- ${rule}`).join('\n')}`)
+  }
+  if (exposure.failureModes !== undefined && exposure.failureModes.length > 0) {
+    parts.push(`失败处理:\n${exposure.failureModes.map((mode) => (
+      `- ${mode.code}: ${mode.when}；修复: ${mode.fix}`
+    )).join('\n')}`)
+  }
+  return parts.join('\n\n')
+}
+
 export function createAppAiToolCodec(projection: AiRuntimeKnowledgeProjection): AppAiToolCodec {
   const actionByToolName = new Map<string, string>()
   const tools = projection.availableFunctions.map((exposure, index): AppAiTransportToolSpec => {
@@ -46,7 +59,7 @@ export function createAppAiToolCodec(projection: AiRuntimeKnowledgeProjection): 
       type: 'function',
       function: {
         name: toolName,
-        description: exposure.description,
+        description: buildToolDescription(exposure),
         parameters: schemaToParameters(exposure.paramsSchema),
       },
     }

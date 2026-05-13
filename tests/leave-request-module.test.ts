@@ -29,6 +29,12 @@ describe('leave-request module', () => {
       'submitDraft',
       'cancelDraft',
     ])
+    const setDraftFields = registrationData.functions.find((item) => item.functionId === 'setDraftFields')
+    expect(JSON.stringify(setDraftFields?.paramsSchema)).toContain('系统提示中的当前日期')
+    expect(setDraftFields?.usageRules).toEqual(expect.arrayContaining([
+      expect.stringContaining('当前日期换算'),
+      expect.stringContaining('setDraftFields 成功'),
+    ]))
 
     const projection = await leave.startSession(createContext('leaveDraft:a'))
     expect(projection.availableFunctions.map((item) => item.action)).toEqual([

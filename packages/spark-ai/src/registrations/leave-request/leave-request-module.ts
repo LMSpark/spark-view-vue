@@ -90,9 +90,9 @@ const NO_PARAMS: LlmParameterSchemaRoot = {}
 const DRAFT_FIELDS_SCHEMA: LlmJsonObject = {
   applicantName: { type: 'string', description: '请假人姓名。' },
   leaveType: { type: 'string', description: '请假类型，例如 annual、sick、personal、other。' },
-  startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。' },
-  endDate: { type: 'string', description: '结束日期，格式 YYYY-MM-DD。' },
-  totalDays: { type: 'number', description: '请假天数，必须大于 0。' },
+  startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。用户给“今天/明天/后天”等相对日期时，必须基于系统提示中的当前日期换算；不能使用假设日期。' },
+  endDate: { type: 'string', description: '结束日期，格式 YYYY-MM-DD。按自然日包含起止日计算；例如请假 2 天时，endDate = startDate + 1 天。' },
+  totalDays: { type: 'number', description: '请假天数，必须大于 0。用户说“请假两天”时填 2。' },
   reason: { type: 'string', description: '请假事由。' },
   approver: { type: 'string', description: '审批人姓名或 ID。' },
 }
@@ -388,7 +388,9 @@ function createFunctionDefinitions(service: LeaveRequestService): readonly Leave
       resultSchema: DRAFT_RESULT_SCHEMA,
       usageRules: [
         '只写入用户明确表达的字段；不要虚构请假人、日期、原因或审批人。',
-        '日期使用 YYYY-MM-DD；用户给相对日期时先追问或由宿主明确日期后再写入。',
+        '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算，无法唯一确定时先追问。',
+        '写入 startDate/endDate/totalDays 前，必须保证三者一致；请假 N 天按自然日包含起止日计算。',
+        '只有调用 setDraftFields 成功后，才能说字段已记录或草稿已更新。',
       ],
       failureModes: [
         { code: 'INVALID_FIELDS', when: 'fields 不是对象', fix: '把字段放在 fields 对象中。' },

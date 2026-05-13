@@ -27,6 +27,47 @@ export interface RegisterAppAiBusinessesOptions {
   readonly resolvePageDesignInstanceId?: (input: AppAiBusinessResolveInput) => string | null
 }
 
+function getRuntimeTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'
+  } catch {
+    return 'local'
+  }
+}
+
+function formatDateInTimeZone(date: Date, timeZone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(date)
+    const byType = new Map(parts.map((part) => [part.type, part.value]))
+    const year = byType.get('year')
+    const month = byType.get('month')
+    const day = byType.get('day')
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      return `${year}-${month}-${day}`
+    }
+  } catch {
+    // fall through to UTC date
+  }
+  return date.toISOString().slice(0, 10)
+}
+
+function createLeaveRequestSystemPrompt(now = new Date()): string {
+  const timeZone = getRuntimeTimeZone()
+  const currentDate = formatDateInTimeZone(now, timeZone)
+  return [
+    '人工请假运行时上下文：',
+    `- 当前日期：${currentDate}`,
+    `- 当前 UTC 时间：${now.toISOString()}`,
+    `- 当前时区：${timeZone}`,
+    '处理“今天/明天/后天/下周一”等相对日期时，必须基于当前日期换算；无法唯一确定时先追问，不要假设或使用训练样本中的日期。',
+  ].join('\n')
+}
+
 class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
   readonly moduleId = LEAVE_REQUEST_MODULE_ID
 
@@ -41,6 +82,10 @@ class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
 
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
     return this.resolveInstanceId(input)
+  }
+
+  getSystemPrompt(_context: AppAiBusinessRuntimeContext): string {
+    return createLeaveRequestSystemPrompt()
   }
 
   startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult> {

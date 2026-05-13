@@ -5,6 +5,7 @@ import {
   AppAiBusinessRegistry,
   AppAiHost,
   FetchAppAiHostTransport,
+  createAppAiToolCodec,
   registerAppAiBusinesses,
   uploadAppAiAttachment,
   type AppAiHostTransport,
@@ -17,10 +18,13 @@ function resolveMaybeGetter<T>(value: T | (() => T)): T {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 describe('AppAiHost', () => {
   it('routes through registered leave-request runtime and switches persistence after selection', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-13T14:41:46.000Z'))
     const registry = new AppAiBusinessRegistry()
     registerAppAiBusinesses({
       registry,
@@ -58,6 +62,8 @@ describe('AppAiHost', () => {
       businessRegistrationId: 'manualLeave',
       businessInstanceId: 'leave-draft-1',
     })
+    expect(createdSessions[0]?.systemPrompt).toContain('当前 UTC 时间：2026-05-13T14:41:46.000Z')
+    expect(createdSessions[0]?.systemPrompt).toContain('相对日期')
     expect(createdSessions[0]?.messages).toEqual([{ role: 'user', content: '我要请假两天' }])
     expect(streamedTurns[0]?.scope.businessInstanceId).toBe('leave-draft-1')
     expect(resolveMaybeGetter(config.disablePersistence ?? false)).toBe(false)
@@ -75,6 +81,26 @@ describe('AppAiHost', () => {
 
     expect(registry.get('manualLeave')).toBeDefined()
     expect(registry.get(PAGE_DESIGN_MODULE_ID)).toBeDefined()
+  })
+
+  it('passes function usage rules into LLM tool descriptions', async () => {
+    const registry = new AppAiBusinessRegistry()
+    registerAppAiBusinesses({
+      registry,
+      resolveLeaveDraftId: () => 'leave-draft-1',
+    })
+    const runtime = registry.get('manualLeave')
+    expect(runtime).toBeDefined()
+    const projection = await runtime!.startSession({
+      moduleId: 'manualLeave',
+      moduleInstanceId: 'leave-draft-1',
+      instanceId: 'ai:manualLeave:leave-draft-1',
+    })
+    const codec = createAppAiToolCodec(projection)
+    const setDraftFields = codec.tools.find((tool) => tool.function.name.includes('setDraftFields'))
+
+    expect(setDraftFields?.function.description).toContain('当前日期换算')
+    expect(setDraftFields?.function.description).toContain('只有调用 setDraftFields 成功后')
   })
 
   it('sends auth and tenant headers through the fetch transport', async () => {

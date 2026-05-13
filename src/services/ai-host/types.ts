@@ -51,6 +51,7 @@ export interface AppAiBusinessRuntime {
   readonly moduleId: string
   getRegistrationData(): AiModuleRegistrationData
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string
+  getSystemPrompt?(context: AppAiBusinessRuntimeContext): string | undefined
   startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult>
   appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry
   executeFunctionCall(options: AppAiBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>>

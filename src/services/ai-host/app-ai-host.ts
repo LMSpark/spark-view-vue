@@ -110,7 +110,7 @@ export class AppAiHost {
       pageId: 'app-ai-host',
       sender: this.createSender(),
       title: 'AI 宿主',
-      placeholder: '描述你要办理的业务，例如：我要请假两天',
+      placeholder: '描述你要办理的事项',
       turnConcurrency: {
         maxParallelTurns: 2,
         overflow: 'queue',
@@ -200,7 +200,13 @@ export class AppAiHost {
   ): Promise<void> {
     const turn = normalizeTurn(request)
     const codec = createAppAiToolCodec(projection)
+    const runtimeContext = {
+      moduleId: runtime.moduleId,
+      moduleInstanceId: scope.businessInstanceId,
+      instanceId: scope.instanceId,
+    }
     const systemPrompt = [
+      runtime.getSystemPrompt?.(runtimeContext),
       request.systemPrompt,
       projection.promptSnapshot,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
