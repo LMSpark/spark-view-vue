@@ -158,6 +158,8 @@ export type AiSessionHooks = {
 export interface AiSessionConfig {
   /** 持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。 */
   readonly storageKey: MaybeRefOrGetter<string>
+  /** 禁用会话快照读写。用于业务尚未被语义路由选定的 pending 阶段。 */
+  readonly disablePersistence?: MaybeRefOrGetter<boolean | undefined>
   /** 业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。 */
   readonly pageId?: MaybeRefOrGetter<string | undefined>
   /** 聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。 */
@@ -210,6 +212,7 @@ const visible = ref(false)
 const configRef = shallowRef<AiSessionConfig | null>(null)
 
 const storageKey = computed(() => toValue(configRef.value?.storageKey ?? DEFAULT_STORAGE_KEY))
+const disablePersistence = computed(() => toValue(configRef.value?.disablePersistence ?? false) === true)
 const pageId = computed(() => {
   const rawPageId = configRef.value?.pageId !== undefined ? toValue(configRef.value.pageId) : undefined
   return typeof rawPageId === 'string' && rawPageId.trim() !== '' ? rawPageId : storageKey.value
@@ -374,6 +377,7 @@ export function useAiPanelStore() {
   return {
     visible,
     storageKey,
+    disablePersistence,
     pageId,
     title,
     placeholder,

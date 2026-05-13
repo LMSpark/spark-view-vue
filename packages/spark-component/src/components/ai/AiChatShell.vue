@@ -673,6 +673,7 @@ function formatDiagnosticLogTitle(tag: string): string {
   if (tag.startsWith('SSE ')) {
     return `SSE ${formatSseTypeLabel(tag.slice(4))}`
   }
+  if (tag.startsWith('LLM → ')) return tag
   return formatActionTitle(tag)
 }
 
@@ -740,7 +741,16 @@ const DEFAULT_ACTION_SUFFIX_TITLE_MAP: Record<string, string> = {
   reset: '重置',
 }
 
-const actionTitleMap = computed(() => props.actionTitleMap ?? {})
+const DEFAULT_ACTION_TITLE_MAP: Record<string, string> = {
+  'session-ready': '会话就绪',
+  'pageDesign/knowledge/queryPayloads': '参数荷载目录',
+  'page-designer@knowledge@queryPayloads': '参数荷载目录',
+}
+
+const actionTitleMap = computed(() => ({
+  ...DEFAULT_ACTION_TITLE_MAP,
+  ...(props.actionTitleMap ?? {}),
+}))
 
 const actionPrefixTitleMap = computed(() => props.actionPrefixTitleMap ?? {})
 

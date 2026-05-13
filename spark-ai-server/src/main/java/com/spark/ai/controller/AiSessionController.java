@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +67,10 @@ public class AiSessionController {
         if (systemPrompt == null) {
             return requestError("MISSING_REQUIRED_FIELD", "systemPrompt 不能为空");
         }
-        String userPrompt = getRequiredString(request, "userPrompt");
-        if (userPrompt == null) {
-            return requestError("MISSING_REQUIRED_FIELD", "userPrompt 不能为空");
+        String userPrompt = getOptionalString(request, "userPrompt");
+        List<Map<String, Object>> messages = extractMessages(request);
+        if ((userPrompt == null || userPrompt.isBlank()) && (messages == null || messages.isEmpty())) {
+            return requestError("MISSING_REQUIRED_FIELD", "userPrompt 或 messages 不能为空");
         }
         int windowSize = request.get("windowSize") instanceof Number n ? n.intValue() : 30;
         String mode = request.get("mode") instanceof String s ? s : "generate";
@@ -80,8 +82,9 @@ public class AiSessionController {
                 ? (List<Map<String, Object>>) list : null;
 
         Map<String, Object> scope = extractScope(request);
-        String sessionId = sessionService.createSession(
-            systemPrompt, userPrompt, windowSize, tools, mode, scope, reuseScopeSession);
+        String sessionId = messages != null && !messages.isEmpty()
+            ? sessionService.createSession(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession)
+            : sessionService.createSession(systemPrompt, userPrompt, windowSize, tools, mode, scope, reuseScopeSession);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("sessionId", sessionId);
@@ -151,10 +154,23 @@ public class AiSessionController {
      */
     @PostMapping(value = "/{sessionId}/turn/stream",
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter executeTurnStream(@PathVariable String sessionId) {
+    public SseEmitter executeTurnStream(
+            @PathVariable String sessionId,
+            @RequestBody(required = false) Map<String, Object> request) {
         SseEmitter emitter = new SseEmitter(300_000L); // 5 min timeout
 
-        sessionService.executeTurnStream(sessionId, emitter);
+        if (!isProtocolV3(request)) {
+            sendSseErrorAndComplete(emitter, "INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+            return emitter;
+        }
+
+        Map<String, Object> turn = extractTurn(request);
+        sessionService.executeTurnStream(
+                sessionId,
+                emitter,
+                extractScope(request),
+                getOptionalString(turn, "turnId"),
+                getOptionalString(turn, "streamKey"));
 
         return emitter;
     }
@@ -270,6 +286,35 @@ public class AiSessionController {
         return null;
     }
 
+    private static String getOptionalString(Map<String, Object> map, String key) {
+        if (map == null) return null;
+        Object val = map.get(key);
+        if (val instanceof String s) {
+            return s;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> extractMessages(Map<String, Object> request) {
+        if (request == null) return null;
+        Object messages = request.get("messages");
+        if (messages instanceof List<?> list) {
+            return (List<Map<String, Object>>) list;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> extractTurn(Map<String, Object> request) {
+        if (request == null) return Map.of();
+        Object turn = request.get("turn");
+        if (turn instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
+        }
+        return Map.of();
+    }
+
     private static boolean isProtocolV3(Map<String, Object> request) {
         if (request == null) {
             return false;
@@ -296,6 +341,21 @@ public class AiSessionController {
             }
         }
         return null;
+    }
+
+    private static void sendSseErrorAndComplete(SseEmitter emitter, String code, String message) {
+        try {
+            emitter.send(SseEmitter.event().name("error").data(Map.of(
+                    "error", Map.of(
+                            "severity", "error",
+                            "category", "request-validation",
+                            "code", code,
+                            "message", message
+                    ),
+                    "protocolVersion", PROTOCOL_VERSION_V3
+            )));
+            emitter.complete();
+        } catch (IOException ignored) {}
     }
 
     private static ResponseEntity<Map<String, Object>> requestError(

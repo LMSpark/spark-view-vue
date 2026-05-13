@@ -283,95 +283,83 @@ describe('PageConfigLoader', () => {
       expect(mockFileLoader.load).toHaveBeenCalledWith('/remote-page/rule.json')
     })
 
-    it('loadRule: 远程 rule.json 不存在时返回可渲染缺失占位 SparkNode', async () => {
+    it('loadRule: 远程 rule.json 不存在时返回 not-found 失败', async () => {
       mockFileLoader.load.mockResolvedValue({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadRule('missing-page')
 
-      expect(r.success).toBe(true)
-      expect(r.source).toBe('remote')
-      expect(r.data?.[0]).toMatchObject({
-        type: 'section',
-        id: 'missing-rule-json',
-      })
-      expect(JSON.stringify(r.data)).toContain('missing-page/rule.json 不存在')
-      expect(JSON.stringify(r.data)).toContain('请在页面配置服务中创建该文件后重新加载')
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(r.data).toBeUndefined()
     })
 
-    it('loadPageConfig: 远程 rule.json 不存在时仍渲染缺失占位，不退回本地内容', async () => {
-      mockFileLoader.load
-        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
-        .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
-        .mockResolvedValueOnce(fileOk(''))
-        .mockResolvedValueOnce(fileOk(''))
+    it('loadPageConfig: 远程 rule.json 不存在时 fail-fast', async () => {
+      mockFileLoader.load.mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadPageConfig('missing-page')
 
-      expect(r.success).toBe(true)
-      expect(r.data?.rule[0]).toMatchObject({ type: 'section', id: 'missing-rule-json' })
-      expect(JSON.stringify(r.data?.rule)).toContain('missing-page/rule.json 不存在')
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(1)
+      expect(mockFileLoader.load).toHaveBeenCalledWith('/missing-page/rule.json')
     })
 
-    it('loadPageConfig: 文件清单确认缺失时直接生成占位，不触发四文件 GET', async () => {
+    it('loadPageConfig: 文件清单确认缺失时直接返回 not-found，不触发四文件 GET', async () => {
       mockRequestClient.get.mockResolvedValue([
         { pageId: 'data-report', files: [] },
       ])
 
       const r = await loader.loadPageConfig('data-report')
 
-      expect(r.success).toBe(true)
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(r.error).toContain('/data-report/rule.json')
       expect(mockRequestClient.get).toHaveBeenCalledWith('/__list', undefined, {
         meta: { silentHttpError: true },
       })
       expect(mockFileLoader.load).not.toHaveBeenCalled()
-      expect(r.data?.data).toBeInstanceOf(DataSet)
-      expect(r.data?.script).toBe('')
-      expect(r.data?.css).toBe('')
-      expect(r.data?.rule).toEqual([
-        expect.objectContaining({ id: 'missing-rule-json' }),
-        expect.objectContaining({ id: 'missing-pagedata-json' }),
-        expect.objectContaining({ id: 'missing-script-js' }),
-        expect.objectContaining({ id: 'missing-style-css' }),
-      ])
     })
 
-    it('loadPageConfig: 远程 pagedata.json 不存在时用空 DataSet 并追加缺失占位 SparkNode', async () => {
+    it('loadPageConfig: 远程 pagedata.json 不存在时 fail-fast', async () => {
       mockFileLoader.load
         .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
         .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
-        .mockResolvedValueOnce(fileOk(''))
-        .mockResolvedValueOnce(fileOk(''))
 
       const r = await loader.loadPageConfig('missing-data-page')
 
-      expect(r.success).toBe(true)
-      expect(r.data?.data).toBeInstanceOf(DataSet)
-      expect(r.data?.rule).toEqual([
-        { type: 'div', id: 'remote-root' },
-        expect.objectContaining({ type: 'section', id: 'missing-pagedata-json' }),
-      ])
-      expect(JSON.stringify(r.data?.rule)).toContain('missing-data-page/pagedata.json 不存在')
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(2)
+      expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-data-page/pagedata.json')
     })
 
-    it('loadPageConfig: 远程 script/style 不存在时追加可见缺失占位，不生成文件', async () => {
+    it('loadPageConfig: 远程 script.js 不存在时 fail-fast', async () => {
       mockFileLoader.load
         .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
         .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
         .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
-        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadPageConfig('missing-assets-page')
 
-      expect(r.success).toBe(true)
-      expect(r.data?.script).toBe('')
-      expect(r.data?.css).toBe('')
-      expect(r.data?.rule).toEqual([
-        { type: 'div', id: 'remote-root' },
-        expect.objectContaining({ type: 'section', id: 'missing-script-js' }),
-        expect.objectContaining({ type: 'section', id: 'missing-style-css' }),
-      ])
-      expect(JSON.stringify(r.data?.rule)).toContain('missing-assets-page/script.js 不存在')
-      expect(JSON.stringify(r.data?.rule)).toContain('missing-assets-page/style.css 不存在')
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(3)
+      expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-assets-page/script.js')
+    })
+
+    it('loadPageConfig: 远程 style.css 不存在时 fail-fast', async () => {
+      mockFileLoader.load
+        .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
+        .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
+        .mockResolvedValueOnce(fileOk(''))
+        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
+
+      const r = await loader.loadPageConfig('missing-style-page')
+
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(4)
+      expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-style-page/style.css')
     })
 
     it('loadScript: 远程 fetch 文本文件', async () => {

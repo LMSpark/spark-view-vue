@@ -166,6 +166,43 @@ describe('AiChatWidget persistence', () => {
     expect(restored.text()).not.toContain('思考中...')
   })
 
+  it('skips snapshot restore and writes when persistence is disabled', async () => {
+    localStorage.setItem('ai-chat-widget-no-persist', JSON.stringify([
+      {
+        id: 'u-old',
+        role: 'user',
+        content: '旧业务未选中前的缓存',
+        timestamp: new Date().toISOString(),
+      },
+    ]))
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
+    const sender = vi.fn(async (request) => {
+      request.onDelta?.('新响应')
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-no-persist',
+        disablePersistence: true,
+      },
+    })
+
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('旧业务未选中前的缓存')
+
+    await wrapper.find('.chat-textarea').setValue('新输入')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('新输入')
+    expect(wrapper.text()).toContain('新响应')
+    expect(setItemSpy.mock.calls.filter(([key]) => key === 'ai-chat-widget-no-persist')).toHaveLength(0)
+    expect(localStorage.getItem('ai-chat-widget-no-persist')).toContain('旧业务未选中前的缓存')
+
+    setItemSpy.mockRestore()
+  })
+
   it('allows typing the next prompt while streaming but does not send concurrently', async () => {
     let release!: () => void
     const sender = vi.fn(async (request) => {
@@ -547,6 +584,46 @@ describe('AiChatWidget persistence', () => {
     expect(snapshot.fcCalls?.[0]?.toolName).toBe('pageDesign/knowledge/queryPayloads')
 
     setItemSpy.mockRestore()
+  })
+
+  it('persists SSE streamKey and business scope for diagnostics', async () => {
+    const sender = vi.fn(async (request) => {
+      request.onSseEvent?.({
+        sessionId: 'session-scope',
+        type: 'result',
+        data: '{"text":"ok"}',
+        streamKey: 'manualLeave:leave-1:llm:turn-1',
+        scope: {
+          businessRegistrationId: 'manualLeave',
+          businessInstanceId: 'leave-1',
+          eventModuleId: 'llm',
+          turnId: 'turn-1',
+        },
+      })
+      request.onDelta?.('ok')
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-sse-scope',
+      },
+    })
+
+    await wrapper.find('.chat-textarea').setValue('我要请假')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    const snapshot = JSON.parse(localStorage.getItem('ai-chat-widget-sse-scope') ?? '{}') as {
+      sseEvents?: Array<{ streamKey?: string; scope?: { businessRegistrationId?: string; businessInstanceId?: string; eventModuleId?: string; turnId?: string } }>
+    }
+    expect(snapshot.sseEvents?.[0]?.streamKey).toBe('manualLeave:leave-1:llm:turn-1')
+    expect(snapshot.sseEvents?.[0]?.scope).toMatchObject({
+      businessRegistrationId: 'manualLeave',
+      businessInstanceId: 'leave-1',
+      eventModuleId: 'llm',
+      turnId: 'turn-1',
+    })
   })
 
   it('renders pageDesign/knowledge/ask as clickable clarification answers', async () => {

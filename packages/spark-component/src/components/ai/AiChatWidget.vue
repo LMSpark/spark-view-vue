@@ -57,6 +57,7 @@ const props = defineProps<{
   compact?: boolean
   sender?: AiChatSender
   storageKey?: string
+  disablePersistence?: boolean | undefined
   pageId?: string
   showToolLogs?: boolean
   externalToolLogs?: Array<{ type: 'info' | 'success' | 'error'; tag: string; text: string; timestamp?: string }>
@@ -124,6 +125,7 @@ const {
   sender: () => props.sender,
   pageId: () => props.pageId,
   storageKey: () => props.storageKey,
+  disablePersistence: () => props.disablePersistence,
   turnConcurrency: () => props.turnConcurrency,
   streamAiChatText: props.streamAiChatText,
   parseTokenUsage: props.parseTokenUsage,

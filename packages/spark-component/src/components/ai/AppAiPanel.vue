@@ -48,6 +48,7 @@
           v-if="sender && storageKey"
           :key="storageKey"
           :storage-key="storageKey"
+          :disable-persistence="disablePersistence"
           :page-id="pageId"
           :sender="sender"
           :title="title"
@@ -110,6 +111,7 @@ const uploadFile = props.uploadFile
 const store = useAiPanelStore()
 const visible = store.visible
 const storageKey = store.storageKey
+const disablePersistence = store.disablePersistence
 const pageId = store.pageId
 const title = store.title
 const placeholder = store.placeholder

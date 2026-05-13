@@ -108,6 +108,7 @@ export type {
 } from './core'
 
 export {
+  PAGE_DESIGN_MODULE_ID,
   PageDesignModule,
   SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
   SPARK_COMPONENT_PAYLOAD_REF,
@@ -158,3 +159,25 @@ export type {
   TextModelFunctionParameterRow,
   TextModelFunctionTarget,
 } from './registrations/page-design'
+
+export {
+  LEAVE_REQUEST_MODULE_ID,
+  LeaveRequestModule,
+  LeaveRequestService,
+  assertLeaveRequestContext,
+  createLeaveDraftId,
+  isLeaveRequestServiceResult,
+  leaveRequestServiceFailure,
+} from './registrations/leave-request'
+
+export type {
+  LeaveRequestAppendMessageOptions,
+  LeaveRequestDraftFields,
+  LeaveRequestDraftState,
+  LeaveRequestDraftStatus,
+  LeaveRequestExecuteFunctionCallOptions,
+  LeaveRequestRuntimeContext,
+  LeaveRequestServiceContext,
+  LeaveRequestServiceResult,
+  LeaveRequestStopSessionOptions,
+} from './registrations/leave-request'

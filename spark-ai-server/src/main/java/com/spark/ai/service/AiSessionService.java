@@ -137,6 +137,33 @@ public class AiSessionService {
                                 List<Map<String, Object>> tools, String mode,
                                 Map<String, Object> scope,
                                 boolean reuseScopeSession) {
+        return createSessionFromMessages(
+            systemPrompt,
+            List.of(messageMap("user", userPrompt)),
+            windowSize,
+            tools,
+            mode,
+            scope,
+            reuseScopeSession);
+        }
+
+        /**
+         * 创建会话（protocol v3），使用前端传入的 messages 初始化对话历史。
+         */
+        public String createSession(String systemPrompt, List<Map<String, Object>> messages, int windowSize,
+                    List<Map<String, Object>> tools, String mode,
+                    Map<String, Object> scope,
+                    boolean reuseScopeSession) {
+        return createSessionFromMessages(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession);
+        }
+
+        private String createSessionFromMessages(String systemPrompt,
+                             List<Map<String, Object>> messages,
+                             int windowSize,
+                             List<Map<String, Object>> tools,
+                             String mode,
+                             Map<String, Object> scope,
+                             boolean reuseScopeSession) {
         SessionScope normalizedScope = normalizeScope(scope);
         if (reuseScopeSession && normalizedScope.scopeKey != null) {
             String existingSessionId = sessionIdsByScopeKey.get(normalizedScope.scopeKey);
@@ -178,9 +205,9 @@ public class AiSessionService {
         session.state = SessionState.READY;
         session.consecutiveFailures = 0;
 
-        Message userMsg = new Message("user");
-        userMsg.content = userPrompt;
-        session.conversation.add(userMsg);
+        for (Map<String, Object> message : messages) {
+            session.conversation.add(messageFromMap(message));
+        }
 
         sessions.put(sessionId, session);
         if (reuseScopeSession && session.scopeKey != null) {
@@ -311,6 +338,18 @@ public class AiSessionService {
      * 执行一轮对话（SSE 流式）。
      */
     public void executeTurnStream(String sessionId, SseEmitter emitter) {
+        executeTurnStream(sessionId, emitter, null, null, null);
+    }
+
+    /**
+     * 执行一轮对话（SSE 流式），并在最终事件上附带 turn/scope 元数据。
+     */
+    public void executeTurnStream(
+            String sessionId,
+            SseEmitter emitter,
+            Map<String, Object> scope,
+            String turnId,
+            String streamKey) {
         Session session = sessions.get(sessionId);
         if (session == null) {
             try {
@@ -321,12 +360,27 @@ public class AiSessionService {
             return;
         }
 
+        if (!matchesScope(session, scope)) {
+            try {
+                emitter.send(SseEmitter.event().name("error")
+                        .data(objectMapper.writeValueAsString(Map.of(
+                                "error", "SESSION_SCOPE_MISMATCH",
+                                "turnId", turnId != null ? turnId : "",
+                                "streamKey", streamKey != null ? streamKey : "",
+                                "scope", session.scope != null ? session.scope : Map.of()
+                        ))));
+                emitter.complete();
+            } catch (IOException ignored) {}
+            return;
+        }
+
         session.lastActiveTime = System.currentTimeMillis();
         List<Map<String, Object>> messages = buildWindowedMessages(session);
+        StreamMeta streamMeta = new StreamMeta(turnId, streamKey, session.scope);
 
         streamExecutor.submit(() -> {
             try {
-                callLlmStream(messages, session.tools, emitter, session);
+                callLlmStream(messages, session.tools, emitter, session, streamMeta);
             } catch (Exception e) {
                 log.error("[SESSION] stream error sessionId={}: {}", sessionId, e.getMessage());
                 try {
@@ -418,6 +472,25 @@ public class AiSessionService {
     // ═════════════════════════════════════════════════════════════════════════
     // 内部方法 — 消息构建
     // ═════════════════════════════════════════════════════════════════════════
+
+    private static Map<String, Object> messageMap(String role, String content) {
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("role", role);
+        message.put("content", content != null ? content : "");
+        return message;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Message messageFromMap(Map<String, Object> rawMessage) {
+        String role = rawMessage.get("role") instanceof String s && !s.isBlank() ? s : "user";
+        Message message = new Message(role);
+        message.content = rawMessage.get("content") instanceof String s ? s : "";
+        message.toolCallId = rawMessage.get("tool_call_id") instanceof String s ? s : null;
+        message.toolCalls = rawMessage.get("tool_calls") instanceof List<?> list
+                ? (List<Map<String, Object>>) list
+                : null;
+        return message;
+    }
 
     private List<Map<String, Object>> buildWindowedMessages(Session session) {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -538,7 +611,8 @@ public class AiSessionService {
     private void callLlmStream(List<Map<String, Object>> messages,
                                 List<Map<String, Object>> tools,
                                 SseEmitter emitter,
-                                Session session) throws Exception {
+                                Session session,
+                                StreamMeta streamMeta) throws Exception {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", props.getModel());
         body.put("messages", messages);
@@ -688,7 +762,7 @@ public class AiSessionService {
             if (fallback == null) {
                 throw new RuntimeException("SSE provider error 且 fallback 失败: " + providerErrorDetail[0]);
             }
-            emitFinalResult(emitter, session, fallback.text, fallback.reasoning, fallback.toolCalls);
+            emitFinalResult(emitter, session, fallback.text, fallback.reasoning, fallback.toolCalls, streamMeta);
             return;
         }
 
@@ -698,7 +772,7 @@ public class AiSessionService {
         List<Map<String, Object>> toolCalls = toolCallsMap.isEmpty()
             ? null : new ArrayList<>(toolCallsMap.values());
 
-        emitFinalResult(emitter, session, text, reasoning, toolCalls);
+        emitFinalResult(emitter, session, text, reasoning, toolCalls, streamMeta);
     }
 
     private String readBodyAsString(InputStream inputStream) throws IOException {
@@ -720,7 +794,8 @@ public class AiSessionService {
                      Session session,
                      String text,
                      String reasoning,
-                     List<Map<String, Object>> toolCalls) throws Exception {
+                     List<Map<String, Object>> toolCalls,
+                     StreamMeta streamMeta) throws Exception {
         // 记录到对话历史。
         // 当有 tool_calls 时，前端 FC 循环会通过 appendMessages 追加 assistant + tool results，
         // 因此后端不再自动写入，避免出现两条相邻的 assistant(tool_calls) 导致 DeepSeek 400。
@@ -735,10 +810,31 @@ public class AiSessionService {
         resultMap.put("text", text);
         if (reasoning != null) resultMap.put("reasoning", reasoning);
         if (toolCalls != null) resultMap.put("toolCalls", toolCalls);
+        resultMap.put("protocolVersion", 3);
+        if (streamMeta.turnId != null && !streamMeta.turnId.isBlank()) {
+            resultMap.put("turnId", streamMeta.turnId);
+        }
+        if (streamMeta.streamKey != null && !streamMeta.streamKey.isBlank()) {
+            resultMap.put("streamKey", streamMeta.streamKey);
+        }
+        if (streamMeta.scope != null && !streamMeta.scope.isEmpty()) {
+            resultMap.put("scope", streamMeta.scope);
+        }
 
         emitter.send(SseEmitter.event().name("result")
             .data(objectMapper.writeValueAsString(resultMap)));
-        emitter.send(SseEmitter.event().name("done").data("{}"));
+        Map<String, Object> doneMap = new LinkedHashMap<>();
+        doneMap.put("protocolVersion", 3);
+        if (streamMeta.turnId != null && !streamMeta.turnId.isBlank()) {
+            doneMap.put("turnId", streamMeta.turnId);
+        }
+        if (streamMeta.streamKey != null && !streamMeta.streamKey.isBlank()) {
+            doneMap.put("streamKey", streamMeta.streamKey);
+        }
+        if (streamMeta.scope != null && !streamMeta.scope.isEmpty()) {
+            doneMap.put("scope", streamMeta.scope);
+        }
+        emitter.send(SseEmitter.event().name("done").data(objectMapper.writeValueAsString(doneMap)));
         emitter.complete();
         }
 
@@ -764,6 +860,8 @@ public class AiSessionService {
         List<Map<String, Object>> tools;
         final List<Message> conversation = new ArrayList<>();
     }
+
+    private record StreamMeta(String turnId, String streamKey, Map<String, Object> scope) {}
 
     private enum SessionState {
         READY,

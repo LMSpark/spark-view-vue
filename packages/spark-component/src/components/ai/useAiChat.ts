@@ -74,13 +74,24 @@ export interface AiSseEventEntry {
   id: string
   timestamp: string
   sessionId?: string
+  streamKey?: string
+  scope?: AiSseEventScope
   type: string
   data: string
+}
+
+export interface AiSseEventScope {
+  businessRegistrationId: string
+  businessInstanceId: string
+  eventModuleId: string
+  turnId: string
 }
 
 export interface AiSseEventInput {
   timestamp?: string
   sessionId?: string
+  streamKey?: string
+  scope?: AiSseEventScope
   type: string
   data: string
 }
@@ -189,6 +200,7 @@ export interface UseAiChatOptions {
   systemPrompt?: MaybeGetter<string | undefined>
   sender?: MaybeGetter<AiChatSender | undefined>
   storageKey?: MaybeGetter<string | undefined>
+  disablePersistence?: MaybeGetter<boolean | undefined>
   pageId?: MaybeGetter<string | undefined>
   sessionConfig?: MaybeGetter<AiSessionMetaConfig | undefined>
   defaultRecoveryPolicy?: MaybeGetter<RecoveryPolicy | undefined>
@@ -332,6 +344,7 @@ export function useAiChat(options?: UseAiChatOptions) {
     if (explicit && explicit.trim() !== '') return explicit
     return `spark-ai-session:${getPageId()}`
   }
+  const getDisablePersistence = () => resolveOption(options?.disablePersistence) === true
   const getSessionConfig = () => resolveOption(options?.sessionConfig) ?? {}
   const getDefaultRecoveryPolicy = () => resolveOption(options?.defaultRecoveryPolicy) ?? 'layered'
   const getDefaultCollaborationPolicy = () => resolveOption(options?.defaultCollaborationPolicy) ?? 'critical-confirm'
@@ -340,7 +353,7 @@ export function useAiChat(options?: UseAiChatOptions) {
 
   const initialSnapshot = (() => {
     const storageKey = getStorageKey()
-    if (!storageKey) {
+    if (getDisablePersistence() || !storageKey) {
       return {
         version: 2,
         pageId: getPageId(),
@@ -510,6 +523,7 @@ export function useAiChat(options?: UseAiChatOptions) {
   }
 
   function writeSessionSnapshot(snapshot: AiSessionSnapshot): void {
+    if (getDisablePersistence()) return
     const storageKey = getStorageKey()
     if (!storageKey) return
 
@@ -637,6 +651,8 @@ export function useAiChat(options?: UseAiChatOptions) {
       type: entry.type,
       data: entry.data,
       ...(entry.sessionId !== undefined ? { sessionId: entry.sessionId } : {}),
+      ...(entry.streamKey !== undefined ? { streamKey: entry.streamKey } : {}),
+      ...(entry.scope !== undefined ? { scope: entry.scope } : {}),
     }
     sseEvents.value.push(next)
     syncPersistedSession()

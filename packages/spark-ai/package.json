@@ -39,6 +39,10 @@
       "import": "./dist/registrations/page-design/index.js",
       "types": "./dist/registrations/page-design/index.d.ts"
     },
+    "./registrations/leave-request": {
+      "import": "./dist/registrations/leave-request/index.js",
+      "types": "./dist/registrations/leave-request/index.d.ts"
+    },
     "./registrations/page-design/payloads": {
       "import": "./dist/registrations/page-design/payloads/index.js",
       "types": "./dist/registrations/page-design/payloads/index.d.ts"

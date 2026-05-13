@@ -221,7 +221,6 @@ export class PageConfigEditWorkspace {
       forceReload: options?.forceReload === true,
     })
     if (result.success) return result.data ?? ''
-    if (result.reason === 'not-found') return ''
     const detail = result.error ?? result.reason ?? 'unknown'
     throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
   }

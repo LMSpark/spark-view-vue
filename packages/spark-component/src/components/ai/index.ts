@@ -34,6 +34,7 @@ export type {
   CollaborationPolicy,
   ToolLogEntry,
   AiSseEventEntry,
+  AiSseEventScope,
   AiSseEventInput,
   AiFcCallRecord,
   AiFcCallInput,

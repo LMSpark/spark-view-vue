@@ -3,7 +3,6 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import {
   compileRule,
-  createMissingPageConfigFileRule,
   parseCss,
   parsePageData,
   parseScript,
@@ -321,16 +320,7 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
   }
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
-    const result = await this.loadRequired(pageId, 'rule.json', compileRule)
-    if (this.isFileNotFound(result)) {
-      return {
-        success: true,
-        data: createMissingPageConfigFileRule(pageId, 'rule.json'),
-        source: 'remote',
-        timestamp: Date.now(),
-      }
-    }
-    return result
+    return this.loadRequired(pageId, 'rule.json', compileRule)
   }
 
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
@@ -372,8 +362,7 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
     }
 
     const dataResult = await this.loadPageData(pageId)
-    const dataMissing = this.isFileNotFound(dataResult)
-    if ((!dataResult.success || !dataResult.data) && !dataMissing) {
+    if (!dataResult.success || !dataResult.data) {
       return {
         success: false,
         ...(dataResult.reason !== undefined && { reason: dataResult.reason }),
@@ -386,9 +375,7 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
       this.loadScript(pageId),
       this.loadCss(pageId),
     ])
-    const scriptMissing = this.isFileNotFound(scriptResult)
-    const cssMissing = this.isFileNotFound(cssResult)
-    if (!scriptResult.success && !scriptMissing) {
+    if (!scriptResult.success) {
       return {
         success: false,
         ...(scriptResult.reason !== undefined && { reason: scriptResult.reason }),
@@ -396,7 +383,7 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
         timestamp: scriptResult.timestamp ?? Date.now(),
       }
     }
-    if (!cssResult.success && !cssMissing) {
+    if (!cssResult.success) {
       return {
         success: false,
         ...(cssResult.reason !== undefined && { reason: cssResult.reason }),
@@ -405,21 +392,14 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
       }
     }
 
-    const rules = [
-      ...ruleResult.data,
-      ...(dataMissing ? createMissingPageConfigFileRule(pageId, 'pagedata.json') : []),
-      ...(scriptMissing ? createMissingPageConfigFileRule(pageId, 'script.js') : []),
-      ...(cssMissing ? createMissingPageConfigFileRule(pageId, 'style.css') : []),
-    ]
-
     return {
       success: true,
       data: {
         pageId,
-        rule: rules,
-        data: dataMissing ? this.createEmptyPageData() : dataResult.data as PageDataConfig,
-        script: scriptMissing ? '' : scriptResult.data,
-        css: cssMissing ? '' : cssResult.data,
+        rule: ruleResult.data,
+        data: dataResult.data,
+        script: scriptResult.data,
+        css: cssResult.data,
       },
       source: 'remote',
       timestamp: Date.now(),
@@ -478,13 +458,6 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
     return content
   }
 
-  private isFileNotFound(result: ConfigLoadResult<unknown>): boolean {
-    return !result.success && result.reason === 'not-found'
-  }
-
-  private createEmptyPageData(): PageDataConfig {
-    return parsePageData('{"dataSetName":"MissingRemotePageData","tables":{}}')
-  }
 }
 
 export const CrossProjectRefPage = defineComponent({

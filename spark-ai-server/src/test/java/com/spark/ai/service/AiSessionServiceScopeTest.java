@@ -49,6 +49,31 @@ class AiSessionServiceScopeTest {
     }
 
     @Test
+    void createSessionInitializesConversationFromProtocolV3Messages() {
+        AiSessionService service = createService();
+        Map<String, Object> scope = scope("page-a");
+
+        String sessionId = service.createSession(
+                "sys",
+                List.of(
+                        Map.of("role", "user", "content", "我要请假"),
+                        Map.of("role", "assistant", "content", "请补充开始日期")
+                ),
+                30,
+                List.of(),
+                "function",
+                scope,
+                false);
+
+        List<Map<String, Object>> conversation = service.getConversationFull(sessionId);
+        assertEquals(2, conversation.size());
+        assertEquals("user", conversation.get(0).get("role"));
+        assertEquals("我要请假", conversation.get(0).get("content"));
+        assertEquals("assistant", conversation.get(1).get("role"));
+        assertEquals("请补充开始日期", conversation.get(1).get("content"));
+    }
+
+    @Test
     void replacesBackendSessionWhenExistingScopeSessionIsNotReady() {
         AiSessionService service = createService();
         Map<String, Object> scope = scope("page-a");

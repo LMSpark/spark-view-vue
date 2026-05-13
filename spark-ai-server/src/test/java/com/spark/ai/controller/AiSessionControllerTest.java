@@ -53,12 +53,13 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
                 .andExpect(jsonPath("$.protocolVersion").value(3));
 
-        verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString(), nullable(Map.class));
+                verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString(), nullable(Map.class), anyBoolean());
+                verify(sessionService, never()).createSession(anyString(), anyList(), anyInt(), anyList(), anyString(), nullable(Map.class), anyBoolean());
     }
 
     @Test
     void createSession_acceptsProtocolV3() throws Exception {
-        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), nullable(Map.class)))
+                when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), nullable(Map.class), anyBoolean()))
                 .thenReturn("sid-1");
 
         String body = objectMapper.writeValueAsString(Map.of(
@@ -79,8 +80,33 @@ class AiSessionControllerTest {
     }
 
     @Test
+    void createSession_acceptsProtocolV3MessagesAndReuseFlag() throws Exception {
+        when(sessionService.createSession(anyString(), anyList(), anyInt(), nullable(List.class), anyString(), nullable(Map.class), eq(false)))
+                .thenReturn("sid-msg");
+
+        String body = objectMapper.writeValueAsString(Map.of(
+                "protocolVersion", 3,
+                "systemPrompt", "sys",
+                "messages", List.of(Map.of("role", "user", "content", "我要请假")),
+                "windowSize", 30,
+                "mode", "function",
+                "tools", List.of(),
+                "reuseScopeSession", false
+        ));
+
+        mockMvc.perform(post("/api/ai/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sessionId").value("sid-msg"))
+                .andExpect(jsonPath("$.protocolVersion").value(3));
+
+        verify(sessionService).createSession(anyString(), anyList(), anyInt(), nullable(List.class), anyString(), nullable(Map.class), eq(false));
+    }
+
+    @Test
     void createSession_forwardsScope() throws Exception {
-        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), anyMap()))
+        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), anyMap(), anyBoolean()))
                 .thenReturn("sid-scoped");
 
         String body = objectMapper.writeValueAsString(Map.of(
@@ -102,6 +128,28 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.sessionId").value("sid-scoped"))
                 .andExpect(jsonPath("$.scope.moduleId").value("pageDesign"))
                 .andExpect(jsonPath("$.scope.moduleInstanceId").value("page-a"));
+    }
+
+    @Test
+    void executeTurnStream_forwardsScopeTurnAndStreamKey() throws Exception {
+        String body = objectMapper.writeValueAsString(Map.of(
+                "protocolVersion", 3,
+                "scope", Map.of(
+                        "moduleId", "manualLeave",
+                        "moduleInstanceId", "leave-1"
+                ),
+                "turn", Map.of(
+                        "turnId", "turn-1",
+                        "streamKey", "sk-1"
+                )
+        ));
+
+        mockMvc.perform(post("/api/ai/sessions/sid-stream/turn/stream")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+
+        verify(sessionService).executeTurnStream(eq("sid-stream"), any(), anyMap(), eq("turn-1"), eq("sk-1"));
     }
 
     @Test

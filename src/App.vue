@@ -120,6 +120,9 @@
   <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
   <AppPageUiHost />
 
+  <!-- APP 层统一 AI 宿主面板 -->
+  <AppAiPanel />
+
   </template>
 </template>
 
@@ -141,7 +144,15 @@ import {
   useTheme,
 } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-page-config'
-import { APP_SERVICES, MODULE_CONTEXT, useSparkComponent, type IModuleContext, type ModuleContextCapability } from '@spark-view/spark-component'
+import {
+  APP_SERVICES,
+  AppAiPanel,
+  MODULE_CONTEXT,
+  useAiPanelStore,
+  useSparkComponent,
+  type IModuleContext,
+  type ModuleContextCapability,
+} from '@spark-view/spark-component'
 import { getToken, getUser, isAuthenticated, logout, switchProject } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
@@ -158,13 +169,28 @@ import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPlatformPaths } from '@/config/vue-page-map'
+import {
+  AppAiBusinessRegistry,
+  AppAiHost,
+  FetchAppAiHostTransport,
+  registerAppAiBusinesses,
+} from '@/services/ai-host'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
+const aiPanelStore = useAiPanelStore()
 
 const route = useRoute()
 const router = useRouter()
 const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
 const platformPaths = getPlatformPaths()
+const appAiRegistry = new AppAiBusinessRegistry()
+registerAppAiBusinesses({ registry: appAiRegistry })
+const appAiHost = new AppAiHost({
+  registry: appAiRegistry,
+  transport: new FetchAppAiHostTransport(),
+  context: createAppAiHostContext,
+})
+const appAiPanelConfig = appAiHost.createPanelConfig()
 const currentUsername = computed(() => {
   const user = getUser()
   return user?.displayName ?? user?.username ?? '管理员'
@@ -263,6 +289,14 @@ function jumpToExpectedContext(): void {
   const expectedPath = contextGuard.value?.expectedPath
   if (!expectedPath) return
   void router.replace(expectedPath)
+}
+
+function createAppAiHostContext(): { pageId?: string; routePath: string } {
+  const pageId = readRoutePageId()
+  return {
+    ...(pageId === null ? {} : { pageId }),
+    routePath: route.path,
+  }
 }
 
 /* ── 项目切换服务（供子组件注入） ── */
@@ -408,6 +442,7 @@ onMounted(() => {
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
   w['__sparkDev'] = { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes }
+  void aiPanelStore.sync(appAiPanelConfig)
 })
 
 onUnmounted(() => {
@@ -431,6 +466,9 @@ function handleUserCommand(command: string) {
       break
     case 'settings':
       showConfigurator.value = true
+      break
+    case 'ai-chat':
+      void aiPanelStore.open(appAiPanelConfig)
       break
     case 'home': {
       const user = getUser()

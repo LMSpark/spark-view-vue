@@ -39,12 +39,23 @@ function createHttpMock(): HttpClient {
 }
 
 function createLoader(files: Partial<Record<string, string>>): ConfigLoader {
-  const loadPageFileContent = vi.fn(async (pageId: string, filename: string, options?: { forceReload?: boolean }) => ({
-    success: true,
-    data: files[`${pageId}/${filename}`] ?? '',
-    source: 'remote' as const,
-    timestamp: options?.forceReload ? 2 : 1,
-  }))
+  const loadPageFileContent = vi.fn(async (pageId: string, filename: string, options?: { forceReload?: boolean }) => {
+    const key = `${pageId}/${filename}`
+    if (!Object.hasOwn(files, key)) {
+      return {
+        success: false,
+        error: `${key} not found`,
+        reason: 'not-found' as const,
+        timestamp: options?.forceReload ? 2 : 1,
+      }
+    }
+    return {
+      success: true,
+      data: files[key] ?? '',
+      source: 'remote' as const,
+      timestamp: options?.forceReload ? 2 : 1,
+    }
+  })
 
   return {
     loadPageConfig: vi.fn(),
@@ -167,6 +178,23 @@ describe('PageConfigEditWorkspace', () => {
     )
     expect(workspace.isDocumentDirty('script.js')).toBe(false)
     expect(loader.clearCache).toHaveBeenCalledWith('/orders/script.js')
+  })
+
+  it('fails active page file load when the loader reports a missing file', async () => {
+    const http = createHttpMock()
+    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config/', http })
+    const loader = createLoader({
+      'orders/rule.json': '[{"type":"div"}]',
+      'orders/pagedata.json': '{"dataSetName":"Orders","tables":{}}',
+      'orders/style.css': '.page{}',
+    })
+    const workspace = new PageConfigEditWorkspace({ fileApi: api, getConfigLoader: () => loader })
+
+    workspace.setActivePage('orders')
+
+    await expect(workspace.ensureActivePageFilesLoaded()).rejects.toThrow('读取页面文件失败: orders/script.js')
+    expect(workspace.documents['script.js'].text.value).toBe('')
+    expect(workspace.documents['script.js'].loadState.value).toBe('idle')
   })
 
   it('wraps page list/create/delete and version restore with cache invalidation', async () => {

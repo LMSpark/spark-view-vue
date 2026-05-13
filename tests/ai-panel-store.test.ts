@@ -74,6 +74,16 @@ describe('useAiPanelStore', () => {
     expect(store.storageKey.value).toBe('panel-session:page-2')
   })
 
+  it('supports reactive disablePersistence for pending routed sessions', async () => {
+    const store = useAiPanelStore()
+    const pending = ref(true)
+    await store.open(makeConfig({ disablePersistence: () => pending.value }))
+    expect(store.disablePersistence.value).toBe(true)
+
+    pending.value = false
+    expect(store.disablePersistence.value).toBe(false)
+  })
+
   it('externalToolLogs proxies a Ref and updates reactively', async () => {
     const store = useAiPanelStore()
     const logs = ref<Array<{ type: 'info' | 'success' | 'error'; tag: string; text: string }>>([])

@@ -42,3 +42,22 @@ export {
   type TextModelFunctionParameterRow,
   type TextModelFunctionTarget,
 } from './page-design'
+
+export {
+  LEAVE_REQUEST_MODULE_ID,
+  LeaveRequestModule,
+  LeaveRequestService,
+  assertLeaveRequestContext,
+  createLeaveDraftId,
+  isLeaveRequestServiceResult,
+  leaveRequestServiceFailure,
+  type LeaveRequestAppendMessageOptions,
+  type LeaveRequestDraftFields,
+  type LeaveRequestDraftState,
+  type LeaveRequestDraftStatus,
+  type LeaveRequestExecuteFunctionCallOptions,
+  type LeaveRequestRuntimeContext,
+  type LeaveRequestServiceContext,
+  type LeaveRequestServiceResult,
+  type LeaveRequestStopSessionOptions,
+} from './leave-request'

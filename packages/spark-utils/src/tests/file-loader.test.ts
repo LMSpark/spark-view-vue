@@ -21,12 +21,12 @@ vi.mock('axios', async () => {
 describe('FileLoader', () => {
   let loader: FileLoader
   let mockAxiosInstance: any
-  
+
   beforeEach(() => {
     // 清理所有缓存
     localStorage.clear()
     sessionStorage.clear()
-    
+
     // 创建mock axios实例
     mockAxiosInstance = {
       request: vi.fn(),
@@ -39,10 +39,10 @@ describe('FileLoader', () => {
         response: { use: vi.fn() }
       }
     }
-    
+
     // 设置mock返回值
     vi.mocked(axios.create).mockReturnValue(mockAxiosInstance)
-    
+
     // 创建测试加载器
     loader = createFileLoader({
       baseUrl: '/api/config',
@@ -50,7 +50,7 @@ describe('FileLoader', () => {
       timeout: 5000
     })
   })
-  
+
   describe('基本加载功能', () => {
     it('应该能够加载文件（首次加载）', async () => {
       // 设置mock响应
@@ -64,14 +64,14 @@ describe('FileLoader', () => {
         headers: {},
         config: { url: 'test.json', method: 'GET' }
       })
-      
+
       const result = await loader.load('test.json')
-      
+
       expect(result.success).toBe(true)
       expect(result.data).toEqual({ test: 'data' })
       expect(result.timestamp).toBe('2024-02-11T10:00:00Z')
       expect(result.fromCache).toBe(false)
-      
+
       // 验证request被调用
       expect(mockAxiosInstance.request).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -80,7 +80,7 @@ describe('FileLoader', () => {
         })
       )
     })
-    
+
     it('应该解析 JSON 文件', async () => {
       mockAxiosInstance.request.mockResolvedValue({
         data: {
@@ -92,13 +92,13 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       const result = await loader.load('test.json', { parseJSON: true })
-      
+
       expect(result.success).toBe(true)
       expect(result.data).toEqual({ name: 'test', value: 123 })
     })
-    
+
     it('应该加载文本文件（不解析 JSON）', async () => {
       mockAxiosInstance.request.mockResolvedValue({
         data: {
@@ -110,14 +110,14 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       const result = await loader.load<string>('script.js', { parseJSON: false })
-      
+
       expect(result.success).toBe(true)
       expect(result.data).toBe('function test() { return 42; }')
     })
   })
-  
+
   describe('缓存机制', () => {
     it('应该缓存加载的文件', async () => {
       mockAxiosInstance.request.mockResolvedValue({
@@ -130,15 +130,15 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       // 首次加载
       await loader.load('cache-test.json')
-      
+
       // 检查缓存
       expect(loader.hasCache('cache-test.json')).toBe(true)
       expect(loader.getTimestamp('cache-test.json')).toBe('2024-02-11T10:00:00Z')
     })
-    
+
     it('应该在文件未修改时使用缓存（notModified 标志）', async () => {
       // 首次加载
       mockAxiosInstance.request.mockResolvedValueOnce({
@@ -151,9 +151,9 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await loader.load('version.json')
-      
+
       // 再次加载，服务器返回 notModified=true
       mockAxiosInstance.request.mockResolvedValueOnce({
         data: {
@@ -164,14 +164,14 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       const result = await loader.load('version.json')
-      
+
       expect(result.success).toBe(true)
       expect(result.fromCache).toBe(true)
       expect(result.notModified).toBe(true)
     })
-    
+
     it('应该在强制刷新时忽略缓存', async () => {
       // 首次加载
       mockAxiosInstance.request.mockResolvedValueOnce({
@@ -184,9 +184,9 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await loader.load('refresh.json')
-      
+
       // 强制刷新
       mockAxiosInstance.request.mockResolvedValueOnce({
         data: {
@@ -198,16 +198,16 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       const result = await loader.load('refresh.json', { forceRefresh: true })
-      
+
       expect(result.success).toBe(true)
       expect(result.fromCache).toBe(false)
       expect(result.data).toEqual({ version: 2 })
       expect(result.timestamp).toBe('2024-02-11T11:00:00Z')
     })
   })
-  
+
   describe('自动降级', () => {
     it('应该在网络失败时自动降级到缓存', async () => {
       // 首次加载成功
@@ -221,37 +221,37 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await loader.load('fallback.json')
-      
+
       // 网络失败
       mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network error'))
-      
+
       const result = await loader.load('fallback.json')
-      
+
       expect(result.success).toBe(true)
       expect(result.fromCache).toBe(true)
       expect(result.data).toEqual({ data: 'cached' })
       expect(result.error).toContain('Network error')
     })
-    
+
     it('应该在无缓存时返回失败', async () => {
       mockAxiosInstance.request.mockRejectedValue(new Error('Network error'))
-      
+
       const result = await loader.load('no-cache.json')
-      
+
       expect(result.success).toBe(false)
       expect(result.fromCache).toBe(false)
       expect(result.error).toContain('Network error')
     })
-    
+
     it('应该支持禁用自动降级', async () => {
       const strictLoader = createFileLoader({
         baseUrl: '/api/config',
         storage: 'memory',
         fallbackToCache: false
       })
-      
+
       // 首次加载成功
       mockAxiosInstance.request.mockResolvedValueOnce({
         data: {
@@ -263,19 +263,19 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await strictLoader.load('strict.json')
-      
+
       // 网络失败，不使用缓存
       mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network error'))
-      
+
       const result = await strictLoader.load('strict.json')
-      
+
       expect(result.success).toBe(false)
       expect(result.fromCache).toBe(false)
     })
   })
-  
+
   describe('批量加载', () => {
     it('应该并行加载多个文件', async () => {
       mockAxiosInstance.request
@@ -309,20 +309,20 @@ describe('FileLoader', () => {
           headers: {},
           config: {}
         })
-      
+
       const results = await loader.loadBatch([
         'file1.json',
         'file2.json',
         'file3.json'
       ])
-      
+
       expect(results.size).toBe(3)
       expect(results.get('file1.json')?.success).toBe(true)
       expect(results.get('file2.json')?.success).toBe(true)
       expect(results.get('file3.json')?.success).toBe(true)
     })
   })
-  
+
   describe('缓存管理', () => {
     it('应该清除特定文件缓存', async () => {
       mockAxiosInstance.request.mockResolvedValue({
@@ -335,14 +335,14 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await loader.load('clear-test.json')
       expect(loader.hasCache('clear-test.json')).toBe(true)
-      
+
       loader.clearCache('clear-test.json')
       expect(loader.hasCache('clear-test.json')).toBe(false)
     })
-    
+
     it('应该清除所有缓存', async () => {
       mockAxiosInstance.request.mockResolvedValue({
         data: {
@@ -354,15 +354,15 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await loader.load('file1.json')
       await loader.load('file2.json')
-      
+
       loader.clearCache()
       expect(loader.hasCache('file1.json')).toBe(false)
       expect(loader.hasCache('file2.json')).toBe(false)
     })
-    
+
     it('应该返回缓存统计信息', async () => {
       mockAxiosInstance.request.mockResolvedValue({
         data: {
@@ -374,18 +374,176 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       await loader.load('stats1.json')
       await loader.load('stats2.json')
-      
+
       // 验证缓存存在
       expect(loader.hasCache('stats1.json')).toBe(true)
       expect(loader.hasCache('stats2.json')).toBe(true)
       expect(loader.getTimestamp('stats1.json')).toBe('2024-02-11T10:00:00Z')
       expect(loader.getTimestamp('stats2.json')).toBe('2024-02-11T10:00:00Z')
     })
+
+    it('localStorage 配额不足时应驱逐最旧项并重试写入', () => {
+      interface FakeStorageRecord {
+        value: string
+      }
+
+      class FakeStorage implements Storage {
+        private readonly map = new Map<string, FakeStorageRecord>()
+        private readonly quotaTargetKey: string
+
+        constructor(quotaTargetKey: string) {
+          this.quotaTargetKey = quotaTargetKey
+        }
+
+        get length(): number {
+          return this.map.size
+        }
+
+        clear(): void {
+          this.map.clear()
+        }
+
+        getItem(key: string): string | null {
+          return this.map.get(key)?.value ?? null
+        }
+
+        key(index: number): string | null {
+          return Array.from(this.map.keys())[index] ?? null
+        }
+
+        removeItem(key: string): void {
+          this.map.delete(key)
+        }
+
+        setItem(key: string, value: string): void {
+          if (key === this.quotaTargetKey && this.map.size >= 2) {
+            throw new DOMException('Quota exceeded', 'QuotaExceededError')
+          }
+          this.map.set(key, { value })
+        }
+      }
+
+      const quotaTarget = 'spark_page_new.json'
+      const fakeStorage = new FakeStorage(quotaTarget)
+      const now = Date.now()
+
+      fakeStorage.setItem('spark_page_old-a.json', JSON.stringify({
+        data: 'a',
+        sourceTimestamp: 'ts-a',
+        cachedAt: now - 1000,
+        lastAccess: now - 1000,
+        expirationLevel: 3,
+      }))
+      fakeStorage.setItem('spark_page_old-b.json', JSON.stringify({
+        data: 'b',
+        sourceTimestamp: 'ts-b',
+        cachedAt: now - 500,
+        lastAccess: now - 500,
+        expirationLevel: 3,
+      }))
+
+      const localLoader = createFileLoader({
+        baseUrl: '/api/config',
+        storage: 'localStorage',
+        cachePrefix: 'spark_page_',
+      })
+
+      const internal = localLoader as unknown as {
+        storage: Storage | null
+      }
+      internal.storage = fakeStorage
+
+      localLoader.store('new.json', 'new-content', 'ts-new')
+
+      expect(fakeStorage.getItem(quotaTarget)).not.toBeNull()
+      expect(fakeStorage.getItem('spark_page_old-a.json')).toBeNull()
+      expect(fakeStorage.getItem('spark_page_old-b.json')).not.toBeNull()
+    })
+
+    it('读取缓存更新 lastAccess 遇到配额不足时不应驱逐缓存', () => {
+      interface FakeStorageRecord {
+        value: string
+      }
+
+      class TouchFailingStorage implements Storage {
+        private readonly map = new Map<string, FakeStorageRecord>()
+        private blockedKey: string | null = null
+
+        get length(): number {
+          return this.map.size
+        }
+
+        blockSetItem(key: string): void {
+          this.blockedKey = key
+        }
+
+        clear(): void {
+          this.map.clear()
+        }
+
+        getItem(key: string): string | null {
+          return this.map.get(key)?.value ?? null
+        }
+
+        key(index: number): string | null {
+          return Array.from(this.map.keys())[index] ?? null
+        }
+
+        removeItem(key: string): void {
+          this.map.delete(key)
+        }
+
+        setItem(key: string, value: string): void {
+          if (key === this.blockedKey) {
+            throw new DOMException('Quota exceeded', 'QuotaExceededError')
+          }
+          this.map.set(key, { value })
+        }
+      }
+
+      const cacheKey = 'spark_page_kept.json'
+      const otherKey = 'spark_page_other.json'
+      const fakeStorage = new TouchFailingStorage()
+      const now = Date.now()
+
+      fakeStorage.setItem(cacheKey, JSON.stringify({
+        data: 'kept-content',
+        sourceTimestamp: 'ts-kept',
+        cachedAt: now,
+        lastAccess: now,
+        expirationLevel: 3,
+      }))
+      fakeStorage.setItem(otherKey, JSON.stringify({
+        data: 'other-content',
+        sourceTimestamp: 'ts-other',
+        cachedAt: now,
+        lastAccess: now,
+        expirationLevel: 3,
+      }))
+      fakeStorage.blockSetItem(cacheKey)
+
+      const localLoader = createFileLoader({
+        baseUrl: '/api/config',
+        storage: 'localStorage',
+        cachePrefix: 'spark_page_',
+      })
+
+      const internal = localLoader as unknown as {
+        storage: Storage | null
+      }
+      internal.storage = fakeStorage
+
+      const data = localLoader.retrieve<string>('kept.json', 'ts-kept')
+
+      expect(data).toBe('kept-content')
+      expect(fakeStorage.getItem(cacheKey)).not.toBeNull()
+      expect(fakeStorage.getItem(otherKey)).not.toBeNull()
+    })
   })
-  
+
   describe('错误处理', () => {
     it('应该处理 HTTP 错误', async () => {
       const error = Object.assign(
@@ -399,13 +557,13 @@ describe('FileLoader', () => {
         }
       )
       mockAxiosInstance.request.mockRejectedValue(error)
-      
+
       const result = await loader.load('not-found.json')
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toContain('404')
     })
-    
+
     it('应该处理无效的响应格式', async () => {
       mockAxiosInstance.request.mockResolvedValue({
         data: {
@@ -417,9 +575,9 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       const result = await loader.load('invalid.json')
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toContain('响应格式错误')
     })
@@ -441,7 +599,7 @@ describe('FileLoader', () => {
       expect(result.success).toBe(true)
       expect(result.data).toBe('')
     })
-    
+
     it('应该处理 JSON 解析错误', async () => {
       mockAxiosInstance.request.mockResolvedValue({
         data: {
@@ -453,9 +611,9 @@ describe('FileLoader', () => {
         headers: {},
         config: {}
       })
-      
+
       const result = await loader.load('parse-error.json')
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toBeDefined()
     })

@@ -55,6 +55,11 @@ interface FileResponse {
   notModified?: boolean
 }
 
+interface CacheWriteOptions {
+  recoverQuota?: boolean
+  reportFailureAsError?: boolean
+}
+
 /** load() 选项 */
 export interface LoadOptions<T = unknown> {
   /** false = 返回原始字符串，不 JSON.parse（默认 true） */
@@ -117,10 +122,10 @@ export class FileLoader {
         }
       })
     }
-    this.storage = this.opts.storage === 'localStorage' 
-      ? localStorage 
-      : this.opts.storage === 'sessionStorage' 
-        ? sessionStorage 
+    this.storage = this.opts.storage === 'localStorage'
+      ? localStorage
+      : this.opts.storage === 'sessionStorage'
+        ? sessionStorage
         : null
 
     // 启动时清理一次过期缓存
@@ -487,14 +492,14 @@ export class FileLoader {
     const now = Date.now()
     const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
     const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
-    
+
     if (maxAge !== Infinity && idleTime > maxAge) {
       const tier = this.opts.expirationTiers.find(t => t.level === entry.expirationLevel)
-      logger.debug('缓存闲置过期，自动删除', { 
-        key, 
+      logger.debug('缓存闲置过期，自动删除', {
+        key,
         level: entry.expirationLevel,
         tierDesc: tier?.description,
-        idleDays: Math.round(idleTime / 1000 / 60 / 60 / 24) 
+        idleDays: Math.round(idleTime / 1000 / 60 / 60 / 24)
       })
       this.clearCache(key)
       return null
@@ -502,15 +507,15 @@ export class FileLoader {
 
     // 更新最后访问时间（滑动窗口）
     entry.lastAccess = now
-    this.writeEntryDirect(k, entry)
+    this.writeEntryDirect(k, entry, { recoverQuota: false, reportFailureAsError: false })
 
     return entry
   }
 
   private writeEntry<T>(key: string, data: T, sourceTimestamp: string, expirationLevel: number): void {
     const now = Date.now()
-    const entry: CacheEntry<T> = { 
-      data, 
+    const entry: CacheEntry<T> = {
+      data,
       sourceTimestamp,
       cachedAt: now,
       lastAccess: now,
@@ -560,15 +565,109 @@ export class FileLoader {
   }
 
   /** 直接写入缓存（不检查限制，内部方法） */
-  private writeEntryDirect<T>(key: string, entry: CacheEntry<T>): void {
-    if (this.opts.storage === 'memory') { 
+  private writeEntryDirect<T>(key: string, entry: CacheEntry<T>, options: CacheWriteOptions = {}): void {
+    if (this.opts.storage === 'memory') {
       this.memCache.set(key, entry as CacheEntry<unknown>)
-      return 
+      return
     }
-    try { 
-      this.storage?.setItem(key, JSON.stringify(entry)) 
-    } catch (e) { 
-      logger.error('缓存写入失败', { key, error: e }) 
+    const storage = this.storage
+    if (!storage) return
+
+    const recoverQuota = options.recoverQuota ?? true
+    const reportFailureAsError = options.reportFailureAsError ?? true
+    const payload = JSON.stringify(entry)
+    let attempt = 0
+
+    while (attempt <= 20) {
+      try {
+        storage.setItem(key, payload)
+        return
+      } catch (e) {
+        if (!this.isQuotaExceededError(e)) {
+          this.reportCacheWriteFailure('缓存写入失败', { key, error: e }, reportFailureAsError)
+          return
+        }
+
+        if (!recoverQuota) {
+          logger.debug('缓存元数据写入因配额不足跳过', { key })
+          return
+        }
+
+        if (attempt === 0) {
+          // 先清理过期项，避免无谓驱逐有效缓存。
+          this.cleanupExpiredCache()
+          attempt++
+          continue
+        }
+
+        const evictedKey = this.evictLeastRecentlyUsedStorageEntry(key)
+        if (!evictedKey) {
+          logger.error('缓存写入失败（配额已满且无可驱逐项）', { key, error: e })
+          return
+        }
+
+        logger.debug('缓存配额已满，驱逐最旧缓存后重试写入', {
+          key,
+          evictedKey,
+          attempt,
+        })
+        attempt++
+      }
+    }
+
+    logger.error('缓存写入失败（达到最大重试次数）', { key })
+  }
+
+  private reportCacheWriteFailure(message: string, details: Record<string, unknown>, asError: boolean): void {
+    if (asError) {
+      logger.error(message, details)
+    } else {
+      logger.debug(message, details)
+    }
+  }
+
+  private isQuotaExceededError(error: unknown): boolean {
+    if (error instanceof DOMException) {
+      return error.name === 'QuotaExceededError' || error.code === 22 || error.code === 1014
+    }
+    if (error !== null && typeof error === 'object') {
+      const maybe = error as { name?: unknown; code?: unknown }
+      return maybe.name === 'QuotaExceededError' || maybe.code === 22 || maybe.code === 1014
+    }
+    return false
+  }
+
+  private evictLeastRecentlyUsedStorageEntry(protectedKey: string): string | null {
+    if (this.opts.storage === 'memory') return null
+    const storage = this.storage
+    if (!storage) return null
+
+    const prefix = this.opts.cachePrefix
+    const entries: Array<{ key: string; lastAccess: number }> = []
+
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i)
+      if (!key?.startsWith(prefix) || key === protectedKey) continue
+      try {
+        const raw = storage.getItem(key)
+        if (!raw) continue
+        const entry = JSON.parse(raw) as CacheEntry<unknown>
+        entries.push({ key, lastAccess: entry.lastAccess || entry.cachedAt || 0 })
+      } catch {
+        entries.push({ key, lastAccess: 0 })
+      }
+    }
+
+    if (entries.length === 0) return null
+
+    entries.sort((a, b) => a.lastAccess - b.lastAccess)
+    const target = entries[0]
+    if (!target) return null
+    try {
+      storage.removeItem(target.key)
+      return target.key
+    } catch {
+      return null
     }
   }
 

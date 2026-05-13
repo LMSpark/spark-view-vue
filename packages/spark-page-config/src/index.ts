@@ -1,6 +1,6 @@
-﻿/**
+/**
  * @spark-view/spark-page-config
- * 
+ *
  * SPARK 页面配置层 - L2 业务编排层
  * 支持页面配置文件 API 加载、动态路由注册、配置缓存和验证
  */
@@ -97,7 +97,6 @@ export * from './page-edit'
 export {
   PageConfigLoader,
   createConfigLoader,
-  createMissingPageConfigFileRule,
   compileRule,
   normalizeRuleNode,
   parsePageData,

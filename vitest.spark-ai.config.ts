@@ -1,13 +1,28 @@
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
+  plugins: [vue()],
   test: {
-    environment: 'node',
     globals: true,
+    environment: 'jsdom',
+    include: [
+      'tests/app-ai-entry-removal.test.ts',
+      'tests/app-ai-host.test.ts',
+      'tests/ai-chat-widget-persistence.test.ts',
+      'tests/ai-panel-store.test.ts',
+      'tests/ai-runtime-business.test.ts',
+      'tests/ai-runtime-public-api.test.ts',
+      'tests/ai-session-cache.test.ts',
+      'tests/leave-request-module.test.ts',
+      'tests/page-design-business-definition.test.ts',
+      'tests/spark-ai-framework-neutral.test.ts',
+    ],
+    setupFiles: ['./tests/vitest-setup.ts'],
   },
   resolve: {
     alias: {
