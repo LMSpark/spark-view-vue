@@ -229,7 +229,7 @@ function getLogLevelType(level: string) {
 
 function getFeatureName(feature: string): string {
   const names: Record<string, string> = {
-    'enableAI': 'AI 功能',
+    'enableAI': '智能功能',
     'enableExport': '导出功能',
     'enableOffline': '离线模式'
   }

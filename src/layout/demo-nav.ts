@@ -22,7 +22,6 @@ export const demoNavRoot: AppNavRoot = {
       icon: 'SetUp',
       childPlacement: 'toolbar',
       children: [
-        { id: 'tb-ai-chat', nodeKind: 'system-action', title: 'AI 对话', icon: 'ChatDotRound', path: 'ai-chat' },
         { id: 'tb-search', nodeKind: 'system-action', title: '搜索', icon: 'Search', path: 'search' },
         { id: 'tb-fullscreen', nodeKind: 'system-action', title: '全屏', icon: 'FullScreen', path: 'fullscreen' },
         { id: 'tb-notifications', nodeKind: 'system-action', title: '通知', icon: 'Bell', path: 'notifications' },
@@ -157,26 +156,6 @@ export const demoNavRoot: AppNavRoot = {
           ],
         },
       ],
-    },
-
-    /* ── AI Studio（独立叶子） ── */
-    {
-      id: 'ai-studio',
-      nodeKind: 'system-page',
-      title: 'AI Studio',
-      description: 'AI 驱动的可视化页面设计工作室',
-      icon: 'MagicStick',
-      path: '/ai-studio',
-    },
-
-    /* ── AI 迭代测试 ── */
-    {
-      id: 'ai-test',
-      nodeKind: 'page',
-      title: 'AI 迭代测试',
-      description: 'AI 页面生成与迭代优化的测试场',
-      icon: 'Opportunity',
-      path: '/ai-test',
     },
   ],
 }

@@ -13,7 +13,7 @@ import type { AppNavRoot } from '@spark-view/spark-app'
  * 页面作用域级别
  * - platform: 平台公共页面，无需登录，不绑定租户（如首页、登录、关于）
  * - tenant:   租户级页面，需登录+租户前缀，租户内共享（如设置、缓存管理）
- * - app:      应用级页面，需登录+租户前缀+绑定具体应用/项目（如仪表盘、开发系统、AI Studio）
+ * - app:      应用级页面，需登录+租户前缀+绑定具体应用/项目（如仪表盘、开发系统）
  */
 export type PageScope = 'platform' | 'tenant' | 'app'
 

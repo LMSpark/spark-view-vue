@@ -2,7 +2,7 @@
   <div class="login-page">
     <div class="login-card">
       <h1 class="login-title">SPARK 应用工场</h1>
-      <p class="login-subtitle">配置驱动，AI 配系统</p>
+      <p class="login-subtitle">配置驱动，快速配系统</p>
 
       <el-tabs v-model="activeTab" class="login-tabs">
         <!-- ── 登录 ── -->
@@ -138,6 +138,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, registerTenant } from '@/services/auth'
 import { refreshRoutes, getNavHomePath } from '@spark-view/spark-app'
+import { buildTenantPath } from '@/services/tenant-scope'
 import type { FormInstance, FormRules } from 'element-plus'
 import { OfficeBuilding, User, Lock, Edit, Message, Postcard } from '@element-plus/icons-vue'
 
@@ -150,6 +151,10 @@ const errorMsg = ref('')
 
 function goHome() {
   void router.replace('/')
+}
+
+function getUserHomePath(user: { tenantId: string; defaultProjectId: string }): string {
+  return buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath())
 }
 
 // ── 登录表单 ────────────────────────────────────────────────────────────────
@@ -170,7 +175,7 @@ async function handleLogin() {
   try {
     const user = await login(loginForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
+    await router.replace(getUserHomePath(user))
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '登录失败'
   } finally {
@@ -206,7 +211,7 @@ async function handleRegister() {
   try {
     const user = await register(regForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
+    await router.replace(getUserHomePath(user))
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '注册失败'
   } finally {
@@ -236,7 +241,7 @@ async function handleRegisterTenant() {
   try {
     const user = await registerTenant(tenantForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
+    await router.replace(getUserHomePath(user))
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '租户注册失败'
   } finally {

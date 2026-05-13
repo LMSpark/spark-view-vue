@@ -15,10 +15,10 @@
       <div class="hero-body">
         <p class="hero-eyebrow">SPARK 融合平台 · 应用工场</p>
         <h1 class="hero-title">
-          企业应用系统<br>是 <span class="hero-highlight">AI 配</span>出来的
+          企业应用系统<br>是 <span class="hero-highlight">配置驱动</span>构建出来的
         </h1>
         <p class="hero-desc">
-          不是让 AI 无边界写代码，而是让 AI 在受约束的配置空间里生成页面结构、数据模型、权限策略和最小化脚本。<br>
+          不是让需求无边界扩散成代码，而是把页面结构、数据模型、权限策略和最小化脚本收敛到受约束的配置空间。<br>
           SPARK AppWorks 用稳定运行时承接多租户、多系统 SaaS 场景，把交付效率和维护升级成本控制放在同一条链路里。
         </p>
         <div class="hero-metrics">
@@ -46,7 +46,7 @@
           </router-link>
         </div>
         <div class="hero-proof">
-          <span class="hero-proof-item">AI 生成受约束配置</span>
+          <span class="hero-proof-item">受约束配置生成</span>
           <span class="hero-proof-item">稳定运行时解释执行</span>
           <span class="hero-proof-item">多租户 + 多系统统一承载</span>
         </div>
@@ -94,11 +94,11 @@
 
     <!-- ── 范式对比 ── -->
     <section class="paradigm">
-      <h2 class="section-title">从 AI 写代码，到 AI 配系统</h2>
+      <h2 class="section-title">从代码堆叠，到配置驱动系统</h2>
       <p class="section-desc">在企业场景里，关键不是第一次生成得多快，而是后续能否稳定维护和升级</p>
       <div class="paradigm-compare">
         <div class="paradigm-card paradigm-card--old">
-          <div class="paradigm-badge">传统 AI 平台</div>
+          <div class="paradigm-badge">传统生成平台</div>
           <div class="paradigm-flow">
             <div class="flow-step">用户需求 → LLM</div>
             <div class="flow-step">自由格式代码 / 页面拼接</div>
@@ -116,7 +116,7 @@
             <div class="flow-step ok">页面结构 + 数据模型 + 权限配置</div>
             <div class="flow-step ok">结构校验 + 运行时解释执行</div>
             <div class="flow-step ok">租户/系统差异收敛到配置层</div>
-            <div class="flow-step ok">日志自动回传 AI 精准修复</div>
+            <div class="flow-step ok">日志自动回传并驱动精准修复</div>
             <div class="flow-step ok">平台升级优先收敛在运行时</div>
           </div>
         </div>
@@ -126,7 +126,7 @@
     <!-- ── 四文件体系 ── -->
     <section class="four-files">
       <h2 class="section-title">企业系统由 4 类资产配置出来</h2>
-      <p class="section-desc">AI 生成受约束配置，运行时解释执行，长期维护和升级成本更低</p>
+      <p class="section-desc">受约束配置生成，运行时解释执行，长期维护和升级成本更低</p>
       <div class="files-grid">
         <div class="file-card">
           <div class="file-header">
@@ -163,15 +163,15 @@
       </div>
     </section>
 
-    <!-- ── AI 闭环迭代 ── -->
-    <section class="ai-loop">
-      <h2 class="section-title">受约束 AI 配置闭环</h2>
-      <p class="section-desc">不是让 AI 猜页面怎么修，而是把结构化日志、配置边界和运行时约束一起交给 AI</p>
+    <!-- ── 配置闭环迭代 ── -->
+    <section class="config-loop">
+      <h2 class="section-title">受约束配置闭环</h2>
+      <p class="section-desc">不是让系统猜页面怎么修，而是把结构化日志、配置边界和运行时约束纳入同一条修复链路</p>
       <div class="loop-container">
         <div class="loop-track">
           <div class="loop-node">
             <div class="loop-icon"><NavIcon name="MagicStick" :size="28" /></div>
-            <div class="loop-label">AI 生成 4 文件</div>
+            <div class="loop-label">生成 4 文件</div>
           </div>
           <div class="loop-arrow">→</div>
           <div class="loop-node">
@@ -186,18 +186,18 @@
           <div class="loop-arrow">→</div>
           <div class="loop-node">
             <div class="loop-icon"><NavIcon name="Refresh" :size="28" /></div>
-            <div class="loop-label">日志回传 AI 精准修复</div>
+            <div class="loop-label">日志回传并精准修复</div>
           </div>
         </div>
         <div class="loop-caption">配置生成、热更新、日志回传和自动修复走在同一条闭环里</div>
         <div class="loop-compare">
           <div class="compare-item compare-item--old">
             <span class="compare-tag">传统</span>
-            人 ↔ AI，人工传递错误信息，页面差异和系统差异都落到代码层
+            人 ↔ 系统，人工传递错误信息，页面差异和系统差异都落到代码层
           </div>
           <div class="compare-item compare-item--new">
             <span class="compare-tag">SPARK</span>
-            AI ↔ 运行时，自动传递结构化日志，优先修配置而不是扩散代码
+            运行时 ↔ 配置链路，自动传递结构化日志，优先修配置而不是扩散代码
           </div>
         </div>
       </div>
@@ -210,8 +210,8 @@
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="Document" :size="32" /></div>
-          <h3>AI 配系统</h3>
-          <p>AI 生成页面结构配置、数据模型配置、样式配置和最小化脚本，不让复杂度无边界扩散到业务代码。</p>
+          <h3>配置驱动系统</h3>
+          <p>生成页面结构配置、数据模型配置、样式配置和最小化脚本，不让复杂度无边界扩散到业务代码。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="Share" :size="32" /></div>
@@ -258,7 +258,7 @@
             </div>
             <div class="scenario-new">
               <span class="scenario-tag">SPARK</span>
-              以租户、项目、页面配置为交付单位，AI 先把系统配出来，再由运行时统一承载和复用
+              以租户、项目、页面配置为交付单位，先把系统结构组织出来，再由运行时统一承载和复用
             </div>
           </div>
         </div>
@@ -316,19 +316,19 @@
     <!-- ── 全景对比表 ── -->
     <section class="comparison">
       <h2 class="section-title">全景对比</h2>
-      <p class="section-desc">SPARK AppWorks vs 传统 AI 开发平台（Copilot / Cursor / v0）</p>
+      <p class="section-desc">SPARK AppWorks vs 传统生成式开发平台（Copilot / Cursor / v0）</p>
       <div class="table-wrapper">
         <table class="compare-table">
           <thead>
             <tr>
               <th>对比维度</th>
-              <th>传统 AI 平台</th>
+              <th>传统生成平台</th>
               <th class="highlight-col">SPARK AppWorks</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>AI 输出格式</td>
+              <td>输出格式</td>
               <td>自由格式代码 (.vue/.tsx)</td>
               <td class="highlight-col">4 个标准化配置文件</td>
             </tr>
@@ -344,8 +344,8 @@
             </tr>
             <tr>
               <td>迭代闭环</td>
-              <td>手动复制报错给 AI</td>
-              <td class="highlight-col">Logger 自动收集 → AI 自动修复</td>
+              <td>手动复制报错给系统链路</td>
+              <td class="highlight-col">Logger 自动收集 → 自动修复链路</td>
             </tr>
             <tr>
               <td>迭代速度</td>
@@ -378,7 +378,7 @@
               <td class="highlight-col">aggregates 配置（零代码）</td>
             </tr>
             <tr>
-              <td>AI 理解深度</td>
+              <td>结构理解深度</td>
               <td>需读 500+ 行混合代码</td>
               <td class="highlight-col">只需理解 120 行结构化配置</td>
             </tr>
@@ -409,7 +409,7 @@
 
     <!-- ── 五层架构 ── -->
     <section class="architecture">
-      <h2 class="section-title">五层 AI 交互体系</h2>
+      <h2 class="section-title">五层配置交互体系</h2>
       <p class="section-desc">从配置生成闭环到多租户、多系统治理，递进覆盖</p>
       <div class="arch-stack">
         <div class="arch-layer arch-layer--5">
@@ -423,7 +423,7 @@
           <span class="arch-num">4</span>
           <div class="arch-content">
             <h4>查询协议</h4>
-            <p>AI 主动查询组件 Props · 表结构 · 字典 · DataKey 帮助</p>
+            <p>按需查询组件 Props · 表结构 · 字典 · DataKey 帮助</p>
           </div>
         </div>
         <div class="arch-layer arch-layer--3">
@@ -444,7 +444,7 @@
           <span class="arch-num">1</span>
           <div class="arch-content">
             <h4>生成 + 迭代闭环</h4>
-            <p>二阶段生成 → 写入文件 → 热更新 → 日志收集 → AI 迭代（≤ 3 轮）</p>
+            <p>二阶段生成 → 写入文件 → 热更新 → 日志收集 → 迭代修正（≤ 3 轮）</p>
           </div>
         </div>
       </div>
@@ -463,7 +463,7 @@
         <div class="step-arrow">→</div>
         <div class="step">
           <div class="step-number">2</div>
-          <h3>AI 配置页面</h3>
+          <h3>配置页面资产</h3>
           <p>生成页面结构、数据模型、权限策略和最小化脚本，而不是无边界地生成代码。</p>
         </div>
         <div class="step-arrow">→</div>
@@ -504,8 +504,8 @@
 
     <!-- ── 底部 CTA ── -->
     <section class="cta">
-      <h2>企业应用系统，不是写出来的，是 AI 配出来的</h2>
-      <p>前提是 AI 只在受约束的配置空间里工作，而页面最终由稳定运行时解释执行。</p>
+      <h2>企业应用系统，不是堆代码堆出来的，而是配置驱动出来的</h2>
+      <p>前提是所有变化都在受约束的配置空间里工作，而页面最终由稳定运行时解释执行。</p>
       <router-link to="/demo/custom-r-table" class="btn btn--primary btn--lg">
         直接看 Demo →
       </router-link>
@@ -532,7 +532,7 @@ const platformDemos = [
     path: '/demo/custom-r-table',
     badge: 'tree-demo',
     title: '树形导航编辑器',
-    description: '展示树容器、表单编辑、工具栏动作、当前节点联动和页面脚本，最适合体现“AI 配系统”的平台感。',
+    description: '展示树容器、表单编辑、工具栏动作、当前节点联动和页面脚本，最适合体现“配置驱动系统”的平台感。',
     points: [
       '树结构与节点编辑在同一页闭环工作',
       '更像真实系统配置页，而不是单一组件示例',
@@ -1107,8 +1107,8 @@ function setRegisterTab() {
   margin: 0;
 }
 
-/* ── AI 闭环 ── */
-.ai-loop {
+/* ── 配置闭环 ── */
+.config-loop {
   padding: 100px 48px;
   max-width: 1100px;
   margin: 0 auto;
@@ -1752,7 +1752,7 @@ html.dark .home-footer {
     grid-template-columns: 1fr 1fr;
   }
 
-  .ai-loop {
+  .config-loop {
     padding: 60px 24px;
   }
 

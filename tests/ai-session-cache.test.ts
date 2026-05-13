@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  registerAiCacheEventHandler,
   readCache,
   writeCache,
   removeCache,
@@ -9,15 +10,37 @@ import {
   SESSION_SNAPSHOT_PREFIX,
   PANEL_LAYOUT_PREFIX,
   ALL_AI_CACHE_PREFIXES,
-  setupAiCacheEventBus,
-} from '../src/composables/aiSessionCache'
-import { useAiPanelStore } from '@spark-view/spark-component'
+  useAiPanelStore,
+} from '@spark-view/spark-component'
 
 describe('aiSessionCache', () => {
-  beforeEach(async () => {
+  const busCleanup: Array<() => void> = []
+
+  beforeAll(() => {
+    const store = useAiPanelStore()
+    busCleanup.push(
+      registerAiCacheEventHandler('snapshot:restore', payload => {
+        store.emit('snapshot:restore', payload)
+      }),
+    )
+    busCleanup.push(
+      registerAiCacheEventHandler('snapshot:persist', payload => {
+        store.emit('snapshot:persist', payload)
+      }),
+    )
+    busCleanup.push(
+      registerAiCacheEventHandler('snapshot:clear', payload => {
+        store.emit('snapshot:clear', payload)
+      }),
+    )
+  })
+
+  afterAll(() => {
+    for (const cleanup of busCleanup.splice(0, busCleanup.length)) cleanup()
+  })
+
+  beforeEach(() => {
     localStorage.clear()
-    // 初始化缓存事件总线，使 spark-component 的事件可以转发到 useAiPanelStore
-    await setupAiCacheEventBus()
   })
 
   it('readCache returns null for missing key (no event)', () => {

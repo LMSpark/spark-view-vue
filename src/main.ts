@@ -39,29 +39,36 @@
  */
 
 // SPARK 架构包
-import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger } from '@spark-view/spark-app'
-import { getNavHomePath } from '@spark-view/spark-app'
+import {
+  SparkApp,
+  PluginManager,
+  configureRemoteLogger,
+  createLogger,
+  getNavHomePath,
+  loadAppConfig,
+  registerBuiltinPlugins,
+} from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
 
-// 创建启动日志（临时用于启动流程）
-import { createLogger } from '@spark-view/spark-app'
 import { getUser, isAuthenticated, switchProject } from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
+import {
+  buildTenantPath,
+  parseTenantScope,
+  stripTenantScope,
+} from './services/tenant-scope'
 const startupLogger = createLogger('main')
 
-// AI 闭环：late-binding pageId（路由就绪后由 afterMount 注入）
+// late-binding pageId（路由就绪后由 afterMount 注入）
 let _currentPageId: string | undefined
 
 function isRecordObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-// AI 闭环：浏览器会话级 ID（页面刷新后重新生成，用于追踪一次对话周期）
+// 浏览器会话级 ID（页面刷新后重新生成，用于追踪一次启动周期）
 const _sessionId = `s-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-
-// 配置加载器
-import { loadAppConfig } from '@spark-view/spark-app'
 
 // 主应用组件
 import { createApp } from 'vue'
@@ -79,8 +86,7 @@ import './style.css'
  */
 function extractPageId(path: string): string | undefined {
   // 租户作用域路由：/t/{tenantId}/{projectId}/xxx -> xxx
-  const scopedMatch = /^\/t\/[^/]+\/[^/]+(?:\/(.+))?$/.exec(path)
-  const raw = scopedMatch ? (scopedMatch[1] ?? '') : path.replace(/^\/+/, '')
+  const raw = parseTenantScope(path) ? stripTenantScope(path) : path.replace(/^\/+/, '')
   const trimmed = raw.replace(/^\/+/, '').replace(/\/+$/, '')
   return trimmed.length > 0 ? trimmed : undefined
 }
@@ -152,7 +158,7 @@ async function startApp() {
     //   B) spark-app    AppLogger → addGlobalTransport() — error handler / warnHandler / startupLogger
     //   C) APP_SERVICES.logger    → 实际是 Logger('PageRenderer')，走链路 A
     //
-    // 远程日志仍然通过统一 logger 配置上报；旧 AI 闭环本地 collector 已下线。
+    // 远程日志仍然通过统一 logger 配置上报；旧本地 collector 已下线。
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     const auditRemoteLogsEnabled = import.meta.env['VITE_AUDIT_REMOTE_LOGS'] === 'true'
@@ -219,13 +225,12 @@ async function startApp() {
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
     // 将 URL 中的 projectId 写入 localStorage，确保后续 API 调用使用正确的项目上下文
     {
-      const urlMatch = /^\/t\/([^/]+)\/([^/]+)/.exec(window.location.pathname)
-      const urlProjectId = urlMatch?.[2]
-      if (urlProjectId && isAuthenticated()) {
+      const urlScope = parseTenantScope(window.location.pathname)
+      if (urlScope && isAuthenticated()) {
         const user = getUser()
-        if (user && urlMatch[1] === user.tenantId && urlProjectId !== user.defaultProjectId) {
-          startupLogger.info(`📌 URL 项目上下文预同步: ${user.defaultProjectId} → ${urlProjectId}`)
-          switchProject(urlProjectId)
+        if (user?.tenantId === urlScope.tenantId && urlScope.projectId !== user.defaultProjectId) {
+          startupLogger.info(`📌 URL 项目上下文预同步: ${user.defaultProjectId} → ${urlScope.projectId}`)
+          switchProject(urlScope.projectId)
         }
       }
     }
@@ -290,7 +295,7 @@ async function startApp() {
       beforeMount: async (context) => {
         const { router } = context
 
-        // ── AI 闭环：尽早注入 pageId 上下文 ──
+        // 尽早注入 pageId 上下文
         // mount 阶段渲染页面时产生的错误需要正确的 pageId 标记，
         // 必须在 app.mount() 之前设置，否则 collectorTransport 记录的 pageId 为 undefined
         _currentPageId = extractPageId(router.currentRoute.value.path)
@@ -311,24 +316,22 @@ async function startApp() {
           const u = getUser()
           const tenantId = u?.tenantId ?? 'default'
           const projectId = u?.defaultProjectId ?? 'homepage'
-          const scopePrefix = `/t/${tenantId}/${projectId}`
+          const currentScope = { tenantId, projectId }
           // 已登录：默认进入租户主应用首页；但保留 about / hidden demos 这类平台静态工具页的直达访问。
           if (isPlatformUtilityPath) return undefined
-          if (!to.path.startsWith('/t/')) return `${scopePrefix}${getNavHomePath()}`
+          if (!to.path.startsWith('/t/')) return buildTenantPath(currentScope, getNavHomePath())
 
           // 租户路径：验证 URL 中的 tenantId/projectId 与当前用户一致
-          const urlScopeMatch = /^\/t\/([^/]+)\/([^/]+)/.exec(to.path)
-          if (urlScopeMatch) {
-            const urlTenantId = urlScopeMatch[1]
-            const urlProjectId = urlScopeMatch[2]
-            if (urlTenantId !== tenantId) {
+          const urlScope = parseTenantScope(to.path)
+          if (urlScope) {
+            if (urlScope.tenantId !== tenantId) {
               // 租户不匹配 → 重定向到当前租户首页
-              const rest = to.path.slice(`/t/${urlTenantId}/${urlProjectId}`.length)
-              return `${scopePrefix}${rest || getNavHomePath()}`
+              const rest = stripTenantScope(to.path)
+              return buildTenantPath(currentScope, rest || getNavHomePath())
             }
-            if (urlProjectId && urlProjectId !== projectId) {
+            if (urlScope.projectId !== projectId) {
               // 同租户不同项目 → 切换项目上下文，具体导航刷新由项目切换服务负责
-              switchProject(urlProjectId)
+              switchProject(urlScope.projectId)
             }
           }
           return undefined
@@ -342,8 +345,6 @@ async function startApp() {
 
         startupLogger.info('✅ SPARK 组件注册完成（内置 renderer + virtual:spark-components + 本地扩展）')
 
-        // ai-studio-panel 由 virtual:spark-components 自动扫描注册
-        startupLogger.info('✅ AI Studio 组件注册完成')
       },
       
       // 挂载后钩子
@@ -369,9 +370,6 @@ async function startApp() {
       // === 错误处理 ===
       onStartError: (error) => {
         startupLogger.error('❌ 应用启动失败', error instanceof Error ? error : { error })
-        
-        // TODO: 错误上报到监控系统
-        // await reportError(error)
 
         mountStartupError(error, String(error))
       }

@@ -125,7 +125,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
-import { clearAllPageCache, getPageCacheStats } from '@/services/page-cache-handle'
+import { clearAllPageCache } from '@/services/page-cache-handle'
 import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────
@@ -263,7 +263,7 @@ async function loadBackendStats() {
 async function handleClearMetadata() {
   try {
     await ElMessageBox.confirm(
-      '确定清除后端组件元数据内存缓存？AI 功能将暂时不可用，直到重新上传元数据。',
+      '确定清除后端组件元数据内存缓存？相关配置能力将暂时不可用，直到重新上传元数据。',
       '清除元数据缓存',
       { type: 'warning', confirmButtonText: '清除', cancelButtonText: '取消' },
     )
@@ -282,9 +282,6 @@ onMounted(() => {
   loadFrontendCache()
   void loadBackendStats()
 })
-
-// 暴露给外部使用（getCacheStats 来自 spark-app）
-void getPageCacheStats
 </script>
 
 <style scoped>

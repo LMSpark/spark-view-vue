@@ -43,13 +43,6 @@
             :items="nav.regionItems.value.header"
           />
         </template>
-        <template #actions>
-          <el-tooltip v-if="hasAiChatAction" content="AI 对话" placement="bottom" :show-after="300">
-            <button class="header-btn" :class="{ 'header-btn--active': aiPanelStore.visible.value }" @click="aiPanelStore.toggle()">
-              <el-icon :size="18"><ChatDotRound /></el-icon>
-            </button>
-          </el-tooltip>
-        </template>
       </AppHeader>
     </template>
 
@@ -127,18 +120,26 @@
   <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
   <AppPageUiHost />
 
-  <!-- APP 层全局 AI 面板 -->
-  <AppAiPanel />
   </template>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { appPageUiService, useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
+import {
+  AppPageUiHost,
+  appPageUiService,
+  getNavHomePath,
+  getNavTree,
+  refreshRoutes,
+  useColorScheme,
+  useNavigation,
+  useTabPages,
+  useTheme,
+} from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
-import { APP_SERVICES, MODULE_CONTEXT, AppAiPanel, useAiPanelStore, useSparkComponent, type IModuleContext, type ModuleContextCapability } from '@spark-view/spark-component'
-import { getToken, getUser, isAuthenticated, logout } from '@/services/auth'
+import { APP_SERVICES, MODULE_CONTEXT, useSparkComponent, type IModuleContext, type ModuleContextCapability } from '@spark-view/spark-component'
+import { getToken, getUser, isAuthenticated, logout, switchProject } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -148,16 +149,12 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { ChatDotRound } from '@element-plus/icons-vue'
 import { clearAllPageCache, clearPageCache, getPageCacheStats } from '@/services/page-cache-handle'
-import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { createAuthHeaders } from '@/services/http'
-import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
-import { startSseDebugRouteBridge } from '@/services/sse-debug-route'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
-import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
+import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPlatformPaths } from '@/config/vue-page-map'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
@@ -178,15 +175,8 @@ const sidebarCollapsed = ref(false)
 const headerFirst = ref(false)
 const showFooter = ref(true)
 const showConfigurator = ref(false)
-const aiPanelStore = useAiPanelStore()
-const hasAiChatAction = computed(() =>
-  nav.regionItems.value.toolbar.some(item => item.path === 'ai-chat')
-)
-
 const { mode, setMode } = useTabPages()
 useColorScheme()
-let _stopSseDebugScreenshot: (() => void) | null = null
-let _stopSseDebugRoute: (() => void) | null = null
 let _stopPageConfigChange: (() => void) | null = null
 const pageConfigRefreshRevision = ref(0)
 const sparkRendererRouteKey = computed(() => {
@@ -201,20 +191,10 @@ interface AppContextGuardState {
   expectedPath?: string | undefined
 }
 
-function parseTenantScope(path: string): { tenantId: string; projectId: string } | null {
-  const match = /^\/t\/([^/]+)\/([^/]+)/.exec(path)
-  if (!match?.[1] || !match[2]) return null
-  return {
-    tenantId: match[1],
-    projectId: match[2],
-  }
-}
-
 function buildScopedPath(relativePath: string): string | null {
   const user = getUser()
   if (!user?.tenantId || !user.defaultProjectId) return null
-  const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
-  return `/t/${user.tenantId}/${user.defaultProjectId}${normalized}`
+  return buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, relativePath)
 }
 
 const contextGuard = computed<AppContextGuardState | null>(() => {
@@ -254,7 +234,10 @@ const contextGuard = computed<AppContextGuardState | null>(() => {
   }
 
   if (scoped.tenantId !== user.tenantId || scoped.projectId !== user.defaultProjectId) {
-    const expectedPath = `/t/${user.tenantId}/${user.defaultProjectId}${currentPath.replace(/^\/t\/[^/]+\/[^/]+/, '') || ''}`
+    const restPath = stripTenantScope(currentPath)
+    const expectedPath = restPath
+      ? buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, restPath)
+      : buildTenantRootPath({ tenantId: user.tenantId, projectId: user.defaultProjectId })
     return {
       title: 'URL 作用域与本地上下文不一致',
       message: '当前 URL 的 tenant/project 与浏览器 localStorage 中保存的 spark_user 不一致。继续渲染会导致接口上下文错位，出现空数据或错误数据。',
@@ -401,9 +384,8 @@ function applyNavTree(navData: AppNavRoot | null): void {
   if (navData && safeChildren.length > 0) {
     _navRoot.childPlacement = navData.childPlacement
     _navRoot.children = safeChildren
-    if (import.meta.env.DEV) console.log(`[Nav] ✅ 导航已同步 (${safeChildren.length} 个节点)`)
   } else if (import.meta.env.DEV) {
-    console.warn('[Nav] ⚠️ 导航树为空')  // DEV guard on outer branch
+    console.warn('[Nav] ⚠️ 导航树为空')
   }
 }
 
@@ -413,15 +395,6 @@ async function reloadNavigation(): Promise<void> {
 }
 
 onMounted(() => {
-  if (_stopSseDebugScreenshot === null) {
-    _stopSseDebugScreenshot = startSseDebugScreenshotBridge()
-  }
-  if (_stopSseDebugRoute === null) {
-    _stopSseDebugRoute = startSseDebugRouteBridge({
-      router,
-      switchProject: projectSwitchService.switchAndReload,
-    })
-  }
   if (_stopPageConfigChange === null) {
     _stopPageConfigChange = onPageConfigChange(handlePageConfigChange)
   }
@@ -437,10 +410,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   moduleContextListeners.clear()
-  _stopSseDebugScreenshot?.()
-  _stopSseDebugScreenshot = null
-  _stopSseDebugRoute?.()
-  _stopSseDebugRoute = null
   _stopPageConfigChange?.()
   _stopPageConfigChange = null
 })
@@ -456,11 +425,7 @@ watch(isLoginPage, (isLogin, wasLogin) => {
 /* ── 用户菜单命令 ── */
 function handleUserCommand(command: string) {
   switch (command) {
-    case 'ai-chat':
-      aiPanelStore.toggle()
-      break
     case 'profile':
-      // TODO: 个人中心页面
       break
     case 'settings':
       showConfigurator.value = true
@@ -469,10 +434,10 @@ function handleUserCommand(command: string) {
       const user = getUser()
       if (user && user.defaultProjectId !== 'homepage') {
         void projectSwitchService.switchAndReload('homepage').then(() => {
-          void router.push(`/t/${user.tenantId}/homepage${getNavHomePath()}`)
+          void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: 'homepage' }, getNavHomePath()))
         })
       } else if (user) {
-        void router.push(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
+        void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath()))
       } else {
         void router.push('/')
       }
@@ -531,7 +496,7 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
   if (!user) return
 
   await projectSwitchService.switchAndReload(targetProjectId)
-  void router.push(`/t/${user.tenantId}/${targetProjectId}${targetPath}`)
+  void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: targetProjectId }, targetPath))
 }
 
 </script>
@@ -546,28 +511,6 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.app-ai-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 8px;
-  color: inherit;
-  background: transparent;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.app-ai-action:hover {
-  background: color-mix(in srgb, var(--spark-header-text) 12%, transparent);
-}
-
-.app-ai-action:active {
-  background: color-mix(in srgb, var(--spark-header-text) 18%, transparent);
 }
 
 .app-context-guard {
