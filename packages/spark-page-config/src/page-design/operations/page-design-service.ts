@@ -242,10 +242,6 @@ function toSerializableServiceData(value: unknown): unknown {
   return JSON.parse(serialized)
 }
 
-function serializableSnapshotsEqual(left: unknown, right: unknown): boolean {
-  return JSON.stringify(toSerializableServiceData(left)) === JSON.stringify(toSerializableServiceData(right))
-}
-
 function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
@@ -331,9 +327,8 @@ export class PageDesignService {
     if (tree === null) {
       return pageDesignServiceFailure('NO_NODE_TREE', 'nodeTree 未初始化', '请先调用 PageDesignService.bootstrap 初始化编辑会话。')
     }
-    const beforeSnapshot = options.mutates ? tree.toJSON() : null
     const result = useMethodBackedTarget(options, tree, args)
-    if (result.ok && options.mutates && !serializableSnapshotsEqual(beforeSnapshot, tree.toJSON())) {
+    if (result.ok && options.mutates) {
       state.notifyNodeTreeChanged(tree)
     }
     return result
@@ -349,9 +344,8 @@ export class PageDesignService {
     if (tool === null) {
       return pageDesignServiceFailure('NO_DATASET_EDIT', 'dataset 未初始化', '请先调用 PageDesignService.bootstrap 初始化编辑会话。')
     }
-    const beforeSnapshot = options.mutates ? tool.toJson() : null
     const result = useMethodBackedTarget(options, tool, args)
-    if (result.ok && options.mutates && !serializableSnapshotsEqual(beforeSnapshot, tool.toJson())) {
+    if (result.ok && options.mutates) {
       state.notifyDataSetChanged(tool)
     }
     return result

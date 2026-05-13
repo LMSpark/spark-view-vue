@@ -33,7 +33,18 @@
     "strictPropertyInitialization": true,
     "useUnknownInCatchVariables": true,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],
+      "@spark-view/spark-component": ["./packages/spark-component/src/index.ts"],
+      "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
+      "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
+      // during development we prefer to resolve to source so that new exports
+      // (e.g. setupAutoRegister) are picked up without rebuilding the package
+      "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
+      "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
+      "@spark-view/spark-ai/services": ["./packages/spark-ai/src/services/index.ts"],
+      "@spark-view/spark-ai/services/page-design": ["./packages/spark-ai/src/services/page-design/index.ts"],
+      "@spark-view/spark-ai/registrations/page-design/payloads": ["./packages/spark-ai/src/registrations/page-design/payloads/index.ts"]
     },
     "types": ["vite/client", "vitest/globals", "node"]
   },
@@ -41,7 +52,9 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "tests/**/*.ts",
+    "packages/spark-ai/src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

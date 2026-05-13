@@ -122,10 +122,6 @@ type RelationSelector = {
 export class DataSetCrudTool {
   private static readonly HISTORY_LIMIT = 50
 
-  private static snapshotsEqual(left: unknown, right: unknown): boolean {
-    return JSON.stringify(left) === JSON.stringify(right)
-  }
-
   /**
    * 当前工具类持有的 DataSet 实例。
    */
@@ -289,12 +285,6 @@ export class DataSetCrudTool {
    */
   replaceFromJson(snapshot: IDataSetMetadata | Record<string, unknown> | string, options?: { commitHistory?: boolean }): void {
     const normalizedSnapshot = DataSet.fromJson(snapshot).toJson()
-    if (
-      options?.commitHistory !== false
-      && DataSetCrudTool.snapshotsEqual(this._dataSet.toJson(), normalizedSnapshot)
-    ) {
-      return
-    }
     this._dataSet.replaceFromJson(normalizedSnapshot)
     if (options?.commitHistory === false) {
       this.initializeHistory()
@@ -307,9 +297,7 @@ export class DataSetCrudTool {
    * 每次结构写操作成功后调用，将当前状态推入历史栈。
    */
   private _afterWrite(): void {
-    const next = this._dataSet.toJson()
-    if (DataSetCrudTool.snapshotsEqual(this._history.current, next)) return
-    this._history.push(next)
+    this._history.push(this._dataSet.toJson())
   }
 
   private initializeHistory(): void {

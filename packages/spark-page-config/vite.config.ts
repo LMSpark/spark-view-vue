@@ -4,15 +4,7 @@ import { resolve, isAbsolute } from 'path'
 export default defineConfig({
   build: {
     lib: {
-      entry: {
-        index: resolve(__dirname, 'src/index.ts'),
-        'compiler/index': resolve(__dirname, 'src/compiler/index.ts'),
-        'documents/index': resolve(__dirname, 'src/documents/index.ts'),
-        'files/index': resolve(__dirname, 'src/files/index.ts'),
-        'loader/index': resolve(__dirname, 'src/loader/index.ts'),
-        'page-design/index': resolve(__dirname, 'src/page-design/index.ts'),
-        'services/index': resolve(__dirname, 'src/services/index.ts'),
-      },
+      entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es'],
     },
     emptyOutDir: true,

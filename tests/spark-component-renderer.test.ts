@@ -350,7 +350,7 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
   expect(wrapper.text()).toContain('slot-forced-content')
 })
 
-test('SparkComponentRenderer merges legacy root-level runtime fields into props for registered components', () => {
+test('SparkComponentRenderer rejects root-level non-struct fields for registered components', () => {
   const RootFieldReader = defineComponent({
     props: {
       label: String,
@@ -369,7 +369,7 @@ test('SparkComponentRenderer merges legacy root-level runtime fields into props 
 
   registry.register('root-field-reader-ignored', RootFieldReader)
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  expect(() => mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: {
         type: 'root-field-reader-ignored',
@@ -384,12 +384,7 @@ test('SparkComponentRenderer merges legacy root-level runtime fields into props 
         [SPARK_REGISTRY_KEY as symbol]: registry,
       }
     }
-  })
-
-  const reader = wrapper.find('.root-field-reader-ignored')
-  expect(reader.attributes('data-label')).toBe('根级标签')
-  expect(reader.attributes('data-status')).toBe('active')
-  expect(reader.attributes('data-gap')).toBe('18')
+  })).toThrow(/root field "label" is invalid/)
 })
 
 test('SparkComponentRenderer renders native html tags directly', () => {

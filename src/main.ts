@@ -42,13 +42,12 @@
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger } from '@spark-view/spark-app'
 import { getNavHomePath } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
-import '@spark-view/spark-component/style.css'
 import { addLogTransport } from '@spark-view/spark-utils'
 
 // 创建启动日志（临时用于启动流程）
 import { createLogger } from '@spark-view/spark-app'
 import { getUser, isAuthenticated, switchProject } from './services/auth'
-import { createAuthHeaders } from './services/http'
+import { createAuthHeaders, http as appHttpClient } from './services/http'
 const startupLogger = createLogger('main')
 
 // AI 闭环：late-binding pageId（路由就绪后由 afterMount 注入）
@@ -214,8 +213,7 @@ async function startApp() {
     const platformPaths = getPlatformPaths()
     startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
 
-    const { getPageApi } = await import('./services/api-paths')
-    const { pageConfigWorkspaceDataService } = await import('./services/page-config-workspace-data-service')
+    const { getNavApi, getPageApi } = await import('./services/api-paths')
 
     // 5.1 URL → localStorage 项目上下文预同步
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
@@ -269,7 +267,7 @@ async function startApp() {
         preAuthNavTree,
         // 导航树作为路由唯一来源 — DynamicRouter 从导航树派生路由
         loadNavigation: async () => {
-          const data = await pageConfigWorkspaceDataService.navigation.loadConfig()
+          const data = await appHttpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getNavApi())
           return {
             childPlacement: (data.childPlacement ?? 'header') as 'header' | 'sidebar',
             children: Array.isArray(data.children) ? data.children : [],

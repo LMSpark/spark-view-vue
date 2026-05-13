@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  registerAiCacheEventHandler,
   readCache,
   writeCache,
   removeCache,
@@ -10,24 +9,9 @@ import {
   SESSION_SNAPSHOT_PREFIX,
   PANEL_LAYOUT_PREFIX,
   ALL_AI_CACHE_PREFIXES,
-} from '@spark-view/spark-component'
+  setupAiCacheEventBus,
+} from '../src/composables/aiSessionCache'
 import { useAiPanelStore } from '@spark-view/spark-component'
-
-async function setupAiCacheEventBus(): Promise<void> {
-  const store = useAiPanelStore()
-
-  registerAiCacheEventHandler('snapshot:restore', (payload: { storageKey: string; size: number }) => {
-    store.emit('snapshot:restore', payload)
-  })
-
-  registerAiCacheEventHandler('snapshot:persist', (payload: { storageKey: string; size: number }) => {
-    store.emit('snapshot:persist', payload)
-  })
-
-  registerAiCacheEventHandler('snapshot:clear', (payload: { storageKey: string }) => {
-    store.emit('snapshot:clear', payload)
-  })
-}
 
 describe('aiSessionCache', () => {
   beforeEach(async () => {

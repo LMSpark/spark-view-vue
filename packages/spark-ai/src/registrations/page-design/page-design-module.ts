@@ -10,15 +10,12 @@ import {
   type AiFunctionRegistration,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeFunctionCallTranslationResult,
-  type AiRuntimeEventListener,
-  type AiRuntimeEventUnsubscribe,
   type AiRuntimeHistoryEntry,
   type AiRuntimeKnowledgeProjection,
   type AiRuntimeMessageHistoryEntry,
   type AiRuntimeMessageRole,
   type AiRuntimeMessageSource,
   type AiRuntimeSessionRecord,
-  type AiRuntimeSessionSnapshot,
   type AiRuntimeStartInstanceResult,
   type AiRuntimeStopInstanceResult,
   type FunctionExecutionContext,
@@ -83,7 +80,6 @@ export interface PageDesignExecuteFunctionCallOptions extends PageDesignRuntimeC
   readonly action: string
   readonly args: unknown
   readonly projection?: AiRuntimeKnowledgeProjection | undefined
-  readonly metadata?: Record<string, unknown> | undefined
 }
 
 export interface PageDesignAppendMessageOptions extends PageDesignRuntimeContext {
@@ -540,18 +536,6 @@ export class PageDesignModule implements AiModuleRegistration {
     return this.ai.getSessionHistoryByModuleInstance(context.moduleInstanceId)
   }
 
-  exportSessionSnapshot(moduleInstanceId: string): AiRuntimeSessionSnapshot | null {
-    return this.ai.exportSessionSnapshot(moduleInstanceId)
-  }
-
-  hydrateSessionSnapshot(snapshot: AiRuntimeSessionSnapshot): void {
-    this.ai.hydrateSessionSnapshot(snapshot)
-  }
-
-  subscribe(listener: AiRuntimeEventListener): AiRuntimeEventUnsubscribe {
-    return this.ai.subscribe(listener)
-  }
-
   getRegistrationData(): AiModuleRegistrationData {
     return this.ai.getRegistrationData()
   }
@@ -581,7 +565,6 @@ export class PageDesignModule implements AiModuleRegistration {
       action: options.action,
       args: options.args,
       ...(options.projection === undefined ? {} : { projection: options.projection }),
-      ...(options.metadata === undefined ? {} : { metadata: options.metadata }),
       validate: ({ functionRegistration, args, context }) => (
         functionRegistration as PageDesignFunctionDefinition<PageDesignModuleId>
       ).validate?.(args, context) ?? null,

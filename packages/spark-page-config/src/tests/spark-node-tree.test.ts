@@ -429,19 +429,6 @@ describe('SparkNodeTree — undo / redo', () => {
     expect(tree.historyCursor).toBe(2)
   })
 
-  it('无实际变化的写操作不应重复推入快照', () => {
-    const tree = SparkNodeTree.fromRuleJson([
-      { type: 'r-text', id: 'txt', props: { text: 'hello' } },
-    ])
-    tree.clearHistory()
-
-    tree.setProps({ componentId: 'txt', props: { text: 'hello' }, merge: true })
-    tree.replaceRoot(tree.toJSON())
-
-    expect(tree.historyCursor).toBe(0)
-    expect(tree.canUndo).toBe(false)
-  })
-
   it('undo 应还原到上一个快照', () => {
     const root = createSparkNodeTree()
     const tree = new SparkNodeTree({ root })

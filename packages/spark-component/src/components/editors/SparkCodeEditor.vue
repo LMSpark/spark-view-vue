@@ -1,5 +1,5 @@
 <template>
-  <div class="spark-code-editor" :style="rootStyle" @focusout="handleBlur">
+  <div class="spark-code-editor" :style="rootStyle">
     <div v-if="initError" class="spark-code-editor__notice">
       {{ initError }}
     </div>
@@ -52,7 +52,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  'blur': []
 }>()
 
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -202,10 +201,6 @@ function handleFallbackInput(event: Event): void {
   emit('update:modelValue', target.value)
 }
 
-function handleBlur(): void {
-  emit('blur')
-}
-
 watch(() => props.modelValue, (value) => {
   if (value === lastSyncedValue.value) return
   lastSyncedValue.value = value
@@ -235,9 +230,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  editorRef.value?.destroy()
-  editorRef.value = null
-})
+    editorRef.value?.destroy()
+    editorRef.value = null
+  })
 </script>
 
 <style scoped>

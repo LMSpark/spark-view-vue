@@ -154,8 +154,9 @@ import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
+import { getPageApi, getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
-import { pageConfigWorkspaceDataService } from '@/services/page-config-workspace-data-service'
+import { http } from '@/services/http'
 
 const props = defineProps<{ state: DevState }>()
 const flags = useNodeKindFlags(props.state)
@@ -415,7 +416,7 @@ async function loadRefProjects() {
   refProjectsLoading.value = true
   try {
     const currentProjectId = getUser()?.defaultProjectId ?? ''
-    const projects = await pageConfigWorkspaceDataService.projects.list()
+    const projects = await http.get<Array<Record<string, unknown>>>(getProjectApi())
     refProjectOptions.value = projects
       .map((p) => ({
         value: String(p['projectId'] ?? p['id'] ?? ''),
@@ -434,7 +435,10 @@ async function loadRefPages(projectId: string) {
   refPagesLoading.value = true
   refPageOptions.value = []
   try {
-    const config = await pageConfigWorkspaceDataService.projects.loadNavigation(projectId)
+    const user = getUser()
+    const tenantId = user?.tenantId ?? 'default'
+    const navUrl = `/api/tenants/${tenantId}/projects/${projectId}/navigation`
+    const config = await http.get<{ children?: NavNode[] }>(navUrl)
     const pages: SelectOption[] = []
     function collect(nodes: NavNode[]) {
       for (const n of nodes) {
@@ -575,7 +579,7 @@ async function createPageFromPath() {
 
   creatingPage.value = true
   try {
-    await pageConfigWorkspaceDataService.pageConfig.createPage({ pageId, title: nodeTitle, icon: nodeIcon })
+    await http.post(`${getPageApi()}/__create`, { pageId, title: nodeTitle, icon: nodeIcon })
     await props.state.loadPages()
     props.state.editForm.path = targetPath
     props.state.handlePathChange(targetPath)

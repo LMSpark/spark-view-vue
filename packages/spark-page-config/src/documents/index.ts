@@ -1,4 +1,5 @@
 export {
+  PAGE_FILE_NAMES,
   canonicalizePageDataJson,
   canonicalizePageDataValue,
   createPageDocuments,
@@ -11,4 +12,5 @@ export type {
   PageDocumentRegistry,
   PageFileDocument,
   PageFileLoadState,
+  PageFileName,
 } from './page-file-documents'

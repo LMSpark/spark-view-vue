@@ -65,10 +65,9 @@
             <div class="vxe-json-tree-editor__key-cell">
               <el-input
                 v-if="row.keyEditable && isEditable && isRowActive(row)"
-                :model-value="getKeyDraftValue(row)"
+                :model-value="row.displayKey"
                 size="small"
-                @update:model-value="handleKeyInput(row, $event)"
-                @change="commitKeyInput(row, $event)"
+                @change="handleKeyChange(row, $event)"
               />
               <span v-else class="vxe-json-tree-editor__key-text">{{ row.displayKey }}</span>
               <el-tag v-if="row._schemaRequired" size="small" type="danger" effect="plain">必填</el-tag>
@@ -111,11 +110,10 @@
                 </el-select>
                 <el-input
                   v-else-if="isRowActive(row)"
-                  :model-value="getStringDraftValue(row)"
+                  :model-value="row.stringValue"
                   size="small"
                   :readonly="!isEditable"
-                  @update:model-value="handleStringInput(row, $event)"
-                  @change="commitStringInput(row, $event)"
+                  @change="handleStringChange(row, $event)"
                 />
                 <span v-else class="vxe-json-tree-editor__value-text">{{ row.stringValue || '(空字符串)' }}</span>
               </template>
@@ -189,7 +187,7 @@
  * @description JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。
  * @category internal
  */
-import { computed, nextTick, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { deepClone } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
@@ -345,8 +343,6 @@ const schemaOnly = ref(false)
 const parseError = ref<string | null>(null)
 const treeModelRef = shallowRef<TreeModel>(buildTreeModel({}))
 const currentRowId = ref(rootOf(treeModelRef.value))
-const keyInputDrafts = reactive<Record<string, string>>({})
-const stringInputDrafts = reactive<Record<string, string>>({})
 let keywordTimer: ReturnType<typeof setTimeout> | undefined
 let lastEmittedValue: string | null = null
 let tableStateInitialized = false
@@ -486,15 +482,9 @@ function captureTreeState(): void {
   pendingRestoreState = { expandPaths, currentPath }
 }
 
-function clearInputDrafts(): void {
-  for (const key of Object.keys(keyInputDrafts)) delete keyInputDrafts[key]
-  for (const key of Object.keys(stringInputDrafts)) delete stringInputDrafts[key]
-}
-
 // ── 文档同步 ─────────────────────────────────────────────────
 
 function syncDocument(rawText: string): void {
-  clearInputDrafts()
   if (rawText.trim() === '') {
     captureTreeState()
     treeModelRef.value = buildTreeModel({}, mergedPolicy.value)
@@ -512,7 +502,6 @@ function syncDocument(rawText: string): void {
 }
 
 function syncDocumentValue(value: JsonDocument): void {
-  clearInputDrafts()
   const nextDocument = deepClone(value)
   const nextText = serializeJsonDocument(nextDocument)
   if (lastEmittedValue !== null && nextText === lastEmittedValue) {
@@ -626,43 +615,10 @@ function isRowActive(row: Pick<DisplayRow, 'id'>): boolean {
   return row.id === currentRowId.value
 }
 
-function getKeyDraftValue(row: DisplayRow): string {
-  return keyInputDrafts[row.id] ?? row.displayKey
-}
-
-function handleKeyInput(row: DisplayRow, value: string | number): void {
-  if (!isEditable.value) return
-  keyInputDrafts[row.id] = String(value)
-}
-
-function commitKeyInput(row: DisplayRow, value: string | number): void {
-  if (!Object.prototype.hasOwnProperty.call(keyInputDrafts, row.id)) return
-  const nextValue = String(value)
-  delete keyInputDrafts[row.id]
-  handleKeyChange(row, nextValue)
-}
-
-function getStringDraftValue(row: DisplayRow): string {
-  return stringInputDrafts[row.id] ?? row.stringValue
-}
-
-function handleStringInput(row: DisplayRow, value: string | number): void {
-  if (!isEditable.value) return
-  stringInputDrafts[row.id] = String(value)
-}
-
-function commitStringInput(row: DisplayRow, value: string | number): void {
-  if (!Object.prototype.hasOwnProperty.call(stringInputDrafts, row.id)) return
-  const nextValue = String(value)
-  delete stringInputDrafts[row.id]
-  handleStringChange(row, nextValue)
-}
-
 // ── 编辑操作 ──────────────────────────────────────────────────
 
 function handleKeyChange(row: DisplayRow, value: string | number): void {
   if (typeof value !== 'string') return
-  if (value.trim() === row.displayKey) return
   mutateModel((current) => renameNodeKey(current, row.id, value, mergedPolicy.value))
 }
 
@@ -681,7 +637,6 @@ function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
 }
 
 function handleStringChange(row: DisplayRow, value: string | number): void {
-  if (String(value) === row.stringValue) return
   mutateModel((current) => updateNodeValue(current, row.id, String(value)))
 }
 
@@ -737,12 +692,9 @@ function mutateModel(
   parseError.value = null
   lastEmittedValue = nextText
   emit('update:documentValue', deepClone(nextDocument))
-  if (props.field) {
-    // 字段模式：通过能力链回写 DATA_ROW[field]
-    void handleControlledChange(nextText)
-  } else {
-    emit('update:modelValue', nextText)
-  }
+  emit('update:modelValue', nextText)
+  // 字段模式：通过能力链回写 DATA_ROW[field]
+  void handleControlledChange(nextText)
 }
 
 // ── 类型标签 ──────────────────────────────────────────────────

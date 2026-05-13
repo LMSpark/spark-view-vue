@@ -1,5 +1,5 @@
 import type { Router } from 'vue-router'
-import { onPageConfigServerEvent } from '@spark-view/spark-page-config/services'
+import { onServerEvent } from '@/services/sse-events'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 
@@ -180,7 +180,7 @@ async function handleRouteRequest(event: DebugRouteRequestEvent, options: RouteB
 export function startSseDebugRouteBridge(options: RouteBridgeOptions): () => void {
   if (_stop) return _stop
 
-  _stop = onPageConfigServerEvent<DebugRouteRequestEvent>(DEBUG_ROUTE_REQUEST_EVENT, (event) => {
+  _stop = onServerEvent<DebugRouteRequestEvent>(DEBUG_ROUTE_REQUEST_EVENT, (event) => {
     void handleRouteRequest(event, options)
   })
 

@@ -22,7 +22,6 @@ export default defineConfig({
       '@spark-view/spark-component': resolve(root, './packages/spark-component/src/index.ts'),
       '@spark-view/spark-utils': resolve(root, './packages/spark-utils/src/index.ts'),
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
-      '@spark-view/spark-page-config/services': resolve(root, './packages/spark-page-config/src/services/index.ts'),
       '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
       '@spark-view/spark-ai/services/page-design': resolve(root, './packages/spark-ai/src/services/page-design/index.ts'),

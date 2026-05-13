@@ -1,154 +1,92 @@
 [
   {
     "type": "r-page-header",
-    "id": "r-page-header__0_0",
     "props": {
-      "content": "📦 产品目录管理系统"
-    },
-    "children": []
+      "content": "产品目录"
+    }
   },
   {
-    "type": "r-table",
-    "id": "r-table-categories",
-    "props": {
-      "dataKey": "Categories@rows",
-      "border": true,
-      "stripe": true,
-      "highlightCurrentRow": true,
-      "rowKey": "id",
-      "toolbar": "refresh",
-      "filter": "name,description",
-      "actions": "message-row",
-      "onCurrentChange": "onCategoryChange"
-    },
+    "type": "r-card",
     "children": [
-      {
-        "type": "r-context-renderer",
-        "id": "col-cat-name",
-        "props": {
-          "fieldName": "name",
-          "displayLabel": "分类名称",
-          "width": 180,
-          "sortable": "custom"
-        },
-        "children": []
-      },
-      {
-        "type": "r-context-renderer",
-        "id": "col-cat-description",
-        "props": {
-          "fieldName": "description",
-          "displayLabel": "分类描述",
-          "width": 250,
-          "minWidth": 150
-        },
-        "children": []
-      },
-      {
-        "type": "r-context-renderer",
-        "id": "col-cat-icon",
-        "props": {
-          "fieldName": "icon",
-          "displayLabel": "图标",
-          "width": 100
-        },
-        "children": []
-      },
-      {
-        "type": "r-context-renderer",
-        "id": "col-cat-sortOrder",
-        "props": {
-          "fieldName": "sortOrder",
-          "displayLabel": "排序",
-          "width": 80,
-          "align": "center"
-        },
-        "children": []
-      }
-    ]
+      "导航入口已恢复",
+      "这是产品目录页面的默认内容。后续可以替换为真实商品数据或接入商品 API。"
+    ],
+    "props": {
+      "class": "catalog-hero"
+    }
   },
   {
-    "type": "r-table",
-    "id": "r-table-products",
-    "props": {
-      "dataKey": "Products@rows",
-      "border": true,
-      "stripe": true,
-      "rowKey": "id",
-      "toolbar": "append-row,refresh,delete-current",
-      "filter": "name,price,status",
-      "actions": "edit-row,delete-row",
-      "onAddRow": "onProductAdd",
-      "onEditRow": "onProductEdit",
-      "onRemoveRow": "onProductDelete"
-    },
+    "type": "r-row",
     "children": [
       {
-        "type": "r-context-renderer",
-        "id": "col-prod-name",
+        "type": "r-col",
+        "children": [
+          {
+            "type": "r-card",
+            "children": [
+              "办公设备",
+              "键盘、鼠标、显示器、耳机等常用办公硬件。",
+              "4 个分类 · 16 个 SKU"
+            ],
+            "props": {
+              "class": "catalog-card"
+            }
+          }
+        ],
         "props": {
-          "fieldName": "name",
-          "displayLabel": "商品名称",
-          "width": 200,
-          "sortable": "custom"
-        },
-        "children": []
+          "span": 8
+        }
       },
       {
-        "type": "r-context-renderer",
-        "id": "col-prod-description",
+        "type": "r-col",
+        "children": [
+          {
+            "type": "r-card",
+            "children": [
+              "企业软件",
+              "CRM、协同办公、项目管理等业务系统。",
+              "3 个方案 · 持续上架"
+            ],
+            "props": {
+              "class": "catalog-card"
+            }
+          }
+        ],
         "props": {
-          "fieldName": "description",
-          "displayLabel": "商品描述",
-          "width": 250,
-          "minWidth": 150
-        },
-        "children": []
+          "span": 8
+        }
       },
       {
-        "type": "r-context-renderer",
-        "id": "col-prod-price",
+        "type": "r-col",
+        "children": [
+          {
+            "type": "r-card",
+            "children": [
+              "数据看板",
+              "面向管理后台的统计图表与分析组件。",
+              "8 个模板 · 即开即用"
+            ],
+            "props": {
+              "class": "catalog-card"
+            }
+          }
+        ],
         "props": {
-          "fieldName": "price",
-          "displayLabel": "价格",
-          "width": 120,
-          "align": "right",
-          "sortable": "custom"
-        },
-        "children": []
-      },
-      {
-        "type": "r-context-renderer",
-        "id": "col-prod-tags",
-        "props": {
-          "fieldName": "tags",
-          "displayLabel": "标签",
-          "width": 150
-        },
-        "children": []
-      },
-      {
-        "type": "r-context-renderer",
-        "id": "col-prod-status",
-        "props": {
-          "fieldName": "status",
-          "displayLabel": "状态",
-          "width": 100,
-          "align": "center"
-        },
-        "children": []
-      },
-      {
-        "type": "r-context-renderer",
-        "id": "col-prod-createdAt",
-        "props": {
-          "fieldName": "createdAt",
-          "displayLabel": "创建时间",
-          "width": 180,
-          "sortable": "custom"
-        },
-        "children": []
+          "span": 8
+        }
       }
-    ]
+    ],
+    "props": {
+      "gutter": 20
+    }
+  },
+  {
+    "type": "r-card",
+    "children": [
+      "下一步：如果你希望这个页面展示真实商品表，可以继续把导航或数据源接到后端商品接口。"
+    ],
+    "props": {
+      "class": "catalog-footnote"
+    }
   }
 ]

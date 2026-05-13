@@ -1,4 +1,4 @@
-import { onPageConfigServerEvent } from '@spark-view/spark-page-config/services'
+import { onServerEvent } from '@/services/sse-events'
 import { http } from '@/services/http'
 
 interface UploadResponse {
@@ -206,7 +206,7 @@ async function handleScreenshotRequest(event: DebugScreenshotRequestEvent): Prom
 
 export function startSseDebugScreenshotBridge(): () => void {
   if (_stop) return _stop
-  _stop = onPageConfigServerEvent<DebugScreenshotRequestEvent>(DEBUG_SCREENSHOT_REQUEST_EVENT, (event) => {
+  _stop = onServerEvent<DebugScreenshotRequestEvent>(DEBUG_SCREENSHOT_REQUEST_EVENT, (event) => {
     void handleScreenshotRequest(event)
   })
   return () => {

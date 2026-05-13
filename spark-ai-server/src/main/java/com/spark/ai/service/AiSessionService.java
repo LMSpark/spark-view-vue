@@ -311,26 +311,11 @@ public class AiSessionService {
      * 执行一轮对话（SSE 流式）。
      */
     public void executeTurnStream(String sessionId, SseEmitter emitter) {
-        executeTurnStream(sessionId, emitter, null);
-    }
-
-    /**
-     * 执行一轮对话（SSE 流式），并校验请求 scope 是否匹配后端 session。
-     */
-    public void executeTurnStream(String sessionId, SseEmitter emitter, Map<String, Object> scope) {
         Session session = sessions.get(sessionId);
         if (session == null) {
             try {
                 emitter.send(SseEmitter.event().name("error")
                         .data("{\"error\":\"会话不存在\"}"));
-                emitter.complete();
-            } catch (IOException ignored) {}
-            return;
-        }
-        if (!matchesScope(session, scope)) {
-            try {
-                emitter.send(SseEmitter.event().name("error")
-                        .data("{\"error\":\"后端 AI 会话与当前模块实例不匹配\"}"));
                 emitter.complete();
             } catch (IOException ignored) {}
             return;

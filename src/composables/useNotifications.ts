@@ -1,8 +1,6 @@
 import { computed, reactive, onBeforeUnmount } from 'vue'
-import {
-  onPageConfigChange,
-  type PageConfigFileChangeEvent,
-} from '@spark-view/spark-page-config/services'
+import { onPageConfigChange } from '@/services/sse-events'
+import type { FileChangeEvent } from '@/services/sse-events'
 
 export interface NotificationItem {
   id: number
@@ -26,7 +24,7 @@ function formatFileLabel(file: string): string {
 
 function connect(): void {
   if (_unsubscribe) return
-  _unsubscribe = onPageConfigChange((event: PageConfigFileChangeEvent) => {
+  _unsubscribe = onPageConfigChange((event: FileChangeEvent) => {
     const item: NotificationItem = {
       id: _nextId++,
       title: `页面配置变更`,

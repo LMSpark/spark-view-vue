@@ -1,6 +1,7 @@
-// Public AI UI surface: applications mount one global panel and drive it through
-// useAiPanelStore().open(config). Shell/widget pieces stay internal to the module.
+export { default as AiChatShell } from './AiChatShell.vue'
+export { default as AiChatWidget } from './AiChatWidget.vue'
 export { default as AppAiPanel } from './AppAiPanel.vue'
+export { default as AiLauncherButton } from './AiLauncherButton.vue'
 
 export {
   registerAiCacheEventHandler,

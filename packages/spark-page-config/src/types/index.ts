@@ -5,14 +5,14 @@
 
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClient } from '@spark-view/spark-utils'
-import type { SparkNode } from '../core/spark-node'
+import type { SparkNode } from '../spark-node'
 
 /**
  * 页面规则配置（rule.json）。
  */
 export type RuleConfig = SparkNode
 
-export type { SparkNode, SparkNodeChildren } from '../core/spark-node'
+export type { SparkNode, SparkNodeChildren } from '../spark-node'
 
 /**
  * 页面数据配置（pagedata.json）编译结果
@@ -167,7 +167,7 @@ export interface ConfigLoader {
   /**
    * 加载单个页面配置文件原文。
    *
-   * 设计时编辑器等入口需要拿到原文，再交给各自的
+   * DevSystem / 编辑器等设计时入口需要拿到原文，再交给各自的
    * PageFileDocument 维护 dirty、undo/redo 和领域模型同步。
    */
   loadPageFileContent(

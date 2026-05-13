@@ -7,8 +7,8 @@
 import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName } from '../types'
-import { SparkNodeTree } from '../core/spark-node-tree'
-import type { SparkNode } from '../core/spark-node'
+import { SparkNodeTree } from '../spark-node-tree'
+import type { SparkNode } from '../spark-node'
 
 export interface PageConfigValueRef<T> {
   value: T
@@ -98,6 +98,9 @@ export function canonicalizePageDataJson(rawText: string): {
   return canonicalizePageDataValue(parsePageDataText(rawText))
 }
 
+export const PAGE_FILE_NAMES = PAGE_CONFIG_FILE_NAMES
+export type PageFileName = PageConfigFileName
+
 export type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 
 export interface LoadFromTextOptions {
@@ -105,7 +108,7 @@ export interface LoadFromTextOptions {
 }
 
 export interface PageFileDocument<TModel = unknown> {
-  readonly name: PageConfigFileName
+  readonly name: PageFileName
   readonly model: PageConfigValueRef<TModel | null>
   readonly text: PageConfigComputedRef<string>
   readonly savedText: PageConfigValueRef<string>
@@ -228,7 +231,6 @@ function createModelBackedDocument<TModel>(
   }
 
   function setText(rawText: string): void {
-    if (loadState.value === 'loaded' && parseError.value === null && rawText === text.value) return
     ingestText(rawText, {
       preserveHistory: getCurrentModel() !== null,
       onErrorResetModel: false,
@@ -496,9 +498,9 @@ export function createPageDocuments(): PageDocumentRegistry {
 
 export function forEachDocument(
   registry: PageDocumentRegistry,
-  visit: <K extends PageConfigFileName>(name: K, doc: PageDocumentRegistry[K]) => void,
+  visit: <K extends PageFileName>(name: K, doc: PageDocumentRegistry[K]) => void,
 ): void {
-  for (const name of PAGE_CONFIG_FILE_NAMES) {
+  for (const name of PAGE_FILE_NAMES) {
     visit(name, registry[name])
   }
 }

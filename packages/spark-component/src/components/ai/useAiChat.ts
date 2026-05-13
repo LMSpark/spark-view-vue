@@ -180,8 +180,6 @@ export interface StreamAiChatTextRequest {
   onReasoning?: (reasoning: string) => void
   onDelta?: (delta: string) => void
   onUsage?: (usageRaw: Record<string, unknown>) => void
-  onSseEvent?: (event: AiSseEventInput) => void
-  onFcCall?: (record: AiFcCallInput) => void
 }
 
 export type StreamAiChatText = (request: StreamAiChatTextRequest) => Promise<string>
@@ -845,8 +843,6 @@ export function useAiChat(options?: UseAiChatOptions) {
           onReasoning,
           onDelta,
           onUsage,
-          onSseEvent,
-          onFcCall,
         })
       } else {
         throw new Error('[useAiChat] 缺少 sender 或 streamAiChatText 依赖。')

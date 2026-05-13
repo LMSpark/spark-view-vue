@@ -69,10 +69,6 @@ describe('SparkComponentRenderer', () => {
       props: { config },
       global: {
         plugins: [Spark.createPlugin({ registry })],
-        stubs: {
-          SparkComponentRenderer: false,
-          'spark-component-renderer': false,
-        },
       },
     })
 

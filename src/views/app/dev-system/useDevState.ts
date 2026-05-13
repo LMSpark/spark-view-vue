@@ -12,17 +12,25 @@
 import { ref, reactive, computed } from 'vue'
 import { deepClone } from '@spark-view/spark-utils'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
+import { refreshRoutes } from '@spark-view/spark-app'
 import {
-  PAGE_CONFIG_FILE_NAMES,
+  PageConfigFileApi,
+  createConfigLoader,
+  PAGE_FILE_NAMES,
   createPageDocuments,
   forEachDocument,
   isPageFileDocumentDirty,
+  type ConfigLoader,
   type PageDocumentRegistry,
   type PageConfigFileVersionSummary,
-  type PageConfigFileName,
+  type PageFileName,
 } from '@spark-view/spark-page-config'
 import { demoNavRoot } from '@/layout/demo-nav'
-import { pageConfigWorkspaceDataService } from '@/services/page-config-workspace-data-service'
+
+export { PAGE_FILE_NAMES }
+export type { PageFileName }
+export type { PageConfigFileVersionSummary }
+export type { PageFileDocument } from '@spark-view/spark-page-config'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -59,7 +67,40 @@ export interface DevContextConfig {
   paramName: string
 }
 
-export type DevWorkspaceTab = 'props' | 'preview' | PageConfigFileName
+export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
+
+import { getPageApi, getNavApi } from '@/services/api-paths'
+import { createAuthHeaders, http } from '@/services/http'
+
+const pageFileApi = new PageConfigFileApi({ getPageConfigApi: getPageApi, http })
+let pageConfigLoader: ConfigLoader | null = null
+let pageConfigLoaderApiBaseUrl = ''
+
+function getPageConfigLoader(): ConfigLoader {
+  const apiBaseUrl = toPageConfigApiBaseUrl(getPageApi())
+  if (pageConfigLoader === null || pageConfigLoaderApiBaseUrl !== apiBaseUrl) {
+    pageConfigLoader = createConfigLoader({
+      apiBaseUrl,
+      fileStorage: 'localStorage',
+      getHeaders: createAuthHeaders,
+    })
+    pageConfigLoaderApiBaseUrl = apiBaseUrl
+  }
+  return pageConfigLoader
+}
+
+function toPageConfigApiBaseUrl(pageApi: string): string {
+  const normalized = pageApi.replace(/\/+$/, '')
+  const suffix = '/pages-config'
+  if (normalized.endsWith(suffix)) {
+    return normalized.slice(0, -suffix.length) || '/'
+  }
+  return normalized || '/'
+}
+
+function toPageConfigLoaderPath(pageId: string, name: PageFileName): string {
+  return `/${encodeURIComponent(pageId)}/${encodeURIComponent(name)}`
+}
 
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
@@ -118,12 +159,6 @@ export function useDevState() {
   const documents: PageDocumentRegistry = createPageDocuments()
   const fileSaving = ref(false)
   const pageFilesRevision = ref(0)
-  const pageFileDraftText = ref<Record<PageConfigFileName, string | null>>({
-    'rule.json': null,
-    'pagedata.json': null,
-    'script.js': null,
-    'style.css': null,
-  })
 
   forEachDocument(documents, (_name, doc) => {
     doc.subscribe(() => {
@@ -141,76 +176,26 @@ export function useDevState() {
     activePageFilesLoadEpoch += 1
   }
 
-  function setPageFileDraftText(name: PageConfigFileName, text: string): void {
-    const doc = documents[name]
-    const nextDraft = text === doc.text.value && doc.parseError.value === null ? null : text
-    if (pageFileDraftText.value[name] === nextDraft) return
-    pageFileDraftText.value = {
-      ...pageFileDraftText.value,
-      [name]: nextDraft,
-    }
-  }
-
-  function getPageFileDraftText(name: PageConfigFileName): string | null {
-    void pageFileDraftText.value
-    return pageFileDraftText.value[name]
-  }
-
-  function hasPageFileDraft(name: PageConfigFileName): boolean {
-    void pageFileDraftText.value
-    return pageFileDraftText.value[name] !== null
-  }
-
-  function clearPageFileDraft(name: PageConfigFileName): void {
-    if (pageFileDraftText.value[name] === null) return
-    pageFileDraftText.value = {
-      ...pageFileDraftText.value,
-      [name]: null,
-    }
-  }
-
-  function flushPageFileDraft(name: PageConfigFileName): void {
-    const draftText = pageFileDraftText.value[name]
-    if (draftText === null) return
-    const doc = documents[name]
-    if (draftText === doc.text.value && doc.parseError.value === null) {
-      clearPageFileDraft(name)
-      return
-    }
-    doc.setText(draftText)
-    if (doc.parseError.value === null) {
-      clearPageFileDraft(name)
-    }
-  }
-
-  function flushAllPageFileDrafts(): void {
-    for (const name of PAGE_CONFIG_FILE_NAMES) {
-      flushPageFileDraft(name)
-    }
-  }
-
-  function resetPageFileDrafts(): void {
-    pageFileDraftText.value = {
-      'rule.json': null,
-      'pagedata.json': null,
-      'script.js': null,
-      'style.css': null,
-    }
-  }
-
-  function notifyPageFileChanged(
-    pageId: string,
-    filename: PageConfigFileName | '__created' | '__deleted' | '__bulk',
-    options?: { cacheAlreadyCleared?: boolean },
-  ): void {
+  function notifyPageFileChanged(pageId: string, filename: PageFileName | '__created' | '__deleted' | '__bulk'): void {
     if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
-      if (options?.cacheAlreadyCleared !== true) pageConfigWorkspaceDataService.pageConfig.clearCache(pageId)
+      clearPageConfigCache(pageId)
       invalidateActivePageFilesLoad()
-    } else if (options?.cacheAlreadyCleared !== true) {
-      pageConfigWorkspaceDataService.pageConfig.clearCache(pageId, filename)
+    } else {
+      clearPageConfigCache(pageId, filename)
     }
     if (pageId && pageId === activePageId.value) {
       pageFilesRevision.value += 1
+    }
+  }
+
+  function clearPageConfigCache(pageId: string, filename?: PageFileName): void {
+    const loader = getPageConfigLoader()
+    if (filename !== undefined) {
+      loader.clearCache(toPageConfigLoaderPath(pageId, filename))
+      return
+    }
+    for (const name of PAGE_FILE_NAMES) {
+      loader.clearCache(toPageConfigLoaderPath(pageId, name))
     }
   }
 
@@ -230,16 +215,16 @@ export function useDevState() {
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
-  function isDocumentDirty(name: PageConfigFileName): boolean {
+  function isDocumentDirty(name: PageFileName): boolean {
     void pageFilesRevision.value
-    return hasPageFileDraft(name) || isPageFileDocumentDirty(documents[name])
+    return isPageFileDocumentDirty(documents[name])
   }
 
   // ═══════════════════════════════════════════════════════════
   // 计算属性
   // ═══════════════════════════════════════════════════════════
 
-  const hasAnyFileDirty = computed(() => PAGE_CONFIG_FILE_NAMES.some((n) => isDocumentDirty(n)))
+  const hasAnyFileDirty = computed(() => PAGE_FILE_NAMES.some((n) => isDocumentDirty(n)))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
   const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
@@ -309,7 +294,6 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function resetAllDocuments(): void {
-    resetPageFileDrafts()
     forEachDocument(documents, (_name, doc) => doc.reset())
   }
 
@@ -530,7 +514,7 @@ export function useDevState() {
     const preservedActivePageId = options?.preserveActivePageId?.trim() ?? ''
     navLoading.value = true
     try {
-      const config = await pageConfigWorkspaceDataService.navigation.loadConfig()
+      const config = await http.get<{ childPlacement?: string; children?: NavNode[]; homePath?: string }>(getNavApi())
       const migratedRoot = buildMigratedNavRoot(config)
       const normalizedChildren = migratedRoot.children
 
@@ -594,19 +578,33 @@ export function useDevState() {
 
   async function loadPages(): Promise<void> {
     try {
-      pageList.value = await pageConfigWorkspaceDataService.pageConfig.listPages()
+      pageList.value = await http.get<Array<Record<string, unknown>>>(`${getPageApi()}/__list`)
     } catch { /* ignore */ }
   }
 
+  async function fetchRemotePageFileContent(
+    pageId: string,
+    name: PageFileName,
+    options?: { forceReload?: boolean },
+  ): Promise<string> {
+    const result = await getPageConfigLoader().loadPageFileContent(pageId, name, {
+      forceReload: options?.forceReload === true,
+    })
+    if (result.success) return result.data ?? ''
+    if (result.reason === 'not-found') return ''
+    const detail = result.error ?? result.reason ?? 'unknown'
+    throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
+  }
+
   function areAllActivePageFilesLoaded(): boolean {
-    return PAGE_CONFIG_FILE_NAMES.every((entry) => documents[entry].loadState.value === 'loaded')
+    return PAGE_FILE_NAMES.every((entry) => documents[entry].loadState.value === 'loaded')
   }
 
   async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
     const forceReload = options?.forceReload === true
-    const isFileDirty = (name: PageConfigFileName) => isDocumentDirty(name)
+    const isFileDirty = (name: PageFileName) => isDocumentDirty(name)
 
     if (activePageFilesLoadPromise && activePageFilesLoadPageId === pageId) {
       return activePageFilesLoadPromise
@@ -614,9 +612,9 @@ export function useDevState() {
 
     if (!forceReload && areAllActivePageFilesLoaded()) return
 
-    if (!forceReload && PAGE_CONFIG_FILE_NAMES.some((entry) => isFileDirty(entry))) {
+    if (!forceReload && PAGE_FILE_NAMES.some((entry) => isFileDirty(entry))) {
       // Respect local dirty edits: mark any non-loading idle docs as loaded so UI progresses.
-      for (const entry of PAGE_CONFIG_FILE_NAMES) {
+      for (const entry of PAGE_FILE_NAMES) {
         const doc = documents[entry]
         if (doc.loadState.value !== 'loading' && !isFileDirty(entry) && doc.loadState.value === 'idle') {
           // Leave idle empty docs as idle — only promote if they have any content.
@@ -628,11 +626,11 @@ export function useDevState() {
 
     const loadEpoch = activePageFilesLoadEpoch
     activePageFilesLoadPageId = pageId
-    const previousLoadStates = new Map<PageConfigFileName, 'idle' | 'loading' | 'loaded'>(
-      PAGE_CONFIG_FILE_NAMES.map(entry => [entry, documents[entry].loadState.value]),
+    const previousLoadStates = new Map<PageFileName, 'idle' | 'loading' | 'loaded'>(
+      PAGE_FILE_NAMES.map(entry => [entry, documents[entry].loadState.value]),
     )
 
-    for (const entry of PAGE_CONFIG_FILE_NAMES) {
+    for (const entry of PAGE_FILE_NAMES) {
       const doc = documents[entry]
       if (!forceReload && isFileDirty(entry)) {
         doc.loadState.value = 'loaded'
@@ -642,12 +640,17 @@ export function useDevState() {
     }
 
     const loadPromise = (async () => {
-      let loadedFiles: Record<PageConfigFileName, string>
+      let loadedSnapshots: ReadonlyArray<readonly [PageFileName, string]>
       try {
-        loadedFiles = await pageConfigWorkspaceDataService.pageConfig.readFiles(pageId, { forceReload, missing: 'empty' })
+        loadedSnapshots = await Promise.all(
+          PAGE_FILE_NAMES.map(async (entry) => [
+            entry,
+            await fetchRemotePageFileContent(pageId, entry, { forceReload }),
+          ] as const),
+        )
       } catch (error) {
         if (activePageFilesLoadEpoch === loadEpoch && activePageId.value === pageId) {
-          for (const entry of PAGE_CONFIG_FILE_NAMES) {
+          for (const entry of PAGE_FILE_NAMES) {
             documents[entry].loadState.value = previousLoadStates.get(entry) ?? 'idle'
           }
         }
@@ -656,13 +659,13 @@ export function useDevState() {
 
       if (activePageFilesLoadEpoch !== loadEpoch || activePageId.value !== pageId) return
 
-      for (const entry of PAGE_CONFIG_FILE_NAMES) {
+      for (const [entry, loadedText] of loadedSnapshots) {
         const doc = documents[entry]
         if (!forceReload && isFileDirty(entry)) {
           doc.loadState.value = 'loaded'
           continue
         }
-        doc.loadFromText(loadedFiles[entry], { markSaved: true })
+        doc.loadFromText(loadedText, { markSaved: true })
       }
     })().finally(() => {
       if (activePageFilesLoadEpoch === loadEpoch && activePageFilesLoadPageId === pageId) {
@@ -675,7 +678,7 @@ export function useDevState() {
     return loadPromise
   }
 
-  async function loadPageFile(name: PageConfigFileName, options?: { forceReload?: boolean }): Promise<void> {
+  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }): Promise<void> {
     void name
     await ensureActivePageFilesLoaded(options)
   }
@@ -684,35 +687,33 @@ export function useDevState() {
   // 后端版本 API
   // ═══════════════════════════════════════════════════════════
 
-  async function listRemotePageVersions(filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
+  async function listRemotePageVersions(filename: PageFileName): Promise<PageConfigFileVersionSummary[]> {
     const pageId = activePageId.value
     if (!pageId) return []
     try {
-      return await pageConfigWorkspaceDataService.pageConfig.listFileVersions(pageId, filename)
+      return await pageFileApi.listVersions(pageId, filename)
     } catch (e) {
       addStatus(`读取后端版本失败: ${String(e)}`, 'error')
       return []
     }
   }
 
-  async function restoreRemotePageVersion(version: number, filename: PageConfigFileName): Promise<boolean> {
+  async function restoreRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
     try {
-      await pageConfigWorkspaceDataService.pageConfig.restoreFileVersion(pageId, filename, version)
+      await pageFileApi.restoreVersion(pageId, filename, version)
+      clearPageConfigCache(pageId, filename)
       invalidateActivePageFilesLoad()
       try {
-        const restoredText = await pageConfigWorkspaceDataService.pageConfig.readFileText(pageId, filename, {
-          forceReload: true,
-          missing: 'empty',
-        })
+        const restoredText = await fetchRemotePageFileContent(pageId, filename, { forceReload: true })
         documents[filename].loadFromText(restoredText, { markSaved: true })
       } catch (reloadError) {
-        notifyPageFileChanged(pageId, filename, { cacheAlreadyCleared: true })
+        notifyPageFileChanged(pageId, filename)
         addStatus(`版本已恢复，但重新读取 ${filename} 失败: ${String(reloadError)}`, 'warning')
         return true
       }
-      notifyPageFileChanged(pageId, filename, { cacheAlreadyCleared: true })
+      notifyPageFileChanged(pageId, filename)
       addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
@@ -721,11 +722,11 @@ export function useDevState() {
     }
   }
 
-  async function createRemotePageVersion(filename: PageConfigFileName): Promise<boolean> {
+  async function createRemotePageVersion(filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
     try {
-      await pageConfigWorkspaceDataService.pageConfig.createFileVersion(pageId, filename)
+      await pageFileApi.createVersion(pageId, filename)
       addStatus(`${filename} 已创建新版本快照`, 'success')
       return true
     } catch (e) {
@@ -734,11 +735,11 @@ export function useDevState() {
     }
   }
 
-  async function deleteRemotePageVersion(version: number, filename: PageConfigFileName): Promise<boolean> {
+  async function deleteRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
     try {
-      await pageConfigWorkspaceDataService.pageConfig.deleteFileVersion(pageId, filename, version)
+      await pageFileApi.deleteVersion(pageId, filename, version)
       addStatus(`${filename} 版本 v${version} 已删除`, 'success')
       return true
     } catch (e) {
@@ -929,7 +930,8 @@ export function useDevState() {
     navSaving.value = true
     const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
     try {
-      await pageConfigWorkspaceDataService.navigation.saveConfig(root)
+      await http.put(getNavApi(), root)
+      await refreshRoutes()
       navDirty.value = false
       addStatus('导航配置已保存', 'success')
     } catch (e) {
@@ -951,7 +953,8 @@ export function useDevState() {
     const { children: _children, ...patch } = node
     navSaving.value = true
     try {
-      await pageConfigWorkspaceDataService.navigation.saveNode(node.id, patch)
+      await http.put(`${getNavApi()}/nodes/${encodeURIComponent(node.id)}`, patch)
+      await refreshRoutes()
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
     } catch (e) {
@@ -970,24 +973,19 @@ export function useDevState() {
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
-  async function savePageFile(name: PageConfigFileName): Promise<void> {
+  async function savePageFile(name: PageFileName): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
 
     fileSaving.value = true
     try {
-      flushPageFileDraft(name)
       const doc = documents[name]
-      if (doc.parseError.value) {
-        addStatus(`${name} 解析失败，已跳过保存: ${doc.parseError.value}`, 'error')
-        return
-      }
       const content = doc.text.value
 
-      await pageConfigWorkspaceDataService.pageConfig.saveFileContent(pageId, name, content)
+      await pageFileApi.saveFileContent(pageId, name, content)
 
       doc.markSaved()
-      notifyPageFileChanged(pageId, name, { cacheAlreadyCleared: true })
+      notifyPageFileChanged(pageId, name)
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
     } catch (e) {
@@ -1006,7 +1004,7 @@ export function useDevState() {
   }
 
   async function saveAllDirtyPageFiles(): Promise<void> {
-    for (const name of PAGE_CONFIG_FILE_NAMES) {
+    for (const name of PAGE_FILE_NAMES) {
       if (isDocumentDirty(name)) await savePageFile(name)
     }
   }
@@ -1087,7 +1085,9 @@ export function useDevState() {
 
     linkProbeLoading.value = true
     try {
-      const { embeddable, reason } = await pageConfigWorkspaceDataService.navigation.probeLinkTarget(url)
+      const result = await http.post<Record<string, unknown>>(`${getNavApi()}/link-probe`, { url })
+      const embeddable = Boolean(result['embeddable'])
+      const reason = String(result['reason'] ?? '')
 
       editForm.linkTarget = embeddable ? 'iframe' : 'new-tab'
       linkProbeInfo.value = { embeddable, reason }
@@ -1121,7 +1121,7 @@ export function useDevState() {
       children: [],
     }
     treeData.value.push(node)
-    void pageConfigWorkspaceDataService.navigation.createNode({ node }).then(
+    void http.post(`${getNavApi()}/nodes`, { node }).then(
       () => {
         notifyPageFileChanged(id, '__created')
         addStatus('已添加根模块', 'info')
@@ -1171,7 +1171,7 @@ export function useDevState() {
     treeData.value.unshift(node)
 
     try {
-      await pageConfigWorkspaceDataService.navigation.createNode({ node, index: 0 })
+      await http.post(`${getNavApi()}/nodes`, { node, index: 0 })
       addStatus(`已恢复 ${node.title}`, 'success')
     } catch (e) {
       treeData.value = treeData.value.filter((n) => n.id !== node.id)
@@ -1189,7 +1189,7 @@ export function useDevState() {
       path: `/${id}`,
     }
     ;(parent.children ??= []).push(node)
-    void pageConfigWorkspaceDataService.navigation.createNode({ parentId: parent.id, node }).then(
+    void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
       () => {
         notifyPageFileChanged(id, '__created')
         addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
@@ -1216,7 +1216,7 @@ export function useDevState() {
       selectedNode.value = null
       clearFiles()
     }
-    void pageConfigWorkspaceDataService.navigation.deleteNode(data.id).then(
+    void http.delete(`${getNavApi()}/nodes/${encodeURIComponent(data.id)}`).then(
       () => {
         if (data.path) {
           notifyPageFileChanged(data.path.replace(/^\/+/, ''), '__deleted')
@@ -1313,12 +1313,6 @@ export function useDevState() {
     isDocumentDirty,
 
     notifyPageFileChanged,
-    setPageFileDraftText,
-    getPageFileDraftText,
-    hasPageFileDraft,
-    clearPageFileDraft,
-    flushPageFileDraft,
-    flushAllPageFileDrafts,
 
     // 方法
     addStatus,

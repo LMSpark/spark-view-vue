@@ -99,21 +99,6 @@ describe('PageFileDocument primitives', () => {
       unsubscribe()
     })
 
-    it('does not push undo history or notify for no-op setText', () => {
-      const docs = createPageDocuments()
-      const doc = docs['rule.json']
-      doc.loadFromText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
-      const currentText = doc.text.value
-      let changes = 0
-      const unsubscribe = doc.subscribe(() => { changes += 1 })
-
-      doc.setText(currentText)
-
-      expect(changes).toBe(0)
-      expect(doc.canUndo.value).toBe(false)
-      unsubscribe()
-    })
-
     it('accepts a single root SparkNode as page children', () => {
       const docs = createPageDocuments()
       const doc = docs['rule.json']

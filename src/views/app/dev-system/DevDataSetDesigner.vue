@@ -794,34 +794,20 @@ function handleTableSemanticChange(
   table: DesignerTable,
   updates: TableUpdatePayload,
 ): void {
-  if (
-    (updates.resourceType === undefined || (updates.resourceType ?? null) === (table.resourceType ?? null))
-    && (updates.businessCategory === undefined || (updates.businessCategory ?? null) === (table.businessCategory ?? null))
-    && (updates.resourceId === undefined || (updates.resourceId ?? null) === (table.resourceId ?? null))
-    && (updates.api === undefined || updates.api === (table.api ?? false))
-  ) return
   updateTableWithFeedback(table, updates, '表属性更新失败')
 }
 
 function handleTableResourceIdInputChange(table: DesignerTable, event: Event): void {
   const value = readInputValue(event).trim()
-  const nextResourceId = value || null
-  if (nextResourceId === (table.resourceId ?? null)) return
-  updateTableWithFeedback(table, { resourceId: nextResourceId }, '资源 ID 更新失败')
+  updateTableWithFeedback(table, { resourceId: value || null }, '资源 ID 更新失败')
 }
 
 function handleTableApiInputChange(table: DesignerTable, event: Event): void {
   const value = readInputValue(event).trim()
-  const nextApi = value || false
-  const currentApi = typeof table.api === 'string' ? table.api : false
-  if (nextApi === currentApi) return
-  updateTableWithFeedback(table, { api: nextApi }, 'API 更新失败')
+  updateTableWithFeedback(table, { api: value || false }, 'API 更新失败')
 }
 
 function handleColumnFieldChange(table: DesignerTable, column: DesignerColumn, updates: Partial<DataColumn>): void {
-  const currentColumn = column as unknown as Record<string, unknown>
-  const isNoop = Object.entries(updates).every(([key, value]) => Object.is(currentColumn[key], value))
-  if (isNoop) return
   updateColumnWithFeedback(table, column.name, updates, '字段更新失败')
 }
 

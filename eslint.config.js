@@ -179,7 +179,6 @@ export default [
       parser: tsParser,
       parserOptions: {
         project: [
-          './tsconfig.json',
           './tsconfig.typecheck.json',
           './.storybook/tsconfig.json',
           './packages/spark-ai/tsconfig.json',

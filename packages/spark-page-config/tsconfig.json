@@ -8,7 +8,6 @@
     "composite": false,
     "target": "ES2020",
     "noEmit": true,
-    "types": ["vite/client", "vitest/globals", "node"],
     "paths": {
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]

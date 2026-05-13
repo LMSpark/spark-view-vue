@@ -11,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -54,12 +53,12 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
                 .andExpect(jsonPath("$.protocolVersion").value(3));
 
-        verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString(), nullable(Map.class), anyBoolean());
+        verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString(), nullable(Map.class));
     }
 
     @Test
     void createSession_acceptsProtocolV3() throws Exception {
-        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), nullable(Map.class), anyBoolean()))
+        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), nullable(Map.class)))
                 .thenReturn("sid-1");
 
         String body = objectMapper.writeValueAsString(Map.of(
@@ -81,7 +80,7 @@ class AiSessionControllerTest {
 
     @Test
     void createSession_forwardsScope() throws Exception {
-        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), anyMap(), anyBoolean()))
+        when(sessionService.createSession(anyString(), anyString(), anyInt(), nullable(List.class), anyString(), anyMap()))
                 .thenReturn("sid-scoped");
 
         String body = objectMapper.writeValueAsString(Map.of(
@@ -117,33 +116,6 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.protocolVersion").value(3));
 
         verify(sessionService, never()).executeTurn(anyString(), nullable(Map.class));
-    }
-
-    @Test
-    void executeTurnStream_requiresProtocolV3() throws Exception {
-        mockMvc.perform(post("/api/ai/sessions/sid-1/turn/stream")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk());
-
-        verify(sessionService, never()).executeTurnStream(anyString(), any(SseEmitter.class), nullable(Map.class));
-    }
-
-    @Test
-    void executeTurnStream_forwardsScope() throws Exception {
-        String body = objectMapper.writeValueAsString(Map.of(
-                "protocolVersion", 3,
-                "stream", true,
-                "scope", Map.of("moduleId", "pageDesign", "moduleInstanceId", "page-a")
-        ));
-
-        mockMvc.perform(post("/api/ai/sessions/sid-stream/turn/stream")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.TEXT_EVENT_STREAM)
-                        .content(body))
-                .andExpect(status().isOk());
-
-        verify(sessionService).executeTurnStream(eq("sid-stream"), any(SseEmitter.class), anyMap());
     }
 
     @Test

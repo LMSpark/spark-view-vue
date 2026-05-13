@@ -36,7 +36,7 @@
 
     <div class="chat-messages-shell">
       <div class="chat-region-toolbar">
-        <span class="chat-region-title">诊断流 ({{ diagnosticItems.length }})</span>
+        <span class="chat-region-title">会话 ({{ diagnosticItems.length }})</span>
         <div class="chat-region-actions">
           <span v-if="copyStatus !== 'idle'" :class="['copy-status', `copy-status--${copyStatus}`]">{{ copyStatusText }}</span>
           <button class="mini-icon-btn" title="复制结构化诊断数据" :disabled="diagnosticItems.length === 0" @click="copyDiagnosticsData">
@@ -547,20 +547,6 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
     })
   }
 
-  const visibleSseEvents = (props.sseEvents ?? []).filter(isVisibleSseEvent)
-  for (const item of buildSseTextDiagnosticItems(visibleSseEvents, props.pageId)) {
-    items.push({
-      ...item,
-      order: order++,
-    })
-  }
-  for (const item of buildSseEventDiagnosticItems(visibleSseEvents, props.pageId)) {
-    items.push({
-      ...item,
-      order: order++,
-    })
-  }
-
   for (const log of props.toolLogs ?? []) {
     if (log.type !== 'error') continue
     if (isRawSseToolLog(log)) continue
@@ -651,24 +637,6 @@ function buildSseTextDiagnosticItems(events: SseEventLike[], pageId: string | un
 
 function formatSseTextSubtitle(pageId: string, sessionId: string | undefined): string {
   return sessionId === undefined ? `页面=${pageId}` : `页面=${pageId} · 会话=${sessionId}`
-}
-
-function buildSseEventDiagnosticItems(events: SseEventLike[], pageId: string | undefined): DiagnosticItem[] {
-  const normalizedPageId = normalizeDiagnosticPageId(pageId)
-  return events
-    .filter((event) => !SSE_TEXT_EVENT_TYPES.has(event.type))
-    .map((event, index): DiagnosticItem => ({
-      id: `sse:${normalizedPageId}:${event.id ?? index}`,
-      timestamp: event.timestamp,
-      sortTime: toSortTime(event.timestamp),
-      kind: 'sse',
-      source: 'sse',
-      kindLabel: 'SSE',
-      title: `SSE ${formatSseTypeLabel(event.type)}`,
-      subtitle: formatSseTextSubtitle(normalizedPageId, event.sessionId),
-      payload: event.data,
-      openByDefault: event.type === 'error',
-    }))
 }
 
 function formatSseTypeLabel(type: string): string {
