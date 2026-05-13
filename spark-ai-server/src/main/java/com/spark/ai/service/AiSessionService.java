@@ -3,6 +3,7 @@ package com.spark.ai.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.config.OpenAiProperties;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -109,6 +110,7 @@ public class AiSessionService {
                 .build();
     }
 
+    @PreDestroy
     public void shutdown() {
         streamExecutor.shutdownNow();
     }
@@ -443,6 +445,21 @@ public class AiSessionService {
             int windowSize,
             List<Map<String, Object>> tools,
             String mode) {
+        executeTurnStream(sessionId, emitter, scope, turnId, streamKey, turnMessages, systemPrompt, windowSize, tools, mode, null);
+    }
+
+    public void executeTurnStream(
+            String sessionId,
+            SseEmitter emitter,
+            Map<String, Object> scope,
+            String turnId,
+            String streamKey,
+            List<Map<String, Object>> turnMessages,
+            String systemPrompt,
+            int windowSize,
+            List<Map<String, Object>> tools,
+            String mode,
+            Integer baseRevision) {
         Session session = sessions.get(sessionId);
         if (session == null) {
             String prompt = stringValue(systemPrompt);
@@ -477,11 +494,18 @@ public class AiSessionService {
             return;
         }
 
-        applySessionConfig(session, scope, systemPrompt, windowSize, tools, mode);
-        session.lastActiveTime = System.currentTimeMillis();
-        appendTurnMessages(session, turnMessages);
-        List<Map<String, Object>> messages = buildWindowedMessages(session);
-        StreamMeta streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope);
+        List<Map<String, Object>> messages;
+        StreamMeta streamMeta;
+        synchronized (session) {
+            applySessionConfig(session, scope, systemPrompt, windowSize, tools, mode);
+            session.lastActiveTime = System.currentTimeMillis();
+            List<Message> parsedTurnMessages = messagesFromMaps(turnMessages);
+            List<Message> llmConversation = conversationAtRevision(session, baseRevision);
+            llmConversation.addAll(parsedTurnMessages);
+            session.conversation.addAll(parsedTurnMessages);
+            messages = buildWindowedMessages(session, llmConversation);
+            streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope);
+        }
         Session streamSession = session;
         List<Map<String, Object>> streamMessages = messages;
 
@@ -607,6 +631,23 @@ public class AiSessionService {
         }
     }
 
+    private static List<Message> messagesFromMaps(List<Map<String, Object>> rawMessages) {
+        if (rawMessages == null || rawMessages.isEmpty()) return List.of();
+        List<Message> messages = new ArrayList<>();
+        for (Map<String, Object> rawMessage : rawMessages) {
+            if (rawMessage == null || rawMessage.isEmpty()) continue;
+            messages.add(messageFromMap(rawMessage));
+        }
+        return messages;
+    }
+
+    private static List<Message> conversationAtRevision(Session session, Integer baseRevision) {
+        int endExclusive = baseRevision == null
+                ? session.conversation.size()
+                : Math.min(Math.max(0, baseRevision), session.conversation.size());
+        return new ArrayList<>(session.conversation.subList(0, endExclusive));
+    }
+
     private static void applySessionConfig(
             Session session,
             Map<String, Object> scope,
@@ -638,12 +679,16 @@ public class AiSessionService {
     }
 
     private List<Map<String, Object>> buildWindowedMessages(Session session) {
+        return buildWindowedMessages(session, session.conversation);
+    }
+
+    private List<Map<String, Object>> buildWindowedMessages(Session session, List<Message> conversation) {
         List<Map<String, Object>> result = new ArrayList<>();
 
         // system prompt 始终在最前
         result.add(Map.of("role", "system", "content", session.systemPrompt));
 
-        List<Message> conv = session.conversation;
+        List<Message> conv = conversation;
         int windowSize = session.windowSize;
 
         if (conv.size() <= windowSize) {
@@ -947,7 +992,9 @@ public class AiSessionService {
         if (toolCalls == null || toolCalls.isEmpty()) {
             Message assistantMsg = new Message("assistant");
             assistantMsg.content = text;
-            session.conversation.add(assistantMsg);
+            synchronized (session) {
+                session.conversation.add(assistantMsg);
+            }
         }
 
         // 发送最终结果
