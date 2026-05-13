@@ -27,8 +27,10 @@ export {
 } from './types'
 
 export type {
+  PageConfigCreatePageParams,
   PageConfigFileApiOptions,
   PageConfigFileVersionSummary,
+  PageConfigPageSummary,
 } from './files'
 
 export {
