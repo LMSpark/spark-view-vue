@@ -138,21 +138,35 @@ export class AppAiHost {
       return null
     }
 
-    const businessInstanceId = runtime.resolveBusinessInstance({
-      userInput,
-      context: this.options.context?.() ?? {},
-    })
+    let businessInstanceId: string
+    let projection: AiRuntimeKnowledgeProjection
+    try {
+      businessInstanceId = runtime.resolveBusinessInstance({
+        userInput,
+        context: this.options.context?.() ?? {},
+      })
+      const scopePreview: AppAiBusinessScope = {
+        businessRegistrationId: runtime.moduleId,
+        businessInstanceId,
+        instanceId: createInstanceId(runtime.moduleId, businessInstanceId),
+        runtimeInstanceId: createInstanceId(runtime.moduleId, businessInstanceId),
+      }
+      projection = await runtime.startSession({
+        moduleId: runtime.moduleId,
+        moduleInstanceId: businessInstanceId,
+        instanceId: scopePreview.instanceId,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      request.onDelta?.(`无法进入 ${runtime.getRegistrationData().name}：${message}`)
+      return null
+    }
     const scope: AppAiBusinessScope = {
       businessRegistrationId: runtime.moduleId,
       businessInstanceId,
       instanceId: createInstanceId(runtime.moduleId, businessInstanceId),
       runtimeInstanceId: createInstanceId(runtime.moduleId, businessInstanceId),
     }
-    const projection = await runtime.startSession({
-      moduleId: runtime.moduleId,
-      moduleInstanceId: businessInstanceId,
-      instanceId: scope.instanceId,
-    })
     this.selected = { runtime, scope, projection }
     this.selectedScope.value = scope
     request.onDelta?.(`已进入 ${projection.module.name}。`)

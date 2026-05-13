@@ -121,7 +121,7 @@
   <AppPageUiHost />
 
   <!-- APP 层统一 AI 宿主面板 -->
-  <AppAiPanel />
+  <AppAiPanel :upload-file="uploadAppAiAttachment" />
 
   </template>
 </template>
@@ -174,6 +174,9 @@ import {
   AppAiHost,
   FetchAppAiHostTransport,
   registerAppAiBusinesses,
+  resolvePageDesignEditHost,
+  resolvePageDesignEditPageId,
+  uploadAppAiAttachment,
 } from '@/services/ai-host'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
@@ -184,7 +187,17 @@ const router = useRouter()
 const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
 const platformPaths = getPlatformPaths()
 const appAiRegistry = new AppAiBusinessRegistry()
-registerAppAiBusinesses({ registry: appAiRegistry })
+registerAppAiBusinesses({
+  registry: appAiRegistry,
+  getPageDesignEditHost: (context) => {
+    const host = resolvePageDesignEditHost(context.moduleInstanceId)
+    if (host === null) {
+      throw new Error(`PageDesign edit host unavailable for page ${context.moduleInstanceId}`)
+    }
+    return host
+  },
+  resolvePageDesignInstanceId: (input) => resolvePageDesignEditPageId(input.context.pageId) ?? input.context.pageId ?? null,
+})
 const appAiHost = new AppAiHost({
   registry: appAiRegistry,
   transport: new FetchAppAiHostTransport(),
@@ -637,4 +650,3 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 }
 
 </style>
-
