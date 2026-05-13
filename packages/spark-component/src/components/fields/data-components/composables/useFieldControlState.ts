@@ -1,4 +1,4 @@
-import { getCurrentInstance, type ComputedRef } from 'vue'
+import type { ComputedRef } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-types.js'
@@ -45,24 +45,11 @@ interface UseFieldControlStateOptions<TValue> {
   emitUpdate: (value: TValue) => void
 }
 
-function kebabCase(value: string): string {
-  return value.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
-}
-
-function hasRuntimeProp(name: string): boolean {
-  const runtimeProps = getCurrentInstance()?.vnode.props
-  if (runtimeProps === null || runtimeProps === undefined) return false
-  return Object.prototype.hasOwnProperty.call(runtimeProps, name)
-    || Object.prototype.hasOwnProperty.call(runtimeProps, kebabCase(name))
-}
-
 export function useFieldControlState<TValue>(options: UseFieldControlStateOptions<TValue>) {
-  const hasResizableProp = hasRuntimeProp('resizable')
-  const hasSortableProp = hasRuntimeProp('sortable')
   const fieldCtx = useFieldContext({
     type: options.props.type ?? options.fieldType,
     width: options.props.width,
-    ...(hasResizableProp ? { resizable: options.props.resizable } : {}),
+    ...(options.props.resizable !== undefined ? { resizable: options.props.resizable } : {}),
     ...(options.props.children !== undefined ? { children: options.props.children } : {}),
     ...(options.props.titleAlign !== undefined ? { titleAlign: options.props.titleAlign } : {}),
     ...(options.props.valueAlign !== undefined ? { valueAlign: options.props.valueAlign } : {}),
@@ -70,7 +57,7 @@ export function useFieldControlState<TValue>(options: UseFieldControlStateOption
     ...(options.props.cellClassName !== undefined ? { cellClassName: options.props.cellClassName } : {}),
     ...(options.props.titleClassName !== undefined ? { titleClassName: options.props.titleClassName } : {}),
     ...(options.props.valueClassName !== undefined ? { valueClassName: options.props.valueClassName } : {}),
-    ...(hasSortableProp ? { sortable: options.props.sortable } : {}),
+    ...(options.props.sortable !== undefined ? { sortable: options.props.sortable } : {}),
   }, options.state)
 
   const { handleControlledChange } = useControlledFieldChange<TValue>({

@@ -113,7 +113,7 @@
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
  * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
  */
-import { computed, getCurrentInstance, nextTick, provide, ref, toRef, watch } from 'vue'
+import { computed, nextTick, provide, ref, toRef, watch } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren,
@@ -137,8 +137,11 @@ import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnC
 
 const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
+  border: undefined,
+  stripe: undefined,
+  highlightCurrentRow: undefined,
+  resizable: undefined,
 })
-const currentInstance = getCurrentInstance()
 
 const normalizedContentChildNodes = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(props.children).map((rawNode) => {
@@ -257,36 +260,18 @@ function readBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined
 }
 
-function kebabCase(value: string): string {
-  return value.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
-}
-
-function hasRuntimeProp(name: string): boolean {
-  const runtimeProps = currentInstance?.vnode.props
-  if (runtimeProps === null || runtimeProps === undefined) return false
-  return Object.prototype.hasOwnProperty.call(runtimeProps, name)
-    || Object.prototype.hasOwnProperty.call(runtimeProps, kebabCase(name))
-}
-
-const hasBorderProp = hasRuntimeProp('border')
-const hasStripeProp = hasRuntimeProp('stripe')
-const hasHighlightCurrentRowProp = hasRuntimeProp('highlightCurrentRow')
-const hasResizableProp = hasRuntimeProp('resizable')
-
 // ── 基础 el-table props：resizable 默认 true，且与 border 联动 ──────────────────────────
 const baseElTableProps = computed<Record<string, unknown>>(() => {
   const legacyTableProps = asRecord(props.tableProps)
-  const resolvedResizable = hasResizableProp
-    ? readBoolean(props.resizable) ?? true
-    : readBoolean(legacyTableProps['resizable']) ?? true
+  const resolvedResizable = props.resizable ?? readBoolean(legacyTableProps['resizable']) ?? true
   const resolvedBorder = resolvedResizable === true
     ? true
-    : (hasBorderProp ? readBoolean(props.border) : readBoolean(legacyTableProps['border'])) ?? true
+    : (props.border ?? readBoolean(legacyTableProps['border']) ?? true)
 
   return {
     ...legacyTableProps,
-    ...(hasStripeProp ? { stripe: readBoolean(props.stripe) ?? false } : {}),
-    ...(hasHighlightCurrentRowProp ? { highlightCurrentRow: readBoolean(props.highlightCurrentRow) ?? false } : {}),
+    ...(props.stripe !== undefined ? { stripe: props.stripe } : {}),
+    ...(props.highlightCurrentRow !== undefined ? { highlightCurrentRow: props.highlightCurrentRow } : {}),
     ...(props.rowKey !== undefined ? { rowKey: props.rowKey } : {}),
     border: resolvedBorder,
     resizable: resolvedResizable,

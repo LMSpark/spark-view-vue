@@ -113,9 +113,9 @@ export class AiRuntime implements AiRuntimeApi {
     this.knowledgeProjector = new AiKnowledgeProjector(ParameterPayloadRegistry.defaultRegistry)
     const listeners = options.onEvent === undefined
       ? []
-      : typeof options.onEvent === 'function'
-        ? [options.onEvent]
-        : options.onEvent
+      : Array.isArray(options.onEvent)
+        ? (options.onEvent as readonly AiRuntimeEventListener[])
+        : [options.onEvent]
     listeners.forEach((listener) => this.eventListeners.add(listener))
   }
 
