@@ -53,16 +53,16 @@
             <span class="notification-panel__title">通知</span>
             <div class="notification-panel__actions">
               <button v-if="unreadCount > 0" class="notification-panel__action" @click="markAllRead">全部已读</button>
-              <button v-if="safeNotifications.length > 0" class="notification-panel__action" @click="clearAll">清空</button>
+              <button v-if="notifications.length > 0" class="notification-panel__action" @click="clearAll">清空</button>
             </div>
           </div>
           <div class="notification-panel__body">
-            <div v-if="safeNotifications.length === 0" class="notification-panel__empty">
+            <div v-if="notifications.length === 0" class="notification-panel__empty">
               <el-icon :size="40" style="color: var(--el-text-color-placeholder)"><Bell /></el-icon>
               <p>暂无通知</p>
             </div>
             <div
-              v-for="item in safeNotifications"
+              v-for="item in notifications"
               :key="item.id"
               class="notification-item"
               :class="{ 'notification-item--unread': !item.read }"
@@ -173,7 +173,6 @@ const emit = defineEmits<{
 
 const safeToolbarItems = computed<NavNode[]>(() => Array.isArray(props.toolbarItems) ? props.toolbarItems : [])
 const safeUserMenuItems = computed<NavNode[]>(() => Array.isArray(props.userMenuItems) ? props.userMenuItems : [])
-const safeNotifications = computed(() => Array.isArray(notifications) ? notifications : [])
 
 /** 检查导航配置中是否包含指定 action 的工具栏项 */
 function hasAction(action: string): boolean {

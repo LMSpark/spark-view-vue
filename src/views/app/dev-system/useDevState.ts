@@ -1203,7 +1203,6 @@ export function useDevState() {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
     }
-    const isRootReserved = isSystemRootDirectory(data)
     const parent = node.parent
     if (parent.data.children) {
       const idx = parent.data.children.indexOf(data)
@@ -1221,12 +1220,7 @@ export function useDevState() {
         if (data.path) {
           notifyPageFileChanged(data.path.replace(/^\/+/, ''), '__deleted')
         }
-        addStatus(
-          isRootReserved
-            ? `已删除 ${data.title}（可在更多菜单中恢复）`
-            : `已删除 ${data.title}`,
-          'info',
-        )
+        addStatus(`已删除 ${data.title}`, 'info')
       },
       (e: unknown) => addStatus(`删除节点失败: ${String(e)}`, 'error'),
     )

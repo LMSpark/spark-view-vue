@@ -220,11 +220,8 @@
  * 该文件均需用 ['key'] 字内访问和移除演示用变量才能通过类型检查。
  * 作为演示文件，此注解是永久的。
  */
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { SparkData } from '@spark-view/spark-data'
+import { ref, computed } from 'vue'
 
-// DataSet 能力管理器
-let capabilityManager: { dispose?(): void } | null = null
 const dataSetContext = ref<Record<string, unknown>>({ id: 'demo-page', providers: new Set() })
 const userInfo = ref<Record<string, unknown>>({ id: 'user001', name: '演示用户', roles: ['admin', 'developer'] })
 const themeConfig = ref<string>('dark')
@@ -251,67 +248,9 @@ const apiLoading = ref(false)
 const isListening = ref(false)
 const changeCount = ref(0)
 const changeHistory = ref<string[]>([])
-let unsubscribe: (() => void) | null = null
 
 const providersCount = computed(() => {
   return 4 // 固定显示4个能力提供者
-})
-
-// 初始化 DataSet
-const _mockDataSet = SparkData.createDataSet({
-  dataSetName: 'DemoData',
-  tables: {
-    Users: {
-      tableName: 'Users',
-      columns: [
-        { name: 'id', type: 'string', isPrimaryKey: true },
-        { name: 'name', type: 'string' },
-        { name: 'age', type: 'number' },
-        { name: 'department', type: 'string' }
-      ],
-      views: {
-        default: {
-          rows: [
-            { id: '1', name: '张三', age: 30, department: '技术部' },
-            { id: '2', name: '李四', age: 28, department: '产品部' },
-            { id: '3', name: '王五', age: 35, department: '设计部' }
-          ]
-        }
-      }
-    }
-  }
-})
-
-// 模拟 API 客户端
-const _mockApiClient = {
-  async request<T>(config: Record<string, unknown>): Promise<T> {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    return {
-      data: {
-        status: 'success',
-        timestamp: new Date().toISOString(),
-        endpoint: config.url,
-        method: config.method || 'GET'
-      },
-      message: '请求成功'
-    } as T
-  }
-}
-
-// 初始化能力管理器
-onMounted(() => {
-  if (import.meta.env.DEV) {
-    console.log('🚀 演示页面已加载')
-    console.log('📊 初始数据已就绪')
-  }
-  // 暂时禁用能力管理器，直接使用静态数据展示
-})
-
-onUnmounted(() => {
-  if (unsubscribe) {
-    unsubscribe()
-  }
-  capabilityManager?.dispose()
 })
 
 // 操作方法

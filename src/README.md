@@ -10,13 +10,12 @@
 - `layout/`：布局、导航和应用骨架。
 - `config/`：前端配置读取与装配。
 - `composables/`：应用层组合式逻辑。
-- `features/`：预留的业务域功能分区入口。
 
 ## 边界原则
 
 - 通用能力优先沉到 `packages/`，不要在这里复制一套基础设施。
 - `src/` 负责“应用组装”和“平台页面宿主”，不是通用运行时核心。
-- 当目录开始呈现明确业务域边界时，优先往 `features/` 收拢，而不是继续平铺到根层目录。
+- 当目录开始呈现明确业务域边界时，再建立独立业务域目录，避免提前保留空壳。
 
 ## 相关入口
 
@@ -28,5 +27,4 @@
 - [layout/README.md](layout/README.md)
 - [services/README.md](services/README.md)
 - [views/README.md](views/README.md)
-- [features/README.md](features/README.md)
 - [../packages/README.md](../packages/README.md)

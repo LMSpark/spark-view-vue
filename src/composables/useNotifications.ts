@@ -18,17 +18,13 @@ let _refCount = 0
 
 const MAX_NOTIFICATIONS = 50
 
-function formatFileLabel(file: string): string {
-  return file
-}
-
 function connect(): void {
   if (_unsubscribe) return
   _unsubscribe = onPageConfigChange((event: FileChangeEvent) => {
     const item: NotificationItem = {
       id: _nextId++,
       title: `页面配置变更`,
-      message: `${event.pageId} / ${formatFileLabel(event.file)}`,
+      message: `${event.pageId} / ${event.file}`,
       time: event.timestamp,
       read: false,
     }

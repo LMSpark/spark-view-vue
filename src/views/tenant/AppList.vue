@@ -86,6 +86,7 @@ import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
+import { buildTenantPath } from '@/services/tenant-scope'
 import NavIcon from '@/components/NavIcon.vue'
 import { getNavHomePath } from '@spark-view/spark-app'
 
@@ -144,7 +145,7 @@ async function handleSwitch(project: ProjectItem) {
   ElMessage.success(`已切换到「${project.name}」`)
   const user = getUser()
   if (user) {
-    void router.push(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
+    void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath()))
   }
 }
 

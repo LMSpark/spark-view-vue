@@ -65,8 +65,9 @@
             <div class="vxe-json-tree-editor__key-cell">
               <el-input
                 v-if="row.keyEditable && isEditable && isRowActive(row)"
-                :model-value="row.displayKey"
+                :model-value="getKeyInputValue(row)"
                 size="small"
+                @update:model-value="handleKeyInput(row, $event)"
                 @change="handleKeyChange(row, $event)"
               />
               <span v-else class="vxe-json-tree-editor__key-text">{{ row.displayKey }}</span>
@@ -110,9 +111,10 @@
                 </el-select>
                 <el-input
                   v-else-if="isRowActive(row)"
-                  :model-value="row.stringValue"
+                  :model-value="getStringInputValue(row)"
                   size="small"
                   :readonly="!isEditable"
+                  @update:model-value="handleStringInput(row, $event)"
                   @change="handleStringChange(row, $event)"
                 />
                 <span v-else class="vxe-json-tree-editor__value-text">{{ row.stringValue || '(空字符串)' }}</span>
@@ -340,6 +342,8 @@ const keywordInput = ref('')
 const keyword = ref('')
 const typeFilter = ref<'all' | JsonNodeType>('all')
 const schemaOnly = ref(false)
+const keyInputDrafts = ref<Record<string, string>>({})
+const stringInputDrafts = ref<Record<string, string>>({})
 const parseError = ref<string | null>(null)
 const treeModelRef = shallowRef<TreeModel>(buildTreeModel({}))
 const currentRowId = ref(rootOf(treeModelRef.value))
@@ -485,6 +489,7 @@ function captureTreeState(): void {
 // ── 文档同步 ─────────────────────────────────────────────────
 
 function syncDocument(rawText: string): void {
+  clearInputDrafts()
   if (rawText.trim() === '') {
     captureTreeState()
     treeModelRef.value = buildTreeModel({}, mergedPolicy.value)
@@ -502,6 +507,7 @@ function syncDocument(rawText: string): void {
 }
 
 function syncDocumentValue(value: JsonDocument): void {
+  clearInputDrafts()
   const nextDocument = deepClone(value)
   const nextText = serializeJsonDocument(nextDocument)
   if (lastEmittedValue !== null && nextText === lastEmittedValue) {
@@ -617,9 +623,39 @@ function isRowActive(row: Pick<DisplayRow, 'id'>): boolean {
 
 // ── 编辑操作 ──────────────────────────────────────────────────
 
-function handleKeyChange(row: DisplayRow, value: string | number): void {
+function hasInputDraft(drafts: Record<string, string>, rowId: string): boolean {
+  return Object.prototype.hasOwnProperty.call(drafts, rowId)
+}
+
+function clearInputDrafts(): void {
+  keyInputDrafts.value = {}
+  stringInputDrafts.value = {}
+}
+
+function getKeyInputValue(row: DisplayRow): string {
+  const draft = keyInputDrafts.value[row.id]
+  return hasInputDraft(keyInputDrafts.value, row.id)
+    ? draft ?? ''
+    : row.displayKey
+}
+
+function getStringInputValue(row: DisplayRow): string {
+  const draft = stringInputDrafts.value[row.id]
+  return hasInputDraft(stringInputDrafts.value, row.id)
+    ? draft ?? ''
+    : row.stringValue
+}
+
+function handleKeyInput(row: DisplayRow, value: string | number): void {
   if (typeof value !== 'string') return
-  mutateModel((current) => renameNodeKey(current, row.id, value, mergedPolicy.value))
+  keyInputDrafts.value[row.id] = value
+}
+
+function handleKeyChange(row: DisplayRow, value: string | number): void {
+  const nextValue = typeof value === 'string' ? value : getKeyInputValue(row)
+  delete keyInputDrafts.value[row.id]
+  if (nextValue === row.displayKey || nextValue.trim().length === 0) return
+  mutateModel((current) => renameNodeKey(current, row.id, nextValue, mergedPolicy.value))
 }
 
 function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
@@ -629,6 +665,7 @@ function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
 
 function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
   const v = value ?? ''
+  delete stringInputDrafts.value[row.id]
   mutateModel(
     (current) => updateNodeValue(current, row.id, v),
     row.path,
@@ -636,8 +673,16 @@ function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
   )
 }
 
+function handleStringInput(row: DisplayRow, value: string | number): void {
+  if (typeof value !== 'string') return
+  stringInputDrafts.value[row.id] = value
+}
+
 function handleStringChange(row: DisplayRow, value: string | number): void {
-  mutateModel((current) => updateNodeValue(current, row.id, String(value)))
+  const nextValue = typeof value === 'string' ? value : getStringInputValue(row)
+  delete stringInputDrafts.value[row.id]
+  if (nextValue === row.stringValue) return
+  mutateModel((current) => updateNodeValue(current, row.id, nextValue))
 }
 
 function handleNumberChange(row: DisplayRow, value: string | number | null | undefined): void {

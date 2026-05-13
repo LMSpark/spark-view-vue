@@ -24,6 +24,7 @@ const BACKEND_PORT = process.env['BACKEND_PORT'] || '8080'
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
+const VITE_CLI = resolve(ROOT_DIR, 'node_modules', 'vite', 'bin', 'vite.js')
 const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
 const existingPath = mergedEnv['PATH'] ?? mergedEnv['Path'] ?? process.env['PATH'] ?? process.env['Path'] ?? ''
 
@@ -45,6 +46,12 @@ if (!javaHome) {
 // ── 检查 pom.xml 存在 ───────────────────────────────────────────────────────
 if (!existsSync(resolve(SERVER_DIR, 'pom.xml'))) {
   console.error(`❌ 找不到 ${SERVER_DIR}/pom.xml`)
+  process.exit(1)
+}
+
+if (!existsSync(VITE_CLI)) {
+  console.error(`❌ 找不到本地 Vite CLI: ${VITE_CLI}`)
+  console.error('   请先执行 `pnpm install` 后重试。')
   process.exit(1)
 }
 
@@ -213,11 +220,10 @@ if (vitePort !== DEFAULT_FE_PORT) {
   console.warn(`⚠️ 端口 ${DEFAULT_FE_PORT} 已占用，Vite 将使用端口 ${vitePort}`)
 }
 
-const vite = spawn('npx', ['vite', '--port', String(vitePort)], {
+const vite = spawn(process.execPath, [VITE_CLI, '--port', String(vitePort)], {
   cwd: ROOT_DIR,
   env: { ...mergedEnv, AI_BACKEND_URL: BACKEND_URL },
   stdio: 'inherit',
-  shell: true,
 })
 
 // ── 优雅退出：关闭两个进程 ──────────────────────────────────────────────────

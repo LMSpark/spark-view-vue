@@ -1,5 +1,5 @@
 import { useRoute, useRouter } from 'vue-router'
-import { initPageCacheHandle } from '@/services/page-cache-handle'
+import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
 
 /**
  * 租户路由工具 composable
@@ -13,21 +13,16 @@ export function useTenantRouter() {
 
   /** 当前租户上下文（从路由参数提取） */
   function getTenantScope(): { tenantId: string; projectId: string } {
-    const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
-    const tenantId: string | undefined = scopedMatch?.[1]
-    const projectId: string | undefined = scopedMatch?.[2]
-    if (!tenantId || !projectId) {
+    const scope = parseTenantScope(route.path)
+    if (!scope) {
       throw new Error(`仅支持租户作用域路由：期望 /t/{tenantId}/{projectId}，当前为 ${route.path}`)
     }
-    return { tenantId, projectId }
+    return scope
   }
 
   /** 将相对路径转化为租户前缀完整路径 */
   function tenantPath(relativePath: string): string {
-    const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
-    if (normalized.startsWith('/t/')) return normalized
-    const { tenantId, projectId } = getTenantScope()
-    return `/t/${tenantId}/${projectId}${normalized}`
+    return buildTenantPath(getTenantScope(), relativePath)
   }
 
   /** 确保页面路由已注册（租户前缀模式） */
@@ -46,7 +41,6 @@ export function useTenantRouter() {
 
     const routeProps = configRoute.props['default'] as Record<string, unknown> | undefined
     const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
-    if (configLoader) initPageCacheHandle(configLoader)
 
     router.addRoute({
       path: tenantPrefixed,

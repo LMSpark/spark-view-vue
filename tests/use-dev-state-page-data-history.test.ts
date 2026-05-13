@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { effectScope, ref } from 'vue'
 
 const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
   httpGet: vi.fn(),
@@ -49,7 +50,8 @@ vi.mock('@/services/api-paths', () => ({
 }))
 
 import { canonicalizePageDataJson } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
-import { PAGE_FILE_NAMES, useDevState } from '../src/views/app/dev-system/useDevState'
+import { PAGE_FILE_NAMES, useDevState, type PageFileName } from '../src/views/app/dev-system/useDevState'
+import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
 function createPageDataText(name: string, compact = false): string {
   const payload = {
@@ -264,6 +266,41 @@ describe('useDevState documents SSOT', () => {
     )
     expect(isDocumentDirty(doc)).toBe(false)
     expect(doc.canUndo.value).toBe(canUndoBefore)
+  })
+
+  it('dev file editor keeps JSON text in a draft until an explicit commit', () => {
+    const state = useDevState()
+    const initial = createPageDataText('Alpha', true)
+    const next = createPageDataText('Draft', true)
+    const doc = state.documents['pagedata.json']
+    doc.loadFromText(initial)
+
+    const scope = effectScope()
+    try {
+      scope.run(() => {
+        const editor = useDevFileEditor(state, ref<PageFileName>('pagedata.json'))
+        const initialCanonical = canonicalizePageDataJson(initial).text
+
+        editor.updateText('{"dataSetName":')
+
+        expect(editor.text.value).toBe('{"dataSetName":')
+        expect(doc.text.value).toBe(initialCanonical)
+        expect(doc.parseError.value).toBeNull()
+        expect(editor.isDirty.value).toBe(true)
+
+        expect(editor.commitText()).toBe(false)
+        expect(editor.text.value).toBe('{"dataSetName":')
+        expect(doc.text.value).toBe(initialCanonical)
+        expect(doc.parseError.value).not.toBeNull()
+
+        editor.updateText(next)
+        expect(editor.commitText()).toBe(true)
+        expect(editor.text.value).toBe(canonicalizePageDataJson(next).text)
+        expect(doc.text.value).toBe(canonicalizePageDataJson(next).text)
+      })
+    } finally {
+      scope.stop()
+    }
   })
 
   it('designer-level mutate reflects in text and is undoable', () => {

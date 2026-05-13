@@ -1,29 +1,35 @@
-import { computed, watch, type Ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import type { DevState, PageFileName } from '../useDevState'
+
+const TEXT_DRAFT_COMMIT_DELAY = 600
 
 /**
  * 手动编辑器绑定器 — 将任意 PageFileName 接入 state.documents 注册表。
- * 所有读写/undo/redo 都经由对应的 PageFileDocument，共享同一模型与历史。
+ * PageFileDocument 的历史栈只记录已提交编辑，用于 undo/redo；后端版本由版本面板手动管理。
+ * 原始文本输入先进入本地草稿，避免 JSON 在每个按键都解析、归一化并压入历史栈。
  */
 export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageFileName>>) {
   const doc = computed(() => state.documents[activeFile.value])
+  const drafts = ref<Partial<Record<PageFileName, string>>>({})
+  let commitTimer: ReturnType<typeof setTimeout> | null = null
 
   const isReady = computed(() => {
     void state.pageFilesRevision.value
     return doc.value.loadState.value === 'loaded'
   })
-  const isDirty = computed(() => state.isDocumentDirty(activeFile.value))
+  const isDirty = computed(() => isFileDirty(activeFile.value))
   const canUndo = computed(() => {
     void state.pageFilesRevision.value
-    return doc.value.canUndo.value
+    return hasDraft(activeFile.value) || doc.value.canUndo.value
   })
   const canRedo = computed(() => {
     void state.pageFilesRevision.value
+    if (hasDraft(activeFile.value)) return false
     return doc.value.canRedo.value
   })
   const text = computed(() => {
     void state.pageFilesRevision.value
-    return doc.value.text.value
+    return getDisplayText(activeFile.value)
   })
   const parseError = computed(() => {
     void state.pageFilesRevision.value
@@ -35,23 +41,117 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     await state.ensureActivePageFilesLoaded(options)
   }
 
+  function hasDraft(name: PageFileName): boolean {
+    return Object.prototype.hasOwnProperty.call(drafts.value, name)
+  }
+
+  function getDraft(name: PageFileName): string {
+    return drafts.value[name] ?? ''
+  }
+
+  function setDraft(name: PageFileName, value: string): void {
+    drafts.value = { ...drafts.value, [name]: value }
+  }
+
+  function clearDraft(name: PageFileName = activeFile.value): void {
+    if (!hasDraft(name)) return
+    const { [name]: _removed, ...next } = drafts.value
+    drafts.value = next
+  }
+
+  function clearAllDrafts(): void {
+    drafts.value = {}
+  }
+
+  function getDisplayText(name: PageFileName): string {
+    return hasDraft(name) ? getDraft(name) : state.documents[name].text.value
+  }
+
+  function isJsonBackedFile(name: PageFileName): boolean {
+    return name === 'rule.json' || name === 'pagedata.json'
+  }
+
+  function isFileDirty(name: PageFileName): boolean {
+    const targetDoc = state.documents[name]
+    return state.isDocumentDirty(name) || getDisplayText(name) !== targetDoc.savedText.value
+  }
+
+  function clearCommitTimer(): void {
+    if (commitTimer === null) return
+    clearTimeout(commitTimer)
+    commitTimer = null
+  }
+
+  function scheduleDraftCommit(name: PageFileName): void {
+    clearCommitTimer()
+    if (isJsonBackedFile(name)) return
+    commitTimer = setTimeout(() => {
+      commitTimer = null
+      void commitDraft(name)
+    }, TEXT_DRAFT_COMMIT_DELAY)
+  }
+
   function updateText(value: string) {
-    doc.value.setText(value)
+    const name = activeFile.value
+    const targetDoc = state.documents[name]
+    if (value === targetDoc.text.value) {
+      clearDraft(name)
+      return
+    }
+    setDraft(name, value)
+    scheduleDraftCommit(name)
+  }
+
+  function commitDraft(name: PageFileName = activeFile.value): boolean {
+    clearCommitTimer()
+    if (!hasDraft(name)) return true
+
+    const targetDoc = state.documents[name]
+    const nextText = getDraft(name)
+    if (nextText === targetDoc.text.value) {
+      clearDraft(name)
+      return targetDoc.parseError.value === null
+    }
+
+    targetDoc.setText(nextText)
+    if (targetDoc.parseError.value !== null) {
+      setDraft(name, nextText)
+      return false
+    }
+
+    clearDraft(name)
+    return true
+  }
+
+  function commitText(value?: string | number): boolean {
+    if (value !== undefined) {
+      setDraft(activeFile.value, String(value))
+    }
+    return commitDraft(activeFile.value)
   }
 
   function undo() {
+    clearCommitTimer()
+    if (hasDraft(activeFile.value)) {
+      clearDraft(activeFile.value)
+      return
+    }
     doc.value.undo()
   }
 
   function redo() {
+    clearCommitTimer()
+    if (hasDraft(activeFile.value)) return
     doc.value.redo()
   }
 
   async function save() {
+    if (!commitDraft(activeFile.value)) return
     await state.savePageFile(activeFile.value)
   }
 
   async function refresh() {
+    clearDraft(activeFile.value)
     await ensureLoaded({ forceReload: true })
   }
 
@@ -68,6 +168,22 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     { immediate: true },
   )
 
+  watch(
+    () => state.activePageId.value,
+    () => {
+      clearCommitTimer()
+      clearAllDrafts()
+    },
+  )
+
+  watch(activeFile, (_nextFile, previousFile) => {
+    void commitDraft(previousFile)
+  })
+
+  onBeforeUnmount(() => {
+    clearCommitTimer()
+  })
+
   return {
     isReady,
     isDirty,
@@ -77,6 +193,10 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     parseError,
     ensureLoaded,
     updateText,
+    commitText,
+    commitDraft,
+    clearDraft,
+    isFileDirty,
     undo,
     redo,
     save,

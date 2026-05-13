@@ -12,10 +12,9 @@
 
 - 页面入口和路由级视图放这里，不把页面级组件平铺到 `src/components/`。
 - 复杂页面内部的局部组件可继续就近放在 `views/app/components/` 等子目录。
-- 当某类页面逐渐形成完整业务域，再考虑迁移到 `src/features/` 做更强分区。
+- 当某类页面逐渐形成完整业务域，再考虑迁移到独立业务域目录做更强分区。
 
 ## 相关目录
 
 - [../components/README.md](../components/README.md)
-- [../features/README.md](../features/README.md)
 - [../../docs/guides/QUICKSTART.md](../../docs/guides/QUICKSTART.md)

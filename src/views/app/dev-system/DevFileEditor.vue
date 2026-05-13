@@ -64,7 +64,7 @@
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
         <el-tab-pane v-for="f in PAGE_FILE_NAMES" :key="f" :name="f">
           <template #label>
-            <span class="file-tab-label" :class="{ 'file-dirty': state.isDocumentDirty(f) }">
+            <span class="file-tab-label" :class="{ 'file-dirty': editor.isFileDirty(f) }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
             </span>
           </template>
@@ -85,6 +85,7 @@
             resize="none"
             class="code-input code-input--pagedata-text"
             @update:model-value="editor.updateText"
+            @change="editor.commitText"
           />
         </div>
 
@@ -97,7 +98,7 @@
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="editor.updateText"
+            @update:model-value="editor.commitText"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
@@ -114,6 +115,7 @@
             :autosize="{ minRows: 30, maxRows: 60 }"
             class="code-input"
             @update:model-value="editor.updateText"
+            @change="editor.commitText"
           />
         </div>
 
@@ -236,6 +238,7 @@ function resetPageDataViewMode() {
 }
 
 function setPageDataViewMode(mode: 'visual' | 'text') {
+  if (mode === 'visual' && !editor.commitText()) return
   pageDataViewModePinned.value = true
   pageDataViewMode.value = mode
 }
@@ -267,7 +270,9 @@ function toggleVersionPanel() {
 async function restoreVersion(version: number) {
   restoringVersion.value = version
   try {
+    editor.clearDraft(resolvedActiveFile.value)
     if (await props.state.restoreRemotePageVersion(version, resolvedActiveFile.value)) {
+      editor.clearDraft(resolvedActiveFile.value)
       await loadVersions()
     }
   } finally {

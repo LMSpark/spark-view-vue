@@ -9,7 +9,6 @@
 - `NavHeaderBar.vue`、`NavContextSelector.vue`：导航上下文切换与平台头部交互。
 - `ThemeConfigurator.vue`：主题配置入口。
 - `demo-nav.ts`：示例导航数据。
-- `index.ts`：布局组件与导航相关导出入口。
 
 ## 放置原则
 
@@ -19,6 +18,5 @@
 
 ## 相关入口
 
-- [index.ts](index.ts)
 - [../views/README.md](../views/README.md)
 - [../../packages/spark-app/README.md](../../packages/spark-app/README.md)
