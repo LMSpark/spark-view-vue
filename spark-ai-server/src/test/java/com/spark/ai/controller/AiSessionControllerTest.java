@@ -170,8 +170,7 @@ class AiSessionControllerTest {
                 ),
                 "turn", Map.of(
                         "turnId", "turn-1",
-                        "streamKey", "sk-1",
-                        "baseRevision", 3
+                        "streamKey", "sk-1"
                 ),
                 "messages", List.of(Map.of("role", "user", "content", "leave request"))
         ));
@@ -193,8 +192,7 @@ class AiSessionControllerTest {
                 nullable(String.class),
                 eq(30),
                 nullable(List.class),
-                eq("function"),
-                eq(3));
+                eq("function"));
     }
 
     @Test
@@ -221,8 +219,7 @@ class AiSessionControllerTest {
                 nullable(String.class),
                 eq(30),
                 nullable(List.class),
-                eq("function"),
-                eq(0));
+                eq("function"));
         verify(sessionService).executeTurnStream(
                 eq("sid-parallel"),
                 any(),
@@ -235,8 +232,7 @@ class AiSessionControllerTest {
                 nullable(String.class),
                 eq(30),
                 nullable(List.class),
-                eq("function"),
-                eq(0));
+                eq("function"));
     }
 
     @Test
@@ -481,9 +477,7 @@ class AiSessionControllerTest {
                         "moduleInstanceId", "leave-1"
                 ),
                 "turn", Map.of(
-                        "turnId", turnId,
-                        "maxParallelTurns", 2,
-                        "baseRevision", 0
+                        "turnId", turnId
                 ),
                 "messages", List.of(Map.of("role", "user", "content", content))
         ));

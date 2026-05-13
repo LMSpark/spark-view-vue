@@ -190,8 +190,7 @@ class AiSessionServiceScopeTest {
                     "sys",
                     30,
                     List.of(),
-                    "function",
-                    0);
+                    "function");
             service.executeTurnStream(
                     sessionId,
                     emitterB,
@@ -202,8 +201,7 @@ class AiSessionServiceScopeTest {
                     "sys",
                     30,
                     List.of(),
-                    "function",
-                    0);
+                    "function");
 
             assertTrue(emitterA.awaitComplete(), "turn-a stream did not complete");
             assertTrue(emitterB.awaitComplete(), "turn-b stream did not complete");

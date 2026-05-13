@@ -292,7 +292,7 @@ public class AiSessionService {
     }
 
     /**
-     * 执行一轮对话（非流式），先把本轮前端传入的消息追加到 session 历史。
+     * 执行一轮对话（非流式），用已提交历史 + 本轮消息构造 LLM 输入。
      */
     public TurnResult executeTurn(String sessionId, Map<String, Object> scope, List<Map<String, Object>> turnMessages) {
         Session session = sessions.get(sessionId);
@@ -315,12 +315,17 @@ public class AiSessionService {
                         buildHandoffPayload("HANDOFF_REQUIRED", "请人工确认后恢复到 PLAN"));
             }
 
-            session.lastActiveTime = System.currentTimeMillis();
-            appendTurnMessages(session, turnMessages);
+            List<Message> parsedTurnMessages;
+            List<Map<String, Object>> messages;
+            synchronized (session) {
+                session.lastActiveTime = System.currentTimeMillis();
+                parsedTurnMessages = messagesFromMaps(turnMessages);
+                List<Message> llmConversation = new ArrayList<>(session.conversation);
+                llmConversation.addAll(parsedTurnMessages);
+                messages = buildWindowedMessages(session, llmConversation);
+            }
             transition(session, SessionState.PLAN);
             transition(session, SessionState.CALL);
-
-            List<Map<String, Object>> messages = buildWindowedMessages(session);
 
             log.info("[SESSION] turn sessionId={} msgCount={} tools={}",
                     sessionId, messages.size(),
@@ -371,7 +376,10 @@ public class AiSessionService {
             if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
                 assistantMsg.toolCalls = llmResult.toolCalls;
             }
-            session.conversation.add(assistantMsg);
+            synchronized (session) {
+                session.conversation.addAll(parsedTurnMessages);
+                session.conversation.add(assistantMsg);
+            }
 
             transition(session, SessionState.APPLY);
             transition(session, SessionState.VERIFY);
@@ -419,7 +427,7 @@ public class AiSessionService {
     }
 
     /**
-     * 执行一轮对话（SSE 流式），先把本轮前端传入的消息追加到 session 历史。
+     * 执行一轮对话（SSE 流式），用已提交历史 + 本轮消息构造 LLM 输入。
      */
     public void executeTurnStream(
             String sessionId,
@@ -445,21 +453,6 @@ public class AiSessionService {
             int windowSize,
             List<Map<String, Object>> tools,
             String mode) {
-        executeTurnStream(sessionId, emitter, scope, turnId, streamKey, turnMessages, systemPrompt, windowSize, tools, mode, null);
-    }
-
-    public void executeTurnStream(
-            String sessionId,
-            SseEmitter emitter,
-            Map<String, Object> scope,
-            String turnId,
-            String streamKey,
-            List<Map<String, Object>> turnMessages,
-            String systemPrompt,
-            int windowSize,
-            List<Map<String, Object>> tools,
-            String mode,
-            Integer baseRevision) {
         Session session = sessions.get(sessionId);
         if (session == null) {
             String prompt = stringValue(systemPrompt);
@@ -500,11 +493,10 @@ public class AiSessionService {
             applySessionConfig(session, scope, systemPrompt, windowSize, tools, mode);
             session.lastActiveTime = System.currentTimeMillis();
             List<Message> parsedTurnMessages = messagesFromMaps(turnMessages);
-            List<Message> llmConversation = conversationAtRevision(session, baseRevision);
+            List<Message> llmConversation = new ArrayList<>(session.conversation);
             llmConversation.addAll(parsedTurnMessages);
-            session.conversation.addAll(parsedTurnMessages);
             messages = buildWindowedMessages(session, llmConversation);
-            streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope);
+            streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope, parsedTurnMessages);
         }
         Session streamSession = session;
         List<Map<String, Object>> streamMessages = messages;
@@ -541,12 +533,14 @@ public class AiSessionService {
         if (session == null) return AppendMessageResult.SESSION_NOT_FOUND;
         if (!matchesScope(session, scope)) return AppendMessageResult.SCOPE_MISMATCH;
 
-        session.lastActiveTime = System.currentTimeMillis();
-        Message msg = new Message(role);
-        msg.content = content;
-        msg.toolCallId = toolCallId;
-        msg.toolCalls = toolCalls;
-        session.conversation.add(msg);
+        synchronized (session) {
+            session.lastActiveTime = System.currentTimeMillis();
+            Message msg = new Message(role);
+            msg.content = content;
+            msg.toolCallId = toolCallId;
+            msg.toolCalls = toolCalls;
+            session.conversation.add(msg);
+        }
         return AppendMessageResult.OK;
     }
 
@@ -558,8 +552,10 @@ public class AiSessionService {
         if (session == null) return List.of();
 
         List<Map<String, Object>> result = new ArrayList<>();
-        for (Message msg : session.conversation) {
-            result.add(msg.toMap());
+        synchronized (session) {
+            for (Message msg : session.conversation) {
+                result.add(msg.toMap());
+            }
         }
         return result;
     }
@@ -623,14 +619,6 @@ public class AiSessionService {
         return message;
     }
 
-    private static void appendTurnMessages(Session session, List<Map<String, Object>> turnMessages) {
-        if (turnMessages == null || turnMessages.isEmpty()) return;
-        for (Map<String, Object> rawMessage : turnMessages) {
-            if (rawMessage == null || rawMessage.isEmpty()) continue;
-            session.conversation.add(messageFromMap(rawMessage));
-        }
-    }
-
     private static List<Message> messagesFromMaps(List<Map<String, Object>> rawMessages) {
         if (rawMessages == null || rawMessages.isEmpty()) return List.of();
         List<Message> messages = new ArrayList<>();
@@ -639,13 +627,6 @@ public class AiSessionService {
             messages.add(messageFromMap(rawMessage));
         }
         return messages;
-    }
-
-    private static List<Message> conversationAtRevision(Session session, Integer baseRevision) {
-        int endExclusive = baseRevision == null
-                ? session.conversation.size()
-                : Math.min(Math.max(0, baseRevision), session.conversation.size());
-        return new ArrayList<>(session.conversation.subList(0, endExclusive));
     }
 
     private static void applySessionConfig(
@@ -989,10 +970,11 @@ public class AiSessionService {
         // 记录到对话历史。
         // 当有 tool_calls 时，前端 FC 循环会通过 appendMessages 追加 assistant + tool results，
         // 因此后端不再自动写入，避免出现两条相邻的 assistant(tool_calls) 导致 DeepSeek 400。
-        if (toolCalls == null || toolCalls.isEmpty()) {
-            Message assistantMsg = new Message("assistant");
-            assistantMsg.content = text;
-            synchronized (session) {
+        synchronized (session) {
+            session.conversation.addAll(streamMeta.turnMessages);
+            if (toolCalls == null || toolCalls.isEmpty()) {
+                Message assistantMsg = new Message("assistant");
+                assistantMsg.content = text;
                 session.conversation.add(assistantMsg);
             }
         }
@@ -1055,7 +1037,12 @@ public class AiSessionService {
         final List<Message> conversation = new ArrayList<>();
     }
 
-    private record StreamMeta(String sessionId, String turnId, String streamKey, Map<String, Object> scope) {}
+    private record StreamMeta(
+            String sessionId,
+            String turnId,
+            String streamKey,
+            Map<String, Object> scope,
+            List<Message> turnMessages) {}
 
     private enum SessionState {
         READY,

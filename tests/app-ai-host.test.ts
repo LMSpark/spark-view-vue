@@ -609,11 +609,11 @@ describe('AppAiHost', () => {
     const requests = fetchMock.mock.calls.map(([, init]) => JSON.parse((init as RequestInit).body as string))
     expect(requests).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        turn: expect.objectContaining({ turnId: 'turn-a', maxParallelTurns: 2 }),
+        turn: { turnId: 'turn-a' },
         messages: [{ role: 'user', content: 'first' }],
       }),
       expect.objectContaining({
-        turn: expect.objectContaining({ turnId: 'turn-b', maxParallelTurns: 2 }),
+        turn: { turnId: 'turn-b' },
         messages: [{ role: 'user', content: 'second' }],
       }),
     ]))

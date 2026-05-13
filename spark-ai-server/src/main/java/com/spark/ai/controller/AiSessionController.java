@@ -182,8 +182,7 @@ public class AiSessionController {
                 getOptionalString(request, "systemPrompt"),
                 windowSize,
                 extractTools(request),
-                mode,
-                getOptionalInteger(turn, "baseRevision"));
+                mode);
 
         return emitter;
     }
@@ -347,15 +346,6 @@ public class AiSessionController {
         Object val = map.get(key);
         if (val instanceof String s) {
             return s;
-        }
-        return null;
-    }
-
-    private static Integer getOptionalInteger(Map<String, Object> map, String key) {
-        if (map == null) return null;
-        Object val = map.get(key);
-        if (val instanceof Number n) {
-            return n.intValue();
         }
         return null;
     }

@@ -74,6 +74,10 @@ function appendEventMetadata(
   }
 }
 
+function toTransportTurn(input: AppAiStreamTurnInput['turn']): { turnId: string } {
+  return { turnId: input.turnId }
+}
+
 function buildRoutePrompt(input: AppAiRouteBusinessInput): string {
   return [
     '你是 SPARK 的 AI 业务路由器。只能从候选注册信息中选择业务。',
@@ -178,7 +182,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
         tools: input.tools,
         mode: 'function',
         scope: toRuntimeScope(input.scope),
-        turn: input.turn,
+        turn: toTransportTurn(input.turn),
         messages: input.messages,
       }),
     })
@@ -263,7 +267,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
       body: JSON.stringify({
         protocolVersion: PROTOCOL_VERSION,
         scope: toRuntimeScope(input.scope),
-        turn: input.turn,
+        turn: toTransportTurn(input.turn),
         messages: input.messages,
       }),
     })
