@@ -1,3 +1,4 @@
+import type { ParameterPayloadProvider } from './parameter-payload-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
 
 /**
@@ -219,6 +220,24 @@ export interface AiModuleRegistrationData {
   readonly modules: readonly AiModuleRegistrationData[]
 }
 
+/** 业务根注册数据；业务是应用对外注册入口，内部仍由递归模块树表达能力。 */
+export interface AiBusinessRegistrationData {
+  /** 业务 ID；作为业务根投影时映射为根 moduleId。 */
+  readonly businessId: AiRuntimeModuleId
+  /** 业务名称。 */
+  readonly name: string
+  /** 业务职责说明。 */
+  readonly description: string
+  /** 静态业务 prompt；动态 provider 必须先在运行时解析，不能作为注册数据落库。 */
+  readonly prompt?: string | undefined
+  /** 当前业务根实例参数声明。 */
+  readonly instanceParam?: AiModuleInstanceParam | undefined
+  /** 业务根直接注册的函数数据。 */
+  readonly functions: readonly AiFunctionRegistrationData[]
+  /** 业务内部模块注册数据。 */
+  readonly modules: readonly AiModuleRegistrationData[]
+}
+
 /** 模块注册持久化快照中的模块行；可直接映射到数据库 module 表。 */
 export interface AiModuleRegistrationStoreModule {
   /** 模块路径，例如 `pageDesign/nodeTree`；同一个快照内唯一。 */
@@ -303,6 +322,12 @@ export interface AiModuleRegistrationStoreSnapshot {
   readonly failureModes: readonly AiFunctionRegistrationFailureMode[]
 }
 
+/** 业务根注册持久化快照；行结构复用模块注册快照，只额外标明根业务路径。 */
+export interface AiBusinessRegistrationStoreSnapshot extends AiModuleRegistrationStoreSnapshot {
+  /** 根业务路径；等同于业务根投影时的 rootModulePath。 */
+  readonly rootBusinessPath: AiRuntimeModulePath
+}
+
 /** 模块注册便捷基类：只帮助模块声明“函数 + 子模块”metadata，不提供生命周期管理。 */
 export abstract class AiModuleRegistrationBase implements AiModuleRegistration {
   protected constructor(
@@ -340,6 +365,31 @@ export interface AiModuleRegistration {
   readonly instanceParam?: AiModuleInstanceParam | undefined
   /** 返回当前模块直接暴露的函数知识；函数体和调用路径都不属于 core 注册目录。 */
   getFunctions(): readonly AiFunctionRegistration[]
+}
+
+/**
+ * 业务根注册契约。
+ *
+ * 业务是应用对外的唯一注册物；模块只作为业务内部的能力分层。
+ * Core 只消费这棵知识树，不创建、不保存、不释放业务 live state。
+ */
+export interface AiBusinessRegistration {
+  /** 业务 ID；同一 core facade 内唯一。 */
+  readonly businessId: AiRuntimeModuleId
+  /** 业务名称。 */
+  readonly name: string
+  /** 业务职责说明。 */
+  readonly description: string
+  /** 业务 prompt 或 prompt provider。 */
+  readonly prompt?: ModulePromptProvider | undefined
+  /** 业务内部模块列表；core 会递归投影。 */
+  readonly modules?: readonly AiModuleRegistration[] | undefined
+  /** 当前业务根实例参数声明。 */
+  readonly instanceParam?: AiModuleInstanceParam | undefined
+  /** 业务根直接暴露的函数知识；函数体和调用路径都不属于 core 注册目录。 */
+  getFunctions(): readonly AiFunctionRegistration[]
+  /** 业务需要挂载的参数 payload provider；注册时由 core 统一安装到知识投影器可见的注册表。 */
+  readonly parameterPayloadProviders?: readonly ParameterPayloadProvider[] | undefined
 }
 
 // =========================================================
@@ -859,8 +909,36 @@ export interface AiRegisteredModuleApi {
   createFunctionResultMessage(options: AiRuntimeCreateFunctionResultMessageOptions): AiRuntimeFunctionResultMessage
 }
 
+/** 注册器返回的业务绑定 API；语义上绑定 businessId，底层复用模块投影/会话链路。 */
+export interface AiRegisteredBusinessApi extends AiRegisteredModuleApi {
+  /** 已绑定的业务 ID。 */
+  readonly businessId: AiRuntimeModuleId
+  /** 注册方传入的业务目录。 */
+  readonly businessRegistration: AiBusinessRegistration
+  /** 读取当前业务注册。 */
+  getBusinessRegistration(): AiBusinessRegistration
+  /** 读取当前业务注册的纯数据快照；可直接 JSON 序列化后由上层写入数据库。 */
+  getBusinessRegistrationData(): AiBusinessRegistrationData
+  /** 读取当前业务注册的结构化持久化快照；可拆表写库，由上层持久化。 */
+  getBusinessRegistrationStoreSnapshot(): AiBusinessRegistrationStoreSnapshot
+}
+
 /** core 对外 API：注册模块知识、管理 AI 会话历史、投影知识、翻译函数调用。 */
 export interface AiRuntimeApi {
+  /** 注册一个业务根知识树；重复 businessId 会 fail-fast，并返回绑定 businessId 的 API 包装器。 */
+  registerBusiness(registration: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi
+  /** 读取已注册业务；未知业务返回 undefined。 */
+  getBusinessRegistration(businessId: string): AiBusinessRegistration | undefined
+  /** 列出当前 core facade 持有的业务注册。只包含知识注册，不代表 live state。 */
+  listBusinessRegistrations(): readonly AiBusinessRegistration[]
+  /** 读取已注册业务的纯数据快照；未知业务返回 undefined。 */
+  getBusinessRegistrationData(businessId: string): AiBusinessRegistrationData | undefined
+  /** 列出当前 core facade 持有的业务注册纯数据快照。 */
+  listBusinessRegistrationData(): readonly AiBusinessRegistrationData[]
+  /** 读取已注册业务的结构化持久化快照；未知业务返回 undefined。 */
+  getBusinessRegistrationStoreSnapshot(businessId: string): AiBusinessRegistrationStoreSnapshot | undefined
+  /** 列出当前 core facade 持有的业务注册结构化持久化快照。 */
+  listBusinessRegistrationStoreSnapshots(): readonly AiBusinessRegistrationStoreSnapshot[]
   /** 注册一个顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
   registerModule(registration: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi
   /** 读取已注册模块；未知模块返回 undefined。 */

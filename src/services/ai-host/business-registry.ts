@@ -1,4 +1,5 @@
 import type {
+  AiBusinessRegistrationData,
   AiModuleRegistrationData,
 } from '@spark-view/spark-ai'
 import type {
@@ -26,6 +27,24 @@ export function createRoutingCandidateFromRegistration(data: AiModuleRegistratio
   }
 }
 
+export function createRoutingCandidateFromBusinessRegistration(data: AiBusinessRegistrationData): AppAiRoutingCandidate {
+  return {
+    moduleId: data.businessId,
+    name: data.name,
+    description: data.description,
+    ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
+    functions: collectFunctions({
+      moduleId: data.businessId,
+      name: data.name,
+      description: data.description,
+      ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
+      ...(data.instanceParam === undefined ? {} : { instanceParam: data.instanceParam }),
+      functions: data.functions,
+      modules: data.modules,
+    }),
+  }
+}
+
 export class AppAiBusinessRegistry {
   private readonly runtimes = new Map<string, AppAiBusinessRuntime>()
 
@@ -45,6 +64,11 @@ export class AppAiBusinessRegistry {
   }
 
   routingCandidates(): readonly AppAiRoutingCandidate[] {
-    return this.list().map((runtime) => createRoutingCandidateFromRegistration(runtime.getRegistrationData()))
+    return this.list().map((runtime) => {
+      const businessData = runtime.getBusinessRegistrationData?.()
+      return businessData === undefined
+        ? createRoutingCandidateFromRegistration(runtime.getRegistrationData())
+        : createRoutingCandidateFromBusinessRegistration(businessData)
+    })
   }
 }

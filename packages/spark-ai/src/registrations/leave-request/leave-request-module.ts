@@ -1,10 +1,13 @@
 import {
   AiRuntime,
+  type AiBusinessRegistration,
+  type AiBusinessRegistrationData,
+  type AiBusinessRegistrationStoreSnapshot,
   type AiFunctionRegistration,
   type AiModuleRegistration,
   type AiModuleRegistrationData,
   type AiModuleRegistrationStoreSnapshot,
-  type AiRegisteredModuleApi,
+  type AiRegisteredBusinessApi,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeFunctionCallTranslationResult,
   type AiRuntimeHistoryEntry,
@@ -446,8 +449,10 @@ export function createLeaveDraftId(): string {
   return `leaveDraft:${randomId}`
 }
 
-export class LeaveRequestModule implements AiModuleRegistration {
+export class LeaveRequestModule implements AiBusinessRegistration {
   static readonly moduleId = LEAVE_REQUEST_MODULE_ID
+
+  readonly businessId = LEAVE_REQUEST_MODULE_ID
 
   readonly moduleId = LEAVE_REQUEST_MODULE_ID
 
@@ -467,7 +472,7 @@ export class LeaveRequestModule implements AiModuleRegistration {
 
   private readonly core: AiRuntime
 
-  private readonly ai: AiRegisteredModuleApi
+  private readonly ai: AiRegisteredBusinessApi
 
   private readonly functions: readonly LeaveRequestFunctionDefinition[]
 
@@ -475,7 +480,7 @@ export class LeaveRequestModule implements AiModuleRegistration {
     this.service = new LeaveRequestService(options.now)
     this.core = new AiRuntime(options.now === undefined ? {} : { now: options.now })
     this.functions = createFunctionDefinitions(this.service)
-    this.ai = this.core.registerModule(this)
+    this.ai = this.core.registerBusiness(this)
   }
 
   getFunctions(): readonly AiFunctionRegistration[] {
@@ -537,8 +542,16 @@ export class LeaveRequestModule implements AiModuleRegistration {
     return this.ai.getRegistrationData()
   }
 
+  getBusinessRegistrationData(): AiBusinessRegistrationData {
+    return this.ai.getBusinessRegistrationData()
+  }
+
   getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot {
     return this.ai.getRegistrationStoreSnapshot()
+  }
+
+  getBusinessRegistrationStoreSnapshot(): AiBusinessRegistrationStoreSnapshot {
+    return this.ai.getBusinessRegistrationStoreSnapshot()
   }
 
   async translateFunctionCall(options: LeaveRequestExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult> {

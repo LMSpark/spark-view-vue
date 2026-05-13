@@ -1,4 +1,8 @@
-export { AppAiBusinessRegistry, createRoutingCandidateFromRegistration } from './business-registry'
+export {
+  AppAiBusinessRegistry,
+  createRoutingCandidateFromBusinessRegistration,
+  createRoutingCandidateFromRegistration,
+} from './business-registry'
 export { AppAiHost } from './app-ai-host'
 export { FetchAppAiHostTransport, uploadAppAiAttachment } from './transport'
 export { registerAppAiBusinesses } from './register-app-ai-businesses'
@@ -17,12 +21,14 @@ export type { PageDesignEditHostSnapshot } from './page-design-edit-host-registr
 export type {
   AppAiAppendMessagesInput,
   AppAiBusinessAppendMessageOptions,
+  AppAiBusinessAfterFunctionCallOptions,
   AppAiBusinessExecuteFunctionCallOptions,
+  AppAiBusinessLifecycleDirective,
+  AppAiBusinessLifecycleStatus,
   AppAiBusinessResolveInput,
   AppAiBusinessRuntime,
   AppAiBusinessRuntimeContext,
   AppAiBusinessScope,
-  AppAiCreateSessionInput,
   AppAiHostContext,
   AppAiHostOptions,
   AppAiHostSender,

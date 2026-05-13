@@ -1,4 +1,5 @@
 import type {
+  AiBusinessRegistrationData,
   AiModuleRegistrationData,
   AiRuntimeFunctionCallResult,
   AiRuntimeHistoryEntry,
@@ -47,14 +48,32 @@ export interface AppAiBusinessExecuteFunctionCallOptions extends AppAiBusinessRu
   readonly projection?: AiRuntimeKnowledgeProjection | undefined
 }
 
+export type AppAiBusinessLifecycleStatus = 'continue' | 'complete' | 'abort'
+
+export interface AppAiBusinessLifecycleDirective {
+  readonly status: AppAiBusinessLifecycleStatus
+  readonly reason?: string | undefined
+  readonly finalAssistantMessage?: string | undefined
+  readonly releaseInstance?: boolean | undefined
+}
+
+export interface AppAiBusinessAfterFunctionCallOptions extends AppAiBusinessRuntimeContext {
+  readonly action: string
+  readonly args: unknown
+  readonly result: AiRuntimeFunctionCallResult<unknown>
+}
+
 export interface AppAiBusinessRuntime {
   readonly moduleId: string
   getRegistrationData(): AiModuleRegistrationData
+  getBusinessRegistrationData?(): AiBusinessRegistrationData
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string
   getSystemPrompt?(context: AppAiBusinessRuntimeContext): string | undefined
   startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult>
   appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry
   executeFunctionCall(options: AppAiBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>>
+  afterFunctionCall?(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective | Promise<AppAiBusinessLifecycleDirective>
+  endBusinessInstance?(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void | Promise<void>
   getSessionHistory(context: AppAiBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[]
   releaseModuleInstance?(moduleInstanceId: string): void
 }
@@ -110,18 +129,13 @@ export interface AppAiTransportToolCall {
   } | undefined
 }
 
-export interface AppAiCreateSessionInput {
-  readonly systemPrompt: string
-  readonly messages: readonly AppAiTransportMessage[]
-  readonly tools: readonly AppAiTransportToolSpec[]
-  readonly scope: AppAiBusinessScope
-  readonly turn: AppAiTurnMeta
-}
-
 export interface AppAiStreamTurnInput {
   readonly sessionId: string
   readonly scope: AppAiBusinessScope
   readonly turn: AppAiTurnMeta
+  readonly systemPrompt: string
+  readonly tools: readonly AppAiTransportToolSpec[]
+  readonly messages: readonly AppAiTransportMessage[]
   readonly signal?: AbortSignal | undefined
   readonly onSseEvent?: ((event: AiSseEventInput) => void) | undefined
   readonly onDelta?: ((delta: string) => void) | undefined
@@ -138,18 +152,19 @@ export interface AppAiStreamTurnResult {
 export interface AppAiAppendMessagesInput {
   readonly sessionId: string
   readonly scope: AppAiBusinessScope
+  readonly turn: AppAiTurnMeta
   readonly messages: readonly AppAiTransportMessage[]
 }
 
 export interface AppAiRouteBusinessInput {
   readonly userInput: string
   readonly candidates: readonly AppAiRoutingCandidate[]
+  readonly turn: AppAiTurnMeta
   readonly signal?: AbortSignal | undefined
 }
 
 export interface AppAiHostTransport {
   routeBusiness(input: AppAiRouteBusinessInput): Promise<AppAiRouteDecision>
-  createSession(input: AppAiCreateSessionInput): Promise<string>
   streamTurn(input: AppAiStreamTurnInput): Promise<AppAiStreamTurnResult>
   appendMessages(input: AppAiAppendMessagesInput): Promise<void>
 }

@@ -19,6 +19,9 @@ export {
 export type {
   AiRuntimeApi,
   AiRuntimeAction,
+  AiBusinessRegistration,
+  AiBusinessRegistrationData,
+  AiBusinessRegistrationStoreSnapshot,
   AiModuleRegistration,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreModule,
@@ -71,6 +74,7 @@ export type {
   AiRuntimeStopInstanceResult,
   AiRuntimeTranslateFunctionCallOptions,
   AiRegisteredModuleExecuteFunctionCallOptions,
+  AiRegisteredBusinessApi,
   AiRuntimeInstanceScope,
   AiFunctionRegistration,
   AiFunctionRegistrationData,

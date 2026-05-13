@@ -22,6 +22,7 @@ import java.util.Map;
  * <ul>
  *   <li>POST   /api/ai/sessions           — 创建会话</li>
  *   <li>POST   /api/ai/sessions/{id}/turn  — 执行一轮 LLM（支持 SSE 流式）</li>
+ *   <li>POST   /api/ai/sessions/{id}/turn/append — 按 turn 追加前端已完成消息</li>
  *   <li>POST   /api/ai/sessions/{id}/append — 追加消息</li>
  *   <li>GET    /api/ai/sessions/{id}/conversation — 获取完整对话</li>
  *   <li>DELETE /api/ai/sessions/{id}       — 销毁会话</li>
@@ -68,23 +69,21 @@ public class AiSessionController {
             return requestError("MISSING_REQUIRED_FIELD", "systemPrompt 不能为空");
         }
         String userPrompt = getOptionalString(request, "userPrompt");
+        String requestedSessionId = getOptionalString(request, "sessionId");
         List<Map<String, Object>> messages = extractMessages(request);
-        if ((userPrompt == null || userPrompt.isBlank()) && (messages == null || messages.isEmpty())) {
+        if ((userPrompt == null || userPrompt.isBlank()) && (messages == null || messages.isEmpty()) && requestedSessionId == null) {
             return requestError("MISSING_REQUIRED_FIELD", "userPrompt 或 messages 不能为空");
         }
         int windowSize = request.get("windowSize") instanceof Number n ? n.intValue() : 30;
         String mode = request.get("mode") instanceof String s ? s : "generate";
         boolean reuseScopeSession = !(request.get("reuseScopeSession") instanceof Boolean b) || b;
 
-        // tools 是 JSON Array，直接存储转发给 LLM
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> tools = request.get("tools") instanceof List<?> list
-                ? (List<Map<String, Object>>) list : null;
+        List<Map<String, Object>> tools = extractTools(request);
 
         Map<String, Object> scope = extractScope(request);
         String sessionId = messages != null && !messages.isEmpty()
-            ? sessionService.createSession(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession)
-            : sessionService.createSession(systemPrompt, userPrompt, windowSize, tools, mode, scope, reuseScopeSession);
+            ? sessionService.createSession(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession, requestedSessionId)
+            : sessionService.createSession(systemPrompt, userPrompt, windowSize, tools, mode, scope, reuseScopeSession, requestedSessionId);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("sessionId", sessionId);
@@ -119,7 +118,7 @@ public class AiSessionController {
             return requestError("INVALID_STREAM_ENDPOINT", "流式请求请使用 SSE 端点");
         }
 
-        TurnResult result = sessionService.executeTurn(sessionId, extractScope(request));
+        TurnResult result = sessionService.executeTurn(sessionId, extractScope(request), extractMessages(request));
         if (result == null) {
             return notFoundError("SESSION_NOT_FOUND", "会话不存在或 LLM 调用失败", sessionId);
         }
@@ -130,6 +129,12 @@ public class AiSessionController {
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("text", result.getText());
+        body.put("sessionId", sessionId);
+        Map<String, Object> turn = extractTurn(request);
+        String turnId = getOptionalString(turn, "turnId");
+        if (turnId != null) {
+            body.put("turnId", turnId);
+        }
         if (result.getReasoning() != null) {
             body.put("reasoning", result.getReasoning());
         }
@@ -165,14 +170,63 @@ public class AiSessionController {
         }
 
         Map<String, Object> turn = extractTurn(request);
+        int windowSize = request != null && request.get("windowSize") instanceof Number n ? n.intValue() : 30;
+        String mode = request != null && request.get("mode") instanceof String s ? s : "function";
         sessionService.executeTurnStream(
                 sessionId,
                 emitter,
                 extractScope(request),
                 getOptionalString(turn, "turnId"),
-                getOptionalString(turn, "streamKey"));
+                getOptionalString(turn, "streamKey"),
+                extractMessages(request),
+                getOptionalString(request, "systemPrompt"),
+                windowSize,
+                extractTools(request),
+                mode);
 
         return emitter;
+    }
+
+    @PostMapping("/{sessionId}/turn/append")
+    public ResponseEntity<Map<String, Object>> appendTurnMessages(
+            @PathVariable String sessionId,
+            @RequestBody Map<String, Object> request) {
+        if (!isProtocolV3(request)) {
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        }
+
+        List<Map<String, Object>> messages = extractMessages(request);
+        if (messages == null || messages.isEmpty()) {
+            return requestError("MISSING_REQUIRED_FIELD", "messages 不能为空");
+        }
+
+        for (Map<String, Object> msg : messages) {
+            String role = msg.get("role") instanceof String s ? s : "user";
+            String content = msg.get("content") instanceof String s ? s : "";
+            String toolCallId = msg.get("tool_call_id") instanceof String s ? s : null;
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> toolCalls = msg.get("tool_calls") instanceof List<?> list
+                    ? (List<Map<String, Object>>) list : null;
+
+            AppendMessageResult appendResult = sessionService.appendMessage(
+                    sessionId, role, content, toolCallId, toolCalls, extractScope(request));
+            if (appendResult == AppendMessageResult.SESSION_NOT_FOUND) {
+                return notFoundError("SESSION_NOT_FOUND", "会话不存在", sessionId);
+            }
+            if (appendResult == AppendMessageResult.SCOPE_MISMATCH) {
+                return scopeMismatchError(sessionId);
+            }
+        }
+
+        Map<String, Object> turn = extractTurn(request);
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("ok", true);
+        body.put("sessionId", sessionId);
+        String turnId = getOptionalString(turn, "turnId");
+        if (turnId != null) body.put("turnId", turnId);
+        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        return ResponseEntity.ok(body);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -228,6 +282,7 @@ public class AiSessionController {
 
         return ResponseEntity.ok(Map.of(
             "ok", true,
+            "sessionId", sessionId,
             "protocolVersion", PROTOCOL_VERSION_V3));
     }
 
@@ -303,6 +358,13 @@ public class AiSessionController {
             return (List<Map<String, Object>>) list;
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> extractTools(Map<String, Object> request) {
+        if (request == null) return null;
+        return request.get("tools") instanceof List<?> list
+                ? (List<Map<String, Object>>) list : null;
     }
 
     @SuppressWarnings("unchecked")

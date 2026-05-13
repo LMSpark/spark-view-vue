@@ -2,6 +2,7 @@ import { shallowRef } from 'vue'
 import type {
   AiRuntimeKnowledgeProjection,
 } from '@spark-view/spark-ai'
+import { AiInvocationProtocol } from '@spark-view/spark-ai'
 import type {
   AiChatSendRequest,
   AiSessionConfig,
@@ -15,6 +16,7 @@ import {
 import type {
   AppAiBusinessRuntime,
   AppAiBusinessScope,
+  AppAiBusinessLifecycleDirective,
   AppAiHostOptions,
   AppAiHostSender,
   AppAiTransportMessage,
@@ -32,8 +34,8 @@ function latestUserInput(request: AiChatSendRequest): string {
   return ''
 }
 
-function createInstanceId(moduleId: string, moduleInstanceId: string): string {
-  return `ai:${moduleId}:${moduleInstanceId}`
+function createBusinessSessionId(businessRegistrationId: string, businessInstanceId: string): string {
+  return `${businessRegistrationId}:${businessInstanceId}`
 }
 
 function normalizeTurn(request: AiChatSendRequest): AppAiTurnMeta {
@@ -48,11 +50,11 @@ function normalizeTurn(request: AiChatSendRequest): AppAiTurnMeta {
   }
 }
 
-function toTransportMessages(messages: AiChatSendRequest['historyMsgs']): AppAiTransportMessage[] {
-  return messages.map((message) => ({
-    role: message.role,
-    content: message.content,
-  }))
+function toCurrentTurnMessages(request: AiChatSendRequest): AppAiTransportMessage[] {
+  const latestUser = latestUserInput(request)
+  return latestUser === ''
+    ? []
+    : [{ role: 'user', content: latestUser }]
 }
 
 function parseToolArgs(raw: string | undefined): unknown {
@@ -73,8 +75,11 @@ function stringifyToolResult(result: unknown): string {
 }
 
 function eventModuleIdFromAction(action: string): string {
-  const parts = action.split('@')
-  return parts.length >= 3 ? (parts[parts.length - 2] ?? 'tool') : 'tool'
+  try {
+    return AiInvocationProtocol.parseActionPath(action).moduleId
+  } catch {
+    return 'tool'
+  }
 }
 
 export class AppAiHost {
@@ -118,17 +123,18 @@ export class AppAiHost {
     }
   }
 
-  private async selectBusiness(request: AiChatSendRequest): Promise<typeof this.selected> {
+  private async selectBusiness(request: AiChatSendRequest, turn: AppAiTurnMeta): Promise<typeof this.selected> {
     if (this.selected !== null) return this.selected
 
     const userInput = latestUserInput(request)
     const decision = await this.options.transport.routeBusiness({
       userInput,
       candidates: this.options.registry.routingCandidates(),
+      turn,
       ...(request.signal === undefined ? {} : { signal: request.signal }),
     })
     if (decision.moduleId === null || decision.confidence < ROUTE_CONFIDENCE_THRESHOLD) {
-      request.onDelta?.('我还不能确定要办理哪个业务。请补充说明，比如“我要提交请假申请”。')
+      request.onDelta?.('我还不能确定要办理哪个业务。请补充说明要处理的业务和目标。')
       return null
     }
 
@@ -148,8 +154,8 @@ export class AppAiHost {
       const scopePreview: AppAiBusinessScope = {
         businessRegistrationId: runtime.moduleId,
         businessInstanceId,
-        instanceId: createInstanceId(runtime.moduleId, businessInstanceId),
-        runtimeInstanceId: createInstanceId(runtime.moduleId, businessInstanceId),
+        instanceId: createBusinessSessionId(runtime.moduleId, businessInstanceId),
+        runtimeInstanceId: createBusinessSessionId(runtime.moduleId, businessInstanceId),
       }
       projection = await runtime.startSession({
         moduleId: runtime.moduleId,
@@ -164,8 +170,8 @@ export class AppAiHost {
     const scope: AppAiBusinessScope = {
       businessRegistrationId: runtime.moduleId,
       businessInstanceId,
-      instanceId: createInstanceId(runtime.moduleId, businessInstanceId),
-      runtimeInstanceId: createInstanceId(runtime.moduleId, businessInstanceId),
+      instanceId: createBusinessSessionId(runtime.moduleId, businessInstanceId),
+      runtimeInstanceId: createBusinessSessionId(runtime.moduleId, businessInstanceId),
     }
     this.selected = { runtime, scope, projection }
     this.selectedScope.value = scope
@@ -174,7 +180,8 @@ export class AppAiHost {
   }
 
   private async send(request: AiChatSendRequest): Promise<void> {
-    const selected = await this.selectBusiness(request)
+    const turn = normalizeTurn(request)
+    const selected = await this.selectBusiness(request, turn)
     if (selected === null) return
 
     const latestUser = latestUserInput(request)
@@ -189,7 +196,7 @@ export class AppAiHost {
       })
     }
 
-    await this.runToolLoop(selected.runtime, selected.scope, selected.projection, request)
+    await this.runToolLoop(selected.runtime, selected.scope, selected.projection, request, turn)
   }
 
   private async runToolLoop(
@@ -197,8 +204,8 @@ export class AppAiHost {
     scope: AppAiBusinessScope,
     projection: AiRuntimeKnowledgeProjection,
     request: AiChatSendRequest,
+    turn: AppAiTurnMeta,
   ): Promise<void> {
-    const turn = normalizeTurn(request)
     const codec = createAppAiToolCodec(projection)
     const runtimeContext = {
       moduleId: runtime.moduleId,
@@ -210,14 +217,8 @@ export class AppAiHost {
       request.systemPrompt,
       projection.promptSnapshot,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
-    const messages = toTransportMessages(request.historyMsgs)
-    const sessionId = await this.options.transport.createSession({
-      systemPrompt,
-      messages,
-      tools: codec.tools,
-      scope,
-      turn,
-    })
+    let pendingMessages = toCurrentTurnMessages(request)
+    const sessionId = scope.instanceId
     const maxRounds = this.options.maxToolRounds ?? 4
 
     for (let round = 0; round < maxRounds; round += 1) {
@@ -225,6 +226,9 @@ export class AppAiHost {
         sessionId,
         scope,
         turn,
+        systemPrompt,
+        tools: codec.tools,
+        messages: pendingMessages,
         ...(request.signal === undefined ? {} : { signal: request.signal }),
         onDelta: request.onDelta,
         onReasoning: request.onReasoning,
@@ -245,21 +249,56 @@ export class AppAiHost {
 
       if (result.toolCalls.length === 0) return
 
+      const toolMessages: AppAiTransportMessage[] = []
+      const executedToolCalls: AppAiTransportToolCall[] = []
+      let lifecycleDirective: AppAiBusinessLifecycleDirective | null = null
+      for (const call of result.toolCalls) {
+        const output = await this.executeToolCall(runtime, scope, projection, turn, codec.actionOf.bind(codec), call, request)
+        if (output !== null) {
+          executedToolCalls.push(call)
+          toolMessages.push(output.toolMessage)
+          if (output.directive.status !== 'continue') {
+            lifecycleDirective = output.directive
+            break
+          }
+        }
+      }
       const assistantMessage: AppAiTransportMessage = {
         role: 'assistant',
         content: result.text,
-        tool_calls: result.toolCalls,
+        tool_calls: executedToolCalls,
       }
-      const toolMessages: AppAiTransportMessage[] = []
-      for (const call of result.toolCalls) {
-        const toolMessage = await this.executeToolCall(runtime, scope, projection, turn, codec.actionOf.bind(codec), call, request)
-        if (toolMessage !== null) toolMessages.push(toolMessage)
+      const messagesToAppend: AppAiTransportMessage[] = [assistantMessage, ...toolMessages]
+      if (lifecycleDirective?.finalAssistantMessage !== undefined && lifecycleDirective.finalAssistantMessage.trim().length > 0) {
+        request.onDelta?.(lifecycleDirective.finalAssistantMessage)
+        runtime.appendMessage({
+          moduleId: runtime.moduleId,
+          moduleInstanceId: scope.businessInstanceId,
+          instanceId: scope.instanceId,
+          role: 'assistant',
+          content: lifecycleDirective.finalAssistantMessage,
+          source: 'system',
+          metadata: {
+            lifecycleStatus: lifecycleDirective.status,
+            ...(lifecycleDirective.reason === undefined ? {} : { reason: lifecycleDirective.reason }),
+          },
+        })
+        messagesToAppend.push({
+          role: 'assistant',
+          content: lifecycleDirective.finalAssistantMessage,
+        })
       }
-      await this.options.transport.appendMessages({
-        sessionId,
-        scope,
-        messages: [assistantMessage, ...toolMessages],
-      })
+      if (lifecycleDirective !== null) {
+        await this.options.transport.appendMessages({
+          sessionId,
+          scope,
+          turn,
+          messages: messagesToAppend,
+        })
+        await runtime.endBusinessInstance?.(runtimeContext, lifecycleDirective)
+        return
+      }
+      pendingMessages = messagesToAppend
     }
 
     request.onDelta?.('工具调用轮次已达上限，请检查当前业务状态后继续。')
@@ -273,7 +312,7 @@ export class AppAiHost {
     actionOf: (toolName: string) => string | null,
     call: AppAiTransportToolCall,
     request: AiChatSendRequest,
-  ): Promise<AppAiTransportMessage | null> {
+  ): Promise<{ toolMessage: AppAiTransportMessage; directive: AppAiBusinessLifecycleDirective } | null> {
     const toolName = call.function?.name ?? ''
     const action = actionOf(toolName)
     if (action === null) {
@@ -290,6 +329,14 @@ export class AppAiHost {
       args,
       projection,
     })
+    const directive = await runtime.afterFunctionCall?.({
+      moduleId: runtime.moduleId,
+      moduleInstanceId: scope.businessInstanceId,
+      instanceId: scope.instanceId,
+      action,
+      args,
+      result,
+    }) ?? { status: 'continue' as const }
     const durationMs = Date.now() - started
     const eventModuleId = eventModuleIdFromAction(action)
     request.onFcCall?.({
@@ -314,9 +361,12 @@ export class AppAiHost {
     })
 
     return {
-      role: 'tool',
-      content: stringifyToolResult(result),
-      ...(call.id === undefined ? {} : { tool_call_id: call.id }),
+      toolMessage: {
+        role: 'tool',
+        content: stringifyToolResult(result),
+        ...(call.id === undefined ? {} : { tool_call_id: call.id }),
+      },
+      directive,
     }
   }
 }

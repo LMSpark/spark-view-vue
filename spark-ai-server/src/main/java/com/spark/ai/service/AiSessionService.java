@@ -109,6 +109,10 @@ public class AiSessionService {
                 .build();
     }
 
+    public void shutdown() {
+        streamExecutor.shutdownNow();
+    }
+
     // ═════════════════════════════════════════════════════════════════════════
     // 公共 API
     // ═════════════════════════════════════════════════════════════════════════
@@ -137,14 +141,26 @@ public class AiSessionService {
                                 List<Map<String, Object>> tools, String mode,
                                 Map<String, Object> scope,
                                 boolean reuseScopeSession) {
+        return createSession(systemPrompt, userPrompt, windowSize, tools, mode, scope, reuseScopeSession, null);
+    }
+
+    public String createSession(String systemPrompt, String userPrompt, int windowSize,
+                                List<Map<String, Object>> tools, String mode,
+                                Map<String, Object> scope,
+                                boolean reuseScopeSession,
+                                String requestedSessionId) {
+        List<Map<String, Object>> messages = userPrompt == null || userPrompt.isBlank()
+                ? List.of()
+                : List.of(messageMap("user", userPrompt));
         return createSessionFromMessages(
             systemPrompt,
-            List.of(messageMap("user", userPrompt)),
+            messages,
             windowSize,
             tools,
             mode,
             scope,
-            reuseScopeSession);
+            reuseScopeSession,
+            requestedSessionId);
         }
 
         /**
@@ -154,7 +170,15 @@ public class AiSessionService {
                     List<Map<String, Object>> tools, String mode,
                     Map<String, Object> scope,
                     boolean reuseScopeSession) {
-        return createSessionFromMessages(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession);
+        return createSessionFromMessages(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession, null);
+        }
+
+        public String createSession(String systemPrompt, List<Map<String, Object>> messages, int windowSize,
+                    List<Map<String, Object>> tools, String mode,
+                    Map<String, Object> scope,
+                    boolean reuseScopeSession,
+                    String requestedSessionId) {
+        return createSessionFromMessages(systemPrompt, messages, windowSize, tools, mode, scope, reuseScopeSession, requestedSessionId);
         }
 
         private String createSessionFromMessages(String systemPrompt,
@@ -163,8 +187,39 @@ public class AiSessionService {
                              List<Map<String, Object>> tools,
                              String mode,
                              Map<String, Object> scope,
-                             boolean reuseScopeSession) {
+                             boolean reuseScopeSession,
+                             String requestedSessionId) {
         SessionScope normalizedScope = normalizeScope(scope);
+        List<Map<String, Object>> safeMessages = messages != null ? messages : List.of();
+        String providedSessionId = stringValue(requestedSessionId);
+        if (providedSessionId != null) {
+            Session existingSession = sessions.get(providedSessionId);
+            if (existingSession != null && matchesScope(existingSession, scope)) {
+                existingSession.moduleId = normalizedScope.moduleId;
+                existingSession.moduleInstanceId = normalizedScope.moduleInstanceId;
+                existingSession.instanceId = normalizedScope.instanceId;
+                existingSession.runtimeInstanceId = normalizedScope.runtimeInstanceId;
+                existingSession.scopeKey = normalizedScope.scopeKey;
+                existingSession.scope = normalizedScope.toMap();
+                existingSession.systemPrompt = systemPrompt;
+                existingSession.windowSize = windowSize > 0 ? windowSize : DEFAULT_WINDOW_SIZE;
+                existingSession.tools = tools;
+                existingSession.mode = mode != null ? mode : "function";
+                existingSession.lastActiveTime = System.currentTimeMillis();
+                if (existingSession.scopeKey != null) {
+                    sessionIdsByScopeKey.put(existingSession.scopeKey, providedSessionId);
+                }
+                log.info("[SESSION] ensured sessionId={} scope={} windowSize={} mode={} tools={}",
+                        providedSessionId, existingSession.scopeKey, existingSession.windowSize, existingSession.mode,
+                        tools != null ? tools.size() : 0);
+                return providedSessionId;
+            }
+            if (existingSession != null) {
+                sessions.remove(providedSessionId);
+                sessionIdsByScopeKey.remove(existingSession.scopeKey, providedSessionId);
+                log.warn("[SESSION] replaced scope-mismatched requested sessionId={}", providedSessionId);
+            }
+        }
         if (reuseScopeSession && normalizedScope.scopeKey != null) {
             String existingSessionId = sessionIdsByScopeKey.get(normalizedScope.scopeKey);
             if (existingSessionId != null) {
@@ -188,7 +243,7 @@ public class AiSessionService {
             }
         }
 
-        String sessionId = UUID.randomUUID().toString();
+        String sessionId = providedSessionId != null ? providedSessionId : UUID.randomUUID().toString();
 
         Session session = new Session();
         session.moduleId = normalizedScope.moduleId;
@@ -205,12 +260,12 @@ public class AiSessionService {
         session.state = SessionState.READY;
         session.consecutiveFailures = 0;
 
-        for (Map<String, Object> message : messages) {
+        for (Map<String, Object> message : safeMessages) {
             session.conversation.add(messageFromMap(message));
         }
 
         sessions.put(sessionId, session);
-        if (reuseScopeSession && session.scopeKey != null) {
+        if ((reuseScopeSession || providedSessionId != null) && session.scopeKey != null) {
             sessionIdsByScopeKey.put(session.scopeKey, sessionId);
         }
 
@@ -231,6 +286,13 @@ public class AiSessionService {
      * 执行一轮对话（非流式），并校验请求 scope 是否匹配后端 session。
      */
     public TurnResult executeTurn(String sessionId, Map<String, Object> scope) {
+        return executeTurn(sessionId, scope, List.of());
+    }
+
+    /**
+     * 执行一轮对话（非流式），先把本轮前端传入的消息追加到 session 历史。
+     */
+    public TurnResult executeTurn(String sessionId, Map<String, Object> scope, List<Map<String, Object>> turnMessages) {
         Session session = sessions.get(sessionId);
         if (session == null) return null;
         if (!matchesScope(session, scope)) {
@@ -252,6 +314,7 @@ public class AiSessionService {
             }
 
             session.lastActiveTime = System.currentTimeMillis();
+            appendTurnMessages(session, turnMessages);
             transition(session, SessionState.PLAN);
             transition(session, SessionState.CALL);
 
@@ -350,14 +413,53 @@ public class AiSessionService {
             Map<String, Object> scope,
             String turnId,
             String streamKey) {
+        executeTurnStream(sessionId, emitter, scope, turnId, streamKey, List.of());
+    }
+
+    /**
+     * 执行一轮对话（SSE 流式），先把本轮前端传入的消息追加到 session 历史。
+     */
+    public void executeTurnStream(
+            String sessionId,
+            SseEmitter emitter,
+            Map<String, Object> scope,
+            String turnId,
+            String streamKey,
+            List<Map<String, Object>> turnMessages) {
+        executeTurnStream(sessionId, emitter, scope, turnId, streamKey, turnMessages, null, DEFAULT_WINDOW_SIZE, null, null);
+    }
+
+    /**
+     * 执行一轮对话（SSE 流式）；前端用 sessionId/turnId 驱动协议，缺失 session 时按 sessionId 初始化。
+     */
+    public void executeTurnStream(
+            String sessionId,
+            SseEmitter emitter,
+            Map<String, Object> scope,
+            String turnId,
+            String streamKey,
+            List<Map<String, Object>> turnMessages,
+            String systemPrompt,
+            int windowSize,
+            List<Map<String, Object>> tools,
+            String mode) {
         Session session = sessions.get(sessionId);
         if (session == null) {
-            try {
-                emitter.send(SseEmitter.event().name("error")
-                        .data("{\"error\":\"会话不存在\"}"));
-                emitter.complete();
-            } catch (IOException ignored) {}
-            return;
+            String prompt = stringValue(systemPrompt);
+            if (prompt == null) {
+                try {
+                    emitter.send(SseEmitter.event().name("error")
+                            .data(objectMapper.writeValueAsString(Map.of(
+                                    "error", "会话不存在",
+                                    "sessionId", sessionId,
+                                    "turnId", turnId != null ? turnId : ""
+                            ))));
+                    emitter.complete();
+                } catch (IOException ignored) {}
+                return;
+            }
+            createSessionFromMessages(prompt, List.of(), windowSize, tools, mode, scope, false, sessionId);
+            session = sessions.get(sessionId);
         }
 
         if (!matchesScope(session, scope)) {
@@ -365,6 +467,7 @@ public class AiSessionService {
                 emitter.send(SseEmitter.event().name("error")
                         .data(objectMapper.writeValueAsString(Map.of(
                                 "error", "SESSION_SCOPE_MISMATCH",
+                                "sessionId", sessionId,
                                 "turnId", turnId != null ? turnId : "",
                                 "streamKey", streamKey != null ? streamKey : "",
                                 "scope", session.scope != null ? session.scope : Map.of()
@@ -374,13 +477,17 @@ public class AiSessionService {
             return;
         }
 
+        applySessionConfig(session, scope, systemPrompt, windowSize, tools, mode);
         session.lastActiveTime = System.currentTimeMillis();
+        appendTurnMessages(session, turnMessages);
         List<Map<String, Object>> messages = buildWindowedMessages(session);
-        StreamMeta streamMeta = new StreamMeta(turnId, streamKey, session.scope);
+        StreamMeta streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope);
+        Session streamSession = session;
+        List<Map<String, Object>> streamMessages = messages;
 
         streamExecutor.submit(() -> {
             try {
-                callLlmStream(messages, session.tools, emitter, session, streamMeta);
+                callLlmStream(streamMessages, streamSession.tools, emitter, streamSession, streamMeta);
             } catch (Exception e) {
                 log.error("[SESSION] stream error sessionId={}: {}", sessionId, e.getMessage());
                 try {
@@ -490,6 +597,44 @@ public class AiSessionService {
                 ? (List<Map<String, Object>>) list
                 : null;
         return message;
+    }
+
+    private static void appendTurnMessages(Session session, List<Map<String, Object>> turnMessages) {
+        if (turnMessages == null || turnMessages.isEmpty()) return;
+        for (Map<String, Object> rawMessage : turnMessages) {
+            if (rawMessage == null || rawMessage.isEmpty()) continue;
+            session.conversation.add(messageFromMap(rawMessage));
+        }
+    }
+
+    private static void applySessionConfig(
+            Session session,
+            Map<String, Object> scope,
+            String systemPrompt,
+            int windowSize,
+            List<Map<String, Object>> tools,
+            String mode) {
+        SessionScope normalizedScope = normalizeScope(scope);
+        session.moduleId = normalizedScope.moduleId;
+        session.moduleInstanceId = normalizedScope.moduleInstanceId;
+        session.instanceId = normalizedScope.instanceId;
+        session.runtimeInstanceId = normalizedScope.runtimeInstanceId;
+        session.scopeKey = normalizedScope.scopeKey;
+        session.scope = normalizedScope.toMap();
+        String prompt = stringValue(systemPrompt);
+        if (prompt != null) {
+            session.systemPrompt = prompt;
+        }
+        if (windowSize > 0) {
+            session.windowSize = windowSize;
+        }
+        if (tools != null) {
+            session.tools = tools;
+        }
+        String normalizedMode = stringValue(mode);
+        if (normalizedMode != null) {
+            session.mode = normalizedMode;
+        }
     }
 
     private List<Map<String, Object>> buildWindowedMessages(Session session) {
@@ -808,6 +953,7 @@ public class AiSessionService {
         // 发送最终结果
         Map<String, Object> resultMap = new LinkedHashMap<>();
         resultMap.put("text", text);
+        resultMap.put("sessionId", streamMeta.sessionId);
         if (reasoning != null) resultMap.put("reasoning", reasoning);
         if (toolCalls != null) resultMap.put("toolCalls", toolCalls);
         resultMap.put("protocolVersion", 3);
@@ -825,6 +971,7 @@ public class AiSessionService {
             .data(objectMapper.writeValueAsString(resultMap)));
         Map<String, Object> doneMap = new LinkedHashMap<>();
         doneMap.put("protocolVersion", 3);
+        doneMap.put("sessionId", streamMeta.sessionId);
         if (streamMeta.turnId != null && !streamMeta.turnId.isBlank()) {
             doneMap.put("turnId", streamMeta.turnId);
         }
@@ -861,7 +1008,7 @@ public class AiSessionService {
         final List<Message> conversation = new ArrayList<>();
     }
 
-    private record StreamMeta(String turnId, String streamKey, Map<String, Object> scope) {}
+    private record StreamMeta(String sessionId, String turnId, String streamKey, Map<String, Object> scope) {}
 
     private enum SessionState {
         READY,

@@ -12,7 +12,6 @@ import {
 } from './scope'
 import type {
   AppAiAppendMessagesInput,
-  AppAiCreateSessionInput,
   AppAiHostTransport,
   AppAiRouteBusinessInput,
   AppAiRouteDecision,
@@ -149,62 +148,23 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
   }
 
   async routeBusiness(input: AppAiRouteBusinessInput): Promise<AppAiRouteDecision> {
-    const response = await fetch(`${this.baseUrl}/chat/stream`, {
-      method: 'POST',
-      headers: this.jsonHeaders(),
+    const businessInstanceId = `route-${input.turn.turnId}`
+    const sessionId = `appAiRouter:${businessInstanceId}`
+    const result = await this.streamTurn({
+      sessionId,
+      turn: input.turn,
+      systemPrompt: '你是严格的 JSON 业务路由器。',
+      tools: [],
+      messages: [{ role: 'user', content: buildRoutePrompt(input) }],
+      scope: {
+        businessRegistrationId: 'appAiRouter',
+        businessInstanceId,
+        instanceId: sessionId,
+        runtimeInstanceId: sessionId,
+      },
       ...(input.signal === undefined ? {} : { signal: input.signal }),
-      body: JSON.stringify({
-        mode: 'single',
-        messages: [{ role: 'user', content: buildRoutePrompt(input) }],
-        systemPrompt: '你是严格的 JSON 业务路由器。',
-      }),
     })
-
-    await assertResponseOk(response)
-
-    if (!response.body) {
-      const text = await response.text()
-      return normalizeRouteDecision(extractJsonObject(text))
-    }
-
-    const decoder = new TextDecoder()
-    let buffer = ''
-    let output = ''
-    await readResponseChunks(response.body, (chunk) => {
-      buffer += decoder.decode(chunk, { stream: true })
-      const parsed = parseSseBlocks(buffer)
-      buffer = parsed.rest
-      for (const event of parsed.events) {
-        if (event.event !== 'delta' && event.event !== 'result' && event.event !== 'message') continue
-        const payload = tryParseJson(event.data)
-        if (isRecord(payload) && typeof payload['delta'] === 'string') output += payload['delta']
-        else if (isRecord(payload) && typeof payload['text'] === 'string') output += payload['text']
-        else if (typeof payload === 'string') output += payload
-      }
-    })
-    return normalizeRouteDecision(extractJsonObject(output))
-  }
-
-  async createSession(input: AppAiCreateSessionInput): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/sessions`, {
-      method: 'POST',
-      headers: this.jsonHeaders(),
-      body: JSON.stringify({
-        protocolVersion: PROTOCOL_VERSION,
-        systemPrompt: input.systemPrompt,
-        messages: input.messages,
-        tools: input.tools,
-        mode: 'function',
-        scope: toRuntimeScope(input.scope),
-        turn: input.turn,
-        reuseScopeSession: false,
-      }),
-    })
-    const body = tryParseJson(await readTextResponse(response))
-    if (!isRecord(body) || typeof body['sessionId'] !== 'string') {
-      throw new Error('AI session create response missing sessionId')
-    }
-    return body['sessionId']
+    return normalizeRouteDecision(extractJsonObject(result.text))
   }
 
   async streamTurn(input: AppAiStreamTurnInput): Promise<AppAiStreamTurnResult> {
@@ -214,8 +174,12 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
       ...(input.signal === undefined ? {} : { signal: input.signal }),
       body: JSON.stringify({
         protocolVersion: PROTOCOL_VERSION,
+        systemPrompt: input.systemPrompt,
+        tools: input.tools,
+        mode: 'function',
         scope: toRuntimeScope(input.scope),
         turn: input.turn,
+        messages: input.messages,
       }),
     })
 
@@ -264,6 +228,14 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
         return
       }
       if (event.event === 'result' && isRecord(payload)) {
+        const responseSessionId = typeof payload['sessionId'] === 'string' ? payload['sessionId'] : ''
+        const responseTurnId = typeof payload['turnId'] === 'string' ? payload['turnId'] : ''
+        if (responseSessionId !== input.sessionId) {
+          throw new Error('AI stream result sessionId mismatch')
+        }
+        if (responseTurnId !== input.turn.turnId) {
+          throw new Error('AI stream result turnId mismatch')
+        }
         if (typeof payload['text'] === 'string') finalText = payload['text']
         if (typeof payload['reasoning'] === 'string') finalReasoning = payload['reasoning']
         finalToolCalls = readToolCalls(payload['toolCalls'])
@@ -285,16 +257,26 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
   }
 
   async appendMessages(input: AppAiAppendMessagesInput): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/append`, {
+    const response = await fetch(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
       method: 'POST',
       headers: this.jsonHeaders(),
       body: JSON.stringify({
         protocolVersion: PROTOCOL_VERSION,
         scope: toRuntimeScope(input.scope),
+        turn: input.turn,
         messages: input.messages,
       }),
     })
-    await readTextResponse(response)
+    const body = tryParseJson(await readTextResponse(response))
+    if (!isRecord(body)) {
+      throw new Error('AI append response missing body')
+    }
+    if (body['sessionId'] !== input.sessionId) {
+      throw new Error('AI append response sessionId mismatch')
+    }
+    if (body['turnId'] !== input.turn.turnId) {
+      throw new Error('AI append response turnId mismatch')
+    }
   }
 }
 

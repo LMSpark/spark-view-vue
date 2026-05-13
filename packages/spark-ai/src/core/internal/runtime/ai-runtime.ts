@@ -2,8 +2,12 @@ import type {
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeAppendMessageOptions,
   AiRuntimeCompleteFunctionCallOptions,
+  AiBusinessRegistration,
+  AiBusinessRegistrationData,
+  AiBusinessRegistrationStoreSnapshot,
   AiModuleInstanceBinding,
   AiModuleRegistration,
+  AiRegisteredBusinessApi,
   AiRegisteredModuleApi,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreSnapshot,
@@ -78,6 +82,9 @@ export class AiRuntime implements AiRuntimeApi {
   /** 顶层模块知识注册表。这里只保存注册方声明的静态/动态知识入口，不保存模块运行状态。 */
   private readonly modules = new Map<string, AiModuleRegistration>()
 
+  /** 通过 registerBusiness 注册的业务根 ID；兼容期避免普通模块被误列为业务。 */
+  private readonly businessIds = new Set<string>()
+
   /** AI 会话表。主键是 `moduleId + moduleInstanceId`，即模块注册 ID + 根模块实例 ID。 */
   private readonly sessions = new Map<string, AiRuntimeSessionRecord>()
 
@@ -103,6 +110,65 @@ export class AiRuntime implements AiRuntimeApi {
   constructor(options: AiRuntimeOptions = {}) {
     this.now = options.now ?? Date.now
     this.knowledgeProjector = new AiKnowledgeProjector(ParameterPayloadRegistry.defaultRegistry)
+  }
+
+  /** 注册业务根知识树；业务 live state 仍由业务服务自管，core 只消费注册知识。 */
+  registerBusiness(source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi {
+    const moduleSource = AiRuntime.moduleSourceFromBusiness(source)
+    const registration = this.projector.createRuntimeRegistration(moduleSource)
+    this.projector.assertUniqueRegistrationKeys(registration)
+    if (this.modules.has(registration.moduleId)) {
+      throw new Error(`Duplicate AI business registration: ${registration.moduleId}`)
+    }
+    this.registerParameterPayloadProviders(AiRuntime.parameterPayloadProvidersFromBusiness(source))
+    this.modules.set(registration.moduleId, registration)
+    this.businessIds.add(registration.moduleId)
+    return this.createRegisteredBusinessApi(this.createRegisteredModuleApi(registration))
+  }
+
+  /** 按 businessId 读取业务知识注册；未知业务返回 undefined。 */
+  getBusinessRegistration(businessId: string): AiBusinessRegistration | undefined {
+    if (!this.businessIds.has(businessId)) return undefined
+    const registration = this.modules.get(businessId)
+    return registration === undefined ? undefined : AiRuntime.moduleToBusinessRegistration(registration)
+  }
+
+  /** 列出已注册业务知识树；列表不代表服务实例或 live state。 */
+  listBusinessRegistrations(): readonly AiBusinessRegistration[] {
+    return Array.from(this.businessIds.values()).flatMap((businessId) => {
+      const registration = this.modules.get(businessId)
+      return registration === undefined ? [] : [AiRuntime.moduleToBusinessRegistration(registration)]
+    })
+  }
+
+  /** 按 businessId 读取可持久化业务注册数据；未知业务返回 undefined。 */
+  getBusinessRegistrationData(businessId: string): AiBusinessRegistrationData | undefined {
+    if (!this.businessIds.has(businessId)) return undefined
+    const data = this.getModuleRegistrationData(businessId)
+    return data === undefined ? undefined : AiRuntime.moduleDataToBusinessData(data)
+  }
+
+  /** 列出已注册业务的可持久化数据快照。 */
+  listBusinessRegistrationData(): readonly AiBusinessRegistrationData[] {
+    return Array.from(this.businessIds.values()).flatMap((businessId) => {
+      const data = this.getBusinessRegistrationData(businessId)
+      return data === undefined ? [] : [data]
+    })
+  }
+
+  /** 按 businessId 读取结构化持久化快照；未知业务返回 undefined。 */
+  getBusinessRegistrationStoreSnapshot(businessId: string): AiBusinessRegistrationStoreSnapshot | undefined {
+    if (!this.businessIds.has(businessId)) return undefined
+    const snapshot = this.getModuleRegistrationStoreSnapshot(businessId)
+    return snapshot === undefined ? undefined : AiRuntime.moduleStoreToBusinessStoreSnapshot(snapshot)
+  }
+
+  /** 列出已注册业务的结构化持久化快照。 */
+  listBusinessRegistrationStoreSnapshots(): readonly AiBusinessRegistrationStoreSnapshot[] {
+    return Array.from(this.businessIds.values()).flatMap((businessId) => {
+      const snapshot = this.getBusinessRegistrationStoreSnapshot(businessId)
+      return snapshot === undefined ? [] : [snapshot]
+    })
   }
 
   /** 注册顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
@@ -801,6 +867,20 @@ export class AiRuntime implements AiRuntimeApi {
     }
   }
 
+  /** 创建注册方使用的业务绑定 API；业务 ID 映射到根模块 ID，live state 仍由业务方管理。 */
+  private createRegisteredBusinessApi(moduleApi: AiRegisteredModuleApi): AiRegisteredBusinessApi {
+    const businessId = moduleApi.moduleId
+    const businessRegistration = AiRuntime.moduleToBusinessRegistration(moduleApi.getRegistration())
+    return {
+      ...moduleApi,
+      businessId,
+      businessRegistration,
+      getBusinessRegistration: () => AiRuntime.moduleToBusinessRegistration(moduleApi.getRegistration()),
+      getBusinessRegistrationData: () => AiRuntime.moduleDataToBusinessData(moduleApi.getRegistrationData()),
+      getBusinessRegistrationStoreSnapshot: () => AiRuntime.moduleStoreToBusinessStoreSnapshot(moduleApi.getRegistrationStoreSnapshot()),
+    }
+  }
+
   /** 读取模块注册；未知模块直接抛错，避免生成空投影。 */
   private getModuleOrThrow(moduleId: string): AiModuleRegistration {
     const module = this.modules.get(moduleId)
@@ -1105,6 +1185,126 @@ export class AiRuntime implements AiRuntimeApi {
       if (found !== null) return found
     }
     return null
+  }
+
+  /** 安装业务注册声明的 payload provider；重复注册同一 provider 视为幂等。 */
+  private registerParameterPayloadProviders(providers: ReadonlyArray<NonNullable<AiBusinessRegistration['parameterPayloadProviders']>[number]>): void {
+    for (const provider of providers) {
+      const existing = ParameterPayloadRegistry.defaultRegistry.getProvider(provider.payloadRef)
+      if (existing === null) {
+        ParameterPayloadRegistry.register(provider)
+        continue
+      }
+      if (
+        existing.payloadRef === provider.payloadRef
+        && existing.description === provider.description
+        && existing.queryPayloads === provider.queryPayloads
+        && existing.guidePayload === provider.guidePayload
+      ) {
+        continue
+      }
+      throw new Error(`Duplicate parameter payload provider: ${provider.payloadRef}`)
+    }
+  }
+
+  private static parameterPayloadProvidersFromBusiness(
+    source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot,
+  ): ReadonlyArray<NonNullable<AiBusinessRegistration['parameterPayloadProviders']>[number]> {
+    return typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function'
+      ? (source as AiBusinessRegistration).parameterPayloadProviders ?? []
+      : []
+  }
+
+  private static moduleSourceFromBusiness(
+    source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot,
+  ): AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot {
+    if (typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function') {
+      return AiRuntime.businessToModuleRegistration(source as AiBusinessRegistration)
+    }
+    if (AiRuntime.isBusinessStoreSnapshot(source)) {
+      return {
+        rootModulePath: source.rootModulePath,
+        modules: source.modules,
+        functions: source.functions,
+        usageRules: source.usageRules,
+        failureModes: source.failureModes,
+      }
+    }
+    if (AiRuntime.isBusinessRegistrationData(source)) return AiRuntime.businessDataToModuleData(source)
+    return AiRuntime.businessToModuleRegistration(source)
+  }
+
+  private static isBusinessRegistrationData(source: unknown): source is AiBusinessRegistrationData {
+    return typeof source === 'object'
+      && source !== null
+      && typeof (source as { readonly getFunctions?: unknown }).getFunctions !== 'function'
+      && typeof (source as { readonly businessId?: unknown }).businessId === 'string'
+      && Array.isArray((source as { readonly functions?: unknown }).functions)
+      && Array.isArray((source as { readonly modules?: unknown }).modules)
+  }
+
+  private static isBusinessStoreSnapshot(source: unknown): source is AiBusinessRegistrationStoreSnapshot {
+    return typeof source === 'object'
+      && source !== null
+      && typeof (source as { readonly rootBusinessPath?: unknown }).rootBusinessPath === 'string'
+      && typeof (source as { readonly rootModulePath?: unknown }).rootModulePath === 'string'
+      && Array.isArray((source as { readonly modules?: unknown }).modules)
+      && Array.isArray((source as { readonly functions?: unknown }).functions)
+  }
+
+  private static businessToModuleRegistration(business: AiBusinessRegistration): AiModuleRegistration {
+    return {
+      moduleId: business.businessId,
+      name: business.name,
+      description: business.description,
+      ...(business.prompt === undefined ? {} : { prompt: business.prompt }),
+      ...(business.modules === undefined ? {} : { modules: business.modules }),
+      ...(business.instanceParam === undefined ? {} : { instanceParam: business.instanceParam }),
+      getFunctions: () => business.getFunctions(),
+    }
+  }
+
+  private static moduleToBusinessRegistration(module: AiModuleRegistration): AiBusinessRegistration {
+    return {
+      businessId: module.moduleId,
+      name: module.name,
+      description: module.description,
+      ...(module.prompt === undefined ? {} : { prompt: module.prompt }),
+      ...(module.modules === undefined ? {} : { modules: module.modules }),
+      ...(module.instanceParam === undefined ? {} : { instanceParam: module.instanceParam }),
+      getFunctions: () => module.getFunctions(),
+    }
+  }
+
+  private static businessDataToModuleData(data: AiBusinessRegistrationData): AiModuleRegistrationData {
+    return {
+      moduleId: data.businessId,
+      name: data.name,
+      description: data.description,
+      ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
+      ...(data.instanceParam === undefined ? {} : { instanceParam: data.instanceParam }),
+      functions: data.functions,
+      modules: data.modules,
+    }
+  }
+
+  private static moduleDataToBusinessData(data: AiModuleRegistrationData): AiBusinessRegistrationData {
+    return {
+      businessId: data.moduleId,
+      name: data.name,
+      description: data.description,
+      ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
+      ...(data.instanceParam === undefined ? {} : { instanceParam: data.instanceParam }),
+      functions: data.functions,
+      modules: data.modules,
+    }
+  }
+
+  private static moduleStoreToBusinessStoreSnapshot(snapshot: AiModuleRegistrationStoreSnapshot): AiBusinessRegistrationStoreSnapshot {
+    return {
+      rootBusinessPath: snapshot.rootModulePath,
+      ...snapshot,
+    }
   }
 
   /** 校验模块 ID、函数 ID、instanceParam 名称等路径段。 */

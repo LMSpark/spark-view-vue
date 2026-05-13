@@ -1,9 +1,11 @@
 import {
+  AiInvocationProtocol,
   LEAVE_REQUEST_MODULE_ID,
   LeaveRequestModule,
   PAGE_DESIGN_MODULE_ID,
   PageDesignModule,
   createLeaveDraftId,
+  type AiBusinessRegistrationData,
   type AiModuleRegistrationData,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeHistoryEntry,
@@ -13,8 +15,10 @@ import {
 import type { PageDesignEditHost } from '@spark-view/spark-page-config'
 import type { AppAiBusinessRegistry } from './business-registry'
 import type {
+  AppAiBusinessAfterFunctionCallOptions,
   AppAiBusinessAppendMessageOptions,
   AppAiBusinessExecuteFunctionCallOptions,
+  AppAiBusinessLifecycleDirective,
   AppAiBusinessResolveInput,
   AppAiBusinessRuntime,
   AppAiBusinessRuntimeContext,
@@ -68,6 +72,43 @@ function createLeaveRequestSystemPrompt(now = new Date()): string {
   ].join('\n')
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function actionFunctionId(action: string): string | null {
+  try {
+    return AiInvocationProtocol.parseActionPath(action).function
+  } catch {
+    return null
+  }
+}
+
+function leaveTypeLabel(value: unknown): string {
+  if (value === 'annual') return '年假'
+  if (value === 'sick') return '病假'
+  if (value === 'personal') return '事假'
+  if (value === 'other') return '其他'
+  return typeof value === 'string' && value.trim().length > 0 ? value : '-'
+}
+
+function submittedLeaveMessage(result: AiRuntimeFunctionCallResult<unknown>): string {
+  const data = result.ok && isRecord(result.data) ? result.data : {}
+  const draft = isRecord(data['draft']) ? data['draft'] : {}
+  const fields = isRecord(draft['fields']) ? draft['fields'] : {}
+  const totalDays = typeof fields['totalDays'] === 'number' ? `${fields['totalDays']}天` : '-'
+  return [
+    '请假申请已提交成功。',
+    '',
+    `请假人：${typeof fields['applicantName'] === 'string' ? fields['applicantName'] : '-'}`,
+    `请假类型：${leaveTypeLabel(fields['leaveType'])}`,
+    `开始日期：${typeof fields['startDate'] === 'string' ? fields['startDate'] : '-'}`,
+    `结束日期：${typeof fields['endDate'] === 'string' ? fields['endDate'] : '-'}`,
+    `请假天数：${totalDays}`,
+    `请假事由：${typeof fields['reason'] === 'string' ? fields['reason'] : '-'}`,
+  ].join('\n')
+}
+
 class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
   readonly moduleId = LEAVE_REQUEST_MODULE_ID
 
@@ -78,6 +119,10 @@ class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
 
   getRegistrationData(): AiModuleRegistrationData {
     return this.module.getRegistrationData()
+  }
+
+  getBusinessRegistrationData(): AiBusinessRegistrationData {
+    return this.module.getBusinessRegistrationData()
   }
 
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
@@ -100,6 +145,38 @@ class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
     return this.module.executeFunctionCall({ ...options, moduleId: LEAVE_REQUEST_MODULE_ID })
   }
 
+  afterFunctionCall(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
+    const functionId = actionFunctionId(options.action)
+    if (functionId === 'submitDraft' && options.result.ok) {
+      return {
+        status: 'complete',
+        reason: 'leave request submitted',
+        finalAssistantMessage: submittedLeaveMessage(options.result),
+        releaseInstance: true,
+      }
+    }
+    if (functionId === 'cancelDraft' && options.result.ok) {
+      return {
+        status: 'abort',
+        reason: 'leave request cancelled',
+        finalAssistantMessage: '当前请假草稿已取消。',
+        releaseInstance: true,
+      }
+    }
+    return { status: 'continue' }
+  }
+
+  endBusinessInstance(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void {
+    this.module.stopSession({
+      ...context,
+      moduleId: LEAVE_REQUEST_MODULE_ID,
+      reason: directive.reason ?? directive.status,
+    })
+    if (directive.releaseInstance === true) {
+      this.module.releaseModuleInstance(context.moduleInstanceId)
+    }
+  }
+
   getSessionHistory(context: AppAiBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[] {
     return this.module.getSessionHistory({ ...context, moduleId: LEAVE_REQUEST_MODULE_ID })
   }
@@ -119,6 +196,10 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
 
   getRegistrationData(): AiModuleRegistrationData {
     return this.module.getRegistrationData()
+  }
+
+  getBusinessRegistrationData(): AiBusinessRegistrationData {
+    return this.module.getBusinessRegistrationData()
   }
 
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
@@ -143,6 +224,17 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
       moduleId: PAGE_DESIGN_MODULE_ID,
       projection: options.projection,
     })
+  }
+
+  endBusinessInstance(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void {
+    this.module.stopSession({
+      ...context,
+      moduleId: PAGE_DESIGN_MODULE_ID,
+      reason: directive.reason ?? directive.status,
+    })
+    if (directive.releaseInstance === true) {
+      this.module.releaseModuleInstance(context.moduleInstanceId)
+    }
   }
 
   getSessionHistory(context: AppAiBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[] {

@@ -1,8 +1,10 @@
 import {
   AiRuntime,
   AiModuleRegistrationBase,
-  ParameterPayloadRegistry,
-  type AiRegisteredModuleApi,
+  type AiBusinessRegistration,
+  type AiBusinessRegistrationData,
+  type AiBusinessRegistrationStoreSnapshot,
+  type AiRegisteredBusinessApi,
   type AiKnowledgeProjection,
   type AiModuleRegistration,
   type AiModuleRegistrationData,
@@ -195,25 +197,6 @@ const PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER: ParameterPayloadProvider = {
   guidePayload: guidePageDesignComponentPayload,
 }
 
-function registerPageDesignPayloadProvider(provider: ParameterPayloadProvider): void {
-  const existing = ParameterPayloadRegistry.defaultRegistry.getProvider(provider.payloadRef)
-  if (existing === null) {
-    ParameterPayloadRegistry.register(provider)
-    return
-  }
-
-  if (
-    existing.payloadRef === provider.payloadRef
-    && existing.description === provider.description
-    && existing.queryPayloads === provider.queryPayloads
-    && existing.guidePayload === provider.guidePayload
-  ) {
-    return
-  }
-
-  throw new Error(`Duplicate parameter payload provider: ${provider.payloadRef}`)
-}
-
 function toObject(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -387,8 +370,10 @@ function createFunctionHandlers<TModuleId extends PageDesignModuleId>(
   }))
 }
 
-export class PageDesignModule implements AiModuleRegistration {
+export class PageDesignModule implements AiBusinessRegistration {
   static readonly moduleId = PAGE_DESIGN_MODULE_ID
+
+  readonly businessId = PAGE_DESIGN_MODULE_ID
 
   readonly moduleId = PAGE_DESIGN_MODULE_ID
 
@@ -398,11 +383,13 @@ export class PageDesignModule implements AiModuleRegistration {
 
   readonly modules: readonly AiModuleRegistration[]
 
+  readonly parameterPayloadProviders = [PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER]
+
   private readonly service: PageDesignService
 
   private readonly core = new AiRuntime()
 
-  private readonly ai: AiRegisteredModuleApi
+  private readonly ai: AiRegisteredBusinessApi
 
   private getFunctionBindingRuntime(): PageDesignFunctionBindingRuntime {
     return {
@@ -420,7 +407,6 @@ export class PageDesignModule implements AiModuleRegistration {
         moduleInstanceId: context.pageId,
       }),
     })
-    registerPageDesignPayloadProvider(PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER)
     this.modules = [
       new PageDesignModuleRegistration({
         moduleId: LIFECYCLE_MODULE_ID,
@@ -483,7 +469,7 @@ export class PageDesignModule implements AiModuleRegistration {
         ),
       }),
     ]
-    this.ai = this.core.registerModule(this)
+    this.ai = this.core.registerBusiness(this)
   }
 
   async projectKnowledge(context: PageDesignRuntimeContext): Promise<AiRuntimeKnowledgeProjection> {
@@ -540,8 +526,16 @@ export class PageDesignModule implements AiModuleRegistration {
     return this.ai.getRegistrationData()
   }
 
+  getBusinessRegistrationData(): AiBusinessRegistrationData {
+    return this.ai.getBusinessRegistrationData()
+  }
+
   getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot {
     return this.ai.getRegistrationStoreSnapshot()
+  }
+
+  getBusinessRegistrationStoreSnapshot(): AiBusinessRegistrationStoreSnapshot {
+    return this.ai.getBusinessRegistrationStoreSnapshot()
   }
 
   async translateFunctionCall(options: PageDesignExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult> {

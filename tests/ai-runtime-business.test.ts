@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   AiRuntime,
+  type AiBusinessRegistration,
   type AiFunctionRegistration,
   type AiModuleRegistration,
   type AiRuntimeApi,
@@ -93,6 +94,83 @@ function createDepartmentModule(): AiModuleRegistration {
 }
 
 describe('AI core module projection and translation API', () => {
+  it('registers business roots without owning business live state', async () => {
+    const core = createDeterministicRuntime()
+    const liveState = { touched: false }
+    const business: AiBusinessRegistration = {
+      businessId: 'leaveApproval',
+      name: 'Leave approval',
+      description: 'Help users finish a leave request.',
+      prompt: 'Collect leave reason only.',
+      getFunctions: () => [{
+        functionId: 'setReason',
+        description: 'Set leave reason.',
+        paramsSchema: {
+          type: 'object',
+          properties: { reason: { type: 'string' } },
+          required: ['reason'],
+        },
+      }],
+    }
+
+    const api = core.registerBusiness(business)
+    const started = await api.startInstance({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+    })
+
+    expect(api.businessId).toBe('leaveApproval')
+    expect(api.moduleId).toBe('leaveApproval')
+    expect(api.getBusinessRegistrationData()).toMatchObject({
+      businessId: 'leaveApproval',
+      name: 'Leave approval',
+    })
+    expect(api.getBusinessRegistrationStoreSnapshot()).toMatchObject({
+      rootBusinessPath: 'leaveApproval',
+      rootModulePath: 'leaveApproval',
+    })
+    expect(core.getBusinessRegistrationData('leaveApproval')).toEqual(api.getBusinessRegistrationData())
+    expect(core.listBusinessRegistrationData()).toEqual([api.getBusinessRegistrationData()])
+    expect(started.availableFunctions.map((item) => item.action)).toEqual([
+      'leave-instance@leaveApproval@setReason',
+    ])
+    expect(liveState.touched).toBe(false)
+
+    const translated = await api.translateFunctionCall({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      action: 'leave-instance@leaveApproval@setReason',
+      args: { reason: 'family care' },
+      projection: started,
+    })
+    expect(translated.ok).toBe(true)
+    expect(liveState.touched).toBe(false)
+
+    const executed = await api.executeFunctionCall({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      runtimeInstanceId: 'leave-session-1',
+      action: 'leave-instance@leaveApproval@setReason',
+      args: { reason: 'family care' },
+      projection: started,
+      run: () => {
+        liveState.touched = true
+        return { ok: true, data: { accepted: true }, summary: 'accepted' }
+      },
+    })
+    expect(executed).toMatchObject({ ok: true })
+    expect(liveState.touched).toBe(true)
+
+    const stopped = api.stopInstance({
+      moduleInstanceId: 'leave-instance',
+      instanceId: 'leave-session-1',
+      reason: 'business completed',
+    })
+    expect(stopped.status).toBe('Stopped')
+    expect(core.getSession('leave-session-1')?.status).toBe('Stopped')
+  })
+
   it('treats startInstance as a session-started notification and projects LLM knowledge', async () => {
     const core = createDeterministicRuntime()
     core.registerModule(createLeaveModule())
