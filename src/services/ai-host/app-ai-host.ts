@@ -82,6 +82,27 @@ function eventModuleIdFromAction(action: string): string {
   }
 }
 
+function emitLlmDiagnosticEvent(
+  request: AiChatSendRequest,
+  scope: AppAiBusinessScope,
+  turn: AppAiTurnMeta,
+  type: 'llm-request' | 'llm-append',
+  data: unknown,
+): void {
+  request.onSseEvent?.({
+    sessionId: scope.instanceId,
+    type,
+    data: stringifyToolResult(data),
+    streamKey: createAppAiStreamKey(scope, 'llm', turn.turnId),
+    scope: {
+      businessRegistrationId: scope.businessRegistrationId,
+      businessInstanceId: scope.businessInstanceId,
+      eventModuleId: 'llm',
+      turnId: turn.turnId,
+    },
+  })
+}
+
 export class AppAiHost {
   private readonly selectedScope = shallowRef<AppAiBusinessScope | null>(null)
 
@@ -222,6 +243,15 @@ export class AppAiHost {
     const maxRounds = this.options.maxToolRounds ?? 4
 
     for (let round = 0; round < maxRounds; round += 1) {
+      emitLlmDiagnosticEvent(request, scope, turn, 'llm-request', {
+        kind: 'streamTurn',
+        round: round + 1,
+        sessionId,
+        turnId: turn.turnId,
+        systemPrompt,
+        tools: codec.tools,
+        messages: pendingMessages,
+      })
       const result = await this.options.transport.streamTurn({
         sessionId,
         scope,
@@ -289,6 +319,12 @@ export class AppAiHost {
         })
       }
       if (lifecycleDirective !== null) {
+        emitLlmDiagnosticEvent(request, scope, turn, 'llm-append', {
+          kind: 'appendMessages',
+          sessionId,
+          turnId: turn.turnId,
+          messages: messagesToAppend,
+        })
         await this.options.transport.appendMessages({
           sessionId,
           scope,

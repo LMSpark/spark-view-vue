@@ -3,28 +3,60 @@ import { readCache, writeCache } from './aiSessionCache'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * 用户随消息上传的文件附件描述。
+ *
+ * 这里只保存文件元信息和后端返回的 fileId，不保存文件二进制内容；
+ * 聊天历史恢复后可以用这些字段展示附件名称、大小和类型。
+ */
 export interface FileAttachment {
+  /** 文件服务返回的稳定标识，用于后续下载、预览或传给业务 sender。 */
   fileId: string
+  /** 用户看到的文件名。 */
   name: string
+  /** 文件大小，单位 byte。 */
   size: number
+  /** MIME 类型，例如 text/plain、image/png。 */
   mimeType: string
 }
 
+/**
+ * 单次 LLM 请求的 token 用量统计。
+ *
+ * 字段名使用前端统一语义，由 parseTokenUsage 把不同供应商的 usage
+ * 响应归一化后写入 assistant 消息。
+ */
 export interface TokenUsage {
+  /** 输入 prompt 消耗的 token 数。 */
   promptTokens?: number
+  /** 模型输出消耗的 token 数。 */
   completionTokens?: number
+  /** 总 token 数。 */
   totalTokens?: number
+  /** 命中 prompt cache 的 token 数。 */
   promptCacheHitTokens?: number
+  /** 未命中 prompt cache 的 token 数。 */
   promptCacheMissTokens?: number
 }
 
+/**
+ * 聊天窗口中的一条可见消息。
+ *
+ * 这是运行态消息结构；落到 localStorage 时会先投影为精简诊断消息，
+ * 不直接保存所有运行态字段。
+ */
 export interface ChatMessage {
+  /** 前端生成的消息 ID，用于渲染 key、typewriter 状态和局部更新。 */
   id: string
+  /** 消息角色。当前 UI 只直接展示用户和助手消息。 */
   role: 'user' | 'assistant'
+  /** 消息正文；assistant 在流式输出中会不断追加。 */
   content: string
   /** DeepSeek-reasoner 的推理思考过程（reasoning_content） */
   reasoning?: string
+  /** 用户消息携带的附件。 */
   attachments?: FileAttachment[]
+  /** 消息创建时间；落盘时序列化为 ISO string。 */
   timestamp: Date
   /** true 表示 AI 仍在流式输出中 */
   streaming?: boolean
@@ -44,6 +76,12 @@ export type ChatMode = 'multi' | 'single'
 export type AiTurnStatus = 'queued' | 'running' | 'done' | 'error' | 'cancelled'
 export type AiTurnOverflowPolicy = 'reject' | 'queue' | 'cancel-oldest'
 
+/**
+ * 前端 turn 并发策略。
+ *
+ * 这是 UI 调度层配置，只决定同一个 AiChatWidget 内如何排队或并发调用 sender；
+ * 后端仍按 sessionId/turnId 识别请求。
+ */
 export interface AiTurnConcurrencyConfig {
   /** 允许同时请求 LLM 的最大 turn 数。默认 1，保持旧的串行行为。 */
   maxParallelTurns?: number
@@ -51,84 +89,178 @@ export interface AiTurnConcurrencyConfig {
   overflow?: AiTurnOverflowPolicy
 }
 
+/**
+ * 一次用户输入对应的前端 turn 元信息。
+ *
+ * 完整对象会传给业务 sender，便于前端诊断和 UI 调度；具体 transport
+ * 可以只把后端协议需要的 turnId 下发。
+ */
 export interface AiTurnRequestMeta {
+  /** 前端生成的 turn ID，用于前后端通信关联和 SSE 诊断归属。 */
   turnId: string
+  /** 当前会话内的发送序号，从 1 开始递增。 */
   seq: number
+  /** 本 turn 创建时可见的已提交消息数；仅前端 UI/诊断使用。 */
   baseRevision: number
+  /** 进入队列的时间。 */
   queuedAt: string
+  /** 实际开始调用 sender 的时间。 */
   startedAt: string
+  /** 创建本 turn 时的最大并发配置快照。 */
   maxParallelTurns: number
 }
 
 export type RecoveryPolicy = 'layered' | 'manual' | 'strict'
 export type CollaborationPolicy = 'auto' | 'critical-confirm' | 'plan-confirm' | 'step-confirm' | 'human-takeover'
 
+/**
+ * 面板内的工具/系统日志。
+ *
+ * 主要用于展示非对话类状态，例如工具执行进度、错误提示、诊断上报结果。
+ */
 export interface ToolLogEntry {
+  /** 日志等级，决定 UI 颜色和图标语义。 */
   type: 'info' | 'success' | 'error'
+  /** 机器可读标签，便于过滤或聚合。 */
   tag: string
+  /** 展示给用户的日志文本。 */
   text: string
+  /** 日志产生时间，ISO string。 */
   timestamp: string
 }
 
+/**
+ * 已持久化的 SSE 事件记录。
+ *
+ * 这是诊断数据，不直接参与下一轮 prompt；用于还原流式事件、排查工具调用和
+ * 前后端 turn/session 对齐问题。
+ */
 export interface AiSseEventEntry {
+  /** 前端生成的事件记录 ID。 */
   id: string
+  /** 事件发生时间，ISO string。 */
   timestamp: string
+  /** 后端/transport 返回的会话 ID。 */
   sessionId?: string
+  /** 前端生成的流标识，通常包含业务、模块和 turn 信息。 */
   streamKey?: string
+  /** 事件归属范围，用于诊断面板按业务实例或 turn 聚合。 */
   scope?: AiSseEventScope
+  /** SSE event 名称，例如 delta、result、tool-result、done。 */
   type: string
+  /** SSE payload 字符串；保持原始文本便于诊断。 */
   data: string
 }
 
+/**
+ * SSE 事件的业务归属信息。
+ *
+ * 由 App AI Host/transport 附加，帮助把底层 SSE 事件映射回业务注册、
+ * 业务实例、事件模块和前端 turn。
+ */
 export interface AiSseEventScope {
+  /** 业务根注册 ID，例如 manualLeave、pageDesign。 */
   businessRegistrationId: string
+  /** 业务实例 ID，例如某个请假草稿或页面 ID。 */
   businessInstanceId: string
+  /** 产生事件的模块 ID，例如 llm 或具体工具模块。 */
   eventModuleId: string
+  /** 归属的前端 turn ID。 */
   turnId: string
 }
 
+/**
+ * sender/transport 推给 useAiChat 的即时 SSE 事件输入。
+ *
+ * useAiChat 会补齐 id/timestamp 后保存为 AiSseEventEntry。
+ */
 export interface AiSseEventInput {
+  /** 可选事件时间；缺省时由前端写入当前时间。 */
   timestamp?: string
+  /** 后端会话 ID。 */
   sessionId?: string
+  /** 诊断流标识。 */
   streamKey?: string
+  /** 业务归属信息。 */
   scope?: AiSseEventScope
+  /** SSE event 名称。 */
   type: string
+  /** SSE payload 文本。 */
   data: string
 }
 
+/**
+ * 已持久化的 Function Calling 调用账本记录。
+ *
+ * 记录工具名、入参、结果、耗时和错误上报状态，便于问题复盘；
+ * 不作为业务状态来源。
+ */
 export interface AiFcCallRecord {
+  /** 前端生成的账本记录 ID。 */
   id: string
+  /** 调用完成或记录生成时间，ISO string。 */
   timestamp: string
+  /** 工具名或 action 名。 */
   toolName: string
+  /** 调用参数，保持原始结构。 */
   args: unknown
+  /** 所属 LLM/tool loop 轮次。 */
   round: number
+  /** LLM 返回的 tool call ID。 */
   callId?: string
+  /** 工具调用结果状态。 */
   status: 'success' | 'error'
+  /** 工具返回结果。 */
   result?: unknown
+  /** 归一化后的错误消息。 */
   error?: string
+  /** 工具执行耗时，单位 ms。 */
   durationMs?: number
+  /** 错误诊断上报状态。 */
   reportStatus?: AiFcErrorReportStatus
+  /** 诊断系统返回的报告 ID。 */
   reportId?: string
+  /** 错误上报失败原因。 */
   reportError?: string
+  /** 错误上报完成时间，ISO string。 */
   reportedAt?: string
 }
 
+/**
+ * sender/transport 推给 useAiChat 的工具调用记录输入。
+ *
+ * 进入状态前会补齐 id/timestamp，并把 error 归一化为字符串。
+ */
 export interface AiFcCallInput {
+  /** 可选调用时间；缺省时由前端写入当前时间。 */
   timestamp?: string
+  /** 工具名或 action 名。 */
   toolName: string
+  /** 调用参数。 */
   args: unknown
+  /** 所属 LLM/tool loop 轮次。 */
   round: number
+  /** LLM 返回的 tool call ID。 */
   callId?: string
+  /** 工具调用结果状态。 */
   status: 'success' | 'error'
+  /** 工具返回结果。 */
   result?: unknown
+  /** 原始错误对象，后续会归一化。 */
   error?: unknown
+  /** 工具执行耗时，单位 ms。 */
   durationMs?: number
 }
 
 export type AiFcErrorReportStatus = 'pending' | 'reported' | 'failed'
 
+/**
+ * Function Calling 错误诊断上报结果。
+ */
 export interface AiFcErrorReportResult {
+  /** 诊断系统返回的报告 ID。 */
   reportId?: string
+  /** 服务端记录时间戳。 */
   serverTimestamp?: number
 }
 
@@ -136,79 +268,185 @@ export type AiFcErrorReporter = (
   record: AiFcCallRecord,
 ) => Promise<AiFcErrorReportResult | void>
 
+/**
+ * 会话展示与业务配置元信息。
+ *
+ * 这些字段只参与运行态 session，不进入 localStorage 诊断快照；
+ * 面板恢复时从当前业务注册/组件配置重新获取。
+ */
 export interface AiSessionMetaConfig {
+  /** 面板标题。 */
   title?: string
+  /** 当前工具实例说明或版本。 */
   toolInstance?: string
+  /** 工具目录文本或摘要。 */
   toolCatalog?: string
+  /** 工具使用指南。 */
   toolGuide?: string
+  /** 业务 prompt 模板摘要。 */
   promptTemplate?: string
+  /** 是否启用 SSE function-call 循环。 */
   sseFcEnabled?: boolean
+  /** 是否启用人工协作能力。 */
   humanCollabEnabled?: boolean
 }
 
+/**
+ * 会话策略快照。
+ */
 export interface AiSessionPolicies {
+  /** 失败恢复策略。 */
   recovery: RecoveryPolicy
+  /** 人工协作策略。 */
   collaboration: CollaborationPolicy
 }
 
+/**
+ * useAiChat 运行时完整会话快照。
+ *
+ * 这是前端 UI 状态，不是后端权威会话历史；写入 localStorage 时会投影为
+ * AiSessionStorageSnapshot，只保留诊断和可见恢复所需字段。
+ */
 export interface AiSessionSnapshot {
-  version: 2
+  /** 快照版本。当前结构版本为 3。 */
+  version: 3
+  /** 业务页 ID；用于缓存管理和诊断聚合。 */
+  pageId: string
+  /** 聊天模式。 */
+  mode: ChatMode
+  /** 可见聊天消息。 */
+  messages: ChatMessage[]
+  /** 工具/系统日志。 */
+  toolLogs: ToolLogEntry[]
+  /** SSE 诊断事件。 */
+  sseEvents: AiSseEventEntry[]
+  /** Function Calling 调用账本。 */
+  fcCalls: AiFcCallRecord[]
+  /** 会话配置快照。 */
+  config: AiSessionMetaConfig
+  /** 策略配置快照。 */
+  policies: AiSessionPolicies
+  /** 快照更新时间，ISO string。 */
+  updatedAt: string
+}
+
+export type AiStoredChatMessage = Omit<ChatMessage, 'timestamp' | 'baseRevision' | 'streaming'> & {
+  timestamp: string
+  streaming?: true
+}
+
+/**
+ * localStorage 中的精简诊断快照。
+ *
+ * 不保存可由当前业务注册重建的 config/policies，也不保存只用于发送瞬间的
+ * baseRevision；目标是支撑刷新恢复和问题复盘，而不是复制完整运行态。
+ */
+export interface AiSessionStorageSnapshot {
+  version: 3
   pageId: string
   mode: ChatMode
-  messages: ChatMessage[]
+  messages: AiStoredChatMessage[]
   toolLogs: ToolLogEntry[]
+  /** 仅保存非文本增量类 SSE 事件；delta/reasoning 已由 messages 承载。 */
   sseEvents: AiSseEventEntry[]
   fcCalls: AiFcCallRecord[]
-  config: AiSessionMetaConfig
-  policies: AiSessionPolicies
   updatedAt: string
 }
 
 type MaybeGetter<T> = T | (() => T)
 
+/**
+ * AiChatWidget 发给业务 sender 的请求。
+ *
+ * sender 通过回调把流式文本、SSE 事件、token usage 和 FC 账本回灌给 UI。
+ */
 export interface AiChatSendRequest {
+  /** 本轮应发送给 LLM/业务宿主的消息历史。 */
   historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
+  /** 聊天模式。 */
   mode: ChatMode
+  /** 前端 turn 元信息。 */
   turn?: AiTurnRequestMeta
+  /** 当前恢复/协作策略。 */
   policies?: AiSessionPolicies
+  /** 业务注入的 system prompt。 */
   systemPrompt?: string
+  /** 本轮取消信号。 */
   signal?: AbortSignal
+  /** 推理内容增量回调。 */
   onReasoning?: (reasoning: string) => void
+  /** 助手正文增量回调。 */
   onDelta?: (delta: string) => void
+  /** usage 原始对象回调。 */
   onUsage?: (usageRaw: Record<string, unknown>) => void
+  /** SSE 诊断事件回调。 */
   onSseEvent?: (event: AiSseEventInput) => void
+  /** FC 调用账本回调。 */
   onFcCall?: (record: AiFcCallInput) => void
 }
 
 export type AiChatSender = (request: AiChatSendRequest) => Promise<void>
 
+/**
+ * 默认文本流接口的请求结构。
+ *
+ * 当调用方没有提供完整 sender 时，AiChatWidget 可退回到 streamAiChatText。
+ */
 export interface StreamAiChatTextRequest {
+  /** 要发送给 LLM 的消息列表。 */
   messages: Array<{ role: string; content: string }>
+  /** 聊天模式。 */
   mode?: ChatMode
+  /** 前端 turn 元信息。 */
   turn?: AiTurnRequestMeta
+  /** system prompt。 */
   systemPrompt?: string
+  /** 本轮取消信号。 */
   signal?: AbortSignal
+  /** 推理内容增量回调。 */
   onReasoning?: (reasoning: string) => void
+  /** 助手正文增量回调。 */
   onDelta?: (delta: string) => void
+  /** usage 原始对象回调。 */
   onUsage?: (usageRaw: Record<string, unknown>) => void
 }
 
 export type StreamAiChatText = (request: StreamAiChatTextRequest) => Promise<string>
 
+/**
+ * useAiChat 的组合式配置。
+ *
+ * 大多数选项支持 getter，便于 AppAiPanel 按当前业务上下文动态切换 storageKey、
+ * sender、prompt 和策略。
+ */
 export interface UseAiChatOptions {
+  /** 默认聊天模式。 */
   mode?: MaybeGetter<ChatMode>
+  /** system prompt。 */
   systemPrompt?: MaybeGetter<string | undefined>
+  /** 业务 sender。 */
   sender?: MaybeGetter<AiChatSender | undefined>
+  /** localStorage key；未传时使用 spark-ai-session:${pageId}。 */
   storageKey?: MaybeGetter<string | undefined>
+  /** 禁用快照读写。 */
   disablePersistence?: MaybeGetter<boolean | undefined>
+  /** 业务页 ID。 */
   pageId?: MaybeGetter<string | undefined>
+  /** 会话配置元信息。 */
   sessionConfig?: MaybeGetter<AiSessionMetaConfig | undefined>
+  /** 默认恢复策略。 */
   defaultRecoveryPolicy?: MaybeGetter<RecoveryPolicy | undefined>
+  /** 默认人工协作策略。 */
   defaultCollaborationPolicy?: MaybeGetter<CollaborationPolicy | undefined>
+  /** turn 并发调度配置。 */
   turnConcurrency?: MaybeGetter<AiTurnConcurrencyConfig | undefined>
+  /** 简化文本流接口。 */
   streamAiChatText?: StreamAiChatText | undefined
+  /** usage 归一化函数。 */
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
+  /** 文件上传函数。 */
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
+  /** FC 错误诊断上报函数。 */
   reportFcError?: MaybeGetter<AiFcErrorReporter | undefined>
 }
 
@@ -245,48 +483,72 @@ function isEmptySseMonitorEvent(entry: AiSseEventInput): boolean {
   return data === '' || (entry.type === 'done' && data === '{}')
 }
 
-function serializeSnapshot(snapshot: AiSessionSnapshot): string {
-  return JSON.stringify({
-    ...snapshot,
-    messages: snapshot.messages.map(message => ({
-      ...message,
-      timestamp: message.timestamp.toISOString(),
-    })),
-  })
+const INTERRUPTED_RESPONSE_NOTICE = '⚠️ 上一轮响应已中断，请重新发送继续。'
+const TRANSIENT_TEXT_SSE_EVENT_TYPES = new Set(['delta', 'reasoning'])
+
+function toStoredMessage(message: ChatMessage): AiStoredChatMessage {
+  const stored: AiStoredChatMessage = {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    timestamp: message.timestamp.toISOString(),
+  }
+
+  if (message.reasoning !== undefined && message.reasoning.trim() !== '') stored.reasoning = message.reasoning
+  if (message.attachments !== undefined && message.attachments.length > 0) stored.attachments = message.attachments
+  if (message.streaming === true) stored.streaming = true
+  if (message.turnId !== undefined) stored.turnId = message.turnId
+  if (message.turnSeq !== undefined) stored.turnSeq = message.turnSeq
+  if (message.turnStatus !== undefined) stored.turnStatus = message.turnStatus
+  if (message.usage !== undefined) stored.usage = message.usage
+
+  return stored
 }
 
-function restoreMessages(raw: string): ChatMessage[] {
-  const parsed = JSON.parse(raw) as Array<Omit<ChatMessage, 'timestamp'> & { timestamp: string }>
-  if (!Array.isArray(parsed)) return []
+function serializeSnapshot(snapshot: AiSessionSnapshot): string {
+  const stored: AiSessionStorageSnapshot = {
+    version: 3,
+    pageId: snapshot.pageId,
+    mode: snapshot.mode,
+    messages: snapshot.messages.map(toStoredMessage),
+    toolLogs: snapshot.toolLogs,
+    sseEvents: snapshot.sseEvents.filter(event => !TRANSIENT_TEXT_SSE_EVENT_TYPES.has(event.type)),
+    fcCalls: snapshot.fcCalls,
+    updatedAt: snapshot.updatedAt,
+  }
+  return JSON.stringify(stored)
+}
 
-  return parsed
-    .filter(message => typeof message.content === 'string')
-    .flatMap((message) => {
-      if (message.streaming !== true) {
-        return [{
-          ...message,
-          timestamp: new Date(message.timestamp),
-        }]
-      }
+function isUnsettledTurnStatus(status: unknown): status is Extract<AiTurnStatus, 'queued' | 'running'> {
+  return status === 'queued' || status === 'running'
+}
 
-      const content = message.content.trim()
-      const reasoning = message.reasoning?.trim() ?? ''
-      if (content === '' && reasoning === '') {
-        return []
-      }
+function restoreMessage(message: AiStoredChatMessage): ChatMessage[] {
+  const wasInterrupted = message.streaming === true || isUnsettledTurnStatus(message.turnStatus)
+  if (!wasInterrupted) {
+    return [{
+      ...message,
+      timestamp: new Date(message.timestamp),
+    }]
+  }
 
-      const interruptionNotice = '⚠️ 上一轮响应已中断，请重新发送继续。'
-      const nextContent = message.role === 'assistant' && !message.content.includes(interruptionNotice)
-        ? `${message.content}${message.content.endsWith('\n') ? '' : '\n\n'}${interruptionNotice}`
-        : message.content
+  const content = message.content.trim()
+  const reasoning = message.reasoning?.trim() ?? ''
+  if (message.role === 'assistant' && content === '' && reasoning === '') {
+    return []
+  }
 
-      return [{
-        ...message,
-        content: nextContent,
-        streaming: false,
-        timestamp: new Date(message.timestamp),
-      }]
-    })
+  const nextContent = message.role === 'assistant' && !message.content.includes(INTERRUPTED_RESPONSE_NOTICE)
+    ? `${message.content}${message.content.endsWith('\n') ? '' : '\n\n'}${INTERRUPTED_RESPONSE_NOTICE}`
+    : message.content
+
+  return [{
+    ...message,
+    content: nextContent,
+    streaming: false,
+    turnStatus: 'cancelled',
+    timestamp: new Date(message.timestamp),
+  }]
 }
 
 function restoreSnapshot(raw: string): AiSessionSnapshot | null {
@@ -294,39 +556,33 @@ function restoreSnapshot(raw: string): AiSessionSnapshot | null {
     version?: number
     pageId?: unknown
     mode?: ChatMode
-    messages?: Array<Omit<ChatMessage, 'timestamp'> & { timestamp: string }>
+    messages?: AiStoredChatMessage[]
     toolLogs?: ToolLogEntry[]
     sseEvents?: AiSseEventEntry[]
     fcCalls?: AiFcCallRecord[]
-    config?: AiSessionMetaConfig
-    policies?: Partial<AiSessionPolicies>
     updatedAt?: string
   }
 
-  if (parsed.version !== 2) return null
+  if (parsed.version !== 3) return null
   if (typeof parsed.pageId !== 'string' || parsed.pageId.trim() === '') return null
   if (!Array.isArray(parsed.messages)) return null
 
   const messages = parsed.messages
     .filter(message => typeof message.content === 'string')
-    .map(message => ({
-      ...message,
-      streaming: false,
-      timestamp: new Date(message.timestamp),
-    }))
+    .flatMap(restoreMessage)
 
   return {
-    version: 2,
+    version: 3,
     pageId: parsed.pageId,
     mode: parsed.mode === 'single' ? 'single' : 'multi',
     messages,
     toolLogs: Array.isArray(parsed.toolLogs) ? parsed.toolLogs : [],
     sseEvents: Array.isArray(parsed.sseEvents) ? parsed.sseEvents : [],
     fcCalls: Array.isArray(parsed.fcCalls) ? parsed.fcCalls : [],
-    config: parsed.config ?? {},
+    config: {},
     policies: {
-      recovery: parsed.policies?.recovery ?? 'layered',
-      collaboration: parsed.policies?.collaboration ?? 'critical-confirm',
+      recovery: 'layered',
+      collaboration: 'critical-confirm',
     },
     updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString(),
   }
@@ -351,91 +607,53 @@ export function useAiChat(options?: UseAiChatOptions) {
   const getParseTokenUsage = () => options?.parseTokenUsage ?? parseTokenUsageDefault
   const getReportFcError = () => resolveOption(options?.reportFcError)
 
+  function createEmptySnapshot(): AiSessionSnapshot {
+    return {
+      version: 3,
+      pageId: getPageId(),
+      mode: getMode(),
+      messages: [],
+      toolLogs: [],
+      sseEvents: [],
+      fcCalls: [],
+      config: getSessionConfig(),
+      policies: {
+        recovery: getDefaultRecoveryPolicy(),
+        collaboration: getDefaultCollaborationPolicy(),
+      },
+      updatedAt: new Date().toISOString(),
+    }
+  }
+
   const initialSnapshot = (() => {
     const storageKey = getStorageKey()
     if (getDisablePersistence() || !storageKey) {
-      return {
-        version: 2,
-        pageId: getPageId(),
-        mode: getMode(),
-        messages: [],
-        toolLogs: [],
-        sseEvents: [],
-        fcCalls: [],
-        config: getSessionConfig(),
-        policies: {
-          recovery: getDefaultRecoveryPolicy(),
-          collaboration: getDefaultCollaborationPolicy(),
-        },
-        updatedAt: new Date().toISOString(),
-      } satisfies AiSessionSnapshot
+      return createEmptySnapshot()
     }
 
     try {
       const raw = readCache(storageKey)
       if (!raw) {
-        return {
-          version: 2,
-          pageId: getPageId(),
-          mode: getMode(),
-          messages: [],
-          toolLogs: [],
-          sseEvents: [],
-          fcCalls: [],
-          config: getSessionConfig(),
-          policies: {
-            recovery: getDefaultRecoveryPolicy(),
-            collaboration: getDefaultCollaborationPolicy(),
-          },
-          updatedAt: new Date().toISOString(),
-        } satisfies AiSessionSnapshot
+        return createEmptySnapshot()
       }
 
       const snapshot = restoreSnapshot(raw)
       if (!snapshot) {
-        const messages = restoreMessages(raw)
-        return {
-          version: 2,
-          pageId: getPageId(),
-          mode: getMode(),
-          messages,
-          toolLogs: [],
-          sseEvents: [],
-          fcCalls: [],
-          config: getSessionConfig(),
-          policies: {
-            recovery: getDefaultRecoveryPolicy(),
-            collaboration: getDefaultCollaborationPolicy(),
-          },
-          updatedAt: new Date().toISOString(),
-        } satisfies AiSessionSnapshot
+        return createEmptySnapshot()
       }
 
       return {
         ...snapshot,
         pageId: getPageId(),
         mode: getMode(),
-        config: {
-          ...snapshot.config,
-          ...getSessionConfig(),
-        },
-      }
-    } catch {
-      return {
-        version: 2,
-        pageId: getPageId(),
-        mode: getMode(),
-        messages: [],
-        toolLogs: [],
-        sseEvents: [],
-        fcCalls: [],
         config: getSessionConfig(),
         policies: {
           recovery: getDefaultRecoveryPolicy(),
           collaboration: getDefaultCollaborationPolicy(),
         },
-        updatedAt: new Date().toISOString(),
-      } satisfies AiSessionSnapshot
+      }
+    } catch {
+      return createEmptySnapshot()
     }
   })()
 
@@ -504,7 +722,7 @@ export function useAiChat(options?: UseAiChatOptions) {
 
   function buildSessionSnapshot(): AiSessionSnapshot {
     return {
-      version: 2,
+      version: 3,
       pageId: getPageId(),
       mode: getMode(),
       messages: messages.value,

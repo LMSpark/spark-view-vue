@@ -61,6 +61,7 @@ describe('AppAiHost', () => {
     const host = new AppAiHost({ registry, transport })
     const config = host.createPanelConfig()
     const onDelta = vi.fn()
+    const onSseEvent = vi.fn()
 
     expect(resolveMaybeGetter(config.disablePersistence ?? false)).toBe(true)
 
@@ -68,6 +69,7 @@ describe('AppAiHost', () => {
       historyMsgs: [{ role: 'user', content: '我要请假两天' }],
       mode: 'multi',
       onDelta,
+      onSseEvent,
     })
 
     expect(streamedTurns[0]?.scope).toMatchObject({
@@ -83,6 +85,26 @@ describe('AppAiHost', () => {
     expect(resolveMaybeGetter(config.storageKey)).toBe('spark-ai-session:manualLeave:leave-draft-1')
     expect(onDelta).toHaveBeenCalledWith(expect.stringContaining('人工请假'))
     expect(onDelta).toHaveBeenCalledWith('请假已进入草稿')
+    const llmRequest = onSseEvent.mock.calls
+      .map((call) => call[0])
+      .find((event) => event.type === 'llm-request')
+    expect(llmRequest).toMatchObject({
+      sessionId: 'manualLeave:leave-draft-1',
+      streamKey: expect.stringContaining('manualLeave::leave-draft-1::llm::'),
+      scope: expect.objectContaining({
+        businessRegistrationId: 'manualLeave',
+        businessInstanceId: 'leave-draft-1',
+        eventModuleId: 'llm',
+      }),
+    })
+    const llmRequestData = JSON.parse(llmRequest?.data ?? '{}') as {
+      systemPrompt?: string
+      messages?: Array<{ role: string; content: string }>
+      tools?: Array<{ function?: { name?: string } }>
+    }
+    expect(llmRequestData.systemPrompt).toContain('当前 UTC 时间：2026-05-13T14:41:46.000Z')
+    expect(llmRequestData.messages).toEqual([{ role: 'user', content: '我要请假两天' }])
+    expect(llmRequestData.tools?.some((tool) => tool.function?.name?.includes('describeDraft'))).toBe(true)
   })
 
   it('registers PageDesign only in the composition root when an edit host is provided', () => {
@@ -412,9 +434,13 @@ describe('AppAiHost', () => {
       },
     })
 
+    const sseEvents: Array<{ type: string; data: string }> = []
     await host.createPanelConfig().sender({
       historyMsgs: [{ role: 'user', content: '检查任务' }],
       mode: 'multi',
+      onSseEvent: (event) => {
+        sseEvents.push(event)
+      },
     })
 
     expect(streamTurn).toHaveBeenCalledTimes(2)
@@ -432,6 +458,22 @@ describe('AppAiHost', () => {
         content: expect.stringContaining('"checked":true'),
       }),
     ])
+    const llmRequests = sseEvents.filter((event) => event.type === 'llm-request')
+    expect(llmRequests).toHaveLength(2)
+    const firstRequest = JSON.parse(llmRequests[0]?.data ?? '{}') as {
+      systemPrompt?: string
+      messages?: unknown
+      tools?: Array<{ function?: { name?: string } }>
+    }
+    const secondRequest = JSON.parse(llmRequests[1]?.data ?? '{}') as {
+      messages?: Array<{ role?: string; content?: string; tool_call_id?: string }>
+    }
+    expect(firstRequest.systemPrompt).toContain('Check tasks.')
+    expect(firstRequest.messages).toEqual([{ role: 'user', content: '检查任务' }])
+    expect(firstRequest.tools?.[0]?.function?.name).toContain('check')
+    expect(secondRequest.messages).toEqual(expect.arrayContaining([
+      expect.objectContaining({ role: 'tool', tool_call_id: 'call_check', content: expect.stringContaining('"checked":true') }),
+    ]))
   })
 
   it('sends auth and tenant headers through the fetch transport', async () => {

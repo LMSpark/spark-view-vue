@@ -242,6 +242,7 @@ interface ChatMessageLike {
   attachments?: FileAttachment[]
   timestamp?: Date | string
   streaming?: boolean
+  turnId?: string
   turnSeq?: number
   turnStatus?: 'queued' | 'running' | 'done' | 'error' | 'cancelled'
   usage?: TokenUsageLike
@@ -258,6 +259,13 @@ interface SseEventLike {
   id: string
   timestamp: string
   sessionId?: string
+  streamKey?: string
+  scope?: {
+    businessRegistrationId?: string
+    businessInstanceId?: string
+    eventModuleId?: string
+    turnId?: string
+  }
   type: string
   data: string
 }
@@ -337,6 +345,8 @@ interface StructuredDiagnosticItem {
   payload: string
   subtitle?: string
   clarification?: ClarificationPayload
+  turnId?: string
+  turnSeq?: number
 }
 
 interface StructuredFcCallRecord {
@@ -364,32 +374,44 @@ interface StructuredToolLogRecord {
   text: string
 }
 
-interface StructuredSseEventRecord {
-  id: string
+type SemanticTimelineSource = 'message' | 'llm-request' | 'llm-append' | 'fc-call' | 'fc-result' | 'sse' | 'sse-text' | 'clarification'
+
+interface StructuredSemanticTimelineItem {
   timestamp: string
-  type: string
-  data: string
-  sessionId?: string
+  speaker: 'system' | 'user' | 'LLM'
+  text: string
+  tokenUsage?: TokenUsageLike
+  payload?: unknown
+}
+
+interface StructuredTurnDiagnosticRecord {
+  turnId: string
+  turnSeq?: number
+  status?: ChatMessageLike['turnStatus']
+  sessionIds: string[]
+  timeline: StructuredSemanticTimelineItem[]
 }
 
 interface StructuredDiagnosticsSnapshot {
-  version: 1
+  version: 3
   generatedAt: string
   pageId: string
   counts: {
+    turns: number
     totalTimelineItems: number
     humanInputs: number
     assistantMessages: number
+    llmRequests: number
+    llmAppends: number
     sseEvents: number
     sseTextSegments: number
     toolLogs: number
     clarifications: number
     fcCalls: number
+    semanticItems: number
   }
-  timeline: StructuredDiagnosticItem[]
+  turns: StructuredTurnDiagnosticRecord[]
   toolLogs: StructuredToolLogRecord[]
-  sseEvents: StructuredSseEventRecord[]
-  fcCalls: StructuredFcCallRecord[]
 }
 
 const props = defineProps<{
@@ -470,6 +492,7 @@ const RECOVERY_OPTIONS: PolicyOption<RecoveryPolicyLike>[] = [
 ]
 
 const SSE_TEXT_EVENT_TYPES = new Set(['delta', 'reasoning'])
+const TIMELINE_SSE_EVENT_TYPES = new Set(['llm-request', 'llm-append', 'tool-result', 'result', 'error'])
 
 const COLLAB_OPTIONS: PolicyOption<CollaborationPolicyLike>[] = [
   { value: 'auto', short: '自动', label: '自动执行：允许直接执行写入' },
@@ -543,6 +566,25 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
       payload: stringifyPayload(clarification),
       clarification,
       openByDefault: true,
+      order: order++,
+    })
+  }
+
+  for (const event of props.sseEvents ?? []) {
+    if (!isVisibleSseEvent(event)) continue
+    if (!TIMELINE_SSE_EVENT_TYPES.has(event.type)) continue
+    const timestamp = toIsoTimestamp(event.timestamp)
+    items.push({
+      id: `sse:${event.id}`,
+      timestamp,
+      sortTime: toSortTime(timestamp),
+      kind: 'sse',
+      source: 'sse',
+      kindLabel: 'SSE',
+      title: `SSE ${formatSseTypeLabel(event.type)}`,
+      ...(event.sessionId !== undefined ? { subtitle: event.sessionId } : {}),
+      payload: event.data,
+      openByDefault: event.type === 'llm-request' || event.type === 'llm-append',
       order: order++,
     })
   }
@@ -653,6 +695,12 @@ function formatSseTypeLabel(type: string): string {
       return '完成'
     case 'message':
       return '消息'
+    case 'llm-request':
+      return 'LLM请求'
+    case 'llm-append':
+      return 'LLM追加'
+    case 'tool-result':
+      return '工具结果'
     default:
       return `事件 ${type}`
   }
@@ -921,6 +969,37 @@ function formatMessagePayload(message: ChatMessageLike): string {
   return '(empty)'
 }
 
+function formatSemanticMessageText(message: ChatMessageLike): string {
+  const lines: string[] = []
+  if (message.content.trim() !== '') lines.push(message.content)
+  if (message.reasoning !== undefined && message.reasoning.trim() !== '') {
+    lines.push(`[reasoning]\n${message.reasoning}`)
+  }
+  if (message.attachments !== undefined && message.attachments.length > 0) {
+    lines.push(`[attachments]\n${stringifyPayload(message.attachments)}`)
+  }
+  if (lines.length > 0) return lines.join('\n\n')
+  if (message.turnStatus === 'queued') return '排队中...'
+  if (message.streaming === true) return '等待响应...'
+  return '(empty)'
+}
+
+function toMessageDiagnosticItem(message: ChatMessageLike): StructuredDiagnosticItem {
+  const isHumanInput = message.role === 'user'
+  const timestamp = toIsoTimestamp(message.timestamp)
+  return {
+    id: `message:${message.id}`,
+    timestamp,
+    source: isHumanInput ? 'human' : 'assistant',
+    kind: 'message',
+    label: isHumanInput ? '人工输入' : '助手',
+    title: isHumanInput ? '用户消息' : formatAssistantMessageTitle(message),
+    payload: formatMessagePayload(message),
+    ...(message.turnId !== undefined ? { turnId: message.turnId } : {}),
+    ...(message.turnSeq !== undefined ? { turnSeq: message.turnSeq } : {}),
+  }
+}
+
 function stringifyPayload(value: unknown): string {
   if (value === undefined) return '(undefined)'
   if (typeof value === 'string') return value
@@ -928,20 +1007,6 @@ function stringifyPayload(value: unknown): string {
     return JSON.stringify(value, null, 2)
   } catch {
     return String(value)
-  }
-}
-
-function toStructuredDiagnosticItem(item: DiagnosticItem): StructuredDiagnosticItem {
-  return {
-    id: item.id,
-    timestamp: item.timestamp,
-    source: item.source,
-    kind: item.kind,
-    label: item.kindLabel,
-    title: item.title,
-    payload: item.payload,
-    ...(item.subtitle !== undefined ? { subtitle: item.subtitle } : {}),
-    ...(item.clarification !== undefined ? { clarification: item.clarification } : {}),
   }
 }
 
@@ -975,14 +1040,266 @@ function toStructuredToolLogRecord(log: ToolLogLike): StructuredToolLogRecord {
   }
 }
 
-function toStructuredSseEventRecord(event: SseEventLike): StructuredSseEventRecord {
+interface TurnDiagnosticDraft {
+  order: number
+  turnId: string
+  turnSeq?: number
+  status?: ChatMessageLike['turnStatus']
+  sessionIds: Set<string>
+  timeline: Array<StructuredSemanticTimelineItem & {
+    source: SemanticTimelineSource
+    title: string
+    sortTime: number
+    order: number
+  }>
+}
+
+function createTurnDiagnosticDraft(turnId: string, order: number): TurnDiagnosticDraft {
   return {
-    id: event.id,
-    timestamp: event.timestamp,
-    type: event.type,
-    data: event.data,
-    ...(event.sessionId !== undefined ? { sessionId: event.sessionId } : {}),
+    order,
+    turnId,
+    sessionIds: new Set<string>(),
+    timeline: [],
   }
+}
+
+function createSemanticItem(
+  item: StructuredSemanticTimelineItem & { source: SemanticTimelineSource; title: string },
+): StructuredSemanticTimelineItem & { source: SemanticTimelineSource; title: string; sortTime: number; order: number } {
+  return {
+    ...item,
+    sortTime: toSortTime(item.timestamp),
+    order: 0,
+  }
+}
+
+function pushSemanticItem(
+  draft: TurnDiagnosticDraft,
+  item: StructuredSemanticTimelineItem & { source: SemanticTimelineSource; title: string },
+): void {
+  const next = createSemanticItem(item)
+  next.order = draft.timeline.length
+  draft.timeline.push(next)
+}
+
+function parseJsonPayload(data: string): unknown {
+  try {
+    return JSON.parse(data)
+  } catch {
+    return data
+  }
+}
+
+function messageLine(value: unknown): string | null {
+  if (!isRecord(value)) return null
+  const role = optionalString(value['role']) ?? 'message'
+  const content = typeof value['content'] === 'string' ? value['content'] : stringifyPayload(value['content'])
+  return `${role}: ${content}`
+}
+
+function formatTransportMessages(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.map((item) => messageLine(item) ?? stringifyPayload(item))
+}
+
+function toolNameOf(value: unknown): string | null {
+  if (!isRecord(value) || !isRecord(value['function'])) return null
+  return optionalString(value['function']['name']) ?? null
+}
+
+function formatToolNames(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.map(toolNameOf).filter((name): name is string => name !== null)
+}
+
+function formatLlmRequestText(payload: unknown): string {
+  if (!isRecord(payload)) return stringifyPayload(payload)
+  const lines: string[] = []
+  const systemPrompt = optionalString(payload['systemPrompt'])
+  if (systemPrompt !== undefined) lines.push(`system:\n${systemPrompt}`)
+  const messages = formatTransportMessages(payload['messages'])
+  if (messages.length > 0) lines.push(`messages:\n${messages.join('\n')}`)
+  const tools = formatToolNames(payload['tools'])
+  if (tools.length > 0) lines.push(`tools:\n${tools.map((tool) => `- ${tool}`).join('\n')}`)
+  return lines.length === 0 ? stringifyPayload(payload) : lines.join('\n\n')
+}
+
+function formatLlmAppendText(payload: unknown): string {
+  if (!isRecord(payload)) return stringifyPayload(payload)
+  const messages = formatTransportMessages(payload['messages'])
+  return messages.length === 0
+    ? stringifyPayload(payload)
+    : `messages:\n${messages.join('\n')}`
+}
+
+function semanticItemFromSseEvent(
+  event: SseEventLike,
+): (StructuredSemanticTimelineItem & { source: SemanticTimelineSource; title: string }) | null {
+  if (SSE_TEXT_EVENT_TYPES.has(event.type)) return null
+  const payload = parseJsonPayload(event.data)
+  if (event.type === 'llm-request') {
+    return {
+      timestamp: event.timestamp,
+      speaker: 'system',
+      source: 'llm-request',
+      title: '提交给 LLM',
+      text: formatLlmRequestText(payload),
+      payload,
+    }
+  }
+  if (event.type === 'llm-append') {
+    return {
+      timestamp: event.timestamp,
+      speaker: 'system',
+      source: 'llm-append',
+      title: '追加给 LLM',
+      text: formatLlmAppendText(payload),
+      payload,
+    }
+  }
+  if (event.type === 'tool-result') {
+    return {
+      timestamp: event.timestamp,
+      speaker: 'system',
+      source: 'sse',
+      title: 'FC 结果',
+      text: stringifyPayload(payload),
+      payload,
+    }
+  }
+  if (event.type === 'result') {
+    const text = isRecord(payload) && typeof payload['text'] === 'string'
+      ? payload['text']
+      : stringifyPayload(payload)
+    return {
+      timestamp: event.timestamp,
+      speaker: 'LLM',
+      source: 'sse',
+      title: 'LLM 结果',
+      text,
+      payload,
+    }
+  }
+  return {
+    timestamp: event.timestamp,
+    speaker: 'system',
+    source: 'sse',
+    title: `SSE ${formatSseTypeLabel(event.type)}`,
+    text: stringifyPayload(payload),
+    payload,
+  }
+}
+
+function pushFcCallSemanticItems(draft: TurnDiagnosticDraft, call: StructuredFcCallRecord): void {
+  const title = formatActionTitle(call.toolName)
+  pushSemanticItem(draft, {
+    timestamp: call.timestamp,
+    speaker: 'LLM',
+    source: 'fc-call',
+    title: `FC 调用：${title}`,
+    text: `args:\n${stringifyPayload(call.args)}`,
+    payload: {
+      toolName: call.toolName,
+      args: call.args,
+      ...(call.callId !== undefined ? { callId: call.callId } : {}),
+    },
+  })
+
+  const resultText = call.status === 'error'
+    ? (call.error ?? stringifyPayload(call.result))
+    : stringifyPayload(call.result)
+  pushSemanticItem(draft, {
+    timestamp: call.timestamp,
+    speaker: 'system',
+    source: 'fc-result',
+    title: `FC 结果：${title}`,
+    text: resultText,
+    payload: {
+      toolName: call.toolName,
+      status: call.status,
+      ...(call.result !== undefined ? { result: call.result } : {}),
+      ...(call.error !== undefined ? { error: call.error } : {}),
+    },
+  })
+}
+
+function buildTurnDiagnostics(
+  visibleSseEvents: SseEventLike[],
+  fcCalls: StructuredFcCallRecord[],
+): StructuredTurnDiagnosticRecord[] {
+  const drafts = new Map<string, TurnDiagnosticDraft>()
+  let order = 0
+
+  const ensureDraft = (turnId: string): TurnDiagnosticDraft => {
+    let draft = drafts.get(turnId)
+    if (draft === undefined) {
+      draft = createTurnDiagnosticDraft(turnId, order++)
+      drafts.set(turnId, draft)
+    }
+    return draft
+  }
+
+  const turnKeyBySeq = new Map<number, string>()
+  const messageTurnIds = new Set<string>()
+  for (const message of props.messages) {
+    const turnId = message.turnId ?? `message:${message.id}`
+    messageTurnIds.add(turnId)
+    const draft = ensureDraft(turnId)
+    if (message.turnSeq !== undefined) {
+      draft.turnSeq = draft.turnSeq ?? message.turnSeq
+      turnKeyBySeq.set(message.turnSeq, turnId)
+    }
+    if (message.turnStatus !== undefined) draft.status = message.turnStatus
+    pushSemanticItem(draft, {
+      timestamp: toIsoTimestamp(message.timestamp),
+      speaker: message.role === 'user' ? 'user' : 'LLM',
+      source: 'message',
+      title: message.role === 'user' ? '用户消息' : formatAssistantMessageTitle(message),
+      text: formatSemanticMessageText(message),
+      ...(message.role === 'assistant' && message.usage !== undefined ? { tokenUsage: message.usage } : {}),
+      payload: toMessageDiagnosticItem(message),
+    })
+  }
+
+  const singleMessageTurnId = messageTurnIds.size === 1 ? Array.from(messageTurnIds)[0] : undefined
+  for (const event of visibleSseEvents) {
+    const turnId = event.scope?.turnId ?? singleMessageTurnId ?? `sse:${event.sessionId ?? event.id}`
+    const draft = ensureDraft(turnId)
+    if (event.sessionId !== undefined) draft.sessionIds.add(event.sessionId)
+    const semantic = semanticItemFromSseEvent(event)
+    if (semantic !== null) pushSemanticItem(draft, semantic)
+  }
+
+  for (const call of fcCalls) {
+    const turnId = turnKeyBySeq.get(call.round) ?? singleMessageTurnId ?? `round:${call.round}`
+    const draft = ensureDraft(turnId)
+    pushFcCallSemanticItems(draft, call)
+    const clarification = extractClarificationPayload(call)
+    if (clarification !== null) {
+      pushSemanticItem(draft, {
+        timestamp: call.timestamp,
+        speaker: 'LLM',
+        source: 'clarification',
+        title: clarification.title,
+        text: stringifyPayload(clarification),
+        payload: clarification,
+      })
+    }
+  }
+
+  return Array.from(drafts.values())
+    .sort((left, right) => left.order - right.order)
+    .map((draft): StructuredTurnDiagnosticRecord => {
+      return {
+        turnId: draft.turnId,
+        ...(draft.turnSeq !== undefined ? { turnSeq: draft.turnSeq } : {}),
+        ...(draft.status !== undefined ? { status: draft.status } : {}),
+        sessionIds: Array.from(draft.sessionIds),
+        timeline: draft.timeline
+          .sort((left, right) => left.sortTime - right.sortTime || left.order - right.order)
+          .map(({ sortTime: _sortTime, order: _order, source: _source, title: _title, ...item }) => item),
+      }
+    })
 }
 
 function buildDiagnosticsData(): StructuredDiagnosticsSnapshot {
@@ -993,26 +1310,31 @@ function buildDiagnosticsData(): StructuredDiagnosticsSnapshot {
     .map(toStructuredToolLogRecord)
   const fcCalls = (props.fcCalls ?? []).map(toStructuredFcCallRecord)
   const visibleSseEvents = (props.sseEvents ?? []).filter(isVisibleSseEvent)
-  const sseEvents = visibleSseEvents.map(toStructuredSseEventRecord)
   const sseTextSegments = buildSseTextDiagnosticItems(visibleSseEvents, props.pageId)
+  const turns = buildTurnDiagnostics(visibleSseEvents, fcCalls)
+  const semanticItems = turns.reduce((sum, turn) => sum + turn.timeline.length, 0)
+  const llmRequests = visibleSseEvents.filter((event) => event.type === 'llm-request').length
+  const llmAppends = visibleSseEvents.filter((event) => event.type === 'llm-append').length
   return {
-    version: 1,
+    version: 3,
     generatedAt: new Date().toISOString(),
     pageId: normalizeDiagnosticPageId(props.pageId),
     counts: {
+      turns: turns.length,
       totalTimelineItems: items.length,
       humanInputs: items.filter((item) => item.source === 'human').length,
       assistantMessages: items.filter((item) => item.source === 'assistant').length,
-      sseEvents: sseEvents.length,
+      llmRequests,
+      llmAppends,
+      sseEvents: visibleSseEvents.length,
       sseTextSegments: sseTextSegments.length,
       toolLogs: toolLogs.length,
       clarifications: items.filter((item) => item.kind === 'clarification').length,
       fcCalls: fcCalls.length,
+      semanticItems,
     },
-    timeline: items.map(toStructuredDiagnosticItem),
+    turns,
     toolLogs,
-    sseEvents,
-    fcCalls,
   }
 }
 

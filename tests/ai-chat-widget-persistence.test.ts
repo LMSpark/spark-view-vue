@@ -126,44 +126,86 @@ describe('AiChatWidget persistence', () => {
     wrapper.unmount()
   })
 
-  it('sanitizes interrupted streaming messages when restoring from storage', async () => {
-    localStorage.setItem('ai-chat-widget-test', JSON.stringify([
+  it('sanitizes interrupted v3 snapshot turns when restoring from storage', async () => {
+    localStorage.setItem('ai-chat-widget-v3-interrupted', JSON.stringify({
+      version: 3,
+      pageId: 'ai-chat-widget-v3-interrupted',
+      mode: 'multi',
+      messages: [
+        {
+          id: 'u1',
+          role: 'user',
+          content: '生成订单页面',
+          timestamp: new Date().toISOString(),
+          turnId: 'turn-1',
+          turnSeq: 1,
+          turnStatus: 'running',
+        },
+        {
+          id: 'a1',
+          role: 'assistant',
+          content: '正在生成页面...',
+          timestamp: new Date().toISOString(),
+          streaming: true,
+          turnId: 'turn-1',
+          turnSeq: 1,
+          turnStatus: 'running',
+        },
+        {
+          id: 'a2',
+          role: 'assistant',
+          content: '',
+          timestamp: new Date().toISOString(),
+          streaming: true,
+          turnId: 'turn-2',
+          turnSeq: 2,
+          turnStatus: 'queued',
+        },
+      ],
+      toolLogs: [],
+      sseEvents: [],
+      fcCalls: [],
+      updatedAt: new Date().toISOString(),
+    }))
+
+    const restored = mount(AiChatWidget, {
+      props: {
+        title: 'Restored AI',
+        storageKey: 'ai-chat-widget-v3-interrupted',
+      },
+    })
+
+    await flushPromises()
+
+    expect(restored.text()).toContain('生成订单页面')
+    expect(restored.text()).toContain('正在生成页面...')
+    expect(restored.text()).toContain('上一轮响应已中断，请重新发送继续。')
+    expect(restored.text()).toContain('AI 已取消')
+    expect(restored.find('.streaming-cursor').exists()).toBe(false)
+    expect(restored.text()).not.toContain('AI 排队中')
+    expect(restored.text()).not.toContain('思考中...')
+  })
+
+  it('ignores legacy non-v3 snapshots when restoring from storage', async () => {
+    localStorage.setItem('ai-chat-widget-legacy', JSON.stringify([
       {
-        id: 'u1',
+        id: 'u-old',
         role: 'user',
-        content: '删除最后修改人字段',
+        content: '旧数组快照不再恢复',
         timestamp: new Date().toISOString(),
-      },
-      {
-        id: 'a1',
-        role: 'assistant',
-        content: '已接收需求，正在执行 DataSet 模型级编辑...',
-        timestamp: new Date().toISOString(),
-        streaming: true,
-      },
-      {
-        id: 'a2',
-        role: 'assistant',
-        content: '',
-        timestamp: new Date().toISOString(),
-        streaming: true,
       },
     ]))
 
     const restored = mount(AiChatWidget, {
       props: {
         title: 'Restored AI',
-        storageKey: 'ai-chat-widget-test',
+        storageKey: 'ai-chat-widget-legacy',
       },
     })
 
     await flushPromises()
 
-    expect(restored.text()).toContain('删除最后修改人字段')
-    expect(restored.text()).toContain('已接收需求，正在执行 DataSet 模型级编辑...')
-    expect(restored.text()).toContain('上一轮响应已中断，请重新发送继续。')
-    expect(restored.find('.streaming-cursor').exists()).toBe(false)
-    expect(restored.text()).not.toContain('思考中...')
+    expect(restored.text()).not.toContain('旧数组快照不再恢复')
   })
 
   it('skips snapshot restore and writes when persistence is disabled', async () => {
@@ -502,34 +544,41 @@ describe('AiChatWidget persistence', () => {
     expect(writeText).toHaveBeenCalledTimes(1)
     const structured = JSON.parse(writeText.mock.calls[0]?.[0] as string) as {
       pageId: string
-      counts: { humanInputs: number; fcCalls: number; sseEvents: number; sseTextSegments: number; toolLogs: number }
-      timeline: Array<{ source: string; kind: string; payload: string; title: string }>
+      counts: {
+        turns: number
+        humanInputs: number
+        fcCalls: number
+        sseEvents: number
+        sseTextSegments: number
+        toolLogs: number
+        semanticItems: number
+      }
+      turns: Array<{
+        timeline: Array<{ timestamp: string; speaker: string; text: string; tokenUsage?: { totalTokens?: number } }>
+      }>
       toolLogs: Array<{ tag: string; title: string; text: string }>
-      sseEvents: Array<{ type: string; data: string; sessionId?: string }>
-      fcCalls: Array<{ toolName: string; status: string }>
     }
     expect(structured.pageId).toBe('orders-page')
+    expect(structured.counts.turns).toBe(1)
     expect(structured.counts.humanInputs).toBe(1)
     expect(structured.counts.fcCalls).toBe(1)
     expect(structured.counts.sseEvents).toBe(4)
     expect(structured.counts.sseTextSegments).toBe(2)
     expect(structured.counts.toolLogs).toBe(2)
+    expect(structured.counts.semanticItems).toBe(4)
     expect(structured.toolLogs).toEqual(expect.arrayContaining([
       expect.objectContaining({ tag: 'session-ready', title: '会话就绪', text: expect.stringContaining('编辑会话已挂接') }),
       expect.objectContaining({ tag: 'LLM → pageDesign/lifecycle/describeProgress', title: 'LLM → pageDesign/lifecycle/describeProgress', text: '读取会话状态' }),
     ]))
-    expect(structured.sseEvents).toEqual(expect.arrayContaining([
-      expect.objectContaining({ type: 'reasoning', data: 'reasoning-context ', sessionId: 'session-1' }),
-      expect.objectContaining({ type: 'reasoning', data: 'more-reasoning ', sessionId: 'session-1' }),
-      expect.objectContaining({ type: 'delta', data: 'raw-sse-', sessionId: 'session-1' }),
-      expect.objectContaining({ type: 'delta', data: 'delta', sessionId: 'session-1' }),
+    expect('sseEvents' in structured).toBe(false)
+    expect('fcCalls' in structured).toBe(false)
+    expect('source' in (structured.turns[0]?.timeline[0] ?? {})).toBe(false)
+    expect('title' in (structured.turns[0]?.timeline[0] ?? {})).toBe(false)
+    expect(structured.turns[0]?.timeline.filter((item) => item.speaker === 'user' && item.text.includes('诊断一下'))).toHaveLength(1)
+    expect(structured.turns[0]?.timeline).toEqual(expect.arrayContaining([
+      expect.objectContaining({ speaker: 'LLM', text: expect.stringContaining('"category": "layout"') }),
+      expect.objectContaining({ speaker: 'system', text: expect.stringContaining('"count": 3') }),
     ]))
-    expect(structured.timeline.filter((item) => item.source === 'human' && item.payload.includes('诊断一下'))).toHaveLength(1)
-    expect(structured.timeline.some((item) => item.source === 'tool-log' && item.title === '人工输入')).toBe(false)
-    expect(structured.timeline.some((item) => item.source === 'tool-log' && item.title.startsWith('SSE '))).toBe(false)
-    expect(structured.timeline.some((item) => item.kind === 'sse' && item.payload.trim() === '')).toBe(false)
-    expect(structured.timeline.some((item) => item.title === 'SSE done')).toBe(false)
-    expect(structured.fcCalls[0]).toMatchObject({ toolName: 'pageDesign/knowledge/queryPayloads', status: 'success' })
 
     await wrapper.find('.fc-call-entry').trigger('click')
 
@@ -539,7 +588,7 @@ describe('AiChatWidget persistence', () => {
     expect(wrapper.text()).toContain('"count": 3')
   })
 
-  it('batches SSE cache writes and persists the final structured snapshot', async () => {
+  it('batches cache writes and persists a compact diagnostic snapshot', async () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
     const sender = vi.fn(async (request) => {
       for (let index = 0; index < 20; index += 1) {
@@ -573,12 +622,22 @@ describe('AiChatWidget persistence', () => {
     const raw = localStorage.getItem('ai-chat-widget-sse-cache-batch')
     expect(raw).not.toBeNull()
     const snapshot = JSON.parse(raw ?? '{}') as {
-      messages?: Array<{ content: string }>
+      version?: number
+      config?: unknown
+      policies?: unknown
+      messages?: Array<{ content: string; baseRevision?: number; streaming?: boolean }>
       sseEvents?: Array<{ type: string; data: string }>
       fcCalls?: Array<{ toolName: string }>
     }
+    expect(snapshot.version).toBe(3)
+    expect(snapshot.config).toBeUndefined()
+    expect(snapshot.policies).toBeUndefined()
     expect(snapshot.messages?.at(-1)?.content).toContain('delta-19')
-    expect(snapshot.sseEvents).toHaveLength(20)
+    expect(snapshot.messages?.some(message => message.baseRevision !== undefined)).toBe(false)
+    expect(snapshot.messages?.some(message => message.streaming === false)).toBe(false)
+    expect(snapshot.sseEvents).toHaveLength(0)
+    expect(snapshot.sseEvents?.some((event) => event.type === 'delta')).toBe(false)
+    expect(snapshot.sseEvents?.some((event) => event.type === 'reasoning')).toBe(false)
     expect(snapshot.sseEvents?.some((event) => event.type === 'done' && event.data === '')).toBe(false)
     expect(snapshot.fcCalls).toHaveLength(1)
     expect(snapshot.fcCalls?.[0]?.toolName).toBe('pageDesign/knowledge/queryPayloads')
@@ -624,6 +683,96 @@ describe('AiChatWidget persistence', () => {
       eventModuleId: 'llm',
       turnId: 'turn-1',
     })
+  })
+
+  it('stores and renders LLM request diagnostic events', async () => {
+    const writeText = vi.fn(async (_text: string) => undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+    const sender = vi.fn(async (request) => {
+      const turnId = request.turn?.turnId ?? 'turn-1'
+      request.onSseEvent?.({
+        sessionId: 'manualLeave:leave-1',
+        type: 'llm-request',
+        data: JSON.stringify({
+          kind: 'streamTurn',
+          round: 1,
+          systemPrompt: '系统提示词：请按当前日期处理相对日期。',
+          messages: [{ role: 'user', content: '我要请假' }],
+          tools: [{ type: 'function', function: { name: 'ai_0_manualLeave_describeDraft' } }],
+        }),
+        streamKey: `manualLeave::leave-1::llm::${turnId}`,
+        scope: {
+          businessRegistrationId: 'manualLeave',
+          businessInstanceId: 'leave-1',
+          eventModuleId: 'llm',
+          turnId,
+        },
+      })
+      request.onUsage?.({ prompt_tokens: 3, completion_tokens: 2, total_tokens: 5 })
+      request.onDelta?.('ok')
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-llm-request',
+      },
+    })
+
+    await wrapper.find('.chat-textarea').setValue('我要请假')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.diagnostic-entry--sse').text()).toContain('SSE LLM请求')
+    expect(wrapper.find('.diagnostic-entry--sse').text()).toContain('系统提示词')
+
+    const snapshot = JSON.parse(localStorage.getItem('ai-chat-widget-llm-request') ?? '{}') as {
+      sseEvents?: Array<{ type?: string; data?: string; streamKey?: string }>
+    }
+    expect(snapshot.sseEvents?.[0]).toMatchObject({
+      type: 'llm-request',
+      streamKey: expect.stringContaining('manualLeave::leave-1::llm::'),
+    })
+    expect(snapshot.sseEvents?.[0]?.data).toContain('系统提示词')
+
+    await wrapper.find('button[title="复制结构化诊断数据"]').trigger('click')
+
+    const structured = JSON.parse(writeText.mock.calls[0]?.[0] as string) as {
+      turns: Array<{
+        timeline: Array<{
+          timestamp?: string
+          speaker: string
+          text: string
+          tokenUsage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number }
+          payload?: { systemPrompt?: string }
+        }>
+      }>
+    }
+    const llmTurn = structured.turns.find((turn) => turn.timeline.some((item) => item.text.includes('系统提示词')))
+    const llmRequestItem = llmTurn?.timeline.find((item) => item.text.includes('系统提示词'))
+    expect(llmRequestItem).toMatchObject({
+      speaker: 'system',
+      text: expect.stringContaining('系统提示词'),
+      payload: expect.objectContaining({
+        systemPrompt: '系统提示词：请按当前日期处理相对日期。',
+      }),
+    })
+    expect('source' in (llmRequestItem ?? {})).toBe(false)
+    expect('title' in (llmRequestItem ?? {})).toBe(false)
+    const llmResultItem = llmTurn?.timeline.find((item) => item.speaker === 'LLM' && item.text.includes('ok'))
+    expect(llmResultItem).toMatchObject({
+      speaker: 'LLM',
+      text: 'ok',
+      tokenUsage: {
+        promptTokens: 3,
+        completionTokens: 2,
+        totalTokens: 5,
+      },
+    })
+    expect(llmResultItem?.timestamp).toEqual(expect.any(String))
   })
 
   it('renders pageDesign/knowledge/ask as clickable clarification answers', async () => {

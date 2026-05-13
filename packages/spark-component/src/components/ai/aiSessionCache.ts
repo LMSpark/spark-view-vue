@@ -4,7 +4,7 @@
  * ── 职责 ──
  * 1. 收口所有 AI 会话相关的 localStorage 读写（消息快照、面板布局）。
  * 2. 统一前缀约定：
- *    - `spark-ai-session:*`    — 消息/工具日志快照（AiSessionSnapshot）
+ *    - `spark-ai-session:*`    — 精简诊断快照（AiSessionStorageSnapshot）
  *    - `app-ai-panel:*`        — 面板 UI 状态（layout / maximized 等）
  * 3. 可选地向事件总线 emit `snapshot:restore / persist / clear`（业务侧接入）。
  * 4. 暴露管理型 API：枚举、批量清除，供设置页 / CacheManager 使用。

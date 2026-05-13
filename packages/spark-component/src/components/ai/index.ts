@@ -44,6 +44,8 @@ export type {
   AiSessionMetaConfig,
   AiSessionPolicies,
   AiSessionSnapshot,
+  AiStoredChatMessage,
+  AiSessionStorageSnapshot,
   AiChatSendRequest,
   AiChatSender,
 } from './useAiChat'
