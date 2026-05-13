@@ -6,7 +6,7 @@
  *
  * 消费时序（建议阅读顺序）：
  * 1. 投影契约定义：统一声明 FC / Function 的输出结构。
- * 2. 基础解析与水合：展开 canonical 引用并补齐 schema/binding。
+ * 2. 基础解析与水合：解析组件自包含 props/emits 与 schema/binding。
  * 3. FC 投影：生成目录摘要、单组件规格、配置指南、会话目录。
  *
  * 主要消费场景：
@@ -20,7 +20,6 @@
 
 import type {
   CatalogBindingDescriptor,
-  CatalogCanonicalComponent,
   ComponentCatalog,
   ComponentEntry,
   ComponentRegistry,
@@ -28,6 +27,7 @@ import type {
   PropEntry,
   PropSchema,
   RootFieldEntry,
+  SchemaNodeEntry,
 } from './types'
 import type { FunctionCatalog, FunctionComponentEntry } from './function-catalog-types'
 
@@ -39,7 +39,7 @@ import type { FunctionCatalog, FunctionComponentEntry } from './function-catalog
  * LLM 目录摘要负载——告知大模型当前应用环境可用的全部组件总览。
  *
  * 由 `projectComponentDirectory` 生成，适合作为 queryPayloads 的响应体直接返回。
- * 包含：组件总数统计、registry 分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
+ * 包含：组件总数统计、由 components.category 派生的分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
  * 以及面向 LLM 的配置使用原则。
  */
 export interface ComponentDirectoryPayload {
@@ -54,7 +54,7 @@ export interface ComponentDirectoryPayload {
     meta: number
     features: number
   }
-  /** 原始注册表，按分类列出全部组件 type */
+  /** 派生分类索引，按 category 列出全部组件 type */
   registry: ComponentRegistry
   /** 全量组件简述列表（type + category + description） */
   components: Array<{ type: string; category: string; description: string }>
@@ -89,7 +89,7 @@ export interface ComponentSpec {
   /** 组件功能的自然语言描述 */
   description: string
   /** 属性列表（必填、类型、默认值、描述） */
-  props: Array<Pick<PropEntry, 'name' | 'type' | 'required'> & { default?: string; description?: string }>
+  props: Array<Pick<PropEntry, 'name' | 'type' | 'required'> & { default?: string; description?: string; examples?: unknown[] }>
   /** 事件列表（事件名、类型、描述） */
   emits: Array<{ name: string; type?: string; description?: string }>
   /** 根字段声明（仅数据容器类组件携带） */
@@ -116,9 +116,9 @@ export interface ComponentConfigGuide {
   /** 组件分类 */
   category: string
   /** 必填属性列表（含类型与描述） */
-  requiredProps: Array<{ name: string; type: string; default?: string; description?: string }>
+  requiredProps: Array<{ name: string; type: string; default?: string; description?: string; examples?: unknown[] }>
   /** 可选属性列表（含类型、默认值与描述） */
-  optionalProps: Array<{ name: string; type: string; default?: string; description?: string }>
+  optionalProps: Array<{ name: string; type: string; default?: string; description?: string; examples?: unknown[] }>
   /** 事件使用指南（事件名 + payload 参数签名 + 描述） */
   eventGuide: Array<{ name: string; payload?: Array<{ name: string; type: string }>; description?: string }>
   /** 数据绑定能力摘要（仅当组件声明了 binding 时存在） */
@@ -164,14 +164,14 @@ export interface ComponentConfigGuide {
  * 收集组件中通过 `componentRef` 声明的子组件引用。
  *
  * 规则：
- * - 仅识别 `prop.componentRef`（忽略 schemaRef=component:* 旧格式）；
+ * - 仅识别 `prop.componentRef`；
  * - 相同子组件 type 合并为一条记录，并聚合来源 prop 名；
  * - 来源 prop 名按字母序输出，确保结果稳定。
  */
 function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: string; fromProps: string[] }> {
   const refs = new Map<string, Set<string>>()
   for (const prop of entry.props) {
-    // 仅允许使用 componentRef 作为子组件引用来源；schemaRef=component:* 无效。
+    // 仅允许使用 componentRef 作为子组件引用来源。
     const refType = prop.componentRef
     if (typeof refType !== 'string') continue
     const normalized = refType.trim()
@@ -210,15 +210,16 @@ function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedCompo
     // 这正是 AI 在 rule.json 中要写入的 JSON 形状，优先级最高。
     const inlineSchema = resolveInlineStructureSchema(catalog, entry, ref.fromProps)
     if (inlineSchema !== undefined) {
-      const properties = Object.values(inlineSchema.properties)
+      const propertyNames = Object.keys(inlineSchema.properties ?? {})
+      const requiredNames = new Set(inlineSchema.required ?? [])
       return {
         type: ref.type,
         fromProps: ref.fromProps,
         resolved: true,
         category: 'inline-structure',
-        description: `结构由 props 类型反推：${inlineSchema.type}（直接按字段配置即可）`,
-        requiredProps: properties.filter((p) => p.required === true).map((p) => p.name),
-        optionalPropsPreview: properties.filter((p) => p.required !== true).map((p) => p.name).slice(0, 12),
+        description: `结构由 props 类型反推：${inlineSchema.title ?? 'object'}（直接按字段配置即可）`,
+        requiredProps: propertyNames.filter((name) => requiredNames.has(name)),
+        optionalPropsPreview: propertyNames.filter((name) => !requiredNames.has(name)).slice(0, 12),
       }
     }
 
@@ -248,53 +249,45 @@ function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedCompo
 /**
  * 解析某个 prop（按名称列表择一）对应的内联结构 schema。
  *
- * 仅在 pool 条目为 `kind: 'object'` 时返回——用于 `@componentRef` 指向的子组件
+ * 仅在 pool 条目为 JSON Schema object 时返回——用于 `@componentRef` 指向的子组件
  * 没有独立 catalog 条目、但父 prop 类型已被 VCM 展开的场景。
  */
 function resolveInlineStructureSchema(
   catalog: ComponentCatalog,
   entry: HydratedComponentEntry,
   propNames: string[],
-): Extract<PropSchema, { kind: 'object' }> | undefined {
+): PropSchema | undefined {
   for (const name of propNames) {
     const prop = entry.props.find((p) => p.name === name)
     if (prop === undefined) continue
     const schema = resolvePropSchema(catalog, prop)
-    if (schema?.kind === 'object') return schema
+    if (schema?.type === 'object' && schema.properties !== undefined) return schema
   }
   return undefined
 }
 
 /**
  * 水合后的属性记录。
- * 在 PropEntry 基础上，附加了通过 schemaRef 解析得到的内联 PropSchema（若存在）。
+ * 在 PropEntry 基础上，附加了通过 JSON Schema $ref 解析得到的内联 PropSchema（若存在）。
  */
 export interface HydratedPropEntry extends PropEntry {
-  /** 已解析的属性 schema（来自 schemaPool 引用或属性直接声明的 schema） */
-  schema?: PropSchema
+  /** 已解析的属性 schema（来自 schemaNodes 自引用表） */
+  resolvedSchema?: PropSchema
 }
 
 /**
  * 水合后的事件记录。
- * 在 EmitEntry 基础上，附加了通过 schemaRefs 批量解析得到的 payload schema 列表（若存在）。
+ * 在 EmitEntry 基础上，附加了通过 JSON Schema $ref 解析得到的 payload schema（若存在）。
  */
-export interface HydratedEmitEntry {
-  /** 事件名 */
-  name: string
-  /** 事件类型标注（如 'change' / 'click'） */
-  type?: string
-  /** 事件语义描述 */
-  description?: string
-  /** 已解析的 payload schema 数组 */
-  schema?: PropSchema[]
-  /** payload 参数列表（显式声明版，优先于 schema 使用） */
-  payload?: Array<{ name: string; type: string }>
+export interface HydratedEmitEntry extends EmitEntry {
+  /** 已解析的 payload schema */
+  resolvedSchema?: PropSchema
 }
 
 /**
  * 完全水合的组件记录——本文件大多数投影逻辑的底层数据结构。
  *
- * 通过解析 canonical 字典、合并 props / emits 并解析 schema 引用得到。
+ * 通过解析组件自包含 props / emits 与 schema 引用得到。
  * 与原始 ComponentEntry 的区别：props / emits 已被替换为含内联 schema 的水合形态。
  */
 export interface HydratedComponentEntry extends Omit<ComponentEntry, 'props' | 'emits'> {
@@ -336,6 +329,66 @@ function inferCategory(entry: ComponentEntry): NonNullable<ComponentEntry['categ
   if (fp.includes('/containers/')) return 'container'
   if (fp.includes('/fields/') || t.startsWith('r-')) return 'field'
   return 'feature'
+}
+
+function buildComponentRegistry(components: Record<string, ComponentEntry>): ComponentRegistry {
+  const registry: ComponentRegistry = {
+    containers: [],
+    fields: [],
+    groups: [],
+    meta: [],
+  }
+
+  for (const [type, entry] of Object.entries(components)) {
+    const category = inferCategory(entry)
+    if (category === 'container') registry.containers.push(type)
+    else if (category === 'field') registry.fields.push(type)
+    else if (category === 'group') registry.groups.push(type)
+    else if (category === 'meta') registry.meta.push(type)
+  }
+
+  registry.containers.sort((a, b) => a.localeCompare(b))
+  registry.fields.sort((a, b) => a.localeCompare(b))
+  registry.groups.sort((a, b) => a.localeCompare(b))
+  registry.meta.sort((a, b) => a.localeCompare(b))
+  return registry
+}
+
+function isConfigurableComponent(entry: ComponentEntry): boolean {
+  return entry.internal !== true && entry.configurable !== false
+}
+
+function collectReachableSchemaNodeIds(
+  schemaNodes: SchemaNodeEntry[] | undefined,
+  components: Record<string, ComponentEntry>,
+): Set<string> {
+  const reachable = new Set<string>()
+  if (schemaNodes === undefined) return reachable
+
+  const nodeById = new Map(schemaNodes.map((node) => [node.id, node]))
+  const childrenByParent = new Map<string, SchemaNodeEntry[]>()
+  for (const node of schemaNodes) {
+    if (node.parentId === undefined) continue
+    const children = childrenByParent.get(node.parentId) ?? []
+    children.push(node)
+    childrenByParent.set(node.parentId, children)
+  }
+
+  const visit = (id: string | undefined): void => {
+    if (id === undefined || reachable.has(id)) return
+    const node = nodeById.get(id)
+    if (node === undefined) return
+    reachable.add(id)
+    visit(node.refId)
+    for (const child of childrenByParent.get(id) ?? []) visit(child.id)
+  }
+
+  for (const entry of Object.values(components)) {
+    for (const prop of entry.props) visit(prop.schemaNodeId)
+    for (const emit of entry.emits ?? []) visit(emit.schemaNodeId)
+  }
+
+  return reachable
 }
 
 /**
@@ -441,15 +494,14 @@ function normalizeConfigEmits(emits: EmitEntry[]): EmitEntry[] {
 }
 
 /**
- * 核心水合函数：将 catalog 中通过 canonical 引用描述的组件展开为完整的 HydratedComponentEntry。
+ * 核心水合函数：将 catalog 中的组件条目展开为完整的 HydratedComponentEntry。
  *
  * 处理流程：
  * 1. 从 catalog.components 取得原始条目；
- * 2. 解析 canonical propRefs / emitRefs（若存在），展开为完整属性/事件列表；
- * 3. 将 canonical 与条目本身的属性/事件进行名称合并（条目覆盖 canonical）；
- * 4. 对每个属性尝试解析 schemaRef -> PropSchema；
- * 5. 对每个事件尝试批量解析 schemaRefs -> PropSchema[]；
- * 6. 合并 binding 描述符（优先级：entry > canonical > bindingDescriptors）。
+ * 2. 规范化 props / emits 的配置层名称；
+ * 3. 对每个属性尝试解析 schema.$ref -> PropSchema；
+ * 4. 对每个事件尝试解析 schema.$ref -> PropSchema；
+ * 5. 合并 binding 描述符（优先级：entry > bindingDescriptors）。
  *
  * 注意：本函数不会修改传入的 catalog 对象，始终返回新的聚合对象。
  *
@@ -461,20 +513,16 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
   const entry = catalog.components[type]
   if (entry === undefined) return null
 
-  const canonicalEntry = catalog.canonical?.components[type]
-  const resolvedBinding = resolveBindingDescriptor(catalog, type, entry, canonicalEntry)
+  const resolvedBinding = resolveBindingDescriptor(catalog, type, entry)
 
-  const canonicalProps = resolveCanonicalProps(catalog, type, canonicalEntry)
-  const canonicalEmits = resolveCanonicalEmits(catalog, type, canonicalEntry)
-
-  const mergedPropsRaw = normalizeConfigProps(mergePropsByName(canonicalProps, entry.props))
-  const mergedEmitsRaw = normalizeConfigEmits(mergeEmitsByName(canonicalEmits, entry.emits ?? []))
+  const mergedPropsRaw = normalizeConfigProps(entry.props)
+  const mergedEmitsRaw = normalizeConfigEmits(entry.emits ?? [])
 
   const props: HydratedPropEntry[] = mergedPropsRaw.map((prop) => {
     const schema = resolvePropSchema(catalog, prop)
     return {
       ...prop,
-      ...(schema !== undefined ? { schema } : {}),
+      ...(schema !== undefined ? { resolvedSchema: schema } : {}),
     }
   })
 
@@ -482,15 +530,12 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
     const schema = resolveEmitSchemas(catalog, emit)
     return {
       ...emit,
-      ...(schema !== undefined ? { schema } : {}),
+      ...(schema !== undefined ? { resolvedSchema: schema } : {}),
     }
   })
 
   return {
     ...entry,
-    ...(canonicalEntry?.description !== undefined ? { description: canonicalEntry.description } : {}),
-    ...(canonicalEntry?.filePath !== undefined ? { filePath: canonicalEntry.filePath } : {}),
-    ...(canonicalEntry?.category !== undefined ? { category: canonicalEntry.category } : {}),
     ...(resolvedBinding !== undefined ? { binding: resolvedBinding } : {}),
     props,
     emits,
@@ -498,108 +543,23 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
 }
 
 /**
- * 将 canonical 中的 propRefs 数组展开为完整的 PropEntry 列表。
- *
- * propRefs 是 canonical 组件引用 dictionaries.props 中属性记录的键名列表。
- * 若当前组件未声明 canonical，则返回空数组（退回到组件自身 entry.props）。
- *
- * @param catalog        全局组件目录（需包含 canonical.dictionaries.props）
- * @param type           组件 type（仅用于错误提示）
- * @param canonicalEntry 该组件对应的 canonical 记录（可能为 undefined）
- * @returns              展开后的属性列表；canonical 不存在时返回空数组
- * @throws               dictionaries.props 缺失或 propRef 未命中时 fail-fast 抛出
- */
-function resolveCanonicalProps(catalog: ComponentCatalog, type: string, canonicalEntry: CatalogCanonicalComponent | undefined): PropEntry[] {
-  if (canonicalEntry === undefined) return []
-  const dict = catalog.canonical?.dictionaries.props
-  if (dict === undefined) throw new Error(`component-catalog canonical.props 缺失: ${type}`)
-
-  return canonicalEntry.propRefs.map((ref) => {
-    const prop = dict[ref]
-    if (prop === undefined) throw new Error(`component-catalog canonical propRef 未解析: ${type}.${ref}`)
-    return prop
-  })
-}
-
-/**
- * 将 canonical 中的 emitRefs 数组展开为完整的 EmitEntry 列表。
- *
- * emitRefs 是 canonical 组件引用 dictionaries.emits 中事件记录的键名列表。
- * 若当前组件未声明 canonical，则返回空数组（退回到组件自身 entry.emits）。
- *
- * @param catalog        全局组件目录（需包含 canonical.dictionaries.emits）
- * @param type           组件 type（仅用于错误提示）
- * @param canonicalEntry 该组件对应的 canonical 记录（可能为 undefined）
- * @returns              展开后的事件列表；canonical 不存在时返回空数组
- * @throws               dictionaries.emits 缺失或 emitRef 未命中时 fail-fast 抛出
- */
-function resolveCanonicalEmits(catalog: ComponentCatalog, type: string, canonicalEntry: CatalogCanonicalComponent | undefined): EmitEntry[] {
-  if (canonicalEntry === undefined) return []
-  const dict = catalog.canonical?.dictionaries.emits
-  if (dict === undefined) throw new Error(`component-catalog canonical.emits 缺失: ${type}`)
-
-  return canonicalEntry.emitRefs.map((ref) => {
-    const emit = dict[ref]
-    if (emit === undefined) throw new Error(`component-catalog canonical emitRef 未解析: ${type}.${ref}`)
-    return emit
-  })
-}
-
-/**
- * 按属性名合并两组 PropEntry 列表，实现"子级覆盖基类"的继承语义。
- *
- * 合并规则：
- * - 以 base（canonical 扩展出的基础属性）为底；
- * - incoming（组件 entry 本体的 props）中同名属性会与 base 中的同名条目做浅合并（incoming 优先）；
- * - 仅出现在 incoming 中的新属性直接追加。
- *
- * @param base     基础属性列表（通常来自 canonical propRefs 展开结果）
- * @param incoming 覆盖属性列表（通常来自组件 entry.props）
- * @returns        合并后的属性列表，顺序与 base 插入顺序一致，incoming 新增项追加在后
- */
-function mergePropsByName(base: PropEntry[], incoming: PropEntry[]): PropEntry[] {
-  const merged = new Map<string, PropEntry>()
-  for (const prop of base) merged.set(prop.name, prop)
-  for (const prop of incoming) merged.set(prop.name, { ...merged.get(prop.name), ...prop })
-  return [...merged.values()]
-}
-
-/**
- * 按事件名合并两组 EmitEntry 列表，实现"子级覆盖基类"的继承语义。
- *
- * 合并规则与 mergePropsByName 一致：base 作为底，incoming 中同名事件浅合并覆盖，新增事件追加。
- *
- * @param base     基础事件列表（通常来自 canonical emitRefs 展开结果）
- * @param incoming 覆盖事件列表（通常来自组件 entry.emits）
- * @returns        合并后的事件列表
- */
-function mergeEmitsByName(base: EmitEntry[], incoming: EmitEntry[]): EmitEntry[] {
-  const merged = new Map<string, EmitEntry>()
-  for (const emit of base) merged.set(emit.name, emit)
-  for (const emit of incoming) merged.set(emit.name, { ...merged.get(emit.name), ...emit })
-  return [...merged.values()]
-}
-
-/**
  * 解析组件的数据上下文绑定能力描述符（binding）。
  *
  * 优先级（从高到低）：
  * 1. entry.binding（组件自身声明的 binding，最高优先级）；
- * 2. canonicalEntry.binding（canonical 中继承的通用 binding）；
- * 3. catalog.bindingDescriptors[type]（全局 binding 描述符字典中的配置）。
+ * 2. catalog.bindingDescriptors[type]（全局 binding 描述符字典中的配置）。
  *
  * @param catalog        全局组件目录
  * @param type           组件 type（用于查询 bindingDescriptors）
  * @param entry          组件原始记录
- * @param canonicalEntry 组件 canonical 记录（可能为 undefined）
  * @returns              解析到的 binding 描述符；所有来源均未定义则返回 undefined
  */
-function resolveBindingDescriptor(catalog: ComponentCatalog, type: string, entry: ComponentEntry, canonicalEntry?: CatalogCanonicalComponent): CatalogBindingDescriptor | undefined {
-  return entry.binding ?? canonicalEntry?.binding ?? catalog.bindingDescriptors?.[type]
+function resolveBindingDescriptor(catalog: ComponentCatalog, type: string, entry: ComponentEntry): CatalogBindingDescriptor | undefined {
+  return entry.binding ?? catalog.bindingDescriptors?.[type]
 }
 
 /**
- * 判断组件是否声明了任意 emits 事件（包括通过 canonical 继承的事件）。
+ * 判断组件是否声明了任意 emits 事件。
  *
  * 用于过滤"事件驱动"类组件的快速检测，避免每次都完整水合整个组件记录。
  *
@@ -610,17 +570,15 @@ function resolveBindingDescriptor(catalog: ComponentCatalog, type: string, entry
  */
 function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEntry): boolean {
   if (normalizeConfigEmits(entry.emits ?? []).length > 0) return true
-  const canonicalEntry = catalog.canonical?.components[type]
-  if ((canonicalEntry?.emitRefs.length ?? 0) === 0) return false
-  return resolveCanonicalEmits(catalog, type, canonicalEntry).some(emit => normalizeConfigEmit(emit) !== undefined)
+  return false
 }
 
 /**
  * 解析属性的 PropSchema，按以下优先级尝试：
- * 1. catalog.schemaPool[prop.schemaRef]（通过 schemaRef 从全局 schema 池中查取）；
+ * 1. prop.schemaNodeId -> catalog.schemaNodes 自引用表；
  * 2. 均不存在则返回 undefined。
  *
- * @param catalog 全局组件目录（需包含 schemaPool）
+ * @param catalog 全局组件目录（需包含 schemaNodes）
  * @param prop    待解析的属性记录
  * @returns       解析得到的 PropSchema；若不存在则返回 undefined
  */
@@ -628,42 +586,117 @@ function resolvePropSchema(
   catalog: ComponentCatalog,
   prop: PropEntry,
 ): PropSchema | undefined {
-  if (prop.schemaRef === undefined) return undefined
-
-  if (prop.schemaRef.startsWith('component:')) {
-    throw new Error(
-      `schemaRef "component:*" 已移除，请改用 componentRef + schemaPool 对象结构（prop=${prop.name}, schemaRef=${prop.schemaRef}）`,
-    )
-  }
-
-  return catalog.schemaPool?.[prop.schemaRef]
+  return resolveSchemaNode(catalog, prop.schemaNodeId)
 }
 
 /**
- * 批量解析事件的 payload schema 列表。
+ * 解析事件的 payload schema。
  *
  * 解析策略：
- * 1. emit.schemaRefs 存在时，从 catalog.schemaPool 批量查取，过滤掉未命中的引用；
- * 2. 均不满足则返回 undefined。
+ * 1. emit.schemaNodeId -> catalog.schemaNodes 自引用表；
+ * 2. 均不存在则返回 undefined。
  *
- * @param catalog 全局组件目录（需包含 schemaPool）
+ * @param catalog 全局组件目录（需包含 schemaNodes）
  * @param emit    待解析的事件记录
- * @returns       解析得到的 PropSchema 数组；若不存在则返回 undefined
+ * @returns       解析得到的 PropSchema；若不存在则返回 undefined
  */
-function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSchema[] | undefined {
-  if (emit.schemaRefs === undefined || emit.schemaRefs.length === 0) return undefined
+function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSchema | undefined {
+  return resolveSchemaNode(catalog, emit.schemaNodeId)
+}
 
-  const schemas = emit.schemaRefs.map((ref) => catalog.schemaPool?.[ref]).filter(isNotUndefined)
-  return schemas.length > 0 ? schemas : undefined
+function resolveSchemaNode(catalog: ComponentCatalog, nodeId: string | undefined): PropSchema | undefined {
+  if (nodeId === undefined || catalog.schemaNodes === undefined) return undefined
+  const byId = new Map(catalog.schemaNodes.map((node) => [node.id, node]))
+  const childrenByParent = new Map<string, SchemaNodeEntry[]>()
+  for (const node of catalog.schemaNodes) {
+    if (node.parentId === undefined) continue
+    const children = childrenByParent.get(node.parentId) ?? []
+    children.push(node)
+    childrenByParent.set(node.parentId, children)
+  }
+  for (const children of childrenByParent.values()) {
+    children.sort((left, right) => {
+      const relation = left.relation.localeCompare(right.relation)
+      if (relation !== 0) return relation
+      const leftIndex = left.index ?? Number.MAX_SAFE_INTEGER
+      const rightIndex = right.index ?? Number.MAX_SAFE_INTEGER
+      if (leftIndex !== rightIndex) return leftIndex - rightIndex
+      return (left.name ?? '').localeCompare(right.name ?? '')
+    })
+  }
+
+  const build = (id: string, seen: Set<string>): PropSchema | undefined => {
+    if (seen.has(id)) return undefined
+    const node = byId.get(id)
+    if (node === undefined) return undefined
+    const nextSeen = new Set(seen)
+    nextSeen.add(id)
+
+    const referenced = node.refId === undefined ? undefined : build(node.refId, nextSeen)
+    const schema: PropSchema = {
+      ...(referenced ?? {}),
+      ...(node.type !== undefined ? { type: node.type } : {}),
+      ...(node.title !== undefined ? { title: node.title } : {}),
+      ...(node.description !== undefined ? { description: node.description } : {}),
+      ...(node.enum !== undefined ? { enum: node.enum } : {}),
+      ...(node.const !== undefined ? { const: node.const } : {}),
+      ...(node.default !== undefined ? { default: node.default } : {}),
+      ...(node.examples !== undefined ? { examples: node.examples } : {}),
+    }
+
+    const children = childrenByParent.get(id) ?? []
+    const propertyChildren = children.filter((child) => child.relation === 'property')
+    if (propertyChildren.length > 0) {
+      const properties: Record<string, PropSchema> = {}
+      const required: string[] = []
+      for (const child of propertyChildren) {
+        if (child.name === undefined) continue
+        const childSchema = build(child.id, nextSeen)
+        if (childSchema !== undefined) properties[child.name] = childSchema
+        if (child.required === true) required.push(child.name)
+      }
+      schema.type = schema.type ?? 'object'
+      schema.properties = properties
+      if (required.length > 0) schema.required = required
+    }
+
+    const itemChild = children.find((child) => child.relation === 'items')
+    if (itemChild !== undefined) {
+      const itemSchema = build(itemChild.id, nextSeen)
+      if (itemSchema !== undefined) schema.items = itemSchema
+    }
+
+    const prefixItems = children
+      .filter((child) => child.relation === 'prefixItem')
+      .map((child) => build(child.id, nextSeen))
+      .filter(isNotUndefined)
+    if (prefixItems.length > 0) schema.prefixItems = prefixItems
+
+    const oneOf = children
+      .filter((child) => child.relation === 'oneOf')
+      .map((child) => build(child.id, nextSeen))
+      .filter(isNotUndefined)
+    if (oneOf.length > 0) schema.oneOf = oneOf
+
+    const anyOf = children
+      .filter((child) => child.relation === 'anyOf')
+      .map((child) => build(child.id, nextSeen))
+      .filter(isNotUndefined)
+    if (anyOf.length > 0) schema.anyOf = anyOf
+
+    return schema
+  }
+
+  return build(nodeId, new Set())
 }
 
 function toPlainPropEntry(prop: HydratedPropEntry): PropEntry {
-  const { schema: _schema, ...plain } = prop
+  const { resolvedSchema: _resolvedSchema, ...plain } = prop
   return plain
 }
 
 function toPlainEmitEntry(emit: HydratedEmitEntry): EmitEntry {
-  const { schema: _schema, payload: _payload, ...plain } = emit
+  const { resolvedSchema: _resolvedSchema, ...plain } = emit
   return plain
 }
 
@@ -672,7 +705,7 @@ function toPlainEmitEntry(emit: HydratedEmitEntry): EmitEntry {
  *
  * - `modelValue` prop 统一投影为 `value`；
  * - `update:modelValue` 事件不作为页面配置事件暴露；
- * - canonical/vue-component-meta 等构建中间结构不进入公开配置目录。
+ * - vue-component-meta 等构建中间结构不进入公开配置目录。
  */
 export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): ComponentCatalog {
   const components: Record<string, ComponentEntry> = {}
@@ -680,6 +713,7 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
   for (const type of Object.keys(catalog.components)) {
     const entry = projectHydratedComponent(catalog, type)
     if (entry === null) continue
+    if (!isConfigurableComponent(entry)) continue
     const {
       props,
       emits,
@@ -687,6 +721,8 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
       notes,
       filePath: _filePath,
       source: _source,
+      internal: _internal,
+      configurable: _configurable,
       ...rest
     } = entry
 
@@ -702,22 +738,16 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
     components[type] = next
   }
 
+  const reachableSchemaNodeIds = collectReachableSchemaNodeIds(catalog.schemaNodes, components)
+
   return {
     version: catalog.version,
     buildTime: catalog.buildTime,
     componentCount: Object.keys(components).length,
     components,
-    ...(catalog.registry !== undefined
-      ? {
-          registry: {
-            containers: [...catalog.registry.containers],
-            fields: [...catalog.registry.fields],
-            groups: [...catalog.registry.groups],
-            meta: [...catalog.registry.meta],
-          },
-        }
+    ...(catalog.schemaNodes !== undefined
+      ? { schemaNodes: catalog.schemaNodes.filter((node) => reachableSchemaNodeIds.has(node.id)) }
       : {}),
-    ...(catalog.schemaPool !== undefined ? { schemaPool: catalog.schemaPool } : {}),
     ...(catalog.constraints !== undefined ? { constraints: catalog.constraints } : {}),
     ...(catalog.bindingDescriptors !== undefined ? { bindingDescriptors: catalog.bindingDescriptors } : {}),
     ...(catalog.governance !== undefined ? { governance: catalog.governance } : {}),
@@ -734,24 +764,19 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
  *
  * 输出内容：
  * - 各分类组件数量汇总（total / containers / fields / groups / meta / features）；
- * - registry 完整分类列表（供 LLM 按类别选择组件）；
+ * - 从 components.category 派生的完整分类列表（供 LLM 按类别选择组件）；
  * - 全量组件简述（type + category + description）；
  * - 按数据绑定 / 事件驱动 / 选项驱动三个维度聚合的能力组；
  * - 面向 LLM 的通用配置使用原则（4 条约束规则）。
  *
- * 注意：本函数会在 registry 缺失时 fail-fast 抛出，避免生成无效的空摘要。
- *
  * @param catalog 全局组件目录（单一事实源）
  * @returns       可直接返回给 LLM 的目录摘要负载
- * @throws        catalog.registry 缺失时抛出
  */
 export function projectComponentDirectory(catalog: ComponentCatalog): ComponentDirectoryPayload {
-  const entries = Object.entries(catalog.components)
+  const entries = Object.entries(catalog.components).filter(([, e]) => isConfigurableComponent(e))
+  const visibleComponents = Object.fromEntries(entries)
   const featureCount = entries.filter(([, e]) => inferCategory(e) === 'feature').length
-  const registry = catalog.registry
-  if (registry === undefined) {
-    throw new Error('component-catalog registry 缺失：请使用规范化 catalog 输入')
-  }
+  const registry = buildComponentRegistry(visibleComponents)
 
   const dataBinding = entries
     .filter(([type, e]) => {
@@ -774,7 +799,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
   return {
     hint: 'queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 guidePayload 查阅配置指南。',
     summary: {
-      total: catalog.componentCount,
+      total: entries.length,
       containers: registry.containers.length,
       fields: registry.fields.length,
       groups: registry.groups.length,
@@ -795,7 +820,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
       fields: [...registry.fields].sort((a, b) => a.localeCompare(b)),
     },
     configurationPrinciples: [
-      '先按 registry 选择组件类型，再按单组件配置指南填写 props。',
+      '先按 components 的 type/category 选择组件，再按单组件配置指南填写 props。',
       'dataKey 与 binding 必须按 catalog 声明使用，不允许猜测字段。',
       '事件能力以 emits 为准；无 emits 的组件不得编造 on.* 绑定。',
       'required props 必填，default 仅作默认值提示，业务值需显式传入。',
@@ -817,6 +842,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
 export function projectComponentSpec(catalog: ComponentCatalog, type: string): ComponentSpec | null {
   const entry = projectHydratedComponent(catalog, type)
   if (entry === null) return null
+  if (!isConfigurableComponent(entry)) return null
   const configurableProps = entry.props.filter(isConfigurableProp)
 
   return {
@@ -829,6 +855,7 @@ export function projectComponentSpec(catalog: ComponentCatalog, type: string): C
       required: p.required,
       ...(p.default !== undefined ? { default: p.default } : {}),
       ...(p.description !== undefined ? { description: p.description } : {}),
+      ...(p.examples !== undefined ? { examples: p.examples } : {}),
     })),
     emits: entry.emits.map(e => ({
       name: e.name,
@@ -847,14 +874,14 @@ export function projectComponentSpec(catalog: ComponentCatalog, type: string): C
  * 该投影供业务 payload provider 持有，避免 core session 协议绑定具体组件目录。
  */
 export function projectFunctionCatalog(catalog: ComponentCatalog): FunctionCatalog {
-  const registry = catalog.registry
-  if (registry === undefined) {
-    throw new Error('component-catalog registry 缺失：无法构建 FunctionCatalog')
-  }
+  const configurableComponents = Object.fromEntries(
+    Object.entries(catalog.components).filter(([, entry]) => isConfigurableComponent(entry)),
+  )
+  const registry = buildComponentRegistry(configurableComponents)
 
   const components: Record<string, FunctionComponentEntry> = {}
 
-  for (const type of Object.keys(catalog.components)) {
+  for (const type of Object.keys(configurableComponents)) {
     const spec = projectComponentSpec(catalog, type)
     if (spec === null) continue
 
@@ -950,6 +977,7 @@ function flattenRootFieldPaths(fields: RootFieldEntry[], prefix = ''): string[] 
 export function projectComponentConfigGuide(catalog: ComponentCatalog, type: string): ComponentConfigGuide | null {
   const entry = projectHydratedComponent(catalog, type)
   if (entry === null) return null
+  if (!isConfigurableComponent(entry)) return null
   const configurableProps = entry.props.filter(isConfigurableProp)
 
   const requiredProps = configurableProps
@@ -959,7 +987,8 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
       type: prop.type,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       ...(prop.description !== undefined ? { description: prop.description } : {}),
-      ...(prop.schema !== undefined ? { schema: prop.schema } : {}),
+      ...(prop.examples !== undefined ? { examples: prop.examples } : {}),
+      ...(prop.resolvedSchema !== undefined ? { schema: prop.resolvedSchema } : {}),
     }))
 
   const optionalProps = configurableProps
@@ -969,7 +998,8 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
       type: prop.type,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       ...(prop.description !== undefined ? { description: prop.description } : {}),
-      ...(prop.schema !== undefined ? { schema: prop.schema } : {}),
+      ...(prop.examples !== undefined ? { examples: prop.examples } : {}),
+      ...(prop.resolvedSchema !== undefined ? { schema: prop.resolvedSchema } : {}),
     }))
 
   const eventGuide = entry.emits.map((emit) => ({

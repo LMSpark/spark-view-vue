@@ -117,7 +117,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。
+ * @skill rform-compare-demo
+ * @catalogIgnore
+ * @description 表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式；仅用于开发演示，不进入组件配置目录。
  */
 import { computed, ref } from 'vue'
 import {

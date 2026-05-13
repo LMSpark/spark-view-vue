@@ -8,9 +8,9 @@
  * 消费时序（建议阅读顺序）：
  * 1. Raw*：读取构建产物最小原始结构。
  * 2. ComponentCatalog：进入运行时统一目录结构。
- * 3. ComponentEntry/Registry：按组件类型做目录查询与能力发现。
+ * 3. ComponentEntry：按组件类型做目录查询与能力发现。
  * 4. Prop/Emit/Schema：按组件读取属性、事件和嵌套结构。
- * 5. Canonical/Shared/Governance：做跨组件归一化、共享类型复用与治理约束。
+ * 5. Shared/Governance：做共享类型复用与治理约束。
  * 6. PlatformConstraints：做平台侧校验与嵌套规则限制。
  */
 
@@ -27,7 +27,7 @@
  */
 export interface RawComponentCatalog {
   /** 目录版本。 */
-  version: string
+  version: '3.0.0'
   /** 构建时间（通常为 ISO 字符串）。 */
   buildTime: string
   /** 组件总数。 */
@@ -57,21 +57,22 @@ export interface RawComponentEntry {
  */
 export interface ComponentCatalog {
   /** 目录版本。 */
-  version: string
+  version: '4.0.0'
   /** 构建时间。 */
   buildTime: string
   /** 组件总数。 */
   componentCount: number
-  /** 分类注册表（容器/字段/分组/元组件）。 */
-  registry?: ComponentRegistry
   /** 组件主索引：type -> 组件详情。 */
   components: Record<string, ComponentEntry>
-  /** 可选 schema 池：避免大对象在 props 上重复内联。 */
-  schemaPool?: Record<string, PropSchema>
+  /**
+   * Schema 自引用节点表。
+   *
+   * 每一行是一段 JSON Schema AST，`parentId` 指向同表父节点；
+   * 组件 prop/emit 通过 `schemaNodeId` 指向根节点，后端可直接用递归 CTE 查询整棵结构。
+   */
+  schemaNodes?: SchemaNodeEntry[]
   /** 平台约束：dataKey、嵌套规则等。 */
   constraints?: PlatformConstraints
-  /** 规范化模型（去重后的字典 + 引用关系）。 */
-  canonical?: CatalogCanonicalModel
   /** 共享类型定义池。 */
   sharedTypes?: Record<string, SharedTypeDefinition>
   /** 绑定能力描述符池。 */
@@ -110,6 +111,10 @@ export interface ComponentEntry {
   category?: 'container' | 'field' | 'group' | 'meta' | 'feature'
   /** 组件摘要说明。 */
   description?: string
+  /** 是否内部组件；内部组件不应被 LLM 当作可配置 SparkNode 使用。 */
+  internal?: boolean
+  /** 是否可作为页面配置组件使用；false 表示仅保留技术目录信息。 */
+  configurable?: boolean
   /** 属性定义列表。 */
   props: PropEntry[]
   /** 事件定义列表。 */
@@ -168,39 +173,96 @@ export interface PropEntry {
   default?: string
   /** 说明文案。 */
   description?: string
-  /** 指向 schemaPool 的键。 */
-  schemaRef?: string
+  /** JSON 示例值，面向 LLM/后端直接生成配置。 */
+  examples?: unknown[]
+  /** 指向 schemaNodes 的根节点 id。 */
+  schemaNodeId?: string
   /**
    * 语义标签：该 prop 期望绑定的子组件 type（kebab-case）。
-   * 来源于 JSDoc `@componentRef xxx`；与 schemaRef 互补（结构由 schemaRef 提供）。
+   * 来源于 JSDoc `@componentRef xxx`；与 schemaNodeId 互补（结构由 schemaNodeId 提供）。
    */
   componentRef?: string
 }
 
+/** JSON Schema 标准 type 名称。 */
+export type JsonSchemaTypeName = 'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null'
+
 /**
- * prop schema 抽象模型。
+ * 标准 JSON Schema 子集。
  *
  * 说明：
- * - object/enum/array/event 四种 kind 覆盖目录消费常见场景；
- * - 消费侧通常按 kind 分派渲染或校验逻辑。
+ * - 不使用自定义 kind 字段；
+ * - 落盘时会被拆成 schemaNodes 自引用表；
+ * - TypeScript 类型名使用标准 `title` 表达，不占用 JSON Schema `type`。
  */
-export type PropSchema =
-  | { kind: 'object'; type: string; properties: Record<string, PropSchemaProperty> }
-  | { kind: 'enum'; type: string; variants: string[] }
-  | { kind: 'array'; type: string; itemTypes: string[] }
-  | { kind: 'event'; type: string; paramTypes: string[] }
-
-export interface PropSchemaProperty {
-  /** 属性名。 */
-  name: string
-  /** 属性类型。 */
-  type: string
-  /** 是否必填。 */
-  required?: boolean
-  /** 属性说明。 */
+export interface PropSchema {
+  /** 标准 JSON Schema type。 */
+  type?: JsonSchemaTypeName | JsonSchemaTypeName[]
+  /** 对象属性。 */
+  properties?: Record<string, PropSchemaProperty>
+  /** object required 属性名列表。 */
+  required?: string[]
+  /** 枚举字面量。 */
+  enum?: unknown[]
+  /** 枚举/联合的逐分支说明。 */
+  oneOf?: PropSchema[]
+  /** const 字面量约束，常用于 oneOf 分支。 */
+  const?: unknown
+  /** 分支标题，常用于 oneOf 分支。 */
+  title?: string
+  /** 数组元素 schema。 */
+  items?: PropSchema
+  /** tuple / event 参数 schema。 */
+  prefixItems?: PropSchema[]
+  /** 联合 schema。 */
+  anyOf?: PropSchema[]
+  /** 引用其它 schema 定义；仅运行时重建 schema 时可能出现。 */
+  $ref?: string
+  /** 描述。 */
   description?: string
-  /** 嵌套结构 schema（当该属性本身也是复杂类型时递归展开） */
-  schema?: PropSchema
+  /** 标准 JSON Schema default annotation。 */
+  default?: unknown
+  /** 标准 JSON Schema examples annotation。 */
+  examples?: unknown[]
+}
+
+export interface PropSchemaProperty extends PropSchema {}
+
+/** Schema 节点在自引用表中的关系类型。 */
+export type SchemaNodeRelation = 'root' | 'property' | 'items' | 'prefixItem' | 'oneOf' | 'anyOf'
+
+/** 后端可直接持久化的 schema 自引用表行。 */
+export interface SchemaNodeEntry {
+  /** 节点主键；根节点 id 等于 TypeScript 类型名。 */
+  id: string
+  /** 所属根节点 id，便于后端按 schema 分区查询。 */
+  rootId: string
+  /** 父节点 id；根节点为空。 */
+  parentId?: string
+  /** 与父节点的关系。 */
+  relation: SchemaNodeRelation
+  /** object property 名称，仅 relation=property 时使用。 */
+  name?: string
+  /** 数组/联合分支序号。 */
+  index?: number
+  /** property 是否必填。 */
+  required?: boolean
+  /** 指向另一棵 schema 根节点，仍然是 schemaNodes 同表 id。 */
+  refId?: string
+  /** 标准 JSON Schema type。 */
+  type?: JsonSchemaTypeName | JsonSchemaTypeName[]
+  /** 标准 JSON Schema title。 */
+  title?: string
+  /** 标准 JSON Schema description。 */
+  description?: string
+  /** 标准 JSON Schema enum。 */
+  enum?: unknown[]
+  /** 标准 JSON Schema const。 */
+  const?: unknown
+  /** 标准 JSON Schema default annotation。 */
+  default?: unknown
+  /** 标准 JSON Schema examples annotation。 */
+  examples?: unknown[]
 }
 
 /** 单个 emit 事件定义。 */
@@ -211,60 +273,12 @@ export interface EmitEntry {
   type?: string
   /** 事件说明。 */
   description?: string
-  /** 关联 schema 引用列表。 */
-  schemaRefs?: string[]
+  /** 指向 schemaNodes 的根节点 id。 */
+  schemaNodeId?: string
 }
 
 // =========================================================
-// 五、规范化模型（Canonical）
-// =========================================================
-
-/** 规范化目录模型（字典去重 + 组件引用）。 */
-export interface CatalogCanonicalModel {
-  /** 去重后的 props/emits 字典。 */
-  dictionaries: CatalogCanonicalDictionaries
-  /** 组件规范化视图。 */
-  components: Record<string, CatalogCanonicalComponent>
-}
-
-/** 规范化字典集合。 */
-export interface CatalogCanonicalDictionaries {
-  /** prop 字典。 */
-  props: Record<string, PropEntry>
-  /** emit 字典。 */
-  emits: Record<string, EmitEntry>
-}
-
-/** 规范化后的单组件定义。 */
-export interface CatalogCanonicalComponent {
-  /** 组件类型。 */
-  type: string
-  /** 非空分类。 */
-  category: NonNullable<ComponentEntry['category']>
-  /** 组件说明。 */
-  description: string
-  /** 源文件路径。 */
-  filePath?: string
-  /** prop 字典引用键。 */
-  propRefs: string[]
-  /** emit 字典引用键。 */
-  emitRefs: string[]
-  /** 来源标记。 */
-  source?: NonNullable<ComponentEntry['source']>
-  /** 绑定描述。 */
-  binding?: CatalogBindingDescriptor
-  /** 契约引用。 */
-  contracts?: ComponentContractRefs
-  /** provides 列表。 */
-  provides?: string[]
-  /** consumes 列表。 */
-  consumes?: string[]
-  /** 备注。 */
-  notes?: string
-}
-
-// =========================================================
-// 六、绑定语义 / 治理契约 / 共享类型
+// 五、绑定语义 / 治理契约 / 共享类型
 // =========================================================
 
 /** 组件绑定语义描述符。 */
@@ -328,7 +342,7 @@ export interface SharedTypeProperty {
 }
 
 // =========================================================
-// 七、平台约束与嵌套规则
+// 六、平台约束与嵌套规则
 // =========================================================
 
 /**

@@ -32,6 +32,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill ai-chat-widget
+ * @catalogInternal
+ * @description AI 聊天会话容器，封装 useAiChat 状态、消息发送、附件上传、工具日志和草稿动作；适合直接挂到页面或全局 AI 面板中。
+ */
 import { computed, ref } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import AiChatShell from './AiChatShell.vue'
@@ -50,26 +55,47 @@ import type {
 const logger = Logger('AiChatWidget')
 
 const props = defineProps<{
+  /** Chat mode; 控制单轮或多轮会话行为。 */
   mode?: ChatMode
+  /** System prompt; 注入给 AI 的系统级指令。 */
   systemPrompt?: string
+  /** Panel title; 传递给聊天壳层顶部标题。 */
   title?: string
+  /** Input placeholder; 传递给消息输入框的提示文案。 */
   placeholder?: string
+  /** Compact layout; true 时使用更紧凑的聊天 UI。 */
   compact?: boolean
+  /** Custom sender; 覆盖默认 AI 消息发送实现。 */
   sender?: AiChatSender
+  /** Storage key; 用于持久化会话和面板状态。 */
   storageKey?: string
+  /** Disable persistence; true 时不读写本地会话缓存。 */
   disablePersistence?: boolean | undefined
+  /** Page id; 当前 AI 会话绑定的页面上下文。 */
   pageId?: string
+  /** Show tool logs; true 时展示内置工具日志。 */
   showToolLogs?: boolean
+  /** External tool logs; 由宿主传入并接管展示的工具日志。 */
   externalToolLogs?: Array<{ type: 'info' | 'success' | 'error'; tag: string; text: string; timestamp?: string }>
+  /** Clear external tool logs; 宿主提供的外部日志清空函数。 */
   clearExternalToolLogs?: (() => void) | undefined
+  /** Function-call error reporter; 上报 AI 函数调用错误。 */
   reportFcError?: AiFcErrorReporter | undefined
+  /** Turn concurrency config; 控制 AI turn 的并发和排队行为。 */
   turnConcurrency?: AiTurnConcurrencyConfig | undefined
+  /** Streaming chat implementation; 由宿主注入真实 LLM 流式调用。 */
   streamAiChatText?: StreamAiChatText | undefined
+  /** Token usage parser; 将 provider 原始 usage 转成统一 token 统计。 */
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
+  /** File upload implementation; 由宿主接管附件上传并返回可引用信息。 */
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
+  /** Draft actions; 可由 AI 或用户触发的草稿编辑动作。 */
   draftActions?: readonly AiDraftActionConfig[] | undefined
+  /** Action title map; 为 action id 覆盖展示标题。 */
   actionTitleMap?: Record<string, string> | undefined
+  /** Action prefix title map; 为 action id 增加标题前缀。 */
   actionPrefixTitleMap?: Record<string, string> | undefined
+  /** Action suffix title map; 为 action id 增加标题后缀。 */
   actionSuffixTitleMap?: Record<string, string> | undefined
 }>()
 

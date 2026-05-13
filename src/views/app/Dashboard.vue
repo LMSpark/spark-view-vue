@@ -104,7 +104,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。
+ * @skill dashboard
+ * @catalogInternal
+ * @description 管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口；属于应用路由页，不允许作为 SparkNode 组件配置生成。
  */
 /**
  * 管理仪表板页面 - Vue 组件页面示例

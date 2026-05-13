@@ -93,4 +93,6 @@ export interface FunctionPropEntry {
   default?: string
   /** 属性描述 */
   description?: string
+  /** JSON 示例值，供 LLM 直接参考填写 */
+  examples?: unknown[]
 }

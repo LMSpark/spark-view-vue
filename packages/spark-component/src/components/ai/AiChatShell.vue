@@ -217,6 +217,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill ai-chat-shell
+ * @catalogInternal
+ * @description AI 聊天壳层组件，负责渲染消息列表、输入区、附件、工具日志、SSE/FC 调试信息和策略切换事件；适合被 AiChatWidget 等上层会话容器托管。
+ */
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 interface FileAttachment {
@@ -415,44 +420,95 @@ interface StructuredDiagnosticsSnapshot {
 }
 
 const props = defineProps<{
+  /** Chat message list; 按时间顺序渲染用户、系统和 LLM 消息。 */
   messages: ChatMessageLike[]
+  /** Pending file attachments; 尚未发送、等待随下一条消息上传的文件。 */
   pendingFiles: FileAttachment[]
+  /** Current input text; 与输入框内容双向同步。 */
   inputText: string
+  /** Streaming state; true 表示当前有 AI turn 正在输出或执行。 */
   isStreaming: boolean
+  /** Active turn count; 当前正在运行的并发 turn 数。 */
   activeTurnCount?: number
+  /** Queued turn count; 已提交但等待执行的 turn 数。 */
   queuedTurnCount?: number
+  /** Max parallel turns; UI 展示允许并发执行的 turn 上限。 */
   maxParallelTurns?: number
+  /** Send availability; false 时禁用发送入口。 */
   canSend?: boolean
+  /** Voice recording state; true 表示正在录音输入。 */
   isRecording: boolean
+  /** Error message; 展示当前聊天流程的错误提示。 */
   error: string | null
+  /** Panel title; 显示在 chat shell 顶部。 */
   title?: string
+  /** Input placeholder; 空输入时的提示文案。 */
   placeholder?: string
+  /** Compact layout; true 时使用更紧凑的聊天面板间距。 */
   compact?: boolean
+  /** Tool log list; 展示 AI 工具调用、调试或流程日志。 */
   toolLogs?: ToolLogLike[]
+  /** Whether tool logs can be cleared; true 时显示清空工具日志操作。 */
   canClearToolLogs?: boolean
+  /** SSE event timeline; 展示流式响应的底层事件轨迹。 */
   sseEvents?: SseEventLike[]
+  /** Function-call records; 展示本轮 AI 调用的函数调用明细。 */
   fcCalls?: FcCallLike[]
+  /** Page id; 标记当前 AI 会话所属页面上下文。 */
   pageId?: string | undefined
+  /** Draft action list; LLM 可触发的草稿操作入口。 */
   draftActions?: readonly DraftActionLike[]
+  /** Draft loading id; 当前正在执行的草稿 action id。 */
   draftLoadingId?: string | null
+  /** Recovery policy; 控制 AI 出错或偏航时的恢复策略。 */
   recoveryPolicy?: RecoveryPolicyLike
+  /** Collaboration policy; 控制 AI 与人工确认之间的协作强度。 */
   collaborationPolicy?: CollaborationPolicyLike
+  /** Action title map; 为 action id 覆盖展示标题。 */
   actionTitleMap?: Record<string, string>
+  /** Action prefix title map; 为 action id 增加标题前缀。 */
   actionPrefixTitleMap?: Record<string, string>
+  /** Action suffix title map; 为 action id 增加标题后缀。 */
   actionSuffixTitleMap?: Record<string, string>
 }>()
 
 const emit = defineEmits<{
+  /**
+   * Input text changed; 同步用户输入框内容。
+   * @param value Next input text.
+   */
   (e: 'update:inputText', value: string): void
+  /** Send requested; 用户提交当前输入内容。 */
   (e: 'send'): void
+  /** Clear input requested; 清空当前输入区。 */
   (e: 'clear'): void
+  /** Clear messages requested; 清空当前聊天消息列表。 */
   (e: 'clearMessages'): void
+  /** Clear tool logs requested; 清空工具日志面板。 */
   (e: 'clearToolLogs'): void
+  /** File picker requested; 打开外部文件选择器。 */
   (e: 'triggerFileInput'): void
+  /** Voice input toggled; 切换录音输入状态。 */
   (e: 'toggleVoice'): void
+  /**
+   * Remove pending file; 从待发送附件列表移除一项。
+   * @param index Pending file index.
+   */
   (e: 'removePendingFile', index: number): void
+  /**
+   * Recovery policy changed; 同步 AI 恢复策略。
+   * @param value Next recovery policy.
+   */
   (e: 'update:recoveryPolicy', value: RecoveryPolicyLike): void
+  /**
+   * Collaboration policy changed; 同步人工确认协作策略。
+   * @param value Next collaboration policy.
+   */
   (e: 'update:collaborationPolicy', value: CollaborationPolicyLike): void
+  /**
+   * Draft action triggered; 用户点击或 LLM 请求执行草稿动作。
+   * @param actionId Draft action id.
+   */
   (e: 'triggerDraftAction', actionId: string): void
 }>(
 )

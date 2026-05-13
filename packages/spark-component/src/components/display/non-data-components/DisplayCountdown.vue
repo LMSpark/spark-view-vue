@@ -27,7 +27,12 @@ const props = withDefaults(defineProps<RDisplayCountdownProps>(), {
 })
 
 const emit = defineEmits<{
+  /** Countdown finished; 倒计时到达目标时间。 */
   finish: []
+  /**
+   * Countdown tick changed; 剩余时间数值更新。
+   * @param value Remaining milliseconds.
+   */
   change: [value: number]
 }>()
 

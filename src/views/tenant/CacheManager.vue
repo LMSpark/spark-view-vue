@@ -120,7 +120,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。
+ * @skill cache-manager
+ * @catalogInternal
+ * @description 缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存；属于租户路由页，不允许作为 SparkNode 组件配置生成。
  */
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'

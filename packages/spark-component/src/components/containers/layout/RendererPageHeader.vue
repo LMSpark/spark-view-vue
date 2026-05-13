@@ -33,6 +33,7 @@ const props = withDefaults(defineProps<RPageHeaderProps>(), {
 })
 
 defineEmits<{
+  /** Back requested; 用户点击页头返回入口。 */
   back: []
 }>()
 

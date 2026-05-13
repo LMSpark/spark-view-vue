@@ -47,6 +47,15 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
       props: [
         { name: 'dataKey', type: 'string', required: false, description: '表格数据源' },
         { name: 'border', type: 'boolean', required: false, description: '是否显示边框' },
+        { name: 'rowKey', type: 'string | undefined', required: false, description: '行唯一键' },
+        { name: 'density', type: '"default" | "compact"', required: true, description: '密度' },
+      ],
+      emits: [
+        {
+          name: 'rowChange',
+          type: '[row: Record<string, unknown>] ',
+          description: '当前行变更事件',
+        },
       ],
       rootFields: [
         {
@@ -67,51 +76,10 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
   }
 
   return {
-    version: '2.0.0',
+    version: '4.0.0',
     buildTime: '2026-04-06T00:00:00.000Z',
     componentCount: Object.keys(components).length,
-    registry: {
-      containers: ['r-table'],
-      fields: ['r-text'],
-      groups: [],
-      meta: [],
-    },
     sharedTypes: {},
-    canonical: {
-      dictionaries: {
-        props: {
-          prop_1: {
-            name: 'rowKey',
-            type: 'string | undefined',
-            required: false,
-            description: '行唯一键',
-          },
-          prop_2: {
-            name: 'density',
-            type: '"default" | "compact"',
-            required: true,
-            description: '密度',
-          },
-        },
-        emits: {
-          emit_1: {
-            name: 'rowChange',
-            type: '[row: Record<string, unknown>] ',
-            description: '当前行变更事件',
-          },
-        },
-      },
-      components: {
-        'r-table': {
-          type: 'r-table',
-          category: 'container',
-          description: '表格容器',
-          propRefs: ['prop_1', 'prop_2'],
-          emitRefs: ['emit_1'],
-          source: 'vcm',
-        },
-      },
-    },
     components,
     constraints: makeConstraints(),
     bindingDescriptors: {
@@ -161,30 +129,32 @@ describe('catalog-projections', () => {
     expect(projectComponentSpec(makeCatalog(), 'missing')).toBeNull()
   })
 
-  it('projectComponentSpec fails fast for legacy schemaRef component prefix', () => {
-    const base = makeCatalog()
-    const catalog: ComponentCatalog = {
-      ...base,
-      componentCount: base.componentCount + 1,
+  it('filters non-configurable internal components from LLM-facing projections', () => {
+    const catalog = makeCatalog({
       components: {
-        ...base.components,
-        'r-legacy': makeEntry({
-          type: 'r-legacy',
-          category: 'field',
-          description: 'legacy schemaRef field',
-          props: [
-            {
-              name: 'legacyConfig',
-              type: 'object',
-              required: false,
-              schemaRef: 'component:r-text',
-            },
-          ],
+        'r-table': makeEntry({
+          type: 'r-table',
+          category: 'container',
+          description: '表格容器',
+          props: [{ name: 'dataKey', type: 'string', required: false }],
+        }),
+        'internal-panel': makeEntry({
+          type: 'internal-panel',
+          category: 'feature',
+          description: '内部面板',
+          internal: true,
+          configurable: false,
         }),
       },
-    }
+    })
 
-    expect(() => projectComponentSpec(catalog, 'r-legacy')).toThrow(/schemaRef "component:\*" 已移除/u)
+    const directory = projectComponentDirectory(catalog)
+    const neutralCatalog = projectFrameworkNeutralCatalog(catalog)
+
+    expect(directory.components.map(entry => entry.type)).toEqual(['r-table'])
+    expect(projectComponentSpec(catalog, 'internal-panel')).toBeNull()
+    expect(projectComponentConfigGuide(catalog, 'internal-panel')).toBeNull()
+    expect(neutralCatalog.components['internal-panel']).toBeUndefined()
   })
 
   it('projectComponentConfigGuide returns normalized guide for known component', () => {

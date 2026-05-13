@@ -15,6 +15,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @catalogIgnore
+ * @description Template DSL demo placeholder; 仅用于路由占位和开发演示，不进入可配置组件目录。
+ */
 defineOptions({ name: 'TemplateDslDemo' })
 </script>
 

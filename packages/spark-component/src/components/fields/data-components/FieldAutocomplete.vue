@@ -39,6 +39,10 @@ const props = withDefaults(defineProps<RAutocompleteProps>(), {
 })
 
 const emit = defineEmits<FieldValueUpdateEmits<string> & {
+  /**
+   * Suggestion selected; 用户从自动完成候选项中选择一项。
+   * @param item Selected suggestion option.
+   */
   'select': [item: SuggestionItem]
 }>()
 

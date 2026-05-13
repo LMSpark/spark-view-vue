@@ -520,7 +520,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 平台首页，展示系统介绍、功能亮点和快速开始入口。
+ * @skill home-page
+ * @catalogInternal
+ * @description 平台首页，展示系统介绍、功能亮点和快速开始入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。
  */
 import NavIcon from '@/components/NavIcon.vue'
 import SkillCatalog from '@/views/app/SkillCatalog.vue'

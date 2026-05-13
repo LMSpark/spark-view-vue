@@ -46,7 +46,16 @@ const props = withDefaults(defineProps<RAnchorProps>(), {
 })
 
 const emit = defineEmits<{
+  /**
+   * Anchor target changed; 用户滚动或点击后切换到新的锚点。
+   * @param href Active anchor href.
+   */
   change: [href: string]
+  /**
+   * Anchor clicked; 用户点击某个锚点入口。
+   * @param e Native click event.
+   * @param href Clicked anchor href.
+   */
   click: [e: MouseEvent, href?: string]
 }>()
 

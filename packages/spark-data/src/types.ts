@@ -85,11 +85,15 @@ export interface IInstancePermission {
  * 前端负责维护和传递权限状态。
  */
 export interface IModelPermission {
+  /** 是否允许新增记录。 */
   allowCreate?: boolean
+  /** 是否允许导入记录。 */
   allowImport?: boolean
+  /** 是否允许导出记录。 */
   allowExport?: boolean
 
   // ===== 权限快照 =====
+  /** 权限令牌，后端可用它校验当前权限快照是否有效。 */
   permissionToken?: string  // 权限令牌（后端验证有效性）
 }
 
@@ -140,6 +144,7 @@ export type IDataRow = Record<string, unknown> & {
  * r-table 等纯列表容器仅需此接口。
  */
 export interface IRowDataSource {
+  /** 当前视图行集合，表格/列表/树等数据容器的主要渲染输入。 */
   rows?: readonly IDataRow[]
   /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
   columns?: readonly DataColumn[]
@@ -184,9 +189,13 @@ export interface ICurrentRowSource extends IRowDataSource {
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */
 export interface IDataSource extends ICurrentRowSource {
+  /** 模型级权限快照，供工具栏和容器判断新增、导入、导出等按钮可用性。 */
   _modelPerm?: IModelPermission
+  /** 当前查询结果总行数，用于分页器展示总量。 */
   total?: number
+  /** 当前页码，通常从 1 开始。 */
   page?: number
+  /** 每页行数，用于分页查询和分页器状态同步。 */
   pageSize?: number
   /**
    * 当前 `rows` 的全量聚合输出行；按视图 aggregates 配置自动计算，行变更后自动重算。

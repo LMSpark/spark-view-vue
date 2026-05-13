@@ -92,6 +92,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill app-ai-panel
+ * @catalogInternal
+ * @description 全局可拖拽/缩放 AI 面板，读取 useAiPanelStore 当前会话配置并承载 AiChatWidget；适合应用层统一挂载一次作为 AI 工作台入口。
+ */
 import { computed, ref, onBeforeUnmount, watch } from 'vue'
 import AiChatWidget from './AiChatWidget.vue'
 import { useAiPanelStore } from './useAiPanelStore'
@@ -99,8 +104,11 @@ import { readCache, writeCache, PANEL_LAYOUT_PREFIX } from './aiSessionCache'
 import type { FileAttachment, StreamAiChatText, TokenUsage } from './useAiChat'
 
 const props = defineProps<{
+  /** Streaming chat implementation; 由应用层注入真实 LLM 流式调用。 */
   streamAiChatText?: StreamAiChatText | undefined
+  /** Token usage parser; 将 provider 原始 usage 转成统一 token 统计。 */
   parseTokenUsage?: ((usageRaw: Record<string, unknown>) => TokenUsage) | undefined
+  /** File upload implementation; 由应用层处理附件上传并返回引用信息。 */
   uploadFile?: ((file: File) => Promise<FileAttachment>) | undefined
 }>()
 

@@ -17,7 +17,16 @@
 
 <script setup lang="ts">
 /**
- * {{pascalName}} — {{description}}
+ * @skill {{name}}
+{{#if isCatalogIgnore}}
+ * @catalogIgnore
+{{else}}
+{{#if isCatalogInternal}}
+ * @catalogInternal
+{{/if}}
+ * @category {{catalogCategory}}
+{{/if}}
+ * @description {{description}}
  *
  * dataKey 行为：{{dataKeyBehavior}}
  * 能力角色：{{capabilityRole}}
@@ -46,6 +55,7 @@ import { SparkData } from '@spark-view/spark-data'
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface Props {
+  /** SparkNode config; 由渲染器传入当前组件节点配置。 */
   config: SparkNode
 }
 

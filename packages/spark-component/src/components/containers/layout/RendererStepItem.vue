@@ -61,6 +61,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /**
+   * Step activated; 用户选择或激活当前步骤。
+   * @param index Step index in the parent steps container.
+   */
   activate: [index: number]
 }>()
 

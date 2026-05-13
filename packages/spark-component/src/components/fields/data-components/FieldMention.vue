@@ -49,7 +49,17 @@ const props = withDefaults(defineProps<RMentionProps>(), {
 })
 
 const emit = defineEmits<FieldValueUpdateEmits<string> & {
+  /**
+   * Mention option selected; 用户选择提及候选项。
+   * @param option Selected mention option.
+   * @param prefix Trigger prefix that matched the option.
+   */
   select: [option: MentionResolvedOption, prefix: string]
+  /**
+   * Mention search changed; 用户在某个前缀下输入搜索文本。
+   * @param pattern Current search keyword.
+   * @param prefix Active mention trigger prefix.
+   */
   search: [pattern: string, prefix: string]
 }>()
 
@@ -200,5 +210,4 @@ function handleSearch(pattern: string, prefix: string) {
   emit('search', pattern, prefix)
 }
 </script>
-
 

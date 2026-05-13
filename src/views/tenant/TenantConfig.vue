@@ -123,7 +123,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 多租户配置管理页面，展示和编辑租户级别的系统配置项。
+ * @skill tenant-config
+ * @catalogInternal
+ * @description 多租户配置管理页面，展示和编辑租户级别的系统配置项；属于租户路由页，不允许作为 SparkNode 组件配置生成。
  */
 /**
  * 多租户配置演示页面 - 租户隔离和配置管理

@@ -21,6 +21,30 @@ export default function (plop) {
       },
       {
         type: 'list',
+        name: 'catalogExposure',
+        message: 'Catalog 暴露方式:',
+        choices: [
+          { name: 'configurable — 可作为 SparkNode 页面配置组件', value: 'configurable' },
+          { name: 'internal     — 仅技术目录保留，LLM 不可直接配置', value: 'internal' },
+          { name: 'ignore       — 完全不进入 component-catalog.json', value: 'ignore' }
+        ],
+        default: 'configurable'
+      },
+      {
+        type: 'list',
+        name: 'catalogCategory',
+        message: 'Catalog 组件分类:',
+        choices: [
+          { name: 'feature   — 功能组件', value: 'feature' },
+          { name: 'container — 容器组件', value: 'container' },
+          { name: 'field     — 字段组件', value: 'field' },
+          { name: 'group     — 分组/布局组件', value: 'group' },
+          { name: 'meta      — 元组件', value: 'meta' }
+        ],
+        default: 'feature'
+      },
+      {
+        type: 'list',
         name: 'package',
         message: '选择目标包:',
         choices: [
@@ -73,12 +97,18 @@ export default function (plop) {
       const isProvider = ['provider', 'both'].includes(data.capabilityRole);
       const isConsumer = ['consumer', 'both'].includes(data.capabilityRole);
       const isDataSelfResolve = data.dataKeyBehavior === 'self-resolve';
+      const isCatalogInternal = data.catalogExposure === 'internal';
+      const isCatalogIgnore = data.catalogExposure === 'ignore';
 
       /** 模板变量一并传递，确保所有 .hbs 模板均可访问 */
       const templateData = {
         name: componentName,
         pascalName,
         description: data.description,
+        catalogCategory: data.catalogCategory,
+        catalogExposure: data.catalogExposure,
+        isCatalogInternal,
+        isCatalogIgnore,
         capabilityRole: data.capabilityRole,
         dataKeyBehavior: data.dataKeyBehavior,
         isProvider,

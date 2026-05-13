@@ -154,7 +154,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 系统设置面板，提供全局参数配置和偏好设置管理界面。
+ * @skill settings
+ * @catalogInternal
+ * @description 系统设置面板，提供全局参数配置和偏好设置管理界面；属于租户路由页，不允许作为 SparkNode 组件配置生成。
  */
 /**
  * 系统设置页面 - 配置管理和系统监控

@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<RAlertProps>(), {
 })
 
 const emit = defineEmits<{
+  /** Alert close requested; 用户关闭当前提示条。 */
   close: []
 }>()
 

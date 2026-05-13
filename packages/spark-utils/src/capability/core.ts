@@ -26,9 +26,13 @@ export interface CapabilityTypeMap {}
 
 /** 能力树节点：持有本地能力 Map，以及指向父节点的可选链。 */
 export interface ICapabilityContext {
+  /** 当前能力上下文节点 ID，用于调试、日志和父子链定位。 */
   id: string
+  /** 当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。 */
   type: string
+  /** 父级能力上下文；消费能力时会沿此链向上查找。 */
   parent?: ICapabilityContext
+  /** 当前节点本地提供的能力实现表，key 为 CapabilityKey。 */
   capabilities: Map<CapabilityName, unknown>
 }
 

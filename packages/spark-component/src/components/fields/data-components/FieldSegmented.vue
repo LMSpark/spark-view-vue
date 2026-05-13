@@ -28,6 +28,10 @@ const props = withDefaults(defineProps<RSegmentedProps>(), {
 })
 
 const emit = defineEmits<FieldValueUpdateEmits<string | number> & {
+  /**
+   * Segmented value changed; 用户切换分段选项。
+   * @param value Next selected segment value.
+   */
   change: [value: string | number]
 }>()
 
@@ -81,5 +85,4 @@ async function handleChange(val: string | number) {
   emit('change', val)
 }
 </script>
-
 

@@ -68,6 +68,7 @@ export interface AiFcLoopConfig {
 export interface AiFeedbackConfig {
   /** 绑定到 UI 文本框的 ref。 */
   readonly value?: Ref<string>
+  /** 提交反馈文本；target 标识对应消息和点赞/点踩来源。 */
   readonly onSubmit?: (
     text: string,
     target?: { messageId?: string; rating?: 'up' | 'down' },

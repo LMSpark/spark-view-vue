@@ -83,6 +83,12 @@ export function buildImplicitSkillDescription(absolutePath: string, skillType: s
 export interface SkillMeta {
   type: string
   description: string
+  /** @catalogIgnore / @sparkCatalogIgnore：完全不进入组件 catalog。 */
+  catalogIgnore?: boolean
+  /** @catalogInternal / @internal：进入技术目录，但不作为可配置组件暴露。 */
+  internal?: boolean
+  /** @configurable false：显式声明不可作为页面配置组件使用。 */
+  configurable?: boolean
   /** @category 覆盖（优先于目录推断） */
   category?: string
   /** @binding 数据绑定模式声明 */
@@ -145,7 +151,7 @@ export function parseSkillMeta(
   const jsdocBody = match[1] ?? ''
   const lines = jsdocBody.split('\n').map((l) => l.replace(/^\s*\*\s?/, '').trim())
 
-  const hasSkillMetadataTag = lines.some((l) => /^@(skill|skill-description|description)(?:\s|$)/.test(l))
+  const hasSkillMetadataTag = lines.some((l) => /^@(skill|skill-description|description|catalogIgnore|sparkCatalogIgnore|catalogInternal)(?:\s|$)/.test(l))
 
   // 提取 @skill（可覆盖推断 type）
   const skillLine = lines.find((l) => /^@skill(?:\s|$)/.test(l))
@@ -158,6 +164,12 @@ export function parseSkillMeta(
   }
 
   const skillTypeResolved = skillTagType ?? skillType
+  const catalogIgnore = lines.some((l) => /^@(catalogIgnore|sparkCatalogIgnore)(?:\s|$)/.test(l))
+  const internal = lines.some((l) => /^@(catalogInternal|internal)(?:\s|$)/.test(l))
+  const configurableLine = lines.find((l) => /^@configurable(?:\s|$)/.test(l))
+  const configurable = configurableLine === undefined
+    ? undefined
+    : !/false|no|0/i.test(configurableLine.replace('@configurable', '').trim())
 
   // 提取 @skill-description / @description
   const descLine = lines.find((l) => l.startsWith('@skill-description') || l.startsWith('@description'))
@@ -198,6 +210,9 @@ export function parseSkillMeta(
   return {
     type: skillTypeResolved,
     description,
+    ...(catalogIgnore ? { catalogIgnore: true } : {}),
+    ...(internal ? { internal: true } : {}),
+    ...(configurable !== undefined ? { configurable } : {}),
     ...(category !== undefined ? { category } : {}),
     ...(binding !== undefined ? { binding } : {}),
     ...(provides.length > 0 ? { provides } : {}),

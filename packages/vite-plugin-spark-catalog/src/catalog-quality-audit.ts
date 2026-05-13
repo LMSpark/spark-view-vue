@@ -7,7 +7,7 @@
  * 审计维度：
  * 1. Prop 描述覆盖率（每个非结构性 prop 应有 description）
  * 2. 类型精度（检测 unknown / object 等低信号类型）
- * 3. Schema 引用一致性（schemaRef 存在且指向有效 schema）
+ * 3. Schema 节点引用一致性（schemaNodeId/refId/parentId 指向有效节点）
  * 4. Emit 语义完整性（emit 应有 description）
  * 5. 绑定描述符完整性（有 dataKey 的组件应有绑定信息）
  * 6. field / value 优先级文档（display 组件同时有 field 和 value 时需说明优先级）
@@ -18,6 +18,7 @@
 import type {
   ComponentCatalog,
   ComponentEntry,
+  SchemaNodeEntry,
 } from './component-catalog-schema'
 import { createLogger } from './utils'
 
@@ -116,21 +117,28 @@ function auditTypePrecision(entry: ComponentEntry, issues: AuditIssue[]): void {
 
 function auditSchemaRefIntegrity(
   entry: ComponentEntry,
-  schemaPool: Record<string, unknown> | undefined,
+  schemaNodes: SchemaNodeEntry[] | undefined,
   issues: AuditIssue[],
 ): void {
-  if (schemaPool === undefined) return
+  if (schemaNodes === undefined) return
+  const nodeIds = new Set(schemaNodes.map((node) => node.id))
+
+  const assertNode = (field: string, nodeId: string | undefined): void => {
+    if (nodeId === undefined || nodeIds.has(nodeId)) return
+    issues.push({
+      severity: 'error',
+      rule: 'schema-node-dangling',
+      component: entry.type,
+      field,
+      message: `"${field}" 的 schemaNodeId "${nodeId}" 指向不存在的 schemaNodes 行`,
+    })
+  }
 
   for (const prop of entry.props) {
-    if (prop.schemaRef !== undefined && !(prop.schemaRef in schemaPool)) {
-      issues.push({
-        severity: 'error',
-        rule: 'schema-ref-dangling',
-        component: entry.type,
-        field: prop.name,
-        message: `Prop "${prop.name}" 的 schemaRef "${prop.schemaRef}" 指向不存在的 schema`,
-      })
-    }
+    assertNode(prop.name, prop.schemaNodeId)
+  }
+  for (const emit of entry.emits) {
+    assertNode(emit.name, emit.schemaNodeId)
   }
 }
 
@@ -207,7 +215,7 @@ function auditDefaultValues(entry: ComponentEntry, _issues: AuditIssue[]): void 
     if (prop.required) continue
 
     // 枚举类型通常需要说明默认行为
-    if (prop.schemaRef !== undefined && prop.default === undefined) {
+    if (prop.schemaNodeId !== undefined && prop.default === undefined) {
       // 非必填的复杂类型 prop 没有 default——可能需要文档化默认行为
       // 仅对 enum 类型提醒
       // 这里不做检查，因为 schema 中可能是 object 而非 enum
@@ -283,7 +291,7 @@ export function auditCatalog(catalog: ComponentCatalog, options: AuditOptions = 
 
     auditPropDescriptions(entry, issues)
     auditTypePrecision(entry, issues)
-    auditSchemaRefIntegrity(entry, catalog.schemaPool, issues)
+    auditSchemaRefIntegrity(entry, catalog.schemaNodes, issues)
     auditEmitDescriptions(entry, issues)
     auditBindingCompleteness(entry, issues)
     auditFieldValuePrecedence(entry, issues)

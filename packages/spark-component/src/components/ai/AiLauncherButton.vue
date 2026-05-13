@@ -15,6 +15,10 @@
 
 <script setup lang="ts">
 /**
+ * @skill ai-launcher-button
+ * @catalogInternal
+ * @description AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。
+ *
  * AiLauncherButton — 通用 AI 入口按钮。
  *
  * 组件只做一件事：绑定一个 AI 业务注册体（`config`）并控制面板开关。
@@ -35,13 +39,19 @@ interface Props {
   /** AI 业务注册体（唯一业务入口）。 */
   config: AiSessionConfig
 
-  // 展示属性
+  /** Button label; 展示在 AI 启动按钮上的文字。 */
   label?: string
+  /** Button size; 对齐 Element Plus small/default/large 尺寸。 */
   size?: 'small' | 'default' | 'large'
+  /** Button visual type; 控制主色、危险色等按钮语义色。 */
   type?: '' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  /** Link style; true 时使用轻量链接按钮外观。 */
   link?: boolean
+  /** Icon name; 对应 Element Plus icons-vue 的图标组件名。 */
   icon?: string
+  /** Icon size; 设置按钮图标像素尺寸。 */
   iconSize?: number
+  /** Disabled state; true 时禁止点击和快捷键打开面板。 */
   disabled?: boolean
 
   /**
@@ -51,6 +61,14 @@ interface Props {
    * 快捷键触发行为与点击完全一致（toggle）。
    */
   shortcut?: string
+}
+
+/** before-open 事件载荷：允许宿主在打开 AI 面板前读取 config 并取消本次打开。 */
+interface AiLauncherBeforeOpenPayload {
+  /** 即将打开的 AI 会话配置。 */
+  config: AiSessionConfig
+  /** 取消本次打开请求；调用后不会执行 store.open。 */
+  cancel: () => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,8 +86,11 @@ const emit = defineEmits<{
   'active-change': [active: boolean]
   /** 快捷键命中（在执行 open/close 之前触发，可用于埋点）。 */
   'shortcut-trigger': []
-  /** 即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。 */
-  'before-open': [payload: { config: AiSessionConfig; cancel: () => void }]
+  /**
+   * 即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。
+   * @param payload Before-open payload with session config and cancel function.
+   */
+  'before-open': [payload: AiLauncherBeforeOpenPayload]
 }>()
 
 const sessionConfig: AiSessionConfig = props.config

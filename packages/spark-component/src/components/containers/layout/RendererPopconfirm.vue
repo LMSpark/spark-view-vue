@@ -45,7 +45,9 @@ const props = withDefaults(defineProps<RPopconfirmProps>(), {
 })
 
 defineEmits<{
+  /** Confirm requested; 用户确认当前危险或二次确认动作。 */
   confirm: []
+  /** Cancel requested; 用户取消当前二次确认动作。 */
   cancel: []
 }>()
 

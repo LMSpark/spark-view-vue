@@ -45,6 +45,7 @@ const props = withDefaults(defineProps<RTagProps>(), {
 })
 
 const emit = defineEmits<{
+  /** Tag close requested; 用户点击可关闭标签的关闭入口。 */
   close: []
 }>()
 

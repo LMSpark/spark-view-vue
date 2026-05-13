@@ -70,7 +70,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。
+ * @skill custom-rtable-demo
+ * @catalogIgnore
+ * @description 自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力；仅用于开发演示，不进入组件配置目录。
  */
 import { FieldNumber, FieldText, PAGE_DATASET, RendererTable, useSparkContextScope } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'

@@ -54,9 +54,22 @@ const props = withDefaults(defineProps<RTourProps>(), {
 })
 
 const emit = defineEmits<{
+  /**
+   * Tour closed; 用户关闭引导浮层。
+   * @param current Current step index when closing.
+   */
   close: [current: number]
+  /** Tour finished; 用户完成所有引导步骤。 */
   finish: []
+  /**
+   * Tour step changed; 当前引导步骤发生切换。
+   * @param current Next active step index.
+   */
   change: [current: number]
+  /**
+   * Open state changed; 同步 tour 显隐状态。
+   * @param value Next open state.
+   */
   'update:open': [value: boolean]
 }>()
 
