@@ -149,7 +149,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { NavNode, NavNodeKind } from '@spark-view/spark-app'
+import type { NavNode, NavNodeKind } from '@spark-view/spark-page-config'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'

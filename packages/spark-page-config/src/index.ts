@@ -88,6 +88,8 @@ export {
 export * from './json-document'
 export * from './documents'
 export * from './page-design'
+export * from './navigation'
+export * from './page-edit'
 
 // 配置加载器
 export {

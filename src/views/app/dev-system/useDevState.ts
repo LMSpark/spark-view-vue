@@ -10,18 +10,36 @@
  * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件注册表合一暴露。
  */
 import { ref, reactive, computed } from 'vue'
-import { deepClone } from '@spark-view/spark-utils'
-import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
 import {
+  NavigationConfigClient,
+  NavigationEditSession,
+  PageConfigEditWorkspace,
   PageConfigFileApi,
+  applyNavigationNodeDraftToNode,
+  applyNodeKindPresetToDraft,
+  buildNavRoot,
+  canUseModuleNodeKind as canUseModuleNodeKindForTree,
+  createChildPageNode,
   createConfigLoader,
+  createNavigationNodeDraft,
+  createReservedRootGroup,
+  createRootModuleNode,
+  findConfigNodeByPageId,
+  findNodeById,
+  findNodeLocation,
   PAGE_FILE_NAMES,
-  createPageDocuments,
   forEachDocument,
-  isPageFileDocumentDirty,
+  isConfigNodeKind,
+  isSystemRootDirectory as isSystemRootDirectoryNode,
+  normalizeNavRoot,
+  normalizePageIdFromPath,
   type ConfigLoader,
-  type PageDocumentRegistry,
+  type LinkTarget,
+  type NavNode,
+  type NavNodeKind,
+  type NavigationNodeDraft,
+  type PageConfigPageSummary,
   type PageConfigFileVersionSummary,
   type PageFileName,
 } from '@spark-view/spark-page-config'
@@ -98,15 +116,17 @@ function toPageConfigApiBaseUrl(pageApi: string): string {
   return normalized || '/'
 }
 
-function toPageConfigLoaderPath(pageId: string, name: PageFileName): string {
-  return `/${encodeURIComponent(pageId)}/${encodeURIComponent(name)}`
-}
-
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
+  const navigationClient = new NavigationConfigClient({ getNavigationApi: getNavApi, http })
+  const navigationSession = new NavigationEditSession()
+  const pageWorkspace = new PageConfigEditWorkspace({
+    fileApi: pageFileApi,
+    getConfigLoader: getPageConfigLoader,
+  })
   const DEMO_CONTEXT_ITEMS: Array<{ id: string; title: string }> = [
     { id: 'sales', title: '销售中心' },
     { id: 'ops', title: '运营中心' },
@@ -117,18 +137,6 @@ export function useDevState() {
     defaultValue: 'sales',
     paramName: 'ctx',
   }
-
-  const DEFAULT_ICON_BY_KIND: Record<NavNodeKind, string> = {
-    'system-directory': 'FolderOpened',
-    'module': 'FolderOpened',
-    'system-page': 'Monitor',
-    'system-action': 'Lightning',
-    'page': 'Document',
-    'link': 'Link',
-    'sub-page': 'Document',
-    'ref': 'Connection',
-  }
-  const ROOT_CHILD_PLACEMENTS = new Set(['header', 'sidebar'])
 
   // ── 导航树 ──
   const treeData = ref<NavNode[]>([])
@@ -156,7 +164,7 @@ export function useDevState() {
 
   // ── 页面文件 SSOT 注册表 ──
   const activePageId = ref('')
-  const documents: PageDocumentRegistry = createPageDocuments()
+  const documents = pageWorkspace.documents
   const fileSaving = ref(false)
   const pageFilesRevision = ref(0)
 
@@ -166,36 +174,10 @@ export function useDevState() {
     })
   })
 
-  let activePageFilesLoadPromise: Promise<void> | null = null
-  let activePageFilesLoadPageId = ''
-  let activePageFilesLoadEpoch = 0
-
-  function invalidateActivePageFilesLoad(): void {
-    activePageFilesLoadPromise = null
-    activePageFilesLoadPageId = ''
-    activePageFilesLoadEpoch += 1
-  }
-
   function notifyPageFileChanged(pageId: string, filename: PageFileName | '__created' | '__deleted' | '__bulk'): void {
-    if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
-      clearPageConfigCache(pageId)
-      invalidateActivePageFilesLoad()
-    } else {
-      clearPageConfigCache(pageId, filename)
-    }
+    pageWorkspace.notifyPageFileChanged(pageId, filename)
     if (pageId && pageId === activePageId.value) {
       pageFilesRevision.value += 1
-    }
-  }
-
-  function clearPageConfigCache(pageId: string, filename?: PageFileName): void {
-    const loader = getPageConfigLoader()
-    if (filename !== undefined) {
-      loader.clearCache(toPageConfigLoaderPath(pageId, filename))
-      return
-    }
-    for (const name of PAGE_FILE_NAMES) {
-      loader.clearCache(toPageConfigLoaderPath(pageId, name))
     }
   }
 
@@ -203,7 +185,7 @@ export function useDevState() {
   const navEmpty = ref(false)
 
   // ── 页面列表 ──
-  const pageList = ref<Array<Record<string, unknown>>>([])
+  const pageList = ref<PageConfigPageSummary[]>([])
 
   // ── 状态消息 ──
   const statusMessages = ref<StatusMessage[]>([])
@@ -217,7 +199,7 @@ export function useDevState() {
 
   function isDocumentDirty(name: PageFileName): boolean {
     void pageFilesRevision.value
-    return isPageFileDocumentDirty(documents[name])
+    return pageWorkspace.isDocumentDirty(name)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -236,10 +218,6 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
   // 工具：地址 / 持久化 pageId
   // ═══════════════════════════════════════════════════════════
-
-  function normalizePageIdFromPath(path: string | undefined | null): string {
-    return path ? path.replace(/^\/+/, '').trim() : ''
-  }
 
   function buildActivePageStorageKey(): string {
     if (typeof window === 'undefined') return 'dev-system:active-page'
@@ -266,59 +244,33 @@ export function useDevState() {
     }
   }
 
-  function isConfigNodeKind(nodeKind: NavNodeKind): boolean {
-    return nodeKind === 'page' || nodeKind === 'sub-page'
-  }
-
-  function findConfigNodeByPageId(nodes: NavNode[], pageId: string): NavNode | null {
-    for (const node of nodes) {
-      if (isConfigNodeKind(node.nodeKind ?? 'page') && normalizePageIdFromPath(node.path) === pageId) {
-        return node
-      }
-      if (Array.isArray(node.children)) {
-        const found = findConfigNodeByPageId(node.children, pageId)
-        if (found) return found
-      }
-    }
-    return null
-  }
-
   function isBackendConfigPage(pageId: string): boolean {
-    const pageMeta = pageList.value.find((page) => String(page['pageId'] ?? '') === pageId)
+    const pageMeta = pageList.value.find((page) => page.pageId === pageId)
     if (!pageMeta) return true
-    return String(pageMeta['pageType'] ?? 'config') !== 'system-page'
+    return (pageMeta.pageType ?? 'config') !== 'system-page'
   }
 
   // ═══════════════════════════════════════════════════════════
   // 页面上下文切换
   // ═══════════════════════════════════════════════════════════
 
-  function resetAllDocuments(): void {
-    forEachDocument(documents, (_name, doc) => doc.reset())
-  }
-
   function setActivePageContext(pageId: string, forceReset = false): boolean {
-    if (!pageId || !isBackendConfigPage(pageId)) {
+    const normalizedPageId = pageId.trim()
+    if (!normalizedPageId || !isBackendConfigPage(normalizedPageId)) {
       clearFiles()
       return false
     }
 
-    const shouldReset = forceReset || activePageId.value !== pageId
-    if (shouldReset) {
-      invalidateActivePageFilesLoad()
-      resetAllDocuments()
-    }
-
-    activePageId.value = pageId
-    persistActivePageId(pageId)
+    pageWorkspace.setActivePage(normalizedPageId, forceReset || activePageId.value !== normalizedPageId)
+    activePageId.value = pageWorkspace.activePageId
+    persistActivePageId(activePageId.value)
     return true
   }
 
   function clearFiles(): void {
-    invalidateActivePageFilesLoad()
+    pageWorkspace.clear()
     activePageId.value = ''
     persistActivePageId('')
-    resetAllDocuments()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -326,50 +278,11 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
-    if (!node) return false
-    if (node.nodeKind !== 'system-directory') return false
-    return treeData.value.some((rootNode) => rootNode.id === node.id)
-  }
-
-  function isPageLikeKind(kind: NavNodeKind): boolean {
-    return kind === 'page' || kind === 'system-page' || kind === 'system-action' || kind === 'link' || kind === 'sub-page'
-  }
-
-  function findParentNodeById(nodes: NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {
-    for (const node of nodes) {
-      if (node.id === targetId) return parent
-      if (Array.isArray(node.children)) {
-        const found = findParentNodeById(node.children, targetId, node)
-        if (found) return found
-      }
-    }
-    return null
-  }
-
-  function findNodeById(nodes: NavNode[], targetId: string): NavNode | null {
-    for (const node of nodes) {
-      if (node.id === targetId) return node
-      if (Array.isArray(node.children)) {
-        const found = findNodeById(node.children, targetId)
-        if (found) return found
-      }
-    }
-    return null
-  }
-
-  function getParentNode(node: NavNode | null | undefined): NavNode | null {
-    if (!node) return null
-    return findParentNodeById(treeData.value, node.id)
+    return isSystemRootDirectoryNode(node, treeData.value)
   }
 
   function canUseModuleNodeKind(node: NavNode | null | undefined): boolean {
-    const parent = getParentNode(node)
-    if (!parent) return true
-    return !isPageLikeKind(parent.nodeKind ?? 'module')
-  }
-
-  function defaultIconByKind(kind: NavNodeKind): string {
-    return DEFAULT_ICON_BY_KIND[kind]
+    return canUseModuleNodeKindForTree(node, treeData.value)
   }
 
   async function syncPageFilesForNode(node: NavNode, forceReload: boolean): Promise<void> {
@@ -382,97 +295,8 @@ export function useDevState() {
     clearFiles()
   }
 
-  function syncIconByNodeKind(nextKind: NavNodeKind, previousKind: NavNodeKind): void {
-    const previousDefault = defaultIconByKind(previousKind)
-    const nextDefault = defaultIconByKind(nextKind)
-    if (!editForm.icon || editForm.icon === previousDefault) {
-      editForm.icon = nextDefault
-    }
-  }
-
-  function applyNodeKindToNode(node: NavNode, parentPlacement?: string): NavNode {
-    const cloned = deepClone(node)
-    if (cloned.nodeKind === undefined && (parentPlacement === 'toolbar' || parentPlacement === 'user-menu')) {
-      cloned.nodeKind = 'system-action'
-    }
-    if (cloned.nodeKind === 'sub-page') {
-      cloned.hidden = true
-      delete cloned.path
-      delete cloned.redirect
-      delete cloned.linkTarget
-    } else if (cloned.nodeKind === 'link') {
-      delete cloned.redirect
-      delete cloned.parentPageId
-      if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab') {
-        cloned.linkTarget = 'iframe'
-      }
-    } else {
-      delete cloned.linkTarget
-    }
-    if (Array.isArray(cloned.children)) {
-      cloned.children = cloned.children.map(child => applyNodeKindToNode(child, cloned.childPlacement))
-    }
-    return cloned
-  }
-
   function applyNodeKindPreset(kind: NavNodeKind): void {
-    const previousKind = editForm.nodeKind
-    editForm.nodeKind = kind
-    syncIconByNodeKind(kind, previousKind)
-
-    if (kind === 'system-directory') {
-      editForm.hidden = false
-      editForm.path = ''
-      editForm.redirect = ''
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-      return
-    }
-
-    if (kind === 'module') {
-      editForm.hidden = false
-      editForm.path = ''
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-      return
-    }
-
-    if (kind === 'system-page') {
-      editForm.hidden = false
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-      return
-    }
-
-    if (kind === 'page') {
-      editForm.hidden = false
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-      return
-    }
-
-    if (kind === 'link') {
-      editForm.hidden = false
-      editForm.path = ''
-      editForm.redirect = ''
-      editForm.parentPageId = ''
-      editForm.refId = ''
-      return
-    }
-
-    if (kind === 'ref') {
-      editForm.hidden = false
-      editForm.path = ''
-      editForm.redirect = ''
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-      return
-    }
-
-    editForm.hidden = true
-    editForm.path = ''
-    editForm.redirect = ''
-    editForm.linkTarget = 'iframe'
+    Object.assign(editForm, applyNodeKindPresetToDraft({ ...editForm } as NavigationNodeDraft, kind))
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -492,30 +316,13 @@ export function useDevState() {
   // 数据加载
   // ═══════════════════════════════════════════════════════════
 
-  function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
-    return ROOT_CHILD_PLACEMENTS.has(String(value ?? '').trim())
-      ? (value as 'header' | 'sidebar')
-      : 'header'
-  }
-
-  function buildMigratedNavRoot(config: { title?: string; childPlacement?: string; children?: NavNode[]; homePath?: string }): AppNavRoot {
-    const root: AppNavRoot = {
-      title: config.title ?? '',
-      childPlacement: normalizeRootChildPlacement(config.childPlacement),
-      children: (config.children ?? []).map(node => applyNodeKindToNode(node)),
-    }
-    const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
-    if (homePath) root.homePath = homePath
-    return root
-  }
-
   async function loadNavConfig(options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null }): Promise<void> {
     const preservedSelectedNodeId = options?.preserveSelectedNodeId ?? selectedNode.value?.id ?? null
     const preservedActivePageId = options?.preserveActivePageId?.trim() ?? ''
     navLoading.value = true
     try {
-      const config = await http.get<{ childPlacement?: string; children?: NavNode[]; homePath?: string }>(getNavApi())
-      const migratedRoot = buildMigratedNavRoot(config)
+      const migratedRoot = await navigationClient.loadRoot()
+      navigationSession.replaceRoot(migratedRoot)
       const normalizedChildren = migratedRoot.children
 
       if (normalizedChildren.length > 0) {
@@ -528,7 +335,9 @@ export function useDevState() {
 
       addStatus('导航配置已加载', 'success')
     } catch {
-      treeData.value = deepClone(demoNavRoot.children).map(node => applyNodeKindToNode(node))
+      const fallbackRoot = normalizeNavRoot(demoNavRoot)
+      navigationSession.replaceRoot(fallbackRoot)
+      treeData.value = fallbackRoot.children
       navEmpty.value = false
       addStatus('导航加载失败，使用演示数据', 'warning')
     } finally {
@@ -578,109 +387,19 @@ export function useDevState() {
 
   async function loadPages(): Promise<void> {
     try {
-      pageList.value = await http.get<Array<Record<string, unknown>>>(`${getPageApi()}/__list`)
+      pageList.value = await pageWorkspace.listPages()
     } catch { /* ignore */ }
   }
 
-  async function fetchRemotePageFileContent(
-    pageId: string,
-    name: PageFileName,
-    options?: { forceReload?: boolean },
-  ): Promise<string> {
-    const result = await getPageConfigLoader().loadPageFileContent(pageId, name, {
-      forceReload: options?.forceReload === true,
-    })
-    if (result.success) return result.data ?? ''
-    if (result.reason === 'not-found') return ''
-    const detail = result.error ?? result.reason ?? 'unknown'
-    throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
-  }
-
-  function areAllActivePageFilesLoaded(): boolean {
-    return PAGE_FILE_NAMES.every((entry) => documents[entry].loadState.value === 'loaded')
-  }
-
   async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
-    const pageId = activePageId.value
-    if (!pageId) return
-    const forceReload = options?.forceReload === true
-    const isFileDirty = (name: PageFileName) => isDocumentDirty(name)
-
-    if (activePageFilesLoadPromise && activePageFilesLoadPageId === pageId) {
-      return activePageFilesLoadPromise
-    }
-
-    if (!forceReload && areAllActivePageFilesLoaded()) return
-
-    if (!forceReload && PAGE_FILE_NAMES.some((entry) => isFileDirty(entry))) {
-      // Respect local dirty edits: mark any non-loading idle docs as loaded so UI progresses.
-      for (const entry of PAGE_FILE_NAMES) {
-        const doc = documents[entry]
-        if (doc.loadState.value !== 'loading' && !isFileDirty(entry) && doc.loadState.value === 'idle') {
-          // Leave idle empty docs as idle — only promote if they have any content.
-          if (doc.text.value || doc.savedText.value) doc.loadState.value = 'loaded'
-        }
-      }
-      return
-    }
-
-    const loadEpoch = activePageFilesLoadEpoch
-    activePageFilesLoadPageId = pageId
-    const previousLoadStates = new Map<PageFileName, 'idle' | 'loading' | 'loaded'>(
-      PAGE_FILE_NAMES.map(entry => [entry, documents[entry].loadState.value]),
-    )
-
-    for (const entry of PAGE_FILE_NAMES) {
-      const doc = documents[entry]
-      if (!forceReload && isFileDirty(entry)) {
-        doc.loadState.value = 'loaded'
-        continue
-      }
-      doc.loadState.value = 'loading'
-    }
-
-    const loadPromise = (async () => {
-      let loadedSnapshots: ReadonlyArray<readonly [PageFileName, string]>
-      try {
-        loadedSnapshots = await Promise.all(
-          PAGE_FILE_NAMES.map(async (entry) => [
-            entry,
-            await fetchRemotePageFileContent(pageId, entry, { forceReload }),
-          ] as const),
-        )
-      } catch (error) {
-        if (activePageFilesLoadEpoch === loadEpoch && activePageId.value === pageId) {
-          for (const entry of PAGE_FILE_NAMES) {
-            documents[entry].loadState.value = previousLoadStates.get(entry) ?? 'idle'
-          }
-        }
-        throw error
-      }
-
-      if (activePageFilesLoadEpoch !== loadEpoch || activePageId.value !== pageId) return
-
-      for (const [entry, loadedText] of loadedSnapshots) {
-        const doc = documents[entry]
-        if (!forceReload && isFileDirty(entry)) {
-          doc.loadState.value = 'loaded'
-          continue
-        }
-        doc.loadFromText(loadedText, { markSaved: true })
-      }
-    })().finally(() => {
-      if (activePageFilesLoadEpoch === loadEpoch && activePageFilesLoadPageId === pageId) {
-        activePageFilesLoadPromise = null
-        activePageFilesLoadPageId = ''
-      }
-    })
-
-    activePageFilesLoadPromise = loadPromise
-    return loadPromise
+    if (!activePageId.value) return
+    pageWorkspace.setActivePage(activePageId.value)
+    await pageWorkspace.ensureActivePageFilesLoaded(options)
   }
 
   async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }): Promise<void> {
-    void name
-    await ensureActivePageFilesLoaded(options)
+    pageWorkspace.setActivePage(activePageId.value)
+    await pageWorkspace.loadPageFile(name, options)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -688,10 +407,10 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   async function listRemotePageVersions(filename: PageFileName): Promise<PageConfigFileVersionSummary[]> {
-    const pageId = activePageId.value
-    if (!pageId) return []
+    if (!activePageId.value) return []
+    pageWorkspace.setActivePage(activePageId.value)
     try {
-      return await pageFileApi.listVersions(pageId, filename)
+      return await pageWorkspace.listRemotePageVersions(filename)
     } catch (e) {
       addStatus(`读取后端版本失败: ${String(e)}`, 'error')
       return []
@@ -701,19 +420,10 @@ export function useDevState() {
   async function restoreRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
+    pageWorkspace.setActivePage(pageId)
     try {
-      await pageFileApi.restoreVersion(pageId, filename, version)
-      clearPageConfigCache(pageId, filename)
-      invalidateActivePageFilesLoad()
-      try {
-        const restoredText = await fetchRemotePageFileContent(pageId, filename, { forceReload: true })
-        documents[filename].loadFromText(restoredText, { markSaved: true })
-      } catch (reloadError) {
-        notifyPageFileChanged(pageId, filename)
-        addStatus(`版本已恢复，但重新读取 ${filename} 失败: ${String(reloadError)}`, 'warning')
-        return true
-      }
-      notifyPageFileChanged(pageId, filename)
+      await pageWorkspace.restoreRemotePageVersion(version, filename)
+      pageFilesRevision.value += 1
       addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
@@ -723,10 +433,10 @@ export function useDevState() {
   }
 
   async function createRemotePageVersion(filename: PageFileName): Promise<boolean> {
-    const pageId = activePageId.value
-    if (!pageId) return false
+    if (!activePageId.value) return false
+    pageWorkspace.setActivePage(activePageId.value)
     try {
-      await pageFileApi.createVersion(pageId, filename)
+      await pageWorkspace.createRemotePageVersion(filename)
       addStatus(`${filename} 已创建新版本快照`, 'success')
       return true
     } catch (e) {
@@ -736,10 +446,10 @@ export function useDevState() {
   }
 
   async function deleteRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
-    const pageId = activePageId.value
-    if (!pageId) return false
+    if (!activePageId.value) return false
+    pageWorkspace.setActivePage(activePageId.value)
     try {
-      await pageFileApi.deleteVersion(pageId, filename, version)
+      await pageWorkspace.deleteRemotePageVersion(version, filename)
       addStatus(`${filename} 版本 v${version} 已删除`, 'success')
       return true
     } catch (e) {
@@ -753,50 +463,11 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function loadNodeToForm(node: NavNode): void {
-    editForm.id = node.id
-    editForm.title = node.title
-    editForm.icon = node.icon ?? ''
-    editForm.nodeKind = node.nodeKind ?? 'page'
-    editForm.dividerAfter = node.dividerAfter ?? false
-    editForm.description = node.description ?? ''
-    editForm.path = node.path ?? ''
-    editForm.redirect = node.redirect ?? ''
-    editForm.linkTarget = node.linkTarget === 'new-tab' ? 'new-tab' : 'iframe'
-    editForm.parentPageId = node.parentPageId ?? ''
-    editForm.refId = node.refId ?? ''
-    editForm.childPlacement = node.childPlacement ?? ''
-    editForm.order = node.order ?? 0
-    editForm.hidden = node.hidden ?? false
-    editForm.disabled = node.disabled ?? false
-    editForm.permissionMode = node.permissionMode ?? 'masked'
-
-    if (!editForm.icon) editForm.icon = defaultIconByKind(editForm.nodeKind)
-
-    if (node.context !== undefined) {
-      hasContext.value = true
-      if (Array.isArray(node.context)) {
-        contextItems.value = node.context.map(i => ({ id: String(i.id), title: i.title }))
-        contextConfig.placeholder = ''
-        contextConfig.defaultValue = ''
-        contextConfig.paramName = ''
-      } else if (typeof node.context === 'object') {
-        const cfg = node.context as {
-          source?: unknown; placeholder?: string; defaultValue?: unknown; paramName?: string
-        }
-        contextItems.value = Array.isArray(cfg.source)
-          ? (cfg.source as NavContextItem[]).map(i => ({ id: String(i.id), title: i.title }))
-          : []
-        contextConfig.placeholder = cfg.placeholder ?? ''
-        contextConfig.defaultValue = cfg.defaultValue !== null && cfg.defaultValue !== undefined ? String(cfg.defaultValue) : ''
-        contextConfig.paramName = cfg.paramName ?? ''
-      }
-    } else {
-      hasContext.value = false
-      contextItems.value = []
-      contextConfig.placeholder = ''
-      contextConfig.defaultValue = ''
-      contextConfig.paramName = ''
-    }
+    const nodeDraft = createNavigationNodeDraft(node)
+    Object.assign(editForm, nodeDraft.draft)
+    hasContext.value = nodeDraft.context.hasContext
+    contextItems.value = nodeDraft.context.items
+    Object.assign(contextConfig, nodeDraft.context.config)
     navDirty.value = false
     linkProbeInfo.value = null
   }
@@ -816,74 +487,17 @@ export function useDevState() {
       addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
     }
 
-    const patch: Record<string, unknown> = { id: editForm.id, title: editForm.title, nodeKind: editForm.nodeKind }
-
-    if (editForm.nodeKind === 'sub-page') {
-      editForm.hidden = true
-      editForm.path = ''
-      editForm.redirect = ''
-      editForm.linkTarget = 'iframe'
-    } else if (editForm.nodeKind === 'link') {
-      editForm.redirect = ''
-      editForm.parentPageId = ''
-    } else if (editForm.nodeKind === 'ref') {
-      editForm.path = ''
-      editForm.redirect = ''
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-    } else if (editForm.nodeKind === 'system-page') {
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
-    } else if (editForm.nodeKind === 'page') {
-      editForm.linkTarget = 'iframe'
-      editForm.parentPageId = ''
+    const result = applyNavigationNodeDraftToNode(node, {
+      draft: { ...editForm } as NavigationNodeDraft,
+      context: {
+        hasContext: hasContext.value,
+        items: contextItems.value,
+        config: { ...contextConfig },
+      },
+    })
+    for (const warning of result.warnings) {
+      addStatus(warning, 'warning')
     }
-
-    if (editForm.icon) patch['icon'] = editForm.icon
-    if (editForm.dividerAfter) patch['dividerAfter'] = true
-    if (editForm.description) patch['description'] = editForm.description
-    if (editForm.path) patch['path'] = editForm.path
-    if (editForm.redirect) patch['redirect'] = editForm.redirect
-    if (editForm.nodeKind === 'link') patch['linkTarget'] = editForm.linkTarget
-    if (editForm.nodeKind === 'ref' && editForm.refId) {
-      if (editForm.refId === editForm.id) {
-        addStatus('不能引用自身，已忽略 refId', 'warning')
-      } else {
-        patch['refId'] = editForm.refId
-      }
-    }
-    if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
-    if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
-    if (editForm.order !== 0) patch['order'] = editForm.order
-    if (editForm.hidden !== false) patch['hidden'] = editForm.hidden
-    if (editForm.disabled !== false) patch['disabled'] = editForm.disabled
-    patch['permissionMode'] = editForm.permissionMode
-
-    if (hasContext.value && contextItems.value.length > 0) {
-      const items = contextItems.value.filter(i => i.id && i.title)
-      if (contextConfig.placeholder || contextConfig.defaultValue || contextConfig.paramName) {
-        const ctx: Record<string, unknown> = { source: items }
-        if (contextConfig.placeholder) ctx['placeholder'] = contextConfig.placeholder
-        if (contextConfig.defaultValue) ctx['defaultValue'] = contextConfig.defaultValue
-        if (contextConfig.paramName) ctx['paramName'] = contextConfig.paramName
-        patch['context'] = ctx
-      } else {
-        patch['context'] = items
-      }
-    }
-
-    const optKeys: Array<keyof NavNode> = [
-      'icon', 'description', 'path', 'redirect', 'linkTarget',
-      'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
-      'dividerAfter', 'nodeKind', 'refId', 'permissionMode',
-    ]
-    for (const k of optKeys) {
-      if (!(k in patch)) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete (node as Record<string, unknown>)[k]
-      }
-    }
-    Object.assign(node, patch)
     navDirty.value = false
   }
 
@@ -928,9 +542,9 @@ export function useDevState() {
   async function saveNavConfig(): Promise<void> {
     if (navDirty.value) applyNavChanges()
     navSaving.value = true
-    const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
+    const root = buildNavRoot(treeData.value)
     try {
-      await http.put(getNavApi(), root)
+      await navigationClient.saveRoot(root)
       await refreshRoutes()
       navDirty.value = false
       addStatus('导航配置已保存', 'success')
@@ -953,7 +567,7 @@ export function useDevState() {
     const { children: _children, ...patch } = node
     navSaving.value = true
     try {
-      await http.put(`${getNavApi()}/nodes/${encodeURIComponent(node.id)}`, patch)
+      await navigationClient.updateNode(node.id, patch)
       await refreshRoutes()
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
@@ -979,13 +593,9 @@ export function useDevState() {
 
     fileSaving.value = true
     try {
-      const doc = documents[name]
-      const content = doc.text.value
-
-      await pageFileApi.saveFileContent(pageId, name, content)
-
-      doc.markSaved()
-      notifyPageFileChanged(pageId, name)
+      pageWorkspace.setActivePage(pageId)
+      await pageWorkspace.savePageFile(name)
+      pageFilesRevision.value += 1
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
     } catch (e) {
@@ -1085,9 +695,9 @@ export function useDevState() {
 
     linkProbeLoading.value = true
     try {
-      const result = await http.post<Record<string, unknown>>(`${getNavApi()}/link-probe`, { url })
-      const embeddable = Boolean(result['embeddable'])
-      const reason = String(result['reason'] ?? '')
+      const result = await navigationClient.probeLink(url)
+      const embeddable = result.embeddable
+      const reason = result.reason
 
       editForm.linkTarget = embeddable ? 'iframe' : 'new-tab'
       linkProbeInfo.value = { embeddable, reason }
@@ -1111,22 +721,17 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function addRootNode(): void {
-    const id = crypto.randomUUID()
-    const node: NavNode = {
-      id,
-      nodeKind: 'module',
-      title: '新模块',
-      icon: 'FolderOpened',
-      childPlacement: 'sidebar',
-      children: [],
-    }
+    const node = createRootModuleNode(() => crypto.randomUUID())
     treeData.value.push(node)
-    void http.post(`${getNavApi()}/nodes`, { node }).then(
+    void navigationClient.addNode({ node }).then(
       () => {
-        notifyPageFileChanged(id, '__created')
+        notifyPageFileChanged(node.id, '__created')
         addStatus('已添加根模块', 'info')
       },
-      (e: unknown) => addStatus(`添加模块失败: ${String(e)}`, 'error'),
+      (e: unknown) => {
+        treeData.value = treeData.value.filter((entry) => entry.id !== node.id)
+        addStatus(`添加模块失败: ${String(e)}`, 'error')
+      },
     )
   }
 
@@ -1135,30 +740,10 @@ export function useDevState() {
   }
 
   function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): NavNode {
-    const template = demoNavRoot.children.find((node) => node.childPlacement === placement)
-    if (template) {
-      const cloned = deepClone(template)
-      cloned.id = crypto.randomUUID()
-      return cloned
-    }
-    if (placement === 'toolbar') {
-      return {
-        id: crypto.randomUUID(),
-        nodeKind: 'system-directory',
-        title: '工具栏',
-        icon: 'SetUp',
-        childPlacement: 'toolbar',
-        children: [],
-      }
-    }
-    return {
-      id: crypto.randomUUID(),
-      nodeKind: 'system-directory',
-      title: '用户菜单',
-      icon: 'User',
-      childPlacement: 'user-menu',
-      children: [],
-    }
+    return createReservedRootGroup(placement, {
+      createId: () => crypto.randomUUID(),
+      templateRoot: demoNavRoot,
+    })
   }
 
   async function restoreReservedRootGroup(placement: 'toolbar' | 'user-menu'): Promise<void> {
@@ -1171,7 +756,7 @@ export function useDevState() {
     treeData.value.unshift(node)
 
     try {
-      await http.post(`${getNavApi()}/nodes`, { node, index: 0 })
+      await navigationClient.addNode({ node, index: 0 })
       addStatus(`已恢复 ${node.title}`, 'success')
     } catch (e) {
       treeData.value = treeData.value.filter((n) => n.id !== node.id)
@@ -1180,21 +765,17 @@ export function useDevState() {
   }
 
   function addChildNode(parent: NavNode): void {
-    const id = crypto.randomUUID()
-    const node: NavNode = {
-      id,
-      nodeKind: 'page',
-      title: '新页面',
-      icon: defaultIconByKind('page'),
-      path: `/${id}`,
-    }
+    const node = createChildPageNode(() => crypto.randomUUID())
     ;(parent.children ??= []).push(node)
-    void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
+    void navigationClient.addNode({ parentId: parent.id, node }).then(
       () => {
-        notifyPageFileChanged(id, '__created')
+        notifyPageFileChanged(node.id, '__created')
         addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
       },
-      (e: unknown) => addStatus(`添加节点失败: ${String(e)}`, 'error'),
+      (e: unknown) => {
+        parent.children = (parent.children ?? []).filter((entry) => entry.id !== node.id)
+        addStatus(`添加节点失败: ${String(e)}`, 'error')
+      },
     )
   }
 
@@ -1215,7 +796,7 @@ export function useDevState() {
       selectedNode.value = null
       clearFiles()
     }
-    void http.delete(`${getNavApi()}/nodes/${encodeURIComponent(data.id)}`).then(
+    void navigationClient.deleteNode(data.id).then(
       () => {
         if (data.path) {
           notifyPageFileChanged(data.path.replace(/^\/+/, ''), '__deleted')
@@ -1226,13 +807,43 @@ export function useDevState() {
     )
   }
 
-  function resetToDemo(): void {
-    treeData.value = deepClone(demoNavRoot.children)
+  async function moveNodeInTree(data: NavNode): Promise<void> {
+    if (isSystemRootDirectory(data)) return
+    const location = findNodeLocation(treeData.value, data.id)
+    if (!location) return
+    navSaving.value = true
+    try {
+      await navigationClient.moveNode(data.id, location.parentId, location.index)
+      await refreshRoutes()
+      navDirty.value = false
+      addStatus(`节点 ${data.title} 已移动`, 'success')
+    } catch (e) {
+      addStatus(`节点移动失败: ${String(e)}`, 'error')
+      await loadNavConfig({ preserveSelectedNodeId: data.id, preserveActivePageId: activePageId.value })
+    } finally {
+      navSaving.value = false
+    }
+  }
+
+  async function resetToDemo(): Promise<void> {
+    const demoRoot = normalizeNavRoot(demoNavRoot)
+    treeData.value = demoRoot.children
+    navigationSession.replaceRoot(demoRoot)
     navEmpty.value = false
     selectedNode.value = null
-    navDirty.value = false
     clearFiles()
-    addStatus('已重置为演示数据', 'info')
+    navSaving.value = true
+    try {
+      await navigationClient.saveRoot(demoRoot)
+      await refreshRoutes()
+      navDirty.value = false
+      addStatus('已重置为演示数据', 'info')
+    } catch (e) {
+      navDirty.value = true
+      addStatus(`重置演示保存失败: ${String(e)}`, 'error')
+    } finally {
+      navSaving.value = false
+    }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1338,6 +949,7 @@ export function useDevState() {
     canUseModuleNodeKind,
     addChildNode,
     removeNodeFromTree,
+    moveNodeInTree,
     resetToDemo,
     toggleContext,
     addContextItem,

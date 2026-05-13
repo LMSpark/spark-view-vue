@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import type { NavContextState } from '@spark-view/spark-app'
+import type { NavContextState } from '@spark-view/spark-page-config'
 import { useNav } from '@spark-view/spark-app'
 
 const props = defineProps<{

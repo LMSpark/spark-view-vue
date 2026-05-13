@@ -15,11 +15,7 @@ export function parseTenantScope(path: string): TenantProjectScope | null {
   }
 }
 
-export function isTenantScopedPath(path: string): boolean {
-  return parseTenantScope(path) !== null
-}
-
-export function normalizeRouteSubPath(path: string): string {
+function normalizeRouteSubPath(path: string): string {
   const trimmed = path.trim()
   if (trimmed.length === 0) return '/'
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
@@ -35,6 +31,6 @@ export function buildTenantRootPath(scope: TenantProjectScope): string {
 
 export function buildTenantPath(scope: TenantProjectScope, subPath: string): string {
   const normalized = normalizeRouteSubPath(subPath)
-  if (isTenantScopedPath(normalized)) return normalized
+  if (parseTenantScope(normalized) !== null) return normalized
   return `${buildTenantRootPath(scope)}${normalized}`
 }

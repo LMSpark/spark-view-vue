@@ -17,11 +17,9 @@ const logger = Logger('SSE')
  * 服务端 SSE 事件类型常量
  * 与后端 SseService.EVENT_* 保持一致
  */
-export const ServerEventType = {
+const ServerEventType = {
   PAGE_CONFIG: 'page-config',
 } as const
-
-export type ServerEventTypeName = (typeof ServerEventType)[keyof typeof ServerEventType]
 
 export interface FileChangeEvent {
   pageId: string
@@ -57,21 +55,10 @@ const _eventSubscribers = new Map<string, Set<(data: unknown) => void>>()
 let _sharedEs: EventSource | null = null
 let _retryCount = 0
 const _MAX_RETRIES = 5
-let _sseUrl = '/api/events'
+const SSE_URL = '/api/events'
 
 /** 累计收到的畸形 SSE 事件数（作为可观测性计数器，由诊断工具读取）。 */
 let _malformedEventCount = 0
-
-/**
- * 配置 SSE 端点 URL（在建立连接前调用）。
- * 默认值为 '/api/events'。
- */
-export function configureSseUrl(url: string): void {
-  if (_sharedEs) {
-    _teardown()
-  }
-  _sseUrl = url
-}
 
 function _totalSubscribers(): number {
   let count = 0
@@ -84,7 +71,7 @@ function _totalSubscribers(): number {
 function _ensureConnection(): void {
   if (_sharedEs) return
   _retryCount = 0
-  const es = new EventSource(_sseUrl)
+  const es = new EventSource(SSE_URL)
   _sharedEs = es
 
   // 为已有订阅的事件类型注册 listener
@@ -137,7 +124,7 @@ function _teardown(): void {
  * @param callback  事件回调
  * @returns 取消订阅函数
  */
-export function onServerEvent<T = unknown>(
+function onServerEvent<T = unknown>(
   eventType: string,
   callback: (data: T) => void,
 ): () => void {

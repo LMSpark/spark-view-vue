@@ -1,9 +1,16 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config'
 
-import { DEV_PROP_ENUMS, DEV_REQUIRED_PROPS, DEV_TYPES } from '@/views/app/dev-system/policies/devComponentMetadata'
-import { rulePolicy } from '@/views/app/dev-system/policies/rulePolicy'
-import { RULE_JSON_SCHEMA } from '@/views/app/dev-system/policies/ruleJsonSchema'
+import {
+  DEV_COMPONENT_METADATA,
+  DEV_PROP_ENUMS,
+  DEV_REQUIRED_PROPS,
+  DEV_TYPES,
+} from '@/views/app/dev-system/policies/devComponentMetadata'
+
+const rulePolicy = createRuleTreePolicy(DEV_COMPONENT_METADATA)
+const RULE_JSON_SCHEMA = createRuleJsonSchema(DEV_COMPONENT_METADATA)
 
 describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
   it('SkillCatalog 页面可展示组件列表、Props 明细、类型字典', async () => {

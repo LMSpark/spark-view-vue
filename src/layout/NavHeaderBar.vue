@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import type { NavNode } from '@spark-view/spark-app'
+import type { NavNode } from '@spark-view/spark-page-config'
 import { useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 

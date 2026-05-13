@@ -1,4 +1,4 @@
-import type { AppNavRoot } from '@spark-view/spark-app'
+import type { AppNavRoot } from '@spark-view/spark-page-config'
 
 /**
  * 演示导航树 — 将 routes.json 中的扁平路由组织为模块化导航。

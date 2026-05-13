@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import type { NavNode } from '@spark-view/spark-app'
+import type { NavNode } from '@spark-view/spark-page-config'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 
@@ -152,8 +152,8 @@ function allowNodeDrop(draggingNode: { data: NavNode }): boolean {
   return !state.isSystemRootDirectory(draggingNode.data)
 }
 
-function handleNodeDrop() {
-  state.markNavDirty()
+function handleNodeDrop(draggingNode: { data: NavNode }) {
+  void state.moveNodeInTree(draggingNode.data)
 }
 
 async function handleRemove(node: { parent: { data: NavNode } }, data: NavNode) {
@@ -171,7 +171,7 @@ async function handleReset() {
   try {
     await ElMessageBox.confirm('确定重置为演示导航？当前修改将丢失。', '确认', { type: 'warning' })
   } catch { return }
-  state.resetToDemo()
+  await state.resetToDemo()
 }
 
 function expandAll() {

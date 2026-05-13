@@ -7,7 +7,7 @@
  * 新增 Vue 组件页面只需在此处添加一条记录，无需同步维护多处。
  */
 import type { Component } from 'vue'
-import type { AppNavRoot } from '@spark-view/spark-app'
+import type { AppNavRoot } from '@spark-view/spark-page-config'
 
 /**
  * 页面作用域级别

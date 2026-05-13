@@ -4,17 +4,7 @@ export {
   pageDesignServiceFailure,
 } from './operations'
 
-export {
-  PageDesignEditSession,
-} from './editing'
-
-export type {
-  PageDesignEditPhase,
-  PageDesignEditHost,
-  PageDesignEditState,
-  PageDesignNodeTree,
-  SparkNodeTreeMethodKey,
-} from './editing'
+export * from './editing'
 
 export type {
   PageDesignServiceMethodBinding,

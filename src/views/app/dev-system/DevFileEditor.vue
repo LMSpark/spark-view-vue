@@ -151,14 +151,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
+import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
-import { rulePolicy } from './policies/rulePolicy'
-import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
+import { DEV_COMPONENT_METADATA } from './policies/devComponentMetadata'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { DevState, PageConfigFileVersionSummary, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
+
+const rulePolicy = createRuleTreePolicy(DEV_COMPONENT_METADATA)
+const RULE_JSON_SCHEMA = createRuleJsonSchema(DEV_COMPONENT_METADATA)
 
 const props = withDefaults(defineProps<{
   state: DevState

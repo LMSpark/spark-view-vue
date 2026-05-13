@@ -1,3 +1,4 @@
+import type { RuleEditorComponentMetadata } from '@spark-view/spark-page-config'
 import { skillCatalog, type PropMeta, type SkillMeta } from 'virtual:spark-skill-catalog'
 
 const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
@@ -84,3 +85,11 @@ export const DEV_REQUIRED_PROPS: Record<string, Record<string, unknown>> = Objec
     })
     .filter(([, requiredProps]) => Object.keys(requiredProps).length > 0),
 )
+
+export const DEV_COMPONENT_METADATA: RuleEditorComponentMetadata = {
+  types: DEV_TYPES,
+  propNames: DEV_PROP_NAMES,
+  propEnums: DEV_PROP_ENUMS,
+  typeLabels: DEV_TYPE_LABELS,
+  requiredProps: DEV_REQUIRED_PROPS,
+}

@@ -128,16 +128,19 @@ import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 
 import { useRoute, useRouter } from 'vue-router'
 import {
   AppPageUiHost,
+  clearAllPageCache,
   appPageUiService,
+  getPageCacheHandle,
   getNavHomePath,
   getNavTree,
+  getPageCacheStats,
   refreshRoutes,
   useColorScheme,
   useNavigation,
   useTabPages,
   useTheme,
 } from '@spark-view/spark-app'
-import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
+import type { NavNode, AppNavRoot } from '@spark-view/spark-page-config'
 import { APP_SERVICES, MODULE_CONTEXT, useSparkComponent, type IModuleContext, type ModuleContextCapability } from '@spark-view/spark-component'
 import { getToken, getUser, isAuthenticated, logout, switchProject } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
@@ -149,7 +152,6 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { clearAllPageCache, clearPageCache, getPageCacheStats } from '@/services/page-cache-handle'
 import { createAuthHeaders } from '@/services/http'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
@@ -163,7 +165,10 @@ const route = useRoute()
 const router = useRouter()
 const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
 const platformPaths = getPlatformPaths()
-const currentUsername = computed(() => getUser()?.displayName ?? getUser()?.username ?? '管理员')
+const currentUsername = computed(() => {
+  const user = getUser()
+  return user?.displayName ?? user?.username ?? '管理员'
+})
 const activeProjectId = ref(getUser()?.defaultProjectId ?? 'homepage')
 const headerTitle = computed(() =>
   activeProjectId.value === 'homepage' ? 'SPARK 应用工场' : `SPARK · ${activeProjectId.value}`
@@ -191,12 +196,6 @@ interface AppContextGuardState {
   expectedPath?: string | undefined
 }
 
-function buildScopedPath(relativePath: string): string | null {
-  const user = getUser()
-  if (!user?.tenantId || !user.defaultProjectId) return null
-  return buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, relativePath)
-}
-
 const contextGuard = computed<AppContextGuardState | null>(() => {
   if (isLoginPage.value) return null
 
@@ -207,11 +206,14 @@ const contextGuard = computed<AppContextGuardState | null>(() => {
 
   if (scoped === null) {
     if (platformPaths.has(currentPath)) return null
+    const expectedPath = user?.tenantId && user.defaultProjectId
+      ? buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, currentPath)
+      : undefined
     return {
       title: '当前页面缺少租户作用域',
       message: '这个业务页需要在 /t/{tenantId}/{projectId}/... 作用域下运行。外部浏览器有数据而内嵌浏览器没数据，通常就是当前浏览器上下文没有进入正确租户路径或未完成登录。',
       primaryActionLabel: user ? '进入当前项目首页' : '前往登录页',
-      ...(buildScopedPath(currentPath) ? { expectedPath: buildScopedPath(currentPath) ?? undefined } : {}),
+      ...(expectedPath !== undefined ? { expectedPath } : {}),
     }
   }
 
@@ -344,7 +346,7 @@ function readRoutePageId(): string | null {
 }
 
 function handlePageConfigChange(event: FileChangeEvent): void {
-  clearPageCache(event.pageId)
+  getPageCacheHandle()?.clearPageCache(event.pageId)
   const refPageId = route.meta['refPageId']
   if (
     readRoutePageId() === event.pageId

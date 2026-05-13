@@ -8,6 +8,18 @@ export interface PageConfigFileVersionSummary {
   modifiedBy: string | null
 }
 
+export interface PageConfigPageSummary extends Record<string, unknown> {
+  pageId: string
+  pageType?: string
+  files?: PageConfigFileName[]
+}
+
+export interface PageConfigCreatePageParams {
+  pageId: string
+  title?: string
+  icon?: string
+}
+
 export interface PageConfigFileApiOptions {
   getPageConfigApi: () => string
   http: HttpClient
@@ -80,6 +92,38 @@ export class PageConfigFileApi {
     )
   }
 
+  async listPages(): Promise<PageConfigPageSummary[]> {
+    const rows = await this.http.get<Array<Record<string, unknown>>>(`${this.baseUrl()}/__list`)
+    return rows
+      .map((row): PageConfigPageSummary | null => {
+        const pageId = row['pageId']
+        if (typeof pageId !== 'string' || pageId.trim() === '') return null
+        return {
+          ...row,
+          pageId,
+          ...(typeof row['pageType'] === 'string' ? { pageType: row['pageType'] } : {}),
+          ...(Array.isArray(row['files'])
+            ? {
+                files: row['files'].filter(
+                  (name): name is PageConfigFileName => typeof name === 'string',
+                ),
+              }
+            : {}),
+        }
+      })
+      .filter((row): row is PageConfigPageSummary => row !== null)
+  }
+
+  async createPage(params: PageConfigCreatePageParams): Promise<Record<string, unknown>> {
+    assertNonEmptyPageId(params.pageId)
+    return this.http.post<Record<string, unknown>>(`${this.baseUrl()}/__create`, params)
+  }
+
+  async deletePage(pageId: string): Promise<void> {
+    assertNonEmptyPageId(pageId)
+    await this.http.delete(`${this.baseUrl()}/${encodeURIComponent(pageId)}`)
+  }
+
   async listVersions(pageId: string, filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
     assertNonEmptyPageId(pageId)
     const result = await this.http.get<Array<Record<string, unknown>>>(
@@ -114,7 +158,10 @@ export class PageConfigFileApi {
   }
 
   private fileUrl(pageId: string, filename: PageConfigFileName): string {
-    const base = this.getPageConfigApi().replace(/\/+$/, '')
-    return `${base}/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
+    return `${this.baseUrl()}/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
+  }
+
+  private baseUrl(): string {
+    return this.getPageConfigApi().replace(/\/+$/, '')
   }
 }

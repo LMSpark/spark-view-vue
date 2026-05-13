@@ -125,7 +125,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
-import { clearAllPageCache } from '@/services/page-cache-handle'
+import { clearAllPageCache } from '@spark-view/spark-app'
 import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────
