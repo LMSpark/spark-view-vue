@@ -588,6 +588,37 @@ describe('AiChatWidget persistence', () => {
     expect(wrapper.text()).toContain('"count": 3')
   })
 
+  it('marks done SSE event as AI diagnostic stream completion', async () => {
+    const sender = vi.fn(async (request) => {
+      const turnId = request.turn?.turnId ?? 'turn-done-marker'
+      request.onSseEvent?.({
+        sessionId: 'session-done-marker',
+        type: 'done',
+        data: JSON.stringify({
+          protocolVersion: 3,
+          sessionId: 'session-done-marker',
+          turnId,
+          streamKey: `manualLeave:leave-1:llm:${turnId}`,
+        }),
+      })
+      request.onDelta?.('本轮完成')
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-done-marker',
+      },
+    })
+
+    await wrapper.find('.chat-textarea').setValue('给我一个完成标记')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    const sseTitles = wrapper.findAll('.diagnostic-entry--sse .diagnostic-entry__title').map((entry) => entry.text())
+    expect(sseTitles).toContain('AI诊断流落成')
+  })
+
   it('batches cache writes and persists a compact diagnostic snapshot', async () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
     const sender = vi.fn(async (request) => {

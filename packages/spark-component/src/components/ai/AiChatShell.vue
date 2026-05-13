@@ -492,7 +492,7 @@ const RECOVERY_OPTIONS: PolicyOption<RecoveryPolicyLike>[] = [
 ]
 
 const SSE_TEXT_EVENT_TYPES = new Set(['delta', 'reasoning'])
-const TIMELINE_SSE_EVENT_TYPES = new Set(['llm-request', 'llm-append', 'tool-result', 'result', 'error'])
+const TIMELINE_SSE_EVENT_TYPES = new Set(['llm-request', 'llm-append', 'tool-result', 'result', 'error', 'done'])
 
 const COLLAB_OPTIONS: PolicyOption<CollaborationPolicyLike>[] = [
   { value: 'auto', short: '自动', label: '自动执行：允许直接执行写入' },
@@ -581,10 +581,10 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
       kind: 'sse',
       source: 'sse',
       kindLabel: 'SSE',
-      title: `SSE ${formatSseTypeLabel(event.type)}`,
+      title: formatSseTimelineTitle(event.type),
       ...(event.sessionId !== undefined ? { subtitle: event.sessionId } : {}),
       payload: event.data,
-      openByDefault: event.type === 'llm-request' || event.type === 'llm-append',
+      openByDefault: event.type === 'llm-request' || event.type === 'llm-append' || event.type === 'done',
       order: order++,
     })
   }
@@ -704,6 +704,11 @@ function formatSseTypeLabel(type: string): string {
     default:
       return `事件 ${type}`
   }
+}
+
+function formatSseTimelineTitle(type: string): string {
+  if (type === 'done') return 'AI诊断流落成'
+  return `SSE ${formatSseTypeLabel(type)}`
 }
 
 function formatLogTypeLabel(type: ToolLogLike['type']): string {
@@ -1180,11 +1185,21 @@ function semanticItemFromSseEvent(
       payload,
     }
   }
+  if (event.type === 'done') {
+    return {
+      timestamp: event.timestamp,
+      speaker: 'system',
+      source: 'sse',
+      title: 'AI诊断流落成',
+      text: stringifyPayload(payload),
+      payload,
+    }
+  }
   return {
     timestamp: event.timestamp,
     speaker: 'system',
     source: 'sse',
-    title: `SSE ${formatSseTypeLabel(event.type)}`,
+    title: formatSseTimelineTitle(event.type),
     text: stringifyPayload(payload),
     payload,
   }
