@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
-import type { RendererEditorProps } from '../../zones/RendererEditor.types'
+import type { REditorProps } from '../../zones/RendererEditor.types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
 import { useContainerToolbar } from '../../runtime/container-ui'
 
@@ -9,7 +9,7 @@ interface RendererTreeInputProps {
   children?: SparkNode['children'] | undefined
   toolbar?: RToolbarProps | undefined
   actions?: RToolbarProps | undefined
-  editor?: RendererEditorProps | undefined
+  editor?: REditorProps | undefined
 }
 
 interface RendererTreeInputOptions {

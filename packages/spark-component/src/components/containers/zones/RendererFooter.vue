@@ -15,7 +15,7 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../../internal'
-import type { RendererFooterProps as Props } from './RendererFooter.types'
+import type { RFooterProps as Props } from './RendererFooter.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-footer',

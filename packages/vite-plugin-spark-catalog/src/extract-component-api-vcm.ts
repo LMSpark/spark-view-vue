@@ -142,7 +142,6 @@ type RawTypeSymbolLike = {
 type PropEntryWithIdentity = PropEntry & {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
-  __componentRef?: string
   /** 自动从 rawType 中提取的字符串字面量枚举 variants（引号包裹，如 `"\"start\""`） */
   __enumVariants?: string[]
   /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
@@ -388,12 +387,6 @@ function buildPropEntry(p: {
   const examples = [...descriptionExamples, ...tagExamples]
   if (examples.length > 0) entry.examples = examples
   if (Object.keys(enumValueDocs).length > 0) entry.__enumValueDocs = enumValueDocs
-
-  // @componentRef tag — 由 JSDoc 声明该 prop 引用的组件类型
-  const componentRefTag = p.tags.find(t => t.name === 'componentRef')
-  if (componentRefTag?.text !== undefined && componentRefTag.text.trim() !== '') {
-    entry.__componentRef = componentRefTag.text.trim()
-  }
 
   const typeObject = resolveTypeObject(p)
 

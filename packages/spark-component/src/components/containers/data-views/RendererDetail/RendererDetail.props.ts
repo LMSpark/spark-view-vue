@@ -17,7 +17,7 @@ export interface RDetailProps
     SparkGridLayoutProps {
   /** 显式收窄为详情容器使用的 DataView 数据线。 */
   dataSource?: DataView
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /** 结构化工具栏 */
   toolbar?: RToolbarProps
   /** 标题对齐 */
   titleAlign?: 'left' | 'center' | 'right'

@@ -15,7 +15,7 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../../internal'
-import type { RendererTailProps as Props } from './RendererTail.types'
+import type { RTailProps as Props } from './RendererTail.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-tail',

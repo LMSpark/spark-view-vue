@@ -15,7 +15,7 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../../internal'
-import type { RendererHeaderProps as Props } from './RendererHeader.types'
+import type { RHeaderProps as Props } from './RendererHeader.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-header',

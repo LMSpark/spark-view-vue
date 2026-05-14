@@ -19,9 +19,9 @@ export interface RListProps
     SparkGridLayoutProps {
   /** 显式收窄为列表容器使用的 DataView 数据线。 */
   dataSource?: DataView
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /** 结构化工具栏 */
   toolbar?: RToolbarProps
-  /** 结构化列表项动作（toolbar 结构） @componentRef r-toolbar */
+  /** 结构化列表项动作（toolbar 结构） */
   actions?: RToolbarProps
   /** 列数 */
   columns?: number

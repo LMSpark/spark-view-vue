@@ -9,7 +9,7 @@ import type { SparkNodeProps } from '../../shared-types'
  * 父容器（r-table 等）不再注入桥接字段；嵌入 r-table 时可省略 dataKey，
  * 由 r-table 提供的 DATA_SOURCE 能力向下注入。
  */
-export interface RendererFilterProps extends SparkNodeProps {
+export interface RFilterProps extends SparkNodeProps {
   /** 组件类型固定为 `r-filter`。 */
   type?: 'r-filter'
   /** 节点标识。 */
@@ -47,4 +47,3 @@ export interface RendererFilterProps extends SparkNodeProps {
   /** 栅格行高。 */
   gridAutoRows?: string
 }
-

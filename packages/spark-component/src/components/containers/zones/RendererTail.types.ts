@@ -4,7 +4,7 @@ import type { SparkNodeProps } from '../../shared-types'
 /**
  * `RendererTail` 运行时公开属性。
  */
-export interface RendererTailProps extends SparkNodeProps {
+export interface RTailProps extends SparkNodeProps {
   /** 组件类型固定为 `r-tail`。 */
   type?: 'r-tail'
   /** 节点标识。 */

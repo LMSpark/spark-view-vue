@@ -4,7 +4,7 @@ import type {
   SparkNodeProps,
 } from '../../../shared-types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
-import type { RendererEditorProps } from '../../zones/RendererEditor.types'
+import type { REditorProps } from '../../zones/RendererEditor.types'
 import type { TreeEventHandler } from './zero-code'
 
 /**
@@ -17,12 +17,12 @@ export interface RTreeProps
     SparkCrudDataContainerProps {
   /** 显式收窄为树容器使用的 DataView 数据线。 */
   dataSource?: DataView
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /** 结构化工具栏 */
   toolbar?: RToolbarProps
-  /** 结构化节点动作（toolbar 结构） @componentRef r-toolbar */
+  /** 结构化节点动作（toolbar 结构） */
   actions?: RToolbarProps
-  /** 结构化编辑区 @componentRef r-editor */
-  editor?: RendererEditorProps
+  /** 结构化编辑区 */
+  editor?: REditorProps
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: SparkText
   /** 当前选中节点 ID */

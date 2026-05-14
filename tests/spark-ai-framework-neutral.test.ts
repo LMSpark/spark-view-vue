@@ -192,10 +192,12 @@ describe('@spark-view/spark-ai framework boundary', () => {
     expect(catalogText).not.toMatch(/\bschema_\d+\b/u)
     expect(catalogText).not.toMatch(/\bprop_\d+\b/u)
     expect(catalogText).not.toMatch(/\bemit_\d+\b/u)
+    expect(catalogText).not.toMatch(/\bRenderer[A-Z][A-Za-z0-9]*Props\b/u)
     expect(catalogText).not.toContain('schema_00333')
     expect(catalogText).not.toMatch(/"kind"\s*:/u)
     expect(catalogText).not.toContain('"schemaRef"')
     expect(catalogText).not.toContain('"schemaRefs"')
+    expect(catalogText).not.toContain('"componentRef"')
     expect(catalogText).not.toContain('"$id"')
     expect(catalogText).not.toContain('"x-ts-')
 
@@ -291,8 +293,17 @@ describe('@spark-view/spark-ai framework boundary', () => {
     const rTable = catalog.components['r-table']
     const toolbarProp = rTable?.props.find(prop => prop.name === 'toolbar')
     expect(toolbarProp?.type).toBe('r-toolbar')
-    expect(toolbarProp?.componentRef).toBe('r-toolbar')
-    expect(toolbarProp).not.toHaveProperty('schema')
+    expect(toolbarProp).not.toHaveProperty('componentRef')
+    expect(toolbarProp?.schema).toEqual({ $ref: '#/$defs/r-toolbar' })
+    expect(catalog.$defs?.['r-toolbar']).toEqual(expect.objectContaining({
+      title: 'r-toolbar',
+      type: 'object',
+      properties: expect.objectContaining({
+        type: expect.objectContaining({ const: 'r-toolbar' }),
+        props: expect.objectContaining({ type: 'object' }),
+        children: expect.objectContaining({ items: { $ref: '#/$defs/SparkNode' } }),
+      }),
+    }))
     expect(catalog.$defs?.['RToolbarProps']).toBeUndefined()
 
     const rButton = catalog.components['r-button']

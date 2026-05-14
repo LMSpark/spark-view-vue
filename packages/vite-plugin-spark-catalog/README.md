@@ -30,6 +30,7 @@
 组件 catalog 的语义 SSOT 写在源码 JSDoc，生成器只搬运这些标识并补通用兜底。新增组件或 props 时遵循下面的最小规范：
 
 - 组件级 JSDoc 放在 `<script setup>` 后的首个 JSDoc 块，至少包含 `@skill <type>` 和 `@description <text>`。
+- 组件 Props 类型是强约束，不是约定俗成：统一命名为 `R{ComponentPascalName}Props`，并与组件 type 一一对应：`r-table -> RTableProps`、`r-filter -> RFilterProps`。生成器只根据已注册组件建立 `RFilterProps -> r-filter` 索引；如果使用 `RendererXxxProps` 指向已注册组件会 fail-fast。
 - `@description`：组件级说明写“用途 + 适用场景 + 核心能力”；prop 级 summary 写“用途 + 绑定语义 + 何时使用”。
 - `@category container|field|group|meta|feature`：仅当目录路径推断不准确时使用。
 - `@catalogIgnore`：完全忽略该 SFC，不写入 `component-catalog.json`；用于 demo、路由占位、开发工具和不应被 catalog 看到的桥接组件。
@@ -41,7 +42,6 @@
 - `@example <json>`：LLM 可直接照抄的配置示例。必须是 JSON literal；同一字段可写多个 `@example`。
 - `@param <name> <text>`：事件 payload 参数说明，仅用于 `defineEmits` call signature 或 tuple property；tuple property 可以写成 `change: [value: string]` 或 `'update:modelValue': [value: string]`。
 - `@enumValue <value> <title>: <text>`：业务枚举值说明。只用于需要解释业务动作的枚举；普通 UI 枚举由生成器自动补通用说明。
-- `@componentRef <type>`：结构化子组件引用，例如 `@componentRef r-toolbar`。
 - `@internal`：不进入 catalog 的 props 或内部实现字段。
 
 推荐写法：
@@ -61,11 +61,10 @@ interface RButtonProps {
   action?: ButtonAction
 
   /**
-   * Structured toolbar node; 用于声明按钮所在工具栏。
-   * @componentRef r-toolbar
+   * Structured toolbar node; 用于声明按钮所在工具栏，生成器会按 RToolbarProps 推导到 #/$defs/r-toolbar。
    * @example {"type":"r-toolbar","props":{}}
    */
-  toolbar?: ToolbarNode
+  toolbar?: RToolbarProps
 }
 
 const emit = defineEmits<{

@@ -17,7 +17,7 @@ export interface RFormProps
     SparkGridLayoutProps {
   /** 显式收窄为表单容器使用的 DataView 数据线。 */
   dataSource?: DataView
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /** 结构化工具栏 */
   toolbar?: RToolbarProps
   /** 表单标签宽度 */
   labelWidth?: SparkText

@@ -3,7 +3,7 @@ import type { SparkNode } from '../../../internal'
 import type { RToolbarProps } from '../RendererToolbar.types'
 
 export interface RStepsProps extends SparkNodeProps {
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /** 结构化工具栏 */
   toolbar?: RToolbarProps
   /** 当前步骤 */
   modelValue?: SparkText | number

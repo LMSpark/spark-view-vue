@@ -146,7 +146,7 @@ export interface ComponentConfigGuide {
    * LLM 在提交配置前应逐条对照，验证生成的 SparkNode 是否满足约束。
    */
   failFastChecks: string[]
-  /** 由 props.componentRef 推导出的子组件说明（用于补齐容器组合链路） */
+  /** 由 props.schema.$ref 推导出的子组件说明（用于补齐容器组合链路） */
   subComponentGuides?: Array<{
     type: string
     fromProps: string[]
@@ -160,19 +160,22 @@ export interface ComponentConfigGuide {
 }
 
 /**
- * 收集组件中通过 `componentRef` 声明的子组件引用。
+ * 收集组件中通过标准 JSON Schema `$ref` 声明的子组件引用。
  *
  * 规则：
- * - 仅识别 `prop.componentRef`；
+ * - 仅识别能命中 catalog.components 的 `prop.schema.$ref`；
  * - 相同子组件 type 合并为一条记录，并聚合来源 prop 名；
  * - 来源 prop 名按字母序输出，确保结果稳定。
  */
-function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: string; fromProps: string[] }> {
+function collectSubComponentRefs(
+  catalog: ComponentCatalog,
+  entry: HydratedComponentEntry,
+): Array<{ type: string; fromProps: string[] }> {
+  const runtime = toRuntimeCatalog(catalog)
   const refs = new Map<string, Set<string>>()
   for (const prop of entry.props) {
-    // 仅允许使用 componentRef 作为子组件引用来源。
-    const refType = prop.componentRef
-    if (typeof refType !== 'string') continue
+    const refType = schemaTypeFromRef(prop.schema?.$ref)
+    if (refType === undefined || runtime.components[refType] === undefined) continue
     const normalized = refType.trim()
     if (normalized.length === 0) continue
     if (!refs.has(normalized)) refs.set(normalized, new Set<string>())
@@ -189,8 +192,8 @@ function collectSubComponentRefs(entry: HydratedComponentEntry): Array<{ type: s
  * 根据子组件引用构建可读的子组件指导信息。
  *
  * 解析优先级：
- * 1. 从父 prop 展开的对象 schema 中推导结构（inline-structure）；
- * 2. 回退到独立组件目录条目（projectComponentSpec）；
+ * 1. 通过 `$ref` 命中的独立组件目录条目（projectComponentSpec）；
+ * 2. 回退到父 prop 展开的对象 schema（inline-structure）；
  * 3. 均失败时返回 unresolved，并给出修复建议。
  */
 function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedComponentEntry): Array<{
@@ -203,10 +206,21 @@ function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedCompo
   optionalPropsPreview?: string[]
   fix?: string
 }> {
-  const refs = collectSubComponentRefs(entry)
+  const refs = collectSubComponentRefs(catalog, entry)
   return refs.map((ref) => {
-    // 首选：从父 prop 类型反推出的结构节点 schema（ActionsNode/ToolbarNode/FilterNode …）。
-    // 这正是 AI 在 rule.json 中要写入的 JSON 形状，优先级最高。
+    const subSpec = projectComponentSpec(catalog, ref.type)
+    if (subSpec !== null) {
+      return {
+        type: ref.type,
+        fromProps: ref.fromProps,
+        resolved: true,
+        category: subSpec.category ?? 'feature',
+        description: subSpec.description,
+        requiredProps: subSpec.props.filter((p) => p.required).map((p) => p.name),
+        optionalPropsPreview: subSpec.props.filter((p) => !p.required).map((p) => p.name).slice(0, 8),
+      }
+    }
+
     const inlineSchema = resolveInlineStructureSchema(catalog, entry, ref.fromProps)
     if (inlineSchema !== undefined) {
       const propertyNames = Object.keys(inlineSchema.properties ?? {})
@@ -222,25 +236,11 @@ function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedCompo
       }
     }
 
-    // 兜底：无内联结构时，回落到独立 catalog 条目（例如缺少 XxxNode 类型声明时）。
-    const subSpec = projectComponentSpec(catalog, ref.type)
-    if (subSpec !== null) {
-      return {
-        type: ref.type,
-        fromProps: ref.fromProps,
-        resolved: true,
-        category: subSpec.category ?? 'feature',
-        description: subSpec.description,
-        requiredProps: subSpec.props.filter((p) => p.required).map((p) => p.name),
-        optionalPropsPreview: subSpec.props.filter((p) => !p.required).map((p) => p.name).slice(0, 8),
-      }
-    }
-
     return {
       type: ref.type,
       fromProps: ref.fromProps,
       resolved: false,
-      fix: `确认 ${ref.type} 是否在 component-catalog 中注册，或在 prop 类型上提供可被 VCM 展开的结构类型（如 XxxNode）。`,
+      fix: `确认 ${ref.type} 是否在 component-catalog.components 中注册，或让 prop.schema.$ref 指向可解析的 $defs 条目。`,
     }
   })
 }
@@ -248,8 +248,7 @@ function buildSubComponentGuides(catalog: ComponentCatalog, entry: HydratedCompo
 /**
  * 解析某个 prop（按名称列表择一）对应的内联结构 schema。
  *
- * 仅在 pool 条目为 JSON Schema object 时返回——用于 `@componentRef` 指向的子组件
- * 没有独立 catalog 条目、但父 prop 类型已被 VCM 展开的场景。
+ * 仅在 `$defs` 条目为 JSON Schema object 时返回，用于父 prop 类型已被 VCM 展开的兜底场景。
  */
 function resolveInlineStructureSchema(
   catalog: ComponentCatalog,

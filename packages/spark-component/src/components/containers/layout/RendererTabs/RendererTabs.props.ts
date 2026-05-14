@@ -8,7 +8,7 @@ export interface TabsClickEvent {
 }
 
 export interface RTabsProps extends SparkNodeProps {
-  /** 结构化工具栏 @componentRef r-toolbar */
+  /** 结构化工具栏 */
   toolbar?: RToolbarProps
   /** 当前激活标签页 */
   modelValue?: string | number

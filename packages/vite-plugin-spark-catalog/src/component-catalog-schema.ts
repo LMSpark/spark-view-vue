@@ -157,14 +157,6 @@ export interface PropEntry {
   /** 构建期 schema type 引用；落盘时转换为 JSON Schema `$ref`。 */
   schemaNodeId?: string
   /**
-   * 语义标签：该 prop 期望绑定的子组件 type（kebab-case）。
-   *
-   * 来源于 JSDoc `@componentRef xxx`，与 schema type 引用互补：
-   * - schema type 引用提供结构（由 VCM 从 prop 类型反推）；
-   * - `componentRef` 提供语义（AI 可据此识别这是一个子组件槽位）。
-   */
-  componentRef?: string
-  /**
    * JSON Schema。复杂类型用 `{ "$ref": "#/$defs/真实Type" }` 指向 `$defs`。
    * 生成阶段也会临时存放完整 VCM schema，最终写盘前会瘦身为标准 JSON Schema。
    */

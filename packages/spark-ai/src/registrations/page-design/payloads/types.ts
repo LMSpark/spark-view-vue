@@ -162,11 +162,6 @@ export interface PropEntry {
   schemaNodeId?: string
   /** 标准 JSON Schema；复杂类型通过 `$ref` 指向 `$defs`。 */
   schema?: PropSchema
-  /**
-   * 语义标签：该 prop 期望绑定的子组件 type（kebab-case）。
-   * 来源于 JSDoc `@componentRef xxx`；与 schema type 引用互补。
-   */
-  componentRef?: string
 }
 
 /** JSON Schema 标准 type 名称。 */

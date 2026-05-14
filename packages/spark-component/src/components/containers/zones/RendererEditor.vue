@@ -15,7 +15,7 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../../internal'
-import type { RendererEditorProps as Props } from './RendererEditor.types'
+import type { REditorProps as Props } from './RendererEditor.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-editor',

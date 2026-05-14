@@ -4,7 +4,7 @@ import type {
   SparkNodeProps,
 } from '../../../shared-types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
-import type { RendererFilterProps } from '../../zones/RendererFilter.types'
+import type { RFilterProps } from '../../zones/RendererFilter.types'
 
 /**
  * r-table 组件公开属性接口。
@@ -34,19 +34,16 @@ export interface RTableProps
   /**
    * 结构化工具栏
    * 提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。
-   * @componentRef r-toolbar
    */
   toolbar?: RToolbarProps
   /**
    * 结构化筛选区
    * 提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。
-   * @componentRef r-filter
    */
-  filter?: RendererFilterProps
+  filter?: RFilterProps
   /**
    * 结构化行动作
    * 提示词模板：默认动作 message-row / delete-row。
-   * @componentRef r-toolbar
    */
   actions?: RToolbarProps
 }

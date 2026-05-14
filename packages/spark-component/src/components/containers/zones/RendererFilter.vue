@@ -63,7 +63,7 @@ import { DATA_SOURCE, SparkComponentRenderer, getSparkNodeChildren, nodeId, node
 } from '../../internal'
 import { useContainerDataSource } from '../data-views/view-data-source'
 import { useFilterPanel } from '../runtime/container-filter'
-import type { RendererFilterProps as Props } from './RendererFilter.types'
+import type { RFilterProps as Props } from './RendererFilter.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-filter',
