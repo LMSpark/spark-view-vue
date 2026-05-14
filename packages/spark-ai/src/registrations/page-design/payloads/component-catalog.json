@@ -1,8 +1,313 @@
 {
   "version": "4.0.0",
-  "buildTime": "2026-05-13T23:05:16.419Z",
-  "componentCount": 98,
+  "buildTime": "2026-05-13T23:24:50.769Z",
+  "componentCount": 105,
   "components": {
+    "ai-chat-shell": {
+      "type": "ai-chat-shell",
+      "filePath": "packages/spark-component/src/components/ai/AiChatShell.vue",
+      "category": "feature",
+      "description": "AI 聊天壳层组件，负责渲染消息列表、输入区、附件、工具日志、SSE/FC 调试信息和策略切换事件；适合被 AiChatWidget 等上层会话容器托管。 配置入口：type=\"ai-chat-shell\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 关键 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 主要事件：send, clear, clearMessages, clearToolLogs, triggerFileInput。",
+      "internal": true,
+      "configurable": false,
+      "props": [
+        {
+          "name": "messages",
+          "type": "ChatMessageLike[]",
+          "required": true,
+          "description": "Chat message list; 按时间顺序渲染用户、系统和 LLM 消息。",
+          "examples": [
+            []
+          ],
+          "schemaNodeId": "ChatMessageLike[]"
+        },
+        {
+          "name": "pendingFiles",
+          "type": "FileAttachment[]",
+          "required": true,
+          "description": "Pending file attachments; 尚未发送、等待随下一条消息上传的文件。",
+          "examples": [
+            []
+          ],
+          "schemaNodeId": "FileAttachment[]"
+        },
+        {
+          "name": "inputText",
+          "type": "string",
+          "required": true,
+          "description": "Current input text; 与输入框内容双向同步。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "isStreaming",
+          "type": "boolean",
+          "required": true,
+          "description": "Streaming state; true 表示当前有 AI turn 正在输出或执行。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "activeTurnCount",
+          "type": "number",
+          "required": false,
+          "description": "Active turn count; 当前正在运行的并发 turn 数。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "queuedTurnCount",
+          "type": "number",
+          "required": false,
+          "description": "Queued turn count; 已提交但等待执行的 turn 数。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "maxParallelTurns",
+          "type": "number",
+          "required": false,
+          "description": "Max parallel turns; UI 展示允许并发执行的 turn 上限。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "canSend",
+          "type": "boolean",
+          "required": false,
+          "description": "Send availability; false 时禁用发送入口。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "isRecording",
+          "type": "boolean",
+          "required": true,
+          "description": "Voice recording state; true 表示正在录音输入。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "error",
+          "type": "string | null",
+          "required": true,
+          "description": "Error message; 展示当前聊天流程的错误提示。",
+          "examples": [
+            null
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "Panel title; 显示在 chat shell 顶部。",
+          "examples": [
+            "订单列表",
+            "text"
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Input placeholder; 空输入时的提示文案。",
+          "examples": [
+            "请输入内容",
+            "text"
+          ]
+        },
+        {
+          "name": "compact",
+          "type": "boolean",
+          "required": false,
+          "description": "Compact layout; true 时使用更紧凑的聊天面板间距。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "toolLogs",
+          "type": "ToolLogLike[]",
+          "required": false,
+          "description": "Tool log list; 展示 AI 工具调用、调试或流程日志。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "canClearToolLogs",
+          "type": "boolean",
+          "required": false,
+          "description": "Whether tool logs can be cleared; true 时显示清空工具日志操作。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "sseEvents",
+          "type": "SseEventLike[]",
+          "required": false,
+          "description": "SSE event timeline; 展示流式响应的底层事件轨迹。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "fcCalls",
+          "type": "FcCallLike[]",
+          "required": false,
+          "description": "Function-call records; 展示本轮 AI 调用的函数调用明细。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "pageId",
+          "type": "string",
+          "required": false,
+          "description": "Page id; 标记当前 AI 会话所属页面上下文。",
+          "examples": [
+            "page-main",
+            "text"
+          ]
+        },
+        {
+          "name": "draftActions",
+          "type": "readonly DraftActionLike[]",
+          "required": false,
+          "description": "Draft action list; LLM 可触发的草稿操作入口。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "draftLoadingId",
+          "type": "string | null",
+          "required": false,
+          "description": "Draft loading id; 当前正在执行的草稿 action id。",
+          "examples": [
+            null
+          ]
+        },
+        {
+          "name": "recoveryPolicy",
+          "type": "RecoveryPolicyLike",
+          "required": false,
+          "description": "Recovery policy; 控制 AI 出错或偏航时的恢复策略。",
+          "examples": [
+            "layered",
+            "manual",
+            "strict"
+          ],
+          "schemaNodeId": "RecoveryPolicyLike"
+        },
+        {
+          "name": "collaborationPolicy",
+          "type": "CollaborationPolicyLike",
+          "required": false,
+          "description": "Collaboration policy; 控制 AI 与人工确认之间的协作强度。",
+          "examples": [
+            "auto",
+            "critical-confirm",
+            "plan-confirm"
+          ],
+          "schemaNodeId": "CollaborationPolicyLike"
+        },
+        {
+          "name": "actionTitleMap",
+          "type": "Record<string, string>",
+          "required": false,
+          "description": "Action title map; 为 action id 覆盖展示标题。",
+          "examples": [
+            {}
+          ]
+        },
+        {
+          "name": "actionPrefixTitleMap",
+          "type": "Record<string, string>",
+          "required": false,
+          "description": "Action prefix title map; 为 action id 增加标题前缀。",
+          "examples": [
+            {}
+          ]
+        },
+        {
+          "name": "actionSuffixTitleMap",
+          "type": "Record<string, string>",
+          "required": false,
+          "description": "Action suffix title map; 为 action id 增加标题后缀。",
+          "examples": [
+            {}
+          ]
+        }
+      ],
+      "emits": [
+        {
+          "name": "send",
+          "type": "[]",
+          "description": "Send requested; 用户提交当前输入内容。"
+        },
+        {
+          "name": "clear",
+          "type": "[]",
+          "description": "Clear input requested; 清空当前输入区。"
+        },
+        {
+          "name": "clearMessages",
+          "type": "[]",
+          "description": "Clear messages requested; 清空当前聊天消息列表。"
+        },
+        {
+          "name": "clearToolLogs",
+          "type": "[]",
+          "description": "Clear tool logs requested; 清空工具日志面板。"
+        },
+        {
+          "name": "triggerFileInput",
+          "type": "[]",
+          "description": "File picker requested; 打开外部文件选择器。"
+        },
+        {
+          "name": "toggleVoice",
+          "type": "[]",
+          "description": "Voice input toggled; 切换录音输入状态。"
+        },
+        {
+          "name": "update:inputText",
+          "type": "[value: string]",
+          "description": "Input text changed; 同步用户输入框内容。"
+        },
+        {
+          "name": "removePendingFile",
+          "type": "[index: number]",
+          "description": "Remove pending file; 从待发送附件列表移除一项。"
+        },
+        {
+          "name": "update:recoveryPolicy",
+          "type": "[value: RecoveryPolicyLike]",
+          "description": "Recovery policy changed; 同步 AI 恢复策略。",
+          "schemaNodeId": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]"
+        },
+        {
+          "name": "update:collaborationPolicy",
+          "type": "[value: CollaborationPolicyLike]",
+          "description": "Collaboration policy changed; 同步人工确认协作策略。",
+          "schemaNodeId": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]"
+        },
+        {
+          "name": "triggerDraftAction",
+          "type": "[actionId: string]",
+          "description": "Draft action triggered; 用户点击或 LLM 请求执行草稿动作。"
+        }
+      ]
+    },
     "ai-chat-widget": {
       "type": "ai-chat-widget",
       "filePath": "packages/spark-component/src/components/ai/AiChatWidget.vue",
@@ -129,6 +434,13 @@
           "type": "AiTurnConcurrencyConfig",
           "required": false,
           "description": "Turn concurrency config; 控制 AI turn 的并发和排队行为。",
+          "examples": [
+            {
+              "maxParallelTurns": 1,
+              "overflow": "queue"
+            },
+            {}
+          ],
           "schemaNodeId": "AiTurnConcurrencyConfig"
         },
         {
@@ -188,6 +500,117 @@
       ],
       "emits": []
     },
+    "ai-launcher-button": {
+      "type": "ai-launcher-button",
+      "filePath": "packages/spark-component/src/components/ai/AiLauncherButton.vue",
+      "category": "feature",
+      "description": "AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。 配置入口：type=\"ai-launcher-button\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：config。 关键 props：config, label。 主要事件：active-change, shortcut-trigger, before-open。",
+      "internal": true,
+      "configurable": false,
+      "props": [
+        {
+          "name": "config",
+          "type": "AiSessionConfig",
+          "required": true,
+          "description": "AI 业务注册体（唯一业务入口）。",
+          "schemaNodeId": "AiSessionConfig"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "default": "\"AI\"",
+          "description": "Button label; 展示在 AI 启动按钮上的文字。",
+          "examples": [
+            "AI",
+            "保存",
+            "text"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "\"small\" | \"default\" | \"large\"",
+          "required": false,
+          "default": "\"small\"",
+          "description": "Button size; 对齐 Element Plus small/default/large 尺寸。",
+          "examples": [
+            "small",
+            "default",
+            "large"
+          ],
+          "schemaNodeId": "\"small\" | \"default\" | \"large\""
+        },
+        {
+          "name": "link",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Link style; true 时使用轻量链接按钮外观。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": false,
+          "default": "\"ChatRound\"",
+          "description": "Icon name; 对应 Element Plus icons-vue 的图标组件名。",
+          "examples": [
+            "ChatRound",
+            "text"
+          ]
+        },
+        {
+          "name": "iconSize",
+          "type": "number",
+          "required": false,
+          "default": "14",
+          "description": "Icon size; 设置按钮图标像素尺寸。",
+          "examples": [
+            14,
+            0
+          ]
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Disabled state; true 时禁止点击和快捷键打开面板。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "shortcut",
+          "type": "string",
+          "required": false,
+          "description": "全局快捷键，例如 `\"ctrl+shift+a\"` / `\"meta+k\"`。\n支持修饰符：`ctrl` / `meta` / `shift` / `alt`，键名使用小写（`a` / `k` / `escape` 等）。\n在输入框 / 可编辑元素中按下时会被忽略，避免劫持用户输入。\n快捷键触发行为与点击完全一致（toggle）。",
+          "examples": [
+            "text"
+          ]
+        }
+      ],
+      "emits": [
+        {
+          "name": "active-change",
+          "type": "[active: boolean]",
+          "description": "激活态变化（`isActive` = 面板可见 **且** 当前 config 就是本按钮的 sessionConfig）。"
+        },
+        {
+          "name": "shortcut-trigger",
+          "type": "[]",
+          "description": "快捷键命中（在执行 open/close 之前触发，可用于埋点）。"
+        },
+        {
+          "name": "before-open",
+          "type": "[payload: AiLauncherBeforeOpenPayload]",
+          "description": "即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。",
+          "schemaNodeId": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]"
+        }
+      ]
+    },
     "app-ai-panel": {
       "type": "app-ai-panel",
       "filePath": "packages/spark-component/src/components/ai/AppAiPanel.vue",
@@ -228,6 +651,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -351,6 +780,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -459,6 +894,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -467,6 +908,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化列表项动作（toolbar 结构）",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -733,6 +1180,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏\n提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -741,6 +1194,12 @@
           "type": "RendererFilterProps",
           "required": false,
           "description": "结构化筛选区\n提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-filter",
           "schemaNodeId": "RendererFilterProps"
         },
@@ -749,6 +1208,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化行动作\n提示词模板：默认动作 message-row / delete-row。",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -823,6 +1288,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -831,6 +1302,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化节点动作（toolbar 结构）",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -839,6 +1316,12 @@
           "type": "RendererEditorProps",
           "required": false,
           "description": "结构化编辑区",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-editor",
           "schemaNodeId": "RendererEditorProps"
         },
@@ -946,6 +1429,113 @@
         }
       ],
       "emits": []
+    },
+    "r-anchor": {
+      "type": "r-anchor",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererAnchor.vue",
+      "category": "container",
+      "description": "锚点导航容器。 配置入口：type=\"r-anchor\"，category=container（容器组件）。 主要事件：change, click。",
+      "props": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": false,
+          "description": "滚动容器选择器",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "偏移量",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "bound",
+          "type": "number",
+          "required": false,
+          "default": "15",
+          "description": "边界值",
+          "examples": [
+            15,
+            0
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false,
+          "default": "300",
+          "description": "滚动动画时长",
+          "examples": [
+            300,
+            0
+          ]
+        },
+        {
+          "name": "marker",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否显示标记",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "name": "direction",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"vertical\"",
+          "description": "排列方向",
+          "examples": [
+            "vertical",
+            "horizontal"
+          ],
+          "schemaNodeId": "\"horizontal\" | \"vertical\""
+        },
+        {
+          "name": "anchorType",
+          "type": "\"default\" | \"underline\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "锚点类型（避免与 SparkNode.type 冲突）",
+          "examples": [
+            "default",
+            "underline"
+          ],
+          "schemaNodeId": "\"default\" | \"underline\""
+        },
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "examples": [
+            "disable",
+            "hide"
+          ],
+          "schemaNodeId": "\"disable\" | \"hide\""
+        }
+      ],
+      "emits": [
+        {
+          "name": "change",
+          "type": "[href: string]",
+          "description": "Anchor target changed; 用户滚动或点击后切换到新的锚点。"
+        },
+        {
+          "name": "click",
+          "type": "[e: MouseEvent, href?: string]",
+          "description": "Anchor clicked; 用户点击某个锚点入口。"
+        }
+      ]
     },
     "r-anchor-link": {
       "type": "r-anchor-link",
@@ -1171,6 +1761,9 @@
           "required": false,
           "description": "卡片头部文本",
           "examples": [
+            {
+              "children": []
+            },
             "text"
           ]
         },
@@ -1230,6 +1823,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -1237,13 +1836,19 @@
           "name": "modelValue",
           "type": "CollapseValue",
           "required": false,
-          "description": "当前展开的面板"
+          "description": "当前展开的面板",
+          "examples": [
+            "panel-1"
+          ]
         },
         {
           "name": "onChange",
           "type": "((value: CollapseValue) => void)",
           "required": false,
-          "description": "展开/折叠切换回调"
+          "description": "展开/折叠切换回调",
+          "examples": [
+            "panel-1"
+          ]
         },
         {
           "name": "permissionDeniedMode",
@@ -1369,6 +1974,12 @@
           "type": "RendererHeaderProps",
           "required": false,
           "description": "结构化头部",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-header",
           "schemaNodeId": "RendererHeaderProps"
         },
@@ -1377,6 +1988,12 @@
           "type": "RendererFooterProps",
           "required": false,
           "description": "结构化底部",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-footer",
           "schemaNodeId": "RendererFooterProps"
         },
@@ -1576,6 +2193,12 @@
           "type": "RendererHeaderProps",
           "required": false,
           "description": "结构化头部",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-header",
           "schemaNodeId": "RendererHeaderProps"
         },
@@ -1584,6 +2207,12 @@
           "type": "RendererFooterProps",
           "required": false,
           "description": "结构化底部",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-footer",
           "schemaNodeId": "RendererFooterProps"
         },
@@ -1992,7 +2621,7 @@
         {
           "name": "back",
           "type": "[]",
-          "description": "Emitted when back occurs; 用于通知父级处理该事件。"
+          "description": "Back requested; 用户点击页头返回入口。"
         }
       ]
     },
@@ -2123,12 +2752,12 @@
         {
           "name": "confirm",
           "type": "[]",
-          "description": "Emitted when confirm occurs; 用于通知父级处理该事件。"
+          "description": "Confirm requested; 用户确认当前危险或二次确认动作。"
         },
         {
           "name": "cancel",
           "type": "[]",
-          "description": "Emitted when cancel occurs; 用于通知父级处理该事件。"
+          "description": "Cancel requested; 用户取消当前二次确认动作。"
         }
       ]
     },
@@ -2144,7 +2773,12 @@
           "required": false,
           "description": "浮层正文节点列表。",
           "examples": [
-            []
+            {
+              "type": "r-text",
+              "props": {
+                "value": "text"
+              }
+            }
           ]
         },
         {
@@ -2285,6 +2919,12 @@
           "type": "RendererHeaderProps",
           "required": false,
           "description": "结构化头部",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-header",
           "schemaNodeId": "RendererHeaderProps"
         },
@@ -2668,7 +3308,7 @@
         {
           "name": "activate",
           "type": "[index: number]",
-          "description": "Emitted when activate occurs; 用于通知父级处理该事件。"
+          "description": "Step activated; 用户选择或激活当前步骤。"
         }
       ]
     },
@@ -2683,6 +3323,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -2699,7 +3345,15 @@
           "name": "onStepChange",
           "type": "((value: string | number, step: SparkNode, index: number) => void)",
           "required": false,
-          "description": "步骤切换回调（value 为当前 step 的 value）"
+          "description": "步骤切换回调（value 为当前 step 的 value）",
+          "examples": [
+            {
+              "type": "r-text",
+              "props": {
+                "value": "text"
+              }
+            }
+          ]
         },
         {
           "name": "permissionDeniedMode",
@@ -2843,6 +3497,12 @@
           "type": "RToolbarProps",
           "required": false,
           "description": "结构化工具栏",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-toolbar",
           "schemaNodeId": "RToolbarProps"
         },
@@ -2898,6 +3558,12 @@
           "type": "RendererTailProps",
           "required": false,
           "description": "尾部动作区（通常放次要按钮）",
+          "examples": [
+            {
+              "children": []
+            },
+            {}
+          ],
           "componentRef": "r-tail",
           "schemaNodeId": "RendererTailProps"
         },
@@ -2907,9 +3573,9 @@
           "required": false,
           "description": "工具栏停靠位置",
           "examples": [
+            "top",
             "left",
-            "right",
-            "top"
+            "right"
           ],
           "schemaNodeId": "ToolbarPosition"
         },
@@ -2949,9 +3615,9 @@
           "required": false,
           "description": "主轴分布",
           "examples": [
+            "space-between",
             "center",
-            "start",
-            "end"
+            "start"
           ],
           "schemaNodeId": "InlineJustify"
         },
@@ -3202,17 +3868,17 @@
         {
           "name": "close",
           "type": "[current: number]",
-          "description": "Emitted when close occurs; 用于通知父级处理该事件。"
+          "description": "Tour closed; 用户关闭引导浮层。"
         },
         {
           "name": "change",
           "type": "[current: number]",
-          "description": "Emitted when change occurs; 用于通知父级处理该事件。"
+          "description": "Tour step changed; 当前引导步骤发生切换。"
         },
         {
           "name": "finish",
           "type": "[]",
-          "description": "Emitted when finish occurs; 用于通知父级处理该事件。"
+          "description": "Tour finished; 用户完成所有引导步骤。"
         },
         {
           "name": "update:open",
@@ -3233,9 +3899,9 @@
           "required": false,
           "description": "编辑区停靠位置",
           "examples": [
+            "top",
             "left",
-            "right",
-            "top"
+            "right"
           ],
           "schemaNodeId": "ToolbarPosition"
         },
@@ -4097,7 +4763,10 @@
           "name": "color",
           "type": "ProgressColor",
           "required": false,
-          "description": "进度色"
+          "description": "进度色",
+          "examples": [
+            "#409eff"
+          ]
         },
         {
           "name": "circleWidth",
@@ -4438,7 +5107,7 @@
         {
           "name": "close",
           "type": "[]",
-          "description": "Emitted when close occurs; 用于通知父级处理该事件。"
+          "description": "Tag close requested; 用户点击可关闭标签的关闭入口。"
         }
       ]
     },
@@ -4545,7 +5214,10 @@
           "name": "value",
           "type": "unknown",
           "required": false,
-          "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
+          "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。",
+          "examples": [
+            "text"
+          ]
         },
         {
           "name": "field",
@@ -4666,7 +5338,7 @@
         {
           "name": "close",
           "type": "[]",
-          "description": "Emitted when close occurs; 用于通知父级处理该事件。"
+          "description": "Alert close requested; 用户关闭当前提示条。"
         }
       ]
     },
@@ -4770,13 +5442,23 @@
           "type": "Date",
           "required": false,
           "description": "当前日期",
+          "examples": [
+            "2026-01-01"
+          ],
           "schemaNodeId": "Date"
         },
         {
           "name": "range",
           "type": "[Date, Date]",
           "required": false,
-          "description": "日期范围 [start, end]"
+          "description": "日期范围 [start, end]",
+          "examples": [
+            [
+              "2026-01-01",
+              "2026-01-31"
+            ],
+            "2026-01-01"
+          ]
         },
         {
           "name": "permissionDeniedMode",
@@ -4804,7 +5486,7 @@
           "required": false,
           "description": "目标时间（时间戳或 Date）",
           "examples": [
-            0
+            "2026-01-01"
           ]
         },
         {
@@ -4850,7 +5532,10 @@
           "name": "valueStyle",
           "type": "CSSProperties",
           "required": false,
-          "description": "值样式"
+          "description": "值样式",
+          "examples": [
+            {}
+          ]
         },
         {
           "name": "permissionDeniedMode",
@@ -4868,12 +5553,12 @@
         {
           "name": "change",
           "type": "[value: number]",
-          "description": "Emitted when change occurs; 用于通知父级处理该事件。"
+          "description": "Countdown tick changed; 剩余时间数值更新。"
         },
         {
           "name": "finish",
           "type": "[]",
-          "description": "Emitted when finish occurs; 用于通知父级处理该事件。"
+          "description": "Countdown finished; 倒计时到达目标时间。"
         }
       ]
     },
@@ -5044,7 +5729,10 @@
           "name": "value",
           "type": "unknown",
           "required": false,
-          "description": "显式展示值"
+          "description": "显式展示值",
+          "examples": [
+            "text"
+          ]
         },
         {
           "name": "field",
@@ -5525,6 +6213,12 @@
           "type": "JsonTreePolicy",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）",
+          "examples": [
+            {
+              "rootLabel": "$"
+            },
+            {}
+          ],
           "schemaNodeId": "JsonTreePolicy"
         },
         {
@@ -6193,13 +6887,25 @@
           "name": "modelValue",
           "type": "CascaderValue",
           "required": false,
-          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            [
+              "province",
+              "city"
+            ]
+          ]
         },
         {
           "name": "value",
           "type": "CascaderValue",
           "required": false,
-          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            [
+              "province",
+              "city"
+            ]
+          ]
         },
         {
           "name": "field",
@@ -6605,6 +7311,322 @@
         }
       ]
     },
+    "r-checkbox-group": {
+      "type": "r-checkbox-group",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.vue",
+      "category": "field",
+      "description": "复选框组字段，绑定数组值，可切换按钮样式。 配置入口：type=\"r-checkbox-group\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "examples": [
+            "disable",
+            "hide"
+          ],
+          "schemaNodeId": "\"disable\" | \"hide\""
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueSeparator",
+          "type": "string",
+          "required": false,
+          "description": "值分隔符。\n\n当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n使用该分隔符把多个候选值序列化到主字段中。\n\n示例：\n- 当前选中值为 `[101, 102]`\n- `valueSeparator` 为 `,`\n- 最终写入 `field` 为 `101,102`",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueMode",
+          "type": "SparkOptionValueMode",
+          "required": false,
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "examples": [
+            "auto",
+            "array",
+            "separated-string"
+          ],
+          "schemaNodeId": "SparkOptionValueMode"
+        },
+        {
+          "name": "textSeparator",
+          "type": "string",
+          "required": false,
+          "description": "文本分隔符。\n\n当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n使用该分隔符拼接展示文本。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "textStorageField",
+          "type": "string",
+          "required": false,
+          "description": "文本储存字段。\n\n主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "filterable",
+          "type": "boolean",
+          "required": false,
+          "description": "是否允许在候选项中搜索。\n一般用于候选集较大、需要关键字过滤的组件。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度。\n\n主要用于输入类、选择类、文件类字段的控件宽度控制。\n这里统一约定为数值宽度，由具体组件决定如何映射到样式层。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "resizable",
+          "type": "boolean",
+          "required": false,
+          "description": "表格列是否允许拖动列宽。\n\n字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "modelValue",
+          "type": "CheckboxGroupMultiValue",
+          "required": false,
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            [
+              "option-a",
+              "option-b"
+            ]
+          ]
+        },
+        {
+          "name": "value",
+          "type": "CheckboxGroupMultiValue",
+          "required": false,
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            [
+              "option-a",
+              "option-b"
+            ]
+          ]
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n也可作为表单写回、明细展示、列渲染时的字段定位键。",
+          "examples": [
+            "name",
+            "text"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签。\n常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。",
+          "examples": [
+            "保存",
+            "text"
+          ]
+        },
+        {
+          "name": "readonly",
+          "type": "boolean",
+          "required": false,
+          "description": "只读状态。\n\n表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n它与完全禁用或隐藏是不同层级的语义。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。",
+          "examples": [
+            "请输入内容",
+            "text"
+          ]
+        },
+        {
+          "name": "onChange",
+          "type": "((...args: unknown[]) => void | Promise<void>)",
+          "required": false,
+          "description": "字段值变更回调。\n\n统一由字段控制层透传给事件分发器，替代隐式监听提取。"
+        },
+        {
+          "name": "titleAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "valueAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "headerCellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格表头单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `label-class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "cellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "titleClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表单标题 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表格值区 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "sortable",
+          "type": "boolean | \"custom\"",
+          "required": false,
+          "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
+          "examples": [
+            false,
+            true,
+            "custom"
+          ],
+          "schemaNodeId": "boolean | \"custom\""
+        },
+        {
+          "name": "options",
+          "type": "unknown[]",
+          "required": false,
+          "description": "可选项数组。\n通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "optionLabelField",
+          "type": "string",
+          "required": false,
+          "description": "选项显示字段。\n指定从选项对象的哪个字段读取展示文本。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionValueField",
+          "type": "string",
+          "required": false,
+          "description": "选项值字段。\n 指定从选项对象的哪个字段读取最终写入字段主值的值。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionDisabledField",
+          "type": "string",
+          "required": false,
+          "description": "选项禁用字段。\n指定从选项对象的哪个字段读取“当前候选项是否不可选”的布尔状态。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionChildrenField",
+          "type": "string",
+          "required": false,
+          "description": "子级字段名。\n用于树形选择、级联选择等嵌套选项结构，指定子节点数组所在字段。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "buttonStyle",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否启用按钮样式。\n\n例如把 radio 渲染成 `el-radio-button`，\n或把 checkbox-group 渲染成 `el-checkbox-button`。",
+          "examples": [
+            false
+          ]
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: MultiValue]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
+          "schemaNodeId": "r-checkbox-group.update:modelValue [value: MultiValue]"
+        }
+      ]
+    },
     "r-check-tag": {
       "type": "r-check-tag",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckTag.vue",
@@ -6647,7 +7669,7 @@
         {
           "name": "change",
           "type": "[checked: boolean]",
-          "description": "Emitted when change occurs; 用于通知父级处理该事件。"
+          "description": "Checked state changed; 用户切换标签选中状态。"
         },
         {
           "name": "update:checked",
@@ -6959,7 +7981,7 @@
           "required": false,
           "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
           "examples": [
-            []
+            "2026-01-01"
           ]
         },
         {
@@ -6968,7 +7990,7 @@
           "required": false,
           "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
           "examples": [
-            []
+            "2026-01-01"
           ]
         },
         {
@@ -7149,7 +8171,10 @@
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false,
-          "description": "直接传入的值"
+          "description": "直接传入的值",
+          "examples": [
+            "entity-001"
+          ]
         },
         {
           "name": "name",
@@ -7453,13 +8478,19 @@
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false,
-          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            "entity-001"
+          ]
         },
         {
           "name": "value",
           "type": "EntityPickerValue",
           "required": false,
-          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            "entity-001"
+          ]
         },
         {
           "name": "field",
@@ -8938,6 +9969,634 @@
         }
       ]
     },
+    "r-mention": {
+      "type": "r-mention",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldMention.vue",
+      "category": "field",
+      "description": "提及输入字段，绑定 string 值。 配置入口：type=\"r-mention\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, label, placeholder。 主要事件：update:modelValue, select, search。",
+      "props": [
+        {
+          "name": "mentionTriggers",
+          "type": "{ prefix: string; split?: string; writebackField?: string; searchable?: boolean; options?: { dataKey?: string; valueField?: string; labelField?: string; disabledField?: string; }; }[]",
+          "required": false,
+          "description": "完整的提及触发规则列表。\n\n每一项描述一个前缀触发器的完整结构：\n- `prefix`：触发字符\n- `split`：选中后写回文本的分隔符\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\n- `options.dataKey`：候选项数据源\n - `options.valueField / labelField / disabledField`：候选项字段映射\n- `searchable`：是否启用本地候选项过滤\n\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\n- `modelValue` 表示当前 Mention 输入框中的文本值\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\n\n注意：底层 el-mention 只支持一个全局 `split`；\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "placement",
+          "type": "\"top\" | \"bottom\"",
+          "required": false,
+          "default": "\"bottom\"",
+          "description": "候选浮层位置",
+          "examples": [
+            "bottom",
+            "top"
+          ],
+          "schemaNodeId": "\"top\" | \"bottom\""
+        },
+        {
+          "name": "showArrow",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否显示箭头",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "description": "浮层偏移",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "whole",
+          "type": "boolean",
+          "required": false,
+          "description": "是否整词匹配",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "checkIsWhole",
+          "type": "((pattern: string, prefix: string) => boolean)",
+          "required": false,
+          "description": "自定义整词判断"
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "description": "是否加载态",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "inputType",
+          "type": "\"textarea\" | \"text\"",
+          "required": false,
+          "default": "\"text\"",
+          "description": "输入框类型",
+          "examples": [
+            "text",
+            "textarea"
+          ],
+          "schemaNodeId": "\"textarea\" | \"text\""
+        },
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "examples": [
+            "disable",
+            "hide"
+          ],
+          "schemaNodeId": "\"disable\" | \"hide\""
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度。\n\n主要用于输入类、选择类、文件类字段的控件宽度控制。\n这里统一约定为数值宽度，由具体组件决定如何映射到样式层。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "resizable",
+          "type": "boolean",
+          "required": false,
+          "description": "表格列是否允许拖动列宽。\n\n字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "modelValue",
+          "type": "string",
+          "required": false,
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n也可作为表单写回、明细展示、列渲染时的字段定位键。",
+          "examples": [
+            "name",
+            "text"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签。\n常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。",
+          "examples": [
+            "保存",
+            "text"
+          ]
+        },
+        {
+          "name": "readonly",
+          "type": "boolean",
+          "required": false,
+          "description": "只读状态。\n\n表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n它与完全禁用或隐藏是不同层级的语义。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。",
+          "examples": [
+            "请输入内容",
+            "text"
+          ]
+        },
+        {
+          "name": "onChange",
+          "type": "((...args: unknown[]) => void | Promise<void>)",
+          "required": false,
+          "description": "字段值变更回调。\n\n统一由字段控制层透传给事件分发器，替代隐式监听提取。"
+        },
+        {
+          "name": "titleAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "valueAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "headerCellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格表头单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `label-class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "cellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "titleClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表单标题 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表格值区 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "sortable",
+          "type": "boolean | \"custom\"",
+          "required": false,
+          "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
+          "examples": [
+            false,
+            true,
+            "custom"
+          ],
+          "schemaNodeId": "boolean | \"custom\""
+        },
+        {
+          "name": "rows",
+          "type": "number",
+          "required": false,
+          "default": "3",
+          "description": "多行输入的可见行数。\n\n该值通常直接映射到底层 textarea 类组件的 `rows` 属性。",
+          "examples": [
+            3,
+            0
+          ]
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        },
+        {
+          "name": "select",
+          "type": "[option: RMentionOption, prefix: string]",
+          "description": "Mention option selected; 用户选择提及候选项。",
+          "schemaNodeId": "r-mention.select [option: RMentionOption, prefix: string]"
+        },
+        {
+          "name": "search",
+          "type": "[pattern: string, prefix: string]",
+          "description": "Mention search changed; 用户在某个前缀下输入搜索文本。"
+        }
+      ]
+    },
+    "r-multi-select": {
+      "type": "r-multi-select",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.vue",
+      "category": "field",
+      "description": "多选下拉字段，绑定数组值，支持标签折叠（collapseTags）显示。 配置入口：type=\"r-multi-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "collapseTags",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "选中项较多时是否折叠标签。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "collapseTagsTooltip",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "折叠标签时是否在悬停中展示完整内容。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "maxCollapseTags",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "折叠后最多显示的标签数量。",
+          "examples": [
+            1,
+            0
+          ]
+        },
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "examples": [
+            "disable",
+            "hide"
+          ],
+          "schemaNodeId": "\"disable\" | \"hide\""
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueSeparator",
+          "type": "string",
+          "required": false,
+          "description": "值分隔符。\n\n当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n使用该分隔符把多个候选值序列化到主字段中。\n\n示例：\n- 当前选中值为 `[101, 102]`\n- `valueSeparator` 为 `,`\n- 最终写入 `field` 为 `101,102`",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueMode",
+          "type": "SparkOptionValueMode",
+          "required": false,
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "examples": [
+            "auto",
+            "array",
+            "separated-string"
+          ],
+          "schemaNodeId": "SparkOptionValueMode"
+        },
+        {
+          "name": "textSeparator",
+          "type": "string",
+          "required": false,
+          "description": "文本分隔符。\n\n当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n使用该分隔符拼接展示文本。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "textStorageField",
+          "type": "string",
+          "required": false,
+          "description": "文本储存字段。\n\n主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "filterable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否允许在候选项中搜索。\n一般用于候选集较大、需要关键字过滤的组件。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度。\n\n主要用于输入类、选择类、文件类字段的控件宽度控制。\n这里统一约定为数值宽度，由具体组件决定如何映射到样式层。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "resizable",
+          "type": "boolean",
+          "required": false,
+          "description": "表格列是否允许拖动列宽。\n\n字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        {
+          "name": "modelValue",
+          "type": "MultiValue",
+          "required": false,
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            [
+              "option-a",
+              "option-b"
+            ]
+          ]
+        },
+        {
+          "name": "value",
+          "type": "MultiValue",
+          "required": false,
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            [
+              "option-a",
+              "option-b"
+            ]
+          ]
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n也可作为表单写回、明细展示、列渲染时的字段定位键。",
+          "examples": [
+            "name",
+            "text"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签。\n常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。",
+          "examples": [
+            "保存",
+            "text"
+          ]
+        },
+        {
+          "name": "readonly",
+          "type": "boolean",
+          "required": false,
+          "description": "只读状态。\n\n表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n它与完全禁用或隐藏是不同层级的语义。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u8BF7\\u9009\\u62E9\"",
+          "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。",
+          "examples": [
+            "\\u8BF7\\u9009\\u62E9",
+            "请输入内容",
+            "text"
+          ]
+        },
+        {
+          "name": "onChange",
+          "type": "((...args: unknown[]) => void | Promise<void>)",
+          "required": false,
+          "description": "字段值变更回调。\n\n统一由字段控制层透传给事件分发器，替代隐式监听提取。"
+        },
+        {
+          "name": "titleAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "valueAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "headerCellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格表头单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `label-class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "cellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "titleClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表单标题 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表格值区 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "sortable",
+          "type": "boolean | \"custom\"",
+          "required": false,
+          "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
+          "examples": [
+            false,
+            true,
+            "custom"
+          ],
+          "schemaNodeId": "boolean | \"custom\""
+        },
+        {
+          "name": "options",
+          "type": "unknown[]",
+          "required": false,
+          "description": "可选项数组。\n通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "optionLabelField",
+          "type": "string",
+          "required": false,
+          "description": "选项显示字段。\n指定从选项对象的哪个字段读取展示文本。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionValueField",
+          "type": "string",
+          "required": false,
+          "description": "选项值字段。\n 指定从选项对象的哪个字段读取最终写入字段主值的值。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionDisabledField",
+          "type": "string",
+          "required": false,
+          "description": "选项禁用字段。\n指定从选项对象的哪个字段读取“当前候选项是否不可选”的布尔状态。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionChildrenField",
+          "type": "string",
+          "required": false,
+          "description": "子级字段名。\n用于树形选择、级联选择等嵌套选项结构，指定子节点数组所在字段。",
+          "examples": [
+            "text"
+          ]
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: MultiValue]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
+          "schemaNodeId": "r-multi-select.update:modelValue [value: MultiValue]"
+        }
+      ]
+    },
     "r-number": {
       "type": "r-number",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldNumber.vue",
@@ -9203,7 +10862,10 @@
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false,
-          "description": "直接传入的值"
+          "description": "直接传入的值",
+          "examples": [
+            "entity-001"
+          ]
         },
         {
           "name": "name",
@@ -10197,7 +11859,7 @@
         {
           "name": "change",
           "type": "[value: string | number]",
-          "description": "Emitted when change occurs; 用于通知父级处理该事件。"
+          "description": "Segmented value changed; 用户切换分段选项。"
         },
         {
           "name": "update:modelValue",
@@ -11484,7 +13146,7 @@
           "required": false,
           "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
           "examples": [
-            "text"
+            "2026-01-01"
           ]
         },
         {
@@ -11493,7 +13155,7 @@
           "required": false,
           "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
           "examples": [
-            "text"
+            "2026-01-01"
           ]
         },
         {
@@ -11867,6 +13529,347 @@
         }
       ]
     },
+    "r-transfer": {
+      "type": "r-transfer",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldTransfer.vue",
+      "category": "field",
+      "description": "穿梭框字段，绑定数组值，支持搜索过滤。 配置入口：type=\"r-transfer\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "titles",
+          "type": "[string, string]",
+          "required": false,
+          "default": "[\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"] as [\n    string,\n    string\n]",
+          "description": "左右面板标题。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "filterPlaceholder",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD\"",
+          "description": "候选项过滤输入框占位文案。",
+          "examples": [
+            "\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD",
+            "text"
+          ]
+        },
+        {
+          "name": "targetOrder",
+          "type": "\"push\" | \"unshift\" | \"original\"",
+          "required": false,
+          "default": "\"original\"",
+          "description": "目标面板排序策略。",
+          "examples": [
+            "original",
+            "push",
+            "unshift"
+          ],
+          "schemaNodeId": "\"push\" | \"unshift\" | \"original\""
+        },
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "examples": [
+            "disable",
+            "hide"
+          ],
+          "schemaNodeId": "\"disable\" | \"hide\""
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueSeparator",
+          "type": "string",
+          "required": false,
+          "description": "值分隔符。\n\n当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n使用该分隔符把多个候选值序列化到主字段中。\n\n示例：\n- 当前选中值为 `[101, 102]`\n- `valueSeparator` 为 `,`\n- 最终写入 `field` 为 `101,102`",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueMode",
+          "type": "SparkOptionValueMode",
+          "required": false,
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "examples": [
+            "auto",
+            "array",
+            "separated-string"
+          ],
+          "schemaNodeId": "SparkOptionValueMode"
+        },
+        {
+          "name": "textSeparator",
+          "type": "string",
+          "required": false,
+          "description": "文本分隔符。\n\n当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n使用该分隔符拼接展示文本。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "textStorageField",
+          "type": "string",
+          "required": false,
+          "description": "文本储存字段。\n\n主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "filterable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否允许在候选项中搜索。\n一般用于候选集较大、需要关键字过滤的组件。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度。\n\n主要用于输入类、选择类、文件类字段的控件宽度控制。\n这里统一约定为数值宽度，由具体组件决定如何映射到样式层。",
+          "examples": [
+            0
+          ]
+        },
+        {
+          "name": "resizable",
+          "type": "boolean",
+          "required": false,
+          "description": "表格列是否允许拖动列宽。\n\n字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "modelValue",
+          "type": "TransferValue",
+          "required": false,
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            [
+              "item-1",
+              "item-2"
+            ]
+          ]
+        },
+        {
+          "name": "value",
+          "type": "TransferValue",
+          "required": false,
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            [
+              "item-1",
+              "item-2"
+            ]
+          ]
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n也可作为表单写回、明细展示、列渲染时的字段定位键。",
+          "examples": [
+            "name",
+            "text"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签。\n常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。",
+          "examples": [
+            "保存",
+            "text"
+          ]
+        },
+        {
+          "name": "readonly",
+          "type": "boolean",
+          "required": false,
+          "description": "只读状态。\n\n表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n它与完全禁用或隐藏是不同层级的语义。",
+          "examples": [
+            false
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。",
+          "examples": [
+            "请输入内容",
+            "text"
+          ]
+        },
+        {
+          "name": "onChange",
+          "type": "((...args: unknown[]) => void | Promise<void>)",
+          "required": false,
+          "description": "字段值变更回调。\n\n统一由字段控制层透传给事件分发器，替代隐式监听提取。"
+        },
+        {
+          "name": "titleAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "valueAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "required": false,
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "examples": [
+            "left",
+            "center",
+            "right"
+          ],
+          "schemaNodeId": "\"left\" | \"center\" | \"right\""
+        },
+        {
+          "name": "headerCellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格表头单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `label-class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "cellClassName",
+          "type": "string",
+          "required": false,
+          "description": "表格单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `class-name`。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "titleClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表单标题 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "valueClassName",
+          "type": "string",
+          "required": false,
+          "description": "详情/表格值区 CSS 类名。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "sortable",
+          "type": "boolean | \"custom\"",
+          "required": false,
+          "description": "是否允许排序。\n- true: 前端排序\n- 'custom': 服务端排序\n- false: 禁用排序",
+          "examples": [
+            false,
+            true,
+            "custom"
+          ],
+          "schemaNodeId": "boolean | \"custom\""
+        },
+        {
+          "name": "options",
+          "type": "unknown[]",
+          "required": false,
+          "description": "可选项数组。\n通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。",
+          "examples": [
+            []
+          ]
+        },
+        {
+          "name": "optionLabelField",
+          "type": "string",
+          "required": false,
+          "description": "选项显示字段。\n指定从选项对象的哪个字段读取展示文本。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionValueField",
+          "type": "string",
+          "required": false,
+          "description": "选项值字段。\n 指定从选项对象的哪个字段读取最终写入字段主值的值。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionDisabledField",
+          "type": "string",
+          "required": false,
+          "description": "选项禁用字段。\n指定从选项对象的哪个字段读取“当前候选项是否不可选”的布尔状态。",
+          "examples": [
+            "text"
+          ]
+        },
+        {
+          "name": "optionChildrenField",
+          "type": "string",
+          "required": false,
+          "description": "子级字段名。\n用于树形选择、级联选择等嵌套选项结构，指定子节点数组所在字段。",
+          "examples": [
+            "text"
+          ]
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: TransferValue]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
+          "schemaNodeId": "r-transfer.update:modelValue [value: TransferValue]"
+        }
+      ]
+    },
     "r-tree-select": {
       "type": "r-tree-select",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.vue",
@@ -12006,13 +14009,19 @@
           "name": "modelValue",
           "type": "TreeSelectValue",
           "required": false,
-          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
+          "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。",
+          "examples": [
+            "node-1"
+          ]
         },
         {
           "name": "value",
           "type": "TreeSelectValue",
           "required": false,
-          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
+          "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。",
+          "examples": [
+            "node-1"
+          ]
         },
         {
           "name": "field",
@@ -12528,7 +14537,10 @@
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false,
-          "description": "直接传入的值"
+          "description": "直接传入的值",
+          "examples": [
+            "entity-001"
+          ]
         },
         {
           "name": "name",
@@ -12782,8 +14794,8 @@
           "required": false,
           "description": "列对齐",
           "examples": [
-            "left",
             "center",
+            "left",
             "right"
           ],
           "schemaNodeId": "TextAlign"
@@ -12806,7 +14818,12 @@
           "required": false,
           "description": "子组件配置",
           "examples": [
-            []
+            {
+              "type": "r-text",
+              "props": {
+                "value": "text"
+              }
+            }
           ]
         },
         {
@@ -13081,6 +15098,14 @@
           "type": "SparkNode",
           "required": true,
           "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+          "examples": [
+            {
+              "type": "r-text",
+              "props": {
+                "value": "text"
+              }
+            }
+          ],
           "schemaNodeId": "SparkNode"
         },
         {
@@ -13127,6 +15152,14 @@
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点",
+          "examples": [
+            {
+              "type": "r-text",
+              "props": {
+                "value": "text"
+              }
+            }
+          ],
           "schemaNodeId": "SparkNode"
         }
       ],
@@ -13651,6 +15684,23 @@
       ]
     },
     {
+      "id": "\"default\" | \"underline\"",
+      "rootId": "\"default\" | \"underline\"",
+      "relation": "root",
+      "type": "string",
+      "title": "\"default\" | \"underline\"",
+      "description": "锚点类型（避免与 SparkNode.type 冲突）",
+      "enum": [
+        "default",
+        "underline"
+      ],
+      "default": "default",
+      "examples": [
+        "default",
+        "underline"
+      ]
+    },
+    {
       "id": "\"disable\" | \"hide\"",
       "rootId": "\"disable\" | \"hide\"",
       "relation": "root",
@@ -13714,15 +15764,15 @@
       "relation": "root",
       "type": "string",
       "title": "\"horizontal\" | \"vertical\"",
-      "description": "分割方向",
+      "description": "排列方向",
       "enum": [
         "horizontal",
         "vertical"
       ],
-      "default": "horizontal",
+      "default": "vertical",
       "examples": [
-        "horizontal",
-        "vertical"
+        "vertical",
+        "horizontal"
       ]
     },
     {
@@ -13881,6 +15931,25 @@
       ]
     },
     {
+      "id": "\"push\" | \"unshift\" | \"original\"",
+      "rootId": "\"push\" | \"unshift\" | \"original\"",
+      "relation": "root",
+      "type": "string",
+      "title": "\"push\" | \"unshift\" | \"original\"",
+      "description": "目标面板排序策略。",
+      "enum": [
+        "push",
+        "unshift",
+        "original"
+      ],
+      "default": "original",
+      "examples": [
+        "original",
+        "push",
+        "unshift"
+      ]
+    },
+    {
       "id": "\"r-editor\"",
       "rootId": "\"r-editor\"",
       "relation": "root",
@@ -13989,16 +16058,16 @@
       "relation": "root",
       "type": "string",
       "title": "\"small\" | \"default\" | \"large\"",
-      "description": "尺寸",
+      "description": "Button size; 对齐 Element Plus small/default/large 尺寸。",
       "enum": [
         "small",
         "default",
         "large"
       ],
-      "default": "default",
+      "default": "small",
       "examples": [
-        "default",
         "small",
+        "default",
         "large"
       ]
     },
@@ -14057,6 +16126,23 @@
       ]
     },
     {
+      "id": "\"textarea\" | \"text\"",
+      "rootId": "\"textarea\" | \"text\"",
+      "relation": "root",
+      "type": "string",
+      "title": "\"textarea\" | \"text\"",
+      "description": "输入框类型",
+      "enum": [
+        "textarea",
+        "text"
+      ],
+      "default": "text",
+      "examples": [
+        "text",
+        "textarea"
+      ]
+    },
+    {
       "id": "\"top\" | \"bottom\"",
       "rootId": "\"top\" | \"bottom\"",
       "relation": "root",
@@ -14074,6 +16160,510 @@
       ]
     },
     {
+      "id": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]",
+      "rootId": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]",
+      "relation": "root",
+      "type": "array",
+      "title": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]",
+      "description": "Collaboration policy changed; 同步人工确认协作策略。",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]/prefixItems/0",
+      "rootId": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]",
+      "relation": "prefixItem",
+      "parentId": "ai-chat-shell.update:collaborationPolicy [value: CollaborationPolicyLike]",
+      "name": "value",
+      "index": 0,
+      "refId": "CollaborationPolicyLike",
+      "title": "value",
+      "description": "Next collaboration policy.",
+      "examples": [
+        "auto",
+        "critical-confirm",
+        "plan-confirm"
+      ]
+    },
+    {
+      "id": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]",
+      "rootId": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]",
+      "relation": "root",
+      "type": "array",
+      "title": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]",
+      "description": "Recovery policy changed; 同步 AI 恢复策略。",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]/prefixItems/0",
+      "rootId": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]",
+      "relation": "prefixItem",
+      "parentId": "ai-chat-shell.update:recoveryPolicy [value: RecoveryPolicyLike]",
+      "name": "value",
+      "index": 0,
+      "refId": "RecoveryPolicyLike",
+      "title": "value",
+      "description": "Next recovery policy.",
+      "examples": [
+        "layered",
+        "manual",
+        "strict"
+      ]
+    },
+    {
+      "id": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]",
+      "rootId": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]",
+      "relation": "root",
+      "type": "array",
+      "title": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]",
+      "description": "即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]/prefixItems/0",
+      "rootId": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]",
+      "relation": "prefixItem",
+      "parentId": "ai-launcher-button.before-open [payload: AiLauncherBeforeOpenPayload]",
+      "name": "payload",
+      "index": 0,
+      "refId": "AiLauncherBeforeOpenPayload",
+      "title": "payload",
+      "description": "Before-open payload with session config and cancel function.",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "AiFcLoopConfig",
+      "rootId": "AiFcLoopConfig",
+      "relation": "root",
+      "type": "object",
+      "title": "AiFcLoopConfig",
+      "description": "SSE + Function-Call 循环配置。",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "AiFcLoopConfig/properties/enabled",
+      "rootId": "AiFcLoopConfig",
+      "relation": "property",
+      "parentId": "AiFcLoopConfig",
+      "name": "enabled",
+      "required": false,
+      "type": "boolean",
+      "title": "enabled",
+      "description": "是否启用本地 FC 循环（业务 sender 自行实现时读取本字段）。",
+      "examples": [
+        false
+      ]
+    },
+    {
+      "id": "AiFcLoopConfig/properties/maxRounds",
+      "rootId": "AiFcLoopConfig",
+      "relation": "property",
+      "parentId": "AiFcLoopConfig",
+      "name": "maxRounds",
+      "required": false,
+      "type": "number",
+      "title": "maxRounds",
+      "description": "单次 sender 调用内允许的最大工具往返轮数。",
+      "examples": [
+        0
+      ]
+    },
+    {
+      "id": "AiFcLoopConfig/properties/endpoint",
+      "rootId": "AiFcLoopConfig",
+      "relation": "property",
+      "parentId": "AiFcLoopConfig",
+      "name": "endpoint",
+      "required": false,
+      "type": "string",
+      "title": "endpoint",
+      "description": "自定义后端端点（默认走 /api/ai/chat/stream）。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiFeedbackConfig",
+      "rootId": "AiFeedbackConfig",
+      "relation": "root",
+      "type": "object",
+      "title": "AiFeedbackConfig",
+      "description": "反馈机制（文本 + 点赞点踩）。",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "AiFeedbackConfig/properties/value",
+      "rootId": "AiFeedbackConfig",
+      "relation": "property",
+      "parentId": "AiFeedbackConfig",
+      "name": "value",
+      "required": false,
+      "type": "string",
+      "title": "value",
+      "description": "绑定到 UI 文本框的 ref。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiFeedbackConfig/properties/onSubmit",
+      "rootId": "AiFeedbackConfig",
+      "relation": "property",
+      "parentId": "AiFeedbackConfig",
+      "name": "onSubmit",
+      "required": false,
+      "type": "string",
+      "title": "onSubmit",
+      "description": "提交反馈文本；target 标识对应消息和点赞/点踩来源。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiLauncherBeforeOpenPayload",
+      "rootId": "AiLauncherBeforeOpenPayload",
+      "relation": "root",
+      "type": "object",
+      "title": "AiLauncherBeforeOpenPayload",
+      "description": "Before-open payload with session config and cancel function.",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "AiLauncherBeforeOpenPayload/properties/config",
+      "rootId": "AiLauncherBeforeOpenPayload",
+      "relation": "property",
+      "parentId": "AiLauncherBeforeOpenPayload",
+      "name": "config",
+      "required": true,
+      "refId": "AiSessionConfig",
+      "title": "config",
+      "description": "即将打开的 AI 会话配置。"
+    },
+    {
+      "id": "AiLauncherBeforeOpenPayload/properties/cancel",
+      "rootId": "AiLauncherBeforeOpenPayload",
+      "relation": "property",
+      "parentId": "AiLauncherBeforeOpenPayload",
+      "name": "cancel",
+      "required": true,
+      "title": "cancel",
+      "description": "取消本次打开请求；调用后不会执行 store.open。"
+    },
+    {
+      "id": "AiSessionConfig",
+      "rootId": "AiSessionConfig",
+      "relation": "root",
+      "type": "object",
+      "title": "AiSessionConfig",
+      "description": "AI 会话标准配置。\n\n所有文本字段支持 `MaybeRefOrGetter<string>`，以便业务随上下文动态变更\n（例如按 activePageId 切换 storageKey 而不重新注册 config）。\n\nexternalToolLogs 必须是 Ref/ComputedRef，面板通过它驱动工具日志视图。",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/storageKey",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "storageKey",
+      "required": true,
+      "type": "string",
+      "title": "storageKey",
+      "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/disablePersistence",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "disablePersistence",
+      "required": false,
+      "type": "boolean",
+      "title": "disablePersistence",
+      "description": "禁用会话快照读写。用于业务尚未被语义路由选定的 pending 阶段。",
+      "examples": [
+        false
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/pageId",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "pageId",
+      "required": false,
+      "type": "string",
+      "title": "pageId",
+      "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。",
+      "examples": [
+        "page-main"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/sender",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "sender",
+      "required": true,
+      "title": "sender",
+      "description": "聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。"
+    },
+    {
+      "id": "AiSessionConfig/properties/title",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "title",
+      "required": false,
+      "type": "string",
+      "title": "title",
+      "description": "面板标题。",
+      "examples": [
+        "订单列表"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/placeholder",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "placeholder",
+      "required": false,
+      "type": "string",
+      "title": "placeholder",
+      "description": "输入框 placeholder。",
+      "examples": [
+        "请输入内容"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/externalToolLogs",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "externalToolLogs",
+      "required": false,
+      "type": "array",
+      "title": "externalToolLogs",
+      "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/clearExternalToolLogs",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "clearExternalToolLogs",
+      "required": false,
+      "title": "clearExternalToolLogs",
+      "description": "清空外部工具日志。若未提供，面板只清空自身内部日志。"
+    },
+    {
+      "id": "AiSessionConfig/properties/fcErrorReporter",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "fcErrorReporter",
+      "required": false,
+      "title": "fcErrorReporter",
+      "description": "FC 调用失败时的诊断回传器。"
+    },
+    {
+      "id": "AiSessionConfig/properties/turnConcurrency",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "turnConcurrency",
+      "required": false,
+      "title": "turnConcurrency",
+      "description": "turn 并发配置；默认由 AiChatWidget 保持 1 个在途 turn。",
+      "examples": [
+        {
+          "maxParallelTurns": 1,
+          "overflow": "queue"
+        }
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/beforeOpen",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "beforeOpen",
+      "required": false,
+      "title": "beforeOpen",
+      "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
+    },
+    {
+      "id": "AiSessionConfig/properties/systemPrompt",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "systemPrompt",
+      "required": false,
+      "type": "string",
+      "title": "systemPrompt",
+      "description": "自定义 system prompt。sender 可读取并随请求下发。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/toolGuide",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "toolGuide",
+      "required": false,
+      "type": "string",
+      "title": "toolGuide",
+      "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/toolCatalog",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "toolCatalog",
+      "required": false,
+      "type": "array",
+      "title": "toolCatalog",
+      "description": "工具目录（function schema 列表）。",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/toolInstances",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "toolInstances",
+      "required": false,
+      "type": "string",
+      "title": "toolInstances",
+      "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/fcLoop",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "fcLoop",
+      "required": false,
+      "refId": "AiFcLoopConfig",
+      "title": "fcLoop",
+      "description": "SSE + Function-Call 循环配置。",
+      "examples": [
+        {
+          "enabled": true,
+          "maxRounds": 3
+        }
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/feedback",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "feedback",
+      "required": false,
+      "refId": "AiFeedbackConfig",
+      "title": "feedback",
+      "description": "反馈机制（文本 + 点赞点踩）。"
+    },
+    {
+      "id": "AiSessionConfig/properties/draftActions",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "draftActions",
+      "required": false,
+      "type": "array",
+      "title": "draftActions",
+      "description": "人工触发的诊断草稿按钮。",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/actionTitleMap",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "actionTitleMap",
+      "required": false,
+      "type": "string",
+      "title": "actionTitleMap",
+      "description": "action 精确标题映射（可选，业务侧注入）。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/actionPrefixTitleMap",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "actionPrefixTitleMap",
+      "required": false,
+      "type": "string",
+      "title": "actionPrefixTitleMap",
+      "description": "action 前缀标题映射（可选，业务侧注入）。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/actionSuffixTitleMap",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "actionSuffixTitleMap",
+      "required": false,
+      "type": "string",
+      "title": "actionSuffixTitleMap",
+      "description": "action 后缀标题映射（可选，业务侧注入）。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "AiSessionConfig/properties/hooks",
+      "rootId": "AiSessionConfig",
+      "relation": "property",
+      "parentId": "AiSessionConfig",
+      "name": "hooks",
+      "required": false,
+      "title": "hooks",
+      "description": "声明式生命周期 hooks（事件名即字段名）。"
+    },
+    {
       "id": "AiTurnConcurrencyConfig",
       "rootId": "AiTurnConcurrencyConfig",
       "relation": "root",
@@ -14081,6 +16671,10 @@
       "title": "AiTurnConcurrencyConfig",
       "description": "Turn concurrency config; 控制 AI turn 的并发和排队行为。",
       "examples": [
+        {
+          "maxParallelTurns": 1,
+          "overflow": "queue"
+        },
         {}
       ]
     },
@@ -14107,7 +16701,10 @@
       "required": false,
       "refId": "AiTurnOverflowPolicy",
       "title": "overflow",
-      "description": "达到并发上限后的策略。默认 reject；queue 会排队等待空闲槽位。"
+      "description": "达到并发上限后的策略。默认 reject；queue 会排队等待空闲槽位。",
+      "examples": [
+        "queue"
+      ]
     },
     {
       "id": "AiTurnOverflowPolicy",
@@ -14163,6 +16760,28 @@
       ]
     },
     {
+      "id": "ChatMessageLike[]",
+      "rootId": "ChatMessageLike[]",
+      "relation": "root",
+      "type": "array",
+      "title": "ChatMessageLike[]",
+      "description": "* Gets or sets the length of the array. This is a number one higher than the highest index in the array.",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "ChatMessageLike[]/items/0",
+      "rootId": "ChatMessageLike[]",
+      "relation": "items",
+      "parentId": "ChatMessageLike[]",
+      "title": "ChatMessageLike[] item",
+      "description": "Array item (ChatMessageLike[] item); 用于描述数组元素。",
+      "examples": [
+        []
+      ]
+    },
+    {
       "id": "ChatMode",
       "rootId": "ChatMode",
       "relation": "root",
@@ -14179,6 +16798,26 @@
       ]
     },
     {
+      "id": "CollaborationPolicyLike",
+      "rootId": "CollaborationPolicyLike",
+      "relation": "root",
+      "type": "string",
+      "title": "CollaborationPolicyLike",
+      "description": "Collaboration policy; 控制 AI 与人工确认之间的协作强度。",
+      "enum": [
+        "auto",
+        "critical-confirm",
+        "plan-confirm",
+        "step-confirm",
+        "human-takeover"
+      ],
+      "examples": [
+        "auto",
+        "critical-confirm",
+        "plan-confirm"
+      ]
+    },
+    {
       "id": "Date",
       "rootId": "Date",
       "relation": "root",
@@ -14186,7 +16825,7 @@
       "title": "Date",
       "description": "当前日期",
       "examples": [
-        {}
+        "2026-01-01"
       ]
     },
     {
@@ -14792,14 +17431,14 @@
       ]
     },
     {
-      "id": "Date/properties/__@toPrimitive@57813",
+      "id": "Date/properties/__@toPrimitive@776",
       "rootId": "Date",
       "relation": "property",
       "parentId": "Date",
-      "name": "__@toPrimitive@57813",
+      "name": "__@toPrimitive@776",
       "required": true,
       "type": "string",
-      "title": "__@toPrimitive@57813",
+      "title": "__@toPrimitive@776",
       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number.",
       "examples": [
         "text"
@@ -14828,6 +17467,28 @@
         "date",
         "year",
         "month"
+      ]
+    },
+    {
+      "id": "FileAttachment[]",
+      "rootId": "FileAttachment[]",
+      "relation": "root",
+      "type": "array",
+      "title": "FileAttachment[]",
+      "description": "* Gets or sets the length of the array. This is a number one higher than the highest index in the array.",
+      "examples": [
+        []
+      ]
+    },
+    {
+      "id": "FileAttachment[]/items/0",
+      "rootId": "FileAttachment[]",
+      "relation": "items",
+      "parentId": "FileAttachment[]",
+      "title": "FileAttachment[] item",
+      "description": "Array item (FileAttachment[] item); 用于描述数组元素。",
+      "examples": [
+        []
       ]
     },
     {
@@ -14895,7 +17556,7 @@
       "relation": "root",
       "type": "object",
       "title": "IDataSource",
-      "description": "IDataSource schema; 描述该类型可配置的数据结构。",
+      "description": "IDataSource object; Fields: _modelPerm, total, page, pageSize, aggregateResult, selectionAggregateResult, value, label. 用于描述可递归查询的结构化配置。",
       "examples": [
         {}
       ]
@@ -14909,7 +17570,13 @@
       "required": false,
       "refId": "IModelPermission",
       "title": "_modelPerm",
-      "description": "模型级权限快照，供工具栏和容器判断新增、导入、导出等按钮可用性。"
+      "description": "模型级权限快照，供工具栏和容器判断新增、导入、导出等按钮可用性。",
+      "examples": [
+        {
+          "allowCreate": true,
+          "allowExport": true
+        }
+      ]
     },
     {
       "id": "IDataSource/properties/total",
@@ -14961,7 +17628,13 @@
       "name": "aggregateResult",
       "required": false,
       "title": "aggregateResult",
-      "description": "当前 `rows` 的全量聚合输出行；按视图 aggregates 配置自动计算，行变更后自动重算。\n\n注意它不是单个标量，而是 `AggregateResultRow` 形状的结果容器：\n每个字段名来自 aggregates 的输出 key，每个字段值是对应聚合计算结果。\n例如 aggregates 配置了 `totalAmount`、`avgScore` 两个输出名，则结果形如：\n`{ totalAmount: 1234, avgScore: 87.5 }`。\n当视图已配置 aggregates 且 rows 为空时，源码按类型填默认输出：\n`sum/count/avg` 为 `0`，`min/max` 为 `undefined`，`join` 为空字符串。"
+      "description": "当前 `rows` 的全量聚合输出行；按视图 aggregates 配置自动计算，行变更后自动重算。\n\n注意它不是单个标量，而是 `AggregateResultRow` 形状的结果容器：\n每个字段名来自 aggregates 的输出 key，每个字段值是对应聚合计算结果。\n例如 aggregates 配置了 `totalAmount`、`avgScore` 两个输出名，则结果形如：\n`{ totalAmount: 1234, avgScore: 87.5 }`。\n当视图已配置 aggregates 且 rows 为空时，源码按类型填默认输出：\n`sum/count/avg` 为 `0`，`min/max` 为 `undefined`，`join` 为空字符串。",
+      "examples": [
+        {
+          "totalAmount": 1234,
+          "count": 2
+        }
+      ]
     },
     {
       "id": "IDataSource/properties/selectionAggregateResult",
@@ -14971,7 +17644,12 @@
       "name": "selectionAggregateResult",
       "required": false,
       "title": "selectionAggregateResult",
-      "description": "当前 `selectedRows` 的选中聚合输出行；按视图 aggregates 配置自动计算，选中/数据变更后自动重算。\n\n无选中行时源码直接返回空对象 `{}`，而不是按聚合类型填默认输出。\n选中行存在时字段结构与 aggregateResult 相同。"
+      "description": "当前 `selectedRows` 的选中聚合输出行；按视图 aggregates 配置自动计算，选中/数据变更后自动重算。\n\n无选中行时源码直接返回空对象 `{}`，而不是按聚合类型填默认输出。\n选中行存在时字段结构与 aggregateResult 相同。",
+      "examples": [
+        {
+          "totalAmount": 1234
+        }
+      ]
     },
     {
       "id": "IDataSource/properties/value",
@@ -15027,7 +17705,10 @@
       "required": false,
       "type": "null",
       "title": "currentRow",
-      "description": "当前聚焦行（UI 高亮行 / 级联父行）"
+      "description": "当前聚焦行（UI 高亮行 / 级联父行）",
+      "examples": [
+        null
+      ]
     },
     {
       "id": "IDataSource/properties/selectedRows",
@@ -15093,7 +17774,10 @@
       "name": "requestState",
       "required": false,
       "title": "requestState",
-      "description": "数据加载状态（Idle / Loading / Loaded / Failed）"
+      "description": "数据加载状态（Idle / Loading / Loaded / Failed）",
+      "examples": [
+        3
+      ]
     },
     {
       "id": "IModelPermission",
@@ -15195,9 +17879,9 @@
         "space-between"
       ],
       "examples": [
+        "space-between",
         "center",
-        "start",
-        "end"
+        "start"
       ]
     },
     {
@@ -15208,6 +17892,9 @@
       "title": "JsonTreePolicy",
       "description": "策略聚合对象（复杂场景一次传入）",
       "examples": [
+        {
+          "rootLabel": "$"
+        },
         {}
       ]
     },
@@ -15348,6 +18035,39 @@
       ]
     },
     {
+      "id": "MultiValue",
+      "rootId": "MultiValue",
+      "relation": "root",
+      "type": "array",
+      "title": "MultiValue",
+      "description": "Next value for the bound model; 用于同步父级状态。",
+      "examples": [
+        [
+          "option-a",
+          "option-b"
+        ]
+      ]
+    },
+    {
+      "id": "MultiValue/items/0",
+      "rootId": "MultiValue",
+      "relation": "items",
+      "parentId": "MultiValue",
+      "type": [
+        "string",
+        "number",
+        "boolean"
+      ],
+      "title": "MultiValue item",
+      "description": "Array item (string | number | boolean); 用于描述数组元素。",
+      "examples": [
+        [
+          "option-a",
+          "option-b"
+        ]
+      ]
+    },
+    {
       "id": "number | \"small\" | \"default\" | \"large\"",
       "rootId": "number | \"small\" | \"default\" | \"large\"",
       "relation": "root",
@@ -15367,6 +18087,142 @@
       ]
     },
     {
+      "id": "r-checkbox-group.update:modelValue [value: MultiValue]",
+      "rootId": "r-checkbox-group.update:modelValue [value: MultiValue]",
+      "relation": "root",
+      "type": "array",
+      "title": "r-checkbox-group.update:modelValue [value: MultiValue]",
+      "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
+      "examples": [
+        [
+          "option-a",
+          "option-b"
+        ]
+      ]
+    },
+    {
+      "id": "r-checkbox-group.update:modelValue [value: MultiValue]/prefixItems/0",
+      "rootId": "r-checkbox-group.update:modelValue [value: MultiValue]",
+      "relation": "prefixItem",
+      "parentId": "r-checkbox-group.update:modelValue [value: MultiValue]",
+      "name": "value",
+      "index": 0,
+      "refId": "MultiValue",
+      "title": "value",
+      "description": "Next value for the bound model; 用于同步父级状态。",
+      "examples": [
+        [
+          "option-a",
+          "option-b"
+        ]
+      ]
+    },
+    {
+      "id": "r-mention.select [option: RMentionOption, prefix: string]",
+      "rootId": "r-mention.select [option: RMentionOption, prefix: string]",
+      "relation": "root",
+      "type": "array",
+      "title": "r-mention.select [option: RMentionOption, prefix: string]",
+      "description": "Mention option selected; 用户选择提及候选项。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "r-mention.select [option: RMentionOption, prefix: string]/prefixItems/0",
+      "rootId": "r-mention.select [option: RMentionOption, prefix: string]",
+      "relation": "prefixItem",
+      "parentId": "r-mention.select [option: RMentionOption, prefix: string]",
+      "name": "option",
+      "index": 0,
+      "refId": "RMentionOption",
+      "title": "option",
+      "description": "Selected mention option.",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "r-multi-select.update:modelValue [value: MultiValue]",
+      "rootId": "r-multi-select.update:modelValue [value: MultiValue]",
+      "relation": "root",
+      "type": "array",
+      "title": "r-multi-select.update:modelValue [value: MultiValue]",
+      "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
+      "examples": [
+        [
+          "option-a",
+          "option-b"
+        ]
+      ]
+    },
+    {
+      "id": "r-multi-select.update:modelValue [value: MultiValue]/prefixItems/0",
+      "rootId": "r-multi-select.update:modelValue [value: MultiValue]",
+      "relation": "prefixItem",
+      "parentId": "r-multi-select.update:modelValue [value: MultiValue]",
+      "name": "value",
+      "index": 0,
+      "refId": "MultiValue",
+      "title": "value",
+      "description": "Next value for the bound model; 用于同步父级状态。",
+      "examples": [
+        [
+          "option-a",
+          "option-b"
+        ]
+      ]
+    },
+    {
+      "id": "r-transfer.update:modelValue [value: TransferValue]",
+      "rootId": "r-transfer.update:modelValue [value: TransferValue]",
+      "relation": "root",
+      "type": "array",
+      "title": "r-transfer.update:modelValue [value: TransferValue]",
+      "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
+      "examples": [
+        [
+          "item-1",
+          "item-2"
+        ]
+      ]
+    },
+    {
+      "id": "r-transfer.update:modelValue [value: TransferValue]/prefixItems/0",
+      "rootId": "r-transfer.update:modelValue [value: TransferValue]",
+      "relation": "prefixItem",
+      "parentId": "r-transfer.update:modelValue [value: TransferValue]",
+      "name": "value",
+      "index": 0,
+      "refId": "TransferValue",
+      "title": "value",
+      "description": "Next value for the bound model; 用于同步父级状态。",
+      "examples": [
+        [
+          "item-1",
+          "item-2"
+        ]
+      ]
+    },
+    {
+      "id": "RecoveryPolicyLike",
+      "rootId": "RecoveryPolicyLike",
+      "relation": "root",
+      "type": "string",
+      "title": "RecoveryPolicyLike",
+      "description": "Recovery policy; 控制 AI 出错或偏航时的恢复策略。",
+      "enum": [
+        "layered",
+        "manual",
+        "strict"
+      ],
+      "examples": [
+        "layered",
+        "manual",
+        "strict"
+      ]
+    },
+    {
       "id": "RendererEditorProps",
       "rootId": "RendererEditorProps",
       "relation": "root",
@@ -15374,6 +18230,9 @@
       "title": "RendererEditorProps",
       "description": "结构化编辑区",
       "examples": [
+        {
+          "children": []
+        },
         {}
       ]
     },
@@ -15417,7 +18276,14 @@
       "title": "children",
       "description": "编辑区内容节点列表。",
       "examples": [
-        []
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
       ]
     },
     {
@@ -15429,7 +18295,10 @@
       "required": false,
       "refId": "ToolbarPosition",
       "title": "position",
-      "description": "编辑区停靠位置"
+      "description": "编辑区停靠位置",
+      "examples": [
+        "top"
+      ]
     },
     {
       "id": "RendererEditorProps/properties/width",
@@ -15485,6 +18354,9 @@
       "title": "RendererFilterProps",
       "description": "结构化筛选区\n提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。",
       "examples": [
+        {
+          "children": []
+        },
         {}
       ]
     },
@@ -15528,7 +18400,14 @@
       "title": "children",
       "description": "默认筛选项节点列表（首选入口）。",
       "examples": [
-        []
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
       ]
     },
     {
@@ -15697,6 +18576,9 @@
       "title": "RendererFooterProps",
       "description": "结构化底部",
       "examples": [
+        {
+          "children": []
+        },
         {}
       ]
     },
@@ -15740,7 +18622,14 @@
       "title": "children",
       "description": "底部内容节点列表。",
       "examples": [
-        []
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
       ]
     },
     {
@@ -15797,6 +18686,9 @@
       "title": "RendererHeaderProps",
       "description": "结构化头部",
       "examples": [
+        {
+          "children": []
+        },
         {}
       ]
     },
@@ -15840,7 +18732,14 @@
       "title": "children",
       "description": "头部内容节点列表。",
       "examples": [
-        []
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
       ]
     },
     {
@@ -15897,6 +18796,9 @@
       "title": "RendererTailProps",
       "description": "尾部动作区（通常放次要按钮）",
       "examples": [
+        {
+          "children": []
+        },
         {}
       ]
     },
@@ -15940,7 +18842,14 @@
       "title": "children",
       "description": "尾部内容节点列表。",
       "examples": [
-        []
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
       ]
     },
     {
@@ -15990,6 +18899,77 @@
       ]
     },
     {
+      "id": "RMentionOption",
+      "rootId": "RMentionOption",
+      "relation": "root",
+      "type": "object",
+      "title": "RMentionOption",
+      "description": "Selected mention option.",
+      "examples": [
+        {}
+      ]
+    },
+    {
+      "id": "RMentionOption/properties/value",
+      "rootId": "RMentionOption",
+      "relation": "property",
+      "parentId": "RMentionOption",
+      "name": "value",
+      "required": true,
+      "type": "string",
+      "title": "value",
+      "description": "展示值（必填）。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
+      "id": "RMentionOption/properties/label",
+      "rootId": "RMentionOption",
+      "relation": "property",
+      "parentId": "RMentionOption",
+      "name": "label",
+      "required": false,
+      "type": "string",
+      "title": "label",
+      "description": "展示标签。",
+      "examples": [
+        "保存"
+      ]
+    },
+    {
+      "id": "RMentionOption/properties/disabled",
+      "rootId": "RMentionOption",
+      "relation": "property",
+      "parentId": "RMentionOption",
+      "name": "disabled",
+      "required": false,
+      "type": "boolean",
+      "title": "disabled",
+      "description": "当前候选项是否禁用。",
+      "examples": [
+        false
+      ]
+    },
+    {
+      "id": "RMentionOption/properties/persistedValue",
+      "rootId": "RMentionOption",
+      "relation": "property",
+      "parentId": "RMentionOption",
+      "name": "persistedValue",
+      "required": false,
+      "type": [
+        "string",
+        "number",
+        "boolean"
+      ],
+      "title": "persistedValue",
+      "description": "Persisted option value; 用于把候选项 ID 或原始值额外回写到宿主字段。",
+      "examples": [
+        "text"
+      ]
+    },
+    {
       "id": "RToolbarProps",
       "rootId": "RToolbarProps",
       "relation": "root",
@@ -15997,6 +18977,9 @@
       "title": "RToolbarProps",
       "description": "结构化工具栏",
       "examples": [
+        {
+          "children": []
+        },
         {}
       ]
     },
@@ -16009,7 +18992,12 @@
       "required": false,
       "refId": "RendererTailProps",
       "title": "tail",
-      "description": "尾部动作区（通常放次要按钮）"
+      "description": "尾部动作区（通常放次要按钮）",
+      "examples": [
+        {
+          "children": []
+        }
+      ]
     },
     {
       "id": "RToolbarProps/properties/position",
@@ -16020,7 +19008,10 @@
       "required": false,
       "refId": "ToolbarPosition",
       "title": "position",
-      "description": "工具栏停靠位置"
+      "description": "工具栏停靠位置",
+      "examples": [
+        "top"
+      ]
     },
     {
       "id": "RToolbarProps/properties/class",
@@ -16079,7 +19070,10 @@
       "required": false,
       "refId": "InlineAlign",
       "title": "align",
-      "description": "交叉轴对齐"
+      "description": "交叉轴对齐",
+      "examples": [
+        "center"
+      ]
     },
     {
       "id": "RToolbarProps/properties/justify",
@@ -16090,7 +19084,10 @@
       "required": false,
       "refId": "InlineJustify",
       "title": "justify",
-      "description": "主轴分布"
+      "description": "主轴分布",
+      "examples": [
+        "space-between"
+      ]
     },
     {
       "id": "RToolbarProps/properties/type",
@@ -16128,7 +19125,17 @@
       "name": "children",
       "required": false,
       "title": "children",
-      "description": "原始子节点载荷，必须严格对齐 `SparkNode.children` 的运行时形态。\n\n注意：\n- 这里不只会出现结构化 `SparkNode`\n- 还可能出现字符串、数字等文本子节点\n- 只接受结构节点的组件，必须在本地显式收窄，而不能在共享层提前写死为 `SparkNode[]`"
+      "description": "原始子节点载荷，必须严格对齐 `SparkNode.children` 的运行时形态。\n\n注意：\n- 这里不只会出现结构化 `SparkNode`\n- 还可能出现字符串、数字等文本子节点\n- 只接受结构节点的组件，必须在本地显式收窄，而不能在共享层提前写死为 `SparkNode[]`",
+      "examples": [
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
+      ]
     },
     {
       "id": "RToolbarProps/properties/permissionDeniedMode",
@@ -16153,7 +19160,7 @@
       "required": false,
       "refId": "IDataSource",
       "title": "dataSource",
-      "description": "dataSource property (value); 用于配置对象字段。"
+      "description": "Runtime data source; 由框架注入的数据上下文，页面配置通常不需要手写。"
     },
     {
       "id": "RToolbarProps/properties/dataKey",
@@ -16213,7 +19220,12 @@
       "title": "SparkNode",
       "description": "组件类型（对应 ComponentDefinition.type）",
       "examples": [
-        {}
+        {
+          "type": "r-text",
+          "props": {
+            "value": "text"
+          }
+        }
       ]
     },
     {
@@ -16266,7 +19278,17 @@
       "name": "children",
       "required": false,
       "title": "children",
-      "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+      "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点",
+      "examples": [
+        [
+          {
+            "type": "r-text",
+            "props": {
+              "value": "text"
+            }
+          }
+        ]
+      ]
     },
     {
       "id": "SparkOptionValueMode",
@@ -16300,8 +19322,8 @@
         "right"
       ],
       "examples": [
-        "left",
         "center",
+        "left",
         "right"
       ]
     },
@@ -16319,275 +19341,1284 @@
         "bottom"
       ],
       "examples": [
+        "top",
         "left",
-        "right",
-        "top"
+        "right"
+      ]
+    },
+    {
+      "id": "TransferValue",
+      "rootId": "TransferValue",
+      "relation": "root",
+      "type": "array",
+      "title": "TransferValue",
+      "description": "Next value for the bound model; 用于同步父级状态。",
+      "examples": [
+        [
+          "item-1",
+          "item-2"
+        ]
+      ]
+    },
+    {
+      "id": "TransferValue/items/0",
+      "rootId": "TransferValue",
+      "relation": "items",
+      "parentId": "TransferValue",
+      "type": [
+        "string",
+        "number"
+      ],
+      "title": "TransferValue item",
+      "description": "Array item (string | number); 用于描述数组元素。",
+      "examples": [
+        [
+          "item-1",
+          "item-2"
+        ]
       ]
     }
   ],
   "constraints": {
-    "dataKeyPattern": "^(#[\\w-]+@)?[\\w-]+@([\\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\\.[\\w.]+)?$",
-    "validTypePrefixes": [
-      "r-",
-      "spark-"
-    ],
-    "validAggregateTypes": [
-      "sum",
-      "count",
-      "avg",
-      "min",
-      "max",
-      "join"
-    ],
-    "nonFieldRTypes": [
-      "r-table",
-      "r-form",
-      "r-detail",
-      "r-tree",
-      "r-list"
-    ],
-    "containerContextMap": {
-      "r-table": "table",
-      "r-form": "form",
-      "r-detail": "detail",
-      "r-tree": "tree",
-      "r-list": "list"
+    "dataKeyPattern": {
+      "value": "^(#[\\w-]+@)?[\\w-]+@([\\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\\.[\\w.]+)?$",
+      "description": "DataKey format constraint; 用于把组件绑定到页面数据空间。格式支持 table@rows、table@currentRow.field、#scope@table@selectedRows 等。",
+      "examples": [
+        "orders@rows",
+        "orders@currentRow.name",
+        "#main@orders@selectedRows",
+        "orders@aggregateResult.totalAmount"
+      ]
     },
-    "nestingRules": {}
+    "validTypePrefixes": {
+      "value": [
+        "r-",
+        "spark-"
+      ],
+      "description": "Configurable component type prefixes; LLM 生成 SparkNode.type 时应优先使用这些前缀，避免编造未注册组件。",
+      "examples": [
+        "r-table",
+        "r-text",
+        "spark-component-renderer"
+      ]
+    },
+    "validAggregateTypes": {
+      "value": [
+        "sum",
+        "count",
+        "avg",
+        "min",
+        "max",
+        "join"
+      ],
+      "description": "Supported aggregate operators; 用于 DataView aggregates 配置和 aggregateResult 字段解释。",
+      "examples": [
+        "sum",
+        "count",
+        "join"
+      ]
+    },
+    "nonFieldRTypes": {
+      "value": [
+        "r-table",
+        "r-form",
+        "r-detail",
+        "r-tree",
+        "r-list"
+      ],
+      "description": "Container r-types that are not field controls; 这些组件提供数据/布局上下文，不应当作字段输入控件使用。",
+      "examples": [
+        "r-table",
+        "r-form"
+      ]
+    },
+    "containerContextMap": {
+      "value": {
+        "r-table": "table",
+        "r-form": "form",
+        "r-detail": "detail",
+        "r-tree": "tree",
+        "r-list": "list"
+      },
+      "description": "Container type to binding context mapping; 用于判断子组件读取 rows/currentRow/selectedRows 时处在哪种容器语境。",
+      "examples": [
+        {
+          "type": "r-table",
+          "context": "table"
+        },
+        {
+          "type": "r-form",
+          "context": "form"
+        }
+      ]
+    },
+    "nestingRules": {
+      "value": {},
+      "description": "Container child nesting rules; key 为父组件 type，value 描述允许或禁止的子组件模式。空对象表示当前未声明额外嵌套限制。",
+      "examples": [
+        {
+          "parentType": "r-toolbar",
+          "rule": {
+            "allowedChildren": [
+              "r-button",
+              "r-link"
+            ],
+            "note": "Toolbar usually contains action controls."
+          }
+        }
+      ]
+    }
   },
   "bindingDescriptors": {
     "r-detail": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-detail binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-detail",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "r-form": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-form binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-form",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "r-list": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-list binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-list",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "r-table": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-table binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-table",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "r-tree": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-tree binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-tree",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "r-collapse": {
-      "valueType": "string"
+      "valueType": "string",
+      "description": "r-collapse binding descriptor; 受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-collapse",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-dialog": {
-      "valueType": "boolean"
+      "valueType": "boolean",
+      "description": "r-dialog binding descriptor; 受控值类型为 boolean。",
+      "examples": [
+        {
+          "type": "r-dialog",
+          "props": {
+            "value": false
+          }
+        }
+      ]
     },
     "r-drawer": {
-      "valueType": "boolean"
+      "valueType": "boolean",
+      "description": "r-drawer binding descriptor; 受控值类型为 boolean。",
+      "examples": [
+        {
+          "type": "r-drawer",
+          "props": {
+            "value": false
+          }
+        }
+      ]
     },
     "r-steps": {
-      "valueType": "string"
+      "valueType": "string",
+      "description": "r-steps binding descriptor; 受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-steps",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-tabs": {
-      "valueType": "string"
+      "valueType": "string",
+      "description": "r-tabs binding descriptor; 受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-tabs",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-toolbar": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-toolbar binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-toolbar",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "r-filter": {
       "selfResolving": true,
-      "dataContainer": true
+      "dataContainer": true,
+      "description": "r-filter binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文。",
+      "examples": [
+        {
+          "type": "r-filter",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        }
+      ]
     },
     "display-avatar": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-avatar binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-avatar",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-badge": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-badge binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-badge",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-image": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-image binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-image",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-progress": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-progress binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-progress",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-statistic": {
       "selfResolving": true,
       "dataContainer": true,
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-statistic binding descriptor; self-resolving dataKey，会从页面数据空间解析 dataKey；data container，会向子组件提供 DataSource 上下文；field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-statistic",
+          "props": {
+            "dataKey": "orders@rows"
+          }
+        },
+        {
+          "type": "display-statistic",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-tag": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-tag binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-tag",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-text": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-text binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-text",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "display-descriptions-item": {
       "fieldProvider": true,
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "display-descriptions-item binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element。",
+      "examples": [
+        {
+          "type": "display-descriptions-item",
+          "props": {
+            "field": "name"
+          }
+        }
+      ]
     },
     "json-tree-editor": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "json-tree-editor binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "json-tree-editor",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "json-tree-editor",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "spark-code-editor": {
-      "valueType": "string"
+      "valueType": "string",
+      "description": "spark-code-editor binding descriptor; 受控值类型为 string。",
+      "examples": [
+        {
+          "type": "spark-code-editor",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "spark-json-editor": {
-      "valueType": "string"
+      "valueType": "string",
+      "description": "spark-json-editor binding descriptor; 受控值类型为 string。",
+      "examples": [
+        {
+          "type": "spark-json-editor",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-autocomplete": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-autocomplete binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-autocomplete",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-autocomplete",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-cascader": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-cascader binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-cascader",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-cascader",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-cascader",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-checkbox": {
       "fieldProvider": true,
       "valueType": "boolean",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-checkbox binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 boolean。",
+      "examples": [
+        {
+          "type": "r-checkbox",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-checkbox",
+          "props": {
+            "value": false
+          }
+        }
+      ]
+    },
+    "r-checkbox-group": {
+      "fieldProvider": true,
+      "hasOptions": true,
+      "valueType": "string",
+      "bindingDelegate": "form-element",
+      "description": "r-checkbox-group binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-checkbox-group",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-checkbox-group",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-checkbox-group",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-color": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-color binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-color",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-color",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-date": {
       "fieldProvider": true,
       "valueType": "array",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-date binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 array。",
+      "examples": [
+        {
+          "type": "r-date",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-date",
+          "props": {
+            "value": [
+              "option-a"
+            ]
+          }
+        }
+      ]
     },
     "r-dept-picker": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-dept-picker binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-dept-picker",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-dept-picker",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-dept-picker",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-entity-picker": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-entity-picker binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-entity-picker",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-entity-picker",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-entity-picker",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-file-browser": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-file-browser binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-file-browser",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-file-browser",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-file-path": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-file-path binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-file-path",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-file-path",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-html-editor": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-html-editor binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-html-editor",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-html-editor",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-icon": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-icon binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-icon",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-icon",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-icon",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-image": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-image binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-image",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-image",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
+    },
+    "r-mention": {
+      "fieldProvider": true,
+      "valueType": "string",
+      "bindingDelegate": "form-element",
+      "description": "r-mention binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-mention",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-mention",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
+    },
+    "r-multi-select": {
+      "fieldProvider": true,
+      "hasOptions": true,
+      "valueType": "string",
+      "bindingDelegate": "form-element",
+      "description": "r-multi-select binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-multi-select",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-multi-select",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-multi-select",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-number": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-number binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-number",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-number",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-product-picker": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-product-picker binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-product-picker",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-product-picker",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-product-picker",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-radio": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-radio binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-radio",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-radio",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-radio",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-rate": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-rate binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-rate",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-rate",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-segmented": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-segmented binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-segmented",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-segmented",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-segmented",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-select": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-select binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-select",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-select",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-select",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-slider": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-slider binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-slider",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-slider",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-switch": {
       "fieldProvider": true,
       "valueType": "boolean",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-switch binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 boolean。",
+      "examples": [
+        {
+          "type": "r-switch",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-switch",
+          "props": {
+            "value": false
+          }
+        }
+      ]
     },
     "r-text": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-text binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-text",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-text",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-textarea": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-textarea binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-textarea",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-textarea",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-time-picker": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-time-picker binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-time-picker",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-time-picker",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-time-select": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-time-select binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-time-select",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-time-select",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
+    },
+    "r-transfer": {
+      "fieldProvider": true,
+      "hasOptions": true,
+      "valueType": "string",
+      "bindingDelegate": "form-element",
+      "description": "r-transfer binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-transfer",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-transfer",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-transfer",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-tree-select": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-tree-select binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-tree-select",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-tree-select",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-tree-select",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-upload": {
       "fieldProvider": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-upload binding descriptor; field provider，通过 field 读取或写入当前行字段；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-upload",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-upload",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     },
     "r-user-picker": {
       "fieldProvider": true,
       "hasOptions": true,
       "valueType": "string",
-      "bindingDelegate": "form-element"
+      "bindingDelegate": "form-element",
+      "description": "r-user-picker binding descriptor; field provider，通过 field 读取或写入当前行字段；options provider，支持 options/optionKey 候选项来源；binding delegate 为 form-element；受控值类型为 string。",
+      "examples": [
+        {
+          "type": "r-user-picker",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "r-user-picker",
+          "props": {
+            "field": "status",
+            "options": [
+              {
+                "label": "启用",
+                "value": "enabled"
+              },
+              {
+                "label": "停用",
+                "value": "disabled"
+              }
+            ]
+          }
+        },
+        {
+          "type": "r-user-picker",
+          "props": {
+            "value": "text"
+          }
+        }
+      ]
     }
   }
 }

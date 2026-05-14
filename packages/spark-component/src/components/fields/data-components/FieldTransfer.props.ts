@@ -1,5 +1,6 @@
 import type { SparkNodeProps, SparkOptionFieldProps } from '../../shared-types'
 
+/** Transfer 已选值数组；每一项对应穿梭框选项的 value。 */
 export type TransferValue = Array<string | number>
 
 export interface RTransferProps extends SparkNodeProps, SparkOptionFieldProps<TransferValue> {

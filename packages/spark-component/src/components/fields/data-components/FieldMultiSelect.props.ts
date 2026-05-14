@@ -1,5 +1,6 @@
 import type { SparkNodeProps, SparkOptionFieldProps } from '../../shared-types'
 
+/** 多选字段值数组；每一项是最终写入业务字段的候选值。 */
 export type MultiValue = Array<string | number | boolean>
 
 export interface RMultiSelectProps extends SparkNodeProps, SparkOptionFieldProps<MultiValue> {

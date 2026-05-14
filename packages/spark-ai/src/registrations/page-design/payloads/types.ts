@@ -283,6 +283,10 @@ export interface EmitEntry {
 
 /** 组件绑定语义描述符。 */
 export interface CatalogBindingDescriptor {
+  /** LLM 可读绑定说明，解释该组件如何参与 dataKey/field/options/value 管线。 */
+  description?: string
+  /** 可直接参考的绑定配置示例。 */
+  examples?: unknown[]
   /** 是否自解析 dataKey/上下文。 */
   selfResolving?: boolean
   /** 绑定委派方。 */
@@ -354,17 +358,27 @@ export interface SharedTypeProperty {
  */
 export interface PlatformConstraints {
   /** dataKey 正则约束。 */
-  dataKeyPattern: string
+  dataKeyPattern: CatalogConstraintEntry<string>
   /** 合法 type 前缀。 */
-  validTypePrefixes: string[]
+  validTypePrefixes: CatalogConstraintEntry<string[]>
   /** 合法聚合类型集合。 */
-  validAggregateTypes: string[]
+  validAggregateTypes: CatalogConstraintEntry<string[]>
   /** 非字段组件 r-type 集合。 */
-  nonFieldRTypes: string[]
+  nonFieldRTypes: CatalogConstraintEntry<string[]>
   /** 容器上下文映射。 */
-  containerContextMap: Record<string, string>
+  containerContextMap: CatalogConstraintEntry<Record<string, string>>
   /** 嵌套规则表。 */
-  nestingRules: Record<string, NestingRule>
+  nestingRules: CatalogConstraintEntry<Record<string, NestingRule>>
+}
+
+/** 带说明的平台约束条目。 */
+export interface CatalogConstraintEntry<TValue> {
+  /** 约束值，供校验器或后端直接消费。 */
+  value: TValue
+  /** LLM 可读说明：解释该约束限制什么、何时使用。 */
+  description: string
+  /** 可直接参考的合法示例。 */
+  examples?: unknown[]
 }
 
 /** 单条嵌套规则定义。 */

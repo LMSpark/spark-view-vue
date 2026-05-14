@@ -171,6 +171,60 @@ function auditBindingCompleteness(entry: ComponentEntry, issues: AuditIssue[]): 
   }
 }
 
+function auditBindingDescriptorDocs(catalog: ComponentCatalog, issues: AuditIssue[]): void {
+  for (const [type, descriptor] of Object.entries(catalog.bindingDescriptors)) {
+    if (descriptor.description === undefined || descriptor.description.trim() === '') {
+      issues.push({
+        severity: 'warning',
+        rule: 'binding-description-missing',
+        component: type,
+        message: `bindingDescriptors.${type} 缺少 description（需要解释 dataKey/field/options/value 绑定语义）`,
+      })
+    }
+    if (!Array.isArray(descriptor.examples)) {
+      issues.push({
+        severity: 'info',
+        rule: 'binding-examples-missing',
+        component: type,
+        message: `bindingDescriptors.${type} 缺少 examples（建议提供 LLM 可参考的最小绑定配置）`,
+      })
+    }
+  }
+}
+
+function auditConstraintDocs(catalog: ComponentCatalog, issues: AuditIssue[]): void {
+  const constraintNames = [
+    'dataKeyPattern',
+    'validTypePrefixes',
+    'validAggregateTypes',
+    'nonFieldRTypes',
+    'containerContextMap',
+    'nestingRules',
+  ] as const
+
+  for (const name of constraintNames) {
+    const constraint = catalog.constraints[name]
+    if (constraint.description.trim() === '') {
+      issues.push({
+        severity: 'warning',
+        rule: 'constraint-description-missing',
+        component: 'component-catalog',
+        field: name,
+        message: `constraints.${name} 缺少 description（LLM 无法理解该平台约束含义）`,
+      })
+    }
+    if (!Array.isArray(constraint.examples)) {
+      issues.push({
+        severity: 'info',
+        rule: 'constraint-examples-missing',
+        component: 'component-catalog',
+        field: name,
+        message: `constraints.${name} 缺少 examples（建议提供合法配置示例）`,
+      })
+    }
+  }
+}
+
 function auditFieldValuePrecedence(entry: ComponentEntry, issues: AuditIssue[]): void {
   const propNames = new Set(entry.props.map((p) => p.name))
 
@@ -298,6 +352,8 @@ export function auditCatalog(catalog: ComponentCatalog, options: AuditOptions = 
     auditComponentDescription(entry, issues)
     auditDefaultValues(entry, issues)
   }
+  auditBindingDescriptorDocs(catalog, issues)
+  auditConstraintDocs(catalog, issues)
 
   // 过滤被忽略的规则
   const filteredIssues = issues.filter((issue) => !ignoreRuleSet.has(issue.rule))

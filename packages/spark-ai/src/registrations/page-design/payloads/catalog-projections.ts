@@ -885,7 +885,7 @@ export function projectFunctionCatalog(catalog: ComponentCatalog): FunctionCatal
     const spec = projectComponentSpec(catalog, type)
     if (spec === null) continue
 
-    const nestingRule = catalog.constraints?.nestingRules[type]
+    const nestingRule = catalog.constraints?.nestingRules.value[type]
 
     components[type] = {
       category: spec.category ?? 'feature',

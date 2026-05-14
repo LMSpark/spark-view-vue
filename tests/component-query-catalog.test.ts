@@ -14,12 +14,36 @@ import {
 
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
   return {
-    dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
-    validTypePrefixes: ['r-', 'spark-'],
-    validAggregateTypes: ['sum', 'count', 'avg', 'min', 'max', 'join'],
-    nonFieldRTypes: ['r-table', 'r-form'],
-    containerContextMap: { 'r-table': 'table', 'r-form': 'form' },
-    nestingRules: {},
+    dataKeyPattern: {
+      value: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
+      description: 'DataKey format constraint',
+      examples: ['orders@rows'],
+    },
+    validTypePrefixes: {
+      value: ['r-', 'spark-'],
+      description: 'Valid component type prefixes',
+      examples: ['r-table'],
+    },
+    validAggregateTypes: {
+      value: ['sum', 'count', 'avg', 'min', 'max', 'join'],
+      description: 'Valid aggregate operators',
+      examples: ['sum'],
+    },
+    nonFieldRTypes: {
+      value: ['r-table', 'r-form'],
+      description: 'Container r-types that are not fields',
+      examples: ['r-table'],
+    },
+    containerContextMap: {
+      value: { 'r-table': 'table', 'r-form': 'form' },
+      description: 'Container type to context mapping',
+      examples: [{ type: 'r-table', context: 'table' }],
+    },
+    nestingRules: {
+      value: {},
+      description: 'Container child nesting rules',
+      examples: [],
+    },
     ...overrides,
   }
 }
@@ -85,6 +109,8 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
     bindingDescriptors: {
       'r-table': {
         dataContainer: true,
+        description: 'r-table data container binding',
+        examples: [{ type: 'r-table', props: { dataKey: 'orders@rows' } }],
       },
     },
     ...overrides,
@@ -110,6 +136,20 @@ describe('catalog-projections', () => {
     expect(directory.capabilities.dataBinding).toContain('r-table')
     expect(Array.isArray(directory.configurationPrinciples)).toBe(true)
     expect(directory.configurationPrinciples.length).toBeGreaterThan(0)
+  })
+
+  it('framework-neutral catalog keeps described platform constraints', () => {
+    const neutralCatalog = projectFrameworkNeutralCatalog(makeCatalog())
+
+    expect(neutralCatalog.constraints?.dataKeyPattern.value).toContain('rows')
+    expect(neutralCatalog.constraints?.dataKeyPattern.description).toBeTruthy()
+    expect(neutralCatalog.constraints?.validTypePrefixes.examples).toContain('r-table')
+    expect(neutralCatalog.constraints?.nestingRules.value).toEqual({})
+    expect(neutralCatalog.bindingDescriptors?.['r-table']?.description).toContain('data container')
+    expect(neutralCatalog.bindingDescriptors?.['r-table']?.examples?.[0]).toEqual({
+      type: 'r-table',
+      props: { dataKey: 'orders@rows' },
+    })
   })
 
   it('projectComponentSpec returns component spec for pageDesign/knowledge/guidePayload', () => {

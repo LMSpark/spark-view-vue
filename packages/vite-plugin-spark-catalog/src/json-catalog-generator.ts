@@ -164,18 +164,53 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
  * 有效组件类型前缀等。它们属于目录的一部分，而不是临时构建细节。
  */
 const DEFAULT_CONSTRAINTS: ComponentCatalog['constraints'] = {
-  dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
-  validTypePrefixes: ['r-', 'spark-'],
-  validAggregateTypes: ['sum', 'count', 'avg', 'min', 'max', 'join'],
-  nonFieldRTypes: ['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list'],
-  containerContextMap: {
-    'r-table': 'table',
-    'r-form': 'form',
-    'r-detail': 'detail',
-    'r-tree': 'tree',
-    'r-list': 'list',
+  dataKeyPattern: {
+    value: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
+    description: 'DataKey format constraint; 用于把组件绑定到页面数据空间。格式支持 table@rows、table@currentRow.field、#scope@table@selectedRows 等。',
+    examples: ['orders@rows', 'orders@currentRow.name', '#main@orders@selectedRows', 'orders@aggregateResult.totalAmount'],
   },
-  nestingRules: {},
+  validTypePrefixes: {
+    value: ['r-', 'spark-'],
+    description: 'Configurable component type prefixes; LLM 生成 SparkNode.type 时应优先使用这些前缀，避免编造未注册组件。',
+    examples: ['r-table', 'r-text', 'spark-component-renderer'],
+  },
+  validAggregateTypes: {
+    value: ['sum', 'count', 'avg', 'min', 'max', 'join'],
+    description: 'Supported aggregate operators; 用于 DataView aggregates 配置和 aggregateResult 字段解释。',
+    examples: ['sum', 'count', 'join'],
+  },
+  nonFieldRTypes: {
+    value: ['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list'],
+    description: 'Container r-types that are not field controls; 这些组件提供数据/布局上下文，不应当作字段输入控件使用。',
+    examples: ['r-table', 'r-form'],
+  },
+  containerContextMap: {
+    value: {
+      'r-table': 'table',
+      'r-form': 'form',
+      'r-detail': 'detail',
+      'r-tree': 'tree',
+      'r-list': 'list',
+    },
+    description: 'Container type to binding context mapping; 用于判断子组件读取 rows/currentRow/selectedRows 时处在哪种容器语境。',
+    examples: [
+      { type: 'r-table', context: 'table' },
+      { type: 'r-form', context: 'form' },
+    ],
+  },
+  nestingRules: {
+    value: {},
+    description: 'Container child nesting rules; key 为父组件 type，value 描述允许或禁止的子组件模式。空对象表示当前未声明额外嵌套限制。',
+    examples: [
+      {
+        parentType: 'r-toolbar',
+        rule: {
+          allowedChildren: ['r-button', 'r-link'],
+          note: 'Toolbar usually contains action controls.',
+        },
+      },
+    ],
+  },
 }
 
 // ── 4. 键池与上下文工厂 (Context Factories) ───────────────────────────────────────
@@ -230,6 +265,55 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   if (names.has('dataKey') && names.has('children')) descriptor.bindingDelegate = 'table'
 
   return Object.keys(descriptor).length > 0 ? descriptor : undefined
+}
+
+function createBindingDescriptorDescription(type: string, binding: CatalogBindingDescriptor): string {
+  const parts: string[] = []
+  if (binding.selfResolving === true) parts.push('self-resolving dataKey，会从页面数据空间解析 dataKey')
+  if (binding.dataContainer === true) parts.push('data container，会向子组件提供 DataSource 上下文')
+  if (binding.fieldProvider === true) parts.push('field provider，通过 field 读取或写入当前行字段')
+  if (binding.hasOptions === true) parts.push('options provider，支持 options/optionKey 候选项来源')
+  if (binding.bindingDelegate !== undefined) parts.push(`binding delegate 为 ${binding.bindingDelegate}`)
+  if (binding.valueType !== undefined) parts.push(`受控值类型为 ${binding.valueType}`)
+  if (binding.actionComponent === true) parts.push('action component，会参与动作权限控制')
+  if (binding.columnLike === true) parts.push('column-like component，可按权限隐藏整列')
+
+  return `${type} binding descriptor; ${parts.join('；')}。`
+}
+
+function createBindingDescriptorExamples(type: string, binding: CatalogBindingDescriptor): unknown[] {
+  const examples: unknown[] = []
+  if (binding.selfResolving === true || binding.dataContainer === true) {
+    examples.push({ type, props: { dataKey: 'orders@rows' } })
+  }
+  if (binding.fieldProvider === true) {
+    examples.push({ type, props: { field: 'name' } })
+  }
+  if (binding.hasOptions === true) {
+    examples.push({
+      type,
+      props: {
+        field: 'status',
+        options: [
+          { label: '启用', value: 'enabled' },
+          { label: '停用', value: 'disabled' },
+        ],
+      },
+    })
+  }
+  if (binding.valueType === 'boolean') examples.push({ type, props: { value: false } })
+  if (binding.valueType === 'array') examples.push({ type, props: { value: ['option-a'] } })
+  if (binding.valueType === 'string') examples.push({ type, props: { value: 'text' } })
+  return uniqueExamples(examples).slice(0, 3)
+}
+
+function annotateBindingDescriptor(type: string, binding: CatalogBindingDescriptor): CatalogBindingDescriptor {
+  const examples = binding.examples ?? createBindingDescriptorExamples(type, binding)
+  return {
+    ...binding,
+    description: binding.description ?? createBindingDescriptorDescription(type, binding),
+    ...(examples.length > 0 ? { examples } : {}),
+  }
 }
 
 /**
@@ -511,9 +595,17 @@ function createGenericSchemaDescription(
 ): string {
   if (relation === 'root') {
     if (schema.enum !== undefined) return `Enum values: ${schema.enum.map(String).join(' / ')}; 用于限制 ${schema.title ?? 'value'} 的可选值。`
-    return `${schema.title ?? 'Schema'} schema; 描述该类型可配置的数据结构。`
+    if (schema.type === 'array') return `${schema.title ?? 'Array'} array; 表示一组可配置值，元素结构由 items 描述。`
+    if (schema.type === 'object') {
+      const fields = Object.keys(schema.properties ?? {}).slice(0, 8)
+      const fieldText = fields.length > 0 ? `Fields: ${fields.join(', ')}. ` : ''
+      return `${schema.title ?? 'Object'} object; ${fieldText}用于描述可递归查询的结构化配置。`
+    }
+    return `${schema.title ?? 'Schema'} value; 用于描述可配置值。`
   }
   if (relation === 'property') {
+    if (options.name === 'dataSource') return 'Runtime data source; 由框架注入的数据上下文，页面配置通常不需要手写。'
+    if (options.name === 'persistedValue') return 'Persisted option value; 用于把候选项 ID 或原始值额外回写到宿主字段。'
     return `${options.name ?? 'Property'} property (${describeSchemaType(schema)}); ${options.required === true ? 'required，' : ''}用于配置对象字段。`
   }
   if (relation === 'oneOf') {
@@ -569,6 +661,20 @@ function parseLiteralExample(value: string): string | number | boolean | null | 
 }
 
 function examplesFromTypeText(typeText: string): unknown[] {
+  const compactType = typeText.replace(/\s+/g, '')
+  if (/\bCollapseValue\b/u.test(typeText)) return ['panel-1']
+  if (/\bProgressColor\b/u.test(typeText)) return ['#409eff']
+  if (/\bDate\b/u.test(typeText)) return ['2026-01-01']
+  if (/\bCascaderValue\b/u.test(typeText)) return [['province', 'city']]
+  if (/\bCheckboxGroupMultiValue\b/u.test(typeText)) return [['option-a', 'option-b']]
+  if (/\bMultiValue\b/u.test(typeText)) return [['option-a', 'option-b']]
+  if (/\bEntityPickerValue\b/u.test(typeText)) return ['entity-001']
+  if (/\bTransferValue\b/u.test(typeText)) return [['item-1', 'item-2']]
+  if (/\bTreeSelectValue\b/u.test(typeText)) return ['node-1']
+  if (/\bSparkNode\b/u.test(typeText)) return [{ type: 'r-text', props: { value: 'text' } }]
+  if (/\bICapabilityContext\b/u.test(typeText)) return []
+  if (compactType === 'unknown') return ['text']
+
   const literalExamples = splitTopLevel(typeText, '|')
     .map(parseLiteralExample)
     .filter((value): value is Exclude<ReturnType<typeof parseLiteralExample>, undefined> => value !== undefined)
@@ -608,6 +714,7 @@ function createExamplesForName(name: string): unknown[] {
   if (name === 'placeholder') return ['请输入内容']
   if (name === 'icon') return ['ChatRound']
   if (name === 'actionId') return ['refresh']
+  if (name === 'children') return [[{ type: 'r-text', props: { value: 'text' } }]]
   if (name === 'toolbar') return [{ children: [] }]
   if (name === 'actions') return [{ children: [] }]
   if (name === 'filter') return [{ children: [] }]
@@ -617,6 +724,17 @@ function createExamplesForName(name: string): unknown[] {
   if (name === 'tail') return [{ children: [] }]
   if (name === 'policy') return [{ rootLabel: '$' }]
   if (name === 'range') return [['2026-01-01', '2026-01-31']]
+  if (name === 'position') return ['top']
+  if (name === 'align') return ['center']
+  if (name === 'justify') return ['space-between']
+  if (name === 'overflow') return ['queue']
+  if (name === 'turnConcurrency') return [{ maxParallelTurns: 1, overflow: 'queue' }]
+  if (name === 'fcLoop') return [{ enabled: true, maxRounds: 3 }]
+  if (name === '_modelPerm') return [{ allowCreate: true, allowExport: true }]
+  if (name === 'aggregateResult') return [{ totalAmount: 1234, count: 2 }]
+  if (name === 'selectionAggregateResult') return [{ totalAmount: 1234 }]
+  if (name === 'currentRow') return [null]
+  if (name === 'requestState') return [3]
   return []
 }
 
@@ -654,6 +772,7 @@ function createGenericSchemaExamples(schema: PropSchema, relation: SchemaNodeEnt
   if (schema.const !== undefined) return [schema.const]
   if (schema.default !== undefined) return [schema.default]
   if (schema.enum !== undefined && schema.enum.length > 0) return schema.enum.slice(0, 3)
+  if (schema.type === 'null') return [null]
   if (options.name !== undefined) {
     const namedExamples = createExamplesForName(options.name)
     if (namedExamples.length > 0) return namedExamples
@@ -858,13 +977,22 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext, comp
     }
 
     if (emit.__payloadSchemas !== undefined && emit.__payloadSchemas.length > 0) {
-      const payloadSchemas: Array<{ ref: string; schema: PropSchema }> = []
-      for (const schema of emit.__payloadSchemas) {
+      const payloadSchemas: Array<{
+        ref: string
+        schema: PropSchema
+        paramDoc?: NonNullable<EmitEntry['__payloadParamDocs']>[number]
+      }> = []
+      for (const [index, schema] of emit.__payloadSchemas.entries()) {
+        const paramDoc = emit.__payloadParamDocs?.[index]
         const normalizedSchema = normalizeNestedSchema(schemaPool, schema)
-        if (!shouldRetainSchema(normalizedSchema)) continue
+        const describedSchema = normalizedSchema.description === undefined && paramDoc?.description !== undefined
+          ? { ...normalizedSchema, description: paramDoc.description }
+          : normalizedSchema
+        if (!shouldRetainSchema(describedSchema)) continue
         payloadSchemas.push({
-          ref: resolveSchemaRef(schemaPool, normalizedSchema),
-          schema: normalizedSchema,
+          ref: resolveSchemaRef(schemaPool, describedSchema),
+          schema: describedSchema,
+          ...(paramDoc !== undefined ? { paramDoc } : {}),
         })
       }
       if (payloadSchemas.length > 0) {
@@ -872,8 +1000,8 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext, comp
         const eventSchema: PropSchema = {
           title: `${componentType}.${emit.name}${type !== undefined ? ` ${type}` : ''}`,
           type: 'array',
-          prefixItems: payloadSchemas.map(({ ref, schema }, index) => {
-            const paramDoc = paramDocs[index]
+          prefixItems: payloadSchemas.map(({ ref, schema, paramDoc: payloadParamDoc }, index) => {
+            const paramDoc = payloadParamDoc ?? paramDocs[index]
             const paramName = paramDoc?.name ?? `payload${index + 1}`
             const paramExamples = createGenericSchemaExamples(schema, 'prefixItem', { name: paramName, index })
             return {
@@ -1099,7 +1227,8 @@ function buildSortedComponents(
 
     const props = compactProps(rawProps, schemaPool)
     const emits = compactEmits(vcmApi.emits, schemaPool, type)
-    const binding = inferBinding(props)
+    const inferredBinding = inferBinding(props)
+    const binding = inferredBinding !== undefined ? annotateBindingDescriptor(type, inferredBinding) : undefined
     const description = buildComponentDescription({
       type,
       baseDescription: skillMeta?.description ?? `SPARK 组件：${type}`,

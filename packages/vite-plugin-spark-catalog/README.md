@@ -108,6 +108,8 @@ const emit = defineEmits<{
 
 `component-catalog.json` 当前按“组件主表 + 属性/事件明细表 + schema 自引用表”设计，后端可以直接拆表持久化，不需要再解析旧的 `schemaPool` 或编号引用。
 
+平台约束 `constraints` 也按说明化结构存储：每个字段都是 `{ value, description, examples }`。`value` 给校验器直接消费，`description/examples` 给 LLM 和后台配置页面解释规则，避免裸正则、裸数组让模型猜含义。
+
 建议表结构：
 
 - `component_catalog_builds`
@@ -160,7 +162,17 @@ const emit = defineEmits<{
 - `component_catalog_binding_descriptors`
   - `build_id`、`component_type`。
   - `binding_delegate`、`self_resolving`、`data_container`、`field_provider`、`has_options`、`value_type`。
+  - `description`：LLM 可读绑定语义说明。
+  - `examples_json`：最小绑定配置示例数组。
   - 也可以整体存为 `descriptor_json`，因为该表主要用于能力过滤。
+
+- `component_catalog_constraints`
+  - `build_id`。
+  - `name`：约束名，例如 `dataKeyPattern`、`validTypePrefixes`。
+  - `value_json`：约束真实值。
+  - `description`：LLM 可读说明。
+  - `examples_json`：合法示例数组。
+  - 推荐唯一键：`(build_id, name)`。
 
 递归查询规则：
 

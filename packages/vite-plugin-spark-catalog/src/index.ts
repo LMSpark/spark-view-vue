@@ -43,6 +43,7 @@ export type {
   JsonSchemaTypeName,
   RootFieldEntry,
   PlatformConstraints,
+  CatalogConstraintEntry,
   NestingRule,
   CatalogBindingDescriptor,
   CatalogGovernance,

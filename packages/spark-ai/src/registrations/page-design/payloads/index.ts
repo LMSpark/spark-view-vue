@@ -42,6 +42,7 @@ export type {
   SchemaNodeRelation,
   EmitEntry,
   PlatformConstraints,
+  CatalogConstraintEntry,
   NestingRule,
   RootFieldEntry,
   CatalogBindingDescriptor,
