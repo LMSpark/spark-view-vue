@@ -4,9 +4,14 @@
       <span class="chat-region-title">{{ title }} ({{ items.length }})</span>
       <div class="chat-region-actions">
         <span v-if="copyStatus !== 'idle'" :class="['copy-status', `copy-status--${copyStatus}`]">{{ copyStatusText }}</span>
-        <button class="mini-icon-btn" title="复制结构化诊断数据" :disabled="items.length === 0" @click="emit('copy')">
+        <button class="mini-icon-btn" title="复制结构化诊断数据" :disabled="!canExportDiagnostics" @click="emit('copy')">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
             <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16h13c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z" />
+          </svg>
+        </button>
+        <button class="mini-icon-btn" title="下载结构化诊断数据" :disabled="!canExportDiagnostics" @click="emit('download')">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+            <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z" />
           </svg>
         </button>
         <button class="mini-icon-btn" title="清空诊断流" @click="emit('clear')">
@@ -26,7 +31,7 @@
       </div>
 
       <article
-        v-for="item in items"
+        v-for="{ item, display } in displayItems"
         :key="item.id"
         class="diagnostic-entry"
         :class="`diagnostic-entry--${item.entryType}`"
@@ -69,7 +74,16 @@
             <span v-if="isClarificationAnswered(item.id)" class="clarification-answered">已回答</span>
           </div>
         </div>
-        <pre v-else class="diagnostic-entry__payload">{{ item.payload }}</pre>
+        <div v-else class="diagnostic-entry__body">
+          <p v-if="display.summary" class="diagnostic-summary">{{ display.summary }}</p>
+          <div v-if="display.chips.length > 0" class="diagnostic-chips">
+            <span v-for="chip in display.chips" :key="chip" class="diagnostic-chip">{{ chip }}</span>
+          </div>
+          <details v-if="display.showRaw" class="diagnostic-raw" :open="display.openRaw">
+            <summary>{{ display.rawLabel }}</summary>
+            <pre>{{ display.raw }}</pre>
+          </details>
+        </div>
       </article>
     </div>
   </div>
@@ -114,6 +128,16 @@ interface AiSseStreamItem {
   subtitle?: string
   payload: string
   clarification?: ClarificationPayload
+  openByDefault?: boolean
+}
+
+interface DisplayPayload {
+  summary: string
+  chips: string[]
+  raw: string
+  rawLabel: string
+  showRaw: boolean
+  openRaw: boolean
 }
 
 const props = withDefaults(defineProps<{
@@ -122,18 +146,21 @@ const props = withDefaults(defineProps<{
   title?: string | undefined
   copyStatus?: 'idle' | 'copied' | 'failed' | undefined
   copyStatusText?: string | undefined
+  canExportDiagnostics?: boolean | undefined
   canSend?: boolean | undefined
   compact?: boolean | undefined
 }>(), {
-  title: 'SSE 流',
+  title: '对话',
   copyStatus: 'idle',
   copyStatusText: '',
+  canExportDiagnostics: false,
   canSend: true,
   compact: false,
 })
 
 const emit = defineEmits<{
   (e: 'copy'): void
+  (e: 'download'): void
   (e: 'clear'): void
   (e: 'submitClarificationAnswer', answer: string): void
 }>()
@@ -141,6 +168,11 @@ const emit = defineEmits<{
 const streamRef = ref<HTMLDivElement | null>(null)
 const answeredClarifications = ref<Record<string, true>>({})
 const canAnswer = computed(() => props.canSend)
+const canExportDiagnostics = computed(() => props.canExportDiagnostics || props.items.length > 0)
+const displayItems = computed(() => props.items.map((item) => ({
+  item,
+  display: createDisplayPayload(item),
+})))
 
 function scrollToBottom(): void {
   const el = streamRef.value
@@ -225,6 +257,131 @@ function formatTimestamp(value: string | Date | undefined): string {
   return date.toLocaleTimeString('zh-CN', { hour12: false })
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function parseJsonPayload(payload: string): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(payload) }
+  } catch {
+    return { ok: false }
+  }
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() !== '' ? value : undefined
+}
+
+function compactValue(value: string, maxLength = 42): string {
+  if (value.length <= maxLength) return value
+  const headLength = Math.ceil((maxLength - 3) / 2)
+  const tailLength = Math.floor((maxLength - 3) / 2)
+  return `${value.slice(0, headLength)}...${value.slice(value.length - tailLength)}`
+}
+
+function arrayCountLabel(payload: Record<string, unknown>, key: string, label: string): string | null {
+  const value = payload[key]
+  return Array.isArray(value) ? `${label} ${value.length}` : null
+}
+
+function collectPayloadChips(payload: unknown): string[] {
+  if (!isRecord(payload)) return []
+  const chips: string[] = []
+  const ok = payload['ok']
+  if (ok === true) chips.push('成功')
+  if (ok === false) chips.push('失败')
+  const code = optionalString(payload['code'])
+  if (code !== undefined) chips.push(code)
+  const round = payload['round']
+  if (typeof round === 'number') chips.push(`第 ${round} 轮`)
+  const kind = optionalString(payload['kind'])
+  if (kind !== undefined) chips.push(kind)
+  const sessionId = optionalString(payload['sessionId'])
+  if (sessionId !== undefined) chips.push(compactValue(sessionId))
+  const turnId = optionalString(payload['turnId'])
+  if (turnId !== undefined) chips.push(`Turn ${turnId.slice(0, 8)}`)
+  for (const item of [
+    arrayCountLabel(payload, 'messages', '消息'),
+    arrayCountLabel(payload, 'tools', '工具'),
+    arrayCountLabel(payload, 'toolCalls', '调用'),
+  ]) {
+    if (item !== null) chips.push(item)
+  }
+  return chips
+}
+
+function summarizeObjectPayload(payload: Record<string, unknown>): string {
+  if (payload['ok'] === false) {
+    const code = optionalString(payload['code'])
+    const msg = optionalString(payload['msg'])
+    if (code !== undefined && msg !== undefined) return `${code}: ${msg}`
+    if (msg !== undefined) return msg
+  }
+
+  const summary = optionalString(payload['summary'])
+  if (summary !== undefined) return summary
+
+  const text = optionalString(payload['text'])
+  if (text !== undefined) return text
+
+  const kind = optionalString(payload['kind'])
+  if (kind === 'streamTurn') {
+    const round = typeof payload['round'] === 'number' ? `第 ${payload['round']} 轮` : '本轮'
+    const messageCount = Array.isArray(payload['messages']) ? payload['messages'].length : 0
+    const toolCount = Array.isArray(payload['tools']) ? payload['tools'].length : 0
+    return `${round} LLM 请求，包含 ${messageCount} 条上下文消息和 ${toolCount} 个可用工具。`
+  }
+  if (kind === 'appendMessages') {
+    const messageCount = Array.isArray(payload['messages']) ? payload['messages'].length : 0
+    return `追加 ${messageCount} 条工具上下文给 LLM。`
+  }
+
+  const protocolVersion = payload['protocolVersion']
+  const sessionId = optionalString(payload['sessionId'])
+  if (typeof protocolVersion === 'number' && sessionId !== undefined) {
+    return `协议 v${protocolVersion}，会话 ${compactValue(sessionId, 56)}。`
+  }
+
+  const keys = Object.keys(payload)
+  return keys.length > 0 ? `JSON 事件：${keys.slice(0, 6).join('、')}` : 'JSON 事件'
+}
+
+function createDisplayPayload(item: AiSseStreamItem): DisplayPayload {
+  const parsed = parseJsonPayload(item.payload)
+  if (!parsed.ok) {
+    return {
+      summary: item.payload,
+      chips: [],
+      raw: item.payload,
+      rawLabel: '完整内容',
+      showRaw: false,
+      openRaw: false,
+    }
+  }
+
+  const raw = stringifyPayload(parsed.value)
+  if (!isRecord(parsed.value)) {
+    return {
+      summary: raw,
+      chips: [],
+      raw,
+      rawLabel: '原始数据',
+      showRaw: false,
+      openRaw: false,
+    }
+  }
+
+  return {
+    summary: summarizeObjectPayload(parsed.value),
+    chips: collectPayloadChips(parsed.value),
+    raw,
+    rawLabel: '查看原始 JSON',
+    showRaw: true,
+    openRaw: item.openByDefault === true && item.entryType !== 'sse',
+  }
+}
+
 defineExpose({ scrollToBottom })
 </script>
 
@@ -251,7 +408,15 @@ defineExpose({ scrollToBottom })
 .diagnostic-entry__kind { color: #409eff; font-weight: 700; font-size: 11px; flex-shrink: 0; }
 .diagnostic-entry__title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .diagnostic-entry__subtitle { margin-left: auto; color: #c0c4cc; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.diagnostic-entry__payload { margin: 0; padding: 9px 10px; background: #0f172a; color: #dbeafe; font-size: 12px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; overflow: visible; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+.diagnostic-entry__body { padding: 9px 10px 10px; background: #fff; }
+.diagnostic-summary { margin: 0; color: #303133; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.diagnostic-entry--sse .diagnostic-summary { color: #475569; }
+.diagnostic-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.diagnostic-chip { display: inline-flex; align-items: center; max-width: 100%; padding: 1px 6px; border-radius: 999px; background: #f1f5f9; color: #64748b; font-size: 11px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.diagnostic-raw { margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; overflow: hidden; }
+.diagnostic-raw summary { padding: 6px 9px; color: #64748b; font-size: 11px; cursor: pointer; user-select: none; }
+.diagnostic-raw summary:hover { color: #409eff; background: #f1f5f9; }
+.diagnostic-raw pre { margin: 0; padding: 9px 10px; max-height: 220px; overflow: auto; border-top: 1px solid #e2e8f0; background: #fff; color: #334155; font-size: 12px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
 .clarification-card { padding: 10px; background: #fff; color: #303133; }
 .clarification-card__reason { margin: 0 0 8px; padding: 8px 10px; border-radius: 6px; background: #fef0f0; color: #a94442; font-size: 12px; line-height: 1.5; }
 .clarification-question + .clarification-question { margin-top: 10px; }

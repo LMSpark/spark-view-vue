@@ -157,7 +157,7 @@ export type AiSessionHooks = {
  * externalToolLogs 必须是 Ref/ComputedRef，面板通过它驱动工具日志视图。
  */
 export interface AiSessionConfig {
-  /** 持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。 */
+  /** 持久化 key。AiChatWidget 按此从 localStorage 恢复/写入当前会话历史。 */
   readonly storageKey: MaybeRefOrGetter<string>
   /** 禁用会话快照读写。用于业务尚未被语义路由选定的 pending 阶段。 */
   readonly disablePersistence?: MaybeRefOrGetter<boolean | undefined>

@@ -36,13 +36,16 @@
 
     <AiSseStreamView
       ref="sseStreamRef"
-      :items="sseStreamItems"
+      :items="visibleStreamItems"
       :placeholder="placeholder"
+      title="对话"
       :copy-status="copyStatus"
       :copy-status-text="copyStatusText"
+      :can-export-diagnostics="canExportDiagnostics"
       :can-send="canSendForUi"
       :compact="compact"
       @copy="copyDiagnosticsData"
+      @download="downloadDiagnosticsData"
       @clear="emit('clearMessages')"
       @submit-clarification-answer="handleClarificationAnswer"
     />
@@ -282,6 +285,7 @@ interface SseStreamItem {
   subtitle?: string
   payload: string
   clarification?: ClarificationPayload
+  openByDefault?: boolean
 }
 
 interface SseTextSegment {
@@ -527,6 +531,7 @@ const fcCallItems = computed(() => props.fcCalls ?? [])
 const fcErrorCount = computed(() => fcCallItems.value.filter((call) => call.status === 'error').length)
 const showFcPanel = computed(() => props.toolLogs !== undefined || fcCallItems.value.length > 0)
 const copyStatusText = computed(() => copyStatus.value === 'copied' ? '已复制' : '复制失败')
+const canExportDiagnostics = computed(() => diagnosticItems.value.length > 0)
 const selectedFcPayload = computed(() => {
   const call = selectedFcCall.value
   if (call === null) return ''
@@ -643,7 +648,12 @@ const sseStreamItems = computed<SseStreamItem[]>(() => diagnosticItems.value.map
   ...(item.subtitle !== undefined ? { subtitle: item.subtitle } : {}),
   payload: item.payload,
   ...(item.clarification !== undefined ? { clarification: item.clarification } : {}),
+  openByDefault: item.openByDefault,
 })))
+
+const visibleStreamItems = computed<SseStreamItem[]>(() => sseStreamItems.value.filter((item) => (
+  item.entryType === 'message' || item.entryType === 'clarification' || item.entryType === 'log'
+)))
 
 function collectHumanInputTexts(messages: readonly ChatMessageLike[]): Set<string> {
   const texts = new Set<string>()
@@ -1381,6 +1391,26 @@ async function copyDiagnosticsData(): Promise<void> {
   } catch {
     markCopyStatus('failed')
   }
+}
+
+function formatDiagnosticDownloadFileName(): string {
+  const pageId = normalizeDiagnosticPageId(props.pageId).replace(/[^\w.-]+/g, '-')
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  return `${pageId}-ai-diagnostics-${timestamp}.json`
+}
+
+function downloadDiagnosticsData(): void {
+  if (diagnosticItems.value.length === 0) return
+  const blob = new Blob([JSON.stringify(buildDiagnosticsData(), null, 2)], { type: 'application/json;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = formatDiagnosticDownloadFileName()
+  link.rel = 'noopener'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
 }
 
 function markCopyStatus(status: 'copied' | 'failed'): void {

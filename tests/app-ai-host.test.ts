@@ -559,6 +559,108 @@ describe('AppAiHost', () => {
     ]))
   })
 
+  it('does not cap tool rounds by default', async () => {
+    const projection = {
+      scope: {
+        moduleId: 'loopBiz',
+        moduleInstanceId: 'loop-1',
+        instanceId: 'loopBiz:loop-1',
+        runtimeInstanceId: 'loopBiz:loop-1',
+      },
+      module: {
+        moduleId: 'loopBiz',
+        modulePath: 'loopBiz',
+        moduleIds: ['loopBiz'],
+        name: 'Loop Business',
+        description: 'Runs several tool rounds.',
+        functions: [{
+          action: 'loop-1@loopBiz@step',
+          moduleId: 'loopBiz',
+          modulePath: 'loopBiz',
+          moduleIds: ['loopBiz'],
+          description: 'Run one step.',
+          paramsSchema: NO_PARAMS_SCHEMA,
+          contextParams: [],
+        }],
+        modules: [],
+      },
+      promptSnapshot: 'Run steps.',
+      availableFunctions: [{
+        action: 'loop-1@loopBiz@step',
+        moduleId: 'loopBiz',
+        modulePath: 'loopBiz',
+        moduleIds: ['loopBiz'],
+        description: 'Run one step.',
+        paramsSchema: NO_PARAMS_SCHEMA,
+        contextParams: [],
+      }],
+    } as unknown as AiRuntimeStartInstanceResult
+    const runtime: AppAiBusinessRuntime = {
+      moduleId: 'loopBiz',
+      getRegistrationData: () => ({
+        moduleId: 'loopBiz',
+        name: 'Loop Business',
+        description: 'Runs several tool rounds.',
+        functions: [{ functionId: 'step', description: 'Run one step.', paramsSchema: NO_PARAMS_SCHEMA }],
+        modules: [],
+      }),
+      resolveBusinessInstance: () => 'loop-1',
+      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
+        id: 'loop-history-1',
+        seq: 1,
+        timestamp: 1,
+        kind: 'message' as const,
+        moduleId: options.moduleId,
+        moduleInstanceId: options.moduleInstanceId,
+        instanceId: options.instanceId,
+        runtimeInstanceId: options.instanceId,
+        role: options.role,
+        source: options.source ?? 'system',
+        content: options.content,
+      })),
+      executeFunctionCall: vi.fn(async (): Promise<AiRuntimeFunctionCallResult<unknown>> => ({
+        ok: true,
+        data: { stepped: true },
+        summary: 'stepped',
+      })),
+      getSessionHistory: () => [],
+    }
+    const registry = new AppAiBusinessRegistry()
+    registry.register(runtime)
+    const streamTurn = vi.fn(async (_input: AppAiStreamTurnInput) => (
+      streamTurn.mock.calls.length <= 5
+        ? {
+            text: `第 ${streamTurn.mock.calls.length} 步。`,
+            toolCalls: [{
+              id: `call_step_${streamTurn.mock.calls.length}`,
+              type: 'function',
+              function: { name: 'ai_0_loopBiz_step', arguments: '{}' },
+            }],
+          }
+        : { text: '完成。', toolCalls: [] }
+    ))
+    const onDelta = vi.fn()
+    const host = new AppAiHost({
+      registry,
+      transport: {
+        routeBusiness: vi.fn(async () => ({ moduleId: 'loopBiz', confidence: 0.95, reason: 'loop' })),
+        streamTurn,
+        appendMessages: vi.fn(async () => {}),
+      },
+    })
+
+    await host.createPanelConfig().sender({
+      historyMsgs: [{ role: 'user', content: '连续执行多轮' }],
+      mode: 'multi',
+      onDelta,
+    })
+
+    expect(streamTurn).toHaveBeenCalledTimes(6)
+    expect(runtime.executeFunctionCall).toHaveBeenCalledTimes(5)
+    expect(onDelta).not.toHaveBeenCalledWith('工具调用轮次已达上限，请检查当前业务状态后继续。')
+  })
+
   it('sends auth and tenant headers through the fetch transport', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({
       ok: true,
@@ -944,6 +1046,92 @@ describe('AppAiHost', () => {
       businessRegistrationId: PAGE_DESIGN_MODULE_ID,
       businessInstanceId: 'page-b',
     })
+  })
+
+  it('reports a clear message when page-design has no active edit host context', async () => {
+    const registry = new AppAiBusinessRegistry()
+    registerAppAiBusinesses({
+      registry,
+      getPageDesignEditHost: () => ({}) as PageDesignEditHost,
+      resolvePageDesignInstanceId: () => null,
+    })
+
+    const transport: AppAiHostTransport = {
+      routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page design' })),
+      streamTurn: vi.fn(async () => ({ text: '', toolCalls: [] })),
+      appendMessages: vi.fn(async () => {}),
+    }
+    const host = new AppAiHost({ registry, transport })
+    const onDelta = vi.fn()
+
+    await host.createPanelConfig().sender({
+      historyMsgs: [{ role: 'user', content: '设计 work-evaluation 页面' }],
+      mode: 'multi',
+      onDelta,
+    })
+
+    expect(onDelta).toHaveBeenCalledWith(
+      expect.stringContaining('PageDesign 需要先在开发系统中打开并选中一个配置页面。'),
+    )
+    expect(transport.streamTurn).not.toHaveBeenCalled()
+  })
+
+  it('aborts page-design tool loops immediately when the live edit host is unavailable', async () => {
+    const registry = new AppAiBusinessRegistry()
+    registerAppAiBusinesses({
+      registry,
+      getPageDesignEditHost: () => {
+        throw new Error('PageDesign edit host unavailable for page renderer-demo. 请先在开发系统中打开并选中目标配置页面。')
+      },
+      resolvePageDesignInstanceId: () => 'renderer-demo',
+    })
+
+    const appendMessages = vi.fn(async () => {})
+    const streamTurn = vi.fn(async (input: AppAiStreamTurnInput) => {
+      const describeProgressTool = input.tools.find((tool) => tool.function.name.includes('lifecycle_describeProgress'))
+      expect(describeProgressTool).toBeDefined()
+      return {
+        text: '我来检查当前页面状态。',
+        toolCalls: [{
+          id: 'call_progress',
+          type: 'function',
+          function: {
+            name: describeProgressTool?.function.name,
+            arguments: '{}',
+          },
+        }],
+      }
+    })
+    const host = new AppAiHost({
+      registry,
+      transport: {
+        routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page design' })),
+        streamTurn,
+        appendMessages,
+      },
+      maxToolRounds: 4,
+    })
+    const onDelta = vi.fn()
+
+    await host.createPanelConfig().sender({
+      historyMsgs: [{ role: 'user', content: '设计 renderer-demo 页面' }],
+      mode: 'multi',
+      onDelta,
+    })
+
+    expect(streamTurn).toHaveBeenCalledTimes(1)
+    expect(appendMessages).toHaveBeenCalledWith(expect.objectContaining({
+      messages: expect.arrayContaining([
+        expect.objectContaining({
+          role: 'assistant',
+          content: expect.stringContaining('PageDesign edit host unavailable for page renderer-demo'),
+        }),
+      ]),
+    }))
+    expect(onDelta).toHaveBeenCalledWith(
+      'PageDesign edit host unavailable for page renderer-demo. 请先在开发系统中打开并选中目标配置页面。',
+    )
+    expect(host.getSelectedScope()).toBeNull()
   })
 
   it('clears selected scope after a business completes so the next turn reroutes', async () => {

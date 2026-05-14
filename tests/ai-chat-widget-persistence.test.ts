@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 
 vi.mock('vue-markdown-render', () => ({
@@ -122,6 +122,42 @@ describe('AiChatWidget persistence', () => {
 
     expect(wrapper.text()).toContain('你好')
     expect(wrapper.text()).toContain('重开后仍然可见')
+
+    wrapper.unmount()
+  })
+
+  it('does not cancel the active turn when AppAiPanel storageKey switches from pending to a real business key', async () => {
+    const store = useAiPanelStore()
+    const storageKeyRef = ref('app-ai-panel-pending')
+    const disablePersistenceRef = ref(true)
+    const sender = vi.fn(async (request) => {
+      storageKeyRef.value = 'app-ai-panel-page-design-work-evaluation'
+      disablePersistenceRef.value = false
+      await Promise.resolve()
+      request.onDelta?.('页面设计已进入')
+    })
+
+    const wrapper = mount(AppAiPanel)
+    await store.open({
+      storageKey: () => storageKeyRef.value,
+      disablePersistence: () => disablePersistenceRef.value,
+      title: '页面设计 AI',
+      sender,
+    })
+    await flushPromises()
+
+    await wrapper.find('.chat-textarea').setValue('work-evaluation 页面设计')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    expect(sender).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).toContain('work-evaluation 页面设计')
+    expect(wrapper.text()).toContain('页面设计已进入')
+    expect(wrapper.text()).not.toContain('AI 已取消')
+
+    const persisted = localStorage.getItem('app-ai-panel-page-design-work-evaluation')
+    expect(persisted).toContain('work-evaluation 页面设计')
+    expect(persisted).toContain('页面设计已进入')
 
     wrapper.unmount()
   })
@@ -402,14 +438,11 @@ describe('AiChatWidget persistence', () => {
     await flushPromises()
     await new Promise((resolve) => window.setTimeout(resolve, 20))
 
-    const sseTextEntries = wrapper.findAll('.diagnostic-entry--sse-text').map((entry) => entry.text())
-    expect(sseTextEntries).toHaveLength(2)
-    const turnOneSse = sseTextEntries.find((entry) => entry.includes('第一条')) ?? ''
-    const turnTwoSse = sseTextEntries.find((entry) => entry.includes('第二条')) ?? ''
-    expect(turnOneSse).toContain('sse-start:第一条;sse-end:第一条;')
-    expect(turnOneSse).not.toContain('第二条')
-    expect(turnTwoSse).toContain('sse-start:第二条;sse-end:第二条;')
-    expect(turnTwoSse).not.toContain('第一条')
+    expect(wrapper.findAll('.diagnostic-entry--sse-text')).toHaveLength(0)
+    expect(wrapper.text()).not.toContain('sse-start:第一条')
+    expect(wrapper.text()).not.toContain('sse-start:第二条')
+    expect(wrapper.text()).toContain('msg-start:第一条;msg-end:第一条;')
+    expect(wrapper.text()).toContain('msg-start:第二条;msg-end:第二条;')
   })
 
   it('queues overflow turns when configured and starts them after a slot frees', async () => {
@@ -598,21 +631,16 @@ describe('AiChatWidget persistence', () => {
       .find((entry) => entry.find('.diagnostic-entry__kind').text() === '人工输入')
     expect(humanEntry?.find('.diagnostic-entry__title').text()).toBe('用户消息')
     expect(wrapper.findAll('.diagnostic-entry__title').filter((entry) => entry.text() === '人工输入')).toHaveLength(0)
-    expect(wrapper.text()).toContain('SSE 文本增量')
-    expect(wrapper.text()).toContain('SSE 推理')
-    expect(wrapper.text()).toContain('raw-sse-delta')
+    expect(wrapper.text()).not.toContain('SSE 文本增量')
+    expect(wrapper.text()).not.toContain('SSE 推理')
+    expect(wrapper.text()).not.toContain('raw-sse-delta')
     expect(wrapper.text()).not.toContain('duplicated-sse-log')
     expect(wrapper.text()).not.toContain('duplicated-result-log')
     expect(wrapper.text()).not.toContain('编辑会话已挂接到当前页面模型')
     expect(wrapper.text()).not.toContain('读取会话状态')
     expect(wrapper.text()).not.toContain('SSE done')
     expect(wrapper.text()).not.toContain('(empty)')
-    const sseTextEntries = wrapper.findAll('.diagnostic-entry--sse-text')
-    expect(sseTextEntries).toHaveLength(2)
-    expect(sseTextEntries.map((entry) => entry.text())).toEqual(expect.arrayContaining([
-      expect.stringContaining('reasoning-context more-reasoning'),
-      expect.stringContaining('raw-sse-delta'),
-    ]))
+    expect(wrapper.findAll('.diagnostic-entry--sse-text')).toHaveLength(0)
     expect(wrapper.text()).toContain('FC 调用记录 (1)')
     expect(wrapper.text()).toContain('参数荷载目录')
 
@@ -692,8 +720,8 @@ describe('AiChatWidget persistence', () => {
     await wrapper.find('.send-btn').trigger('click')
     await flushPromises()
 
-    const sseTitles = wrapper.findAll('.diagnostic-entry--sse .diagnostic-entry__title').map((entry) => entry.text())
-    expect(sseTitles).toContain('AI诊断流落成')
+    expect(wrapper.findAll('.diagnostic-entry--sse')).toHaveLength(0)
+    expect(wrapper.text()).toContain('本轮完成')
   })
 
   it('batches cache writes and persists a compact diagnostic snapshot', async () => {
@@ -834,8 +862,8 @@ describe('AiChatWidget persistence', () => {
     await wrapper.find('.send-btn').trigger('click')
     await flushPromises()
 
-    expect(wrapper.find('.diagnostic-entry--sse').text()).toContain('SSE LLM请求')
-    expect(wrapper.find('.diagnostic-entry--sse').text()).toContain('系统提示词')
+    expect(wrapper.findAll('.diagnostic-entry--sse')).toHaveLength(0)
+    expect(wrapper.text()).not.toContain('SSE LLM请求')
 
     const snapshot = JSON.parse(localStorage.getItem('ai-chat-widget-llm-request') ?? '{}') as {
       sseEvents?: Array<{ type?: string; data?: string; streamKey?: string }>
@@ -881,6 +909,54 @@ describe('AiChatWidget persistence', () => {
       },
     })
     expect(llmResultItem?.timestamp).toEqual(expect.any(String))
+  })
+
+  it('downloads structured diagnostic data as a JSON file', async () => {
+    const createObjectURL = vi.fn((object: Blob) => {
+      void object
+      return 'blob:ai-diagnostics'
+    })
+    const revokeObjectURL = vi.fn()
+    Object.defineProperty(URL, 'createObjectURL', {
+      value: createObjectURL,
+      configurable: true,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      value: revokeObjectURL,
+      configurable: true,
+    })
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const sender = vi.fn(async (request) => {
+      request.onSseEvent?.({
+        sessionId: 'manualLeave:leave-download',
+        type: 'tool-result',
+        data: JSON.stringify({ ok: true, summary: '已读取草稿' }),
+      })
+      request.onDelta?.('ok')
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-download-diagnostics',
+        pageId: 'app-ai-host',
+      },
+    })
+
+    await wrapper.find('.chat-textarea').setValue('下载调试链路')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    await wrapper.find('button[title="下载结构化诊断数据"]').trigger('click')
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    expect(createObjectURL.mock.calls[0]?.[0]).toBeInstanceOf(Blob)
+    const blob = createObjectURL.mock.calls[0]?.[0] as Blob
+    await expect(blob.text()).resolves.toContain('"pageId": "app-ai-host"')
+    expect(clickSpy).toHaveBeenCalledTimes(1)
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:ai-diagnostics')
+
+    clickSpy.mockRestore()
   })
 
   it('renders pageDesign/knowledge/ask as clickable clarification answers', async () => {

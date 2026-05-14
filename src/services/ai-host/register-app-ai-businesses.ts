@@ -109,6 +109,15 @@ function submittedLeaveMessage(result: AiRuntimeFunctionCallResult<unknown>): st
   ].join('\n')
 }
 
+function pageDesignEditHostUnavailableMessage(result: AiRuntimeFunctionCallResult<unknown>): string | null {
+  if (result.ok || result.code !== 'EXECUTE_ERROR') return null
+  const message = result.msg.trim()
+  if (message === '') return null
+  if (message.includes('PageDesign edit host unavailable')) return message
+  if (message.includes('请先在开发系统中打开并选中目标配置页面')) return message
+  return null
+}
+
 class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
   readonly moduleId = LEAVE_REQUEST_MODULE_ID
 
@@ -205,7 +214,7 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
     const pageId = this.resolveInstanceId(input)
     if (pageId === null || pageId.trim() === '') {
-      throw new Error('PageDesign business requires an active pageId')
+      throw new Error('PageDesign 需要先在开发系统中打开并选中一个配置页面。')
     }
     return pageId
   }
@@ -233,6 +242,19 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
       moduleId: PAGE_DESIGN_MODULE_ID,
       projection: options.projection,
     })
+  }
+
+  afterFunctionCall(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
+    const unavailableMessage = pageDesignEditHostUnavailableMessage(options.result)
+    if (unavailableMessage !== null) {
+      return {
+        status: 'abort',
+        reason: 'page design edit host unavailable',
+        finalAssistantMessage: unavailableMessage,
+        releaseInstance: true,
+      }
+    }
+    return { status: 'continue' }
   }
 
   endBusinessInstance(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void {

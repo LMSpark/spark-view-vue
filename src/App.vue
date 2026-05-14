@@ -192,7 +192,7 @@ registerAppAiBusinesses({
   getPageDesignEditHost: (context) => {
     const host = resolvePageDesignEditHost(context.moduleInstanceId)
     if (host === null) {
-      throw new Error(`PageDesign edit host unavailable for page ${context.moduleInstanceId}`)
+      throw new Error(`PageDesign edit host unavailable for page ${context.moduleInstanceId}. 请先在开发系统中打开并选中目标配置页面。`)
     }
     return host
   },

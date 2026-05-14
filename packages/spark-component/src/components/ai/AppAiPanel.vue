@@ -46,7 +46,6 @@
       <div class="app-ai-panel__body">
         <AiChatWidget
           v-if="sender && storageKey"
-          :key="storageKey"
           :storage-key="storageKey"
           :disable-persistence="disablePersistence"
           :page-id="pageId"

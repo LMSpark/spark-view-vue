@@ -298,16 +298,18 @@ export class AppAiHost {
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
     let pendingMessages = toCurrentTurnMessages(request)
     const sessionId = scope.instanceId
-    const maxRounds = this.options.maxToolRounds ?? 4
+    const maxRounds = this.options.maxToolRounds
 
-    for (let round = 0; round < maxRounds; round += 1) {
+    for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
+      if (request.signal?.aborted) return
+      const currentRound = round + 1
       const codec = createAppAiToolCodec(
         projection,
         enabledActions === null ? {} : { includeActions: enabledActions },
       )
       emitLlmDiagnosticEvent(request, scope, turn, 'llm-request', {
         kind: 'streamTurn',
-        round: round + 1,
+        round: currentRound,
         sessionId,
         turnId: turn.turnId,
         systemPrompt,
@@ -345,7 +347,7 @@ export class AppAiHost {
       const executedToolCalls: AppAiTransportToolCall[] = []
       let lifecycleDirective: AppAiBusinessLifecycleDirective | null = null
       for (const call of result.toolCalls) {
-        const output = await this.executeToolCall(runtime, scope, projection, turn, round + 1, codec.actionOf.bind(codec), call, request)
+        const output = await this.executeToolCall(runtime, scope, projection, turn, currentRound, codec.actionOf.bind(codec), call, request)
         if (output !== null) {
           executedToolCalls.push(call)
           toolMessages.push(output.toolMessage)
