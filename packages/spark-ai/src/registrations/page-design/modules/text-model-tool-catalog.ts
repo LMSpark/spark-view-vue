@@ -4,6 +4,7 @@ import {
   type PageDesignFunctionRuntimeBinding,
   PageDesignToolCatalog,
 } from './tool-catalog'
+import { noParamsSchema, paramsSchema, stringSchema } from './json-schema-helpers'
 
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionTarget = 'script' | 'style'
@@ -40,8 +41,8 @@ export type TextModelFunctionCapabilityRow = Pick<
   example?: LlmJsonObject
 }
 
-const NO_PARAMS: LlmParameterSchemaRoot = {}
-const CONTENT_PARAM = 'string — 完整文本内容（全量覆盖写入，不支持 patch）'
+const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')
+const CONTENT_SCHEMA = stringSchema('完整文本内容（全量覆盖写入，不支持 patch）')
 
 const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.bootstrap，确保宿主绑定 read*/write*。`
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
@@ -100,9 +101,7 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'script',
     fileKey: 'script',
     description: '覆盖写入 script.js 全量文本模型内容。',
-    paramsSchema: {
-      content: CONTENT_PARAM,
-    },
+    paramsSchema: paramsSchema({ content: CONTENT_SCHEMA }, ['content']),
     resultSchema: {
       ok: 'boolean — 写入成功返回 true',
     },
@@ -147,9 +146,7 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'style',
     fileKey: 'style',
     description: '覆盖写入 style.css 全量文本模型内容。',
-    paramsSchema: {
-      content: CONTENT_PARAM,
-    },
+    paramsSchema: paramsSchema({ content: CONTENT_SCHEMA }, ['content']),
     resultSchema: {
       ok: 'boolean — 写入成功返回 true',
     },
@@ -175,25 +172,5 @@ export class PageDesignTextModelCatalog extends PageDesignToolCatalog<
 > {
   constructor() {
     super(TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE, TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE)
-  }
-
-  validateParams(functionId: string, params: unknown): string | null {
-    const row = this.getParameterRow(functionId)
-    if (row === undefined) {
-      return `未知 textModel 函数: ${functionId}`
-    }
-
-    if (row.type === 'describe') {
-      if (params === undefined || params === null) return null
-      if (typeof params === 'object' && !Array.isArray(params) && Object.keys(params).length === 0) return null
-      return `${functionId} 不接受参数，请传 {} 或留空`
-    }
-
-    if (typeof params !== 'object' || params === null || Array.isArray(params)) {
-      return `${functionId} 参数必须是对象，且包含 content（string）`
-    }
-
-    const content = (params as { content?: unknown }).content
-    return typeof content === 'string' ? null : `${functionId} 缺少 content（string）`
   }
 }

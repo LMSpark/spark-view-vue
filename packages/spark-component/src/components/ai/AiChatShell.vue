@@ -34,80 +34,18 @@
       </div>
     </div>
 
-    <div class="chat-messages-shell">
-      <div class="chat-region-toolbar">
-        <span class="chat-region-title">会话 ({{ diagnosticItems.length }})</span>
-        <div class="chat-region-actions">
-          <span v-if="copyStatus !== 'idle'" :class="['copy-status', `copy-status--${copyStatus}`]">{{ copyStatusText }}</span>
-          <button class="mini-icon-btn" title="复制结构化诊断数据" :disabled="diagnosticItems.length === 0" @click="copyDiagnosticsData">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16h13c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z" />
-            </svg>
-          </button>
-          <button class="mini-icon-btn" title="清空诊断流" @click="emit('clearMessages')">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div ref="messagesRef" class="chat-messages">
-        <div v-if="diagnosticItems.length === 0" class="chat-empty">
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="#c0c4cc">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
-          </svg>
-          <p>{{ placeholder ?? '有什么可以帮您？' }}</p>
-        </div>
-
-        <article
-          v-for="item in diagnosticItems"
-          :key="item.id"
-          class="diagnostic-entry"
-          :class="`diagnostic-entry--${item.kind}`"
-        >
-          <header class="diagnostic-entry__header">
-            <span class="diagnostic-entry__time">{{ formatTimestamp(item.timestamp) }}</span>
-            <span class="diagnostic-entry__kind">{{ item.kindLabel }}</span>
-            <span class="diagnostic-entry__title">{{ item.title }}</span>
-            <span v-if="item.subtitle" class="diagnostic-entry__subtitle">{{ item.subtitle }}</span>
-          </header>
-          <div v-if="item.kind === 'clarification' && item.clarification" class="clarification-card">
-            <p v-if="item.clarification.reason" class="clarification-card__reason">{{ item.clarification.reason }}</p>
-            <article v-for="question in item.clarification.questions" :key="question.id" class="clarification-question">
-              <header class="clarification-question__header">
-                <span class="clarification-question__type">{{ question.type === 'multi' ? '多选' : '单选' }}</span>
-                <span class="clarification-question__prompt">{{ question.prompt }}</span>
-              </header>
-              <div class="clarification-options">
-                <button
-                  v-for="option in question.options"
-                  :key="option.id"
-                  class="clarification-option"
-                  :class="{ 'clarification-option--recommended': isRecommendedOption(question, option) }"
-                  :disabled="!canSendForUi || isClarificationAnswered(item.id)"
-                  @click="answerClarificationOption(item, question, option)"
-                >
-                  <span class="clarification-option__label">{{ option.label }}</span>
-                  <span v-if="isRecommendedOption(question, option)" class="clarification-option__badge">推荐</span>
-                  <small v-if="option.description" class="clarification-option__desc">{{ option.description }}</small>
-                </button>
-              </div>
-            </article>
-            <div class="clarification-actions">
-              <button
-                v-if="hasRecommendedAnswers(item.clarification)"
-                class="clarification-recommend-btn"
-                :disabled="!canSendForUi || isClarificationAnswered(item.id)"
-                @click="answerClarificationRecommended(item)"
-              >按推荐项回答</button>
-              <span v-if="isClarificationAnswered(item.id)" class="clarification-answered">已回答</span>
-            </div>
-          </div>
-          <pre v-else class="diagnostic-entry__payload">{{ item.payload }}</pre>
-        </article>
-      </div>
-    </div>
+    <AiSseStreamView
+      ref="sseStreamRef"
+      :items="sseStreamItems"
+      :placeholder="placeholder"
+      :copy-status="copyStatus"
+      :copy-status-text="copyStatusText"
+      :can-send="canSendForUi"
+      :compact="compact"
+      @copy="copyDiagnosticsData"
+      @clear="emit('clearMessages')"
+      @submit-clarification-answer="handleClarificationAnswer"
+    />
 
     <div v-if="error !== null" class="chat-error">⚠️ {{ error }}</div>
 
@@ -223,6 +161,7 @@
  * @description AI 聊天壳层组件，负责渲染消息列表、输入区、附件、工具日志、SSE/FC 调试信息和策略切换事件；适合被 AiChatWidget 等上层会话容器托管。
  */
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import AiSseStreamView from './AiSseStreamView.vue'
 
 interface FileAttachment {
   fileId: string
@@ -278,6 +217,7 @@ interface SseEventLike {
 interface FcCallLike {
   id: string
   timestamp: string
+  turnId?: string
   toolName: string
   args: unknown
   round: number
@@ -333,10 +273,26 @@ interface DiagnosticItem {
   openByDefault: boolean
 }
 
-interface SseTextSegment {
+interface SseStreamItem {
+  id: string
   timestamp: string
+  entryType: DiagnosticItem['kind']
+  kindLabel: string
+  title: string
+  subtitle?: string
+  payload: string
+  clarification?: ClarificationPayload
+}
+
+interface SseTextSegment {
+  key: string
+  timestamp: string
+  sortTime: number
+  order: number
   type: string
+  turnId?: string
   sessionId?: string
+  streamKey?: string
   chunks: string[]
 }
 
@@ -357,6 +313,7 @@ interface StructuredDiagnosticItem {
 interface StructuredFcCallRecord {
   id: string
   timestamp: string
+  turnId?: string
   toolName: string
   args: unknown
   round: number
@@ -558,11 +515,12 @@ const COLLAB_OPTIONS: PolicyOption<CollaborationPolicyLike>[] = [
   { value: 'human-takeover', short: '接管', label: '人工接管：AI 不执行写入，等待人工操作或下一条指令' },
 ]
 
-const messagesRef = ref<HTMLDivElement | null>(null)
+type AiSseStreamViewInstance = InstanceType<typeof AiSseStreamView>
+
+const sseStreamRef = ref<AiSseStreamViewInstance | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const selectedFcCall = ref<FcCallLike | null>(null)
 const copyStatus = ref<'idle' | 'copied' | 'failed'>('idle')
-const answeredClarifications = ref<Record<string, true>>({})
 let copyStatusTimer: number | undefined
 
 const fcCallItems = computed(() => props.fcCalls ?? [])
@@ -626,10 +584,18 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
     })
   }
 
-  for (const event of props.sseEvents ?? []) {
-    if (!isVisibleSseEvent(event)) continue
+  const visibleSseEvents = (props.sseEvents ?? []).filter(isVisibleSseEvent)
+  for (const sseTextItem of buildSseTextDiagnosticItems(visibleSseEvents, props.pageId)) {
+    items.push({
+      ...sseTextItem,
+      order: order++,
+    })
+  }
+
+  for (const event of visibleSseEvents) {
     if (!TIMELINE_SSE_EVENT_TYPES.has(event.type)) continue
     const timestamp = toIsoTimestamp(event.timestamp)
+    const subtitle = formatSseEventSubtitle(event, props.pageId)
     items.push({
       id: `sse:${event.id}`,
       timestamp,
@@ -638,7 +604,7 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
       source: 'sse',
       kindLabel: 'SSE',
       title: formatSseTimelineTitle(event.type),
-      ...(event.sessionId !== undefined ? { subtitle: event.sessionId } : {}),
+      ...(subtitle !== undefined ? { subtitle } : {}),
       payload: event.data,
       openByDefault: event.type === 'llm-request' || event.type === 'llm-append' || event.type === 'done',
       order: order++,
@@ -667,6 +633,17 @@ const diagnosticItems = computed<DiagnosticItem[]>(() => {
 
   return items.sort((left, right) => left.sortTime - right.sortTime || left.order - right.order)
 })
+
+const sseStreamItems = computed<SseStreamItem[]>(() => diagnosticItems.value.map((item) => ({
+  id: item.id,
+  timestamp: item.timestamp,
+  entryType: item.kind,
+  kindLabel: item.kindLabel,
+  title: item.title,
+  ...(item.subtitle !== undefined ? { subtitle: item.subtitle } : {}),
+  payload: item.payload,
+  ...(item.clarification !== undefined ? { clarification: item.clarification } : {}),
+})))
 
 function collectHumanInputTexts(messages: readonly ChatMessageLike[]): Set<string> {
   const texts = new Set<string>()
@@ -698,43 +675,81 @@ function isVisibleSseEvent(event: SseEventLike): boolean {
 }
 
 function buildSseTextDiagnosticItems(events: SseEventLike[], pageId: string | undefined): DiagnosticItem[] {
-  const segments: SseTextSegment[] = []
+  const segments = new Map<string, SseTextSegment>()
+  let order = 0
 
   for (const event of events) {
     if (!SSE_TEXT_EVENT_TYPES.has(event.type)) continue
     if (event.data.trim() === '') continue
-    const last = segments.at(-1)
-    if (last !== undefined && last.type === event.type && last.sessionId === event.sessionId) {
-      last.chunks.push(event.data)
-    } else {
-      segments.push({
-        timestamp: event.timestamp,
-        type: event.type,
-        ...(event.sessionId !== undefined ? { sessionId: event.sessionId } : {}),
-        chunks: [event.data],
-      })
+    const key = `${event.type}:${getSseEventTurnKey(event)}`
+    const segment = segments.get(key)
+    if (segment !== undefined) {
+      segment.chunks.push(event.data)
+      continue
     }
+    const timestamp = toIsoTimestamp(event.timestamp)
+    const turnId = getSseEventTurnId(event)
+    segments.set(key, {
+      key,
+      timestamp,
+      sortTime: toSortTime(timestamp),
+      order: order++,
+      type: event.type,
+      ...(turnId !== undefined ? { turnId } : {}),
+      ...(event.sessionId !== undefined ? { sessionId: event.sessionId } : {}),
+      ...(event.streamKey !== undefined ? { streamKey: event.streamKey } : {}),
+      chunks: [event.data],
+    })
   }
 
-  if (segments.length === 0) return []
+  if (segments.size === 0) return []
 
   const normalizedPageId = normalizeDiagnosticPageId(pageId)
-  return segments.map((segment, index): DiagnosticItem => ({
-    id: `sse-text:${normalizedPageId}:${index}`,
-    timestamp: segment.timestamp,
-    sortTime: toSortTime(segment.timestamp),
-    kind: 'sse-text',
-    source: 'sse',
-    kindLabel: 'SSE文本',
-    title: `SSE ${formatSseTypeLabel(segment.type)} (${segment.chunks.length}片)`,
-    subtitle: formatSseTextSubtitle(normalizedPageId, segment.sessionId),
-    payload: segment.chunks.join(''),
-    openByDefault: true,
-  }))
+  return Array.from(segments.values())
+    .sort((left, right) => left.sortTime - right.sortTime || left.order - right.order)
+    .map((segment): DiagnosticItem => ({
+      id: `sse-text:${normalizedPageId}:${segment.key}`,
+      timestamp: segment.timestamp,
+      sortTime: segment.sortTime,
+      kind: 'sse-text',
+      source: 'sse',
+      kindLabel: 'SSE文本',
+      title: `SSE ${formatSseTypeLabel(segment.type)} (${segment.chunks.length}片)`,
+      subtitle: formatSseTextSubtitle(normalizedPageId, segment),
+      payload: segment.chunks.join(''),
+      openByDefault: true,
+    }))
 }
 
-function formatSseTextSubtitle(pageId: string, sessionId: string | undefined): string {
-  return sessionId === undefined ? `页面=${pageId}` : `页面=${pageId} · 会话=${sessionId}`
+function getSseEventTurnId(event: SseEventLike): string | undefined {
+  return event.scope?.turnId
+}
+
+function getSseEventTurnKey(event: SseEventLike): string {
+  return getSseEventTurnId(event) ?? event.streamKey ?? event.sessionId ?? event.id
+}
+
+function formatSseTurnLabel(turnId: string | undefined, turnSeq: number | undefined): string | undefined {
+  if (turnId !== undefined) return `Turn ${turnId.slice(0, 8)}`
+  if (turnSeq !== undefined) return `Turn #${turnSeq}`
+  return undefined
+}
+
+function formatSseTextSubtitle(pageId: string, segment: SseTextSegment): string {
+  const parts = [`页面=${pageId}`]
+  const turnLabel = formatSseTurnLabel(segment.turnId, undefined)
+  if (turnLabel !== undefined) parts.push(turnLabel)
+  if (segment.sessionId !== undefined) parts.push(`会话=${segment.sessionId}`)
+  return parts.join(' · ')
+}
+
+function formatSseEventSubtitle(event: SseEventLike, pageId: string | undefined): string | undefined {
+  const parts: string[] = []
+  const turnLabel = formatSseTurnLabel(getSseEventTurnId(event), undefined)
+  if (turnLabel !== undefined) parts.push(turnLabel)
+  if (event.sessionId !== undefined) parts.push(event.sessionId)
+  if (event.sessionId === undefined && pageId !== undefined) parts.push(normalizeDiagnosticPageId(pageId))
+  return parts.length > 0 ? parts.join(' · ') : undefined
 }
 
 function formatSseTypeLabel(type: string): string {
@@ -933,65 +948,10 @@ function extractClarificationPayload(call: FcCallLike): ClarificationPayload | n
   return normalizeClarificationPayload(call.result) ?? normalizeClarificationPayload(call.args)
 }
 
-function isRecommendedOption(question: ClarificationQuestion, option: ClarificationOption): boolean {
-  return question.recommendedOptionIds.includes(option.id)
-}
-
-function hasRecommendedAnswers(payload: ClarificationPayload): boolean {
-  return payload.questions.every((question) => question.recommendedOptionIds.length > 0)
-}
-
-function isClarificationAnswered(itemId: string): boolean {
-  return answeredClarifications.value[itemId] === true
-}
-
-function formatOptionValue(option: ClarificationOption): string {
-  if (option.value === undefined) return option.id
-  return typeof option.value === 'string' ? option.value : stringifyPayload(option.value)
-}
-
-function buildClarificationAnswer(
-  item: DiagnosticItem,
-  selections: Array<{ question: ClarificationQuestion; optionIds: string[] }>,
-): string {
-  const payload = item.clarification
-  if (payload === undefined) return ''
-  const lines = [`【反问回答】${payload.title}`]
-  for (const selection of selections) {
-    const selectedOptions = selection.optionIds
-      .map((optionId) => selection.question.options.find((option) => option.id === optionId))
-      .filter((option): option is ClarificationOption => option !== undefined)
-    if (selectedOptions.length === 0) continue
-    lines.push(`问题：${selection.question.prompt}`)
-    lines.push(`选择：${selectedOptions.map((option) => option.label).join('、')}`)
-    lines.push(`选项值：${selectedOptions.map(formatOptionValue).join('、')}`)
-  }
-  return lines.join('\n')
-}
-
-function submitClarificationAnswer(
-  item: DiagnosticItem,
-  selections: Array<{ question: ClarificationQuestion; optionIds: string[] }>,
-): void {
-  if (!canSendForUi.value || item.clarification === undefined || isClarificationAnswered(item.id)) return
-  const answer = buildClarificationAnswer(item, selections)
-  if (answer.trim() === '') return
-  answeredClarifications.value = { ...answeredClarifications.value, [item.id]: true }
+function handleClarificationAnswer(answer: string): void {
+  if (!canSendForUi.value || answer.trim() === '') return
   emit('update:inputText', answer)
   emit('send')
-}
-
-function answerClarificationOption(item: DiagnosticItem, question: ClarificationQuestion, option: ClarificationOption): void {
-  submitClarificationAnswer(item, [{ question, optionIds: [option.id] }])
-}
-
-function answerClarificationRecommended(item: DiagnosticItem): void {
-  const payload = item.clarification
-  if (payload === undefined) return
-  submitClarificationAnswer(item, payload.questions.map((question) => ({
-    question,
-    optionIds: question.recommendedOptionIds,
-  })))
 }
 
 function toSortTime(value: string): number {
@@ -1075,6 +1035,7 @@ function toStructuredFcCallRecord(call: FcCallLike): StructuredFcCallRecord {
   return {
     id: call.id,
     timestamp: call.timestamp,
+    ...(call.turnId !== undefined ? { turnId: call.turnId } : {}),
     toolName: call.toolName,
     args: call.args,
     round: call.round,
@@ -1334,7 +1295,7 @@ function buildTurnDiagnostics(
 
   const singleMessageTurnId = messageTurnIds.size === 1 ? Array.from(messageTurnIds)[0] : undefined
   for (const event of visibleSseEvents) {
-    const turnId = event.scope?.turnId ?? singleMessageTurnId ?? `sse:${event.sessionId ?? event.id}`
+    const turnId = getSseEventTurnId(event) ?? singleMessageTurnId ?? `sse:${event.sessionId ?? event.id}`
     const draft = ensureDraft(turnId)
     if (event.sessionId !== undefined) draft.sessionIds.add(event.sessionId)
     const semantic = semanticItemFromSseEvent(event)
@@ -1342,7 +1303,10 @@ function buildTurnDiagnostics(
   }
 
   for (const call of fcCalls) {
-    const turnId = turnKeyBySeq.get(call.round) ?? singleMessageTurnId ?? `round:${call.round}`
+    const turnId = call.turnId
+      ?? turnKeyBySeq.get(call.round)
+      ?? singleMessageTurnId
+      ?? `round:${call.round}`
     const draft = ensureDraft(turnId)
     pushFcCallSemanticItems(draft, call)
     const clarification = extractClarificationPayload(call)
@@ -1472,10 +1436,7 @@ watch(
   () => diagnosticItems.value.map((item) => `${item.id}:${item.payload}`).join('|'),
   () => {
     void nextTick(() => {
-      const el = messagesRef.value
-      if (el !== null) {
-        el.scrollTop = el.scrollHeight
-      }
+      sseStreamRef.value?.scrollToBottom()
     })
   },
 )
@@ -1496,47 +1457,6 @@ watch(
 .chat-title { font-weight: 600; font-size: 14px; color: #303133; }
 .chat-header-actions { display: flex; align-items: center; gap: 4px; }
 .turn-status { flex-shrink: 0; padding: 2px 7px; border-radius: 999px; background: #ecf5ff; color: #409eff; font-size: 11px; line-height: 1.6; white-space: nowrap; }
-.chat-messages-shell { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.chat-region-toolbar { display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 10px 0 12px; border-bottom: 1px solid #ebeef5; background: #fafafa; flex-shrink: 0; gap: 8px; }
-.chat-region-title { font-size: 11px; font-weight: 600; color: #909399; }
-.chat-region-actions { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
-.copy-status { font-size: 11px; white-space: nowrap; }
-.copy-status--copied { color: #67c23a; }
-.copy-status--failed { color: #f56c6c; }
-.chat-messages { flex: 1; overflow-y: auto; padding: 10px; min-height: 0; background: #fff; }
-.chat-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: #909399; font-size: 14px; }
-.diagnostic-entry { border: 1px solid #e4e7ed; border-radius: 6px; background: #fff; overflow: hidden; }
-.diagnostic-entry + .diagnostic-entry { margin-top: 8px; }
-.diagnostic-entry--message { border-left: 3px solid #409eff; }
-.diagnostic-entry--sse { border-left: 3px solid #67c23a; }
-.diagnostic-entry--sse-text { border-left: 3px solid #10b981; }
-.diagnostic-entry--log { border-left: 3px solid #e6a23c; }
-.diagnostic-entry--clarification { border-left: 3px solid #f56c6c; }
-.diagnostic-entry__header { display: flex; align-items: center; gap: 6px; padding: 7px 9px; background: #f8fafc; color: #606266; font-size: 12px; min-width: 0; border-bottom: 1px solid #eef2f7; }
-.diagnostic-entry__time { color: #909399; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; flex-shrink: 0; }
-.diagnostic-entry__kind { color: #409eff; font-weight: 700; font-size: 11px; flex-shrink: 0; }
-.diagnostic-entry__title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.diagnostic-entry__subtitle { margin-left: auto; color: #c0c4cc; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.diagnostic-entry__payload { margin: 0; padding: 9px 10px; background: #0f172a; color: #dbeafe; font-size: 12px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; overflow: visible; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
-.clarification-card { padding: 10px; background: #fff; color: #303133; }
-.clarification-card__reason { margin: 0 0 8px; padding: 8px 10px; border-radius: 6px; background: #fef0f0; color: #a94442; font-size: 12px; line-height: 1.5; }
-.clarification-question + .clarification-question { margin-top: 10px; }
-.clarification-question__header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-.clarification-question__type { flex-shrink: 0; padding: 1px 6px; border-radius: 4px; background: #f4f4f5; color: #909399; font-size: 11px; line-height: 1.5; }
-.clarification-question__prompt { font-size: 13px; font-weight: 600; line-height: 1.5; color: #303133; }
-.clarification-options { display: grid; gap: 6px; }
-.clarification-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; align-items: center; width: 100%; padding: 8px 10px; border: 1px solid #dcdfe6; border-radius: 6px; background: #fff; color: #606266; cursor: pointer; text-align: left; }
-.clarification-option:hover:not(:disabled) { border-color: #409eff; background: #ecf5ff; color: #409eff; }
-.clarification-option:disabled { opacity: 0.58; cursor: not-allowed; }
-.clarification-option--recommended { border-color: #f3d19e; background: #fdf6ec; }
-.clarification-option__label { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.clarification-option__badge { justify-self: end; padding: 1px 6px; border-radius: 999px; background: #e6a23c; color: #fff; font-size: 11px; line-height: 1.4; }
-.clarification-option__desc { grid-column: 1 / -1; color: #909399; font-size: 11px; line-height: 1.45; }
-.clarification-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-.clarification-recommend-btn { padding: 5px 10px; border: none; border-radius: 6px; background: #409eff; color: #fff; font-size: 12px; cursor: pointer; }
-.clarification-recommend-btn:hover:not(:disabled) { background: #337ecc; }
-.clarification-recommend-btn:disabled { opacity: 0.58; cursor: not-allowed; }
-.clarification-answered { color: #67c23a; font-size: 12px; font-weight: 600; }
 .chat-error { padding: 8px 16px; background: #fef0f0; color: #f56c6c; font-size: 13px; border-top: 1px solid #fbc4c4; }
 .chat-input-area { border-top: 1px solid #e4e7ed; padding: 8px 12px; background: #fafafa; }
 .draft-action-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -1564,7 +1484,6 @@ watch(
 .send-btn:disabled { background: #a0cfff; cursor: not-allowed; }
 .ai-chat-widget.compact { border-radius: 12px; max-width: 400px; max-height: 600px; }
 .ai-chat-widget.compact .chat-header { padding: 8px 12px; }
-.ai-chat-widget.compact .chat-messages { padding: 8px; }
 
 .policy-btn {
   padding: 2px 7px;

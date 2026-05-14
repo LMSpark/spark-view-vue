@@ -4,6 +4,7 @@ import {
   type PageDesignFunctionRuntimeBinding,
   PageDesignToolCatalog,
 } from './tool-catalog'
+import { noParamsSchema } from './json-schema-helpers'
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionTarget = 'session'
@@ -38,7 +39,7 @@ export type EditLifecycleFunctionCapabilityRow = Pick<
   example?: LlmJsonObject
 }
 
-const NO_PARAMS: LlmParameterSchemaRoot = {}
+const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')
 
 const BOOTSTRAP_RULE = 'bootstrap 仅做 live binding 可用性校验，不接收文件快照参数。'
 const PHASE_RULE = '执行成功后进入 editing phase。'
@@ -115,16 +116,5 @@ export class PageDesignLifecycleCatalog extends PageDesignToolCatalog<
 > {
   constructor() {
     super(EDIT_LIFECYCLE_FUNCTION_PARAMETER_TABLE, EDIT_LIFECYCLE_FUNCTION_CAPABILITY_TABLE)
-  }
-
-  validateParams(functionId: string, params: unknown): string | null {
-    if (this.getParameterRow(functionId) === undefined) {
-      return `未知 lifecycle 函数: ${functionId}`
-    }
-
-    if (params === undefined || params === null) return null
-    if (typeof params !== 'object' || Array.isArray(params)) return `${functionId} 参数必须留空或传 {}`
-    if (Object.keys(params).length > 0) return `${functionId} 不再接收文件快照参数，请传 {}`
-    return null
   }
 }

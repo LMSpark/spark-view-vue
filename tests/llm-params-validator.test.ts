@@ -2,14 +2,20 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LlmParamsValidator,
+  type LlmParameterSchemaRoot,
   PageDesignDatasetCatalog,
 } from '../packages/spark-ai/src'
 
 const datasetCatalog = new PageDesignDatasetCatalog()
+const NO_PARAMS_SCHEMA: LlmParameterSchemaRoot = {
+  type: 'object',
+  properties: {},
+  additionalProperties: false,
+}
 
 describe('validateLlmDeserializedParams', () => {
   it('rejects non-object root params', () => {
-    const result = LlmParamsValidator.validateLlmDeserializedParams('not-an-object', {})
+    const result = LlmParamsValidator.validateLlmDeserializedParams('not-an-object', NO_PARAMS_SCHEMA)
 
     expect(result.ok).toBe(false)
     expect(result.issues).toEqual([
@@ -20,7 +26,7 @@ describe('validateLlmDeserializedParams', () => {
     ])
   })
 
-  it('supports nested wildcard object schemas', () => {
+  it('supports nested dynamic-key JSON Schema objects', () => {
     const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         tableName: 'Users',
@@ -31,21 +37,20 @@ describe('validateLlmDeserializedParams', () => {
         },
       },
       {
-        tableName: 'string — 表名',
-        views: {
-          kind: 'object',
-          optional: {
-            '<customViewId>': {
-              kind: 'object',
-              optional: {
-                page: 'number? — 当前页',
+        type: 'object',
+        required: ['tableName'],
+        properties: {
+          tableName: { type: 'string', description: '表名' },
+          views: {
+            type: 'object',
+            additionalProperties: {
+              type: 'object',
+              properties: {
+                page: { type: 'number', description: '当前页' },
               },
             },
           },
         },
-      },
-      {
-        requiredKeys: ['tableName'],
       },
     )
 
@@ -61,10 +66,13 @@ describe('validateLlmDeserializedParams', () => {
         },
       },
       {
-        crudConfig: {
-          kind: 'object',
-          optional: {
-            transformRequest: '不要传函数；LLM 场景应省略此字段',
+        type: 'object',
+        properties: {
+          crudConfig: {
+            type: 'object',
+            properties: {
+              transformRequest: false,
+            },
           },
         },
       },
@@ -80,10 +88,11 @@ describe('validateLlmDeserializedParams', () => {
         componentId: 'div__0_0',
       },
       {
-        componentId: 'string — 节点 id（来自 listChildren / getNode 返回结果中的 id 字段）',
-      },
-      {
-        requiredKeys: ['componentId'],
+        type: 'object',
+        required: ['componentId'],
+        properties: {
+          componentId: { type: 'string', description: '节点 id（来自 listChildren / getNode 返回结果中的 id 字段）' },
+        },
       },
     )
 
@@ -101,23 +110,19 @@ describe('validateLlmDeserializedParams', () => {
         },
       },
       {
-        componentId: 'string — 节点 id',
-        node: {
-          kind: 'object',
-          required: ['type'],
-          properties: {
-            type: 'string — 组件类型',
-          },
-          optional: {
-            children: {
-              kind: 'array',
-              note: 'SparkNodeChildren',
+        type: 'object',
+        required: ['componentId', 'node'],
+        properties: {
+          componentId: { type: 'string', description: '节点 id' },
+          node: {
+            type: 'object',
+            required: ['type'],
+            properties: {
+              type: { type: 'string', description: '组件类型' },
+              children: { type: 'array', description: 'SparkNodeChildren' },
             },
           },
         },
-      },
-      {
-        requiredKeys: ['componentId', 'node'],
       },
     )
 
@@ -125,24 +130,23 @@ describe('validateLlmDeserializedParams', () => {
     expect(result.issues).toHaveLength(0)
   })
 
-  it('fails fast when leaf schema description has no recognizable type', () => {
+  it('fails fast when schema is not standard JSON Schema', () => {
+    const invalidSchema = {
+      foo: '字段说明（缺少类型标注）',
+    } as unknown as LlmParameterSchemaRoot
+
     const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         foo: 'bar',
       },
-      {
-        foo: '字段说明（缺少类型标注）',
-      },
-      {
-        requiredKeys: ['foo'],
-      },
+      invalidSchema,
     )
 
     expect(result.ok).toBe(false)
-    expect(LlmParamsValidator.formatLlmParamValidationIssues(result.issues)).toContain('schema 描述缺少可识别类型')
+    expect(LlmParamsValidator.formatLlmParamValidationIssues(result.issues)).toContain('schema 根节点必须是 type=object 的标准 JSON Schema')
   })
 
-  it('keeps explicit unknown leaf schema pass-through', () => {
+  it('keeps explicit open JSON Schema pass-through', () => {
     const result = LlmParamsValidator.validateLlmDeserializedParams(
       {
         payload: {
@@ -150,10 +154,11 @@ describe('validateLlmDeserializedParams', () => {
         },
       },
       {
-        payload: 'unknown — 明确声明由上层自行处理',
-      },
-      {
-        requiredKeys: ['payload'],
+        type: 'object',
+        required: ['payload'],
+        properties: {
+          payload: { description: '明确声明由上层自行处理' },
+        },
       },
     )
 

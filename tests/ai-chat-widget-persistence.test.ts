@@ -339,6 +339,79 @@ describe('AiChatWidget persistence', () => {
     expect(wrapper.text()).toContain('结束:第一条')
   })
 
+  it('echoes concurrent turn SSE diagnostics without mixing scoped streams', async () => {
+    const releases = new Map<string, () => void>()
+    const sender = vi.fn(async (request) => {
+      const prompt = request.historyMsgs.at(-1)?.content ?? ''
+      const turnId = request.turn?.turnId ?? prompt
+      request.onSseEvent?.({
+        sessionId: 'shared-session',
+        type: 'delta',
+        data: `sse-start:${prompt};`,
+        streamKey: `test::shared-session::llm::${turnId}`,
+        scope: {
+          businessRegistrationId: 'test',
+          businessInstanceId: 'shared-session',
+          eventModuleId: 'llm',
+          turnId,
+        },
+      })
+      request.onDelta?.(`msg-start:${prompt};`)
+      await new Promise<void>((resolve) => {
+        releases.set(prompt, resolve)
+      })
+      request.onSseEvent?.({
+        sessionId: 'shared-session',
+        type: 'delta',
+        data: `sse-end:${prompt};`,
+        streamKey: `test::shared-session::llm::${turnId}`,
+        scope: {
+          businessRegistrationId: 'test',
+          businessInstanceId: 'shared-session',
+          eventModuleId: 'llm',
+          turnId,
+        },
+      })
+      request.onDelta?.(`msg-end:${prompt};`)
+    })
+
+    const wrapper = mount(AiChatWidget, {
+      props: {
+        sender,
+        storageKey: 'ai-chat-widget-concurrent-turn-echo',
+        pageId: 'concurrent-page',
+        turnConcurrency: { maxParallelTurns: 2 },
+        showToolLogs: true,
+      },
+    })
+
+    const textarea = wrapper.find('.chat-textarea')
+    await textarea.setValue('第一条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    await textarea.setValue('第二条')
+    await wrapper.find('.send-btn').trigger('click')
+    await flushPromises()
+
+    releases.get('第二条')?.()
+    await flushPromises()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+
+    releases.get('第一条')?.()
+    await flushPromises()
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
+
+    const sseTextEntries = wrapper.findAll('.diagnostic-entry--sse-text').map((entry) => entry.text())
+    expect(sseTextEntries).toHaveLength(2)
+    const turnOneSse = sseTextEntries.find((entry) => entry.includes('第一条')) ?? ''
+    const turnTwoSse = sseTextEntries.find((entry) => entry.includes('第二条')) ?? ''
+    expect(turnOneSse).toContain('sse-start:第一条;sse-end:第一条;')
+    expect(turnOneSse).not.toContain('第二条')
+    expect(turnTwoSse).toContain('sse-start:第二条;sse-end:第二条;')
+    expect(turnTwoSse).not.toContain('第一条')
+  })
+
   it('queues overflow turns when configured and starts them after a slot frees', async () => {
     const releases = new Map<string, () => void>()
     const sender = vi.fn(async (request) => {
@@ -525,9 +598,9 @@ describe('AiChatWidget persistence', () => {
       .find((entry) => entry.find('.diagnostic-entry__kind').text() === '人工输入')
     expect(humanEntry?.find('.diagnostic-entry__title').text()).toBe('用户消息')
     expect(wrapper.findAll('.diagnostic-entry__title').filter((entry) => entry.text() === '人工输入')).toHaveLength(0)
-    expect(wrapper.text()).not.toContain('SSE 文本增量')
-    expect(wrapper.text()).not.toContain('SSE 推理')
-    expect(wrapper.text()).not.toContain('raw-sse-delta')
+    expect(wrapper.text()).toContain('SSE 文本增量')
+    expect(wrapper.text()).toContain('SSE 推理')
+    expect(wrapper.text()).toContain('raw-sse-delta')
     expect(wrapper.text()).not.toContain('duplicated-sse-log')
     expect(wrapper.text()).not.toContain('duplicated-result-log')
     expect(wrapper.text()).not.toContain('编辑会话已挂接到当前页面模型')
@@ -535,7 +608,11 @@ describe('AiChatWidget persistence', () => {
     expect(wrapper.text()).not.toContain('SSE done')
     expect(wrapper.text()).not.toContain('(empty)')
     const sseTextEntries = wrapper.findAll('.diagnostic-entry--sse-text')
-    expect(sseTextEntries).toHaveLength(0)
+    expect(sseTextEntries).toHaveLength(2)
+    expect(sseTextEntries.map((entry) => entry.text())).toEqual(expect.arrayContaining([
+      expect.stringContaining('reasoning-context more-reasoning'),
+      expect.stringContaining('raw-sse-delta'),
+    ]))
     expect(wrapper.text()).toContain('FC 调用记录 (1)')
     expect(wrapper.text()).toContain('参数荷载目录')
 

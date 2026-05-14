@@ -7,6 +7,7 @@ import {
   guidePageDesignComponentPayload,
   projectFunctionCatalog,
   queryComponentCatalog,
+  queryPageDesignComponentPayloads,
   type ComponentCatalog,
 } from '../packages/spark-ai/src/registrations/page-design/payloads'
 
@@ -355,16 +356,67 @@ describe('@spark-view/spark-ai framework boundary', () => {
     expect(guide).not.toHaveProperty('jsonSchema')
     expect(guide).not.toHaveProperty('minimalExample')
     expect(guide).toHaveProperty('minimalParams')
+    expect(guide).toHaveProperty('sourceGuide')
     expect(guide?.paramsSchema).toMatchObject({
-      kind: 'object',
+      type: 'object',
       required: ['type', 'props'],
     })
 
     const schema = guide?.paramsSchema as { properties?: Record<string, unknown> } | undefined
     expect(schema?.properties?.['type']).toMatchObject({
-      kind: 'enum',
-      enum: ['r-table'],
+      type: 'string',
+      const: 'r-table',
     })
+
+    const sourceGuide = guide?.sourceGuide as {
+      type?: string
+      category?: string
+      optionalProps?: Array<{ name?: string; schema?: unknown }>
+      subComponentGuides?: Array<{ type?: string; fromProps?: string[] }>
+      failFastChecks?: string[]
+    } | undefined
+    expect(sourceGuide).toMatchObject({
+      type: 'r-table',
+      category: 'container',
+    })
+    expect(sourceGuide?.optionalProps?.map(prop => prop.name)).toContain('toolbar')
+    expect(sourceGuide?.subComponentGuides?.some(item => item.type === 'r-toolbar')).toBe(true)
+    expect(sourceGuide?.failFastChecks).toContain('组件 type 必须精确匹配: r-table')
+  })
+
+  it('publishes component directory as bounded summaries', () => {
+    const directory = queryPageDesignComponentPayloads()
+
+    expect(directory.length).toBeGreaterThan(0)
+    expect(directory.length).toBeLessThanOrEqual(24)
+    expect(directory[0]).toHaveProperty('key')
+    expect(directory[0]).toHaveProperty('description')
+    expect(directory[0]).not.toHaveProperty('category')
+    expect(directory[0]).not.toHaveProperty('payloadRef')
+    expect(directory[0]).not.toHaveProperty('tags')
+    expect(directory[0]).not.toHaveProperty('paramsSchema')
+    expect(directory[0]).not.toHaveProperty('usageRules')
+
+    expect(queryPageDesignComponentPayloads({ limit: 1 })).toHaveLength(1)
+    expect(queryPageDesignComponentPayloads({ limit: 999 }).length).toBeLessThanOrEqual(40)
+    expect(() => queryPageDesignComponentPayloads({ limit: 0 })).toThrow(/filter\.limit/u)
+  })
+
+  it('extracts component directory summaries with JMESPath', () => {
+    const fields = queryPageDesignComponentPayloads({
+      expression: 'components[?category==`field`].type',
+      limit: 3,
+    })
+    expect(fields).toHaveLength(3)
+    expect(fields.every(item => Object.keys(item).join(',') === 'key,description')).toBe(true)
+    expect(fields[0]).not.toHaveProperty('paramsSchema')
+
+    const containers = queryPageDesignComponentPayloads({
+      expression: 'registry.containers',
+      limit: 5,
+    })
+    expect(containers.length).toBeGreaterThan(0)
+    expect(containers[0]).toHaveProperty('key')
   })
 
   it('builds component payload parameter schema from JSON Schema, not type text guesses', () => {
@@ -379,8 +431,7 @@ describe('@spark-view/spark-ai framework boundary', () => {
     const action = schema?.properties?.props?.properties?.['action']
 
     expect(action).toMatchObject({
-      kind: 'enum',
-      openEnded: false,
+      type: 'string',
       enum: expect.arrayContaining(['append-row', 'delete-selected', 'message-current']),
     })
   })

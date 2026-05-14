@@ -17,16 +17,20 @@ export interface ParameterPayloadQueryFilter {
   readonly category?: string
   /** 关键词过滤，具体匹配策略由 provider 自行决定。 */
   readonly keyword?: string
+  /** 可选投影表达式；具体语法由 provider 定义，page-design 组件目录使用 JMESPath。 */
+  readonly expression?: string
+  /** 最多返回多少条目录摘要；provider 可设置默认值与上限。 */
+  readonly limit?: number
 }
 
 /** 可展示在列表或供 LLM 初筛的参数 payload 摘要。 */
 export interface ParameterPayloadSummary {
-  /** 参数提供者命名空间，必须能定位到注册过的 provider。 */
-  readonly payloadRef: string
+  /** 参数提供者命名空间；当调用结果已有顶层 payloadRef 时，目录项可省略。 */
+  readonly payloadRef?: string
   /** provider 内部的知识条目 key，用于后续拉取 guide。 */
   readonly key: string
-  /** 面向 LLM 或 UI 的简短描述。 */
-  readonly description: string
+  /** 面向 LLM 或 UI 的简短描述；表达式投影可按需省略以压缩上下文。 */
+  readonly description?: string
   /** 可选分类，便于调用方分组展示或过滤。 */
   readonly category?: string
   /** 可选标签，补充检索和提示词上下文。 */
@@ -55,6 +59,8 @@ export interface ParameterPayloadGuide {
   readonly paramsSchema: LlmParameterSchemaRoot
   /** 最小可用参数示例，帮助 LLM 减少结构猜测。 */
   readonly minimalParams?: LlmJsonValue
+  /** provider 原始语义指南；保留业务 catalog 的说明、分组、绑定、事件等信息，供 LLM 理解用途。 */
+  readonly sourceGuide?: LlmJsonValue
   /** 使用规则、前置条件或调用顺序提示。 */
   readonly usageRules?: readonly string[]
   /** 已知失败模式，供 LLM 规划修复动作。 */

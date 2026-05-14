@@ -33,6 +33,41 @@ async function waitForCondition(condition: () => boolean): Promise<void> {
   throw new Error('condition was not met')
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+const NO_PARAMS_SCHEMA = {
+  type: 'object',
+  properties: {},
+  additionalProperties: false,
+} as const
+
+function collectProviderSchemaIssues(value: unknown, path: string, issues: string[]): void {
+  if (!isRecord(value)) return
+  if ('kind' in value) issues.push(`${path}.kind`)
+  const properties = value['properties']
+  if (isRecord(properties)) {
+    for (const [key, property] of Object.entries(properties)) {
+      if (!isRecord(property) && typeof property !== 'boolean') {
+        issues.push(`${path}.properties.${key}`)
+        continue
+      }
+      collectProviderSchemaIssues(property, `${path}.properties.${key}`, issues)
+    }
+  }
+  for (const key of ['items', 'additionalProperties'] as const) {
+    const child = value[key]
+    if (isRecord(child)) collectProviderSchemaIssues(child, `${path}.${key}`, issues)
+  }
+  for (const key of ['oneOf', 'anyOf', 'allOf', 'prefixItems'] as const) {
+    const children = value[key]
+    if (Array.isArray(children)) {
+      children.forEach((child, index) => collectProviderSchemaIssues(child, `${path}.${key}[${index}]`, issues))
+    }
+  }
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.useRealTimers()
@@ -138,6 +173,39 @@ describe('AppAiHost', () => {
     expect(setDraftFields?.function.description).toContain('只有调用 setDraftFields 成功后')
   })
 
+  it('exposes PageDesign parameter schemas as provider-ready JSON Schema', async () => {
+    const registry = new AppAiBusinessRegistry()
+    registerAppAiBusinesses({
+      registry,
+      getPageDesignEditHost: () => ({}) as PageDesignEditHost,
+      resolvePageDesignInstanceId: () => 'data-report',
+    })
+    const runtime = registry.get(PAGE_DESIGN_MODULE_ID)
+    expect(runtime).toBeDefined()
+    if (runtime === undefined) return
+
+    const projection = await runtime.startSession({
+      moduleId: PAGE_DESIGN_MODULE_ID,
+      moduleInstanceId: 'data-report',
+      instanceId: 'pageDesign:data-report',
+    })
+    const codec = createAppAiToolCodec(projection)
+    const issues: string[] = []
+    codec.tools.forEach((tool, index) => {
+      collectProviderSchemaIssues(tool.function.parameters, `tools[${index}].function.parameters`, issues)
+    })
+    const writeScript = codec.tools.find((tool) => tool.function.name.includes('writeScript'))
+    const writeScriptProperties = writeScript?.function.parameters['properties']
+
+    expect(issues).toEqual([])
+    expect(writeScriptProperties).toMatchObject({
+      content: {
+        type: 'string',
+        description: expect.stringContaining('完整文本内容'),
+      },
+    })
+  })
+
   it('lets leave-request runtime complete and release live draft state after submit', async () => {
     const registry = new AppAiBusinessRegistry()
     registerAppAiBusinesses({
@@ -233,7 +301,7 @@ describe('AppAiHost', () => {
           modulePath: 'taskBiz',
           moduleIds: ['taskBiz'],
           description: 'Finish the task.',
-          paramsSchema: {},
+          paramsSchema: NO_PARAMS_SCHEMA,
           contextParams: [],
         }],
         modules: [],
@@ -245,7 +313,7 @@ describe('AppAiHost', () => {
         modulePath: 'taskBiz',
         moduleIds: ['taskBiz'],
         description: 'Finish the task.',
-        paramsSchema: {},
+        paramsSchema: NO_PARAMS_SCHEMA,
         contextParams: [],
       }],
     } as unknown as AiRuntimeStartInstanceResult
@@ -259,7 +327,7 @@ describe('AppAiHost', () => {
         functions: [{
           functionId: 'finish',
           description: 'Finish the task.',
-          paramsSchema: {},
+          paramsSchema: NO_PARAMS_SCHEMA,
         }],
         modules: [],
       }),
@@ -310,11 +378,21 @@ describe('AppAiHost', () => {
     }
     const host = new AppAiHost({ registry, transport, maxToolRounds: 4 })
     const onDelta = vi.fn()
+    const onFcCall = vi.fn()
 
     await host.createPanelConfig().sender({
       historyMsgs: [{ role: 'user', content: '完成任务' }],
       mode: 'multi',
+      turn: {
+        turnId: 'turn-tool-loop',
+        seq: 7,
+        baseRevision: 0,
+        queuedAt: '2026-05-14T00:00:00.000Z',
+        startedAt: '2026-05-14T00:00:00.000Z',
+        maxParallelTurns: 2,
+      },
       onDelta,
+      onFcCall,
     })
 
     expect(streamTurn).toHaveBeenCalledTimes(1)
@@ -338,6 +416,11 @@ describe('AppAiHost', () => {
       ]),
     }))
     expect(onDelta).toHaveBeenCalledWith('任务已完成。')
+    expect(onFcCall).toHaveBeenCalledWith(expect.objectContaining({
+      turnId: 'turn-tool-loop',
+      round: 1,
+      toolName: 'task-1@taskBiz@finish',
+    }))
   })
 
   it('passes assistant tool calls and tool results as the next turn messages when business continues', async () => {
@@ -360,7 +443,7 @@ describe('AppAiHost', () => {
           modulePath: 'taskBiz',
           moduleIds: ['taskBiz'],
           description: 'Check the task.',
-          paramsSchema: {},
+          paramsSchema: NO_PARAMS_SCHEMA,
           contextParams: [],
         }],
         modules: [],
@@ -372,7 +455,7 @@ describe('AppAiHost', () => {
         modulePath: 'taskBiz',
         moduleIds: ['taskBiz'],
         description: 'Check the task.',
-        paramsSchema: {},
+        paramsSchema: NO_PARAMS_SCHEMA,
         contextParams: [],
       }],
     } as unknown as AiRuntimeStartInstanceResult
@@ -382,7 +465,7 @@ describe('AppAiHost', () => {
         moduleId: 'taskBiz',
         name: 'Task Business',
         description: 'Completes a task.',
-        functions: [{ functionId: 'check', description: 'Check the task.', paramsSchema: {} }],
+        functions: [{ functionId: 'check', description: 'Check the task.', paramsSchema: NO_PARAMS_SCHEMA }],
         modules: [],
       }),
       resolveBusinessInstance: () => 'task-1',
@@ -661,6 +744,318 @@ describe('AppAiHost', () => {
     ]))
   })
 
+  it('stages large knowledge projections so guided tools are exposed on demand', async () => {
+    const noParams = NO_PARAMS_SCHEMA
+    const datasetCreateTable = {
+      action: 'page-1@dataset@createTable',
+      moduleId: 'dataset',
+      modulePath: 'pageDesign/dataset',
+      moduleIds: ['pageDesign', 'dataset'],
+      description: 'Create a table.',
+      paramsSchema: noParams,
+      contextParams: [],
+    }
+    const projection = {
+      scope: {
+        moduleId: PAGE_DESIGN_MODULE_ID,
+        moduleInstanceId: 'page-1',
+        instanceId: 'pageDesign:page-1',
+        runtimeInstanceId: 'pageDesign:page-1',
+      },
+      module: {
+        moduleId: PAGE_DESIGN_MODULE_ID,
+        modulePath: 'pageDesign',
+        moduleIds: ['pageDesign'],
+        name: 'Page Design',
+        description: 'Edit pages.',
+        functions: [],
+        modules: [],
+      },
+      promptSnapshot: 'Edit pages.',
+      availableFunctions: [
+        {
+          action: 'page-1@knowledge@guideFunction',
+          moduleId: 'knowledge',
+          modulePath: 'pageDesign/knowledge',
+          moduleIds: ['pageDesign', 'knowledge'],
+          description: 'Guide a function.',
+          paramsSchema: {
+            type: 'object',
+            properties: { action: { type: 'string' } },
+            required: ['action'],
+          },
+          contextParams: [],
+        },
+        {
+          action: 'page-1@lifecycle@bootstrap',
+          moduleId: 'lifecycle',
+          modulePath: 'pageDesign/lifecycle',
+          moduleIds: ['pageDesign', 'lifecycle'],
+          description: 'Bootstrap edit host.',
+          paramsSchema: noParams,
+          contextParams: [],
+        },
+        datasetCreateTable,
+        ...Array.from({ length: 25 }, (_, index) => ({
+          action: `page-1@dataset@filler${index}`,
+          moduleId: 'dataset',
+          modulePath: 'pageDesign/dataset',
+          moduleIds: ['pageDesign', 'dataset'],
+          description: `Filler ${index}.`,
+          paramsSchema: noParams,
+          contextParams: [],
+        })),
+      ],
+    } as unknown as AiRuntimeStartInstanceResult
+    const runtime: AppAiBusinessRuntime = {
+      moduleId: PAGE_DESIGN_MODULE_ID,
+      getRegistrationData: () => ({
+        moduleId: PAGE_DESIGN_MODULE_ID,
+        name: 'Page Design',
+        description: 'Edit pages.',
+        functions: [],
+        modules: [],
+      }),
+      resolveBusinessInstance: () => 'page-1',
+      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
+        id: 'history-1',
+        seq: 1,
+        timestamp: 1,
+        kind: 'message' as const,
+        moduleId: options.moduleId,
+        moduleInstanceId: options.moduleInstanceId,
+        instanceId: options.instanceId,
+        runtimeInstanceId: options.instanceId,
+        role: options.role,
+        source: options.source ?? 'system',
+        content: options.content,
+      })),
+      executeFunctionCall: vi.fn(async (options): Promise<AiRuntimeFunctionCallResult<unknown>> => ({
+        ok: true,
+        data: functionIdFromActionForTest(options.action) === 'guideFunction'
+          ? { guide: datasetCreateTable }
+          : { created: true },
+        summary: 'ok',
+      })),
+      afterFunctionCall: vi.fn((options): AppAiBusinessLifecycleDirective => (
+        functionIdFromActionForTest(options.action) === 'createTable'
+          ? { status: 'complete', reason: 'created' }
+          : { status: 'continue' }
+      )),
+      endBusinessInstance: vi.fn(),
+      getSessionHistory: () => [],
+    }
+    const registry = new AppAiBusinessRegistry()
+    registry.register(runtime)
+    const streamInputs: AppAiStreamTurnInput[] = []
+    const streamTurn = vi.fn(async (input: AppAiStreamTurnInput) => {
+      streamInputs.push(input)
+      if (streamInputs.length === 1) {
+        expect(input.tools.some((tool) => tool.function.name.includes('dataset_createTable'))).toBe(false)
+        const guideTool = input.tools.find((tool) => tool.function.name.includes('knowledge_guideFunction'))
+        expect(guideTool).toBeDefined()
+        return {
+          text: '',
+          toolCalls: [{
+            id: 'call_guide',
+            type: 'function',
+            function: {
+              name: guideTool?.function.name,
+              arguments: JSON.stringify({ action: 'page-1@dataset@createTable' }),
+            },
+          }],
+        }
+      }
+      const createTableTool = input.tools.find((tool) => tool.function.name.includes('dataset_createTable'))
+      expect(createTableTool).toBeDefined()
+      return {
+        text: '',
+        toolCalls: [{
+          id: 'call_create',
+          type: 'function',
+          function: {
+            name: createTableTool?.function.name,
+            arguments: '{}',
+          },
+        }],
+      }
+    })
+    const host = new AppAiHost({
+      registry,
+      transport: {
+        routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page' })),
+        streamTurn,
+        appendMessages: vi.fn(async () => {}),
+      },
+      maxToolRounds: 3,
+    })
+
+    await host.createPanelConfig().sender({
+      historyMsgs: [{ role: 'user', content: '编辑 page-1' }],
+      mode: 'multi',
+    })
+
+    expect(streamTurn).toHaveBeenCalledTimes(2)
+    expect(runtime.executeFunctionCall).toHaveBeenCalledWith(expect.objectContaining({
+      action: 'page-1@knowledge@guideFunction',
+    }))
+    expect(runtime.executeFunctionCall).toHaveBeenCalledWith(expect.objectContaining({
+      action: 'page-1@dataset@createTable',
+    }))
+  })
+
+  it('reselects page-design scope when the active page changes', async () => {
+    const registry = new AppAiBusinessRegistry()
+    let activePageId = 'page-a'
+    registerAppAiBusinesses({
+      registry,
+      getPageDesignEditHost: () => ({}) as PageDesignEditHost,
+      resolvePageDesignInstanceId: () => activePageId,
+    })
+
+    const streamedTurns: AppAiStreamTurnInput[] = []
+    const transport: AppAiHostTransport = {
+      routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page design' })),
+      streamTurn: vi.fn(async (input) => {
+        streamedTurns.push(input)
+        return { text: '已进入页面设计', toolCalls: [] }
+      }),
+      appendMessages: vi.fn(async () => {}),
+    }
+    const host = new AppAiHost({ registry, transport })
+    const sender = host.createPanelConfig().sender
+
+    await sender({
+      historyMsgs: [{ role: 'user', content: '编辑 page-a' }],
+      mode: 'multi',
+    })
+
+    activePageId = 'page-b'
+
+    await sender({
+      historyMsgs: [{ role: 'user', content: '编辑 page-b' }],
+      mode: 'multi',
+    })
+
+    expect(transport.routeBusiness).toHaveBeenCalledTimes(2)
+    expect(streamedTurns.map((turn) => turn.scope.businessInstanceId)).toEqual(['page-a', 'page-b'])
+    expect(host.getSelectedScope()).toMatchObject({
+      businessRegistrationId: PAGE_DESIGN_MODULE_ID,
+      businessInstanceId: 'page-b',
+    })
+  })
+
+  it('clears selected scope after a business completes so the next turn reroutes', async () => {
+    const registry = new AppAiBusinessRegistry()
+    const projection = {
+      scope: {
+        moduleId: 'task',
+        moduleInstanceId: 'task-1',
+        instanceId: 'task:task-1',
+        runtimeInstanceId: 'task:task-1',
+      },
+      module: {
+        moduleId: 'task',
+        modulePath: 'task',
+        moduleIds: ['task'],
+        name: 'Task Runtime',
+        description: 'Finish a task.',
+        functions: [],
+        modules: [],
+      },
+      promptSnapshot: 'Finish the task.',
+      availableFunctions: [{
+        action: 'task-1@task@finish',
+        moduleId: 'task',
+        modulePath: 'task',
+        moduleIds: ['task'],
+        description: 'Finish the task.',
+        paramsSchema: NO_PARAMS_SCHEMA,
+        contextParams: [],
+      }],
+    } as unknown as AiRuntimeStartInstanceResult
+    const runtime: AppAiBusinessRuntime = {
+      moduleId: 'task',
+      getRegistrationData: () => ({
+        moduleId: 'task',
+        name: 'Task Runtime',
+        description: 'Finish a task.',
+        functions: [],
+        modules: [],
+      }),
+      resolveBusinessInstance: () => 'task-1',
+      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
+        id: 'task-history-1',
+        seq: 1,
+        timestamp: 1,
+        kind: 'message' as const,
+        moduleId: options.moduleId,
+        moduleInstanceId: options.moduleInstanceId,
+        instanceId: options.instanceId,
+        runtimeInstanceId: options.instanceId,
+        role: options.role,
+        source: options.source ?? 'system',
+        content: options.content,
+      })),
+      executeFunctionCall: vi.fn(async (): Promise<AiRuntimeFunctionCallResult<unknown>> => ({
+        ok: true,
+        data: { finished: true },
+        summary: 'done',
+      })),
+      afterFunctionCall: vi.fn((): AppAiBusinessLifecycleDirective => ({
+        status: 'complete',
+        reason: 'done',
+        finalAssistantMessage: '任务已完成。',
+      })),
+      endBusinessInstance: vi.fn(),
+      getSessionHistory: () => [],
+    }
+    registry.register(runtime)
+
+    const streamedTurns: AppAiStreamTurnInput[] = []
+    const transport: AppAiHostTransport = {
+      routeBusiness: vi.fn(async () => ({ moduleId: 'task', confidence: 0.95, reason: 'task' })),
+      streamTurn: vi.fn(async (input) => {
+        streamedTurns.push(input)
+        if (streamedTurns.length === 1) {
+          const finishTool = input.tools.find((tool: AppAiStreamTurnInput['tools'][number]) => tool.function.name.includes('finish'))
+          return {
+            text: '',
+            toolCalls: [{
+              id: 'call_finish',
+              type: 'function',
+              function: {
+                name: finishTool?.function.name,
+                arguments: '{}',
+              },
+            }],
+          }
+        }
+        return { text: '继续处理', toolCalls: [] }
+      }),
+      appendMessages: vi.fn(async () => {}),
+    }
+    const host = new AppAiHost({ registry, transport })
+    const sender = host.createPanelConfig().sender
+
+    await sender({
+      historyMsgs: [{ role: 'user', content: '完成任务' }],
+      mode: 'multi',
+    })
+
+    expect(host.getSelectedScope()).toBeNull()
+
+    await sender({
+      historyMsgs: [{ role: 'user', content: '再处理一次' }],
+      mode: 'multi',
+    })
+
+    expect(transport.routeBusiness).toHaveBeenCalledTimes(2)
+    expect(runtime.endBusinessInstance).toHaveBeenCalledTimes(1)
+  })
+
   it('uploads AI attachments with auth headers and FormData body', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({
       fileId: 'file-1',
@@ -686,3 +1081,7 @@ describe('AppAiHost', () => {
     expect((init.body as FormData).get('file')).toBe(file)
   })
 })
+
+function functionIdFromActionForTest(action: string): string {
+  return action.split('@').at(-1) ?? ''
+}

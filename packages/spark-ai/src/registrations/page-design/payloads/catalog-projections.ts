@@ -828,7 +828,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     .sort((a, b) => a.localeCompare(b))
 
   return {
-    hint: 'queryPayloads 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 guidePayload 查阅配置指南。',
+    hint: 'queryPayloads 基于组件目录执行 JMESPath 提取；如需查看单组件属性规格，请按组件 type 调用 guidePayload 查阅配置指南。',
     summary: {
       total: entries.length,
       containers: registry.containers.length,

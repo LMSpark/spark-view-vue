@@ -20,6 +20,7 @@ import {
   type AiRuntimeStopInstanceResult,
   type FunctionExecutionContext,
   type LlmJsonObject,
+  type LlmJsonSchema,
   type LlmParameterSchemaRoot,
 } from '../../core'
 
@@ -88,9 +89,14 @@ type LeaveRequestFunctionDefinition = AiFunctionRegistration & {
   apply(args: unknown, context: FunctionExecutionContext): LeaveRequestServiceResult<unknown>
 }
 
-const NO_PARAMS: LlmParameterSchemaRoot = {}
+const NO_PARAMS: LlmParameterSchemaRoot = {
+  type: 'object',
+  properties: {},
+  additionalProperties: false,
+  description: '不接受参数，请传 {} 或留空。',
+}
 
-const DRAFT_FIELDS_SCHEMA: LlmJsonObject = {
+const DRAFT_FIELDS_SCHEMA: Record<string, LlmJsonSchema> = {
   applicantName: { type: 'string', description: '请假人姓名。' },
   leaveType: { type: 'string', description: '请假类型，例如 annual、sick、personal、other。' },
   startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。用户给“今天/明天/后天”等相对日期时，必须基于系统提示中的当前日期换算；不能使用假设日期。' },
@@ -361,19 +367,6 @@ function toServiceContext(context: LeaveRequestRuntimeContext | FunctionExecutio
   }
 }
 
-function validateFieldsArg(args: unknown): string | null {
-  if (!isRecord(args)) return 'args 必须是对象'
-  if (!isRecord(args['fields'])) return 'fields 必须是对象'
-  return null
-}
-
-function validateCancelArg(args: unknown): string | null {
-  if (args === undefined || args === null) return null
-  if (!isRecord(args)) return 'args 必须是对象'
-  if (args['reason'] !== undefined && typeof args['reason'] !== 'string') return 'reason 必须是字符串'
-  return null
-}
-
 function createFunctionDefinitions(service: LeaveRequestService): readonly LeaveRequestFunctionDefinition[] {
   return [
     {
@@ -400,7 +393,6 @@ function createFunctionDefinitions(service: LeaveRequestService): readonly Leave
         { code: 'INVALID_DATE_RANGE', when: '结束日期早于开始日期', fix: '向用户确认日期范围。' },
         { code: 'DRAFT_NOT_EDITABLE', when: '草稿已提交或取消', fix: '创建新草稿或停止修改。' },
       ],
-      validate: validateFieldsArg,
       apply: (args, context) => service.setDraftFields(toServiceContext(context), (args as { fields: unknown }).fields),
     },
     {
@@ -427,7 +419,6 @@ function createFunctionDefinitions(service: LeaveRequestService): readonly Leave
       failureModes: [
         { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '不要取消草稿，提示用户走审批撤回流程。' },
       ],
-      validate: validateCancelArg,
       apply: (args, context) => service.cancelDraft(
         toServiceContext(context),
         isRecord(args) && typeof args['reason'] === 'string' ? args['reason'] : undefined,

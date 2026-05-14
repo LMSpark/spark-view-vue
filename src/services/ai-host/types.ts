@@ -68,6 +68,7 @@ export interface AppAiBusinessRuntime {
   getRegistrationData(): AiModuleRegistrationData
   getBusinessRegistrationData?(): AiBusinessRegistrationData
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string
+  canReuseSelection?(input: AppAiBusinessResolveInput, currentScope: AppAiBusinessScope): boolean
   getSystemPrompt?(context: AppAiBusinessRuntimeContext): string | undefined
   startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult>
   appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry

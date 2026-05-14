@@ -91,21 +91,16 @@ describe('dataset tool protocol contract', () => {
 
   it('exposes recommended enum dictionaries for table semantic metadata fields', () => {
     const row = catalog.getParameterRow('updateTable')
+    const properties = row?.paramsSchema.properties as Record<string, unknown> | undefined
 
-    expect(row?.paramsSchema).toMatchObject({
+    expect(properties).toMatchObject({
       resourceType: {
-        kind: 'enum',
-        type: 'string',
-        enum: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
-        openEnded: true,
-        nullable: true,
+        type: ['string', 'null'],
+        examples: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
       },
       businessCategory: {
-        kind: 'enum',
-        type: 'string',
-        enum: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
-        openEnded: true,
-        nullable: true,
+        type: ['string', 'null'],
+        examples: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
       },
     })
   })

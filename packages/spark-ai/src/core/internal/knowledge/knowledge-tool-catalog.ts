@@ -1,5 +1,6 @@
 import type { FunctionFailureMode } from '../../protocol/runtime-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
+import { LlmParamsValidator } from '../../protocol/llm-params-validator'
 
 export type AiKnowledgeFunctionFailureMode = FunctionFailureMode
 export type AiKnowledgeFunctionTarget = 'knowledge'
@@ -48,6 +49,17 @@ export interface AiKnowledgeCatalogOptions {
 }
 
 const KNOWLEDGE_TARGET: AiKnowledgeFunctionTarget = 'knowledge'
+const NO_PARAMS: LlmParameterSchemaRoot = {
+  type: 'object',
+  properties: {},
+  additionalProperties: false,
+  description: 'queryModules 不接受参数，请传 {} 或留空。',
+}
+const STRING_PARAM = (description: string, options: { minLength?: number } = {}) => ({
+  type: 'string',
+  description,
+  ...(options.minLength !== undefined ? { minLength: options.minLength } : {}),
+}) as const
 
 function createAiKnowledgeCapabilityRow(row: AiKnowledgeFunctionParameterRow): AiKnowledgeFunctionCapabilityRow {
   return {
@@ -59,13 +71,9 @@ function createAiKnowledgeCapabilityRow(row: AiKnowledgeFunctionParameterRow): A
     paramsRef: row.functionId,
     ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
     ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
+    params: row.paramsSchema,
     ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
   }
-}
-
-function isPlainObject(params: unknown): params is Record<string, unknown> {
-  return typeof params === 'object' && params !== null && !Array.isArray(params)
 }
 
 export class AiKnowledgeCatalog {
@@ -85,12 +93,15 @@ export class AiKnowledgeCatalog {
         target: KNOWLEDGE_TARGET,
         description: '查询当前 AI 会话可调用的函数目录（按 modulePath/moduleId/keyword 过滤）。',
         paramsSchema: {
-          modulePath: 'string? — 按模块路径过滤，例如 root/child。',
-          moduleId: 'string? — 按模块 ID 精确过滤。',
-          keyword: 'string? — 按 action/description/modulePath 模糊搜索。',
+          type: 'object',
+          properties: {
+            modulePath: STRING_PARAM('按模块路径过滤，例如 root/child。'),
+            moduleId: STRING_PARAM('按模块 ID 精确过滤。'),
+            keyword: STRING_PARAM('按 action/description/modulePath 模糊搜索。'),
+          },
         },
         resultSchema: {
-          items: 'AiRuntimeFunctionExposure[] — 函数目录（action、参数 schema、规则、失败模式）。',
+          items: 'AiKnowledgeFunctionSummary[] — 轻量函数目录（action、模块、描述、顶层参数名、失败码）；完整 paramsSchema/usageRules/failureModes 请用 guideFunction(action) 按需查询。',
         },
         example: {},
         usageRules: [
@@ -104,9 +115,9 @@ export class AiKnowledgeCatalog {
         type: 'describe',
         target: KNOWLEDGE_TARGET,
         description: '查询当前 AI 会话的模块目录（含根模块与子模块）。',
-        paramsSchema: {},
+        paramsSchema: NO_PARAMS,
         resultSchema: {
-          items: 'AiRuntimeModuleExposure[] — 模块目录（moduleId/modulePath/name/description）。',
+          items: 'AiKnowledgeModuleSummary[] — 轻量模块目录（moduleId/modulePath/name/description/functionCount/childModuleCount），不包含函数 schema。',
         },
         example: {},
         usageRules: [
@@ -120,8 +131,11 @@ export class AiKnowledgeCatalog {
         target: KNOWLEDGE_TARGET,
         description: '查询单个函数指南（按 action 精确查询）。',
         paramsSchema: {
+          type: 'object',
           required: ['action'],
-          action: 'string — 函数 action，例如 root-1@module@actionName。',
+          properties: {
+            action: STRING_PARAM('函数 action，例如 root-1@module@actionName。', { minLength: 1 }),
+          },
         },
         resultSchema: {
           guide: 'AiRuntimeFunctionExposure — 函数完整指南（参数 schema、规则、失败模式）。',
@@ -172,39 +186,7 @@ export class AiKnowledgeCatalog {
       return `未知 knowledge 函数: ${functionId}`
     }
 
-    if (functionId === 'queryModules') {
-      if (params === undefined || params === null) return null
-      if (isPlainObject(params) && Object.keys(params).length === 0) return null
-      return 'queryModules 不接受参数，请传 {} 或留空'
-    }
-
-    if (!isPlainObject(params)) {
-      return `${functionId} 参数必须是对象`
-    }
-
-    if (functionId === 'guideFunction') {
-      return typeof params['action'] === 'string' && params['action'].trim().length > 0
-        ? null
-        : 'guideFunction 缺少 action（非空字符串）'
-    }
-
-    if (functionId === 'guidePayload') {
-      return typeof params['key'] === 'string' && params['key'].trim().length > 0
-        ? null
-        : 'guidePayload 缺少 key（非空字符串）'
-    }
-
-    const optionalKeys = functionId === 'queryFunctions'
-      ? ['modulePath', 'moduleId', 'keyword']
-      : ['category', 'keyword']
-
-    for (const key of optionalKeys) {
-      const value = params[key]
-      if (value !== undefined && typeof value !== 'string') {
-        return `${functionId}.${key} 必须是字符串`
-      }
-    }
-
-    return null
+    const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
+    return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
   }
 }

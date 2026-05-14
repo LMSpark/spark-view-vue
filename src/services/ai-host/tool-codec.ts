@@ -10,24 +10,20 @@ export interface AppAiToolCodec {
   actionOf(toolName: string): string | null
 }
 
+export interface AppAiToolCodecOptions {
+  readonly includeActions?: ReadonlySet<string> | ((exposure: AiRuntimeFunctionExposure) => boolean) | undefined
+}
+
 function sanitizeToolNamePart(value: string): string {
   const normalized = value.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '')
   return normalized.length > 0 ? normalized : 'tool'
 }
 
 function schemaToParameters(schema: LlmParameterSchemaRoot): Record<string, unknown> {
-  if (schema['type'] === 'object') return schema as Record<string, unknown>
-  if (schema['kind'] === 'object') return schema as Record<string, unknown>
-  if (Object.keys(schema).length === 0) {
-    return {
-      type: 'object',
-      properties: {},
-    }
+  if (schema.type !== 'object') {
+    throw new Error('LLM tool parameters must be standard JSON Schema with root type=object')
   }
-  return {
-    type: 'object',
-    properties: schema,
-  }
+  return schema as Record<string, unknown>
 }
 
 function toolNameForExposure(exposure: AiRuntimeFunctionExposure, index: number): string {
@@ -49,20 +45,31 @@ function buildToolDescription(exposure: AiRuntimeFunctionExposure): string {
   return parts.join('\n\n')
 }
 
-export function createAppAiToolCodec(projection: AiRuntimeKnowledgeProjection): AppAiToolCodec {
+function shouldIncludeExposure(exposure: AiRuntimeFunctionExposure, options: AppAiToolCodecOptions): boolean {
+  const includeActions = options.includeActions
+  if (includeActions === undefined) return true
+  if (typeof includeActions === 'function') return includeActions(exposure)
+  return includeActions.has(exposure.action)
+}
+
+export function createAppAiToolCodec(
+  projection: AiRuntimeKnowledgeProjection,
+  options: AppAiToolCodecOptions = {},
+): AppAiToolCodec {
   const actionByToolName = new Map<string, string>()
-  const tools = projection.availableFunctions.map((exposure, index): AppAiTransportToolSpec => {
+  const tools = projection.availableFunctions.flatMap((exposure, index): AppAiTransportToolSpec[] => {
+    if (!shouldIncludeExposure(exposure, options)) return []
     let toolName = toolNameForExposure(exposure, index)
     if (actionByToolName.has(toolName)) toolName = `ai_${index}_${toolName}`.slice(0, 64)
     actionByToolName.set(toolName, exposure.action)
-    return {
+    return [{
       type: 'function',
       function: {
         name: toolName,
         description: buildToolDescription(exposure),
         parameters: schemaToParameters(exposure.paramsSchema),
       },
-    }
+    }]
   })
 
   return {

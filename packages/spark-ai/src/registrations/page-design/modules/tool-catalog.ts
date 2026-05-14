@@ -1,4 +1,4 @@
-import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
+import { LlmParamsValidator, type FunctionFailureMode, type LlmJsonObject, type LlmParameterSchemaRoot } from '../../../core'
 
 export type PageDesignFunctionKind = 'describe' | 'request'
 export type PageDesignCapabilityIntegrationStatus = 'runtime-wired'
@@ -77,7 +77,7 @@ export function createPageDesignCapabilityRow<
     ...extras,
     ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
     ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    ...(Object.keys(row.paramsSchema).length > 0 ? { params: row.paramsSchema } : {}),
+    params: row.paramsSchema,
     ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
   }
   return capability as unknown as TCapability
@@ -110,5 +110,10 @@ export abstract class PageDesignToolCatalog<
     return this.capabilityIndex.get(functionId)
   }
 
-  abstract validateParams(functionId: string, params: unknown): string | null
+  validateParams(functionId: string, params: unknown): string | null {
+    const row = this.getParameterRow(functionId)
+    if (row === undefined) return `未知 ${functionId} 函数`
+    const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
+    return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+  }
 }

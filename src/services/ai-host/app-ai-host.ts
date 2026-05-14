@@ -25,6 +25,8 @@ import type {
 } from './types'
 
 const ROUTE_CONFIDENCE_THRESHOLD = 0.65
+const STAGED_TOOL_EXPOSURE_THRESHOLD = 24
+const INITIAL_PAGE_DESIGN_TOOL_MODULES = new Set(['knowledge', 'lifecycle'])
 
 function latestUserInput(request: AiChatSendRequest): string {
   for (let index = request.historyMsgs.length - 1; index >= 0; index -= 1) {
@@ -82,6 +84,50 @@ function eventModuleIdFromAction(action: string): string {
   }
 }
 
+function functionIdFromAction(action: string): string | null {
+  try {
+    return AiInvocationProtocol.parseActionPath(action).function
+  } catch {
+    return null
+  }
+}
+
+function shouldStageToolExposure(projection: AiRuntimeKnowledgeProjection): boolean {
+  return projection.availableFunctions.length > STAGED_TOOL_EXPOSURE_THRESHOLD
+    && projection.availableFunctions.some((exposure) => exposure.moduleId === 'knowledge')
+}
+
+function createInitialToolActionSet(projection: AiRuntimeKnowledgeProjection): Set<string> | null {
+  if (!shouldStageToolExposure(projection)) return null
+  const actions = new Set<string>()
+  for (const exposure of projection.availableFunctions) {
+    if (INITIAL_PAGE_DESIGN_TOOL_MODULES.has(exposure.moduleId)) {
+      actions.add(exposure.action)
+    }
+  }
+  return actions.size > 0 ? actions : null
+}
+
+function hasProjectedAction(projection: AiRuntimeKnowledgeProjection, action: string): boolean {
+  return projection.availableFunctions.some((exposure) => exposure.action === action)
+}
+
+function addGuidedToolAction(
+  projection: AiRuntimeKnowledgeProjection,
+  enabledActions: Set<string> | null,
+  executedAction: string,
+  args: unknown,
+  result: { readonly ok: boolean },
+): void {
+  if (enabledActions === null || functionIdFromAction(executedAction) !== 'guideFunction' || !result.ok) return
+  if (typeof args !== 'object' || args === null || Array.isArray(args)) return
+  const guidedAction = (args as { readonly action?: unknown }).action
+  if (typeof guidedAction !== 'string' || guidedAction.trim() === '') return
+  if (hasProjectedAction(projection, guidedAction)) {
+    enabledActions.add(guidedAction)
+  }
+}
+
 function emitLlmDiagnosticEvent(
   request: AiChatSendRequest,
   scope: AppAiBusinessScope,
@@ -120,6 +166,11 @@ export class AppAiHost {
     return this.selectedScope.value
   }
 
+  private clearSelected(): void {
+    this.selected = null
+    this.selectedScope.value = null
+  }
+
   createSender(): AppAiHostSender {
     return (request) => this.send(request)
   }
@@ -145,9 +196,19 @@ export class AppAiHost {
   }
 
   private async selectBusiness(request: AiChatSendRequest, turn: AppAiTurnMeta): Promise<typeof this.selected> {
-    if (this.selected !== null) return this.selected
-
     const userInput = latestUserInput(request)
+    const resolveInput = {
+      userInput,
+      context: this.options.context?.() ?? {},
+    }
+    if (this.selected !== null) {
+      const canReuseSelection = this.selected.runtime.canReuseSelection
+      if (canReuseSelection === undefined || canReuseSelection(resolveInput, this.selected.scope)) {
+        return this.selected
+      }
+      this.clearSelected()
+    }
+
     const decision = await this.options.transport.routeBusiness({
       userInput,
       candidates: this.options.registry.routingCandidates(),
@@ -168,10 +229,7 @@ export class AppAiHost {
     let businessInstanceId: string
     let projection: AiRuntimeKnowledgeProjection
     try {
-      businessInstanceId = runtime.resolveBusinessInstance({
-        userInput,
-        context: this.options.context?.() ?? {},
-      })
+      businessInstanceId = runtime.resolveBusinessInstance(resolveInput)
       const scopePreview: AppAiBusinessScope = {
         businessRegistrationId: runtime.moduleId,
         businessInstanceId,
@@ -227,7 +285,7 @@ export class AppAiHost {
     request: AiChatSendRequest,
     turn: AppAiTurnMeta,
   ): Promise<void> {
-    const codec = createAppAiToolCodec(projection)
+    const enabledActions = createInitialToolActionSet(projection)
     const runtimeContext = {
       moduleId: runtime.moduleId,
       moduleInstanceId: scope.businessInstanceId,
@@ -243,6 +301,10 @@ export class AppAiHost {
     const maxRounds = this.options.maxToolRounds ?? 4
 
     for (let round = 0; round < maxRounds; round += 1) {
+      const codec = createAppAiToolCodec(
+        projection,
+        enabledActions === null ? {} : { includeActions: enabledActions },
+      )
       emitLlmDiagnosticEvent(request, scope, turn, 'llm-request', {
         kind: 'streamTurn',
         round: round + 1,
@@ -283,10 +345,11 @@ export class AppAiHost {
       const executedToolCalls: AppAiTransportToolCall[] = []
       let lifecycleDirective: AppAiBusinessLifecycleDirective | null = null
       for (const call of result.toolCalls) {
-        const output = await this.executeToolCall(runtime, scope, projection, turn, codec.actionOf.bind(codec), call, request)
+        const output = await this.executeToolCall(runtime, scope, projection, turn, round + 1, codec.actionOf.bind(codec), call, request)
         if (output !== null) {
           executedToolCalls.push(call)
           toolMessages.push(output.toolMessage)
+          addGuidedToolAction(projection, enabledActions, output.action, output.args, output.result)
           if (output.directive.status !== 'continue') {
             lifecycleDirective = output.directive
             break
@@ -332,6 +395,7 @@ export class AppAiHost {
           messages: messagesToAppend,
         })
         await runtime.endBusinessInstance?.(runtimeContext, lifecycleDirective)
+        this.clearSelected()
         return
       }
       pendingMessages = messagesToAppend
@@ -345,10 +409,17 @@ export class AppAiHost {
     scope: AppAiBusinessScope,
     projection: AiRuntimeKnowledgeProjection,
     turn: AppAiTurnMeta,
+    round: number,
     actionOf: (toolName: string) => string | null,
     call: AppAiTransportToolCall,
     request: AiChatSendRequest,
-  ): Promise<{ toolMessage: AppAiTransportMessage; directive: AppAiBusinessLifecycleDirective } | null> {
+  ): Promise<{
+    toolMessage: AppAiTransportMessage
+    directive: AppAiBusinessLifecycleDirective
+    action: string
+    args: unknown
+    result: Awaited<ReturnType<AppAiBusinessRuntime['executeFunctionCall']>>
+  } | null> {
     const toolName = call.function?.name ?? ''
     const action = actionOf(toolName)
     if (action === null) {
@@ -378,7 +449,8 @@ export class AppAiHost {
     request.onFcCall?.({
       toolName: action,
       args,
-      round: turn.seq,
+      turnId: turn.turnId,
+      round,
       ...(call.id === undefined ? {} : { callId: call.id }),
       status: result.ok ? 'success' : 'error',
       result,
@@ -403,6 +475,9 @@ export class AppAiHost {
         ...(call.id === undefined ? {} : { tool_call_id: call.id }),
       },
       directive,
+      action,
+      args,
+      result,
     }
   }
 }

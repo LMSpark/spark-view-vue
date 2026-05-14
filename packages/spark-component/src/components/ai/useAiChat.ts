@@ -200,6 +200,8 @@ export interface AiFcCallRecord {
   id: string
   /** 调用完成或记录生成时间，ISO string。 */
   timestamp: string
+  /** 归属的前端 turn ID；与 round 分离，round 仍表示 AI core/tool-loop 轮次。 */
+  turnId?: string
   /** 工具名或 action 名。 */
   toolName: string
   /** 调用参数，保持原始结构。 */
@@ -234,6 +236,8 @@ export interface AiFcCallRecord {
 export interface AiFcCallInput {
   /** 可选调用时间；缺省时由前端写入当前时间。 */
   timestamp?: string
+  /** 可选前端 turn ID；用于并发 turn 下的 FC 诊断归档。 */
+  turnId?: string
   /** 工具名或 action 名。 */
   toolName: string
   /** 调用参数。 */
@@ -919,6 +923,7 @@ export function useAiChat(options?: UseAiChatOptions) {
     const next: AiFcCallRecord = {
       id: crypto.randomUUID(),
       timestamp: entry.timestamp ?? new Date().toISOString(),
+      ...(entry.turnId !== undefined ? { turnId: entry.turnId } : {}),
       toolName: entry.toolName,
       args: entry.args,
       round: entry.round,

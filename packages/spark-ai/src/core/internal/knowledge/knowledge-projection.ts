@@ -13,16 +13,37 @@ export interface AiKnowledgeScope {
   readonly moduleInstanceId: string
 }
 
+export interface AiKnowledgeFunctionSummary {
+  readonly action: AiRuntimeFunctionExposure['action']
+  readonly moduleId: AiRuntimeFunctionExposure['moduleId']
+  readonly modulePath: AiRuntimeFunctionExposure['modulePath']
+  readonly moduleIds: AiRuntimeFunctionExposure['moduleIds']
+  readonly description: string
+  readonly paramNames?: readonly string[] | undefined
+  readonly requiredParamNames?: readonly string[] | undefined
+  readonly failureCodes?: readonly string[] | undefined
+}
+
+export interface AiKnowledgeModuleSummary {
+  readonly moduleId: AiRuntimeModuleExposure['moduleId']
+  readonly modulePath: AiRuntimeModuleExposure['modulePath']
+  readonly moduleIds: AiRuntimeModuleExposure['moduleIds']
+  readonly name: string
+  readonly description: string
+  readonly functionCount: number
+  readonly childModuleCount: number
+}
+
 export interface AiKnowledgeProjection {
   queryPayloads(payloadRef: string, filter?: ParameterPayloadQueryFilter): readonly ParameterPayloadSummary[]
   guidePayload(payloadRef: string, key: string): ParameterPayloadGuide | null
   queryFunctions(
     scope: AiKnowledgeScope,
     filter?: { readonly modulePath?: string; readonly moduleId?: string; readonly keyword?: string },
-  ): readonly AiRuntimeFunctionExposure[]
+  ): readonly AiKnowledgeFunctionSummary[]
   guideFunction(scope: AiKnowledgeScope, action: string): AiRuntimeFunctionExposure | null
-  queryModules(scope: AiKnowledgeScope): readonly AiRuntimeModuleExposure[]
-  guideModule(scope: AiKnowledgeScope, modulePath: string): AiRuntimeModuleExposure | null
+  queryModules(scope: AiKnowledgeScope): readonly AiKnowledgeModuleSummary[]
+  guideModule(scope: AiKnowledgeScope, modulePath: string): AiKnowledgeModuleSummary | null
 }
 
 interface RuntimeProjectionSnapshot {
@@ -56,7 +77,7 @@ export class AiKnowledgeProjector implements AiKnowledgeProjection {
   queryFunctions(
     scope: AiKnowledgeScope,
     filter?: { readonly modulePath?: string; readonly moduleId?: string; readonly keyword?: string },
-  ): readonly AiRuntimeFunctionExposure[] {
+  ): readonly AiKnowledgeFunctionSummary[] {
     const projection = this.requireProjection(scope)
     let functions = projection.availableFunctions
     const modulePath = filter?.modulePath?.trim()
@@ -76,19 +97,20 @@ export class AiKnowledgeProjector implements AiKnowledgeProjection {
         || fn.modulePath.toLowerCase().includes(keyword),
       )
     }
-    return functions
+    return functions.map((fn) => this.summarizeFunction(fn))
   }
 
   guideFunction(scope: AiKnowledgeScope, action: string): AiRuntimeFunctionExposure | null {
     return this.requireProjection(scope).availableFunctions.find((fn) => fn.action === action) ?? null
   }
 
-  queryModules(scope: AiKnowledgeScope): readonly AiRuntimeModuleExposure[] {
+  queryModules(scope: AiKnowledgeScope): readonly AiKnowledgeModuleSummary[] {
     return this.flattenModules(this.requireProjection(scope).module)
   }
 
-  guideModule(scope: AiKnowledgeScope, modulePath: string): AiRuntimeModuleExposure | null {
-    return this.findModuleInTree(this.requireProjection(scope).module, modulePath) ?? null
+  guideModule(scope: AiKnowledgeScope, modulePath: string): AiKnowledgeModuleSummary | null {
+    const module = this.findModuleInTree(this.requireProjection(scope).module, modulePath)
+    return module === null ? null : this.summarizeModule(module)
   }
 
   private requireProjection(scope: AiKnowledgeScope): RuntimeProjectionSnapshot {
@@ -100,14 +122,45 @@ export class AiKnowledgeProjector implements AiKnowledgeProjection {
     )
   }
 
-  private flattenModules(root: AiRuntimeModuleExposure): AiRuntimeModuleExposure[] {
-    const output: AiRuntimeModuleExposure[] = []
+  private flattenModules(root: AiRuntimeModuleExposure): AiKnowledgeModuleSummary[] {
+    const output: AiKnowledgeModuleSummary[] = []
     const visit = (node: AiRuntimeModuleExposure): void => {
-      output.push({ ...node, modules: [] })
+      output.push(this.summarizeModule(node))
       for (const child of node.modules) visit(child)
     }
     visit(root)
     return output
+  }
+
+  private summarizeFunction(fn: AiRuntimeFunctionExposure): AiKnowledgeFunctionSummary {
+    const properties = fn.paramsSchema.properties
+    const paramNames = properties === undefined ? [] : Object.keys(properties)
+    const requiredParamNames = Array.isArray(fn.paramsSchema.required)
+      ? fn.paramsSchema.required.filter((item): item is string => typeof item === 'string')
+      : []
+    const failureCodes = fn.failureModes?.map((mode) => mode.code) ?? []
+    return {
+      action: fn.action,
+      moduleId: fn.moduleId,
+      modulePath: fn.modulePath,
+      moduleIds: fn.moduleIds,
+      description: fn.description,
+      ...(paramNames.length > 0 ? { paramNames } : {}),
+      ...(requiredParamNames.length > 0 ? { requiredParamNames } : {}),
+      ...(failureCodes.length > 0 ? { failureCodes } : {}),
+    }
+  }
+
+  private summarizeModule(module: AiRuntimeModuleExposure): AiKnowledgeModuleSummary {
+    return {
+      moduleId: module.moduleId,
+      modulePath: module.modulePath,
+      moduleIds: module.moduleIds,
+      name: module.name,
+      description: module.description,
+      functionCount: module.functions.length,
+      childModuleCount: module.modules.length,
+    }
   }
 
   private findModuleInTree(module: AiRuntimeModuleExposure, modulePath: string): AiRuntimeModuleExposure | null {

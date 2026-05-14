@@ -175,10 +175,11 @@ describe('pageDesign module definition', () => {
       moduleInstanceId: 'page-designer',
       instanceId: 'page-design-1',
       action: 'page-designer@knowledge@queryPayloads',
-      args: { keyword: 'table' },
+      args: { expression: 'components[?category==`container`].type', limit: 1 },
       projection,
     })
     expect(payloads).toMatchObject({ ok: true })
+    expect(((payloads as { data?: { items?: unknown[] } }).data?.items ?? []).length).toBeLessThanOrEqual(1)
 
     const listTables = await pageDesign.executeFunctionCall({
       moduleId: PageDesignModule.moduleId,

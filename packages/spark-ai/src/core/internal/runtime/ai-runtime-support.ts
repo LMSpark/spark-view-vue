@@ -633,51 +633,26 @@ export class AiRuntimeProjector {
     if (contextParams.length === 0) return cloneRuntimeValue(schema)
 
     const cloned = cloneRuntimeValue(schema) as Record<string, unknown>
-    // 兼容 JSON Schema 风格的 object schema。
-    if (cloned['type'] === 'object') {
-      const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
-      const required = Array.isArray(cloned['required'])
-        ? cloned['required'].filter((key): key is string => typeof key === 'string')
-        : []
-      for (const param of contextParams) {
-        properties[param.paramName] = {
-          type: 'string',
-          description: `${param.description}（模块路径: ${param.modulePath}）`,
-        }
-        if (!required.includes(param.paramName)) required.push(param.paramName)
-      }
-      return {
-        ...cloned,
-        type: 'object',
-        properties,
-        required,
-      } as LlmParameterSchemaRoot
+    if (Object.keys(cloned).length !== 0 && cloned['type'] !== 'object') {
+      throw new Error('paramsSchema root must be standard JSON Schema type=object')
     }
-
-    // 兼容 spark-ai 自有的 kind: object schema。
-    if (cloned['kind'] === 'object') {
-      const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
-      const required = Array.isArray(cloned['required'])
-        ? cloned['required'].filter((key): key is string => typeof key === 'string')
-        : []
-      for (const param of contextParams) {
-        properties[param.paramName] = `string — ${param.description}（模块路径: ${param.modulePath}）`
-        if (!required.includes(param.paramName)) required.push(param.paramName)
-      }
-      return {
-        ...cloned,
-        kind: 'object',
-        properties,
-        required,
-      } as LlmParameterSchemaRoot
-    }
-
-    // 简写对象 schema 直接追加字段说明。
-    const simplified = { ...cloned }
+    const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
+    const required = Array.isArray(cloned['required'])
+      ? cloned['required'].filter((key): key is string => typeof key === 'string')
+      : []
     for (const param of contextParams) {
-      simplified[param.paramName] = `string — ${param.description}（模块路径: ${param.modulePath}）`
+      properties[param.paramName] = {
+        type: 'string',
+        description: `${param.description}（模块路径: ${param.modulePath}）`,
+      }
+      if (!required.includes(param.paramName)) required.push(param.paramName)
     }
-    return simplified as LlmParameterSchemaRoot
+    return {
+      ...cloned,
+      type: 'object',
+      properties,
+      required,
+    } as LlmParameterSchemaRoot
   }
 
   private collectPrompts(module: AiRuntimeModuleExposure, parts: string[]): void {
@@ -753,59 +728,7 @@ export class AiRuntimeProjector {
 export class AiRuntimeArgValidator {
   /** 根据函数投影后的 paramsSchema 校验 LLM args，返回 null 表示通过。 */
   validateArgsBySchema(schema: LlmParameterSchemaRoot, args: unknown): string | null {
-    if (Object.keys(schema).length === 0) return null
-    if (schema['type'] === 'object') return this.validateJsonSchemaObject(schema, args)
-
-    const result = LlmParamsValidator.validateLlmDeserializedParams(args, schema)
+    const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, schema)
     return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
-  }
-
-  /** 校验 JSON Schema 风格的 object schema。 */
-  private validateJsonSchemaObject(schema: LlmParameterSchemaRoot, args: unknown): string | null {
-    if (!this.isRecord(args)) return 'args must be an object'
-
-    const required = Array.isArray(schema['required'])
-      ? schema['required'].filter((key): key is string => typeof key === 'string')
-      : []
-    for (const key of required) {
-      if (!(key in args) || args[key] === undefined) {
-        return `missing required arg: ${key}`
-      }
-    }
-
-    const properties = this.isRecord(schema['properties']) ? schema['properties'] : {}
-    for (const [key, property] of Object.entries(properties)) {
-      if (!(key in args) || args[key] === undefined || !this.isRecord(property) || property['type'] === undefined) continue
-      if (!this.matchesSchemaType(args[key], property['type'])) {
-        return `arg ${key} must be ${this.readableSchemaType(property['type'])}`
-      }
-    }
-
-    return null
-  }
-
-  /** 将 schema type 转成人类可读文本。 */
-  private readableSchemaType(type: unknown): string {
-    return Array.isArray(type) ? type.join(' | ') : String(type)
-  }
-
-  /** 判断值是否满足 JSON Schema 的基础 type。 */
-  private matchesSchemaType(value: unknown, type: unknown): boolean {
-    const types = Array.isArray(type) ? type : [type]
-    for (const candidate of types) {
-      if (candidate === 'null' && value === null) return true
-      if (candidate === 'array' && Array.isArray(value)) return true
-      if (candidate === 'object' && this.isRecord(value)) return true
-      if (candidate === 'string' && typeof value === 'string') return true
-      if (candidate === 'number' && typeof value === 'number') return true
-      if (candidate === 'integer' && Number.isInteger(value)) return true
-      if (candidate === 'boolean' && typeof value === 'boolean') return true
-    }
-    return false
-  }
-
-  /** 判断 unknown 是否为普通对象。 */
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return isRecord(value)
   }
 }

@@ -1,0 +1,1162 @@
+{
+  "payloadRef": "spark.component",
+  "key": "r-table",
+  "description": "r-table SparkNode 参数荷载指南",
+  "paramsSchema": {
+    "type": "object",
+    "required": [
+      "type",
+      "props"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "SparkNode 稳定 id；新增节点时可省略，由宿主生成。"
+      },
+      "type": {
+        "type": "string",
+        "const": "r-table",
+        "description": "Spark 组件 type，必须与 payload key 完全一致。"
+      },
+      "props": {
+        "type": "object",
+        "required": [],
+        "properties": {
+          "tableProps": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "透传给 el-table 的原生属性（兼容 JSON 规则里常见的 tableProps 写法）。\n顶层同名 props（如 resizable / border / rowKey）优先级更高。"
+          },
+          "border": {
+            "type": "boolean",
+            "description": "是否显示纵向边框。默认 true（resizable 启用时强制开启）。"
+          },
+          "stripe": {
+            "type": "boolean",
+            "description": "是否开启斑马纹。"
+          },
+          "highlightCurrentRow": {
+            "type": "boolean",
+            "description": "是否高亮当前行。"
+          },
+          "rowKey": {
+            "type": "string",
+            "description": "行数据的 Key，用于树形表格。"
+          },
+          "resizable": {
+            "type": "boolean",
+            "description": "是否允许拖动列宽，默认 true。"
+          },
+          "toolbar": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "r-toolbar",
+                "description": "SparkNode.type 固定为 r-toolbar。"
+              },
+              "props": {
+                "type": "object",
+                "properties": {
+                  "tail": {
+                    "type": "object",
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "r-tail",
+                        "description": "SparkNode.type 固定为 r-tail。"
+                      },
+                      "props": {
+                        "type": "object",
+                        "properties": {
+                          "width": {
+                            "type": "string",
+                            "description": "尾部区域宽度"
+                          },
+                          "permissionDeniedMode": {
+                            "type": "string",
+                            "enum": [
+                              "disable",
+                              "hide"
+                            ],
+                            "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                          }
+                        },
+                        "description": "r-tail props 配置对象。"
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "type"
+                          ],
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "description": "组件类型（对应 ComponentDefinition.type）"
+                            },
+                            "id": {
+                              "type": "string",
+                              "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                            },
+                            "props": {
+                              "type": "string",
+                              "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                            },
+                            "children": {
+                              "type": "string",
+                              "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                            }
+                          },
+                          "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。"
+                        },
+                        "description": "子节点列表；每一项都是 SparkNode。"
+                      }
+                    },
+                    "description": "尾部动作区（通常放次要按钮）"
+                  },
+                  "position": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right",
+                      "top",
+                      "bottom"
+                    ],
+                    "description": "工具栏停靠位置"
+                  },
+                  "gap": {
+                    "type": "string",
+                    "description": "主区内元素间距"
+                  },
+                  "zoneGap": {
+                    "type": "string",
+                    "description": "主区与尾区间距"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "center",
+                      "start",
+                      "end",
+                      "stretch"
+                    ],
+                    "description": "交叉轴对齐"
+                  },
+                  "justify": {
+                    "type": "string",
+                    "enum": [
+                      "center",
+                      "start",
+                      "end",
+                      "space-between"
+                    ],
+                    "description": "主轴分布"
+                  },
+                  "permissionDeniedMode": {
+                    "type": "string",
+                    "enum": [
+                      "disable",
+                      "hide"
+                    ],
+                    "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                  },
+                  "dataKey": {
+                    "type": "string",
+                    "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                  }
+                },
+                "description": "r-toolbar props 配置对象。"
+              },
+              "children": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "组件类型（对应 ComponentDefinition.type）"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                    },
+                    "props": {
+                      "type": "string",
+                      "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                    },
+                    "children": {
+                      "type": "string",
+                      "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                    }
+                  },
+                  "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。"
+                },
+                "description": "子节点列表；每一项都是 SparkNode。"
+              }
+            },
+            "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。"
+          },
+          "filter": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "r-filter",
+                "description": "SparkNode.type 固定为 r-filter。"
+              },
+              "props": {
+                "type": "object",
+                "properties": {
+                  "dataKey": {
+                    "type": "string",
+                    "description": "数据绑定键（dataKey）。"
+                  },
+                  "collapsible": {
+                    "type": "boolean",
+                    "description": "是否允许折叠。"
+                  },
+                  "defaultCollapsed": {
+                    "type": "boolean",
+                    "description": "初始是否折叠。"
+                  },
+                  "autoFitMinWidth": {
+                    "type": "string",
+                    "description": "自适应最小宽度。"
+                  },
+                  "itemSpan": {
+                    "type": "number",
+                    "description": "每个筛选项占据的栅格列数。"
+                  },
+                  "actionSpan": {
+                    "type": "number",
+                    "description": "操作区占据的栅格列数，默认跟随 itemSpan。"
+                  },
+                  "gridColumns": {
+                    "type": "number",
+                    "description": "CSS Grid 列数。"
+                  },
+                  "gridGap": {
+                    "type": "string",
+                    "description": "栅格间距。"
+                  },
+                  "gridAutoRows": {
+                    "type": "string",
+                    "description": "栅格行高。"
+                  },
+                  "permissionDeniedMode": {
+                    "type": "string",
+                    "enum": [
+                      "disable",
+                      "hide"
+                    ],
+                    "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                  }
+                },
+                "description": "r-filter props 配置对象。"
+              },
+              "children": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "组件类型（对应 ComponentDefinition.type）"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                    },
+                    "props": {
+                      "type": "string",
+                      "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                    },
+                    "children": {
+                      "type": "string",
+                      "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                    }
+                  },
+                  "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。"
+                },
+                "description": "子节点列表；每一项都是 SparkNode。"
+              }
+            },
+            "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。"
+          },
+          "actions": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "r-toolbar",
+                "description": "SparkNode.type 固定为 r-toolbar。"
+              },
+              "props": {
+                "type": "object",
+                "properties": {
+                  "tail": {
+                    "type": "object",
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "r-tail",
+                        "description": "SparkNode.type 固定为 r-tail。"
+                      },
+                      "props": {
+                        "type": "object",
+                        "properties": {
+                          "width": {
+                            "type": "string",
+                            "description": "尾部区域宽度"
+                          },
+                          "permissionDeniedMode": {
+                            "type": "string",
+                            "enum": [
+                              "disable",
+                              "hide"
+                            ],
+                            "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                          }
+                        },
+                        "description": "r-tail props 配置对象。"
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "type"
+                          ],
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "description": "组件类型（对应 ComponentDefinition.type）"
+                            },
+                            "id": {
+                              "type": "string",
+                              "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                            },
+                            "props": {
+                              "type": "string",
+                              "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                            },
+                            "children": {
+                              "type": "string",
+                              "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                            }
+                          },
+                          "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。"
+                        },
+                        "description": "子节点列表；每一项都是 SparkNode。"
+                      }
+                    },
+                    "description": "尾部动作区（通常放次要按钮）"
+                  },
+                  "position": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right",
+                      "top",
+                      "bottom"
+                    ],
+                    "description": "工具栏停靠位置"
+                  },
+                  "gap": {
+                    "type": "string",
+                    "description": "主区内元素间距"
+                  },
+                  "zoneGap": {
+                    "type": "string",
+                    "description": "主区与尾区间距"
+                  },
+                  "align": {
+                    "type": "string",
+                    "enum": [
+                      "center",
+                      "start",
+                      "end",
+                      "stretch"
+                    ],
+                    "description": "交叉轴对齐"
+                  },
+                  "justify": {
+                    "type": "string",
+                    "enum": [
+                      "center",
+                      "start",
+                      "end",
+                      "space-between"
+                    ],
+                    "description": "主轴分布"
+                  },
+                  "permissionDeniedMode": {
+                    "type": "string",
+                    "enum": [
+                      "disable",
+                      "hide"
+                    ],
+                    "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                  },
+                  "dataKey": {
+                    "type": "string",
+                    "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                  }
+                },
+                "description": "r-toolbar props 配置对象。"
+              },
+              "children": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "组件类型（对应 ComponentDefinition.type）"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                    },
+                    "props": {
+                      "type": "string",
+                      "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                    },
+                    "children": {
+                      "type": "string",
+                      "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                    }
+                  },
+                  "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。"
+                },
+                "description": "子节点列表；每一项都是 SparkNode。"
+              }
+            },
+            "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。"
+          },
+          "permissionDeniedMode": {
+            "type": "string",
+            "enum": [
+              "disable",
+              "hide"
+            ],
+            "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+          },
+          "dataKey": {
+            "type": "string",
+            "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          },
+          "onAddRow": {
+            "type": "string",
+            "description": "新增动作回调。\n常由工具栏“新增”按钮、空态入口或快捷动作触发。"
+          },
+          "onEditRow": {
+            "type": "string",
+            "description": "编辑动作回调。\n通常用于编辑当前行、双击行编辑或弹出编辑表单。"
+          },
+          "onRemoveRow": {
+            "type": "string",
+            "description": "删除动作回调。\n常用于删除当前行、批量删除所选行，或触发删除确认流程。"
+          },
+          "onRowClick": {
+            "type": "string",
+            "description": "行点击回调。\n用户点击某一行时触发，常用于详情联动、主子表级联或进入编辑态。"
+          },
+          "onSelectionChange": {
+            "type": "string",
+            "description": "选中集合变化回调。\n多选表格或勾选容器在选中项增减后触发。"
+          },
+          "onCurrentChange": {
+            "type": "string",
+            "description": "当前行变化回调。\n当前高亮行、焦点行或主选择行切换时触发。"
+          }
+        },
+        "additionalProperties": true,
+        "description": "组件 props 参数；required props 必须显式传入。"
+      },
+      "children": {
+        "type": "array",
+        "items": {},
+        "description": "子 SparkNode 列表；是否允许子节点以组件 nestingRule 和函数指南为准。"
+      }
+    },
+    "description": "这是可直接作为 nodeTree 写函数 node 参数使用的参数 schema。"
+  },
+  "minimalParams": {
+    "type": "r-table",
+    "props": {},
+    "children": []
+  },
+  "sourceGuide": {
+    "type": "r-table",
+    "category": "container",
+    "requiredProps": [],
+    "optionalProps": [
+      {
+        "name": "tableProps",
+        "type": "Record<string, unknown>",
+        "description": "透传给 el-table 的原生属性（兼容 JSON 规则里常见的 tableProps 写法）。\n顶层同名 props（如 resizable / border / rowKey）优先级更高。"
+      },
+      {
+        "name": "border",
+        "type": "boolean",
+        "description": "是否显示纵向边框。默认 true（resizable 启用时强制开启）。"
+      },
+      {
+        "name": "stripe",
+        "type": "boolean",
+        "description": "是否开启斑马纹。"
+      },
+      {
+        "name": "highlightCurrentRow",
+        "type": "boolean",
+        "description": "是否高亮当前行。"
+      },
+      {
+        "name": "rowKey",
+        "type": "string",
+        "description": "行数据的 Key，用于树形表格。"
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "description": "是否允许拖动列宽，默认 true。"
+      },
+      {
+        "name": "toolbar",
+        "type": "r-toolbar",
+        "description": "结构化工具栏\n提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。",
+        "schema": {
+          "title": "r-toolbar",
+          "type": "object",
+          "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "r-toolbar",
+              "description": "SparkNode.type 固定为 r-toolbar。"
+            },
+            "props": {
+              "type": "object",
+              "description": "r-toolbar props 配置对象。",
+              "properties": {
+                "tail": {
+                  "title": "r-tail",
+                  "type": "object",
+                  "description": "尾部动作区（通常放次要按钮）",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "r-tail",
+                      "description": "SparkNode.type 固定为 r-tail。"
+                    },
+                    "props": {
+                      "type": "object",
+                      "description": "r-tail props 配置对象。",
+                      "properties": {
+                        "width": {
+                          "type": [
+                            "string",
+                            "number"
+                          ],
+                          "description": "尾部区域宽度"
+                        },
+                        "permissionDeniedMode": {
+                          "enum": [
+                            "disable",
+                            "hide"
+                          ],
+                          "type": "string",
+                          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                        }
+                      }
+                    },
+                    "children": {
+                      "type": "array",
+                      "description": "子节点列表；每一项都是 SparkNode。",
+                      "items": {
+                        "title": "SparkNode",
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "description": "组件类型（对应 ComponentDefinition.type）"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                          },
+                          "props": {
+                            "type": "string",
+                            "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                          },
+                          "children": {
+                            "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+                        "examples": [
+                          {
+                            "type": "r-text",
+                            "props": {
+                              "value": "text"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                },
+                "position": {
+                  "enum": [
+                    "left",
+                    "right",
+                    "top",
+                    "bottom"
+                  ],
+                  "type": "string",
+                  "description": "工具栏停靠位置"
+                },
+                "gap": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "主区内元素间距"
+                },
+                "zoneGap": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "主区与尾区间距"
+                },
+                "align": {
+                  "enum": [
+                    "center",
+                    "start",
+                    "end",
+                    "stretch"
+                  ],
+                  "type": "string",
+                  "description": "交叉轴对齐"
+                },
+                "justify": {
+                  "enum": [
+                    "center",
+                    "start",
+                    "end",
+                    "space-between"
+                  ],
+                  "type": "string",
+                  "description": "主轴分布"
+                },
+                "permissionDeniedMode": {
+                  "enum": [
+                    "disable",
+                    "hide"
+                  ],
+                  "type": "string",
+                  "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                },
+                "dataKey": {
+                  "type": "string",
+                  "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                }
+              }
+            },
+            "children": {
+              "type": "array",
+              "description": "子节点列表；每一项都是 SparkNode。",
+              "items": {
+                "title": "SparkNode",
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "组件类型（对应 ComponentDefinition.type）"
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                  },
+                  "props": {
+                    "type": "string",
+                    "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                  },
+                  "children": {
+                    "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+                "examples": [
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "value": "text"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      },
+      {
+        "name": "filter",
+        "type": "r-filter",
+        "description": "结构化筛选区\n提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。",
+        "schema": {
+          "title": "r-filter",
+          "type": "object",
+          "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "r-filter",
+              "description": "SparkNode.type 固定为 r-filter。"
+            },
+            "props": {
+              "type": "object",
+              "description": "r-filter props 配置对象。",
+              "properties": {
+                "dataKey": {
+                  "type": "string",
+                  "description": "数据绑定键（dataKey）。"
+                },
+                "collapsible": {
+                  "type": "boolean",
+                  "description": "是否允许折叠。"
+                },
+                "defaultCollapsed": {
+                  "type": "boolean",
+                  "description": "初始是否折叠。"
+                },
+                "autoFitMinWidth": {
+                  "type": "string",
+                  "description": "自适应最小宽度。"
+                },
+                "itemSpan": {
+                  "type": "number",
+                  "description": "每个筛选项占据的栅格列数。"
+                },
+                "actionSpan": {
+                  "type": "number",
+                  "description": "操作区占据的栅格列数，默认跟随 itemSpan。"
+                },
+                "gridColumns": {
+                  "type": "number",
+                  "description": "CSS Grid 列数。"
+                },
+                "gridGap": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "栅格间距。"
+                },
+                "gridAutoRows": {
+                  "type": "string",
+                  "description": "栅格行高。"
+                },
+                "permissionDeniedMode": {
+                  "enum": [
+                    "disable",
+                    "hide"
+                  ],
+                  "type": "string",
+                  "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                }
+              }
+            },
+            "children": {
+              "type": "array",
+              "description": "子节点列表；每一项都是 SparkNode。",
+              "items": {
+                "title": "SparkNode",
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "组件类型（对应 ComponentDefinition.type）"
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                  },
+                  "props": {
+                    "type": "string",
+                    "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                  },
+                  "children": {
+                    "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+                "examples": [
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "value": "text"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      },
+      {
+        "name": "actions",
+        "type": "r-toolbar",
+        "description": "结构化行动作\n提示词模板：默认动作 message-row / delete-row。",
+        "schema": {
+          "title": "r-toolbar",
+          "type": "object",
+          "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "r-toolbar",
+              "description": "SparkNode.type 固定为 r-toolbar。"
+            },
+            "props": {
+              "type": "object",
+              "description": "r-toolbar props 配置对象。",
+              "properties": {
+                "tail": {
+                  "title": "r-tail",
+                  "type": "object",
+                  "description": "尾部动作区（通常放次要按钮）",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "r-tail",
+                      "description": "SparkNode.type 固定为 r-tail。"
+                    },
+                    "props": {
+                      "type": "object",
+                      "description": "r-tail props 配置对象。",
+                      "properties": {
+                        "width": {
+                          "type": [
+                            "string",
+                            "number"
+                          ],
+                          "description": "尾部区域宽度"
+                        },
+                        "permissionDeniedMode": {
+                          "enum": [
+                            "disable",
+                            "hide"
+                          ],
+                          "type": "string",
+                          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                        }
+                      }
+                    },
+                    "children": {
+                      "type": "array",
+                      "description": "子节点列表；每一项都是 SparkNode。",
+                      "items": {
+                        "title": "SparkNode",
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "description": "组件类型（对应 ComponentDefinition.type）"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                          },
+                          "props": {
+                            "type": "string",
+                            "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                          },
+                          "children": {
+                            "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+                        "examples": [
+                          {
+                            "type": "r-text",
+                            "props": {
+                              "value": "text"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                },
+                "position": {
+                  "enum": [
+                    "left",
+                    "right",
+                    "top",
+                    "bottom"
+                  ],
+                  "type": "string",
+                  "description": "工具栏停靠位置"
+                },
+                "gap": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "主区内元素间距"
+                },
+                "zoneGap": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "主区与尾区间距"
+                },
+                "align": {
+                  "enum": [
+                    "center",
+                    "start",
+                    "end",
+                    "stretch"
+                  ],
+                  "type": "string",
+                  "description": "交叉轴对齐"
+                },
+                "justify": {
+                  "enum": [
+                    "center",
+                    "start",
+                    "end",
+                    "space-between"
+                  ],
+                  "type": "string",
+                  "description": "主轴分布"
+                },
+                "permissionDeniedMode": {
+                  "enum": [
+                    "disable",
+                    "hide"
+                  ],
+                  "type": "string",
+                  "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+                },
+                "dataKey": {
+                  "type": "string",
+                  "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                }
+              }
+            },
+            "children": {
+              "type": "array",
+              "description": "子节点列表；每一项都是 SparkNode。",
+              "items": {
+                "title": "SparkNode",
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "组件类型（对应 ComponentDefinition.type）"
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+                  },
+                  "props": {
+                    "type": "string",
+                    "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                  },
+                  "children": {
+                    "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+                "examples": [
+                  {
+                    "type": "r-text",
+                    "props": {
+                      "value": "text"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      },
+      {
+        "name": "permissionDeniedMode",
+        "type": "\"disable\" | \"hide\"",
+        "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+        "schema": {
+          "enum": [
+            "disable",
+            "hide"
+          ],
+          "type": "string",
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+        }
+      },
+      {
+        "name": "dataKey",
+        "type": "string",
+        "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+      },
+      {
+        "name": "onAddRow",
+        "type": "AddRowHandler",
+        "description": "新增动作回调。\n常由工具栏“新增”按钮、空态入口或快捷动作触发。"
+      },
+      {
+        "name": "onEditRow",
+        "type": "EditRowHandler",
+        "description": "编辑动作回调。\n通常用于编辑当前行、双击行编辑或弹出编辑表单。"
+      },
+      {
+        "name": "onRemoveRow",
+        "type": "RemoveRowHandler",
+        "description": "删除动作回调。\n常用于删除当前行、批量删除所选行，或触发删除确认流程。"
+      },
+      {
+        "name": "onRowClick",
+        "type": "RowClickHandler",
+        "description": "行点击回调。\n用户点击某一行时触发，常用于详情联动、主子表级联或进入编辑态。"
+      },
+      {
+        "name": "onSelectionChange",
+        "type": "RowSelectionHandler",
+        "description": "选中集合变化回调。\n多选表格或勾选容器在选中项增减后触发。"
+      },
+      {
+        "name": "onCurrentChange",
+        "type": "CurrentRowChangeHandler",
+        "description": "当前行变化回调。\n当前高亮行、焦点行或主选择行切换时触发。"
+      }
+    ],
+    "eventGuide": [],
+    "subComponentGuides": [
+      {
+        "type": "r-toolbar",
+        "fromProps": [
+          "actions",
+          "toolbar"
+        ],
+        "resolved": true,
+        "category": "container",
+        "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+        "requiredProps": [],
+        "optionalPropsPreview": [
+          "tail",
+          "position",
+          "gap",
+          "zoneGap",
+          "align",
+          "justify",
+          "permissionDeniedMode",
+          "dataKey"
+        ]
+      },
+      {
+        "type": "r-filter",
+        "fromProps": [
+          "filter"
+        ],
+        "resolved": true,
+        "category": "container",
+        "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+        "requiredProps": [],
+        "optionalPropsPreview": [
+          "dataKey",
+          "collapsible",
+          "defaultCollapsed",
+          "autoFitMinWidth",
+          "itemSpan",
+          "actionSpan",
+          "gridColumns",
+          "gridGap"
+        ]
+      }
+    ],
+    "minimalConfig": {
+      "type": "r-table",
+      "props": {},
+      "children": []
+    },
+    "failFastChecks": [
+      "组件 type 必须精确匹配: r-table",
+      "该组件无 emits 事件声明，不应绑定 on.* 事件。"
+    ]
+  },
+  "usageRules": [
+    "构造 nodeTree 写函数的 node 参数前，必须以本 paramsSchema 为准。",
+    "required props 必须显式传入；default 只能作为默认值提示，不能代替业务值判断。",
+    "事件绑定只能使用 eventGuide / emits 中声明的事件名。",
+    "组件 type 必须精确匹配: r-table",
+    "该组件无 emits 事件声明，不应绑定 on.* 事件。"
+  ],
+  "failureModes": [
+    {
+      "code": "PAYLOAD_NOT_FOUND",
+      "when": "key 不存在于 spark.component 参数荷载目录。",
+      "fix": "先调用 queryPayloads 重新选择可用组件。"
+    }
+  ]
+}

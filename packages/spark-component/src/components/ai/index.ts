@@ -1,4 +1,5 @@
 export { default as AiChatShell } from './AiChatShell.vue'
+export { default as AiSseStreamView } from './AiSseStreamView.vue'
 export { default as AiChatWidget } from './AiChatWidget.vue'
 export { default as AppAiPanel } from './AppAiPanel.vue'
 export { default as AiLauncherButton } from './AiLauncherButton.vue'

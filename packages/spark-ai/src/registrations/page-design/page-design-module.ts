@@ -326,9 +326,11 @@ const PAGE_DESIGN_KNOWLEDGE_BINDING_APPLIERS: Record<PageDesignKnowledgeRuntimeB
     const filter = {
       ...(typeof input['category'] === 'string' ? { category: input['category'] } : {}),
       ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
+      ...(typeof input['expression'] === 'string' ? { expression: input['expression'] } : {}),
+      ...(typeof input['limit'] === 'number' ? { limit: input['limit'] } : {}),
     }
     const items = runtime.knowledge.queryPayloads(runtime.payloadRef, filter)
-    return { ok: true, data: { payloadRef: runtime.payloadRef, items }, summary: `已返回 ${items.length} 个组件参数荷载摘要` }
+    return { ok: true, data: { payloadRef: runtime.payloadRef, items }, summary: `已返回 ${items.length} 个组件目录摘要` }
   },
   guidePayload: ({ runtime, args }) => {
     const key = (args as { key: string }).key

@@ -52,6 +52,7 @@
     "@spark-view/spark-data": "workspace:*",
     "@spark-view/spark-page-config": "workspace:*",
     "@spark-view/spark-utils": "workspace:*",
+    "ajv": "^8.18.0",
     "jmespath": "0.16.0"
   },
   "scripts": {

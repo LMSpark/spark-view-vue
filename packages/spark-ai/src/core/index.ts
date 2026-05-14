@@ -118,26 +118,17 @@ export {
 
 export type {
   LlmParamValidationIssue,
-  LlmParamValidationOptions,
   LlmParamValidationResult,
 } from './protocol/llm-params-validator'
 
-export {
-  LlmParameterSchema,
-} from './protocol/parameter-schema'
-
 export type {
-  ArrayItemKind,
-  LeafKind,
-  LlmParamArraySchema,
-  LlmParamEnumSchema,
-  LlmParamObjectSchema,
   LlmJsonObject,
   LlmJsonPrimitive,
+  LlmJsonSchema,
+  LlmJsonSchemaObject,
+  LlmJsonSchemaType,
   LlmJsonValue,
-  LlmParameterSchemaNode,
   LlmParameterSchemaRoot,
-  ParsedLeafDescription,
 } from './protocol/parameter-schema'
 
 // 五、参数 payload 注册中心：把外部参数源按 payloadRef 暴露。
@@ -163,6 +154,8 @@ export {
 } from './internal/knowledge/knowledge-tool-catalog'
 
 export type {
+  AiKnowledgeFunctionSummary,
+  AiKnowledgeModuleSummary,
   AiKnowledgeScope,
   AiKnowledgeProjection,
 } from './internal/knowledge/knowledge-projection'

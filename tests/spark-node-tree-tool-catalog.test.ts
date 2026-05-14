@@ -51,11 +51,11 @@ describe('SparkNodeTree tool catalog', () => {
     const addNodes = catalog.getParameterRow('addNodes')
 
     expect(addNode?.paramsSchema).toMatchObject({
-      kind: 'object',
+      type: 'object',
       required: ['node'],
     })
     expect(addNodes?.paramsSchema).toMatchObject({
-      kind: 'object',
+      type: 'object',
       required: ['nodes'],
     })
   })
@@ -82,7 +82,7 @@ describe('SparkNodeTree tool catalog', () => {
   it('moveNode 应声明小结果并阻止 remove/add 重建子树', () => {
     const row = catalog.getParameterRow('moveNode')
     expect(row?.paramsSchema).toMatchObject({
-      kind: 'object',
+      type: 'object',
       required: ['componentId'],
     })
     expect(row?.resultSchema).toMatchObject({

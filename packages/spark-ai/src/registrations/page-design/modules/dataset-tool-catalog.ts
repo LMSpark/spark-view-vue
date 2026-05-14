@@ -1,15 +1,21 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import {
-  type FunctionFailureMode,
-  type LlmJsonObject,
-  type LlmParameterSchemaRoot,
-  LlmParamsValidator,
-} from '../../../core'
+import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
 import {
   createPageDesignCapabilityRow,
   type PageDesignFunctionRuntimeBinding,
   PageDesignToolCatalog,
 } from './tool-catalog'
+import {
+  anySchema,
+  arraySchema,
+  booleanSchema,
+  enumSchema,
+  noParamsSchema,
+  numberSchema,
+  objectSchema,
+  paramsSchema,
+  stringSchema,
+} from './json-schema-helpers'
 
 type MethodKey<T> = Extract<{
   [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
@@ -51,7 +57,6 @@ export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionBaseFie
   failureModes: readonly DatasetCrudToolFunctionFailureMode[]
   target: DatasetCrudToolFunctionTarget
   crudToolMethod: DataSetCrudToolMethodKey
-  validation?: DatasetCrudToolFunctionValidationRule
   runtimeBinding: PageDesignFunctionRuntimeBinding
   runtimeRegistration: 'registered'
 }
@@ -66,14 +71,17 @@ export type DatasetCrudToolFunctionCapabilityRow = Pick<
   params?: LlmParameterSchemaRoot
   example?: LlmJsonObject
 }
-const NO_PARAMS: LlmParameterSchemaRoot = {}
-const TABLE_NAME_PARAM = 'string — 表名'
-const VIEW_ID_PARAM = 'string — 视图 ID；省略时默认 default'
-const COLUMN_NAME_PARAM = 'string — 列名'
-const ROW_ID_PARAM = 'string | number — 主键值'
-const PARENT_TABLE_PARAM = 'string — 父表名'
-const CHILD_TABLE_PARAM = 'string — 子表名'
-const RESOURCE_ID_PARAM = 'string? — 资源 ID'
+const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请传 {} 或留空。')
+const TABLE_NAME_PARAM = stringSchema('表名')
+const VIEW_ID_PARAM = stringSchema('视图 ID；省略时默认 default')
+const COLUMN_NAME_PARAM = stringSchema('列名')
+const ROW_ID_PARAM = {
+  type: ['string', 'number'],
+  description: '主键值',
+} as const
+const PARENT_TABLE_PARAM = stringSchema('父表名')
+const CHILD_TABLE_PARAM = stringSchema('子表名')
+const RESOURCE_ID_PARAM = stringSchema('资源 ID')
 const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES = [
   'database-table',
   'database-view',
@@ -90,250 +98,210 @@ const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES = [
 ] as const
 
 const RESOURCE_TYPE_SCHEMA = {
-  kind: 'enum',
   type: 'string',
-  enum: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
-  optional: true,
-  openEnded: true,
-  note: '资源类型推荐值字典；优先使用内置资源类型，也允许业务侧自定义字符串。',
+  examples: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
+  description: '资源类型推荐值字典；优先使用内置资源类型，也允许业务侧自定义字符串。',
 } as const
 
 const NULLABLE_RESOURCE_TYPE_SCHEMA = {
   ...RESOURCE_TYPE_SCHEMA,
-  nullable: true,
-  note: '资源类型推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
+  type: ['string', 'null'],
+  description: '资源类型推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
 } as const
 
 const BUSINESS_CATEGORY_SCHEMA = {
-  kind: 'enum',
   type: 'string',
-  enum: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
-  optional: true,
-  openEnded: true,
-  note: '业务分类推荐值字典；优先使用 master / child / reference，也允许业务侧自定义字符串。',
+  examples: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
+  description: '业务分类推荐值字典；优先使用 master / child / reference，也允许业务侧自定义字符串。',
 } as const
 
 const NULLABLE_BUSINESS_CATEGORY_SCHEMA = {
   ...BUSINESS_CATEGORY_SCHEMA,
-  nullable: true,
-  note: '业务分类推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
+  type: ['string', 'null'],
+  description: '业务分类推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
 } as const
 
 const DATA_COLUMN_FIELDS_SCHEMA = {
-  name: 'string — 列名，必填，表内唯一',
-  type: 'ColumnType — 列类型，必填；常用 string/number/boolean/date/datetime',
-  label: 'string? — UI 显示标题',
-  isPrimaryKey: 'boolean? — 是否主键',
-  allowDBNull: 'boolean? — 是否允许 null',
-  defaultValue: 'unknown? — 默认值',
-  autoIncrement: 'boolean? — 是否自增',
-  required: 'boolean? — UI 必填标记',
-  minLength: 'number? — 字符串最小长度',
-  maxLength: 'number? — 字符串最大长度',
-  min: 'number? — 数值最小值',
-  max: 'number? — 数值最大值',
-  pattern: 'string? — 正则表达式字符串',
-  patternMessage: 'string? — 正则失败提示',
-  computeExpression: 'string? — 计算列表达式',
+  name: stringSchema('列名，必填，表内唯一'),
+  type: stringSchema('ColumnType，必填；常用 string/number/boolean/date/datetime'),
+  label: stringSchema('UI 显示标题'),
+  isPrimaryKey: booleanSchema('是否主键'),
+  allowDBNull: booleanSchema('是否允许 null'),
+  defaultValue: anySchema('默认值'),
+  autoIncrement: booleanSchema('是否自增'),
+  required: booleanSchema('UI 必填标记'),
+  minLength: numberSchema('字符串最小长度'),
+  maxLength: numberSchema('字符串最大长度'),
+  min: numberSchema('数值最小值'),
+  max: numberSchema('数值最大值'),
+  pattern: stringSchema('正则表达式字符串'),
+  patternMessage: stringSchema('正则失败提示'),
+  computeExpression: stringSchema('计算列表达式'),
 } as const
 
-const DATA_COLUMN_SCHEMA = {
-  kind: 'object',
+const DATA_COLUMN_SCHEMA = objectSchema(DATA_COLUMN_FIELDS_SCHEMA, {
   required: ['name', 'type'],
-  properties: DATA_COLUMN_FIELDS_SCHEMA,
-  note: '必须传 JSON 对象，不要把 column 写成 "DataColumn" 之类的类型名字符串。',
-} as const
+  description: '必须传 JSON 对象，不要把 column 写成 "DataColumn" 之类的类型名字符串。',
+})
 
-const PARTIAL_DATA_COLUMN_SCHEMA = {
-  kind: 'object',
-  optional: DATA_COLUMN_FIELDS_SCHEMA,
-  note: '只传要修改的字段；通常不要在 updates 中修改 name。',
-} as const
+const PARTIAL_DATA_COLUMN_SCHEMA = objectSchema(DATA_COLUMN_FIELDS_SCHEMA, {
+  description: '只传要修改的字段；通常不要在 updates 中修改 name。',
+})
 
-const DATA_COLUMN_ARRAY_SCHEMA = {
-  kind: 'array',
-  items: DATA_COLUMN_SCHEMA,
-} as const
+const DATA_COLUMN_ARRAY_SCHEMA = arraySchema(DATA_COLUMN_SCHEMA)
 
-const COLUMN_UPDATE_ENTRY_SCHEMA = {
-  kind: 'object',
+const COLUMN_UPDATE_ENTRY_SCHEMA = objectSchema({
+  columnName: COLUMN_NAME_PARAM,
+  updates: PARTIAL_DATA_COLUMN_SCHEMA,
+}, {
   required: ['columnName', 'updates'],
-  properties: {
-    columnName: COLUMN_NAME_PARAM,
-    updates: PARTIAL_DATA_COLUMN_SCHEMA,
-  },
-} as const
+})
 
-const ROW_DATA_SCHEMA = {
-  kind: 'object',
-  additionalProperties: 'unknown — 键名必须来自已声明列名，值类型要匹配列定义',
-  note: '不要传未声明字段；主键字段必须能被当前表 schema 接受。',
-} as const
+const ROW_DATA_SCHEMA = objectSchema({}, {
+  additionalProperties: true,
+  description: '不要传未声明字段；主键字段必须能被当前表 schema 接受。',
+})
 
-const ROW_ARRAY_SCHEMA = {
-  kind: 'array',
-  items: ROW_DATA_SCHEMA,
-} as const
+const ROW_ARRAY_SCHEMA = arraySchema(ROW_DATA_SCHEMA)
 
-const TREE_CONFIG_SCHEMA = {
-  kind: 'object',
-  optional: {
-    idField: 'string? — 节点 id 字段名',
-    parentIdField: 'string? — 父节点 id 字段名',
-    textField: 'string? — 节点文本字段名',
-    depthLimit: 'number? — 最大展开深度',
-    lazy: 'boolean? — 是否懒加载',
-    treeMode: '"flat" | "nested" ? — 树数据模式',
-  },
-} as const
+const TREE_CONFIG_SCHEMA = objectSchema({
+  idField: stringSchema('节点 id 字段名'),
+  parentIdField: stringSchema('父节点 id 字段名'),
+  textField: stringSchema('节点文本字段名'),
+  depthLimit: numberSchema('最大展开深度'),
+  lazy: booleanSchema('是否懒加载'),
+  treeMode: enumSchema(['flat', 'nested'], '树数据模式'),
+})
 
-const AGGREGATE_ITEM_SCHEMA = {
-  kind: 'object',
+const AGGREGATE_ITEM_SCHEMA = objectSchema({
+  type: enumSchema(['sum', 'count', 'avg', 'min', 'max', 'join'], '不只有求和；按场景选择计数/平均/极值/字符串拼接'),
+  field: stringSchema('源字段名；省略时默认与聚合输出键同名'),
+  separator: stringSchema('join 聚合分隔符，仅 type="join" 时有效'),
+}, {
   required: ['type'],
-  properties: {
-    type: '"sum" | "count" | "avg" | "min" | "max" | "join" — 不只有求和；按场景选择计数/平均/极值/字符串拼接',
-    field: 'string? — 源字段名；省略时默认与聚合输出键同名',
-    separator: 'string? — join 聚合分隔符，仅 type="join" 时有效',
-  },
-} as const
+})
 
-const AGGREGATES_SCHEMA = {
-  kind: 'object',
+const AGGREGATES_SCHEMA = objectSchema({}, {
   additionalProperties: AGGREGATE_ITEM_SCHEMA,
-  note: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 aggregateResult / selectionAggregateResult 是运行时派生结果。',
-} as const
+  description: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 aggregateResult / selectionAggregateResult 是运行时派生结果。',
+})
 
-const VIEW_METADATA_SCHEMA = {
-  kind: 'object',
-  optional: {
-    rows: 'IDataRow[]? — 仅 resourceType = static-data 时才应直接提供',
-    autoCurrentFirst: 'boolean? — 请求成功后是否自动聚焦第一行',
-    autoSelectFirst: 'boolean? — 请求成功后是否自动选中第一行',
-    page: 'number? — 当前页',
-    pageSize: 'number? — 每页大小',
-    autoLoad: 'boolean? — DataSet 初始化后是否自动加载',
-    commitMode: '"immediate" | "staged" ? — 提交模式',
-    valueField: 'string | string[] ? — 值序列化字段',
-    labelField: 'string? — 标签字段',
-    selectionDelimiter: 'string? — 多选序列化分隔符；空字符串表示单选',
-    treeConfig: TREE_CONFIG_SCHEMA,
-    filterExpression: 'FilterExpression? — 复杂过滤对象；简单场景建议先省略',
-    sortExpression: 'SortField[]? — 例如 [{ field: "createdAt", direction: "desc" }]',
-    aggregates: AGGREGATES_SCHEMA,
+const VIEW_METADATA_SCHEMA = objectSchema({
+  rows: arraySchema(ROW_DATA_SCHEMA, '仅 resourceType = static-data 时才应直接提供'),
+  autoCurrentFirst: booleanSchema('请求成功后是否自动聚焦第一行'),
+  autoSelectFirst: booleanSchema('请求成功后是否自动选中第一行'),
+  page: numberSchema('当前页'),
+  pageSize: numberSchema('每页大小'),
+  autoLoad: booleanSchema('DataSet 初始化后是否自动加载'),
+  commitMode: enumSchema(['immediate', 'staged'], '提交模式'),
+  valueField: {
+    anyOf: [
+      stringSchema('值序列化字段'),
+      arraySchema(stringSchema('值序列化字段'), '值序列化字段列表'),
+    ],
+    description: '值序列化字段',
   },
-  note: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成；UI 可通过 Table@aggregateResult / Table@selectionAggregateResult（或 Table@viewId@aggregateResult）这类 DataKey 引用结果行。',
-} as const
+  labelField: stringSchema('标签字段'),
+  selectionDelimiter: stringSchema('多选序列化分隔符；空字符串表示单选'),
+  treeConfig: TREE_CONFIG_SCHEMA,
+  filterExpression: objectSchema({}, { additionalProperties: true, description: '复杂过滤对象；简单场景建议先省略' }),
+  sortExpression: arraySchema(objectSchema({}, { additionalProperties: true }), '例如 [{ field: "createdAt", direction: "desc" }]'),
+  aggregates: AGGREGATES_SCHEMA,
+}, {
+  description: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成；UI 可通过 Table@aggregateResult / Table@selectionAggregateResult（或 Table@viewId@aggregateResult）这类 DataKey 引用结果行。',
+})
 
-const CRUD_HTTP_ENDPOINT_SCHEMA = {
-  kind: 'object',
+const CRUD_HTTP_ENDPOINT_SCHEMA = objectSchema({
+  url: stringSchema('接口地址'),
+  method: enumSchema(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '默认由后端或调用方约定'),
+  headers: objectSchema({}, { additionalProperties: stringSchema('请求头值'), description: '请求头' }),
+  params: objectSchema({}, { additionalProperties: true, description: '查询参数模板' }),
+  pathParams: arraySchema(stringSchema('路径占位参数名'), '路径占位参数名，例如 ["id"]'),
+  baseURL: stringSchema('可选 API 基础地址'),
+}, {
   required: ['url'],
-  properties: {
-    url: 'string — 接口地址',
-    method: '"GET" | "POST" | "PUT" | "PATCH" | "DELETE" ? — 默认由后端或调用方约定',
-    headers: 'Record<string, string> ? — 请求头',
-    params: 'Record<string, unknown> ? — 查询参数模板',
-    pathParams: 'string[] ? — 路径占位参数名，例如 ["id"]',
-    baseURL: 'string? — 可选 API 基础地址',
-  },
-} as const
+})
 
 const CRUD_LIST_ENDPOINT_SCHEMA = {
   ...CRUD_HTTP_ENDPOINT_SCHEMA,
   properties: {
     ...CRUD_HTTP_ENDPOINT_SCHEMA.properties,
-    pagination: {
-      kind: 'object',
-      optional: {
-        pageParam: 'string? — 页码参数名',
-        sizeParam: 'string? — 分页大小参数名',
-        sortParam: 'string? — 排序参数名',
-      },
-    },
+    pagination: objectSchema({
+      pageParam: stringSchema('页码参数名'),
+      sizeParam: stringSchema('分页大小参数名'),
+      sortParam: stringSchema('排序参数名'),
+    }),
   },
 } as const
 
-const CRUD_API_SCHEMA = {
-  kind: 'object',
-  optional: {
-    list: CRUD_LIST_ENDPOINT_SCHEMA,
+const CRUD_API_SCHEMA = objectSchema({
+  list: CRUD_LIST_ENDPOINT_SCHEMA,
+  create: CRUD_HTTP_ENDPOINT_SCHEMA,
+  retrieve: CRUD_HTTP_ENDPOINT_SCHEMA,
+  update: CRUD_HTTP_ENDPOINT_SCHEMA,
+  delete: CRUD_HTTP_ENDPOINT_SCHEMA,
+  import: CRUD_HTTP_ENDPOINT_SCHEMA,
+  export: CRUD_HTTP_ENDPOINT_SCHEMA,
+  batch: objectSchema({
     create: CRUD_HTTP_ENDPOINT_SCHEMA,
-    retrieve: CRUD_HTTP_ENDPOINT_SCHEMA,
     update: CRUD_HTTP_ENDPOINT_SCHEMA,
     delete: CRUD_HTTP_ENDPOINT_SCHEMA,
-    import: CRUD_HTTP_ENDPOINT_SCHEMA,
-    export: CRUD_HTTP_ENDPOINT_SCHEMA,
-    batch: {
-      kind: 'object',
-      optional: {
-        create: CRUD_HTTP_ENDPOINT_SCHEMA,
-        update: CRUD_HTTP_ENDPOINT_SCHEMA,
-        delete: CRUD_HTTP_ENDPOINT_SCHEMA,
-      },
+  }),
+  node: CRUD_HTTP_ENDPOINT_SCHEMA,
+  children: {
+    ...CRUD_HTTP_ENDPOINT_SCHEMA,
+    properties: {
+      ...CRUD_HTTP_ENDPOINT_SCHEMA.properties,
+      limit: numberSchema('最大返回子节点数'),
     },
-    node: CRUD_HTTP_ENDPOINT_SCHEMA,
-    children: {
-      ...CRUD_HTTP_ENDPOINT_SCHEMA,
-      properties: {
-        ...CRUD_HTTP_ENDPOINT_SCHEMA.properties,
-        limit: 'number? — 最大返回子节点数',
-      },
-    },
-    path: CRUD_HTTP_ENDPOINT_SCHEMA,
-    subtree: CRUD_HTTP_ENDPOINT_SCHEMA,
-    nestedSearch: CRUD_HTTP_ENDPOINT_SCHEMA,
   },
-  note: '至少提供一个端点；不要把 api 误写成单个 { url, method }，而要按 list/create/update/delete 等键组织。',
-} as const
+  path: CRUD_HTTP_ENDPOINT_SCHEMA,
+  subtree: CRUD_HTTP_ENDPOINT_SCHEMA,
+  nestedSearch: CRUD_HTTP_ENDPOINT_SCHEMA,
+}, {
+  description: '至少提供一个端点；不要把 api 误写成单个 { url, method }，而要按 list/create/update/delete 等键组织。',
+})
 
-const CRUD_OPERATION_CONFIG_SCHEMA = {
-  kind: 'object',
-  optional: {
-    timeout: 'number? — 超时毫秒数',
-    retryCount: 'number? — 重试次数',
-    skipPermissionCheck: 'boolean? — 是否跳过权限检查',
-    validateData: 'boolean? — 是否在请求前校验数据',
-    modelPermission: 'IModelPermission? — 模型级权限快照对象',
-    instancePermission: 'IInstancePermission? — 实例级权限快照对象',
-    transformRequest: '不要传函数；LLM 场景应省略此字段',
-    transformResponse: '不要传函数；LLM 场景应省略此字段',
-  },
-  note: '函数类型字段无法稳定通过协议块传输；LLM 调用时请省略 transformRequest / transformResponse。',
-} as const
+const CRUD_OPERATION_CONFIG_SCHEMA = objectSchema({
+  timeout: numberSchema('超时毫秒数'),
+  retryCount: numberSchema('重试次数'),
+  skipPermissionCheck: booleanSchema('是否跳过权限检查'),
+  validateData: booleanSchema('是否在请求前校验数据'),
+  modelPermission: objectSchema({}, { additionalProperties: true, description: '模型级权限快照对象' }),
+  instancePermission: objectSchema({}, { additionalProperties: true, description: '实例级权限快照对象' }),
+  transformRequest: false,
+  transformResponse: false,
+}, {
+  description: '函数类型字段无法稳定通过协议块传输；LLM 调用时请省略 transformRequest / transformResponse。',
+})
 
-const VIEWS_SCHEMA = {
-  kind: 'object',
-  optional: {
-    default: VIEW_METADATA_SCHEMA,
-    '<customViewId>': VIEW_METADATA_SCHEMA,
-  },
-  note: '对象键就是 viewId；default 可配置但不会新建，非 default 键会创建对应视图。',
-} as const
+const VIEWS_SCHEMA = objectSchema({
+  default: VIEW_METADATA_SCHEMA,
+}, {
+  additionalProperties: VIEW_METADATA_SCHEMA,
+  description: '对象键就是 viewId；default 可配置但不会新建，非 default 键会创建对应视图。',
+})
 
-const RELATION_SELECTOR_SCHEMA = {
-  kind: 'object',
+const RELATION_SELECTOR_SCHEMA = objectSchema({
+  parentTable: PARENT_TABLE_PARAM,
+  childTable: CHILD_TABLE_PARAM,
+  parentField: stringSchema('同一父子表有多条关系时建议显式提供'),
+  childField: stringSchema('同一父子表有多条关系时建议显式提供'),
+}, {
   required: ['parentTable', 'childTable'],
-  properties: {
-    parentTable: PARENT_TABLE_PARAM,
-    childTable: CHILD_TABLE_PARAM,
-    parentField: 'string? — 同一父子表有多条关系时建议显式提供',
-    childField: 'string? — 同一父子表有多条关系时建议显式提供',
-  },
-  note: '优先传完整 selector，避免关系歧义。',
-} as const
+  description: '优先传完整 selector，避免关系歧义。',
+})
 
-const RELATION_UPDATE_SCHEMA = {
-  kind: 'object',
-  optional: {
-    relationName: 'string? — 关系名',
-    parentTable: 'string? — 新父表名',
-    childTable: 'string? — 新子表名',
-    parentField: 'string? — 新父表字段',
-    childField: 'string? — 新子表字段',
-    condition: 'Record<string, unknown> ? — 高级条件，简单场景建议省略',
-    cascadeUpdate: 'boolean? — 是否级联更新',
-    cascadeDelete: 'boolean? — 是否级联删除',
-  },
-} as const
+const RELATION_UPDATE_SCHEMA = objectSchema({
+  relationName: stringSchema('关系名'),
+  parentTable: stringSchema('新父表名'),
+  childTable: stringSchema('新子表名'),
+  parentField: stringSchema('新父表字段'),
+  childField: stringSchema('新子表字段'),
+  condition: objectSchema({}, { additionalProperties: true, description: '高级条件，简单场景建议省略' }),
+  cascadeUpdate: booleanSchema('是否级联更新'),
+  cascadeDelete: booleanSchema('是否级联删除'),
+})
 
 const DEPENDENCY_TYPE_RECOMMENDED_VALUES = [
   'currentRow',
@@ -343,23 +311,17 @@ const DEPENDENCY_TYPE_RECOMMENDED_VALUES = [
 ] as const
 
 const DEPENDENCY_TYPE_PARAM = {
-  kind: 'enum',
   type: 'string',
-  enum: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
-  optional: true,
-  openEnded: true,
-  note: '依赖类型推荐值字典；常用 currentRow / selectedRows / allRows / pagedRows，也允许业务侧自定义字符串。',
+  examples: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
+  description: '依赖类型推荐值字典；常用 currentRow / selectedRows / allRows / pagedRows，也允许业务侧自定义字符串。',
 } as const
 
-const VIEW_DEPENDENCY_UPDATE_SCHEMA = {
-  kind: 'object',
-  optional: {
-    parentTable: PARENT_TABLE_PARAM,
-    childTable: CHILD_TABLE_PARAM,
-    dependencyType: DEPENDENCY_TYPE_PARAM,
-    autoLoad: 'boolean? — 父变化时是否自动加载子视图',
-  },
-} as const
+const VIEW_DEPENDENCY_UPDATE_SCHEMA = objectSchema({
+  parentTable: PARENT_TABLE_PARAM,
+  childTable: CHILD_TABLE_PARAM,
+  dependencyType: DEPENDENCY_TYPE_PARAM,
+  autoLoad: booleanSchema('父变化时是否自动加载子视图'),
+})
 
 const STATIC_ROWS_ONLY_RULE = '只有 resourceType = static-data 时，才应直接通过 rows 或 defaultRows 传静态数据。'
 const DEFAULT_VIEW_RULE = '省略 viewId 时默认作用于 default 视图。'
@@ -368,10 +330,6 @@ const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可
 const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条关系时，必须补 parentField 与 childField 做消歧。'
 const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool/pagedata.json 模型。'
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
-type DatasetCrudToolFunctionValidationRule = {
-  requiredKeys?: readonly string[]
-  oneOfRequiredKeyGroups?: ReadonlyArray<readonly string[]>
-}
 
 type DatasetCrudToolFunctionRowWithoutType = Omit<DatasetCrudToolFunctionParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
 
@@ -547,16 +505,15 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'table',
     crudToolMethod: 'getTable',
     description: '获取指定数据表',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       table: 'DataTable | undefined — 命中的数据表',
     },
     example: {
       tableName: 'Users',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '不存在时返回 undefined，而不是抛错。',
       RUNTIME_WIRED_RULE,
@@ -568,16 +525,15 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'listColumns',
     description: '列出指定表的全部列定义',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       columns: 'DataColumn[] — 列定义数组副本',
     },
     example: {
       tableName: 'Users',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '表不存在时抛错。',
       RUNTIME_WIRED_RULE,
@@ -595,10 +551,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'getColumn',
     description: '获取指定表中的单个列定义',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
-    },
+    }, ['tableName', 'columnName']),
     resultSchema: {
       column: 'DataColumn | undefined — 命中的列定义',
     },
@@ -606,7 +562,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       columnName: 'name',
     },
-    validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '表不存在时抛错；列不存在时返回 undefined。',
       RUNTIME_WIRED_RULE,
@@ -624,10 +579,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'createColumn',
     description: '向指定表追加一列',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       column: DATA_COLUMN_SCHEMA,
-    },
+    }, ['tableName', 'column']),
     resultSchema: {
       table: 'DataTable — 更新后的数据表实例',
     },
@@ -635,7 +590,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       column: { name: 'email', type: 'string' },
     },
-    validation: { requiredKeys: ['tableName', 'column'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '底层统一走 DataTable.addColumns，保证 validator 和 DataView 列缓存同步刷新。',
@@ -659,11 +613,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'updateColumn',
     description: '更新指定列定义',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
       updates: PARTIAL_DATA_COLUMN_SCHEMA,
-    },
+    }, ['tableName', 'columnName', 'updates']),
     resultSchema: {
       table: 'DataTable — 更新后的数据表实例',
     },
@@ -672,7 +626,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       columnName: 'name',
       updates: { label: 'User Name' },
     },
-    validation: { requiredKeys: ['tableName', 'columnName', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '列更新会触发 DataTable 内部运行时刷新链。',
@@ -691,11 +644,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'renameColumn',
     description: '重命名指定列，并同步更新该表视图、静态 rows 与相关关系引用',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
-      newColumnName: 'string — 新列名，表内唯一',
-    },
+      newColumnName: stringSchema('新列名，表内唯一'),
+    }, ['tableName', 'columnName', 'newColumnName']),
     resultSchema: {
       table: 'DataTable — 重命名后的数据表实例',
     },
@@ -704,7 +657,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       columnName: 'name',
       newColumnName: 'userName',
     },
-    validation: { requiredKeys: ['tableName', 'columnName', 'newColumnName'] },
     usageRules: [
       '仅用于列身份变更；普通元数据修改仍优先用 dataset.updateColumn。',
       '会同步改写当前表 views 中的字段引用、静态 rows 字段键，以及 tableRelations 中的 parentField/childField 引用。',
@@ -733,10 +685,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'deleteColumn',
     description: '删除指定列',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
-    },
+    }, ['tableName', 'columnName']),
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
@@ -744,7 +696,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       columnName: 'email',
     },
-    validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '删除后会同步刷新 DataView 列缓存。',
       RUNTIME_WIRED_RULE,
@@ -762,7 +713,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'table',
     crudToolMethod: 'createTable',
     description: '创建数据表，并按需初始化资源语义、API、CRUD 配置和视图',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columns: DATA_COLUMN_ARRAY_SCHEMA,
       resourceType: RESOURCE_TYPE_SCHEMA,
@@ -771,7 +722,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       api: CRUD_API_SCHEMA,
       crudConfig: CRUD_OPERATION_CONFIG_SCHEMA,
       views: VIEWS_SCHEMA,
-    },
+    }, ['tableName', 'columns']),
     resultSchema: {
       table: 'DataTable — 新建的数据表实例',
     },
@@ -785,7 +736,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       resourceId: 'crm.users',
       businessCategory: 'master',
     },
-    validation: { requiredKeys: ['tableName', 'columns'] },
     usageRules: [
       JSON_OBJECT_RULE,
       STATIC_ROWS_ONLY_RULE,
@@ -811,24 +761,21 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'table',
     crudToolMethod: 'updateTable',
     description: '更新数据表结构、资源语义及运行配置',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnsToAdd: DATA_COLUMN_ARRAY_SCHEMA,
-      columnUpdates: {
-        kind: 'array',
-        items: COLUMN_UPDATE_ENTRY_SCHEMA,
-      },
-      columnsToRemove: 'string[]? — 需要删除的列名列表',
+      columnUpdates: arraySchema(COLUMN_UPDATE_ENTRY_SCHEMA),
+      columnsToRemove: arraySchema(stringSchema('需要删除的列名'), '需要删除的列名列表'),
       api: CRUD_API_SCHEMA,
       crudConfig: {
         ...CRUD_OPERATION_CONFIG_SCHEMA,
-        note: '传 null 表示显式移除已有 crudConfig；传对象表示新的运行配置。',
+        description: '传 null 表示显式移除已有 crudConfig；传对象表示新的运行配置。',
       },
       resourceType: NULLABLE_RESOURCE_TYPE_SCHEMA,
-      resourceId: 'string | null? — null 表示显式清空',
+      resourceId: stringSchema('null 表示显式清空', { nullable: true }),
       businessCategory: NULLABLE_BUSINESS_CATEGORY_SCHEMA,
       defaultRows: ROW_ARRAY_SCHEMA,
-    },
+    }, ['tableName']),
     resultSchema: {
       table: 'DataTable — 更新后的数据表实例',
     },
@@ -838,7 +785,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       resourceId: null,
       businessCategory: 'reference',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '结构变更优先于 api/crudConfig/defaultRows 更新执行。',
@@ -864,10 +810,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'table',
     crudToolMethod: 'renameTable',
     description: '重命名数据表，并同步更新视图、关系、依赖与布局引用',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-      newTableName: 'string — 新表名，DataSet 内唯一',
-    },
+      newTableName: stringSchema('新表名，DataSet 内唯一'),
+    }, ['tableName', 'newTableName']),
     resultSchema: {
       table: 'DataTable — 重命名后的数据表实例',
     },
@@ -875,7 +821,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       newTableName: 'CustomerUsers',
     },
-    validation: { requiredKeys: ['tableName', 'newTableName'] },
     usageRules: [
       '仅用于表身份变更；普通资源语义、API 或列结构修改仍优先用 dataset.updateTable。',
       '会同步改写表级 views.tableName、tableRelations、viewDependencies 与 layout.tablePositions 中的表名引用。',
@@ -899,16 +844,15 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'table',
     crudToolMethod: 'deleteTable',
     description: '删除指定数据表',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
     example: {
       tableName: 'UsersSample',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '当表仍被 relation 或 dependency 引用时，底层会 fail-fast 拒绝删除。',
       RUNTIME_WIRED_RULE,
@@ -926,16 +870,15 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'listViews',
     description: '列出指定表下的全部视图',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       views: 'DataView[] — 视图实例列表',
     },
     example: {
       tableName: 'Users',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '返回值包含 default 视图。',
       RUNTIME_WIRED_RULE,
@@ -953,10 +896,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'getView',
     description: '获取指定视图',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       view: 'DataView | undefined — 命中的视图',
     },
@@ -964,7 +907,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       viewId: 'grid',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '若该视图配置了 aggregates，运行时汇总结果位于 view.aggregateResult / view.selectionAggregateResult。',
@@ -979,11 +921,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'createView',
     description: '创建一个非 default 视图',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-      viewId: 'string — 新视图 ID，不能是 default',
+      viewId: stringSchema('新视图 ID，不能是 default'),
       config: VIEW_METADATA_SCHEMA,
-    },
+    }, ['tableName', 'viewId']),
     resultSchema: {
       view: 'DataView — 新创建的视图实例',
     },
@@ -1002,7 +944,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         },
       },
     },
-    validation: { requiredKeys: ['tableName', 'viewId'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_LIFECYCLE_RULE,
@@ -1023,11 +964,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'updateView',
     description: '更新指定视图的元数据配置',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
       updates: VIEW_METADATA_SCHEMA,
-    },
+    }, ['tableName', 'updates']),
     resultSchema: {
       view: 'DataView — 更新后的视图实例',
     },
@@ -1047,7 +988,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         },
       },
     },
-    validation: { requiredKeys: ['tableName', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1070,10 +1010,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'deleteView',
     description: '删除指定视图',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-      viewId: 'string — 视图 ID，不能是 default',
-    },
+      viewId: stringSchema('视图 ID，不能是 default'),
+    }, ['tableName', 'viewId']),
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
@@ -1081,7 +1021,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       viewId: 'grid',
     },
-    validation: { requiredKeys: ['tableName', 'viewId'] },
     usageRules: [
       DEFAULT_VIEW_LIFECYCLE_RULE,
       RUNTIME_WIRED_RULE,
@@ -1099,10 +1038,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'listRows',
     description: '列出指定视图当前持有的全部行',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       rows: 'IDataRow[] — 行数组副本',
     },
@@ -1110,7 +1049,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       viewId: 'default',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '读取的是当前视图行集，不一定等于 DataTable.rows 全量源数据。',
@@ -1129,11 +1067,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'getRow',
     description: '按主键查找一条行数据，支持树形 children 递归扫描',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       id: ROW_ID_PARAM,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'id']),
     resultSchema: {
       row: 'IDataRow | undefined — 命中的行数据',
     },
@@ -1142,7 +1080,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       id: 1,
       viewId: 'default',
     },
-    validation: { requiredKeys: ['tableName', 'id'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '树形 children 会递归扫描，不需要调用方区分平铺表和树表。',
@@ -1155,11 +1092,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'createRow',
     description: '在指定视图中创建一条新行',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       data: ROW_DATA_SCHEMA,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'data']),
     resultSchema: {
       result: 'IDataRow | CrudResult<IDataRow> — 本地/远端双返回形态',
     },
@@ -1167,7 +1104,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       data: { id: 2, name: 'Bob' },
     },
-    validation: { requiredKeys: ['tableName', 'data'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1188,11 +1124,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'createRows',
     description: '批量创建多条行数据',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       items: ROW_ARRAY_SCHEMA,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'items']),
     resultSchema: {
       result: 'CrudResult<BatchResult> — 批量创建结果（含 successCount/failureCount）',
     },
@@ -1203,7 +1139,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         { id: 4, name: 'Carol' },
       ],
     },
-    validation: { requiredKeys: ['tableName', 'items'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1224,12 +1159,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'updateRow',
     description: '更新指定主键的行数据',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       id: ROW_ID_PARAM,
       data: ROW_DATA_SCHEMA,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'id', 'data']),
     resultSchema: {
       result: 'boolean | CrudResult<IDataRow> — 本地/远端双返回形态',
     },
@@ -1238,7 +1173,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       id: 2,
       data: { name: 'Bobby' },
     },
-    validation: { requiredKeys: ['tableName', 'id', 'data'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1259,21 +1193,14 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'updateRows',
     description: '批量更新多条行数据',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-      items: {
-        kind: 'array',
-        items: {
-          kind: 'object',
-          required: ['id', 'data'],
-          properties: {
-            id: ROW_ID_PARAM,
-            data: ROW_DATA_SCHEMA,
-          },
-        },
-      },
+      items: arraySchema(objectSchema({
+        id: ROW_ID_PARAM,
+        data: ROW_DATA_SCHEMA,
+      }, { required: ['id', 'data'] })),
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'items']),
     resultSchema: {
       result: 'CrudResult<BatchResult> — 批量更新结果（含 successCount/failureCount）',
     },
@@ -1284,7 +1211,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         { id: 4, data: { name: 'Carol Wang' } },
       ],
     },
-    validation: { requiredKeys: ['tableName', 'items'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1305,11 +1231,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'deleteRow',
     description: '删除指定主键的行数据',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       id: ROW_ID_PARAM,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'id']),
     resultSchema: {
       result: 'boolean | CrudResult<boolean> — 本地/远端双返回形态',
     },
@@ -1317,7 +1243,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       id: 1,
     },
-    validation: { requiredKeys: ['tableName', 'id'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       REMOTE_ROW_RESULT_RULE,
@@ -1337,11 +1262,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'row',
     crudToolMethod: 'deleteRows',
     description: '批量删除多条行数据',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
-      ids: 'Array<string | number> — 需要删除的主键数组',
+      ids: arraySchema(ROW_ID_PARAM, '需要删除的主键数组'),
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName', 'ids']),
     resultSchema: {
       result: 'CrudResult<BatchResult> — 批量删除结果（含 successCount/failureCount）',
     },
@@ -1349,7 +1274,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Users',
       ids: [3, 4],
     },
-    validation: { requiredKeys: ['tableName', 'ids'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       'immediate + API 模式优先走远端 batchDelete；其余模式逐条本地 removeRow 并汇总结果。',
@@ -1369,10 +1293,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'relation',
     crudToolMethod: 'listRelations',
     description: '列出 DataSet 中的表关系，可按 parentTable 或 childTable 过滤',
-    paramsSchema: {
-      parentTable: 'string? — 可选父表过滤条件',
-      childTable: 'string? — 可选子表过滤条件',
-    },
+    paramsSchema: paramsSchema({
+      parentTable: stringSchema('可选父表过滤条件'),
+      childTable: stringSchema('可选子表过滤条件'),
+    }),
     resultSchema: {
       relations: 'TableRelation[] — 命中的关系列表',
     },
@@ -1390,12 +1314,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'relation',
     crudToolMethod: 'getRelation',
     description: '获取单条表关系；命中多条关系时要求字段级消歧',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
-      parentField: 'string? — 父表字段，用于消歧',
-      childField: 'string? — 子表字段，用于消歧',
-    },
+      parentField: stringSchema('父表字段，用于消歧'),
+      childField: stringSchema('子表字段，用于消歧'),
+    }, ['parentTable', 'childTable']),
     resultSchema: {
       relation: 'TableRelation | undefined — 命中的表关系',
     },
@@ -1405,7 +1329,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       parentField: 'id',
       childField: 'orderId',
     },
-    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       RELATION_AMBIGUITY_RULE,
       RUNTIME_WIRED_RULE,
@@ -1423,13 +1346,13 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'relation',
     crudToolMethod: 'createRelation',
     description: '创建一条表关系',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
-      parentField: 'string — 父表匹配字段',
-      childField: 'string — 子表外键字段',
-      relationName: 'string? — 可选关系名',
-    },
+      parentField: stringSchema('父表匹配字段'),
+      childField: stringSchema('子表外键字段'),
+      relationName: stringSchema('可选关系名'),
+    }, ['parentTable', 'childTable', 'parentField', 'childField']),
     resultSchema: {
       relation: 'TableRelation — 新创建的表关系',
     },
@@ -1439,7 +1362,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       parentField: 'id',
       childField: 'orderId',
     },
-    validation: { requiredKeys: ['parentTable', 'childTable', 'parentField', 'childField'] },
     usageRules: [
       '父表、子表和字段都必须已经存在。',
       RUNTIME_WIRED_RULE,
@@ -1457,10 +1379,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'relation',
     crudToolMethod: 'updateRelation',
     description: '更新一条表关系',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       selector: RELATION_SELECTOR_SCHEMA,
       updates: RELATION_UPDATE_SCHEMA,
-    },
+    }, ['selector', 'updates']),
     resultSchema: {
       relation: 'TableRelation — 更新后的表关系',
     },
@@ -1468,7 +1390,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       selector: { parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' },
       updates: { relationName: 'order-items' },
     },
-    validation: { requiredKeys: ['selector', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       RELATION_AMBIGUITY_RULE,
@@ -1487,12 +1408,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'relation',
     crudToolMethod: 'deleteRelation',
     description: '删除一条表关系（单一签名：关系选择器）',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
-      parentField: 'string? — 同一父子表有多条关系时建议显式提供',
-      childField: 'string? — 同一父子表有多条关系时建议显式提供',
-    },
+      parentField: stringSchema('同一父子表有多条关系时建议显式提供'),
+      childField: stringSchema('同一父子表有多条关系时建议显式提供'),
+    }, ['parentTable', 'childTable']),
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
@@ -1502,7 +1423,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       parentField: 'id',
       childField: 'orderId',
     },
-    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       JSON_OBJECT_RULE,
       RELATION_AMBIGUITY_RULE,
@@ -1522,10 +1442,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'dependency',
     crudToolMethod: 'listDependencies',
     description: '列出 DataSet 中的视图依赖，可按 parentTable 或 childTable 过滤',
-    paramsSchema: {
-      parentTable: 'string? — 可选父表过滤条件',
-      childTable: 'string? — 可选子表过滤条件',
-    },
+    paramsSchema: paramsSchema({
+      parentTable: stringSchema('可选父表过滤条件'),
+      childTable: stringSchema('可选子表过滤条件'),
+    }),
     resultSchema: {
       dependencies: 'ViewDependency[] — 命中的依赖列表',
     },
@@ -1543,10 +1463,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'dependency',
     crudToolMethod: 'getDependency',
     description: '获取一条视图依赖',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
-    },
+    }, ['parentTable', 'childTable']),
     resultSchema: {
       dependency: 'ViewDependency | undefined — 命中的依赖',
     },
@@ -1554,7 +1474,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       parentTable: 'Orders',
       childTable: 'Items',
     },
-    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '不存在时返回 undefined。',
       RUNTIME_WIRED_RULE,
@@ -1566,12 +1485,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'dependency',
     crudToolMethod: 'createDependency',
     description: '创建一条视图依赖',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
       dependencyType: DEPENDENCY_TYPE_PARAM,
-      autoLoad: 'boolean? — 父变化时是否自动级联加载子视图',
-    },
+      autoLoad: booleanSchema('父变化时是否自动级联加载子视图'),
+    }, ['parentTable', 'childTable']),
     resultSchema: {
       dependency: 'ViewDependency — 新创建的依赖',
     },
@@ -1581,7 +1500,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       dependencyType: 'currentRow',
       autoLoad: true,
     },
-    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '底层 relation 必须已经存在，否则依赖创建会失败。',
       RUNTIME_WIRED_RULE,
@@ -1599,11 +1517,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'dependency',
     crudToolMethod: 'updateDependency',
     description: '更新一条视图依赖',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
       updates: VIEW_DEPENDENCY_UPDATE_SCHEMA,
-    },
+    }, ['parentTable', 'childTable', 'updates']),
     resultSchema: {
       dependency: 'ViewDependency — 更新后的依赖',
     },
@@ -1612,7 +1530,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       childTable: 'Items',
       updates: { dependencyType: 'selectedRows', autoLoad: false },
     },
-    validation: { requiredKeys: ['parentTable', 'childTable', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '只更新现有依赖，不会隐式创建新依赖。',
@@ -1631,10 +1548,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'dependency',
     crudToolMethod: 'deleteDependency',
     description: '删除一条视图依赖',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
       childTable: CHILD_TABLE_PARAM,
-    },
+    }, ['parentTable', 'childTable']),
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
@@ -1642,7 +1559,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       parentTable: 'Orders',
       childTable: 'Items',
     },
-    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '依赖不存在时底层会抛错。',
       RUNTIME_WIRED_RULE,
@@ -1660,10 +1576,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'listAggregates',
     description: '列出指定视图当前的全部聚合配置',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-    },
+    }, ['tableName']),
     resultSchema: {
       aggregates: 'Record<string, AggregateColumnConfig> — 聚合配置浅拷贝，键为聚合输出字段名',
     },
@@ -1671,7 +1587,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Orders',
       viewId: 'default',
     },
-    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '聚合配置按 viewId 隔离：同一 table 在不同视图可维护不同 aggregates，不会互相覆盖。',
@@ -1692,11 +1607,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'getAggregate',
     description: '获取指定视图中单条聚合配置',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-      key: 'string — 聚合输出字段名（即 aggregates 对象的键）',
-    },
+      key: stringSchema('聚合输出字段名（即 aggregates 对象的键）'),
+    }, ['tableName', 'key']),
     resultSchema: {
       aggregate: 'AggregateColumnConfig | undefined — 命中的聚合配置；不存在时为 undefined',
     },
@@ -1704,7 +1619,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Orders',
       key: 'totalAmount',
     },
-    validation: { requiredKeys: ['tableName', 'key'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '不存在时返回 undefined，而不是抛错。',
@@ -1723,12 +1637,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'addAggregate',
     description: '向指定视图新增一条聚合配置',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-      key: 'string — 聚合输出字段名，视图内唯一',
+      key: stringSchema('聚合输出字段名，视图内唯一'),
       config: AGGREGATE_ITEM_SCHEMA,
-    },
+    }, ['tableName', 'key', 'config']),
     resultSchema: {
       added: 'void — 写入成功后无返回值',
     },
@@ -1737,7 +1651,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       key: 'totalAmount',
       config: { type: 'sum', field: 'amount' },
     },
-    validation: { requiredKeys: ['tableName', 'key', 'config'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       JSON_OBJECT_RULE,
@@ -1766,19 +1679,16 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'updateAggregate',
     description: '更新指定视图中一条已有聚合配置（浅合并 updates）',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-      key: 'string — 聚合输出字段名',
-      updates: {
-        kind: 'object',
-        optional: {
-          type: '"sum" | "count" | "avg" | "min" | "max" | "join"',
-          field: 'string? — 新源字段名',
-          separator: 'string? — join 分隔符',
-        },
-      },
-    },
+      key: stringSchema('聚合输出字段名'),
+      updates: objectSchema({
+        type: enumSchema(['sum', 'count', 'avg', 'min', 'max', 'join'], '聚合类型'),
+        field: stringSchema('新源字段名'),
+        separator: stringSchema('join 分隔符'),
+      }),
+    }, ['tableName', 'key', 'updates']),
     resultSchema: {
       updated: 'void — 写入成功后无返回值',
     },
@@ -1787,7 +1697,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       key: 'totalAmount',
       updates: { field: 'paidAmount' },
     },
-    validation: { requiredKeys: ['tableName', 'key', 'updates'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       JSON_OBJECT_RULE,
@@ -1815,11 +1724,11 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'view',
     crudToolMethod: 'removeAggregate',
     description: '删除指定视图中一条聚合配置',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       viewId: VIEW_ID_PARAM,
-      key: 'string — 聚合输出字段名',
-    },
+      key: stringSchema('聚合输出字段名'),
+    }, ['tableName', 'key']),
     resultSchema: {
       removed: 'void — 删除成功后无返回值',
     },
@@ -1827,7 +1736,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Orders',
       key: 'totalAmount',
     },
-    validation: { requiredKeys: ['tableName', 'key'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       'key 不存在时抛错。',
@@ -1847,10 +1755,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'getComputeExpression',
     description: '获取指定列的计算表达式字符串',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
-    },
+    }, ['tableName', 'columnName']),
     resultSchema: {
       expression: 'string | undefined — 当前计算表达式；未配置时为 undefined',
     },
@@ -1858,7 +1766,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Orders',
       columnName: 'totalAmount',
     },
-    validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '未配置计算表达式时返回 undefined，而不是抛错。',
       RUNTIME_WIRED_RULE,
@@ -1881,47 +1788,26 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'setComputeExpression',
     description: '设置（或替换）指定列的计算表达式；设置后自动重编译并对现有行立即重算',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
       expression: {
         type: 'string',
         maxLength: 2048,
-        description: '计算表达式字符串',
-        syntax: {
-          fieldRef: "直接写字段名（无需任何前缀）。行对象通过 with(__row) 解构，字段直接可见。例：price * qty / status === 'active' ? 1 : 0",
-          ctxRef: "ctx.<key> — 引用外部上下文变量，需先调用 DataView.setComputedContext({ key: value }) 注入。例：amount * ctx.taxRate",
-          childAgg: {
-            note: '子表聚合函数；需父子表已通过 dataset.createRelation 建立 TableRelation，否则子行为空。当前源码按 childTable 匹配并读取子表 default 视图。',
-            childRef: "'子表名'；例如 'Items'。当前不要写 'Items@filtered' 这类视图后缀。",
-            functions: [
-              '$sum(childRef, field) → number（无行时返回 0）',
-              '$count(childRef) → number',
-              '$avg(childRef, field) → number（无行时返回 0）',
-              '$min(childRef, field) → number | undefined',
-              '$max(childRef, field) → number | undefined',
-              '$list(childRef, field) → unknown[]',
-              "$join(childRef, field, sep?) → string；sep 默认 ', '",
-            ],
-            examples: [
-              "$sum('Items', 'lineTotal')  — 汇总子订单行金额",
-              "$count('Items')  — 统计子行数量",
-              "$avg('Items', 'lineTotal')  — 子行金额平均值",
-              "$min('Items', 'lineTotal')  — 子行金额最小值",
-              "$max('Items', 'lineTotal')  — 子行金额最大值",
-              "$list('Items', 'sku')  — 收集子行 SKU 列表",
-              "$join('Tags', 'name', ' / ')  — 拼接标签名",
-            ],
-          },
-          singleVsBlock: {
-            single: '不含 return 关键字 → 整体视为单一表达式，自动 return。例：price * qty',
-            block: '含 return 关键字 → 视为函数体，每条分支须显式 return。例：if (qty > 0) { return price * qty } else { return 0 }',
-            multiStatementExample: 'const tax = amount * 0.13\nreturn amount + tax',
-          },
-          errorHandling: '运行期求值失败时列值写 undefined，不中断其他行；编译期语法错误在调用时立即抛出',
-        },
+        description: [
+          '计算表达式字符串。',
+          '行字段直接写字段名；外部变量写 ctx.<key>。',
+          "子表聚合可用 $sum/$count/$avg/$min/$max/$list/$join，例如 $sum('Items', 'lineTotal')。",
+          '不含 return 时整体自动 return；含 return 时视为函数体，每条分支须显式 return。',
+        ].join(' '),
+        examples: [
+          'quantity * unitPrice',
+          'totalAmount * ctx.taxRate',
+          "$count('Items')",
+          "if (stock > 100) { return price * 0.9 } else { return price }",
+        ],
       },
-    },
+    }, ['tableName', 'columnName', 'expression']),
     resultSchema: {
       table: 'DataTable — 更新后的数据表实例',
     },
@@ -1954,7 +1840,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         expression: "if (stock > 100) { return price * 0.9 } else { return price }",
       },
     },
-    validation: { requiredKeys: ['tableName', 'columnName', 'expression'] },
     usageRules: [
       '行字段直接写字段名（无需前缀）；外部变量写 ctx.<key>；子表聚合写 $sum/$count/$avg/$min/$max/$list/$join。',
       '不含 return → 整体自动 return；含 return → 函数体模式，所有分支须显式 return。',
@@ -1987,10 +1872,10 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     target: 'column',
     crudToolMethod: 'clearComputeExpression',
     description: '移除指定列的计算表达式，恢复为普通列（值保留，但不再重算）',
-    paramsSchema: {
+    paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
       columnName: COLUMN_NAME_PARAM,
-    },
+    }, ['tableName', 'columnName']),
     resultSchema: {
       table: 'DataTable — 更新后的数据表实例',
     },
@@ -1998,7 +1883,6 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       tableName: 'Orders',
       columnName: 'totalAmount',
     },
-    validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '移除表达式后列变为普通列，现有行的列值保留最后一次计算结果，不再自动重算。',
       RUNTIME_WIRED_RULE,
@@ -2026,15 +1910,5 @@ export class PageDesignDatasetCatalog extends PageDesignToolCatalog<
 > {
   constructor() {
     super(DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE, DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE)
-  }
-
-  validateParams(functionId: string, params: unknown): string | null {
-    const row = this.getParameterRow(functionId)
-    if (row === undefined) {
-      return `未知 datasetTool 函数: ${functionId}`
-    }
-
-    const result = LlmParamsValidator.validateLlmDeserializedParams(params, row.paramsSchema, row.validation)
-    return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
   }
 }

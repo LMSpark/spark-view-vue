@@ -3,9 +3,9 @@ import { SPARK_COMPONENT_PAYLOAD_REF } from '../payloads/component-payload-catal
 import {
   createPageDesignCapabilityRow,
   type PageDesignFunctionRuntimeBinding,
-  type PageDesignKnowledgeRuntimeBinding,
   PageDesignToolCatalog,
 } from './tool-catalog'
+import { noParamsSchema, paramsSchema, stringSchema } from './json-schema-helpers'
 
 export type PageDesignKnowledgeFunctionFailureMode = FunctionFailureMode
 export type PageDesignKnowledgeFunctionTarget = 'knowledge'
@@ -46,47 +46,10 @@ export type PageDesignKnowledgeFunctionCapabilityRow = Pick<
 }
 
 const KNOWLEDGE_TARGET = 'knowledge'
+const NO_PARAMS = noParamsSchema('queryModules 不接受参数，请传 {} 或留空。')
 
 function toCapabilityRow(row: PageDesignKnowledgeFunctionParameterRow): PageDesignKnowledgeFunctionCapabilityRow {
   return createPageDesignCapabilityRow(row, 'runtime-wired')
-}
-
-function isPlainObject(params: unknown): params is Record<string, unknown> {
-  return typeof params === 'object' && params !== null && !Array.isArray(params)
-}
-
-type PageDesignKnowledgeParamsValidator = (functionId: string, params: unknown) => string | null
-
-function validateNoParams(functionId: string, params: unknown): string | null {
-  if (params === undefined || params === null) return null
-  if (isPlainObject(params) && Object.keys(params).length === 0) return null
-  return `${functionId} 不接受参数，请传 {} 或留空`
-}
-
-function validateRequiredStringParam(functionId: string, params: unknown, key: string): string | null {
-  if (!isPlainObject(params)) return `${functionId} 参数必须是对象`
-  return typeof params[key] === 'string' && params[key].trim().length > 0
-    ? null
-    : `${functionId} 缺少 ${key}（非空字符串）`
-}
-
-function validateOptionalStringParams(functionId: string, params: unknown, optionalKeys: readonly string[]): string | null {
-  if (!isPlainObject(params)) return `${functionId} 参数必须是对象`
-  for (const key of optionalKeys) {
-    const value = params[key]
-    if (value !== undefined && typeof value !== 'string') {
-      return `${functionId}.${key} 必须是字符串`
-    }
-  }
-  return null
-}
-
-const PAGE_DESIGN_KNOWLEDGE_PARAM_VALIDATORS: Record<PageDesignKnowledgeRuntimeBinding['method'], PageDesignKnowledgeParamsValidator> = {
-  queryFunctions: (functionId, params) => validateOptionalStringParams(functionId, params, ['modulePath', 'moduleId', 'keyword']),
-  queryModules: validateNoParams,
-  guideFunction: (functionId, params) => validateRequiredStringParam(functionId, params, 'action'),
-  queryPayloads: (functionId, params) => validateOptionalStringParams(functionId, params, ['category', 'keyword']),
-  guidePayload: (functionId, params) => validateRequiredStringParam(functionId, params, 'key'),
 }
 
 const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
@@ -95,13 +58,13 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     type: 'describe',
     target: KNOWLEDGE_TARGET,
     description: '查询当前 AI 会话可调用的函数目录（按 modulePath/moduleId/keyword 过滤）。',
-    paramsSchema: {
-      modulePath: 'string? — 按模块路径过滤，例如 knowledge、nodeTree、dataset。',
-      moduleId: 'string? — 按模块 ID 精确过滤。',
-      keyword: 'string? — 按 action/description/modulePath 模糊搜索。',
-    },
+    paramsSchema: paramsSchema({
+      modulePath: stringSchema('按模块路径过滤，例如 knowledge、nodeTree、dataset。'),
+      moduleId: stringSchema('按模块 ID 精确过滤。'),
+      keyword: stringSchema('按 action/description/modulePath 模糊搜索。'),
+    }),
     resultSchema: {
-      items: 'AiRuntimeFunctionExposure[] — 函数目录（action、参数 schema、规则、失败模式）。',
+      items: 'AiKnowledgeFunctionSummary[] — 轻量函数目录（action、模块、描述、顶层参数名、失败码）；完整 paramsSchema/usageRules/failureModes 请用 guideFunction(action) 按需查询。',
     },
     example: {},
     usageRules: [
@@ -120,9 +83,9 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     type: 'describe',
     target: KNOWLEDGE_TARGET,
     description: '查询当前 AI 会话的模块目录（含根模块与子模块）。',
-    paramsSchema: {},
+    paramsSchema: NO_PARAMS,
     resultSchema: {
-      items: 'AiRuntimeModuleExposure[] — 模块目录（moduleId/modulePath/name/description）。',
+      items: 'AiKnowledgeModuleSummary[] — 轻量模块目录（moduleId/modulePath/name/description/functionCount/childModuleCount），不包含函数 schema。',
     },
     example: {},
     usageRules: [
@@ -140,10 +103,9 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     type: 'describe',
     target: KNOWLEDGE_TARGET,
     description: '查询单个函数指南（按 action 精确查询）。',
-    paramsSchema: {
-      required: ['action'],
-      action: 'string — 函数 action，例如 page-1@nodeTree@addNode。',
-    },
+    paramsSchema: paramsSchema({
+      action: stringSchema('函数 action，例如 page-1@nodeTree@addNode。', { minLength: 1 }),
+    }, ['action']),
     resultSchema: {
       guide: 'AiRuntimeFunctionExposure — 函数完整指南（参数 schema、规则、失败模式）。',
     },
@@ -170,20 +132,30 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     functionId: 'queryPayloads',
     type: 'describe',
     target: KNOWLEDGE_TARGET,
-    description: '查询 page-design 组件参数荷载目录，返回可用于 SparkNode node 参数的组件 type 摘要。',
-    paramsSchema: {
-      category: 'string? — 组件分类过滤，例如 container / field / group / meta。',
-      keyword: 'string? — 按组件 type、描述或标签模糊搜索。',
-    },
+    description: '查询 page-design 组件目录，返回可用于 SparkNode node 参数的组件 type 摘要。',
+    paramsSchema: paramsSchema({
+      category: stringSchema('组件分类过滤，例如 container / field / group / meta。'),
+      keyword: stringSchema('按组件 type、描述或分类模糊搜索。'),
+      expression: stringSchema('JMESPath 表达式，作用于组件目录视图 { components, registry, capabilities, summary }；用于选择组件 type，结果统一规整为 key/description。'),
+      limit: {
+        type: 'integer',
+        minimum: 1,
+        maximum: 40,
+        description: '最多返回多少条组件目录摘要；默认 24，最大 40。',
+      },
+    }),
     resultSchema: {
       payloadRef: `string — 固定为 ${SPARK_COMPONENT_PAYLOAD_REF}`,
-      items: 'ParameterPayloadSummary[] — 组件参数荷载摘要列表。',
+      items: 'ParameterPayloadSummary[] — 轻量组件目录摘要，仅包含 key 与 description；不含 category、payloadRef、paramsSchema，完整参数结构请用 guidePayload(key) 按需查询。',
     },
     example: {
-      category: 'container',
+      expression: 'components[?category==`container`].type',
+      limit: 12,
     },
     usageRules: [
-      '新增或替换组件前，若不确定 type，先查询目录。',
+      '新增或替换组件前，若不确定 type，先按关键词或分类查询组件目录。',
+      '复杂筛选优先用 expression 对组件目录执行 JMESPath，例如 components[?category==`field`].type 或 registry.containers。',
+      'queryPayloads 默认只返回前 24 条摘要；需要更多时可传 limit，但完整组件参数只能通过 guidePayload(key) 查询。',
       `无需传 payloadRef；本模块固定查询 ${SPARK_COMPONENT_PAYLOAD_REF}。`,
     ],
     runtimeBinding: {
@@ -197,13 +169,12 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     functionId: 'guidePayload',
     type: 'describe',
     target: KNOWLEDGE_TARGET,
-    description: '读取指定组件 type 的 SparkNode 参数荷载指南，返回 paramsSchema、最小参数示例和使用规则。',
-    paramsSchema: {
-      required: ['key'],
-      key: 'string — 组件 type，例如 r-table、r-form、el-button。',
-    },
+    description: '读取指定组件 type 的 SparkNode 参数荷载指南，返回标准 paramsSchema 与原始组件语义指南。',
+    paramsSchema: paramsSchema({
+      key: stringSchema('组件 type，例如 r-table、r-form、el-button。', { minLength: 1 }),
+    }, ['key']),
     resultSchema: {
-      guide: 'ParameterPayloadGuide — 组件 SparkNode 参数荷载指南（paramsSchema 与函数参数协议同源）。',
+      guide: 'ParameterPayloadGuide — 组件 SparkNode 参数荷载指南；paramsSchema 与函数参数协议同源，sourceGuide 保留组件目录原始语义（分类、props 分组、事件、绑定、子组件、fail-fast 检查）。',
     },
     example: {
       key: 'r-table',
@@ -235,18 +206,5 @@ export class PageDesignKnowledgeCatalog extends PageDesignToolCatalog<
 > {
   constructor() {
     super(PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE, PAGE_DESIGN_KNOWLEDGE_FUNCTION_CAPABILITY_TABLE)
-  }
-
-  validateParams(functionId: string, params: unknown): string | null {
-    const row = this.getParameterRow(functionId)
-    if (row === undefined) {
-      return `未知 knowledge 函数: ${functionId}`
-    }
-
-    if (row.runtimeBinding.kind !== 'page-design-knowledge') {
-      return `${functionId} 缺少 knowledge runtime binding`
-    }
-
-    return PAGE_DESIGN_KNOWLEDGE_PARAM_VALIDATORS[row.runtimeBinding.method](functionId, params)
   }
 }

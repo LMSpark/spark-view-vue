@@ -210,6 +210,15 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
     return pageId
   }
 
+  canReuseSelection(input: AppAiBusinessResolveInput, currentScope: { businessInstanceId: string }): boolean {
+    try {
+      const pageId = this.resolveInstanceId(input)
+      return pageId !== null && pageId.trim() !== '' && pageId === currentScope.businessInstanceId
+    } catch {
+      return false
+    }
+  }
+
   async startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult> {
     return this.module.startSession({ ...context, moduleId: PAGE_DESIGN_MODULE_ID })
   }

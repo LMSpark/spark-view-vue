@@ -4,6 +4,7 @@ import {
   AiRuntime,
   type AiBusinessRegistration,
   type AiFunctionRegistration,
+  type AiKnowledgeProjection,
   type AiModuleRegistration,
   type AiRuntimeApi,
   type FunctionExecutionContext,
@@ -18,6 +19,12 @@ interface LeaveFormState {
     reason: string | null
   }
 }
+
+const NO_PARAMS_SCHEMA = {
+  type: 'object',
+  properties: {},
+  additionalProperties: false,
+} as const
 
 function createDeterministicRuntime(): AiRuntimeApi {
   return new AiRuntime({
@@ -191,6 +198,38 @@ describe('AI core module projection and translation API', () => {
     expect(started.availableFunctions[0]?.failureModes).toEqual([
       { code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' },
     ])
+    const knowledge = core.getKnowledgeProjection() as AiKnowledgeProjection
+    const summaries = knowledge.queryFunctions({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+    })
+    expect(summaries[0]).toMatchObject({
+      action: 'leave-instance@leaveApproval@setReason',
+      moduleId: 'leaveApproval',
+      modulePath: 'leaveApproval',
+      paramNames: ['reason'],
+      requiredParamNames: ['reason'],
+      failureCodes: ['REASON_REQUIRED'],
+    })
+    expect(summaries[0]).not.toHaveProperty('paramsSchema')
+    expect(summaries[0]).not.toHaveProperty('usageRules')
+    expect(summaries[0]).not.toHaveProperty('failureModes')
+    const modules = knowledge.queryModules({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+    })
+    expect(modules[0]).toMatchObject({
+      moduleId: 'leaveApproval',
+      modulePath: 'leaveApproval',
+      functionCount: 1,
+      childModuleCount: 0,
+    })
+    expect(modules[0]).not.toHaveProperty('functions')
+    expect(modules[0]).not.toHaveProperty('modules')
+    expect(knowledge.guideFunction({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+    }, 'leave-instance@leaveApproval@setReason')).toHaveProperty('paramsSchema')
     expect(started.lifecycle).toMatchObject({
       status: 'Started',
       instanceId: 'leave-session-1',
@@ -839,7 +878,7 @@ describe('AI core module projection and translation API', () => {
           getFunctions: () => [{
             functionId: 'run',
             description: 'Run first tool.',
-            paramsSchema: {},
+            paramsSchema: NO_PARAMS_SCHEMA,
           }],
         },
         {
@@ -849,7 +888,7 @@ describe('AI core module projection and translation API', () => {
           getFunctions: () => [{
             functionId: 'run',
             description: 'Run second tool.',
-            paramsSchema: {},
+            paramsSchema: NO_PARAMS_SCHEMA,
           }],
         },
       ],
