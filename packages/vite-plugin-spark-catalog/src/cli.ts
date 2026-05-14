@@ -12,6 +12,7 @@
 
 import { resolve } from 'node:path'
 import { generateJsonCatalog } from './json-catalog-generator'
+import type { VcmCheckerOptions } from './extract-component-api-vcm'
 import {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
@@ -35,13 +36,13 @@ function parseBooleanEnv(name: string): boolean | undefined {
   return undefined
 }
 
-function pickDefined<T extends Record<string, boolean | undefined>>(source: T): Partial<T> {
+function pickDefined<T extends Record<string, unknown>>(source: T): { [K in keyof T]?: Exclude<T[K], undefined> } {
   return Object.fromEntries(
     Object.entries(source).filter(([, value]) => value !== undefined),
-  ) as Partial<T>
+  ) as { [K in keyof T]?: Exclude<T[K], undefined> }
 }
 
-const vcmCheckerOptions = pickDefined({
+const vcmCheckerOptions: VcmCheckerOptions = pickDefined({
   rawType: parseBooleanEnv('SPARK_CATALOG_VCM_RAW_TYPE'),
   schema: parseBooleanEnv('SPARK_CATALOG_VCM_SCHEMA'),
   noDeclarations: parseBooleanEnv('SPARK_CATALOG_VCM_NO_DECLARATIONS'),

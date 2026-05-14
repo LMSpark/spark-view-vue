@@ -16,8 +16,10 @@
 
 /** 组件目录 JSON 根结构 */
 export interface ComponentCatalog {
+  /** JSON Schema draft 标识；catalog envelope 内的 schema 引用遵循 2020-12。 */
+  $schema: 'https://json-schema.org/draft/2020-12/schema'
   /** Schema 版本，遵循 semver */
-  version: '4.0.0'
+  version: '3.0.0'
   /** 构建时间 ISO 8601 */
   buildTime: string
   /** 组件总数 */
@@ -26,44 +28,9 @@ export interface ComponentCatalog {
   /** 组件条目：key = 组件 type（kebab-case），目录主入口。 */
   components: Record<string, ComponentEntry>
 
-  /**
-   * 共享类型定义（SparkNode 等框架级类型，一次定义多处引用）
-   *
-   * 组件 props 中出现的 `SparkNode[]` 等类型不再逐个组件展开 schema，
-   * 统一引用此处的单例定义。AI 生成时查阅此表即可理解完整结构。
-   */
-  sharedTypes: Record<string, SharedTypeDefinition>
+  /** 标准 JSON Schema definitions：key 必须等于 schema.title，复杂字段通过 `#/$defs/{type}` 引用。 */
+  $defs?: Record<string, PropSchema>
 
-  /**
-   * Schema 自引用节点表。
-   *
-   * 每一行是一段 JSON Schema AST，`parentId` 指向同表父节点；
-   * 组件 prop/emit 通过 `schemaNodeId` 指向根节点，后端可直接用递归 CTE 查询整棵结构。
-   */
-  schemaNodes?: SchemaNodeEntry[]
-
-  /** API 全息表面：DataView / DataSet / 沙箱注入变量的公共方法签名 */
-  apiSurface?: ApiSurface
-
-  /** 平台约束（校验器使用） */
-  constraints: PlatformConstraints
-
-  /**
-   * 组件绑定行为描述符（全量映射）
-   *
-   * 包含所有在绑定管线中有角色的组件类型（el-* 静态 + r-* 推断），
-   * 运行时 component-binding-registry 可从此初始化。
-   * AI 可查阅此表理解组件的数据绑定行为。
-   */
-  bindingDescriptors: Record<string, CatalogBindingDescriptor>
-
-  /**
-   * 治理契约字典（Vue 约束 -> AI 可读契约）
-   *
-   * 将组件公共 Props / 事件 / API 的“约束层”显式建模，
-   * 让 AI 在生成配置时优先基于契约推理，而不是逐组件重复学习。
-   */
-  governance?: CatalogGovernance
 }
 
 /**
@@ -187,19 +154,19 @@ export interface PropEntry {
   description?: string
   /** JSON 示例值，面向 LLM/后端直接生成配置。 */
   examples?: unknown[]
-  /** 指向 schemaNodes 的根节点 id。 */
+  /** 构建期 schema type 引用；落盘时转换为 JSON Schema `$ref`。 */
   schemaNodeId?: string
   /**
    * 语义标签：该 prop 期望绑定的子组件 type（kebab-case）。
    *
-   * 来源于 JSDoc `@componentRef xxx`，与 `schemaNodeId` 互补：
-   * - `schemaNodeId` 提供结构（由 VCM 从 prop 类型反推）；
+   * 来源于 JSDoc `@componentRef xxx`，与 schema type 引用互补：
+   * - schema type 引用提供结构（由 VCM 从 prop 类型反推）；
    * - `componentRef` 提供语义（AI 可据此识别这是一个子组件槽位）。
    */
   componentRef?: string
   /**
-   * @internal Build-time 中间字段：VCM 提取阶段写入，随后由 generator
-   * `compactProps` 转换为 `schemaNodeId`。不会出现在落盘 catalog 中。
+   * JSON Schema。复杂类型用 `{ "$ref": "#/$defs/真实Type" }` 指向 `$defs`。
+   * 生成阶段也会临时存放完整 VCM schema，最终写盘前会瘦身为标准 JSON Schema。
    */
   schema?: PropSchema
 }
@@ -210,15 +177,20 @@ export interface EmitEntry {
   type?: string
   /** 事件描述 */
   description?: string
-  /** 指向 schemaNodes 的根节点 id。 */
+  /** 构建期 schema type 引用；落盘时转换为 JSON Schema `$ref`。 */
   schemaNodeId?: string
+  /**
+   * @internal Build-time 中间字段：事件 payload 的 JSON Schema。
+   * 落盘时会直接写入组件 type 的 emits[eventName]，不再提升为事件专属伪 type。
+   */
+  schema?: PropSchema
   /**
    * Build-time 中间字段：仅在提取阶段被赋值，不会落盘。如需事件载荷语义，使用 schema。
    */
   payload?: Array<{ name: string; type: string }>
   /**
    * @internal Build-time 中间字段：VCM 提取阶段写入，随后由 generator
-   * `compactEmits` 转换为 `schemaNodeId`。不会出现在落盘 catalog 中。
+   * `compactEmits` 转换为 schema type 引用。不会出现在落盘 catalog 中。
    */
   __payloadSchemas?: PropSchema[]
   /**
@@ -240,7 +212,7 @@ export type JsonSchemaTypeName = 'object' | 'array' | 'string' | 'number' | 'int
 export interface PropSchemaProperty extends PropSchema {
   /**
    * @internal 临时字段 — 仅在生成阶段使用
-   * 暂存需要递归提取到 schemaNodes 的嵌套 schema
+   * 暂存需要递归提取到 schema type 池的嵌套 schema
    * 最终 JSON 中不会包含此字段，会被替换为 $ref
    */
   __nestedSchema?: PropSchema
@@ -250,7 +222,7 @@ export interface PropSchemaProperty extends PropSchema {
  *
  * 约束：
  * - 不使用自定义 kind 字段；
- * - 落盘时会被拆成 schemaNodes 自引用表；
+ * - 复杂对象以真实 type 为键进入 `$defs`；
  * - TypeScript 类型名使用标准 `title` 表达，不占用 JSON Schema `type`。
  */
 export interface PropSchema {
@@ -274,47 +246,10 @@ export interface PropSchema {
   prefixItems?: PropSchema[]
   /** 联合 schema。 */
   anyOf?: PropSchema[]
-  /** 引用其它 schema 定义；仅生成阶段使用。 */
+  /** 标准 JSON Schema `$ref`，落盘时使用 `#/$defs/{type}`。 */
   $ref?: string
   /** 描述。 */
   description?: string
-  /** 标准 JSON Schema default annotation。 */
-  default?: unknown
-  /** 标准 JSON Schema examples annotation。 */
-  examples?: unknown[]
-}
-
-/** Schema 节点在自引用表中的关系类型。 */
-export type SchemaNodeRelation = 'root' | 'property' | 'items' | 'prefixItem' | 'oneOf' | 'anyOf'
-
-/** 后端可直接持久化的 schema 自引用表行。 */
-export interface SchemaNodeEntry {
-  /** 节点主键；根节点 id 等于 TypeScript 类型名。 */
-  id: string
-  /** 所属根节点 id，便于后端按 schema 分区查询。 */
-  rootId: string
-  /** 父节点 id；根节点为空。 */
-  parentId?: string
-  /** 与父节点的关系。 */
-  relation: SchemaNodeRelation
-  /** object property 名称，仅 relation=property 时使用。 */
-  name?: string
-  /** 数组/联合分支序号。 */
-  index?: number
-  /** property 是否必填。 */
-  required?: boolean
-  /** 指向另一棵 schema 根节点，仍然是 schemaNodes 同表 id。 */
-  refId?: string
-  /** 标准 JSON Schema type。 */
-  type?: JsonSchemaTypeName | JsonSchemaTypeName[]
-  /** 标准 JSON Schema title。 */
-  title?: string
-  /** 标准 JSON Schema description。 */
-  description?: string
-  /** 标准 JSON Schema enum。 */
-  enum?: unknown[]
-  /** 标准 JSON Schema const。 */
-  const?: unknown
   /** 标准 JSON Schema default annotation。 */
   default?: unknown
   /** 标准 JSON Schema examples annotation。 */
@@ -328,30 +263,6 @@ export interface RootFieldEntry {
   description: string
   /** 子字段（如 filter.columns, toolbar.items） */
   children?: RootFieldEntry[]
-}
-
-/* --------------------------------------------------------------------------
- * 共享类型定义（SparkNode 等框架级类型）
- * ----------------------------------------------------------------------- */
-
-/** 共享类型定义条目 */
-export interface SharedTypeDefinition {
-  /** 类型名称 */
-  name: string
-  /** 类型描述 */
-  description: string
-  /** 属性列表 */
-  properties: SharedTypeProperty[]
-  /** 附加说明（Markdown） */
-  notes?: string
-}
-
-/** 共享类型的属性条目 */
-export interface SharedTypeProperty {
-  name: string
-  type: string
-  required?: boolean
-  description: string
 }
 
 /* --------------------------------------------------------------------------

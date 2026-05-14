@@ -38,8 +38,6 @@ export type {
   EmitEntry,
   PropSchema,
   PropSchemaProperty,
-  SchemaNodeEntry,
-  SchemaNodeRelation,
   JsonSchemaTypeName,
   RootFieldEntry,
   PlatformConstraints,

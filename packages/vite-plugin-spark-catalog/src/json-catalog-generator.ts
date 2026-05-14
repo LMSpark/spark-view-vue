@@ -10,7 +10,7 @@
  * 设计原则：
  * - 运行时模型保留完整信息，便于审计与后续扩展；
  * - 落盘前再做瘦身，避免把内部辅助信息直接写入产物；
- * - 通过 schemaNodes 自引用表与组件自包含条目，为 AI、工具链和后端递归查询提供稳定消费面。
+ * - 落盘结构只按真实 type 去重，复杂字段使用标准 JSON Schema `$ref` 引用其它 type。
  */
 
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
@@ -33,14 +33,14 @@ import type {
   EmitEntry,
   PropSchema,
   PropSchemaProperty,
-  SchemaNodeEntry,
+  JsonSchemaTypeName,
   CatalogBindingDescriptor,
+  PlatformConstraints,
 } from './component-catalog-schema'
 import { auditCatalog, logAuditReport } from './catalog-quality-audit'
 import type { AuditReport, AuditOptions } from './catalog-quality-audit'
 
 import { nestedSchemaCollector } from './nested-schema-collector'
-import { deepClone } from '@spark-view/spark-utils'
 // ── 2. 常量与生成约束 (Constants & Policies) ───────────────────────────────────────
 
 /** 统一日志前缀，方便从构建日志里快速筛出目录生成阶段输出。 */
@@ -107,6 +107,8 @@ interface EnumValueDoc {
   description?: string
 }
 
+type SchemaRelation = 'root' | 'property' | 'items' | 'prefixItem' | 'oneOf' | 'anyOf'
+
 /**
  * 结构性属性不再保留在组件 props 列表里。
  *
@@ -115,27 +117,9 @@ interface EnumValueDoc {
 const STRUCTURAL_PROP_NAMES = new Set(['type', 'id', 'children'])
 
 /**
- * 低信息量枚举变体。
- *
- * 这类枚举通常只是宽泛基础类型的文字化表达，不足以支撑真实配置语义，写入目录只会制造噪音。
- */
-const _LOW_SIGNAL_ENUM_VARIANTS = new Set([
-  'undefined',
-  'null',
-  'string',
-  'number',
-  'boolean',
-  'object',
-  'unknown',
-  'any',
-  'never',
-  'void',
-])
-
-/**
  * 外部系统对象或 DOM/CSS 相关类型。
  *
- * 这些类型往往会展开成大量对业务无帮助的字段，因此不应进入 schemaNodes。
+ * 这些类型往往会展开成大量对业务无帮助的字段，因此不应进入 schema type 池。
  */
 const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
   'Event',
@@ -163,7 +147,7 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
  * 这里保存的是消费者需要共享遵循的平台规则，例如 DataKey 正则、容器上下文映射、
  * 有效组件类型前缀等。它们属于目录的一部分，而不是临时构建细节。
  */
-const DEFAULT_CONSTRAINTS: ComponentCatalog['constraints'] = {
+const DEFAULT_CONSTRAINTS: PlatformConstraints = {
   dataKeyPattern: {
     value: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
     description: 'DataKey format constraint; 用于把组件绑定到页面数据空间。格式支持 table@rows、table@currentRow.field、#scope@table@selectedRows 等。',
@@ -461,6 +445,20 @@ function stripRootSchemaAnnotations(schema: PropSchema): PropSchema {
   return clean
 }
 
+function stripInlineEnumNoise(schema: PropSchema): PropSchema {
+  const clean = stripInternalSchemaFields(schema)
+  delete clean.title
+  delete clean.examples
+  if (clean.oneOf !== undefined) {
+    clean.oneOf = clean.oneOf.map((branch) => {
+      const next = stripInternalSchemaFields(branch)
+      delete next.examples
+      return next
+    })
+  }
+  return clean
+}
+
 function mergeRootSchemaAnnotations(existing: PropSchema, next: PropSchema): PropSchema {
   const examples = uniqueExamples([
     ...(existing.examples ?? []),
@@ -489,7 +487,7 @@ function resolveSchemaRef(
   const schemaRefKey = getSchemaRefKey(schema)
   const ref = schemaRefKey.length > 0 ? schemaRefKey : (normalizedIdentityKey ?? '')
   if (ref.length === 0) {
-    throw new Error('component-catalog schema title/identityKey 为空，无法建立 schemaNodeId')
+    throw new Error('component-catalog schema title/identityKey 为空，无法建立 schema type 引用')
   }
 
   const pooledSchema = stripInternalSchemaFields({ ...schema, title: schema.title ?? ref })
@@ -521,6 +519,18 @@ function normalizeNestedSchemaProperty(
   }
 
   const normalizedNestedSchema = normalizeNestedSchema(context, nestedSchema)
+  if (isEnumLikeSchema(normalizedNestedSchema)) {
+    const inlineEnum = stripInlineEnumNoise(normalizedNestedSchema)
+    const description = normalizedProperty.description ?? inlineEnum.description
+    const defaultValue = normalizedProperty.default ?? inlineEnum.default
+    delete normalizedProperty.__nestedSchema
+    return {
+      ...normalizedProperty,
+      ...inlineEnum,
+      ...(description !== undefined ? { description } : {}),
+      ...(defaultValue !== undefined ? { default: defaultValue } : {}),
+    }
+  }
   const ref = resolveSchemaRef(
     context,
     normalizedNestedSchema,
@@ -545,6 +555,31 @@ function normalizeNestedSchema(context: SchemaPoolContext, schema: PropSchema): 
       ]),
     ),
   }
+}
+
+function normalizeInlineSchema(context: SchemaPoolContext, schema: PropSchema): PropSchema {
+  if (schema.type !== 'array') return stripInternalSchemaFields(schema)
+
+  const normalized: PropSchema = {
+    ...schema,
+    type: 'array',
+  }
+  delete normalized.title
+
+  if (schema.items !== undefined) {
+    const itemSchema = normalizeNestedSchema(context, schema.items)
+    if (isObjectSchema(itemSchema) && shouldRetainSchema(itemSchema)) {
+      normalized.items = { $ref: resolveSchemaRef(context, itemSchema, itemSchema.title) }
+    } else {
+      normalized.items = stripInternalSchemaFields(itemSchema)
+    }
+  }
+
+  if (schema.prefixItems !== undefined) {
+    normalized.prefixItems = schema.prefixItems.map((item) => normalizeInlineSchema(context, item))
+  }
+
+  return stripInternalSchemaFields(normalized)
 }
 
 function applyEnumValueDocs(schema: PropSchema, enumValueDocs: Record<string, EnumValueDoc> | undefined): PropSchema {
@@ -582,51 +617,6 @@ function createGenericPropDescription(name: string, type: string): string {
   return `${name} prop (${type}); 用于配置该组件的 ${name} 行为或展示。`
 }
 
-function describeSchemaType(schema: PropSchema): string {
-  if (schema.enum !== undefined) return `enum(${schema.enum.map(String).join(' / ')})`
-  if (Array.isArray(schema.type)) return schema.type.join(' | ')
-  return schema.type ?? schema.title ?? 'value'
-}
-
-function createGenericSchemaDescription(
-  schema: PropSchema,
-  relation: SchemaNodeEntry['relation'],
-  options: { name?: string; index?: number; required?: boolean },
-): string {
-  if (relation === 'root') {
-    if (schema.enum !== undefined) return `Enum values: ${schema.enum.map(String).join(' / ')}; 用于限制 ${schema.title ?? 'value'} 的可选值。`
-    if (schema.type === 'array') return `${schema.title ?? 'Array'} array; 表示一组可配置值，元素结构由 items 描述。`
-    if (schema.type === 'object') {
-      const fields = Object.keys(schema.properties ?? {}).slice(0, 8)
-      const fieldText = fields.length > 0 ? `Fields: ${fields.join(', ')}. ` : ''
-      return `${schema.title ?? 'Object'} object; ${fieldText}用于描述可递归查询的结构化配置。`
-    }
-    return `${schema.title ?? 'Schema'} value; 用于描述可配置值。`
-  }
-  if (relation === 'property') {
-    if (options.name === 'dataSource') return 'Runtime data source; 由框架注入的数据上下文，页面配置通常不需要手写。'
-    if (options.name === 'persistedValue') return 'Persisted option value; 用于把候选项 ID 或原始值额外回写到宿主字段。'
-    return `${options.name ?? 'Property'} property (${describeSchemaType(schema)}); ${options.required === true ? 'required，' : ''}用于配置对象字段。`
-  }
-  if (relation === 'oneOf') {
-    const label = schema.const !== undefined ? String(schema.const) : schema.title ?? `option ${options.index ?? ''}`.trim()
-    return `Enum branch ${label}; 表示该枚举可选值。`
-  }
-  if (relation === 'prefixItem') {
-    return `${options.name ?? `payload${(options.index ?? 0) + 1}`} parameter (${describeSchemaType(schema)}); 用于事件 payload 参数。`
-  }
-  if (relation === 'items') return `Array item (${describeSchemaType(schema)}); 用于描述数组元素。`
-  return `${relation} schema (${describeSchemaType(schema)}); 用于描述联合分支。`
-}
-
-function createGenericSchemaTitle(schema: PropSchema, relation: SchemaNodeEntry['relation'], options: { name?: string; index?: number }): string | undefined {
-  if (schema.title !== undefined) return schema.title
-  if (relation === 'property') return options.name
-  if (relation === 'prefixItem') return options.name ?? `payload${(options.index ?? 0) + 1}`
-  if (relation === 'oneOf' && schema.const !== undefined) return String(schema.const)
-  return undefined
-}
-
 function parseJsonSafeDefault(defaultText: string | undefined): unknown {
   if (defaultText === undefined) return undefined
   const trimmed = defaultText.trim()
@@ -649,71 +639,34 @@ function parseJsonSafeDefault(defaultText: string | undefined): unknown {
   }
 }
 
-function parseLiteralExample(value: string): string | number | boolean | null | undefined {
-  const trimmed = value.trim()
-  if (trimmed === 'undefined' || trimmed.length === 0) return undefined
-  if (trimmed === 'true') return true
-  if (trimmed === 'false') return false
-  if (trimmed === 'null') return null
-  if (/^-?\d+(?:\.\d+)?$/u.test(trimmed)) return Number(trimmed)
-  const quoted = /^(['"])([\s\S]*)\1$/u.exec(trimmed)
-  return quoted?.[2]
-}
-
 function examplesFromTypeText(typeText: string): unknown[] {
   const compactType = typeText.replace(/\s+/g, '')
-  if (/\bCollapseValue\b/u.test(typeText)) return ['panel-1']
-  if (/\bProgressColor\b/u.test(typeText)) return ['#409eff']
-  if (/\bDate\b/u.test(typeText)) return ['2026-01-01']
   if (/\bCascaderValue\b/u.test(typeText)) return [['province', 'city']]
   if (/\bCheckboxGroupMultiValue\b/u.test(typeText)) return [['option-a', 'option-b']]
   if (/\bMultiValue\b/u.test(typeText)) return [['option-a', 'option-b']]
-  if (/\bEntityPickerValue\b/u.test(typeText)) return ['entity-001']
   if (/\bTransferValue\b/u.test(typeText)) return [['item-1', 'item-2']]
-  if (/\bTreeSelectValue\b/u.test(typeText)) return ['node-1']
   if (/\bSparkNode\b/u.test(typeText)) return [{ type: 'r-text', props: { value: 'text' } }]
   if (/\bICapabilityContext\b/u.test(typeText)) return []
-  if (compactType === 'unknown') return ['text']
-
-  const literalExamples = splitTopLevel(typeText, '|')
-    .map(parseLiteralExample)
-    .filter((value): value is Exclude<ReturnType<typeof parseLiteralExample>, undefined> => value !== undefined)
-  if (literalExamples.length > 0) return literalExamples.slice(0, 3)
+  if (compactType === 'unknown') return []
 
   const normalized = typeText.toLowerCase()
   if (normalized.includes('=>') || normalized.includes('function') || normalized.includes('promise<')) return []
-  if (normalized.includes('boolean')) return [false]
-  if (normalized.includes('number') || normalized.includes('integer') || normalized.includes('float')) return [0]
   if (normalized.includes('[]') || normalized.includes('array<') || normalized.includes('readonlyarray<')) return [[]]
   if (normalized.includes('record<') || normalized.includes('object') || normalized.includes('{')) return [{}]
-  if (normalized.includes('string')) return ['text']
   return []
 }
 
 function examplesFromSchemaShape(schema: PropSchema | undefined): unknown[] {
   if (schema === undefined) return []
-  if (schema.default !== undefined) return [schema.default]
-  if (schema.enum !== undefined && schema.enum.length > 0) return schema.enum.slice(0, 3)
+  if (schema.enum !== undefined && schema.enum.length > 0) return []
 
   const schemaType = Array.isArray(schema.type) ? schema.type[0] : schema.type
   if (schemaType === 'array') return [[]]
-  if (schemaType === 'boolean') return [false]
-  if (schemaType === 'number' || schemaType === 'integer') return [0]
-  if (schemaType === 'string') return ['text']
   if (schemaType === 'object' && (schema.required?.length ?? 0) === 0) return [{}]
   return []
 }
 
 function createExamplesForName(name: string): unknown[] {
-  if (name === 'dataKey') return ['orders@rows']
-  if (name === 'field') return ['name']
-  if (name === 'rowKey') return ['id']
-  if (name === 'pageId') return ['page-main']
-  if (name === 'title') return ['订单列表']
-  if (name === 'label') return ['保存']
-  if (name === 'placeholder') return ['请输入内容']
-  if (name === 'icon') return ['ChatRound']
-  if (name === 'actionId') return ['refresh']
   if (name === 'children') return [[{ type: 'r-text', props: { value: 'text' } }]]
   if (name === 'toolbar') return [{ children: [] }]
   if (name === 'actions') return [{ children: [] }]
@@ -724,17 +677,12 @@ function createExamplesForName(name: string): unknown[] {
   if (name === 'tail') return [{ children: [] }]
   if (name === 'policy') return [{ rootLabel: '$' }]
   if (name === 'range') return [['2026-01-01', '2026-01-31']]
-  if (name === 'position') return ['top']
-  if (name === 'align') return ['center']
-  if (name === 'justify') return ['space-between']
-  if (name === 'overflow') return ['queue']
   if (name === 'turnConcurrency') return [{ maxParallelTurns: 1, overflow: 'queue' }]
   if (name === 'fcLoop') return [{ enabled: true, maxRounds: 3 }]
   if (name === '_modelPerm') return [{ allowCreate: true, allowExport: true }]
   if (name === 'aggregateResult') return [{ totalAmount: 1234, count: 2 }]
   if (name === 'selectionAggregateResult') return [{ totalAmount: 1234 }]
   if (name === 'currentRow') return [null]
-  if (name === 'requestState') return [3]
   return []
 }
 
@@ -750,6 +698,34 @@ function uniqueExamples(values: unknown[]): unknown[] {
   return result
 }
 
+function schemaPrimaryType(schema: PropSchema | undefined): JsonSchemaTypeName | undefined {
+  if (schema === undefined) return undefined
+  return Array.isArray(schema.type) ? schema.type[0] : schema.type
+}
+
+function isEnumLikeSchema(schema: PropSchema | undefined): boolean {
+  if (schema === undefined) return false
+  if (schema.enum !== undefined && schema.enum.length > 0) return true
+  return schema.oneOf?.some(item => item.const !== undefined) === true
+}
+
+function shouldKeepExamplesForSchema(schema: PropSchema | undefined, typeText: string | undefined): boolean {
+  if (schema?.$ref !== undefined) return false
+  if (isEnumLikeSchema(schema)) return false
+
+  const schemaType = schemaPrimaryType(schema)
+  if (schemaType === 'array' || schemaType === 'object') return true
+
+  const normalizedType = (typeText ?? '').toLowerCase()
+  if (normalizedType.includes('=>') || normalizedType.includes('function') || normalizedType.includes('promise<')) return false
+  if (normalizedType.includes('[]') || normalizedType.includes('array<') || normalizedType.includes('readonlyarray<')) return true
+  if (normalizedType.includes('record<') || normalizedType.includes('object') || normalizedType.includes('{')) return true
+  if (/\b(cascadervalue|checkboxgroupmultivalue|multivalue|transfervalue|sparknode|icapabilitycontext)\b/u.test(normalizedType)) {
+    return true
+  }
+  return false
+}
+
 function createPropExamples(
   name: string,
   type: string,
@@ -757,22 +733,19 @@ function createPropExamples(
   defaultValue: unknown,
   sourceExamples: unknown[] = [],
 ): unknown[] {
+  void defaultValue
+  if (!shouldKeepExamplesForSchema(schema, type)) return []
   return uniqueExamples([
-    ...(defaultValue !== undefined ? [defaultValue] : []),
     ...sourceExamples,
     ...createExamplesForName(name),
     ...(schema?.examples ?? []),
     ...examplesFromSchemaShape(schema),
-    ...(schema?.enum?.slice(0, 3) ?? []),
     ...examplesFromTypeText(type),
   ]).slice(0, 3)
 }
 
-function createGenericSchemaExamples(schema: PropSchema, relation: SchemaNodeEntry['relation'], options: { name?: string; index?: number }): unknown[] {
-  if (schema.const !== undefined) return [schema.const]
-  if (schema.default !== undefined) return [schema.default]
-  if (schema.enum !== undefined && schema.enum.length > 0) return schema.enum.slice(0, 3)
-  if (schema.type === 'null') return [null]
+function createGenericSchemaExamples(schema: PropSchema, relation: SchemaRelation, options: { name?: string; index?: number }): unknown[] {
+  if (!shouldKeepExamplesForSchema(schema, schema.title)) return []
   if (options.name !== undefined) {
     const namedExamples = createExamplesForName(options.name)
     if (namedExamples.length > 0) return namedExamples
@@ -782,11 +755,9 @@ function createGenericSchemaExamples(schema: PropSchema, relation: SchemaNodeEnt
     if (titleExamples.length > 0) return titleExamples
   }
   const schemaType = Array.isArray(schema.type) ? schema.type[0] : schema.type
-  if (schemaType === 'boolean') return [false]
-  if (schemaType === 'number' || schemaType === 'integer') return [0]
   if (schemaType === 'array') return [[]]
   if (schemaType === 'object') return [{}]
-  if (schemaType === 'string') return [relation === 'prefixItem' ? `${options.name ?? 'value'}` : 'text']
+  void relation
   return []
 }
 
@@ -890,7 +861,7 @@ function buildComponentDescription(options: {
  * 处理策略：
  * - 移除结构性 props；
  * - 保留基础展示字段；
- * - 复杂 schema 提升为 schemaNodeId；
+ * - 复杂 schema 提升为 schema type 引用，落盘时转成 JSON Schema `$ref`；
  * - 若存在组件引用，则写 componentRef 语义标签。
  */
 function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolContext): PropEntry[] {
@@ -898,9 +869,9 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
 
   for (const prop of rawProps) {
     if (STRUCTURAL_PROP_NAMES.has(prop.name)) continue
-    const type = normalizeCatalogTypeText(prop.type)
+    const componentRef = prop.__componentRef
+    const type = componentRef ?? normalizeCatalogTypeText(prop.type)
     const defaultValue = parseJsonSafeDefault(prop.default)
-    const examples = createPropExamples(prop.name, type, prop.schema, defaultValue, prop.examples)
 
     const compacted: PropEntry = {
       name: prop.name,
@@ -908,28 +879,39 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
       required: prop.required,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       description: prop.description ?? createGenericPropDescription(prop.name, type),
-      ...(examples.length > 0 ? { examples } : {}),
     }
 
-    // 语义标签：@componentRef 始终以独立字段落盘，不再与结构 schema 互斥。
-    if (prop.__componentRef !== undefined) {
-      compacted.componentRef = prop.__componentRef
+    // 语义标签：@componentRef 表示该字段的真相是组件 type，不再暴露底层 TS Props 接口 schema。
+    if (componentRef !== undefined) {
+      compacted.componentRef = componentRef
+      result.push(compacted)
+      continue
     }
 
     // 结构 schema 优先级：
-    // 1) VCM 抽取出的真实结构（object/array）——首选；
-    // 2) rawType 提取的命名字面量 enum（InlineAlign 等）；
+    // 1) VCM 抽取出的真实结构（object/array）进入 `$defs` 或数组 items；
+    // 2) 匿名字面量 enum 直接内联，避免把 `"a" | "b"` 伪装成共享业务 type；
     // 当上述两类都缺失而仅存在 @componentRef 时，schema 留空——
     // 消费层通过独立的 componentRef 字段定位目标组件。
     let schemaResolved = false
     if (prop.schema !== undefined) {
       const schemaWithExamples = annotateSchemaExamples(prop.schema, prop.name, type, defaultValue)
       const normalizedSchema = normalizeNestedSchema(schemaPool, schemaWithExamples)
+      if (schemaWithExamples.type === 'array') {
+        compacted.schema = normalizeInlineSchema(schemaPool, schemaWithExamples)
+        schemaResolved = true
+        result.push(compacted)
+        continue
+      }
       const isExternalObjectSchema = isObjectSchema(prop.schema) && prop.__schemaOwner === 'external'
-      if (!isExternalObjectSchema && shouldRetainSchema(normalizedSchema)) {
+      const documentedSchema = applyEnumValueDocs(normalizedSchema, prop.__enumValueDocs)
+      if (isEnumLikeSchema(documentedSchema)) {
+        compacted.schema = stripInlineEnumNoise(documentedSchema)
+        schemaResolved = true
+      } else if (!isExternalObjectSchema && shouldRetainSchema(normalizedSchema)) {
         const ref = resolveSchemaRef(
           schemaPool,
-          applyEnumValueDocs(normalizedSchema, prop.__enumValueDocs),
+          documentedSchema,
           prop.__schemaIdentityKey,
         )
         compacted.schemaNodeId = ref
@@ -946,11 +928,9 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
           .map((variant) => variant.slice(1, -1)),
         ...(defaultValue !== undefined ? { default: defaultValue } : {}),
       }
-      const enumExamples = createPropExamples(prop.name, type, enumSchema, defaultValue, prop.examples)
-      if (enumExamples.length > 0) enumSchema.examples = enumExamples
       const documentedEnumSchema = applyEnumValueDocs(enumSchema, prop.__enumValueDocs)
       if (shouldRetainSchema(documentedEnumSchema)) {
-        compacted.schemaNodeId = resolveSchemaRef(schemaPool, documentedEnumSchema)
+        compacted.schema = stripInlineEnumNoise(documentedEnumSchema)
       }
     }
     result.push(compacted)
@@ -965,7 +945,7 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
  * 与 props 类似，事件 payload 的复杂类型也会提升为共享 schema 引用，避免每个组件重复展开。
  */
 
-function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext, componentType: string): EmitEntry[] {
+function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): EmitEntry[] {
   const result: EmitEntry[] = []
 
   for (const emit of rawEmits) {
@@ -998,7 +978,7 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext, comp
       if (payloadSchemas.length > 0) {
         const paramDocs = emit.__payloadParamDocs ?? []
         const eventSchema: PropSchema = {
-          title: `${componentType}.${emit.name}${type !== undefined ? ` ${type}` : ''}`,
+          ...(type !== undefined ? { title: type } : {}),
           type: 'array',
           prefixItems: payloadSchemas.map(({ ref, schema, paramDoc: payloadParamDoc }, index) => {
             const paramDoc = payloadParamDoc ?? paramDocs[index]
@@ -1013,7 +993,7 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext, comp
           }),
           ...(emit.description !== undefined ? { description: emit.description } : {}),
         }
-        compacted.schemaNodeId = resolveSchemaRef(schemaPool, eventSchema)
+        compacted.schema = eventSchema
       }
     }
 
@@ -1023,37 +1003,129 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext, comp
   return result
 }
 
-/**
- * 生成用于写盘的 payload。
- *
- * 运行态 catalog 会保留更多内部字段，但磁盘产物需要做瘦身：
- * - components.* 保留 props/emits，删除 source/binding。
- *
- * 这样既保留运行态信息，又维持落盘 JSON 的稳定与紧凑。
- */
-function createCatalogFilePayload(catalog: ComponentCatalog): unknown {
-  const payload = deepClone(catalog) as unknown as {
-    components?: Record<string, Record<string, unknown> & {
-      props?: Array<Record<string, unknown>>
-      emits?: Array<Record<string, unknown>>
-    }>
+interface CatalogRuntimeModel {
+  version: ComponentCatalog['version']
+  buildTime: string
+  componentCount: number
+  components: Record<string, ComponentEntry>
+  schemaPool?: Record<string, PropSchema>
+  constraints: PlatformConstraints
+  bindingDescriptors: Record<string, CatalogBindingDescriptor>
+}
+
+function sortRecord<T>(record: Record<string, T>): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right))) as Record<string, T>
+}
+
+function escapeJsonPointerSegment(value: string): string {
+  return value.replace(/~/gu, '~0').replace(/\//gu, '~1')
+}
+
+function toDefsRef(ref: string): string {
+  const trimmed = ref.trim()
+  if (trimmed.startsWith('#') || /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(trimmed)) {
+    return trimmed
+  }
+  return `#/$defs/${escapeJsonPointerSegment(trimmed)}`
+}
+
+function normalizePublicSchemaRefs(schema: PropSchema): PropSchema {
+  const clean = stripInternalSchemaFields(schema)
+  const normalized: PropSchema = { ...clean }
+
+  if (normalized.$ref !== undefined) normalized.$ref = toDefsRef(normalized.$ref)
+  if (normalized.properties !== undefined) {
+    normalized.properties = Object.fromEntries(
+      Object.entries(normalized.properties).map(([name, property]) => [
+        name,
+        normalizePublicSchemaRefs(property) as PropSchemaProperty,
+      ]),
+    )
+  }
+  if (normalized.items !== undefined) normalized.items = normalizePublicSchemaRefs(normalized.items)
+  if (normalized.prefixItems !== undefined) normalized.prefixItems = normalized.prefixItems.map(normalizePublicSchemaRefs)
+  if (normalized.anyOf !== undefined) normalized.anyOf = normalized.anyOf.map(normalizePublicSchemaRefs)
+  if (normalized.oneOf !== undefined) normalized.oneOf = normalized.oneOf.map(normalizePublicSchemaRefs)
+  if (normalized.examples !== undefined && !shouldKeepExamplesForSchema(normalized, normalized.title)) {
+    delete normalized.examples
   }
 
-  const components = payload.components
-  if (components !== undefined) {
-    for (const entry of Object.values(components)) {
-      delete entry['source']
-      delete entry['binding']
-      for (const prop of entry.props ?? []) delete prop['schema']
-      for (const emit of entry.emits ?? []) {
-        delete emit['schema']
-        delete emit['__payloadSchemas']
-        delete emit['__payloadParamDocs']
-      }
-    }
-  }
+  return normalized
+}
 
-  return payload
+function normalizePublicRootSchema(type: string, schema: PropSchema): PropSchema {
+  void type
+  const normalized = normalizePublicSchemaRefs(schema)
+  return normalized
+}
+
+function toPublicProp(prop: PropEntry): PropEntry {
+  const schema = prop.schema ?? (prop.schemaNodeId === undefined ? undefined : { $ref: prop.schemaNodeId })
+  const clean: PropEntry = {
+    name: prop.name,
+    type: prop.type,
+    required: prop.required,
+    ...(prop.default !== undefined ? { default: prop.default } : {}),
+    ...(prop.description !== undefined ? { description: prop.description } : {}),
+    ...(prop.examples !== undefined ? { examples: prop.examples } : {}),
+    ...(schema !== undefined ? { schema: normalizePublicSchemaRefs(schema) } : {}),
+    ...(prop.componentRef !== undefined ? { componentRef: prop.componentRef } : {}),
+  }
+  return clean
+}
+
+function toPublicEmit(emit: EmitEntry): EmitEntry {
+  const schema = emit.schema ?? (emit.schemaNodeId === undefined ? undefined : { $ref: emit.schemaNodeId })
+  return {
+    name: emit.name,
+    ...(emit.type !== undefined ? { type: emit.type } : {}),
+    ...(emit.description !== undefined ? { description: emit.description } : {}),
+    ...(schema !== undefined ? { schema: normalizePublicSchemaRefs(schema) } : {}),
+  }
+}
+
+function toPublicComponent(entry: ComponentEntry): ComponentEntry {
+  return {
+    type: entry.type,
+    ...(entry.filePath !== undefined ? { filePath: entry.filePath } : {}),
+    category: entry.category,
+    description: entry.description,
+    ...(entry.internal !== undefined ? { internal: entry.internal } : {}),
+    ...(entry.configurable !== undefined ? { configurable: entry.configurable } : {}),
+    props: entry.props.map(toPublicProp),
+    emits: entry.emits.map(toPublicEmit),
+    ...(entry.contracts !== undefined ? { contracts: entry.contracts } : {}),
+    ...(entry.rootFields !== undefined ? { rootFields: entry.rootFields } : {}),
+    ...(entry.notes !== undefined ? { notes: entry.notes } : {}),
+    ...(entry.provides !== undefined ? { provides: entry.provides } : {}),
+    ...(entry.consumes !== undefined ? { consumes: entry.consumes } : {}),
+    ...(entry.propsInterface !== undefined ? { propsInterface: entry.propsInterface } : {}),
+    source: entry.source,
+  }
+}
+
+function buildComponentCatalog(model: CatalogRuntimeModel): ComponentCatalog {
+  const components = Object.fromEntries(
+    Object.entries(model.components)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([type, entry]) => [type, toPublicComponent(entry)]),
+  ) as Record<string, ComponentEntry>
+  const defs = model.schemaPool === undefined
+    ? undefined
+    : sortRecord(
+      Object.fromEntries(
+        Object.entries(model.schemaPool).map(([type, schema]) => [type, normalizePublicRootSchema(type, schema)]),
+      ) as Record<string, PropSchema>,
+    )
+
+  return {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    version: model.version,
+    buildTime: model.buildTime,
+    componentCount: model.componentCount,
+    components,
+    ...(defs !== undefined ? { $defs: defs } : {}),
+  }
 }
 
 function collectSchemaRefs(schema: PropSchema | undefined, refs: Set<string>): void {
@@ -1086,9 +1158,17 @@ function pruneReachableSchemas(
   }
 
   for (const entry of Object.values(components)) {
-    for (const prop of entry.props) visit(prop.schemaNodeId)
+    for (const prop of entry.props) {
+      visit(prop.schemaNodeId)
+      const nestedRefs = new Set<string>()
+      collectSchemaRefs(prop.schema, nestedRefs)
+      for (const nestedRef of nestedRefs) visit(nestedRef)
+    }
     for (const emit of entry.emits) {
       visit(emit.schemaNodeId)
+      const nestedRefs = new Set<string>()
+      collectSchemaRefs(emit.schema, nestedRefs)
+      for (const nestedRef of nestedRefs) visit(nestedRef)
     }
   }
 
@@ -1101,87 +1181,6 @@ function pruneReachableSchemas(
   ) as Record<string, PropSchema>
 }
 
-function escapeNodeSegment(value: string): string {
-  return value.replace(/~/g, '~0').replace(/\//g, '~1')
-}
-
-function childNodeId(parentId: string, relation: string, key: string | number): string {
-  return `${parentId}/${relation}/${escapeNodeSegment(String(key))}`
-}
-
-function schemaToNodes(
-  schema: PropSchema,
-  id: string,
-  rootId: string,
-  relation: SchemaNodeEntry['relation'],
-  parentId?: string,
-  options: { name?: string; index?: number; required?: boolean } = {},
-): SchemaNodeEntry[] {
-  const title = createGenericSchemaTitle(schema, relation, options)
-  const examples = schema.examples ?? createGenericSchemaExamples(schema, relation, options)
-  const node: SchemaNodeEntry = {
-    id,
-    rootId,
-    relation,
-    ...(parentId !== undefined ? { parentId } : {}),
-    ...(options.name !== undefined ? { name: options.name } : {}),
-    ...(options.index !== undefined ? { index: options.index } : {}),
-    ...(options.required !== undefined ? { required: options.required } : {}),
-    ...(schema.$ref !== undefined ? { refId: schema.$ref } : {}),
-    ...(schema.type !== undefined ? { type: schema.type } : {}),
-    ...(title !== undefined ? { title } : {}),
-    description: schema.description ?? createGenericSchemaDescription(schema, relation, options),
-    ...(schema.enum !== undefined ? { enum: schema.enum } : {}),
-    ...(schema.const !== undefined ? { const: schema.const } : {}),
-    ...(schema.default !== undefined ? { default: schema.default } : {}),
-    ...(examples.length > 0 ? { examples } : {}),
-  }
-
-  const nodes: SchemaNodeEntry[] = [node]
-  const requiredNames = new Set(schema.required ?? [])
-
-  if (schema.properties !== undefined) {
-    for (const [name, property] of Object.entries(schema.properties)) {
-      nodes.push(
-        ...schemaToNodes(
-          property,
-          childNodeId(id, 'properties', name),
-          rootId,
-          'property',
-          id,
-          { name, required: requiredNames.has(name) },
-        ),
-      )
-    }
-  }
-
-  if (schema.items !== undefined) {
-    nodes.push(...schemaToNodes(schema.items, childNodeId(id, 'items', 0), rootId, 'items', id))
-  }
-
-  for (const [index, item] of (schema.prefixItems ?? []).entries()) {
-    nodes.push(...schemaToNodes(item, childNodeId(id, 'prefixItems', index), rootId, 'prefixItem', id, { index, ...(item.title !== undefined ? { name: item.title } : {}) }))
-  }
-
-  for (const [index, item] of (schema.oneOf ?? []).entries()) {
-    nodes.push(...schemaToNodes(item, childNodeId(id, 'oneOf', index), rootId, 'oneOf', id, { index }))
-  }
-
-  for (const [index, item] of (schema.anyOf ?? []).entries()) {
-    nodes.push(...schemaToNodes(item, childNodeId(id, 'anyOf', index), rootId, 'anyOf', id, { index }))
-  }
-
-  return nodes
-}
-
-function createSchemaNodes(schemas: Record<string, PropSchema> | undefined): SchemaNodeEntry[] | undefined {
-  if (schemas === undefined) return undefined
-  const nodes = Object.entries(schemas)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .flatMap(([id, schema]) => schemaToNodes(schema, id, id, 'root'))
-  return nodes.length > 0 ? nodes : undefined
-}
-
 // ── 7. 组件扫描与目录构建 (Scanner & Builder) ─────────────────────────────────────
 
 /**
@@ -1190,7 +1189,7 @@ function createSchemaNodes(schemas: Record<string, PropSchema> | undefined): Sch
  * 该阶段负责：
  * - 建立 TS / Vue 检查器；
  * - 提取每个组件的 VCM API；
- * - 生成组件条目、bindingDescriptors、schemaNodes；
+ * - 生成组件条目、bindingDescriptors、schema type 池；
  */
 function buildSortedComponents(
   root: string,
@@ -1226,7 +1225,7 @@ function buildSortedComponents(
     const category = inferCategory(normalizedFilePath, skillMeta?.category)
 
     const props = compactProps(rawProps, schemaPool)
-    const emits = compactEmits(vcmApi.emits, schemaPool, type)
+    const emits = compactEmits(vcmApi.emits, schemaPool)
     const inferredBinding = inferBinding(props)
     const binding = inferredBinding !== undefined ? annotateBindingDescriptor(type, inferredBinding) : undefined
     const description = buildComponentDescription({
@@ -1275,7 +1274,7 @@ function buildSortedComponents(
   return {
     components,
     bindingDescriptors,
-    schemas: schemaPool.pool,
+    schemaPool: schemaPool.pool,
   }
 }
 
@@ -1309,35 +1308,30 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   const {
     components,
     bindingDescriptors,
-    schemas,
+    schemaPool,
   } = buildSortedComponents(root, files, includeGlobalProps, tsconfigPath, vcmCheckerOptions)
-  const reachableSchemas = pruneReachableSchemas(components, schemas)
-  const schemaNodes = createSchemaNodes(reachableSchemas)
+  const reachableSchemaPool = pruneReachableSchemas(components, schemaPool)
 
-  // 运行态 catalog 保留完整字段，供审计和调用方继续加工。
-  const catalog: ComponentCatalog = {
-    version: '4.0.0',
+  const runtimeCatalog: CatalogRuntimeModel = {
+    version: '3.0.0',
     buildTime: new Date().toISOString(),
     componentCount: Object.keys(components).length,
     components,
-    sharedTypes: {},
-    ...(schemaNodes !== undefined ? { schemaNodes } : {}),
+    ...(reachableSchemaPool !== undefined ? { schemaPool: reachableSchemaPool } : {}),
     constraints: DEFAULT_CONSTRAINTS,
     bindingDescriptors,
   }
-
-  // 真正写盘前统一做 payload 瘦身，避免把内部辅助字段直接暴露给目录消费者。
-  const filePayload = createCatalogFilePayload(catalog)
+  const catalog = buildComponentCatalog(runtimeCatalog)
 
   const outPath = getCanonicalCatalogOutputPath(root)
-  writeFileSync(outPath, JSON.stringify(filePayload, null, 2), 'utf-8')
+  writeFileSync(outPath, JSON.stringify(catalog, null, 2), 'utf-8')
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
 
   // 质量审计属于后置能力：目录本身先生成，再决定是否做结构质量分析。
   let auditReport: AuditReport | undefined
   if (audit !== undefined && audit !== false) {
     const auditOptions = typeof audit === 'object' ? audit : {}
-    auditReport = auditCatalog(catalog, auditOptions)
+    auditReport = auditCatalog(runtimeCatalog, auditOptions)
     logAuditReport(auditReport)
   }
 

@@ -47,8 +47,6 @@ export interface FunctionComponentEntry {
   notes?: string
   /** 数据绑定配置 */
   binding?: Record<string, unknown>
-  /** 嵌套规则（可放哪些子组件） */
-  nestingRule?: FunctionNestingRule
 }
 
 /** 事件条目 */
@@ -71,16 +69,6 @@ export interface FunctionRootFieldEntry {
   description: string
 }
 
-/** 嵌套规则 */
-export interface FunctionNestingRule {
-  /** 允许的子组件类型（支持通配符如 `r-*`） */
-  allowedChildren: string[]
-  /** 禁止的子组件类型 */
-  forbiddenChildren?: string[]
-  /** 说明 */
-  note?: string
-}
-
 /** 属性条目 */
 export interface FunctionPropEntry {
   /** 属性名（camelCase） */
@@ -93,6 +81,4 @@ export interface FunctionPropEntry {
   default?: string
   /** 属性描述 */
   description?: string
-  /** JSON 示例值，供 LLM 直接参考填写 */
-  examples?: unknown[]
 }

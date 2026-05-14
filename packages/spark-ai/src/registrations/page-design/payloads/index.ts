@@ -5,11 +5,12 @@ export {
   queryPageDesignComponentPayloads,
 } from './component-payload-catalog'
 
-import rawComponentCatalogJson from './component-catalog.json'
-import { projectFrameworkNeutralCatalog } from './catalog-projections'
-import type { ComponentCatalog } from './types'
+import {
+  COMPONENT_CATALOG_JSON,
+  RAW_COMPONENT_CATALOG_JSON,
+} from './component-catalog-source'
 
-export const COMPONENT_CATALOG_JSON = projectFrameworkNeutralCatalog(rawComponentCatalogJson as ComponentCatalog)
+export { COMPONENT_CATALOG_JSON, RAW_COMPONENT_CATALOG_JSON }
 
 export {
   projectFrameworkNeutralCatalog,
@@ -19,6 +20,9 @@ export {
   projectFunctionCatalog,
   projectHydratedComponent,
 } from './catalog-projections'
+
+export { queryComponentCatalog } from './catalog-query'
+export type { ComponentCatalogQueryOptions, ComponentCatalogQuerySource } from './catalog-query'
 
 export type {
   ComponentDirectoryPayload,
@@ -38,15 +42,9 @@ export type {
   PropEntry,
   PropSchema,
   PropSchemaProperty,
-  SchemaNodeEntry,
-  SchemaNodeRelation,
   EmitEntry,
-  PlatformConstraints,
-  CatalogConstraintEntry,
-  NestingRule,
   RootFieldEntry,
   CatalogBindingDescriptor,
-  SharedTypeDefinition,
 } from './types'
 
 export type {

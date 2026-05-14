@@ -27,7 +27,6 @@ import type {
   PropEntry,
   PropSchema,
   RootFieldEntry,
-  SchemaNodeEntry,
 } from './types'
 import type { FunctionCatalog, FunctionComponentEntry } from './function-catalog-types'
 
@@ -89,7 +88,7 @@ export interface ComponentSpec {
   /** 组件功能的自然语言描述 */
   description: string
   /** 属性列表（必填、类型、默认值、描述） */
-  props: Array<Pick<PropEntry, 'name' | 'type' | 'required'> & { default?: string; description?: string; examples?: unknown[] }>
+  props: Array<Pick<PropEntry, 'name' | 'type' | 'required'> & { default?: string; description?: string }>
   /** 事件列表（事件名、类型、描述） */
   emits: Array<{ name: string; type?: string; description?: string }>
   /** 根字段声明（仅数据容器类组件携带） */
@@ -116,9 +115,9 @@ export interface ComponentConfigGuide {
   /** 组件分类 */
   category: string
   /** 必填属性列表（含类型与描述） */
-  requiredProps: Array<{ name: string; type: string; default?: string; description?: string; examples?: unknown[] }>
+  requiredProps: Array<{ name: string; type: string; default?: string; description?: string; schema?: PropSchema }>
   /** 可选属性列表（含类型、默认值与描述） */
-  optionalProps: Array<{ name: string; type: string; default?: string; description?: string; examples?: unknown[] }>
+  optionalProps: Array<{ name: string; type: string; default?: string; description?: string; schema?: PropSchema }>
   /** 事件使用指南（事件名 + payload 参数签名 + 描述） */
   eventGuide: Array<{ name: string; payload?: Array<{ name: string; type: string }>; description?: string }>
   /** 数据绑定能力摘要（仅当组件声明了 binding 时存在） */
@@ -271,7 +270,7 @@ function resolveInlineStructureSchema(
  * 在 PropEntry 基础上，附加了通过 JSON Schema $ref 解析得到的内联 PropSchema（若存在）。
  */
 export interface HydratedPropEntry extends PropEntry {
-  /** 已解析的属性 schema（来自 schemaNodes 自引用表） */
+  /** 已解析的属性 schema（来自 type 字典中的 JSON Schema） */
   resolvedSchema?: PropSchema
 }
 
@@ -295,6 +294,44 @@ export interface HydratedComponentEntry extends Omit<ComponentEntry, 'props' | '
   props: HydratedPropEntry[]
   /** 已水合的事件列表（含内联 payload schema） */
   emits: HydratedEmitEntry[]
+}
+
+interface RuntimeComponentCatalog {
+  version: ComponentCatalog['version']
+  buildTime: string
+  componentCount: number
+  components: Record<string, ComponentEntry>
+  schemas?: Record<string, PropSchema>
+}
+
+const runtimeCatalogCache = new WeakMap<ComponentCatalog, RuntimeComponentCatalog>()
+
+function schemaTypeFromRef(ref: string | undefined): string | undefined {
+  if (ref === undefined) return undefined
+  if (ref.startsWith('#/$defs/')) {
+    return ref
+      .slice('#/$defs/'.length)
+      .replace(/~1/gu, '/')
+      .replace(/~0/gu, '~')
+  }
+  if (ref.startsWith('#')) return undefined
+  return ref
+}
+
+function toRuntimeCatalog(catalog: ComponentCatalog): RuntimeComponentCatalog {
+  const cached = runtimeCatalogCache.get(catalog)
+  if (cached !== undefined) return cached
+
+  const runtime: RuntimeComponentCatalog = {
+    version: catalog.version,
+    buildTime: catalog.buildTime,
+    componentCount: catalog.componentCount,
+    components: catalog.components,
+    ...(catalog.$defs !== undefined ? { schemas: catalog.$defs } : {}),
+  }
+
+  runtimeCatalogCache.set(catalog, runtime)
+  return runtime
 }
 
 
@@ -358,34 +395,49 @@ function isConfigurableComponent(entry: ComponentEntry): boolean {
   return entry.internal !== true && entry.configurable !== false
 }
 
-function collectReachableSchemaNodeIds(
-  schemaNodes: SchemaNodeEntry[] | undefined,
+function collectSchemaRefs(schema: PropSchema | undefined, refs: Set<string>): void {
+  if (schema === undefined) return
+  const refType = schemaTypeFromRef(schema.$ref)
+  if (refType !== undefined) refs.add(refType)
+  if (schema.properties !== undefined) {
+    for (const property of Object.values(schema.properties)) collectSchemaRefs(property, refs)
+  }
+  collectSchemaRefs(schema.items, refs)
+  for (const item of schema.prefixItems ?? []) collectSchemaRefs(item, refs)
+  for (const item of schema.oneOf ?? []) collectSchemaRefs(item, refs)
+  for (const item of schema.anyOf ?? []) collectSchemaRefs(item, refs)
+}
+
+function collectReachableSchemaTypes(
+  schemas: Record<string, PropSchema> | undefined,
   components: Record<string, ComponentEntry>,
 ): Set<string> {
   const reachable = new Set<string>()
-  if (schemaNodes === undefined) return reachable
+  if (schemas === undefined) return reachable
 
-  const nodeById = new Map(schemaNodes.map((node) => [node.id, node]))
-  const childrenByParent = new Map<string, SchemaNodeEntry[]>()
-  for (const node of schemaNodes) {
-    if (node.parentId === undefined) continue
-    const children = childrenByParent.get(node.parentId) ?? []
-    children.push(node)
-    childrenByParent.set(node.parentId, children)
-  }
-
-  const visit = (id: string | undefined): void => {
-    if (id === undefined || reachable.has(id)) return
-    const node = nodeById.get(id)
-    if (node === undefined) return
-    reachable.add(id)
-    visit(node.refId)
-    for (const child of childrenByParent.get(id) ?? []) visit(child.id)
+  const visit = (type: string | undefined): void => {
+    if (type === undefined || reachable.has(type)) return
+    const schema = schemas[type]
+    if (schema === undefined) return
+    reachable.add(type)
+    const refs = new Set<string>()
+    collectSchemaRefs(schema, refs)
+    for (const ref of refs) visit(ref)
   }
 
   for (const entry of Object.values(components)) {
-    for (const prop of entry.props) visit(prop.schemaNodeId)
-    for (const emit of entry.emits ?? []) visit(emit.schemaNodeId)
+    for (const prop of entry.props) {
+      visit(prop.schemaNodeId)
+      const refs = new Set<string>()
+      collectSchemaRefs(prop.schema, refs)
+      for (const ref of refs) visit(ref)
+    }
+    for (const emit of entry.emits ?? []) {
+      visit(emit.schemaNodeId)
+      const refs = new Set<string>()
+      collectSchemaRefs(emit.schema, refs)
+      for (const ref of refs) visit(ref)
+    }
   }
 
   return reachable
@@ -501,7 +553,7 @@ function normalizeConfigEmits(emits: EmitEntry[]): EmitEntry[] {
  * 2. 规范化 props / emits 的配置层名称；
  * 3. 对每个属性尝试解析 schema.$ref -> PropSchema；
  * 4. 对每个事件尝试解析 schema.$ref -> PropSchema；
- * 5. 合并 binding 描述符（优先级：entry > bindingDescriptors）。
+ * 5. 读取组件自身 binding 描述符。
  *
  * 注意：本函数不会修改传入的 catalog 对象，始终返回新的聚合对象。
  *
@@ -510,7 +562,8 @@ function normalizeConfigEmits(emits: EmitEntry[]): EmitEntry[] {
  * @returns       水合完成的组件记录，若 type 不存在则返回 null
  */
 export function projectHydratedComponent(catalog: ComponentCatalog, type: string): HydratedComponentEntry | null {
-  const entry = catalog.components[type]
+  const runtimeCatalog = toRuntimeCatalog(catalog)
+  const entry = runtimeCatalog.components[type]
   if (entry === undefined) return null
 
   const resolvedBinding = resolveBindingDescriptor(catalog, type, entry)
@@ -545,17 +598,17 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
 /**
  * 解析组件的数据上下文绑定能力描述符（binding）。
  *
- * 优先级（从高到低）：
- * 1. entry.binding（组件自身声明的 binding，最高优先级）；
- * 2. catalog.bindingDescriptors[type]（全局 binding 描述符字典中的配置）。
+ * binding 只读取组件自身声明。
  *
  * @param catalog        全局组件目录
- * @param type           组件 type（用于查询 bindingDescriptors）
+ * @param type           组件 type（保留参数形态，便于调用点表达上下文）
  * @param entry          组件原始记录
  * @returns              解析到的 binding 描述符；所有来源均未定义则返回 undefined
  */
 function resolveBindingDescriptor(catalog: ComponentCatalog, type: string, entry: ComponentEntry): CatalogBindingDescriptor | undefined {
-  return entry.binding ?? catalog.bindingDescriptors?.[type]
+  void catalog
+  void type
+  return entry.binding
 }
 
 /**
@@ -563,22 +616,20 @@ function resolveBindingDescriptor(catalog: ComponentCatalog, type: string, entry
  *
  * 用于过滤"事件驱动"类组件的快速检测，避免每次都完整水合整个组件记录。
  *
- * @param catalog 全局组件目录
- * @param type    组件 type
  * @param entry   组件原始记录
  * @returns       true 表示该组件声明了至少一个 emits 事件
  */
-function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEntry): boolean {
+function hasAnyEmit(entry: ComponentEntry): boolean {
   if (normalizeConfigEmits(entry.emits ?? []).length > 0) return true
   return false
 }
 
 /**
  * 解析属性的 PropSchema，按以下优先级尝试：
- * 1. prop.schemaNodeId -> catalog.schemaNodes 自引用表；
+ * 1. prop.schemaNodeId -> catalog.$defs[type]；
  * 2. 均不存在则返回 undefined。
  *
- * @param catalog 全局组件目录（需包含 schemaNodes）
+ * @param catalog 全局组件目录
  * @param prop    待解析的属性记录
  * @returns       解析得到的 PropSchema；若不存在则返回 undefined
  */
@@ -586,6 +637,10 @@ function resolvePropSchema(
   catalog: ComponentCatalog,
   prop: PropEntry,
 ): PropSchema | undefined {
+  const runtimeCatalog = toRuntimeCatalog(catalog)
+  if (prop.schema !== undefined) {
+    return resolveStandardSchema(prop.schema, runtimeCatalog.schemas ?? {}, new Set())
+  }
   return resolveSchemaNode(catalog, prop.schemaNodeId)
 }
 
@@ -593,101 +648,60 @@ function resolvePropSchema(
  * 解析事件的 payload schema。
  *
  * 解析策略：
- * 1. emit.schemaNodeId -> catalog.schemaNodes 自引用表；
- * 2. 均不存在则返回 undefined。
+ * 1. emit.schema -> 直接解析 JSON Schema；
+ * 2. emit.schemaNodeId -> catalog.$defs[type]；
+ * 3. 均不存在则返回 undefined。
  *
- * @param catalog 全局组件目录（需包含 schemaNodes）
+ * @param catalog 全局组件目录
  * @param emit    待解析的事件记录
  * @returns       解析得到的 PropSchema；若不存在则返回 undefined
  */
 function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSchema | undefined {
+  const runtimeCatalog = toRuntimeCatalog(catalog)
+  if (emit.schema !== undefined) {
+    return resolveStandardSchema(emit.schema, runtimeCatalog.schemas ?? {}, new Set())
+  }
   return resolveSchemaNode(catalog, emit.schemaNodeId)
 }
 
 function resolveSchemaNode(catalog: ComponentCatalog, nodeId: string | undefined): PropSchema | undefined {
-  if (nodeId === undefined || catalog.schemaNodes === undefined) return undefined
-  const byId = new Map(catalog.schemaNodes.map((node) => [node.id, node]))
-  const childrenByParent = new Map<string, SchemaNodeEntry[]>()
-  for (const node of catalog.schemaNodes) {
-    if (node.parentId === undefined) continue
-    const children = childrenByParent.get(node.parentId) ?? []
-    children.push(node)
-    childrenByParent.set(node.parentId, children)
+  const runtimeCatalog = toRuntimeCatalog(catalog)
+  if (nodeId === undefined) return undefined
+  if (runtimeCatalog.schemas?.[nodeId] !== undefined) {
+    return resolveStandardSchema(runtimeCatalog.schemas[nodeId], runtimeCatalog.schemas, new Set([nodeId]))
   }
-  for (const children of childrenByParent.values()) {
-    children.sort((left, right) => {
-      const relation = left.relation.localeCompare(right.relation)
-      if (relation !== 0) return relation
-      const leftIndex = left.index ?? Number.MAX_SAFE_INTEGER
-      const rightIndex = right.index ?? Number.MAX_SAFE_INTEGER
-      if (leftIndex !== rightIndex) return leftIndex - rightIndex
-      return (left.name ?? '').localeCompare(right.name ?? '')
-    })
+  return undefined
+}
+
+function resolveStandardSchema(schema: PropSchema | undefined, schemas: Record<string, PropSchema>, seen: Set<string>): PropSchema | undefined {
+  if (schema === undefined) return undefined
+  const ref = schemaTypeFromRef(schema.$ref)
+  const referenced = ref === undefined || seen.has(ref)
+    ? undefined
+    : resolveStandardSchema(schemas[ref], schemas, new Set([...seen, ref]))
+  const resolved: PropSchema = {
+    ...(referenced ?? {}),
+    ...schema,
   }
+  delete resolved.$ref
 
-  const build = (id: string, seen: Set<string>): PropSchema | undefined => {
-    if (seen.has(id)) return undefined
-    const node = byId.get(id)
-    if (node === undefined) return undefined
-    const nextSeen = new Set(seen)
-    nextSeen.add(id)
-
-    const referenced = node.refId === undefined ? undefined : build(node.refId, nextSeen)
-    const schema: PropSchema = {
-      ...(referenced ?? {}),
-      ...(node.type !== undefined ? { type: node.type } : {}),
-      ...(node.title !== undefined ? { title: node.title } : {}),
-      ...(node.description !== undefined ? { description: node.description } : {}),
-      ...(node.enum !== undefined ? { enum: node.enum } : {}),
-      ...(node.const !== undefined ? { const: node.const } : {}),
-      ...(node.default !== undefined ? { default: node.default } : {}),
-      ...(node.examples !== undefined ? { examples: node.examples } : {}),
-    }
-
-    const children = childrenByParent.get(id) ?? []
-    const propertyChildren = children.filter((child) => child.relation === 'property')
-    if (propertyChildren.length > 0) {
-      const properties: Record<string, PropSchema> = {}
-      const required: string[] = []
-      for (const child of propertyChildren) {
-        if (child.name === undefined) continue
-        const childSchema = build(child.id, nextSeen)
-        if (childSchema !== undefined) properties[child.name] = childSchema
-        if (child.required === true) required.push(child.name)
-      }
-      schema.type = schema.type ?? 'object'
-      schema.properties = properties
-      if (required.length > 0) schema.required = required
-    }
-
-    const itemChild = children.find((child) => child.relation === 'items')
-    if (itemChild !== undefined) {
-      const itemSchema = build(itemChild.id, nextSeen)
-      if (itemSchema !== undefined) schema.items = itemSchema
-    }
-
-    const prefixItems = children
-      .filter((child) => child.relation === 'prefixItem')
-      .map((child) => build(child.id, nextSeen))
-      .filter(isNotUndefined)
-    if (prefixItems.length > 0) schema.prefixItems = prefixItems
-
-    const oneOf = children
-      .filter((child) => child.relation === 'oneOf')
-      .map((child) => build(child.id, nextSeen))
-      .filter(isNotUndefined)
-    if (oneOf.length > 0) schema.oneOf = oneOf
-
-    const anyOf = children
-      .filter((child) => child.relation === 'anyOf')
-      .map((child) => build(child.id, nextSeen))
-      .filter(isNotUndefined)
-    if (anyOf.length > 0) schema.anyOf = anyOf
-
-    return schema
+  if (schema.properties !== undefined) {
+    resolved.properties = Object.fromEntries(
+      Object.entries(schema.properties)
+        .map(([name, property]) => [name, resolveStandardSchema(property, schemas, seen) ?? property]),
+    )
   }
-
-  return build(nodeId, new Set())
+  if (schema.items !== undefined) resolved.items = resolveStandardSchema(schema.items, schemas, seen) ?? schema.items
+  if (schema.prefixItems !== undefined) {
+    resolved.prefixItems = schema.prefixItems.map(item => resolveStandardSchema(item, schemas, seen) ?? item)
+  }
+  if (schema.oneOf !== undefined) {
+    resolved.oneOf = schema.oneOf.map(item => resolveStandardSchema(item, schemas, seen) ?? item)
+  }
+  if (schema.anyOf !== undefined) {
+    resolved.anyOf = schema.anyOf.map(item => resolveStandardSchema(item, schemas, seen) ?? item)
+  }
+  return resolved
 }
 
 function toPlainPropEntry(prop: HydratedPropEntry): PropEntry {
@@ -700,6 +714,24 @@ function toPlainEmitEntry(emit: HydratedEmitEntry): EmitEntry {
   return plain
 }
 
+function runtimeCatalogToTypeCatalog(catalog: RuntimeComponentCatalog): ComponentCatalog {
+  const schemas = catalog.schemas ?? {}
+  const components: Record<string, ComponentEntry> = {}
+
+  for (const [type, entry] of Object.entries(catalog.components).sort(([left], [right]) => left.localeCompare(right))) {
+    components[type] = entry
+  }
+
+  return {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    version: catalog.version,
+    buildTime: catalog.buildTime,
+    componentCount: catalog.componentCount,
+    components,
+    ...(Object.keys(schemas).length > 0 ? { $defs: schemas } : {}),
+  }
+}
+
 /**
  * 公开 catalog 投影：把构建产物中的具体前端实现细节收敛为配置层 catalog。
  *
@@ -708,9 +740,10 @@ function toPlainEmitEntry(emit: HydratedEmitEntry): EmitEntry {
  * - vue-component-meta 等构建中间结构不进入公开配置目录。
  */
 export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): ComponentCatalog {
+  const runtimeCatalog = toRuntimeCatalog(catalog)
   const components: Record<string, ComponentEntry> = {}
 
-  for (const type of Object.keys(catalog.components)) {
+  for (const type of Object.keys(runtimeCatalog.components)) {
     const entry = projectHydratedComponent(catalog, type)
     if (entry === null) continue
     if (!isConfigurableComponent(entry)) continue
@@ -738,20 +771,18 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
     components[type] = next
   }
 
-  const reachableSchemaNodeIds = collectReachableSchemaNodeIds(catalog.schemaNodes, components)
-
-  return {
+  const reachableSchemaTypes = collectReachableSchemaTypes(runtimeCatalog.schemas, components)
+  const projectedRuntime: RuntimeComponentCatalog = {
     version: catalog.version,
     buildTime: catalog.buildTime,
     componentCount: Object.keys(components).length,
     components,
-    ...(catalog.schemaNodes !== undefined
-      ? { schemaNodes: catalog.schemaNodes.filter((node) => reachableSchemaNodeIds.has(node.id)) }
+    ...(runtimeCatalog.schemas !== undefined
+      ? { schemas: Object.fromEntries(Object.entries(runtimeCatalog.schemas).filter(([type]) => reachableSchemaTypes.has(type))) }
       : {}),
-    ...(catalog.constraints !== undefined ? { constraints: catalog.constraints } : {}),
-    ...(catalog.bindingDescriptors !== undefined ? { bindingDescriptors: catalog.bindingDescriptors } : {}),
-    ...(catalog.governance !== undefined ? { governance: catalog.governance } : {}),
   }
+
+  return runtimeCatalogToTypeCatalog(projectedRuntime)
 }
 
 
@@ -773,7 +804,8 @@ export function projectFrameworkNeutralCatalog(catalog: ComponentCatalog): Compo
  * @returns       可直接返回给 LLM 的目录摘要负载
  */
 export function projectComponentDirectory(catalog: ComponentCatalog): ComponentDirectoryPayload {
-  const entries = Object.entries(catalog.components).filter(([, e]) => isConfigurableComponent(e))
+  const runtimeCatalog = toRuntimeCatalog(catalog)
+  const entries = Object.entries(runtimeCatalog.components).filter(([, e]) => isConfigurableComponent(e))
   const visibleComponents = Object.fromEntries(entries)
   const featureCount = entries.filter(([, e]) => inferCategory(e) === 'feature').length
   const registry = buildComponentRegistry(visibleComponents)
@@ -787,7 +819,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     .sort((a, b) => a.localeCompare(b))
 
   const eventDriven = entries
-    .filter(([type, e]) => hasAnyEmit(catalog, type, e))
+    .filter(([, e]) => hasAnyEmit(e))
     .map(([type]) => type)
     .sort((a, b) => a.localeCompare(b))
 
@@ -855,7 +887,6 @@ export function projectComponentSpec(catalog: ComponentCatalog, type: string): C
       required: p.required,
       ...(p.default !== undefined ? { default: p.default } : {}),
       ...(p.description !== undefined ? { description: p.description } : {}),
-      ...(p.examples !== undefined ? { examples: p.examples } : {}),
     })),
     emits: entry.emits.map(e => ({
       name: e.name,
@@ -874,8 +905,9 @@ export function projectComponentSpec(catalog: ComponentCatalog, type: string): C
  * 该投影供业务 payload provider 持有，避免 core session 协议绑定具体组件目录。
  */
 export function projectFunctionCatalog(catalog: ComponentCatalog): FunctionCatalog {
+  const runtimeCatalog = toRuntimeCatalog(catalog)
   const configurableComponents = Object.fromEntries(
-    Object.entries(catalog.components).filter(([, entry]) => isConfigurableComponent(entry)),
+    Object.entries(runtimeCatalog.components).filter(([, entry]) => isConfigurableComponent(entry)),
   )
   const registry = buildComponentRegistry(configurableComponents)
 
@@ -885,8 +917,6 @@ export function projectFunctionCatalog(catalog: ComponentCatalog): FunctionCatal
     const spec = projectComponentSpec(catalog, type)
     if (spec === null) continue
 
-    const nestingRule = catalog.constraints?.nestingRules.value[type]
-
     components[type] = {
       category: spec.category ?? 'feature',
       description: spec.description,
@@ -895,7 +925,6 @@ export function projectFunctionCatalog(catalog: ComponentCatalog): FunctionCatal
       ...(spec.rootFields !== undefined ? { rootFields: spec.rootFields } : {}),
       ...(spec.notes !== undefined ? { notes: spec.notes } : {}),
       ...(spec.binding !== undefined ? { binding: { ...spec.binding } as Record<string, unknown> } : {}),
-      ...(nestingRule !== undefined ? { nestingRule } : {}),
     }
   }
 
@@ -987,7 +1016,6 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
       type: prop.type,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       ...(prop.description !== undefined ? { description: prop.description } : {}),
-      ...(prop.examples !== undefined ? { examples: prop.examples } : {}),
       ...(prop.resolvedSchema !== undefined ? { schema: prop.resolvedSchema } : {}),
     }))
 
@@ -998,7 +1026,6 @@ export function projectComponentConfigGuide(catalog: ComponentCatalog, type: str
       type: prop.type,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       ...(prop.description !== undefined ? { description: prop.description } : {}),
-      ...(prop.examples !== undefined ? { examples: prop.examples } : {}),
       ...(prop.resolvedSchema !== undefined ? { schema: prop.resolvedSchema } : {}),
     }))
 

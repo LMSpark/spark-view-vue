@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type {
   ComponentCatalog,
   ComponentEntry,
-  PlatformConstraints,
+  PropSchema,
 } from '../packages/vite-plugin-spark-catalog/src/index'
 import {
   projectComponentDirectory,
@@ -11,42 +11,6 @@ import {
   projectComponentSpec,
   projectFrameworkNeutralCatalog,
 } from '../packages/spark-ai/src/registrations/page-design/payloads/catalog-projections'
-
-function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
-  return {
-    dataKeyPattern: {
-      value: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
-      description: 'DataKey format constraint',
-      examples: ['orders@rows'],
-    },
-    validTypePrefixes: {
-      value: ['r-', 'spark-'],
-      description: 'Valid component type prefixes',
-      examples: ['r-table'],
-    },
-    validAggregateTypes: {
-      value: ['sum', 'count', 'avg', 'min', 'max', 'join'],
-      description: 'Valid aggregate operators',
-      examples: ['sum'],
-    },
-    nonFieldRTypes: {
-      value: ['r-table', 'r-form'],
-      description: 'Container r-types that are not fields',
-      examples: ['r-table'],
-    },
-    containerContextMap: {
-      value: { 'r-table': 'table', 'r-form': 'form' },
-      description: 'Container type to context mapping',
-      examples: [{ type: 'r-table', context: 'table' }],
-    },
-    nestingRules: {
-      value: {},
-      description: 'Container child nesting rules',
-      examples: [],
-    },
-    ...overrides,
-  }
-}
 
 function makeEntry(overrides?: Partial<ComponentEntry>): ComponentEntry {
   return {
@@ -62,8 +26,13 @@ function makeEntry(overrides?: Partial<ComponentEntry>): ComponentEntry {
   }
 }
 
-function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
-  const components: Record<string, ComponentEntry> = {
+interface TestCatalogOverrides {
+  components?: Record<string, ComponentEntry>
+  $defs?: Record<string, PropSchema>
+}
+
+function makeCatalog(overrides?: TestCatalogOverrides): ComponentCatalog {
+  const components: Record<string, ComponentEntry> = overrides?.components ?? {
     'r-table': makeEntry({
       type: 'r-table',
       category: 'container',
@@ -77,10 +46,15 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
       emits: [
         {
           name: 'rowChange',
-          type: '[row: Record<string, unknown>] ',
+          type: '[row: Record<string, unknown>]',
           description: '当前行变更事件',
         },
       ],
+      binding: {
+        dataContainer: true,
+        description: 'r-table data container binding',
+        examples: [{ type: 'r-table', props: { dataKey: 'orders@rows' } }],
+      },
       rootFields: [
         {
           name: 'currentRow',
@@ -100,20 +74,12 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
   }
 
   return {
-    version: '4.0.0',
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    version: '3.0.0',
     buildTime: '2026-04-06T00:00:00.000Z',
     componentCount: Object.keys(components).length,
-    sharedTypes: {},
     components,
-    constraints: makeConstraints(),
-    bindingDescriptors: {
-      'r-table': {
-        dataContainer: true,
-        description: 'r-table data container binding',
-        examples: [{ type: 'r-table', props: { dataKey: 'orders@rows' } }],
-      },
-    },
-    ...overrides,
+    ...(overrides?.$defs !== undefined ? { $defs: overrides.$defs } : {}),
   }
 }
 
@@ -138,18 +104,52 @@ describe('catalog-projections', () => {
     expect(directory.configurationPrinciples.length).toBeGreaterThan(0)
   })
 
-  it('framework-neutral catalog keeps described platform constraints', () => {
-    const neutralCatalog = projectFrameworkNeutralCatalog(makeCatalog())
+  it('framework-neutral catalog keeps component-local binding and standard $defs', () => {
+    const neutralCatalog = projectFrameworkNeutralCatalog(makeCatalog({
+      components: {
+        'r-table': makeEntry({
+          type: 'r-table',
+          category: 'container',
+          description: '表格容器',
+          props: [
+            {
+              name: 'columns',
+              type: 'ColumnLike[]',
+              required: false,
+              description: '列定义',
+              schema: {
+                type: 'array',
+                items: { $ref: '#/$defs/ColumnLike' },
+              },
+            },
+          ],
+          binding: {
+            dataContainer: true,
+            description: 'r-table data container binding',
+            examples: [{ type: 'r-table', props: { dataKey: 'orders@rows' } }],
+          },
+        }),
+      },
+      $defs: {
+        ColumnLike: {
+          title: 'ColumnLike',
+          type: 'object',
+          description: '表格列定义',
+          properties: {
+            field: { type: 'string', description: '字段名' },
+          },
+        },
+      },
+    }))
 
-    expect(neutralCatalog.constraints?.dataKeyPattern.value).toContain('rows')
-    expect(neutralCatalog.constraints?.dataKeyPattern.description).toBeTruthy()
-    expect(neutralCatalog.constraints?.validTypePrefixes.examples).toContain('r-table')
-    expect(neutralCatalog.constraints?.nestingRules.value).toEqual({})
-    expect(neutralCatalog.bindingDescriptors?.['r-table']?.description).toContain('data container')
-    expect(neutralCatalog.bindingDescriptors?.['r-table']?.examples?.[0]).toEqual({
+    expect(neutralCatalog.components['r-table']?.binding?.description).toContain('data container')
+    expect(neutralCatalog.components['r-table']?.binding?.examples?.[0]).toEqual({
       type: 'r-table',
       props: { dataKey: 'orders@rows' },
     })
+    expect(neutralCatalog.$defs?.['ColumnLike']?.description).toBe('表格列定义')
+    expect(neutralCatalog).not.toHaveProperty('constraints')
+    expect(neutralCatalog).not.toHaveProperty('bindingDescriptors')
   })
 
   it('projectComponentSpec returns component spec for pageDesign/knowledge/guidePayload', () => {
@@ -194,7 +194,7 @@ describe('catalog-projections', () => {
     expect(directory.components.map(entry => entry.type)).toEqual(['r-table'])
     expect(projectComponentSpec(catalog, 'internal-panel')).toBeNull()
     expect(projectComponentConfigGuide(catalog, 'internal-panel')).toBeNull()
-    expect(neutralCatalog.components['internal-panel']).toBeUndefined()
+    expect(Object.keys(neutralCatalog.components)).not.toContain('internal-panel')
   })
 
   it('projectComponentConfigGuide returns normalized guide for known component', () => {
@@ -253,14 +253,15 @@ describe('catalog-projections', () => {
     const spec = projectComponentSpec(catalog, 'r-text')
     const guide = projectComponentConfigGuide(catalog, 'r-text')
     const neutralCatalog = projectFrameworkNeutralCatalog(catalog)
-    const neutralEntry = neutralCatalog.components['r-text']
+    const neutralText = neutralCatalog.components['r-text']
 
     expect(spec?.props.map(prop => prop.name)).toContain('value')
     expect(spec?.props.map(prop => prop.name)).not.toContain('modelValue')
     expect(spec?.emits.map(emit => emit.name)).toEqual(['change'])
     expect(guide?.optionalProps.map(prop => prop.name)).toContain('value')
-    expect(neutralEntry?.props.map(prop => prop.name)).toContain('value')
-    expect(neutralEntry?.emits?.map(emit => emit.name) ?? []).toEqual(['change'])
+    expect(neutralText?.props.map(prop => prop.name)).toContain('value')
+    expect(neutralText?.props.map(prop => prop.name)).not.toContain('modelValue')
+    expect(neutralText?.emits?.map(emit => emit.name)).toEqual(['change'])
     expect('canonical' in neutralCatalog).toBe(false)
   })
 

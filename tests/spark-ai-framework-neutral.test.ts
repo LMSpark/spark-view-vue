@@ -6,6 +6,7 @@ import {
   COMPONENT_CATALOG_JSON,
   guidePageDesignComponentPayload,
   projectFunctionCatalog,
+  queryComponentCatalog,
   type ComponentCatalog,
 } from '../packages/spark-ai/src/registrations/page-design/payloads'
 
@@ -133,54 +134,61 @@ describe('@spark-view/spark-ai framework boundary', () => {
     const catalog = COMPONENT_CATALOG_JSON as ComponentCatalog
     const functionCatalog = projectFunctionCatalog(catalog)
     const serializedCatalog = JSON.stringify(catalog)
+    const componentEntries = Object.values(catalog.components)
+    const componentTypes = componentEntries.map(entry => entry.type)
+    const propertyNames = componentEntries.flatMap(entry => entry.props.map(prop => prop.name))
+    const emitNames = componentEntries.flatMap(entry => (entry.emits ?? []).map(emit => emit.name))
 
     expect(serializedCatalog).not.toContain('modelValue')
     expect(serializedCatalog).not.toContain('update:modelValue')
     expect(serializedCatalog).not.toContain('Vue')
     expect(serializedCatalog).not.toContain('.vue')
 
-    for (const entry of Object.values(catalog.components)) {
-      expect(entry.props.map(prop => prop.name)).not.toContain('modelValue')
-      expect(entry.emits?.map(emit => emit.name) ?? []).not.toContain('update:modelValue')
-    }
+    expect(propertyNames).not.toContain('modelValue')
+    expect(emitNames).not.toContain('update:modelValue')
 
     for (const entry of Object.values(functionCatalog.components)) {
       expect(entry.props.map(prop => prop.name)).not.toContain('modelValue')
       expect(entry.emits?.map(emit => emit.name) ?? []).not.toContain('update:modelValue')
     }
 
-    expect(COMPONENT_CATALOG_JSON.components['ai-chat-shell']).toBeUndefined()
-    expect(COMPONENT_CATALOG_JSON.components['dashboard']).toBeUndefined()
+    expect(componentTypes).not.toContain('ai-chat-shell')
+    expect(componentTypes).not.toContain('dashboard')
     expect(functionCatalog.components['ai-chat-shell']).toBeUndefined()
     expect(functionCatalog.components['dashboard']).toBeUndefined()
 
   })
 
-  it('publishes a self-referential schema-node VCM component catalog payload', () => {
+  it('publishes a standard JSON Schema VCM component catalog payload', () => {
     const catalogPath = path.join(packageRoot, 'src/registrations/page-design/payloads/component-catalog.json')
     const catalogText = fs.readFileSync(catalogPath, 'utf8')
     const catalog = JSON.parse(catalogText) as ComponentCatalog
-    const schemaNodes = catalog.schemaNodes ?? []
-    const nodeById = new Map(schemaNodes.map((node) => [node.id, node]))
-    const childrenByParent = new Map<string, typeof schemaNodes>()
-    for (const node of schemaNodes) {
-      if (node.parentId === undefined) continue
-      const children = childrenByParent.get(node.parentId) ?? []
-      children.push(node)
-      childrenByParent.set(node.parentId, children)
-    }
+    const componentEntries = Object.values(catalog.components)
+    const schemaEntries = Object.entries(catalog.$defs ?? {})
+    const componentTypes = componentEntries.map(entry => entry.type)
 
-    expect(catalog.version).toBe('4.0.0')
-    expect(catalog.components['template-dsl-demo']).toBeUndefined()
-    expect(catalog.components['capability-demo']).toBeUndefined()
-    expect(catalog.components['custom-rtable-demo']).toBeUndefined()
-    expect(catalog.components['rform-compare-demo']).toBeUndefined()
+    expect(catalog.$schema).toBe('https://json-schema.org/draft/2020-12/schema')
+    expect(catalog.version).toBe('3.0.0')
+    expect(componentTypes).not.toContain('template-dsl-demo')
+    expect(componentTypes).not.toContain('capability-demo')
+    expect(componentTypes).not.toContain('custom-rtable-demo')
+    expect(componentTypes).not.toContain('rform-compare-demo')
     expect(catalog.components['ai-chat-shell']).toMatchObject({ internal: true, configurable: false })
     expect(catalog.components['dashboard']).toMatchObject({ internal: true, configurable: false })
     expect(catalog).not.toHaveProperty('canonical')
     expect(catalog).not.toHaveProperty('registry')
     expect(catalog).not.toHaveProperty('schemaPool')
-    expect(catalog).not.toHaveProperty('$defs')
+    expect(catalog).not.toHaveProperty('schemaNodes')
+    expect(catalog).not.toHaveProperty('bindingDescriptors')
+    expect(catalog).not.toHaveProperty('constraints')
+    expect(catalog).not.toHaveProperty('metadata')
+    expect(catalog).not.toHaveProperty('sharedTypes')
+    expect(catalog).toHaveProperty('$defs')
+    expect(catalog).not.toHaveProperty('objects')
+    expect(catalog).not.toHaveProperty('objectCount')
+    expect(catalog).not.toHaveProperty('groups')
+    expect(catalog).not.toHaveProperty('types')
+    expect(catalog).not.toHaveProperty('typeCount')
     expect(catalogText).not.toMatch(/\bschema_\d+\b/u)
     expect(catalogText).not.toMatch(/\bprop_\d+\b/u)
     expect(catalogText).not.toMatch(/\bemit_\d+\b/u)
@@ -191,55 +199,142 @@ describe('@spark-view/spark-ai framework boundary', () => {
     expect(catalogText).not.toContain('"$id"')
     expect(catalogText).not.toContain('"x-ts-')
 
-    expect(schemaNodes.length).toBeGreaterThan(0)
-    expect(nodeById.size).toBe(schemaNodes.length)
-    expect(Object.keys(catalog).slice(0, 4)).toEqual(['version', 'buildTime', 'componentCount', 'components'])
-    for (const node of schemaNodes) {
-      expect(nodeById.has(node.rootId)).toBe(true)
-      if (node.parentId !== undefined) expect(nodeById.has(node.parentId)).toBe(true)
-      if (node.refId !== undefined) expect(nodeById.has(node.refId)).toBe(true)
-    }
-
-    for (const entry of Object.values(catalog.components)) {
-      for (const prop of entry.props) {
-        if (prop.schemaNodeId !== undefined) expect(nodeById.has(prop.schemaNodeId)).toBe(true)
-      }
-      for (const emit of entry.emits ?? []) {
-        if (emit.schemaNodeId !== undefined) expect(nodeById.has(emit.schemaNodeId)).toBe(true)
-      }
+    expect(componentEntries.length).toBeGreaterThan(0)
+    expect(schemaEntries.length).toBeGreaterThan(0)
+    expect(new Set(Object.keys(catalog.components)).size).toBe(Object.keys(catalog.components).length)
+    expect(catalog.componentCount).toBe(Object.keys(catalog.components).length)
+    expect(Object.keys(catalog)).toEqual(['$schema', 'version', 'buildTime', 'componentCount', 'components', '$defs'])
+    for (const [key, entry] of Object.entries(catalog.components)) {
+      expect(entry.type).toBe(key)
+      expect(entry.description).toBeTruthy()
+      expect(entry).not.toHaveProperty('id')
+      expect(entry).not.toHaveProperty('ownerId')
+      expect(entry).not.toHaveProperty('parentId')
+      expect(entry).not.toHaveProperty('rootId')
+      expect(entry).not.toHaveProperty('refId')
+      expect(Array.isArray(entry.props)).toBe(true)
     }
 
     const isBlank = (value: unknown): boolean => value === undefined || String(value).trim() === ''
-    const allProps = Object.values(catalog.components).flatMap(entry => entry.props)
-    const allEmits = Object.values(catalog.components).flatMap(entry => entry.emits ?? [])
-    const keyNodes = schemaNodes.filter(node => ['root', 'property', 'oneOf', 'prefixItem'].includes(node.relation))
+    const allProps = componentEntries.flatMap(entry => entry.props)
+    const allEmits = componentEntries.flatMap(entry => entry.emits ?? [])
     expect(allProps.filter(prop => isBlank(prop.description))).toHaveLength(0)
     expect(allEmits.filter(emit => isBlank(emit.description))).toHaveLength(0)
-    expect(keyNodes.filter(node => isBlank(node.description))).toHaveLength(0)
-    expect(allProps.filter(prop => /\|\s*undefined\b/u.test(prop.type))).toHaveLength(0)
-    expect(allEmits.filter(emit => /\|\s*undefined\b/u.test(emit.type ?? ''))).toHaveLength(0)
-    expect(schemaNodes.filter(node => /\|\s*undefined\b/u.test(node.id) || /\|\s*undefined\b/u.test(node.title ?? ''))).toHaveLength(0)
+    expect(allProps.filter(prop => 'examples' in prop)).toHaveLength(0)
+    const schemaDescriptions = schemaEntries.filter(([, schema]) => !isBlank(schema.description))
+    expect(schemaDescriptions.length).toBeGreaterThan(0)
 
-    const actionProp = catalog.components['r-button']?.props.find(prop => prop.name === 'action')
+    const missingRefs: string[] = []
+    const nonStandardRefs: string[] = []
+    const refToDefKey = (ref: string): string => ref
+      .slice('#/$defs/'.length)
+      .replace(/~1/gu, '/')
+      .replace(/~0/gu, '~')
+    const collectRefs = (schema: unknown): void => {
+      if (schema === null || typeof schema !== 'object') return
+      const current = schema as {
+        $ref?: unknown
+        properties?: Record<string, unknown>
+        items?: unknown
+        prefixItems?: unknown[]
+        oneOf?: unknown[]
+        anyOf?: unknown[]
+      }
+      if (typeof current.$ref === 'string') {
+        if (!current.$ref.startsWith('#/$defs/')) nonStandardRefs.push(current.$ref)
+        else if (catalog.$defs?.[refToDefKey(current.$ref)] === undefined) missingRefs.push(current.$ref)
+      }
+      Object.values(current.properties ?? {}).forEach(collectRefs)
+      collectRefs(current.items)
+      ;(current.prefixItems ?? []).forEach(collectRefs)
+      ;(current.oneOf ?? []).forEach(collectRefs)
+      ;(current.anyOf ?? []).forEach(collectRefs)
+    }
+    const schemasWithEnumExamples: string[] = []
+    const collectEnumExamples = (schema: unknown, pathName: string): void => {
+      if (schema === null || typeof schema !== 'object') return
+      const current = schema as {
+        enum?: unknown[]
+        examples?: unknown[]
+        oneOf?: unknown[]
+        anyOf?: unknown[]
+        properties?: Record<string, unknown>
+        items?: unknown
+        prefixItems?: unknown[]
+      }
+      const enumLike = (current.enum?.length ?? 0) > 0
+        || current.oneOf?.some(item => item !== null && typeof item === 'object' && 'const' in item) === true
+      if (enumLike && Array.isArray(current.examples)) schemasWithEnumExamples.push(pathName)
+      Object.entries(current.properties ?? {}).forEach(([key, child]) => collectEnumExamples(child, `${pathName}.properties.${key}`))
+      collectEnumExamples(current.items, `${pathName}.items`)
+      ;(current.prefixItems ?? []).forEach((child, index) => collectEnumExamples(child, `${pathName}.prefixItems.${index}`))
+      ;(current.oneOf ?? []).forEach((child, index) => collectEnumExamples(child, `${pathName}.oneOf.${index}`))
+      ;(current.anyOf ?? []).forEach((child, index) => collectEnumExamples(child, `${pathName}.anyOf.${index}`))
+    }
+    for (const entry of componentEntries) {
+      entry.props.forEach(prop => collectRefs(prop.schema))
+      ;(entry.emits ?? []).forEach(emit => collectRefs(emit.schema))
+      entry.props.forEach(prop => collectEnumExamples(prop.schema, `components.${entry.type}.props.${prop.name}`))
+      ;(entry.emits ?? []).forEach(emit => collectEnumExamples(emit.schema, `components.${entry.type}.emits.${emit.name}`))
+    }
+    for (const [, schema] of schemaEntries) {
+      collectRefs(schema)
+      collectEnumExamples(schema, '$defs')
+    }
+    expect(missingRefs).toEqual([])
+    expect(nonStandardRefs).toEqual([])
+    expect(schemasWithEnumExamples).toEqual([])
+    expect(Object.keys(catalog.$defs ?? {}).filter(type => type.endsWith('[]'))).toEqual([])
+    expect(Object.keys(catalog.$defs ?? {}).filter(type => type.includes('"') || type.includes('|'))).toEqual([])
+    expect(catalogText).not.toContain('Gets or sets the length of the array')
+
+    const rTable = catalog.components['r-table']
+    const toolbarProp = rTable?.props.find(prop => prop.name === 'toolbar')
+    expect(toolbarProp?.type).toBe('r-toolbar')
+    expect(toolbarProp?.componentRef).toBe('r-toolbar')
+    expect(toolbarProp).not.toHaveProperty('schema')
+    expect(catalog.$defs?.['RToolbarProps']).toBeUndefined()
+
+    const rButton = catalog.components['r-button']
+    const actionProp = rButton?.props.find(prop => prop.name === 'action')
     expect(actionProp?.description).not.toContain('@enumValue')
-    expect(actionProp?.examples).toEqual(expect.arrayContaining(['append-row']))
-    expect(actionProp?.schemaNodeId).toBeDefined()
-    const actionBranches = actionProp?.schemaNodeId === undefined
-      ? []
-      : (childrenByParent.get(actionProp.schemaNodeId) ?? []).filter(node => node.relation === 'oneOf')
+    expect(actionProp).not.toHaveProperty('examples')
+    expect(actionProp?.schema).not.toHaveProperty('$ref')
+    const actionSchema = actionProp?.schema as { enum?: unknown[]; oneOf?: Array<Record<string, unknown>>; examples?: unknown[] } | undefined
+    expect(actionSchema?.enum).toEqual(expect.arrayContaining(['append-row', 'delete-selected', 'message-current']))
+    const actionBranches = actionSchema?.oneOf ?? []
     expect(actionBranches).toHaveLength(16)
     expect(actionBranches).toContainEqual(expect.objectContaining({
       const: 'append-row',
       title: '新增行',
       description: '向当前数据视图追加一行。适合普通新增按钮；可配 appendPayload、inheritFields 或 prompt。',
     }))
-    const actionRootNode = actionProp?.schemaNodeId === undefined ? undefined : nodeById.get(actionProp.schemaNodeId)
-    expect(actionRootNode?.examples).toEqual(expect.arrayContaining(['append-row']))
+    expect(actionSchema).not.toHaveProperty('examples')
 
-    const payloadParamNode = schemaNodes.find(node => node.relation === 'prefixItem' && node.name === 'value')
-    expect(payloadParamNode).toBeDefined()
-    expect(payloadParamNode?.description).not.toEqual('')
-    expect(payloadParamNode?.examples?.length ?? 0).toBeGreaterThan(0)
+    const payloadParam = componentEntries
+      .flatMap(entry => (entry.emits ?? []).map(emit => emit.schema as { prefixItems?: Array<Record<string, unknown>> } | undefined))
+      .flatMap(schema => schema?.prefixItems ?? [])
+      .find(item => item['title'] === 'value')
+    expect(payloadParam).toBeDefined()
+    expect(payloadParam?.['description']).not.toEqual('')
+    expect(payloadParam).not.toHaveProperty('examples')
+  })
+
+  it('queries component catalog with JMESPath without leaking raw shape details', () => {
+    const rawComponentTypes = queryComponentCatalog<string[]>('components.*.type | sort(@)', { source: 'raw' })
+    const publicComponentTypes = queryComponentCatalog<string[]>('components.*.type | sort(@)')
+    const actionValues = queryComponentCatalog<string[]>(
+      'components."r-button".props[?name==`action`].schema.enum[]',
+      { source: 'raw' },
+    )
+    const fieldTypes = queryComponentCatalog<string[]>(
+      'components.* | [?category==`field`].type | sort(@)',
+    )
+
+    expect(rawComponentTypes).toContain('ai-chat-shell')
+    expect(publicComponentTypes).not.toContain('ai-chat-shell')
+    expect(actionValues).toEqual(expect.arrayContaining(['append-row', 'delete-selected', 'message-current']))
+    expect(fieldTypes).toContain('r-text')
   })
 
   it('publishes component payload guides as parameter schema', () => {
@@ -258,6 +353,24 @@ describe('@spark-view/spark-ai framework boundary', () => {
     expect(schema?.properties?.['type']).toMatchObject({
       kind: 'enum',
       enum: ['r-table'],
+    })
+  })
+
+  it('builds component payload parameter schema from JSON Schema, not type text guesses', () => {
+    const guide = guidePageDesignComponentPayload('r-button')
+    const schema = guide?.paramsSchema as {
+      properties?: {
+        props?: {
+          properties?: Record<string, unknown>
+        }
+      }
+    } | undefined
+    const action = schema?.properties?.props?.properties?.['action']
+
+    expect(action).toMatchObject({
+      kind: 'enum',
+      openEnded: false,
+      enum: expect.arrayContaining(['append-row', 'delete-selected', 'message-current']),
     })
   })
 })

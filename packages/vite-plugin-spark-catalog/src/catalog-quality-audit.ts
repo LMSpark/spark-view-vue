@@ -7,7 +7,7 @@
  * 审计维度：
  * 1. Prop 描述覆盖率（每个非结构性 prop 应有 description）
  * 2. 类型精度（检测 unknown / object 等低信号类型）
- * 3. Schema 节点引用一致性（schemaNodeId/refId/parentId 指向有效节点）
+ * 3. Schema type 引用一致性（组件属性/事件的复杂类型必须指向存在的 schema type）
  * 4. Emit 语义完整性（emit 应有 description）
  * 5. 绑定描述符完整性（有 dataKey 的组件应有绑定信息）
  * 6. field / value 优先级文档（display 组件同时有 field 和 value 时需说明优先级）
@@ -16,9 +16,10 @@
  */
 
 import type {
-  ComponentCatalog,
+  CatalogBindingDescriptor,
   ComponentEntry,
-  SchemaNodeEntry,
+  PlatformConstraints,
+  PropSchema,
 } from './component-catalog-schema'
 import { createLogger } from './utils'
 
@@ -59,6 +60,15 @@ export interface AuditOptions {
   ignoreComponents?: string[]
   /** 开启严格模式（warning 升级为 error） */
   strict?: boolean
+}
+
+interface AuditableComponentCatalog {
+  componentCount: number
+  components: Record<string, ComponentEntry>
+  schemas?: Record<string, PropSchema>
+  schemaPool?: Record<string, PropSchema>
+  constraints: PlatformConstraints
+  bindingDescriptors: Record<string, CatalogBindingDescriptor>
 }
 
 /* --------------------------------------------------------------------------
@@ -117,28 +127,28 @@ function auditTypePrecision(entry: ComponentEntry, issues: AuditIssue[]): void {
 
 function auditSchemaRefIntegrity(
   entry: ComponentEntry,
-  schemaNodes: SchemaNodeEntry[] | undefined,
+  schemas: Record<string, PropSchema> | undefined,
   issues: AuditIssue[],
 ): void {
-  if (schemaNodes === undefined) return
-  const nodeIds = new Set(schemaNodes.map((node) => node.id))
+  const refs = new Set(Object.keys(schemas ?? {}))
+  if (refs.size === 0) return
 
-  const assertNode = (field: string, nodeId: string | undefined): void => {
-    if (nodeId === undefined || nodeIds.has(nodeId)) return
+  const assertSchemaType = (field: string, typeRef: string | undefined): void => {
+    if (typeRef === undefined || refs.has(typeRef)) return
     issues.push({
       severity: 'error',
-      rule: 'schema-node-dangling',
+      rule: 'schema-type-dangling',
       component: entry.type,
       field,
-      message: `"${field}" 的 schemaNodeId "${nodeId}" 指向不存在的 schemaNodes 行`,
+      message: `"${field}" 的 schema type 引用 "${typeRef}" 指向不存在的类型`,
     })
   }
 
   for (const prop of entry.props) {
-    assertNode(prop.name, prop.schemaNodeId)
+    assertSchemaType(prop.name, prop.schemaNodeId)
   }
   for (const emit of entry.emits) {
-    assertNode(emit.name, emit.schemaNodeId)
+    assertSchemaType(emit.name, emit.schemaNodeId)
   }
 }
 
@@ -171,7 +181,7 @@ function auditBindingCompleteness(entry: ComponentEntry, issues: AuditIssue[]): 
   }
 }
 
-function auditBindingDescriptorDocs(catalog: ComponentCatalog, issues: AuditIssue[]): void {
+function auditBindingDescriptorDocs(catalog: AuditableComponentCatalog, issues: AuditIssue[]): void {
   for (const [type, descriptor] of Object.entries(catalog.bindingDescriptors)) {
     if (descriptor.description === undefined || descriptor.description.trim() === '') {
       issues.push({
@@ -192,7 +202,7 @@ function auditBindingDescriptorDocs(catalog: ComponentCatalog, issues: AuditIssu
   }
 }
 
-function auditConstraintDocs(catalog: ComponentCatalog, issues: AuditIssue[]): void {
+function auditConstraintDocs(catalog: AuditableComponentCatalog, issues: AuditIssue[]): void {
   const constraintNames = [
     'dataKeyPattern',
     'validTypePrefixes',
@@ -281,7 +291,7 @@ function auditDefaultValues(entry: ComponentEntry, _issues: AuditIssue[]): void 
  * 统计计算
  * ----------------------------------------------------------------------- */
 
-function computePropDescriptionCoverage(catalog: ComponentCatalog): number {
+function computePropDescriptionCoverage(catalog: AuditableComponentCatalog): number {
   let total = 0
   let withDesc = 0
 
@@ -298,7 +308,7 @@ function computePropDescriptionCoverage(catalog: ComponentCatalog): number {
   return total > 0 ? Math.round((withDesc / total) * 10000) / 100 : 100
 }
 
-function computeEmitDescriptionCoverage(catalog: ComponentCatalog): number {
+function computeEmitDescriptionCoverage(catalog: AuditableComponentCatalog): number {
   let total = 0
   let withDesc = 0
 
@@ -314,7 +324,7 @@ function computeEmitDescriptionCoverage(catalog: ComponentCatalog): number {
   return total > 0 ? Math.round((withDesc / total) * 10000) / 100 : 100
 }
 
-function computeAvgPropsPerComponent(catalog: ComponentCatalog): number {
+function computeAvgPropsPerComponent(catalog: AuditableComponentCatalog): number {
   const components = Object.values(catalog.components)
   if (components.length === 0) return 0
 
@@ -333,7 +343,7 @@ function computeAvgPropsPerComponent(catalog: ComponentCatalog): number {
  *
  * 修复路径：审计报告指向需要在 Vue 层补充 JSDoc 的具体 prop 和组件。
  */
-export function auditCatalog(catalog: ComponentCatalog, options: AuditOptions = {}): AuditReport {
+export function auditCatalog(catalog: AuditableComponentCatalog, options: AuditOptions = {}): AuditReport {
   const { ignoreRules = [], ignoreComponents = [], strict = false } = options
   const ignoreRuleSet = new Set(ignoreRules)
   const ignoreComponentSet = new Set(ignoreComponents)
@@ -345,7 +355,7 @@ export function auditCatalog(catalog: ComponentCatalog, options: AuditOptions = 
 
     auditPropDescriptions(entry, issues)
     auditTypePrecision(entry, issues)
-    auditSchemaRefIntegrity(entry, catalog.schemaNodes, issues)
+    auditSchemaRefIntegrity(entry, catalog.schemas ?? catalog.schemaPool, issues)
     auditEmitDescriptions(entry, issues)
     auditBindingCompleteness(entry, issues)
     auditFieldValuePrecedence(entry, issues)
@@ -434,7 +444,7 @@ export function logAuditReport(report: AuditReport): void {
  *
  * 按 Vue 源文件分组，输出每个文件需要添加的 JSDoc 注解。
  */
-export function generateFixGuide(report: AuditReport, catalog: ComponentCatalog): string {
+export function generateFixGuide(report: AuditReport, catalog: AuditableComponentCatalog): string {
   const lines: string[] = ['# 组件目录质量修复指南', '']
   lines.push(`生成时间: ${report.timestamp}`)
   lines.push(`Prop 描述覆盖率: ${report.summary.propDescriptionCoverage}%`)

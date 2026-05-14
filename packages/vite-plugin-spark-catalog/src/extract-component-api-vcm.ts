@@ -404,7 +404,9 @@ function buildPropEntry(p: {
   }
 
   // schema 为纯字符串时不落盘；只有真正的结构信息才保留。
-  const rootSchemaDescription = getRawTypeJsDocDescription(typeObject) ?? cleanDescription
+  const rootSchemaDescription = cleanDescription !== ''
+    ? cleanDescription
+    : getRawTypeJsDocDescription(typeObject)
   const schema = convertSchema(p.schema, rootSchemaDescription)
   if (schema === undefined) return entry
 
@@ -903,10 +905,31 @@ function withSchemaDescription(schema: PropSchema, description: string | undefin
   return { ...schema, description: normalized }
 }
 
+function isVcmNoiseDescription(description: string): boolean {
+  return description.includes('Gets or sets the length of the array')
+}
+
 function readVcmSchemaDescription(vcmSchema: PropertyMetaSchema): string | undefined {
   if (typeof vcmSchema === 'string') return undefined
   const description = normalizeDescription((vcmSchema as { description?: string }).description ?? '').trim()
-  return description.length > 0 ? stripCatalogDocTags(description) : undefined
+  if (description.length === 0 || isVcmNoiseDescription(description)) return undefined
+  return stripCatalogDocTags(description)
+}
+
+function createArrayItemsSchema(itemSchemas: PropertyMetaSchema[]): PropSchema | undefined {
+  const convertedItems = itemSchemas
+    .map((item) => {
+      if (typeof item === 'string') return schemaForTsType(item)
+      return convertSchema(item) ?? schemaForTsType(item.type)
+    })
+    .filter((schema) => Object.keys(schema).length > 0)
+
+  if (convertedItems.length === 1) return convertedItems[0]
+  if (convertedItems.length > 1) return { anyOf: convertedItems }
+
+  const itemTypes = uniqueSchemaTypes(itemSchemas)
+  if (itemTypes.length === 0) return undefined
+  return createUnionSchema('array item', itemTypes)
 }
 
 function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescription?: string): PropSchema | undefined {
@@ -934,7 +957,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescriptio
       // 递归处理嵌套 schema（如 ActionsNode.props 中的结构化对象类型）
       const nestedPropSchema = convertSchema(propMeta.schema, description !== '' ? stripCatalogDocTags(description) : undefined)
       if (nestedPropSchema !== undefined) {
-        // 暂存完整的嵌套 schema，供后续处理时转换为 schemaNodes 自引用节点
+        // 暂存完整的嵌套 schema，供后续处理时提升到 schema type 池
         childSchema.__nestedSchema = nestedPropSchema
       }
       // 如果是 object schema，记录到收集器以供共池化处理
@@ -982,14 +1005,12 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescriptio
   }
 
   if (vcmSchema.kind === 'array' && vcmSchema.schema !== undefined) {
-    const itemTypes = uniqueSchemaTypes(vcmSchema.schema)
-    if (itemTypes.length > 0) {
-      return withSchemaDescription({
-        title: normalizeCatalogTypeText(vcmSchema.type),
-        type: 'array',
-        items: createUnionSchema(`${normalizeCatalogTypeText(vcmSchema.type)} item`, itemTypes),
-      }, schemaDescription)
-    }
+    const items = createArrayItemsSchema(vcmSchema.schema)
+    return withSchemaDescription({
+      title: normalizeCatalogTypeText(vcmSchema.type),
+      type: 'array',
+      ...(items !== undefined ? { items } : {}),
+    }, schemaDescription)
   }
 
   if (vcmSchema.kind === 'event' && vcmSchema.schema !== undefined) {

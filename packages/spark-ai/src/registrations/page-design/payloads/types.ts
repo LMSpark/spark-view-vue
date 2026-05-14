@@ -3,15 +3,13 @@
  *
  * spark-ai 不依赖 vite-plugin-spark-catalog（构建工具包），
  * 因此需要独立维护消费侧类型声明。
- * component-catalog.json 是单一 rich 目录（VCM + SFC 元注解 + 平台约束）。
+ * component-catalog.json 是单一 rich 目录（VCM + SFC 元注解 + 标准 JSON Schema）。
  *
  * 消费时序（建议阅读顺序）：
  * 1. Raw*：读取构建产物最小原始结构。
- * 2. ComponentCatalog：进入运行时统一目录结构。
+ * 2. ComponentCatalog：进入 v3 h-function catalog + 标准 JSON Schema `$defs`。
  * 3. ComponentEntry：按组件类型做目录查询与能力发现。
  * 4. Prop/Emit/Schema：按组件读取属性、事件和嵌套结构。
- * 5. Shared/Governance：做共享类型复用与治理约束。
- * 6. PlatformConstraints：做平台侧校验与嵌套规则限制。
  */
 
 // =========================================================
@@ -49,38 +47,25 @@ export interface RawComponentEntry {
 }
 
 // =========================================================
-// 二、Rich 根结构（运行时统一目录）
+// 二、组件目录根结构
 // =========================================================
 
 /**
- * 组件目录 JSON 根结构（运行时消费主入口）。
+ * 组件目录 JSON 根结构。
  */
 export interface ComponentCatalog {
+  /** JSON Schema draft 标识；catalog 内 schema 引用遵循 2020-12。 */
+  $schema?: 'https://json-schema.org/draft/2020-12/schema'
   /** 目录版本。 */
-  version: '4.0.0'
+  version: '3.0.0'
   /** 构建时间。 */
   buildTime: string
   /** 组件总数。 */
   componentCount: number
-  /** 组件主索引：type -> 组件详情。 */
+  /** type -> 组件定义。 */
   components: Record<string, ComponentEntry>
-  /**
-   * Schema 自引用节点表。
-   *
-   * 每一行是一段 JSON Schema AST，`parentId` 指向同表父节点；
-   * 组件 prop/emit 通过 `schemaNodeId` 指向根节点，后端可直接用递归 CTE 查询整棵结构。
-   */
-  schemaNodes?: SchemaNodeEntry[]
-  /** 平台约束：dataKey、嵌套规则等。 */
-  constraints?: PlatformConstraints
-  /** 共享类型定义池。 */
-  sharedTypes?: Record<string, SharedTypeDefinition>
-  /** 绑定能力描述符池。 */
-  bindingDescriptors?: Record<string, CatalogBindingDescriptor>
-  /** 治理契约定义。 */
-  governance?: CatalogGovernance
-  /** 预留：API 表面摘要（由生成器控制结构）。 */
-  apiSurface?: object
+  /** 标准 JSON Schema definitions；复杂类型用 `#/$defs/{type}` 引用。 */
+  $defs?: Record<string, PropSchema>
 }
 
 // =========================================================
@@ -173,13 +158,13 @@ export interface PropEntry {
   default?: string
   /** 说明文案。 */
   description?: string
-  /** JSON 示例值，面向 LLM/后端直接生成配置。 */
-  examples?: unknown[]
-  /** 指向 schemaNodes 的根节点 id。 */
+  /** 构建期 schema type 引用；运行时会转换为 JSON Schema `$ref`。 */
   schemaNodeId?: string
+  /** 标准 JSON Schema；复杂类型通过 `$ref` 指向 `$defs`。 */
+  schema?: PropSchema
   /**
    * 语义标签：该 prop 期望绑定的子组件 type（kebab-case）。
-   * 来源于 JSDoc `@componentRef xxx`；与 schemaNodeId 互补（结构由 schemaNodeId 提供）。
+   * 来源于 JSDoc `@componentRef xxx`；与 schema type 引用互补。
    */
   componentRef?: string
 }
@@ -192,7 +177,7 @@ export type JsonSchemaTypeName = 'object' | 'array' | 'string' | 'number' | 'int
  *
  * 说明：
  * - 不使用自定义 kind 字段；
- * - 落盘时会被拆成 schemaNodes 自引用表；
+ * - 复杂对象以真实 type 为键进入 `$defs`；
  * - TypeScript 类型名使用标准 `title` 表达，不占用 JSON Schema `type`。
  */
 export interface PropSchema {
@@ -216,7 +201,7 @@ export interface PropSchema {
   prefixItems?: PropSchema[]
   /** 联合 schema。 */
   anyOf?: PropSchema[]
-  /** 引用其它 schema 定义；仅运行时重建 schema 时可能出现。 */
+  /** 标准 JSON Schema `$ref`，落盘时使用 `#/$defs/{type}`。 */
   $ref?: string
   /** 描述。 */
   description?: string
@@ -228,43 +213,6 @@ export interface PropSchema {
 
 export interface PropSchemaProperty extends PropSchema {}
 
-/** Schema 节点在自引用表中的关系类型。 */
-export type SchemaNodeRelation = 'root' | 'property' | 'items' | 'prefixItem' | 'oneOf' | 'anyOf'
-
-/** 后端可直接持久化的 schema 自引用表行。 */
-export interface SchemaNodeEntry {
-  /** 节点主键；根节点 id 等于 TypeScript 类型名。 */
-  id: string
-  /** 所属根节点 id，便于后端按 schema 分区查询。 */
-  rootId: string
-  /** 父节点 id；根节点为空。 */
-  parentId?: string
-  /** 与父节点的关系。 */
-  relation: SchemaNodeRelation
-  /** object property 名称，仅 relation=property 时使用。 */
-  name?: string
-  /** 数组/联合分支序号。 */
-  index?: number
-  /** property 是否必填。 */
-  required?: boolean
-  /** 指向另一棵 schema 根节点，仍然是 schemaNodes 同表 id。 */
-  refId?: string
-  /** 标准 JSON Schema type。 */
-  type?: JsonSchemaTypeName | JsonSchemaTypeName[]
-  /** 标准 JSON Schema title。 */
-  title?: string
-  /** 标准 JSON Schema description。 */
-  description?: string
-  /** 标准 JSON Schema enum。 */
-  enum?: unknown[]
-  /** 标准 JSON Schema const。 */
-  const?: unknown
-  /** 标准 JSON Schema default annotation。 */
-  default?: unknown
-  /** 标准 JSON Schema examples annotation。 */
-  examples?: unknown[]
-}
-
 /** 单个 emit 事件定义。 */
 export interface EmitEntry {
   /** 事件名。 */
@@ -273,12 +221,14 @@ export interface EmitEntry {
   type?: string
   /** 事件说明。 */
   description?: string
-  /** 指向 schemaNodes 的根节点 id。 */
+  /** 构建期 schema type 引用；运行时会转换为 JSON Schema `$ref`。 */
   schemaNodeId?: string
+  /** 事件 payload 的 JSON Schema；通常为 tuple array，并在 prefixItems 中引用真实 type。 */
+  schema?: PropSchema
 }
 
 // =========================================================
-// 五、绑定语义 / 治理契约 / 共享类型
+// 五、绑定语义
 // =========================================================
 
 /** 组件绑定语义描述符。 */
@@ -303,90 +253,4 @@ export interface CatalogBindingDescriptor {
   hasOptions?: boolean
   /** 值类型提示。 */
   valueType?: string
-}
-
-/** 治理配置根对象。 */
-export interface CatalogGovernance {
-  /** 契约表：contractName -> contract 定义。 */
-  contracts: Record<string, GovernanceContract>
-}
-
-/** 单条治理契约定义。 */
-export interface GovernanceContract {
-  /** 契约层级。 */
-  layer: 'props' | 'events' | 'api'
-  /** 契约说明。 */
-  description: string
-  /** 契约成员名列表。 */
-  members: string[]
-}
-
-/** 共享类型定义。 */
-export interface SharedTypeDefinition {
-  /** 类型名。 */
-  name: string
-  /** 类型说明。 */
-  description: string
-  /** 属性列表。 */
-  properties: SharedTypeProperty[]
-  /** 备注。 */
-  notes?: string
-}
-
-/** 共享类型的单属性定义。 */
-export interface SharedTypeProperty {
-  /** 属性名。 */
-  name: string
-  /** 类型字符串。 */
-  type: string
-  /** 是否必填。 */
-  required?: boolean
-  /** 属性说明。 */
-  description: string
-}
-
-// =========================================================
-// 六、平台约束与嵌套规则
-// =========================================================
-
-/**
- * 平台级约束集合。
- *
- * 用途：
- * - 为目录消费侧提供统一的运行时校验边界；
- * - 在编辑器/LLM 场景下约束可生成的类型与嵌套关系。
- */
-export interface PlatformConstraints {
-  /** dataKey 正则约束。 */
-  dataKeyPattern: CatalogConstraintEntry<string>
-  /** 合法 type 前缀。 */
-  validTypePrefixes: CatalogConstraintEntry<string[]>
-  /** 合法聚合类型集合。 */
-  validAggregateTypes: CatalogConstraintEntry<string[]>
-  /** 非字段组件 r-type 集合。 */
-  nonFieldRTypes: CatalogConstraintEntry<string[]>
-  /** 容器上下文映射。 */
-  containerContextMap: CatalogConstraintEntry<Record<string, string>>
-  /** 嵌套规则表。 */
-  nestingRules: CatalogConstraintEntry<Record<string, NestingRule>>
-}
-
-/** 带说明的平台约束条目。 */
-export interface CatalogConstraintEntry<TValue> {
-  /** 约束值，供校验器或后端直接消费。 */
-  value: TValue
-  /** LLM 可读说明：解释该约束限制什么、何时使用。 */
-  description: string
-  /** 可直接参考的合法示例。 */
-  examples?: unknown[]
-}
-
-/** 单条嵌套规则定义。 */
-export interface NestingRule {
-  /** 允许的子组件 type。 */
-  allowedChildren: string[]
-  /** 禁止的子组件 type。 */
-  forbiddenChildren?: string[]
-  /** 规则备注。 */
-  note?: string
 }

@@ -1,6 +1,6 @@
-import rawComponentCatalogJson from './component-catalog.json'
-import { projectComponentConfigGuide, projectFunctionCatalog, projectFrameworkNeutralCatalog } from './catalog-projections'
-import type { ComponentCatalog } from './types'
+import { projectComponentConfigGuide, projectFunctionCatalog } from './catalog-projections'
+import { COMPONENT_CATALOG_JSON } from './component-catalog-source'
+import type { PropSchema } from './types'
 import type {
   LlmJsonObject,
   LlmJsonValue,
@@ -15,8 +15,6 @@ export const SPARK_COMPONENT_PAYLOAD_REF = 'spark.component'
 
 export const SPARK_COMPONENT_PAYLOAD_DESCRIPTION = 'SparkNode 组件参数荷载目录；key 为组件 type，如 r-table。'
 
-const COMPONENT_CATALOG_JSON = projectFrameworkNeutralCatalog(rawComponentCatalogJson as ComponentCatalog)
-
 const PAGE_DESIGN_FUNCTION_CATALOG = projectFunctionCatalog(COMPONENT_CATALOG_JSON)
 
 interface ComponentPropGuide {
@@ -24,6 +22,7 @@ interface ComponentPropGuide {
   type: string
   default?: string
   description?: string
+  schema?: PropSchema
 }
 
 function parseLiteralUnion(typeText: string): string[] {
@@ -44,7 +43,100 @@ function describeDefault(prop: ComponentPropGuide): string {
   return prop.default === undefined ? '' : ` 默认值提示: ${prop.default}`
 }
 
+function schemaPrimaryType(schema: PropSchema | undefined): string | undefined {
+  if (schema === undefined) return undefined
+  return Array.isArray(schema.type) ? schema.type[0] : schema.type
+}
+
+function enumValuesFromSchema(schema: PropSchema | undefined): Array<string | number> {
+  if (schema === undefined) return []
+  const direct = (schema.enum ?? []).filter((value): value is string | number => typeof value === 'string' || typeof value === 'number')
+  if (direct.length > 0) return direct
+  return (schema.oneOf ?? [])
+    .map(item => item.const)
+    .filter((value): value is string | number => typeof value === 'string' || typeof value === 'number')
+}
+
+function noteFromSchema(schema: PropSchema | undefined, prop: ComponentPropGuide, fallback: string): string {
+  const description = schema?.description ?? prop.description ?? fallback
+  const defaultValue = schema?.default !== undefined ? ` 默认值提示: ${JSON.stringify(schema.default)}` : describeDefault(prop)
+  return `${description}${defaultValue}`.trim()
+}
+
+function inferParamSchemaFromJsonSchema(schema: PropSchema | undefined, prop: ComponentPropGuide): LlmParameterSchemaNode | undefined {
+  if (schema === undefined) return undefined
+
+  const enumValues = enumValuesFromSchema(schema)
+  if (enumValues.length > 0) {
+    const enumType = enumValues.some(value => typeof value === 'number') ? 'number' : 'string'
+    return {
+      kind: 'enum',
+      type: enumType,
+      enum: enumValues,
+      openEnded: false,
+      note: noteFromSchema(schema, prop, '可选值'),
+    }
+  }
+
+  if (schema.const !== undefined) {
+    if (typeof schema.const === 'string' || typeof schema.const === 'number') {
+      return {
+        kind: 'enum',
+        type: typeof schema.const === 'number' ? 'number' : 'string',
+        enum: [schema.const],
+        openEnded: false,
+        note: noteFromSchema(schema, prop, '固定值'),
+      }
+    }
+    return `${typeof schema.const}${describeProp(prop)}${describeDefault(prop)}`
+  }
+
+  const schemaType = schemaPrimaryType(schema)
+  if (schemaType === 'array') {
+    const itemSchema = schema.items === undefined
+      ? undefined
+      : (inferParamSchemaFromJsonSchema(schema.items, prop) ?? 'unknown — 数组元素') as LlmJsonValue
+    return {
+      kind: 'array',
+      ...(itemSchema !== undefined ? { items: itemSchema } : {}),
+      note: noteFromSchema(schema, prop, '数组参数'),
+    }
+  }
+  if (schemaType === 'object' || schema.properties !== undefined) {
+    const required = new Set(schema.required ?? [])
+    const properties: Record<string, LlmParameterSchemaNode> = {}
+    const optional: Record<string, LlmParameterSchemaNode> = {}
+    for (const [name, propertySchema] of Object.entries(schema.properties ?? {})) {
+      const propertyProp: ComponentPropGuide = {
+        name,
+        type: typeof propertySchema.type === 'string' ? propertySchema.type : name,
+        ...(propertySchema.description !== undefined ? { description: propertySchema.description } : {}),
+        ...(propertySchema.default !== undefined ? { default: JSON.stringify(propertySchema.default) } : {}),
+        schema: propertySchema,
+      }
+      const propertyNode = inferParamSchemaFromJsonSchema(propertySchema, propertyProp)
+        ?? inferParamSchemaFromTypeText(propertyProp)
+      if (required.has(name)) properties[name] = propertyNode
+      else optional[name] = propertyNode
+    }
+    return {
+      kind: 'object',
+      ...(required.size > 0 ? { required: [...required] } : {}),
+      ...(Object.keys(properties).length > 0 ? { properties: properties as LlmJsonObject } : {}),
+      ...(Object.keys(optional).length > 0 ? { optional: optional as LlmJsonObject } : {}),
+      note: noteFromSchema(schema, prop, '对象参数'),
+    }
+  }
+  if (schemaType === 'boolean') return `boolean${describeProp(prop)}${describeDefault(prop)}`
+  if (schemaType === 'number' || schemaType === 'integer') return `number${describeProp(prop)}${describeDefault(prop)}`
+  if (schemaType === 'string') return `string${describeProp(prop)}${describeDefault(prop)}`
+  return undefined
+}
+
 function inferParamSchemaFromTypeText(prop: ComponentPropGuide): LlmParameterSchemaNode {
+  const schemaNode = inferParamSchemaFromJsonSchema(prop.schema, prop)
+  if (schemaNode !== undefined) return schemaNode
+
   const typeText = prop.type
   const normalized = typeText.trim().toLowerCase()
   const enumValues = parseLiteralUnion(typeText)
