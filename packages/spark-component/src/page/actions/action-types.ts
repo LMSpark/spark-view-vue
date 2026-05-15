@@ -12,11 +12,11 @@
  *   ├─ 字段操作：set-field
  *   └─ 数据变更类（含 ActionUiDecorator 装饰）：
  *        append-row / delete / patch / move / message-row /
- *        refresh / clear-rows / submit-current-form
+ *        refresh / clear-rows / submit-current-form / save-dataset
  * ```
  */
 
-import type { DataView, IDataRow, IDataSet } from '@spark-view/spark-data'
+import type { DataView, IDataRow, IDataSet, DataSetSaveChangesMode, DataSetSaveChangesViewSelector } from '@spark-view/spark-data'
 import type { IPageServiceCapability, PageMessageType } from '../../core/capability-keys.js'
 import type { CancellableControl } from '../../components/containers/support/interactionControl.js'
 
@@ -107,6 +107,7 @@ export type ActionDescriptor =
   | RefreshAction
   | ClearRowsAction
   | SubmitCurrentFormAction
+  | SaveDataSetAction
 
 /** ActionDescriptor 的统一动作名集合（用于类型约束和穷举检查）。 */
 export type ActionDescriptorActionName =
@@ -124,6 +125,7 @@ export type ActionDescriptorActionName =
   | 'refresh'
   | 'clear-rows'
   | 'submit-current-form'
+  | 'save-dataset'
 
 /**
  * 行目标语义：区分动作操作的目标行来源。
@@ -329,6 +331,15 @@ export interface SubmitCurrentFormAction extends ActionDescriptorBase, ActionUiD
   validateMessage?: string
 }
 
+/** 提交当前 DataSet 范围内的 staged/editing 变更。 */
+export interface SaveDataSetAction extends ActionDescriptorBase, ActionUiDecorator {
+  action: 'save-dataset'
+  mode?: DataSetSaveChangesMode
+  requestId?: string
+  applyEditingRows?: boolean
+  views?: DataSetSaveChangesViewSelector[]
+}
+
 // ── 类型守卫 ──────────────────────────────────────────────────────────────
 
 interface ActionDescriptorShape {
@@ -387,3 +398,4 @@ export type ActionExecutionControl = CancellableControl
 export interface RouterLike {
   push(to: string | { path: string; query?: Record<string, string> }): unknown
 }
+

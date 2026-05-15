@@ -44,6 +44,7 @@ import {
   executeRefresh,
   executeClearRows,
   executeSetField,
+  executeSaveDataSet,
   executeSubmitCurrentForm,
 } from './action-data'
 
@@ -301,6 +302,9 @@ async function dispatchAction(
     case 'submit-current-form':
       await executeSubmitCurrentForm(descriptor, ctx, scope)
       return
+    case 'save-dataset':
+      await executeSaveDataSet(descriptor, ctx)
+      return
     default: {
       const exhaustive: never = descriptor
       logger.warn(`未知 action 类型: ${(exhaustive as { action: string }).action}`)
@@ -325,3 +329,4 @@ export function extractActionExecutionControl(
   if (isCancellableControl(last)) return last
   return undefined
 }
+

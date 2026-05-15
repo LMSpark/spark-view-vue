@@ -34,47 +34,58 @@
                 },
                 "children": [
                     {
-                        "type": "el-button",
-                        "id": "btn-prepare-retry-table",
+                        "type": "r-button",
+                        "id": "btn-append-retry-audit",
                         "props": {
-                            "type": "primary",
-                            "click": "prepareRetryTable"
+                            "label": "新增审计 staged",
+                            "template": "primary",
+                            "action": "append-row",
+                            "dataKey": "SparkTxAudit@default@id",
+                            "appendPayload": {
+                                "id": 9201,
+                                "requestKey": "tx-config-retry-v1",
+                                "message": "first-submit",
+                                "status": "committed"
+                            },
+                            "successMessage": "审计记录已进入 staged 状态"
                         },
-                        "children": [
-                            "准备审计表"
-                        ]
+                        "children": []
                     },
                     {
-                        "type": "el-button",
-                        "id": "btn-run-replay",
+                        "type": "r-button",
+                        "id": "btn-save-retry-audit",
                         "props": {
-                            "type": "success",
-                            "click": "runReplayTwice"
+                            "label": "提交固定 requestId",
+                            "template": "success",
+                            "action": "save-dataset",
+                            "mode": "transaction",
+                            "requestId": "tx-config-retry-v1",
+                            "successMessage": "事务已提交；重复相同 operations 时由后端 replay"
                         },
-                        "children": [
-                            "同 requestId 重试"
-                        ]
+                        "children": []
                     },
                     {
-                        "type": "el-button",
-                        "id": "btn-run-conflict",
+                        "type": "r-button",
+                        "id": "btn-save-retry-conflict",
                         "props": {
-                            "type": "danger",
-                            "click": "runRequestIdConflict"
+                            "label": "冲突 requestId 提交",
+                            "template": "danger",
+                            "action": "save-dataset",
+                            "mode": "transaction",
+                            "requestId": "tx-config-retry-v1",
+                            "failureMessage": "后端应拒绝相同 requestId 的不同 payload"
                         },
-                        "children": [
-                            "冲突 payload"
-                        ]
+                        "children": []
                     },
                     {
-                        "type": "el-button",
+                        "type": "r-button",
                         "id": "btn-reload-audit",
                         "props": {
-                            "click": "reloadAuditView"
+                            "label": "刷新审计表",
+                            "action": "refresh",
+                            "dataKey": "SparkTxAudit@default@id"
                         },
-                        "children": [
-                            "刷新审计表"
-                        ]
+                        "children": []
                     }
                 ]
             },

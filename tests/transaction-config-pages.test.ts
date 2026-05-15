@@ -1,99 +1,129 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { compileRule, parsePageData } from '@spark-view/spark-page-config'
-import { SparkData } from '@spark-view/spark-data'
-import { compileFunctions } from '../packages/spark-component/src/page/createSandbox'
-import type { PageContext } from '../packages/spark-component/src/page/context/types'
+import type { HttpClient } from '@spark-view/spark-utils'
 
 const pageRoot = join(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/homepage')
 
-const pages = [
-  {
-    pageId: 'tx-editing-rows',
-    functions: ['markDrafts', 'applyDrafts', 'discardDrafts', 'showEditingSummary'],
-  },
-  {
-    pageId: 'tx-transaction-commit',
-    functions: ['prepareTransactionTables', 'seedTransactionData', 'commitTransactionUpdate', 'reloadTransactionViews'],
-  },
-  {
-    pageId: 'tx-transaction-retry',
-    functions: ['prepareRetryTable', 'runReplayTwice', 'runRequestIdConflict', 'reloadAuditView'],
-  },
-] as const
+const pages = ['tx-editing-rows', 'tx-transaction-commit', 'tx-transaction-retry'] as const
+
+interface RuleNodeLike {
+  props?: Record<string, unknown>
+  children?: unknown[]
+}
+
+interface CapturedPost {
+  url: string
+  data: unknown
+}
 
 function readPageFile(pageId: string, fileName: string): string {
   return readFileSync(join(pageRoot, pageId, fileName), 'utf8')
 }
 
-function createMockContext(): PageContext {
+function collectActions(nodes: unknown[]): string[] {
+  const actions: string[] = []
+  const visit = (node: unknown): void => {
+    if (node === null || typeof node !== 'object' || Array.isArray(node)) return
+    const current = node as RuleNodeLike
+    const action = current.props?.['action']
+    if (typeof action === 'string') actions.push(action)
+    for (const child of current.children ?? []) visit(child)
+  }
+  for (const node of nodes) visit(node)
+  return actions
+}
+
+function readOperations(data: unknown): Array<Record<string, unknown>> {
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) return []
+  const operations = (data as { operations?: unknown }).operations
+  if (!Array.isArray(operations)) return []
+  return operations.filter((item): item is Record<string, unknown> => (
+    item !== null && typeof item === 'object' && !Array.isArray(item)
+  ))
+}
+
+function createMockHttpClient(posts: CapturedPost[]): HttpClient {
+  const notUsed = vi.fn(async () => {
+    throw new Error('unexpected HTTP method')
+  })
+  const post = vi.fn(async (url: string, data?: unknown) => {
+    posts.push({ url, data })
+    const operations = readOperations(data)
+    return {
+      success: true,
+      transactionId: 'tx-test-1',
+      operationCount: operations.length,
+      results: operations.map((operation) => ({
+        operationId: typeof operation['operationId'] === 'string' ? operation['operationId'] : undefined,
+        status: 'success',
+        result: operation['data'] ?? { deleted: true },
+      })),
+    }
+  })
+
   return {
-    $route: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
-    $el: () => null,
-    $query: () => null,
-    $queryAll: () => [] as unknown as NodeListOf<Element>,
-    $dataSet: null,
-    $components: {
-      get: vi.fn(() => null),
-      list: vi.fn(() => []),
-      getApi: vi.fn(() => null),
-      getApisByType: vi.fn(() => []),
+    interceptors: {
+      request: { use: vi.fn(() => () => {}) },
+      response: { use: vi.fn(() => () => {}) },
     },
-    $refreshData: vi.fn(async () => {}),
-    $page: {
-      showDialog: vi.fn(async () => 'confirm' as const),
-      selectEntities: vi.fn(async () => []),
-      browseFiles: vi.fn(async () => []),
-      uploadFiles: vi.fn(async () => []),
-      showMessage: vi.fn(),
-      showConfirm: vi.fn(async () => true),
-      showPrompt: vi.fn(async () => null),
-      showAlert: vi.fn(async () => {}),
-      showLoading: vi.fn(),
-      navigate: vi.fn(),
-    },
-    permission: {} as PageContext['permission'],
-    SparkData,
-    h: vi.fn() as unknown as PageContext['h'],
-    setTimeout: vi.fn() as unknown as PageContext['setTimeout'],
-    clearTimeout: vi.fn() as unknown as PageContext['clearTimeout'],
-    setInterval: vi.fn() as unknown as PageContext['setInterval'],
-    clearInterval: vi.fn() as unknown as PageContext['clearInterval'],
-    console,
-    $moduleContext: null,
+    request: notUsed as HttpClient['request'],
+    requestFull: notUsed as HttpClient['requestFull'],
+    get: notUsed as HttpClient['get'],
+    post: post as HttpClient['post'],
+    put: notUsed as HttpClient['put'],
+    patch: notUsed as HttpClient['patch'],
+    delete: notUsed as HttpClient['delete'],
+    clearCache: vi.fn(),
   }
 }
 
 describe('transaction validation page configs', () => {
-  for (const page of pages) {
-    it(`${page.pageId} parses page data, compiles rule tree, and exposes expected script functions`, () => {
-      const pageDataText = readPageFile(page.pageId, 'pagedata.json')
-      const ruleText = readPageFile(page.pageId, 'rule.json')
-      const script = readPageFile(page.pageId, 'script.js')
+  for (const pageId of pages) {
+    it(`${pageId} is a zero-code transaction validation page`, () => {
+      const pageDataText = readPageFile(pageId, 'pagedata.json')
+      const ruleText = readPageFile(pageId, 'rule.json')
 
       const parsedData = parsePageData(pageDataText)
       const compiledRule = compileRule(ruleText)
-      const functions = compileFunctions(script, createMockContext())
+      const actions = collectActions(compiledRule)
 
-      expect(parsedData.dataSetName).toBeTruthy()
+      expect(existsSync(join(pageRoot, pageId, 'script.js'))).toBe(false)
+      expect(parsedData.toJson().saveChanges?.mode).toBe('transaction')
+      expect(parsedData.toJson().saveChanges?.transaction?.endpoint.url).toBe('/data/transactions')
       expect(compiledRule.length).toBeGreaterThan(0)
-      for (const functionName of page.functions) {
-        expect(functions[functionName]).toEqual(expect.any(Function))
-      }
-      expect(script).not.toMatch(/\b(?:window|document|fetch)\s*\./)
+      expect(actions).toContain('save-dataset')
+      expect(ruleText).not.toContain('"click"')
+      expect(ruleText).not.toContain('/data/batch-jobs')
     })
   }
 
-  it('backend transaction pages use the scoped synchronous transaction endpoint', () => {
-    const commitScript = readPageFile('tx-transaction-commit', 'script.js')
-    const retryScript = readPageFile('tx-transaction-retry', 'script.js')
+  it('tx-transaction-commit sends parent before child operations through the configured transaction endpoint', async () => {
+    const dataSet = parsePageData(readPageFile('tx-transaction-commit', 'pagedata.json'))
+    dataSet.setPageRoute({ params: { tenantId: 'lmspark', projectId: 'homepage' } })
+    const posts: CapturedPost[] = []
+    dataSet.setSharedHttpClient(createMockHttpClient(posts))
 
-    expect(commitScript).toContain("'/api/tenants/lmspark/projects/homepage'")
-    expect(retryScript).toContain("'/api/tenants/lmspark/projects/homepage'")
-    expect(commitScript).toContain("'/data/transactions'")
-    expect(retryScript).toContain("'/data/transactions'")
-    expect(commitScript).not.toContain('/data/batch-jobs')
-    expect(retryScript).not.toContain('/data/batch-jobs')
+    const orders = dataSet.getView('SparkTxOrders', 'default')
+    const items = dataSet.getView('SparkTxItems', 'default')
+    expect(orders).toBeDefined()
+    expect(items).toBeDefined()
+
+    await orders!.addRow({ id: 9001, orderNo: 'TX-BE-001', owner: 'Morgan', status: 'draft' })
+    await items!.addRow({ id: 9101, orderId: 9001, sku: 'SKU-TX', quantity: 1, status: 'draft' })
+
+    const result = await dataSet.saveChanges()
+    expect(result.success).toBe(true)
+    expect(posts).toHaveLength(1)
+    expect(posts[0]!.url).toBe('/tenants/lmspark/projects/homepage/data/transactions')
+
+    const operations = readOperations(posts[0]!.data)
+    expect(operations.map((operation) => `${operation['tableName']}:${operation['op']}`)).toEqual([
+      'SparkTxOrders:create',
+      'SparkTxItems:create',
+    ])
+    expect(orders!.dirtyTracking.hasPendingChanges()).toBe(false)
+    expect(items!.dirtyTracking.hasPendingChanges()).toBe(false)
   })
 })

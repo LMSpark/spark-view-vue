@@ -379,6 +379,7 @@ export const BUILTIN_ACTION_META = {
   'patch-selected': { label: '批量更新' },
   'message-row': { label: '查看' },
   'message-current': { label: '查看当前' },
+  'save-dataset': { label: '保存全部' },
 } as const satisfies Record<string, BuiltinActionMeta>
 
 export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
@@ -485,6 +486,7 @@ export function isActionDescriptorDisabled(
     case 'set-field':
     case 'append-row':
     case 'refresh':
+    case 'save-dataset':
       return false
 
     case 'clear-rows':
@@ -512,3 +514,4 @@ export function isActionDescriptorDisabled(
       return false
   }
 }
+

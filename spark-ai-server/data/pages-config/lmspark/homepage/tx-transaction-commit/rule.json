@@ -34,46 +34,63 @@
                 },
                 "children": [
                     {
-                        "type": "el-button",
-                        "id": "btn-prepare-tx-tables",
+                        "type": "r-button",
+                        "id": "btn-append-tx-order",
                         "props": {
-                            "type": "primary",
-                            "click": "prepareTransactionTables"
+                            "label": "新增订单 staged",
+                            "template": "primary",
+                            "action": "append-row",
+                            "dataKey": "SparkTxOrders@default@id",
+                            "appendPayload": {
+                                "id": 9001,
+                                "orderNo": "TX-BE-001",
+                                "owner": "Morgan",
+                                "status": "draft"
+                            },
+                            "successMessage": "订单已进入 staged 状态"
                         },
-                        "children": [
-                            "准备后端表"
-                        ]
+                        "children": []
                     },
                     {
-                        "type": "el-button",
-                        "id": "btn-seed-tx-data",
+                        "type": "r-button",
+                        "id": "btn-append-tx-item",
                         "props": {
-                            "click": "seedTransactionData"
+                            "label": "新增明细 staged",
+                            "template": "primary",
+                            "action": "append-row",
+                            "dataKey": "SparkTxItems@default@id",
+                            "appendPayload": {
+                                "id": 9101,
+                                "orderId": 9001,
+                                "sku": "SKU-TX",
+                                "quantity": 1,
+                                "status": "draft"
+                            },
+                            "successMessage": "明细已进入 staged 状态"
                         },
-                        "children": [
-                            "种子事务"
-                        ]
+                        "children": []
                     },
                     {
-                        "type": "el-button",
-                        "id": "btn-commit-tx-update",
+                        "type": "r-button",
+                        "id": "btn-save-tx-commit",
                         "props": {
-                            "type": "success",
-                            "click": "commitTransactionUpdate"
+                            "label": "提交多表事务",
+                            "template": "success",
+                            "action": "save-dataset",
+                            "mode": "transaction",
+                            "successMessage": "订单和明细已通过统一事务提交"
                         },
-                        "children": [
-                            "提交多表事务"
-                        ]
+                        "children": []
                     },
                     {
-                        "type": "el-button",
+                        "type": "r-button",
                         "id": "btn-reload-tx-data",
                         "props": {
-                            "click": "reloadTransactionViews"
+                            "label": "刷新订单",
+                            "action": "refresh",
+                            "dataKey": "SparkTxOrders@default@id"
                         },
-                        "children": [
-                            "刷新视图"
-                        ]
+                        "children": []
                     }
                 ]
             },

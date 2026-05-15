@@ -1,5 +1,18 @@
 {
     "dataSetName": "TxRetryPageDataSet",
+    "saveChanges": {
+        "mode": "transaction",
+        "transaction": {
+            "endpoint": {
+                "url": "/data/transactions",
+                "method": "POST",
+                "params": {
+                    "source": "tx-config-retry"
+                }
+            },
+            "requestId": "tx-config-retry-v1"
+        }
+    },
     "tableRelations": [],
     "viewDependencies": [],
     "tables": {

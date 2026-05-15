@@ -13,7 +13,7 @@
  * - `confirmIfNeeded` 实现统一确认弹窗，`confirmMessage=''` 表示有意跳过确认
  */
 
-import type { DataView, IDataRow, CrudResult } from '@spark-view/spark-data'
+import type { DataView, IDataRow, CrudResult, DataSetSaveChangesOptions } from '@spark-view/spark-data'
 import type {
   ActionExecutionContext,
   ActionExecutionScope,
@@ -26,6 +26,7 @@ import type {
   MoveAction,
   PatchAction,
   RefreshAction,
+  SaveDataSetAction,
   SetFieldAction,
   SubmitCurrentFormAction,
 } from './action-types'
@@ -693,3 +694,29 @@ export async function executeSubmitCurrentForm(
       : (desc.failureMessage ?? '保存失败'),
   )
 }
+
+export async function executeSaveDataSet(
+  desc: SaveDataSetAction,
+  ctx: ActionExecutionContext,
+): Promise<void> {
+  const notifier = createActionNotifier(ctx, desc)
+  const dataSet = ctx.getDataSet()
+  if (!dataSet) {
+    notifier.notify('warning', desc.emptyMessage ?? 'DataSet 未就绪')
+    return
+  }
+
+  const options: DataSetSaveChangesOptions = {}
+  if (desc.mode !== undefined) options.mode = desc.mode
+  if (desc.applyEditingRows !== undefined) options.applyEditingRows = desc.applyEditingRows
+  if (desc.views !== undefined) options.views = desc.views
+  if (desc.requestId !== undefined) options.transaction = { requestId: desc.requestId }
+
+  const result = await dataSet.saveChanges(options)
+  if (result.success) {
+    notifier.notify('success', desc.successMessage ?? result.message ?? '保存成功')
+    return
+  }
+  notifier.notify('warning', desc.failureMessage ?? result.message ?? '保存失败')
+}
+

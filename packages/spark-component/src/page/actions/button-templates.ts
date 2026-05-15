@@ -83,6 +83,7 @@ const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
   'prompt-append':       { template: 'primary', label: '新增', icon: 'Plus' },
   'prompt-edit':         { template: 'success', label: '编辑', icon: 'Edit' },
   'submit-current-form': { template: 'success', label: '保存当前' },
+  'save-dataset':        { template: 'success', label: '保存全部' },
   'refresh':             { template: 'primary', label: '刷新', icon: 'Refresh' },
   'clear-rows':          { template: 'danger', label: '清空', icon: 'Delete' },
   'delete-row':          { template: 'danger', label: '删除', icon: 'Delete' },
@@ -208,3 +209,4 @@ export function getActionDefaultLabel(action: BuiltinActionName): string {
 export function isKnownAction(action: string): action is BuiltinActionName {
   return action in ACTION_TEMPLATE_MAP
 }
+

@@ -28,6 +28,7 @@ import type {
   MoveAction,
   PatchAction,
   RefreshAction,
+  SaveDataSetAction,
   SubmitCurrentFormAction,
 } from './action-types'
 import { isBuiltinActionName, type BuiltinActionName } from './executor-helpers'
@@ -109,6 +110,26 @@ function pickDataKey(props: Record<string, unknown>): string | undefined {
   return readString(props['dataKey'])
 }
 
+function readSaveDataSetViews(value: unknown): SaveDataSetAction['views'] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const views: NonNullable<SaveDataSetAction['views']> = []
+  for (const item of value) {
+    const record = asRecord(item)
+    if (!record) continue
+    const tableName = readString(record['tableName'])
+    if (!tableName) continue
+    const view: NonNullable<SaveDataSetAction['views']>[number] = { tableName }
+    const viewId = readString(record['viewId'])
+    if (viewId) view.viewId = viewId
+    if (Array.isArray(record['ids'])) {
+      const ids = record['ids'].filter((id): id is string | number => typeof id === 'string' || typeof id === 'number')
+      if (ids.length > 0) view.ids = ids
+    }
+    views.push(view)
+  }
+  return views.length > 0 ? views : undefined
+}
+
 // ── 公开翻译入口 ──────────────────────────────────────────────────────────
 
 /**
@@ -181,6 +202,19 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (idField) desc.idField = idField
       const validateMessage = readString(props['validateMessage'])
       if (validateMessage) desc.validateMessage = validateMessage
+      return desc
+    }
+
+    case 'save-dataset': {
+      const desc: SaveDataSetAction = { action: 'save-dataset', ...decorator }
+      const mode = readString(props['mode'])
+      if (mode === 'perView' || mode === 'transaction') desc.mode = mode
+      const requestId = readString(props['requestId'])
+      if (requestId) desc.requestId = requestId
+      const applyEditingRows = readBoolean(props['applyEditingRows'])
+      if (applyEditingRows !== undefined) desc.applyEditingRows = applyEditingRows
+      const views = readSaveDataSetViews(props['views'])
+      if (views) desc.views = views
       return desc
     }
 
@@ -259,3 +293,4 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
     }
   }
 }
+

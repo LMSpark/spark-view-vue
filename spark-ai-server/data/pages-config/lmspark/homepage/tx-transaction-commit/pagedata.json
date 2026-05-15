@@ -1,5 +1,14 @@
 {
     "dataSetName": "TxBackendCommitPageDataSet",
+    "saveChanges": {
+        "mode": "transaction",
+        "transaction": {
+            "endpoint": {
+                "url": "/data/transactions",
+                "method": "POST"
+            }
+        }
+    },
     "tableRelations": [
         {
             "parentTable": "SparkTxOrders",
