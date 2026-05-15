@@ -71,6 +71,7 @@ export function normalizeDataSetMetadata(input: IDataSetMetadata): IDataSetMetad
     ...(input.viewDependencies !== undefined ? { viewDependencies: input.viewDependencies } : {}),
     ...(input.version !== undefined ? { version: input.version } : {}),
     ...(input.pageId !== undefined ? { pageId: input.pageId } : {}),
+    ...(input.saveChanges !== undefined ? { saveChanges: input.saveChanges } : {}),
     ...(normalizedLayout !== undefined ? { layout: normalizedLayout } : {}),
   }
 }

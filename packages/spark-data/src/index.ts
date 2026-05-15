@@ -94,6 +94,14 @@ export type {
   DataSetSaveChangesResult,
   DataSetSaveChangesViewResult,
   DataSetSaveChangesViewSelector,
+  DataSetSaveChangesMode,
+  DataSetSaveChangesConfig,
+  DataSetSaveChangesTransactionConfig,
+  DataSetSaveChangesTransactionOptions,
+  DataSetTransactionOperation,
+  DataSetTransactionRequest,
+  DataSetTransactionResponse,
+  DataSetTransactionOperationResult,
   IDataSet,
 
   // DataSet 配置（createDataSet / fromJson 参数类型）

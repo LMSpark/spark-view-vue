@@ -85,6 +85,9 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       type: 'array',
       items: { $ref: '#/$defs/viewDependency' },
     }),
+    saveChanges: withMeta('保存策略', '描述 DataSet.saveChanges 的默认提交方式，例如走逐视图 CRUD 或后端统一事务。', {
+      $ref: '#/$defs/dataSetSaveChangesConfig',
+    }),
     version: withMeta('页面数据版本号', '页面数据内容本身的业务版本号，可选。', { type: 'number' }),
     pageId: withMeta('页面 ID', '当前页面配置的 pageId，可选。', { type: 'string' }),
   },
@@ -119,6 +122,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
         retrieve: { $ref: '#/$defs/httpEndpoint' },
         update: { $ref: '#/$defs/httpEndpoint' },
         delete: { $ref: '#/$defs/httpEndpoint' },
+        transaction: { $ref: '#/$defs/httpEndpoint' },
         list: { $ref: '#/$defs/httpEndpoint' },
         batch: { $ref: '#/$defs/jsonObject' },
         import: { $ref: '#/$defs/httpEndpoint' },
@@ -132,6 +136,23 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
         nested: { $ref: '#/$defs/httpEndpoint' },
         nestedSearch: { $ref: '#/$defs/httpEndpoint' },
       },
+      additionalProperties: false,
+    }),
+    dataSetSaveChangesConfig: withMeta('DataSet 保存策略', '描述 DataSet.saveChanges 默认采用的提交方式。transaction 模式会把 staged 变更提交到统一事务端点。', {
+      type: 'object',
+      properties: {
+        mode: withMeta('提交模式', 'perView 为逐视图 CRUD；transaction 为统一事务提交。', { type: 'string', enum: ['perView', 'transaction'] }),
+        transaction: { $ref: '#/$defs/dataSetTransactionConfig' },
+      },
+      additionalProperties: false,
+    }),
+    dataSetTransactionConfig: withMeta('统一事务配置', '描述 DataSet.saveChanges(transaction) 使用的后端事务端点与可选幂等请求号。', {
+      type: 'object',
+      properties: {
+        endpoint: { $ref: '#/$defs/httpEndpoint' },
+        requestId: withMeta('幂等请求号', '可选。重复提交相同 requestId 和相同 operations 时，后端应 replay 已提交结果。', { type: 'string' }),
+      },
+      required: ['endpoint'],
       additionalProperties: false,
     }),
     aggregateColumnConfig: withMeta('聚合列配置', '描述 aggregateResult / selectionAggregateResult 的聚合方式。', {
