@@ -26,7 +26,7 @@ public class AiContextSnapshotEntity {
     private String turnId;
 
     @Lob
-    @Column(name = "scope_json")
+    @Column(name = "scope_json", columnDefinition = "LONGTEXT")
     private String scopeJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)

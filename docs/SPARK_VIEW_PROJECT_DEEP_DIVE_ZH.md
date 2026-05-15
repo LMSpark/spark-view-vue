@@ -1,6 +1,8 @@
 # SPARK View 项目深度解析与演进建议
 
 > 本文面向第一次深入了解 SPARK View 的开发者、维护者和技术评审者。它不逐项复述目录，而是回答四个问题：这个项目解决什么问题，核心运行链路如何成立，各包分别承担什么职责，下一阶段最值得投入的优化空间在哪里。
+>
+> 更新基准：2026-05-16，覆盖 ViewKey/DataKey 绑定规则、DataView 输出面、DataSet 事务保存、统一 API envelope、页面配置存储抽象、AI 会话持久化和后端生产化基线。
 
 ## 1. 执行摘要
 
@@ -18,13 +20,14 @@ SPARK View 是一个面向 Vue 3、Element Plus 和企业后台场景的深度�
 | 复杂表单表格 | DataSet/DataView 统一处理数据源、选择、联动、请求和状态 |
 | 主从联动和树形编辑 | 关系、级联、当前行和树管理进入平台模型 |
 | 权限可视化 | 字段、按钮、页面模式和行权限能进入同一套判断链 |
-| 多租户页面平台 | 后端承载租户、项目、导航、页面配置、版本和 AI 会话 |
+| 多租户页面平台 | 后端承载租户、项目、成员关系、导航、页面配置、版本审计和 AI 会话 |
+| 生产化部署 | MySQL/Flyway、Actuator/Prometheus、Docker、限流和 requestId 日志已进入后端基线 |
 
-项目当前已经具备平台雏形：前端使用 pnpm workspace 组织多个运行时包，根应用只做装配；Java 后端提供配置、导航、认证、AI 会话和调试能力。
+项目当前已经从平台雏形推进到“可生产化演进”的阶段：前端使用 pnpm workspace 组织多个运行时包，根应用只做装配；Java 后端已经具备统一响应 envelope、鉴权上下文、成员关系校验、可插拔页面配置存储、AI 会话持久化、MySQL/Flyway 迁移和观测入口。
 
 DevSystem 承担配置编辑、预览、数据设计和版本管理职责；测试与架构验证脚本开始约束包边界。
 
-下一阶段最重要的工作，不是继续增加更多 renderer，而是把诊断、设计时体验、配置版本治理和后端生产化补齐。这样 SPARK View 才会从“能渲染配置页面的框架”进一步变成“能被团队长期使用的页面生产平台”。
+下一阶段最重要的工作，不是继续增加更多 renderer，而是把诊断产品化、DevSystem 工作流、AI 审计回放和生产化二期压实。这样 SPARK View 才会从“可运行的页面平台”进一步变成“能被团队长期稳定使用的页面生产系统”。
 
 ## 2. 项目心智模型
 
@@ -47,7 +50,7 @@ flowchart LR
   Data["spark-data<br/>DataSet / DataView"]
   App["spark-app<br/>路由 / 插件 / 主题 / 认证"]
   AI["spark-ai<br/>受约束编辑工具"]
-  Server["spark-ai-server<br/>配置 / 导航 / 会话 / 版本"]
+  Server["spark-ai-server<br/>配置 / 导航 / 会话 / 版本 / 审计"]
   UI["Vue / Element Plus / VXE 页面"]
 
   Server --> Files
@@ -65,8 +68,9 @@ flowchart LR
 1. 页面结构可被设计器和 AI 修改，而不是必须改 Vue 文件。
 2. 数据模型成为显式资产，主从关系、自动加载、聚合和计算列不散落在组件状态里。
 3. 权限、导航、页面模式和数据状态可以进入统一运行链。
-4. 页面可以版本化、回滚、审计和差异分析。
-5. AI 的工作范围被限制在配置和平台函数内，降低不可控代码生成风险。
+4. 页面可以版本化、回滚、审计和差异分析，版本元数据可关联 requestId、来源和 AI 会话。
+5. AI 的工作范围被限制在配置和平台函数内，后端持久化 LLM 会话与工具调用事实，前端 runtime 执行受控工具，降低不可控代码生成风险。
+6. DataSet 可以选择逐视图保存或统一事务保存，复杂页面的多表提交不再只能靠页面脚本串行拼接。
 
 SPARK View 的本质不是“动态 component”，而是“配置资产 + 稳定运行时 + 设计时闭环”的组合。
 
@@ -124,7 +128,7 @@ flowchart TB
 
 ## 4. 技术栈与工程基线
 
-当前根 [package.json](../package.json) 显示，前端基线包括 Vue 3.5、TypeScript、Vite、Element Plus、VXE Table、Vitest、Storybook、ESLint 和 pnpm workspace。后端基线是 Java 17、Spring Boot、Maven、Repository/JPA 风格的数据访问、SSE 流式响应和 OpenAI 兼容模型接口。
+当前根 [package.json](../package.json) 显示，前端基线包括 Vue 3.5、TypeScript、Vite、Element Plus、VXE Table、Vitest、Storybook、ESLint 和 pnpm workspace。后端基线是 Java 17、Spring Boot、Maven、JPA/JdbcTemplate、SSE 流式响应和 OpenAI 兼容模型接口，并已引入 Flyway、MySQL driver、Actuator、Micrometer Prometheus、S3 SDK、Dockerfile 与 docker-compose 示例。
 
 常用脚本体现了项目的工程意图：
 
@@ -139,6 +143,7 @@ flowchart TB
 | `pnpm run test:run` | 运行根级 Vitest 测试 |
 | `pnpm run verify:arch` | 执行架构边界验证 |
 | `pnpm run generate:catalog` | 生成组件知识目录 |
+| `mvn test` | 运行 `spark-ai-server` 后端测试 |
 
 ```mermaid
 flowchart LR
@@ -153,6 +158,8 @@ flowchart LR
 ```
 
 值得注意的是，仓库包含 [tools/verify-architecture.mjs](../tools/verify-architecture.mjs)。它约束主应用 `src/` 不应重新实现渲染器、模板编译、沙箱等基础能力，也会检查 workspace 包之间的依赖边界。这说明项目已经把包分层当作工程纪律，而不是只写在文档里的愿望。
+
+后端配置也开始按环境分层：`application-dev.yml` 保留 H2/文件存储的开发体验，`application-prod.yml` 面向 MySQL、Flyway validate、Actuator/Prometheus 和生产部署；页面配置默认仍是文件系统，但可通过 `spark.pages.storage.type=file|database|s3|git` 切换存储后端。
 
 ## 5. 端到端运行链路
 
@@ -307,7 +314,9 @@ flowchart LR
   Compiler --> PageConfig
 ```
 
-加载器对必需文件和可选文件做了不同处理：`rule.json` 与 `pagedata.json` 缺失会导致页面加载失败；`script.js` 与 `style.css` 缺失可以返回空内容。远程模式下，它通过统一 HTTP client 读取 `/pages-config/{pageId}/{filename}`，并支持动态请求头注入，以配合租户和项目上下文。
+加载器对必需文件和可选文件做了不同处理：运行时页面加载仍将 `rule.json` 与 `pagedata.json` 视为关键资产；DevSystem 编辑态可以显式开启 `allowMissingAsEmpty`，让缺失文件以空文档进入编辑状态，避免把占位内容写回远端。远程模式下，它通过统一 HTTP client 读取 `/pages-config/{pageId}/{filename}`，并支持动态请求头注入，以配合租户和项目上下文。
+
+`page-data-json-schema.ts` 也已经跟随数据层扩展，`CrudApi` 新增 `transaction` 端点，DataSet 顶层新增 `saveChanges` 配置，用于声明 `perView` 或 `transaction` 保存策略。
 
 这个包是配置资产和运行时之间的契约边界。后续优化应优先增强这里，而不是让渲染器在下游反复兜底。
 
@@ -318,6 +327,7 @@ flowchart LR
 | 结构化诊断 | 将加载错误扩展为 `code/path/fileName/status/detail/suggestion` |
 | schema 迁移 | 为页面整体配置引入版本迁移管线，兼容历史配置 |
 | 远程缓存 | 支持 ETag、If-None-Match 或显式 timestamp 协议 |
+| schema 示例 | 为 `saveChanges.transaction`、`viewKey/dataKey`、聚合和状态字段提供最小可运行样例 |
 
 如果这个边界变得更强，DevSystem 和 AI 都可以基于同一套诊断对象给出可操作反馈。
 
@@ -441,9 +451,11 @@ DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，Da
 |---|---|
 | 当前行 | 主表选中后，详情区和子表自动响应 |
 | selection | 工具栏动作可以基于勾选行执行 |
+| editingRows | 字段编辑可写入 DataView 编辑态，提交前不污染原始 rows |
 | 关系与级联 | 主从数据不需要每个组件手写 watch |
 | 自动加载 | 页面初始化后按配置触发请求 |
 | CRUD 委托 | 新增、编辑、删除、保存进入统一数据工具 |
+| 事务保存 | `DataSet.saveChanges({ mode: 'transaction' })` 可把多表 staged 变更提交到统一后端事务端点 |
 | 历史记录 | 支持撤销、回滚和变更追踪的基础 |
 | 计算列/聚合 | 将业务派生数据纳入平台模型 |
 
@@ -459,10 +471,14 @@ ViewKey 和 DataKey 是组件和数据视图之间的绑定协议。两者都用
 | DataKey | `Users@mainList@currentRow.name` | 读取当前行的 `name` 字段 |
 | DataKey | `Users@mainList@selectedRows` | 读取当前多选集合 |
 | DataKey | `Users@summary@aggregateResult.totalAmount` | 读取聚合结果字段 |
+| DataKey | `Users@mainList@requestState` | 读取请求状态 |
+| DataKey | `Users@mainList@loadingError` | 读取加载错误 |
 
 当前规则下，表级容器使用 `viewKey`，DataView 输出读取使用完整 `dataKey`。不再把 `Users@rows` 作为新配置范式；应该写 `viewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataKey: "Users@summary@aggregateResult.xxx"`。
 
 在容器已经提供 `DATA_ROW` 的子树中，还可以使用 `$[fieldName]` 把当前行字段投影到任意 prop，这适合按钮文案、tag 类型、tooltip、标题、前后缀等轻量展示，不需要额外脚本拼装。
+
+当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接 `getSnapshot()`，可稳定暴露 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `viewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataKey` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
 
 建议后续增强 DataKey 诊断：当解析失败时，不只返回 null，而是返回失败原因、候选 view、候选字段和修复建议。这个能力对 DevSystem 和 AI 都很重要。
 
@@ -475,8 +491,9 @@ SPARK View 的数据层不止是请求缓存。它已经开始覆盖企业后台
 3. 计算列：派生字段不必落在每个组件的临时 computed 里。
 4. 聚合：表格统计和汇总可以成为配置化能力。
 5. 请求状态：加载、失败、空状态和刷新可以被平台统一感知。
+6. 事务提交：`CrudService.executeTransaction` 和后端 `/data/transactions` 让多表 create/update/delete 具备原子性与 requestId 幂等 replay。
 
-下一阶段建议为 DataSet 增加可视化关系图和请求追踪面板，让页面作者能看见“哪个组件触发了哪个 view 的哪次请求”。
+下一阶段建议为 DataSet 增加可视化关系图、请求追踪面板和事务计划预览，让页面作者能看见“哪个组件触发了哪个 view 的哪次请求”，以及一次保存会生成哪些 transaction operations。
 
 ## 11. 权限体系
 
@@ -518,54 +535,92 @@ flowchart TD
 
 ### 12.1 AI runtime
 
-[packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts) 中的 `AiRuntime` 是内存型 AI 编排器。它管理业务注册、运行实例、函数暴露、历史记录、生命周期事件和参数校验。
+[packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts) 中的 `AiRuntime` 不是模型网关，也不是页面编辑器本身，而是 AI Core 的组合根。它把注册、知识投影、会话账本、函数调用翻译和函数执行串起来，并且只通过 `registerBusiness` / `registerModule` 返回的注册句柄暴露能力。
 
 ```mermaid
-stateDiagram-v2
-  [*] --> Starting
-  Starting --> Ready
-  Ready --> Executing: executeFunctionCall
-  Executing --> Ready: success / fail
-  Ready --> Paused: pause
-  Executing --> Paused: pendingPause
-  Ready --> Stopping: stop
-  Executing --> Stopping: pendingStop
-  Stopping --> Stopped
-  Stopping --> Failed
+flowchart TD
+  Runtime["AiRuntime"]
+  Registry["AiRegistrationRepository<br/>业务 / 模块 / 函数注册"]
+  Ledger["AiSessionLedger<br/>Started / Stopped / history"]
+  Projection["AiProjectionService<br/>LLM 可见知识投影"]
+  Translator["AiFunctionCallTranslator<br/>action / scope / activePath / params"]
+  Executor["AiFunctionCallExecutor<br/>requested / completed / failed"]
+  Api["AiRegisteredApiFactory<br/>注册句柄 API"]
+
+  Runtime --> Registry
+  Runtime --> Ledger
+  Runtime --> Projection
+  Runtime --> Translator
+  Runtime --> Executor
+  Runtime --> Api
+  Projection --> Registry
+  Translator --> Registry
+  Translator --> Ledger
+  Translator --> Projection
+  Executor --> Translator
+  Executor --> Ledger
 ```
 
-函数调用采用 `business@module@function` 地址。执行前会检查实例状态、业务匹配、`businessInstanceId`、函数暴露和参数 schema；执行后会记录历史、发布事件、刷新函数暴露，并处理 pending stop/pause。
+前端 AI Core 的会话生命周期目前只有 `Started` 和 `Stopped`。它保存的是当前模块实例的 AI 会话记录、UI/LLM 消息和函数调用历史，不创建、不恢复、不暂停模块服务实例，也不直接调用后端 LLM。函数调用由 `AiInvocationProtocol` 解析 action，再经 projection、scope、activePath 和参数 schema 校验；执行器只调用注册方提供的 `run` 落点，并把函数调用记录成 `requested/completed/failed`。
 
-这个边界非常重要。它让 AI 行为从“拼 prompt 后直接生成代码”变成“调用平台暴露的函数工具”，可验证性高很多。
+这个边界非常重要。它让 AI 行为从“拼 prompt 后直接生成代码”变成“LLM 看到投影出来的工具，前端 runtime 把工具调用翻译成受约束的平台函数”。可验证性高很多，职责也更清楚。
+
+需要特别区分两层会话：前端 `AiRuntime/AiSessionLedger` 是工具执行侧的内存账本；后端 `AiSessionService` 是 LLM 会话、SSE 流和数据库持久化服务。二者通过应用层 transport 协作，但不是同一个对象，也不是互相自动同步完整状态。
 
 ### 12.2 page-design 业务
 
-`spark-ai/src/registrations/page-design` 围绕页面四文件编辑组织业务能力，包括节点树、dataset、json-doc、lifecycle、text-model 等函数模块。它和 `SparkPageRenderer` 暴露的节点树、CRUD 工具形成闭环：
+[packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts) 是页面设计业务适配器。它内部创建 `AiRuntime`，把自己注册成 business，并把页面编辑能力拆成五个子模块：
+
+| 模块 | 职责 |
+|---|---|
+| `lifecycle` | 初始化编辑会话、查询编辑进度 |
+| `textModel` | 读写 `script.js` 和 `style.css` |
+| `knowledge` | 查询组件参数 payload 和组件知识 |
+| `nodeTree` | 读写 `rule.json` 对应的 SparkNodeTree |
+| `dataset` | 读写 `pagedata.json` 对应的 DataSetCrudTool |
+
+真正落地到页面文件的能力在 [PageDesignService](../packages/spark-page-config/src/page-design/operations/page-design-service.ts)。它通过 `PageDesignEditHost` 获取活体编辑对象：`getNodeTree`、`getDataSetTool`、`readScript/writeScript`、`readStyle/writeStyle`。也就是说，AI 工具不是直接改 Vue 组件或后端文件，而是调用宿主暴露的编辑会话。
 
 ```mermaid
 flowchart TD
   LLM["LLM"]
-  Runtime["AiRuntime"]
-  Business["page-design business"]
-  NodeFuncs["node-tree functions"]
-  DataFuncs["dataset functions"]
-  JsonFuncs["json-doc functions"]
-  Renderer["SparkPageRenderer expose"]
+  Host["App AI Host"]
+  Transport["FetchAppAiHostTransport"]
+  BackendSession["spark-ai-server<br/>AiSessionService"]
+  Runtime["PageDesignModule / AiRuntime"]
+  Service["PageDesignService"]
+  EditHost["PageDesignEditHost"]
+  NodeTree["SparkNodeTree"]
+  DataSetTool["DataSetCrudTool"]
+  TextModels["script.js / style.css live model"]
   Files["rule / pagedata / script / style"]
 
-  LLM --> Runtime
-  Runtime --> Business
-  Business --> NodeFuncs
-  Business --> DataFuncs
-  Business --> JsonFuncs
-  Renderer --> NodeFuncs
-  Renderer --> DataFuncs
-  NodeFuncs --> Files
-  DataFuncs --> Files
-  JsonFuncs --> Files
+  Host --> Transport
+  Transport --> BackendSession
+  BackendSession --> LLM
+  LLM --> BackendSession
+  BackendSession --> Transport
+  Transport --> Host
+  Host --> Runtime
+  Runtime --> Service
+  Service --> EditHost
+  EditHost --> NodeTree
+  EditHost --> DataSetTool
+  EditHost --> TextModels
+  NodeTree --> Files
+  DataSetTool --> Files
+  TextModels --> Files
 ```
 
-建议将所有 AI 工具调用结果标准化为：
+这里还有一个关键细节：LLM tool call 的闭环由 [src/services/ai-host/tool-loop.ts](../src/services/ai-host/tool-loop.ts) 驱动。后端 SSE 返回 `toolCalls` 后，前端在本地执行 `runtime.executeFunctionCall`，再把 assistant/tool messages 通过 `/turn/append` 追加回后端会话。因此后端保存的是 LLM 对话、计划中的 tool calls 和追加回去的 tool result 消息；页面配置的实际编辑仍发生在前端宿主绑定的编辑对象里。
+
+### 12.3 后端 AI session
+
+[spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java](../spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java) 负责 OpenAI-compatible LLM 调用、SSE stream、Function Calling 消息窗口、协议 v3 校验、scope guard 和持久化。它会把 session、message、tool call 和 context snapshot 写入数据库；`/conversation` 会从持久层恢复完整消息历史；retention job 默认按配置清理过期会话。
+
+这层不应该被描述成“执行页面设计工具”的地方。它更像 LLM 会话账本与流式传输层：负责让工具调用计划可追踪、让 SSE result/error 使用 envelope、让前端完成工具执行后能把结果 append 回同一条后端会话。
+
+产品层后续仍应把 AI 工具调用结果标准化为：
 
 | 字段 | 说明 |
 |---|---|
@@ -577,7 +632,7 @@ flowchart TD
 
 这样 AI 编辑才会从“黑箱改配置”变成“可解释协作者”。
 
-### 12.3 组件知识目录
+### 12.4 组件知识目录
 
 `vite-plugin-spark-catalog` 在构建期从组件源码提取元数据，生成可供业务 AI 模块和 DevSystem 使用的组件目录。它连接真实组件 API 与上层工具知识，是避免手写目录与源码漂移的关键机制。
 
@@ -627,17 +682,19 @@ DevSystem 应该被视为 SPARK View 的一等产品，而不是附属调试页�
 
 [spark-ai-server](../spark-ai-server) 是 Spring Boot 后端。虽然名字里带 AI，但当前职责已经覆盖平台后端能力：聊天流、AI 会话、页面配置、导航、认证、租户项目、SSE 调试、日志和版本管理。
 
-根据 README 和控制器职责，可以概括为：
+根据当前控制器、service、entity 和配置，可以概括为：
 
 | 能力 | 说明 |
 |---|---|
+| API envelope | JSON REST 统一返回 `{ ok, data, error, requestId }`，非 JSON/SSE 保留原协议，SSE result/error data 使用同一 envelope |
 | AI chat | `POST /api/ai/chat/stream` 通用对话流 |
-| AI sessions | `/api/ai/sessions/*` 会话创建、执行、追加、查询和销毁 |
-| 页面配置 | 读取、创建、删除、版本、恢复和健康检查页面四文件 |
-| 导航树 | 多租户项目下的导航节点查询、CRUD、搜索和链接探测 |
-| 认证与租户 | 登录、注册、当前用户、租户和项目上下文 |
+| AI sessions | `/api/ai/sessions/*` 会话创建、执行、追加、查询和销毁，DB 持久化 session/message/tool/context |
+| 页面配置 | 读取、创建、删除、版本、恢复和健康检查页面四文件，依赖 `PageConfigStorage` SPI |
+| 导航树 | 多租户项目下的导航节点查询、CRUD、搜索和链接探测，service 层校验访问上下文 |
+| 认证与租户 | 登录、注册、当前用户、租户、项目和 `ProjectMember` 成员关系 |
+| 动态数据 | 动态表模型、CRUD、批处理与同步事务提交 `/data/transactions` |
 | SSE 调试 | 截图、路由、调试请求和结果回传 |
-| 日志 | 前端远程日志上报 |
+| 观测与治理 | requestId MDC 日志、IP 限流、Actuator health、Prometheus metrics |
 
 ```mermaid
 flowchart TB
@@ -647,32 +704,50 @@ flowchart TB
   Nav["NavigationController"]
   Page["PageConfigController"]
   AI["AiChat / AiSession"]
+  Data["DynamicDataController"]
   Debug["SSE Debug"]
   Logs["LogsController"]
-  Storage["spark-ai-server/data/pages-config"]
+  Envelope["ApiEnvelopeAdvice"]
+  Guard["AccessGuardService"]
+  Storage["PageConfigStorage<br/>file / database / s3 / git"]
+  DB["MySQL / H2<br/>Flyway schema"]
   LLM["OpenAI 兼容端点"]
 
-  FE --> Auth
-  FE --> Config
-  FE --> Nav
-  FE --> Page
-  FE --> AI
-  FE --> Debug
-  FE --> Logs
+  FE --> Envelope
+  Envelope --> Auth
+  Envelope --> Config
+  Envelope --> Nav
+  Envelope --> Page
+  Envelope --> AI
+  Envelope --> Data
+  Envelope --> Debug
+  Envelope --> Logs
+  Auth --> Guard
+  Nav --> Guard
+  Page --> Guard
+  Data --> Guard
   Page --> Storage
+  Storage --> DB
+  AI --> DB
+  Data --> DB
   AI --> LLM
 ```
 
-后端的价值，是把页面配置从静态 public 文件升级为多租户、多项目、可版本化、可调试的服务端资产。当前正式页面配置路径是 `spark-ai-server/data/pages-config/`，而不是仓库根目录的 `data/` 残留。
+后端的价值，是把页面配置从静态 public 文件升级为多租户、多项目、可版本化、可调试、可审计的服务端资产。当前正式页面配置路径默认仍是 `spark-ai-server/data/pages-config/`，但 `PageConfigService` 已经只依赖 `PageConfigStorage`，文件系统只是默认 adapter。
 
-生产化建议：
+已经落地的生产化基线如下：
 
-1. 统一 API envelope，例如 `{ ok, data, error, requestId }`。
-2. 在 service/repository 层强校验 tenant、project 和 user 关系。
-3. 抽象页面配置存储，支持文件系统、数据库、对象存储或 Git-backed storage。
-4. 增强版本审计：作者、来源、提交说明、审批状态、关联 AI 会话。
-5. 持久化 AI session、history、工具调用和上下文快照。
-6. 补齐部署配置、数据库迁移、指标、日志追踪和限流。
+| 基线 | 当前状态 |
+|---|---|
+| 统一响应 | `ApiEnvelopeAdvice`、`ApiResponseFactory`、`GlobalExceptionHandler` 和 `RequestIdFilterConfig` 已统一 JSON 成功/错误响应 |
+| 鉴权上下文 | JWT filter 写入 requestId/tenantId/username/roles，`AccessGuardService` 在 service 层校验用户、租户、项目和成员关系 |
+| 存储抽象 | `PageConfigStorage` 支持 file/database/s3/git，`PageConfigFileEntity` 承载 database storage |
+| 版本审计 | `FileVersionEntity` 增加 source、commitMessage、approvalStatus、AI session/turn、requestId、contentHash、storageRef |
+| AI 持久化 | `AiSessionEntity`、`AiMessageEntity`、`AiToolCallEntity`、`AiContextSnapshotEntity` 与 retention job 已落地 |
+| 数据库迁移 | `V1__production_baseline.sql` 覆盖核心业务表和动态数据元数据表 |
+| 部署观测 | `application-prod.yml`、Dockerfile、docker-compose、Actuator、Prometheus 和 IP rate limit 已进入仓库 |
+
+下一阶段后端不再是“补齐生产化”这个大方向，而是生产化二期：补 Testcontainers/MySQL 迁移验证、对象存储集成测试、审计查询 API、租户级限流、OpenTelemetry tracing、备份恢复策略和 Git storage 的远端同步策略。
 
 ## 15. 测试、脚本与质量体系
 
@@ -683,8 +758,9 @@ flowchart TB
 | 类型 | 示例 |
 |---|---|
 | 运行时行为测试 | renderer、field、toolbar、tabs、dialog、table datasource |
-| 数据层回归测试 | DataKey、DataView CRUD、relation rebuild、computed column |
+| 数据层回归测试 | DataKey、DataView CRUD、relation rebuild、computed column、editingRows、transaction save |
 | AI 与协议测试 | ai-runtime、page-design-business、dataset-tool-protocol、validator |
+| 后端生产化测试 | envelope controller、AI session、page config service、dynamic data transaction、navigation service |
 | 架构约束测试 | `verify-architecture.mjs`、forbidden imports、public API |
 
 ```mermaid
@@ -717,6 +793,9 @@ flowchart LR
 | `permission-render` | 权限快照对渲染结果的影响 |
 | `dynamic-columns` | 动态列和表格配置 |
 | `smart-load` | 依赖链驱动的数据加载 |
+| `tx-transaction-commit` | 多表事务提交和 `DataSet.saveChanges(transaction)` |
+| `tx-transaction-retry` | requestId 幂等 replay 与 payload 冲突拒绝 |
+| `tx-editing-rows` | 字段编辑态、保存前预览和 DataView editingRows |
 
 每个样例应包含页面配置、mock 数据、权限快照、截图基线和 AI 编辑回归。这样底层改动才不容易破坏真实体验。
 
@@ -732,7 +811,7 @@ SPARK View 当前最突出的优势有五点。
 
 第四，AI 方向克制。项目没有把“生成代码”作为核心卖点，而是强调受约束配置生成、函数工具、组件知识目录和稳定运行时。
 
-第五，平台化痕迹真实。多租户路径、项目切换、远程页面配置、版本管理、SSE 调试、远程日志、DevSystem 和组件目录生成都说明项目正在从框架走向平台。
+第五，平台化痕迹真实。多租户路径、项目切换、远程页面配置、版本审计、统一 envelope、SSE 调试、远程日志、DevSystem、组件目录生成和后端迁移/观测配置都说明项目正在从框架走向平台。
 
 ## 17. 主要风险
 
@@ -754,17 +833,17 @@ DevSystem 已经具备许多能力，但编辑、预览、诊断、AI、版本�
 
 建议以 DevSystem 为中心重新组织产品叙事和功能入口。
 
-### 17.4 AI 编辑需要可审计
+### 17.4 AI 编辑需要产品级审计
 
-AI runtime 有 history，但产品层还需要把每次工具调用转成可读审计：输入参数、影响范围、变更前后、验证结果、是否应用、是否回滚。
+后端已经开始持久化 AI session、message、tool call 和 context snapshot，但产品层还需要把每次工具调用转成可读审计：输入参数、影响范围、变更前后、验证结果、是否应用、是否回滚。
 
 没有审计，AI 在复杂页面中的可信度会下降。
 
-### 17.5 后端生产化仍需补强
+### 17.5 后端生产化二期仍需压实
 
-后端接口范围已经很广，但生产级平台还需要统一异常、鉴权、租户隔离、审计、数据迁移、存储抽象、限流、观测、会话持久化和部署文档。
+后端生产化基线已经落地，但生产级平台仍需要把“可运行”推进到“可运营”：迁移脚本需要 MySQL/Testcontainers 验证，S3/Git storage 需要真实集成测试，AI session retention 需要运维可见性，限流还只是 IP 维度，审计字段已有但查询和审批工作流还不完整。
 
-这些不是展示 demo 的前置条件，却是团队长期使用的前置条件。
+这些不是展示 demo 的前置条件，却是团队长期使用、多人协作和故障追踪的前置条件。
 
 ## 18. 演进路线图
 
@@ -825,20 +904,20 @@ AI runtime 有 history，但产品层还需要把每次工具调用转成可读�
 
 预期收益：用户能理解、验证和回滚 AI 对复杂页面的修改。
 
-### 阶段五：后端生产化
+### 阶段五：生产化二期与运营能力
 
-目标：支持多人、多租户和可部署环境。
+目标：在已落地生产化基线之上，补齐可运营、可审计和可恢复能力。
 
 建议任务：
 
-1. 统一 API envelope 与错误码。
-2. 所有 service 层强校验 tenant、project 和 user 权限。
-3. 页面配置存储抽象，支持文件、数据库、对象存储或 Git。
-4. 版本审计增强：作者、来源、说明、审批和关联 AI 会话。
-5. AI session 和 history 持久化。
-6. 增加部署配置、数据库迁移、日志追踪、指标和限流。
+1. 为 Flyway migration 增加 MySQL/Testcontainers 验证。
+2. 为 file/database/s3/git storage 建立 contract tests 和故障注入测试。
+3. 增加版本审计查询、审批状态流转和 AI session 关联视图。
+4. 将 IP 限流升级为可选租户/用户维度限流，并明确 trusted proxy 策略。
+5. 接入 OpenTelemetry trace，将 requestId、tenantId、projectId、sessionId 串到前后端链路。
+6. 制定备份恢复、retention、归档和 Git-backed storage 远端同步策略。
 
-预期收益：项目从原型和内部平台走向可持续运行的团队级产品。
+预期收益：项目从“具备生产化基线”走向“可持续运营的团队级产品”。
 
 ## 19. 对外介绍口径
 
@@ -847,8 +926,8 @@ AI runtime 有 history，但产品层还需要把每次工具调用转成可读�
 1. SPARK View 是一个配置驱动的后台页面平台。
 2. 它把页面拆成结构、数据、行为、样式四类资产。
 3. 稳定运行时解释这些资产，比 AI 直接生成页面代码更可控。
-4. DataSet/DataView 让主从联动、树、权限、计算列和聚合成为平台能力。
-5. DevSystem 与 AI 工具让页面配置可以被编辑、调试、回滚和审计。
+4. DataSet/DataView 让主从联动、树、权限、计算列、聚合和事务保存成为平台能力。
+5. DevSystem、AI 工具和生产化后端让页面配置可以被编辑、调试、回滚、审计和运营。
 
 ```mermaid
 flowchart LR
@@ -864,12 +943,12 @@ flowchart LR
   Design --> Config
   AI --> Config
   Backend --> Config
-  Backend --> AI
+  AI --> Backend
 ```
 
 推荐对外一句话：
 
-> SPARK View 是一个面向企业后台的配置化页面平台，用稳定运行时承载页面配置，用 DataSet 管理复杂业务数据，用受约束 AI 辅助生成、编辑和审计页面资产。
+> SPARK View 是一个面向企业后台的配置化页面平台，用稳定运行时承载页面配置，用 DataSet 管理复杂业务数据，用受约束 AI 辅助生成、编辑和审计页面资产，并通过生产化后端支撑租户、版本、会话和观测链路。
 
 ## 20. 关键源码阅读路线
 
@@ -885,10 +964,19 @@ flowchart LR
 8. [packages/spark-component/src/core/spark-node-tree.ts](../packages/spark-component/src/core/spark-node-tree.ts)：理解节点树模型。
 9. [packages/spark-data/src/dataset.ts](../packages/spark-data/src/dataset.ts)：理解数据空间协调器。
 10. [packages/spark-data/src/core/data-key.ts](../packages/spark-data/src/core/data-key.ts)：理解组件到 DataView 的绑定协议。
-11. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解 AI runtime 和函数调用边界。
-12. [src/views/app/dev-system/DevSystem.vue](../src/views/app/dev-system/DevSystem.vue)：理解设计时工作台。
-13. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
-14. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 AI Core、通用宿主与 AI 业务服务关系。
+11. [packages/spark-component/src/components/containers/data-views/view-data-source.ts](../packages/spark-component/src/components/containers/data-views/view-data-source.ts)：理解容器如何通过 `viewKey` 解析 DataView。
+12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView snapshot 如何映射到 UI 状态。
+13. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Core 组合根和函数调用边界。
+14. [packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts)：理解 page-design 工具如何绑定页面编辑服务。
+15. [src/services/ai-host/tool-loop.ts](../src/services/ai-host/tool-loop.ts)：理解 LLM tool call 如何在前端执行并 append 回后端。
+16. [src/services/ai-host/transport.ts](../src/services/ai-host/transport.ts)：理解前端 AI transport、SSE envelope unwrap 和 protocol v3。
+17. [src/views/app/dev-system/DevSystem.vue](../src/views/app/dev-system/DevSystem.vue)：理解设计时工作台。
+18. [spark-ai-server/src/main/java/com/spark/ai/api/ApiEnvelopeAdvice.java](../spark-ai-server/src/main/java/com/spark/ai/api/ApiEnvelopeAdvice.java)：理解统一 API envelope。
+19. [spark-ai-server/src/main/java/com/spark/ai/security/AccessGuardService.java](../spark-ai-server/src/main/java/com/spark/ai/security/AccessGuardService.java)：理解 tenant/project/user 访问校验。
+20. [spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java](../spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java)：理解页面配置存储 SPI。
+21. [spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java](../spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java)：理解后端 LLM 会话持久化和 SSE envelope。
+22. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
+23. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 AI Core、通用宿主与 AI 业务服务关系。
 
 ## 21. 结语
 
@@ -896,4 +984,4 @@ SPARK View 当前最有价值的地方，是它已经把配置驱动页面推进
 
 它的技术路线是克制的：让 AI 做结构化生成和局部编辑，让稳定 runtime 承担可验证执行，让 DataSet 承担复杂业务状态，让 DevSystem 承担设计时闭环。
 
-下一阶段真正决定项目上限的，不是继续堆更多组件，而是把诊断、可观测性、设计器体验、AI 审计和后端生产化补齐。只要这些闭环打通，SPARK View 就不只是一个“能渲染配置页面的 Vue 项目”，而会成为一个可以支撑团队长期维护复杂后台页面的平台内核。
+下一阶段真正决定项目上限的，不是继续堆更多组件，而是把诊断、可观测性、设计器体验、AI 审计和生产化二期压实。只要这些闭环打通，SPARK View 就不只是一个“能渲染配置页面的 Vue 项目”，而会成为一个可以支撑团队长期维护复杂后台页面的平台内核。

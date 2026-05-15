@@ -28,7 +28,7 @@ public class PageConfigFileEntity {
     private String filename;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "updated_at", nullable = false)

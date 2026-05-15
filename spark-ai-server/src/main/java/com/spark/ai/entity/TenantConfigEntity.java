@@ -60,7 +60,7 @@ public class TenantConfigEntity {
     // ── 扩展配置（低频 / 未来新增字段暂存） ──
 
     @Lob
-    @Column(name = "config_json", columnDefinition = "CLOB")
+    @Column(name = "config_json", columnDefinition = "LONGTEXT")
     private String configJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)

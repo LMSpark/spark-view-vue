@@ -32,14 +32,14 @@ public class AiToolCallEntity {
     private String name;
 
     @Lob
-    @Column(name = "arguments_json")
+    @Column(name = "arguments_json", columnDefinition = "LONGTEXT")
     private String argumentsJson;
 
     @Column(length = 64)
     private String status;
 
     @Lob
-    @Column(name = "runtime_meta_json")
+    @Column(name = "runtime_meta_json", columnDefinition = "LONGTEXT")
     private String runtimeMetaJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)

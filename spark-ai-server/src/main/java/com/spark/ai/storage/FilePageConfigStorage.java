@@ -1,6 +1,7 @@
 package com.spark.ai.storage;
 
 import com.spark.ai.config.PagesConfigProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class FilePageConfigStorage implements PageConfigStorage {
 
     private final Path root;
 
+    @Autowired
     public FilePageConfigStorage(PagesConfigProperties properties) {
         this.root = Path.of(properties.getConfigDir());
     }

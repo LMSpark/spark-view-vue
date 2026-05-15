@@ -28,7 +28,7 @@ public class AiSessionEntity {
     private String username;
 
     @Lob
-    @Column(name = "system_prompt")
+    @Column(name = "system_prompt", columnDefinition = "LONGTEXT")
     private String systemPrompt;
 
     @Column(length = 64)
@@ -38,11 +38,11 @@ public class AiSessionEntity {
     private String state;
 
     @Lob
-    @Column(name = "scope_json")
+    @Column(name = "scope_json", columnDefinition = "LONGTEXT")
     private String scopeJson;
 
     @Lob
-    @Column(name = "tools_json")
+    @Column(name = "tools_json", columnDefinition = "LONGTEXT")
     private String toolsJson;
 
     @Column(name = "window_size")

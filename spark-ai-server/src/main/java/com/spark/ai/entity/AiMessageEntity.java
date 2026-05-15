@@ -32,13 +32,14 @@ public class AiMessageEntity {
     private String role;
 
     @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "tool_call_id", length = 255)
     private String toolCallId;
 
     @Lob
-    @Column(name = "tool_calls_json")
+    @Column(name = "tool_calls_json", columnDefinition = "LONGTEXT")
     private String toolCallsJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)
