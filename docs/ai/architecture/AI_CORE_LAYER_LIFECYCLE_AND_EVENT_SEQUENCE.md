@@ -1,6 +1,6 @@
 # AI 核心层生命周期与事件时序设计
 
-> 状态：历史设计稿，已被 `packages/spark-ai/ARCHITECTURE.md` 中的 business-registration core 取代。当前实现中 Core 只管理 LLM 适配会话、函数曝光、调用分发、历史与事件；业务服务自管生命周期与状态，Core 不再创建 ModuleRuntime。
+> 状态：生命周期与时序主文档。第 1-19 章保留早期状态机推演；第 20 章合并 2026-05-15 的落地修订，记录当前实现中 core session ledger、registered handle、AppAiHost tool loop 的真实生命周期边界。当前代码以 `packages/spark-ai/ARCHITECTURE.md` 与本文第 20 章为准。
 
 > 目标：定义业务实例从创建到销毁的稳定状态机，以及在“AI 会话宿主负责下一步交互决策、核心层只负责执行与记录”的前提下，核心层应该如何处理启动、执行、暂停、恢复、停止与事件时序。
 
@@ -505,3 +505,115 @@ Paused 的本质不是“编排卡住”，而是“核心层把实例维持在�
 2. Ready、Executing、Paused 是三个必须区分的核心运行态。
 3. 核心层只执行一次函数调用并记录结果，不负责任何编排。
 4. AI 会话宿主负责下一步交互决策，核心层负责状态、可用函数、历史与事件。
+
+## 20. 2026-05-15 落地修订：当前实现的生命周期边界
+
+本章覆盖前文早期概念中“Core 创建 ModuleRuntime”“Core 提供 pause/resume/abort/listInstances/subscribe”等设计。当前实现已经收敛为：core 管 AI session 和函数调用账本，业务服务管业务实例状态，AppAiHost 管模型交互轮次。
+
+### 20.1 当前三层生命周期
+
+| 层级 | 生命周期对象 | 启动 | 结束 | 状态持有者 |
+|---|---|---|---|---|
+| `spark-ai core` | AI session | `handle.startSession()` | `handle.stopSession()` | `AiSessionLedger` |
+| `AppAiHost` | 一轮模型交互 / tool loop | `sender(request)` | tool loop complete / abort / max rounds / signal aborted | `AppAiToolLoopRunner` 与宿主 transport |
+| 业务服务 | 真实业务实例，如 PageDesign 页面编辑会话、LeaveRequest 草稿 | `resolveBusinessInstance()` 后业务 runtime 自行准备 | `endBusinessInstance()` / `releaseModuleInstance()` | 业务服务自身 |
+
+核心变化：
+
+1. `startSession` / `stopSession` 只表示 AI session 生命周期，不释放业务服务实例。
+2. 业务实例 ID 使用 `moduleInstanceId` 表达；`instanceId` 是 AI 会话 envelope/alias。
+3. Core 不再创建或索引 `ModuleRuntime`，也不维护业务运行态目录。
+4. Pause/resume/abort 不是 core 公共 API；是否完成、暂停或释放由业务 runtime 与 AppAiHost lifecycle directive 决定。
+5. Core 只负责函数调用链路：translate -> requested -> run -> normalize -> completed/failed。
+
+### 20.2 当前最小时序
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant User as User
+  participant Host as AppAiHost
+  participant Selector as business-selector
+  participant Runtime as AppAiBusinessRuntime
+  participant Handle as Registered Handle
+  participant Core as spark-ai core
+  participant Transport as LLM Transport
+  participant Service as Business Service
+
+  User->>Host: sender(request)
+  Host->>Selector: selectBusiness(latest input, context)
+  Selector->>Runtime: resolveBusinessInstance()
+  Selector->>Runtime: startSession(context)
+  Runtime->>Handle: startSession(scope)
+  Handle->>Core: projectKnowledge + start ledger session
+  Core-->>Runtime: projection + session snapshot
+  Runtime-->>Host: projection
+
+  loop tool loop
+    Host->>Transport: streamTurn(systemPrompt, tools, messages)
+    Transport-->>Host: assistant text / tool calls
+    Host->>Runtime: executeFunctionCall(action, args)
+    Runtime->>Handle: executeFunctionCall(scope, run)
+    Handle->>Core: translate + record requested
+    Core->>Service: run business handler
+    Service-->>Core: business result
+    Core-->>Handle: normalized result + completed/failed history
+    Handle-->>Runtime: function result
+    Runtime-->>Host: lifecycle directive
+  end
+
+  Host->>Runtime: endBusinessInstance(directive)
+  Runtime->>Handle: stopSession(scope)
+```
+
+### 20.3 与早期状态机的映射
+
+| 早期概念 | 当前实现 |
+|---|---|
+| `Starting` | `business-selector` 选择业务并调用 runtime `startSession`；core 创建/恢复 AI session ledger 记录 |
+| `Ready` | 已取得 projection，AppAiHost 可以发起 `streamTurn` |
+| `Executing` | `AiFunctionCallExecutor.executeFunctionCall()` 单次执行期间 |
+| `Paused` / `Resuming` | 不再是 core 可观察状态；由宿主或业务 runtime 自行表达 |
+| `Stopping` / `Stopped` | `handle.stopSession()` 只把 AI session 标记为 `Stopped`；业务服务释放另行处理 |
+| `Failed` | 函数调用失败写入 functionCall failed；是否终止业务由 lifecycle directive 决定 |
+
+### 20.4 当前 API 收敛
+
+保留在 registered handle 上的生命周期相关入口：
+
+- `startSession(options)`
+- `stopSession(options)`
+- `projectKnowledge(options)`
+- `appendMessage(options)`
+- `executeFunctionCall(options)`
+- `getSession(moduleInstanceId)`
+- `getSessionHistory(moduleInstanceId)`
+
+删除或不再作为当前 core 公共 API 的早期建议：
+
+- `startSession({ businessId })` 这种裸 core 入口。
+- `getAvailableFunctions`，当前由 `projectKnowledge().availableFunctions` 承接。
+- `appendMessages`，当前 handle 使用单条 `appendMessage`，AppAiHost 负责 transport append messages。
+- `pauseSession` / `abortSession` / `resumeSession`。
+- `listInstances` / `getInstanceDetail`。
+- `subscribe` / `EventBus`。
+- 对外暴露 `sessionId`。
+
+### 20.5 事件与诊断的当前位置
+
+早期文档中的 EventBus 没有进入当前 core。当前诊断事件在 AppAiHost 边界产生：
+
+- `llm-request`：发起 `streamTurn` 前记录 system prompt、tools、messages、round、scope。
+- `llm-append`：业务完成/中止后，把 assistant/tool messages append 到 transport 前记录。
+- `tool-result`：每次工具调用完成后记录 action、result、streamKey、scope。
+
+这些事件是宿主诊断 envelope，不是 core 控制面。Core 的可追溯事实仍然是 `AiSessionLedger` 中的 message / functionCall history。
+
+### 20.6 验证要求
+
+本轮 AI 生命周期相关验证命令：
+
+```bash
+pnpm --filter @spark-view/spark-ai run typecheck
+pnpm run test:run -- --config vitest.spark-ai.config.ts tests/ai-runtime-business.test.ts tests/app-ai-host.test.ts tests/protocol-parser-json-extract.test.ts tests/page-design-business-definition.test.ts
+```

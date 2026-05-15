@@ -1,6 +1,6 @@
 # DM: spark-ai Core 与 core@knowledge 模块边界
 
-> **状态**：已实施，持续验证  
+> **状态**：历史 DM，已被 2026-05-15 handle-first runtime 拆分修订。本文保留 `core@knowledge` 与业务语义分离的原则；涉及 stills、`业务@模块@函数`、core 运行时编排的具体实现，以 `packages/spark-ai/ARCHITECTURE.md`、`docs/ai/architecture/AI_CORE_LAYER_CONCEPT_MODEL.md` 第 18 章、`docs/ai/architecture/AI_CORE_LAYER_LIFECYCLE_AND_EVENT_SEQUENCE.md` 第 20 章为准。
 > **日期**：2026-05-05  
 > **范围**：`packages/spark-ai/src/core`、`packages/spark-ai/src/stills`、`packages/spark-ai/src/registrations/page-design`  
 > **目标**：core 只负责注册机和运行时；`core@knowledge` 只能作为注册机读模型和运行时内省入口存在，业务语义、函数定义、模块提示词、参数荷载来源、业务 prompt 由业务域维护。
@@ -541,3 +541,94 @@ pnpm run typecheck
 ```
 
 核心原则：**core 负责机制，registrations 负责语义；函数定义行是 action 的唯一事实来源。**
+
+---
+
+## 16. 2026-05-15 修订：从 stills DM 收敛到 handle-first runtime
+
+本 DM 的核心原则仍然有效：core 不持有 PageDesign 业务语义，业务 prompt、函数定义、参数荷载来源和领域状态仍归业务域维护。但当前实现已经从 stills 时代的运行时模型迁移到 `AiRuntime` handle-first 模型，以下内容覆盖本文早期实现细节。
+
+### 16.1 保留的原则
+
+| 原则 | 当前对应实现 |
+|---|---|
+| core 负责机制，业务负责语义 | `packages/spark-ai/src/core` 不依赖 `registrations/page-design` |
+| knowledge 只能是注册事实读模型 | `AiKnowledgeProjector` 只查询已注册函数、模块和 payload provider |
+| payload 与 function 分线 | `ParameterPayloadRegistry` 管 payload provider；函数目录来自 module/business registration |
+| prompt 分层 | core 只提供协议和投影，PageDesign prompt 留在 `registrations/page-design/prompts` |
+| 不保留旧 action alias | 新 runtime 不提供旧裸 API 或旧 action alias 兼容层 |
+
+### 16.2 已替换的早期术语
+
+| 本文早期术语 | 当前实现术语 |
+|---|---|
+| `StillDefinition` | `AiFunctionRegistration` / catalog row 转换出的 function registration |
+| `IStillSession` | `AiRuntimeSessionRecord` |
+| `runStillsLoop` | `AppAiToolLoopRunner` + transport `streamTurn` |
+| `core@knowledge` | core knowledge projection / knowledge module registration |
+| `业务@模块@函数` | `rootInstanceId[/childInstanceId]@moduleId@functionId` |
+| `stills installer facade` | `registerBusiness()` / `registerModule()` 返回的 registered handle |
+
+### 16.3 当前 action 与 knowledge 边界
+
+当前 LLM-facing action 不再使用 `业务@模块@函数`。它由 core 在 projection 时根据 session scope 生成：
+
+```text
+rootInstanceId[/childInstanceId]@moduleId@functionId
+```
+
+这带来两个约束：
+
+1. 根实例 ID 是 action 的一部分，保证多页面、多草稿、多业务实例并行时不会串线。
+2. 同一注册树内 `moduleId` 必须唯一，因为翻译时用 `moduleId + functionId` 定位能力。
+
+knowledge 的 SSOT 也已收敛：
+
+- `projectKnowledge()` 负责生成 `promptSnapshot` 和 `availableFunctions`。
+- `AiKnowledgeProjector` 提供函数目录、模块目录、payload 查询入口。
+- `createAiRuntimeToolCodec()` 把 projection 转成模型 tools。
+- `createInitialAiToolActionSet()` / `addGuidedAiToolAction()` 负责 staged tool exposure。
+
+### 16.4 当前 runtime 拆分
+
+`AiRuntime` 只做组合根和注册入口，内部职责拆分为：
+
+| 服务 | 单一职责 |
+|---|---|
+| `AiRegistrationRepository` | module/business 注册、注册数据快照、store snapshot、business/module 互转、payload provider 注册 |
+| `AiSessionLedger` | sessions、alias index、history seq、start/stop、append/record/complete、session 查询和 clone |
+| `AiProjectionService` | `projectKnowledge()` 和 knowledge projection 更新 |
+| `AiFunctionCallTranslator` | action 解析、scope 校验、模块/函数定位、activePath 合并、上下文参数准备和 schema 校验 |
+| `AiFunctionCallExecutor` | translate -> record requested -> run -> normalize -> complete failed/completed |
+| `AiRegisteredApiFactory` | 创建 module/business scoped handle |
+
+### 16.5 当前公共入口
+
+旧裸入口已删除：
+
+- `AiRuntime.startInstance`
+- `AiRuntime.stopInstance`
+- `AiRuntime.projectModule`
+- `AiRuntime.appendMessage`
+- `AiRuntime.translateFunctionCall`
+- `AiRuntime.executeFunctionCall`
+- `AiRuntime.getSession`
+- `AiRuntime.getSessionHistory`
+
+当前只通过 registered handle 使用：
+
+- `startSession`
+- `stopSession`
+- `projectKnowledge`
+- `appendMessage`
+- `translateFunctionCall`
+- `executeFunctionCall`
+- `getSession(moduleInstanceId)`
+- `getSessionHistory(moduleInstanceId)`
+
+### 16.6 当前验证命令
+
+```bash
+pnpm --filter @spark-view/spark-ai run typecheck
+pnpm run test:run -- --config vitest.spark-ai.config.ts tests/ai-runtime-business.test.ts tests/app-ai-host.test.ts tests/protocol-parser-json-extract.test.ts tests/page-design-business-definition.test.ts
+```
