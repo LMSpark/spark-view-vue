@@ -18,8 +18,8 @@ import {
   type AiRuntimeMessageRole,
   type AiRuntimeMessageSource,
   type AiRuntimeSessionRecord,
-  type AiRuntimeStartInstanceResult,
-  type AiRuntimeStopInstanceResult,
+  type AiRuntimeStartSessionResult,
+  type AiRuntimeStopSessionResult,
   type FunctionExecutionContext,
   type ParameterPayloadProvider,
 } from '../../core'
@@ -476,25 +476,25 @@ export class PageDesignModule implements AiBusinessRegistration {
 
   async projectKnowledge(context: PageDesignRuntimeContext): Promise<AiRuntimeKnowledgeProjection> {
     assertPageDesignContext(context)
-    return this.ai.projectModule({
+    return this.ai.projectKnowledge({
       instanceId: context.instanceId,
       moduleInstanceId: context.moduleInstanceId,
       runtimeInstanceId: context.instanceId,
     })
   }
 
-  async startSession(context: PageDesignRuntimeContext): Promise<AiRuntimeStartInstanceResult> {
+  async startSession(context: PageDesignRuntimeContext): Promise<AiRuntimeStartSessionResult> {
     assertPageDesignContext(context)
-    return this.ai.startInstance({
+    return this.ai.startSession({
       instanceId: context.instanceId,
       moduleInstanceId: context.moduleInstanceId,
       runtimeInstanceId: context.instanceId,
     })
   }
 
-  stopSession(options: PageDesignStopSessionOptions): AiRuntimeStopInstanceResult {
+  stopSession(options: PageDesignStopSessionOptions): AiRuntimeStopSessionResult {
     assertPageDesignContext(options)
-    return this.ai.stopInstance({
+    return this.ai.stopSession({
       instanceId: options.instanceId,
       moduleInstanceId: options.moduleInstanceId,
       ...(options.reason === undefined ? {} : { reason: options.reason }),
@@ -516,12 +516,12 @@ export class PageDesignModule implements AiBusinessRegistration {
 
   getSession(context: PageDesignRuntimeContext): AiRuntimeSessionRecord | null {
     assertPageDesignContext(context)
-    return this.ai.getSessionByModuleInstance(context.moduleInstanceId)
+    return this.ai.getSession(context.moduleInstanceId)
   }
 
   getSessionHistory(context: PageDesignRuntimeContext): readonly AiRuntimeHistoryEntry[] {
     assertPageDesignContext(context)
-    return this.ai.getSessionHistoryByModuleInstance(context.moduleInstanceId)
+    return this.ai.getSessionHistory(context.moduleInstanceId)
   }
 
   getRegistrationData(): AiModuleRegistrationData {

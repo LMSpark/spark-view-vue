@@ -1,5 +1,19 @@
 import type { AppAiBusinessScope } from './types'
 
+export function createAppAiBusinessSessionId(businessRegistrationId: string, businessInstanceId: string): string {
+  return `${businessRegistrationId}:${businessInstanceId}`
+}
+
+export function createAppAiBusinessScope(businessRegistrationId: string, businessInstanceId: string): AppAiBusinessScope {
+  const instanceId = createAppAiBusinessSessionId(businessRegistrationId, businessInstanceId)
+  return {
+    businessRegistrationId,
+    businessInstanceId,
+    instanceId,
+    runtimeInstanceId: instanceId,
+  }
+}
+
 export function createAppAiStreamKey(scope: AppAiBusinessScope, eventModuleId: string, turnId: string): string {
   return [
     scope.businessRegistrationId,

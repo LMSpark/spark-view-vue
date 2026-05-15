@@ -6,7 +6,6 @@ import {
   type AiFunctionRegistration,
   type AiKnowledgeProjection,
   type AiModuleRegistration,
-  type AiRuntimeApi,
   type FunctionExecutionContext,
 } from '../packages/spark-ai/src'
 
@@ -26,7 +25,7 @@ const NO_PARAMS_SCHEMA = {
   additionalProperties: false,
 } as const
 
-function createDeterministicRuntime(): AiRuntimeApi {
+function createDeterministicRuntime(): AiRuntime {
   return new AiRuntime({
     now: () => 1778030000000,
   })
@@ -121,7 +120,7 @@ describe('AI core module projection and translation API', () => {
     }
 
     const api = core.registerBusiness(business)
-    const started = await api.startInstance({
+    const started = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
@@ -136,8 +135,6 @@ describe('AI core module projection and translation API', () => {
       rootBusinessPath: 'leaveApproval',
       rootModulePath: 'leaveApproval',
     })
-    expect(core.getBusinessRegistrationData('leaveApproval')).toEqual(api.getBusinessRegistrationData())
-    expect(core.listBusinessRegistrationData()).toEqual([api.getBusinessRegistrationData()])
     expect(started.availableFunctions.map((item) => item.action)).toEqual([
       'leave-instance@leaveApproval@setReason',
     ])
@@ -169,21 +166,20 @@ describe('AI core module projection and translation API', () => {
     expect(executed).toMatchObject({ ok: true })
     expect(liveState.touched).toBe(true)
 
-    const stopped = api.stopInstance({
+    const stopped = api.stopSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       reason: 'business completed',
     })
     expect(stopped.status).toBe('Stopped')
-    expect(core.getSession('leave-session-1')?.status).toBe('Stopped')
+    expect(api.getSession('leave-instance')?.status).toBe('Stopped')
   })
 
-  it('treats startInstance as a session-started notification and projects LLM knowledge', async () => {
+  it('treats startSession as a session-started notification and projects LLM knowledge', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
+    const api = core.registerModule(createLeaveModule())
 
-    const started = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const started = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
@@ -241,14 +237,14 @@ describe('AI core module projection and translation API', () => {
       moduleInstanceId: 'leave-instance',
       history: [],
     })
-    expect(core.getSession('leave-session-1')?.status).toBe('Started')
+    expect(api.getSession('leave-instance')?.status).toBe('Started')
   })
 
   it('returns a module-bound API wrapper that keeps the session data chain continuous', async () => {
     const core = createDeterministicRuntime()
     const leaveApi = core.registerModule(createLeaveModule())
 
-    const projection = await leaveApi.startInstance({
+    const projection = await leaveApi.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
@@ -297,10 +293,10 @@ describe('AI core module projection and translation API', () => {
       resultMessage,
     })
 
-    const session = leaveApi.getSessionByModuleInstance('leave-instance')
+    const session = leaveApi.getSession('leave-instance')
     expect(session?.moduleId).toBe('leaveApproval')
     expect(session?.history.map((entry) => entry.kind)).toEqual(['message', 'functionCall'])
-    expect(leaveApi.getSessionHistoryByModuleInstance('leave-instance').map((entry) => entry.kind)).toEqual(['message', 'functionCall'])
+    expect(leaveApi.getSessionHistory('leave-instance').map((entry) => entry.kind)).toEqual(['message', 'functionCall'])
     expect(session?.history[1]).toMatchObject({
       action: 'leave-instance@leaveApproval@setReason',
       status: 'completed',
@@ -318,10 +314,6 @@ describe('AI core module projection and translation API', () => {
     const roundTripped = JSON.parse(JSON.stringify(data))
     const storeRoundTripped = JSON.parse(JSON.stringify(storeSnapshot))
 
-    expect(core.getModuleRegistrationData('department')).toEqual(data)
-    expect(core.listModuleRegistrationData()).toEqual([data])
-    expect(core.getModuleRegistrationStoreSnapshot('department')).toEqual(storeSnapshot)
-    expect(core.listModuleRegistrationStoreSnapshots()).toEqual([storeSnapshot])
     expect(roundTripped).toEqual(data)
     expect(storeRoundTripped).toEqual(storeSnapshot)
     expect(data).not.toHaveProperty('getFunctions')
@@ -387,22 +379,20 @@ describe('AI core module projection and translation API', () => {
     const sourceCore = createDeterministicRuntime()
     const data = sourceCore.registerModule(createDepartmentModule()).getRegistrationData()
     const core = createDeterministicRuntime()
-    core.registerModule(data)
+    const api = core.registerModule(data)
 
-    const projection = await core.startInstance({
-      moduleId: 'department',
+    const projection = await api.startSession({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-from-data',
     })
 
-    expect(core.getModuleRegistrationData('department')).toEqual(data)
+    expect(api.getRegistrationData()).toEqual(data)
     expect(projection.availableFunctions.map((item) => item.action)).toEqual([
       'dept-1/{personId}@basicInfo@update',
     ])
     expect(projection.availableFunctions[0]).not.toHaveProperty('functionId')
 
-    const translated = await core.translateFunctionCall({
-      moduleId: 'department',
+    const translated = await api.translateFunctionCall({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-from-data',
       runtimeInstanceId: 'department-session-from-data',
@@ -420,22 +410,19 @@ describe('AI core module projection and translation API', () => {
 
   it('registers store snapshots as a database-loaded module source', async () => {
     const sourceCore = createDeterministicRuntime()
-    const data = sourceCore.registerModule(createDepartmentModule()).getRegistrationData()
-    const snapshot = sourceCore.getModuleRegistrationStoreSnapshot('department')
+    const sourceApi = sourceCore.registerModule(createDepartmentModule())
+    const data = sourceApi.getRegistrationData()
+    const snapshot = sourceApi.getRegistrationStoreSnapshot()
     const core = createDeterministicRuntime()
-    expect(snapshot).toBeDefined()
-    if (snapshot === undefined) return
 
-    core.registerModule(snapshot)
+    const api = core.registerModule(snapshot)
 
-    const projection = await core.startInstance({
-      moduleId: 'department',
+    const projection = await api.startSession({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-from-store',
     })
 
-    expect(core.getModuleRegistrationData('department')).toEqual(data)
-    expect(core.getModuleRegistrationStoreSnapshot('department')).toEqual(snapshot)
+    expect(api.getRegistrationData()).toEqual(data)
     expect(projection.availableFunctions.map((item) => item.action)).toEqual([
       'dept-1/{personId}@basicInfo@update',
     ])
@@ -453,7 +440,6 @@ describe('AI core module projection and translation API', () => {
     })
 
     expect(() => dynamicApi.getRegistrationData()).toThrow('Dynamic module prompt provider cannot be persisted')
-    expect(() => core.getModuleRegistrationData('dynamicPrompt')).toThrow('Dynamic module prompt provider cannot be persisted')
   })
 
   it('rejects registration schemas that would be lossy in JSON persistence', () => {
@@ -476,46 +462,41 @@ describe('AI core module projection and translation API', () => {
 
   it('isolates AI sessions by module registration id and root module entity id', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
+    const api = core.registerModule(createLeaveModule())
 
-    const first = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const first = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
-    core.appendMessage({
-      moduleId: 'leaveApproval',
+    api.appendMessage({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-alias',
       runtimeInstanceId: 'leave-session-alias',
       role: 'user',
       content: 'same root entity',
     })
-    const resumed = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const resumed = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-2',
     })
-    const other = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const other = await api.startSession({
       moduleInstanceId: 'another-leave-instance',
       instanceId: 'leave-session-3',
     })
 
     expect(first.instanceId).toBe('leave-session-1')
     expect(resumed.instanceId).toBe('leave-session-2')
-    expect(core.getSessionByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })?.history).toHaveLength(1)
-    expect(core.getSessionHistoryByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })).toHaveLength(1)
-    expect(core.getSession('leave-session-alias')?.instanceId).toBe('leave-session-2')
+    expect(api.getSession('leave-instance')?.history).toHaveLength(1)
+    expect(api.getSessionHistory('leave-instance')).toHaveLength(1)
+    expect(api.getSession('leave-instance')?.instanceId).toBe('leave-session-2')
     expect(other.instanceId).toBe('leave-session-3')
-    expect(core.getSessionByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'another-leave-instance' })?.history).toHaveLength(0)
+    expect(api.getSession('another-leave-instance')?.history).toHaveLength(0)
   })
 
   it('encodes root business entity ids in projected actions and decodes them during translation', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
-    const projection = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule())
+    const projection = await api.startSession({
       moduleInstanceId: 'workspace/page@A',
       instanceId: 'leave-session-encoded',
     })
@@ -524,8 +505,7 @@ describe('AI core module projection and translation API', () => {
       'workspace%2Fpage%40A@leaveApproval@setReason',
     ])
 
-    const translated = await core.translateFunctionCall({
-      moduleId: 'leaveApproval',
+    const translated = await api.translateFunctionCall({
       moduleInstanceId: 'workspace/page@A',
       instanceId: 'leave-session-encoded',
       runtimeInstanceId: 'leave-session-encoded',
@@ -541,15 +521,13 @@ describe('AI core module projection and translation API', () => {
 
   it('rejects reusing one technical session alias for another root business entity', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
-    await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule())
+    await api.startSession({
       moduleInstanceId: 'leave-instance-a',
       instanceId: 'shared-session',
     })
 
-    await expect(core.startInstance({
-      moduleId: 'leaveApproval',
+    await expect(api.startSession({
       moduleInstanceId: 'leave-instance-b',
       instanceId: 'shared-session',
     })).rejects.toThrow('AI session alias shared-session is already bound to leaveApproval/leave-instance-a')
@@ -558,15 +536,13 @@ describe('AI core module projection and translation API', () => {
   it('translates a function call but leaves execution to the registering service', async () => {
     const executeSpy = vi.fn()
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule(executeSpy))
-    const projection = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule(executeSpy))
+    const projection = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
 
-    const translated = await core.translateFunctionCall({
-      moduleId: 'leaveApproval',
+    const translated = await api.translateFunctionCall({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
@@ -600,6 +576,7 @@ describe('AI core module projection and translation API', () => {
 
   it('serializes execution results for LLM without interpreting business fields', () => {
     const core = createDeterministicRuntime()
+    const api = core.registerModule(createLeaveModule())
     const domainResult = {
       ok: false,
       code: 'DOMAIN_NEEDS_MORE_INPUT',
@@ -607,7 +584,7 @@ describe('AI core module projection and translation API', () => {
       fix: 'Ask the user for an approver.',
     }
 
-    const message = core.createFunctionResultMessage({
+    const message = api.createFunctionResultMessage({
       action: 'leave-instance@leaveApproval@setReason',
       result: domainResult,
     })
@@ -621,43 +598,38 @@ describe('AI core module projection and translation API', () => {
 
   it('keeps AI session history for UI messages, LLM messages, and LLM-planned function calls', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
-    await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule())
+    await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
 
-    const user = core.appendMessage({
-      moduleId: 'leaveApproval',
+    const user = api.appendMessage({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
       role: 'user',
       content: 'I need family leave.',
     })
-    const assistant = core.appendMessage({
-      moduleId: 'leaveApproval',
+    const assistant = api.appendMessage({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
       role: 'assistant',
       content: 'I will set the leave reason.',
     })
-    const resultMessage = core.createFunctionResultMessage({
+    const resultMessage = api.createFunctionResultMessage({
       action: 'leave-instance@leaveApproval@setReason',
       result: { ok: true, data: { accepted: true }, summary: 'accepted' },
     })
-    const requested = core.recordFunctionCallRequest({
-      moduleId: 'leaveApproval',
+    const requested = api.recordFunctionCallRequest({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
       action: 'leave-instance@leaveApproval@setReason',
       args: { reason: 'family care' },
     })
-    const call = core.completeFunctionCall({
-      moduleId: 'leaveApproval',
+    const call = api.completeFunctionCall({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
@@ -671,8 +643,8 @@ describe('AI core module projection and translation API', () => {
     expect(requested.status).toBe('requested')
     expect(call.status).toBe('completed')
     expect(call.id).toBe(requested.id)
-    expect(core.getSessionByModuleScope({ moduleId: 'leaveApproval', moduleInstanceId: 'leave-instance' })?.instanceId).toBe('leave-session-1')
-    expect(core.getSessionHistory('leave-session-1').map((entry) => entry.kind)).toEqual([
+    expect(api.getSession('leave-instance')?.instanceId).toBe('leave-session-1')
+    expect(api.getSessionHistory('leave-instance').map((entry) => entry.kind)).toEqual([
       'message',
       'message',
       'functionCall',
@@ -681,9 +653,8 @@ describe('AI core module projection and translation API', () => {
 
   it('projects recursive module context params and strips them from execution args', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createDepartmentModule())
-    const projection = await core.startInstance({
-      moduleId: 'department',
+    const api = core.registerModule(createDepartmentModule())
+    const projection = await api.startSession({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-1',
     })
@@ -699,8 +670,7 @@ describe('AI core module projection and translation API', () => {
       required: ['name', 'departmentId', 'personId'],
     })
 
-    const translated = await core.translateFunctionCall({
-      moduleId: 'department',
+    const translated = await api.translateFunctionCall({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-1',
       runtimeInstanceId: 'department-session-1',
@@ -719,15 +689,13 @@ describe('AI core module projection and translation API', () => {
 
   it('rejects active path conflicts and missing module instances during translation', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createDepartmentModule())
-    const projection = await core.startInstance({
-      moduleId: 'department',
+    const api = core.registerModule(createDepartmentModule())
+    const projection = await api.startSession({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-1',
     })
 
-    const conflict = await core.translateFunctionCall({
-      moduleId: 'department',
+    const conflict = await api.translateFunctionCall({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-1',
       runtimeInstanceId: 'department-session-1',
@@ -739,8 +707,7 @@ describe('AI core module projection and translation API', () => {
     expect(conflict.ok).toBe(false)
     if (!conflict.ok) expect(conflict.code).toBe('CONTEXT_MISMATCH')
 
-    const missing = await core.translateFunctionCall({
-      moduleId: 'department',
+    const missing = await api.translateFunctionCall({
       moduleInstanceId: 'dept-1',
       instanceId: 'department-session-1',
       runtimeInstanceId: 'department-session-1',
@@ -754,15 +721,13 @@ describe('AI core module projection and translation API', () => {
 
   it('fails fast when action module and current scope do not match', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
-    const projection = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule())
+    const projection = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
 
-    const output = await core.translateFunctionCall({
-      moduleId: 'leaveApproval',
+    const output = await api.translateFunctionCall({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
@@ -778,15 +743,13 @@ describe('AI core module projection and translation API', () => {
   it('validates args from the projected function schema before returning a translation', async () => {
     const executeSpy = vi.fn()
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule(executeSpy))
-    const projection = await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule(executeSpy))
+    const projection = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
 
-    const output = await core.translateFunctionCall({
-      moduleId: 'leaveApproval',
+    const output = await api.translateFunctionCall({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
@@ -805,15 +768,13 @@ describe('AI core module projection and translation API', () => {
 
   it('marks an AI session stopped and blocks later function translation until restart', async () => {
     const core = createDeterministicRuntime()
-    core.registerModule(createLeaveModule())
-    await core.startInstance({
-      moduleId: 'leaveApproval',
+    const api = core.registerModule(createLeaveModule())
+    await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
 
-    const stopped = core.stopInstance({
-      moduleId: 'leaveApproval',
+    const stopped = api.stopSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       reason: 'session closed',
@@ -826,10 +787,9 @@ describe('AI core module projection and translation API', () => {
       reason: 'session closed',
     })
     expect(stopped.session.status).toBe('Stopped')
-    expect(core.getSession('leave-session-1')?.status).toBe('Stopped')
+    expect(api.getSession('leave-instance')?.status).toBe('Stopped')
 
-    const translated = await core.translateFunctionCall({
-      moduleId: 'leaveApproval',
+    const translated = await api.translateFunctionCall({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',
@@ -840,13 +800,11 @@ describe('AI core module projection and translation API', () => {
     expect(translated.ok).toBe(false)
     if (!translated.ok) expect(translated.code).toBe('SESSION_STOPPED')
 
-    await core.startInstance({
-      moduleId: 'leaveApproval',
+    await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
-    const resumed = await core.translateFunctionCall({
-      moduleId: 'leaveApproval',
+    const resumed = await api.translateFunctionCall({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
       runtimeInstanceId: 'leave-session-1',

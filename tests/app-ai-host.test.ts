@@ -3,7 +3,7 @@ import { PAGE_DESIGN_MODULE_ID } from '@spark-view/spark-ai'
 import type {
   AiRuntimeFunctionCallResult,
   AiRuntimeMessageHistoryEntry,
-  AiRuntimeStartInstanceResult,
+  AiRuntimeStartSessionResult,
 } from '@spark-view/spark-ai'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config'
 import {
@@ -316,7 +316,7 @@ describe('AppAiHost', () => {
         paramsSchema: NO_PARAMS_SCHEMA,
         contextParams: [],
       }],
-    } as unknown as AiRuntimeStartInstanceResult
+    } as unknown as AiRuntimeStartSessionResult
     const endBusinessInstance = vi.fn()
     const runtime: AppAiBusinessRuntime = {
       moduleId: 'taskBiz',
@@ -332,7 +332,7 @@ describe('AppAiHost', () => {
         modules: [],
       }),
       resolveBusinessInstance: () => 'task-1',
-      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      startSession: vi.fn(async (): Promise<AiRuntimeStartSessionResult> => projection),
       appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
         id: 'history-1',
         seq: 1,
@@ -458,7 +458,7 @@ describe('AppAiHost', () => {
         paramsSchema: NO_PARAMS_SCHEMA,
         contextParams: [],
       }],
-    } as unknown as AiRuntimeStartInstanceResult
+    } as unknown as AiRuntimeStartSessionResult
     const runtime: AppAiBusinessRuntime = {
       moduleId: 'taskBiz',
       getRegistrationData: () => ({
@@ -469,7 +469,7 @@ describe('AppAiHost', () => {
         modules: [],
       }),
       resolveBusinessInstance: () => 'task-1',
-      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      startSession: vi.fn(async (): Promise<AiRuntimeStartSessionResult> => projection),
       appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
         id: 'history-1',
         seq: 1,
@@ -594,7 +594,7 @@ describe('AppAiHost', () => {
         paramsSchema: NO_PARAMS_SCHEMA,
         contextParams: [],
       }],
-    } as unknown as AiRuntimeStartInstanceResult
+    } as unknown as AiRuntimeStartSessionResult
     const runtime: AppAiBusinessRuntime = {
       moduleId: 'loopBiz',
       getRegistrationData: () => ({
@@ -605,7 +605,7 @@ describe('AppAiHost', () => {
         modules: [],
       }),
       resolveBusinessInstance: () => 'loop-1',
-      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      startSession: vi.fn(async (): Promise<AiRuntimeStartSessionResult> => projection),
       appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
         id: 'loop-history-1',
         seq: 1,
@@ -908,7 +908,7 @@ describe('AppAiHost', () => {
           contextParams: [],
         })),
       ],
-    } as unknown as AiRuntimeStartInstanceResult
+    } as unknown as AiRuntimeStartSessionResult
     const runtime: AppAiBusinessRuntime = {
       moduleId: PAGE_DESIGN_MODULE_ID,
       getRegistrationData: () => ({
@@ -919,7 +919,7 @@ describe('AppAiHost', () => {
         modules: [],
       }),
       resolveBusinessInstance: () => 'page-1',
-      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      startSession: vi.fn(async (): Promise<AiRuntimeStartSessionResult> => projection),
       appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
         id: 'history-1',
         seq: 1,
@@ -1162,7 +1162,7 @@ describe('AppAiHost', () => {
         paramsSchema: NO_PARAMS_SCHEMA,
         contextParams: [],
       }],
-    } as unknown as AiRuntimeStartInstanceResult
+    } as unknown as AiRuntimeStartSessionResult
     const runtime: AppAiBusinessRuntime = {
       moduleId: 'task',
       getRegistrationData: () => ({
@@ -1173,7 +1173,7 @@ describe('AppAiHost', () => {
         modules: [],
       }),
       resolveBusinessInstance: () => 'task-1',
-      startSession: vi.fn(async (): Promise<AiRuntimeStartInstanceResult> => projection),
+      startSession: vi.fn(async (): Promise<AiRuntimeStartSessionResult> => projection),
       appendMessage: vi.fn((options): AiRuntimeMessageHistoryEntry => ({
         id: 'task-history-1',
         seq: 1,

@@ -97,6 +97,15 @@ export class AiInvocationProtocol {
     }
   }
 
+  /** 容错解析 action；非法 action 返回 null，供宿主层避免重复 try/catch。 */
+  static tryParseActionPath(action: string): ActionPathParts | null {
+    try {
+      return AiInvocationProtocol.parseActionPath(action)
+    } catch {
+      return null
+    }
+  }
+
   /** 解析 LLM-facing action：rootInstance[/childInstance]@moduleId@actionName。实例路径段允许 URI 编码。 */
   private static parseInstanceActionPath(action: string): ActionPathParts {
     const parts = action.split('@')
@@ -144,6 +153,24 @@ export class AiInvocationProtocol {
   /** 将 unknown 错误统一转换为可记录、可返回给调用方的字符串。 */
   static toErrorMessage(err: unknown): string {
     return err instanceof Error ? err.message : String(err)
+  }
+
+  /** 将任意函数执行结果转为 tool result 字符串；只做序列化，不解释领域字段。 */
+  static stringifyFunctionResult(result: unknown): string {
+    if (typeof result === 'string') return result
+    try {
+      const seen = new WeakSet<object>()
+      const serialized: unknown = JSON.stringify(result, (_key, value: unknown) => {
+        if (typeof value === 'bigint') return value.toString()
+        if (typeof value !== 'object' || value === null) return value
+        if (seen.has(value)) return '[Circular]'
+        seen.add(value)
+        return value
+      })
+      return typeof serialized === 'string' ? serialized : String(result)
+    } catch {
+      return String(result)
+    }
   }
 
   /**

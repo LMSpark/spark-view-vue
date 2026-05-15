@@ -11,7 +11,7 @@ export {
   resolvePageDesignEditHost,
   resolvePageDesignEditPageId,
 } from './page-design-edit-host-registry'
-export { createAppAiStreamKey, toRuntimeScope } from './scope'
+export { createAppAiBusinessScope, createAppAiBusinessSessionId, createAppAiStreamKey, toRuntimeScope } from './scope'
 export { createAppAiToolCodec } from './tool-codec'
 
 export type { RegisterAppAiBusinessesOptions } from './register-app-ai-businesses'

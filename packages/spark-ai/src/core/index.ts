@@ -34,10 +34,10 @@ export type {
   AiRegisteredModuleAppendMessageOptions,
   AiRegisteredModuleCompleteFunctionCallOptions,
   AiRegisteredModuleExecuteFunctionCallOptions,
-  AiRegisteredModuleProjectModuleOptions,
+  AiRegisteredModuleProjectKnowledgeOptions,
   AiRegisteredModuleRecordFunctionCallRequestOptions,
-  AiRegisteredModuleStartInstanceOptions,
-  AiRegisteredModuleStopInstanceOptions,
+  AiRegisteredModuleStartSessionOptions,
+  AiRegisteredModuleStopSessionOptions,
   AiRegisteredModuleTranslateFunctionCallOptions,
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeAppendMessageOptions,
@@ -77,15 +77,15 @@ export type {
   AiRuntimeModuleInstanceScope,
   AiRuntimeModulePath,
   AiRuntimeOptions,
-  AiRuntimeProjectModuleOptions,
+  AiRuntimeProjectKnowledgeOptions,
   AiRuntimeRecordFunctionCallRequestOptions,
   AiRuntimeSessionRecord,
   AiRuntimeSessionLifecycleSnapshot,
   AiRuntimeSessionStatus,
-  AiRuntimeStartInstanceOptions,
-  AiRuntimeStartInstanceResult,
-  AiRuntimeStopInstanceOptions,
-  AiRuntimeStopInstanceResult,
+  AiRuntimeStartSessionOptions,
+  AiRuntimeStartSessionResult,
+  AiRuntimeStopSessionOptions,
+  AiRuntimeStopSessionResult,
   AiRuntimeTranslateFunctionCallOptions,
   FunctionExecutionContext,
   FunctionFailureMode,
@@ -103,6 +103,15 @@ export {
   AiInvocationProtocol,
 } from './protocol/invocation-helpers'
 
+export {
+  createAiRuntimeToolCodec,
+} from './protocol/tool-codec'
+
+export {
+  addGuidedAiToolAction,
+  createInitialAiToolActionSet,
+} from './protocol/tool-exposure-policy'
+
 export type {
   ActionPathParts,
   ProtocolRole,
@@ -110,6 +119,16 @@ export type {
   TokenUsage,
   StreamCallbacks,
 } from './protocol/invocation-helpers'
+
+export type {
+  AiRuntimeToolCodec,
+  AiRuntimeToolCodecOptions,
+  AiRuntimeToolSpec,
+} from './protocol/tool-codec'
+
+export type {
+  AiRuntimeToolExposurePolicyOptions,
+} from './protocol/tool-exposure-policy'
 
 // 四、LLM 参数校验：运行函数前对反序列化 JSON 参数做结构校验。
 export {

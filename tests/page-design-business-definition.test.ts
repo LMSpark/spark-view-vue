@@ -112,9 +112,8 @@ describe('pageDesign module definition', () => {
     ))).toBe(true)
 
     const dataOnlyCore = new AiRuntime()
-    dataOnlyCore.registerModule(registrationStoreSnapshot)
-    const dataOnlyProjection = await dataOnlyCore.startInstance({
-      moduleId: PageDesignModule.moduleId,
+    const dataOnlyPageDesign = dataOnlyCore.registerModule(registrationStoreSnapshot)
+    const dataOnlyProjection = await dataOnlyPageDesign.startSession({
       moduleInstanceId: 'page-designer-data-only',
       instanceId: 'page-design-data-only',
     })

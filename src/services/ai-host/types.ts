@@ -5,7 +5,7 @@ import type {
   AiRuntimeHistoryEntry,
   AiRuntimeKnowledgeProjection,
   AiRuntimeMessageHistoryEntry,
-  AiRuntimeStartInstanceResult,
+  AiRuntimeStartSessionResult,
 } from '@spark-view/spark-ai'
 import type {
   AiChatSendRequest,
@@ -70,7 +70,7 @@ export interface AppAiBusinessRuntime {
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string
   canReuseSelection?(input: AppAiBusinessResolveInput, currentScope: AppAiBusinessScope): boolean
   getSystemPrompt?(context: AppAiBusinessRuntimeContext): string | undefined
-  startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult>
+  startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult>
   appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry
   executeFunctionCall(options: AppAiBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>>
   afterFunctionCall?(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective | Promise<AppAiBusinessLifecycleDirective>

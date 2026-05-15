@@ -23,7 +23,11 @@ action 中的实例路径段会按 URI 编码后投影给 LLM，翻译时再解�
 
 - `protocol/runtime-contracts.ts`
   - 定义递归模块注册、函数知识注册、AI 会话记录、LLM 知识投影、函数调用翻译、执行上下文和结果回传消息。
-  - `startInstance` / `stopInstance` 更新 AI session record，不代表 core 创建、停止或释放模块服务实例。
+  - `startSession` / `stopSession` 更新 AI session record，不代表 core 创建、停止或释放模块服务实例。
+
+- `protocol/registration-contracts.ts` / `session-contracts.ts` / `projection-contracts.ts` / `function-call-contracts.ts` / `runtime-api-contracts.ts`
+  - 面向不同调用场景的契约分组导出，SSOT 仍是 `runtime-contracts.ts`。
+  - 调用方从 `core/index.ts` 或包根入口拿类型，不深链 `internal/`。
 
 - `protocol/parameter-schema.ts`
   - 参数 schema 的单一事实源。
@@ -35,7 +39,11 @@ action 中的实例路径段会按 URI 编码后投影给 LLM，翻译时再解�
 
 - `protocol/invocation-helpers.ts`
   - 放置和具体模型 SDK 无关的调用协议工具。
-  - 包括 action 地址解析、错误归一、JSON 对象抽取和 token usage 格式化。
+  - 包括 action 地址解析、try-parse、函数结果序列化、错误归一、JSON 对象抽取和 token usage 格式化。
+
+- `protocol/tool-codec.ts` / `tool-exposure-policy.ts`
+  - 无框架 tool 能力：把 projection 转成模型 tools，并在工具过多时先开放基础工具、再按 `guideFunction` 解锁。
+  - 这是“轻宿主、重核心”的公共能力，Vue/React/后端宿主都应复用这里的策略。
 
 - `protocol/parameter-payload-contracts.ts`
   - 定义参数 payload provider 的查询和指南接口。
@@ -61,12 +69,28 @@ action 中的实例路径段会按 URI 编码后投影给 LLM，翻译时再解�
 
 - `internal/runtime/ai-runtime.ts`
   - core facade。
-  - 主时序是：registerModule 返回 AiRegisteredModuleApi -> startInstance/projectModule -> appendMessage/executeFunctionCall -> stopInstance。
+  - 只 new 组合 `AiRegistrationRepository`、`AiSessionLedger`、`AiProjectionService`、`AiFunctionCallTranslator`、`AiFunctionCallExecutor`、`AiRegisteredApiFactory`。
+  - 对外只保留 `registerModule()`、`registerBusiness()`、`getKnowledgeProjection()`。
+  - 主时序是：registerModule/registerBusiness 返回绑定 handle -> startSession/projectKnowledge -> appendMessage/executeFunctionCall -> stopSession。
   - `AiRegisteredModuleApi` 只绑定 moduleId，帮助注册方保持 AI 会话数据链路不断线；模块服务实例仍由注册方自管。
-  - `translateFunctionCall` 只返回 `executionArgs` 和 `FunctionExecutionContext`，供需要分步调试的调用方使用。
-  - `executeFunctionCall` 由 core 串起 translate、record requested、调用外部落点、complete/failed；注册方只提供描述和落点绑定。
-  - `appendMessage` / `recordFunctionCallRequest` / `completeFunctionCall` 统一保存 AI 会话历史，不保存模块运行状态。
-  - `createFunctionResultMessage` 只序列化注册方执行结果，下一步由 LLM/宿主决定。
+
+- `internal/runtime/ai-registration-repository.ts`
+  - 唯一持有 module/business 注册、注册数据快照、store snapshot、business/module 互转和 payload provider 注册。
+
+- `internal/runtime/ai-session-ledger.ts`
+  - 唯一持有 sessions、alias index、history seq、start/stop、append/record/complete、session 查询和 clone。
+
+- `internal/runtime/ai-projection-service.ts`
+  - 组合注册仓库、runtime projector 与 knowledge projector，唯一负责 `projectKnowledge` 和 knowledge projection 更新。
+
+- `internal/runtime/ai-function-call-translator.ts`
+  - 唯一负责 action 解析、projection scope 校验、模块/函数定位、activePath 合并、上下文参数准备和 schema 校验。
+
+- `internal/runtime/ai-function-call-executor.ts`
+  - 由 core 串起 translate、record requested、调用外部落点、normalize、complete failed/completed。
+
+- `internal/runtime/ai-registered-api-factory.ts`
+  - 唯一负责创建 module/business 绑定 handle。
 
 ## 四、核心边界
 

@@ -10,7 +10,7 @@ import {
   type AiRuntimeFunctionCallResult,
   type AiRuntimeHistoryEntry,
   type AiRuntimeMessageHistoryEntry,
-  type AiRuntimeStartInstanceResult,
+  type AiRuntimeStartSessionResult,
 } from '@spark-view/spark-ai'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config'
 import type { AppAiBusinessRegistry } from './business-registry'
@@ -77,11 +77,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function actionFunctionId(action: string): string | null {
-  try {
-    return AiInvocationProtocol.parseActionPath(action).function
-  } catch {
-    return null
-  }
+  return AiInvocationProtocol.tryParseActionPath(action)?.function ?? null
 }
 
 function leaveTypeLabel(value: unknown): string {
@@ -142,7 +138,7 @@ class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
     return createLeaveRequestSystemPrompt()
   }
 
-  startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult> {
+  startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {
     return this.module.startSession({ ...context, moduleId: LEAVE_REQUEST_MODULE_ID })
   }
 
@@ -228,7 +224,7 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
     }
   }
 
-  async startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartInstanceResult> {
+  async startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {
     return this.module.startSession({ ...context, moduleId: PAGE_DESIGN_MODULE_ID })
   }
 

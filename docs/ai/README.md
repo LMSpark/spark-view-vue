@@ -40,6 +40,7 @@
 | 文件 | 说明 |
 |------|------|
 | [packages/spark-ai/ARCHITECTURE.md](../../packages/spark-ai/ARCHITECTURE.md) | spark-ai 当前 business-first core、page-design business、公共出口与删除的旧兼容 API |
+| [SPARK_AI_PACKAGE_USAGE_GUIDE.md](SPARK_AI_PACKAGE_USAGE_GUIDE.md) | **使用指南**：spark-ai core 智能边界、AI Host 通用宿主关系、PageDesign 业务服务工作流与接入步骤 |
 | [AI_DETAILED_DESIGN_AND_IMPLEMENTATION_CHAIN.md](AI_DETAILED_DESIGN_AND_IMPLEMENTATION_CHAIN.md) | **方案总览**：AI 详细设计方案、图文链路、模块分工、实施路线、质量门禁与交付文案 |
 | [AI_FRONTEND_UNIFICATION_PLAN.md](architecture/AI_FRONTEND_UNIFICATION_PLAN.md) | 前端 AI 引擎统一与细粒度编辑主链路规划 |
 | [AI_CORE_LAYER_CONCEPT_MODEL.md](architecture/AI_CORE_LAYER_CONCEPT_MODEL.md) | **概念模型**：AI 核心层的一等对象、分层边界、注册原则与最小工作流 |

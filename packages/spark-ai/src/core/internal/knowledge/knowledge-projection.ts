@@ -118,7 +118,7 @@ export class AiKnowledgeProjector implements AiKnowledgeProjection {
     if (projection !== undefined) return projection
     throw new Error(
       `Knowledge projection missing for ${scope.moduleId}/${scope.moduleInstanceId}. ` +
-      'Call AiRuntime.projectModule() or startInstance() for this scope first.',
+      'Call moduleApi.projectKnowledge() or startSession() for this scope first.',
     )
   }
 

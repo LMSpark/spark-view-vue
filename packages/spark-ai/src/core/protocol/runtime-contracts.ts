@@ -6,7 +6,7 @@ import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
  *
  * 核心层定义递归模块知识、LLM 可见函数暴露、AI 会话记录、
  * LLM 函数调用翻译结果、执行翻译链路，以及把注册方执行结果转换成 LLM 可消费消息的最薄协议。
- * `startInstance` / `stopInstance` 与 AI 会话生命周期一致：core 会统一保存
+ * `startSession` / `stopSession` 与 AI 会话生命周期一致：core 会统一保存
  * AI 会话状态和历史记录，但不会创建、停止或释放任何模块服务实例。
  *
  * 边界约束：
@@ -713,7 +713,7 @@ export type AiRuntimeFunctionCallTranslationResult =
   | AiRuntimeFunctionCallFailure
 
 /** 请求 core 投影某个会话 scope 下的模块知识。 */
-export interface AiRuntimeProjectModuleOptions extends AiRuntimeInstanceScope {}
+export interface AiRuntimeProjectKnowledgeOptions extends AiRuntimeInstanceScope {}
 
 /** 请求 core 翻译一次 LLM 函数调用。 */
 export interface AiRuntimeTranslateFunctionCallOptions extends AiRuntimeInstanceScope {
@@ -768,7 +768,7 @@ export interface AiRuntimeExecuteFunctionCallOptions extends AiRuntimeTranslateF
 }
 
 /** AI 会话开始通知。core 返回投影、生命周期快照，并保存 AI session record。 */
-export interface AiRuntimeStartInstanceOptions {
+export interface AiRuntimeStartSessionOptions {
   /** 顶层模块 ID。 */
   readonly moduleId: AiRuntimeModuleId
   /** 顶层模块实例 ID。 */
@@ -785,7 +785,7 @@ export interface AiRuntimeStartInstanceOptions {
 }
 
 /** AI 会话开始通知的返回值。 */
-export interface AiRuntimeStartInstanceResult extends AiRuntimeKnowledgeProjection {
+export interface AiRuntimeStartSessionResult extends AiRuntimeKnowledgeProjection {
   /** 固定为 Started，表示本次通知语义。 */
   readonly status: 'Started'
   /** 归一化后的 AI 会话 ID。 */
@@ -801,7 +801,7 @@ export interface AiRuntimeStartInstanceResult extends AiRuntimeKnowledgeProjecti
 }
 
 /** AI 会话结束通知。core 更新 AI session record，但不释放模块服务。 */
-export interface AiRuntimeStopInstanceOptions {
+export interface AiRuntimeStopSessionOptions {
   /** 顶层模块 ID。 */
   readonly moduleId: AiRuntimeModuleId
   /** 顶层模块实例 ID。 */
@@ -813,7 +813,7 @@ export interface AiRuntimeStopInstanceOptions {
 }
 
 /** AI 会话结束通知的返回值。 */
-export interface AiRuntimeStopInstanceResult {
+export interface AiRuntimeStopSessionResult {
   /** 固定为 Stopped，表示本次通知语义。 */
   readonly status: 'Stopped'
   /** 归一化后的 AI 会话 ID。 */
@@ -835,13 +835,13 @@ export interface AiRuntimeOptions {
 }
 
 /** 注册器返回的模块绑定 start options；moduleId 已由注册句柄补齐。 */
-export type AiRegisteredModuleStartInstanceOptions = Omit<AiRuntimeStartInstanceOptions, 'moduleId'>
+export type AiRegisteredModuleStartSessionOptions = Omit<AiRuntimeStartSessionOptions, 'moduleId'>
 
 /** 注册器返回的模块绑定 stop options；moduleId 已由注册句柄补齐。 */
-export type AiRegisteredModuleStopInstanceOptions = Omit<AiRuntimeStopInstanceOptions, 'moduleId'>
+export type AiRegisteredModuleStopSessionOptions = Omit<AiRuntimeStopSessionOptions, 'moduleId'>
 
 /** 注册器返回的模块绑定投影 options；moduleId 已由注册句柄补齐。 */
-export type AiRegisteredModuleProjectModuleOptions = Omit<AiRuntimeProjectModuleOptions, 'moduleId'>
+export type AiRegisteredModuleProjectKnowledgeOptions = Omit<AiRuntimeProjectKnowledgeOptions, 'moduleId'>
 
 /** 注册器返回的模块绑定消息记录 options；moduleId 已由注册句柄补齐。 */
 export type AiRegisteredModuleAppendMessageOptions = Omit<AiRuntimeAppendMessageOptions, 'moduleId'>
@@ -879,14 +879,10 @@ export interface AiRegisteredModuleApi {
   getRegistrationData(): AiModuleRegistrationData
   /** 读取当前模块注册的结构化持久化快照；可拆表写库，由上层持久化。 */
   getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot
-  /** 按技术 instanceId alias 读取会话记录。 */
-  getSession(instanceId: string): AiRuntimeSessionRecord | null
   /** 按根模块实例 ID 读取当前模块的 AI 会话记录。 */
-  getSessionByModuleInstance(moduleInstanceId: AiRuntimeModuleInstanceId): AiRuntimeSessionRecord | null
-  /** 按技术 instanceId alias 读取当前模块的 AI 会话历史。 */
-  getSessionHistory(instanceId: string): readonly AiRuntimeHistoryEntry[]
+  getSession(moduleInstanceId: AiRuntimeModuleInstanceId): AiRuntimeSessionRecord | null
   /** 按根模块实例 ID 读取当前模块的 AI 会话历史。 */
-  getSessionHistoryByModuleInstance(moduleInstanceId: AiRuntimeModuleInstanceId): readonly AiRuntimeHistoryEntry[]
+  getSessionHistory(moduleInstanceId: AiRuntimeModuleInstanceId): readonly AiRuntimeHistoryEntry[]
   /** 追加 UI/LLM/system 消息历史。 */
   appendMessage(options: AiRegisteredModuleAppendMessageOptions): AiRuntimeMessageHistoryEntry
   /** 记录 LLM 编排出的一次函数调用请求。 */
@@ -896,11 +892,11 @@ export interface AiRegisteredModuleApi {
   /** 追加 LLM 编排的函数调用历史。 */
   appendFunctionCall(options: AiRegisteredModuleAppendFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry
   /** 接收当前模块的 AI 会话开始通知，并返回 LLM 知识投影。 */
-  startInstance(options: AiRegisteredModuleStartInstanceOptions): Promise<AiRuntimeStartInstanceResult>
+  startSession(options: AiRegisteredModuleStartSessionOptions): Promise<AiRuntimeStartSessionResult>
   /** 接收当前模块的 AI 会话结束通知。 */
-  stopInstance(options: AiRegisteredModuleStopInstanceOptions): AiRuntimeStopInstanceResult
+  stopSession(options: AiRegisteredModuleStopSessionOptions): AiRuntimeStopSessionResult
   /** 投影当前模块在某个会话 scope 下的 LLM 知识。 */
-  projectModule(options: AiRegisteredModuleProjectModuleOptions): Promise<AiRuntimeKnowledgeProjection>
+  projectKnowledge(options: AiRegisteredModuleProjectKnowledgeOptions): Promise<AiRuntimeKnowledgeProjection>
   /** 翻译一次当前模块 scope 下的 LLM 函数调用。 */
   translateFunctionCall(options: AiRegisteredModuleTranslateFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult>
   /** 由 core 完整处理一次当前模块 scope 下的函数调用翻译、记录、落点运行和回填。 */
@@ -923,64 +919,12 @@ export interface AiRegisteredBusinessApi extends AiRegisteredModuleApi {
   getBusinessRegistrationStoreSnapshot(): AiBusinessRegistrationStoreSnapshot
 }
 
-/** core 对外 API：注册模块知识、管理 AI 会话历史、投影知识、翻译函数调用。 */
+/** core 对外 API：只负责注册模块知识并返回绑定 handle；会话能力由 handle 承接。 */
 export interface AiRuntimeApi {
   /** 注册一个业务根知识树；重复 businessId 会 fail-fast，并返回绑定 businessId 的 API 包装器。 */
   registerBusiness(registration: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi
-  /** 读取已注册业务；未知业务返回 undefined。 */
-  getBusinessRegistration(businessId: string): AiBusinessRegistration | undefined
-  /** 列出当前 core facade 持有的业务注册。只包含知识注册，不代表 live state。 */
-  listBusinessRegistrations(): readonly AiBusinessRegistration[]
-  /** 读取已注册业务的纯数据快照；未知业务返回 undefined。 */
-  getBusinessRegistrationData(businessId: string): AiBusinessRegistrationData | undefined
-  /** 列出当前 core facade 持有的业务注册纯数据快照。 */
-  listBusinessRegistrationData(): readonly AiBusinessRegistrationData[]
-  /** 读取已注册业务的结构化持久化快照；未知业务返回 undefined。 */
-  getBusinessRegistrationStoreSnapshot(businessId: string): AiBusinessRegistrationStoreSnapshot | undefined
-  /** 列出当前 core facade 持有的业务注册结构化持久化快照。 */
-  listBusinessRegistrationStoreSnapshots(): readonly AiBusinessRegistrationStoreSnapshot[]
   /** 注册一个顶层模块知识树；重复 moduleId 会 fail-fast，并返回绑定 moduleId 的 API 包装器。 */
   registerModule(registration: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi
-  /** 读取已注册模块；未知模块返回 undefined。 */
-  getModuleRegistration(moduleId: string): AiModuleRegistration | undefined
-  /** 列出当前 core facade 持有的模块注册。只包含知识注册，不代表服务状态。 */
-  listModuleRegistrations(): readonly AiModuleRegistration[]
-  /** 读取已注册模块的纯数据快照；未知模块返回 undefined。 */
-  getModuleRegistrationData(moduleId: string): AiModuleRegistrationData | undefined
-  /** 列出当前 core facade 持有的模块注册纯数据快照。 */
-  listModuleRegistrationData(): readonly AiModuleRegistrationData[]
-  /** 读取已注册模块的结构化持久化快照；未知模块返回 undefined。 */
-  getModuleRegistrationStoreSnapshot(moduleId: string): AiModuleRegistrationStoreSnapshot | undefined
-  /** 列出当前 core facade 持有的模块注册结构化持久化快照。 */
-  listModuleRegistrationStoreSnapshots(): readonly AiModuleRegistrationStoreSnapshot[]
-  /** 按技术 instanceId alias 读取会话记录；真实隔离仍以 moduleId + moduleInstanceId 为准。 */
-  getSession(instanceId: string): AiRuntimeSessionRecord | null
-  /** 按模块注册 ID + 根模块实例 ID 读取 AI 会话记录；未知时返回 null。 */
-  getSessionByModuleScope(scope: AiRuntimeModuleInstanceScope): AiRuntimeSessionRecord | null
-  /** 按技术 instanceId alias 读取 AI 会话历史；未知 session 返回空数组。 */
-  getSessionHistory(instanceId: string): readonly AiRuntimeHistoryEntry[]
-  /** 按模块注册 ID + 根模块实例 ID 读取 AI 会话历史；未知 session 返回空数组。 */
-  getSessionHistoryByModuleScope(scope: AiRuntimeModuleInstanceScope): readonly AiRuntimeHistoryEntry[]
   /** 获取核心层知识投影器（统一的函数目录、模块目录、参数 payload 查询入口）。 */
   getKnowledgeProjection(): unknown // AiKnowledgeProjection（需要通过 @spark-view/spark-ai 导出）
-  /** 追加 UI/LLM/system 消息历史。 */
-  appendMessage(options: AiRuntimeAppendMessageOptions): AiRuntimeMessageHistoryEntry
-  /** 记录 LLM 编排出的一次函数调用请求，形成 requested 历史条目。 */
-  recordFunctionCallRequest(options: AiRuntimeRecordFunctionCallRequestOptions): AiRuntimeFunctionCallHistoryEntry
-  /** 把 requested 函数调用更新为 completed/failed；不解释结果、不做下一步编排。 */
-  completeFunctionCall(options: AiRuntimeCompleteFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry
-  /** 追加 LLM 编排的函数调用历史；不执行、不调度、不验证结果。 */
-  appendFunctionCall(options: AiRuntimeAppendFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry
-  /** 接收 AI 会话开始通知，并返回当前会话的 LLM 知识投影。 */
-  startInstance(options: AiRuntimeStartInstanceOptions): Promise<AiRuntimeStartInstanceResult>
-  /** 接收 AI 会话结束通知，并返回通知快照；core 不释放模块服务。 */
-  stopInstance(options: AiRuntimeStopInstanceOptions): AiRuntimeStopInstanceResult
-  /** 按调用方给定会话 scope 投影 LLM 知识，不读取或写入任何 core 会话状态。 */
-  projectModule(options: AiRuntimeProjectModuleOptions): Promise<AiRuntimeKnowledgeProjection>
-  /** 翻译一次 LLM 函数调用，不执行函数、不修改 active path；函数调用历史由 appendFunctionCall 写入。 */
-  translateFunctionCall(options: AiRuntimeTranslateFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult>
-  /** 由 core 完整处理一次函数调用翻译、记录、落点运行和回填；不保存模块服务状态、不做下一步编排。 */
-  executeFunctionCall(options: AiRuntimeExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>>
-  /** 把注册方执行结果序列化成 LLM tool result；不验证结果、不做编排决策。 */
-  createFunctionResultMessage(options: AiRuntimeCreateFunctionResultMessageOptions): AiRuntimeFunctionResultMessage
 }

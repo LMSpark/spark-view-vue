@@ -16,8 +16,8 @@ import {
   type AiRuntimeMessageRole,
   type AiRuntimeMessageSource,
   type AiRuntimeSessionRecord,
-  type AiRuntimeStartInstanceResult,
-  type AiRuntimeStopInstanceResult,
+  type AiRuntimeStartSessionResult,
+  type AiRuntimeStopSessionResult,
   type FunctionExecutionContext,
   type LlmJsonObject,
   type LlmJsonSchema,
@@ -480,26 +480,26 @@ export class LeaveRequestModule implements AiBusinessRegistration {
 
   async projectKnowledge(context: LeaveRequestRuntimeContext): Promise<AiRuntimeKnowledgeProjection> {
     assertLeaveRequestContext(context)
-    return this.ai.projectModule({
+    return this.ai.projectKnowledge({
       instanceId: context.instanceId,
       moduleInstanceId: context.moduleInstanceId,
       runtimeInstanceId: context.instanceId,
     })
   }
 
-  async startSession(context: LeaveRequestRuntimeContext): Promise<AiRuntimeStartInstanceResult> {
+  async startSession(context: LeaveRequestRuntimeContext): Promise<AiRuntimeStartSessionResult> {
     assertLeaveRequestContext(context)
     this.service.getDraft(context.moduleInstanceId)
-    return this.ai.startInstance({
+    return this.ai.startSession({
       instanceId: context.instanceId,
       moduleInstanceId: context.moduleInstanceId,
       runtimeInstanceId: context.instanceId,
     })
   }
 
-  stopSession(options: LeaveRequestStopSessionOptions): AiRuntimeStopInstanceResult {
+  stopSession(options: LeaveRequestStopSessionOptions): AiRuntimeStopSessionResult {
     assertLeaveRequestContext(options)
-    return this.ai.stopInstance({
+    return this.ai.stopSession({
       instanceId: options.instanceId,
       moduleInstanceId: options.moduleInstanceId,
       ...(options.reason === undefined ? {} : { reason: options.reason }),
@@ -521,12 +521,12 @@ export class LeaveRequestModule implements AiBusinessRegistration {
 
   getSession(context: LeaveRequestRuntimeContext): AiRuntimeSessionRecord | null {
     assertLeaveRequestContext(context)
-    return this.ai.getSessionByModuleInstance(context.moduleInstanceId)
+    return this.ai.getSession(context.moduleInstanceId)
   }
 
   getSessionHistory(context: LeaveRequestRuntimeContext): readonly AiRuntimeHistoryEntry[] {
     assertLeaveRequestContext(context)
-    return this.ai.getSessionHistoryByModuleInstance(context.moduleInstanceId)
+    return this.ai.getSessionHistory(context.moduleInstanceId)
   }
 
   getRegistrationData(): AiModuleRegistrationData {
