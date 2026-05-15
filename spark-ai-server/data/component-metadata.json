@@ -623,12 +623,14 @@
           "name": "rowKey",
           "type": "string | undefined",
           "required": false,
-          "description": "DataView 输出读取键""description": "行唯一键字段"
+          "default": "\"id\"",
+          "description": "行唯一键字段"
         },
         {
           "name": "emptyText",
           "type": "string | undefined",
-          "description": "DataView 输出读取键""default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
+          "required": false,
+          "default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
           "description": "空数据提示文案"
         },
         {

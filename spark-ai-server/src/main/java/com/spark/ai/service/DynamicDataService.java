@@ -850,7 +850,7 @@ public class DynamicDataService {
         columnByLogical(definition, idField);
         columnByLogical(definition, parentIdField);
         if (definition.columns().stream().noneMatch(column -> column.columnName().equals(textField))) {
-            textField = idField;
+            return new TreeFields(idField, parentIdField, idField);
         }
         return new TreeFields(idField, parentIdField, textField);
     }

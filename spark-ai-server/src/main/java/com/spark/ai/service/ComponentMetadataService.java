@@ -58,6 +58,8 @@ public class ComponentMetadataService {
             parseAndStore(json, false);
         } catch (IOException e) {
             log.warn("[ComponentMetadata] 读取 {} 失败: {}", METADATA_FILE, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.warn("[ComponentMetadata] {} 内容无效，已忽略并等待构建重新上传: {}", METADATA_FILE, e.getMessage());
         }
     }
 
