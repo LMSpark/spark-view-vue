@@ -478,7 +478,7 @@ ViewKey 和 DataKey 是组件和数据视图之间的绑定协议。两者都用
 
 在容器已经提供 `DATA_ROW` 的子树中，还可以使用 `$[fieldName]` 把当前行字段投影到任意 prop，这适合按钮文案、tag 类型、tooltip、标题、前后缀等轻量展示，不需要额外脚本拼装。
 
-当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接 `getSnapshot()`，可稳定暴露 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `viewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataKey` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
+当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接监听 DataView 领域事件，并按需读取 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `viewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataKey` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
 
 建议后续增强 DataKey 诊断：当解析失败时，不只返回 null，而是返回失败原因、候选 view、候选字段和修复建议。这个能力对 DevSystem 和 AI 都很重要。
 
@@ -965,7 +965,7 @@ flowchart LR
 9. [packages/spark-data/src/dataset.ts](../packages/spark-data/src/dataset.ts)：理解数据空间协调器。
 10. [packages/spark-data/src/core/data-key.ts](../packages/spark-data/src/core/data-key.ts)：理解组件到 DataView 的绑定协议。
 11. [packages/spark-component/src/components/containers/data-views/view-data-source.ts](../packages/spark-component/src/components/containers/data-views/view-data-source.ts)：理解容器如何通过 `viewKey` 解析 DataView。
-12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView snapshot 如何映射到 UI 状态。
+12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView 领域事件如何映射到 UI 状态。
 13. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Core 组合根和函数调用边界。
 14. [packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts)：理解 page-design 工具如何绑定页面编辑服务。
 15. [src/services/ai-host/tool-loop.ts](../src/services/ai-host/tool-loop.ts)：理解 LLM tool call 如何在前端执行并 append 回后端。

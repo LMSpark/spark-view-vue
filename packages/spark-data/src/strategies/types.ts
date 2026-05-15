@@ -12,7 +12,6 @@ import type {
   CrudResult,
   CrudOperationConfig,
   RequestState,
-  DataViewStateChangeKind,
 } from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
@@ -30,12 +29,9 @@ export type EmitSelectedRowsChangedFn = (originatorId?: string) => void
 /**
  * LocalMutationDelegate 向宿主发射 rows 变更的回调签名。
  *
- * `kinds` 会并入 rows 防抖窗口内的统一 stateChanged kinds，
- * 用于表达“本次 rows 变更同时影响了 selection/request 等分区”。
+ * `selectionChanged` 用于表达本次 rows 变更同时清理了 current/selection。
  */
-export type EmitRowsChangedFn = (
-  kinds?: DataViewStateChangeKind | readonly DataViewStateChangeKind[],
-) => void
+export type EmitRowsChangedFn = (options?: { selectionChanged?: boolean }) => void
 
 /**
  * LocalMutationDelegate 变更后的后处理回调（计算列求值 + 聚合重算）。
@@ -180,9 +176,9 @@ export interface ICrudHost extends IRowStore {
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean
   /** 按主键删除一行 */
   deleteRowById(id: string | number): boolean
-  /** 重置状态（requestState→Idle，清空行和选中；通过 stateChanged 通知订阅者） */
+  /** 重置状态（requestState→Idle，清空行和选中；通过领域事件通知订阅者） */
   resetState(): void
-  /** 走完整请求编排（非阻塞，结果经 stateChanged 事件通知） */
+  /** 走完整请求编排（非阻塞，结果经领域事件通知） */
   requestData(): void
 }
 
@@ -239,18 +235,18 @@ export interface ICascadeHost extends IViewIdentity {
    * CascadeDelegate 用此字段判断是走网络加载还是内存过滤。
    */
   readonly crudService: CrudService | undefined
-  /** 清空所有状态并发射 cleared/stateChanged（单波次） */
+  /** 清空所有状态并发射领域事件 */
   clearAll(): void
-  /** 重置状态（requestState→Idle，清空行和选中；通过 stateChanged 通知订阅者） */
+  /** 重置状态（requestState→Idle，清空行和选中；通过领域事件通知订阅者） */
   resetState(): void
   /**
    * 走完整请求编排（幂等：requestState≠Idle 时直接返回）
-   * 上行触发（UI/脚本主动请求）用此方法。非阻塞，结果经 stateChanged 事件通知。
+   * 上行触发（UI/脚本主动请求）用此方法。非阻塞，结果经领域事件通知。
    */
   requestData(): void
   /**
    * 强制刷新：先 resetState() 再 requestData()
-   * 下行触发（父数据变化→级联子视图）用此方法。非阻塞，结果经 stateChanged 事件通知。
+   * 下行触发（父数据变化→级联子视图）用此方法。非阻塞，结果经领域事件通知。
    */
   refresh(): Promise<void>
   /**

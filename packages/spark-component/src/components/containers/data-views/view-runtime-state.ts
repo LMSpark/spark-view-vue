@@ -4,7 +4,6 @@ import {
   RequestState,
   type DataView,
   type DataColumn,
-  type DataViewSnapshot,
   type IDataRow,
   type IDataSource,
   type IModelPermission,
@@ -83,31 +82,108 @@ export type AggregateResultState = Readonly<Record<string, unknown>>
 /** resolvedView 的标准 ref 形态。 */
 export type ResolvedViewRef = ValueRef<DataView | null>
 
-/** DataView revision 引用。 */
-type ViewRevisionRef = ValueRef<number>
-
 const EMPTY_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_ROWS: readonly IDataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
+interface DataViewRuntimeRevisions {
+  rowsRevision: ValueRef<number>
+  selectionRevision: ValueRef<number>
+  requestRevision: ValueRef<number>
+  aggregateRevision: ValueRef<number>
+  mutationRevision: ValueRef<number>
+  configRevision: ValueRef<number>
+  editingRevision: ValueRef<number>
+}
+
 function normalizeAggregateResult(value: unknown, emptyValue: AggregateResultState): AggregateResultState {
   return toDataRecord(value) ?? emptyValue
 }
 
-function useResolvedViewRevision(resolvedView: ResolvedViewRef): ViewRevisionRef {
-  const viewRevision = shallowRef(0)
+function bumpRevision(revision: ValueRef<number>): void {
+  revision.value += 1
+}
+
+function useDataViewRuntimeRevisions(resolvedView: ResolvedViewRef): DataViewRuntimeRevisions {
+  const rowsRevision = shallowRef(0)
+  const selectionRevision = shallowRef(0)
+  const requestRevision = shallowRef(0)
+  const aggregateRevision = shallowRef(0)
+  const mutationRevision = shallowRef(0)
+  const configRevision = shallowRef(0)
+  const editingRevision = shallowRef(0)
+
+  function bumpAll(): void {
+    bumpRevision(rowsRevision)
+    bumpRevision(selectionRevision)
+    bumpRevision(requestRevision)
+    bumpRevision(aggregateRevision)
+    bumpRevision(mutationRevision)
+    bumpRevision(configRevision)
+    bumpRevision(editingRevision)
+  }
+
   watchEffect((onCleanup) => {
     const view = resolvedView.value
-    viewRevision.value += 1
+    bumpAll()
     if (!view) return
-    const unsubscribe = view.subscribe(() => {
-      viewRevision.value += 1
+    const cleanups: Array<() => void> = []
+
+    const handleRowsChanged = () => {
+      bumpRevision(rowsRevision)
+      // currentRow/selectedRows are row-derived getters; refresh them when row objects are replaced.
+      bumpRevision(selectionRevision)
+      bumpRevision(aggregateRevision)
+    }
+    const handleCurrentRowChanged = () => bumpRevision(selectionRevision)
+    const handleSelectedRowsChanged = () => bumpRevision(selectionRevision)
+    const handleRequestStateChanged = () => bumpRevision(requestRevision)
+    const handleMutatingChanged = () => bumpRevision(mutationRevision)
+    const handleSummaryChanged = () => bumpRevision(aggregateRevision)
+    const handleSelectionSummaryChanged = () => bumpRevision(aggregateRevision)
+    const handleConfigChanged = () => bumpRevision(configRevision)
+    const handleEditingChanged = () => bumpRevision(editingRevision)
+
+    view.events.on('rowsChanged', handleRowsChanged)
+    view.events.on('currentRowChanged', handleCurrentRowChanged)
+    view.events.on('selectedRowsChanged', handleSelectedRowsChanged)
+    view.events.on('requestStateChanged', handleRequestStateChanged)
+    view.events.on('mutatingChanged', handleMutatingChanged)
+    view.events.on('summaryChanged', handleSummaryChanged)
+    view.events.on('selectionSummaryChanged', handleSelectionSummaryChanged)
+    view.events.on('configChanged', handleConfigChanged)
+    view.events.on('editingChanged', handleEditingChanged)
+    view.events.on('cleared', bumpAll)
+
+    cleanups.push(
+      () => view.events.off('rowsChanged', handleRowsChanged),
+      () => view.events.off('currentRowChanged', handleCurrentRowChanged),
+      () => view.events.off('selectedRowsChanged', handleSelectedRowsChanged),
+      () => view.events.off('requestStateChanged', handleRequestStateChanged),
+      () => view.events.off('mutatingChanged', handleMutatingChanged),
+      () => view.events.off('summaryChanged', handleSummaryChanged),
+      () => view.events.off('selectionSummaryChanged', handleSelectionSummaryChanged),
+      () => view.events.off('configChanged', handleConfigChanged),
+      () => view.events.off('editingChanged', handleEditingChanged),
+      () => view.events.off('cleared', bumpAll),
+    )
+
+    onCleanup(() => {
+      for (const cleanup of cleanups) cleanup()
     })
-    onCleanup(unsubscribe)
   })
-  return viewRevision
+
+  return {
+    rowsRevision,
+    selectionRevision,
+    requestRevision,
+    aggregateRevision,
+    mutationRevision,
+    configRevision,
+    editingRevision,
+  }
 }
 
 /**
@@ -116,94 +192,125 @@ function useResolvedViewRevision(resolvedView: ResolvedViewRef): ViewRevisionRef
 export function useDataViewState(
   resolvedView: ResolvedViewRef,
 ): DataViewRuntimeState & DataViewPermissionState {
-  const viewRevision = useResolvedViewRevision(resolvedView)
-
-  const snapshot = computed<DataViewSnapshot | null>(() => {
-    viewRevision.value
-    return resolvedView.value?.getSnapshot() ?? null
-  })
+  const revisions = useDataViewRuntimeRevisions(resolvedView)
 
   const tableName = computed<IDataSource['tableName']>(() => {
-    return snapshot.value?.tableName ?? ''
+    revisions.configRevision.value
+    return resolvedView.value?.tableName ?? ''
   })
 
   const viewId = computed<string | undefined>(() => {
-    return snapshot.value?.viewId
+    revisions.configRevision.value
+    return resolvedView.value?.viewId
   })
 
   const primaryKey = computed<string | undefined>(() => {
-    return snapshot.value?.primaryKey
+    revisions.configRevision.value
+    return resolvedView.value?.primaryKey
   })
   const treeConfig = computed<TreeConfig | undefined>(() => {
-    return snapshot.value?.treeConfig
+    revisions.configRevision.value
+    return resolvedView.value?.treeConfig
   })
 
   const rows = computed<readonly IDataRow[]>(() => {
-    return snapshot.value?.rows ?? EMPTY_ROWS
+    revisions.rowsRevision.value
+    return resolvedView.value?.rows ?? EMPTY_ROWS
   })
   const columns = computed<readonly DataColumn[]>(() => {
-    return snapshot.value?.columns ?? EMPTY_COLUMNS
+    revisions.configRevision.value
+    return resolvedView.value?.columns ?? EMPTY_COLUMNS
   })
   const currentRow = computed<IDataRow | null>(() => {
-    return snapshot.value?.currentRow ?? null
+    revisions.selectionRevision.value
+    revisions.rowsRevision.value
+    return resolvedView.value?.currentRow ?? null
   })
   const selectedRows = computed<readonly IDataRow[]>(() => {
-    return snapshot.value?.selectedRows ?? EMPTY_ROWS
+    revisions.selectionRevision.value
+    revisions.rowsRevision.value
+    return resolvedView.value?.selectedRows ?? EMPTY_ROWS
   })
   const editingRows = computed<readonly IDataRow[]>(() => {
-    return snapshot.value?.editingRows ?? EMPTY_ROWS
+    revisions.editingRevision.value
+    revisions.rowsRevision.value
+    return resolvedView.value?.editingRows ?? EMPTY_ROWS
   })
   const isMultiSelect = computed<boolean>(() => {
-    return snapshot.value?.isMultiSelect ?? false
+    revisions.configRevision.value
+    return resolvedView.value?.isMultiSelect ?? false
   })
 
   const _modelPerm = computed<IDataSource['_modelPerm']>(() => {
-    return snapshot.value?._modelPerm
+    revisions.configRevision.value
+    return (resolvedView.value as IDataSource | null)?._modelPerm
   })
   const value = computed<IDataSource['value']>(() => {
-    return snapshot.value?.value ?? ''
+    revisions.selectionRevision.value
+    revisions.rowsRevision.value
+    revisions.configRevision.value
+    return resolvedView.value?.value ?? ''
   })
   const label = computed<IDataSource['label']>(() => {
-    return snapshot.value?.label ?? null
+    revisions.selectionRevision.value
+    revisions.rowsRevision.value
+    revisions.configRevision.value
+    return resolvedView.value?.label ?? null
   })
   const labels = computed<IDataSource['labels']>(() => {
-    return snapshot.value?.labels ?? EMPTY_LABELS
+    revisions.selectionRevision.value
+    revisions.rowsRevision.value
+    revisions.configRevision.value
+    return resolvedView.value?.labels ?? EMPTY_LABELS
   })
 
   const requestState = computed<IDataSource['requestState']>(() => {
-    return snapshot.value?.requestState ?? RequestState.Idle
+    revisions.requestRevision.value
+    return resolvedView.value?.requestState ?? RequestState.Idle
   })
 
   const aggregateResult = computed<AggregateResultState>(() => {
-    return normalizeAggregateResult(snapshot.value?.aggregateResult, EMPTY_AGGREGATE_RESULT)
+    revisions.aggregateRevision.value
+    return normalizeAggregateResult(resolvedView.value?.aggregateResult, EMPTY_AGGREGATE_RESULT)
   })
 
   const selectionAggregateResult = computed<AggregateResultState>(() => {
-    return normalizeAggregateResult(snapshot.value?.selectionAggregateResult, EMPTY_SELECTION_AGGREGATE_RESULT)
+    revisions.aggregateRevision.value
+    return normalizeAggregateResult(resolvedView.value?.selectionAggregateResult, EMPTY_SELECTION_AGGREGATE_RESULT)
   })
 
   const total = computed<number>(() => {
-    return snapshot.value?.total ?? 0
+    revisions.rowsRevision.value
+    revisions.configRevision.value
+    return resolvedView.value?.total ?? 0
   })
   const page = computed<number>(() => {
-    return snapshot.value?.page ?? 1
+    revisions.rowsRevision.value
+    revisions.configRevision.value
+    return resolvedView.value?.page ?? 1
   })
   const pageSize = computed<number>(() => {
-    return snapshot.value?.pageSize ?? 20
+    revisions.rowsRevision.value
+    revisions.configRevision.value
+    return resolvedView.value?.pageSize ?? 20
   })
 
   const mutating = computed<boolean>(() => {
-    return snapshot.value?.mutating ?? false
+    revisions.mutationRevision.value
+    return resolvedView.value?.mutating ?? false
   })
   const mutatingError = computed<Error | null>(() => {
-    return snapshot.value?.mutatingError ?? null
+    revisions.mutationRevision.value
+    return resolvedView.value?.mutatingError ?? null
   })
   const loadingError = computed<Error | null>(() => {
-    return snapshot.value?.loadingError ?? null
+    revisions.requestRevision.value
+    return resolvedView.value?.loadingError ?? null
   })
 
   const modelPermission = computed<IModelPermission | undefined>(() => {
-    return extractModelPermission(snapshot.value as IDataSource | null)
+    revisions.configRevision.value
+    return extractModelPermission(resolvedView.value as IDataSource | null)
   })
 
   return {

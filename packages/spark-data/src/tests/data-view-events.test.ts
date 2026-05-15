@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
+import { RequestState, SparkData } from '@spark-view/spark-data'
 
 function createTestDataSet() {
   return SparkData.createDataSet({
@@ -280,91 +280,76 @@ describe('DataView 事件流端到端', () => {
   })
 })
 
-describe('DataView snapshot + subscribe 统一状态订阅', () => {
-  it('setCurrentRow 后 stateChanged 失效 snapshot', () => {
+describe('DataView 领域事件覆盖运行时状态', () => {
+  const waitRowsDebounce = () => new Promise(resolve => setTimeout(resolve, 25))
+
+  it('updateFromServer 通过 rowsChanged 通知行数据更新', async () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    const changes: string[][] = []
+    const rowsChanged = vi.fn()
 
-    const off = deptView.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
-
-    const before = deptView.getSnapshot()
-    deptView.setCurrentRow(deptView.rows[0]!)
-    const after = deptView.getSnapshot()
-
-    expect(after.revision).toBeGreaterThan(before.revision)
-    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
-    expect(after.currentRow).toBe(deptView.rows[0])
-    expect(changes.at(-1)).toContain('selection')
-
-    off()
-    const countAfterOff = changes.length
-    deptView.setCurrentRow(deptView.rows[1]!)
-    expect(changes).toHaveLength(countAfterOff)
-  })
-
-  it('updateFromServer 通过 rows stateChanged 通知快照更新', async () => {
-    const ds = createTestDataSet()
-    const deptView = ds.getView('Departments')!
-    const changes: string[][] = []
-
-    deptView.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
-
+    deptView.events.on('rowsChanged', rowsChanged)
     deptView.updateFromServer([{ id: 3, name: 'Sales' }])
-    await new Promise(resolve => setTimeout(resolve, 25))
+    await waitRowsDebounce()
 
-    const snapshot = deptView.getSnapshot()
-    expect(snapshot.rows).toHaveLength(1)
-    expect(snapshot.rows[0]?.['name']).toBe('Sales')
-    expect(snapshot.rowsRevision).toBeGreaterThan(0)
-    expect(changes.some(kinds => kinds.includes('rows'))).toBe(true)
+    expect(deptView.rows).toHaveLength(1)
+    expect(deptView.rows[0]?.['name']).toBe('Sales')
+    expect(rowsChanged).toHaveBeenCalledTimes(1)
   })
 
-  it('DataSet.onAnyViewChange 转发 stateChanged', () => {
+  it('DataSet.onAnyViewChange 转发 configChanged 和 editingChanged', () => {
     const ds = createTestDataSet()
-    const handler = vi.fn()
-    const off = ds.onAnyViewChange({ stateChanged: handler })
+    const configChanged = vi.fn()
+    const editingChanged = vi.fn()
+    const off = ds.onAnyViewChange({ configChanged, editingChanged })
 
     const deptView = ds.getView('Departments')!
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.applyViewConfig({ page: 2 })
+    deptView.updateEditingValue(1, 'name', 'Engineering Draft')
 
-    expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler.mock.calls[0]?.[0]).toBe('Departments')
-    expect(handler.mock.calls[0]?.[1]).toBe('default')
-    expect(handler.mock.calls[0]?.[2].kinds).toContain('selection')
+    expect(configChanged).toHaveBeenCalledWith('Departments', 'default')
+    expect(editingChanged).toHaveBeenCalledWith('Departments', 'default')
 
     off()
   })
 
-  it('resetState 通过 stateChanged 通知 snapshot 清空', () => {
+  it('requestData 通过 requestStateChanged 通知请求状态', async () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    const changes: string[][] = []
+    const states: RequestState[] = []
+
+    deptView.events.on('requestStateChanged', state => states.push(state))
+    await deptView.requestData()
+
+    expect(states).toContain(RequestState.Loaded)
+    expect(deptView.requestState).toBe(RequestState.Loaded)
+  })
+
+  it('resetState 通过领域事件清空 rows 和 selection', async () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const rowsChanged = vi.fn()
+    const currentRowChanged = vi.fn()
+    const selectedRowsChanged = vi.fn()
 
     deptView.setCurrentRow(deptView.rows[0]!)
-    const before = deptView.getSnapshot()
-    deptView.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
+    deptView.events.on('rowsChanged', rowsChanged)
+    deptView.events.on('currentRowChanged', currentRowChanged)
+    deptView.events.on('selectedRowsChanged', selectedRowsChanged)
 
     deptView.resetState()
-    const after = deptView.getSnapshot()
+    await waitRowsDebounce()
 
-    expect(after.revision).toBeGreaterThan(before.revision)
-    expect(after.rows).toHaveLength(0)
-    expect(after.currentRow).toBeNull()
-    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
-    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
-    expect(changes.some(kinds => kinds.includes('rows') && kinds.includes('selection'))).toBe(true)
+    expect(deptView.rows).toHaveLength(0)
+    expect(deptView.currentRow).toBeNull()
+    expect(rowsChanged).toHaveBeenCalledTimes(1)
+    expect(currentRowChanged).toHaveBeenCalledWith(null)
+    expect(selectedRowsChanged).toHaveBeenCalledWith([])
   })
 
-  it('recomputeColumns 会通过 rows stateChanged 通知计算列快照更新', async () => {
+  it('recomputeColumns 通过 rowsChanged 通知计算列更新', async () => {
     const ds = SparkData.createDataSet({
-      dataSetName: 'ComputedSnapshotDS',
+      dataSetName: 'ComputedEventsDS',
       tables: {
         Orders: {
           tableName: 'Orders',
@@ -383,26 +368,20 @@ describe('DataView snapshot + subscribe 统一状态订阅', () => {
       },
     })
     const orders = ds.getView('Orders')!
-    const changes: string[][] = []
+    const rowsChanged = vi.fn()
 
-    orders.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
-
-    const before = orders.getSnapshot()
+    orders.events.on('rowsChanged', rowsChanged)
     orders.rows[0]!['price'] = 10
     orders.recomputeColumns()
-    await new Promise(resolve => setTimeout(resolve, 25))
-    const after = orders.getSnapshot()
+    await waitRowsDebounce()
 
-    expect(after.rows[0]?.['total']).toBe(50)
-    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
-    expect(changes.some(kinds => kinds.includes('rows'))).toBe(true)
+    expect(orders.rows[0]?.['total']).toBe(50)
+    expect(rowsChanged).toHaveBeenCalledTimes(1)
   })
 
-  it('setComputedContext 会通过 rows stateChanged 通知计算列快照更新', async () => {
+  it('setComputedContext 通过 rowsChanged 通知计算列更新', async () => {
     const ds = SparkData.createDataSet({
-      dataSetName: 'ComputedContextSnapshotDS',
+      dataSetName: 'ComputedContextEventsDS',
       tables: {
         Orders: {
           tableName: 'Orders',
@@ -420,79 +399,86 @@ describe('DataView snapshot + subscribe 统一状态订阅', () => {
       },
     })
     const orders = ds.getView('Orders')!
-    const changes: string[][] = []
+    const rowsChanged = vi.fn()
 
-    orders.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
-
-    const before = orders.getSnapshot()
+    orders.events.on('rowsChanged', rowsChanged)
     orders.setComputedContext({ taxRate: 0.2 })
-    await new Promise(resolve => setTimeout(resolve, 25))
-    const after = orders.getSnapshot()
+    await waitRowsDebounce()
 
-    expect(after.rows[0]?.['tax']).toBe(20)
-    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
-    expect(changes.some(kinds => kinds.includes('rows'))).toBe(true)
+    expect(orders.rows[0]?.['tax']).toBe(20)
+    expect(rowsChanged).toHaveBeenCalledTimes(1)
   })
 
-  it('deleteRowById 清理当前行时随 rows 事件递增 selectionRevision', async () => {
+  it('deleteRowById 清理当前行时随 rowsChanged 补发 selection 事件', async () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    const changes: string[][] = []
+    const rowsChanged = vi.fn()
+    const currentRowChanged = vi.fn()
 
     deptView.setCurrentRow(deptView.rows[0]!)
-    const before = deptView.getSnapshot()
-    deptView.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
+    deptView.events.on('rowsChanged', rowsChanged)
+    deptView.events.on('currentRowChanged', currentRowChanged)
 
     deptView.deleteRowById(1)
-    await new Promise(resolve => setTimeout(resolve, 25))
-    const after = deptView.getSnapshot()
+    await waitRowsDebounce()
 
-    expect(after.currentRow).toBeNull()
-    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
-    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
-    expect(changes.some(kinds => kinds.includes('rows') && kinds.includes('selection'))).toBe(true)
+    expect(deptView.currentRow).toBeNull()
+    expect(rowsChanged).toHaveBeenCalledTimes(1)
+    expect(currentRowChanged).toHaveBeenCalledWith(null)
   })
 
-  it('replaceRows 裁剪选中行时随 rows 事件递增 selectionRevision', async () => {
+  it('replaceRows 裁剪选中行时随 rowsChanged 补发 selectedRowsChanged', async () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    const changes: string[][] = []
+    const selectedRowsChanged = vi.fn()
 
     deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
-    const before = deptView.getSnapshot()
-    deptView.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
+    deptView.events.on('selectedRowsChanged', selectedRowsChanged)
 
     deptView.replaceRows([{ id: 2, name: 'Marketing' }])
-    await new Promise(resolve => setTimeout(resolve, 25))
-    const after = deptView.getSnapshot()
+    await waitRowsDebounce()
 
-    expect(after.selectedRows).toHaveLength(1)
-    expect(after.selectedRows[0]?.['id']).toBe(2)
-    expect(after.rowsRevision).toBeGreaterThan(before.rowsRevision)
-    expect(after.selectionRevision).toBeGreaterThan(before.selectionRevision)
-    expect(changes.some(kinds => kinds.includes('rows') && kinds.includes('selection'))).toBe(true)
+    expect(deptView.selectedRows).toHaveLength(1)
+    expect(deptView.selectedRows[0]?.['id']).toBe(2)
+    const emittedRows = selectedRowsChanged.mock.calls.at(-1)?.[0]
+    expect(emittedRows).toHaveLength(1)
+    expect(emittedRows?.[0]?.['id']).toBe(2)
   })
 
-  it('clearAll 只触发一次统一 stateChanged（含 cleared）', () => {
+  it('editingChanged 不携带整批 editingRows，editingRows 仅显式读取时生成', () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    const changes: string[][] = []
+    const editingFieldChanged = vi.fn()
+    const editingChanged = vi.fn()
 
-    deptView.subscribe((change) => {
-      changes.push([...change.kinds])
-    })
+    deptView.events.on('editingFieldChanged', editingFieldChanged)
+    deptView.events.on('editingChanged', editingChanged)
+    deptView.updateEditingValue(1, 'name', 'Engineering Draft')
+
+    expect(editingFieldChanged).toHaveBeenCalledTimes(1)
+    expect(editingChanged).toHaveBeenCalledTimes(1)
+    expect(editingChanged.mock.calls[0]).toEqual([])
+    expect(deptView.rows[0]?.['name']).toBe('Engineering')
+    expect(deptView.editingRows).toMatchObject([{ id: 1, name: 'Engineering Draft' }])
+  })
+
+  it('clearAll 发出 cleared 并通过领域事件刷新行与选择', async () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    const cleared = vi.fn()
+    const rowsChanged = vi.fn()
+    const currentRowChanged = vi.fn()
+
+    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.events.on('cleared', cleared)
+    deptView.events.on('rowsChanged', rowsChanged)
+    deptView.events.on('currentRowChanged', currentRowChanged)
 
     deptView.clearAll()
+    await waitRowsDebounce()
 
-    expect(changes).toHaveLength(1)
-    expect(changes[0]).toContain('cleared')
-    expect(changes[0]).toContain('rows')
-    expect(changes[0]).toContain('selection')
+    expect(cleared).toHaveBeenCalledTimes(1)
+    expect(rowsChanged).toHaveBeenCalledTimes(1)
+    expect(currentRowChanged).toHaveBeenCalledWith(null)
   })
 })

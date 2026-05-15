@@ -1,11 +1,24 @@
-import type { DataViewChangeEvent, IDataRow, PkValue } from '@spark-view/spark-data'
+import type { IDataRow, PkValue } from '@spark-view/spark-data'
+
+export type DataViewEditingEventName =
+  | 'editingFieldChanged'
+  | 'editingChanged'
+  | 'rowsChanged'
+  | 'currentRowChanged'
+  | 'selectedRowsChanged'
+  | 'cleared'
+
+export interface DataViewEditingEvents {
+  on(eventName: DataViewEditingEventName, handler: () => void): void
+  off(eventName: DataViewEditingEventName, handler: () => void): void
+}
 
 export interface DataViewEditingSource {
   getPkKey(row: IDataRow): PkValue | undefined
   hasEditingChanges(id?: PkValue): boolean
   getEditingRow(id: PkValue): IDataRow | null
   updateEditingValue(id: PkValue, field: string, value: unknown): IDataRow
-  subscribe?: (listener: (change: DataViewChangeEvent) => void) => () => void
+  events?: DataViewEditingEvents
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

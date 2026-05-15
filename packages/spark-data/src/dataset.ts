@@ -517,9 +517,9 @@ export class DataSet implements IDataSet {
     // 数据驱动注册：每种事件统一 wrap (tableName, viewId, ...args)
     const eventKeys = [
       'currentRowChanged', 'selectedRowsChanged', 'rowsChanged',
-      'editingFieldChanged', 'editingRowsChanged',
-      'cleared', 'requestStateChanged', 'mutatingChanged',
-      'summaryChanged', 'selectionSummaryChanged', 'stateChanged',
+      'editingFieldChanged', 'editingChanged',
+      'cleared', 'configChanged', 'requestStateChanged', 'mutatingChanged',
+      'summaryChanged', 'selectionSummaryChanged',
     ] as const
     for (const key of eventKeys) {
       const handler = h[key]

@@ -12,7 +12,6 @@ import type {
   CrudResult, CrudOperationConfig,
   IDataSource,
   AggregateResultRow,
-  DataViewChangeEvent, DataViewChangeListener, DataViewSnapshot, DataViewStateChangeKind, IDataViewStore,
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
@@ -57,10 +56,12 @@ interface DataViewEventMap extends Record<string, any[]> {
   rowsChanged: []
   /** 编辑态字段变化 */
   editingFieldChanged: [event: DataViewEditingFieldChangeEvent]
-  /** 编辑态行集合变化 */
-  editingRowsChanged: [editingRows: IDataRow[]]
+  /** 编辑态 patch 集合变化 */
+  editingChanged: []
   /** 数据已清空 */
   cleared: []
+  /** 视图配置变化（分页、排序、过滤、主键、树、聚合等） */
+  configChanged: []
   /** 请求状态变化（Idle→Loading→Loaded/Failed） */
   requestStateChanged: [requestState: RequestState]
   /** CRUD 变更状态变化 */
@@ -69,8 +70,6 @@ interface DataViewEventMap extends Record<string, any[]> {
   summaryChanged: []
   /** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
   selectionSummaryChanged: []
-  /** 统一状态变化事件，供框架适配层通过 getSnapshot() 失效 UI 状态 */
-  stateChanged: [change: DataViewChangeEvent]
   /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
   'crud:before': [CrudLifecycleEvent]
   /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
@@ -140,7 +139,7 @@ function getArrayFilterValue(value: unknown): unknown[] | null {
 // DataView 类
 // ─────────────────────────────────────────────
 
-export class DataView implements IDataSource, IDataViewStore {
+export class DataView implements IDataSource {
 
   // ─────────────────────────────────────────────
   // DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）
@@ -188,7 +187,7 @@ export class DataView implements IDataSource, IDataViewStore {
     this._primaryKeyDelegate.ensurePkColumn()
     if (this._dataTable) this._ensurePkColumnMeta(this._dataTable)
     if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
   }
 
   /** 清除显式覆盖，恢复从 DataTable 列定义自动推导主键 */
@@ -198,7 +197,7 @@ export class DataView implements IDataSource, IDataViewStore {
     this._primaryKeyDelegate.ensurePkColumn()
     if (this._dataTable) this._ensurePkColumnMeta(this._dataTable)
     if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
   }
 
   // ─────────────────────────────────────────────
@@ -577,7 +576,7 @@ export class DataView implements IDataSource, IDataViewStore {
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') {
     (this.treeConfig ??= {}).treeMode = v
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
   }
 
   // ─────────────────────────────────────────────
@@ -589,14 +588,15 @@ export class DataView implements IDataSource, IDataViewStore {
     this._computedDelegate.setContext(ctx)
     this._computedDelegate.apply(this.rows)
     this.aggregateDelegate.recompute(this.rows, this.selectedRows)
-    this.emitStateChanged('rows')
+    this.emitRowsChanged()
   }
 
   /** 手动触发全量计算列重新求值 + 聚合重算。常规行操作已自动触发，仅用于特殊场景 */
-  recomputeColumns(): void {
+  recomputeColumns(options?: { emit?: boolean }): void {
     this._computedDelegate.apply(this.rows)
-    this.aggregateDelegate.recompute(this.rows, this.selectedRows)
-    this.emitStateChanged('rows')
+    const aggregateOptions = options?.emit === undefined ? undefined : { emit: options.emit }
+    this.aggregateDelegate.recompute(this.rows, this.selectedRows, aggregateOptions)
+    if (options?.emit !== false) this.emitRowsChanged()
   }
 
   /** @internal 已注册的计算列名集合（CrudDelegate 用于提交前剥离） */
@@ -634,7 +634,7 @@ export class DataView implements IDataSource, IDataViewStore {
       this._computedDelegate.syncFromConfig()
     }
     if (hasComputedCols || hasAgg) {
-      this.recomputeColumns()
+      this.recomputeColumns({ emit: false })
     }
   }
 
@@ -729,16 +729,6 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 整棵 rows 树的 ID → row 缓存（含 nested children） */
   private _rowByIdCache: { ver: number; rows: Map<string | number, IDataRow> } = { ver: -1, rows: new Map() }
 
-  /** 统一状态快照版本号（供框架适配层失效 getSnapshot） */
-  private _revision = 0
-  private _rowsRevision = 0
-  private _selectionRevision = 0
-  private _requestRevision = 0
-  private _aggregateRevision = 0
-  private _mutationRevision = 0
-  private _configRevision = 0
-  private _editingRevision = 0
-
   /** 编辑态 patch：UI 字段变化先进入这里，apply 后再进入 editRowById / dirtyTracking。 */
   private _editingPatches = new Map<PkValue, Partial<IDataRow>>()
   /** 首次进入编辑态前的行快照，用于 discard / diff / 诊断。 */
@@ -755,69 +745,13 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */
   rowIndexMap?: Map<IDataRow, number> | undefined
   /** rowsChanged 事件防抖定时器 */
-  private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
-  /** rowsChanged 防抖窗口内需要一起失效的统一状态分区 */
-  private pendingRowsStateKinds = new Set<DataViewStateChangeKind>()
+  private rowsChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
+  /** rowsChanged 防抖窗口内是否需要补发 selection/currentRow 领域事件 */
+  private pendingRowsSelectionChanged = false
 
-  private emitStateChanged(
-    kinds: DataViewStateChangeKind | readonly DataViewStateChangeKind[],
-    originatorId?: string,
-  ): void {
-    const normalizedKinds = Array.from(new Set(Array.isArray(kinds) ? kinds : [kinds]))
-    if (normalizedKinds.length === 0) return
-
-    this._revision++
-    for (const kind of normalizedKinds) {
-      switch (kind) {
-        case 'rows':
-          this._rowsRevision++
-          break
-        case 'selection':
-          this._selectionRevision++
-          break
-        case 'request':
-          this._requestRevision++
-          break
-        case 'aggregate':
-          this._aggregateRevision++
-          break
-        case 'mutation':
-          this._mutationRevision++
-          break
-        case 'config':
-          this._configRevision++
-          break
-        case 'editing':
-          this._editingRevision++
-          break
-        case 'cleared':
-          break
-        default:
-          break
-      }
-    }
-
-    const change: DataViewChangeEvent = {
-      tableName: this.tableName,
-      viewId: this.viewId,
-      kinds: normalizedKinds,
-      revision: this._revision,
-      rowsRevision: this._rowsRevision,
-      selectionRevision: this._selectionRevision,
-      requestRevision: this._requestRevision,
-      aggregateRevision: this._aggregateRevision,
-      mutationRevision: this._mutationRevision,
-      configRevision: this._configRevision,
-      editingRevision: this._editingRevision,
-      ...(originatorId !== undefined ? { originatorId } : {}),
-    }
-    this.events.emit('stateChanged', change)
-  }
-
-  private emitEditingRowsChanged(event?: DataViewEditingFieldChangeEvent): void {
-    this.emitStateChanged('editing')
+  private emitEditingChanged(event?: DataViewEditingFieldChangeEvent): void {
     if (event) this.events.emit('editingFieldChanged', event)
-    this.events.emit('editingRowsChanged', this.editingRows)
+    this.events.emit('editingChanged')
   }
 
   private clearEditingState(): boolean {
@@ -827,13 +761,10 @@ export class DataView implements IDataSource, IDataViewStore {
     return true
   }
 
-  private setRequestState(nextState: RequestState, options?: { emit?: boolean; emitStateChanged?: boolean }): void {
+  private setRequestState(nextState: RequestState): void {
     const previousState = this.requestState
     this.requestState = nextState
-    if (previousState !== nextState && options?.emitStateChanged !== false) {
-      this.emitStateChanged('request')
-    }
-    if (previousState !== nextState && options?.emit) {
+    if (previousState !== nextState) {
       this.events.emit('requestStateChanged', this.requestState)
     }
   }
@@ -1085,60 +1016,8 @@ export class DataView implements IDataSource, IDataViewStore {
     return result
   }
 
-  /** 事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / requestStateChanged / mutatingChanged） */
+  /** 事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / configChanged / requestStateChanged / mutatingChanged） */
   readonly events: IEventEmitter<DataViewEventMap> = createEventEmitter()
-
-  /**
-   * 获取当前 DataView 的框架无关运行时快照。
-   *
-   * 快照用于渲染层适配，不做深拷贝；rows/currentRow/selectedRows 保持 DataView 当前引用。
-   */
-  getSnapshot(): DataViewSnapshot {
-    const source = this as IDataSource
-    return {
-      tableName: this.tableName,
-      viewId: this.viewId,
-      rows: this.rows,
-      columns: this.columns,
-      currentRow: this.currentRow,
-      selectedRows: this.selectedRows,
-      editingRows: this.editingRows,
-      ...(source._modelPerm !== undefined ? { _modelPerm: source._modelPerm } : {}),
-      requestState: this.requestState,
-      primaryKey: this.primaryKey,
-      treeConfig: this.treeConfig,
-      isMultiSelect: this.isMultiSelect,
-      total: this.total,
-      page: this.page,
-      pageSize: this.pageSize,
-      mutating: this.mutating,
-      mutatingError: this.mutatingError,
-      loadingError: this.loadingError,
-      aggregateResult: this.aggregateResult,
-      selectionAggregateResult: this.selectionAggregateResult,
-      value: this.value,
-      label: this.label,
-      labels: this.labels,
-      revision: this._revision,
-      rowsRevision: this._rowsRevision,
-      selectionRevision: this._selectionRevision,
-      requestRevision: this._requestRevision,
-      aggregateRevision: this._aggregateRevision,
-      mutationRevision: this._mutationRevision,
-      configRevision: this._configRevision,
-      editingRevision: this._editingRevision,
-    }
-  }
-
-  /**
-   * 订阅统一状态变化事件。
-   *
-   * 框架适配层应优先使用 subscribe + getSnapshot，而不是依赖具体框架的 Proxy 包装。
-   */
-  subscribe(listener: DataViewChangeListener): () => void {
-    this.events.on('stateChanged', listener)
-    return () => this.events.off('stateChanged', listener)
-  }
 
   protected logger = Logger('DataView')
 
@@ -1202,7 +1081,7 @@ export class DataView implements IDataSource, IDataViewStore {
     if (this._shouldApplyStaticLocalFilter()) {
       this._syncStaticLocalFilterRows()
       this.selectionDelegate.applyAutoFirst()
-      this.setRequestState(RequestState.Loaded, { emit: true })
+      this.setRequestState(RequestState.Loaded)
       return
     }
 
@@ -1218,7 +1097,7 @@ export class DataView implements IDataSource, IDataViewStore {
         this.requestIdleDependencyViewSources(rel)
         const relationFilter = ds?.resolveDependencyFilter(rel)
         if (relationFilter === null) {
-          this.setRequestState(RequestState.Failed, { emit: true })
+          this.setRequestState(RequestState.Failed)
           return
         }
         if (relationFilter !== undefined) relationFilters.push(relationFilter)
@@ -1247,7 +1126,7 @@ export class DataView implements IDataSource, IDataViewStore {
         // 不再静默吞异常：记录错误、设置失败状态、通知订阅方
         this.logger.error(`requestData 失败 [${this.tableName}@${this.viewId}]: ${toErrorMessage(error)}`)
         this.loadingError = error instanceof Error ? error : new Error(toErrorMessage(error))
-        this.setRequestState(RequestState.Failed, { emit: true })
+        this.setRequestState(RequestState.Failed)
         return
       }
 
@@ -1293,9 +1172,9 @@ export class DataView implements IDataSource, IDataViewStore {
       if (result.success && result.data !== undefined) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.selectionDelegate.applyAutoFirst()
-        this.setRequestState(RequestState.Loaded, { emit: true })   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
+        this.setRequestState(RequestState.Loaded)
       } else {
-        this.setRequestState(RequestState.Failed, { emit: true })
+        this.setRequestState(RequestState.Failed)
       }
       return result
     } catch (error) {
@@ -1305,7 +1184,7 @@ export class DataView implements IDataSource, IDataViewStore {
       }
 
       this.loadingError = toError(error)
-      this.setRequestState(RequestState.Failed, { emit: true })
+      this.setRequestState(RequestState.Failed)
       throw error
     }
   }
@@ -1373,7 +1252,7 @@ export class DataView implements IDataSource, IDataViewStore {
 
       this.updateFromServer(rows as IDataRow[])
       this.selectionDelegate.applyAutoFirst()
-      this.setRequestState(RequestState.Loaded, { emit: true })
+      this.setRequestState(RequestState.Loaded)
       return { success: true, data: rows }
     } catch (error) {
       if (requestId !== this.currentLoadRequestId) {
@@ -1382,7 +1261,7 @@ export class DataView implements IDataSource, IDataViewStore {
       }
 
       this.loadingError = toError(error)
-      this.setRequestState(RequestState.Failed, { emit: true })
+      this.setRequestState(RequestState.Failed)
       throw error
     }
   }
@@ -1413,7 +1292,7 @@ export class DataView implements IDataSource, IDataViewStore {
 
     this.updateFromServer(filteredRows)
     this.selectionDelegate.applyAutoFirst()
-    // 内存级联不走网络，requestState 直接 Loaded（不发 requestStateChanged 避免副作用）
+    // 内存级联不走网络，requestState 直接 Loaded。
     this.setRequestState(RequestState.Loaded)
   }
 
@@ -1535,7 +1414,7 @@ export class DataView implements IDataSource, IDataViewStore {
       editingRow,
       patch: { ...nextPatch },
     }
-    this.emitEditingRowsChanged(event)
+    this.emitEditingChanged(event)
     return editingRow
   }
 
@@ -1549,7 +1428,7 @@ export class DataView implements IDataSource, IDataViewStore {
       const hadOriginal = this._editingOriginalRows.delete(id)
       if (hadPatch || hadOriginal) discardedCount++
     }
-    if (discardedCount > 0) this.emitEditingRowsChanged()
+    if (discardedCount > 0) this.emitEditingChanged()
     return discardedCount
   }
 
@@ -1581,7 +1460,7 @@ export class DataView implements IDataSource, IDataViewStore {
       }
     }
 
-    if (appliedCount > 0) this.emitEditingRowsChanged()
+    if (appliedCount > 0) this.emitEditingChanged()
     const failedCount = failedIds.length
     return {
       success: failedCount === 0,
@@ -1688,8 +1567,12 @@ export class DataView implements IDataSource, IDataViewStore {
 
   /** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */
   clearAll(): void {
-    const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
-    this.resetStateInternal({ emitStateChanged: false })
+    const had = this.rows.length > 0
+      || this.currentRow !== null
+      || this.selectedRows.length > 0
+      || this.requestState !== RequestState.Idle
+      || this.hasEditingChanges()
+    this.resetStateInternal({ emitEvents: true })
     if (had) {
       this.emitClearedChanged()
     }
@@ -1698,24 +1581,27 @@ export class DataView implements IDataSource, IDataViewStore {
   /**
    * 重置行数据和选中状态，并将 requestState 重置为 Idle。
    * 同时清除脏追踪状态（staged 模式下的未提交变更）。
-   * 不发 legacy cleared/requestStateChanged；会通过 stateChanged 通知 snapshot 订阅者。
+   * 通过领域事件通知订阅者刷新 rows / selection / request / aggregate / editing。
    */
   resetState(): void {
-    this.resetStateInternal({ emitStateChanged: true })
+    this.resetStateInternal({ emitEvents: true })
   }
 
-  private resetStateInternal(options: { emitStateChanged: boolean }): void {
+  private resetStateInternal(options: { emitEvents: boolean }): void {
+    const selectionChanged = this._currentRowId !== null || this._selectedRowIds.length > 0
     this.rows = []
+    this._rowsVersion++
     this._currentRowId = null
     this._selectedRowIds = []
     this.rowIndexMap = undefined   // 行集合已清空，索引缓存失效
     this.loadingError = null
-    this.setRequestState(RequestState.Idle, { emitStateChanged: options.emitStateChanged })
+    this.setRequestState(RequestState.Idle)
     this._dirtyTrackingDelegate?.clearAll()
     const editingCleared = this.clearEditingState()
-    this.aggregateDelegate.recompute(this.rows, this.selectedRows, { emit: options.emitStateChanged })
-    if (options.emitStateChanged) {
-      this.emitStateChanged(editingCleared ? ['rows', 'selection', 'editing'] : ['rows', 'selection'])
+    this.aggregateDelegate.recompute(this.rows, this.selectedRows, { emit: options.emitEvents })
+    if (options.emitEvents) {
+      if (editingCleared) this.emitEditingChanged()
+      this.emitRowsChanged({ selectionChanged })
     }
   }
 
@@ -1776,16 +1662,14 @@ export class DataView implements IDataSource, IDataViewStore {
   // 事件通知（独立事件模型）
   // ─────────────────────────────────────────────
 
-  /** 发射 cleared 事件（通知 UI 和子视图），同时失效统一快照 */
+  /** 发射 cleared 事件（通知 UI 和子视图） */
   private emitClearedChanged(): void {
     this.events.emit('cleared')
-    this.emitStateChanged(['cleared', 'rows', 'selection', 'request', 'aggregate'])
   }
 
   /** 发射 currentRowChanged 事件（立即） */
   private emitCurrentRowChanged(originatorId?: string): void {
     this.events.emit('currentRowChanged', this.currentRow, originatorId)
-    this.emitStateChanged('selection', originatorId)
   }
 
   /** 发射 selectedRowsChanged 事件（立即） */
@@ -1793,41 +1677,39 @@ export class DataView implements IDataSource, IDataViewStore {
     this._selectionIdsVersion++
     this.aggregateDelegate.recomputeSelection(this.selectedRows)
     this.events.emit('selectedRowsChanged', this.selectedRows, originatorId)
-    this.emitStateChanged('selection', originatorId)
   }
 
   /** 发射 aggregateResult 重算事件（立即） */
   private emitSummaryChanged(): void {
     this.events.emit('summaryChanged')
-    this.emitStateChanged('aggregate')
   }
 
   /** 发射 selectionAggregateResult 重算事件（立即） */
   private emitSelectionSummaryChanged(): void {
     this.events.emit('selectionSummaryChanged')
-    this.emitStateChanged('aggregate')
   }
 
-  /** 发射 rowsChanged 事件（stateChanged 立即失效，rowsChanged 防抖 16ms 合并批量更新） */
-  private emitRowsChanged(kinds?: DataViewStateChangeKind | readonly DataViewStateChangeKind[]): void {
-    const stateKinds = new Set<DataViewStateChangeKind>(['rows'])
-    if (kinds !== undefined) {
-      const nextStateKinds: readonly DataViewStateChangeKind[] = Array.isArray(kinds) ? kinds : [kinds]
-      for (const kind of nextStateKinds) stateKinds.add(kind)
+  private emitConfigChanged(): void {
+    this.events.emit('configChanged')
+  }
+
+  /** 发射 rowsChanged 事件（防抖 16ms 合并批量更新） */
+  private emitRowsChanged(options?: { selectionChanged?: boolean }): void {
+    this.pendingRowsSelectionChanged ||= options?.selectionChanged === true
+
+    if (this.rowsChangedDebouncer) {
+      clearTimeout(this.rowsChangedDebouncer)
     }
-
-    const normalizedKinds = [...stateKinds]
-    this.emitStateChanged(normalizedKinds)
-
-    for (const kind of normalizedKinds) this.pendingRowsStateKinds.add(kind)
-
-    if (this.stateChangedDebouncer) {
-      clearTimeout(this.stateChangedDebouncer)
-    }
-    this.stateChangedDebouncer = setTimeout(() => {
-      this.pendingRowsStateKinds.clear()
+    this.rowsChangedDebouncer = setTimeout(() => {
+      const selectionChanged = this.pendingRowsSelectionChanged
+      this.pendingRowsSelectionChanged = false
       this.events.emit('rowsChanged')
-      this.stateChangedDebouncer = undefined
+      if (selectionChanged) {
+        this.events.emit('currentRowChanged', this.currentRow)
+        this._selectionIdsVersion++
+        this.events.emit('selectedRowsChanged', this.selectedRows)
+      }
+      this.rowsChangedDebouncer = undefined
     }, ROWS_CHANGED_DEBOUNCE_MS)
   }
 
@@ -1856,7 +1738,7 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 设置当前页；远端视图自动重新查询 */
   async setPage(page: number): Promise<void> {
     this.page = page
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
     if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
@@ -1864,7 +1746,7 @@ export class DataView implements IDataSource, IDataViewStore {
   async setPageSize(pageSize: number): Promise<void> {
     this.pageSize = pageSize
     this.page = 1
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
     if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
@@ -1875,7 +1757,7 @@ export class DataView implements IDataSource, IDataViewStore {
     } else {
       this.sortExpression = sort
     }
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
     if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
@@ -1890,7 +1772,7 @@ export class DataView implements IDataSource, IDataViewStore {
       this.filterExpression = filter
     }
     this.page = 1
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
     if (this._shouldApplyStaticLocalFilter()) {
       this._syncStaticLocalFilterRows()
       return
@@ -1943,11 +1825,11 @@ export class DataView implements IDataSource, IDataViewStore {
     this._crudDelegate = undefined
 
     // 3. 清除防抖定时器
-    if (this.stateChangedDebouncer) {
-      clearTimeout(this.stateChangedDebouncer)
-      this.stateChangedDebouncer = undefined
+    if (this.rowsChangedDebouncer) {
+      clearTimeout(this.rowsChangedDebouncer)
+      this.rowsChangedDebouncer = undefined
     }
-    this.pendingRowsStateKinds.clear()
+    this.pendingRowsSelectionChanged = false
 
     // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）
     this.events.removeAllListeners()
@@ -2001,8 +1883,6 @@ export class DataView implements IDataSource, IDataViewStore {
 
   /** CrudDelegate 回调：追踪并发 CRUD 请求数，维护 mutating / mutatingError */
   private _trackMutating(delta: 1 | -1, error?: Error | null): void {
-    const previousMutating = this.mutating
-    const previousError = this.mutatingError
     this._mutatingCount = Math.max(0, this._mutatingCount + delta)
     this.mutating = this._mutatingCount > 0
     if (delta === 1) {
@@ -2011,9 +1891,6 @@ export class DataView implements IDataSource, IDataViewStore {
       if (error) this.mutatingError = error
     }
     this.events.emit('mutatingChanged', this.mutating)
-    if (previousMutating !== this.mutating || previousError !== this.mutatingError) {
-      this.emitStateChanged('mutation')
-    }
   }
 
   // ─────────────────────────────────────────────
@@ -2044,7 +1921,7 @@ export class DataView implements IDataSource, IDataViewStore {
     if (vc.filterExpression !== undefined && this._shouldApplyStaticLocalFilter()) {
       this._syncStaticLocalFilterRows()
     }
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
   }
 
   configure(config: Partial<IViewMetadata>): void {
@@ -2078,7 +1955,7 @@ export class DataView implements IDataSource, IDataViewStore {
     }
 
     this.treeConfig = treeConfig
-    this.emitStateChanged('config')
+    this.emitConfigChanged()
   }
 
   /** 对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态（静态数据路径用） */

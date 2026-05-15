@@ -154,15 +154,12 @@ Idle ──requestData()──▶ Preparing ──loadFromServer()──▶ Load
 
 ### 级联加载
 
-子视图订阅父视图的 `stateChanged` 事件（子依赖父，父不知子）：
+子视图订阅父视图的领域事件（子依赖父，父不知子）：
 
 ```typescript
 // DataView 内部（setupCascade）
-parentView.events.on('stateChanged', (event) => {
-  if (event.currentRow != null) {
-    this.requestData()   // 父行变化 → 子重新加载
-  }
-})
+parentView.events.on('currentRowChanged', () => this.requestData())
+parentView.events.on('rowsChanged', () => this.requestData())
 ```
 
 ---
@@ -277,6 +274,6 @@ sequenceDiagram
   Note over DV: 向后端发起请求
   DV-->>DV: rows = responseData
   DV->>DV: requestState = Loaded
-  DV->>DV: emit stateChanged
+  DV->>DV: emit rowsChanged/requestStateChanged
   Note over DV: 级联子视图自动更新
 ```

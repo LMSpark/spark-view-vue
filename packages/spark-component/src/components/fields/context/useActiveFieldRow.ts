@@ -9,11 +9,26 @@ export function useActiveFieldRow() {
   const dataSource = sparkConsume(DATA_SOURCE)
   const dataSourceRevision = shallowRef(0)
 
-  if (isDataViewEditingSource(dataSource) && typeof dataSource.subscribe === 'function') {
-    const unsubscribe = dataSource.subscribe(() => {
+  if (isDataViewEditingSource(dataSource) && dataSource.events) {
+    const bumpRevision = () => {
       dataSourceRevision.value += 1
+    }
+    const eventNames = [
+      'editingFieldChanged',
+      'editingChanged',
+      'rowsChanged',
+      'currentRowChanged',
+      'selectedRowsChanged',
+      'cleared',
+    ] as const
+    for (const eventName of eventNames) {
+      dataSource.events.on(eventName, bumpRevision)
+    }
+    onScopeDispose(() => {
+      for (const eventName of eventNames) {
+        dataSource.events?.off(eventName, bumpRevision)
+      }
     })
-    onScopeDispose(unsubscribe)
   }
 
   const activeRow = computed<IDataRow | null>(() => {

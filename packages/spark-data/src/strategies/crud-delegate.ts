@@ -180,7 +180,7 @@ export class CrudDelegate {
       const svc = this.ensureCrudService()
       const result = await svc.create<IDataRow>(cleanData, this.getCrudConfig())
       if (result.success && result.data) {
-        this.host.appendRow(result.data)   // appendRow 内部已发射 stateChanged('rows')
+        this.host.appendRow(result.data)   // appendRow 内部已发射 rowsChanged
       }
       this.fireAfter('create', data, result)
       return result
@@ -385,7 +385,7 @@ export class CrudDelegate {
       const result = await svc.importData(file)
       if (result.success) {
         this.host.resetState()
-        // fire-and-forget：结果经 stateChanged 事件通知；捕获异常防止 unhandled rejection
+        // fire-and-forget：结果经领域事件通知；捕获异常防止 unhandled rejection
         try { this.host.requestData() } catch (e: unknown) {
           logger.error('importData 后 requestData 失败', e)
         }

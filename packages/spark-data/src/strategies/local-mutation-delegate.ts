@@ -69,7 +69,7 @@ export class LocalMutationDelegate {
     this.postMutation?.('all')
   }
 
-  /** 本地追加一行，发射 stateChanged('rows') */
+  /** 本地追加一行，发射 rowsChanged */
   appendRow(row: IDataRow): void {
     this.host.rows = [...this.host.rows, row]
     this.host.rowIndexMap = undefined   // 新行未加入缓存，直接失效
@@ -78,7 +78,7 @@ export class LocalMutationDelegate {
   }
 
   /**
-   * 本地按主键部分更新一行，发射 stateChanged('rows')
+   * 本地按主键部分更新一行，发射 rowsChanged
    * 同步 currentRow / selectedRows 引用（引用已变，UI 需感知）
    * @returns 是否成功（行不存在时 false）
    */
@@ -124,7 +124,7 @@ export class LocalMutationDelegate {
   }
 
   /**
-   * 本地按主键删除一行，清理选中引用，发射 stateChanged('rows')
+   * 本地按主键删除一行，清理选中引用，发射 rowsChanged
    * @returns 是否成功（行不存在时 false）
    */
   deleteRowById(id: string | number): boolean {
@@ -155,14 +155,14 @@ export class LocalMutationDelegate {
 
     this.postMutation?.(null)
     if (this.hasSelectionStateChanged(selectionBefore)) {
-      this.emitRowsChanged('selection')
+      this.emitRowsChanged({ selectionChanged: true })
     } else {
       this.emitRowsChanged()
     }
     return true
   }
 
-  /** 本地整批替换所有行，清理无效选中引用，发射 stateChanged('rows') */
+  /** 本地整批替换所有行，清理无效选中引用，发射 rowsChanged */
   replaceRows(rows: IDataRow[]): void {
     const h = this.host
     const selectionBefore = {
@@ -178,7 +178,7 @@ export class LocalMutationDelegate {
 
     this.postMutation?.('all')
     if (this.hasSelectionStateChanged(selectionBefore)) {
-      this.emitRowsChanged('selection')
+      this.emitRowsChanged({ selectionChanged: true })
     } else {
       this.emitRowsChanged()
     }

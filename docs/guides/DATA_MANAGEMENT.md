@@ -114,10 +114,12 @@ if (usersView) {
 // requestData() 是幂等的：requestState !== Idle 时直接返回
 usersView?.requestData()
 
-// 监听状态变化
-usersView?.events.on('stateChanged', (event) => {
-  console.log('状态变化:', event)
-  // event.requestState, event.rows 等
+// 监听领域事件
+usersView?.events.on('requestStateChanged', (state) => {
+  console.log('请求状态变化:', state)
+})
+usersView?.events.on('rowsChanged', () => {
+  console.log('行数据变化:', usersView.rows)
 })
 ```
 
@@ -298,7 +300,7 @@ const ordersView = dataSet.getView('Orders')!
 const itemsView = dataSet.getView('OrderItems')!
 
 ordersView.currentRow = ordersView.rows[0]
-// → itemsView 会自动执行 requestData()（订阅父 stateChanged）
+// → itemsView 会自动执行 requestData()（订阅父 currentRowChanged / rowsChanged）
 ```
 
 ---
@@ -357,10 +359,9 @@ const currentRow = computed(() => view?.currentRow)
 const isLoading = computed(() => view?.requestState === 2 /* Loading */)
 
 onMounted(() => {
-  // 监听状态变化
-  view?.events.on('stateChanged', (event) => {
-    logger.debug('View state changed', event)
-  })
+  view?.events.on('rowsChanged', () => logger.debug('View rows changed'))
+  view?.events.on('currentRowChanged', () => logger.debug('View current row changed'))
+  view?.events.on('requestStateChanged', () => logger.debug('View request state changed'))
 })
 </script>
 ```

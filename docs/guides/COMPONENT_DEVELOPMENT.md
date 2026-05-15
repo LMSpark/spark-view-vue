@@ -381,7 +381,7 @@ ds?.setCurrentRow(row, ctx)
 
 ### 6.3 本地内存变更
 
-本地变更不触发网络请求，但会同步 `currentRow` / `selectedRows` 引用，并发射对应 `stateChanged` 事件：
+本地变更不触发网络请求，但会同步 `currentRow` / `selectedRows` 引用，并发射对应领域事件（如 `rowsChanged`、`currentRowChanged`、`selectedRowsChanged`）：
 
 ```typescript
 const ds = sparkConsume(DATA_SOURCE)
@@ -756,7 +756,7 @@ if (ds) sparkProvide(DATA_SOURCE, ds)
 const rows = computed(() => ds?.rows ?? [])
 
 function onRowClick(row: any) {
-  ds?.setCurrentRow(row)    // SelectionDelegate 处理，自动发射 stateChanged('currentRow')
+  ds?.setCurrentRow(row)    // SelectionDelegate 处理，自动发射 currentRowChanged
   logger.info('currentRow changed', { id: row.id })
 }
 </script>
@@ -766,7 +766,7 @@ function onRowClick(row: any) {
 
 ```vue
 <!-- DetailGrid.vue -->
-<!-- 级联由 DataSet relation 驱动（CascadeDelegate 自动订阅父表 stateChanged('currentRow')） -->
+<!-- 级联由 DataSet relation 驱动（CascadeDelegate 自动订阅父表 currentRowChanged / rowsChanged） -->
 <!-- 无需手动订阅——只需在 DataSet.relations 中正确配置 dependencyType: 'currentRow' -->
 <script setup lang="ts">
 import { computed } from 'vue'

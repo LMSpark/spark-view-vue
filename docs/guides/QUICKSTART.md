@@ -577,7 +577,7 @@ if (view) {
 
 // 订阅视图变化（统一使用 events.on）
 const usersView = dataSet.getView('Users', 'default')
-usersView?.events.on('stateChanged', () => {
+usersView?.events.on('rowsChanged', () => {
   console.log('用户数据已变化')
 })
 ```
