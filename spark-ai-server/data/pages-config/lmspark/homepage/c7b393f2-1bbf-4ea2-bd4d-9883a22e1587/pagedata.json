@@ -349,10 +349,26 @@
   ],
   "viewDependencies": [
     {
-      "parentTable": "LeaveTypes",
-      "childTable": "LeaveRequests",
-      "dependencyType": "currentRow",
-      "autoLoad": true
+      "id": "leave-type-requests",
+      "targetViewKey": "LeaveRequests@default",
+      "sources": [
+        {
+          "id": "leave-types",
+          "type": "view",
+          "viewKey": "LeaveTypes@default",
+          "state": "currentRow"
+        }
+      ],
+      "bindings": [
+        {
+          "sourceId": "leave-types",
+          "sourceField": "id",
+          "targetField": "leaveTypeId",
+          "required": true
+        }
+      ],
+      "autoLoad": true,
+      "emptyPolicy": "clearRows"
     }
   ],
   "layout": {

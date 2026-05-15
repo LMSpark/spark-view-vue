@@ -19,14 +19,48 @@
   ],
   "viewDependencies": [
     {
-      "parentTable": "Categories",
-      "childTable": "Products",
-      "dependencyType": "allRows"
+      "id": "category-products",
+      "targetViewKey": "Products@default",
+      "sources": [
+        {
+          "id": "categories",
+          "type": "view",
+          "viewKey": "Categories@default",
+          "state": "allRows"
+        }
+      ],
+      "bindings": [
+        {
+          "sourceId": "categories",
+          "sourceField": "id",
+          "targetField": "categoryId",
+          "required": true
+        }
+      ],
+      "autoLoad": true,
+      "emptyPolicy": "clearRows"
     },
     {
-      "parentTable": "Products",
-      "childTable": "OrderDetails",
-      "dependencyType": "allRows"
+      "id": "product-orders",
+      "targetViewKey": "OrderDetails@default",
+      "sources": [
+        {
+          "id": "products",
+          "type": "view",
+          "viewKey": "Products@default",
+          "state": "allRows"
+        }
+      ],
+      "bindings": [
+        {
+          "sourceId": "products",
+          "sourceField": "id",
+          "targetField": "productId",
+          "required": true
+        }
+      ],
+      "autoLoad": true,
+      "emptyPolicy": "clearRows"
     }
   ],
   "tables": {

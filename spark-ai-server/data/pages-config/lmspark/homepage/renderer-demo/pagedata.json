@@ -422,10 +422,26 @@
   ],
   "viewDependencies": [
     {
-      "parentTable": "users",
-      "childTable": "user_resumes",
-      "dependencyType": "currentRow",
-      "autoLoad": true
+      "id": "user-resumes",
+      "targetViewKey": "user_resumes@default",
+      "sources": [
+        {
+          "id": "users",
+          "type": "view",
+          "viewKey": "users@default",
+          "state": "currentRow"
+        }
+      ],
+      "bindings": [
+        {
+          "sourceId": "users",
+          "sourceField": "id",
+          "targetField": "userId",
+          "required": true
+        }
+      ],
+      "autoLoad": true,
+      "emptyPolicy": "clearRows"
     }
   ],
   "pageId": "renderer-demo",

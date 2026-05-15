@@ -12,10 +12,26 @@
   ],
   "viewDependencies": [
     {
-      "parentTable": "Projects",
-      "childTable": "WeeklyProgress",
-      "dependencyType": "currentRow",
-      "autoLoad": true
+      "id": "project-weekly-progress",
+      "targetViewKey": "WeeklyProgress@default",
+      "sources": [
+        {
+          "id": "projects",
+          "type": "view",
+          "viewKey": "Projects@default",
+          "state": "currentRow"
+        }
+      ],
+      "bindings": [
+        {
+          "sourceId": "projects",
+          "sourceField": "id",
+          "targetField": "projectId",
+          "required": true
+        }
+      ],
+      "autoLoad": true,
+      "emptyPolicy": "clearRows"
     }
   ],
   "tables": {
