@@ -59,8 +59,8 @@ class ControllersTest {
 
         mockMvc.perform(get("/api/tenants/t1/projects/p1/pages-config/my-page/rule.json"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").value("[]"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data.content").value("[]"))
+                .andExpect(jsonPath("$.data.timestamp").exists());
     }
 
     @Test
@@ -92,7 +92,7 @@ class ControllersTest {
                         .contentType(MediaType.TEXT_PLAIN)
                         .content("[{\"type\":\"h1\"}]"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ok").value(true));
+                .andExpect(jsonPath("$.data.ok").value(true));
     }
 
     // ── PageConfigController: SSE ─────────────────────────────────────────

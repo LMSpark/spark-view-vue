@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { Spark, type SparkNode } from '@spark-view/spark-component'
+import type { SparkNode } from '../core/types.js'
+import { Spark } from '../system/index.js'
 import SparkComponentRenderer from '../components/SparkComponentRenderer.vue'
 
 describe('SparkComponentRenderer', () => {
@@ -69,6 +70,10 @@ describe('SparkComponentRenderer', () => {
       props: { config },
       global: {
         plugins: [Spark.createPlugin({ registry })],
+        stubs: {
+          SparkComponentRenderer: false,
+          'spark-component-renderer': false,
+        },
       },
     })
 

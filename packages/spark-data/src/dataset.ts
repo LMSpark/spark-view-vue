@@ -6,7 +6,11 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, IDataRow, DataColumn, ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression } from './types'
+import type {
+  IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, IDataRow, DataColumn,
+  ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression, CrudResult, PkValue,
+  DataSetSaveChangesOptions, DataSetSaveChangesResult, DataSetSaveChangesViewResult,
+} from './types'
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView as SparkDataView } from './data-view'
@@ -103,6 +107,53 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   if (tenantId !== undefined) result.tenantId = tenantId
   if (projectId !== undefined) result.projectId = projectId
   return result
+}
+
+interface DataSetSaveChangesTarget {
+  view: SparkDataView
+  ids?: PkValue[]
+}
+
+function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesResult {
+  return {
+    viewCount,
+    appliedEditingRows: 0,
+    failedEditingRows: 0,
+    createdCount: 0,
+    savedCount: 0,
+    deletedCount: 0,
+    failedCount: 0,
+    failedViews: [],
+    viewResults: [],
+  }
+}
+
+function hasEditingChanges(view: SparkDataView, ids?: PkValue[]): boolean {
+  return ids === undefined
+    ? view.hasEditingChanges()
+    : ids.some(id => view.hasEditingChanges(id))
+}
+
+function hasPendingChanges(view: SparkDataView, ids?: PkValue[]): boolean {
+  if (ids === undefined) return view.dirtyTracking.hasPendingChanges()
+  return ids.some(id =>
+    view.dirtyTracking.isDirty(id)
+    || view.dirtyTracking.isPendingCreate(id)
+    || view.dirtyTracking.isPendingDelete(id)
+  )
+}
+
+function mergeViewResult(target: DataSetSaveChangesResult, viewResult: DataSetSaveChangesViewResult): void {
+  target.appliedEditingRows += viewResult.appliedEditingRows
+  target.failedEditingRows += viewResult.failedEditingRows
+  target.createdCount += viewResult.createdCount
+  target.savedCount += viewResult.savedCount
+  target.deletedCount += viewResult.deletedCount
+  target.failedCount += viewResult.failedCount
+  if (viewResult.failedCount > 0 || viewResult.failedEditingRows > 0) {
+    target.failedViews.push({ tableName: viewResult.tableName, viewId: viewResult.viewId })
+  }
+  target.viewResults.push(viewResult)
 }
 
 function buildDataSetHistoryScope(
@@ -442,6 +493,7 @@ export class DataSet implements IDataSet {
     // 数据驱动注册：每种事件统一 wrap (tableName, viewId, ...args)
     const eventKeys = [
       'currentRowChanged', 'selectedRowsChanged', 'rowsChanged',
+      'editingFieldChanged', 'editingRowsChanged',
       'cleared', 'requestStateChanged', 'mutatingChanged',
       'summaryChanged', 'selectionSummaryChanged', 'stateChanged',
     ] as const
@@ -1125,6 +1177,147 @@ export class DataSet implements IDataSet {
     const t = this.getTable(tableName)
     if (!t) return undefined
     return t.getView(viewId)
+  }
+
+  /**
+   * 保存 DataSet 范围内的编辑态和 staged 变更。
+   *
+   * 默认保存所有有变更视图；如果传入 views，则只保存指定视图/行。
+   * 提交顺序按 tableRelations 做父表 → 子表排序，保证主从页面一次提交时主表先落库。
+   */
+  async saveChanges(options?: DataSetSaveChangesOptions): Promise<CrudResult<DataSetSaveChangesResult>> {
+    const targets = this.resolveSaveChangesTargets(options)
+    const result = emptyDataSetSaveChangesResult(targets.length)
+    const shouldApplyEditingRows = options?.applyEditingRows ?? true
+
+    for (const target of targets) {
+      const view = target.view
+      const shouldApply = shouldApplyEditingRows && hasEditingChanges(view, target.ids)
+      const shouldSave = hasPendingChanges(view, target.ids)
+      if (!shouldApply && !shouldSave) continue
+
+      const viewResult: DataSetSaveChangesViewResult = {
+        tableName: view.tableName,
+        viewId: view.viewId,
+        appliedEditingRows: 0,
+        failedEditingRows: 0,
+        createdCount: 0,
+        savedCount: 0,
+        deletedCount: 0,
+        failedCount: 0,
+        failedIds: [],
+        failedErrors: {},
+      }
+
+      if (shouldApply) {
+        const applyResult = await view.applyEditingRows(target.ids)
+        const applyData = applyResult.data
+        viewResult.appliedEditingRows = applyData?.appliedCount ?? 0
+        viewResult.failedEditingRows = applyData?.failedCount ?? 0
+        if (applyData) {
+          viewResult.failedIds.push(...applyData.failedIds)
+          Object.assign(viewResult.failedErrors, applyData.failedErrors)
+        }
+      }
+
+      if (viewResult.failedEditingRows === 0 && (shouldSave || viewResult.appliedEditingRows > 0)) {
+        const saveResult = await view.saveChanges(target.ids)
+        const saveData = saveResult.data
+        if (saveData) {
+          viewResult.createdCount = saveData.createdCount
+          viewResult.savedCount = saveData.savedCount
+          viewResult.deletedCount = saveData.deletedCount
+          viewResult.failedCount = saveData.failedCount
+          viewResult.failedIds.push(...saveData.failedIds)
+          for (const [id, message] of Object.entries(saveData.failedErrors)) {
+            viewResult.failedErrors[id] = message
+          }
+        } else if (!saveResult.success) {
+          viewResult.failedCount = 1
+          viewResult.failedErrors['*'] = saveResult.message ?? saveResult.error?.message ?? '保存失败'
+        }
+      }
+
+      mergeViewResult(result, viewResult)
+    }
+
+    return {
+      success: result.failedCount === 0 && result.failedEditingRows === 0,
+      message: result.failedCount === 0 && result.failedEditingRows === 0
+        ? `保存 ${result.viewResults.length} 个视图：新增 ${result.createdCount}，更新 ${result.savedCount}，删除 ${result.deletedCount}`
+        : `保存 ${result.viewResults.length} 个视图存在失败：编辑态失败 ${result.failedEditingRows}，提交失败 ${result.failedCount}`,
+      data: result,
+    }
+  }
+
+  private resolveSaveChangesTargets(options?: DataSetSaveChangesOptions): DataSetSaveChangesTarget[] {
+    const targets: DataSetSaveChangesTarget[] = []
+    const seen = new Set<string>()
+
+    if (options?.views !== undefined) {
+      for (const selector of options.views) {
+        const viewId = selector.viewId ?? 'default'
+        const key = `${selector.tableName}@${viewId}`
+        if (seen.has(key)) throw new Error(`DataSet.saveChanges: duplicate view selector "${key}"`)
+        const view = this.getView(selector.tableName, viewId)
+        if (!view) throw new Error(`DataSet.saveChanges: view not found "${key}"`)
+        seen.add(key)
+        targets.push({ view, ...(selector.ids !== undefined ? { ids: selector.ids } : {}) })
+      }
+    } else {
+      for (const table of Object.values(this.tables)) {
+        table.forEachView(view => {
+          targets.push({ view })
+        })
+      }
+    }
+
+    const tableOrder = this.getSaveChangesTableOrder()
+    targets.sort((a, b) => {
+      const tableDiff = (tableOrder.get(a.view.tableName) ?? Number.MAX_SAFE_INTEGER)
+        - (tableOrder.get(b.view.tableName) ?? Number.MAX_SAFE_INTEGER)
+      if (tableDiff !== 0) return tableDiff
+      if (a.view.viewId === b.view.viewId) return 0
+      if (a.view.viewId === 'default') return -1
+      if (b.view.viewId === 'default') return 1
+      return a.view.viewId.localeCompare(b.view.viewId)
+    })
+    return targets
+  }
+
+  private getSaveChangesTableOrder(): Map<string, number> {
+    const tableNames = Object.keys(this.tables)
+    const children = new Map<string, Set<string>>()
+    const inDegree = new Map<string, number>()
+    for (const tableName of tableNames) {
+      children.set(tableName, new Set())
+      inDegree.set(tableName, 0)
+    }
+
+    for (const relation of this.tableRelations ?? []) {
+      if (!children.has(relation.parentTable) || !children.has(relation.childTable)) continue
+      if (relation.parentTable === relation.childTable) continue
+      const childSet = children.get(relation.parentTable)
+      if (!childSet || childSet.has(relation.childTable)) continue
+      childSet.add(relation.childTable)
+      inDegree.set(relation.childTable, (inDegree.get(relation.childTable) ?? 0) + 1)
+    }
+
+    const queue = tableNames.filter(tableName => (inDegree.get(tableName) ?? 0) === 0)
+    const ordered: string[] = []
+    for (const tableName of queue) {
+      ordered.push(tableName)
+      for (const childTable of children.get(tableName) ?? []) {
+        const nextDegree = (inDegree.get(childTable) ?? 0) - 1
+        inDegree.set(childTable, nextDegree)
+        if (nextDegree === 0) queue.push(childTable)
+      }
+    }
+
+    for (const tableName of tableNames) {
+      if (!ordered.includes(tableName)) ordered.push(tableName)
+    }
+    return new Map(ordered.map((tableName, index) => [tableName, index]))
   }
 
   // ===== 序列化 =====

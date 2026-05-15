@@ -1,5 +1,7 @@
 package com.spark.ai.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.api.ApiResponseFactory;
 import com.spark.ai.service.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
@@ -44,7 +46,6 @@ public class JwtAuthFilterConfig {
         "/api/events",
         "/api/logs",
         "/api/ai/debug/",
-        "/api/pages-config/",
         "/api/openapi",
         "/api/swagger"
     );
@@ -57,9 +58,9 @@ public class JwtAuthFilterConfig {
     );
 
     @Bean
-    public FilterRegistrationBean<Filter> jwtAuthFilter(JwtUtil jwtUtil) {
+    public FilterRegistrationBean<Filter> jwtAuthFilter(JwtUtil jwtUtil, ObjectMapper objectMapper) {
         FilterRegistrationBean<Filter> reg = new FilterRegistrationBean<>();
-        reg.setFilter(new JwtFilter(jwtUtil));
+        reg.setFilter(new JwtFilter(jwtUtil, objectMapper));
         reg.addUrlPatterns("/api/*");
         reg.setOrder(1);
         return reg;
@@ -68,9 +69,11 @@ public class JwtAuthFilterConfig {
     static class JwtFilter implements Filter {
 
         private final JwtUtil jwtUtil;
+        private final ObjectMapper objectMapper;
 
-        JwtFilter(JwtUtil jwtUtil) {
+        JwtFilter(JwtUtil jwtUtil, ObjectMapper objectMapper) {
             this.jwtUtil = jwtUtil;
+            this.objectMapper = objectMapper;
         }
 
         @Override
@@ -90,7 +93,7 @@ public class JwtAuthFilterConfig {
             // 2. 提取 Bearer Token
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                sendError(response, 401, "UNAUTHORIZED", "缺少认证 Token");
+                sendError(request, response, 401, "UNAUTHORIZED", "缺少认证 Token");
                 return;
             }
 
@@ -102,7 +105,7 @@ public class JwtAuthFilterConfig {
                 claims = jwtUtil.parseToken(token);
             } catch (Exception e) {
                 log.debug("[JwtFilter] Token 无效: {}", e.getMessage());
-                sendError(response, 401, "INVALID_TOKEN", "Token 无效或已过期");
+                sendError(request, response, 401, "INVALID_TOKEN", "Token 无效或已过期");
                 return;
             }
 
@@ -114,7 +117,7 @@ public class JwtAuthFilterConfig {
             String headerTenantId = request.getHeader("X-Tenant-Id");
             if (headerTenantId != null && !headerTenantId.isBlank()
                     && !headerTenantId.equals(tokenTenantId)) {
-                sendError(response, 403, "TENANT_MISMATCH",
+                sendError(request, response, 403, "TENANT_MISMATCH",
                     "X-Tenant-Id 头与 Token 中的租户不匹配");
                 return;
             }
@@ -123,6 +126,7 @@ public class JwtAuthFilterConfig {
             request.setAttribute("tenantId", tokenTenantId);
             request.setAttribute("username", username);
             request.setAttribute("roles", roles);
+            request.setAttribute(ApiResponseFactory.REQUEST_ID_ATTRIBUTE, ApiResponseFactory.requestId(request));
 
             chain.doFilter(req, resp);
         }
@@ -137,13 +141,10 @@ public class JwtAuthFilterConfig {
             return false;
         }
 
-        private void sendError(HttpServletResponse response, int status, String error, String message)
+        private void sendError(HttpServletRequest request, HttpServletResponse response, int status, String error, String message)
                 throws IOException {
-            response.setStatus(status);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write(
-                String.format("{\"error\":\"%s\",\"message\":\"%s\"}", error, message)
-            );
+            ApiResponseFactory.writeJsonError(request, response, objectMapper,
+                    org.springframework.http.HttpStatus.valueOf(status), error, message);
         }
     }
 }

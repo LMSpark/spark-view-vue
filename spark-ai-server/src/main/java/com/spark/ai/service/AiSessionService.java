@@ -2,10 +2,23 @@ package com.spark.ai.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.api.ApiResponseFactory;
+import com.spark.ai.config.AiSessionProperties;
 import com.spark.ai.config.OpenAiProperties;
+import com.spark.ai.entity.AiContextSnapshotEntity;
+import com.spark.ai.entity.AiMessageEntity;
+import com.spark.ai.entity.AiSessionEntity;
+import com.spark.ai.entity.AiToolCallEntity;
+import com.spark.ai.repository.AiContextSnapshotRepository;
+import com.spark.ai.repository.AiMessageRepository;
+import com.spark.ai.repository.AiSessionRepository;
+import com.spark.ai.repository.AiToolCallRepository;
+import com.spark.ai.security.AccessGuardService;
+import com.spark.ai.security.AuthenticatedRequestContext;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -15,6 +28,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -93,10 +108,35 @@ public class AiSessionService {
     private final OpenAiProperties props;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
+    private final AiSessionRepository aiSessionRepository;
+    private final AiMessageRepository aiMessageRepository;
+    private final AiToolCallRepository aiToolCallRepository;
+    private final AiContextSnapshotRepository aiContextSnapshotRepository;
+    private final AiSessionProperties aiSessionProperties;
+    private final AccessGuardService accessGuardService;
 
     public AiSessionService(OpenAiProperties props, ObjectMapper objectMapper) {
+        this(props, objectMapper, null, null, null, null, null, null);
+    }
+
+    @Autowired
+    public AiSessionService(
+            OpenAiProperties props,
+            ObjectMapper objectMapper,
+            AiSessionRepository aiSessionRepository,
+            AiMessageRepository aiMessageRepository,
+            AiToolCallRepository aiToolCallRepository,
+            AiContextSnapshotRepository aiContextSnapshotRepository,
+            AiSessionProperties aiSessionProperties,
+            AccessGuardService accessGuardService) {
         this.props = props;
         this.objectMapper = objectMapper;
+        this.aiSessionRepository = aiSessionRepository;
+        this.aiMessageRepository = aiMessageRepository;
+        this.aiToolCallRepository = aiToolCallRepository;
+        this.aiContextSnapshotRepository = aiContextSnapshotRepository;
+        this.aiSessionProperties = aiSessionProperties != null ? aiSessionProperties : new AiSessionProperties();
+        this.accessGuardService = accessGuardService;
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(15_000);
@@ -192,6 +232,7 @@ public class AiSessionService {
                              boolean reuseScopeSession,
                              String requestedSessionId) {
         SessionScope normalizedScope = normalizeScope(scope);
+        AuthenticatedRequestContext requestContext = guardAiScope(scope);
         List<Map<String, Object>> safeMessages = messages != null ? messages : List.of();
         String providedSessionId = stringValue(requestedSessionId);
         if (providedSessionId != null) {
@@ -208,9 +249,11 @@ public class AiSessionService {
                 existingSession.tools = tools;
                 existingSession.mode = mode != null ? mode : "function";
                 existingSession.lastActiveTime = System.currentTimeMillis();
+                applyRequestIdentity(existingSession, scope, requestContext);
                 if (existingSession.scopeKey != null) {
                     sessionIdsByScopeKey.put(existingSession.scopeKey, providedSessionId);
                 }
+                persistSession(providedSessionId, existingSession);
                 log.info("[SESSION] ensured sessionId={} scope={} windowSize={} mode={} tools={}",
                         providedSessionId, existingSession.scopeKey, existingSession.windowSize, existingSession.mode,
                         tools != null ? tools.size() : 0);
@@ -261,6 +304,7 @@ public class AiSessionService {
         session.mode = mode != null ? mode : "function";
         session.state = SessionState.READY;
         session.consecutiveFailures = 0;
+        applyRequestIdentity(session, scope, requestContext);
 
         for (Map<String, Object> message : safeMessages) {
             session.conversation.add(messageFromMap(message));
@@ -274,6 +318,9 @@ public class AiSessionService {
         log.info("[SESSION] created sessionId={} scope={} windowSize={} mode={} tools={}",
                 sessionId, session.scopeKey, session.windowSize, session.mode,
                 tools != null ? tools.size() : 0);
+        persistSession(sessionId, session);
+        persistMessages(sessionId, session.conversation);
+        persistContextSnapshot(sessionId, null, session.scope);
         return sessionId;
     }
 
@@ -295,7 +342,8 @@ public class AiSessionService {
      * 执行一轮对话（非流式），用已提交历史 + 本轮消息构造 LLM 输入。
      */
     public TurnResult executeTurn(String sessionId, Map<String, Object> scope, List<Map<String, Object>> turnMessages) {
-        Session session = sessions.get(sessionId);
+        guardAiScope(scope);
+        Session session = getOrLoadSession(sessionId);
         if (session == null) return null;
         if (!matchesScope(session, scope)) {
             return TurnResult.error(
@@ -356,6 +404,9 @@ public class AiSessionService {
                 Map<String, Object> guard = getRuntimeGuard(runtimeMeta);
                 boolean blocked = guard.get("blocked") instanceof Boolean b && b;
                 if (blocked) {
+                    persistToolCalls(sessionId, String.valueOf(round), llmResult.toolCalls, runtimeMeta, "blocked");
+                    persistContextSnapshot(sessionId, String.valueOf(round), session.scope);
+                    persistSession(sessionId, session);
                     String reasonCode = guard.get("reasonCode") instanceof String s
                             ? s : "RUNTIME_GUARD_BLOCKED";
                     transition(session, SessionState.FAILED);
@@ -380,6 +431,10 @@ public class AiSessionService {
                 session.conversation.addAll(parsedTurnMessages);
                 session.conversation.add(assistantMsg);
             }
+            persistMessages(sessionId, parsedTurnMessages);
+            persistMessage(sessionId, assistantMsg);
+            persistToolCalls(sessionId, String.valueOf(round), llmResult.toolCalls, runtimeMeta, "planned");
+            persistContextSnapshot(sessionId, String.valueOf(round), session.scope);
 
             transition(session, SessionState.APPLY);
             transition(session, SessionState.VERIFY);
@@ -387,6 +442,7 @@ public class AiSessionService {
             session.consecutiveFailures = 0;
             String stateTransition = "VERIFY->DONE";
             transition(session, SessionState.READY);
+            persistSession(sessionId, session);
 
             return new TurnResult(
                     llmResult.text,
@@ -453,17 +509,18 @@ public class AiSessionService {
             int windowSize,
             List<Map<String, Object>> tools,
             String mode) {
-        Session session = sessions.get(sessionId);
+        AuthenticatedRequestContext requestContext = guardAiScope(scope);
+        Session session = getOrLoadSession(sessionId);
         if (session == null) {
             String prompt = stringValue(systemPrompt);
             if (prompt == null) {
                 try {
                     emitter.send(SseEmitter.event().name("error")
-                            .data(objectMapper.writeValueAsString(Map.of(
-                                    "error", "会话不存在",
-                                    "sessionId", sessionId,
-                                    "turnId", turnId != null ? turnId : ""
-                            ))));
+                            .data(objectMapper.writeValueAsString(ApiResponseFactory.error(
+                                    org.springframework.http.HttpStatus.NOT_FOUND,
+                                    "SESSION_NOT_FOUND",
+                                    "会话不存在",
+                                    ApiResponseFactory.currentRequestId()))));
                     emitter.complete();
                 } catch (IOException ignored) {}
                 return;
@@ -475,13 +532,15 @@ public class AiSessionService {
         if (!matchesScope(session, scope)) {
             try {
                 emitter.send(SseEmitter.event().name("error")
-                        .data(objectMapper.writeValueAsString(Map.of(
-                                "error", "SESSION_SCOPE_MISMATCH",
-                                "sessionId", sessionId,
-                                "turnId", turnId != null ? turnId : "",
-                                "streamKey", streamKey != null ? streamKey : "",
-                                "scope", session.scope != null ? session.scope : Map.of()
-                        ))));
+                        .data(objectMapper.writeValueAsString(ApiResponseFactory.error(
+                                org.springframework.http.HttpStatus.CONFLICT,
+                                "SESSION_SCOPE_MISMATCH",
+                                "会话 scope 不匹配",
+                                Map.of("sessionId", sessionId,
+                                        "turnId", turnId != null ? turnId : "",
+                                        "streamKey", streamKey != null ? streamKey : "",
+                                        "scope", session.scope != null ? session.scope : Map.of()),
+                                ApiResponseFactory.currentRequestId()))));
                 emitter.complete();
             } catch (IOException ignored) {}
             return;
@@ -491,13 +550,17 @@ public class AiSessionService {
         StreamMeta streamMeta;
         synchronized (session) {
             applySessionConfig(session, scope, systemPrompt, windowSize, tools, mode);
+            applyRequestIdentity(session, scope, requestContext);
             session.lastActiveTime = System.currentTimeMillis();
             List<Message> parsedTurnMessages = messagesFromMaps(turnMessages);
             List<Message> llmConversation = new ArrayList<>(session.conversation);
             llmConversation.addAll(parsedTurnMessages);
             messages = buildWindowedMessages(session, llmConversation);
-            streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope, parsedTurnMessages);
+            streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope, parsedTurnMessages,
+                    ApiResponseFactory.currentRequestId());
         }
+        persistSession(sessionId, session);
+        persistContextSnapshot(sessionId, turnId, session.scope);
         Session streamSession = session;
         List<Map<String, Object>> streamMessages = messages;
 
@@ -508,7 +571,11 @@ public class AiSessionService {
                 log.error("[SESSION] stream error sessionId={}: {}", sessionId, e.getMessage());
                 try {
                     emitter.send(SseEmitter.event().name("error")
-                            .data("{\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}"));
+                            .data(objectMapper.writeValueAsString(ApiResponseFactory.error(
+                                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                                    "AI_STREAM_ERROR",
+                                    e.getMessage(),
+                                    ApiResponseFactory.currentRequestId()))));
                     emitter.complete();
                 } catch (IOException ignored) {}
             }
@@ -529,18 +596,21 @@ public class AiSessionService {
     public AppendMessageResult appendMessage(String sessionId, String role, String content,
                                              String toolCallId, List<Map<String, Object>> toolCalls,
                                              Map<String, Object> scope) {
-        Session session = sessions.get(sessionId);
+        guardAiScope(scope);
+        Session session = getOrLoadSession(sessionId);
         if (session == null) return AppendMessageResult.SESSION_NOT_FOUND;
         if (!matchesScope(session, scope)) return AppendMessageResult.SCOPE_MISMATCH;
 
+        Message msg = new Message(role);
+        msg.content = content;
+        msg.toolCallId = toolCallId;
+        msg.toolCalls = toolCalls;
         synchronized (session) {
             session.lastActiveTime = System.currentTimeMillis();
-            Message msg = new Message(role);
-            msg.content = content;
-            msg.toolCallId = toolCallId;
-            msg.toolCalls = toolCalls;
             session.conversation.add(msg);
         }
+        persistMessage(sessionId, msg);
+        persistSession(sessionId, session);
         return AppendMessageResult.OK;
     }
 
@@ -548,8 +618,10 @@ public class AiSessionService {
      * 获取完整对话记录（包含 FC 字段）。
      */
     public List<Map<String, Object>> getConversationFull(String sessionId) {
-        Session session = sessions.get(sessionId);
-        if (session == null) return List.of();
+        Session session = getOrLoadSession(sessionId);
+        if (session == null) {
+            return loadConversationFromPersistence(sessionId);
+        }
 
         List<Map<String, Object>> result = new ArrayList<>();
         synchronized (session) {
@@ -565,6 +637,7 @@ public class AiSessionService {
         if (removed != null && removed.scopeKey != null) {
             sessionIdsByScopeKey.remove(removed.scopeKey, sessionId);
         }
+        markSessionDestroyed(sessionId);
         log.info("[SESSION] destroyed sessionId={}", sessionId);
     }
 
@@ -572,6 +645,7 @@ public class AiSessionService {
         int count = 0;
         for (String id : sessionIds) {
             if (sessions.remove(id) != null) count++;
+            markSessionDestroyed(id);
         }
         log.info("[SESSION] bulk destroyed {} sessions", count);
         return count;
@@ -594,6 +668,264 @@ public class AiSessionService {
             }
         }
         return cleaned;
+    }
+
+    private boolean persistenceEnabled() {
+        return aiSessionRepository != null
+                && aiMessageRepository != null
+                && aiToolCallRepository != null
+                && aiContextSnapshotRepository != null;
+    }
+
+    private Session getOrLoadSession(String sessionId) {
+        Session hot = sessions.get(sessionId);
+        if (hot != null || !persistenceEnabled()) {
+            return hot;
+        }
+        Optional<AiSessionEntity> entity = aiSessionRepository.findById(sessionId);
+        if (entity.isEmpty()) {
+            return null;
+        }
+        Session session = new Session();
+        AiSessionEntity row = entity.get();
+        session.tenantId = row.getTenantId();
+        session.projectId = row.getProjectId();
+        session.username = row.getUsername();
+        session.systemPrompt = row.getSystemPrompt();
+        session.windowSize = row.getWindowSize() > 0 ? row.getWindowSize() : DEFAULT_WINDOW_SIZE;
+        session.mode = row.getMode() != null ? row.getMode() : "function";
+        session.state = parseState(row.getState());
+        session.lastActiveTime = row.getLastActiveAt() != null ? row.getLastActiveAt().toEpochMilli() : System.currentTimeMillis();
+        session.scope = readMap(row.getScopeJson());
+        session.tools = readList(row.getToolsJson());
+        SessionScope normalizedScope = normalizeScope(session.scope);
+        session.moduleId = normalizedScope.moduleId;
+        session.moduleInstanceId = normalizedScope.moduleInstanceId;
+        session.instanceId = normalizedScope.instanceId;
+        session.runtimeInstanceId = normalizedScope.runtimeInstanceId;
+        session.scopeKey = normalizedScope.scopeKey;
+        for (Map<String, Object> message : loadConversationFromPersistence(sessionId)) {
+            session.conversation.add(messageFromMap(message));
+        }
+        sessions.put(sessionId, session);
+        if (session.scopeKey != null) {
+            sessionIdsByScopeKey.put(session.scopeKey, sessionId);
+        }
+        return session;
+    }
+
+    private List<Map<String, Object>> loadConversationFromPersistence(String sessionId) {
+        if (!persistenceEnabled()) {
+            return List.of();
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (AiMessageEntity entity : aiMessageRepository.findBySessionIdOrderBySeqNoAsc(sessionId)) {
+            Map<String, Object> message = new LinkedHashMap<>();
+            message.put("role", entity.getRole());
+            message.put("content", entity.getContent() != null ? entity.getContent() : "");
+            if (entity.getToolCallId() != null) {
+                message.put("tool_call_id", entity.getToolCallId());
+            }
+            List<Map<String, Object>> toolCalls = readList(entity.getToolCallsJson());
+            if (toolCalls != null && !toolCalls.isEmpty()) {
+                message.put("tool_calls", toolCalls);
+            }
+            result.add(message);
+        }
+        return result;
+    }
+
+    private void persistSession(String sessionId, Session session) {
+        if (!persistenceEnabled() || session == null) {
+            return;
+        }
+        try {
+            AiSessionEntity entity = aiSessionRepository.findById(sessionId).orElseGet(AiSessionEntity::new);
+            entity.setSessionId(sessionId);
+            entity.setTenantId(session.tenantId);
+            entity.setProjectId(session.projectId);
+            entity.setUsername(session.username);
+            entity.setSystemPrompt(session.systemPrompt);
+            entity.setMode(session.mode);
+            entity.setState(session.state != null ? session.state.name() : "READY");
+            entity.setScopeJson(writeJson(session.scope));
+            entity.setToolsJson(writeJson(session.tools));
+            entity.setWindowSize(session.windowSize);
+            Instant lastActiveAt = Instant.ofEpochMilli(session.lastActiveTime > 0 ? session.lastActiveTime : System.currentTimeMillis());
+            entity.setLastActiveAt(lastActiveAt);
+            int retentionDays = Math.max(1, aiSessionProperties.getRetentionDays());
+            entity.setExpiresAt(lastActiveAt.plus(retentionDays, ChronoUnit.DAYS));
+            aiSessionRepository.save(entity);
+        } catch (Exception error) {
+            log.warn("[SESSION] persist session failed sessionId={}: {}", sessionId, error.getMessage());
+        }
+    }
+
+    private void persistMessages(String sessionId, List<Message> messages) {
+        if (!persistenceEnabled() || messages == null || messages.isEmpty()) {
+            return;
+        }
+        try {
+            int nextSeq = aiMessageRepository.findTopBySessionIdOrderBySeqNoDesc(sessionId)
+                    .map(AiMessageEntity::getSeqNo)
+                    .orElse(0) + 1;
+            List<AiMessageEntity> rows = new ArrayList<>();
+            for (Message message : messages) {
+                AiMessageEntity entity = new AiMessageEntity();
+                entity.setSessionId(sessionId);
+                entity.setSeqNo(nextSeq++);
+                entity.setRole(message.role);
+                entity.setContent(message.content);
+                entity.setToolCallId(message.toolCallId);
+                entity.setToolCallsJson(writeJson(message.toolCalls));
+                rows.add(entity);
+            }
+            aiMessageRepository.saveAll(rows);
+        } catch (Exception error) {
+            log.warn("[SESSION] persist messages failed sessionId={}: {}", sessionId, error.getMessage());
+        }
+    }
+
+    private void persistMessage(String sessionId, Message message) {
+        if (message != null) {
+            persistMessages(sessionId, List.of(message));
+        }
+    }
+
+    private void persistToolCalls(String sessionId,
+                                  String turnId,
+                                  List<Map<String, Object>> toolCalls,
+                                  Map<String, Object> runtimeMeta,
+                                  String status) {
+        if (!persistenceEnabled() || toolCalls == null || toolCalls.isEmpty()) {
+            return;
+        }
+        try {
+            String runtimeMetaJson = writeJson(runtimeMeta);
+            List<AiToolCallEntity> rows = new ArrayList<>();
+            for (Map<String, Object> call : toolCalls) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> function = call.get("function") instanceof Map<?, ?> raw
+                        ? (Map<String, Object>) raw
+                        : Map.of();
+                AiToolCallEntity entity = new AiToolCallEntity();
+                entity.setSessionId(sessionId);
+                entity.setTurnId(turnId);
+                entity.setCallId(stringValue(call.get("id")));
+                entity.setName(stringValue(function.get("name")));
+                entity.setArgumentsJson(stringValue(function.get("arguments")));
+                entity.setStatus(status);
+                entity.setRuntimeMetaJson(runtimeMetaJson);
+                rows.add(entity);
+            }
+            aiToolCallRepository.saveAll(rows);
+        } catch (Exception error) {
+            log.warn("[SESSION] persist tool calls failed sessionId={}: {}", sessionId, error.getMessage());
+        }
+    }
+
+    private void persistContextSnapshot(String sessionId, String turnId, Map<String, Object> scope) {
+        if (!persistenceEnabled()) {
+            return;
+        }
+        try {
+            AiContextSnapshotEntity entity = new AiContextSnapshotEntity();
+            entity.setSessionId(sessionId);
+            entity.setTurnId(turnId);
+            entity.setScopeJson(writeJson(scope));
+            aiContextSnapshotRepository.save(entity);
+        } catch (Exception error) {
+            log.warn("[SESSION] persist context snapshot failed sessionId={}: {}", sessionId, error.getMessage());
+        }
+    }
+
+    private void markSessionDestroyed(String sessionId) {
+        if (!persistenceEnabled()) {
+            return;
+        }
+        aiSessionRepository.findById(sessionId).ifPresent(entity -> {
+            entity.setState("DESTROYED");
+            aiSessionRepository.save(entity);
+        });
+    }
+
+    private AuthenticatedRequestContext guardAiScope(Map<String, Object> scope) {
+        AuthenticatedRequestContext ctx = AuthenticatedRequestContext.currentOrNull();
+        if (accessGuardService == null) {
+            return ctx;
+        }
+        String scopedTenantId = stringValue(scope != null ? scope.get("tenantId") : null);
+        String scopedProjectId = stringValue(scope != null ? scope.get("projectId") : null);
+        String tenantId = scopedTenantId != null ? scopedTenantId : (ctx != null ? ctx.tenantId() : null);
+        if (tenantId == null) {
+            return ctx;
+        }
+        if (scopedProjectId != null) {
+            accessGuardService.requireProjectAccess(tenantId, scopedProjectId);
+        } else {
+            accessGuardService.requireTenantUser(tenantId);
+        }
+        return ctx;
+    }
+
+    private void applyRequestIdentity(Session session, Map<String, Object> scope, AuthenticatedRequestContext ctx) {
+        String scopedTenantId = stringValue(scope != null ? scope.get("tenantId") : null);
+        String scopedProjectId = stringValue(scope != null ? scope.get("projectId") : null);
+        if (scopedTenantId != null) {
+            session.tenantId = scopedTenantId;
+        } else if (ctx != null) {
+            session.tenantId = ctx.tenantId();
+        }
+        if (scopedProjectId != null) {
+            session.projectId = scopedProjectId;
+        }
+        if (ctx != null) {
+            session.username = ctx.username();
+        }
+    }
+
+    private String writeJson(Object value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception error) {
+            return null;
+        }
+    }
+
+    private Map<String, Object> readMap(String json) {
+        if (json == null || json.isBlank()) {
+            return Map.of();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+        } catch (Exception error) {
+            return Map.of();
+        }
+    }
+
+    private List<Map<String, Object>> readList(String json) {
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception error) {
+            return List.of();
+        }
+    }
+
+    private SessionState parseState(String state) {
+        if (state == null || state.isBlank()) {
+            return SessionState.READY;
+        }
+        try {
+            return SessionState.valueOf(state);
+        } catch (IllegalArgumentException error) {
+            return SessionState.READY;
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -972,12 +1304,16 @@ public class AiSessionService {
         // 因此后端不再自动写入，避免出现两条相邻的 assistant(tool_calls) 导致 DeepSeek 400。
         synchronized (session) {
             session.conversation.addAll(streamMeta.turnMessages);
+            persistMessages(streamMeta.sessionId, streamMeta.turnMessages);
             if (toolCalls == null || toolCalls.isEmpty()) {
                 Message assistantMsg = new Message("assistant");
                 assistantMsg.content = text;
                 session.conversation.add(assistantMsg);
+                persistMessage(streamMeta.sessionId, assistantMsg);
             }
         }
+        persistToolCalls(streamMeta.sessionId, streamMeta.turnId, toolCalls, null, "planned");
+        persistSession(streamMeta.sessionId, session);
 
         // 发送最终结果
         Map<String, Object> resultMap = new LinkedHashMap<>();
@@ -997,7 +1333,7 @@ public class AiSessionService {
         }
 
         emitter.send(SseEmitter.event().name("result")
-            .data(objectMapper.writeValueAsString(resultMap)));
+            .data(objectMapper.writeValueAsString(ApiResponseFactory.ok(resultMap, streamMeta.requestId))));
         Map<String, Object> doneMap = new LinkedHashMap<>();
         doneMap.put("protocolVersion", 3);
         doneMap.put("sessionId", streamMeta.sessionId);
@@ -1020,6 +1356,9 @@ public class AiSessionService {
 
     private static class Session {
         String systemPrompt;
+        String tenantId;
+        String projectId;
+        String username;
         String moduleId;
         String moduleInstanceId;
         String instanceId;
@@ -1042,7 +1381,8 @@ public class AiSessionService {
             String turnId,
             String streamKey,
             Map<String, Object> scope,
-            List<Message> turnMessages) {}
+            List<Message> turnMessages,
+            String requestId) {}
 
     private enum SessionState {
         READY,

@@ -83,10 +83,17 @@ export type {
   ICurrentRowSource,
   IDataSource,
   IDataViewStore,
+  PkValue,
   DataViewSnapshot,
   DataViewChangeEvent,
   DataViewChangeListener,
   DataViewStateChangeKind,
+  DataViewEditingFieldChangeEvent,
+  DataViewApplyEditingRowsResult,
+  DataSetSaveChangesOptions,
+  DataSetSaveChangesResult,
+  DataSetSaveChangesViewResult,
+  DataSetSaveChangesViewSelector,
   IDataSet,
 
   // DataSet 配置（createDataSet / fromJson 参数类型）

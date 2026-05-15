@@ -394,7 +394,10 @@ export function useDevState() {
   async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
     if (!activePageId.value) return
     pageWorkspace.setActivePage(activePageId.value)
-    await pageWorkspace.ensureActivePageFilesLoaded(options)
+    await pageWorkspace.ensureActivePageFilesLoaded({
+      ...options,
+      allowMissingAsEmpty: true,
+    })
   }
 
   async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }): Promise<void> {

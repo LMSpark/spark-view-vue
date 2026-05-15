@@ -313,24 +313,24 @@ const DEPENDENCY_TYPE_RECOMMENDED_VALUES = [
 const DEPENDENCY_TYPE_PARAM = {
   type: 'string',
   examples: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
-  description: '父视图哪类数据变化触发子视图级联；常用 currentRow / selectedRows / allRows / pagedRows，默认 currentRow。',
+  description: '父表 default 视图哪类数据变化触发子表 default 视图级联；常用 currentRow / selectedRows / allRows / pagedRows，默认 currentRow。',
 } as const
 
 const VIEW_DEPENDENCY_SCHEMA = objectSchema({
   parentTable: PARENT_TABLE_PARAM,
   childTable: CHILD_TABLE_PARAM,
   dependencyType: DEPENDENCY_TYPE_PARAM,
-  autoLoad: booleanSchema('父变化时是否自动级联加载子视图，默认 true'),
+  autoLoad: booleanSchema('父表 default 视图变化时是否自动级联加载子表 default 视图，默认 true'),
 }, {
   required: ['parentTable', 'childTable'],
-  description: '旧版视图依赖；通过 parentTable / childTable 与 tableRelations 对齐，字段绑定来自对应 TableRelation。',
+  description: '当前视图依赖；通过 parentTable / childTable 与 tableRelations 对齐，字段绑定来自对应 TableRelation。',
 })
 
 const VIEW_DEPENDENCY_UPDATE_SCHEMA = objectSchema({
   parentTable: stringSchema('新的父表名；通常不建议修改'),
   childTable: stringSchema('新的子表名；通常不建议修改'),
   dependencyType: DEPENDENCY_TYPE_PARAM,
-  autoLoad: booleanSchema('父变化时是否自动级联加载子视图'),
+  autoLoad: booleanSchema('父表 default 视图变化时是否自动级联加载子表 default 视图'),
 })
 
 const STATIC_ROWS_ONLY_RULE = '只有 resourceType = static-data 时，才应直接通过 rows 或 defaultRows 传静态数据。'
@@ -340,7 +340,7 @@ const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可
 const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条关系时，必须补 parentField 与 childField 做消歧。'
 const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool/pagedata.json 模型。'
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
-const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用旧版 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
+const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用当前 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
 
 type DatasetCrudToolFunctionRowWithoutType = Omit<DatasetCrudToolFunctionParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
 

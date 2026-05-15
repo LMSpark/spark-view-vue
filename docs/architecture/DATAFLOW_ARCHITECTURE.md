@@ -101,7 +101,7 @@ DataSet（数据空间协调器）
   │   ├── DataView "default"        ← 每表至少一个 DataView
   │   ├── DataView "grid"
   │   └── DataView "form"
-  └── relations[]                   ← 父子视图级联关系
+  └── tableRelations + viewDependencies ← 表关系 + 父子表 default 视图联动协议
 ```
 
 **引用链**（单向，子持有父引用）：

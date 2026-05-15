@@ -54,8 +54,8 @@ class AiDiagnosticsControllerTest {
                         .content("{\"source\":\"test\",\"fcCall\":{\"toolName\":\"queryPayloads\",\"status\":\"error\",\"error\":\"boom\"}}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.eventType").value(SseService.EVENT_DEBUG_FC_ERROR_REPORT))
-                .andExpect(jsonPath("$.reportId").value("report-1"));
+                .andExpect(jsonPath("$.data.eventType").value(SseService.EVENT_DEBUG_FC_ERROR_REPORT))
+                .andExpect(jsonPath("$.data.reportId").value("report-1"));
 
         verify(sseService).emit(SseService.EVENT_DEBUG_FC_ERROR_REPORT, report);
     }
@@ -67,8 +67,8 @@ class AiDiagnosticsControllerTest {
         mockMvc.perform(get("/api/ai/debug/fc-error-reports").param("limit", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.count").value(1))
-                .andExpect(jsonPath("$.reports[0].reportId").value("report-1"));
+                .andExpect(jsonPath("$.data.count").value(1))
+                .andExpect(jsonPath("$.data.reports[0].reportId").value("report-1"));
     }
 
     @Test
@@ -78,6 +78,6 @@ class AiDiagnosticsControllerTest {
         mockMvc.perform(delete("/api/ai/debug/fc-error-reports"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.cleared").value(2));
+                .andExpect(jsonPath("$.data.cleared").value(2));
     }
 }

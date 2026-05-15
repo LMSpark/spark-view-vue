@@ -38,6 +38,6 @@ class LogsControllerTest {
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.received").value(1));
+                .andExpect(jsonPath("$.data.received").value(1));
     }
 }

@@ -275,6 +275,6 @@ describe('DevSystem rule and pagedata edit policy', () => {
     expect(canUseStructuredPageDataEditor(JSON.stringify(metadataModel))).toBe(true)
     expect(canUseStructuredPageDataEditor('{')).toBe(false)
     expect(rebuilt.tables['orders']?.columns[0]?.name).toBe('id')
-    expect(rebuilt.layout?.tablePositions['orders']).toEqual({ x: 50, y: 50 })
+    expect(rebuilt.layout?.tablePositions?.['orders']).toEqual({ x: 50, y: 50 })
   })
 })

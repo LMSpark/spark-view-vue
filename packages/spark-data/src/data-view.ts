@@ -17,6 +17,7 @@ import type {
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
   IEventEmitter,
+  PkValue, DataViewEditingFieldChangeEvent, DataViewApplyEditingRowsResult,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -54,6 +55,10 @@ interface DataViewEventMap extends Record<string, any[]> {
   selectedRowsChanged: [selectedRows: IDataRow[], originatorId?: string]
   /** 行数据批量变化（防抖 16ms） */
   rowsChanged: []
+  /** 编辑态字段变化 */
+  editingFieldChanged: [event: DataViewEditingFieldChangeEvent]
+  /** 编辑态行集合变化 */
+  editingRowsChanged: [editingRows: IDataRow[]]
   /** 数据已清空 */
   cleared: []
   /** 请求状态变化（Idle→Loading→Loaded/Failed） */
@@ -732,6 +737,12 @@ export class DataView implements IDataSource, IDataViewStore {
   private _aggregateRevision = 0
   private _mutationRevision = 0
   private _configRevision = 0
+  private _editingRevision = 0
+
+  /** 编辑态 patch：UI 字段变化先进入这里，apply 后再进入 editRowById / dirtyTracking。 */
+  private _editingPatches = new Map<PkValue, Partial<IDataRow>>()
+  /** 首次进入编辑态前的行快照，用于 discard / diff / 诊断。 */
+  private _editingOriginalRows = new Map<PkValue, IDataRow>()
 
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
@@ -776,6 +787,9 @@ export class DataView implements IDataSource, IDataViewStore {
         case 'config':
           this._configRevision++
           break
+        case 'editing':
+          this._editingRevision++
+          break
         case 'cleared':
           break
         default:
@@ -794,9 +808,23 @@ export class DataView implements IDataSource, IDataViewStore {
       aggregateRevision: this._aggregateRevision,
       mutationRevision: this._mutationRevision,
       configRevision: this._configRevision,
+      editingRevision: this._editingRevision,
       ...(originatorId !== undefined ? { originatorId } : {}),
     }
     this.events.emit('stateChanged', change)
+  }
+
+  private emitEditingRowsChanged(event?: DataViewEditingFieldChangeEvent): void {
+    this.emitStateChanged('editing')
+    if (event) this.events.emit('editingFieldChanged', event)
+    this.events.emit('editingRowsChanged', this.editingRows)
+  }
+
+  private clearEditingState(): boolean {
+    if (this._editingPatches.size === 0 && this._editingOriginalRows.size === 0) return false
+    this._editingPatches.clear()
+    this._editingOriginalRows.clear()
+    return true
   }
 
   private setRequestState(nextState: RequestState, options?: { emit?: boolean; emitStateChanged?: boolean }): void {
@@ -1036,6 +1064,27 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 手工编辑追踪委托 */
   get dirtyTracking(): DirtyTrackingDelegate { return this.dirtyTrackingDelegate }
 
+  /** 当前编辑态行集合（按 rows 顺序返回 overlay 后的浅拷贝）。 */
+  get editingRows(): IDataRow[] {
+    if (this._editingPatches.size === 0) return []
+    const result: IDataRow[] = []
+    const included = new Set<PkValue>()
+    for (const row of this.rows) {
+      const rowId = this.getPkKey(row)
+      if (rowId === undefined) continue
+      const patch = this._editingPatches.get(rowId)
+      if (!patch) continue
+      result.push({ ...row, ...patch })
+      included.add(rowId)
+    }
+    for (const [rowId, patch] of this._editingPatches) {
+      if (included.has(rowId)) continue
+      const original = this._editingOriginalRows.get(rowId)
+      if (original) result.push({ ...original, ...patch })
+    }
+    return result
+  }
+
   /** 事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / requestStateChanged / mutatingChanged） */
   readonly events: IEventEmitter<DataViewEventMap> = createEventEmitter()
 
@@ -1053,6 +1102,7 @@ export class DataView implements IDataSource, IDataViewStore {
       columns: this.columns,
       currentRow: this.currentRow,
       selectedRows: this.selectedRows,
+      editingRows: this.editingRows,
       ...(source._modelPerm !== undefined ? { _modelPerm: source._modelPerm } : {}),
       requestState: this.requestState,
       primaryKey: this.primaryKey,
@@ -1076,6 +1126,7 @@ export class DataView implements IDataSource, IDataViewStore {
       aggregateRevision: this._aggregateRevision,
       mutationRevision: this._mutationRevision,
       configRevision: this._configRevision,
+      editingRevision: this._editingRevision,
     }
   }
 
@@ -1402,8 +1453,141 @@ export class DataView implements IDataSource, IDataViewStore {
   /** 本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态 */
   replaceRows(rows: IDataRow[]): void {
     this._dirtyTrackingDelegate?.clearAll()
+    this.clearEditingState()
     this.localMutationDelegate.replaceRows(rows)
     this.syncTreeManagerFromRows()
+  }
+
+  // ─────────────────────────────────────────────
+  // 编辑态缓冲（UI 字段编辑 → apply → 手工编辑/脏追踪）
+  // ─────────────────────────────────────────────
+
+  /** 是否存在编辑态变更。 */
+  hasEditingChanges(id?: PkValue): boolean {
+    return id === undefined ? this._editingPatches.size > 0 : this._editingPatches.has(id)
+  }
+
+  /** 获取指定行当前编辑态 patch。 */
+  getEditingPatch(id: PkValue): Partial<IDataRow> | undefined {
+    const patch = this._editingPatches.get(id)
+    return patch ? { ...patch } : undefined
+  }
+
+  /** 获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。 */
+  getEditingRow(id: PkValue): IDataRow | null {
+    const row = this.getRowById(id) ?? this._editingOriginalRows.get(id) ?? null
+    if (!row) return null
+    const patch = this._editingPatches.get(id)
+    return patch ? { ...row, ...patch } : row
+  }
+
+  /** 将 UI 字段值写入编辑态，不直接污染 rows。 */
+  updateEditingValue(id: PkValue, field: string, value: unknown): IDataRow {
+    this.checkDestroyed()
+    const normalizedField = field.trim()
+    if (normalizedField.length === 0) {
+      throw new Error(`updateEditingValue: field 不能为空 [${this.tableName}@${this.viewId}]`)
+    }
+
+    const sourceRow = this.getRowById(id)
+    if (!sourceRow) {
+      throw new Error(`updateEditingValue: 行不存在 [${this.tableName}@${this.viewId}] id=${String(id)}`)
+    }
+
+    for (const pkField of this.effectivePkFields) {
+      if (normalizedField === pkField && !Object.is(sourceRow[pkField], value)) {
+        throw new Error(`updateEditingValue: 不允许修改主键字段 "${pkField}" [${this.tableName}@${this.viewId}]`)
+      }
+    }
+
+    const previousPatch = this._editingPatches.get(id) ?? {}
+    const previousEditingRow = { ...sourceRow, ...previousPatch }
+    const previousValue = previousEditingRow[normalizedField]
+    if (Object.is(previousValue, value)) return previousEditingRow
+
+    if (!this._editingOriginalRows.has(id)) {
+      this._editingOriginalRows.set(id, { ...sourceRow })
+    }
+
+    const originalRow = this._editingOriginalRows.get(id) ?? sourceRow
+    const nextPatch = Object.fromEntries(
+      Object.entries(previousPatch).filter(([key]) => key !== normalizedField),
+    ) as Partial<IDataRow>
+    if (!Object.is(originalRow[normalizedField], value)) {
+      nextPatch[normalizedField] = value
+    }
+
+    if (Object.keys(nextPatch).length === 0) {
+      this._editingPatches.delete(id)
+      this._editingOriginalRows.delete(id)
+    } else {
+      this._editingPatches.set(id, nextPatch)
+    }
+
+    const editingRow = this.getEditingRow(id) ?? { ...sourceRow, [normalizedField]: value }
+    const event: DataViewEditingFieldChangeEvent = {
+      tableName: this.tableName,
+      viewId: this.viewId,
+      rowId: id,
+      field: normalizedField,
+      previousValue,
+      nextValue: value,
+      editingRow,
+      patch: { ...nextPatch },
+    }
+    this.emitEditingRowsChanged(event)
+    return editingRow
+  }
+
+  /** 丢弃指定行或全部编辑态变更。 */
+  discardEditingRows(ids?: PkValue[]): number {
+    this.checkDestroyed()
+    const targets = ids ?? [...this._editingPatches.keys()]
+    let discardedCount = 0
+    for (const id of targets) {
+      const hadPatch = this._editingPatches.delete(id)
+      const hadOriginal = this._editingOriginalRows.delete(id)
+      if (hadPatch || hadOriginal) discardedCount++
+    }
+    if (discardedCount > 0) this.emitEditingRowsChanged()
+    return discardedCount
+  }
+
+  /** 将编辑态 patch 应用到现有 editRowById 管线。 */
+  async applyEditingRows(ids?: PkValue[]): Promise<CrudResult<DataViewApplyEditingRowsResult>> {
+    this.checkDestroyed()
+    const targets = ids ?? [...this._editingPatches.keys()]
+    let appliedCount = 0
+    const failedIds: PkValue[] = []
+    const failedErrors: Record<string, string> = {}
+
+    for (const id of targets) {
+      const patch = this._editingPatches.get(id)
+      if (!patch || Object.keys(patch).length === 0) continue
+      try {
+        const result = await this.editRowById(id, patch)
+        const success = typeof result === 'boolean' ? result : result.success
+        if (success) {
+          this._editingPatches.delete(id)
+          this._editingOriginalRows.delete(id)
+          appliedCount++
+        } else {
+          failedIds.push(id)
+          failedErrors[String(id)] = typeof result === 'boolean' ? '编辑失败' : result.message ?? '编辑失败'
+        }
+      } catch (error) {
+        failedIds.push(id)
+        failedErrors[String(id)] = error instanceof Error ? error.message : String(error)
+      }
+    }
+
+    if (appliedCount > 0) this.emitEditingRowsChanged()
+    const failedCount = failedIds.length
+    return {
+      success: failedCount === 0,
+      message: failedCount === 0 ? `应用 ${appliedCount} 行编辑态变更` : `应用 ${appliedCount} 行，失败 ${failedCount} 行`,
+      data: { appliedCount, failedCount, failedIds, failedErrors },
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -1528,9 +1712,10 @@ export class DataView implements IDataSource, IDataViewStore {
     this.loadingError = null
     this.setRequestState(RequestState.Idle, { emitStateChanged: options.emitStateChanged })
     this._dirtyTrackingDelegate?.clearAll()
+    const editingCleared = this.clearEditingState()
     this.aggregateDelegate.recompute(this.rows, this.selectedRows, { emit: options.emitStateChanged })
     if (options.emitStateChanged) {
-      this.emitStateChanged(['rows', 'selection'])
+      this.emitStateChanged(editingCleared ? ['rows', 'selection', 'editing'] : ['rows', 'selection'])
     }
   }
 

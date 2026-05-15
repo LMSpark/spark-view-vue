@@ -64,7 +64,7 @@ flowchart TB
   ViewB1 --> UI4["r-table 明细列表"]
 ```
 
-这张图的重点是消费边界：同一张 `DataTable: Orders` 可以被多个 `DataView` 投影成不同 UI 场景。UI 不能直接消费 `DataTable`。独立分页、筛选、统计、选择器可以使用命名视图；但当前旧版 `viewDependencies` 只按 `parentTable / childTable` 工作，运行时会把关系展开到父子表的 `default` 视图。
+这张图的重点是消费边界：同一张 `DataTable: Orders` 可以被多个 `DataView` 投影成不同 UI 场景。UI 不能直接消费 `DataTable`。独立分页、筛选、统计、选择器可以使用命名视图；但当前 `viewDependencies` 协议只按 `parentTable / childTable` 工作，运行时会把关系展开到父子表的 `default` 视图。
 
 ### 2.1 DataSet 是页面数据空间协调器
 
@@ -528,7 +528,7 @@ PageDesign 子模块边界：
 | 83 | 视图依赖 | 判断 `dependencyType` | currentRow、selectedRows、allRows、pagedRows 语义明确 |
 | 84 | 视图依赖 | 判断子表是否 `autoLoad` | 只在父状态变化后需要加载时开启 |
 | 85 | 视图依赖 | 校验依赖对应的表关系存在 | 字段绑定由 `tableRelations` 提供，避免悬空依赖 |
-| 86 | 视图依赖 | 校验父表和子表的 `default` view 可用 | 当前旧协议运行时展开到 `default` view |
+| 86 | 视图依赖 | 校验父表和子表的 `default` view 可用 | 当前 ViewDependency 协议运行时展开到 `default` view |
 | 87 | 视图依赖 | 校验依赖链不会循环 | 避免 A 触发 B、B 又触发 A |
 | 88 | 视图依赖 | 再次序列化 DataSetCrudTool toJson | `pagedata.json` canonical、可 round-trip |
 | 89 | 结构 | 查询组件 payload 列表 | 选择合法 `r-*` 组件 |
@@ -606,7 +606,7 @@ flowchart TD
 | rule 中写不存在的 handler | 补 `script.js` 函数或删除事件绑定 |
 | style.css 写了无对应 class 的样式 | 从 rule 反查 class，删除死 CSS |
 | 选择项写死在每一行 | 复用选项建独立字典表，字段用 `optionKey` |
-| 主从联动靠脚本监听手写过滤 | 优先用 `tableRelations` / `viewDependencies`；当前旧协议要求依赖与 parentTable / childTable 对齐，并作用于 `default` view |
+| 主从联动靠脚本监听手写过滤 | 优先用 `tableRelations` / `viewDependencies`；当前 ViewDependency 协议要求依赖与 parentTable / childTable 对齐，并作用于 `default` view |
 
 ## 14. 最小可落地模板
 
@@ -740,7 +740,7 @@ function handleRefreshOrders() {
 
 ### 15.4 viewDependencies 为什么最后写
 
-`viewDependencies` 不是任意两个命名 DataView 之间的连线。当前恢复后的旧协议只声明 `parentTable`、`childTable`、`dependencyType` 和 `autoLoad`；字段绑定来自对应 `tableRelations`，运行时展开为父子表 `default` view 之间的联动。
+`viewDependencies` 不是任意两个命名 DataView 之间的连线。当前 ViewDependency 协议只声明 `parentTable`、`childTable`、`dependencyType` 和 `autoLoad`；字段绑定来自对应 `tableRelations`，运行时展开为父子表 `default` view 之间的联动。
 
 省略 `viewDependencies` 时，框架会为每条 `tableRelations` 自动推导默认依赖；显式传 `[]` 才表示不建立视图联动。因此 AI 不应该为了“完整”重复生成一份与 `tableRelations` 完全等价的依赖列表。
 
@@ -754,7 +754,7 @@ function handleRefreshOrders() {
 
 - 没有 UI 区域消费这个联动。
 - 只是为了“看起来完整”把 tableRelations 再复制一遍。
-- 想表达任意命名 DataView 之间的自由连线；当前旧协议只支持 parentTable / childTable 关系。
+- 想表达任意命名 DataView 之间的自由连线；当前 ViewDependency 协议只支持 parentTable / childTable 关系。
 
 ### 15.5 AI 判断门：每一步都要问“谁消费它”
 

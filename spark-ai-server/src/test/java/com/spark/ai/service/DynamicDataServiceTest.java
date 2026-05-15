@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DynamicDataServiceTest {
@@ -19,6 +22,7 @@ class DynamicDataServiceTest {
     private JdbcTemplate jdbcTemplate;
     private DynamicDataModelService modelService;
     private DynamicDataService dataService;
+        private TransactionTemplate transactionTemplate;
 
     @BeforeEach
     void setUp() {
@@ -33,6 +37,7 @@ class DynamicDataServiceTest {
         modelService = new DynamicDataModelService(jdbcTemplate, objectMapper, dataSource);
         modelService.ensureMetadataSchema();
         dataService = new DynamicDataService(jdbcTemplate, objectMapper, modelService, new SseService());
+        transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
     }
 
     @Test
@@ -112,4 +117,144 @@ class DynamicDataServiceTest {
         assertEquals("legacy", rows.get(0).get("name"));
         assertEquals(9, ((Number) rows.get(0).get("amount")).intValue());
     }
+
+    @Test
+    void executeTransaction_commitsMultipleTablesAtomically() {
+        createOrderAndItemTables();
+        Map<String, Object> order = dataService.createRecord("t1", "p1", "Orders", Map.of("name", "order-a"));
+        Map<String, Object> item = dataService.createRecord("t1", "p1", "Items", Map.of(
+                "orderId", order.get("id"),
+                "name", "item-a"
+        ));
+
+        Map<String, Object> result = executeTransaction(Map.of(
+                "operations", List.of(
+                        Map.of(
+                                "operationId", "update-order",
+                                "tableName", "Orders",
+                                "op", "update",
+                                "pk", Map.of("id", order.get("id")),
+                                "data", Map.of("name", "order-b")
+                        ),
+                        Map.of(
+                                "operationId", "update-item",
+                                "tableName", "Items",
+                                "op", "update",
+                                "pk", Map.of("id", item.get("id")),
+                                "data", Map.of("name", "item-b")
+                        )
+                )
+        ));
+
+        assertEquals(true, result.get("success"));
+        assertEquals("order-b", dataService.getRecord("t1", "p1", "Orders", Map.of("id", order.get("id"))).get("name"));
+        assertEquals("item-b", dataService.getRecord("t1", "p1", "Items", Map.of("id", item.get("id"))).get("name"));
+    }
+
+    @Test
+    void executeTransaction_rollsBackWhenAnyOperationFails() {
+        createOrderAndItemTables();
+        Map<String, Object> order = dataService.createRecord("t1", "p1", "Orders", Map.of("name", "order-a"));
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () ->
+                transactionTemplate.executeWithoutResult(status -> dataService.executeTransaction("t1", "p1", Map.of(
+                        "operations", List.of(
+                                Map.of(
+                                        "operationId", "update-order",
+                                        "tableName", "Orders",
+                                        "op", "update",
+                                        "pk", Map.of("id", order.get("id")),
+                                        "data", Map.of("name", "order-b")
+                                ),
+                                Map.of(
+                                        "operationId", "missing-item",
+                                        "tableName", "Items",
+                                        "op", "update",
+                                        "pk", Map.of("id", 9999),
+                                        "data", Map.of("name", "item-b")
+                                )
+                        )
+                        )))
+                );
+        assertTrue(error.getMessage().contains("missing-item"));
+
+        assertEquals("order-a", dataService.getRecord("t1", "p1", "Orders", Map.of("id", order.get("id"))).get("name"));
+    }
+
+    @Test
+    void executeTransaction_replaysCommittedRequestIdAcrossRetries() {
+        createOrderAndItemTables();
+        Map<String, Object> body = Map.of(
+                "requestId", "tx-retry-001",
+                "operations", List.of(
+                        Map.of(
+                                "operationId", "create-order",
+                                "tableName", "Orders",
+                                "op", "create",
+                                "data", Map.of("name", "order-a")
+                        )
+                )
+        );
+
+        Map<String, Object> first = executeTransaction(body);
+        Map<String, Object> second = executeTransaction(body);
+
+        assertEquals("tx-retry-001", first.get("requestId"));
+        assertEquals(first.get("transactionId"), second.get("transactionId"));
+        assertEquals(true, second.get("replayed"));
+        assertEquals(1, ((Number) dataService.query("t1", "p1", "Orders", Map.of()).get("total")).intValue());
+    }
+
+    @Test
+    void executeTransaction_rejectsRequestIdWithDifferentOperations() {
+        createOrderAndItemTables();
+        Map<String, Object> first = Map.of(
+                "requestId", "tx-conflict-001",
+                "operations", List.of(
+                        Map.of(
+                                "operationId", "create-order",
+                                "tableName", "Orders",
+                                "op", "create",
+                                "data", Map.of("name", "order-a")
+                        )
+                )
+        );
+        Map<String, Object> second = Map.of(
+                "requestId", "tx-conflict-001",
+                "operations", List.of(
+                        Map.of(
+                                "operationId", "create-order",
+                                "tableName", "Orders",
+                                "op", "create",
+                                "data", Map.of("name", "order-b")
+                        )
+                )
+        );
+
+        executeTransaction(first);
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> executeTransaction(second));
+
+        assertTrue(error.getMessage().contains("requestId 已用于不同事务"));
+        assertEquals(1, ((Number) dataService.query("t1", "p1", "Orders", Map.of()).get("total")).intValue());
+    }
+
+    private void createOrderAndItemTables() {
+        modelService.createTable("t1", "p1", Map.of(
+                "tableName", "Orders",
+                "columns", List.of(Map.of("name", "name", "type", "string"))
+        ));
+        modelService.createTable("t1", "p1", Map.of(
+                "tableName", "Items",
+                "columns", List.of(
+                        Map.of("name", "orderId", "type", "number"),
+                        Map.of("name", "name", "type", "string")
+                )
+        ));
+    }
+
+        private Map<String, Object> executeTransaction(Map<String, Object> body) {
+                Map<String, Object> result = transactionTemplate.execute(status -> dataService.executeTransaction("t1", "p1", body));
+                assertNotNull(result);
+                return result;
+        }
 }

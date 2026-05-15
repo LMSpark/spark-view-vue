@@ -51,6 +51,8 @@ export interface ViewChangeHandlers {
   currentRowChanged?: (tableName: string, viewId: string, currentRow: IDataRow | null, originatorId?: string) => void
   selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: IDataRow[], originatorId?: string) => void
   rowsChanged?: (tableName: string, viewId: string) => void
+  editingFieldChanged?: (tableName: string, viewId: string, event: DataViewEditingFieldChangeEvent) => void
+  editingRowsChanged?: (tableName: string, viewId: string, editingRows: IDataRow[]) => void
   cleared?: (tableName: string, viewId: string) => void
   requestStateChanged?: (tableName: string, viewId: string, requestState: RequestState) => void
   mutatingChanged?: (tableName: string, viewId: string, mutating: boolean) => void
@@ -134,6 +136,115 @@ export type PkValue = string | number
 /** 数据行（带权限） */
 export type IDataRow = Record<string, unknown> & {
   _perm?: IInstancePermission
+}
+
+/** DataView 编辑态字段变更事件。 */
+export interface DataViewEditingFieldChangeEvent {
+  tableName: string
+  viewId: string
+  rowId: PkValue
+  field: string
+  previousValue: unknown
+  nextValue: unknown
+  editingRow: IDataRow
+  patch: Partial<IDataRow>
+}
+
+/** DataView 编辑态应用结果。 */
+export interface DataViewApplyEditingRowsResult {
+  appliedCount: number
+  failedCount: number
+  failedIds: PkValue[]
+  failedErrors: Record<string, string>
+}
+
+/** DataSet 级保存目标：用于一次提交一个主从编辑范围。 */
+export interface DataSetSaveChangesViewSelector {
+  tableName: string
+  viewId?: string
+  ids?: PkValue[]
+}
+
+export type DataSetSaveChangesMode = 'perView' | 'transaction'
+
+export interface DataSetTransactionOperation {
+  operationId?: string
+  tableName: string
+  op: 'create' | 'update' | 'delete'
+  data?: Record<string, unknown>
+  pk?: Record<string, unknown>
+}
+
+export interface DataSetTransactionRequest {
+  requestId?: string
+  operations: DataSetTransactionOperation[]
+}
+
+export interface DataSetTransactionOperationResult {
+  operationId?: string
+  status?: string
+  result?: unknown
+  error?: string
+}
+
+export interface DataSetTransactionResponse {
+  success?: boolean
+  transactionId?: string
+  requestId?: string
+  operationCount?: number
+  results?: DataSetTransactionOperationResult[]
+  replayed?: boolean
+}
+
+export interface DataSetSaveChangesTransactionConfig {
+  endpoint: HttpEndpoint
+  requestId?: string
+}
+
+export interface DataSetSaveChangesTransactionOptions {
+  endpoint?: HttpEndpoint
+  requestId?: string
+}
+
+export interface DataSetSaveChangesConfig {
+  mode?: DataSetSaveChangesMode
+  transaction?: DataSetSaveChangesTransactionConfig
+}
+
+/** DataSet 级保存选项。 */
+export interface DataSetSaveChangesOptions {
+  views?: DataSetSaveChangesViewSelector[]
+  applyEditingRows?: boolean
+  mode?: DataSetSaveChangesMode
+  transaction?: DataSetSaveChangesTransactionOptions
+}
+
+/** DataSet 级单视图保存结果。 */
+export interface DataSetSaveChangesViewResult {
+  tableName: string
+  viewId: string
+  appliedEditingRows: number
+  failedEditingRows: number
+  createdCount: number
+  savedCount: number
+  deletedCount: number
+  failedCount: number
+  failedIds: PkValue[]
+  failedErrors: Record<string, string>
+}
+
+/** DataSet 级跨视图保存结果。 */
+export interface DataSetSaveChangesResult {
+  viewCount: number
+  appliedEditingRows: number
+  failedEditingRows: number
+  createdCount: number
+  savedCount: number
+  deletedCount: number
+  failedCount: number
+  failedViews: Array<{ tableName: string; viewId: string }>
+  viewResults: DataSetSaveChangesViewResult[]
+  transaction?: DataSetTransactionResponse
 }
 
 // ── 数据源接口（分层，ISP）──────────────────
@@ -242,6 +353,7 @@ export type DataViewStateChangeKind =
   | 'aggregate'
   | 'mutation'
   | 'config'
+  | 'editing'
   | 'cleared'
 
 /**
@@ -260,6 +372,7 @@ export interface DataViewChangeEvent {
   aggregateRevision: number
   mutationRevision: number
   configRevision: number
+  editingRevision: number
   originatorId?: string
 }
 
@@ -279,6 +392,7 @@ export interface DataViewSnapshot extends IDataSource {
   columns: readonly DataColumn[]
   currentRow: IDataRow | null
   selectedRows: readonly IDataRow[]
+  editingRows: readonly IDataRow[]
   primaryKey: string | undefined
   treeConfig: TreeConfig | undefined
   isMultiSelect: boolean
@@ -301,6 +415,7 @@ export interface DataViewSnapshot extends IDataSource {
   aggregateRevision: number
   mutationRevision: number
   configRevision: number
+  editingRevision: number
 }
 
 /**
@@ -607,6 +722,7 @@ export interface CrudApi extends TreeApi {
   retrieve?: HttpEndpoint
   update?: HttpEndpoint
   delete?: HttpEndpoint
+  transaction?: HttpEndpoint
   list?: HttpEndpoint & {
     pagination?: {
       pageParam?: string
@@ -776,6 +892,8 @@ export interface IDataSetMetadata {
   /** 业务数据版本号（乐观锁），与 schemaVersion 含义不同 */
   version?: number
   pageId?: string
+  /** DataSet.saveChanges 的默认提交策略。 */
+  saveChanges?: DataSetSaveChangesConfig
   /** 可选的设计器布局信息（如画布坐标）。 */
   layout?: IDataSetLayoutMetadata
 }
@@ -793,14 +911,14 @@ export interface IDataSetLayoutMetadata {
 // ===== 过滤和排序类型 =====
 
 /**
- * 子视图响应父视图的数据变化触发源。
+ * 子表 default 视图响应父表 default 视图的数据变化触发源。
  *
- * 配置在 `ViewDependency.dependencyType`，决定父视图"哪种数据变化"会触发子视图重新级联加载。
+ * 配置在 `ViewDependency.dependencyType`，决定父表 default 视图"哪种数据变化"会触发子表 default 视图重新级联加载。
  *
- * - `'currentRow'`   — 父视图当前聚焦行变化时触发（默认值）；子视图用当前行主键过滤
- * - `'selectedRows'` — 父视图选中行集合变化时触发；子视图用所有选中行的主键 in-list 过滤
- * - `'allRows'`      — 父视图全量行集合变化时触发（不区分分页）
- * - `'pagedRows'`    — 父视图当前分页行集合变化时触发
+ * - `'currentRow'`   — 父表 default 视图当前聚焦行变化时触发（默认值）；子表 default 视图用当前行主键过滤
+ * - `'selectedRows'` — 父表 default 视图选中行集合变化时触发；子表 default 视图用所有选中行的主键 in-list 过滤
+ * - `'allRows'`      — 父表 default 视图全量行集合变化时触发（不区分分页）
+ * - `'pagedRows'`    — 父表 default 视图当前分页行集合变化时触发
  */
 export type DependencyType =
   | 'currentRow'
@@ -948,7 +1066,7 @@ export interface TableRelation {
 // ═══════════════════════════════════════════
 
 /**
- * 视图依赖 — 声明子视图如何响应父视图数据变化。
+ * 视图依赖 — 声明子表 default 视图如何响应父表 default 视图数据变化。
  *
  * 基于 TableRelation 的字段信息工作，独立描述视图层面的联动策略。
  * 省略 `viewDependencies` 时框架为每条 TableRelation 自动生成默认依赖。
@@ -966,9 +1084,9 @@ export interface ViewDependency {
   parentTable: string
   /** 与 TableRelation 对齐的子表名 */
   childTable: string
-  /** 响应父视图的哪种数据变化（默认 'currentRow'） */
+  /** 响应父表 default 视图的哪种数据变化（默认 'currentRow'） */
   dependencyType?: DependencyType
-  /** 父变化时是否自动级联加载子视图（默认 true） */
+  /** 父表 default 视图变化时是否自动级联加载子表 default 视图（默认 true） */
   autoLoad?: boolean
 }
 
@@ -1231,6 +1349,8 @@ export interface IDataSet {
   getTable(name: string): DataTable | undefined
   /** 获取数据视图（委托到 DataTable） */
   getView(tableName: string, viewId?: string): SparkDataView | undefined
+  /** 保存 DataSet 范围内的编辑态和 staged 变更；默认按表关系父表先于子表提交所有有变更视图。 */
+  saveChanges(options?: DataSetSaveChangesOptions): Promise<CrudResult<DataSetSaveChangesResult>>
   /** 注入 APP_SERVICES（用于 URL 模板 tenant/project 作用域解析） */
   setAppServices(appServices: DataSetAppServices): void
   /** 注入页面路由快照（APP_SERVICES 缺失时用于 URL 模板 tenant/project 作用域解析） */

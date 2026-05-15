@@ -52,7 +52,7 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.code").value("INVALID_PROTOCOL_VERSION"))
                 .andExpect(jsonPath("$.error.category").value("request-validation"))
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.error.details.protocolVersion").value(3));
 
                 verify(sessionService, never()).createSession(anyString(), anyString(), anyInt(), anyList(), anyString(), nullable(Map.class), anyBoolean());
                 verify(sessionService, never()).createSession(anyString(), anyList(), anyInt(), anyList(), anyString(), nullable(Map.class), anyBoolean());
@@ -76,8 +76,8 @@ class AiSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sessionId").value("sid-1"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.data.sessionId").value("sid-1"))
+                .andExpect(jsonPath("$.data.protocolVersion").value(3));
     }
 
     @Test
@@ -99,8 +99,8 @@ class AiSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sessionId").value("sid-msg"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.data.sessionId").value("sid-msg"))
+                .andExpect(jsonPath("$.data.protocolVersion").value(3));
 
         verify(sessionService).createSession(anyString(), anyList(), anyInt(), nullable(List.class), anyString(), nullable(Map.class), eq(false), nullable(String.class));
     }
@@ -126,9 +126,9 @@ class AiSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sessionId").value("sid-scoped"))
-                .andExpect(jsonPath("$.scope.moduleId").value("pageDesign"))
-                .andExpect(jsonPath("$.scope.moduleInstanceId").value("page-a"));
+                .andExpect(jsonPath("$.data.sessionId").value("sid-scoped"))
+                .andExpect(jsonPath("$.data.scope.moduleId").value("pageDesign"))
+                .andExpect(jsonPath("$.data.scope.moduleInstanceId").value("page-a"));
     }
 
     @Test
@@ -156,8 +156,8 @@ class AiSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sessionId").value("manualLeave:draft-1"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.data.sessionId").value("manualLeave:draft-1"))
+                .andExpect(jsonPath("$.data.protocolVersion").value(3));
     }
 
     @Test
@@ -244,7 +244,7 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.code").value("INVALID_PROTOCOL_VERSION"))
                 .andExpect(jsonPath("$.error.category").value("request-validation"))
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.error.details.protocolVersion").value(3));
 
         verify(sessionService, never()).executeTurn(anyString(), nullable(Map.class), nullable(List.class));
     }
@@ -262,7 +262,7 @@ class AiSessionControllerTest {
                 .andExpect(jsonPath("$.error.code").value("INVALID_PROTOCOL_VERSION"))
                 .andExpect(jsonPath("$.error.category").value("request-validation"))
                 .andExpect(jsonPath("$.error.message").value("仅支持 protocolVersion=3"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.error.details.protocolVersion").value(3));
 
         verify(sessionService, never()).appendMessage(eq("sid-1"), anyString(), anyString(), anyString(), nullable(List.class), nullable(Map.class));
     }
@@ -302,10 +302,10 @@ class AiSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.sessionId").value("sid-1"))
-                .andExpect(jsonPath("$.turnId").value("turn-append-1"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.data.ok").value(true))
+                .andExpect(jsonPath("$.data.sessionId").value("sid-1"))
+                .andExpect(jsonPath("$.data.turnId").value("turn-append-1"))
+                .andExpect(jsonPath("$.data.protocolVersion").value(3));
     }
 
     @Test
@@ -319,9 +319,9 @@ class AiSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.text").value("ok"))
-                .andExpect(jsonPath("$.sessionId").value("sid-2"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.data.text").value("ok"))
+                .andExpect(jsonPath("$.data.sessionId").value("sid-2"))
+                .andExpect(jsonPath("$.data.protocolVersion").value(3));
     }
 
     @Test
@@ -342,7 +342,7 @@ class AiSessionControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("SESSION_SCOPE_MISMATCH"))
                 .andExpect(jsonPath("$.error.category").value("session-scope"))
-                .andExpect(jsonPath("$.handoff.reasonCode").value("SESSION_SCOPE_MISMATCH"));
+                .andExpect(jsonPath("$.error.details.handoff.reasonCode").value("SESSION_SCOPE_MISMATCH"));
     }
 
         @Test
@@ -357,8 +357,8 @@ class AiSessionControllerTest {
                                                 .content(body))
                                 .andExpect(status().isBadGateway())
                                 .andExpect(jsonPath("$.error.code").value("LLM_CALL_FAILED"))
-                                .andExpect(jsonPath("$.error.retryPolicy").value("safe-retry"))
-                                .andExpect(jsonPath("$.state").value("FAILED"));
+                                .andExpect(jsonPath("$.error.details.error.retryPolicy").value("safe-retry"))
+                                .andExpect(jsonPath("$.error.details.state").value("FAILED"));
         }
 
                     @Test
@@ -383,14 +383,14 @@ class AiSessionControllerTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(body))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.runtime.round").value(1))
-                                .andExpect(jsonPath("$.runtime.scheduling.strategy").value("conflict-aware"))
-                                .andExpect(jsonPath("$.runtime.scheduling.collisionScope").value("domain+entity"))
-                                .andExpect(jsonPath("$.runtime.scheduling.classificationStrategy").value("action-rule-object+runtime-fallback"))
-                                .andExpect(jsonPath("$.runtime.scheduling.ruleMatchStrategy").value("exact-first-prefix-second-fallback"))
-                                .andExpect(jsonPath("$.runtime.scheduling.dominantRuleSource").value("exact"))
-                                .andExpect(jsonPath("$.runtime.idempotency[0].ruleSource").value("exact"))
-                                .andExpect(jsonPath("$.runtime.idempotency[0].toolCallId").value("call_1"));
+                                .andExpect(jsonPath("$.data.runtime.round").value(1))
+                                .andExpect(jsonPath("$.data.runtime.scheduling.strategy").value("conflict-aware"))
+                                .andExpect(jsonPath("$.data.runtime.scheduling.collisionScope").value("domain+entity"))
+                                .andExpect(jsonPath("$.data.runtime.scheduling.classificationStrategy").value("action-rule-object+runtime-fallback"))
+                                .andExpect(jsonPath("$.data.runtime.scheduling.ruleMatchStrategy").value("exact-first-prefix-second-fallback"))
+                                .andExpect(jsonPath("$.data.runtime.scheduling.dominantRuleSource").value("exact"))
+                                .andExpect(jsonPath("$.data.runtime.idempotency[0].ruleSource").value("exact"))
+                                .andExpect(jsonPath("$.data.runtime.idempotency[0].toolCallId").value("call_1"));
                     }
 
                     @Test
@@ -418,8 +418,8 @@ class AiSessionControllerTest {
                                 .andExpect(status().isConflict())
                                 .andExpect(jsonPath("$.error.category").value("idempotency"))
                                 .andExpect(jsonPath("$.error.message").value("AI 生成了重复的工具调用，已阻止执行，请重新生成计划"))
-                                .andExpect(jsonPath("$.error.retryPolicy").value("regenerate-plan"))
-                                .andExpect(jsonPath("$.runtime.guard.reasonCode").value("IDEMPOTENCY_REPLAY_BLOCKED"));
+                                .andExpect(jsonPath("$.error.details.error.retryPolicy").value("regenerate-plan"))
+                                .andExpect(jsonPath("$.error.details.runtime.guard.reasonCode").value("IDEMPOTENCY_REPLAY_BLOCKED"));
                     }
 
                     @Test
@@ -448,8 +448,8 @@ class AiSessionControllerTest {
                                 .andExpect(status().isConflict())
                                 .andExpect(jsonPath("$.error.category").value("parallelism"))
                                 .andExpect(jsonPath("$.error.message").value("AI 本轮包含并行写入计划，请改为串行或拆分执行"))
-                                .andExpect(jsonPath("$.error.retryPolicy").value("serialize-or-split"))
-                                .andExpect(jsonPath("$.runtime.scheduling.decision").value("block"));
+                                .andExpect(jsonPath("$.error.details.error.retryPolicy").value("serialize-or-split"))
+                                .andExpect(jsonPath("$.error.details.runtime.scheduling.decision").value("block"));
                     }
 
                                         @Test
@@ -464,9 +464,9 @@ class AiSessionControllerTest {
                                                                 .andExpect(status().isNotFound())
                                                                 .andExpect(jsonPath("$.error.code").value("SESSION_NOT_FOUND"))
                                                                 .andExpect(jsonPath("$.error.category").value("session"))
-                                                                .andExpect(jsonPath("$.error.retryPolicy").value("recreate-session"))
-                                        .andExpect(jsonPath("$.sessionId").value("sid-missing"))
-                                                                .andExpect(jsonPath("$.protocolVersion").value(3));
+                                                                .andExpect(jsonPath("$.error.details.error.retryPolicy").value("recreate-session"))
+                                        .andExpect(jsonPath("$.error.details.sessionId").value("sid-missing"))
+                                                                .andExpect(jsonPath("$.error.details.protocolVersion").value(3));
                                         }
 
     private String streamTurnBody(String turnId, String content) throws Exception {

@@ -175,9 +175,8 @@ public class PageConfigController {
             @PathVariable String filename,
             @RequestBody(required = false) Map<String, String> body) {
         try {
-            String modifiedBy = body != null ? body.get("modifiedBy") : null;
-            Map<String, Object> result = pageConfigService.createFileVersion(
-                    tenantId, projectId, pageId, filename, modifiedBy);
+            Map<String, Object> result = pageConfigService.createFileVersionWithAudit(
+                    tenantId, projectId, pageId, filename, PageConfigService.VersionAuditInput.from(body));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

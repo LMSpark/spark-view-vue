@@ -36,6 +36,39 @@ function tryParseJson(value: string): unknown {
   }
 }
 
+function isApiEnvelope(value: unknown): value is {
+  ok: boolean
+  data: unknown
+  error: { code?: unknown; message?: unknown } | null
+  requestId: string
+} {
+  return isRecord(value)
+    && typeof value['ok'] === 'boolean'
+    && Object.prototype.hasOwnProperty.call(value, 'data')
+    && Object.prototype.hasOwnProperty.call(value, 'error')
+    && typeof value['requestId'] === 'string'
+}
+
+function unwrapApiEnvelope(value: unknown): unknown {
+  if (!isApiEnvelope(value)) return value
+  if (value.ok) return value.data
+  const message = isRecord(value.error) && typeof value.error['message'] === 'string'
+    ? value.error['message']
+    : 'AI request failed'
+  throw new Error(message)
+}
+
+function envelopeErrorMessage(value: unknown): string | null {
+  if (!isApiEnvelope(value) || value.ok) return null
+  if (isRecord(value.error) && typeof value.error['message'] === 'string' && value.error['message'].trim() !== '') {
+    return value.error['message'].trim()
+  }
+  if (isRecord(value.error) && typeof value.error['code'] === 'string' && value.error['code'].trim() !== '') {
+    return value.error['code'].trim()
+  }
+  return 'AI request failed'
+}
+
 function extractJsonObject(text: string): Record<string, unknown> | null {
   const json = AiInvocationProtocol.extractFirstJsonObject(text)
   if (json === null) return null
@@ -91,15 +124,23 @@ function buildRoutePrompt(input: AppAiRouteBusinessInput): string {
 
 async function readTextResponse(response: Response): Promise<string> {
   const text = await response.text()
+  const parsed = tryParseJson(text)
   if (!response.ok) {
-    throw new Error(text || `HTTP ${response.status}`)
+    throw new Error(envelopeErrorMessage(parsed) ?? (text || `HTTP ${response.status}`))
   }
-  return text
+  const unwrapped = unwrapApiEnvelope(parsed)
+  return typeof unwrapped === 'string' ? unwrapped : JSON.stringify(unwrapped)
+}
+
+async function readJsonResponse(response: Response): Promise<unknown> {
+  return unwrapApiEnvelope(tryParseJson(await readTextResponse(response)))
 }
 
 async function assertResponseOk(response: Response): Promise<void> {
   if (!response.ok) {
-    throw new Error(await response.text() || `HTTP ${response.status}`)
+    const text = await response.text()
+    const parsed = tryParseJson(text)
+    throw new Error(envelopeErrorMessage(parsed) ?? (text || `HTTP ${response.status}`))
   }
 }
 
@@ -201,11 +242,16 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
     let finalToolCalls: readonly AppAiTransportToolCall[] = []
 
     const handle = (event: ParsedSseEvent): void => {
-      const payload = tryParseJson(event.data)
+      const rawPayload = tryParseJson(event.data)
+      const payload = unwrapApiEnvelope(rawPayload)
       input.onSseEvent?.(appendEventMetadata({
         type: event.event,
         data: typeof payload === 'string' ? payload : JSON.stringify(payload),
       }, input))
+
+      if (event.event === 'error') {
+        throw new Error(typeof payload === 'string' ? payload : 'AI stream failed')
+      }
 
       if (event.event === 'delta') {
         const delta = isRecord(payload) && typeof payload['delta'] === 'string'
@@ -271,7 +317,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
         messages: input.messages,
       }),
     })
-    const body = tryParseJson(await readTextResponse(response))
+    const body = await readJsonResponse(response)
     if (!isRecord(body)) {
       throw new Error('AI append response missing body')
     }
@@ -297,7 +343,7 @@ export async function uploadAppAiAttachment(
     headers: getHeaders(),
     body: form,
   })
-  const body = tryParseJson(await readTextResponse(response))
+  const body = await readJsonResponse(response)
   if (!isRecord(body) || typeof body['fileId'] !== 'string' || body['fileId'].trim().length === 0) {
     throw new Error('AI upload response missing fileId')
   }

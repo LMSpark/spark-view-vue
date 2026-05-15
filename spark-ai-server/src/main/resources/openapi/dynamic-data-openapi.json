@@ -96,637 +96,1818 @@
   "paths": {
     "/auth/login": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Login and return JWT/session user info",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" }, "400": { "$ref": "#/components/responses/BadRequest" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/auth/register": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Register a user",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" }, "400": { "$ref": "#/components/responses/BadRequest" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/auth/register-tenant": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Register a tenant and initial user",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" }, "400": { "$ref": "#/components/responses/BadRequest" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/auth/me": {
       "get": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Get current authenticated user",
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/config/default": {
       "get": {
-        "tags": ["App Config"],
+        "tags": [
+          "App Config"
+        ],
         "summary": "Get default application config",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/config/tenant/{tenantId}": {
       "get": {
-        "tags": ["App Config"],
+        "tags": [
+          "App Config"
+        ],
         "summary": "Get tenant application config",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "post": {
-        "tags": ["App Config"],
+        "tags": [
+          "App Config"
+        ],
         "summary": "Save tenant application config",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["App Config"],
+        "tags": [
+          "App Config"
+        ],
         "summary": "Delete tenant application config override",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/tenants": {
       "get": {
-        "tags": ["App Config"],
+        "tags": [
+          "App Config"
+        ],
         "summary": "List tenants",
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/health": {
-      "servers": [{ "url": "/" }],
+      "servers": [
+        {
+          "url": "/"
+        }
+      ],
       "get": {
-        "tags": ["System"],
+        "tags": [
+          "System"
+        ],
         "summary": "Health check",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/openapi.json": {
       "get": {
-        "tags": ["API Docs"],
+        "tags": [
+          "API Docs"
+        ],
         "summary": "Get OpenAPI JSON",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/swagger": {
       "get": {
-        "tags": ["API Docs"],
+        "tags": [
+          "API Docs"
+        ],
         "summary": "Redirect to Swagger UI",
         "security": [],
-        "responses": { "302": { "description": "Redirect" } }
+        "responses": {
+          "302": {
+            "description": "Redirect"
+          }
+        }
       }
     },
     "/swagger-ui": {
       "get": {
-        "tags": ["API Docs"],
+        "tags": [
+          "API Docs"
+        ],
         "summary": "Swagger UI",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/Html" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Html"
+          }
+        }
       }
     },
     "/logs": {
       "post": {
-        "tags": ["Logs"],
+        "tags": [
+          "Logs"
+        ],
         "summary": "Ingest client/browser logs",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/cache/stats": {
       "get": {
-        "tags": ["Cache"],
+        "tags": [
+          "Cache"
+        ],
         "summary": "Get cache statistics",
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/cache/clear-metadata": {
       "post": {
-        "tags": ["Cache"],
+        "tags": [
+          "Cache"
+        ],
         "summary": "Clear component metadata cache",
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "List projects for a tenant",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "post": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "Create project",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}": {
       "get": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "Get project",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" }, "404": { "$ref": "#/components/responses/NotFound" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       },
       "put": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "Update project",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "summary": "Delete project",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/events": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Subscribe to server-sent events",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/SseStream" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SseStream"
+          }
+        }
       }
     },
     "/ai/component-metadata": {
       "get": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Get component metadata",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Query component metadata",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/chat/stream": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Stream AI chat response",
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/SseStream" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SseStream"
+          }
+        }
       }
     },
     "/ai/upload": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Upload a file for AI workflows",
-        "requestBody": { "$ref": "#/components/requestBodies/MultipartForm" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/MultipartForm"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/debug/screenshot-request": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Broadcast frontend screenshot request",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/debug/screenshot-result": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Receive frontend screenshot result",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/debug/route-request": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Broadcast frontend route request",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/debug/route-result": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "Receive frontend route result",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/debug/fc-error-report": {
       "post": {
-        "tags": ["Diagnostics"],
+        "tags": [
+          "Diagnostics"
+        ],
         "summary": "Report frontend function-call error",
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/debug/fc-error-reports": {
       "get": {
-        "tags": ["Diagnostics"],
+        "tags": [
+          "Diagnostics"
+        ],
         "summary": "List frontend function-call error reports",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["Diagnostics"],
+        "tags": [
+          "Diagnostics"
+        ],
         "summary": "Clear frontend function-call error reports",
         "security": [],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/ai/sessions": {
       "post": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Create AI session",
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Delete all AI sessions",
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/ai/sessions/{sessionId}/turn": {
       "post": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Run one AI session turn",
-        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/sessions/{sessionId}/turn/stream": {
       "post": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Stream one AI session turn",
-        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/SseStream" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SseStream"
+          }
+        }
       }
     },
     "/ai/sessions/{sessionId}/turn/append": {
       "post": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Append a turn result to an AI session",
-        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/sessions/{sessionId}/append": {
       "post": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Append messages to an AI session",
-        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/sessions/{sessionId}/conversation": {
       "get": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Get AI session conversation",
-        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/ai/sessions/{sessionId}": {
       "delete": {
-        "tags": ["AI Sessions"],
+        "tags": [
+          "AI Sessions"
+        ],
         "summary": "Delete one AI session",
-        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/ai/scenario-functions/{functionName}": {
       "post": {
-        "tags": ["Scenario Functions"],
+        "tags": [
+          "Scenario Functions"
+        ],
         "summary": "Execute scenario function",
-        "parameters": [{ "$ref": "#/components/parameters/FunctionName" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FunctionName"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation": {
       "get": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Get project navigation tree",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "put": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Replace project navigation tree",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/nodes": {
       "get": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "List flat navigation nodes",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "post": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Create navigation node",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}": {
       "get": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Get navigation node path",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree": {
       "post": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Load navigation subtree",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search": {
       "get": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Search navigation nodes",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "name": "keyword", "in": "query", "schema": { "type": "string" } }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/raw": {
       "get": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Get raw navigation payload",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}": {
       "put": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Update navigation node",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Delete navigation node",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move": {
       "put": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Move navigation node",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/navigation/link-probe": {
       "post": {
-        "tags": ["Navigation"],
+        "tags": [
+          "Navigation"
+        ],
         "summary": "Probe link metadata",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/filter-expression-cases/query": {
       "post": {
-        "tags": ["Filter Expression Cases"],
+        "tags": [
+          "Filter Expression Cases"
+        ],
         "summary": "Query filter-expression case records",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/DataViewQuery" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/DataViewQuery"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/filter-expression-cases": {
       "post": {
-        "tags": ["Filter Expression Cases"],
+        "tags": [
+          "Filter Expression Cases"
+        ],
         "summary": "Create filter-expression case record",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/filter-expression-cases/{id}": {
       "get": {
-        "tags": ["Filter Expression Cases"],
+        "tags": [
+          "Filter Expression Cases"
+        ],
         "summary": "Get filter-expression case record",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" }, "404": { "$ref": "#/components/responses/NotFound" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       },
       "put": {
-        "tags": ["Filter Expression Cases"],
+        "tags": [
+          "Filter Expression Cases"
+        ],
         "summary": "Update filter-expression case record",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["Filter Expression Cases"],
+        "tags": [
+          "Filter Expression Cases"
+        ],
         "summary": "Delete filter-expression case record",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/Id" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/__list": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "List project page configs",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/__health": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Check project page-config storage health",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/__create": {
       "post": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Create page config",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/__sync-routes": {
       "post": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Synchronize project routes.json from page configs",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/routes.json": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Get project routes.json",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}": {
       "delete": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Delete page config",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Get one page-config file",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }],
-        "responses": { "200": { "$ref": "#/components/responses/TextOrJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TextOrJson"
+          }
+        }
       },
       "put": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Save one page-config file",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }],
-        "requestBody": { "$ref": "#/components/requestBodies/TextOrJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/TextOrJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions": {
       "post": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Create page-config file version",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       },
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "List page-config file versions",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "List versions for all files in one page",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}": {
       "get": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Get one page-config file version",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }, { "$ref": "#/components/parameters/Version" }],
-        "responses": { "200": { "$ref": "#/components/responses/TextOrJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TextOrJson"
+          }
+        }
       },
       "delete": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Delete one page-config file version",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }, { "$ref": "#/components/parameters/Version" }],
-        "responses": { "200": { "$ref": "#/components/responses/Ok" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}/__restore": {
       "post": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Restore one page-config file version",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }, { "$ref": "#/components/parameters/Version" }],
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/__prune": {
       "post": {
-        "tags": ["Page Config"],
+        "tags": [
+          "Page Config"
+        ],
         "summary": "Prune page-config file versions",
-        "parameters": [{ "$ref": "#/components/parameters/TenantId" }, { "$ref": "#/components/parameters/ProjectId" }, { "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }],
-        "requestBody": { "$ref": "#/components/requestBodies/GenericJson" },
-        "responses": { "200": { "$ref": "#/components/responses/GenericJson" } }
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
       }
     },
     "/pages-config/__list": {
-      "get": { "tags": ["Page Config"], "summary": "List page configs using legacy global path", "security": [], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "List page configs using legacy global path",
+        "security": [],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/__health": {
-      "get": { "tags": ["Page Config"], "summary": "Check legacy page-config storage health", "security": [], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Check legacy page-config storage health",
+        "security": [],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/__create": {
-      "post": { "tags": ["Page Config"], "summary": "Create page config using legacy global path", "security": [], "requestBody": { "$ref": "#/components/requestBodies/GenericJson" }, "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "post": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Create page config using legacy global path",
+        "security": [],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/__sync-routes": {
-      "post": { "tags": ["Page Config"], "summary": "Synchronize legacy routes.json", "security": [], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "post": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Synchronize legacy routes.json",
+        "security": [],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/routes.json": {
-      "get": { "tags": ["Page Config"], "summary": "Get legacy routes.json", "security": [], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Get legacy routes.json",
+        "security": [],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}": {
-      "delete": { "tags": ["Page Config"], "summary": "Delete page config using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }], "responses": { "200": { "$ref": "#/components/responses/Ok" } } }
+      "delete": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Delete page config using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}/{filename}": {
-      "get": { "tags": ["Page Config"], "summary": "Get page-config file using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }], "responses": { "200": { "$ref": "#/components/responses/TextOrJson" } } },
-      "put": { "tags": ["Page Config"], "summary": "Save page-config file using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }], "requestBody": { "$ref": "#/components/requestBodies/TextOrJson" }, "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Get page-config file using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TextOrJson"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Save page-config file using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/TextOrJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}/{filename}/__versions": {
-      "post": { "tags": ["Page Config"], "summary": "Create file version using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }], "requestBody": { "$ref": "#/components/requestBodies/GenericJson" }, "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } },
-      "get": { "tags": ["Page Config"], "summary": "List file versions using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "post": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Create file version using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "List file versions using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}/__versions": {
-      "get": { "tags": ["Page Config"], "summary": "List page versions using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "List page versions using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}/{filename}/__versions/{version}": {
-      "get": { "tags": ["Page Config"], "summary": "Get file version using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }, { "$ref": "#/components/parameters/Version" }], "responses": { "200": { "$ref": "#/components/responses/TextOrJson" } } },
-      "delete": { "tags": ["Page Config"], "summary": "Delete file version using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }, { "$ref": "#/components/parameters/Version" }], "responses": { "200": { "$ref": "#/components/responses/Ok" } } }
+      "get": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Get file version using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TextOrJson"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Delete file version using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}/{filename}/__versions/{version}/__restore": {
-      "post": { "tags": ["Page Config"], "summary": "Restore file version using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }, { "$ref": "#/components/parameters/Version" }], "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "post": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Restore file version using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/pages-config/{pageId}/{filename}/__versions/__prune": {
-      "post": { "tags": ["Page Config"], "summary": "Prune file versions using legacy global path", "security": [], "parameters": [{ "$ref": "#/components/parameters/PageId" }, { "$ref": "#/components/parameters/Filename" }], "requestBody": { "$ref": "#/components/requestBodies/GenericJson" }, "responses": { "200": { "$ref": "#/components/responses/GenericJson" } } }
+      "post": {
+        "tags": [
+          "Page Config"
+        ],
+        "summary": "Prune file versions using legacy global path",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageId"
+          },
+          {
+            "$ref": "#/components/parameters/Filename"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/tables": {
       "get": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "List metadata tables",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
         ],
         "responses": {
           "200": {
@@ -735,7 +1916,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/DataModelTable" }
+                  "items": {
+                    "$ref": "#/components/schemas/DataModelTable"
+                  }
                 }
               }
             }
@@ -743,19 +1926,29 @@
         }
       },
       "post": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "Create a metadata-managed dynamic physical table",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateTableRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/CreateTableRequest"
+              },
               "examples": {
-                "orders": { "$ref": "#/components/examples/CreateOrdersTable" }
+                "orders": {
+                  "$ref": "#/components/examples/CreateOrdersTable"
+                }
               }
             }
           }
@@ -765,49 +1958,77 @@
             "description": "Created metadata table",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataModelTableDetail" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataModelTableDetail"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "409": { "$ref": "#/components/responses/Conflict" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/tables/{tableName}": {
       "get": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "Get one metadata table",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "responses": {
           "200": {
             "description": "Metadata table detail",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataModelTableDetail" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataModelTableDetail"
+                }
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "put": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "Update metadata and synchronize physical schema",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UpdateTableRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTableRequest"
+              }
             }
           }
         },
@@ -816,7 +2037,9 @@
             "description": "Updated metadata table",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataModelTableDetail" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataModelTableDetail"
+                }
               }
             }
           },
@@ -824,46 +2047,73 @@
             "description": "Dangerous schema changes require force=true",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PreflightReport" }
+                "schema": {
+                  "$ref": "#/components/schemas/PreflightReport"
+                }
               }
             }
           }
         }
       },
       "delete": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "Delete metadata table, optionally dropping the physical table",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          },
           {
             "name": "dropPhysical",
             "in": "query",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Ok" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/tables/{tableName}/consistency": {
       "get": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "Compare metadata with physical schema",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "responses": {
           "200": {
             "description": "Consistency report",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ConsistencyReport" }
+                "schema": {
+                  "$ref": "#/components/schemas/ConsistencyReport"
+                }
               }
             }
           }
@@ -872,19 +2122,29 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/tables/{tableName}/reconcile": {
       "post": {
-        "tags": ["Data Model"],
+        "tags": [
+          "Data Model"
+        ],
         "summary": "Refresh metadata columns from the physical table",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "responses": {
           "200": {
             "description": "Reconciled metadata table",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataModelTableDetail" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataModelTableDetail"
+                }
               }
             }
           }
@@ -893,11 +2153,17 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/introspection/tables": {
       "get": {
-        "tags": ["Existing Table Import"],
+        "tags": [
+          "Existing Table Import"
+        ],
         "summary": "List importable physical tables",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
         ],
         "responses": {
           "200": {
@@ -906,7 +2172,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/PhysicalTableSummary" }
+                  "items": {
+                    "$ref": "#/components/schemas/PhysicalTableSummary"
+                  }
                 }
               }
             }
@@ -916,19 +2184,29 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/introspection/tables/{physicalTableName}": {
       "get": {
-        "tags": ["Existing Table Import"],
+        "tags": [
+          "Existing Table Import"
+        ],
         "summary": "Describe one physical table before import",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/PhysicalTableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/PhysicalTableName"
+          }
         ],
         "responses": {
           "200": {
             "description": "Physical table schema",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PhysicalTableDetail" }
+                "schema": {
+                  "$ref": "#/components/schemas/PhysicalTableDetail"
+                }
               }
             }
           }
@@ -937,20 +2215,30 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data-model/import-existing-tables": {
       "post": {
-        "tags": ["Existing Table Import"],
+        "tags": [
+          "Existing Table Import"
+        ],
         "summary": "Import existing physical tables and strictly manage them",
         "description": "If the table lacks TENANT_ID/PROJECT_ID, they are added and existing rows are assigned to the current tenant/project. If the table lacks a primary key, ID is added.",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ImportExistingTablesRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/ImportExistingTablesRequest"
+              },
               "examples": {
-                "legacyItem": { "$ref": "#/components/examples/ImportLegacyItemTable" }
+                "legacyItem": {
+                  "$ref": "#/components/examples/ImportLegacyItemTable"
+                }
               }
             }
           }
@@ -962,7 +2250,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/DataModelTableDetail" }
+                  "items": {
+                    "$ref": "#/components/schemas/DataModelTableDetail"
+                  }
                 }
               }
             }
@@ -972,20 +2262,32 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/query": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Query a metadata table using DataView config",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "required": false,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DataViewQueryRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/DataViewQueryRequest"
+              },
               "examples": {
-                "ordersDataView": { "$ref": "#/components/examples/OrdersDataViewQuery" }
+                "ordersDataView": {
+                  "$ref": "#/components/examples/OrdersDataViewQuery"
+                }
               }
             }
           }
@@ -995,7 +2297,9 @@
             "description": "Rows, paging, and optional aggregate result",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataViewQueryResult" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataViewQueryResult"
+                }
               }
             }
           }
@@ -1004,20 +2308,32 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Create one record",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DataRecord" },
+              "schema": {
+                "$ref": "#/components/schemas/DataRecord"
+              },
               "examples": {
-                "orderRecord": { "$ref": "#/components/examples/CreateOrderRecord" }
+                "orderRecord": {
+                  "$ref": "#/components/examples/CreateOrderRecord"
+                }
               }
             }
           }
@@ -1027,7 +2343,9 @@
             "description": "Created record",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataRecord" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataRecord"
+                }
               }
             }
           }
@@ -1036,18 +2354,28 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records/get": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Get one record by primary key",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PrimaryKeyPayload" }
+              "schema": {
+                "$ref": "#/components/schemas/PrimaryKeyPayload"
+              }
             }
           }
         },
@@ -1056,28 +2384,42 @@
             "description": "Record",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataRecord" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataRecord"
+                }
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records/update": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Update one record. Body includes primary key fields plus patch fields.",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DataRecord" }
+              "schema": {
+                "$ref": "#/components/schemas/DataRecord"
+              }
             }
           }
         },
@@ -1086,7 +2428,9 @@
             "description": "Updated record",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DataRecord" }
+                "schema": {
+                  "$ref": "#/components/schemas/DataRecord"
+                }
               }
             }
           }
@@ -1095,84 +2439,142 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records/delete": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Delete one record by primary key",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PrimaryKeyPayload" }
+              "schema": {
+                "$ref": "#/components/schemas/PrimaryKeyPayload"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Ok" }
+          "200": {
+            "$ref": "#/components/responses/Ok"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records/batch-create": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Batch create records",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
-        "requestBody": { "$ref": "#/components/requestBodies/RecordArray" },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/RecordArray"
+        },
         "responses": {
-          "200": { "$ref": "#/components/responses/BatchResult" }
+          "200": {
+            "$ref": "#/components/responses/BatchResult"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records/batch-update": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Batch update records",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
-        "requestBody": { "$ref": "#/components/requestBodies/RecordArray" },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/RecordArray"
+        },
         "responses": {
-          "200": { "$ref": "#/components/responses/BatchResult" }
+          "200": {
+            "$ref": "#/components/responses/BatchResult"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/records/batch-delete": {
       "post": {
-        "tags": ["Dynamic Data"],
+        "tags": [
+          "Dynamic Data"
+        ],
         "summary": "Batch delete records by primary keys",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
-        "requestBody": { "$ref": "#/components/requestBodies/RecordArray" },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/RecordArray"
+        },
         "responses": {
-          "200": { "$ref": "#/components/responses/BatchResult" }
+          "200": {
+            "$ref": "#/components/responses/BatchResult"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/children": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Load direct children",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/TreeChildrenRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/TreeChildrenRequest"
+              }
             }
           }
         },
@@ -1183,7 +2585,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/FlatTreeNode" }
+                  "items": {
+                    "$ref": "#/components/schemas/FlatTreeNode"
+                  }
                 }
               }
             }
@@ -1193,17 +2597,27 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/path": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Load ancestor path IDs",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/TreePathRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/TreePathRequest"
+              }
             }
           }
         },
@@ -1212,7 +2626,9 @@
             "description": "Path IDs",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/TreePathResult" }
+                "schema": {
+                  "$ref": "#/components/schemas/TreePathResult"
+                }
               }
             }
           }
@@ -1221,17 +2637,27 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/subtree": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Load path/subtree nodes for expand-to-node",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/TreeSubtreeRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/TreeSubtreeRequest"
+              }
             }
           }
         },
@@ -1242,7 +2668,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": { "$ref": "#/components/schemas/FlatTreeNode" }
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/FlatTreeNode"
+                  }
                 }
               }
             }
@@ -1252,17 +2680,27 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/move": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Move a node to a new parent",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/TreeMoveRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/TreeMoveRequest"
+              }
             }
           }
         },
@@ -1274,7 +2712,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "node": { "$ref": "#/components/schemas/FlatTreeNode" }
+                    "node": {
+                      "$ref": "#/components/schemas/FlatTreeNode"
+                    }
                   }
                 }
               }
@@ -1285,32 +2725,54 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/search": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Search flat tree nodes with ancestor path",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
-        "requestBody": { "$ref": "#/components/requestBodies/TreeSearch" },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/TreeSearch"
+        },
         "responses": {
-          "200": { "$ref": "#/components/responses/NestedTreeSearchResult" }
+          "200": {
+            "$ref": "#/components/responses/NestedTreeSearchResult"
+          }
         }
       }
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/nested": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Load nested tree",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/NestedTreeRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/NestedTreeRequest"
+              }
             }
           }
         },
@@ -1321,7 +2783,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/NestedTreeNode" }
+                  "items": {
+                    "$ref": "#/components/schemas/NestedTreeNode"
+                  }
                 }
               }
             }
@@ -1331,35 +2795,104 @@
     },
     "/tenants/{tenantId}/projects/{projectId}/data/{tableName}/tree/nested/search": {
       "post": {
-        "tags": ["Dynamic Tree"],
+        "tags": [
+          "Dynamic Tree"
+        ],
         "summary": "Search nested tree nodes with ancestor path",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" },
-          { "$ref": "#/components/parameters/TableName" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TableName"
+          }
         ],
-        "requestBody": { "$ref": "#/components/requestBodies/TreeSearch" },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/TreeSearch"
+        },
         "responses": {
-          "200": { "$ref": "#/components/responses/NestedTreeSearchResult" }
+          "200": {
+            "$ref": "#/components/responses/NestedTreeSearchResult"
+          }
         }
       }
     },
-    "/tenants/{tenantId}/projects/{projectId}/data/batch-jobs": {
+    "/tenants/{tenantId}/projects/{projectId}/data/transactions": {
       "post": {
-        "tags": ["Batch Jobs"],
-        "summary": "Submit an asynchronous multi-table update job",
-        "description": "Progress and completion are emitted through SSE event data-batch-job. Data changes are emitted through data-change.",
+        "tags": [
+          "Dynamic Data"
+        ],
+        "summary": "Commit multi-table operations in one transaction",
+        "description": "Executes all operations synchronously in one backing database transaction. Any failed operation rolls back the whole transaction. requestId is an idempotency key shared through the database, so retries routed to another backend instance replay the committed result instead of executing the operations again. data-change SSE events are emitted only after commit by the current in-process SSE service; multi-instance deployments need an outbox or message broker for cross-instance event fan-out.",
         "parameters": [
-          { "$ref": "#/components/parameters/TenantId" },
-          { "$ref": "#/components/parameters/ProjectId" }
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/BatchJobRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/TransactionRequest"
+              },
               "examples": {
-                "multiTable": { "$ref": "#/components/examples/MultiTableBatchJob" }
+                "multiTable": {
+                  "$ref": "#/components/examples/MultiTableTransaction"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Committed transaction result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/tenants/{tenantId}/projects/{projectId}/data/batch-jobs": {
+      "post": {
+        "tags": [
+          "Batch Jobs"
+        ],
+        "summary": "Submit an asynchronous multi-table update job",
+        "description": "Progress and completion are emitted through SSE event data-batch-job. Data changes are emitted through data-change.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchJobRequest"
+              },
+              "examples": {
+                "multiTable": {
+                  "$ref": "#/components/examples/MultiTableBatchJob"
+                }
               }
             }
           }
@@ -1369,7 +2902,9 @@
             "description": "Queued job",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/BatchJobQueued" }
+                "schema": {
+                  "$ref": "#/components/schemas/BatchJobQueued"
+                }
               }
             }
           }
@@ -1390,70 +2925,93 @@
         "name": "tenantId",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "lmspark"
       },
       "ProjectId": {
         "name": "projectId",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "default"
       },
       "TableName": {
         "name": "tableName",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
         "example": "Orders"
       },
       "PhysicalTableName": {
         "name": "physicalTableName",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
         "example": "LEGACY_ITEM"
       },
       "Id": {
         "name": "id",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "1"
       },
       "SessionId": {
         "name": "sessionId",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "session-001"
       },
       "FunctionName": {
         "name": "functionName",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "generate-page"
       },
       "PageId": {
         "name": "pageId",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "orders-page"
       },
       "Filename": {
         "name": "filename",
         "in": "path",
         "required": true,
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "example": "pagedata.json"
       },
       "Version": {
         "name": "version",
         "in": "path",
         "required": true,
-        "schema": { "type": "integer", "format": "int64" },
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
         "example": 1
       }
     },
@@ -1462,7 +3020,9 @@
         "required": false,
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/GenericObject" }
+            "schema": {
+              "$ref": "#/components/schemas/GenericObject"
+            }
           }
         }
       },
@@ -1470,7 +3030,9 @@
         "required": false,
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/DataViewQueryRequest" }
+            "schema": {
+              "$ref": "#/components/schemas/DataViewQueryRequest"
+            }
           }
         }
       },
@@ -1478,10 +3040,14 @@
         "required": false,
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/GenericObject" }
+            "schema": {
+              "$ref": "#/components/schemas/GenericObject"
+            }
           },
           "text/plain": {
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1507,7 +3073,9 @@
           "application/json": {
             "schema": {
               "type": "array",
-              "items": { "$ref": "#/components/schemas/DataRecord" }
+              "items": {
+                "$ref": "#/components/schemas/DataRecord"
+              }
             }
           }
         }
@@ -1515,7 +3083,9 @@
       "TreeSearch": {
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/TreeSearchRequest" }
+            "schema": {
+              "$ref": "#/components/schemas/TreeSearchRequest"
+            }
           }
         }
       }
@@ -1525,7 +3095,9 @@
         "description": "JSON response",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/GenericObject" }
+            "schema": {
+              "$ref": "#/components/schemas/GenericObject"
+            }
           }
         }
       },
@@ -1533,7 +3105,9 @@
         "description": "Server-sent event stream",
         "content": {
           "text/event-stream": {
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1541,7 +3115,9 @@
         "description": "HTML response",
         "content": {
           "text/html": {
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1549,10 +3125,14 @@
         "description": "Text or JSON response",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/GenericObject" }
+            "schema": {
+              "$ref": "#/components/schemas/GenericObject"
+            }
           },
           "text/plain": {
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1563,7 +3143,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "ok": { "type": "boolean", "example": true }
+                "ok": {
+                  "type": "boolean",
+                  "example": true
+                }
               }
             }
           }
@@ -1573,7 +3156,9 @@
         "description": "Bad request",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -1581,7 +3166,9 @@
         "description": "Conflict",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -1592,7 +3179,9 @@
         "description": "Batch operation result",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/BatchResult" }
+            "schema": {
+              "$ref": "#/components/schemas/BatchResult"
+            }
           }
         }
       },
@@ -1602,7 +3191,9 @@
           "application/json": {
             "schema": {
               "type": "array",
-              "items": { "$ref": "#/components/schemas/NestedTreeSearchResult" }
+              "items": {
+                "$ref": "#/components/schemas/NestedTreeSearchResult"
+              }
             }
           }
         }
@@ -1615,82 +3206,175 @@
       },
       "CreateTableRequest": {
         "type": "object",
-        "required": ["tableName", "columns"],
+        "required": [
+          "tableName",
+          "columns"
+        ],
         "properties": {
-          "tableName": { "type": "string" },
-          "physicalTableName": { "type": "string" },
-          "resourceType": { "type": "string", "example": "database-table" },
-          "resourceId": { "type": "string" },
-          "businessCategory": { "type": "string" },
+          "tableName": {
+            "type": "string"
+          },
+          "physicalTableName": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "example": "database-table"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "businessCategory": {
+            "type": "string"
+          },
           "columns": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/DataModelColumnInput" }
+            "items": {
+              "$ref": "#/components/schemas/DataModelColumnInput"
+            }
           },
           "views": {
             "type": "object",
-            "additionalProperties": { "$ref": "#/components/schemas/DataViewConfig" }
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DataViewConfig"
+            }
           }
         }
       },
       "UpdateTableRequest": {
         "allOf": [
-          { "$ref": "#/components/schemas/CreateTableRequest" },
+          {
+            "$ref": "#/components/schemas/CreateTableRequest"
+          },
           {
             "type": "object",
             "properties": {
-              "force": { "type": "boolean", "default": false }
+              "force": {
+                "type": "boolean",
+                "default": false
+              }
             }
           }
         ]
       },
       "DataModelColumnInput": {
         "type": "object",
-        "required": ["name", "type"],
+        "required": [
+          "name",
+          "type"
+        ],
         "properties": {
-          "name": { "type": "string", "example": "amount" },
-          "physicalColumnName": { "type": "string", "example": "AMOUNT" },
+          "name": {
+            "type": "string",
+            "example": "amount"
+          },
+          "physicalColumnName": {
+            "type": "string",
+            "example": "AMOUNT"
+          },
           "type": {
             "type": "string",
-            "enum": ["string", "text", "integer", "number", "decimal", "boolean", "date", "datetime", "time", "object", "array"]
+            "enum": [
+              "string",
+              "text",
+              "integer",
+              "number",
+              "decimal",
+              "boolean",
+              "date",
+              "datetime",
+              "time",
+              "object",
+              "array"
+            ]
           },
-          "sqlType": { "type": "string", "example": "DECIMAL(18,2)" },
-          "primaryKey": { "type": "boolean" },
-          "autoIncrement": { "type": "boolean" },
-          "required": { "type": "boolean" },
-          "nullable": { "type": "boolean" },
-          "maxLength": { "type": "integer" },
-          "numericPrecision": { "type": "integer" },
-          "numericScale": { "type": "integer" },
-          "label": { "type": "string" }
+          "sqlType": {
+            "type": "string",
+            "example": "DECIMAL(18,2)"
+          },
+          "primaryKey": {
+            "type": "boolean"
+          },
+          "autoIncrement": {
+            "type": "boolean"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "nullable": {
+            "type": "boolean"
+          },
+          "maxLength": {
+            "type": "integer"
+          },
+          "numericPrecision": {
+            "type": "integer"
+          },
+          "numericScale": {
+            "type": "integer"
+          },
+          "label": {
+            "type": "string"
+          }
         }
       },
       "DataModelTable": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64" },
-          "tableName": { "type": "string" },
-          "origin": { "type": "string", "enum": ["dynamic-created", "existing-imported"] },
-          "managedMode": { "type": "string", "example": "strict" },
-          "physicalTableName": { "type": "string" },
-          "primaryKeyField": { "type": "string" },
-          "schemaVersion": { "type": "integer" },
-          "ddlHash": { "type": "string" },
-          "status": { "type": "string" }
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "dynamic-created",
+              "existing-imported"
+            ]
+          },
+          "managedMode": {
+            "type": "string",
+            "example": "strict"
+          },
+          "physicalTableName": {
+            "type": "string"
+          },
+          "primaryKeyField": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer"
+          },
+          "ddlHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
         }
       },
       "DataModelTableDetail": {
         "allOf": [
-          { "$ref": "#/components/schemas/DataModelTable" },
+          {
+            "$ref": "#/components/schemas/DataModelTable"
+          },
           {
             "type": "object",
             "properties": {
               "columns": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/DataModelColumn" }
+                "items": {
+                  "$ref": "#/components/schemas/DataModelColumn"
+                }
               },
               "views": {
                 "type": "object",
-                "additionalProperties": { "$ref": "#/components/schemas/DataViewConfig" }
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/DataViewConfig"
+                }
               }
             }
           }
@@ -1698,12 +3382,19 @@
       },
       "DataModelColumn": {
         "allOf": [
-          { "$ref": "#/components/schemas/DataModelColumnInput" },
+          {
+            "$ref": "#/components/schemas/DataModelColumnInput"
+          },
           {
             "type": "object",
             "properties": {
-              "id": { "type": "integer", "format": "int64" },
-              "physicalColumnName": { "type": "string" }
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "physicalColumnName": {
+                "type": "string"
+              }
             }
           }
         ]
@@ -1711,21 +3402,54 @@
       "DataViewConfig": {
         "type": "object",
         "properties": {
-          "viewId": { "type": "string", "example": "default" },
-          "page": { "type": "integer", "example": 1 },
-          "pageSize": { "type": "integer", "example": 20 },
-          "filterExpression": { "$ref": "#/components/schemas/FilterExpression" },
+          "viewId": {
+            "type": "string",
+            "example": "default"
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          },
+          "filterExpression": {
+            "$ref": "#/components/schemas/FilterExpression"
+          },
           "sortExpression": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/SortField" }
+            "items": {
+              "$ref": "#/components/schemas/SortField"
+            }
           },
-          "treeConfig": { "$ref": "#/components/schemas/TreeConfig" },
-          "valueField": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
-          "labelField": { "type": "string" },
-          "selectionDelimiter": { "type": "string" },
+          "treeConfig": {
+            "$ref": "#/components/schemas/TreeConfig"
+          },
+          "valueField": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "labelField": {
+            "type": "string"
+          },
+          "selectionDelimiter": {
+            "type": "string"
+          },
           "aggregates": {
             "type": "object",
-            "additionalProperties": { "$ref": "#/components/schemas/AggregateConfig" }
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AggregateConfig"
+            }
           }
         }
       },
@@ -1736,68 +3460,172 @@
         "example": {
           "type": "and",
           "children": [
-            { "field": "status", "op": "==", "value": "open" },
-            { "field": "amount", "op": ">=", "value": 10 }
+            {
+              "field": "status",
+              "op": "==",
+              "value": "open"
+            },
+            {
+              "field": "amount",
+              "op": ">=",
+              "value": 10
+            }
           ]
         }
       },
       "SortField": {
         "type": "object",
         "properties": {
-          "field": { "type": "string" },
-          "direction": { "type": "string", "enum": ["asc", "desc"] }
+          "field": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          }
         }
       },
       "TreeConfig": {
         "type": "object",
         "properties": {
-          "idField": { "type": "string", "example": "id" },
-          "parentIdField": { "type": "string", "example": "parentId" },
-          "textField": { "type": "string", "example": "name" },
-          "depthLimit": { "type": "integer" },
-          "lazy": { "type": "boolean" },
-          "treeMode": { "type": "string", "enum": ["flat", "nested"] },
-          "serverPaginationMode": { "type": "string", "enum": ["root", "flat"], "default": "root" },
-          "filterMode": { "type": "string", "enum": ["include-ancestors", "node-only"], "default": "include-ancestors" }
+          "idField": {
+            "type": "string",
+            "example": "id"
+          },
+          "parentIdField": {
+            "type": "string",
+            "example": "parentId"
+          },
+          "textField": {
+            "type": "string",
+            "example": "name"
+          },
+          "depthLimit": {
+            "type": "integer"
+          },
+          "lazy": {
+            "type": "boolean"
+          },
+          "treeMode": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "nested"
+            ]
+          },
+          "serverPaginationMode": {
+            "type": "string",
+            "enum": [
+              "root",
+              "flat"
+            ],
+            "default": "root"
+          },
+          "filterMode": {
+            "type": "string",
+            "enum": [
+              "include-ancestors",
+              "node-only"
+            ],
+            "default": "include-ancestors"
+          }
         }
       },
       "AggregateConfig": {
         "type": "object",
         "properties": {
-          "type": { "type": "string", "enum": ["sum", "count", "avg", "min", "max", "join"] },
-          "field": { "type": "string" },
-          "separator": { "type": "string" }
+          "type": {
+            "type": "string",
+            "enum": [
+              "sum",
+              "count",
+              "avg",
+              "min",
+              "max",
+              "join"
+            ]
+          },
+          "field": {
+            "type": "string"
+          },
+          "separator": {
+            "type": "string"
+          }
         }
       },
       "DataViewQueryRequest": {
         "type": "object",
         "properties": {
-          "viewId": { "type": "string" },
-          "viewConfig": { "$ref": "#/components/schemas/DataViewConfig" },
-          "query": { "$ref": "#/components/schemas/QueryParams" }
+          "viewId": {
+            "type": "string"
+          },
+          "viewConfig": {
+            "$ref": "#/components/schemas/DataViewConfig"
+          },
+          "query": {
+            "$ref": "#/components/schemas/QueryParams"
+          }
         }
       },
       "QueryParams": {
         "type": "object",
         "properties": {
-          "page": { "type": "integer", "default": 1 },
-          "pageSize": { "type": "integer", "default": 20 },
-          "sort": { "type": "string", "example": "amount:desc,name:asc" },
+          "page": {
+            "type": "integer",
+            "default": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "default": 20
+          },
+          "sort": {
+            "type": "string",
+            "example": "amount:desc,name:asc"
+          },
           "filter": {
             "oneOf": [
-              { "$ref": "#/components/schemas/FilterExpression" },
-              { "type": "object", "additionalProperties": true }
+              {
+                "$ref": "#/components/schemas/FilterExpression"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
             ]
           },
-          "search": { "type": "string" },
-          "fields": { "type": "array", "items": { "type": "string" } },
-          "viewId": { "type": "string" },
-          "viewConfig": { "$ref": "#/components/schemas/DataViewConfig" },
-          "treeMode": { "type": "string", "enum": ["flat", "nested"] },
+          "search": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "viewId": {
+            "type": "string"
+          },
+          "viewConfig": {
+            "$ref": "#/components/schemas/DataViewConfig"
+          },
+          "treeMode": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "nested"
+            ]
+          },
           "parentId": {},
           "rootId": {},
-          "depthLimit": { "type": "integer" },
-          "limit": { "type": "integer" }
+          "depthLimit": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
         }
       },
       "DataViewQueryResult": {
@@ -1805,11 +3633,19 @@
         "properties": {
           "rows": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/DataRecord" }
+            "items": {
+              "$ref": "#/components/schemas/DataRecord"
+            }
           },
-          "total": { "type": "integer" },
-          "page": { "type": "integer" },
-          "pageSize": { "type": "integer" },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
           "aggregateResult": {
             "type": "object",
             "additionalProperties": true
@@ -1836,58 +3672,179 @@
       "BatchResult": {
         "type": "object",
         "properties": {
-          "successCount": { "type": "integer" },
-          "failureCount": { "type": "integer" },
-          "results": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
-          "errors": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+          "successCount": {
+            "type": "integer"
+          },
+          "failureCount": {
+            "type": "integer"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
         }
       },
       "BatchJobRequest": {
         "type": "object",
-        "required": ["operations"],
+        "required": [
+          "operations"
+        ],
         "properties": {
-          "requestId": { "type": "string" },
+          "requestId": {
+            "type": "string"
+          },
           "operations": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/BatchOperation" }
+            "items": {
+              "$ref": "#/components/schemas/BatchOperation"
+            }
           }
         }
       },
       "BatchOperation": {
         "type": "object",
-        "required": ["tableName", "op"],
+        "required": [
+          "tableName",
+          "op"
+        ],
         "properties": {
-          "operationId": { "type": "string" },
-          "tableName": { "type": "string" },
-          "op": { "type": "string", "enum": ["create", "update", "delete"] },
-          "pk": { "$ref": "#/components/schemas/PrimaryKeyPayload" },
-          "data": { "$ref": "#/components/schemas/DataRecord" }
+          "operationId": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "delete"
+            ]
+          },
+          "pk": {
+            "$ref": "#/components/schemas/PrimaryKeyPayload"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DataRecord"
+          }
         }
       },
       "BatchJobQueued": {
         "type": "object",
         "properties": {
-          "jobId": { "type": "string" },
-          "status": { "type": "string", "example": "queued" }
+          "jobId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "example": "queued"
+          }
+        }
+      },
+      "TransactionRequest": {
+        "type": "object",
+        "required": [
+          "operations"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Optional idempotency key. Reusing the same requestId with the same operations replays the committed result; reusing it with different operations is rejected."
+          },
+          "operations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/BatchOperation"
+            }
+          }
+        }
+      },
+      "TransactionOperationResult": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "TransactionResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "transactionId": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "operationCount": {
+            "type": "integer"
+          },
+          "replayed": {
+            "type": "boolean",
+            "description": "true when the response is replayed from an earlier committed requestId."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionOperationResult"
+            }
+          }
         }
       },
       "PhysicalTableSummary": {
         "type": "object",
         "properties": {
-          "physicalTableName": { "type": "string" },
-          "primaryKeyColumns": { "type": "array", "items": { "type": "string" } },
-          "managed": { "type": "boolean" }
+          "physicalTableName": {
+            "type": "string"
+          },
+          "primaryKeyColumns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "managed": {
+            "type": "boolean"
+          }
         }
       },
       "PhysicalTableDetail": {
         "allOf": [
-          { "$ref": "#/components/schemas/PhysicalTableSummary" },
+          {
+            "$ref": "#/components/schemas/PhysicalTableSummary"
+          },
           {
             "type": "object",
             "properties": {
               "columns": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/DataModelColumn" }
+                "items": {
+                  "$ref": "#/components/schemas/DataModelColumn"
+                }
               }
             }
           }
@@ -1895,19 +3852,29 @@
       },
       "ImportExistingTablesRequest": {
         "type": "object",
-        "required": ["tables"],
+        "required": [
+          "tables"
+        ],
         "properties": {
           "tables": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["physicalTableName"],
+              "required": [
+                "physicalTableName"
+              ],
               "properties": {
-                "physicalTableName": { "type": "string" },
-                "logicalTableName": { "type": "string" },
+                "physicalTableName": {
+                  "type": "string"
+                },
+                "logicalTableName": {
+                  "type": "string"
+                },
                 "views": {
                   "type": "object",
-                  "additionalProperties": { "$ref": "#/components/schemas/DataViewConfig" }
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/DataViewConfig"
+                  }
                 }
               }
             }
@@ -1917,23 +3884,39 @@
       "ConsistencyReport": {
         "type": "object",
         "properties": {
-          "consistent": { "type": "boolean" },
-          "logicalTableName": { "type": "string" },
-          "physicalTableName": { "type": "string" },
-          "ddlHash": { "type": "string" },
+          "consistent": {
+            "type": "boolean"
+          },
+          "logicalTableName": {
+            "type": "string"
+          },
+          "physicalTableName": {
+            "type": "string"
+          },
+          "ddlHash": {
+            "type": "string"
+          },
           "differences": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           }
         }
       },
       "PreflightReport": {
         "type": "object",
         "properties": {
-          "message": { "type": "string" },
+          "message": {
+            "type": "string"
+          },
           "changes": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           }
         }
       },
@@ -1943,19 +3926,27 @@
         "properties": {
           "id": {},
           "parentId": {},
-          "name": { "type": "string" },
-          "hasChildren": { "type": "boolean" }
+          "name": {
+            "type": "string"
+          },
+          "hasChildren": {
+            "type": "boolean"
+          }
         }
       },
       "NestedTreeNode": {
         "allOf": [
-          { "$ref": "#/components/schemas/FlatTreeNode" },
+          {
+            "$ref": "#/components/schemas/FlatTreeNode"
+          },
           {
             "type": "object",
             "properties": {
               "children": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/NestedTreeNode" }
+                "items": {
+                  "$ref": "#/components/schemas/NestedTreeNode"
+                }
               }
             }
           }
@@ -1965,54 +3956,102 @@
         "type": "object",
         "properties": {
           "parentId": {},
-          "limit": { "type": "integer" },
-          "treeMode": { "type": "string", "enum": ["flat", "nested"] },
-          "viewConfig": { "$ref": "#/components/schemas/DataViewConfig" }
+          "limit": {
+            "type": "integer"
+          },
+          "treeMode": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "nested"
+            ]
+          },
+          "viewConfig": {
+            "$ref": "#/components/schemas/DataViewConfig"
+          }
         }
       },
       "TreePathRequest": {
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "properties": {
           "id": {}
         }
       },
       "TreeSubtreeRequest": {
         "type": "object",
-        "required": ["toId"],
+        "required": [
+          "toId"
+        ],
         "properties": {
           "fromId": {},
           "toId": {},
-          "includeTargetChildren": { "type": "boolean", "default": true }
+          "includeTargetChildren": {
+            "type": "boolean",
+            "default": true
+          }
         }
       },
       "TreeMoveRequest": {
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "properties": {
           "id": {},
           "newParentId": {},
-          "index": { "type": "integer" }
+          "index": {
+            "type": "integer"
+          }
         }
       },
       "TreeSearchRequest": {
         "type": "object",
-        "required": ["keyword"],
+        "required": [
+          "keyword"
+        ],
         "properties": {
-          "keyword": { "type": "string" },
-          "limit": { "type": "integer" },
-          "treeMode": { "type": "string", "enum": ["flat", "nested"] },
-          "viewConfig": { "$ref": "#/components/schemas/DataViewConfig" }
+          "keyword": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "treeMode": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "nested"
+            ]
+          },
+          "viewConfig": {
+            "$ref": "#/components/schemas/DataViewConfig"
+          }
         }
       },
       "NestedTreeRequest": {
         "type": "object",
         "properties": {
           "rootId": {},
-          "depthLimit": { "type": "integer" },
-          "limit": { "type": "integer" },
-          "treeMode": { "type": "string", "enum": ["flat", "nested"], "default": "nested" },
-          "viewConfig": { "$ref": "#/components/schemas/DataViewConfig" }
+          "depthLimit": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "treeMode": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "nested"
+            ],
+            "default": "nested"
+          },
+          "viewConfig": {
+            "$ref": "#/components/schemas/DataViewConfig"
+          }
         }
       },
       "TreePathResult": {
@@ -2027,18 +4066,26 @@
       "NestedTreeSearchResult": {
         "type": "object",
         "properties": {
-          "node": { "$ref": "#/components/schemas/FlatTreeNode" },
+          "node": {
+            "$ref": "#/components/schemas/FlatTreeNode"
+          },
           "path": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/FlatTreeNode" }
+            "items": {
+              "$ref": "#/components/schemas/FlatTreeNode"
+            }
           }
         }
       },
       "ErrorResponse": {
         "type": "object",
         "properties": {
-          "error": { "type": "string" },
-          "message": { "type": "string" }
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
         }
       }
     },
@@ -2050,17 +4097,40 @@
           "resourceType": "database-table",
           "businessCategory": "master",
           "columns": [
-            { "name": "name", "type": "string", "required": true, "maxLength": 255 },
-            { "name": "status", "type": "string", "required": true, "maxLength": 64 },
-            { "name": "amount", "type": "decimal", "numericPrecision": 18, "numericScale": 2 },
-            { "name": "parentId", "type": "number" }
+            {
+              "name": "name",
+              "type": "string",
+              "required": true,
+              "maxLength": 255
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": true,
+              "maxLength": 64
+            },
+            {
+              "name": "amount",
+              "type": "decimal",
+              "numericPrecision": 18,
+              "numericScale": 2
+            },
+            {
+              "name": "parentId",
+              "type": "number"
+            }
           ],
           "views": {
             "default": {
               "viewId": "default",
               "page": 1,
               "pageSize": 20,
-              "sortExpression": [{ "field": "amount", "direction": "desc" }],
+              "sortExpression": [
+                {
+                  "field": "amount",
+                  "direction": "desc"
+                }
+              ],
               "treeConfig": {
                 "idField": "id",
                 "parentIdField": "parentId",
@@ -2069,7 +4139,10 @@
                 "filterMode": "include-ancestors"
               },
               "aggregates": {
-                "totalAmount": { "type": "sum", "field": "amount" }
+                "totalAmount": {
+                  "type": "sum",
+                  "field": "amount"
+                }
               }
             }
           }
@@ -2095,8 +4168,16 @@
             "filter": {
               "type": "and",
               "children": [
-                { "field": "status", "op": "==", "value": "open" },
-                { "field": "amount", "op": ">=", "value": 10 }
+                {
+                  "field": "status",
+                  "op": "==",
+                  "value": "open"
+                },
+                {
+                  "field": "amount",
+                  "op": ">=",
+                  "value": 10
+                }
               ]
             },
             "search": "Order",
@@ -2110,7 +4191,10 @@
               "treeMode": "flat"
             },
             "aggregates": {
-              "totalAmount": { "type": "sum", "field": "amount" }
+              "totalAmount": {
+                "type": "sum",
+                "field": "amount"
+              }
             }
           }
         }
@@ -2126,7 +4210,12 @@
                 "default": {
                   "page": 1,
                   "pageSize": 20,
-                  "sortExpression": [{ "field": "name", "direction": "asc" }]
+                  "sortExpression": [
+                    {
+                      "field": "name",
+                      "direction": "asc"
+                    }
+                  ]
                 }
               }
             }
@@ -2142,14 +4231,51 @@
               "operationId": "create-order",
               "tableName": "Orders",
               "op": "create",
-              "data": { "name": "Order B", "status": "open", "amount": 80 }
+              "data": {
+                "name": "Order B",
+                "status": "open",
+                "amount": 80
+              }
             },
             {
               "operationId": "update-legacy",
               "tableName": "LegacyItem",
               "op": "update",
-              "pk": { "id": 1 },
-              "data": { "name": "Imported Item" }
+              "pk": {
+                "id": 1
+              },
+              "data": {
+                "name": "Imported Item"
+              }
+            }
+          ]
+        }
+      },
+      "MultiTableTransaction": {
+        "summary": "Commit multiple tables atomically",
+        "value": {
+          "requestId": "txn-demo-001",
+          "operations": [
+            {
+              "operationId": "update-order",
+              "tableName": "Orders",
+              "op": "update",
+              "pk": {
+                "id": 1
+              },
+              "data": {
+                "status": "submitted"
+              }
+            },
+            {
+              "operationId": "create-item",
+              "tableName": "OrderItems",
+              "op": "create",
+              "data": {
+                "orderId": 1,
+                "sku": "SKU-001",
+                "quantity": 2
+              }
             }
           ]
         }

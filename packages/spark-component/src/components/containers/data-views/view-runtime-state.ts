@@ -30,6 +30,7 @@ export interface DataViewRowsState {
   columns: ComputedRef<readonly DataColumn[]>
   currentRow: ComputedRef<IDataRow | null>
   selectedRows: ComputedRef<readonly IDataRow[]>
+  editingRows: ComputedRef<readonly IDataRow[]>
   isMultiSelect: ComputedRef<boolean>
 }
 
@@ -149,6 +150,9 @@ export function useDataViewState(
   const selectedRows = computed<readonly IDataRow[]>(() => {
     return snapshot.value?.selectedRows ?? EMPTY_ROWS
   })
+  const editingRows = computed<readonly IDataRow[]>(() => {
+    return snapshot.value?.editingRows ?? EMPTY_ROWS
+  })
   const isMultiSelect = computed<boolean>(() => {
     return snapshot.value?.isMultiSelect ?? false
   })
@@ -204,7 +208,7 @@ export function useDataViewState(
 
   return {
     tableName, viewId, primaryKey, treeConfig,
-    rows, columns, currentRow, selectedRows, isMultiSelect,
+    rows, columns, currentRow, selectedRows, editingRows, isMultiSelect,
     _modelPerm, value, label, labels,
     requestState, aggregateResult, selectionAggregateResult,
     total, page, pageSize,

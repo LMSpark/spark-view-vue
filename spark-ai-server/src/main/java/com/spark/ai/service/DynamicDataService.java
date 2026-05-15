@@ -3,17 +3,22 @@ package com.spark.ai.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.crud.FilterExpressionSqlBuilder;
 import com.spark.ai.crud.FilterExpressionSqlBuilder.SqlFragment;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -29,6 +34,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -347,16 +353,7 @@ public class DynamicDataService {
     }
 
     public Map<String, Object> submitBatchJob(String tenantId, String projectId, Map<String, Object> body) {
-        Object operationsValue = body == null ? null : body.get("operations");
-        if (!(operationsValue instanceof List<?> rawOperations)) {
-            throw new IllegalArgumentException("operations 必须是数组");
-        }
-        List<Map<String, Object>> operations = rawOperations.stream().map(item -> {
-            if (!(item instanceof Map<?, ?> rawMap)) {
-                throw new IllegalArgumentException("operation 必须是对象");
-            }
-            return toStringKeyMap(rawMap);
-        }).toList();
+        List<Map<String, Object>> operations = readOperations(body);
         String jobId = UUID.randomUUID().toString();
         Timestamp now = Timestamp.from(Instant.now());
         jdbcTemplate.update("""
@@ -378,6 +375,61 @@ public class DynamicDataService {
         emitBatchJob(tenantId, projectId, jobId, "queued", 0, operations.size(), null, null);
         CompletableFuture.runAsync(() -> runBatchJob(tenantId, projectId, jobId, operations));
         return Map.of("jobId", jobId, "status", "queued");
+    }
+
+    @Transactional
+    public Map<String, Object> executeTransaction(String tenantId, String projectId, Map<String, Object> body) {
+        List<Map<String, Object>> operations = readOperations(body);
+        if (operations.isEmpty()) {
+            throw new IllegalArgumentException("operations 不能为空");
+        }
+
+        String requestId = body == null ? null : stringOrNull(body.get("requestId"));
+        String requestHash = requestId == null ? null : transactionRequestHash(operations);
+        Map<String, Object> replayed = requestId == null ? null : readCommittedTransaction(tenantId, projectId, requestId, requestHash);
+        if (replayed != null) {
+            return replayed;
+        }
+
+        String transactionId = UUID.randomUUID().toString();
+        if (requestId != null) {
+            try {
+                insertTransactionCommit(tenantId, projectId, transactionId, requestId, requestHash, operations);
+            } catch (DataIntegrityViolationException e) {
+                Map<String, Object> committed = readCommittedTransaction(tenantId, projectId, requestId, requestHash);
+                if (committed != null) {
+                    return committed;
+                }
+                throw new IllegalArgumentException("事务请求正在处理中: " + requestId, e);
+            }
+        }
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        int index = 0;
+        for (Map<String, Object> operation : operations) {
+            index++;
+            String operationId = stringOrDefault(operation.get("operationId"), String.valueOf(index));
+            try {
+                Map<String, Object> itemResult = executeTransactionOperation(tenantId, projectId, operation);
+                results.add(Map.of(
+                        "operationId", operationId,
+                        "status", "success",
+                        "result", itemResult
+                ));
+            } catch (Exception e) {
+                throw new IllegalArgumentException("事务操作失败[" + operationId + "]: " + e.getMessage(), e);
+            }
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", true);
+        result.put("transactionId", transactionId);
+        if (requestId != null) result.put("requestId", requestId);
+        result.put("operationCount", operations.size());
+        result.put("results", results);
+        if (requestId != null) {
+            completeTransactionCommit(transactionId, result);
+        }
+        return result;
     }
 
     private Map<String, Object> queryFlat(
@@ -1016,6 +1068,23 @@ public class DynamicDataService {
         return result;
     }
 
+    private Map<String, Object> executeTransactionOperation(String tenantId, String projectId, Map<String, Object> operation) {
+        String tableName = stringOrDefault(operation.get("tableName"), null);
+        String op = stringOrDefault(operation.get("op"), stringOrDefault(operation.get("operation"), null));
+        if (tableName == null || op == null) {
+            throw new IllegalArgumentException("operation.tableName/op 不能为空");
+        }
+        return switch (op) {
+            case "create" -> createRecord(tenantId, projectId, tableName, readMap(operation.get("data")));
+            case "update" -> updateRecord(tenantId, projectId, tableName, merged(readMap(operation.get("data")), readMap(operation.get("pk"))));
+            case "delete" -> {
+                deleteRecord(tenantId, projectId, tableName, readMap(operation.get("pk")));
+                yield Map.of("deleted", true);
+            }
+            default -> throw new IllegalArgumentException("未知事务操作: " + op);
+        };
+    }
+
     private void insertJobItem(String jobId, Map<String, Object> operation, String status, Object result, String error) {
         Timestamp now = Timestamp.from(Instant.now());
         jdbcTemplate.update("""
@@ -1066,6 +1135,74 @@ public class DynamicDataService {
         );
     }
 
+    private void insertTransactionCommit(
+            String tenantId,
+            String projectId,
+            String transactionId,
+            String requestId,
+            String requestHash,
+            List<Map<String, Object>> operations
+    ) {
+        Timestamp now = Timestamp.from(Instant.now());
+        jdbcTemplate.update("""
+            INSERT INTO DATA_TRANSACTION_COMMIT (
+                TRANSACTION_ID, TENANT_ID, PROJECT_ID, REQUEST_ID, REQUEST_HASH,
+                STATUS, PAYLOAD, CREATED_AT, UPDATED_AT
+            ) VALUES (?, ?, ?, ?, ?, 'running', ?, ?, ?)
+            """,
+                transactionId,
+                tenantId,
+                projectId,
+                requestId,
+                requestHash,
+                writeJson(operations),
+                now,
+                now
+        );
+    }
+
+    private void completeTransactionCommit(String transactionId, Map<String, Object> result) {
+        Timestamp now = Timestamp.from(Instant.now());
+        jdbcTemplate.update("""
+            UPDATE DATA_TRANSACTION_COMMIT
+            SET STATUS = 'success', RESULT = ?, UPDATED_AT = ?, COMPLETED_AT = ?
+            WHERE TRANSACTION_ID = ?
+            """,
+                writeJson(result),
+                now,
+                now,
+                transactionId
+        );
+    }
+
+    private Map<String, Object> readCommittedTransaction(
+            String tenantId,
+            String projectId,
+            String requestId,
+            String requestHash
+    ) {
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList("""
+            SELECT REQUEST_HASH, STATUS, RESULT
+            FROM DATA_TRANSACTION_COMMIT
+            WHERE TENANT_ID = ? AND PROJECT_ID = ? AND REQUEST_ID = ?
+            """, tenantId, projectId, requestId);
+        if (rows.isEmpty()) {
+            return null;
+        }
+
+        Map<String, Object> row = rows.get(0);
+        if (!Objects.equals(requestHash, row.get("REQUEST_HASH"))) {
+            throw new IllegalArgumentException("requestId 已用于不同事务: " + requestId);
+        }
+        String status = stringOrDefault(row.get("STATUS"), "");
+        if (!"success".equals(status)) {
+            throw new IllegalArgumentException("事务请求正在处理中: " + requestId);
+        }
+        Map<String, Object> result = readJsonMap(stringOrDefault(row.get("RESULT"), null));
+        result.put("replayed", true);
+        return result;
+    }
+
     private void emitBatchJob(String tenantId, String projectId, String jobId, String status, int completed, int total, Object result, String error) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("tenantId", tenantId);
@@ -1088,7 +1225,64 @@ public class DynamicDataService {
         payload.put("operation", operation);
         payload.put("timestamp", Instant.now().toEpochMilli());
         if (jobId != null) payload.put("jobId", jobId);
-        sseService.emit(SseService.EVENT_DATA_CHANGE, payload);
+        emitAfterCommit(() -> sseService.emit(SseService.EVENT_DATA_CHANGE, payload));
+    }
+
+    private void emitAfterCommit(Runnable emitter) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()
+                && TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    emitter.run();
+                }
+            });
+            return;
+        }
+        emitter.run();
+    }
+
+    private static List<Map<String, Object>> readOperations(Map<String, Object> body) {
+        Object operationsValue = body == null ? null : body.get("operations");
+        if (!(operationsValue instanceof List<?> rawOperations)) {
+            throw new IllegalArgumentException("operations 必须是数组");
+        }
+        return rawOperations.stream().map(item -> {
+            if (!(item instanceof Map<?, ?> rawMap)) {
+                throw new IllegalArgumentException("operation 必须是对象");
+            }
+            return toStringKeyMap(rawMap);
+        }).toList();
+    }
+
+    private String transactionRequestHash(List<Map<String, Object>> operations) {
+        return sha256(writeJson(canonicalizeJson(operations)));
+    }
+
+    private static Object canonicalizeJson(Object value) {
+        if (value instanceof Map<?, ?> rawMap) {
+            Map<String, Object> sorted = new TreeMap<>();
+            rawMap.forEach((key, mapValue) -> sorted.put(String.valueOf(key), canonicalizeJson(mapValue)));
+            return sorted;
+        }
+        if (value instanceof List<?> rawList) {
+            return rawList.stream().map(DynamicDataService::canonicalizeJson).toList();
+        }
+        return value;
+    }
+
+    private static String sha256(String text) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(text.getBytes(StandardCharsets.UTF_8));
+            StringBuilder builder = new StringBuilder(bytes.length * 2);
+            for (byte b : bytes) {
+                builder.append(String.format("%02x", b));
+            }
+            return builder.toString();
+        } catch (Exception e) {
+            throw new IllegalStateException("SHA-256 不可用", e);
+        }
     }
 
     private static Map<String, Object> merged(Map<String, Object> data, Map<String, Object> pk) {

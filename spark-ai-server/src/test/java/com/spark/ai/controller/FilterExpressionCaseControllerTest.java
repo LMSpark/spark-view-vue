@@ -59,8 +59,8 @@ class FilterExpressionCaseControllerTest {
                                 )
                         ))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.rows[0].id").value(1))
-                .andExpect(jsonPath("$.total").value(1));
+                .andExpect(jsonPath("$.data.rows[0].id").value(1))
+                .andExpect(jsonPath("$.data.total").value(1));
 
         verify(caseService).queryCases(eq("t1"), eq("p1"), any());
     }
@@ -69,9 +69,9 @@ class FilterExpressionCaseControllerTest {
     void query_rejectsNonObjectEnvelope() throws Exception {
         mockMvc.perform(post("/api/tenants/t1/projects/p1/filter-expression-cases/query")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"query\": []}"))
+                .content("{\"query\": []}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("query 必须是对象"));
+                .andExpect(jsonPath("$.error.message").value("query 必须是对象"));
     }
 
     @Test
@@ -99,8 +99,8 @@ class FilterExpressionCaseControllerTest {
                                 "category", "demo"
                         ))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(11))
-                .andExpect(jsonPath("$.amountDelta").value(2));
+                .andExpect(jsonPath("$.data.id").value(11))
+                .andExpect(jsonPath("$.data.amountDelta").value(2));
     }
 
     @Test
@@ -126,7 +126,7 @@ class FilterExpressionCaseControllerTest {
     void delete_returnsOk() throws Exception {
         mockMvc.perform(delete("/api/tenants/t1/projects/p1/filter-expression-cases/7"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ok").value(true));
+                .andExpect(jsonPath("$.data.ok").value(true));
 
         verify(caseService).deleteCase("t1", "p1", 7L);
     }

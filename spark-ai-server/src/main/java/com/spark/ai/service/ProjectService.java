@@ -3,7 +3,11 @@ package com.spark.ai.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.entity.ProjectEntity;
+import com.spark.ai.entity.ProjectMemberEntity;
+import com.spark.ai.repository.ProjectMemberRepository;
 import com.spark.ai.repository.ProjectRepository;
+import com.spark.ai.security.AccessGuardService;
+import com.spark.ai.security.AuthenticatedRequestContext;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +35,22 @@ public class ProjectService {
     public static final String APP_PROJECT_TYPE = "app";
 
     private final ProjectRepository projectRepo;
+    private final ProjectMemberRepository memberRepo;
     private final ProjectNavigationTreeService navigationTreeService;
     private final ObjectMapper objectMapper;
+    private final AccessGuardService accessGuard;
     private Map<String, Object> appNavigationTemplate = Map.of();
 
-    public ProjectService(ProjectRepository projectRepo, ProjectNavigationTreeService navigationTreeService, ObjectMapper objectMapper) {
+    public ProjectService(ProjectRepository projectRepo,
+                          ProjectMemberRepository memberRepo,
+                          ProjectNavigationTreeService navigationTreeService,
+                          ObjectMapper objectMapper,
+                          AccessGuardService accessGuard) {
         this.projectRepo = projectRepo;
+        this.memberRepo = memberRepo;
         this.navigationTreeService = navigationTreeService;
         this.objectMapper = objectMapper;
+        this.accessGuard = accessGuard;
     }
 
     @PostConstruct
@@ -60,6 +72,7 @@ public class ProjectService {
      * 获取租户下所有项目（homepage 排首位）。
      */
     public List<Map<String, Object>> listProjects(String tenantId) {
+        accessGuard.requireTenantUser(tenantId);
         List<ProjectEntity> projects = projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(tenantId);
         List<Map<String, Object>> result = new ArrayList<>();
         for (ProjectEntity p : projects) {
@@ -72,6 +85,7 @@ public class ProjectService {
      * 获取单个项目详情。
      */
     public Map<String, Object> getProject(String tenantId, String projectId) {
+        accessGuard.requireProjectAccess(tenantId, projectId);
         return projectRepo.findByTenantIdAndProjectId(tenantId, projectId)
                 .map(this::toMap)
                 .orElse(null);
@@ -86,6 +100,7 @@ public class ProjectService {
         if (projectRepo.existsByTenantIdAndProjectId(tenantId, projectId)) {
             throw new IllegalArgumentException("项目已存在: " + projectId);
         }
+        AuthenticatedRequestContext ctx = accessGuard.requireTenantUser(tenantId);
 
         ProjectEntity entity = new ProjectEntity();
         entity.setTenantId(tenantId);
@@ -96,6 +111,9 @@ public class ProjectService {
         entity.setDescription(description != null ? description : "");
         entity.setSortOrder(100);
         projectRepo.save(entity);
+        if (ctx != null) {
+            ensureProjectMember(tenantId, projectId, ctx.username(), ctx.isAdmin() ? "owner" : "member");
+        }
 
         // 从 classpath 模板初始化应用默认导航
         initAppNavigation(tenantId, projectId);
@@ -110,6 +128,7 @@ public class ProjectService {
     @Transactional
     public Map<String, Object> updateProject(String tenantId, String projectId,
                                               Map<String, Object> patch) {
+        accessGuard.requireProjectAdmin(tenantId, projectId);
         ProjectEntity entity = projectRepo.findByTenantIdAndProjectId(tenantId, projectId)
                 .orElseThrow(() -> new NoSuchElementException("项目不存在: " + projectId));
 
@@ -128,6 +147,7 @@ public class ProjectService {
      */
     @Transactional
     public void deleteProject(String tenantId, String projectId) {
+        accessGuard.requireProjectAdmin(tenantId, projectId);
         ProjectEntity entity = projectRepo.findByTenantIdAndProjectId(tenantId, projectId)
                 .orElseThrow(() -> new NoSuchElementException("项目不存在: " + projectId));
 
@@ -158,7 +178,24 @@ public class ProjectService {
         homepage.setDescription("企业级开发管理平台 — 创建和管理业务应用");
         homepage.setSortOrder(0);
         projectRepo.save(homepage);
+        ensureProjectMember(tenantId, HOMEPAGE_PROJECT_ID, "admin", "owner");
         log.info("[Project] 自动创建企业管理平台: tenant={}", tenantId);
+    }
+
+    @Transactional
+    public void ensureProjectMember(String tenantId, String projectId, String username, String role) {
+        if (username == null || username.isBlank()) {
+            return;
+        }
+        if (memberRepo.existsByTenantIdAndProjectIdAndUsername(tenantId, projectId, username)) {
+            return;
+        }
+        ProjectMemberEntity member = new ProjectMemberEntity();
+        member.setTenantId(tenantId);
+        member.setProjectId(projectId);
+        member.setUsername(username);
+        member.setRole(role != null && !role.isBlank() ? role : "member");
+        memberRepo.save(member);
     }
 
     /**

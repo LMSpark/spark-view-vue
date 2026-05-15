@@ -24,11 +24,13 @@ public class AuthService {
 
     private final UserRepository userRepo;
     private final JwtUtil jwtUtil;
+    private final ProjectService projectService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public AuthService(UserRepository userRepo, JwtUtil jwtUtil) {
+    public AuthService(UserRepository userRepo, JwtUtil jwtUtil, ProjectService projectService) {
         this.userRepo = userRepo;
         this.jwtUtil = jwtUtil;
+        this.projectService = projectService;
     }
 
     // ── 用户登录 ──────────────────────────────────────────────────────────────
@@ -86,6 +88,7 @@ public class AuthService {
         user.setEmail(email);
         user.setRoles(roles != null ? roles : "user");
         userRepo.save(user);
+        projectService.ensureProjectMember(tenantId, ProjectService.HOMEPAGE_PROJECT_ID, username, "member");
 
         String token = jwtUtil.generateToken(tenantId, username, user.getRoles());
         log.info("[Auth] 注册成功 tenant={} user={}", tenantId, username);
@@ -108,6 +111,7 @@ public class AuthService {
         admin.setDisplayName("管理员");
         admin.setRoles("admin");
         userRepo.save(admin);
+        projectService.ensureProjectMember(tenantId, ProjectService.HOMEPAGE_PROJECT_ID, username, "owner");
         log.info("[Auth] 种子管理员已创建 tenant={} user={}", tenantId, username);
     }
 

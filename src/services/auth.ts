@@ -81,7 +81,9 @@ async function authFetch(url: string, body: Record<string, string>): Promise<Rec
     return await authHttp.post<Record<string, unknown>>(url, body)
   } catch (err) {
     const reqErr = err as RequestError
-    const serverMsg = (reqErr.response as Record<string, unknown> | undefined)?.['message']
+    const response = reqErr.response as Record<string, unknown> | undefined
+    const error = response?.['error'] as Record<string, unknown> | undefined
+    const serverMsg = typeof error?.['message'] === 'string' ? error['message'] : response?.['message']
     throw new Error(typeof serverMsg === 'string' ? serverMsg : `请求失败 (${reqErr.status ?? 0})`)
   }
 }

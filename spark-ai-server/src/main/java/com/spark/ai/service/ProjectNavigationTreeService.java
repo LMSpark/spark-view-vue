@@ -1,8 +1,10 @@
 package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.security.AccessGuardService;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -116,15 +118,28 @@ public class ProjectNavigationTreeService {
 
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
+    private final AccessGuardService accessGuardService;
 
     public ProjectNavigationTreeService(ObjectMapper objectMapper,
                                         JdbcTemplate jdbcTemplate) {
+        this(objectMapper, jdbcTemplate, null);
+    }
+
+    @Autowired
+    public ProjectNavigationTreeService(ObjectMapper objectMapper,
+                                        JdbcTemplate jdbcTemplate,
+                                        AccessGuardService accessGuardService) {
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
+        this.accessGuardService = accessGuardService;
     }
 
     @PostConstruct
     void ensureSchema() {
+        if (isMySql()) {
+            log.info("[Navigation] MySQL profile detected; schema is managed by Flyway");
+            return;
+        }
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS NAVIGATION_NODE_FLAT (
                 NODE_ID         VARCHAR(255)  NOT NULL PRIMARY KEY,
@@ -157,6 +172,15 @@ public class ProjectNavigationTreeService {
         log.info("[Navigation] 表 NAVIGATION_NODE_FLAT 已就绪");
     }
 
+    private boolean isMySql() {
+        try (var connection = jdbcTemplate.getDataSource().getConnection()) {
+            String product = connection.getMetaData().getDatabaseProductName();
+            return product != null && product.toLowerCase().contains("mysql");
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     /** 安全添加列：如果列已存在则忽略。 */
     private void safeAddColumn(String column, String type) {
         try {
@@ -175,6 +199,7 @@ public class ProjectNavigationTreeService {
      * 读取导航配置（完整树）。
      */
     public Map<String, Object> getNavConfig(String tenantId, String projectId) throws IOException {
+        guardProject(tenantId, projectId);
         List<Map<String, Object>> rows = fetchFlatRows(tenantId, projectId);
         Map<String, Object> root = buildRootFromFlatRows(rows);
         if (root != null) {
@@ -189,6 +214,7 @@ public class ProjectNavigationTreeService {
     @Transactional
     public void saveNavConfig(String tenantId, String projectId,
                                Map<String, Object> navRoot) throws IOException {
+        guardProject(tenantId, projectId);
         persistTree(tenantId, projectId, navRoot);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(navRoot);
         log.info("[Navigation] 整树保存 tenant={} project={} ({} bytes)", tenantId, projectId, json.length());
@@ -210,6 +236,7 @@ public class ProjectNavigationTreeService {
                                         String parentId,
                                         Map<String, Object> node,
                                         int index) throws IOException {
+        guardProject(tenantId, projectId);
         Map<String, Object> sanitized = sanitizeNode(node);
         String newId = asTrimmedString(sanitized.get("id"));
         if (newId.isBlank()) {
@@ -243,6 +270,7 @@ public class ProjectNavigationTreeService {
     public Map<String, Object> updateNode(String tenantId, String projectId,
                                            String id,
                                            Map<String, Object> patch) throws IOException {
+        guardProject(tenantId, projectId);
         if (isSystemRootDirectory(id)) {
             throw new IllegalArgumentException("系统目录不可修改目录属性，仅可编辑子项: " + id);
         }
@@ -279,6 +307,7 @@ public class ProjectNavigationTreeService {
     @Transactional
     public Map<String, Object> deleteNode(String tenantId, String projectId,
                                            String id) throws IOException {
+        guardProject(tenantId, projectId);
         if (isSystemRootDirectory(id)) {
             throw new IllegalArgumentException("系统目录不可删除: " + id);
         }
@@ -295,6 +324,7 @@ public class ProjectNavigationTreeService {
     public Map<String, Object> moveNode(String tenantId, String projectId,
                                          String id, String newParentId,
                                          int index) throws IOException {
+        guardProject(tenantId, projectId);
         if (isSystemRootDirectory(id)) {
             throw new IllegalArgumentException("系统目录不可修改层级: " + id);
         }
@@ -481,6 +511,7 @@ public class ProjectNavigationTreeService {
     }
 
     public List<Map<String, Object>> listRawFlatRows(String tenantId, String projectId) {
+        guardProject(tenantId, projectId);
         return fetchFlatRows(tenantId, projectId);
     }
 
@@ -542,6 +573,12 @@ public class ProjectNavigationTreeService {
     // ─────────────────────────────────────────────────────────────────────────
     // 私有工具方法
     // ─────────────────────────────────────────────────────────────────────────
+
+    private void guardProject(String tenantId, String projectId) {
+        if (accessGuardService != null) {
+            accessGuardService.requireProjectAccess(tenantId, projectId);
+        }
+    }
 
     private Map<String, Object> loadOrInit(String tenantId, String projectId) throws IOException {
         Map<String, Object> root = getNavConfig(tenantId, projectId);

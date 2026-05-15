@@ -89,10 +89,11 @@ export class PageConfigEditWorkspace {
     }
   }
 
-  async ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
+  async ensureActivePageFilesLoaded(options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
     const pageId = this.activePageId
     if (!pageId) return
     const forceReload = options?.forceReload === true
+    const allowMissingAsEmpty = options?.allowMissingAsEmpty === true
 
     if (this.activePageFilesLoadPromise && this.activePageFilesLoadPageId === pageId) {
       return this.activePageFilesLoadPromise
@@ -126,7 +127,7 @@ export class PageConfigEditWorkspace {
         loadedSnapshots = await Promise.all(
           PAGE_FILE_NAMES.map(async (entry) => [
             entry,
-            await this.fetchRemotePageFileContent(pageId, entry, { forceReload }),
+            await this.fetchRemotePageFileContent(pageId, entry, { forceReload, allowMissingAsEmpty }),
           ] as const),
         )
       } catch (error) {
@@ -159,7 +160,7 @@ export class PageConfigEditWorkspace {
     return loadPromise
   }
 
-  async loadPageFile(_name: PageFileName, options?: { forceReload?: boolean }): Promise<void> {
+  async loadPageFile(_name: PageFileName, options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
     await this.ensureActivePageFilesLoaded(options)
   }
 
@@ -215,12 +216,13 @@ export class PageConfigEditWorkspace {
   private async fetchRemotePageFileContent(
     pageId: string,
     name: PageFileName,
-    options?: { forceReload?: boolean },
+    options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean },
   ): Promise<string> {
     const result = await this.getConfigLoader().loadPageFileContent(pageId, name, {
       forceReload: options?.forceReload === true,
     })
     if (result.success) return result.data ?? ''
+    if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) return ''
     const detail = result.error ?? result.reason ?? 'unknown'
     throw new Error(`读取页面文件失败: ${pageId}/${name} (${detail})`)
   }

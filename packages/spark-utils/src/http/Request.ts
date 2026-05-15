@@ -30,10 +30,12 @@ export class Request extends HttpClientBase {
     const base = err instanceof Error ? err : new Error(String(err))
 
     if (axios.isAxiosError(err)) {
-      return this.buildRequestError(base.message, err.config ? this.fromAxios(err.config) : (config ?? { url: '' }), {
+      const responseBody: unknown = err.response?.data
+      const message = this.extractApiEnvelopeErrorMessage(responseBody) ?? base.message
+      return this.buildRequestError(message, err.config ? this.fromAxios(err.config) : (config ?? { url: '' }), {
         code: err.code ?? 'ERR_NETWORK',
         status: err.response?.status ?? 0,
-        response: err.response?.data,
+        response: responseBody,
       })
     }
 

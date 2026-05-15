@@ -1,5 +1,6 @@
 package com.spark.ai.controller;
 
+import com.spark.ai.api.ApiResponseFactory;
 import com.spark.ai.service.AiSessionService;
 import com.spark.ai.service.AiSessionService.AppendMessageResult;
 import com.spark.ai.service.AiSessionService.TurnResult;
@@ -407,15 +408,12 @@ public class AiSessionController {
 
     private static void sendSseErrorAndComplete(SseEmitter emitter, String code, String message) {
         try {
-            emitter.send(SseEmitter.event().name("error").data(Map.of(
-                    "error", Map.of(
-                            "severity", "error",
-                            "category", "request-validation",
-                            "code", code,
-                            "message", message
-                    ),
-                    "protocolVersion", PROTOCOL_VERSION_V3
-            )));
+            emitter.send(SseEmitter.event().name("error").data(ApiResponseFactory.error(
+                    HttpStatus.BAD_REQUEST,
+                    code,
+                    message,
+                    Map.of("protocolVersion", PROTOCOL_VERSION_V3),
+                    ApiResponseFactory.currentRequestId())));
             emitter.complete();
         } catch (IOException ignored) {}
     }

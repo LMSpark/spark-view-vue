@@ -2,7 +2,9 @@ package com.spark.ai.service;
 
 import com.spark.ai.crud.FilterExpressionSqlBuilder;
 import com.spark.ai.crud.FilterExpressionSqlBuilder.SqlFragment;
+import com.spark.ai.security.AccessGuardService;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -115,20 +117,40 @@ public class FilterExpressionCaseService {
         """;
 
     private final JdbcTemplate jdbcTemplate;
+    private final AccessGuardService accessGuardService;
     private final FilterExpressionSqlBuilder filterExpressionSqlBuilder = new FilterExpressionSqlBuilder(QUERY_FIELD_SQL);
 
     public FilterExpressionCaseService(JdbcTemplate jdbcTemplate) {
+        this(jdbcTemplate, null);
+    }
+
+    @Autowired
+    public FilterExpressionCaseService(JdbcTemplate jdbcTemplate, AccessGuardService accessGuardService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.accessGuardService = accessGuardService;
     }
 
     @PostConstruct
     void ensureSchema() {
+        if (isMySql()) {
+            return;
+        }
         jdbcTemplate.execute(CREATE_TABLE_SQL);
         jdbcTemplate.execute(CREATE_SCOPE_INDEX_SQL);
     }
 
+    private boolean isMySql() {
+        try (var connection = jdbcTemplate.getDataSource().getConnection()) {
+            String product = connection.getMetaData().getDatabaseProductName();
+            return product != null && product.toLowerCase().contains("mysql");
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     @Transactional
     public Map<String, Object> createCase(String tenantId, String projectId, Map<String, Object> body) {
+        guardProject(tenantId, projectId);
         Map<String, Object> normalized = normalizePayload(body, true);
         Instant now = Instant.now();
 
@@ -156,6 +178,7 @@ public class FilterExpressionCaseService {
     }
 
     public Map<String, Object> getCase(String tenantId, String projectId, long id) {
+        guardProject(tenantId, projectId);
         List<Map<String, Object>> rows = jdbcTemplate.query(String.format(SELECT_ONE_SQL, ROW_PROJECTION_SQL, BASE_FROM_SQL),
                 (rs, rowNum) -> toRowMap(
                         rs.getLong("ID"),
@@ -175,6 +198,7 @@ public class FilterExpressionCaseService {
 
     @Transactional
     public Map<String, Object> updateCase(String tenantId, String projectId, long id, Map<String, Object> patch) {
+        guardProject(tenantId, projectId);
         Map<String, Object> existing = requireCase(tenantId, projectId, id);
         Map<String, Object> merged = new LinkedHashMap<>();
         merged.put("title", patch.containsKey("title") ? patch.get("title") : existing.get("title"));
@@ -205,6 +229,7 @@ public class FilterExpressionCaseService {
 
     @Transactional
     public void deleteCase(String tenantId, String projectId, long id) {
+        guardProject(tenantId, projectId);
         int deleted = jdbcTemplate.update(DELETE_SQL, tenantId, projectId, id);
         if (deleted == 0) {
             throw new NoSuchElementException("过滤用例不存在: " + id);
@@ -212,6 +237,7 @@ public class FilterExpressionCaseService {
     }
 
     public Map<String, Object> queryCases(String tenantId, String projectId, Map<String, Object> query) {
+        guardProject(tenantId, projectId);
         int page = readPositiveInt(query.get("page"), 1, "page");
         int pageSize = readPositiveInt(query.get("pageSize"), 20, "pageSize");
         String sort = query.get("sort") instanceof String sortExpr ? sortExpr.trim() : "";
@@ -271,6 +297,12 @@ public class FilterExpressionCaseService {
             throw new NoSuchElementException("过滤用例不存在: " + id);
         }
         return row;
+    }
+
+    private void guardProject(String tenantId, String projectId) {
+        if (accessGuardService != null) {
+            accessGuardService.requireProjectAccess(tenantId, projectId);
+        }
     }
 
     private Map<String, Object> normalizePayload(Map<String, Object> body, boolean create) {

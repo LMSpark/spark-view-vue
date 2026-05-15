@@ -9,6 +9,7 @@ import { useSparkConsume } from '../../internal'
 import { columnToFormRules } from '../columnFormRules'
 import type { FormItemRule } from '../columnFormRules'
 import { useActiveFieldRow } from './useActiveFieldRow'
+import { writeDataViewEditingValue } from './dataViewEditing'
 
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
@@ -148,6 +149,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   function syncValue(value: TValue): void {
     const row = activeRow.value
     if (row !== null && fieldName.value) {
+      if (writeDataViewEditingValue(dataSource, row, fieldName.value, value)) return
       row[fieldName.value] = value
     }
   }

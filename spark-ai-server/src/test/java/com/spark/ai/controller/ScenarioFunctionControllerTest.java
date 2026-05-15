@@ -60,7 +60,7 @@ class ScenarioFunctionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("INVALID_PROTOCOL_VERSION"))
                 .andExpect(jsonPath("$.error.category").value("request-validation"))
-                .andExpect(jsonPath("$.protocolVersion").value(3));
+                .andExpect(jsonPath("$.error.details.protocolVersion").value(3));
 
         verify(filterExpressionCaseService, never()).queryCases(anyString(), anyString(), any());
     }
@@ -105,7 +105,7 @@ class ScenarioFunctionControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.code").value("UNKNOWN_FUNCTION"))
                 .andExpect(jsonPath("$.error.category").value("scenario-function"))
-                .andExpect(jsonPath("$.functionName").value("missing.query"));
+                .andExpect(jsonPath("$.error.details.functionName").value("missing.query"));
 
         verify(filterExpressionCaseService, never()).queryCases(anyString(), anyString(), any());
     }
@@ -151,15 +151,15 @@ class ScenarioFunctionControllerTest {
 
         mockMvc.perform(post("/api/ai/scenario-functions/filterExpressionCases.query")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.callId").value("call-query"))
-                .andExpect(jsonPath("$.functionName").value("filterExpressionCases.query"))
-                .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.status").value("executed"))
-                .andExpect(jsonPath("$.executionHost").value("backend"))
-                .andExpect(jsonPath("$.result.total").value(1))
-                .andExpect(jsonPath("$.result.rows[0].title").value("alpha"));
+                .andExpect(jsonPath("$.data.callId").value("call-query"))
+                .andExpect(jsonPath("$.data.functionName").value("filterExpressionCases.query"))
+                .andExpect(jsonPath("$.data.ok").value(true))
+                .andExpect(jsonPath("$.data.status").value("executed"))
+                .andExpect(jsonPath("$.data.executionHost").value("backend"))
+                .andExpect(jsonPath("$.data.result.total").value(1))
+                .andExpect(jsonPath("$.data.result.rows[0].title").value("alpha"));
     }
 
     @Test
@@ -178,10 +178,10 @@ class ScenarioFunctionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .header("X-Tenant-Id", "tenant-header")
-                        .header("X-Project-Id", "project-header"))
+                .header("X-Project-Id", "project-header"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.result.page").value(2));
+                .andExpect(jsonPath("$.data.ok").value(true))
+                .andExpect(jsonPath("$.data.result.page").value(2));
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, Object>> queryCaptor = ArgumentCaptor.forClass(Map.class);
@@ -209,12 +209,12 @@ class ScenarioFunctionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .header("X-Tenant-Id", "tenant-1")
-                        .header("X-Project-Id", "project-1"))
+                .header("X-Project-Id", "project-1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.callId").value("call-failed"))
-                .andExpect(jsonPath("$.ok").value(false))
-                .andExpect(jsonPath("$.status").value("failed"))
-                .andExpect(jsonPath("$.executionHost").value("backend"))
-                .andExpect(jsonPath("$.error").value("过滤值表达式引用了不存在的字段 \"missingField\""));
+                .andExpect(jsonPath("$.data.callId").value("call-failed"))
+                .andExpect(jsonPath("$.data.ok").value(false))
+                .andExpect(jsonPath("$.data.status").value("failed"))
+                .andExpect(jsonPath("$.data.executionHost").value("backend"))
+                .andExpect(jsonPath("$.data.error").value("过滤值表达式引用了不存在的字段 \"missingField\""));
     }
 }

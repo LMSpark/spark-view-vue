@@ -155,6 +155,19 @@ public class DynamicDataController {
         }
     }
 
+    @PostMapping("/transactions")
+    public ResponseEntity<?> executeTransaction(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @RequestBody Map<String, Object> body
+    ) {
+        try {
+            return ResponseEntity.ok(dataService.executeTransaction(tenantId, projectId, body));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
+        }
+    }
+
     @PostMapping("/{tableName}/tree/children")
     public ResponseEntity<?> treeChildren(
             @PathVariable String tenantId,

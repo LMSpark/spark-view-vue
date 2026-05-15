@@ -56,13 +56,28 @@ export interface HttpResponse<T = unknown> {
   headers: Record<string, string>
 }
 
-/** 标准业务 API 响应（{ code, message, data } 格式） */
+/** 旧版标准业务 API 响应（{ code, message, data } 格式） */
 export interface ApiResponse<T = unknown> {
   code: number
   message: string
   data: T
   timestamp?: string
   traceId?: string
+}
+
+/** SPARK AI Server 统一 API envelope */
+export interface ApiEnvelope<T = unknown> {
+  ok: boolean
+  data: T | null
+  error: ApiEnvelopeError | null
+  requestId: string
+}
+
+export interface ApiEnvelopeError {
+  code: string
+  message: string
+  category: string
+  details?: Record<string, unknown>
 }
 
 // ==================== 错误 ====================

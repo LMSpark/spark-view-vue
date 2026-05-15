@@ -22,7 +22,7 @@
 import { Logger } from '../logger'
 import type {
   RequestConfig, HttpResponse,
-  RequestError, RequestInterceptor, ResponseInterceptor, HttpClient,
+  RequestError, RequestInterceptor, ResponseInterceptor, HttpClient, ApiEnvelope,
 } from './types'
 
 // ==================== 常量（单一来源） ====================
@@ -128,12 +128,13 @@ export abstract class HttpClientBase implements HttpClient {
         const cfg = await this.applyRequestInterceptors(merged)
         const res = await this.executeRequest<T>(cfg)
         const processed = await this.applyResponseInterceptors(res)
+        const unwrapped = this.unwrapApiEnvelopeResponse(processed, cfg)
 
         // 写入缓存
         if (useCache && method === 'GET' && (merged.cache ?? false)) {
-          this.setCache(merged, processed.data)
+          this.setCache(merged, unwrapped.data)
         }
-        return processed
+        return unwrapped
       } catch (err) {
         const normalized = this.isRequestError(err) ? err : this.normalizeAdapterError(err, merged)
         const transformed = await this.applyResponseErrorInterceptors(normalized)
@@ -307,6 +308,44 @@ export abstract class HttpClientBase implements HttpClient {
     if (opts.code !== undefined) result.code = opts.code
     if (opts.response !== undefined) result.response = opts.response
     return result
+  }
+
+  protected extractApiEnvelopeErrorMessage(body: unknown): string | undefined {
+    if (!this.isApiEnvelope(body)) return undefined
+    const message = body.error?.message
+    if (typeof message === 'string' && message.trim() !== '') {
+      return message.trim()
+    }
+    const code = body.error?.code
+    return typeof code === 'string' && code.trim() !== '' ? code.trim() : undefined
+  }
+
+  private unwrapApiEnvelopeResponse<T>(response: HttpResponse<T>, config: RequestConfig): HttpResponse<T> {
+    if (config.meta?.['rawEnvelope'] === true || !this.isApiEnvelope(response.data)) {
+      return response
+    }
+    const envelope = response.data
+    if (envelope.ok === true) {
+      return { ...response, data: envelope.data as T }
+    }
+    throw this.buildRequestError(
+      this.extractApiEnvelopeErrorMessage(envelope) ?? 'API request failed',
+      config,
+      {
+        status: response.status,
+        response: envelope,
+        ...(envelope.error?.code !== undefined ? { code: envelope.error.code } : {}),
+      },
+    )
+  }
+
+  private isApiEnvelope(value: unknown): value is ApiEnvelope {
+    if (value === null || typeof value !== 'object') return false
+    const record = value as Record<string, unknown>
+    return typeof record['ok'] === 'boolean'
+      && Object.prototype.hasOwnProperty.call(record, 'data')
+      && Object.prototype.hasOwnProperty.call(record, 'error')
+      && typeof record['requestId'] === 'string'
   }
 
   private safePreview(value: unknown): string {

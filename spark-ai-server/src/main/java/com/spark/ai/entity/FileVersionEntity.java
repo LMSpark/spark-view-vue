@@ -46,6 +46,30 @@ public class FileVersionEntity {
     @Column(name = "modified_by", length = 128)
     private String modifiedBy;
 
+    @Column(length = 64)
+    private String source;
+
+    @Column(name = "commit_message", length = 1024)
+    private String commitMessage;
+
+    @Column(name = "approval_status", length = 64)
+    private String approvalStatus;
+
+    @Column(name = "ai_session_id", length = 128)
+    private String aiSessionId;
+
+    @Column(name = "ai_turn_id", length = 128)
+    private String aiTurnId;
+
+    @Column(name = "request_id", length = 128)
+    private String requestId;
+
+    @Column(name = "content_hash", length = 128)
+    private String contentHash;
+
+    @Column(name = "storage_ref", length = 1024)
+    private String storageRef;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -79,6 +103,30 @@ public class FileVersionEntity {
 
     public String getModifiedBy() { return modifiedBy; }
     public void setModifiedBy(String modifiedBy) { this.modifiedBy = modifiedBy; }
+
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+
+    public String getCommitMessage() { return commitMessage; }
+    public void setCommitMessage(String commitMessage) { this.commitMessage = commitMessage; }
+
+    public String getApprovalStatus() { return approvalStatus; }
+    public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }
+
+    public String getAiSessionId() { return aiSessionId; }
+    public void setAiSessionId(String aiSessionId) { this.aiSessionId = aiSessionId; }
+
+    public String getAiTurnId() { return aiTurnId; }
+    public void setAiTurnId(String aiTurnId) { this.aiTurnId = aiTurnId; }
+
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+
+    public String getContentHash() { return contentHash; }
+    public void setContentHash(String contentHash) { this.contentHash = contentHash; }
+
+    public String getStorageRef() { return storageRef; }
+    public void setStorageRef(String storageRef) { this.storageRef = storageRef; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

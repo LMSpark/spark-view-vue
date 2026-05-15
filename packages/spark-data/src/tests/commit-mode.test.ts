@@ -48,6 +48,43 @@ function createImmediateView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }]) {
   return { ds, view }
 }
 
+function createMasterDetailStagedDataSet() {
+  const ds = SparkData.createDataSet({
+    dataSetName: 'MasterDetailDS',
+    tableRelations: [
+      { parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' },
+    ],
+    tables: {
+      Orders: {
+        tableName: 'Orders',
+        columns: [
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'name', type: 'string' },
+        ],
+        views: {
+          default: { rows: [{ id: 1, name: 'Order A' }], commitMode: 'staged' },
+        },
+      },
+      Items: {
+        tableName: 'Items',
+        columns: [
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'orderId', type: 'number' },
+          { name: 'name', type: 'string' },
+        ],
+        views: {
+          default: { rows: [{ id: 10, orderId: 1, name: 'Item A' }], commitMode: 'staged' },
+        },
+      },
+    },
+  })
+  return {
+    ds,
+    orders: ds.getView('Orders', 'default')!,
+    items: ds.getView('Items', 'default')!,
+  }
+}
+
 function setupMockApi(view: DataView) {
   const mockCrud = {
     create: vi.fn(async (row: Partial<IDataRow>) => ({
@@ -170,6 +207,78 @@ describe('commitMode=staged: dirty tracking lifecycle', () => {
     // Dirty tracking active
     expect(view.dirtyTracking.isDirty(1)).toBe(true)
     expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+  })
+
+  it('editing value stays in editingRows until applied, then enters staged dirty tracking', async () => {
+    const { view } = createStagedView()
+    setupMockApi(view)
+
+    const editingRow = view.updateEditingValue(1, 'name', 'Alice Draft')
+    expect(editingRow['name']).toBe('Alice Draft')
+    expect(view.rows.find(r => r['id'] === 1)?.['name']).toBe('Alice')
+    expect(view.editingRows).toHaveLength(1)
+    expect(view.getEditingPatch(1)).toEqual({ name: 'Alice Draft' })
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(false)
+
+    const applyResult = await view.applyEditingRows()
+    expect(applyResult.success).toBe(true)
+    expect(applyResult.data).toMatchObject({ appliedCount: 1, failedCount: 0 })
+    expect(view.editingRows).toHaveLength(0)
+    expect(view.rows.find(r => r['id'] === 1)?.['name']).toBe('Alice Draft')
+    expect(view.dirtyTracking.isDirty(1)).toBe(true)
+  })
+
+  it('editing value can be reverted or discarded without touching rows', () => {
+    const { view } = createStagedView()
+
+    view.updateEditingValue(1, 'name', 'Alice Draft')
+    expect(view.hasEditingChanges(1)).toBe(true)
+
+    view.updateEditingValue(1, 'name', 'Alice')
+    expect(view.hasEditingChanges(1)).toBe(false)
+    expect(view.editingRows).toHaveLength(0)
+    expect(view.rows.find(r => r['id'] === 1)?.['name']).toBe('Alice')
+
+    view.updateEditingValue(2, 'name', 'Bob Draft')
+    expect(view.discardEditingRows()).toBe(1)
+    expect(view.hasEditingChanges()).toBe(false)
+    expect(view.rows.find(r => r['id'] === 2)?.['name']).toBe('Bob')
+  })
+
+  it('DataSet.saveChanges applies editing rows and saves master table before detail table', async () => {
+    const { ds, orders, items } = createMasterDetailStagedDataSet()
+    const calls: string[] = []
+    const orderApi = setupMockApi(orders)
+    const itemApi = setupMockApi(items)
+    orderApi.update.mockImplementation(async (_pk: Record<string, unknown>, data: Partial<IDataRow>) => {
+      calls.push('Orders')
+      return { success: true, data: { ...data, _server: true } }
+    })
+    itemApi.update.mockImplementation(async (_pk: Record<string, unknown>, data: Partial<IDataRow>) => {
+      calls.push('Items')
+      return { success: true, data: { ...data, _server: true } }
+    })
+
+    orders.updateEditingValue(1, 'name', 'Order Draft')
+    items.updateEditingValue(10, 'name', 'Item Draft')
+
+    const result = await ds.saveChanges()
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({
+      viewCount: 2,
+      appliedEditingRows: 2,
+      failedEditingRows: 0,
+      savedCount: 2,
+      failedCount: 0,
+    })
+    expect(calls).toEqual(['Orders', 'Items'])
+    expect(orders.getEditingPatch(1)).toBeUndefined()
+    expect(items.getEditingPatch(10)).toBeUndefined()
+    expect(orders.rows[0]?.['name']).toBe('Order Draft')
+    expect(items.rows[0]?.['name']).toBe('Item Draft')
+    expect(orders.dirtyTracking.hasPendingChanges()).toBe(false)
+    expect(items.dirtyTracking.hasPendingChanges()).toBe(false)
   })
 
   it('removeRow in staged mode tracks pending-delete (no remote call)', async () => {

@@ -1,0 +1,233 @@
+[
+    {
+        "type": "div",
+        "id": "tx-editing-rows-root",
+        "props": {
+            "class": "tx-test-page"
+        },
+        "children": [
+            {
+                "type": "h1",
+                "id": "tx-editing-rows-title",
+                "props": {},
+                "children": [
+                    "事务验证 1：编辑态与 DataSet staged 提交"
+                ]
+            },
+            {
+                "type": "el-alert",
+                "id": "tx-editing-rows-alert",
+                "props": {
+                    "type": "info",
+                    "closable": false,
+                    "showIcon": true
+                },
+                "children": [
+                    "先写入 DataView editingRows，再由 DataSet.saveChanges() 一次应用主从表 staged 变更。"
+                ]
+            },
+            {
+                "type": "div",
+                "id": "tx-editing-rows-toolbar",
+                "props": {
+                    "class": "tx-test-toolbar"
+                },
+                "children": [
+                    {
+                        "type": "el-button",
+                        "id": "btn-mark-drafts",
+                        "props": {
+                            "type": "primary",
+                            "click": "markDrafts"
+                        },
+                        "children": [
+                            "写入编辑态"
+                        ]
+                    },
+                    {
+                        "type": "el-button",
+                        "id": "btn-apply-drafts",
+                        "props": {
+                            "type": "success",
+                            "click": "applyDrafts"
+                        },
+                        "children": [
+                            "应用并保存"
+                        ]
+                    },
+                    {
+                        "type": "el-button",
+                        "id": "btn-discard-drafts",
+                        "props": {
+                            "click": "discardDrafts"
+                        },
+                        "children": [
+                            "丢弃编辑态"
+                        ]
+                    },
+                    {
+                        "type": "el-button",
+                        "id": "btn-editing-summary",
+                        "props": {
+                            "click": "showEditingSummary"
+                        },
+                        "children": [
+                            "查看状态"
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "div",
+                "id": "tx-editing-rows-grid",
+                "props": {
+                    "class": "tx-test-grid"
+                },
+                "children": [
+                    {
+                        "type": "section",
+                        "id": "tx-orders-section",
+                        "props": {},
+                        "children": [
+                            {
+                                "type": "h2",
+                                "id": "tx-orders-heading",
+                                "props": {},
+                                "children": [
+                                    "订单"
+                                ]
+                            },
+                            {
+                                "type": "r-table",
+                                "id": "tx-orders-table",
+                                "props": {
+                                    "viewKey": "TxOrders@default",
+                                    "border": true,
+                                    "stripe": true,
+                                    "highlightCurrentRow": true
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-orders-id",
+                                        "props": {
+                                            "field": "id",
+                                            "label": "ID",
+                                            "width": 80
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-orders-no",
+                                        "props": {
+                                            "field": "orderNo",
+                                            "label": "订单号",
+                                            "width": 140
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-orders-owner",
+                                        "props": {
+                                            "field": "owner",
+                                            "label": "负责人",
+                                            "width": 120
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-orders-status",
+                                        "props": {
+                                            "field": "status",
+                                            "label": "状态"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "section",
+                        "id": "tx-items-section",
+                        "props": {},
+                        "children": [
+                            {
+                                "type": "h2",
+                                "id": "tx-items-heading",
+                                "props": {},
+                                "children": [
+                                    "订单明细"
+                                ]
+                            },
+                            {
+                                "type": "r-table",
+                                "id": "tx-items-table",
+                                "props": {
+                                    "viewKey": "TxItems@default",
+                                    "border": true,
+                                    "stripe": true,
+                                    "highlightCurrentRow": true
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-items-id",
+                                        "props": {
+                                            "field": "id",
+                                            "label": "ID",
+                                            "width": 80
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-items-order",
+                                        "props": {
+                                            "field": "orderId",
+                                            "label": "订单ID",
+                                            "width": 100
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-items-sku",
+                                        "props": {
+                                            "field": "sku",
+                                            "label": "SKU",
+                                            "width": 120
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-items-qty",
+                                        "props": {
+                                            "field": "quantity",
+                                            "label": "数量",
+                                            "width": 100
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "id": "tx-items-status",
+                                        "props": {
+                                            "field": "status",
+                                            "label": "状态"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

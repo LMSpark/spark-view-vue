@@ -40,9 +40,9 @@ class NavigationControllerTest {
 
         mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.childPlacement").value("header"))
-                .andExpect(jsonPath("$.children").isArray())
-                .andExpect(jsonPath("$.children").isEmpty());
+                .andExpect(jsonPath("$.data.childPlacement").value("header"))
+                .andExpect(jsonPath("$.data.children").isArray())
+                .andExpect(jsonPath("$.data.children").isEmpty());
     }
 
     @Test
@@ -57,8 +57,8 @@ class NavigationControllerTest {
 
         mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.childPlacement").value("header"))
-                .andExpect(jsonPath("$.children[0].id").value("home"));
+                .andExpect(jsonPath("$.data.childPlacement").value("header"))
+                .andExpect(jsonPath("$.data.children[0].id").value("home"));
     }
 
     @Test
@@ -72,7 +72,7 @@ class NavigationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(nav)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+                .andExpect(jsonPath("$.data.success").value(true));
 
         verify(navigationTreeService).saveNavConfig(eq("t1"), eq("p1"), any());
     }
@@ -81,7 +81,7 @@ class NavigationControllerTest {
     void saveNavConfig_rejectsMissingChildren() throws Exception {
         mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"childPlacement\":\"header\"}"))
+                .content("{\"childPlacement\":\"header\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").exists());
     }
@@ -98,8 +98,8 @@ class NavigationControllerTest {
 
         mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation/nodes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("home"))
-                .andExpect(jsonPath("$[1].hasChildren").value(true));
+                .andExpect(jsonPath("$.data[0].id").value("home"))
+                .andExpect(jsonPath("$.data[1].hasChildren").value(true));
     }
 
         @Test
@@ -121,7 +121,7 @@ class NavigationControllerTest {
                 mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation/nodes")
                                 .param("treeMode", "nested"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$[0].id").value("home"));
+                        .andExpect(jsonPath("$.data[0].id").value("home"));
             }
 
             @Test
@@ -133,7 +133,7 @@ class NavigationControllerTest {
                                 .param("parentId", "root")
                                 .param("limit", "10"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$[0].parentId").value("root"));
+                        .andExpect(jsonPath("$.data[0].parentId").value("root"));
             }
 
             @Test
@@ -143,16 +143,16 @@ class NavigationControllerTest {
 
                 mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation/nodes/path/leaf"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.pathIds[0]").value("root"));
+                        .andExpect(jsonPath("$.data.pathIds[0]").value("root"));
             }
 
             @Test
             void getNodeSubtree_requiresToId() throws Exception {
                 mockMvc.perform(post("/api/tenants/t1/projects/p1/navigation/nodes/subtree")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{}"))
+                        .content("{}"))
                         .andExpect(status().isBadRequest())
-                        .andExpect(jsonPath("$.error").value("缺少 toId 字段"));
+                        .andExpect(jsonPath("$.error.message").value("缺少 toId 字段"));
             }
 
             @Test
@@ -168,7 +168,7 @@ class NavigationControllerTest {
                                 .param("limit", "5")
                                 .param("treeMode", "nested"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$[0].node.id").value("leaf"));
+                        .andExpect(jsonPath("$.data[0].node.id").value("leaf"));
             }
 
             @Test
@@ -181,7 +181,7 @@ class NavigationControllerTest {
                                 .param("limit", "5")
                                 .param("treeMode", "flat"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$[0].id").value("home"));
+                        .andExpect(jsonPath("$.data[0].id").value("home"));
             }
 
         @Test
@@ -189,7 +189,7 @@ class NavigationControllerTest {
                 mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation/nodes")
                                                 .param("treeMode", "weird"))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.error").value("非法 treeMode: weird"));
+                                .andExpect(jsonPath("$.error.message").value("非法 treeMode: weird"));
 
                 verify(navigationTreeService, never()).listNodes(anyString(), anyString());
         }

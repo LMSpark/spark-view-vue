@@ -81,7 +81,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       type: 'array',
       items: { $ref: '#/$defs/tableRelation' },
     }),
-    viewDependencies: withMeta('视图依赖集合', '描述父视图状态变化如何驱动子视图联动。', {
+    viewDependencies: withMeta('视图依赖集合', '描述父表 default 视图状态变化如何驱动子表 default 视图联动。', {
       type: 'array',
       items: { $ref: '#/$defs/viewDependency' },
     }),
@@ -226,7 +226,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
       required: ['parentTable', 'childTable'],
       additionalProperties: false,
     }),
-    viewDependency: withMeta('视图依赖', '描述父视图状态变化如何驱动子视图联动。', {
+    viewDependency: withMeta('视图依赖', '描述父表 default 视图状态变化如何驱动子表 default 视图联动。', {
       type: 'object',
       properties: {
         parentTable: { type: 'string' },
