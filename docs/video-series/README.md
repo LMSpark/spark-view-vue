@@ -27,8 +27,6 @@
 | 11 | DataKey：组件通往数据空间的那把钥匙 | [long-script](11-datakey-and-cascade-loading/long-script.md) | [short-script](11-datakey-and-cascade-loading/short-script.md) | [storyboard](11-datakey-and-cascade-loading/storyboard.md) |
 | 12 | CRUD 之外：聚合、计算列与树数据的工程化收口 | [long-script](12-crud-aggregate-computed-tree/long-script.md) | [short-script](12-crud-aggregate-computed-tree/short-script.md) | [storyboard](12-crud-aggregate-computed-tree/storyboard.md) |
 | 13 | 权限别演戏：前端只是装饰，后端鉴权才是边界 | [long-script](13-permission-boundary-frontend-decoration/long-script.md) | [short-script](13-permission-boundary-frontend-decoration/short-script.md) | [storyboard](13-permission-boundary-frontend-decoration/storyboard.md) |
-| 14 | 给 AI 上护栏：SPARK_VIEW 的通用受约束智能体架构 | [long-script](14-constrained-ai-architecture/long-script.md) | [short-script](14-constrained-ai-architecture/short-script.md) | [storyboard](14-constrained-ai-architecture/storyboard.md) |
-| 15 | 业务 AI 落地样例：以 Page Design 为第一块试金石 | [long-script](15-page-design-ai-implementation-path/long-script.md) | [short-script](15-page-design-ai-implementation-path/short-script.md) | [storyboard](15-page-design-ai-implementation-path/storyboard.md) |
 | 16 | DevSystem：把运行时框架推进生产车间 | [long-script](16-devsystem-production-toolchain/long-script.md) | [short-script](16-devsystem-production-toolchain/short-script.md) | [storyboard](16-devsystem-production-toolchain/storyboard.md) |
 
 ## 制作状态

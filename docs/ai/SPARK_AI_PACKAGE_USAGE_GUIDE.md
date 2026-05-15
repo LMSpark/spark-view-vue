@@ -2,6 +2,8 @@
 
 > 本文基于 `@spark-view/spark-ai`、前端 `AppAiHost`、`spark-ai-server` 和 PageDesign 编辑链路的源码梳理而成。目标是说明：核心层的智能边界在哪里，它和 AI HOST 通用宿主如何协作，以及 PageDesign 业务服务层如何把 AI 工具调用落到真实页面编辑。
 
+> 文档 SSOT：本文件是当前仓库 AI core / AI 通用宿主 / AI 业务服务关系的唯一维护入口。历史 AI 设计稿、提示词散文档、包内 AI README 和早期 DM 不再单独维护；若需要更新 AI 架构或使用规则，直接修改本文。
+
 ## 1. 一张图看整体关系
 
 ```mermaid
@@ -471,7 +473,7 @@ flowchart TD
 1. 修改前先确认真实节点 ID，不要凭组件名称猜 ID。
 2. 新增组件前先 `queryPayloads`，再对目标组件 `guidePayload`。
 3. `guidePayload` 返回的 schema 是组件配置依据，尤其是必填 props、children 约束和事件绑定。
-4. 表级容器用 `viewKey` 定位 DataView，值级展示才用完整 `dataKey`，不要再生成 `Table@rows` 旧写法。
+4. 表级容器用 `viewKey` 定位 DataView，展示组件读取 DataView 输出时才用完整 `dataKey`，不要再生成 `Table@rows` 旧写法。
 5. 数据容器下的任何组件、任何 prop 都可以用 `$[fieldName]` 消费当前 `DATA_ROW` 字段；例如 `r-tag.content="$[age] 岁"`、`r-tag.tagType="$[ageBadgeType]"`。纯占位符保留原始类型，混合文本会字符串化。
 6. 批量编辑优先用 batch 工具，减少多轮模型调用。
 
@@ -549,8 +551,7 @@ pnpm run test:run -- --config vitest.spark-ai.config.ts tests/app-ai-host.test.t
 
 | 主题 | 文件 |
 |---|---|
-| spark-ai 包说明 | [`packages/spark-ai/README.md`](../../packages/spark-ai/README.md) |
-| spark-ai 架构说明 | [`packages/spark-ai/ARCHITECTURE.md`](../../packages/spark-ai/ARCHITECTURE.md) |
+| AI 文档 SSOT | 本文 |
 | core 类型契约 | [`runtime-contracts.ts`](../../packages/spark-ai/src/core/protocol/runtime-contracts.ts) |
 | core 运行时 | [`ai-runtime.ts`](../../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts) |
 | core 投影和校验辅助 | [`ai-runtime-support.ts`](../../packages/spark-ai/src/core/internal/runtime/ai-runtime-support.ts) |

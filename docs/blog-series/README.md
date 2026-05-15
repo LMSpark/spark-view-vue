@@ -59,13 +59,11 @@ flowchart LR
 | 11 | [DataKey：组件通往数据空间的那把钥匙](11-datakey-and-cascade-loading.md) | 组件如何通过 DataKey 声明式访问数据空间。 |
 | 12 | [CRUD 之外：聚合、计算列与树数据的工程化收口](12-crud-aggregate-computed-tree.md) | 企业后台高频数据能力如何被数据层工具收口。 |
 | 13 | [权限别演戏：前端只是装饰，后端鉴权才是边界](13-permission-boundary-frontend-decoration.md) | `_modelPerm` / `_perm` 的事实源地位，以及前端权限的真实边界。 |
-| 14 | [给 AI 上护栏：SPARK_VIEW 的通用受约束智能体架构](14-constrained-ai-architecture.md) | AI Runtime 如何作为通用协议层服务不同业务模块。 |
-| 15 | [业务 AI 落地样例：以 Page Design 为第一块试金石](15-page-design-ai-implementation-path.md) | PageDesign 如何作为首个业务样例接入通用 AI 架构。 |
 | 16 | [DevSystem：把运行时框架推进生产车间](16-devsystem-production-toolchain.md) | DevSystem 如何把编辑、预览、数据设计和版本管理连成闭环。 |
 
 ## 两条读法
 
-想快速建立全局感，可以先读 1、2、7、10、13、14、16。这条线会把“理念、资产、运行时、数据、权限、AI、工具链”串起来。
+想快速建立全局感，可以先读 1、2、7、10、13、16。这条线会把“理念、资产、运行时、数据、权限、工具链”串起来；AI 相关内容以 [SPARK AI 包使用指南](../ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md) 为准。
 
 想深入实现，可以按顺序读完 16 篇。这个顺序刻意从外到内、再从内到生产化：先建立为什么，再看页面如何启动和解释，再看数据与权限如何治理，最后看 AI 和 DevSystem 如何接入。
 

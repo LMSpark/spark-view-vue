@@ -504,7 +504,7 @@ pnpm run lint
 1. **[组件开发指南](COMPONENT_DEVELOPMENT.md)** - 深入了解组件系统和能力机制
 2. **[数据管理指南](DATA_MANAGEMENT.md)** - 掌握 DataSet 和 TreeManager
 3. **[树能力总览](TREE_CAPABILITY.md)** - 理解 r-tree、TreeManager、treeMode 与导航树 API
-4. **[AI 文档体系](../ai/README.md)** - 提示词 + AI 架构设计的统一入口
+4. **[SPARK AI 包使用指南](../ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)** - AI Core、通用宿主与 AI 业务服务关系的唯一入口
 6. **[插件配置](PLUGIN_CONFIGURATION.md)** - 集成第三方 UI 库
 7. **[配置系统](CONFIG_SYSTEM.md)** - 多租户与远程配置
 8. **[架构设计](https://github.com/your-org/spark-view/tree/main/docs/architecture)** - 理解系统设计理念
@@ -597,7 +597,7 @@ const pageConfig = {
   layout: {
     type: 'container',
     children: [
-      { type: 'r-table', id: 'userGrid', dataKey: 'Users@rows' }
+      { type: 'r-table', id: 'userGrid', props: { viewKey: 'Users@default' } }
     ]
   },
   dataSet: {

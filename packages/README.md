@@ -12,7 +12,7 @@
 
 ## AI 与目录生成
 
-- [spark-ai/README.md](spark-ai/README.md)：AI 运行时、Function Calling 会话、组件知识目录与页面编辑工具。
+- [../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：AI 运行时、Function Calling 会话、组件知识目录与页面编辑工具。
 - [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：构建期组件目录与提示词元数据生成。
 
 ## 插件与集成

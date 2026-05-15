@@ -138,7 +138,7 @@ pnpm run test
 2. **页面数据模型**
    用 `pagedata.json` 描述 DataSet、表、视图、关系、计算列和聚合。
 3. **页面数据绑定**
-   通过 DataKey 把组件和 DataView 连接起来，例如 `Users@rows`、`Orders@currentRow`。
+   通过 ViewKey 把容器和 DataView 连接起来，例如 `Users@default`；展示和动作需要读取 DataView 输出时使用完整 DataKey，例如 `Orders@detail@currentRow.total`。
 4. **页面行为脚本**
    在 `script.js` 里只写最小化业务分支和页面行为，数据管理仍然通过 DataSet 流转。
 5. **组件能力系统**
@@ -151,8 +151,8 @@ pnpm run test
 ```json
 {
   "type": "r-table",
-  "dataKey": "Users@rows",
   "props": {
+      "viewKey": "Users@default",
     "border": true,
     "stripe": true,
     "highlightCurrentRow": true
@@ -160,13 +160,11 @@ pnpm run test
   "children": [
     {
       "type": "r-text",
-      "field": "name",
-      "props": { "label": "姓名" }
+         "props": { "field": "name", "label": "姓名" }
     },
     {
       "type": "r-text",
-      "field": "role",
-      "props": { "label": "角色" }
+         "props": { "field": "role", "label": "角色" }
     }
   ]
 }
@@ -176,7 +174,7 @@ pnpm run test
 
 - 页面结构配置决定渲染什么
 - 页面数据模型决定数据从哪里来
-- DataKey 决定组件绑定到哪个 DataView
+- ViewKey 决定容器绑定到哪个 DataView，DataKey 用于读取 DataView 的具体输出
 - 权限和页面模式决定字段最终是否可见、可编辑、可操作
 
 ## 对外理解的 4 个核心概念
@@ -211,7 +209,7 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 ## 📚 文档导航
 
 - [🏗️ 架构设计](docs/architecture/DATAFLOW_ARCHITECTURE.md) - 完整的数据流和分层架构
-- [🤖 AI 文档体系](docs/ai/README.md) - 提示词 + AI 架构设计的统一入口
+- [🤖 SPARK AI 包使用指南](docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md) - AI Core、通用宿主与 AI 业务服务关系的唯一入口
 - [⚙️ 组件开发](docs/guides/COMPONENT_DEVELOPMENT.md) - 组件注册和能力系统
 - [📊 数据管理](docs/guides/DATA_MANAGEMENT.md) - DataSet 和 TreeManager 使用
 - [🌲 树能力总览](docs/guides/TREE_CAPABILITY.md) - 树容器、DataView、TreeManager、导航树 API 与零代码动作

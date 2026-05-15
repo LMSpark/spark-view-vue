@@ -455,12 +455,12 @@ ViewKey 和 DataKey 是组件和数据视图之间的绑定协议。两者都用
 |---|---|---|
 | ViewKey | `Users@mainList` | 容器级绑定，定位 `Users` 表的 `mainList` DataView |
 | ViewKey | `#SharedDS@Users@lookup` | 跨 scope 定位共享 DataView |
-| DataKey | `Users@mainList@rows` | 值级绑定，读取某个 DataView 的行集合 |
+| DataKey | `Users@mainList@rows` | 读取某个 DataView 的行集合 |
 | DataKey | `Users@mainList@currentRow.name` | 读取当前行的 `name` 字段 |
 | DataKey | `Users@mainList@selectedRows` | 读取当前多选集合 |
 | DataKey | `Users@summary@aggregateResult.totalAmount` | 读取聚合结果字段 |
 
-当前规则下，表级容器使用 `viewKey`，值级读取使用完整 `dataKey`。不再把 `Users@rows` 作为新配置范式；应该写 `viewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataKey: "Users@summary@aggregateResult.xxx"`。
+当前规则下，表级容器使用 `viewKey`，DataView 输出读取使用完整 `dataKey`。不再把 `Users@rows` 作为新配置范式；应该写 `viewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataKey: "Users@summary@aggregateResult.xxx"`。
 
 在容器已经提供 `DATA_ROW` 的子树中，还可以使用 `$[fieldName]` 把当前行字段投影到任意 prop，这适合按钮文案、tag 类型、tooltip、标题、前后缀等轻量展示，不需要额外脚本拼装。
 
@@ -888,7 +888,7 @@ flowchart LR
 11. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解 AI runtime 和函数调用边界。
 12. [src/views/app/dev-system/DevSystem.vue](../src/views/app/dev-system/DevSystem.vue)：理解设计时工作台。
 13. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
-14. [docs/ai/README.md](ai/README.md)：理解 AI 文档体系。
+14. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 AI Core、通用宿主与 AI 业务服务关系。
 
 ## 21. 结语
 

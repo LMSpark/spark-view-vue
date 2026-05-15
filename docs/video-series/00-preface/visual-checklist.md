@@ -11,7 +11,7 @@
 - `docs/blog-series/README.md`
 - `SPARK_VIEW_16_BLOG_SERIES_PLAN.md`
 - `docs/blog-series/01-spark-view-not-json-form-generator.md`
-- `docs/blog-series/14-constrained-ai-architecture.md`
+- `docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md`
 
 ## 增强素材
 
