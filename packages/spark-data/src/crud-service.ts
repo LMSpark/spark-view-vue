@@ -122,12 +122,40 @@ export class CrudService {
     }
 
     try {
-      const endpoint = this.resolveEndpoint(this.api.retrieve, pk)
+      const endpointConfig = this.api.retrieve
+      const endpoint = this.resolveEndpoint(endpointConfig, pk)
       const requestConfig = this.buildRequestConfig(config)
-      const result = await this.http.get<T>(endpoint.url, endpoint.params, {
-        ...requestConfig,
-        headers: { ...endpoint.headers, ...requestConfig?.headers }
-      })
+      let result: T
+      switch (endpointConfig.method ?? 'GET') {
+        case 'POST':
+          result = await this.http.post<T>(endpoint.url, pk, {
+            ...requestConfig,
+            headers: { ...endpoint.headers, ...requestConfig?.headers }
+          })
+          break
+        case 'PUT':
+          result = await this.http.put<T>(endpoint.url, pk, {
+            ...requestConfig,
+            headers: { ...endpoint.headers, ...requestConfig?.headers }
+          })
+          break
+        case 'PATCH':
+          result = await this.http.patch<T>(endpoint.url, pk, {
+            ...requestConfig,
+            headers: { ...endpoint.headers, ...requestConfig?.headers }
+          })
+          break
+        case 'GET':
+          result = await this.http.get<T>(endpoint.url, endpoint.params, {
+            ...requestConfig,
+            headers: { ...endpoint.headers, ...requestConfig?.headers }
+          })
+          break
+        case 'DELETE':
+          throw new Error('Retrieve API does not support DELETE')
+        default:
+          throw new Error(`Retrieve API method is not supported: ${endpointConfig.method}`)
+      }
       this.logger.info('记录查询成功', { pk, data: result })
       return { success: true, data: result }
     } catch (error) {

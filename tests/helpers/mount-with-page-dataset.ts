@@ -92,13 +92,15 @@ export function mountWithDataView(
   }
 
   const field = options.field ?? 'rows'
-  const dataKey = `${options.view.tableName}@${options.view.viewId}@${field}`
+  const viewKey = `${options.view.tableName}@${options.view.viewId}`
+  const contextDataKey = `${viewKey}@${field}`
 
   const mountOptions: MountWithPageDataSetOptions = {
     dataSet,
     props: {
       ...options.props,
-      dataKey,
+      viewKey,
+      ...(field === 'currentRow' ? { contextDataKey } : {}),
     },
   }
 

@@ -231,8 +231,8 @@ describe('DataSet', () => {
         Users: { tableName: 'Users', columns: [], rows: [{ id: 1 }] }
       }
     })
-    const binding = SparkData.resolveDataKeyBinding('TestDS@Users@rows', ds)
-    expect(binding?.kind).toBe('view')
+    const binding = SparkData.resolveDataKeyBinding('Users@default@rows', ds)
+    expect(binding?.kind).toBe('value')
   })
 })
 ```

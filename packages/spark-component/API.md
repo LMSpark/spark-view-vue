@@ -350,7 +350,7 @@ export type {
 
 ### 容器组件 — 数据驱动（5 类型）
 
-自解析 `viewKey`，提供 `DATA_SOURCE` 能力；值级展示继续使用 `dataKey`。
+自解析 `viewKey`，提供 `DATA_SOURCE` 能力；展示组件读取 DataView 输出时继续使用 `dataKey`。
 
 | type | 组件 | 说明 |
 |------|------|------|

@@ -150,7 +150,7 @@
         "props": {
           "field": "leaveTypeId",
           "label": "假期类型",
-          "optionKey": "LeaveTypes@rows",
+          "optionKey": "LeaveTypes@default@rows",
           "optionLabelField": "name",
           "optionValueField": "id",
           "width": 120,
@@ -425,7 +425,7 @@
             "props": {
               "field": "leaveTypeId",
               "label": "假期类型",
-              "optionKey": "LeaveTypes@rows",
+              "optionKey": "LeaveTypes@default@rows",
               "optionLabelField": "name",
               "optionValueField": "id",
               "placeholder": "请选择假期类型",

@@ -459,7 +459,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         },
         {
           "name": "onAddRow",
@@ -540,7 +540,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         },
         {
           "name": "onAddRow",
@@ -623,14 +623,12 @@
           "name": "rowKey",
           "type": "string | undefined",
           "required": false,
-          "default": "\"id\"",
-          "description": "行唯一键字段"
+          "description": "DataView 输出读取键""description": "行唯一键字段"
         },
         {
           "name": "emptyText",
           "type": "string | undefined",
-          "required": false,
-          "default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
+          "description": "DataView 输出读取键""default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
           "description": "空数据提示文案"
         },
         {
@@ -698,7 +696,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         },
         {
           "name": "onAddRow",
@@ -818,7 +816,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         },
         {
           "name": "onAddRow",
@@ -947,7 +945,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         },
         {
           "name": "onAddRow",
@@ -2406,7 +2404,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         }
       ]
     },
@@ -2594,10 +2592,10 @@
       "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点；",
       "props": [
         {
-          "name": "dataKey",
+          "name": "viewKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（dataKey）。"
+          "description": "DataView 定位键（viewKey）。"
         },
         {
           "name": "collapsible",
@@ -3207,7 +3205,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（值级绑定）"
+          "description": "DataView 输出读取键"
         },
         {
           "name": "precision",
@@ -4474,7 +4472,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -4819,7 +4817,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -5499,7 +5497,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -6170,7 +6168,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -6731,7 +6729,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -7221,7 +7219,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -7570,7 +7568,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -7757,7 +7755,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -8844,7 +8842,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -9052,7 +9050,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         {
           "name": "valueSeparator",
@@ -10737,7 +10735,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         }
       }
     },
@@ -26597,11 +26595,11 @@
           "required": false,
           "description": "筛选区附加 CSS class。"
         },
-        "dataKey": {
-          "name": "dataKey",
+        "viewKey": {
+          "name": "viewKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（dataKey）。"
+          "description": "DataView 定位键（viewKey）。"
         },
         "collapsible": {
           "name": "collapsible",
@@ -27660,7 +27658,7 @@
     }
   },
   "constraints": {
-    "dataKeyPattern": "^(#[\\w-]+@)?[\\w-]+@([\\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\\.[\\w.]+)?$",
+    "dataKeyPattern": "^(#[\\w-]+@)?[\\w-]+@[\\w-]+@(rows|columns|currentRow|selectedRows|aggregateResult|selectionAggregateResult|total|page|pageSize|requestState|mutating|loadingError|mutatingError)(\\.[\\w.]+)?$",
     "validTypePrefixes": [
       "r-",
       "spark-"
@@ -27984,7 +27982,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
         },
         "prop_00054": {
           "name": "onAddRow",
@@ -29206,10 +29204,10 @@
           "description": "编辑区宽度"
         },
         "prop_00238": {
-          "name": "dataKey",
+          "name": "viewKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（dataKey）。"
+          "description": "DataView 定位键（viewKey）。"
         },
         "prop_00239": {
           "name": "collapsible",
@@ -29654,7 +29652,7 @@
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
-          "description": "数据绑定键（值级绑定）"
+          "description": "DataView 输出读取键"
         },
         "prop_00307": {
           "name": "precision",
@@ -30547,7 +30545,7 @@
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
         "prop_00442": {
           "name": "valueSeparator",

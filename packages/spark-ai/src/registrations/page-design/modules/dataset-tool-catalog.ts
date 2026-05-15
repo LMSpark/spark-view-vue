@@ -29,6 +29,11 @@ type DataSetCrudToolMethodKey = MethodKey<DataSetCrudTool>
   | 'addAggregate'
   | 'updateAggregate'
   | 'removeAggregate'
+  | 'listFieldDependencies'
+  | 'getFieldDependency'
+  | 'addFieldDependency'
+  | 'updateFieldDependency'
+  | 'removeFieldDependency'
   | 'getComputeExpression'
   | 'setComputeExpression'
   | 'clearComputeExpression'
@@ -186,6 +191,42 @@ const AGGREGATES_SCHEMA = objectSchema({}, {
   description: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 aggregateResult / selectionAggregateResult 是运行时派生结果。',
 })
 
+const FIELD_DEPENDENCY_LOOKUP_SCHEMA = objectSchema({
+  viewKey: stringSchema('选项 DataView 的 ViewKey，例如 Cities@byRegion'),
+  matchField: stringSchema('选项行中用于匹配当前字段值的字段名，例如 id'),
+  map: objectSchema({}, {
+    additionalProperties: stringSchema('选项行源字段名'),
+    description: '回填映射：当前编辑域目标字段 -> 选项行源字段。',
+  }),
+}, {
+  required: ['viewKey', 'matchField', 'map'],
+  description: '字段选中后从选项 DataView 回填 label/code 等字段。',
+})
+
+const FIELD_DEPENDENCY_SCHEMA = objectSchema({
+  field: stringSchema('下游字段名，例如 cityId', { minLength: 1 }),
+  dependsOn: arraySchema(stringSchema('父字段名，例如 provinceId'), '当前编辑域内的父字段列表'),
+  optionDependencyId: stringSchema('对应 ViewDependency.id；该依赖负责过滤/刷新此字段的选项 DataView'),
+  valuePolicy: enumSchema(['clear', 'keep', 'keepIfValid'], '父字段变化时的下游值策略，默认 clear'),
+  clearAlso: arraySchema(stringSchema('一并清空的字段名'), '更下游字段或派生字段'),
+  lookup: FIELD_DEPENDENCY_LOOKUP_SCHEMA,
+}, {
+  required: ['field', 'dependsOn'],
+  description: '字段依赖配置在 views[viewId].fieldDependencies 上；只声明字段关系，选项刷新由 ViewDependency 负责。',
+})
+
+const FIELD_DEPENDENCY_UPDATES_SCHEMA = objectSchema({
+  field: stringSchema('新的下游字段名；通常不建议修改'),
+  dependsOn: arraySchema(stringSchema('父字段名'), '新的父字段列表'),
+  optionDependencyId: stringSchema('新的 ViewDependency.id'),
+  valuePolicy: enumSchema(['clear', 'keep', 'keepIfValid'], '新的下游值策略'),
+  clearAlso: arraySchema(stringSchema('一并清空的字段名'), '新的一并清空字段'),
+  lookup: FIELD_DEPENDENCY_LOOKUP_SCHEMA,
+}, {
+  additionalProperties: true,
+  description: '只传要修改的字段；dependsOn/clearAlso/lookup 传入时整体替换。',
+})
+
 const VIEW_METADATA_SCHEMA = objectSchema({
   rows: arraySchema(ROW_DATA_SCHEMA, '仅 resourceType = static-data 时才应直接提供'),
   autoCurrentFirst: booleanSchema('请求成功后是否自动聚焦第一行'),
@@ -207,8 +248,9 @@ const VIEW_METADATA_SCHEMA = objectSchema({
   filterExpression: objectSchema({}, { additionalProperties: true, description: '复杂过滤对象；简单场景建议先省略' }),
   sortExpression: arraySchema(objectSchema({}, { additionalProperties: true }), '例如 [{ field: "createdAt", direction: "desc" }]'),
   aggregates: AGGREGATES_SCHEMA,
+  fieldDependencies: arraySchema(FIELD_DEPENDENCY_SCHEMA, '字段依赖数组；适合省市区、多父级下拉、选项行回填。'),
 }, {
-  description: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成；UI 可通过 Table@aggregateResult / Table@selectionAggregateResult（或 Table@viewId@aggregateResult）这类 DataKey 引用结果行。',
+  description: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成；若配置 fieldDependencies，字段变更会投影到 viewDependencies，业务无需 script.js。UI 可通过 Table@viewId@aggregateResult / Table@viewId@selectionAggregateResult 这类 DataKey 引用结果行。',
 })
 
 const CRUD_HTTP_ENDPOINT_SCHEMA = objectSchema({
@@ -303,24 +345,61 @@ const RELATION_UPDATE_SCHEMA = objectSchema({
   cascadeDelete: booleanSchema('是否级联删除'),
 })
 
-const DEPENDENCY_TYPE_RECOMMENDED_VALUES = [
+const DEPENDENCY_STATE_RECOMMENDED_VALUES = [
   'currentRow',
   'selectedRows',
   'allRows',
   'pagedRows',
 ] as const
 
-const DEPENDENCY_TYPE_PARAM = {
+const DEPENDENCY_STATE_PARAM = {
   type: 'string',
-  examples: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
-  description: '依赖类型推荐值字典；常用 currentRow / selectedRows / allRows / pagedRows，也允许业务侧自定义字符串。',
+  examples: DEPENDENCY_STATE_RECOMMENDED_VALUES,
+  description: 'view source 读取哪类父视图状态；常用 currentRow / selectedRows / allRows / pagedRows。',
 } as const
 
+const DEPENDENCY_SOURCE_SCHEMA = objectSchema({
+  id: stringSchema('source ID，供 bindings[].sourceId 引用', { minLength: 1 }),
+  type: enumSchema(['view', 'fields'], 'view=父视图状态；fields=当前编辑域字段快照'),
+  viewKey: stringSchema('源 DataView 的 ViewKey，例如 Address@editor 或 Orders@default'),
+  state: DEPENDENCY_STATE_PARAM,
+  scope: enumSchema(['editContext', 'currentRow'], 'fields source 的编辑域，默认 editContext'),
+  fields: arraySchema(stringSchema('字段名'), 'fields source 依赖字段列表，用于快速定位触发'),
+}, {
+  required: ['id', 'type', 'viewKey'],
+  description: 'ViewDependency source；一个依赖可有多个 source 支持多父级过滤。',
+})
+
+const DEPENDENCY_BINDING_SCHEMA = objectSchema({
+  sourceId: stringSchema('指向 sources[].id', { minLength: 1 }),
+  sourceField: stringSchema('源字段名', { minLength: 1 }),
+  targetField: stringSchema('目标 DataView 过滤字段名', { minLength: 1 }),
+  op: enumSchema(['==', 'in'], '过滤操作符；省略时单值 ==，多值 in'),
+  required: booleanSchema('值为空时是否清空/跳过目标视图，默认 false'),
+}, {
+  required: ['sourceId', 'sourceField', 'targetField'],
+  description: '将 source 字段投影为 target view 过滤条件；多个 binding 以 AND 合并。',
+})
+
+const VIEW_DEPENDENCY_SCHEMA = objectSchema({
+  id: stringSchema('依赖 ID，DataSet 内唯一', { minLength: 1 }),
+  targetViewKey: stringSchema('目标 DataView 的 ViewKey，例如 Cities@byRegion'),
+  sources: arraySchema(DEPENDENCY_SOURCE_SCHEMA, '依赖源列表'),
+  bindings: arraySchema(DEPENDENCY_BINDING_SCHEMA, '字段绑定列表'),
+  autoLoad: booleanSchema('源变化时是否自动过滤/刷新目标视图，默认 true'),
+  emptyPolicy: enumSchema(['clearRows', 'skipLoad', 'keepRows'], 'required 源值为空时目标视图处理策略，默认 clearRows'),
+}, {
+  required: ['id', 'targetViewKey', 'sources', 'bindings'],
+  description: '显式视图依赖；字段级下拉也通过 fields source 投影到此结构。',
+})
+
 const VIEW_DEPENDENCY_UPDATE_SCHEMA = objectSchema({
-  parentTable: PARENT_TABLE_PARAM,
-  childTable: CHILD_TABLE_PARAM,
-  dependencyType: DEPENDENCY_TYPE_PARAM,
-  autoLoad: booleanSchema('父变化时是否自动加载子视图'),
+  id: stringSchema('新的依赖 ID；通常不建议修改'),
+  targetViewKey: stringSchema('新的目标 ViewKey'),
+  sources: arraySchema(DEPENDENCY_SOURCE_SCHEMA, '新的 source 列表'),
+  bindings: arraySchema(DEPENDENCY_BINDING_SCHEMA, '新的 binding 列表'),
+  autoLoad: booleanSchema('源变化时是否自动过滤/刷新目标视图'),
+  emptyPolicy: enumSchema(['clearRows', 'skipLoad', 'keepRows'], 'required 源值为空时目标视图处理策略'),
 })
 
 const STATIC_ROWS_ONLY_RULE = '只有 resourceType = static-data 时，才应直接通过 rows 或 defaultRows 传静态数据。'
@@ -330,6 +409,8 @@ const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可
 const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条关系时，必须补 parentField 与 childField 做消歧。'
 const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool/pagedata.json 模型。'
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
+const FIELD_DEPENDENCY_RULE = '字段依赖只声明字段关系和选项回填；下游选项过滤/刷新必须通过 optionDependencyId 指向 ViewDependency，不写业务脚本。'
+const VIEW_DEPENDENCY_RULE = 'viewDependencies 必须显式声明 id、targetViewKey、sources、bindings；不再从 tableRelations 自动推导。'
 
 type DatasetCrudToolFunctionRowWithoutType = Omit<DatasetCrudToolFunctionParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
 
@@ -910,7 +991,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       '若该视图配置了 aggregates，运行时汇总结果位于 view.aggregateResult / view.selectionAggregateResult。',
-      'UI 侧引用聚合结果时，优先使用 DataKey：TableName@aggregateResult、TableName@selectionAggregateResult、TableName@viewId@aggregateResult，或继续追加字段路径如 Orders@aggregateResult.totalAmount。',
+      'UI 侧引用聚合结果时，优先使用完整 DataKey：TableName@viewId@aggregateResult、TableName@viewId@selectionAggregateResult，或继续追加字段路径如 Orders@summary@aggregateResult.totalAmount。',
       '不存在时返回 undefined，而不是抛错。',
       RUNTIME_WIRED_RULE,
     ],
@@ -994,7 +1075,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       STATIC_ROWS_ONLY_RULE,
       '如果 updates.rows 存在，会先 replaceRows，再 applyViewConfig。',
       '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 aggregateResult / selectionAggregateResult 上的字段名。',
-      '聚合配置生效后，UI 侧可用 TableName@aggregateResult、TableName@selectionAggregateResult、TableName@viewId@aggregateResult，或字段路径 TableName@aggregateResult.totalScore 进行绑定。',
+      '聚合配置生效后，UI 侧可用 TableName@viewId@aggregateResult、TableName@viewId@selectionAggregateResult，或字段路径 TableName@summary@aggregateResult.totalScore 进行绑定。',
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [
@@ -1441,19 +1522,19 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     functionId: 'listDependencies',
     target: 'dependency',
     crudToolMethod: 'listDependencies',
-    description: '列出 DataSet 中的视图依赖，可按 parentTable 或 childTable 过滤',
+    description: '列出 DataSet 中的显式视图依赖，可按 id 或 targetViewKey 过滤',
     paramsSchema: paramsSchema({
-      parentTable: stringSchema('可选父表过滤条件'),
-      childTable: stringSchema('可选子表过滤条件'),
+      id: stringSchema('可选依赖 ID 过滤条件'),
+      targetViewKey: stringSchema('可选目标 ViewKey 过滤条件，例如 Cities@byRegion'),
     }),
     resultSchema: {
       dependencies: 'ViewDependency[] — 命中的依赖列表',
     },
     example: {
-      parentTable: 'Orders',
+      targetViewKey: 'Cities@byRegion',
     },
     usageRules: [
-      'filter 只支持按 parentTable 和 childTable 过滤。',
+      VIEW_DEPENDENCY_RULE,
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
@@ -1464,15 +1545,13 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     crudToolMethod: 'getDependency',
     description: '获取一条视图依赖',
     paramsSchema: paramsSchema({
-      parentTable: PARENT_TABLE_PARAM,
-      childTable: CHILD_TABLE_PARAM,
-    }, ['parentTable', 'childTable']),
+      id: stringSchema('依赖 ID'),
+    }, ['id']),
     resultSchema: {
       dependency: 'ViewDependency | undefined — 命中的依赖',
     },
     example: {
-      parentTable: 'Orders',
-      childTable: 'Items',
+      id: 'cities-by-region',
     },
     usageRules: [
       '不存在时返回 undefined。',
@@ -1486,29 +1565,33 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     crudToolMethod: 'createDependency',
     description: '创建一条视图依赖',
     paramsSchema: paramsSchema({
-      parentTable: PARENT_TABLE_PARAM,
-      childTable: CHILD_TABLE_PARAM,
-      dependencyType: DEPENDENCY_TYPE_PARAM,
-      autoLoad: booleanSchema('父变化时是否自动级联加载子视图'),
-    }, ['parentTable', 'childTable']),
+      dependency: VIEW_DEPENDENCY_SCHEMA,
+    }, ['dependency']),
     resultSchema: {
       dependency: 'ViewDependency — 新创建的依赖',
     },
     example: {
-      parentTable: 'Orders',
-      childTable: 'Items',
-      dependencyType: 'currentRow',
-      autoLoad: true,
+      dependency: {
+        id: 'cities-by-region',
+        targetViewKey: 'Cities@byRegion',
+        sources: [{ id: 'address', type: 'fields', viewKey: 'Address@editor', scope: 'editContext', fields: ['countryId', 'provinceId'] }],
+        bindings: [
+          { sourceId: 'address', sourceField: 'countryId', targetField: 'countryId', required: true },
+          { sourceId: 'address', sourceField: 'provinceId', targetField: 'provinceId', required: true },
+        ],
+        autoLoad: true,
+        emptyPolicy: 'clearRows',
+      },
     },
     usageRules: [
-      '底层 relation 必须已经存在，否则依赖创建会失败。',
+      VIEW_DEPENDENCY_RULE,
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [
       {
         code: 'INVALID_DEPENDENCY',
-        when: '依赖引用非法或缺少底层 relation',
-        fix: '先创建表关系，再创建依赖。',
+        when: '依赖引用非法、sourceId 不存在或 ViewKey 不可解析',
+        fix: '先确认目标视图、源视图和 bindings[].sourceId 都存在。',
       },
     ],
   }),
@@ -1518,20 +1601,19 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     crudToolMethod: 'updateDependency',
     description: '更新一条视图依赖',
     paramsSchema: paramsSchema({
-      parentTable: PARENT_TABLE_PARAM,
-      childTable: CHILD_TABLE_PARAM,
+      id: stringSchema('依赖 ID'),
       updates: VIEW_DEPENDENCY_UPDATE_SCHEMA,
-    }, ['parentTable', 'childTable', 'updates']),
+    }, ['id', 'updates']),
     resultSchema: {
       dependency: 'ViewDependency — 更新后的依赖',
     },
     example: {
-      parentTable: 'Orders',
-      childTable: 'Items',
-      updates: { dependencyType: 'selectedRows', autoLoad: false },
+      id: 'cities-by-region',
+      updates: { autoLoad: false },
     },
     usageRules: [
       JSON_OBJECT_RULE,
+      VIEW_DEPENDENCY_RULE,
       '只更新现有依赖，不会隐式创建新依赖。',
       RUNTIME_WIRED_RULE,
     ],
@@ -1549,15 +1631,13 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     crudToolMethod: 'deleteDependency',
     description: '删除一条视图依赖',
     paramsSchema: paramsSchema({
-      parentTable: PARENT_TABLE_PARAM,
-      childTable: CHILD_TABLE_PARAM,
-    }, ['parentTable', 'childTable']),
+      id: stringSchema('依赖 ID'),
+    }, ['id']),
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
     example: {
-      parentTable: 'Orders',
-      childTable: 'Items',
+      id: 'cities-by-region',
     },
     usageRules: [
       '依赖不存在时底层会抛错。',
@@ -1747,6 +1827,183 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         code: 'AGGREGATE_KEY_NOT_FOUND',
         when: 'key 不存在于当前视图聚合配置',
         fix: '先执行 dataset.listAggregates 确认 key 存在。',
+      },
+    ],
+  }),
+  defineDescribeRow({
+    functionId: 'listFieldDependencies',
+    target: 'view',
+    crudToolMethod: 'listFieldDependencies',
+    description: '列出指定视图的字段依赖配置',
+    paramsSchema: paramsSchema({
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+    }, ['tableName']),
+    resultSchema: {
+      fieldDependencies: 'FieldDependency[] — 字段依赖配置数组快照',
+    },
+    example: {
+      tableName: 'Orders',
+      viewId: 'default',
+    },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      FIELD_DEPENDENCY_RULE,
+      '返回的是配置态依赖，不包含运行时触发日志或动作结果。',
+      RUNTIME_WIRED_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_VIEW',
+        when: '目标视图不存在',
+        fix: '先执行 dataset.listViews 确认视图存在。',
+      },
+    ],
+  }),
+  defineDescribeRow({
+    functionId: 'getFieldDependency',
+    target: 'view',
+    crudToolMethod: 'getFieldDependency',
+    description: '读取指定视图中的单条字段依赖',
+    paramsSchema: paramsSchema({
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      field: stringSchema('下游字段名，例如 cityId'),
+    }, ['tableName', 'field']),
+    resultSchema: {
+      fieldDependency: 'FieldDependency | undefined — 命中的字段依赖；不存在时为 undefined',
+    },
+    example: {
+      tableName: 'Address',
+      field: 'cityId',
+    },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      '不存在时返回 undefined，而不是抛错。',
+      RUNTIME_WIRED_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_VIEW',
+        when: '目标视图不存在',
+        fix: '先执行 dataset.listViews 确认视图存在。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    functionId: 'addFieldDependency',
+    target: 'view',
+    crudToolMethod: 'addFieldDependency',
+    description: '向指定视图新增一条字段依赖',
+    paramsSchema: paramsSchema({
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      dependency: FIELD_DEPENDENCY_SCHEMA,
+    }, ['tableName', 'dependency']),
+    resultSchema: {
+      added: 'void — 写入成功后无返回值',
+    },
+    example: {
+      tableName: 'Address',
+      viewId: 'editor',
+      dependency: {
+        field: 'cityId',
+        dependsOn: ['countryId', 'provinceId'],
+        optionDependencyId: 'cities-by-region',
+        valuePolicy: 'clear',
+        clearAlso: ['districtId', 'cityName'],
+        lookup: { viewKey: 'Cities@byRegion', matchField: 'id', map: { cityName: 'name' } },
+      },
+    },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      JSON_OBJECT_RULE,
+      FIELD_DEPENDENCY_RULE,
+      'field 在同一视图内必须唯一；新增已存在 field 会抛错。',
+      RUNTIME_WIRED_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'FIELD_DEPENDENCY_EXISTS',
+        when: 'dependency.field 已存在于当前视图',
+        fix: '改用 dataset.updateFieldDependency，或先 remove 再 add。',
+      },
+      {
+        code: 'UNKNOWN_VIEW',
+        when: '目标视图不存在',
+        fix: '先执行 dataset.listViews 或 dataset.createView。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    functionId: 'updateFieldDependency',
+    target: 'view',
+    crudToolMethod: 'updateFieldDependency',
+    description: '更新指定视图中的字段依赖（浅合并 updates）',
+    paramsSchema: paramsSchema({
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      field: stringSchema('下游字段名，例如 cityId'),
+      updates: FIELD_DEPENDENCY_UPDATES_SCHEMA,
+    }, ['tableName', 'field', 'updates']),
+    resultSchema: {
+      updated: 'void — 写入成功后无返回值',
+    },
+    example: {
+      tableName: 'Address',
+      field: 'cityId',
+      updates: {
+        valuePolicy: 'keepIfValid',
+      },
+    },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      JSON_OBJECT_RULE,
+      FIELD_DEPENDENCY_RULE,
+      'dependsOn/clearAlso/lookup 传入时会整体替换。',
+      '若 updates.field 改名，新 field 也必须在同一视图内唯一。',
+      RUNTIME_WIRED_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'FIELD_DEPENDENCY_NOT_FOUND',
+        when: '目标字段依赖不存在',
+        fix: '先执行 dataset.listFieldDependencies，或改用 dataset.addFieldDependency。',
+      },
+      {
+        code: 'FIELD_DEPENDENCY_EXISTS',
+        when: 'updates.field 与当前视图其他依赖冲突',
+        fix: '改用唯一 field，或先移除冲突依赖。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    functionId: 'removeFieldDependency',
+    target: 'view',
+    crudToolMethod: 'removeFieldDependency',
+    description: '删除指定视图中的字段依赖',
+    paramsSchema: paramsSchema({
+      tableName: TABLE_NAME_PARAM,
+      viewId: VIEW_ID_PARAM,
+      field: stringSchema('下游字段名，例如 cityId'),
+    }, ['tableName', 'field']),
+    resultSchema: {
+      removed: 'void — 删除成功后无返回值',
+    },
+    example: {
+      tableName: 'Address',
+      field: 'cityId',
+    },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      'field 不存在时抛错。',
+      RUNTIME_WIRED_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'FIELD_DEPENDENCY_NOT_FOUND',
+        when: '目标字段依赖不存在',
+        fix: '先执行 dataset.listFieldDependencies 确认 field 存在。',
       },
     ],
   }),

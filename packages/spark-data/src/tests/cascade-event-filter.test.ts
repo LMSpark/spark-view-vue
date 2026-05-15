@@ -2,7 +2,7 @@
  * 级联事件过滤 + 陈旧数据修复 的回归测试
  *
  * 覆盖两类 bug：
- *  1. 白请求风暴：子视图响应了与其 dependencyType 无关的父事件
+ *  1. 白请求风暴：子视图响应了与其 source.state 无关的父事件
  *  2. 陈旧数据：父的选中行在子 Loading 期间改变，子完成后数据仍是旧的
  */
 
@@ -13,7 +13,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 
 // ─── 通用测试 DataSet 工厂 ─────────────────────────────────────
 
-function makeDs(dependencyType: string) {
+function makeDs(sourceState: string) {
   return SparkData.createDataSet({
     dataSetName: 'TestDS',
     tables: {
@@ -39,9 +39,10 @@ function makeDs(dependencyType: string) {
     ],
     viewDependencies: [
       {
-        parentTable: 'Orders',
-        childTable: 'Items',
-        dependencyType,
+        id: 'items-by-orders',
+        targetViewKey: 'Items@default',
+        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: sourceState }],
+        bindings: [{ sourceId: 'orders', sourceField: 'id', targetField: 'orderId', required: true }],
         autoLoad: true,
       }
     ]
@@ -143,7 +144,7 @@ describe('cascade event filter — no spurious child requests', () => {
     pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
-      expect(params?.orderId).toBe(42)
+      expect(params?.filter).toEqual({ field: 'orderId', op: '==', value: 42 })
       cView.requestState = RequestState.Loaded
       return { success: true, data: [] } as any
     })

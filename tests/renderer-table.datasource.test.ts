@@ -771,7 +771,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
       },
       slots: {
         default: () => h(DirectTableColumns),
@@ -817,6 +817,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           field: 'name',
           label: '姓名',
           width: 120,
+          resizable: true,
         })
       },
     })
@@ -824,14 +825,14 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
+        highlightCurrentRow: true,
+        stripe: true,
+        resizable: true,
         tableProps: {
           rowKey: 'id',
-          highlightCurrentRow: true,
-          stripe: true,
           border: false,
           size: 'small',
-          resizable: true,
         },
       },
       slots: {
@@ -893,7 +894,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         resizable: false,
         tableProps: {
           resizable: true,
@@ -1459,7 +1460,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Nodes@rows',
+        viewKey: 'Nodes@default',
         children: [
           { type: 'r-text', props: { field: 'label', label: '名称' } },
         ],
@@ -1509,7 +1510,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
       },
       global: {
         config: {
@@ -1584,7 +1585,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
       },
       global: {
         stubs: {
@@ -1618,7 +1619,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         onRowClick: async (_row: unknown, _column: unknown, _event: unknown, control: { cancel: boolean }) => {
           observed.push(`row:${String(view.currentRow?.['id'] ?? 'null')}:${String(control.cancel)}`)
           control.cancel = true
@@ -1653,7 +1654,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         onAddRow: async (_row: Record<string, unknown>, control: { cancel: boolean }) => {
           control.cancel = true
         },
@@ -1729,7 +1730,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Nodes@rows',
+        viewKey: 'Nodes@default',
       },
       global: {
         config: {
@@ -1812,7 +1813,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
       },
       global: {
         config: {
@@ -1853,7 +1854,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: toolbarDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         toolbar: { type: 'r-toolbar', position: 'bottom', children: [{ type: 'toolbar-button' }] },
         actions: { position: 'left', children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
       },
@@ -1889,7 +1890,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: rowActionDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         actions: {
           type: 'r-toolbar',
           children: [{ type: 'row-button' }],
@@ -2514,7 +2515,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: actionDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         children: [
           { type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] },
           { type: 'r-toolbar', children: [{ type: 'biz-row-action-config' }] },
@@ -2543,7 +2544,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         actions: {
           type: 'r-toolbar',
           children: [
@@ -2572,7 +2573,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: sortableDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         children: [
           {
             type: 'el-table-column',
@@ -2603,7 +2604,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: primitiveDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         children: [
           { type: 'r-text', props: { field: 'name', label: '姓名' } },
           { type: 'r-number', props: { field: 'score', label: '分数' } },
@@ -2636,7 +2637,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: childrenDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         children: [
           { type: 'r-text', props: { field: 'name', label: '姓名' } },
           { type: 'r-number', props: { field: 'score', label: '分数' } },
@@ -2667,7 +2668,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: groupedDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         children: [
           {
             type: 'r-column-group',
@@ -2719,7 +2720,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
         sparkProvide(PAGE_DATASET, fragmentDataSet)
         return () => h(RendererTable as never, {
-          dataKey: 'Users@rows',
+          viewKey: 'Users@default',
           children: [
             {
               type: 'r-row-fragment',
@@ -2809,7 +2810,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
         sparkProvide(PAGE_DATASET, fragmentDataSet)
         return () => h(RendererTable as never, {
-          dataKey: 'Users@rows',
+          viewKey: 'Users@default',
           children: [
             {
               type: 'r-row-fragment',
@@ -2931,7 +2932,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         toolbar: {
           type: 'r-toolbar',
           children: [

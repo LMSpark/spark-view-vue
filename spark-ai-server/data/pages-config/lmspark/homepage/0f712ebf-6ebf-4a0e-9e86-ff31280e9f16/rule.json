@@ -95,7 +95,7 @@
                   "field": "accountCode",
                   "label": "会计科目",
                   "width": 180,
-                  "optionKey": "Accounts@rows",
+                  "optionKey": "Accounts@default@rows",
                   "optionLabelField": "accountName",
                   "optionValueField": "accountCode",
                   "filterable": true

@@ -16,9 +16,9 @@ Use this instruction for Vue renderer work under `packages/spark-component/**` a
 
 ## Renderer And Dataflow Rules
 
-- Containers are DataView-first. `r-table`, `r-form`, `r-detail`, and `r-tree` should resolve `dataKey` to `DataView` and provide `DATA_SOURCE` downward.
+- Containers are DataView-first. `r-table`, `r-form`, `r-detail`, and `r-tree` should resolve `viewKey` to `DataView` and provide `DATA_SOURCE` downward.
 - Do not reintroduce raw page-data normalization, renderer-side JSON parsing, `pageData`, or `$data`-style side channels in frontend code.
-- Use the current `@`-based DataKey format only: `table@field`, `table@viewId@field`, or `#scope@table@...`.
+- Use the current `@`-based formats only: containers use `viewKey` as `table@viewId` or `#scope@table@viewId`; DataView output reads use `dataKey`/`contextDataKey` as `table@viewId@field` or `#scope@table@viewId@field`.
 - `clearDataSet()` must only release the reference. Never call `DataSet.destroy()` from renderer lifecycle cleanup.
 
 ## Capability And Component Boundaries

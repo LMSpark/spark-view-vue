@@ -2,6 +2,7 @@ import type { ComputedRef } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-types.js'
+import { PAGE_DATASET, useSparkConsume } from '../../../internal'
 import { useFieldContext } from '../../context/useFieldContext'
 import { useControlledFieldChange } from './useControlledFieldChange'
 
@@ -18,7 +19,25 @@ interface FieldContextStateLike {
 
 interface ControlledFieldStateLike<TValue> extends FieldContextStateLike {
   fieldValue: ComputedRef<TValue>
+  contextData: IDataRow | null
+  dataSource: unknown
+  currentRow: ComputedRef<IDataRow | null>
   syncValue: (value: TValue) => void
+}
+
+interface FieldDependencyDataViewLike {
+  tableName: string
+  viewId: string
+}
+
+interface FieldDependencyDataSetLike {
+  notifyFieldChanged?: (change: {
+    viewKey: string
+    scope: 'editContext' | 'currentRow'
+    row: IDataRow
+    field: string
+    value?: unknown
+  }) => void | Promise<void>
 }
 
 type OptionalWithUndefined<T> = {
@@ -46,6 +65,8 @@ interface UseFieldControlStateOptions<TValue> {
 }
 
 export function useFieldControlState<TValue>(options: UseFieldControlStateOptions<TValue>) {
+  const { sparkConsume } = useSparkConsume()
+  const pageDataSet = sparkConsume(PAGE_DATASET)
   const fieldCtx = useFieldContext({
     type: options.props.type ?? options.fieldType,
     width: options.props.width,
@@ -64,6 +85,22 @@ export function useFieldControlState<TValue>(options: UseFieldControlStateOption
     getValue: () => options.state.fieldValue.value,
     emitUpdate: value => options.emitUpdate(value),
     syncValue: options.state.syncValue,
+    afterDefault: (nextValue) => {
+      const sourceView = options.state.dataSource as Partial<FieldDependencyDataViewLike> | null | undefined
+      const dataSet = pageDataSet as FieldDependencyDataSetLike | null | undefined
+      const hasEditContext = options.state.contextData !== null
+      const row = options.state.contextData ?? options.state.currentRow.value
+      if (!sourceView?.tableName || !sourceView.viewId || !row || typeof dataSet?.notifyFieldChanged !== 'function') {
+        return undefined
+      }
+      return dataSet.notifyFieldChanged({
+        viewKey: `${sourceView.tableName}@${sourceView.viewId}`,
+        scope: hasEditContext ? 'editContext' : 'currentRow',
+        row,
+        field: options.state.fieldName.value,
+        value: nextValue,
+      })
+    },
     handlerSource: {
       ...(options.props.onChange !== undefined ? { onChange: options.props.onChange } : {}),
     },

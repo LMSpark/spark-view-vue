@@ -23,8 +23,8 @@
 ```json
 {
   "type": "r-table",
-  "dataKey": "OrgRows@rows",
   "props": {
+    "viewKey": "OrgRows@default",
     "row-key": "id",
     "default-expand-all": true,
     "tree-props": {

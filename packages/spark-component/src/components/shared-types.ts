@@ -697,7 +697,7 @@ export interface SparkTableModelProps {
    */
   viewKey?: string
   /**
-   * 值级数据绑定键。
+   * DataView 输出读取键。
    * 固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。
    */
   dataKey?: string

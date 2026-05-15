@@ -20,7 +20,7 @@
 - **四文件协议**：`rule.json`、`pagedata.json`、`script.js`、`style.css` 共同构成一个页面资产。
 - **SparkNode**：运行时组件节点模型，是 `rule.json` 被解释后的核心结构。
 - **DataSet/DataTable/DataView**：数据空间、表元数据、交互视图三层模型。
-- **DataKey**：配置绑定数据的表达式，例如 `Users@rows`、`Orders@detail@currentRow.total`。
+- **ViewKey / DataKey**：容器用 ViewKey 定位 DataView，例如 `Users@default`；展示和动作读取 DataView 输出时用完整 DataKey，例如 `Orders@detail@currentRow.total`。
 - **Capability**：组件、页面、数据、行上下文之间的能力传递机制。
 - **Permission Snapshot**：后端鉴权后下发的模型级 `_modelPerm` 与行级 `_perm` 快照；前端只消费快照做 UI 显隐、禁用、脱敏等装饰性渲染。
 - **AI Runtime**：AI 会话、函数暴露、函数调用翻译与记录的通用核心运行时。

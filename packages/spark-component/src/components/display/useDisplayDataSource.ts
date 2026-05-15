@@ -3,7 +3,7 @@
  *
  * 优先级：
  * 1. props.value（显式值）
- * 2. props.dataKey（值级 DataKey 解析，依赖 PAGE_DATASET）
+ * 2. props.dataKey（DataView 输出读取，依赖 PAGE_DATASET）
  * 3. props.field（从 DATA_ROW / DATA_SOURCE.currentRow 读取字段）
  */
 import { computed, type ComputedRef } from 'vue'
@@ -31,7 +31,7 @@ export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSou
     // 静态值优先（直接传入 value 的场景）
     if (props.value !== undefined) return props.value
 
-    // 值级 dataKey 绑定：支持 aggregateResult / currentRow / rows 等 DataKey 解析。
+    // DataView 输出读取：支持 aggregateResult / currentRow / rows 等 DataKey 解析。
     if (typeof props.dataKey === 'string' && props.dataKey.trim().length > 0 && pageDataSet) {
       if (import.meta.env.DEV) {
         const diagnostic = diagnoseDataKey(props.dataKey, pageDataSet)

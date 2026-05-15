@@ -17,6 +17,7 @@ import type {
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
   IEventEmitter,
+  FieldDependency,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -26,7 +27,8 @@ import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
 import { Logger, toErrorMessage, toError } from '@spark-view/spark-utils'
 import { createEventEmitter } from './core/event-emitter'
-import { getParentRows, assertNoSeparator } from './core/utils'
+import { assertNoSeparator } from './core/utils'
+import { resolveViewKey } from './core/data-key'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
 import { SelectionDelegate } from './strategies/selection-delegate'
@@ -442,54 +444,8 @@ export class DataView implements IDataSource, IDataViewStore {
     return JSON.stringify(left) === JSON.stringify(right)
   }
 
-  private _shouldUseRemotePostQuery(): boolean {
-    const listEndpoint = this._dataTable?.api?.list
-    return listEndpoint !== undefined && listEndpoint.method !== 'GET'
-  }
-
   private _createRequestSupersededResult<T = unknown>(): CrudResult<T> {
     return { success: false, message: REQUEST_SUPERSEDED_MESSAGE }
-  }
-
-  private _buildRemoteRelationFilter(
-    resolvedParents: Array<{ rel: DataRelation; pView: DataView; rows: readonly IDataRow[] }>,
-  ): FilterExpression | undefined {
-    const relationConditions: FilterExpression[] = []
-
-    for (const { rel, pView, rows: parentRows } of resolvedParents) {
-      if (parentRows.length === 0) continue
-
-      const parentKey = typeof rel.parentField === 'string' ? rel.parentField : pView.primaryKey
-      const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
-
-      const values = Array.from(new Set(parentRows.map((row, rowIndex) => {
-        const rowValue: unknown = row
-        if (rowValue === null || typeof rowValue !== 'object' || Array.isArray(rowValue)) {
-          throw new Error(
-            `远端关系过滤收到非法父行数据（index=${rowIndex}, field=${parentKey}） [${this.tableName}@${this.viewId}]`
-          )
-        }
-        if (!(parentKey in rowValue)) {
-          throw new Error(`远端关系过滤引用了不存在的父字段 "${parentKey}" [${this.tableName}@${this.viewId}]`)
-        }
-        const rowRecord = rowValue as Record<string, unknown>
-        return rowRecord[parentKey]
-      })))
-
-      if (values.some(value => value === undefined)) {
-        throw new Error(`远端关系过滤字段 "${parentKey}" 解析为 undefined [${this.tableName}@${this.viewId}]`)
-      }
-
-      relationConditions.push(
-        values.length > 1
-          ? { field: childKey, op: 'in', value: values as FilterValueExpression[] }
-          : { field: childKey, op: '==', value: values[0] as Exclude<FilterValueExpression, FilterValueExpression[]> },
-      )
-    }
-
-    if (relationConditions.length === 0) return undefined
-    if (relationConditions.length === 1) return relationConditions[0]
-    return { type: 'and', children: relationConditions }
   }
 
   private _mergeRemoteFilters(
@@ -613,6 +569,9 @@ export class DataView implements IDataSource, IDataViewStore {
 
   /** 视图级聚合配置——行变更后自动重算 aggregateResult / selectionAggregateResult。仅由 applyViewConfig() 初始化 */
   readonly aggregates: Record<string, AggregateColumnConfig> = {}
+
+  /** 字段依赖——字段统一变更入口读取后投影到 ViewDependency。 */
+  fieldDependencies: FieldDependency[] = []
 
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
@@ -1204,62 +1163,36 @@ export class DataView implements IDataSource, IDataViewStore {
     const run = async (): Promise<void> => {
       this.setRequestState(RequestState.Preparing)
 
-      // 逐个父视图检查依赖是否满足
+      // 逐个父/字段源检查依赖是否满足
       const ds = this.dataSet
       const parents = ds ? ds.getParentRelations(this.tableName, this.viewId) : []
 
-      // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
-      const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: readonly IDataRow[] }> = []
+      const relationFilters: FilterExpression[] = []
       for (const rel of parents) {
-        const pView = ds?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-        if (!pView) continue
-
-        if (pView.requestState === RequestState.Idle) {
-          void pView.requestData()
-        }
-
-        const parentRows = getParentRows(pView, rel.dependencyType ?? 'currentRow')
-        // Phase 4 S2: Loading 不视为就绪（可能持有上轮旧数据），必须 Loaded 或有实际行数据
-        const parentReady = pView.requestState === RequestState.Loaded || pView.rows.length > 0
-        if (!parentReady || parentRows.length === 0) {
+        this.requestIdleDependencyViewSources(rel)
+        const relationFilter = ds?.resolveDependencyFilter(rel)
+        if (relationFilter === null) {
           this.setRequestState(RequestState.Failed, { emit: true })
           return
         }
-        resolvedParents.push({ rel, pView, rows: parentRows })
+        if (relationFilter !== undefined) relationFilters.push(relationFilter)
       }
 
-      // 按各关系的 parentField/childField 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
       const params: QueryParams = {}
-      if (this._shouldUseRemotePostQuery()) {
-        const mergedFilter = this._mergeRemoteFilters(
-          this._buildRemoteRelationFilter(resolvedParents),
-          this.filterExpression,
-        )
-        if (mergedFilter !== undefined) params.filter = mergedFilter
-      } else {
-        for (const { rel, pView, rows: parentRows } of resolvedParents) {
-          if (!parentRows.length) continue
-
-          let parentKey: string | undefined
-          if (typeof rel.parentField === 'string') {
-            parentKey = rel.parentField
-          } else {
-            // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
-            parentKey = pView.primaryKey
-          }
-
-          const values = parentRows.map(r => r[parentKey])
-
-          const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
-          params[childKey] = values[0]
-        }
-      }
+      const relationFilter = relationFilters.length === 0
+        ? undefined
+        : relationFilters.length === 1
+          ? relationFilters[0]
+          : { type: 'and', children: relationFilters } satisfies FilterExpression
+      const mergedFilter = this._mergeRemoteFilters(relationFilter, this.filterExpression)
+      if (mergedFilter !== undefined) params.filter = mergedFilter
 
       // 注入视图自身的分页/排序/过滤参数
+      params.viewId = this.viewId
+      params.viewConfig = this._buildRemoteViewConfig()
       params.page = this.page
       params.pageSize = this.pageSize
       if (this.sortExpression !== undefined) params.sort = this._serializeSort(this.sortExpression)
-      if (!this._shouldUseRemotePostQuery() && this.filterExpression !== undefined) params.filter = this.filterExpression
 
       try {
         const result = await this.loadFromServer(params)
@@ -1272,7 +1205,7 @@ export class DataView implements IDataSource, IDataViewStore {
         return
       }
 
-      // 子视图级联由 rowsChanged 事件驱动（respondToParentChange），无需主动推
+      // 子视图级联由 rowsChanged / fields source 事件驱动，无需主动推
     }
 
     this._pendingRequestData = run()
@@ -1280,6 +1213,18 @@ export class DataView implements IDataSource, IDataViewStore {
       await this._pendingRequestData
     } finally {
       this._pendingRequestData = null
+    }
+  }
+
+  private requestIdleDependencyViewSources(rel: DataRelation): void {
+    const ds = this.dataSet
+    if (!ds) return
+    for (const source of rel.sources ?? []) {
+      if (source.type !== 'view') continue
+      const view = resolveViewKey(source.viewKey, ds)
+      if (view?.requestState === RequestState.Idle) {
+        void view.requestData()
+      }
     }
   }
 
@@ -1406,20 +1351,21 @@ export class DataView implements IDataSource, IDataViewStore {
     return this.requestData()
   }
 
-  /** 无 API 时的内存级联过滤（从 DataTable.rows 按关系字段过滤写入视图）。 */
+  /** 无 API 时的内存级联过滤（从 DataTable.rows 按依赖过滤条件写入视图）。 */
   applyInMemoryCascade(rel: DataRelation, parentRows: readonly IDataRow[]): void {
     // 从 DataTable.rows 读取全量静态源数据（可在多次父行切换中反复过滤）
     const srcRows: IDataRow[] = this._dataTable?.rows ?? []
-    const childField = typeof rel.childField === 'string' ? rel.childField : undefined
-    let filteredRows: IDataRow[]
+    const relationFilter = this.dataSet?.resolveDependencyFilter(rel)
+    let filteredRows = srcRows.slice()
 
-    if (childField && parentRows.length > 0) {
+    if (relationFilter === null) {
+      filteredRows = []
+    } else if (relationFilter !== undefined) {
+      filteredRows = srcRows.filter((row: IDataRow) => this._matchesFilterExpression(row, relationFilter))
+    } else if (parentRows.length > 0 && typeof rel.childField === 'string') {
       const pField = typeof rel.parentField === 'string' ? rel.parentField : 'id'
       const parentValues = new Set<unknown>(parentRows.map((r: IDataRow) => r[pField]))
-      filteredRows = srcRows.filter((r: IDataRow) => parentValues.has(r[childField]))
-    } else {
-      // 无 childField：显示全部源行；无 parentRows 不该走到此处（已在 respondToParentChange 前置守卫）
-      filteredRows = srcRows.slice()
+      filteredRows = srcRows.filter((r: IDataRow) => parentValues.has(r[rel.childField as string]))
     }
 
     this.updateFromServer(filteredRows)
@@ -1713,6 +1659,23 @@ export class DataView implements IDataSource, IDataViewStore {
     return sort.map(f => `${f.field}:${f.direction ?? 'asc'}`).join(',')
   }
 
+  private _buildRemoteViewConfig(): IViewMetadata {
+    const config: IViewMetadata = {
+      tableName: this.tableName,
+      viewId: this.viewId,
+      page: this.page,
+      pageSize: this.pageSize,
+    }
+    if (this.filterExpression !== undefined) config.filterExpression = this.filterExpression
+    if (this.sortExpression !== undefined) config.sortExpression = this.sortExpression
+    if (this.treeConfig !== undefined) config.treeConfig = this.treeConfig
+    if (this.valueField !== undefined) config.valueField = this.valueField
+    if (this.labelField !== undefined) config.labelField = this.labelField
+    if (this.selectionDelimiter !== ',') config.selectionDelimiter = this.selectionDelimiter
+    if (Object.keys(this.aggregates).length > 0) config.aggregates = this.aggregates
+    return config
+  }
+
   /** 设置当前页；远端视图自动重新查询 */
   async setPage(page: number): Promise<void> {
     this.page = page
@@ -1899,6 +1862,7 @@ export class DataView implements IDataSource, IDataViewStore {
     if (vc.labelField !== undefined) this.labelField = vc.labelField
     if (vc.selectionDelimiter !== undefined) this.selectionDelimiter = vc.selectionDelimiter
     if (vc.aggregates !== undefined) (this as { aggregates: Record<string, AggregateColumnConfig> }).aggregates = vc.aggregates
+    if (vc.fieldDependencies !== undefined) this.fieldDependencies = [...vc.fieldDependencies]
     this.page = vc.page ?? 1
     this.pageSize = vc.pageSize ?? 20
     if (vc.filterExpression !== undefined && this._shouldApplyStaticLocalFilter()) {
@@ -1968,6 +1932,7 @@ export class DataView implements IDataSource, IDataViewStore {
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
     if (Object.keys(this.aggregates).length > 0) result.aggregates = this.aggregates
+    if (this.fieldDependencies.length > 0) result.fieldDependencies = this.fieldDependencies
     return result
   }
 

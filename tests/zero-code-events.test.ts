@@ -181,7 +181,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
         messageType: 'success',
         cancelDefault: true,
       },
-      dataKey: 'Users@rows',
+      dataKey: 'Users@default@rows',
     }
 
     normalizeOnProps(props, vi.fn(), actionCtx)
@@ -189,7 +189,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
     // onRowClick 应被包装为闭包
     expect(typeof props['onRowClick']).toBe('function')
     // dataKey 不应被动
-    expect(props['dataKey']).toBe('Users@rows')
+    expect(props['dataKey']).toBe('Users@default@rows')
 
     // 模拟 runControlledInteraction 调用模式
     const control = { cancel: false }
@@ -377,14 +377,14 @@ describe('string handler — callFunc 透传', () => {
     const callFunc = vi.fn()
 
     const props: Record<string, unknown> = {
-      dataKey: 'Users@rows',
+      dataKey: 'Users@default@rows',
       label: '姓名',
       onRowClick: 'fn1',
     }
 
     normalizeOnProps(props, callFunc)
 
-    expect(props['dataKey']).toBe('Users@rows')
+    expect(props['dataKey']).toBe('Users@default@rows')
     expect(props['label']).toBe('姓名')
     expect(typeof props['onRowClick']).toBe('function')
   })
@@ -609,7 +609,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
 
     // 使用 normalizeOnProps 包装 action descriptor
     const tableProps: Record<string, unknown> = {
-      dataKey: 'Users@rows',
+      viewKey: 'Users@default',
       onRowClick: {
         action: 'show-message',
         message: 'clicked-row',
@@ -657,7 +657,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     })
 
     const tableProps: Record<string, unknown> = {
-      dataKey: 'Users@rows',
+      viewKey: 'Users@default',
       onSelectionChange: {
         action: 'show-message',
         message: 'selection-changed',
@@ -703,7 +703,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     })
 
     const tableProps: Record<string, unknown> = {
-      dataKey: 'Users@rows',
+      viewKey: 'Users@default',
       onRowClick: {
         action: 'show-message',
         message: 'clicked',

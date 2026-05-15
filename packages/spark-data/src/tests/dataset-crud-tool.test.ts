@@ -184,14 +184,28 @@ describe('DataSetCrudTool', () => {
     tool.deleteRelation({ parentTable: 'Orders', childTable: 'Items', parentField: 'code', childField: 'orderCode' })
     expect(tool.listRelations({ parentTable: 'Orders', childTable: 'Items' })).toHaveLength(1)
 
-    tool.createDependency({ parentTable: 'Orders', childTable: 'Items', dependencyType: 'currentRow', autoLoad: true })
-    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })?.dependencyType).toBe('currentRow')
+    tool.createDependency({
+      dependency: {
+        id: 'items-by-order',
+        targetViewKey: 'Items@default',
+        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: 'currentRow' }],
+        bindings: [{ sourceId: 'orders', sourceField: 'id', targetField: 'orderId', required: true }],
+        autoLoad: true,
+      },
+    })
+    expect(tool.getDependency({ id: 'items-by-order' })?.sources[0]?.state).toBe('currentRow')
 
-    tool.updateDependency({ parentTable: 'Orders', childTable: 'Items', updates: { dependencyType: 'selectedRows', autoLoad: false } })
-    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })?.dependencyType).toBe('selectedRows')
+    tool.updateDependency({
+      id: 'items-by-order',
+      updates: {
+        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: 'selectedRows' }],
+        autoLoad: false,
+      },
+    })
+    expect(tool.getDependency({ id: 'items-by-order' })?.sources[0]?.state).toBe('selectedRows')
 
-    tool.deleteDependency({ parentTable: 'Orders', childTable: 'Items' })
-    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })).toBeUndefined()
+    tool.deleteDependency({ id: 'items-by-order' })
+    expect(tool.getDependency({ id: 'items-by-order' })).toBeUndefined()
   })
 
   it('SparkData namespace should expose createDataSetCrudTool factory', () => {

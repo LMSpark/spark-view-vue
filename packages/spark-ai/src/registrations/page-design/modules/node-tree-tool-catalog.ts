@@ -236,7 +236,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     description: '收集当前组件实例子树中出现过的全部唯一 viewKey / dataKey / contextDataKey，用于确认页面现有数据绑定。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
-      dataKeys: 'Set<string> — 唯一数据绑定键集合（包含 viewKey / dataKey / contextDataKey）',
+      dataKeys: 'Set<string> — 唯一数据视图键集合（包含 viewKey / dataKey / contextDataKey）',
     },
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],

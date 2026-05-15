@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, DependencyType, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, IDataRow, DataColumn, ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression, FieldChangeNotification, DependencySource } from './types'
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView as SparkDataView } from './data-view'
@@ -28,7 +28,8 @@ import type {
 } from './dataset-history'
 import { DataTable } from './data-table'
 import { normalizeDataSetMetadata } from './metadata'
-import { assertNoSeparator } from './core/utils'
+import { assertNoSeparator, getParentRows } from './core/utils'
+import { parseViewKey, resolveViewKey } from './core/data-key'
 
 /** @internal 从未知值推断列类型 */
 function inferColumnType(v: unknown): ColumnType {
@@ -118,84 +119,38 @@ function buildDataSetHistoryScope(
 }
 
 /**
- * @internal 自动推导视图联动
- *
- * - viewDependencies 未提供（undefined）: 每条 tableRelation 生成默认视图联动
- * - viewDependencies 显式提供（含空数组）: 使用显式列表，未覆盖的 tableRelation 仍自动推导
- * - viewDependencies: []（空数组）: 明确无视图联动
- */
-function deriveViewDependencies(
-  tableRelations: TableRelation[],
-  explicit: ViewDependency[] | undefined,
-): ViewDependency[] {
-  if (explicit?.length === 0) return []
-
-  const result: ViewDependency[] = explicit ? [...explicit] : []
-
-  // 已显式覆盖的 parentTable+childTable 对
-  const covered = new Set<string>()
-  for (const vd of result) {
-    covered.add(`${vd.parentTable}:${vd.childTable}`)
-  }
-
-  // 为未覆盖的 tableRelation 自动推导默认视图联动
-  for (const tr of tableRelations) {
-    const key = `${tr.parentTable}:${tr.childTable}`
-    if (!covered.has(key)) {
-      result.push({
-        parentTable: tr.parentTable,
-        childTable: tr.childTable,
-        dependencyType: 'currentRow',
-        autoLoad: true,
-      })
-    }
-  }
-
-  return result
-}
-
-/**
- * @internal 将 TableRelation + ViewDependency 展开为内部扁平 DataRelation（供 CascadeDelegate / DataView 消费）
+ * @internal 将显式 ViewDependency 展开为内部扁平 DataRelation（供 CascadeDelegate / DataView 消费）
  */
 function expandRelations(
-  tableRelations: TableRelation[],
   viewDependencies: ViewDependency[],
-  ds: DataSet,
 ): DataRelation[] {
-  // tableRelation 索引：parentTable:childTable → TableRelation
-  const trMap = new Map<string, TableRelation>()
-  for (const tr of tableRelations) {
-    trMap.set(`${tr.parentTable}:${tr.childTable}`, tr)
-  }
-
   return viewDependencies.map(vd => {
-    const tr = trMap.get(`${vd.parentTable}:${vd.childTable}`)
-    const dependencyType = vd.dependencyType ?? 'currentRow'
-
-    // parentField 回退到父视图 primaryKey（与 data-view.ts requestData 逻辑对齐）
-    let parentField = tr?.parentField
-    if (!parentField) {
-      const parentView = ds.getView(vd.parentTable, 'default')
-      if (parentView) {
-        parentField = parentView.primaryKey
-      }
-      parentField = parentField ?? 'id'
-    }
-
-    const childField = tr?.childField
-
+    const target = parseViewKey(vd.targetViewKey)
+    if (!target) throw new Error(`Invalid ViewDependency.targetViewKey "${vd.targetViewKey}"`)
+    const firstViewSource = vd.sources.find(source => source.type === 'view')
+    const firstSource = firstViewSource ?? vd.sources[0]
+    if (!firstSource) throw new Error(`ViewDependency "${vd.id}" must declare at least one source`)
+    const firstSourceView = parseViewKey(firstSource.viewKey)
+    if (!firstSourceView) throw new Error(`Invalid ViewDependency source viewKey "${firstSource.viewKey}"`)
+    const firstBinding = vd.bindings[0]
     return {
-      parentTable: vd.parentTable,
-      childTable: vd.childTable,
-      parentViewId: 'default',
-      childViewId: 'default',
-      parentField,
-      childField,
-      dependencyType,
+      dependencyId: vd.id,
+      targetViewKey: vd.targetViewKey,
+      sources: vd.sources.map(source => ({
+        ...source,
+        ...(source.type === 'view' ? { state: source.state ?? 'currentRow' } : {}),
+        ...(source.type === 'fields' ? { scope: source.scope ?? 'editContext' } : {}),
+      })),
+      bindings: vd.bindings,
+      emptyPolicy: vd.emptyPolicy,
+      parentTable: firstSourceView.tableName,
+      parentViewId: firstSourceView.viewId,
+      childTable: target.tableName,
+      childViewId: target.viewId,
+      parentField: firstBinding?.sourceField,
+      childField: firstBinding?.targetField,
       autoLoad: vd.autoLoad,
-      cascadeUpdate: tr?.cascadeUpdate,
-      cascadeDelete: tr?.cascadeDelete,
-      relationName: tr?.relationName,
+      relationName: vd.id,
     } as DataRelation
   })
 }
@@ -251,11 +206,17 @@ export class DataSet implements IDataSet {
   private _childRelIdx = new Map<string, DataRelation[]>()
   /** @internal 关系索引（视图级）：childTable:childViewId → parent relations */
   private _parentRelIdx = new Map<string, DataRelation[]>()
+  /** @internal 字段源索引：viewKey:scope:field → target relations */
+  private _fieldSourceRelIdx = new Map<string, DataRelation[]>()
 
   /** @internal 关系索引（表级）：parentTable → TableRelation[]（聚合函数消费） */
   private _tableChildIdx = new Map<string, TableRelation[]>()
   /** @internal 关系索引（表级）：childTable → TableRelation[]  */
   private _tableParentIdx = new Map<string, TableRelation[]>()
+  /** @internal 当前编辑域字段源快照：viewKey:scope → row */
+  private _fieldSourceSnapshots = new Map<string, IDataRow>()
+  /** @internal 字段源变化监听：viewKey:scope:field → listeners */
+  private _fieldSourceListeners = new Map<string, Set<() => void | Promise<void>>>()
 
   // ===== 动态视图订阅追踪 =====
 
@@ -553,6 +514,203 @@ export class DataSet implements IDataSet {
     return this._parentRelIdx.get(`${childTable}:${childViewId}`) ?? []
   }
 
+  private _fieldSourceIndexKey(viewKey: string, scope: string, field: string): string {
+    return `${viewKey}:${scope}:${field}`
+  }
+
+  private _fieldSnapshotKey(viewKey: string, scope: string): string {
+    return `${viewKey}:${scope}`
+  }
+
+  private _isEmptyDependencyValue(value: unknown): boolean {
+    return value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)
+  }
+
+  private _readDependencySourceRows(source: DependencySource): readonly IDataRow[] | null {
+    if (source.type === 'fields') {
+      const scope = source.scope ?? 'editContext'
+      const row = this._fieldSourceSnapshots.get(this._fieldSnapshotKey(source.viewKey, scope))
+      return row ? [row] : []
+    }
+
+    const sourceView = resolveViewKey(source.viewKey, this)
+    if (!sourceView) return null
+    return getParentRows(sourceView, source.state ?? 'currentRow')
+  }
+
+  resolveDependencyFilter(rel: DataRelation): FilterExpression | undefined | null {
+    const bindings = rel.bindings ?? []
+    if (!bindings.length) return undefined
+    const sourceById = new Map<string, DependencySource>()
+    for (const source of rel.sources ?? []) sourceById.set(source.id, source)
+
+    const conditions: FilterExpression[] = []
+    for (const binding of bindings) {
+      const source = sourceById.get(binding.sourceId)
+      if (!source) return null
+
+      const sourceRows = this._readDependencySourceRows(source)
+      if (sourceRows === null) return null
+
+      const values = Array.from(new Set(sourceRows
+        .map(row => row[binding.sourceField])
+        .filter(value => !this._isEmptyDependencyValue(value))))
+
+      if (values.length === 0) {
+        if (binding.required === true) return null
+        continue
+      }
+
+      const op = binding.op ?? (values.length > 1 ? 'in' : '==')
+      conditions.push(op === 'in' || values.length > 1
+        ? { field: binding.targetField, op: 'in', value: values as FilterValueExpression[] }
+        : { field: binding.targetField, op: '==', value: values[0] as Exclude<FilterValueExpression, FilterValueExpression[]> })
+    }
+
+    if (!conditions.length) return undefined
+    if (conditions.length === 1) return conditions[0]
+    return { type: 'and', children: conditions }
+  }
+
+  async notifyFieldChanged(change: FieldChangeNotification): Promise<void> {
+    const scope = change.scope ?? 'editContext'
+    this._fieldSourceSnapshots.set(this._fieldSnapshotKey(change.viewKey, scope), change.row)
+    await this._processFieldChange(change.viewKey, scope, change.row, [change.field], 0, new Set())
+  }
+
+  subscribeFieldSource(
+    viewKey: string,
+    scope: FieldChangeNotification['scope'] | undefined,
+    field: string,
+    handler: () => void | Promise<void>,
+  ): () => void {
+    const key = this._fieldSourceIndexKey(viewKey, scope ?? 'editContext', field)
+    let listeners = this._fieldSourceListeners.get(key)
+    if (!listeners) {
+      listeners = new Set()
+      this._fieldSourceListeners.set(key, listeners)
+    }
+    listeners.add(handler)
+    return () => {
+      const current = this._fieldSourceListeners.get(key)
+      if (!current) return
+      current.delete(handler)
+      if (current.size === 0) this._fieldSourceListeners.delete(key)
+    }
+  }
+
+  private async _emitFieldSourceChanged(viewKey: string, scope: string, field: string): Promise<void> {
+    const listeners = this._fieldSourceListeners.get(this._fieldSourceIndexKey(viewKey, scope, field))
+    if (!listeners?.size) return
+    await Promise.all([...listeners].map(async (listener) => {
+      try {
+        await listener()
+      } catch (error: unknown) {
+        dsLogger.error(`字段源变化监听失败: ${viewKey}.${field}`, error)
+      }
+    }))
+  }
+
+  private _clearDraftField(row: IDataRow, field: string): boolean {
+    if (Object.is(row[field], null)) return false
+    row[field] = null
+    return true
+  }
+
+  private _valuesEqual(left: unknown, right: unknown): boolean {
+    return Object.is(left, right) || String(left ?? '') === String(right ?? '')
+  }
+
+  private _applyLookupProjection(viewKey: string, row: IDataRow, changedField: string): string[] {
+    const descriptor = parseViewKey(viewKey)
+    if (!descriptor) return []
+    const view = this.getView(descriptor.tableName, descriptor.viewId)
+    if (!view) return []
+
+    const changedFields: string[] = []
+    for (const dependency of view.fieldDependencies) {
+      if (dependency.field !== changedField || !dependency.lookup) continue
+      const lookup = dependency.lookup
+      const lookupView = resolveViewKey(lookup.viewKey, this)
+      if (!lookupView) continue
+      const expected = row[dependency.field]
+      const matched = lookupView.rows.find(optionRow => this._valuesEqual(optionRow[lookup.matchField], expected))
+      if (!matched) continue
+
+      for (const [targetField, sourceField] of Object.entries(lookup.map)) {
+        const nextValue = matched[sourceField]
+        if (Object.is(row[targetField], nextValue)) continue
+        row[targetField] = nextValue
+        changedFields.push(targetField)
+      }
+    }
+    return changedFields
+  }
+
+  private _isFieldValueValidInLookup(row: IDataRow, field: string, lookup: { viewKey: string; matchField: string }): boolean {
+    const value = row[field]
+    if (this._isEmptyDependencyValue(value)) return true
+    const lookupView = resolveViewKey(lookup.viewKey, this)
+    if (!lookupView) return true
+    return lookupView.rows.some(optionRow => this._valuesEqual(optionRow[lookup.matchField], value))
+  }
+
+  private async _processFieldChange(
+    viewKey: string,
+    scope: string,
+    row: IDataRow,
+    changedFields: readonly string[],
+    depth: number,
+    visited: Set<string>,
+  ): Promise<void> {
+    if (depth >= 8 || changedFields.length === 0) return
+
+    const descriptor = parseViewKey(viewKey)
+    if (!descriptor) return
+    const view = this.getView(descriptor.tableName, descriptor.viewId)
+    if (!view) return
+
+    const nextChanged = new Set<string>()
+    const keepIfValid = new Set<string>()
+
+    for (const changedField of changedFields) {
+      const visitKey = `${viewKey}:${scope}:${changedField}`
+      if (visited.has(visitKey)) continue
+      visited.add(visitKey)
+
+      await this._emitFieldSourceChanged(viewKey, scope, changedField)
+
+      for (const projectedField of this._applyLookupProjection(viewKey, row, changedField)) {
+        nextChanged.add(projectedField)
+      }
+
+      for (const dependency of view.fieldDependencies) {
+        if (!dependency.dependsOn.includes(changedField)) continue
+
+        const policy = dependency.valuePolicy ?? 'clear'
+        if (policy === 'clear' && this._clearDraftField(row, dependency.field)) {
+          nextChanged.add(dependency.field)
+        } else if (policy === 'keepIfValid') {
+          keepIfValid.add(dependency.field)
+        }
+
+        for (const field of dependency.clearAlso ?? []) {
+          if (this._clearDraftField(row, field)) nextChanged.add(field)
+        }
+      }
+    }
+
+    for (const dependency of view.fieldDependencies) {
+      if (!keepIfValid.has(dependency.field) || !dependency.lookup) continue
+      if (this._isFieldValueValidInLookup(row, dependency.field, dependency.lookup)) continue
+      if (this._clearDraftField(row, dependency.field)) nextChanged.add(dependency.field)
+    }
+
+    if (nextChanged.size > 0) {
+      await this._processFieldChange(viewKey, scope, row, [...nextChanged], depth + 1, visited)
+    }
+  }
+
   /**
    * 查询以指定表为父的所有表关系（表级索引，聚合函数消费）
    */
@@ -571,15 +729,34 @@ export class DataSet implements IDataSet {
   private _buildViewRelationIndex(): void {
     this._childRelIdx.clear()
     this._parentRelIdx.clear()
+    this._fieldSourceRelIdx.clear()
     for (const r of this._resolvedRelations ?? []) {
-      const pKey = `${r.parentTable}:${r.parentViewId ?? 'default'}`
       const cKey = `${r.childTable}:${r.childViewId ?? 'default'}`
-      let pArr = this._childRelIdx.get(pKey)
-      if (!pArr) { pArr = []; this._childRelIdx.set(pKey, pArr) }
-      pArr.push(r)
       let cArr = this._parentRelIdx.get(cKey)
       if (!cArr) { cArr = []; this._parentRelIdx.set(cKey, cArr) }
       cArr.push(r)
+
+      for (const source of r.sources ?? []) {
+        const sourceView = parseViewKey(source.viewKey)
+        if (!sourceView) continue
+        if (source.type === 'view') {
+          const pKey = `${sourceView.tableName}:${sourceView.viewId}`
+          let pArr = this._childRelIdx.get(pKey)
+          if (!pArr) { pArr = []; this._childRelIdx.set(pKey, pArr) }
+          pArr.push(r)
+        } else {
+          const scope = source.scope ?? 'editContext'
+          const fields = source.fields ?? (r.bindings
+            ?.filter(binding => binding.sourceId === source.id)
+            .map(binding => binding.sourceField) ?? [])
+          for (const field of fields) {
+            const fKey = this._fieldSourceIndexKey(source.viewKey, scope, field)
+            let fArr = this._fieldSourceRelIdx.get(fKey)
+            if (!fArr) { fArr = []; this._fieldSourceRelIdx.set(fKey, fArr) }
+            fArr.push(r)
+          }
+        }
+      }
     }
   }
 
@@ -599,21 +776,18 @@ export class DataSet implements IDataSet {
 
   /** @internal 重建运行时关系图与索引，并通知各视图刷新级联订阅/聚合解析。 */
   private _rebuildRelations(deriveDependencies: boolean): void {
-    if (deriveDependencies) {
-      this.viewDependencies = this.tableRelations?.length
-        ? deriveViewDependencies(this.tableRelations, this.viewDependencies)
-        : undefined
-    }
+    void deriveDependencies
 
     this._buildTableRelationIndex()
 
-    if (this.tableRelations?.length && this.viewDependencies?.length) {
-      this._resolvedRelations = expandRelations(this.tableRelations, this.viewDependencies, this)
+    if (this.viewDependencies?.length) {
+      this._resolvedRelations = expandRelations(this.viewDependencies)
       this._buildViewRelationIndex()
     } else {
       this._resolvedRelations = undefined
       this._childRelIdx.clear()
       this._parentRelIdx.clear()
+      this._fieldSourceRelIdx.clear()
     }
 
     for (const table of Object.values(this.tables)) {
@@ -746,9 +920,11 @@ export class DataSet implements IDataSet {
       throw new Error(`Table "${tableName}" is referenced by tableRelation, remove relation first`)
     }
 
-    const relatedDependency = (this.viewDependencies ?? []).find(
-      dep => dep.parentTable === tableName || dep.childTable === tableName,
-    )
+    const relatedDependency = (this.viewDependencies ?? []).find((dep) => {
+      const target = parseViewKey(dep.targetViewKey)
+      if (target?.tableName === tableName) return true
+      return dep.sources.some(source => parseViewKey(source.viewKey)?.tableName === tableName)
+    })
     if (relatedDependency) {
       throw new Error(`Table "${tableName}" is referenced by viewDependency, remove dependency first`)
     }
@@ -789,12 +965,10 @@ export class DataSet implements IDataSet {
     return match.index
   }
 
-  private _resolveDependencyIndex(parentTable: string, childTable: string): number {
+  private _resolveDependencyIndex(id: string): number {
     this.viewDependencies ??= []
-    const idx = this.viewDependencies.findIndex(
-      dep => dep.parentTable === parentTable && dep.childTable === childTable,
-    )
-    if (idx < 0) throw new Error(`Dependency ${parentTable}→${childTable} not found`)
+    const idx = this.viewDependencies.findIndex(dep => dep.id === id)
+    if (idx < 0) throw new Error(`Dependency "${id}" not found`)
     return idx
   }
 
@@ -895,16 +1069,6 @@ export class DataSet implements IDataSet {
     this._assertRelationField(next.parentTable, nextParentField, 'Parent')
     this._assertRelationField(next.childTable, nextChildField, 'Child')
 
-    const pairChanged = next.parentTable !== current.parentTable || next.childTable !== current.childTable
-    if (pairChanged) {
-      const blocking = (this.viewDependencies ?? []).some(
-        dep => dep.parentTable === current.parentTable && dep.childTable === current.childTable,
-      )
-      if (blocking) {
-        throw new Error(`Relation ${current.parentTable}→${current.childTable} is referenced by viewDependency, update dependency first`)
-      }
-    }
-
     const duplicate = this.tableRelations.some((relation, relationIndex) => {
       if (relationIndex === idx) return false
       return relation.parentTable === next.parentTable
@@ -945,93 +1109,86 @@ export class DataSet implements IDataSet {
       throw new Error(`Relation ${selector.parentTable}→${selector.childTable} not found`)
     }
 
-    const blocking = (this.viewDependencies ?? []).some(
-      (d) => d.parentTable === relation.parentTable && d.childTable === relation.childTable,
-    )
-    if (blocking) {
-      throw new Error(`Relation ${relation.parentTable}→${relation.childTable} is referenced by viewDependency, remove dependency first`)
-    }
-
     this.tableRelations.splice(idx, 1)
     this._rebuildRelations(false)
   }
 
+  private _assertDependencyShape(dependency: ViewDependency): void {
+    if (!dependency.id) throw new Error('ViewDependency.id is required')
+    const target = parseViewKey(dependency.targetViewKey)
+    if (!target) throw new Error(`Invalid ViewDependency.targetViewKey "${dependency.targetViewKey}"`)
+    if (!this.getView(target.tableName, target.viewId)) {
+      throw new Error(`Target view "${dependency.targetViewKey}" not found`)
+    }
+    if (!Array.isArray(dependency.sources) || dependency.sources.length === 0) {
+      throw new Error(`ViewDependency "${dependency.id}" must declare sources`)
+    }
+    if (!Array.isArray(dependency.bindings) || dependency.bindings.length === 0) {
+      throw new Error(`ViewDependency "${dependency.id}" must declare bindings`)
+    }
+    const sourceIds = new Set<string>()
+    for (const source of dependency.sources) {
+      if (!source.id) throw new Error(`ViewDependency "${dependency.id}" has source without id`)
+      sourceIds.add(source.id)
+      const sourceView = parseViewKey(source.viewKey)
+      if (!sourceView) throw new Error(`Invalid source viewKey "${source.viewKey}"`)
+      if (!this.getView(sourceView.tableName, sourceView.viewId)) {
+        throw new Error(`Source view "${source.viewKey}" not found`)
+      }
+    }
+    for (const binding of dependency.bindings) {
+      if (!sourceIds.has(binding.sourceId)) {
+        throw new Error(`ViewDependency "${dependency.id}" binding references unknown source "${binding.sourceId}"`)
+      }
+      if (!binding.sourceField || !binding.targetField) {
+        throw new Error(`ViewDependency "${dependency.id}" binding sourceField/targetField is required`)
+      }
+    }
+  }
+
   /**
    * 添加 ViewDependency（视图联动依赖）。
-   * @throws 表不存在、底层 relation 缺失、或重复时抛 Error
+   * @throws 依赖引用非法或重复时抛 Error
    */
-  addDependency(params: {
-    parentTable: string
-    childTable: string
-    dependencyType?: DependencyType | undefined
-    autoLoad?: boolean
-  }): void {
-    if (!this.getTable(params.parentTable)) throw new Error(`Parent table "${params.parentTable}" not found`)
-    if (!this.getTable(params.childTable)) throw new Error(`Child table "${params.childTable}" not found`)
-
-    const hasRelation = (this.tableRelations ?? []).some(
-      (r) => r.parentTable === params.parentTable && r.childTable === params.childTable,
-    )
-    if (!hasRelation) {
-      throw new Error(`No tableRelation for ${params.parentTable}→${params.childTable}, add relation first`)
-    }
-
+  addDependency(dependency: ViewDependency): void {
+    this._assertDependencyShape(dependency)
     this.viewDependencies ??= []
 
-    const dup = this.viewDependencies.some(
-      (d) => d.parentTable === params.parentTable && d.childTable === params.childTable,
-    )
-    if (dup) throw new Error(`Dependency ${params.parentTable}→${params.childTable} already exists`)
+    const dup = this.viewDependencies.some((d) => d.id === dependency.id)
+    if (dup) throw new Error(`Dependency "${dependency.id}" already exists`)
 
-    const dep: ViewDependency = {
-      parentTable: params.parentTable,
-      childTable: params.childTable,
-      dependencyType: params.dependencyType ?? 'currentRow',
-      ...(params.autoLoad !== undefined ? { autoLoad: params.autoLoad } : {}),
-    }
-    this.viewDependencies.push(dep)
+    this.viewDependencies.push(deepClone(dependency))
     this._rebuildRelations(false)
   }
 
   /**
    * 更新 ViewDependency。
-   * fail-fast：目标 parentTable→childTable 必须已有底层 tableRelation。
+   * fail-fast：目标依赖必须存在，更新后仍需引用有效视图和字段映射。
    */
   updateDependency(
-    parentTable: string,
-    childTable: string,
+    id: string,
     updates: Partial<ViewDependency>,
   ): ViewDependency {
     this.viewDependencies ??= []
 
-    const idx = this._resolveDependencyIndex(parentTable, childTable)
+    const idx = this._resolveDependencyIndex(id)
     const current = this.viewDependencies[idx]
     if (!current) {
-      throw new Error(`Dependency ${parentTable}→${childTable} not found`)
+      throw new Error(`Dependency "${id}" not found`)
     }
     const next: ViewDependency = {
       ...current,
       ...updates,
-      parentTable: updates.parentTable ?? current.parentTable,
-      childTable: updates.childTable ?? current.childTable,
     }
 
-    if (!this.getTable(next.parentTable)) throw new Error(`Parent table "${next.parentTable}" not found`)
-    if (!this.getTable(next.childTable)) throw new Error(`Child table "${next.childTable}" not found`)
-
-    const hasRelation = (this.tableRelations ?? []).some(
-      relation => relation.parentTable === next.parentTable && relation.childTable === next.childTable,
-    )
-    if (!hasRelation) {
-      throw new Error(`No tableRelation for ${next.parentTable}→${next.childTable}, update relation first`)
-    }
+    this._assertDependencyShape(next)
 
     const duplicate = this.viewDependencies.some((dep, depIndex) => {
       if (depIndex === idx) return false
-      return dep.parentTable === next.parentTable && dep.childTable === next.childTable
+      return dep.id === next.id
     })
     if (duplicate) {
-      throw new Error(`Dependency ${next.parentTable}→${next.childTable} already exists`)
+      throw new Error(`Dependency "${next.id}" already exists`)
     }
 
     this.viewDependencies[idx] = next
@@ -1043,13 +1200,11 @@ export class DataSet implements IDataSet {
    * 删除 ViewDependency。
    * @throws 依赖不存在时抛 Error
    */
-  removeDependency(parentTable: string, childTable: string): void {
+  removeDependency(id: string): void {
     this.viewDependencies ??= []
 
-    const idx = this.viewDependencies.findIndex(
-      (d) => d.parentTable === parentTable && d.childTable === childTable,
-    )
-    if (idx < 0) throw new Error(`Dependency ${parentTable}→${childTable} not found`)
+    const idx = this.viewDependencies.findIndex((d) => d.id === id)
+    if (idx < 0) throw new Error(`Dependency "${id}" not found`)
 
     this.viewDependencies.splice(idx, 1)
     this._rebuildRelations(false)

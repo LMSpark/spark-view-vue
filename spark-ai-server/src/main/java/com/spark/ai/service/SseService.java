@@ -41,6 +41,8 @@ public class SseService {
     public static final String EVENT_DEBUG_ROUTE_REQUEST = "debug-route-request";
     public static final String EVENT_DEBUG_ROUTE_RESULT = "debug-route-result";
     public static final String EVENT_DEBUG_FC_ERROR_REPORT = "debug-fc-error-report";
+    public static final String EVENT_DATA_BATCH_JOB = "data-batch-job";
+    public static final String EVENT_DATA_CHANGE = "data-change";
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 

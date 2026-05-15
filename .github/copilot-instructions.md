@@ -50,7 +50,7 @@ High-value entry points:
 - Never use relative imports across package boundaries. Use `@spark-view/*` package names.
 - `spark-utils`, `spark-data`, and `spark-page-config` must stay framework-free. Do not import `vue`, `vue-router`, `element-plus`, or other UI frameworks there.
 - SPARK capability DI is not Vue DI. Use `sparkProvide` / `sparkConsume` for business capabilities. Vue `provide/inject` is only for infrastructure, mainly the registry.
-- Renderer containers are DataView-first. `r-table`, `r-form`, `r-detail`, and `r-tree` resolve data through `DataKey` and provide `DATA_SOURCE` to descendants.
+- Renderer containers are DataView-first. `r-table`, `r-form`, `r-detail`, and `r-tree` use `viewKey` to resolve a `DataView` and provide `DATA_SOURCE` to descendants.
 - Avoid slot wrappers that break direct `el-table` -> `el-table-column` relationships. Container children should flow through `SparkComponentRenderer`.
 - Prefer fail-fast behavior. Do not add silent fallbacks that mask missing APIs, invalid config, or inconsistent runtime state.
 - API-first when touching page config, navigation, generic CRUD, AI generation, or SSE debugging. Prefer existing tenant/project-scoped endpoints and frontend integration before changing Spring controllers or services.
@@ -59,7 +59,7 @@ High-value entry points:
 
 - Component `type` values use kebab-case and register through `Spark.register()`.
 - Components rendered directly under `el-table` must be registered synchronously. Do not use `defineAsyncComponent` for table-column style components.
-- DataKey format is `@`-based: `table@field` or `table@viewId@field`. Cross-page bindings use `#scope@table@...`. Do not restore legacy dot-notation keys.
+- DataKey/ViewKey formats are `@`-based: containers use `viewKey` as `table@viewId` or `#scope@table@viewId`; DataView output reads use `dataKey`/`contextDataKey` as `table@viewId@field` or `#scope@table@viewId@field`. Do not restore legacy `table@field` or dot-notation keys.
 - `script.js` sandbox code should prefer `$page`, `$route`, `$dataSet`, `$query`, `SparkData`, and `h`.
 - In `script.js`, do not use `$data`, ESM `import`, `window.xxx` globals, direct `ElMessage` / `ElMessageBox`, or direct Vue Router imports.
 - `computeExpression` rules:

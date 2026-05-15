@@ -3,7 +3,7 @@ import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 export interface RStatisticProps extends SparkNodeProps, SparkDataDisplayProps<number | string> {
   /** 统计标题 */
   title?: SparkText
-  /** 数据绑定键（值级绑定） */
+  /** DataView 输出读取键 */
   dataKey?: SparkText
   /** 小数精度 */
   precision?: number

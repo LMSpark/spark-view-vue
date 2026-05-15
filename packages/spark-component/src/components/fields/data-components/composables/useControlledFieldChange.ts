@@ -21,6 +21,7 @@ interface UseControlledFieldChangeOptions<TValue> {
   getValue: () => TValue
   emitUpdate: (value: TValue) => void
   syncValue: (value: TValue) => void
+  afterDefault?: (nextValue: TValue, previousValue: TValue) => void | Promise<void>
   handlerSource?: Readonly<Record<string, unknown>>
 }
 
@@ -33,9 +34,10 @@ interface UseControlledFieldChangeOptions<TValue> {
 export function useControlledFieldChange<TValue>(options: UseControlledFieldChangeOptions<TValue>) {
   const { dispatch } = useEventDefaults({
     change: {
-      systemDefault: nextValue => {
+      systemDefault: async (nextValue, previousValue) => {
         options.emitUpdate(nextValue as TValue)
         options.syncValue(nextValue as TValue)
+        await options.afterDefault?.(nextValue as TValue, previousValue as TValue)
       },
     },
   }, options.handlerSource ?? {})

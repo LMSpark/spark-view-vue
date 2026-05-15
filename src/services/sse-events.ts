@@ -19,12 +19,35 @@ const logger = Logger('SSE')
  */
 const ServerEventType = {
   PAGE_CONFIG: 'page-config',
+  DATA_BATCH_JOB: 'data-batch-job',
+  DATA_CHANGE: 'data-change',
 } as const
 
 export interface FileChangeEvent {
   pageId: string
   file: string
   timestamp: number
+}
+
+export interface DataBatchJobEvent {
+  tenantId: string
+  projectId: string
+  jobId: string
+  status: string
+  completed: number
+  total: number
+  timestamp: number
+  result?: unknown
+  error?: string
+}
+
+export interface DataChangeEvent {
+  tenantId: string
+  projectId: string
+  tableName: string
+  operation: string
+  timestamp: number
+  jobId?: string
 }
 
 function normalizeFileChangeEvent(data: unknown): FileChangeEvent | null {
@@ -46,6 +69,65 @@ function normalizeFileChangeEvent(data: unknown): FileChangeEvent | null {
   }
 
   return { pageId, file, timestamp: normalizedTimestamp }
+}
+
+function normalizeTimestamp(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return Date.now()
+}
+
+function normalizeNumber(value: unknown, fallback = 0): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return fallback
+}
+
+function normalizeDataBatchJobEvent(data: unknown): DataBatchJobEvent | null {
+  if (data === null || typeof data !== 'object') return null
+  const record = data as Record<string, unknown>
+  const tenantId = record['tenantId']
+  const projectId = record['projectId']
+  const jobId = record['jobId']
+  const status = record['status']
+  if (typeof tenantId !== 'string' || typeof projectId !== 'string' || typeof jobId !== 'string' || typeof status !== 'string') return null
+  const event: DataBatchJobEvent = {
+    tenantId,
+    projectId,
+    jobId,
+    status,
+    completed: normalizeNumber(record['completed']),
+    total: normalizeNumber(record['total']),
+    timestamp: normalizeTimestamp(record['timestamp']),
+  }
+  if ('result' in record) event.result = record['result']
+  if (typeof record['error'] === 'string') event.error = record['error']
+  return event
+}
+
+function normalizeDataChangeEvent(data: unknown): DataChangeEvent | null {
+  if (data === null || typeof data !== 'object') return null
+  const record = data as Record<string, unknown>
+  const tenantId = record['tenantId']
+  const projectId = record['projectId']
+  const tableName = record['tableName']
+  const operation = record['operation']
+  if (typeof tenantId !== 'string' || typeof projectId !== 'string' || typeof tableName !== 'string' || typeof operation !== 'string') return null
+  const event: DataChangeEvent = {
+    tenantId,
+    projectId,
+    tableName,
+    operation,
+    timestamp: normalizeTimestamp(record['timestamp']),
+  }
+  if (typeof record['jobId'] === 'string') event.jobId = record['jobId']
+  return event
 }
 
 // ─── 连接管理 ────────────────────────────────────────────────────────────────
@@ -124,7 +206,7 @@ function _teardown(): void {
  * @param callback  事件回调
  * @returns 取消订阅函数
  */
-function onServerEvent<T = unknown>(
+export function onServerEvent<T = unknown>(
   eventType: string,
   callback: (data: T) => void,
 ): () => void {
@@ -164,6 +246,44 @@ export function onPageConfigChange(
     if (event === null) {
       _malformedEventCount += 1
       logger.warn('丢弃畸形页面配置事件', {
+        totalMalformed: _malformedEventCount,
+      })
+      return
+    }
+    callback(event)
+  })
+}
+
+/**
+ * 监听多表异步数据任务状态。
+ */
+export function onDataBatchJob(
+  callback: (event: DataBatchJobEvent) => void,
+): () => void {
+  return onServerEvent<unknown>(ServerEventType.DATA_BATCH_JOB, (data) => {
+    const event = normalizeDataBatchJobEvent(data)
+    if (event === null) {
+      _malformedEventCount += 1
+      logger.warn('丢弃畸形数据任务事件', {
+        totalMalformed: _malformedEventCount,
+      })
+      return
+    }
+    callback(event)
+  })
+}
+
+/**
+ * 监听元数据驱动表的数据变更事件。
+ */
+export function onDataChange(
+  callback: (event: DataChangeEvent) => void,
+): () => void {
+  return onServerEvent<unknown>(ServerEventType.DATA_CHANGE, (data) => {
+    const event = normalizeDataChangeEvent(data)
+    if (event === null) {
+      _malformedEventCount += 1
+      logger.warn('丢弃畸形数据变更事件', {
         totalMalformed: _malformedEventCount,
       })
       return

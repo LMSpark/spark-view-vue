@@ -13,9 +13,9 @@ import type {
   IDataRow,
   ITableMetadata,
   IViewMetadata,
+  FieldDependency,
   TableRelation,
   ViewDependency,
-  DependencyType,
   TableSemanticMetadata,
   TableResourceType,
   TableBusinessCategory,
@@ -108,6 +108,17 @@ type RelationSelector = {
   childTable: string
   parentField?: string
   childField?: string
+}
+
+function replaceViewKeyTable(viewKey: string, tableName: string, newTableName: string): string {
+  const parts = viewKey.split('@')
+  if (parts.length === 2 && parts[0] === tableName) {
+    return `${newTableName}@${parts[1]}`
+  }
+  if (parts.length === 3 && parts[0]?.startsWith('#') && parts[1] === tableName) {
+    return `${parts[0]}@${newTableName}@${parts[2]}`
+  }
+  return viewKey
 }
 
 /**
@@ -450,6 +461,10 @@ export class DataSetCrudTool {
           nextRecord[key] = newColumnName
           continue
         }
+        if ((key === 'sourceField' || key === 'targetField' || key === 'matchField') && child === columnName) {
+          nextRecord[key] = newColumnName
+          continue
+        }
         nextRecord[key] = renameFieldRefs(child)
       }
       return nextRecord
@@ -613,8 +628,11 @@ export class DataSetCrudTool {
     if (snapshot.viewDependencies) {
       snapshot.viewDependencies = snapshot.viewDependencies.map((dependency) => ({
         ...dependency,
-        ...(dependency.parentTable === tableName ? { parentTable: newTableName } : {}),
-        ...(dependency.childTable === tableName ? { childTable: newTableName } : {}),
+        targetViewKey: replaceViewKeyTable(dependency.targetViewKey, tableName, newTableName),
+        sources: dependency.sources.map(source => ({
+          ...source,
+          viewKey: replaceViewKeyTable(source.viewKey, tableName, newTableName),
+        })),
       }))
     }
 
@@ -788,8 +806,68 @@ export class DataSetCrudTool {
     if (view.aggregates[key] === undefined) {
       throw new Error(`Aggregate key "${key}" not found`)
     }
-      const { [key]: _removedAggregate, ...nextAggregates } = view.aggregates
+    const { [key]: _removedAggregate, ...nextAggregates } = view.aggregates
     view.setAggregates(nextAggregates)
+    this._afterWrite()
+  }
+
+  listFieldDependencies(params: { tableName: string; viewId?: string }): FieldDependency[] {
+    const tableName = this.requireNonEmptyString(params.tableName, 'listFieldDependencies.tableName')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    return [...view.fieldDependencies]
+  }
+
+  getFieldDependency(params: { tableName: string; viewId?: string; field: string }): FieldDependency | undefined {
+    const tableName = this.requireNonEmptyString(params.tableName, 'getFieldDependency.tableName')
+    const field = this.requireNonEmptyString(params.field, 'getFieldDependency.field')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    return view.fieldDependencies.find(rule => rule.field === field)
+  }
+
+  addFieldDependency(params: { tableName: string; viewId?: string; dependency: FieldDependency }): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'addFieldDependency.tableName')
+    const dependency = this.requireFieldDependency(params.dependency, 'addFieldDependency.dependency')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    if (view.fieldDependencies.some(item => item.field === dependency.field)) {
+      throw new Error(`Field dependency "${dependency.field}" already exists`)
+    }
+    view.applyViewConfig({ fieldDependencies: [...view.fieldDependencies, dependency] })
+    this._afterWrite()
+  }
+
+  updateFieldDependency(
+    params: { tableName: string; viewId?: string; field: string; updates: Partial<FieldDependency> },
+  ): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateFieldDependency.tableName')
+    const field = this.requireNonEmptyString(params.field, 'updateFieldDependency.field')
+    const updates = this.requireObjectArg(params.updates, 'updateFieldDependency.updates')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    const index = view.fieldDependencies.findIndex(rule => rule.field === field)
+    if (index < 0) {
+      throw new Error(`Field dependency "${field}" not found`)
+    }
+    const nextRule = this.requireFieldDependency({
+      ...view.fieldDependencies[index],
+      ...updates,
+    }, 'updateFieldDependency.updates')
+    const duplicate = view.fieldDependencies.find((rule, ruleIndex) => ruleIndex !== index && rule.field === nextRule.field)
+    if (duplicate) {
+      throw new Error(`Field dependency "${nextRule.field}" already exists`)
+    }
+    const nextRules = [...view.fieldDependencies]
+    nextRules[index] = nextRule
+    view.applyViewConfig({ fieldDependencies: nextRules })
+    this._afterWrite()
+  }
+
+  removeFieldDependency(params: { tableName: string; viewId?: string; field: string }): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'removeFieldDependency.tableName')
+    const field = this.requireNonEmptyString(params.field, 'removeFieldDependency.field')
+    const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
+    if (!view.fieldDependencies.some(rule => rule.field === field)) {
+      throw new Error(`Field dependency "${field}" not found`)
+    }
+    view.applyViewConfig({ fieldDependencies: view.fieldDependencies.filter(rule => rule.field !== field) })
     this._afterWrite()
   }
 
@@ -1061,13 +1139,13 @@ export class DataSetCrudTool {
   /**
    * 列出 DataSet 中的视图依赖。
    *
-   * @param filter 可选过滤条件，仅支持按 parentTable / childTable 过滤。
+   * @param filter 可选过滤条件，支持按 id / targetViewKey 过滤。
    * @returns 依赖列表。
    */
-  listDependencies(filter?: Partial<Pick<ViewDependency, 'parentTable' | 'childTable'>>): ViewDependency[] {
+  listDependencies(filter?: Partial<Pick<ViewDependency, 'id' | 'targetViewKey'>>): ViewDependency[] {
     return (this.dataSet.viewDependencies ?? []).filter((dependency) => {
-      if (filter?.parentTable !== undefined && dependency.parentTable !== filter.parentTable) return false
-      if (filter?.childTable !== undefined && dependency.childTable !== filter.childTable) return false
+      if (filter?.id !== undefined && dependency.id !== filter.id) return false
+      if (filter?.targetViewKey !== undefined && dependency.targetViewKey !== filter.targetViewKey) return false
       return true
     })
   }
@@ -1075,16 +1153,12 @@ export class DataSetCrudTool {
   /**
    * 获取一条视图依赖。
    *
-   * @param parentTable 父表名。
-   * @param childTable 子表名。
+   * @param id 依赖 ID。
    * @returns 命中的依赖；不存在时返回 undefined。
    */
-  getDependency(params: { parentTable: string; childTable: string }): ViewDependency | undefined {
-    const parentTable = this.requireNonEmptyString(params.parentTable, 'getDependency.parentTable')
-    const childTable = this.requireNonEmptyString(params.childTable, 'getDependency.childTable')
-    return (this.dataSet.viewDependencies ?? []).find(
-      dependency => dependency.parentTable === parentTable && dependency.childTable === childTable,
-    )
+  getDependency(params: { id: string }): ViewDependency | undefined {
+    const id = this.requireNonEmptyString(params.id, 'getDependency.id')
+    return (this.dataSet.viewDependencies ?? []).find(dependency => dependency.id === id)
   }
 
   /**
@@ -1092,14 +1166,15 @@ export class DataSetCrudTool {
    *
    * @param params 依赖参数。
    * @returns 新创建的依赖。
-   * @throws 当依赖引用非法或底层 relation 不满足要求时抛错。
+   * @throws 当依赖引用非法时抛错。
    */
-  createDependency(params: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean }): ViewDependency {
-    this.dataSet.addDependency(params)
+  createDependency(params: { dependency: ViewDependency }): ViewDependency {
+    const dependencyInput = this.requireViewDependency(params.dependency, 'createDependency.dependency')
+    this.dataSet.addDependency(dependencyInput)
     this._afterWrite()
-    const dependency = this.getDependency({ parentTable: params.parentTable, childTable: params.childTable })
+    const dependency = this.getDependency({ id: dependencyInput.id })
     if (!dependency) {
-      throw new Error(`Dependency "${params.parentTable}→${params.childTable}" not found`)
+      throw new Error(`Dependency "${dependencyInput.id}" not found`)
     }
     return dependency
   }
@@ -1107,17 +1182,15 @@ export class DataSetCrudTool {
   /**
    * 更新一条视图依赖。
    *
-   * @param parentTable 原父表名。
-   * @param childTable 原子表名。
+   * @param id 原依赖 ID。
    * @param updates 依赖更新内容。
    * @returns 更新后的依赖。
-   * @throws 当依赖不存在、更新目标非法或缺少底层 relation 时抛错。
+   * @throws 当依赖不存在或更新目标非法时抛错。
    */
-  updateDependency(params: { parentTable: string; childTable: string; updates: Partial<ViewDependency> }): ViewDependency {
-    const parentTable = this.requireNonEmptyString(params.parentTable, 'updateDependency.parentTable')
-    const childTable = this.requireNonEmptyString(params.childTable, 'updateDependency.childTable')
+  updateDependency(params: { id: string; updates: Partial<ViewDependency> }): ViewDependency {
+    const id = this.requireNonEmptyString(params.id, 'updateDependency.id')
     const updates = this.requireObjectArg(params.updates, 'updateDependency.updates')
-    const result = this.dataSet.updateDependency(parentTable, childTable, updates)
+    const result = this.dataSet.updateDependency(id, updates)
     this._afterWrite()
     return result
   }
@@ -1125,14 +1198,12 @@ export class DataSetCrudTool {
   /**
    * 删除一条视图依赖。
    *
-   * @param parentTable 父表名。
-   * @param childTable 子表名。
+   * @param id 依赖 ID。
    * @throws 当依赖不存在时抛错。
    */
-  deleteDependency(params: { parentTable: string; childTable: string }): void {
-    const parentTable = this.requireNonEmptyString(params.parentTable, 'deleteDependency.parentTable')
-    const childTable = this.requireNonEmptyString(params.childTable, 'deleteDependency.childTable')
-    this.dataSet.removeDependency(parentTable, childTable)
+  deleteDependency(params: { id: string }): void {
+    const id = this.requireNonEmptyString(params.id, 'deleteDependency.id')
+    this.dataSet.removeDependency(id)
     this._afterWrite()
   }
 
@@ -1174,6 +1245,36 @@ export class DataSetCrudTool {
       throw new Error(`${label} must be a non-empty array`)
     }
     return value
+  }
+
+  private requireFieldDependency(value: FieldDependency | Partial<FieldDependency>, label: string): FieldDependency {
+    const dependency = this.requireObjectArg(value, label) as FieldDependency
+    this.requireNonEmptyString(dependency.field, `${label}.field`)
+    if (!Array.isArray(dependency.dependsOn)) {
+      throw new Error(`${label}.dependsOn must be an array`)
+    }
+    if (!dependency.dependsOn.every(field => typeof field === 'string' && field.length > 0)) {
+      throw new Error(`${label}.dependsOn must only contain non-empty strings`)
+    }
+    if (dependency.lookup !== undefined) {
+      this.requireNonEmptyString(dependency.lookup.viewKey, `${label}.lookup.viewKey`)
+      this.requireNonEmptyString(dependency.lookup.matchField, `${label}.lookup.matchField`)
+      this.requireObjectArg(dependency.lookup.map, `${label}.lookup.map`)
+    }
+    return dependency
+  }
+
+  private requireViewDependency(value: ViewDependency | Partial<ViewDependency>, label: string): ViewDependency {
+    const dependency = this.requireObjectArg(value, label) as ViewDependency
+    this.requireNonEmptyString(dependency.id, `${label}.id`)
+    this.requireNonEmptyString(dependency.targetViewKey, `${label}.targetViewKey`)
+    if (!Array.isArray(dependency.sources) || dependency.sources.length === 0) {
+      throw new Error(`${label}.sources must be a non-empty array`)
+    }
+    if (!Array.isArray(dependency.bindings) || dependency.bindings.length === 0) {
+      throw new Error(`${label}.bindings must be a non-empty array`)
+    }
+    return dependency
   }
 
   private normalizeTableNameArg(

@@ -28,33 +28,33 @@ describe('spark-component dataKey resolver', () => {
 
   it('returns the target view for valid keys', () => {
     const dataSet = createDataSet()
-    const view = resolveViewFromDataKey('Users@rows', dataSet)
+    const view = resolveViewFromDataKey('Users@default@rows', dataSet)
 
     expect(view).toBe(dataSet.getView('Users', 'default'))
   })
 
   it('accepts non-rows field keys and still resolves the owning view', () => {
     const dataSet = createDataSet()
-    const view = resolveViewFromDataKey('Users@currentRow', dataSet)
+    const view = resolveViewFromDataKey('Users@default@currentRow', dataSet)
 
     expect(view).toBe(dataSet.getView('Users', 'default'))
   })
 
-  it('resolves rows key as dataSource capability and current row capability', () => {
+  it('resolves rows key as dataSource capability without a row context', () => {
     const dataSet = createDataSet()
     const view = dataSet.getView('Users', 'default')
     view?.selection.setCurrentRow(view.rows[0] ?? null)
-    const caps = resolveDataCapabilitiesFromDataKey('Users@rows', dataSet)
+    const caps = resolveDataCapabilitiesFromDataKey('Users@default@rows', dataSet)
 
     expect(caps.dataSource).toBe(view)
-    expect(caps.dataRow).toMatchObject({ id: 1, name: 'Alice' })
+    expect(caps.dataRow).toBeNull()
   })
 
   it('resolves value key as row capability while preserving source', () => {
     const dataSet = createDataSet()
     const view = dataSet.getView('Users', 'default')
     view?.selection.setCurrentRow(view.rows[0] ?? null)
-    const caps = resolveDataCapabilitiesFromDataKey('Users@currentRow', dataSet)
+    const caps = resolveDataCapabilitiesFromDataKey('Users@default@currentRow', dataSet)
 
     expect(caps.dataSource).toBe(view)
     expect(caps.dataRow).toMatchObject({ id: 1, name: 'Alice' })
@@ -66,8 +66,9 @@ describe('spark-component dataKey resolver', () => {
     expect(resolveViewFromDataKey(undefined, dataSet)).toBeNull()
     expect(resolveViewFromDataKey('', dataSet)).toBeNull()
     expect(resolveViewFromDataKey('Users', dataSet)).toBeNull()
-    expect(resolveViewFromDataKey('Missing@rows', dataSet)).toBeNull()
-    expect(resolveViewFromDataKey('Users@invalidField', dataSet)).toBeNull()
-    expect(resolveViewFromDataKey('Users@rows', null)).toBeNull()
+    expect(resolveViewFromDataKey('Users@rows', dataSet)).toBeNull()
+    expect(resolveViewFromDataKey('Missing@default@rows', dataSet)).toBeNull()
+    expect(resolveViewFromDataKey('Users@default@invalidField', dataSet)).toBeNull()
+    expect(resolveViewFromDataKey('Users@default@rows', null)).toBeNull()
   })
 })

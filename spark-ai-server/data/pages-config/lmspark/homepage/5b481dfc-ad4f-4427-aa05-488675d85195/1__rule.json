@@ -60,7 +60,7 @@
                     "props": {
                       "field": "status",
                       "label": "状态",
-                      "optionKey": "OrderStatusOptions@rows",
+                      "optionKey": "OrderStatusOptions@default@rows",
                       "optionLabelField": "label",
                       "optionValueField": "value",
                       "width": 100

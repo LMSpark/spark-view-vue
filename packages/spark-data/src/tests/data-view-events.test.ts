@@ -57,8 +57,10 @@ function createTestDataSet() {
     ],
     viewDependencies: [
       {
-        parentTable: 'Departments',
-        childTable: 'Users',
+        id: 'users-by-department',
+        targetViewKey: 'Users@default',
+        sources: [{ id: 'departments', type: 'view', viewKey: 'Departments@default', state: 'currentRow' }],
+        bindings: [{ sourceId: 'departments', sourceField: 'id', targetField: 'deptId', required: true }],
         autoLoad: false,
       }
     ]

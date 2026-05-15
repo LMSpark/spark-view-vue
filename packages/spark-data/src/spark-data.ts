@@ -81,6 +81,36 @@ export namespace SparkData {
     return new CrudService(api, httpConfig)
   }
 
+  /**
+   * 创建元数据驱动数据库表的标准 CRUD/Tree API。
+   *
+   * URL 使用平台相对路径，运行时会由 CrudService/TreeManager 按当前
+   * tenantId/projectId 自动补齐为 `/api/tenants/{tenantId}/projects/{projectId}/...`。
+   */
+  export function createDatabaseCrudApi(tableName: string): CrudApi {
+    const encodedTableName = encodeURIComponent(tableName)
+    const base = `/data/${encodedTableName}`
+    return {
+      list: { url: `${base}/query`, method: 'POST' },
+      create: { url: `${base}/records`, method: 'POST' },
+      retrieve: { url: `${base}/records/get`, method: 'POST' },
+      update: { url: `${base}/records/update`, method: 'POST' },
+      delete: { url: `${base}/records/delete`, method: 'POST' },
+      batch: {
+        create: { url: `${base}/records/batch-create`, method: 'POST' },
+        update: { url: `${base}/records/batch-update`, method: 'POST' },
+        delete: { url: `${base}/records/batch-delete`, method: 'POST' },
+      },
+      children: { url: `${base}/tree/children`, method: 'POST' },
+      path: { url: `${base}/tree/path`, method: 'POST' },
+      subtree: { url: `${base}/tree/subtree`, method: 'POST' },
+      move: { url: `${base}/tree/move`, method: 'POST' },
+      search: { url: `${base}/tree/search`, method: 'POST' },
+      nested: { url: `${base}/tree/nested`, method: 'POST' },
+      nestedSearch: { url: `${base}/tree/nested/search`, method: 'POST' },
+    }
+  }
+
   // ===== DataView 工厂方法 =====
 
   /**
@@ -135,8 +165,12 @@ export namespace SparkData {
    *
    * @example
    * ```ts
-   * SparkData.createViewDependency({ parentTable: 'Users', childTable: 'Orders', dependencyType: 'selectedRows' })
-   * // → { parentTable: 'Users', childTable: 'Orders', dependencyType: 'selectedRows' }
+   * SparkData.createViewDependency({
+   *   id: 'orders-by-user',
+   *   targetViewKey: 'Orders@default',
+   *   sources: [{ id: 'users', type: 'view', viewKey: 'Users@default', state: 'selectedRows' }],
+   *   bindings: [{ sourceId: 'users', sourceField: 'id', targetField: 'userId' }]
+   * })
    * ```
    */
   export function createViewDependency(dependency: ViewDependency): ViewDependency {

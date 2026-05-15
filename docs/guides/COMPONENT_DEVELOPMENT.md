@@ -249,10 +249,10 @@ SPARK 以统一的 DataKey 字符串描述数据来源：
 
 | 段数 | 示例 | 说明 |
 |------|------|------|
-| 4 段 | `UserDS@Users@grid@rows` | 完整格式 |
-| 3 段 | `UserDS@Users@rows` | viewId 默认 `default` |
+| 3 段 | `Users@grid@rows` | 同页 DataKey，显式 viewId |
+| 4 段 | `#UserDS@Users@grid@rows` | 跨 scope DataKey，显式 viewId |
 
-`field` 可选值：`rows`、`currentRow`、`selectedRows`。
+`field` 可选值：`rows`、`columns`、`currentRow`、`selectedRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`。
 
 ### 5.2 解析 DataKey → 数据视图
 
@@ -584,9 +584,9 @@ it('resolves DataKey to rows', () => {
     }
   })
 
-  const binding = SparkData.resolveDataKeyBinding('Test@Items@rows', dataSet)
-  expect(binding?.kind).toBe('view')
-  if (binding?.kind === 'view') {
+  const binding = SparkData.resolveDataKeyBinding('Items@default@rows', dataSet)
+  expect(binding?.kind).toBe('value')
+  if (binding?.kind === 'value') {
     expect(binding.source.rows).toHaveLength(2)
   }
 })
@@ -704,11 +704,11 @@ pnpm run plop
   "children": [
     {
       "type": "master-grid",
-      "dataKey": "PageDS@Orders@grid@rows"
+      "viewKey": "Orders@grid"
     },
     {
       "type": "detail-grid",
-      "dataKey": "PageDS@OrderItems@detail@rows"
+      "viewKey": "OrderItems@detail"
     }
   ]
 }

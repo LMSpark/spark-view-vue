@@ -258,7 +258,7 @@ function createBindingDescriptorDescription(type: string, binding: CatalogBindin
   if (binding.selfResolving === true) {
     parts.push(binding.dataContainer === true
       ? 'self-resolving binding，会从页面数据空间解析容器级 viewKey'
-      : 'self-resolving binding，会从页面数据空间解析值级 dataKey')
+      : 'self-resolving binding，会从页面数据空间解析 DataView 输出 dataKey')
   }
   if (binding.dataContainer === true) parts.push('data container，会向子组件提供 DataSource 上下文')
   if (binding.fieldProvider === true) parts.push('field provider，通过 field 读取或写入当前行字段')

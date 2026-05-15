@@ -26,7 +26,7 @@ describe('SparkPageRenderer root props aggregation', () => {
         {
           type: 'r-table',
           props: {
-            dataKey: 'Users@rows',
+            viewKey: 'Users@default',
             label,
           },
         },
@@ -94,9 +94,9 @@ describe('SparkPageRenderer root props aggregation', () => {
     const props = firstChild['props'] as Record<string, unknown>
 
     expect(Array.isArray(children)).toBe(true)
-    expect(props['dataKey']).toBe('Users@rows')
+    expect(props['viewKey']).toBe('Users@default')
     expect(props['label']).toBe('用户列表')
-    expect(firstChild['dataKey']).toBeUndefined()
+    expect(firstChild['viewKey']).toBeUndefined()
     expect(firstChild['label']).toBeUndefined()
 
     debugSpy.mockRestore()

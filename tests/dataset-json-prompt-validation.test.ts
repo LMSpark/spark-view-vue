@@ -37,6 +37,38 @@ function fromPromptJson(json: Record<string, unknown>): DataSet {
   return DataSet.fromJson(json)
 }
 
+function viewDependency(
+  id: string,
+  parentTable: string,
+  childTable: string,
+  childField: string,
+  parentField = 'id',
+): Record<string, unknown> {
+  const sourceId = `${parentTable}Source`
+  return {
+    id,
+    targetViewKey: `${childTable}@default`,
+    sources: [
+      {
+        id: sourceId,
+        type: 'view',
+        viewKey: `${parentTable}@default`,
+        state: 'currentRow',
+      },
+    ],
+    bindings: [
+      {
+        sourceId,
+        sourceField: parentField,
+        targetField: childField,
+        required: true,
+      },
+    ],
+    autoLoad: true,
+    emptyPolicy: 'clearRows',
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 案例 A：图书馆管理（简单两表 + 主从关系）
 // ─────────────────────────────────────────────────────────────────────────────
@@ -92,6 +124,9 @@ const CASE_A_JSON = {
         childField:     'readerId',
         cascadeDelete:  true,
       },
+    ],
+    viewDependencies: [
+      viewDependency('ReaderBorrowRecords', 'Readers', 'BorrowRecords', 'readerId'),
     ],
 }
 
@@ -225,6 +260,9 @@ const CASE_B_JSON = {
         childField:     'orderId',
         cascadeDelete:  true,
       },
+    ],
+    viewDependencies: [
+      viewDependency('OrderItems', 'Orders', 'OrderItems', 'orderId'),
     ],
 }
 
@@ -365,6 +403,9 @@ const EXAMPLE_9_JSON = {
         childField:     'studentId',
       },
     ],
+    viewDependencies: [
+      viewDependency('StudentGrades', 'Students', 'Grades', 'studentId'),
+    ],
 }
 
 describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
@@ -497,6 +538,9 @@ const CASE_C_JSON = {
         childField:     'deptId',
       },
     ],
+    viewDependencies: [
+      viewDependency('DeptEmployees', 'Departments', 'Employees', 'deptId'),
+    ],
 }
 
 describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
@@ -542,9 +586,9 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
   // 注：Employees 配置了 api: '/api/employees'，级联触发的是 HTTP 请求而非内存过滤。
   // 需要 mock loadFromServer 才能验证级联行为，此处仅验证结构正确性。
   // API 级联行为的测试见 dataset-request-orchestration.test.ts。
-  it('C-5: DataSet 含 api 配置时 tableRelations 仍能正常展开', () => {
+  it('C-5: DataSet 含 api 配置时显式 viewDependencies 能正常展开', () => {
     const ds = fromPromptJson(CASE_C_JSON)
-    // tableRelations 展开后 parentViewId/childViewId 均默认 'default'
+    // viewDependencies 展开后 parentViewId/childViewId 均来自显式 viewKey
     const rel = ds._resolvedRelations?.[0]
     expect(rel?.parentTable).toBe('Departments')
     expect(rel?.childTable).toBe('Employees')
@@ -632,6 +676,9 @@ const CASE_G_JSON = {
         childTable:     'StockItems',
         childField:     'warehouseId',
       },
+    ],
+    viewDependencies: [
+      viewDependency('WarehouseStock', 'Warehouses', 'StockItems', 'warehouseId', 'id'),
     ],
 }
 
@@ -836,6 +883,10 @@ const CASE_H_JSON = {
         childField:     'warehouseId',
       },
     ],
+    viewDependencies: [
+      viewDependency('WarehouseInventories', 'Warehouses', 'Inventories', 'warehouseId'),
+      viewDependency('WarehouseInbounds', 'Warehouses', 'Inbounds', 'warehouseId'),
+    ],
 }
 
 describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', () => {
@@ -874,7 +925,7 @@ describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', 
     expect(f(rows[3], 'status')).toBe('预警')
   })
 
-  it('H-5: 两条 tableRelation 均已展开', () => {
+  it('H-5: 两条 viewDependency 均已展开', () => {
     const ds = fromPromptJson(CASE_H_JSON)
     const relations = ds._resolvedRelations ?? []
     const names = relations.map(r => r.relationName)
@@ -1025,6 +1076,10 @@ const CASE_I_JSON = {
         childField:     'buildingId',
       },
     ],
+    viewDependencies: [
+      viewDependency('CommunityBuildings', 'Communities', 'Buildings', 'communityId'),
+      viewDependency('BuildingRepairOrders', 'Buildings', 'RepairOrders', 'buildingId'),
+    ],
 }
 
 describe('Case I：标准提示词模板自测 - 物业管理系统（三级层次）', () => {
@@ -1067,7 +1122,7 @@ describe('Case I：标准提示词模板自测 - 物业管理系统（三级层�
     expect(f(rows[4], 'status')).toBe('一般')
   })
 
-  it('I-5: 两条 tableRelation 均已展开', () => {
+  it('I-5: 两条 viewDependency 均已展开', () => {
     const ds = fromPromptJson(CASE_I_JSON)
     const names = (ds._resolvedRelations ?? []).map(r => r.relationName)
     expect(names).toContain('CommunityBuildings')

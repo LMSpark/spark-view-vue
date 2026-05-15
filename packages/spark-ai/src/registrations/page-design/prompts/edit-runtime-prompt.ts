@@ -69,7 +69,7 @@ export class PageDesignEditRuntimePrompt {
            从每个节点的顶层 id 字段读取真实 id，再调用 getNode / setProps / moveNode / removeNode
     ⚠ ViewKey / DataKey 详细约束（rule 编辑必须遵守）：
       • 容器级绑定只写 viewKey：table@viewId、#scope@table@viewId；严禁省略 viewId
-      • 值级绑定只写 dataKey：table@viewId@field、#scope@table@viewId@field；不再允许 table@field 或 #scope@table@field
+      • DataView 输出读取只写 dataKey：table@viewId@field、#scope@table@viewId@field；不再允许 table@field 或 #scope@table@field
       • field 只允许：rows / columns / currentRow / selectedRows / aggregateResult / selectionAggregateResult / total / page / pageSize / requestState / mutating / loadingError / mutatingError；允许对象字段路径后缀，如 stats@default@currentRow.totalUsers
       • r-table / r-list / r-tree / r-filter 用 viewKey 定位 DataView；不要写 dataKey: table@viewId@rows
       • r-form / r-detail 用 viewKey 定位 DataView，用 contextDataKey 选择上下文值；默认 contextDataKey 是 table@viewId@currentRow，也可配置 table@viewId@aggregateResult / table@viewId@selectionAggregateResult

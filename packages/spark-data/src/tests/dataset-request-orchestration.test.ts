@@ -2,6 +2,22 @@ import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import { RequestState } from '../types'
 
+function viewDependency(
+  id: string,
+  parent: string,
+  child: string,
+  childField: string,
+  state = 'allRows',
+  parentField = 'id',
+) {
+  return {
+    id,
+    targetViewKey: `${child}@default`,
+    sources: [{ id: parent.toLowerCase(), type: 'view' as const, viewKey: `${parent}@default`, state }],
+    bindings: [{ sourceId: parent.toLowerCase(), sourceField: parentField, targetField: childField, required: true }],
+  }
+}
+
 describe('DataView.requestData orchestration', () => {
   it('should load parents first then child and update requestState', async () => {
     const ds = SparkData.createDataSet({
@@ -14,7 +30,7 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
       ],
       viewDependencies: [
-        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows' }
+        viewDependency('children-by-parent', 'Parents', 'Children', 'parentId')
       ]
     })
 
@@ -29,7 +45,7 @@ describe('DataView.requestData orchestration', () => {
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
       expect(params).toBeDefined()
-      expect(params.parentId).toBe(11)
+      expect(params.filter).toEqual({ field: 'parentId', op: '==', value: 11 })
       cView.rows.splice(0, cView.rows.length, { id: 101, parentId: 11 })
       cView.requestState = RequestState.Loaded
       return { success: true, data: cView.rows } as any
@@ -59,7 +75,7 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
       ],
       viewDependencies: [
-        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows' }
+        viewDependency('children-by-parent', 'Parents', 'Children', 'parentId')
       ]
     })
 
@@ -96,7 +112,10 @@ describe('DataView.requestData orchestration', () => {
           parentTable: 'Parents', childTable: 'Children',
           parentField: 'uuid', childField: 'parentUuid',
         }
-      ]
+      ],
+      viewDependencies: [
+        viewDependency('children-by-parent-uuid', 'Parents', 'Children', 'parentUuid', 'currentRow', 'uuid')
+      ],
     })
 
     const pView = ds.getView('Parents', 'default')!
@@ -112,7 +131,7 @@ describe('DataView.requestData orchestration', () => {
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
       expect(params).toBeDefined()
-      expect(params.parentUuid).toBe('p-1')
+      expect(params.filter).toEqual({ field: 'parentUuid', op: '==', value: 'p-1' })
       cView.rows.splice(0, cView.rows.length, { id: 101, parentUuid: 'p-1' })
       cView.requestState = RequestState.Loaded
       return { success: true, data: cView.rows } as any
@@ -160,7 +179,7 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'Parents', childTable: 'Children', parentField: 'id', childField: 'parentId' },
       ],
       viewDependencies: [
-        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows' },
+        viewDependency('children-by-parent', 'Parents', 'Children', 'parentId'),
       ],
     })
 
@@ -207,8 +226,8 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'B', childTable: 'C', childField: 'bId' },
       ],
       viewDependencies: [
-        { parentTable: 'A', childTable: 'B', dependencyType: 'allRows' },
-        { parentTable: 'B', childTable: 'C', dependencyType: 'allRows' },
+        viewDependency('b-by-a', 'A', 'B', 'aId'),
+        viewDependency('c-by-b', 'B', 'C', 'bId'),
       ]
     })
 
@@ -225,7 +244,7 @@ describe('DataView.requestData orchestration', () => {
 
     const bSpy = vi.spyOn(bView, 'loadFromServer').mockImplementation(async (params?: any) => {
       expect(params).toBeDefined()
-      expect(params.aId).toBe(1)
+      expect(params.filter).toEqual({ field: 'aId', op: '==', value: 1 })
       bView.rows.splice(0, bView.rows.length, { id: 10, aId: 1 })
       bView.requestState = RequestState.Loaded
       bView.events.emit('rowsChanged')
@@ -234,7 +253,7 @@ describe('DataView.requestData orchestration', () => {
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
       expect(params).toBeDefined()
-      expect(params.bId).toBe(10)
+      expect(params.filter).toEqual({ field: 'bId', op: '==', value: 10 })
       cView.rows.splice(0, cView.rows.length, { id: 100, bId: 10 })
       cView.requestState = RequestState.Loaded
       return { success: true, data: cView.rows } as any

@@ -574,9 +574,9 @@ export class SparkNodeTree {
   }
 
   /**
-   * 收集当前组件实例子树中出现过的全部唯一数据绑定键。
+  * 收集当前组件实例子树中出现过的全部唯一数据视图键。
    *
-   * 包括容器级 viewKey、值级 dataKey 以及表单/详情上下文 contextDataKey。
+  * 包括容器级 viewKey、DataView 输出 dataKey 以及表单/详情上下文 contextDataKey。
    */
   collectDataKeys(): Set<string> {
     const keys = new Set<string>()

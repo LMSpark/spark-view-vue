@@ -170,7 +170,7 @@
                   },
                   "dataKey": {
                     "type": "string",
-                    "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                    "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
                   }
                 },
                 "description": "r-toolbar props 配置对象。"
@@ -221,9 +221,9 @@
               "props": {
                 "type": "object",
                 "properties": {
-                  "dataKey": {
+                  "viewKey": {
                     "type": "string",
-                    "description": "数据绑定键（dataKey）。"
+                    "description": "DataView 定位键（viewKey）。"
                   },
                   "collapsible": {
                     "type": "boolean",
@@ -423,7 +423,7 @@
                   },
                   "dataKey": {
                     "type": "string",
-                    "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                    "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
                   }
                 },
                 "description": "r-toolbar props 配置对象。"
@@ -470,7 +470,7 @@
           },
           "dataKey": {
             "type": "string",
-            "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+            "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
           },
           "onAddRow": {
             "type": "string",
@@ -693,7 +693,7 @@
                 },
                 "dataKey": {
                   "type": "string",
-                  "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                  "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
                 }
               }
             },
@@ -758,9 +758,9 @@
               "type": "object",
               "description": "r-filter props 配置对象。",
               "properties": {
-                "dataKey": {
+                "viewKey": {
                   "type": "string",
-                  "description": "数据绑定键（dataKey）。"
+                  "description": "DataView 定位键（viewKey）。"
                 },
                 "collapsible": {
                   "type": "boolean",
@@ -995,7 +995,7 @@
                 },
                 "dataKey": {
                   "type": "string",
-                  "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+                  "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
                 }
               }
             },
@@ -1058,7 +1058,7 @@
       {
         "name": "dataKey",
         "type": "string",
-        "description": "数据绑定键。\n推荐格式为 `table@field` 或 `table@viewId@field`，\n用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。"
+        "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
       },
       {
         "name": "onAddRow",

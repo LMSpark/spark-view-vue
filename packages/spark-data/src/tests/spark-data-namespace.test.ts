@@ -94,9 +94,10 @@ describe('SparkData Namespace', () => {
 
   it('应该提供 createViewDependency 工厂方法', () => {
     const dependency: ViewDependency = {
-      parentTable: 'Users',
-      childTable: 'Orders',
-      dependencyType: 'selectedRows',
+      id: 'orders-by-user',
+      targetViewKey: 'Orders@default',
+      sources: [{ id: 'users', type: 'view', viewKey: 'Users@default', state: 'selectedRows' }],
+      bindings: [{ sourceId: 'users', sourceField: 'id', targetField: 'userId', required: true }],
       autoLoad: true,
     }
 

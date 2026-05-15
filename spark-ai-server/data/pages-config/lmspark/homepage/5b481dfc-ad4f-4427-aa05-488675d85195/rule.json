@@ -201,7 +201,7 @@
                 "props": {
                   "field": "customerId",
                   "label": "客户名称",
-                  "optionKey": "Customers@rows",
+                  "optionKey": "Customers@default@rows",
                   "optionLabelField": "name",
                   "optionValueField": "id",
                   "readonly": true,
@@ -216,7 +216,7 @@
                 "props": {
                   "field": "employeeId",
                   "label": "业务人",
-                  "optionKey": "Employees@rows",
+                  "optionKey": "Employees@default@rows",
                   "optionLabelField": "name",
                   "optionValueField": "id",
                   "readonly": true,

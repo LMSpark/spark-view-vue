@@ -31,7 +31,15 @@ describe('DataSet relation rebuild', () => {
         },
       },
       tableRelations: [
-        { parentTable: 'Departments', childTable: 'Employees', childField: 'deptId' },
+        { parentTable: 'Departments', childTable: 'Employees', parentField: 'id', childField: 'deptId' },
+      ],
+      viewDependencies: [
+        {
+          id: 'employees-by-department',
+          targetViewKey: 'Employees@default',
+          sources: [{ id: 'departments', type: 'view', viewKey: 'Departments@default' }],
+          bindings: [{ sourceId: 'departments', sourceField: 'id', targetField: 'deptId' }],
+        },
       ],
     })
 
@@ -44,8 +52,8 @@ describe('DataSet relation rebuild', () => {
 
     parent?.selection.setCurrentRow(parent.rows[1] ?? null)
 
-  expect(child?.rows).toHaveLength(1)
-  expect(child?.rows[0]).toMatchObject({ id: 102, deptId: 2 })
+    expect(child?.rows).toHaveLength(1)
+    expect(child?.rows[0]).toMatchObject({ id: 102, deptId: 2 })
   })
 
   it('运行期 addRelation/addDependency 会重建内部关系图', () => {
@@ -86,8 +94,10 @@ describe('DataSet relation rebuild', () => {
       childField: 'deptId',
     })
     ds.addDependency({
-      parentTable: 'Departments',
-      childTable: 'Employees',
+      id: 'employees-by-department',
+      targetViewKey: 'Employees@default',
+      sources: [{ id: 'departments', type: 'view', viewKey: 'Departments@default' }],
+      bindings: [{ sourceId: 'departments', sourceField: 'id', targetField: 'deptId' }],
     })
 
     const parent = ds.getView('Departments', 'default')

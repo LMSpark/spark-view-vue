@@ -1,11 +1,11 @@
 /**
- * DataKey / ViewKey — DataSet 数据绑定键解析器
+ * DataKey / ViewKey — DataView 定位与输出读取键解析器
  *
  * ViewKey 定位 DataView，供表级容器使用：
  *   - `tableName@viewId`
  *   - `#scope@tableName@viewId`
  *
- * DataKey 读取 DataView 的具体输出字段，供值级组件使用：
+ * DataKey 读取 DataView 的具体输出字段，供展示、动作等需要消费 DataView 输出的组件使用：
  *   - `tableName@viewId@field`
  *   - `#scope@tableName@viewId@field`
  *
@@ -233,7 +233,7 @@ export function resolveViewKey(
 // ===== DataKey 解析 =====
 
 /**
- * 判断 dataKey 是否为当前合法的 DataSet 值级数据键。
+ * 判断 dataKey 是否为当前合法的 DataView 输出读取键。
  */
 export function isDataKey(dataKey: string): boolean {
   return parseDataKey(dataKey) !== null
@@ -288,7 +288,7 @@ export function resolveDataKey(
 }
 
 /**
- * 从原始字符串一步解析到值级绑定结果。
+ * 从原始字符串一步解析到 DataView 输出读取结果。
  */
 export function resolveRawKey(
   rawKey: string,

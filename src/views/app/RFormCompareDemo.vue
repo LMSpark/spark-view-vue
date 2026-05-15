@@ -17,7 +17,7 @@
         </div>
         <div class="r-form-compare-demo__meta-item">
           <span class="r-form-compare-demo__meta-label">数据绑定</span>
-          <strong>{{ formDataKey }}</strong>
+          <strong>{{ formViewKey }}</strong>
         </div>
         <div class="r-form-compare-demo__meta-item">
           <span class="r-form-compare-demo__meta-label">宿主语义</span>
@@ -68,7 +68,7 @@
         </p>
         <RendererForm
           type="r-form"
-          :data-key="formDataKey"
+          :view-key="formViewKey"
           :children="configChildren"
           label-width="92px"
         />
@@ -79,7 +79,7 @@
         <p class="r-form-compare-demo__panel-desc">
           字段直接写在 Vue 模板里，适合本地业务组件把 RendererForm 当作宿主直接组合。
         </p>
-        <RendererForm type="r-form" :data-key="formDataKey" label-width="92px">
+        <RendererForm type="r-form" :view-key="formViewKey" label-width="92px">
           <div class="r-form-compare-demo__template-fields">
             <FieldText type="r-text" field="name" label="姓名" />
             <FieldText type="r-text" field="department" label="部门" />
@@ -108,7 +108,7 @@
       <ul>
         <li>两边底层都是原始 RendererForm，没有再包自定义表单宿主。</li>
         <li>配置式把字段定义放进 SparkNode children，模板式直接写 Vue slot children。</li>
-        <li>两边共用同一个 PAGE_DATASET 和同一个 Users@currentRow，所以切换记录时会同时更新。</li>
+        <li>两边共用同一个 PAGE_DATASET 和同一个 Users@default 视图，所以切换记录时会同时更新。</li>
         <li>选择哪种写法，取决于页面来源：远程配置优先配置式，本地 Vue 组件编排优先模板式。</li>
       </ul>
     </section>
@@ -170,7 +170,7 @@ const employeeDataSet = SparkData.createDataSet({
 })
 
 const usersView = employeeDataSet.getView('Users', 'default')
-const formDataKey = 'Users@currentRow'
+const formViewKey = 'Users@default'
 
 const { sparkProvide } = useSparkContextScope('r-form-compare-demo-page')
 sparkProvide(PAGE_DATASET, employeeDataSet)
@@ -210,12 +210,12 @@ const configSnippet = `const configChildren: SparkNode[] = [
 ]
 
 <RendererForm
-  :data-key="'Users@currentRow'"
+  :view-key="'Users@default'"
   :children="configChildren"
   label-width="92px"
 />`
 
-const templateSnippet = `<RendererForm :data-key="'Users@currentRow'" label-width="92px">
+const templateSnippet = `<RendererForm :view-key="'Users@default'" label-width="92px">
   <FieldText type="r-text" field="name" label="姓名" />
   <FieldText type="r-text" field="department" label="部门" />
   <FieldNumber type="r-number" field="score" label="绩效分" />

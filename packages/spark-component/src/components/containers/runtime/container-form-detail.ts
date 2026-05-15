@@ -67,7 +67,7 @@ const DEFAULT_GRID_GAP = 0
 // ============================================================
 
 /**
- * 标准化值级 DataKey：非字符串或空字符串返回 null，否则返回去空后的字符串。
+ * 标准化 DataView 输出 DataKey：非字符串或空字符串返回 null，否则返回去空后的字符串。
  */
 function getNormalizedDataKey(rawKey: unknown): string | null {
   if (typeof rawKey !== 'string') return null

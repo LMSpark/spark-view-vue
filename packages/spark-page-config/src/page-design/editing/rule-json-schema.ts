@@ -43,8 +43,8 @@ export function createRuleJsonSchema(
             },
           }),
           viewKey: withMeta('视图绑定键 View Key', '容器级 ViewKey 格式：table@viewId 或 #scope@table@viewId。', { type: 'string' }),
-          dataKey: withMeta('数据绑定键 Data Key', '值级 DataKey 格式：table@viewId@field 或 #scope@table@viewId@field。', { type: 'string' }),
-          contextDataKey: withMeta('上下文数据绑定键 Context Data Key', 'r-form / r-detail 的上下文 DataKey，格式同 dataKey。默认通常为 table@viewId@currentRow。', { type: 'string' }),
+          dataKey: withMeta('DataView 输出读取键 Data Key', 'DataView 输出读取 DataKey 格式：table@viewId@field 或 #scope@table@viewId@field。', { type: 'string' }),
+          contextDataKey: withMeta('上下文输出绑定键 Context Data Key', 'r-form / r-detail 的上下文 DataKey，格式同 dataKey。默认通常为 table@viewId@currentRow。', { type: 'string' }),
           field: withMeta('字段名 Field', '字段组件绑定的列名。', { type: 'string' }),
           label: withMeta('标签 Label', '字段组件或列的显示标题。', { type: 'string' }),
           on: withMeta('事件绑定 Events', '事件名到 script.js 函数名的映射，如 { "click": "handleClick" }。', {

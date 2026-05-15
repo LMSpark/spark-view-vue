@@ -45,7 +45,7 @@ function mountOptionProbe(dataSet: ReturnType<typeof SparkData.createDataSet>, s
       sparkProvide(PAGE_DATASET, dataSet)
 
       return () => h(OptionProbe as never, {
-        optionKey: 'Dict@rows',
+        optionKey: 'Dict@default@rows',
         sampleValue: normalizedSampleValue,
       } as never)
     },

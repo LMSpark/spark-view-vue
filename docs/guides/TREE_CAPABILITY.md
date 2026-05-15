@@ -292,8 +292,8 @@ RendererTree 支持按 dock 分区：
 ```json
 {
   "type": "r-tree",
-  "dataKey": "NavigationNodes@rows",
   "props": {
+    "viewKey": "NavigationNodes@default",
     "nodeKey": "id"
   },
   "children": [
@@ -457,8 +457,8 @@ RendererTree 仍兼容旧式：
 [
   {
     "type": "r-tree",
-    "dataKey": "NavigationNodes@rows",
     "props": {
+      "viewKey": "NavigationNodes@default",
       "nodeKey": "id",
       "highlightCurrent": true,
       "draggable": true,

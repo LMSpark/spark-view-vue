@@ -38,7 +38,7 @@ function makeCatalog(overrides?: TestCatalogOverrides): ComponentCatalog {
       category: 'container',
       description: '表格容器',
       props: [
-        { name: 'dataKey', type: 'string', required: false, description: '表格数据源' },
+        { name: 'viewKey', type: 'string', required: false, description: '表格 DataView 定位键' },
         { name: 'border', type: 'boolean', required: false, description: '是否显示边框' },
         { name: 'rowKey', type: 'string | undefined', required: false, description: '行唯一键' },
         { name: 'density', type: '"default" | "compact"', required: true, description: '密度' },
@@ -53,7 +53,7 @@ function makeCatalog(overrides?: TestCatalogOverrides): ComponentCatalog {
       binding: {
         dataContainer: true,
         description: 'r-table data container binding',
-        examples: [{ type: 'r-table', props: { dataKey: 'orders@rows' } }],
+        examples: [{ type: 'r-table', props: { viewKey: 'orders@default' } }],
       },
       rootFields: [
         {
@@ -126,7 +126,7 @@ describe('catalog-projections', () => {
           binding: {
             dataContainer: true,
             description: 'r-table data container binding',
-            examples: [{ type: 'r-table', props: { dataKey: 'orders@rows' } }],
+            examples: [{ type: 'r-table', props: { viewKey: 'orders@default' } }],
           },
         }),
       },
@@ -145,7 +145,7 @@ describe('catalog-projections', () => {
     expect(neutralCatalog.components['r-table']?.binding?.description).toContain('data container')
     expect(neutralCatalog.components['r-table']?.binding?.examples?.[0]).toEqual({
       type: 'r-table',
-      props: { dataKey: 'orders@rows' },
+      props: { viewKey: 'orders@default' },
     })
     expect(neutralCatalog.$defs?.['ColumnLike']?.description).toBe('表格列定义')
     expect(neutralCatalog).not.toHaveProperty('constraints')
@@ -159,7 +159,7 @@ describe('catalog-projections', () => {
     expect(spec).not.toBeNull()
     expect(spec!.type).toBe('r-table')
     expect(spec!.category).toBe('container')
-    expect(spec!.props.some((prop) => prop.name === 'dataKey')).toBe(true)
+    expect(spec!.props.some((prop) => prop.name === 'viewKey')).toBe(true)
     expect(spec!.props.some((prop) => prop.name === 'border')).toBe(true)
     expect(spec!.props.some((prop) => prop.name === 'rowKey')).toBe(true)
     expect(spec!.emits.some((emit) => emit.name === 'rowChange')).toBe(true)
@@ -176,7 +176,7 @@ describe('catalog-projections', () => {
           type: 'r-table',
           category: 'container',
           description: '表格容器',
-          props: [{ name: 'dataKey', type: 'string', required: false }],
+          props: [{ name: 'viewKey', type: 'string', required: false }],
         }),
         'internal-panel': makeEntry({
           type: 'internal-panel',

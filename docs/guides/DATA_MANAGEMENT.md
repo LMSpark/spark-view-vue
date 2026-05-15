@@ -251,20 +251,24 @@ import { useSparkComponent } from '@spark-view/spark-component'
 const { sparkConsume } = useSparkComponent(props.config)
 const dataSet = sparkConsume(PAGE_DATASET)
 
-// 通过 DataKey 绑定解析（推荐方式）
-const binding = SparkData.resolveDataKeyBinding('UserManagement@Users@rows', dataSet)
-if (binding?.kind === 'view') {
-  const view = binding.source              // IDataSource（DataView 实现）
-  const rows = computed(() => view.rows)
-}
+// 容器级绑定使用 ViewKey 定位 DataView
+const view = SparkData.resolveViewKey('Users@grid', dataSet)
+
+// 展示、动作等需要读取 DataView 输出时使用完整 DataKey
+const binding = SparkData.resolveDataKeyBinding('Users@grid@rows', dataSet)
+const rows = computed(() => binding?.value ?? [])
 ```
 
-DataKey 格式：
+ViewKey / DataKey 格式：
 
-| 格式 | 示例 | viewId |
-|------|------|--------|
-| `table@viewId@field` | `Users@grid@rows` | 显式指定 |
-| `table@field` | `Users@rows` | 默认 `default` |
+| 类型 | 格式 | 示例 |
+|------|------|------|
+| ViewKey | `table@viewId` | `Users@grid` |
+| ViewKey | `#scope@table@viewId` | `#Shared@Users@grid` |
+| DataKey | `table@viewId@field` | `Users@grid@rows` |
+| DataKey | `#scope@table@viewId@field` | `#Shared@Users@grid@currentRow.name` |
+
+`table@field`、`#scope@table@field` 这类省略 viewId 的旧写法不再合法。
 
 ---
 

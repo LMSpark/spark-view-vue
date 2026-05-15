@@ -58,7 +58,7 @@ describe('RendererList and RendererSection container integration', () => {
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         gridGap: 12,
         itemColSpan: 12,
         toolbar: { position: 'bottom', children: [{ type: 'list-toolbar-action' }] },
@@ -117,7 +117,7 @@ describe('RendererList and RendererSection container integration', () => {
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         actions: {
           type: 'r-toolbar',
           props: { position: 'left', permDeniedBehavior: 'hide' },
@@ -166,7 +166,7 @@ describe('RendererList and RendererSection container integration', () => {
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
       },
       global: {
         stubs: {
@@ -244,7 +244,7 @@ describe('RendererList and RendererSection container integration', () => {
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
       props: {
-        dataKey: 'Users@rows',
+        viewKey: 'Users@default',
         onItemClick: async (_row: unknown, _index: number, _event: Event, control: { cancel: boolean }) => {
           observed.push(`item:${String(view.currentRow?.['id'] ?? 'null')}:${String(control.cancel)}`)
           control.cancel = true

@@ -83,7 +83,7 @@
                 "type": "r-select",
                 "props": {
                   "label": "节点类型",
-                  "optionKey": "NodeKindFilterOptions@rows",
+                  "optionKey": "NodeKindFilterOptions@default@rows",
                   "optionLabelField": "label",
                   "optionValueField": "value",
                   "colSpan": 7,
@@ -94,7 +94,7 @@
                 "type": "r-select",
                 "props": {
                   "label": "子项布局",
-                  "optionKey": "PlacementFilterOptions@rows",
+                  "optionKey": "PlacementFilterOptions@default@rows",
                   "optionLabelField": "label",
                   "optionValueField": "value",
                   "colSpan": 7,
@@ -378,7 +378,7 @@
                                 "props": {
                                   "label": "节点类型",
                                   "buttonStyle": true,
-                                  "optionKey": "NodeKindOptions@rows",
+                                  "optionKey": "NodeKindOptions@default@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
                                   "colSpan": 24,
@@ -397,7 +397,7 @@
                                 "type": "r-select",
                                 "props": {
                                   "label": "链接打开方式",
-                                  "optionKey": "LinkTargetOptions@rows",
+                                  "optionKey": "LinkTargetOptions@default@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
                                   "colSpan": 12,
@@ -408,7 +408,7 @@
                                 "type": "r-select",
                                 "props": {
                                   "label": "子项布局",
-                                  "optionKey": "ChildPlacementOptions@rows",
+                                  "optionKey": "ChildPlacementOptions@default@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
                                   "colSpan": 12,

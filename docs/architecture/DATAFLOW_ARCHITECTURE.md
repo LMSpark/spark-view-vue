@@ -110,15 +110,15 @@ DataView → DataTable → DataSet
 ```
 DataSet 不持有 DataView 引用，不直接操控 DataView 状态。
 
-### DataKey 绑定键
+### ViewKey / DataKey 数据视图键
 
 统一格式（无 scope，SPA 单 DataSet）：`tableName@viewId@field`
 
 ```typescript
-// 3段（完整）
+// ViewKey：容器定位 DataView
+'Users@grid'
+// DataKey：读取 DataView 输出字段
 'Users@grid@rows'
-// 2段（viewId 默认 'default'）
-'Users@rows'
 ```
 
 | 段 | 含义 | 示例 |

@@ -291,7 +291,7 @@ public class ComponentMetadataService {
         sb.append(buildSkillPromptIndex(components));
         sb.append("\n\n");
         sb.append("使用规则：先从索引确定组件 type，再结合相关组件详情补全 props/emits，避免猜测属性。\n");
-        sb.append("数据绑定统一走 dataKey（table@view@field / #scope@table@field）。");
+        sb.append("数据绑定规则：表级容器使用 viewKey（table@viewId / #scope@table@viewId）；读取 DataView 输出字段或上下文行使用 dataKey/contextDataKey（table@viewId@field / #scope@table@viewId@field）。");
         return sb.toString().trim();
     }
 

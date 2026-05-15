@@ -158,6 +158,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     displayLabel,
     boundColumn,
     contextData,
+    dataSource,
     pageService,
     currentRow,
     selectedRows,

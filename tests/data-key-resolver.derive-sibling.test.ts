@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { deriveSiblingFieldDataKey } from '@spark-view/spark-data'
 
 describe('deriveSiblingFieldDataKey', () => {
-  it('keeps default view as short form', () => {
-    expect(deriveSiblingFieldDataKey('Orders@rows', 'currentRow')).toBe('Orders@currentRow')
+  it('requires an explicit viewId', () => {
+    expect(deriveSiblingFieldDataKey('Orders@rows', 'currentRow')).toBeUndefined()
+  })
+
+  it('keeps default viewId', () => {
+    expect(deriveSiblingFieldDataKey('Orders@default@rows', 'currentRow')).toBe('Orders@default@currentRow')
   })
 
   it('keeps explicit viewId', () => {

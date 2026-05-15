@@ -339,25 +339,25 @@ import type {
 
 ---
 
-## DataKey 统一数据绑定键
+## DataKey / ViewKey 数据视图绑定键
 
 ### 概览
 
-DataKey 是统一的数据绑定键格式，用于在页面配置（rule.json）中声明数据绑定关系。所有数据绑定使用 `@` 分隔的标准格式。
+ViewKey 用于在页面配置（rule.json）中定位 DataView；DataKey 用于读取 DataView 输出字段。两者都使用 `@` 分隔的标准格式。
 
 ### 格式
 
 ```
-tableName@viewId@field           # 完整 3 段格式
-tableName@field                  # 简写（viewId 默认 'default'）
-#scope@tableName@viewId@field    # 跨页面完整格式
-#scope@tableName@field           # 跨页面简写（viewId 默认 'default'）
+tableName@viewId                 # ViewKey：容器定位 DataView
+#scope@tableName@viewId          # 跨页面 ViewKey
+tableName@viewId@field           # DataKey：读取 DataView 输出字段
+#scope@tableName@viewId@field    # 跨页面 DataKey
 ```
 
 - **scope** — 跨页面页面 ID 或 DataSet 名称（`dataSetName`），必须使用 `#` 前缀
 - **tableName** — 表名
-- **viewId** — 视图 ID（省略时默认 `'default'`）
-- **field** — `rows` | `currentRow` | `selectedRows` | `summaryRow` | `selectionSummaryRow`
+- **viewId** — 视图 ID，必须显式写出；默认视图也写 `default`
+- **field** — `rows` | `columns` | `currentRow` | `selectedRows` | `aggregateResult` | `selectionAggregateResult` | `total` | `page` | `pageSize` | `requestState` | `mutating` | `loadingError` | `mutatingError`
 
 ### API
 
@@ -373,24 +373,22 @@ tableName@field                  # 简写（viewId 默认 'default'）
 
 | 段数 | 格式 | 示例 |
 |------|------|------|
-| 2 段 | `table@field`（viewId 默认 `default`） | `Users@rows` |
 | 3 段 | `table@viewId@field` | `Users@grid@rows` |
-| 3 段 | `#scope@table@field`（viewId 默认 `default`） | `#SharedDS@Users@rows` |
 | 4 段 | `#scope@table@viewId@field` | `#SharedDS@Users@grid@rows` |
 
-旧式 `scope@table@viewId@field` 和点号链式 DataKey 不再支持。
+旧式 `table@field`、`#scope@table@field`、`scope@table@viewId@field` 和点号链式 DataKey 不再支持。
 
 ```typescript
 import { parseDataKey } from '@spark-view/spark-data'
 
 parseDataKey('Users@rows')
-// → { tableName: 'Users', viewId: 'default', field: 'rows', raw: 'Users@rows' }
+// → null（旧短写不再合法，必须显式写 viewId）
 
 parseDataKey('Users@grid@rows')
 // → { tableName: 'Users', viewId: 'grid', field: 'rows', raw: 'Users@grid@rows' }
 
-parseDataKey('#SharedDS@Users@rows')
-// → { scope: 'SharedDS', tableName: 'Users', viewId: 'default', field: 'rows', raw: '#SharedDS@Users@rows', crossPage: true }
+parseDataKey('#SharedDS@Users@grid@rows')
+// → { scope: 'SharedDS', tableName: 'Users', viewId: 'grid', field: 'rows', raw: '#SharedDS@Users@grid@rows', crossPage: true }
 
 parseDataKey('settings.siteName')
 // → null（非 DataKey，回落到 pageData 路径）
@@ -401,16 +399,16 @@ parseDataKey('settings.siteName')
 从 DataSet 中解析数据键对应的值。
 
 ```typescript
-const dk = parseDataKey('Users@rows')!
+const dk = parseDataKey('Users@default@rows')!
 const rows = resolveDataKey(dk, dataSet)  // → DataView.rows
 ```
 
 #### `buildDataKey(tableName, field, viewId?): string`
 
-构建标准化 DataKey 字符串。viewId 为 `'default'` 时省略（输出 2 段格式）。
+构建标准化 DataKey 字符串。viewId 为 `'default'` 时也会显式输出。
 
 ```typescript
-buildDataKey('Users', 'rows')           // → 'Users@rows'
+buildDataKey('Users', 'rows')           // → 'Users@default@rows'
 buildDataKey('Users', 'rows', 'grid')   // → 'Users@grid@rows'
 ```
 
@@ -421,7 +419,7 @@ buildDataKey('Users', 'rows', 'grid')   // → 'Users@grid@rows'
 ### 类型
 
 ```typescript
-type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow' | 'selectionSummaryRow'
+type DataKeyField = 'rows' | 'columns' | 'currentRow' | 'selectedRows' | 'aggregateResult' | 'selectionAggregateResult' | 'total' | 'page' | 'pageSize' | 'requestState' | 'mutating' | 'loadingError' | 'mutatingError'
 
 interface DataKeyDescriptor {
   scope?: string        // 仅跨页面 #scope 前缀存在
@@ -437,13 +435,16 @@ interface DataKeyDescriptor {
 
 ```json
 {
-  "type": "el-table",
-  "dataKey": "Users@rows",
-  "props": { "border": true, "highlightCurrentRow": true }
+  "type": "r-table",
+  "props": {
+    "viewKey": "Users@default",
+    "border": true,
+    "highlightCurrentRow": true
+  }
 }
 ```
 
-非 DataSet 键（如 `"dataKey": "settings.siteName"`）会回落到 pageData 路径解析。
+展示组件、动作和 `contextDataKey` 需要读取 DataView 输出时，使用完整 DataKey，例如 `Users@default@currentRow.name` 或 `Users@summary@aggregateResult.totalAmount`。
 
 ---
 
