@@ -18,6 +18,8 @@ import type {
   QueryParams,
   BatchResult,
   CrudOperationConfig,
+  DataSetTransactionRequest,
+  DataSetTransactionResponse,
 } from './types'
 import {
   INSTANCE_PERMISSION_FIELD,
@@ -269,6 +271,27 @@ export class CrudService {
     }
   }
 
+  async executeTransaction<T = DataSetTransactionResponse>(
+    request: DataSetTransactionRequest,
+    endpoint?: HttpEndpoint,
+    config?: CrudOperationConfig,
+  ): Promise<CrudResult<T>> {
+    const transactionEndpoint = endpoint ?? this.api.transaction
+    if (!transactionEndpoint) {
+      return this.errorResult('Transaction API not configured')
+    }
+
+    try {
+      const requestConfig = this.buildRequestConfig(config)
+      const result = await this.executeEndpointRaw<T>(transactionEndpoint, request, requestConfig)
+      this.logger.info('事务提交成功', { operationCount: request.operations.length })
+      return { success: true, data: result }
+    } catch (error) {
+      this.logger.error('事务提交失败', error)
+      return this.errorResult('Transaction failed', error)
+    }
+  }
+
   // ===== 批量操作 =====
 
   /**
@@ -483,38 +506,45 @@ export class CrudService {
     data?: unknown,
     config?: Partial<RequestConfig>
   ): Promise<T> {
-    const resolvedEndpoint = this.resolveEndpoint(endpoint, data)
+    const value = await this.executeEndpointRaw<unknown>(endpoint, data, config)
+    return this.unwrapEndpointResult<T>(value)
+  }
 
-    const unwrap = (value: unknown): T => this.unwrapEndpointResult<T>(value)
+  private async executeEndpointRaw<T>(
+    endpoint: HttpEndpoint,
+    data?: unknown,
+    config?: Partial<RequestConfig>
+  ): Promise<T> {
+    const resolvedEndpoint = this.resolveEndpoint(endpoint, data)
 
     switch (endpoint.method) {
       case 'POST':
-        return unwrap(await this.http.post<T>(resolvedEndpoint.url, data, {
+        return await this.http.post<T>(resolvedEndpoint.url, data, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        }))
+        })
       case 'PUT':
-        return unwrap(await this.http.put<T>(resolvedEndpoint.url, data, {
+        return await this.http.put<T>(resolvedEndpoint.url, data, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        }))
+        })
       case 'PATCH':
-        return unwrap(await this.http.patch<T>(resolvedEndpoint.url, data, {
+        return await this.http.patch<T>(resolvedEndpoint.url, data, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        }))
+        })
       case 'DELETE':
-        return unwrap(await this.http.delete<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
+        return await this.http.delete<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        }))
+        })
       case 'GET':
       case undefined:
       default:
-        return unwrap(await this.http.get<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
+        return await this.http.get<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        }))
+        })
     }
   }
 
