@@ -10,6 +10,8 @@ import type {
   IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, IDataRow, DataColumn,
   ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression, CrudResult, PkValue,
   DataSetSaveChangesOptions, DataSetSaveChangesResult, DataSetSaveChangesViewResult,
+  DataSetSaveChangesConfig, DataSetTransactionOperation, DataSetTransactionRequest,
+  DataSetTransactionResponse, HttpEndpoint,
 } from './types'
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
@@ -31,6 +33,7 @@ import type {
   DataSetSnapshotSelector,
 } from './dataset-history'
 import { DataTable } from './data-table'
+import { createCrudService } from './crud-service'
 import { normalizeDataSetMetadata } from './metadata'
 import { assertNoSeparator, getParentRows } from './core/utils'
 
@@ -114,6 +117,18 @@ interface DataSetSaveChangesTarget {
   ids?: PkValue[]
 }
 
+interface DataSetTransactionOperationPlan {
+  operation: DataSetTransactionOperation
+  view: SparkDataView
+  id: PkValue
+  kind: DataSetTransactionOperation['op']
+}
+
+interface DataSetTransactionViewPlan {
+  viewResult: DataSetSaveChangesViewResult
+  operations: DataSetTransactionOperationPlan[]
+}
+
 function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesResult {
   return {
     viewCount,
@@ -141,6 +156,10 @@ function hasPendingChanges(view: SparkDataView, ids?: PkValue[]): boolean {
     || view.dirtyTracking.isPendingCreate(id)
     || view.dirtyTracking.isPendingDelete(id)
   )
+}
+
+function toUploadRecord(data: Partial<IDataRow>): Record<string, unknown> {
+  return { ...data }
 }
 
 function mergeViewResult(target: DataSetSaveChangesResult, viewResult: DataSetSaveChangesViewResult): void {
@@ -273,6 +292,9 @@ export class DataSet implements IDataSet {
   /** 页面ID */
   pageId: string | undefined
 
+  /** DataSet.saveChanges 的默认提交策略。 */
+  saveChangesConfig: DataSetSaveChangesConfig | undefined
+
   /** 设计器布局信息（不参与运行时数据逻辑）。 */
   layout: IDataSetMetadata['layout'] | undefined
 
@@ -338,6 +360,7 @@ export class DataSet implements IDataSet {
     viewDependencies?: ViewDependency[] | undefined
     version?: number | undefined
     pageId?: string | undefined
+    saveChanges?: DataSetSaveChangesConfig | undefined
     layout?: IDataSetMetadata['layout'] | undefined
   }) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
@@ -350,6 +373,7 @@ export class DataSet implements IDataSet {
       ...(config.viewDependencies !== undefined ? { viewDependencies: config.viewDependencies } : {}),
       ...(config.version !== undefined ? { version: config.version } : {}),
       ...(config.pageId !== undefined ? { pageId: config.pageId } : {}),
+      ...(config.saveChanges !== undefined ? { saveChanges: config.saveChanges } : {}),
       ...(config.layout !== undefined ? { layout: config.layout } : {}),
     })
   }
@@ -710,6 +734,7 @@ export class DataSet implements IDataSet {
     this.viewDependencies = normalized.viewDependencies
     this.version = normalized.version
     this.pageId = normalized.pageId
+    this.saveChangesConfig = normalized.saveChanges
     this.layout = normalized.layout
     this._buildTableRelationIndex()
     this._createTablesFromMetadata(normalized.tables)
@@ -1187,6 +1212,11 @@ export class DataSet implements IDataSet {
    */
   async saveChanges(options?: DataSetSaveChangesOptions): Promise<CrudResult<DataSetSaveChangesResult>> {
     const targets = this.resolveSaveChangesTargets(options)
+    const mode = options?.mode ?? this.saveChangesConfig?.mode ?? 'perView'
+    if (mode === 'transaction') {
+      return this.saveChangesInTransaction(targets, options)
+    }
+
     const result = emptyDataSetSaveChangesResult(targets.length)
     const shouldApplyEditingRows = options?.applyEditingRows ?? true
 
@@ -1248,6 +1278,238 @@ export class DataSet implements IDataSet {
         : `保存 ${result.viewResults.length} 个视图存在失败：编辑态失败 ${result.failedEditingRows}，提交失败 ${result.failedCount}`,
       data: result,
     }
+  }
+
+  private async saveChangesInTransaction(
+    targets: DataSetSaveChangesTarget[],
+    options?: DataSetSaveChangesOptions,
+  ): Promise<CrudResult<DataSetSaveChangesResult>> {
+    const result = emptyDataSetSaveChangesResult(targets.length)
+    const shouldApplyEditingRows = options?.applyEditingRows ?? true
+    const viewPlans: DataSetTransactionViewPlan[] = []
+
+    for (const target of targets) {
+      const view = target.view
+      const shouldApply = shouldApplyEditingRows && hasEditingChanges(view, target.ids)
+      const shouldSave = hasPendingChanges(view, target.ids)
+      if (!shouldApply && !shouldSave) continue
+
+      const viewResult: DataSetSaveChangesViewResult = {
+        tableName: view.tableName,
+        viewId: view.viewId,
+        appliedEditingRows: 0,
+        failedEditingRows: 0,
+        createdCount: 0,
+        savedCount: 0,
+        deletedCount: 0,
+        failedCount: 0,
+        failedIds: [],
+        failedErrors: {},
+      }
+
+      if (shouldApply) {
+        const applyResult = await view.applyEditingRows(target.ids)
+        const applyData = applyResult.data
+        viewResult.appliedEditingRows = applyData?.appliedCount ?? 0
+        viewResult.failedEditingRows = applyData?.failedCount ?? 0
+        if (applyData) {
+          viewResult.failedIds.push(...applyData.failedIds)
+          Object.assign(viewResult.failedErrors, applyData.failedErrors)
+        }
+      }
+
+      if (viewResult.failedEditingRows > 0) {
+        mergeViewResult(result, viewResult)
+        continue
+      }
+
+      const operations = this.collectTransactionOperations(view, target.ids, viewResult)
+      if (operations.length === 0) {
+        mergeViewResult(result, viewResult)
+        continue
+      }
+      viewPlans.push({ viewResult, operations })
+    }
+
+    if (result.failedEditingRows > 0) {
+      return {
+        success: false,
+        message: `事务保存中止：编辑态失败 ${result.failedEditingRows}`,
+        data: result,
+      }
+    }
+
+    const operationPlans = viewPlans.flatMap(plan => plan.operations)
+    if (operationPlans.length === 0) {
+      return {
+        success: true,
+        message: `保存 ${result.viewResults.length} 个视图：新增 0，更新 0，删除 0`,
+        data: result,
+      }
+    }
+
+    const transaction = this.resolveSaveChangesTransaction(options)
+    const request: DataSetTransactionRequest = {
+      operations: operationPlans.map(plan => plan.operation),
+    }
+    if (transaction.requestId !== undefined) request.requestId = transaction.requestId
+
+    const service = createCrudService(
+      { transaction: transaction.endpoint },
+      this._sharedHttpClient,
+      () => this.getRequestTemplateParams(),
+    )
+    const transactionResult = await service.executeTransaction<DataSetTransactionResponse>(request)
+    if (!transactionResult.success || !transactionResult.data) {
+      const message = transactionResult.message ?? transactionResult.error?.message ?? '事务提交失败'
+      for (const plan of viewPlans) {
+        plan.viewResult.createdCount = 0
+        plan.viewResult.savedCount = 0
+        plan.viewResult.deletedCount = 0
+        plan.viewResult.failedCount = plan.operations.length
+        plan.viewResult.failedIds.push(...plan.operations.map(op => op.id))
+        plan.viewResult.failedErrors['*'] = message
+        mergeViewResult(result, plan.viewResult)
+      }
+      const failure: CrudResult<DataSetSaveChangesResult> = {
+        success: false,
+        message,
+        data: result,
+      }
+      if (transactionResult.error !== undefined) failure.error = transactionResult.error
+      return failure
+    }
+
+    this.applySuccessfulTransactionOperations(operationPlans, transactionResult.data)
+    for (const plan of viewPlans) mergeViewResult(result, plan.viewResult)
+    result.transaction = transactionResult.data
+
+    return {
+      success: true,
+      message: `事务保存 ${result.viewResults.length} 个视图：新增 ${result.createdCount}，更新 ${result.savedCount}，删除 ${result.deletedCount}`,
+      data: result,
+    }
+  }
+
+  private resolveSaveChangesTransaction(options?: DataSetSaveChangesOptions): {
+    endpoint: HttpEndpoint
+    requestId?: string
+  } {
+    const endpoint = options?.transaction?.endpoint ?? this.saveChangesConfig?.transaction?.endpoint
+    if (!endpoint) {
+      throw new Error('DataSet.saveChanges(transaction): transaction endpoint not configured')
+    }
+    const requestId = options?.transaction?.requestId ?? this.saveChangesConfig?.transaction?.requestId
+    return requestId === undefined ? { endpoint } : { endpoint, requestId }
+  }
+
+  private collectTransactionOperations(
+    view: SparkDataView,
+    ids: PkValue[] | undefined,
+    viewResult: DataSetSaveChangesViewResult,
+  ): DataSetTransactionOperationPlan[] {
+    const idFilter = ids !== undefined ? new Set<PkValue>(ids) : undefined
+    const includesId = (id: PkValue): boolean => idFilter === undefined || idFilter.has(id)
+    const plans: DataSetTransactionOperationPlan[] = []
+    const rowById = new Map<PkValue, IDataRow>()
+    for (const row of view.rows) {
+      const rowId = view.getPkKey(row)
+      if (rowId !== undefined) rowById.set(rowId, row)
+    }
+    const pendingCreateRows = new Map<PkValue, IDataRow>()
+    for (const row of view.dirtyTracking.pendingCreateRows) {
+      const rowId = view.getPkKey(row)
+      if (rowId !== undefined) pendingCreateRows.set(rowId, row)
+    }
+
+    for (const id of view.dirtyTracking.pendingCreateIds) {
+      if (!includesId(id)) continue
+      const row = pendingCreateRows.get(id) ?? rowById.get(id)
+      if (!row) throw new Error(`DataSet.saveChanges(transaction): pending create row not found ${view.tableName}@${view.viewId}:${String(id)}`)
+      const operation: DataSetTransactionOperation = {
+        operationId: this.buildTransactionOperationId('create', view, id),
+        tableName: view.tableName,
+        op: 'create',
+        data: toUploadRecord(view.stripComputedColumns({ ...row })),
+      }
+      plans.push({ operation, view, id, kind: 'create' })
+      viewResult.createdCount++
+    }
+
+    for (const id of view.dirtyTracking.dirtyRowIds) {
+      if (!includesId(id)) continue
+      const row = rowById.get(id)
+      if (!row) throw new Error(`DataSet.saveChanges(transaction): dirty row not found ${view.tableName}@${view.viewId}:${String(id)}`)
+      const operation: DataSetTransactionOperation = {
+        operationId: this.buildTransactionOperationId('update', view, id),
+        tableName: view.tableName,
+        op: 'update',
+        pk: view.buildServerPk(row),
+        data: toUploadRecord(view.stripComputedColumns({ ...row })),
+      }
+      plans.push({ operation, view, id, kind: 'update' })
+      viewResult.savedCount++
+    }
+
+    for (const id of view.dirtyTracking.pendingDeleteIds) {
+      if (!includesId(id)) continue
+      const snapshot = view.dirtyTracking.getPendingDeleteSnapshot(id)
+      const operation: DataSetTransactionOperation = {
+        operationId: this.buildTransactionOperationId('delete', view, id),
+        tableName: view.tableName,
+        op: 'delete',
+        pk: snapshot ? view.buildServerPk(snapshot) : { [view.primaryKey]: id },
+      }
+      plans.push({ operation, view, id, kind: 'delete' })
+      viewResult.deletedCount++
+    }
+
+    return plans
+  }
+
+  private buildTransactionOperationId(
+    kind: DataSetTransactionOperation['op'],
+    view: SparkDataView,
+    id: PkValue,
+  ): string {
+    return `${view.tableName}@${view.viewId}:${kind}:${String(id)}`
+  }
+
+  private applySuccessfulTransactionOperations(
+    plans: DataSetTransactionOperationPlan[],
+    response: DataSetTransactionResponse,
+  ): void {
+    const resultByOperationId = new Map<string, unknown>()
+    for (const item of response.results ?? []) {
+      if (typeof item.operationId === 'string') resultByOperationId.set(item.operationId, item.result)
+    }
+
+    for (const plan of plans) {
+      const operationId = plan.operation.operationId
+      const rawResult = operationId ? resultByOperationId.get(operationId) : undefined
+      const serverRow = asRecord(rawResult)
+      if (plan.kind === 'create') {
+        plan.view.dirtyTracking.cancelCreate(plan.id)
+        if (serverRow) this.syncTransactionCreatedRow(plan.view, plan.id, serverRow as IDataRow)
+        continue
+      }
+      if (plan.kind === 'update') {
+        plan.view.dirtyTracking.clearDirty(plan.id)
+        if (serverRow) plan.view.updateRowById(plan.id, serverRow)
+        continue
+      }
+      plan.view.dirtyTracking.cancelDelete(plan.id)
+    }
+  }
+
+  private syncTransactionCreatedRow(view: SparkDataView, localId: PkValue, serverRow: IDataRow): void {
+    const serverId = view.getPkKey(serverRow)
+    if (serverId !== undefined && serverId !== localId) {
+      view.deleteRowById(localId)
+      view.appendRow(serverRow)
+      return
+    }
+    view.updateRowById(localId, serverRow)
   }
 
   private resolveSaveChangesTargets(options?: DataSetSaveChangesOptions): DataSetSaveChangesTarget[] {
@@ -1339,6 +1601,7 @@ export class DataSet implements IDataSet {
       viewDependencies: this.viewDependencies,
       version: this.version,
       pageId: this.pageId,
+      ...(this.saveChangesConfig !== undefined ? { saveChanges: this.saveChangesConfig } : {}),
       ...(this.layout !== undefined ? { layout: this.layout } : {}),
     } as IDataSetMetadata
   }
@@ -1398,6 +1661,7 @@ export class DataSet implements IDataSet {
         schemaVersion?: number
         version?: number
         pageId?: string
+        saveChanges?: DataSetSaveChangesConfig
         layout?: IDataSetMetadata['layout']
       }
 
@@ -1416,6 +1680,7 @@ export class DataSet implements IDataSet {
         ...(rd.schemaVersion !== undefined ? { schemaVersion: rd.schemaVersion } : {}),
         ...(rd.version !== undefined ? { version: rd.version } : {}),
         ...(rd.pageId !== undefined ? { pageId: rd.pageId } : {}),
+        ...(rd.saveChanges !== undefined ? { saveChanges: rd.saveChanges } : {}),
         ...(rd.layout !== undefined ? { layout: rd.layout } : {}),
       })
     }
