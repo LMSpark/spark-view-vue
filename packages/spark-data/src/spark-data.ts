@@ -147,6 +147,18 @@ export namespace SparkData {
 
   // ===== DataKey 统一解析 =====
 
+  /** 判断 viewKey 是否为 DataView 定位键 */
+  export const isViewKey = DataKeyModule.isViewKey
+
+  /** 解析 viewKey 为结构化描述符 */
+  export const parseViewKey = DataKeyModule.parseViewKey
+
+  /** 诊断 ViewKey 绑定链路 */
+  export const diagnoseViewKey = DataKeyModule.diagnoseViewKey
+
+  /** 从 DataSet 中解析 ViewKey 对应的 DataView */
+  export const resolveViewKey = DataKeyModule.resolveViewKey
+
   /** 判断 dataKey 是否为 DataSet 数据键 */
   export const isDataKey = DataKeyModule.isDataKey
 
@@ -162,8 +174,14 @@ export namespace SparkData {
   /** 解析 DataKey 为渲染绑定描述符（判别联合，避免 instanceof DataView） */
   export const resolveDataKeyBinding = DataKeyModule.resolveDataKeyBinding
 
+  /** 构建标准化 ViewKey 字符串 */
+  export const buildViewKey = DataKeyModule.buildViewKey
+
   /** 构建标准化 DataKey 字符串 */
   export const buildDataKey = DataKeyModule.buildDataKey
+
+  /** 从 ViewKey 派生同视图 DataKey */
+  export const deriveDataKeyFromViewKey = DataKeyModule.deriveDataKeyFromViewKey
 
   /** 从描述符提取视图唯一键 */
   export const getViewKey = DataKeyModule.getViewKey

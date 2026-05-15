@@ -147,7 +147,7 @@
       "border": true,
       "stripe": true,
       "highlightCurrentRow": true,
-      "dataKey": "ResourceAlloc@rows"
+      "viewKey": "ResourceAlloc@default"
     }
   }
 ]

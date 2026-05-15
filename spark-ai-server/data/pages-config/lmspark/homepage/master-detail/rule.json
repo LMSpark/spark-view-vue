@@ -60,7 +60,7 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "dataKey": "Users@rows"
+              "viewKey": "Users@default"
             }
           }
         ],
@@ -109,7 +109,8 @@
               }
             ],
             "props": {
-              "dataKey": "Users@currentRow"
+              "viewKey": "Users@default",
+              "contextDataKey": "Users@default@currentRow"
             }
           }
         ],
@@ -173,7 +174,7 @@
               "border": true,
               "stripe": true,
               "emptyText": "请先选择用户",
-              "dataKey": "Orders@rows"
+              "viewKey": "Orders@default"
             }
           }
         ],

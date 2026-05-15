@@ -1067,8 +1067,8 @@
                   "border": false,
                   "stripe": false,
                   "highlightCurrentRow": true,
-                  "dataKey": "MyTasks@rows",
-                  "class": "dashboard-task-table"
+                  "class": "dashboard-task-table",
+                  "viewKey": "MyTasks@default"
                 }
               }
             ],

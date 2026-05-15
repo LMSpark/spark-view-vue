@@ -19,6 +19,10 @@ export interface RDetailProps
   dataSource?: DataView
   /** 结构化工具栏 */
   toolbar?: RToolbarProps
+  /** 值级上下文绑定，默认由 viewKey 派生为 currentRow。 */
+  contextDataKey?: string
+  /** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */
+  autoColumns?: boolean
   /** 标题对齐 */
   titleAlign?: 'left' | 'center' | 'right'
   /** 值对齐 */

@@ -574,7 +574,9 @@ export class SparkNodeTree {
   }
 
   /**
-   * 收集当前组件实例子树中出现过的全部唯一 dataKey。
+   * 收集当前组件实例子树中出现过的全部唯一数据绑定键。
+   *
+   * 包括容器级 viewKey、值级 dataKey 以及表单/详情上下文 contextDataKey。
    */
   collectDataKeys(): Set<string> {
     const keys = new Set<string>()
@@ -1634,13 +1636,24 @@ function countRecursive(node: SparkNode): number {
 }
 
 /**
- * 递归收集所有 props.dataKey。
+ * 递归收集所有 props.viewKey / props.dataKey / props.contextDataKey。
  */
 function collectDataKeysRecursive(node: SparkNode, out: Set<string>): void {
+  const viewKey = node.props?.['viewKey']
+  if (typeof viewKey === 'string' && viewKey.length > 0) {
+    out.add(viewKey)
+  }
+
   const dataKey = node.props?.['dataKey']
   if (typeof dataKey === 'string' && dataKey.length > 0) {
     out.add(dataKey)
   }
+
+  const contextDataKey = node.props?.['contextDataKey']
+  if (typeof contextDataKey === 'string' && contextDataKey.length > 0) {
+    out.add(contextDataKey)
+  }
+
   if (!Array.isArray(node.children)) return
   for (const child of node.children) {
     if (isSparkNode(child)) collectDataKeysRecursive(child, out)

@@ -184,7 +184,8 @@ export interface ICurrentRowSource extends IRowDataSource {
  *    基于当前 `selectedRows` 计算；二者都是由 aggregates 配置生成的“聚合结果输出行”，
  *    字段名来自 aggregates 的输出 key，字段值是对应聚合计算结果。
  * 4. UI / DataKey 消费：组件可直接读取 `dataSource.aggregateResult`，也可通过
- *    `Table@aggregateResult.totalAmount` 或 `Table@selectionAggregateResult.totalAmount` 引用。
+ *    `Table@default@aggregateResult.totalAmount` 或
+ *    `Table@default@selectionAggregateResult.totalAmount` 引用。
  * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */

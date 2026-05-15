@@ -168,7 +168,6 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "dataKey": "Orders@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -438,7 +437,8 @@
                     }
                   }
                 ]
-              }
+              },
+              "viewKey": "Orders@default"
             }
           }
         ],
@@ -490,7 +490,8 @@
                   }
                 ],
                 "props": {
-                  "dataKey": "Orders@aggregateResult"
+                  "viewKey": "Orders@default",
+                  "contextDataKey": "Orders@default@aggregateResult"
                 }
               },
               {
@@ -530,7 +531,8 @@
                   }
                 ],
                 "props": {
-                  "dataKey": "Orders@selectionAggregateResult"
+                  "viewKey": "Orders@default",
+                  "contextDataKey": "Orders@default@selectionAggregateResult"
                 }
               }
             ],
@@ -634,7 +636,8 @@
             "props": {
               "gridColumns": 24,
               "gridGap": 12,
-              "dataKey": "Orders@currentRow"
+              "viewKey": "Orders@default",
+              "contextDataKey": "Orders@default@currentRow"
             }
           }
         ],
@@ -725,7 +728,7 @@
                   }
                 ]
               },
-              "dataKey": "OrderItems@rows"
+              "viewKey": "OrderItems@default"
             }
           }
         ],

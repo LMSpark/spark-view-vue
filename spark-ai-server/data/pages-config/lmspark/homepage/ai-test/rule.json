@@ -49,7 +49,7 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "dataKey": "employees@rows"
+              "dataKey": "employees@default@rows"
             }
           }
         ]

@@ -94,11 +94,11 @@
               "style": {
                 "width": "100%"
               },
-              "dataKey": "users@rows",
               "on": {
                 "currentChange": "handleRowChange",
                 "selectionChange": "handleSelection"
-              }
+              },
+              "viewKey": "users@default"
             }
           }
         ],

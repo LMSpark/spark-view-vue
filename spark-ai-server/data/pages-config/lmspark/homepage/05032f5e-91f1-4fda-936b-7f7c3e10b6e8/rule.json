@@ -152,12 +152,12 @@
                       }
                     ],
                     "props": {
-                      "dataKey": "Voucher@all@rows",
                       "tableProps": {
                         "highlightCurrentRow": true,
                         "rowKey": "id"
                       },
-                      "onCurrentChange": "onVoucherChange"
+                      "onCurrentChange": "onVoucherChange",
+                      "viewKey": "Voucher@all"
                     },
                     "id": "table__voucherAll"
                   }
@@ -239,12 +239,12 @@
                       }
                     ],
                     "props": {
-                      "dataKey": "Voucher@draft@rows",
                       "tableProps": {
                         "highlightCurrentRow": true,
                         "rowKey": "id"
                       },
-                      "onCurrentChange": "onVoucherChange"
+                      "onCurrentChange": "onVoucherChange",
+                      "viewKey": "Voucher@draft"
                     },
                     "id": "table__voucherDraft"
                   }
@@ -326,12 +326,12 @@
                       }
                     ],
                     "props": {
-                      "dataKey": "Voucher@audited@rows",
                       "tableProps": {
                         "highlightCurrentRow": true,
                         "rowKey": "id"
                       },
-                      "onCurrentChange": "onVoucherChange"
+                      "onCurrentChange": "onVoucherChange",
+                      "viewKey": "Voucher@audited"
                     },
                     "id": "table__voucherAudited"
                   }
@@ -423,8 +423,9 @@
               }
             ],
             "props": {
-              "dataKey": "Voucher@currentRow",
-              "labelWidth": "80px"
+              "labelWidth": "80px",
+              "viewKey": "Voucher@default",
+              "contextDataKey": "Voucher@default@currentRow"
             },
             "id": "form__voucher"
           }
@@ -528,7 +529,6 @@
               }
             ],
             "props": {
-              "dataKey": "Entries@default@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -570,7 +570,8 @@
                 "props": {
                   "gap": "8px"
                 }
-              }
+              },
+              "viewKey": "Entries@default"
             },
             "id": "table__entries"
           }
@@ -610,7 +611,8 @@
               }
             ],
             "props": {
-              "dataKey": "Entries@aggregateResult"
+              "viewKey": "Entries@default",
+              "contextDataKey": "Entries@default@aggregateResult"
             },
             "id": "detail__summary"
           }

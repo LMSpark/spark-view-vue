@@ -104,7 +104,6 @@
                   }
                 ]
               },
-              "dataKey": "Users@rows",
               "actions": {
                 "type": "r-toolbar",
                 "children": [
@@ -133,7 +132,8 @@
                     }
                   }
                 ]
-              }
+              },
+              "viewKey": "Users@default"
             }
           }
         ],
@@ -229,7 +229,6 @@
                   }
                 ]
               },
-              "dataKey": "Orders@rows",
               "actions": {
                 "type": "r-toolbar",
                 "children": [
@@ -258,7 +257,8 @@
                     }
                   }
                 ]
-              }
+              },
+              "viewKey": "Orders@default"
             }
           }
         ],
@@ -345,7 +345,6 @@
                   }
                 ]
               },
-              "dataKey": "OrderItems@rows",
               "actions": {
                 "type": "r-toolbar",
                 "children": [
@@ -374,7 +373,8 @@
                     }
                   }
                 ]
-              }
+              },
+              "viewKey": "OrderItems@default"
             }
           }
         ],

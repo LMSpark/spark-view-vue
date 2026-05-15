@@ -43,6 +43,11 @@ export type {
 // ===== DataKey 统一解析 =====
 
 export {
+  isViewKey,
+  parseViewKey,
+  diagnoseViewKey,
+  resolveViewKey,
+  buildViewKey,
   isDataKey,
   parseDataKey,
   diagnoseDataKey,
@@ -50,14 +55,24 @@ export {
   resolveDataKeyBinding,
   resolveRawKey,
   getViewFromRawKey,
+  buildDataKey,
+  getViewKey,
 } from './core/data-key'
-export type { DataKeyBinding, DataKeyDiagnostic, DataKeyDiagnosticStatus } from './core/data-key'
+export type {
+  DataKeyBinding,
+  DataKeyDiagnostic,
+  DataKeyDiagnosticStatus,
+  ViewKeyDescriptor,
+  ViewKeyDiagnostic,
+  ViewKeyDiagnosticStatus,
+} from './core/data-key'
 export {
   resolveDataCapabilitiesFromDataKey,
   resolveViewFromDataKey,
+  deriveDataKeyFromViewKey,
   deriveSiblingFieldDataKey,
 } from './core/data-key'
-export type { ResolvedDataCapabilities } from './core/data-key'
+export type { DataKeyDescriptor, DataKeyField, ResolvedDataCapabilities } from './core/data-key'
 
 // ===== 核心类型 =====
 

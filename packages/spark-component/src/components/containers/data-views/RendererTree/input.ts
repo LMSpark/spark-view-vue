@@ -5,7 +5,6 @@ import type { RToolbarProps } from '../../layout/RendererToolbar.types'
 import { useContainerToolbar } from '../../runtime/container-ui'
 
 interface RendererTreeInputProps {
-  dataKey?: string | undefined
   children?: SparkNode['children'] | undefined
   toolbar?: RToolbarProps | undefined
   actions?: RToolbarProps | undefined

@@ -101,7 +101,7 @@
                     "props": {
                       "border": true,
                       "size": "small",
-                      "dataKey": "Categories@rows"
+                      "viewKey": "Categories@default"
                     }
                   }
                 ],
@@ -158,7 +158,7 @@
                     "props": {
                       "border": true,
                       "size": "small",
-                      "dataKey": "Products@rows"
+                      "viewKey": "Products@default"
                     }
                   }
                 ],
@@ -207,7 +207,7 @@
                     "props": {
                       "border": true,
                       "size": "small",
-                      "dataKey": "OrderDetails@rows"
+                      "viewKey": "OrderDetails@default"
                     }
                   }
                 ],

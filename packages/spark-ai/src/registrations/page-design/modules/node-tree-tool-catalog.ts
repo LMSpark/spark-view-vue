@@ -233,10 +233,10 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     functionId: 'collectDataKeys',
     target: 'tree',
     coreMethod: 'collectDataKeys',
-    description: '收集当前组件实例子树中出现过的全部唯一 dataKey，用于确认页面现有数据绑定。',
+    description: '收集当前组件实例子树中出现过的全部唯一 viewKey / dataKey / contextDataKey，用于确认页面现有数据绑定。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
-      dataKeys: 'Set<string> — 唯一 dataKey 集合',
+      dataKeys: 'Set<string> — 唯一数据绑定键集合（包含 viewKey / dataKey / contextDataKey）',
     },
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],

@@ -8,6 +8,24 @@
         />
     </div>
 
+    <DataViewMetaBar
+      :rows="dataState.rows.value"
+      :columns="dataState.columns.value"
+      :selected-rows="dataState.selectedRows.value"
+      :total="dataState.total.value"
+      :page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :request-state="dataState.requestState.value"
+      :mutating="dataState.mutating.value"
+      :loading-error="dataState.loadingError.value"
+      :mutating-error="dataState.mutatingError.value"
+      :aggregate-result="dataState.aggregateResult.value"
+      :selection-aggregate-result="dataState.selectionAggregateResult.value"
+      :show-data-view-meta="props.showDataViewMeta !== false"
+      :show-aggregate-summary="props.showAggregateSummary !== false"
+      :show-selection-summary="props.showSelectionSummary !== false"
+    />
+
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
       <el-tree
         ref="nativeTreeRef"
@@ -63,7 +81,7 @@
  * @skill r-tree
  * @description 树形容器，支持懒加载、节点操作和编辑器侧面板。
  * @category container
- * @binding dataKey-driven
+ * @binding viewKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
@@ -72,7 +90,7 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 内部通过 useContainerDataSource 统一解析 dataKey，并走能力链读取 PAGE_DATASET。
+ * 内部通过 useContainerDataSource 统一解析 viewKey，并走能力链读取 PAGE_DATASET。
  */
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import {
@@ -100,6 +118,7 @@ import { useRendererTreeViewState } from '../view-tree-state'
 import { resolveTreeNodeText, toDataRecord } from '../data-row-utils'
 import { resolveNodeBeforeRender, mergeNodeBeforeRenderProps } from '../../../support/beforeRender'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import DataViewMetaBar from '../DataViewMetaBar.vue'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -124,7 +143,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 
 const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
-  dataKey: toRef(props, 'dataKey'),
+  viewKey: toRef(props, 'viewKey'),
   sparkConsume,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,

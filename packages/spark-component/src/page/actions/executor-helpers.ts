@@ -16,7 +16,7 @@
  */
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { getViewFromRawKey, resolveDataKeyBinding } from '@spark-view/spark-data'
+import { resolveDataKeyBinding } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
@@ -317,9 +317,7 @@ export interface ResolvedActionDataCapabilities {
  *
  * 解析优先级：
  * 1. 无 dataKey → 使用 `ctx.getDataSource()` 作用域 DataView（容器注入）
- * 2. 有 dataKey → 通过 `resolveDataKeyBinding` 从 DataSet 查找
- *    - binding.kind = 'view' → 直接使用该 DataView
- *    - 其他 kind → 通过 `getViewFromRawKey` 查找对应 DataView
+ * 2. 有 dataKey → 通过 `resolveDataKeyBinding` 从 DataSet 查找所属 DataView
  *
  * 任何环节不满足都返回全 null/空 的空结果，调用方负责 fail-fast。
  */
@@ -345,22 +343,13 @@ export function resolveActionDataCapabilities(
   const binding = resolveDataKeyBinding(dataKey, ds)
   if (!binding) return empty
 
-  if (binding.kind === 'view') {
-    const dataSource = binding.source as DataView
-    return {
-      dataSource,
-      currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
-      selectedRows: getSelectedRows(dataSource),
-    }
-  }
-
-  const dataSource = getViewFromRawKey(dataKey, ds) ?? null
+  const dataSource = binding.source as DataView
   return {
     dataSource,
     currentRow: isRowLike(binding.value)
       ? binding.value
-      : (dataSource && isRowLike(dataSource.currentRow) ? dataSource.currentRow : null),
-    selectedRows: dataSource ? getSelectedRows(dataSource) : [],
+      : (isRowLike(dataSource.currentRow) ? dataSource.currentRow : null),
+    selectedRows: getSelectedRows(dataSource),
   }
 }
 

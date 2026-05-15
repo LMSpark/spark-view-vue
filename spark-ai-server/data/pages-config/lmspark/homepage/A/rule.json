@@ -166,7 +166,7 @@
           "stripe": true,
           "highlightCurrentRow": true,
           "rowKey": "id",
-          "dataKey": "Projects@rows",
+          "dataKey": "Projects@default@rows",
           "on": {
             "currentChange": "handleCurrentChange",
             "selectionChange": "handleSelectionChange"
@@ -239,10 +239,11 @@
           }
         ],
         "props": {
-          "dataKey": "Projects@currentRow",
           "style": {
             "marginTop": "16px"
-          }
+          },
+          "viewKey": "Projects@default",
+          "contextDataKey": "Projects@default@currentRow"
         }
       }
     ],

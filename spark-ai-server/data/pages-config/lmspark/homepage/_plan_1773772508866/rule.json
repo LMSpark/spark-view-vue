@@ -52,7 +52,7 @@
           "border": true,
           "highlightCurrentRow": true,
           "stripe": true,
-          "dataKey": "Pages@rows"
+          "viewKey": "Pages@default"
         }
       }
     ],

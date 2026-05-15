@@ -79,9 +79,10 @@
             ],
             "props": {
               "labelWidth": "100px",
-              "dataKey": "Vouchers@currentRow",
               "gridColumns": 24,
-              "gridGap": "12px"
+              "gridGap": "12px",
+              "viewKey": "Vouchers@default",
+              "contextDataKey": "Vouchers@default@currentRow"
             },
             "id": "form__voucher"
           },
@@ -151,7 +152,6 @@
               }
             ],
             "props": {
-              "dataKey": "VoucherItems@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -191,7 +191,8 @@
                 ],
                 "props": {},
                 "id": "actions__details"
-              }
+              },
+              "viewKey": "VoucherItems@default"
             },
             "id": "table__details"
           }
@@ -266,7 +267,6 @@
               }
             ],
             "props": {
-              "dataKey": "Vouchers@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -356,7 +356,8 @@
                 ],
                 "props": {},
                 "id": "actions__voucherList"
-              }
+              },
+              "viewKey": "Vouchers@default"
             },
             "id": "table__voucherList"
           }

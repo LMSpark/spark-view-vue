@@ -104,7 +104,7 @@ function pickIdField(props: Record<string, unknown>): string | undefined {
   return readString(props['idField'])
 }
 
-/** 读取 dataKey prop（DataView 路径，省略时使用容器作用域 DataView）。 */
+/** 读取 dataKey prop（DataView 值级路径，省略时使用容器作用域 DataView）。 */
 function pickDataKey(props: Record<string, unknown>): string | undefined {
   return readString(props['dataKey'])
 }

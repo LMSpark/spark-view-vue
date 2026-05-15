@@ -195,7 +195,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "WorkloadDetail@rows"
+          "viewKey": "WorkloadDetail@default"
         }
       }
     ],

@@ -228,11 +228,11 @@ export interface EmitEntry {
 
 /** 组件绑定语义描述符。 */
 export interface CatalogBindingDescriptor {
-  /** LLM 可读绑定说明，解释该组件如何参与 dataKey/field/options/value 管线。 */
+  /** LLM 可读绑定说明，解释该组件如何参与 viewKey/dataKey/field/options/value 管线。 */
   description?: string
   /** 可直接参考的绑定配置示例。 */
   examples?: unknown[]
-  /** 是否自解析 dataKey/上下文。 */
+  /** 是否自解析 viewKey/dataKey/上下文。 */
   selfResolving?: boolean
   /** 绑定委派方。 */
   bindingDelegate?: string

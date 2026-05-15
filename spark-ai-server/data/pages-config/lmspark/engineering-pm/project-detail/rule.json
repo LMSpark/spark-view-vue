@@ -164,7 +164,7 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "dataKey": "ProjectTasks@rows"
+              "viewKey": "ProjectTasks@default"
             }
           }
         ],
@@ -206,7 +206,7 @@
             ],
             "props": {
               "border": true,
-              "dataKey": "Milestones@rows"
+              "viewKey": "Milestones@default"
             }
           }
         ],

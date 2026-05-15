@@ -298,7 +298,7 @@
               "emptyText": "暂无产品数据",
               "gridColumns": 24,
               "gridGap": "8px",
-              "dataKey": "Products@cards@rows"
+              "viewKey": "Products@cards"
             }
           }
         ],
@@ -473,7 +473,7 @@
               },
               "gridColumns": 24,
               "gridGap": "8px",
-              "dataKey": "TeamMembers@rows"
+              "viewKey": "TeamMembers@default"
             }
           }
         ],
@@ -599,7 +599,7 @@
                 "borderBottom": "1px solid #F2F6FC"
               },
               "gridColumns": 24,
-              "dataKey": "Products@simple@rows"
+              "viewKey": "Products@simple"
             }
           }
         ],
@@ -733,7 +733,7 @@
               "rowKey": "id",
               "gridColumns": 24,
               "gridGap": "4px",
-              "dataKey": "Products@rows"
+              "viewKey": "Products@default"
             }
           }
         ],

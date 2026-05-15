@@ -29,7 +29,6 @@
           }
         ],
         "props": {
-          "dataKey": "TreeData@rows",
           "nodeKey": "id",
           "onNodeClick": "handleNodeClick",
           "onNodeExpand": "handleNodeExpand",
@@ -44,7 +43,8 @@
             "highlightCurrent": true,
             "defaultExpandAll": true,
             "draggable": true
-          }
+          },
+          "viewKey": "TreeData@default"
         }
       },
       {

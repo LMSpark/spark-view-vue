@@ -8,6 +8,24 @@
         />
     </div>
 
+    <DataViewMetaBar
+      :rows="dataState.rows.value"
+      :columns="dataState.columns.value"
+      :selected-rows="dataState.selectedRows.value"
+      :total="dataState.total.value"
+      :page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :request-state="dataState.requestState.value"
+      :mutating="dataState.mutating.value"
+      :loading-error="dataState.loadingError.value"
+      :mutating-error="dataState.mutatingError.value"
+      :aggregate-result="dataState.aggregateResult.value"
+      :selection-aggregate-result="dataState.selectionAggregateResult.value"
+      :show-data-view-meta="props.showDataViewMeta !== false"
+      :show-aggregate-summary="props.showAggregateSummary !== false"
+      :show-selection-summary="props.showSelectionSummary !== false"
+    />
+
     <div class="renderer-list-main renderer-list" :style="listStyle" v-bind="listPropsValue">
         <template v-if="showListItems">
           <div
@@ -64,6 +82,18 @@
         <div v-else-if="emptyText" class="renderer-list-empty">{{ emptyText }}</div>
         <slot v-else v-bind="getDefaultScope()" />
       </div>
+    <el-pagination
+      v-if="showPagination"
+      class="renderer-list-pagination"
+      background
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="dataState.total.value"
+      :current-page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :page-sizes="[10, 20, 50, 100]"
+      @current-change="handlePageChange"
+      @size-change="handlePageSizeChange"
+    />
   </div>
 </template>
 
@@ -72,7 +102,7 @@
  * @skill r-list
  * @description 列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。
  * @category container
- * @binding dataKey-driven
+ * @binding viewKey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @notes 使用结构化 `toolbar` / `actions` 区域声明工具栏与列表项操作
@@ -95,6 +125,7 @@ import { useContainerGrid } from '../../runtime/container-layout'
 import { createRowScope, createToolbarScope } from '../../support/scopeFactories'
 import { createRendererListZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import DataViewMetaBar from '../DataViewMetaBar.vue'
 
 const props = withDefaults(defineProps<RListProps>(), {
   type: 'r-list',
@@ -120,13 +151,14 @@ const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
-  dataKey: toRef(props, 'dataKey'),
+  viewKey: toRef(props, 'viewKey'),
   sparkConsume,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererList',
 })
 const { rows } = dataState
+const showPagination = computed(() => props.showPagination !== false && dataState.total.value > 0)
 
 const toolbarNode = computed(() => props.toolbar)
 const actionsNode = computed(() => props.actions)
@@ -266,6 +298,14 @@ async function handleItemClick(row: IDataRow, index: number, event: Event) {
   await dispatch('item-click', row, index, event)
 }
 
+function handlePageChange(page: number) {
+  dataState.resolvedView.value?.setPage(page)
+}
+
+function handlePageSizeChange(size: number) {
+  dataState.resolvedView.value?.setPageSize(size)
+}
+
 function getDefaultScope() {
   return createToolbarScope(scopeBase(), {
     rows: rows.value,
@@ -364,5 +404,9 @@ function getDefaultScope() {
   border: 1px dashed #dcdfe6;
   border-radius: 8px;
   background: #fafafa;
+}
+
+.renderer-list-pagination {
+  justify-content: flex-end;
 }
 </style>

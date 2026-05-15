@@ -138,7 +138,7 @@
                       "label": "操作"
                     }
                   },
-                  "dataKey": "columns@rows"
+                  "viewKey": "columns@default"
                 }
               }
             ],
@@ -208,7 +208,8 @@
                   }
                 ],
                 "props": {
-                  "dataKey": "columns@currentRow"
+                  "viewKey": "columns@default",
+                  "contextDataKey": "columns@default@currentRow"
                 }
               }
             ],

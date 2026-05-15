@@ -4,9 +4,9 @@ import type { SparkNodeProps } from '../../shared-types'
 /**
  * `r-filter` / `RendererFilter` 完整属性定义。
  *
- * SSOT 设计：r-filter 通过 `dataKey` 自治绑定 DataView 的 rows 维度，
+ * SSOT 设计：r-filter 通过 `viewKey` 自治绑定 DataView，
  * 自己维护 filterModel / FilterExpression / DataView.setFilter 同步。
- * 父容器（r-table 等）不再注入桥接字段；嵌入 r-table 时可省略 dataKey，
+ * 父容器（r-table 等）不再注入桥接字段；嵌入 r-table 时可省略 viewKey，
  * 由 r-table 提供的 DATA_SOURCE 能力向下注入。
  */
 export interface RFilterProps extends SparkNodeProps {
@@ -25,11 +25,11 @@ export interface RFilterProps extends SparkNodeProps {
    */
   class?: string
   /**
-   * 数据绑定键（dataKey）。
+   * DataView 定位键（viewKey）。
    * @remarks RendererFilter 通过该 key 解析 DataView，并写入 filterExpression。
    * 未提供时退回到向上注入的 DATA_SOURCE 能力（如 r-table 内嵌时）。
    */
-  dataKey?: string
+  viewKey?: string
   /** 是否允许折叠。 */
   collapsible?: boolean
   /** 初始是否折叠。 */
@@ -46,4 +46,10 @@ export interface RFilterProps extends SparkNodeProps {
   gridGap?: number | string
   /** 栅格行高。 */
   gridAutoRows?: string
+  /** 是否显示 DataView 元信息栏。 */
+  showDataViewMeta?: boolean
+  /** 是否显示全量聚合摘要。 */
+  showAggregateSummary?: boolean
+  /** 是否显示选区聚合摘要。 */
+  showSelectionSummary?: boolean
 }

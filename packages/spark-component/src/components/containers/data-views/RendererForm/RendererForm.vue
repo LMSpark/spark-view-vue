@@ -8,6 +8,24 @@
         />
     </div>
 
+    <DataViewMetaBar
+      :rows="dataState.rows.value"
+      :columns="dataState.columns.value"
+      :selected-rows="dataState.selectedRows.value"
+      :total="dataState.total.value"
+      :page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :request-state="dataState.requestState.value"
+      :mutating="dataState.mutating.value"
+      :loading-error="dataState.loadingError.value"
+      :mutating-error="dataState.mutatingError.value"
+      :aggregate-result="dataState.aggregateResult.value"
+      :selection-aggregate-result="dataState.selectionAggregateResult.value"
+      :show-data-view-meta="props.showDataViewMeta !== false"
+      :show-aggregate-summary="props.showAggregateSummary !== false"
+      :show-selection-summary="props.showSelectionSummary !== false"
+    />
+
     <el-form ref="nativeFormRef" class="renderer-form-main" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
         <div class="renderer-form-grid" :style="gridStyle">
           <div
@@ -33,7 +51,7 @@
  * @skill r-form
  * @description 数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。
  * @category container
- * @binding dataKey-driven
+ * @binding viewKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
@@ -55,6 +73,7 @@ import {
 } from '../../runtime/container-form-detail'
 import { createRendererFormZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import DataViewMetaBar from '../DataViewMetaBar.vue'
 
 const props = withDefaults(defineProps<RFormProps>(), {
   type: 'r-form',
@@ -70,6 +89,7 @@ const {
   registerApi,
   logger,
   resolvedView,
+  dataState,
   contextData: formModel,
   gridChildren,
   gridStyle,
@@ -86,7 +106,9 @@ const {
     ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
     ...(props.children !== undefined ? { children: props.children } : {}),
     ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
-    dataKey: props.dataKey,
+    viewKey: props.viewKey,
+    contextDataKey: props.contextDataKey,
+    autoColumns: props.autoColumns,
     gridColumns: props.gridColumns,
     gridGap: props.gridGap,
     gridAutoRows: props.gridAutoRows,

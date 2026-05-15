@@ -265,7 +265,6 @@
               }
             ],
             "props": {
-              "dataKey": "Orders@orderListView@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -362,7 +361,8 @@
                   "fixed": "right",
                   "align": "center"
                 }
-              }
+              },
+              "viewKey": "Orders@orderListView"
             }
           }
         ],
@@ -413,7 +413,6 @@
               }
             ],
             "props": {
-              "dataKey": "Customers@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -510,7 +509,8 @@
                   "fixed": "right",
                   "align": "center"
                 }
-              }
+              },
+              "viewKey": "Customers@default"
             }
           }
         ],
@@ -564,7 +564,6 @@
               }
             ],
             "props": {
-              "dataKey": "Products@rows",
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -661,7 +660,8 @@
                   "fixed": "right",
                   "align": "center"
                 }
-              }
+              },
+              "viewKey": "Products@default"
             }
           }
         ],

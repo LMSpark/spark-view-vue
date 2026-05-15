@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-14T17:04:47.407Z",
-  "componentCount": 105,
+  "buildTime": "2026-05-15T04:06:57.600Z",
+  "componentCount": 106,
   "components": {
     "about": {
       "type": "about",
@@ -19,7 +19,7 @@
       "type": "ai-chat-shell",
       "filePath": "packages/spark-component/src/components/ai/AiChatShell.vue",
       "category": "feature",
-      "description": "AI 聊天壳层组件，负责渲染消息列表、输入区、附件、工具日志、SSE/FC 调试信息和策略切换事件；适合被 AiChatWidget 等上层会话容器托管。 配置入口：type=\"ai-chat-shell\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 关键 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 主要事件：send, clear, clearMessages, clearToolLogs, triggerFileInput。",
+      "description": "AI 聊天壳层组件，负责渲染消息列表、输入区、附件、工具日志、SSE/FC 调试信息和策略切换事件；适合被 AiChatWidget 等上层会话容器托管。 配置入口：type=\"ai-chat-shell\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 关键 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 主要事件：clear, send, clearMessages, clearToolLogs, triggerFileInput。",
       "internal": true,
       "configurable": false,
       "props": [
@@ -170,9 +170,9 @@
           "description": "Recovery policy; 控制 AI 出错或偏航时的恢复策略。",
           "schema": {
             "enum": [
-              "layered",
+              "strict",
               "manual",
-              "strict"
+              "layered"
             ],
             "type": "string",
             "description": "Recovery policy; 控制 AI 出错或偏航时的恢复策略。"
@@ -216,14 +216,14 @@
       ],
       "emits": [
         {
-          "name": "send",
-          "type": "[]",
-          "description": "Send requested; 用户提交当前输入内容。"
-        },
-        {
           "name": "clear",
           "type": "[]",
           "description": "Clear input requested; 清空当前输入区。"
+        },
+        {
+          "name": "send",
+          "type": "[]",
+          "description": "Send requested; 用户提交当前输入内容。"
         },
         {
           "name": "clearMessages",
@@ -312,8 +312,8 @@
           "description": "Chat mode; 控制单轮或多轮会话行为。",
           "schema": {
             "enum": [
-              "multi",
-              "single"
+              "single",
+              "multi"
             ],
             "type": "string",
             "description": "Chat mode; 控制单轮或多轮会话行为。"
@@ -375,7 +375,7 @@
         },
         {
           "name": "externalToolLogs",
-          "type": "{ type: \"error\" | \"info\" | \"success\"; tag: string; text: string; timestamp?: string; }[]",
+          "type": "{ type: \"success\" | \"info\" | \"error\"; tag: string; text: string; timestamp?: string; }[]",
           "required": false,
           "description": "External tool logs; 由宿主传入并接管展示的工具日志。"
         },
@@ -472,15 +472,15 @@
         },
         {
           "name": "size",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"small\"",
           "description": "Button size; 对齐 Element Plus small/default/large 尺寸。",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "Button size; 对齐 Element Plus small/default/large 尺寸。",
@@ -616,6 +616,120 @@
       "emits": [],
       "source": "vcm+meta"
     },
+    "data-view-meta-bar": {
+      "type": "data-view-meta-bar",
+      "filePath": "packages/spark-component/src/components/containers/data-views/DataViewMetaBar.vue",
+      "category": "container",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"data-view-meta-bar\" 使用。 配置入口：type=\"data-view-meta-bar\"，category=container（容器组件）。 关键 props：columns。",
+      "props": [
+        {
+          "name": "rows",
+          "type": "readonly IDataRow[]",
+          "required": false,
+          "default": "[]",
+          "description": "rows prop (readonly IDataRow[]); 用于配置该组件的 rows 行为或展示。"
+        },
+        {
+          "name": "columns",
+          "type": "readonly DataColumn[]",
+          "required": false,
+          "default": "[]",
+          "description": "columns prop (readonly DataColumn[]); 用于配置该组件的 columns 行为或展示。"
+        },
+        {
+          "name": "selectedRows",
+          "type": "readonly IDataRow[]",
+          "required": false,
+          "default": "[]",
+          "description": "selectedRows prop (readonly IDataRow[]); 用于配置该组件的 selectedRows 行为或展示。"
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "total prop (number); 用于配置该组件的 total 行为或展示。"
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "page prop (number); 用于配置该组件的 page 行为或展示。"
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "required": false,
+          "default": "20",
+          "description": "pageSize prop (number); 用于配置该组件的 pageSize 行为或展示。"
+        },
+        {
+          "name": "requestState",
+          "type": "RequestState",
+          "required": false,
+          "description": "requestState prop (RequestState); 用于配置该组件的 requestState 行为或展示。"
+        },
+        {
+          "name": "mutating",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "mutating prop (boolean); 用于配置该组件的 mutating 行为或展示。"
+        },
+        {
+          "name": "loadingError",
+          "type": "Error | null",
+          "required": false,
+          "default": "null",
+          "description": "loadingError prop (Error | null); 用于配置该组件的 loadingError 行为或展示。"
+        },
+        {
+          "name": "mutatingError",
+          "type": "Error | null",
+          "required": false,
+          "default": "null",
+          "description": "mutatingError prop (Error | null); 用于配置该组件的 mutatingError 行为或展示。"
+        },
+        {
+          "name": "aggregateResult",
+          "type": "Readonly<Record<string, unknown>>",
+          "required": false,
+          "default": "{}",
+          "description": "aggregateResult prop (Readonly<Record<string, unknown>>); 用于配置该组件的 aggregateResult 行为或展示。"
+        },
+        {
+          "name": "selectionAggregateResult",
+          "type": "Readonly<Record<string, unknown>>",
+          "required": false,
+          "default": "{}",
+          "description": "selectionAggregateResult prop (Readonly<Record<string, unknown>>); 用于配置该组件的 selectionAggregateResult 行为或展示。"
+        },
+        {
+          "name": "showDataViewMeta",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "showDataViewMeta prop (boolean); 用于配置该组件的 showDataViewMeta 行为或展示。"
+        },
+        {
+          "name": "showAggregateSummary",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "showAggregateSummary prop (boolean); 用于配置该组件的 showAggregateSummary 行为或展示。"
+        },
+        {
+          "name": "showSelectionSummary",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "showSelectionSummary prop (boolean); 用于配置该组件的 showSelectionSummary 行为或展示。"
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
     "display-alert": {
       "type": "display-alert",
       "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayAlert.vue",
@@ -636,16 +750,16 @@
         },
         {
           "name": "alertType",
-          "type": "\"error\" | \"info\" | \"success\" | \"warning\"",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型",
           "schema": {
             "enum": [
-              "error",
-              "info",
               "success",
-              "warning"
+              "warning",
+              "info",
+              "error"
             ],
             "type": "string",
             "description": "提示类型",
@@ -727,15 +841,15 @@
       "props": [
         {
           "name": "avatarSize",
-          "type": "number | \"small\" | \"default\" | \"large\"",
+          "type": "number | \"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "头像尺寸",
@@ -872,17 +986,17 @@
         },
         {
           "name": "badgeType",
-          "type": "\"\" | \"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -1192,15 +1306,15 @@
         },
         {
           "name": "descriptionsSize",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "尺寸",
@@ -1787,16 +1901,16 @@
       "props": [
         {
           "name": "icon",
-          "type": "\"error\" | \"info\" | \"success\" | \"warning\"",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型",
           "schema": {
             "enum": [
-              "error",
-              "info",
               "success",
-              "warning"
+              "warning",
+              "info",
+              "error"
             ],
             "type": "string",
             "description": "结果图标类型",
@@ -1896,7 +2010,7 @@
       "type": "display-statistic",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayStatistic.vue",
       "category": "feature",
-      "description": "统计数值展示组件，支持精度、前后缀和千分位分隔。 配置入口：type=\"display-statistic\"，category=feature（功能组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataKey, field, value, title。",
+      "description": "统计数值展示组件，支持精度、前后缀和千分位分隔。 配置入口：type=\"display-statistic\"，category=feature（功能组件）。 绑定语义：self-resolving dataKey，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataKey, field, value, title。",
       "props": [
         {
           "name": "title",
@@ -1999,9 +2113,9 @@
           "schema": {
             "enum": [
               "",
-              "info",
               "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -2050,15 +2164,15 @@
         },
         {
           "name": "size",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "尺寸",
@@ -2283,16 +2397,16 @@
         },
         {
           "name": "itemType",
-          "type": "\"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
           "schema": {
             "enum": [
-              "info",
-              "success",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -2308,14 +2422,14 @@
         },
         {
           "name": "itemSize",
-          "type": "\"large\" | \"normal\"",
+          "type": "\"normal\" | \"large\"",
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸",
           "schema": {
             "enum": [
-              "large",
-              "normal"
+              "normal",
+              "large"
             ],
             "type": "string",
             "description": "节点尺寸",
@@ -4595,23 +4709,17 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
-          "name": "placeholder",
-          "type": "string",
+          "name": "multiple",
+          "type": "boolean",
           "required": false,
-          "description": "占位文案"
+          "default": "false",
+          "description": "是否启用多选"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
           "description": "展示标签"
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
         },
         {
           "name": "modelValue",
@@ -4636,6 +4744,12 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -4742,7 +4856,7 @@
       "type": "r-detail",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.vue",
       "category": "container",
-      "description": "数据详情容器，与 r-form 结构一致但不可编辑。 配置入口：type=\"r-detail\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey, toolbar。",
+      "description": "数据详情容器，与 r-form 结构一致但不可编辑。 配置入口：type=\"r-detail\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey, toolbar。",
       "props": [
         {
           "name": "toolbar",
@@ -6034,7 +6148,7 @@
       "type": "r-filter",
       "filePath": "packages/spark-component/src/components/containers/zones/RendererFilter.vue",
       "category": "container",
-      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey。",
       "props": [
         {
           "name": "dataKey",
@@ -6142,7 +6256,7 @@
       "type": "r-form",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.vue",
       "category": "container",
-      "description": "数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。 配置入口：type=\"r-form\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey, toolbar。",
+      "description": "数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。 配置入口：type=\"r-form\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey, toolbar。",
       "props": [
         {
           "name": "toolbar",
@@ -6889,18 +7003,18 @@
         },
         {
           "name": "linkType",
-          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "default",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -6961,7 +7075,7 @@
       "type": "r-list",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererList/RendererList.vue",
       "category": "container",
-      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。 配置入口：type=\"r-list\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey, columns, toolbar, actions。",
+      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。 配置入口：type=\"r-list\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey, columns, toolbar, actions。",
       "props": [
         {
           "name": "toolbar",
@@ -7930,18 +8044,18 @@
         },
         {
           "name": "confirmButtonType",
-          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "default",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -7951,18 +8065,18 @@
         },
         {
           "name": "cancelButtonType",
-          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "default",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -8160,23 +8274,17 @@
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
-          "name": "placeholder",
-          "type": "string",
+          "name": "multiple",
+          "type": "boolean",
           "required": false,
-          "description": "占位文案"
+          "default": "false",
+          "description": "是否启用多选"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
           "description": "展示标签"
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
         },
         {
           "name": "modelValue",
@@ -8201,6 +8309,12 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -8884,15 +8998,15 @@
       "props": [
         {
           "name": "size",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "尺寸",
@@ -10055,7 +10169,7 @@
       "type": "r-table",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.vue",
       "category": "container",
-      "description": "数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。 配置入口：type=\"r-table\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey, toolbar, filter, actions。",
+      "description": "数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。 配置入口：type=\"r-table\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey, toolbar, filter, actions。",
       "props": [
         {
           "name": "tableProps",
@@ -11010,7 +11124,7 @@
       "type": "r-toolbar",
       "filePath": "packages/spark-component/src/components/containers/layout/RendererToolbar.vue",
       "category": "container",
-      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey。",
       "props": [
         {
           "name": "tail",
@@ -11207,7 +11321,7 @@
       "type": "r-tour",
       "filePath": "packages/spark-component/src/components/containers/layout/RendererTour.vue",
       "category": "container",
-      "description": "引导流程组件，管理引导打开/关闭状态。 配置入口：type=\"r-tour\"，category=container（容器组件）。 主要事件：close, change, finish, update:open。",
+      "description": "引导流程组件，管理引导打开/关闭状态。 配置入口：type=\"r-tour\"，category=container（容器组件）。 主要事件：change, close, finish, update:open。",
       "props": [
         {
           "name": "steps",
@@ -11287,14 +11401,14 @@
       ],
       "emits": [
         {
-          "name": "close",
-          "type": "[current: number]",
-          "description": "Tour closed; 用户关闭引导浮层。"
-        },
-        {
           "name": "change",
           "type": "[current: number]",
           "description": "Tour step changed; 当前引导步骤发生切换。"
+        },
+        {
+          "name": "close",
+          "type": "[current: number]",
+          "description": "Tour closed; 用户关闭引导浮层。"
         },
         {
           "name": "finish",
@@ -11596,7 +11710,7 @@
       "type": "r-tree",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.vue",
       "category": "container",
-      "description": "树形容器，支持懒加载、节点操作和编辑器侧面板。 配置入口：type=\"r-tree\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey, toolbar, actions。",
+      "description": "树形容器，支持懒加载、节点操作和编辑器侧面板。 配置入口：type=\"r-tree\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey, toolbar, actions。",
       "props": [
         {
           "name": "toolbar",
@@ -12218,23 +12332,17 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
-          "name": "placeholder",
-          "type": "string",
+          "name": "multiple",
+          "type": "boolean",
           "required": false,
-          "description": "占位文案"
+          "default": "false",
+          "description": "是否启用多选"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
           "description": "展示标签"
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
         },
         {
           "name": "modelValue",
@@ -12259,6 +12367,12 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -12794,7 +12908,7 @@
       "properties": {
         "storageKey": {
           "type": "string",
-          "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复历史；用作重挂载 :key。"
+          "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复/写入当前会话历史。"
         },
         "disablePersistence": {
           "type": "boolean",
@@ -12947,9 +13061,9 @@
           "type": "string",
           "enum": [
             "done",
+            "running",
             "error",
             "queued",
-            "running",
             "cancelled"
           ]
         },
@@ -13151,7 +13265,7 @@
           "type": "string",
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@776": {
+        "__@toPrimitive@12261": {
           "type": "string",
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
         }
@@ -13200,7 +13314,7 @@
         "toUTCString",
         "toISOString",
         "toJSON",
-        "__@toPrimitive@776"
+        "__@toPrimitive@12261"
       ],
       "description": "当前日期"
     },
@@ -13374,7 +13488,7 @@
     "r-filter": {
       "title": "r-filter",
       "type": "object",
-      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey。",
       "properties": {
         "type": {
           "type": "string",
@@ -13578,7 +13692,7 @@
     "r-toolbar": {
       "title": "r-toolbar",
       "type": "object",
-      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey。 关键 props：dataKey。",
       "properties": {
         "type": {
           "type": "string",
@@ -13666,9 +13780,9 @@
     "RecoveryPolicyLike": {
       "title": "RecoveryPolicyLike",
       "enum": [
-        "layered",
+        "strict",
         "manual",
-        "strict"
+        "layered"
       ],
       "type": "string",
       "description": "Next recovery policy."

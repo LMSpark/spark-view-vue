@@ -79,11 +79,12 @@ const toolbarReactiveVersion = ref(0)
 // 3) 数据源解析策略
 //    优先级：
 //    1. 显式 props.dataSource
-//    2. dataKey 解析得到的 dataSource
+//    2. viewKey 或 dataKey 解析得到的 dataSource
 //    3. 继承父级 DATA_SOURCE
 // ============================================================================
 const dataState = useContainerDataSource({
-  dataKey: toRef(props, 'dataKey'),
+  viewKey: toRef(props, 'viewKey'),
+  contextDataKey: toRef(props, 'dataKey'),
   sparkConsume,
   externalDataSource: computed(() => props.dataSource as DataView | undefined),
   inheritedDataSource: computed(() => inheritedDataSource as DataView | null),

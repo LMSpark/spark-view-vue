@@ -63,7 +63,7 @@
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
-                  "dataKey": "Customers@rows",
+                  "dataKey": "Customers@default@rows",
                   "on": {
                     "currentChange": "handleCustomerSelect"
                   }
@@ -120,7 +120,8 @@
                         ],
                         "props": {
                           "labelWidth": "100px",
-                          "dataKey": "Customers@currentRow"
+                          "viewKey": "Customers@default",
+                          "contextDataKey": "Customers@default@currentRow"
                         }
                       }
                     ],
@@ -168,7 +169,7 @@
                         "props": {
                           "border": true,
                           "stripe": true,
-                          "dataKey": "Contacts@rows"
+                          "dataKey": "Contacts@default@rows"
                         }
                       }
                     ],
@@ -216,7 +217,7 @@
                         "props": {
                           "border": true,
                           "stripe": true,
-                          "dataKey": "Followups@rows"
+                          "dataKey": "Followups@default@rows"
                         }
                       }
                     ],

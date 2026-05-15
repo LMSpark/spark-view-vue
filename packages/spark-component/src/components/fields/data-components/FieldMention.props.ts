@@ -47,7 +47,7 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
     searchable?: boolean
     /** 候选项来源与字段映射。 */
     options?: {
-      /** 候选项数据源，例如 `Users@rows`。 */
+      /** 候选项数据源，例如 `Users@default@rows`。 */
       dataKey?: SparkText
       /**
        * 候选项值字段。

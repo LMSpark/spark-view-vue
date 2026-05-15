@@ -188,7 +188,7 @@ function auditBindingDescriptorDocs(catalog: AuditableComponentCatalog, issues: 
         severity: 'warning',
         rule: 'binding-description-missing',
         component: type,
-        message: `bindingDescriptors.${type} 缺少 description（需要解释 dataKey/field/options/value 绑定语义）`,
+        message: `bindingDescriptors.${type} 缺少 description（需要解释 viewKey/dataKey/field/options/value 绑定语义）`,
       })
     }
     if (!Array.isArray(descriptor.examples)) {

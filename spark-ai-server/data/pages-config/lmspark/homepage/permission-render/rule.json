@@ -223,7 +223,7 @@
                           "label": "零代码动作"
                         }
                       },
-                      "dataKey": "PermissionUsers@rows"
+                      "viewKey": "PermissionUsers@default"
                     }
                   },
                   {
@@ -269,7 +269,8 @@
                     ],
                     "props": {
                       "labelWidth": "72px",
-                      "dataKey": "PermissionUsers@currentRow"
+                      "viewKey": "PermissionUsers@default",
+                      "contextDataKey": "PermissionUsers@default@currentRow"
                     }
                   }
                 ],

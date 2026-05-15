@@ -1,11 +1,13 @@
 import { computed, toValue, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import {
-  diagnoseDataKey,
+  diagnoseViewKey,
   resolveDataCapabilitiesFromDataKey,
-  type DataView,
+  resolveViewKey,
   type DataKeyDiagnostic,
+  type DataView,
   type IDataRow,
+  type ViewKeyDiagnostic,
 } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../internal'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
@@ -27,6 +29,8 @@ const DEFAULT_DATA_SOURCE_LOGGER: DataSourceLoggerLike = {
   error: () => {},
 }
 
+type ContainerDataSourceDiagnostic = ViewKeyDiagnostic | DataKeyDiagnostic
+
 function resolveMaybeValue<T>(source: MaybeRefOrGetter<T> | undefined): T | undefined {
   return source === undefined ? undefined : toValue(source)
 }
@@ -38,7 +42,8 @@ function pickRowFromSource(source: unknown): IDataRow | null {
 }
 
 interface UseContainerDataSourceOptions<TSource> {
-  dataKey: MaybeRefOrGetter<string | undefined>
+  viewKey: MaybeRefOrGetter<string | undefined>
+  contextDataKey?: MaybeRefOrGetter<string | undefined>
   sparkConsume: SparkCapabilityConsumer
   mapView: (view: DataView) => TSource
   externalDataSource?: MaybeRefOrGetter<TSource | undefined>
@@ -53,7 +58,7 @@ interface UseContainerDataSourceOptions<TSource> {
 
 interface UseContainerDataSourceEffectsOptions<TSource> {
   resolvedView: ComputedRef<TSource | null>
-  diagnostic?: ComputedRef<ReturnType<typeof diagnoseDataKey> | null>
+  diagnostic?: ComputedRef<ContainerDataSourceDiagnostic | null>
   provideDataSource?: (source: TSource) => void
   logger: DataSourceLoggerLike
   logPrefix: string
@@ -69,35 +74,45 @@ export interface ContainerDataSourceState<TSource> {
 function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOptions<TSource>): ContainerDataSourceState<TSource> {
   const pageDataSet = options.sparkConsume(PAGE_DATASET)
 
-  const capabilities = computed(() =>
-    resolveDataCapabilitiesFromDataKey(toValue(options.dataKey), pageDataSet),
-  )
   const diagnostic = computed(() => {
-    const rawKey = toValue(options.dataKey)
+    const rawKey = toValue(options.viewKey)
     if (typeof rawKey !== 'string' || rawKey.trim().length === 0) return null
-    return diagnoseDataKey(rawKey, pageDataSet)
+    return diagnoseViewKey(rawKey, pageDataSet)
+  })
+
+  const contextCapabilities = computed(() =>
+    resolveDataCapabilitiesFromDataKey(toValue(options.contextDataKey), pageDataSet),
+  )
+
+  const resolvedView = computed<TSource | null>(() => {
+    const provided = resolveMaybeValue(options.externalDataSource)
+    if (provided !== undefined) return provided
+
+    const view = resolveViewKey(toValue(options.viewKey), pageDataSet)
+    if (view) return options.mapView(view)
+
+    if (contextCapabilities.value.dataSource) {
+      return options.mapView(contextCapabilities.value.dataSource)
+    }
+
+    const inherited = resolveMaybeValue(options.inheritedDataSource)
+    if (inherited !== null && inherited !== undefined) return inherited
+
+    return null
   })
 
   const resolvedDataRow = computed<IDataRow | null>(() => {
     const provided = resolveMaybeValue(options.externalDataSource)
     if (provided !== undefined) return pickRowFromSource(provided)
 
-    if (capabilities.value.dataRow !== null) return capabilities.value.dataRow
+    if (contextCapabilities.value.dataRow !== null) return contextCapabilities.value.dataRow
+
+    const viewRecord = toDataRecord(resolvedView.value)
+    const currentRow = viewRecord ? toDataRecord(viewRecord['currentRow']) : null
+    if (currentRow) return currentRow as IDataRow
 
     const inherited = resolveMaybeValue(options.inheritedDataSource)
     return pickRowFromSource(inherited)
-  })
-
-  const resolvedView = computed<TSource | null>(() => {
-    const provided = resolveMaybeValue(options.externalDataSource)
-    if (provided !== undefined) return provided
-
-    if (capabilities.value.dataSource) return options.mapView(capabilities.value.dataSource)
-
-    const inherited = resolveMaybeValue(options.inheritedDataSource)
-    if (inherited !== null && inherited !== undefined) return inherited
-
-    return null
   })
 
   if (options.skipEffects !== true) {
@@ -122,7 +137,7 @@ export function useContainerDataSource(
     ...options,
     mapView: (view: DataView) => view,
   })
-  return { ...useDataViewState(state.resolvedView as ResolvedViewRef, options.dataKey), ...state }
+  return { ...useDataViewState(state.resolvedView as ResolvedViewRef), ...state }
 }
 
 function shouldAutoLoad(view: DataView): boolean {
@@ -171,7 +186,7 @@ function useContainerDataSourceAutoLoadEffect<TSource>(options: {
 }
 
 function useContainerDataSourceDiagnosticEffect(options: {
-  diagnostic: ComputedRef<ReturnType<typeof diagnoseDataKey> | null>
+  diagnostic: ComputedRef<ContainerDataSourceDiagnostic | null>
   logger: DataSourceLoggerLike
   logPrefix: string
 }): void {
@@ -186,11 +201,8 @@ function useContainerDataSourceDiagnosticEffect(options: {
   )
 }
 
-function shouldLogContainerDiagnostic(diagnostic: DataKeyDiagnostic): boolean {
-  // currentRow / selectedRows 在首帧为空属于常态，不应污染控制台。
-  if (diagnostic.status === 'empty-current-row') return false
-  if (diagnostic.status === 'empty-selection') return false
-  return true
+function shouldLogContainerDiagnostic(diagnostic: ContainerDataSourceDiagnostic): boolean {
+  return diagnostic.status !== 'empty-current-row' && diagnostic.status !== 'empty-selection'
 }
 
 export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>): void {

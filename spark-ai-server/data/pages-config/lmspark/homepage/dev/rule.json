@@ -109,9 +109,10 @@
               }
             ],
             "props": {
-              "dataKey": "LeaveApplications@currentRow",
               "labelWidth": "100px",
-              "labelPosition": "right"
+              "labelPosition": "right",
+              "viewKey": "LeaveApplications@default",
+              "contextDataKey": "LeaveApplications@default@currentRow"
             }
           }
         ],
@@ -164,7 +165,6 @@
               }
             ],
             "props": {
-              "dataKey": "ApprovalRecords@rows",
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
@@ -172,7 +172,8 @@
                 {
                   "type": "RenderApprovalActions"
                 }
-              ]
+              ],
+              "viewKey": "ApprovalRecords@default"
             }
           }
         ],

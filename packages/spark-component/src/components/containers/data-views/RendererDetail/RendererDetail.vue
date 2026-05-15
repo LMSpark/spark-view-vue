@@ -8,6 +8,24 @@
         />
     </div>
 
+    <DataViewMetaBar
+      :rows="dataState.rows.value"
+      :columns="dataState.columns.value"
+      :selected-rows="dataState.selectedRows.value"
+      :total="dataState.total.value"
+      :page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :request-state="dataState.requestState.value"
+      :mutating="dataState.mutating.value"
+      :loading-error="dataState.loadingError.value"
+      :mutating-error="dataState.mutatingError.value"
+      :aggregate-result="dataState.aggregateResult.value"
+      :selection-aggregate-result="dataState.selectionAggregateResult.value"
+      :show-data-view-meta="props.showDataViewMeta !== false"
+      :show-aggregate-summary="props.showAggregateSummary !== false"
+      :show-selection-summary="props.showSelectionSummary !== false"
+    />
+
     <div class="renderer-detail-main" v-bind="detailPropsValue" :style="detailAlignStyle">
         <div class="renderer-detail-grid" :style="gridStyle">
           <div
@@ -33,7 +51,7 @@
  * @skill r-detail
  * @description 数据详情容器，与 r-form 结构一致但不可编辑。
  * @category container
- * @binding dataKey-driven
+ * @binding viewKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
@@ -55,6 +73,7 @@ import {
 } from '../../runtime/container-form-detail'
 import { createRendererDetailZeroCode } from './zero-code'
 import RendererHostScope from '../../support/RendererHostScope.vue'
+import DataViewMetaBar from '../DataViewMetaBar.vue'
 
 const props = withDefaults(defineProps<RDetailProps>(), {
   type: 'r-detail',
@@ -75,6 +94,7 @@ const {
   registerApi,
   logger,
   resolvedView,
+  dataState,
   gridChildren,
   gridStyle,
   getChildGridStyle,
@@ -91,7 +111,9 @@ const {
     ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
     ...(props.children !== undefined ? { children: props.children } : {}),
     ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
-    dataKey: props.dataKey,
+    viewKey: props.viewKey,
+    contextDataKey: props.contextDataKey,
+    autoColumns: props.autoColumns,
     gridColumns: props.gridColumns,
     gridGap: props.gridGap,
     gridAutoRows: props.gridAutoRows,

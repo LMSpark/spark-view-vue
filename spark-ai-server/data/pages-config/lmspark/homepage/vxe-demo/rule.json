@@ -157,7 +157,7 @@
                       }
                     ]
                   },
-                  "dataKey": "DemoData@rows"
+                  "viewKey": "DemoData@default"
                 }
               }
             ],
@@ -252,7 +252,8 @@
                 ],
                 "props": {
                   "labelWidth": "80px",
-                  "dataKey": "DemoData@currentRow"
+                  "viewKey": "DemoData@default",
+                  "contextDataKey": "DemoData@default@currentRow"
                 }
               }
             ],
@@ -340,7 +341,8 @@
                   }
                 ],
                 "props": {
-                  "dataKey": "DemoData@currentRow"
+                  "viewKey": "DemoData@default",
+                  "contextDataKey": "DemoData@default@currentRow"
                 }
               }
             ],

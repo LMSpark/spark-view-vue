@@ -149,9 +149,9 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
  */
 const DEFAULT_CONSTRAINTS: PlatformConstraints = {
   dataKeyPattern: {
-    value: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|aggregateResult|selectionAggregateResult)(\.[\w.]+)?$`,
-    description: 'DataKey format constraint; 用于把组件绑定到页面数据空间。格式支持 table@rows、table@currentRow.field、#scope@table@selectedRows 等。',
-    examples: ['orders@rows', 'orders@currentRow.name', '#main@orders@selectedRows', 'orders@aggregateResult.totalAmount'],
+    value: String.raw`^(#[\w-]+@)?[\w-]+@[\w-]+@(rows|columns|currentRow|selectedRows|aggregateResult|selectionAggregateResult|total|page|pageSize|requestState|mutating|loadingError|mutatingError)(\.[\w.]+)?$`,
+    description: 'DataKey format constraint; 用于读取 DataView 的具体输出字段。格式固定为 table@viewId@field 或 #scope@table@viewId@field。',
+    examples: ['orders@default@rows', 'orders@grid@currentRow.name', '#main@orders@grid@selectedRows', 'orders@grid@aggregateResult.totalAmount'],
   },
   validTypePrefixes: {
     value: ['r-', 'spark-'],
@@ -233,8 +233,10 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   const names = new Set(props.map((prop) => prop.name))
   const descriptor: CatalogBindingDescriptor = {}
 
-  if (names.has('dataKey')) {
+  if (names.has('dataKey') || names.has('viewKey')) {
     descriptor.selfResolving = true
+  }
+  if (names.has('viewKey')) {
     descriptor.dataContainer = true
   }
   if (names.has('field')) descriptor.fieldProvider = true
@@ -246,14 +248,18 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   else if (modelValue !== undefined) descriptor.valueType = 'string'
 
   if (names.has('field')) descriptor.bindingDelegate = 'form-element'
-  if (names.has('dataKey') && names.has('children')) descriptor.bindingDelegate = 'table'
+  if (names.has('viewKey') && names.has('children')) descriptor.bindingDelegate = 'table'
 
   return Object.keys(descriptor).length > 0 ? descriptor : undefined
 }
 
 function createBindingDescriptorDescription(type: string, binding: CatalogBindingDescriptor): string {
   const parts: string[] = []
-  if (binding.selfResolving === true) parts.push('self-resolving dataKey，会从页面数据空间解析 dataKey')
+  if (binding.selfResolving === true) {
+    parts.push(binding.dataContainer === true
+      ? 'self-resolving binding，会从页面数据空间解析容器级 viewKey'
+      : 'self-resolving binding，会从页面数据空间解析值级 dataKey')
+  }
   if (binding.dataContainer === true) parts.push('data container，会向子组件提供 DataSource 上下文')
   if (binding.fieldProvider === true) parts.push('field provider，通过 field 读取或写入当前行字段')
   if (binding.hasOptions === true) parts.push('options provider，支持 options/optionKey 候选项来源')
@@ -267,8 +273,11 @@ function createBindingDescriptorDescription(type: string, binding: CatalogBindin
 
 function createBindingDescriptorExamples(type: string, binding: CatalogBindingDescriptor): unknown[] {
   const examples: unknown[] = []
-  if (binding.selfResolving === true || binding.dataContainer === true) {
-    examples.push({ type, props: { dataKey: 'orders@rows' } })
+  if (binding.dataContainer === true) {
+    examples.push({ type, props: { viewKey: 'orders@default' } })
+  }
+  else if (binding.selfResolving === true) {
+    examples.push({ type, props: { dataKey: 'orders@default@rows' } })
   }
   if (binding.fieldProvider === true) {
     examples.push({ type, props: { field: 'name' } })
@@ -682,7 +691,8 @@ function createGenericPropDescription(name: string, type: string): string {
   if (name === 'modelValue') return 'Bound model value; 由 v-model 同步的当前值。'
   if (name === 'value') return 'Display or input value; 用于展示或绑定当前字段值。'
   if (name === 'field') return 'Data field key; 绑定 rows/currentRow 中的字段名。'
-  if (name === 'dataKey') return 'DataView key; 指向页面数据上下文中的 rows/currentRow/selectedRows。'
+  if (name === 'viewKey') return 'ViewKey; 指向页面数据上下文中的 DataView，格式为 table@viewId。'
+  if (name === 'dataKey') return 'DataKey; 指向 DataView 的具体输出字段，格式为 table@viewId@field。'
   if (name === 'children') return 'Child SparkNode list; 用于声明嵌套组件。'
   if (name === 'options') return 'Option list; 用于 select/radio 等选项型组件。'
   if (name === 'disabled') return 'Disabled state; true 时禁止用户交互。'
@@ -861,7 +871,9 @@ function categoryLabel(category: ComponentEntry['category']): string {
 function bindingDescription(binding: CatalogBindingDescriptor | undefined): string | undefined {
   if (binding === undefined) return undefined
   const parts: string[] = []
-  if (binding.selfResolving === true) parts.push('self-resolving dataKey')
+  if (binding.selfResolving === true) {
+    parts.push(binding.dataContainer === true ? 'self-resolving viewKey' : 'self-resolving dataKey')
+  }
   if (binding.dataContainer === true) parts.push('向子组件提供数据上下文')
   if (binding.fieldProvider === true) parts.push('通过 field 绑定行字段')
   if (binding.hasOptions === true) parts.push('支持 options/optionKey 选项数据')
@@ -871,6 +883,7 @@ function bindingDescription(binding: CatalogBindingDescriptor | undefined): stri
 }
 
 const COMPONENT_KEY_PROP_ORDER = [
+  'viewKey',
   'dataKey',
   'field',
   'value',
@@ -919,7 +932,9 @@ function buildComponentDescription(options: {
   const requiredProps = options.props.filter((prop) => prop.required).map((prop) => prop.name).slice(0, 6)
   if (requiredProps.length > 0) parts.push(`必填 props：${requiredProps.join(', ')}。`)
 
-  const keyProps = selectKeyProps(options.props)
+  const keyProps = options.binding?.dataContainer === true
+    ? selectKeyProps(options.props).filter(prop => prop !== 'dataKey')
+    : selectKeyProps(options.props)
   if (keyProps.length > 0) parts.push(`关键 props：${keyProps.join(', ')}。`)
 
   const eventNames = options.emits.map((emit) => emit.name).slice(0, 5)
@@ -1181,7 +1196,9 @@ function inferSimpleSchemaFromType(typeText: string): PropSchema {
     if (primitiveTypes.every((type): type is JsonSchemaTypeName => type !== undefined)) {
       const uniqueTypes = [...new Set(primitiveTypes)]
       if (uniqueTypes.length === 0) return {}
-      return { type: uniqueTypes.length === 1 ? uniqueTypes[0]! : uniqueTypes }
+      const [firstType] = uniqueTypes
+      if (firstType === undefined) return {}
+      return { type: uniqueTypes.length === 1 ? firstType : uniqueTypes }
     }
   }
 
@@ -1287,8 +1304,7 @@ function mergeDefs(...defsList: Array<Record<string, PropSchema> | undefined>): 
   }
 
   if (Object.keys(merged).length === 0) return undefined
-  if (merged['SparkNode'] === undefined) {
-    merged['SparkNode'] = {
+  merged['SparkNode'] ??= {
       title: 'SparkNode',
       type: 'object',
       description: 'Spark h-function 节点：通过 type 选择组件，props 配置属性，children 描述子节点。',
@@ -1303,7 +1319,6 @@ function mergeDefs(...defsList: Array<Record<string, PropSchema> | undefined>): 
       },
       required: ['type'],
     }
-  }
   return sortRecord(merged)
 }
 

@@ -22,6 +22,24 @@
       </button>
     </div>
 
+    <DataViewMetaBar
+      :rows="dataState.rows.value"
+      :columns="dataState.columns.value"
+      :selected-rows="dataState.selectedRows.value"
+      :total="dataState.total.value"
+      :page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :request-state="dataState.requestState.value"
+      :mutating="dataState.mutating.value"
+      :loading-error="dataState.loadingError.value"
+      :mutating-error="dataState.mutatingError.value"
+      :aggregate-result="dataState.aggregateResult.value"
+      :selection-aggregate-result="dataState.selectionAggregateResult.value"
+      :show-data-view-meta="props.showDataViewMeta !== false"
+      :show-aggregate-summary="props.showAggregateSummary !== false"
+      :show-selection-summary="props.showSelectionSummary !== false"
+    />
+
     <div v-show="!filtersCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
         <SparkComponentRenderer :config="fieldScopeConfig" />
@@ -62,6 +80,7 @@ import { DATA_SOURCE, SparkComponentRenderer, getSparkNodeChildren, nodeId, node
   type SparkNode,
 } from '../../internal'
 import { useContainerDataSource } from '../data-views/view-data-source'
+import DataViewMetaBar from '../data-views/DataViewMetaBar.vue'
 import { useFilterPanel } from '../runtime/container-filter'
 import type { RFilterProps as Props } from './RendererFilter.types'
 
@@ -89,7 +108,7 @@ const isPanelMode = computed(() => {
 const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
 
 const dataState = useContainerDataSource({
-  dataKey: toRef(props, 'dataKey'),
+  viewKey: toRef(props, 'viewKey'),
   sparkConsume,
   inheritedDataSource,
   skipEffects: true,
@@ -100,7 +119,7 @@ watch(
   ([panelMode, view]) => {
     if (panelMode && !view) {
       throw new Error(
-        'RendererFilter: 面板模式必须能解析到 DataView，请通过 dataKey 显式绑定，'
+        'RendererFilter: 面板模式必须能解析到 DataView，请通过 viewKey 显式绑定，'
         + '或确保父容器通过 DATA_SOURCE 能力向下注入。',
       )
     }

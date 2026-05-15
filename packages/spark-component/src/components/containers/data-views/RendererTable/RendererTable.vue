@@ -3,6 +3,23 @@
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <SparkComponentRenderer v-if="toolbarNode" :config="toolbarNode" />
     <SparkComponentRenderer v-if="hasFilters" :config="filterSparkNode" />
+    <DataViewMetaBar
+      :rows="dataState.rows.value"
+      :columns="dataState.columns.value"
+      :selected-rows="dataState.selectedRows.value"
+      :total="dataState.total.value"
+      :page="dataState.page.value"
+      :page-size="dataState.pageSize.value"
+      :request-state="dataState.requestState.value"
+      :mutating="dataState.mutating.value"
+      :loading-error="dataState.loadingError.value"
+      :mutating-error="dataState.mutatingError.value"
+      :aggregate-result="dataState.aggregateResult.value"
+      :selection-aggregate-result="dataState.selectionAggregateResult.value"
+      :show-data-view-meta="props.showDataViewMeta !== false"
+      :show-aggregate-summary="props.showAggregateSummary !== false"
+      :show-selection-summary="props.showSelectionSummary !== false"
+    />
 
     <el-table
       ref="nativeTableRef"
@@ -103,7 +120,7 @@
  * @skill r-table
  * @description 数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
  * @category container
- * @binding dataKey-driven
+ * @binding viewKey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @consumes PAGE_SERVICE
@@ -111,7 +128,7 @@
  * @notes 结构化区域使用 props.toolbar / props.filter / props.actions，不再使用 dock 分流
  * @notes highlightCurrentRow 必须显式声明才生效
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
- * @notes 提示词模板（数据绑定）：table dataKey 使用 table@view@rows；统计值优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
+ * @notes 提示词模板（数据绑定）：table viewKey 使用 table@view；统计值优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
  */
 import { computed, nextTick, provide, ref, toRef, watch } from 'vue'
 import {
@@ -123,14 +140,15 @@ import {
   DATA_SOURCE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
-import type { IDataRow, DataView } from '@spark-view/spark-data'
+import type { DataColumn, IDataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { RequestState } from '@spark-view/spark-data'
 import { useContainerDataSource } from '../view-data-source'
 import { buildTreeTableRows } from '../view-tree-state'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { deriveSiblingFieldDataKey } from '@spark-view/spark-data'
+import DataViewMetaBar from '../DataViewMetaBar.vue'
+import { deriveDataKeyFromViewKey } from '@spark-view/spark-data'
 import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnContext'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
@@ -139,8 +157,42 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
+// ── 能力注入与 DataView 解析（viewKey 优先，回落外部 dataSource）、向下提供 DATA_SOURCE ─────────────
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+
+const dataState = useContainerDataSource({
+  externalDataSource: toRef(props, 'dataSource'),
+  viewKey: toRef(props, 'viewKey'),
+  sparkConsume,
+  provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
+  logger,
+  logPrefix: 'RendererTable',
+})
+
+function toAutoColumnNode(column: DataColumn): SparkNode {
+  return {
+    type: 'r-column-group',
+    props: {
+      fieldName: column.name,
+      displayLabel: column.label ?? column.name,
+      sortable: true,
+    },
+  }
+}
+
+const explicitContentChildNodes = computed(() => getSparkNodeChildren(props.children))
+
+const contentSourceChildNodes = computed<SparkNode[]>(() => {
+  if (explicitContentChildNodes.value.length > 0 || props.autoColumns === false) {
+    return explicitContentChildNodes.value
+  }
+  return dataState.columns.value
+    .filter(column => column.isComputed !== true)
+    .map(toAutoColumnNode)
+})
+
 const normalizedContentChildNodes = computed<SparkNode[]>(() => {
-  return getSparkNodeChildren(props.children).map((rawNode) => {
+  return contentSourceChildNodes.value.map((rawNode) => {
     const sourceProps = nodeInputProps(rawNode)
     const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
     return (
@@ -162,7 +214,7 @@ const toolbarNode = computed<SparkNode | undefined>(() => {
   const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
   const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== '')
     ? existingDataKey
-    : deriveSiblingFieldDataKey(props.dataKey, 'currentRow')
+    : deriveDataKeyFromViewKey(props.viewKey, 'currentRow')
 
   return {
     type: 'r-toolbar',
@@ -204,7 +256,10 @@ const hasFilters = computed(() => (props.filter?.children?.length ?? 0) > 0)
 
 const filterSparkNode = computed<SparkNode>(() => {
   const filter = props.filter ?? {}
-  const { type: _type, id, children, class: userClass, ...rest } = filter
+  const { type: _type, id, children, class: userClass, viewKey: existingViewKey, ...rest } = filter
+  const resolvedViewKey = (existingViewKey !== undefined && existingViewKey !== '')
+    ? existingViewKey
+    : props.viewKey
   return {
     type: 'r-filter',
     ...(id !== undefined ? { id } : {}),
@@ -212,6 +267,7 @@ const filterSparkNode = computed<SparkNode>(() => {
       autoFitMinWidth: '220px',
       itemSpan: 1,
       ...rest,
+      ...(resolvedViewKey !== undefined ? { viewKey: resolvedViewKey } : {}),
       class: ['renderer-table-filter-panel', userClass].filter(Boolean).join(' '),
     },
     children: children ?? [],
@@ -290,17 +346,6 @@ const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freez
   hasChildren: 'hasChildren',
 })
 
-// ── 能力注入与 DataView 解析（dataKey 优先，回落外部 dataSource）、向下提供 DATA_SOURCE ─────────────
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
-
-const dataState = useContainerDataSource({
-  externalDataSource: toRef(props, 'dataSource'),
-  dataKey: toRef(props, 'dataKey'),
-  sparkConsume,
-  provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
-  logger,
-  logPrefix: 'RendererTable',
-})
 // ── 外层布局方向（toolbar 结构由 view-state 统一组装） ───────────────────────────────────────
 
 const {
@@ -317,7 +362,7 @@ const rows = computed(() => buildTreeTableRows(
   dataState.primaryKey.value,
 ))
 const isLoading = computed(() => dataState.requestState.value === RequestState.Loading)
-const showPagination = computed(() => dataState.total.value > 0)
+const showPagination = computed(() => props.showPagination !== false && dataState.total.value > 0)
 
 function handlePageChange(page: number) {
   dataState.resolvedView.value?.setPage(page)

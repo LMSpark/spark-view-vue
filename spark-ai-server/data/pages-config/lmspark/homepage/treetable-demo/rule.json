@@ -72,7 +72,7 @@
               },
               "indent": 18,
               "onCurrentChange": "handleCurrentChange",
-              "dataKey": "OrgRows@rows"
+              "viewKey": "OrgRows@default"
             }
           }
         ],

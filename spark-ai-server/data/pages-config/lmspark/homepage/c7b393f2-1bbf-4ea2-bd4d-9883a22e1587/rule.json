@@ -231,7 +231,6 @@
       }
     ],
     "props": {
-      "dataKey": "LeaveRequests@rows",
       "rowKey": "id",
       "highlightCurrentRow": true,
       "stripe": true,
@@ -386,7 +385,8 @@
           "align": "center",
           "fixed": "right"
         }
-      }
+      },
+      "viewKey": "LeaveRequests@default"
     }
   },
   {
@@ -488,10 +488,11 @@
         ],
         "id": "leave-form",
         "props": {
-          "dataKey": "LeaveRequests@currentRow",
           "labelWidth": "100px",
           "gridColumns": 24,
-          "gridGap": "16px"
+          "gridGap": "16px",
+          "viewKey": "LeaveRequests@default",
+          "contextDataKey": "LeaveRequests@default@currentRow"
         }
       },
       {
@@ -627,10 +628,11 @@
         ],
         "id": "approve-form",
         "props": {
-          "dataKey": "LeaveRequests@currentRow",
           "labelWidth": "100px",
           "gridColumns": 24,
-          "gridGap": "16px"
+          "gridGap": "16px",
+          "viewKey": "LeaveRequests@default",
+          "contextDataKey": "LeaveRequests@default@currentRow"
         }
       },
       {

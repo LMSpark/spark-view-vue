@@ -106,7 +106,6 @@
               }
             ],
             "props": {
-              "dataKey": "Users@default@rows",
               "tableProps": {
                 "rowKey": "id",
                 "highlightCurrentRow": true,
@@ -173,7 +172,8 @@
                   "fixed": "right",
                   "align": "center"
                 }
-              }
+              },
+              "viewKey": "Users@default"
             }
           }
         ],

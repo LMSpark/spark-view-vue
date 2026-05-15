@@ -142,7 +142,7 @@
                     "fontWeight": "bold",
                     "marginTop": "10px"
                   },
-                  "dataKey": "stats@currentRow.totalUsers"
+                  "dataKey": "stats@default@currentRow.totalUsers"
                 }
               }
             ],
@@ -177,7 +177,7 @@
                     "marginTop": "10px",
                     "color": "#67c23a"
                   },
-                  "dataKey": "stats@currentRow.todayOrders"
+                  "dataKey": "stats@default@currentRow.todayOrders"
                 }
               }
             ],
@@ -211,7 +211,7 @@
                     "fontWeight": "bold",
                     "marginTop": "10px"
                   },
-                  "dataKey": "stats@currentRow.revenue"
+                  "dataKey": "stats@default@currentRow.revenue"
                 }
               }
             ],
@@ -246,7 +246,7 @@
                     "marginTop": "10px",
                     "color": "#e6a23c"
                   },
-                  "dataKey": "stats@currentRow.pending"
+                  "dataKey": "stats@default@currentRow.pending"
                 }
               }
             ],
@@ -326,7 +326,7 @@
               "data": [],
               "stripe": true,
               "border": true,
-              "dataKey": "tableData@rows"
+              "dataKey": "tableData@default@rows"
             }
           }
         ],
@@ -393,7 +393,7 @@
               "field": "status",
               "title": "状态",
               "value": "激活",
-              "dataKey": "formOptions@currentRow.statusOptions",
+              "dataKey": "formOptions@default@currentRow.statusOptions",
               "options": []
             }
           },
@@ -403,7 +403,7 @@
               "field": "gender",
               "title": "性别",
               "value": "男",
-              "dataKey": "formOptions@currentRow.genderOptions",
+              "dataKey": "formOptions@default@currentRow.genderOptions",
               "options": []
             }
           },

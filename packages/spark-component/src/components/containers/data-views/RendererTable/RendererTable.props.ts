@@ -31,6 +31,10 @@ export interface RTableProps
   rowKey?: SparkText
   /** 是否允许拖动列宽，默认 true。 */
   resizable?: boolean
+  /** 没有显式 children 时，是否从 DataView.columns 自动生成列。默认 true。 */
+  autoColumns?: boolean
+  /** 是否显示分页器。默认 true。 */
+  showPagination?: boolean
   /**
    * 结构化工具栏
    * 提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。

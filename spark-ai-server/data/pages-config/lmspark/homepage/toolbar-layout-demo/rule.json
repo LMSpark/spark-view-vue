@@ -442,7 +442,7 @@
                       "label": "操作"
                     }
                   },
-                  "dataKey": "Tasks@rows"
+                  "viewKey": "Tasks@default"
                 }
               }
             ],
@@ -518,7 +518,8 @@
                 ],
                 "props": {
                   "gridGap": 12,
-                  "dataKey": "Tasks@currentRow"
+                  "viewKey": "Tasks@default",
+                  "contextDataKey": "Tasks@default@currentRow"
                 }
               }
             ],

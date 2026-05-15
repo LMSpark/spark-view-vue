@@ -195,7 +195,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "ProjectKPI@rows"
+          "viewKey": "ProjectKPI@default"
         }
       }
     ],

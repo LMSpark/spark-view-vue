@@ -129,7 +129,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "Projects@rows",
+          "dataKey": "Projects@default@rows",
           "on": {
             "currentChange": "handleCurrentChange",
             "selectionChange": "handleSelectionChange"
@@ -193,7 +193,8 @@
         ],
         "props": {
           "labelWidth": "100px",
-          "dataKey": "Projects@currentRow"
+          "viewKey": "Projects@default",
+          "contextDataKey": "Projects@default@currentRow"
         }
       }
     ],

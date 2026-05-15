@@ -196,10 +196,10 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "dataKey": "Users@rows",
               "on": {
                 "current-change": "handleUserRowChange"
-              }
+              },
+              "viewKey": "Users@default"
             }
           }
         ],
@@ -267,7 +267,7 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "dataKey": "Orders@rows"
+              "viewKey": "Orders@default"
             }
           }
         ],
@@ -344,7 +344,7 @@
             "props": {
               "border": true,
               "stripe": true,
-              "dataKey": "OrderItems@rows"
+              "viewKey": "OrderItems@default"
             }
           }
         ],

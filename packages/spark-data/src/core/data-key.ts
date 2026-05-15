@@ -1,216 +1,157 @@
 /**
- * DataKey — 统一数据绑定键解析器
+ * DataKey / ViewKey — DataSet 数据绑定键解析器
  *
- * 统一格式（无 scope，SPA 单 DataSet）：
- *   - `tableName@viewId@field`    — 3 段完整格式
- *   - `tableName@field`           — 2 段简写（viewId 默认 'default'）
+ * ViewKey 定位 DataView，供表级容器使用：
+ *   - `tableName@viewId`
+ *   - `#scope@tableName@viewId`
  *
- * 跨页面共享数据（`#scope` 前缀）：
- *   - `#scope@tableName@field`           — 显式指定 scope（viewId 默认 'default'）
- *   - `#scope@tableName@viewId@field`    — 显式指定 scope + viewId
+ * DataKey 读取 DataView 的具体输出字段，供值级组件使用：
+ *   - `tableName@viewId@field`
+ *   - `#scope@tableName@viewId@field`
  *
  * 字段路径（可选）：
- *   - `tableName@viewId@field.path`  → 如 `stats@default@currentRow.totalUsers`
- *   - `tableName@field.path`         → 如 `stats@currentRow.totalUsers`
+ *   - `tableName@viewId@currentRow.customerName`
+ *   - `tableName@viewId@aggregateResult.totalAmount`
  *
- * 非 DataSet 键（如 `settings.siteName`、`formData`）返回 null。
- *
- * @example
- * ```ts
- * import { parseDataKey, resolveDataKey } from '@spark-view/spark-data'
- *
- * // 页面内数据（无 scope）
- * const dk = parseDataKey('Users@default@rows')
- * // { tableName: 'Users', viewId: 'default', field: 'rows' }
- *
- * // 跨页面共享数据（#scope）
- * const dk2 = parseDataKey('#SharedDS@Orders@rows')
- * // { scope: 'SharedDS', tableName: 'Orders', viewId: 'default', field: 'rows' }
- *
- * const data = resolveDataKey(dk, dataSet)
- * // → DataView.rows
- * ```
+ * 不再支持旧的 `tableName@field` 简写。
  */
 
 import type { DataView as SparkDataView } from '../data-view'
-import type { AggregateResultRow, IDataRow, IDataSet, IDataSource } from '../types'
+import type {
+  AggregateResultRow,
+  DataColumn,
+  IDataRow,
+  IDataSet,
+  IDataSource,
+} from '../types'
 
 // ===== 类型定义 =====
 
-/** DataKey 可绑定的字段类型 */
-export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'aggregateResult' | 'selectionAggregateResult'
+/** DataKey 可绑定的字段类型。 */
+export type DataKeyField =
+  | 'rows'
+  | 'columns'
+  | 'currentRow'
+  | 'selectedRows'
+  | 'aggregateResult'
+  | 'selectionAggregateResult'
+  | 'total'
+  | 'page'
+  | 'pageSize'
+  | 'requestState'
+  | 'mutating'
+  | 'loadingError'
+  | 'mutatingError'
 
-/** DataKey 解析后的描述符 */
-export interface DataKeyDescriptor {
-  /** 数据集 scope（仅跨页面 `#scope` 前缀存在） */
+/** ViewKey 解析后的描述符。 */
+export interface ViewKeyDescriptor {
+  /** 数据集 scope（仅跨页面 `#scope` 前缀存在）。 */
   scope?: string
-  /** 表名 */
+  /** 表名。 */
   tableName: string
-  /** 视图ID */
+  /** 视图 ID。 */
   viewId: string
-  /** 绑定字段 */
-  field: DataKeyField
-  /** 字段路径（用于访问行对象的具体字段，如 currentRow.totalUsers 中的 totalUsers） */
-  fieldPath?: string
-  /** 原始 dataKey 字符串 */
+  /** 原始 viewKey 字符串。 */
   raw: string
-  /** 是否为跨页面数据引用（`#scope` 前缀） */
+  /** 是否为跨页面数据引用（`#scope` 前缀）。 */
   crossPage?: boolean
 }
 
-/** DataKey 字段值中的标量类型（用于 fieldPath 提取结果） */
+/** DataKey 解析后的描述符。 */
+export interface DataKeyDescriptor extends ViewKeyDescriptor {
+  /** 绑定字段。 */
+  field: DataKeyField
+  /** 字段路径（用于访问对象字段，如 currentRow.customerName）。 */
+  fieldPath?: string
+}
+
+/** DataKey 字段值中的标量类型。 */
 export type DataKeyScalar = string | number | boolean | bigint | symbol | null | undefined
 
-/** DataKey 字段值中的对象类型（用于 fieldPath 提取结果） */
+/** DataKey 字段值中的对象类型。 */
 export type DataKeyObject = Record<string, unknown>
 
-/** DataKey 字段值（用于 kind='value' 场景） */
-export type DataKeyValue = IDataRow | AggregateResultRow | IDataRow[] | DataKeyObject | unknown[] | DataKeyScalar
+/** DataKey 字段值。 */
+export type DataKeyValue =
+  | IDataRow
+  | AggregateResultRow
+  | readonly IDataRow[]
+  | readonly DataColumn[]
+  | DataKeyObject
+  | readonly unknown[]
+  | DataKeyScalar
+  | Error
 
-/** DataKey 解析结果值（含 rows → DataView 场景） */
-export type DataKeyResolvedValue = SparkDataView | DataKeyValue
+/** DataKey 解析结果值。 */
+export type DataKeyResolvedValue = DataKeyValue
 
 // ===== 常量 =====
 
-/** DataKey 分隔符 */
+/** DataKey / ViewKey 分隔符。 */
 const SEPARATOR = '@'
 
-/** 合法字段名集合 */
-const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows', 'aggregateResult', 'selectionAggregateResult'])
+/** 合法字段名集合。 */
+const VALID_FIELDS = new Set<string>([
+  'rows',
+  'columns',
+  'currentRow',
+  'selectedRows',
+  'aggregateResult',
+  'selectionAggregateResult',
+  'total',
+  'page',
+  'pageSize',
+  'requestState',
+  'mutating',
+  'loadingError',
+  'mutatingError',
+])
 
-/** 跨页面数据引用前缀 */
+/** 跨页面数据引用前缀。 */
 const CROSS_PAGE_PREFIX = '#'
-
 
 // ===== 内部辅助 =====
 
-/**
- * 解析 fieldPart（可能带字段路径，如 `currentRow.totalUsers`）
- * @returns { field, fieldPath } 合法时返回对象，字段非法返回 null
- */
 function parseFieldPart(fieldPart: string): { field: DataKeyField; fieldPath?: string } | null {
   const dotIndex = fieldPart.indexOf('.')
   let field: string
   let fieldPath: string | undefined
-  if (dotIndex > 0) {
+
+  if (dotIndex >= 0) {
     field = fieldPart.substring(0, dotIndex)
     fieldPath = fieldPart.substring(dotIndex + 1)
+    if (!field || !fieldPath) return null
   } else {
     field = fieldPart
   }
+
   if (!VALID_FIELDS.has(field)) return null
   const result: { field: DataKeyField; fieldPath?: string } = { field: field as DataKeyField }
   if (fieldPath !== undefined) result.fieldPath = fieldPath
   return result
 }
 
-/**
- * @internal 解析 #scope@table@[viewId@]field 跨页面数据键
- */
-function parseCrossPageKey(dataKey: string): DataKeyDescriptor | null {
-  // strip leading '#'
-  const stripped = dataKey.substring(1)
-  const parts = stripped.split(SEPARATOR)
-
-  if (parts.length === 4) {
-    // #scope@table@viewId@field
-    const [scope, tableName, viewId, fieldPart] = parts
-    if (!scope || !tableName || !viewId || !fieldPart) return null
-    const fp = parseFieldPart(fieldPart)
-    if (!fp) return null
-    const result: DataKeyDescriptor = { scope, tableName, viewId, field: fp.field, raw: dataKey, crossPage: true }
-    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
-    return result
-  }
-
-  if (parts.length === 3) {
-    // #scope@table@field (viewId = 'default')
-    const [scope, tableName, fieldPart] = parts
-    if (!scope || !tableName || !fieldPart) return null
-    const fp = parseFieldPart(fieldPart)
-    if (!fp) return null
-    const result: DataKeyDescriptor = { scope, tableName, viewId: 'default', field: fp.field, raw: dataKey, crossPage: true }
-    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
-    return result
-  }
-
-  return null
+function parseScopedParts(rawKey: string): string[] | null {
+  if (!rawKey.startsWith(CROSS_PAGE_PREFIX)) return null
+  const stripped = rawKey.substring(1)
+  return stripped.split(SEPARATOR)
 }
 
-// ===== 解析函数 =====
-
-/**
- * 判断 dataKey 是否为当前合法的 DataSet 数据键
- *
- * @param dataKey 原始 dataKey 字符串
- * @returns 是否为 DataSet 绑定键
- */
-export function isDataKey(dataKey: string): boolean {
-  return parseDataKey(dataKey) !== null
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
-/**
- * 解析 dataKey 字符串为结构化描述符
- *
- * 支持格式：
- *   - `tableName@field`                       → 2 段简写（viewId 默认 'default'）
- *   - `tableName@viewId@field`                → 3 段完整格式（推荐）
- *   - `#scope@tableName@field`                → 跨页面 2 段（viewId 默认 'default'）
- *   - `#scope@tableName@viewId@field`         → 跨页面 3 段
- *   - 以上均支持 `field.path` 字段路径
- *
- * @param dataKey 原始 dataKey 字符串
- * @returns 解析后的描述符，非 DataSet 键返回 null
- */
-export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
-  if (!dataKey) return null
-
-  // ── 跨页面 #scope 前缀 ──
-  if (dataKey.startsWith(CROSS_PAGE_PREFIX)) {
-    return parseCrossPageKey(dataKey)
-  }
-
-  // ── 标准格式 ──
-  const parts = dataKey.split(SEPARATOR)
-
-  if (parts.length === 3) {
-    // 新格式：tableName@viewId@field
-    const [tableName, viewId, fieldPart] = parts
-    if (!tableName || !viewId || !fieldPart) return null
-    const fp = parseFieldPart(fieldPart)
-    if (!fp) return null
-    const result: DataKeyDescriptor = { tableName, viewId, field: fp.field, raw: dataKey }
-    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
-    return result
-  }
-
-  if (parts.length === 2) {
-    // 新格式简写：tableName@field → viewId = 'default'
-    const [tableName, fieldPart] = parts
-    if (!tableName || !fieldPart) return null
-    const fp = parseFieldPart(fieldPart)
-    if (!fp) return null
-    const result: DataKeyDescriptor = { tableName, viewId: 'default', field: fp.field, raw: dataKey }
-    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
-    return result
-  }
-
-  // 段数不对或不含 @
-  return null
+function isRowLike(value: unknown): value is IDataRow {
+  return isObjectRecord(value)
 }
 
-// ===== 内部共用解析核心 =====
-
-/**
- * @internal 从行/行对象中提取字段路径的值（如 `currentRow.totalUsers` 中的 `totalUsers`）
- */
 function extractFieldPath(value: unknown, fieldPath: string): unknown {
   const pathParts = fieldPath.split('.')
   let current: unknown = value
 
   for (const part of pathParts) {
-    if (current !== null && current !== undefined && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
-      current = (current as Record<string, unknown>)[part]
+    if (isObjectRecord(current) && Object.prototype.hasOwnProperty.call(current, part)) {
+      current = current[part]
     } else {
       return undefined
     }
@@ -219,122 +160,183 @@ function extractFieldPath(value: unknown, fieldPath: string): unknown {
   return current
 }
 
-/**
- * @internal 从 DataSet 中查找视图并按 field 提取值的共用逻辑
- *
- * @param descriptor 解析后的描述符
- * @param dataSet 数据集
- * @param rowsAsView 当 field='rows' 时，true 返回 DataView 实例，false 返回 view.rows 数组
- * @returns 解析到的值（含 fieldPath 提取）
- */
-function _resolveCore(
-  descriptor: DataKeyDescriptor,
-  dataSet: IDataSet,
-  rowsAsView: boolean
-): DataKeyResolvedValue {
-  const table = dataSet.getTable(descriptor.tableName)
-  if (!table) return undefined
-
-  const view = table.getView(descriptor.viewId)
-  if (!view) return undefined
-
-  let value: SparkDataView | IDataRow[] | IDataRow | AggregateResultRow | null | undefined
-
-  switch (descriptor.field) {
-    case 'rows':                value = rowsAsView ? view : view.rows; break
-    case 'currentRow':          value = view.currentRow; break
-    case 'selectedRows':        value = view.selectedRows; break
-    case 'aggregateResult':          value = view.aggregateResult as AggregateResultRow; break
-    case 'selectionAggregateResult': value = view.selectionAggregateResult as AggregateResultRow; break
-    default:                    return undefined
+function getDataKeyValue(view: SparkDataView, field: DataKeyField): DataKeyValue {
+  switch (field) {
+    case 'rows': return view.rows
+    case 'columns': return view.columns
+    case 'currentRow': return view.currentRow
+    case 'selectedRows': return view.selectedRows
+    case 'aggregateResult': return view.aggregateResult
+    case 'selectionAggregateResult': return view.selectionAggregateResult
+    case 'total': return view.total
+    case 'page': return view.page
+    case 'pageSize': return view.pageSize
+    case 'requestState': return view.requestState
+    case 'mutating': return view.mutating
+    case 'loadingError': return view.loadingError
+    case 'mutatingError': return view.mutatingError
   }
-
-  // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
-  // field='rows' + rowsAsView=true → value 是 DataView 实例，不应作为行对象取字段路径
-  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !('viewId' in value)) {
-    return extractFieldPath(value, descriptor.fieldPath) as DataKeyValue
-  }
-
-  return value
 }
 
-// ===== 公共解析函数 =====
+function resolveValueWithPath(
+  value: DataKeyValue,
+  fieldPath: string | undefined,
+): DataKeyResolvedValue {
+  if (fieldPath === undefined) return value
+  if (!isObjectRecord(value)) return undefined
+  return extractFieldPath(value, fieldPath) as DataKeyValue
+}
+
+// ===== ViewKey 解析 =====
 
 /**
- * 从 DataSet 中解析数据键对应的值
- *
- * @param descriptor 已解析的描述符（parseDataKey 返回值）
- * @param dataSet 数据集实例
- * @returns 解析到的数据值
+ * 判断字符串是否为合法 ViewKey。
+ */
+export function isViewKey(viewKey: string): boolean {
+  return parseViewKey(viewKey) !== null
+}
+
+/**
+ * 解析 ViewKey：`table@viewId` 或 `#scope@table@viewId`。
+ */
+export function parseViewKey(viewKey: string): ViewKeyDescriptor | null {
+  if (!viewKey) return null
+
+  const scopedParts = parseScopedParts(viewKey)
+  if (scopedParts) {
+    if (scopedParts.length !== 3) return null
+    const [scope, tableName, viewId] = scopedParts
+    if (!scope || !tableName || !viewId) return null
+    return { scope, tableName, viewId, raw: viewKey, crossPage: true }
+  }
+
+  const parts = viewKey.split(SEPARATOR)
+  if (parts.length !== 2) return null
+  const [tableName, viewId] = parts
+  if (!tableName || !viewId) return null
+  return { tableName, viewId, raw: viewKey }
+}
+
+/**
+ * 从 DataSet 中解析 ViewKey 对应的 DataView。
+ */
+export function resolveViewKey(
+  viewKey: string | undefined,
+  dataSet: IDataSet | null | undefined,
+): SparkDataView | undefined {
+  if (!viewKey || !dataSet) return undefined
+  const descriptor = parseViewKey(viewKey)
+  if (!descriptor) return undefined
+  return dataSet.getView(descriptor.tableName, descriptor.viewId)
+}
+
+// ===== DataKey 解析 =====
+
+/**
+ * 判断 dataKey 是否为当前合法的 DataSet 值级数据键。
+ */
+export function isDataKey(dataKey: string): boolean {
+  return parseDataKey(dataKey) !== null
+}
+
+/**
+ * 解析 DataKey：`table@viewId@field` 或 `#scope@table@viewId@field`。
+ */
+export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
+  if (!dataKey) return null
+
+  const scopedParts = parseScopedParts(dataKey)
+  if (scopedParts) {
+    if (scopedParts.length !== 4) return null
+    const [scope, tableName, viewId, fieldPart] = scopedParts
+    if (!scope || !tableName || !viewId || !fieldPart) return null
+    const fp = parseFieldPart(fieldPart)
+    if (!fp) return null
+    const result: DataKeyDescriptor = {
+      scope,
+      tableName,
+      viewId,
+      field: fp.field,
+      raw: dataKey,
+      crossPage: true,
+    }
+    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+    return result
+  }
+
+  const parts = dataKey.split(SEPARATOR)
+  if (parts.length !== 3) return null
+  const [tableName, viewId, fieldPart] = parts
+  if (!tableName || !viewId || !fieldPart) return null
+  const fp = parseFieldPart(fieldPart)
+  if (!fp) return null
+  const result: DataKeyDescriptor = { tableName, viewId, field: fp.field, raw: dataKey }
+  if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+  return result
+}
+
+/**
+ * 从 DataSet 中解析数据键对应的值。
  */
 export function resolveDataKey(
   descriptor: DataKeyDescriptor,
-  dataSet: IDataSet
+  dataSet: IDataSet,
 ): DataKeyResolvedValue {
-  return _resolveCore(descriptor, dataSet, false)
+  const view = dataSet.getView(descriptor.tableName, descriptor.viewId)
+  if (!view) return undefined
+  return resolveValueWithPath(getDataKeyValue(view, descriptor.field), descriptor.fieldPath)
 }
 
 /**
- * 解析 DataKey → 绑定友好的值（rows → DataView 实例，其他字段 → 原始值）
- *
- * 与 `resolveDataKey` 的区别：`rows` 字段返回 **DataView 实例**（实现了 `IDataSource`），
- * 而非 `view.rows` 数组，更适合绑定到需要完整 DataSource 接口的数据容器组件。
- *
- * @internal 内部实现——外部调用方请使用 resolveRawKey 或 resolveDataKeyBinding
- */
-function resolveDataKeyAsSource(
-  descriptor: DataKeyDescriptor,
-  dataSet: IDataSet
-): DataKeyResolvedValue {
-  return _resolveCore(descriptor, dataSet, true)
-}
-
-// ===== 字符串入口（raw string → 数据）=====
-// 调用方无需手动组合 isDataKey + parseDataKey + resolveXxx 三步
-
-/**
- * 从原始字符串一步解析到绑定值（rows → DataView，其他 → 原始行数据）
- *
- * - 格式无效或解析失败 → `undefined`（不打日志，由调用方决定是否 warn）
- * - 等价于 `resolveDataKeyAsSource(parseDataKey(rawKey)!, dataSet)`
+ * 从原始字符串一步解析到值级绑定结果。
  */
 export function resolveRawKey(
   rawKey: string,
-  dataSet: IDataSet
-): SparkDataView | IDataRow | IDataRow[] | null | undefined {
-  if (!isDataKey(rawKey)) return undefined
-  const dk = parseDataKey(rawKey)
-  if (!dk) return undefined
-  return resolveDataKeyAsSource(dk, dataSet) as SparkDataView | IDataRow | IDataRow[] | null | undefined
+  dataSet: IDataSet,
+): DataKeyResolvedValue {
+  const descriptor = parseDataKey(rawKey)
+  if (!descriptor) return undefined
+  return resolveDataKey(descriptor, dataSet)
 }
 
 /**
- * 从原始字符串获取对应的 DataView（不依赖 field 字段）
+ * 从原始 DataKey 获取所属 DataView。
  *
- * 合并了 isDataKey + parseDataKey + dataSet.getView 三步。
- * 用于需要注入 DataView 引用但不关心具体 field 的场景。
+ * @deprecated 表级容器应使用 resolveViewKey(viewKey, dataSet)。
  */
 export function getViewFromRawKey(
   rawKey: string,
-  dataSet: IDataSet
+  dataSet: IDataSet,
 ): SparkDataView | undefined {
-  if (!isDataKey(rawKey)) return undefined
-  const dk = parseDataKey(rawKey)
-  if (!dk) return undefined
-  return dataSet.getView(dk.tableName, dk.viewId)
+  const descriptor = parseDataKey(rawKey)
+  if (!descriptor) return undefined
+  return dataSet.getView(descriptor.tableName, descriptor.viewId)
 }
 
 /**
- * DataKey 渲染绑定结果（判别联合）
- *
- * 供渲染层消费，避免渲染层直接依赖 `DataView` 具体类。
- *
- * - `kind: 'view'`  — field='rows'，返回实现了 IDataSource 的视图对象
- * - `kind: 'value'` — field='currentRow'|'selectedRows'，返回标量 / 行数组
+ * DataKey 渲染绑定结果。
  */
-export type DataKeyBinding =
-  | { kind: 'view'; source: IDataSource }
-  | { kind: 'value'; value: DataKeyValue }
+export type DataKeyBinding = {
+  kind: 'value'
+  value: DataKeyValue
+  source: IDataSource
+  descriptor: DataKeyDescriptor
+}
+
+export type ViewKeyDiagnosticStatus =
+  | 'ok'
+  | 'invalid-key'
+  | 'missing-dataset'
+  | 'missing-table'
+  | 'missing-view'
+
+export interface ViewKeyDiagnostic {
+  ok: boolean
+  status: ViewKeyDiagnosticStatus
+  rawKey: string
+  descriptor: ViewKeyDescriptor | null
+  message: string
+}
 
 export type DataKeyDiagnosticStatus =
   | 'ok'
@@ -355,6 +357,21 @@ export interface DataKeyDiagnostic {
   message: string
 }
 
+function viewKeyDiagnostic(
+  status: ViewKeyDiagnosticStatus,
+  rawKey: string,
+  descriptor: ViewKeyDescriptor | null,
+  message: string,
+): ViewKeyDiagnostic {
+  return {
+    ok: status === 'ok',
+    status,
+    rawKey,
+    descriptor,
+    message,
+  }
+}
+
 function dataKeyDiagnostic(
   status: DataKeyDiagnosticStatus,
   rawKey: string,
@@ -371,7 +388,33 @@ function dataKeyDiagnostic(
 }
 
 /**
- * 诊断 DataKey 绑定链路，不改变 resolveDataKey/resolveDataKeyBinding 的既有行为。
+ * 诊断 ViewKey 绑定链路。
+ */
+export function diagnoseViewKey(
+  rawKey: string,
+  dataSet: IDataSet | null | undefined,
+): ViewKeyDiagnostic {
+  const normalizedKey = typeof rawKey === 'string' ? rawKey.trim() : ''
+  const descriptor = normalizedKey ? parseViewKey(normalizedKey) : null
+  if (!descriptor) {
+    return viewKeyDiagnostic('invalid-key', rawKey, null, `无效 ViewKey: ${rawKey}`)
+  }
+  if (!dataSet) {
+    return viewKeyDiagnostic('missing-dataset', rawKey, descriptor, `DataSet 未就绪: ${rawKey}`)
+  }
+  const table = dataSet.getTable(descriptor.tableName)
+  if (!table) {
+    return viewKeyDiagnostic('missing-table', rawKey, descriptor, `ViewKey 表不存在: ${descriptor.tableName}`)
+  }
+  const view = table.getView(descriptor.viewId)
+  if (!view) {
+    return viewKeyDiagnostic('missing-view', rawKey, descriptor, `ViewKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}`)
+  }
+  return viewKeyDiagnostic('ok', rawKey, descriptor, `ViewKey 可解析: ${rawKey}`)
+}
+
+/**
+ * 诊断 DataKey 绑定链路。
  */
 export function diagnoseDataKey(
   rawKey: string,
@@ -396,45 +439,19 @@ export function diagnoseDataKey(
     return dataKeyDiagnostic('missing-view', rawKey, descriptor, `DataKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}`)
   }
 
-  let value: SparkDataView | IDataRow[] | IDataRow | AggregateResultRow | null | undefined
-  switch (descriptor.field) {
-    case 'rows':
-      value = view
-      break
-    case 'currentRow':
-      value = view.currentRow
-      if (value === null) {
-        return dataKeyDiagnostic('empty-current-row', rawKey, descriptor, `DataKey 当前行为空: ${rawKey}`)
-      }
-      break
-    case 'selectedRows':
-      value = view.selectedRows
-      if (value.length === 0) {
-        return dataKeyDiagnostic('empty-selection', rawKey, descriptor, `DataKey 选中行为空: ${rawKey}`)
-      }
-      break
-    case 'aggregateResult':
-      value = view.aggregateResult
-      break
-    case 'selectionAggregateResult':
-      value = view.selectionAggregateResult
-      break
-    default:
-      return dataKeyDiagnostic('invalid-key', rawKey, descriptor, `无效 DataKey 字段: ${rawKey}`)
+  const value = getDataKeyValue(view, descriptor.field)
+  if (descriptor.field === 'currentRow' && value === null) {
+    return dataKeyDiagnostic('empty-current-row', rawKey, descriptor, `DataKey 当前行为空: ${rawKey}`)
+  }
+  if (descriptor.field === 'selectedRows' && Array.isArray(value) && value.length === 0) {
+    return dataKeyDiagnostic('empty-selection', rawKey, descriptor, `DataKey 选中行为空: ${rawKey}`)
   }
 
-  const fieldPathCandidate: unknown = value
   if (descriptor.fieldPath !== undefined) {
-    if (
-      fieldPathCandidate === null
-      || fieldPathCandidate === undefined
-      || typeof fieldPathCandidate !== 'object'
-      || Array.isArray(fieldPathCandidate)
-      || 'viewId' in fieldPathCandidate
-    ) {
+    if (!isObjectRecord(value)) {
       return dataKeyDiagnostic('unsupported-field-path', rawKey, descriptor, `DataKey 字段路径不适用于当前值: ${rawKey}`)
     }
-    if (extractFieldPath(fieldPathCandidate, descriptor.fieldPath) === undefined) {
+    if (extractFieldPath(value, descriptor.fieldPath) === undefined) {
       return dataKeyDiagnostic('missing-field', rawKey, descriptor, `DataKey 字段不存在: ${descriptor.fieldPath}`)
     }
   }
@@ -443,122 +460,71 @@ export function diagnoseDataKey(
 }
 
 /**
- * 解析 DataKey 为渲染绑定描述符（渲染层入口）
- *
- * 封装了 isDataKey → parseDataKey → getView 全链路；
- * 返回判别联合，渲染层无需 `instanceof DataView` 判断。
- *
- * @returns 绑定描述符，键无效或未找到返回 `null`
+ * 解析 DataKey 为渲染绑定描述符。
  */
 export function resolveDataKeyBinding(
   rawKey: string,
-  dataSet: IDataSet
+  dataSet: IDataSet,
 ): DataKeyBinding | null {
-  if (!isDataKey(rawKey)) return null
-  const dk = parseDataKey(rawKey)
-  if (!dk) return null
-  const table = dataSet.getTable(dk.tableName)
-  if (!table) return null
-  const view = table.getView(dk.viewId)
+  const descriptor = parseDataKey(rawKey)
+  if (!descriptor) return null
+  const view = dataSet.getView(descriptor.tableName, descriptor.viewId)
   if (!view) return null
-
-  // rows → 返回 DataView（IDataSource），不支持 fieldPath
-  if (dk.field === 'rows') return { kind: 'view', source: view }
-
-  // 其他字段 → 取原始值后按需提取 fieldPath
-  let value: IDataRow | AggregateResultRow | IDataRow[] | null | undefined
-  switch (dk.field) {
-    case 'currentRow':          value = view.currentRow; break
-    case 'selectedRows':        value = view.selectedRows; break
-    case 'aggregateResult':          value = view.aggregateResult; break
-    case 'selectionAggregateResult': value = view.selectionAggregateResult; break
-    default:                    return null
+  const value = resolveValueWithPath(getDataKeyValue(view, descriptor.field), descriptor.fieldPath)
+  return {
+    kind: 'value',
+    value,
+    source: view,
+    descriptor,
   }
-
-  // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
-  const fieldPathCandidate: unknown = value
-  if (
-    dk.fieldPath !== undefined
-    && fieldPathCandidate !== null
-    && fieldPathCandidate !== undefined
-    && typeof fieldPathCandidate === 'object'
-    && !Array.isArray(fieldPathCandidate)
-  ) {
-    const fieldPathValue = extractFieldPath(fieldPathCandidate, dk.fieldPath) as DataKeyValue
-    return { kind: 'value', value: fieldPathValue }
-  }
-
-  return { kind: 'value', value: value as DataKeyValue }
 }
 
 /**
- * 构建标准化 DataKey 字符串
- *
- * @param tableName 表名
- * @param field 绑定字段
- * @param viewId 视图ID（默认 'default'，省略时输出 2 段简写）
- * @param scope 跨页面 scope（传入时输出 `#scope@table@...` 格式）
- * @returns 格式化后的 dataKey 字符串
- *
- * @example
- * ```ts
- * buildDataKey('Orders', 'rows')                    // → 'Orders@rows'
- * buildDataKey('Orders', 'rows', 'grid')             // → 'Orders@grid@rows'
- * buildDataKey('Orders', 'rows', 'default', 'Shared') // → '#Shared@Orders@rows'
- * buildDataKey('Orders', 'rows', 'grid', 'Shared')   // → '#Shared@Orders@grid@rows'
- * ```
+ * 构建标准化 ViewKey 字符串。
+ */
+export function buildViewKey(
+  tableName: string,
+  viewId = 'default',
+  scope?: string,
+): string {
+  const prefix = scope ? `${CROSS_PAGE_PREFIX}${scope}${SEPARATOR}` : ''
+  return `${prefix}${tableName}${SEPARATOR}${viewId}`
+}
+
+/**
+ * 构建标准化 DataKey 字符串。
  */
 export function buildDataKey(
   tableName: string,
   field: DataKeyField,
   viewId = 'default',
-  scope?: string
+  scope?: string,
 ): string {
   const prefix = scope ? `${CROSS_PAGE_PREFIX}${scope}${SEPARATOR}` : ''
-  if (viewId === 'default') {
-    return `${prefix}${tableName}${SEPARATOR}${field}`
-  }
   return `${prefix}${tableName}${SEPARATOR}${viewId}${SEPARATOR}${field}`
 }
 
 /**
- * 从 DataKey 描述符提取视图唯一键（用于订阅去重）
- *
- * @param descriptor 描述符
- * @returns `tableName.viewId` 格式字符串
+ * 从 DataKey 描述符提取视图唯一键（用于订阅去重）。
  */
-export function getViewKey(descriptor: DataKeyDescriptor): string {
+export function getViewKey(descriptor: DataKeyDescriptor | ViewKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
 }
 
-// ===== 跨框架能力解析（framework-agnostic capability resolution）=====
+// ===== 跨框架能力解析 =====
 
 /**
  * DataKey 能力解析结果。
- *
- * 设计约束：此类型及以下函数不依赖任何 UI 框架，可在 Node.js、测试、非 Vue 环境中使用。
  */
 export interface ResolvedDataCapabilities {
-  /** 解析到的 DataView（来自 rows/currentRow/… 字段所属视图）；无匹配时为 null */
+  /** 解析到的 DataView；无匹配时为 null。 */
   dataSource: SparkDataView | null
-  /**
-   * 解析到的上下文行：
-   * - view-binding（field='rows'）→ view.currentRow
-   * - field-binding（field='currentRow' / 其他行字段）→ 绑定行本身
-   * 无匹配时为 null
-   */
+  /** 解析到的上下文行；无匹配时为 null。 */
   dataRow: IDataRow | null
 }
 
-function isRowLike(value: unknown): value is IDataRow {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
 /**
- * 统一 DataKey 能力解析入口（框架无关）。
- *
- * - dataSource：定位到绑定键所属的 DataView
- * - dataRow：view-binding 返回 view.currentRow；field-binding 返回绑定行
+ * 统一 DataKey 能力解析入口。
  */
 export function resolveDataCapabilitiesFromDataKey(
   rawKey: string | undefined,
@@ -570,27 +536,16 @@ export function resolveDataCapabilitiesFromDataKey(
   const binding = resolveDataKeyBinding(rawKey, dataSet)
   if (!binding) return empty
 
-  if (binding.kind === 'view') {
-    const dataSource = binding.source as SparkDataView
-    const currentRow = dataSource.currentRow
-    return {
-      dataSource,
-      dataRow: isRowLike(currentRow) ? currentRow : null,
-    }
-  }
-
-  const dataSource = getViewFromRawKey(rawKey, dataSet) ?? null
   return {
-    dataSource,
+    dataSource: binding.source as SparkDataView,
     dataRow: isRowLike(binding.value) ? binding.value : null,
   }
 }
 
 /**
- * 统一 DataKey → DataView 入口（框架无关）。
+ * 统一 DataKey → DataView 入口。
  *
- * - 空 key / 缺少 DataSet → null
- * - 非法 key / 视图不存在 → null
+ * @deprecated 表级容器应使用 resolveViewKey(viewKey, dataSet)。
  */
 export function resolveViewFromDataKey(
   rawKey: string | undefined,
@@ -600,26 +555,27 @@ export function resolveViewFromDataKey(
 }
 
 /**
- * 从任意合法 DataKey 派生"同 scope + 同 table + 同 viewId"的目标字段 DataKey。
- *
- * @example
- * deriveSiblingFieldDataKey('Orders@grid@rows', 'currentRow') // → 'Orders@grid@currentRow'
- * deriveSiblingFieldDataKey('#Shared@Orders@rows', 'selectedRows') // → '#Shared@Orders@selectedRows'
+ * 从合法 ViewKey 派生同视图的目标字段 DataKey。
+ */
+export function deriveDataKeyFromViewKey(
+  viewKey: string | undefined,
+  targetField: DataKeyField,
+): string | undefined {
+  if (typeof viewKey !== 'string') return undefined
+  const descriptor = parseViewKey(viewKey.trim())
+  if (!descriptor) return undefined
+  return buildDataKey(descriptor.tableName, targetField, descriptor.viewId, descriptor.scope)
+}
+
+/**
+ * 从任意合法 DataKey 派生同 scope + 同 table + 同 viewId 的目标字段 DataKey。
  */
 export function deriveSiblingFieldDataKey(
   rawKey: string | undefined,
   targetField: DataKeyField,
 ): string | undefined {
   if (typeof rawKey !== 'string') return undefined
-  const normalized = rawKey.trim()
-  if (normalized.length === 0) return undefined
-
-  const descriptor = parseDataKey(normalized)
+  const descriptor = parseDataKey(rawKey.trim())
   if (!descriptor) return undefined
-
-  const scopePrefix = descriptor.scope ? `#${descriptor.scope}@` : ''
-  if (descriptor.viewId === 'default') {
-    return `${scopePrefix}${descriptor.tableName}@${targetField}`
-  }
-  return `${scopePrefix}${descriptor.tableName}@${descriptor.viewId}@${targetField}`
+  return buildDataKey(descriptor.tableName, targetField, descriptor.viewId, descriptor.scope)
 }

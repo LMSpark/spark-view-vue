@@ -1,9 +1,10 @@
-import { computed, shallowRef, toValue, watchEffect } from 'vue'
-import type { ComputedRef, MaybeRefOrGetter } from 'vue'
+import { computed, shallowRef, watchEffect } from 'vue'
+import type { ComputedRef } from 'vue'
 import {
   RequestState,
-  parseDataKey,
   type DataView,
+  type DataColumn,
+  type DataViewSnapshot,
   type IDataRow,
   type IDataSource,
   type IModelPermission,
@@ -14,7 +15,7 @@ import { extractModelPermission } from '../../../permission/index.js'
 import { toDataRecord } from './data-row-utils.js'
 
 /**
- * DataView 标识态：来自 dataKey 反推或 DataView 本身的静态元信息。
+ * DataView 标识态：来自 DataView 快照的静态元信息。
  */
 export interface DataViewIdentityState {
   tableName: ComputedRef<IDataSource['tableName']>
@@ -26,6 +27,7 @@ export interface DataViewIdentityState {
 /** DataView 行数据态：当前视图下的行级数据与选择状态。 */
 export interface DataViewRowsState {
   rows: ComputedRef<readonly IDataRow[]>
+  columns: ComputedRef<readonly DataColumn[]>
   currentRow: ComputedRef<IDataRow | null>
   selectedRows: ComputedRef<readonly IDataRow[]>
   isMultiSelect: ComputedRef<boolean>
@@ -86,6 +88,7 @@ type ViewRevisionRef = ValueRef<number>
 const EMPTY_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_ROWS: readonly IDataRow[] = Object.freeze([])
+const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
 function normalizeAggregateResult(value: unknown, emptyValue: AggregateResultState): AggregateResultState {
@@ -108,120 +111,100 @@ function useResolvedViewRevision(resolvedView: ResolvedViewRef): ViewRevisionRef
 
 /**
  * 将 DataView 实例统一投影为容器可消费的 UI 只读状态。
- *
- * 当前实现不依赖 snapshot，而是直接读取 view 字段并用 subscribe 驱动失效。
  */
 export function useDataViewState(
   resolvedView: ResolvedViewRef,
-  dataKey: MaybeRefOrGetter<string | undefined>,
 ): DataViewRuntimeState & DataViewPermissionState {
   const viewRevision = useResolvedViewRevision(resolvedView)
 
-  const tableName = computed<IDataSource['tableName']>(() => {
+  const snapshot = computed<DataViewSnapshot | null>(() => {
     viewRevision.value
-    return resolvedView.value?.tableName ?? ''
+    return resolvedView.value?.getSnapshot() ?? null
+  })
+
+  const tableName = computed<IDataSource['tableName']>(() => {
+    return snapshot.value?.tableName ?? ''
   })
 
   const viewId = computed<string | undefined>(() => {
-    const rawKey = toValue(dataKey)
-    if (typeof rawKey !== 'string') return undefined
-    const descriptor = parseDataKey(rawKey)
-    return descriptor?.viewId
+    return snapshot.value?.viewId
   })
 
   const primaryKey = computed<string | undefined>(() => {
-    viewRevision.value
-    return resolvedView.value?.primaryKey
+    return snapshot.value?.primaryKey
   })
   const treeConfig = computed<TreeConfig | undefined>(() => {
-    viewRevision.value
-    return resolvedView.value?.treeConfig
+    return snapshot.value?.treeConfig
   })
 
   const rows = computed<readonly IDataRow[]>(() => {
-    viewRevision.value
-    return resolvedView.value?.rows ?? EMPTY_ROWS
+    return snapshot.value?.rows ?? EMPTY_ROWS
+  })
+  const columns = computed<readonly DataColumn[]>(() => {
+    return snapshot.value?.columns ?? EMPTY_COLUMNS
   })
   const currentRow = computed<IDataRow | null>(() => {
-    viewRevision.value
-    return resolvedView.value?.currentRow ?? null
+    return snapshot.value?.currentRow ?? null
   })
   const selectedRows = computed<readonly IDataRow[]>(() => {
-    viewRevision.value
-    return resolvedView.value?.selectedRows ?? EMPTY_ROWS
+    return snapshot.value?.selectedRows ?? EMPTY_ROWS
   })
   const isMultiSelect = computed<boolean>(() => {
-    viewRevision.value
-    return resolvedView.value?.isMultiSelect ?? false
+    return snapshot.value?.isMultiSelect ?? false
   })
 
   const _modelPerm = computed<IDataSource['_modelPerm']>(() => {
-    viewRevision.value
-    const source = resolvedView.value as IDataSource | null
-    return source?._modelPerm
+    return snapshot.value?._modelPerm
   })
   const value = computed<IDataSource['value']>(() => {
-    viewRevision.value
-    return resolvedView.value?.value ?? ''
+    return snapshot.value?.value ?? ''
   })
   const label = computed<IDataSource['label']>(() => {
-    viewRevision.value
-    return resolvedView.value?.label ?? null
+    return snapshot.value?.label ?? null
   })
   const labels = computed<IDataSource['labels']>(() => {
-    viewRevision.value
-    return resolvedView.value?.labels ?? EMPTY_LABELS
+    return snapshot.value?.labels ?? EMPTY_LABELS
   })
 
   const requestState = computed<IDataSource['requestState']>(() => {
-    viewRevision.value
-    return resolvedView.value?.requestState ?? RequestState.Idle
+    return snapshot.value?.requestState ?? RequestState.Idle
   })
 
   const aggregateResult = computed<AggregateResultState>(() => {
-    viewRevision.value
-    return normalizeAggregateResult(resolvedView.value?.aggregateResult, EMPTY_AGGREGATE_RESULT)
+    return normalizeAggregateResult(snapshot.value?.aggregateResult, EMPTY_AGGREGATE_RESULT)
   })
 
   const selectionAggregateResult = computed<AggregateResultState>(() => {
-    viewRevision.value
-    return normalizeAggregateResult(resolvedView.value?.selectionAggregateResult, EMPTY_SELECTION_AGGREGATE_RESULT)
+    return normalizeAggregateResult(snapshot.value?.selectionAggregateResult, EMPTY_SELECTION_AGGREGATE_RESULT)
   })
 
   const total = computed<number>(() => {
-    viewRevision.value
-    return resolvedView.value?.total ?? 0
+    return snapshot.value?.total ?? 0
   })
   const page = computed<number>(() => {
-    viewRevision.value
-    return resolvedView.value?.page ?? 1
+    return snapshot.value?.page ?? 1
   })
   const pageSize = computed<number>(() => {
-    viewRevision.value
-    return resolvedView.value?.pageSize ?? 20
+    return snapshot.value?.pageSize ?? 20
   })
 
   const mutating = computed<boolean>(() => {
-    viewRevision.value
-    return resolvedView.value?.mutating ?? false
+    return snapshot.value?.mutating ?? false
   })
   const mutatingError = computed<Error | null>(() => {
-    viewRevision.value
-    return resolvedView.value?.mutatingError ?? null
+    return snapshot.value?.mutatingError ?? null
   })
   const loadingError = computed<Error | null>(() => {
-    viewRevision.value
-    return resolvedView.value?.loadingError ?? null
+    return snapshot.value?.loadingError ?? null
   })
 
   const modelPermission = computed<IModelPermission | undefined>(() => {
-    viewRevision.value
-    return extractModelPermission(resolvedView.value as IDataSource | null)
+    return extractModelPermission(snapshot.value as IDataSource | null)
   })
 
   return {
     tableName, viewId, primaryKey, treeConfig,
-    rows, currentRow, selectedRows, isMultiSelect,
+    rows, columns, currentRow, selectedRows, isMultiSelect,
     _modelPerm, value, label, labels,
     requestState, aggregateResult, selectionAggregateResult,
     total, page, pageSize,

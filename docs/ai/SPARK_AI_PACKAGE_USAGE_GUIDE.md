@@ -471,7 +471,9 @@ flowchart TD
 1. 修改前先确认真实节点 ID，不要凭组件名称猜 ID。
 2. 新增组件前先 `queryPayloads`，再对目标组件 `guidePayload`。
 3. `guidePayload` 返回的 schema 是组件配置依据，尤其是必填 props、children 约束和事件绑定。
-4. 批量编辑优先用 batch 工具，减少多轮模型调用。
+4. 表级容器用 `viewKey` 定位 DataView，值级展示才用完整 `dataKey`，不要再生成 `Table@rows` 旧写法。
+5. 数据容器下的任何组件、任何 prop 都可以用 `$[fieldName]` 消费当前 `DATA_ROW` 字段；例如 `r-tag.content="$[age] 岁"`、`r-tag.tagType="$[ageBadgeType]"`。纯占位符保留原始类型，混合文本会字符串化。
+6. 批量编辑优先用 batch 工具，减少多轮模型调用。
 
 ### 7.3 编辑 `pagedata`
 

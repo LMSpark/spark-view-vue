@@ -28,7 +28,7 @@ export function createRuleJsonSchema(
         properties: {
           type: withMeta('组件类型 Component Type', '组件注册名（kebab-case），如 r-table / el-button / div。', { type: 'string', enum: metadata.types }),
           id: withMeta('节点标识 Component ID', 'SparkNode 顶层稳定 id，用于脚本寻址和渲染 key。不要放到 props.id。', { type: 'string' }),
-          props: withMeta('组件属性 Props', '传给组件的业务属性。dataKey / field / label / on / visible / disabled 等在此声明；id 必须写在节点顶层。', {
+          props: withMeta('组件属性 Props', '传给组件的业务属性。viewKey / dataKey / contextDataKey / field / label / on / visible / disabled 等在此声明；id 必须写在节点顶层。', {
             type: 'object',
             additionalProperties: true,
           }),
@@ -42,7 +42,9 @@ export function createRuleJsonSchema(
               ],
             },
           }),
-          dataKey: withMeta('数据绑定键 Data Key', 'DataKey 格式：table@field 或 table@viewId@field。', { type: 'string' }),
+          viewKey: withMeta('视图绑定键 View Key', '容器级 ViewKey 格式：table@viewId 或 #scope@table@viewId。', { type: 'string' }),
+          dataKey: withMeta('数据绑定键 Data Key', '值级 DataKey 格式：table@viewId@field 或 #scope@table@viewId@field。', { type: 'string' }),
+          contextDataKey: withMeta('上下文数据绑定键 Context Data Key', 'r-form / r-detail 的上下文 DataKey，格式同 dataKey。默认通常为 table@viewId@currentRow。', { type: 'string' }),
           field: withMeta('字段名 Field', '字段组件绑定的列名。', { type: 'string' }),
           label: withMeta('标签 Label', '字段组件或列的显示标题。', { type: 'string' }),
           on: withMeta('事件绑定 Events', '事件名到 script.js 函数名的映射，如 { "click": "handleClick" }。', {

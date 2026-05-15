@@ -369,7 +369,7 @@ sequenceDiagram
 | 事件映射 | 将配置中的事件映射为 Vue listener props |
 | children 协商 | 根据组件声明决定 children 走 prop 还是 slot |
 | 行上下文 | 当前节点有 row/data 时提供 `DATA_ROW` 能力 |
-| 占位符解析 | 将 `$[fieldName]` 等占位符替换为当前行字段值 |
+| 占位符解析 | 将任意 prop 中的 `$[fieldName]` 替换为当前行字段值 |
 | 宿主约束 | 根据 registry meta 的 `hostTypes` 检查组件可放置位置 |
 
 优化建议是拆出纯函数模块，并给每类规则补独立测试：
@@ -382,6 +382,8 @@ sequenceDiagram
 | `children-negotiation.ts` | childrenMode、prop/slot 推断 |
 
 这样可以保持行为不变，同时降低后续改 renderer 的风险。
+
+占位符解析是渲染器级能力，不是某个展示组件的私有能力。只要节点处在 `DATA_ROW` 上下文中，任何组件的任何 prop 都可以写 `$[fieldName]`：纯占位符保留字段原始类型，混合文本会转成字符串。`placeholder-demo` 页面里的 `r-tag.content="$[age] 岁"`、`r-tag.tagType="$[ageBadgeType]"`、`r-statistic.title="$[name] 的年龄"` 就是这个能力的标准用法。
 
 ### 9.3 能力系统
 
@@ -405,7 +407,7 @@ flowchart TD
 
 ## 10. `spark-data`：数据空间与绑定协议
 
-`spark-data` 是复杂后台页面的核心支撑。它让页面不再把数据散落在组件内部，而是通过 DataSet、DataTable、DataView、DataKey 和关系管理形成统一数据空间。
+`spark-data` 是复杂后台页面的核心支撑。它让页面不再把数据散落在组件内部，而是通过 DataSet、DataTable、DataView、ViewKey/DataKey 和关系管理形成统一数据空间。
 
 ```mermaid
 flowchart TD
@@ -413,7 +415,7 @@ flowchart TD
   DataSet["DataSet"]
   Table["DataTable"]
   View["DataView"]
-  Key["DataKey"]
+  Key["ViewKey / DataKey"]
   Component["组件"]
   Crud["CRUD Delegate"]
   Relation["关系 / 级联"]
@@ -431,7 +433,7 @@ flowchart TD
 
 ### 10.1 DataSet / DataTable / DataView
 
-DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，DataView 表示面向组件绑定和交互的视图。组件通常不直接关心接口细节，而是通过 DataKey 绑定到某个 view 的 rows、currentRow、selection 或字段。
+DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，DataView 表示面向组件绑定和交互的视图。组件通常不直接关心接口细节：表级容器通过 `viewKey` 定位某个 DataView，展示组件或动作上下文通过 `dataKey` 读取该 DataView 的 rows、currentRow、selection、aggregateResult 或状态字段。
 
 这套分层让 SPARK 页面能表达后台页面常见模式：
 
@@ -445,18 +447,22 @@ DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，Da
 | 历史记录 | 支持撤销、回滚和变更追踪的基础 |
 | 计算列/聚合 | 将业务派生数据纳入平台模型 |
 
-### 10.2 DataKey
+### 10.2 ViewKey / DataKey
 
-DataKey 是组件和数据视图之间的绑定协议。它让配置可以用稳定字符串表达“我要绑定到哪个数据对象”。例如：
+ViewKey 和 DataKey 是组件和数据视图之间的绑定协议。两者都用稳定字符串表达数据来源，但职责不同：
 
-| DataKey 示例 | 含义 |
-|---|---|
-| `Users@rows` | `Users` 视图的行集合 |
-| `Users@currentRow` | 当前选中行 |
-| `Users@selection` | 当前多选集合 |
-| `Users@currentRow.name` | 当前行的 `name` 字段 |
+| 协议 | 示例 | 含义 |
+|---|---|---|
+| ViewKey | `Users@mainList` | 容器级绑定，定位 `Users` 表的 `mainList` DataView |
+| ViewKey | `#SharedDS@Users@lookup` | 跨 scope 定位共享 DataView |
+| DataKey | `Users@mainList@rows` | 值级绑定，读取某个 DataView 的行集合 |
+| DataKey | `Users@mainList@currentRow.name` | 读取当前行的 `name` 字段 |
+| DataKey | `Users@mainList@selectedRows` | 读取当前多选集合 |
+| DataKey | `Users@summary@aggregateResult.totalAmount` | 读取聚合结果字段 |
 
-DataKey 的价值在于让组件配置和数据模型解耦。组件只声明绑定目标，DataSet 负责解析、读取、更新和联动。
+当前规则下，表级容器使用 `viewKey`，值级读取使用完整 `dataKey`。不再把 `Users@rows` 作为新配置范式；应该写 `viewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataKey: "Users@summary@aggregateResult.xxx"`。
+
+在容器已经提供 `DATA_ROW` 的子树中，还可以使用 `$[fieldName]` 把当前行字段投影到任意 prop，这适合按钮文案、tag 类型、tooltip、标题、前后缀等轻量展示，不需要额外脚本拼装。
 
 建议后续增强 DataKey 诊断：当解析失败时，不只返回 null，而是返回失败原因、候选 view、候选字段和修复建议。这个能力对 DevSystem 和 AI 都很重要。
 

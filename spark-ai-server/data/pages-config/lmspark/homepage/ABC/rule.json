@@ -143,7 +143,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "Students@rows",
+          "dataKey": "Students@default@rows",
           "on": {
             "currentChange": "handleCurrentChange"
           }
@@ -215,7 +215,8 @@
         ],
         "props": {
           "labelWidth": "100px",
-          "dataKey": "Students@currentRow"
+          "viewKey": "Students@default",
+          "contextDataKey": "Students@default@currentRow"
         }
       }
     ],

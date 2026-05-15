@@ -11,7 +11,7 @@
       {
         "type": "r-tabs",
         "props": {
-          "dataKey": "Orders@rows",
+          "dataKey": "Orders@default@rows",
           "toolbar": [
             {
               "type": "RenderToolbar"
@@ -29,14 +29,14 @@
               {
                 "type": "r-table",
                 "props": {
-                  "dataKey": "Orders@rows",
                   "highlightCurrentRow": true,
                   "border": true,
                   "rowActions": [
                     {
                       "type": "RenderRowActions"
                     }
-                  ]
+                  ],
+                  "viewKey": "Orders@default"
                 },
                 "children": [
                   {
@@ -98,8 +98,8 @@
                   {
                     "type": "r-table",
                     "props": {
-                      "dataKey": "OrderItems@rows",
-                      "border": true
+                      "border": true,
+                      "viewKey": "OrderItems@default"
                     },
                     "children": [
                       {
@@ -150,14 +150,14 @@
               {
                 "type": "r-table",
                 "props": {
-                  "dataKey": "Customers@rows",
                   "highlightCurrentRow": true,
                   "border": true,
                   "rowActions": [
                     {
                       "type": "RenderCustomerActions"
                     }
-                  ]
+                  ],
+                  "viewKey": "Customers@default"
                 },
                 "children": [
                   {
@@ -200,8 +200,8 @@
                   {
                     "type": "r-table",
                     "props": {
-                      "dataKey": "Contacts@rows",
-                      "border": true
+                      "border": true,
+                      "viewKey": "Contacts@default"
                     },
                     "children": [
                       {
@@ -252,13 +252,13 @@
               {
                 "type": "r-table",
                 "props": {
-                  "dataKey": "Products@rows",
                   "border": true,
                   "rowActions": [
                     {
                       "type": "RenderProductActions"
                     }
-                  ]
+                  ],
+                  "viewKey": "Products@default"
                 },
                 "children": [
                   {

@@ -90,7 +90,7 @@
               }
             ]
           },
-          "dataKey": "Users@rows"
+          "viewKey": "Users@default"
         }
       }
     ],

@@ -126,7 +126,7 @@
                   "position": "top"
                 }
               },
-              "dataKey": "Permissions@rows"
+              "viewKey": "Permissions@default"
             }
           }
         ],
@@ -221,7 +221,8 @@
               }
             ],
             "props": {
-              "dataKey": "Permissions@currentRow"
+              "viewKey": "Permissions@default",
+              "contextDataKey": "Permissions@default@currentRow"
             }
           }
         ],

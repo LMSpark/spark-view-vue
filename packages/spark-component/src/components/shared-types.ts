@@ -508,7 +508,7 @@ export interface SparkOptionFieldProps<TValue = unknown, TOption = unknown>
   /**
    * 选项绑定键。
    *
-   * 通常指向某个 DataView 的行集，例如 `Categories@rows`，
+   * 通常指向某个 DataView 的行集，例如 `Categories@default@rows`，
    * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。
    */
   optionKey?: string
@@ -692,11 +692,21 @@ export interface SparkTableModelProps {
    */
   dataSource?: IDataSource
   /**
-   * 数据绑定键。
-   * 推荐格式为 `table@field` 或 `table@viewId@field`，
-   * 用于把容器声明式地绑定到页面 DataSet 的某个视图/字段。
+   * DataView 定位键。
+   * 固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。
+   */
+  viewKey?: string
+  /**
+   * 值级数据绑定键。
+   * 固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。
    */
   dataKey?: string
+  /** 是否显示 DataView 元信息栏。 */
+  showDataViewMeta?: boolean
+  /** 是否显示全量聚合摘要。 */
+  showAggregateSummary?: boolean
+  /** 是否显示选区聚合摘要。 */
+  showSelectionSummary?: boolean
 }
 
 /**

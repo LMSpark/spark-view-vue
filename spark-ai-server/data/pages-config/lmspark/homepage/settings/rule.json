@@ -34,10 +34,11 @@
           }
         ],
         "props": {
-          "dataKey": "settings@currentRow",
           "style": {
             "marginTop": "20px"
-          }
+          },
+          "viewKey": "settings@default",
+          "contextDataKey": "settings@default@currentRow"
         }
       }
     ]

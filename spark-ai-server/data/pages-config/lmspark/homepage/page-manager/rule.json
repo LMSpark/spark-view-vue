@@ -115,7 +115,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "Pages@rows"
+          "dataKey": "Pages@default@rows"
         }
       }
     ],

@@ -47,4 +47,6 @@ export interface RListProps
   onItemClick?: RowClickHandler
   /** 透传给列表根节点的显式属性 */
   listProps?: Record<string, unknown>
+  /** 是否显示分页器。默认 true。 */
+  showPagination?: boolean
 }

@@ -517,12 +517,12 @@ describe('compileRule', () => {
       type: 'r-table',
       props: {
         id: 'legacy-table',
-        dataKey: 'Orders@rows',
+        viewKey: 'Orders@default',
       },
     }])
     const result = compileRule(raw)
     expect(result[0]!.id).toBe('legacy-table')
-    expect(result[0]!.props).toEqual({ dataKey: 'Orders@rows' })
+    expect(result[0]!.props).toEqual({ viewKey: 'Orders@default' })
   })
 
   it('props.id 与顶层 id 同时存在时以顶层 id 为准', () => {
@@ -531,12 +531,12 @@ describe('compileRule', () => {
       id: 'orders-table',
       props: {
         id: 'legacy-table',
-        dataKey: 'Orders@rows',
+        viewKey: 'Orders@default',
       },
     }])
     const result = compileRule(raw)
     expect(result[0]!.id).toBe('orders-table')
-    expect(result[0]!.props).toEqual({ dataKey: 'Orders@rows' })
+    expect(result[0]!.props).toEqual({ viewKey: 'Orders@default' })
   })
 
   it('RuleConfig 与 SparkNode 可直接互换', () => {

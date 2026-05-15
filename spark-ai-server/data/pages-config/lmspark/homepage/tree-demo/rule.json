@@ -106,7 +106,8 @@
               "gridColumns": 24,
               "gridGap": 12,
               "labelWidth": "88px",
-              "dataKey": "EditorFilters@currentRow"
+              "viewKey": "EditorFilters@default",
+              "contextDataKey": "EditorFilters@default@currentRow"
             }
           }
         ],
@@ -460,7 +461,8 @@
                               "gridColumns": 24,
                               "gridGap": 18,
                               "labelWidth": "108px",
-                              "dataKey": "NavigationNodes@currentRow"
+                              "viewKey": "NavigationNodes@default",
+                              "contextDataKey": "NavigationNodes@default@currentRow"
                             }
                           }
                         ],
@@ -472,7 +474,7 @@
                       }
                     ]
                   },
-                  "dataKey": "NavigationNodes@rows"
+                  "viewKey": "NavigationNodes@default"
                 }
               }
             ],

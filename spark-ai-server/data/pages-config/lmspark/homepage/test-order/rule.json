@@ -69,7 +69,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "test-order@rows"
+          "viewKey": "test-order@default"
         }
       }
     ],

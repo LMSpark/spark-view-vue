@@ -363,7 +363,7 @@
                           "style": {
                             "width": "100%"
                           },
-                          "dataKey": "pageTypes@rows"
+                          "dataKey": "pageTypes@default@rows"
                         }
                       }
                     ],

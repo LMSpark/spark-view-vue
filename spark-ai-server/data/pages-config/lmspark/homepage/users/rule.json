@@ -94,7 +94,7 @@
               "style": {
                 "width": "100%"
               },
-              "dataKey": "users@rows",
+              "dataKey": "users@default@rows",
               "on": {
                 "currentChange": "handleRowChange",
                 "selectionChange": "handleSelection"

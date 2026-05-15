@@ -1,473 +1,236 @@
 /**
- * DataKey 统一解析器测试
- *
- * 验证 parseDataKey / resolveDataKey / isDataKey / buildDataKey 的正确性
- *
- * 格式：
- *   - 2 段：tableName@field（viewId 默认 'default'）
- *   - 3 段：tableName@viewId@field
- *   - 跨页面：#scope@tableName@field 或 #scope@tableName@viewId@field
+ * ViewKey / DataKey 绑定规则测试。
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { SparkData, DataSet } from '@spark-view/spark-data'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { DataSet, RequestState, SparkData } from '@spark-view/spark-data'
 import {
-  parseDataKey,
+  buildDataKey,
+  buildViewKey,
+  deriveDataKeyFromViewKey,
   diagnoseDataKey,
-  resolveDataKey,
+  diagnoseViewKey,
+  getViewKey,
   isDataKey,
+  isViewKey,
+  parseDataKey,
+  parseViewKey,
+  resolveDataKey,
+  resolveDataKeyBinding,
+  resolveRawKey,
+  resolveViewKey,
 } from '@spark-view/spark-data'
-import { buildDataKey, getViewKey } from '../core/data-key'
 
-describe('DataKey 统一解析器', () => {
-  // ===== parseDataKey — 2 段简写 =====
-
-  describe('parseDataKey — 2 段简写（table@field）', () => {
-    it('table@rows', () => {
-      const dk = parseDataKey('Users@rows')
-      expect(dk).toEqual({
+function createFixtureDataSet(): DataSet {
+  return SparkData.createDataSet({
+    dataSetName: 'TestDS',
+    tables: {
+      Users: {
         tableName: 'Users',
-        viewId: 'default',
-        field: 'rows',
-        raw: 'Users@rows'
-      })
-    })
-
-    it('table@currentRow', () => {
-      const dk = parseDataKey('Orders@currentRow')
-      expect(dk).toEqual({
-        tableName: 'Orders',
-        viewId: 'default',
-        field: 'currentRow',
-        raw: 'Orders@currentRow'
-      })
-    })
-
-    it('table@selectedRows', () => {
-      const dk = parseDataKey('Users@selectedRows')
-      expect(dk).toEqual({
-        tableName: 'Users',
-        viewId: 'default',
-        field: 'selectedRows',
-        raw: 'Users@selectedRows'
-      })
-    })
-
-    it('table@aggregateResult', () => {
-      const dk = parseDataKey('Orders@aggregateResult')
-      expect(dk!.field).toBe('aggregateResult')
-      expect(dk!.viewId).toBe('default')
-    })
-
-    it('table@selectionAggregateResult', () => {
-      const dk = parseDataKey('Items@selectionAggregateResult')
-      expect(dk!.field).toBe('selectionAggregateResult')
-    })
-
-    it('带字段路径 table@field.path', () => {
-      const dk = parseDataKey('stats@currentRow.totalUsers')
-      expect(dk).toEqual({
-        tableName: 'stats',
-        viewId: 'default',
-        field: 'currentRow',
-        fieldPath: 'totalUsers',
-        raw: 'stats@currentRow.totalUsers'
-      })
-    })
-
-    it('非法字段名返回 null', () => {
-      expect(parseDataKey('Users@invalidField')).toBeNull()
-    })
-  })
-
-  // ===== parseDataKey — 3 段完整 =====
-
-  describe('parseDataKey — 3 段完整（table@viewId@field）', () => {
-    it('table@viewId@rows', () => {
-      const dk = parseDataKey('Users@grid@rows')
-      expect(dk).toEqual({
-        tableName: 'Users',
-        viewId: 'grid',
-        field: 'rows',
-        raw: 'Users@grid@rows'
-      })
-    })
-
-    it('table@default@currentRow', () => {
-      const dk = parseDataKey('Orders@default@currentRow')
-      expect(dk).toEqual({
-        tableName: 'Orders',
-        viewId: 'default',
-        field: 'currentRow',
-        raw: 'Orders@default@currentRow'
-      })
-    })
-
-    it('带字段路径 table@viewId@field.path', () => {
-      const dk = parseDataKey('stats@default@currentRow.totalUsers')
-      expect(dk).toEqual({
-        tableName: 'stats',
-        viewId: 'default',
-        field: 'currentRow',
-        fieldPath: 'totalUsers',
-        raw: 'stats@default@currentRow.totalUsers'
-      })
-    })
-
-    it('非法字段名返回 null', () => {
-      expect(parseDataKey('Users@grid@invalidField')).toBeNull()
-    })
-  })
-
-  // ===== parseDataKey — 跨页面 #scope =====
-
-  describe('parseDataKey — 跨页面 #scope 前缀', () => {
-    it('#scope@table@field（3 段，viewId 默认 default）', () => {
-      const dk = parseDataKey('#SharedDS@Orders@rows')
-      expect(dk).toEqual({
-        scope: 'SharedDS',
-        tableName: 'Orders',
-        viewId: 'default',
-        field: 'rows',
-        raw: '#SharedDS@Orders@rows',
-        crossPage: true
-      })
-    })
-
-    it('#scope@table@viewId@field（4 段完整）', () => {
-      const dk = parseDataKey('#SharedDS@Orders@grid@rows')
-      expect(dk).toEqual({
-        scope: 'SharedDS',
-        tableName: 'Orders',
-        viewId: 'grid',
-        field: 'rows',
-        raw: '#SharedDS@Orders@grid@rows',
-        crossPage: true
-      })
-    })
-
-    it('#scope@table@field.path 带字段路径', () => {
-      const dk = parseDataKey('#SharedDS@stats@currentRow.revenue')
-      expect(dk).toEqual({
-        scope: 'SharedDS',
-        tableName: 'stats',
-        viewId: 'default',
-        field: 'currentRow',
-        fieldPath: 'revenue',
-        raw: '#SharedDS@stats@currentRow.revenue',
-        crossPage: true
-      })
-    })
-
-    it('#scope@table@viewId@field.path 带字段路径', () => {
-      const dk = parseDataKey('#SharedDS@stats@main@currentRow.revenue')
-      expect(dk).toEqual({
-        scope: 'SharedDS',
-        tableName: 'stats',
-        viewId: 'main',
-        field: 'currentRow',
-        fieldPath: 'revenue',
-        raw: '#SharedDS@stats@main@currentRow.revenue',
-        crossPage: true
-      })
-    })
-
-    it('#scope 非法字段名返回 null', () => {
-      expect(parseDataKey('#DS@Users@invalidField')).toBeNull()
-    })
-
-    it('#scope 段数不足返回 null', () => {
-      expect(parseDataKey('#DS@Users')).toBeNull()
-    })
-
-    it('#scope 空段返回 null', () => {
-      expect(parseDataKey('#@Users@rows')).toBeNull()
-      expect(parseDataKey('#DS@Users@')).toBeNull()
-    })
-  })
-
-  // ===== parseDataKey — 旧点号格式 =====
-
-  describe('parseDataKey — 旧点号格式（不再支持）', () => {
-    it('dataset.tables.{tableName}.rows 返回 null', () => {
-      expect(parseDataKey('dataset.tables.Users.rows')).toBeNull()
-    })
-
-    it('dataset.tables.{tableName}.views.{viewId}.rows 返回 null', () => {
-      expect(parseDataKey('dataset.tables.Orders.views.grid.rows')).toBeNull()
-    })
-
-    it('dataset.tables.{tableName}.currentRow 返回 null', () => {
-      expect(parseDataKey('dataset.tables.Users.currentRow')).toBeNull()
-    })
-
-    it('dataset.tables.{tableName}.columns 返回 null', () => {
-      expect(parseDataKey('dataset.tables.Users.columns')).toBeNull()
-    })
-  })
-
-  describe('parseDataKey — 非 DataSet 键', () => {
-    it('简单 pageData 路径返回 null', () => {
-      expect(parseDataKey('users')).toBeNull()
-      expect(parseDataKey('settings.siteName')).toBeNull()
-      expect(parseDataKey('formData')).toBeNull()
-      expect(parseDataKey('currentRowJson')).toBeNull()
-    })
-
-    it('空字符串返回 null', () => {
-      expect(parseDataKey('')).toBeNull()
-    })
-  })
-
-  // ===== isDataKey =====
-
-  describe('isDataKey', () => {
-    it('2 段新格式返回 true', () => {
-      expect(isDataKey('Users@rows')).toBe(true)
-    })
-
-    it('3 段新格式返回 true', () => {
-      expect(isDataKey('Users@grid@rows')).toBe(true)
-    })
-
-    it('4 段旧格式不再识别', () => {
-      expect(isDataKey('DS@Orders@grid@currentRow')).toBe(false)
-    })
-
-    it('#scope 跨页面格式返回 true', () => {
-      expect(isDataKey('#SharedDS@Orders@rows')).toBe(true)
-    })
-
-    it('旧点号格式不再识别', () => {
-      expect(isDataKey('dataset.tables.Users.rows')).toBe(false)
-    })
-
-    it('普通 pageData 路径返回 false', () => {
-      expect(isDataKey('users')).toBe(false)
-      expect(isDataKey('settings.siteName')).toBe(false)
-      expect(isDataKey('')).toBe(false)
-    })
-  })
-
-  // ===== buildDataKey =====
-
-  describe('buildDataKey', () => {
-    it('2 段简写（省略 viewId）', () => {
-      expect(buildDataKey('Users', 'rows')).toBe('Users@rows')
-    })
-
-    it('3 段完整（指定 viewId）', () => {
-      expect(buildDataKey('Users', 'rows', 'grid')).toBe('Users@grid@rows')
-    })
-
-    it('viewId=default 时输出 2 段', () => {
-      expect(buildDataKey('Orders', 'currentRow', 'default')).toBe('Orders@currentRow')
-    })
-
-    it('#scope 跨页面 2 段', () => {
-      expect(buildDataKey('Orders', 'rows', 'default', 'SharedDS')).toBe('#SharedDS@Orders@rows')
-    })
-
-    it('#scope 跨页面 3 段', () => {
-      expect(buildDataKey('Orders', 'rows', 'grid', 'SharedDS')).toBe('#SharedDS@Orders@grid@rows')
-    })
-
-    it('构建的键可以被 parseDataKey 解析回来', () => {
-      const key = buildDataKey('Products', 'selectedRows', 'grid2')
-      const dk = parseDataKey(key)
-      expect(dk).toEqual({
-        tableName: 'Products',
-        viewId: 'grid2',
-        field: 'selectedRows',
-        raw: key
-      })
-    })
-
-    it('#scope 构建的键可以被 parseDataKey 解析回来', () => {
-      const key = buildDataKey('Products', 'selectedRows', 'grid2', 'SharedDS')
-      const dk = parseDataKey(key)
-      expect(dk).toEqual({
-        scope: 'SharedDS',
-        tableName: 'Products',
-        viewId: 'grid2',
-        field: 'selectedRows',
-        raw: key,
-        crossPage: true
-      })
-    })
-  })
-
-  // ===== getViewKey =====
-
-  describe('getViewKey', () => {
-    it('返回 tableName.viewId 格式', () => {
-      const dk = parseDataKey('Users@grid@rows')!
-      expect(getViewKey(dk)).toBe('Users.grid')
-    })
-
-    it('2 段默认视图', () => {
-      const dk = parseDataKey('Users@rows')!
-      expect(getViewKey(dk)).toBe('Users.default')
-    })
-
-    it('#scope 跨页面键', () => {
-      const dk = parseDataKey('#SharedDS@Users@grid@rows')!
-      expect(getViewKey(dk)).toBe('Users.grid')
-    })
-  })
-
-  // ===== resolveDataKey — 集成 DataSet =====
-
-  describe('resolveDataKey — 从 DataSet 解析数据', () => {
-    let dataSet: DataSet
-
-    beforeEach(() => {
-      dataSet = SparkData.createDataSet({
-        dataSetName: 'TestDS',
-        tables: {
-          Users: {
-            tableName: 'Users',
-            columns: [
-              { name: 'id', type: 'number' },
-              { name: 'name', type: 'string' }
+        columns: [
+          { name: 'id', type: 'number', label: 'ID' },
+          { name: 'name', type: 'string', label: '姓名' },
+          { name: 'amount', type: 'number', label: '金额' },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '张三', amount: 10 },
+              { id: 2, name: '李四', amount: 20 },
             ],
-            views: {
-              default: {
-                rows: [
-                  { id: 1, name: '张三' },
-                  { id: 2, name: '李四' }
-                ],
-                autoCurrentFirst: false,
-                autoSelectFirst: false
-              }
-            }
-          },
-          Orders: {
-            tableName: 'Orders',
-            columns: [
-              { name: 'id', type: 'number' },
-              { name: 'userId', type: 'number' }
-            ],
-            views: { default: { rows: [] } }
-          }
-        }
-      })
-    })
-
-    it('2 段新格式解析 rows', () => {
-      const dk = parseDataKey('Users@rows')!
-      const rows = resolveDataKey(dk, dataSet)
-      expect(Array.isArray(rows)).toBe(true)
-      expect((rows as unknown[]).length).toBe(2)
-    })
-
-    it('3 段新格式解析 rows', () => {
-      const dk = parseDataKey('Users@default@rows')!
-      const rows = resolveDataKey(dk, dataSet)
-      expect(Array.isArray(rows)).toBe(true)
-      expect((rows as unknown[]).length).toBe(2)
-    })
-
-    it('4 段旧格式不再支持，返回 null', () => {
-      const dk = parseDataKey('TestDS@Users@default@rows')
-      expect(dk).toBeNull()
-    })
-
-    it('解析 currentRow（初始为 null）', () => {
-      const dk = parseDataKey('Users@currentRow')!
-      const value = resolveDataKey(dk, dataSet)
-      expect(value).toBeNull()
-    })
-
-    it('解析 currentRow（设置后）', () => {
-      const view = dataSet.getView('Users', 'default')!
-      view.selection.setCurrentRow({ id: 1, name: '张三' })
-
-      const dk = parseDataKey('Users@currentRow')!
-      const value = resolveDataKey(dk, dataSet)
-      expect(value).toEqual({ id: 1, name: '张三', _pk: 1 })
-    })
-
-    it('解析 selectedRows', () => {
-      const view = dataSet.getView('Users', 'default')!
-      view.selection.setSelectedRows([{ id: 1, name: '张三' }])
-
-      const dk = parseDataKey('Users@selectedRows')!
-      const value = resolveDataKey(dk, dataSet)
-      expect(Array.isArray(value)).toBe(true)
-      expect((value as unknown[]).length).toBe(1)
-    })
-
-    it('不存在的表返回 undefined', () => {
-      const dk = parseDataKey('NonExistent@rows')!
-      expect(resolveDataKey(dk, dataSet)).toBeUndefined()
-    })
-
-    it('不存在的视图返回 undefined', () => {
-      const dk = parseDataKey('Users@grid@rows')!
-      const result = resolveDataKey(dk, dataSet)
-      expect(result).toBeUndefined()
-    })
-  })
-
-  describe('diagnoseDataKey — 绑定链路诊断', () => {
-    let dataSet: DataSet
-
-    beforeEach(() => {
-      dataSet = SparkData.createDataSet({
-        dataSetName: 'DiagnosticDS',
-        tables: {
-          Users: {
-            tableName: 'Users',
-            columns: [
-              { name: 'id', type: 'number' },
-              { name: 'name', type: 'string' },
-            ],
-            views: {
-              default: {
-                rows: [
-                  { id: 1, name: '张三' },
-                  { id: 2, name: '李四' },
-                ],
-                autoCurrentFirst: false,
-                autoSelectFirst: false,
-              },
+            aggregates: {
+              totalAmount: { type: 'sum', field: 'amount' },
             },
+            autoCurrentFirst: false,
+            autoSelectFirst: false,
+          },
+          grid: {
+            rows: [
+              { id: 3, name: '王五', amount: 30 },
+            ],
+            autoCurrentFirst: false,
+            autoSelectFirst: false,
           },
         },
-      })
-    })
+      },
+    },
+  })
+}
 
-    it('合法 rows 返回 ok', () => {
-      expect(diagnoseDataKey('Users@rows', dataSet).status).toBe('ok')
+describe('ViewKey', () => {
+  it('parses page-local view keys', () => {
+    expect(parseViewKey('Orders@default')).toEqual({
+      tableName: 'Orders',
+      viewId: 'default',
+      raw: 'Orders@default',
     })
-
-    it('非法 key 返回 invalid-key', () => {
-      expect(diagnoseDataKey('Users.name', dataSet).status).toBe('invalid-key')
+    expect(parseViewKey('Orders@grid')).toEqual({
+      tableName: 'Orders',
+      viewId: 'grid',
+      raw: 'Orders@grid',
     })
+  })
 
-    it('缺失 DataSet 返回 missing-dataset', () => {
-      expect(diagnoseDataKey('Users@rows', null).status).toBe('missing-dataset')
+  it('parses scoped view keys', () => {
+    expect(parseViewKey('#SharedDS@Orders@grid')).toEqual({
+      scope: 'SharedDS',
+      tableName: 'Orders',
+      viewId: 'grid',
+      raw: '#SharedDS@Orders@grid',
+      crossPage: true,
     })
+  })
 
-    it('缺失表和视图分别返回结构化状态', () => {
-      expect(diagnoseDataKey('Orders@rows', dataSet).status).toBe('missing-table')
-      expect(diagnoseDataKey('Users@grid@rows', dataSet).status).toBe('missing-view')
+  it('rejects data keys and malformed keys', () => {
+    expect(parseViewKey('Orders@grid@rows')).toBeNull()
+    expect(parseViewKey('Orders')).toBeNull()
+    expect(parseViewKey('#SharedDS@Orders')).toBeNull()
+    expect(isViewKey('Orders@grid')).toBe(true)
+    expect(isViewKey('Orders@grid@rows')).toBe(false)
+  })
+
+  it('resolves views and diagnoses failures', () => {
+    const dataSet = createFixtureDataSet()
+    expect(resolveViewKey('Users@default', dataSet)?.viewId).toBe('default')
+    expect(resolveViewKey('Users@grid', dataSet)?.rows).toHaveLength(1)
+    expect(diagnoseViewKey('Users@default', dataSet).status).toBe('ok')
+    expect(diagnoseViewKey('Users@missing', dataSet).status).toBe('missing-view')
+    expect(diagnoseViewKey('Missing@default', dataSet).status).toBe('missing-table')
+    expect(diagnoseViewKey('Users@default', null).status).toBe('missing-dataset')
+  })
+
+  it('builds view keys', () => {
+    expect(buildViewKey('Users')).toBe('Users@default')
+    expect(buildViewKey('Users', 'grid')).toBe('Users@grid')
+    expect(buildViewKey('Users', 'grid', 'SharedDS')).toBe('#SharedDS@Users@grid')
+  })
+})
+
+describe('DataKey', () => {
+  it('requires explicit viewId', () => {
+    expect(parseDataKey('Users@rows')).toBeNull()
+    expect(isDataKey('Users@rows')).toBe(false)
+    expect(diagnoseDataKey('Users@rows', createFixtureDataSet()).status).toBe('invalid-key')
+  })
+
+  it('parses page-local data keys', () => {
+    expect(parseDataKey('Users@grid@rows')).toEqual({
+      tableName: 'Users',
+      viewId: 'grid',
+      field: 'rows',
+      raw: 'Users@grid@rows',
     })
-
-    it('currentRow 为空返回 empty-current-row', () => {
-      expect(diagnoseDataKey('Users@currentRow.name', dataSet).status).toBe('empty-current-row')
+    expect(parseDataKey('Users@default@currentRow.name')).toEqual({
+      tableName: 'Users',
+      viewId: 'default',
+      field: 'currentRow',
+      fieldPath: 'name',
+      raw: 'Users@default@currentRow.name',
     })
+  })
 
-    it('字段路径缺失返回 missing-field', () => {
-      const view = dataSet.getView('Users', 'default')!
-      view.selection.setCurrentRow({ id: 1, name: '张三' })
-
-      expect(diagnoseDataKey('Users@currentRow.missing', dataSet).status).toBe('missing-field')
+  it('parses scoped data keys', () => {
+    expect(parseDataKey('#SharedDS@Users@grid@aggregateResult.totalAmount')).toEqual({
+      scope: 'SharedDS',
+      tableName: 'Users',
+      viewId: 'grid',
+      field: 'aggregateResult',
+      fieldPath: 'totalAmount',
+      raw: '#SharedDS@Users@grid@aggregateResult.totalAmount',
+      crossPage: true,
     })
+  })
 
-    it('空选中行返回 empty-selection', () => {
-      expect(diagnoseDataKey('Users@selectedRows', dataSet).status).toBe('empty-selection')
-    })
+  it('supports the full value field set', () => {
+    const fields = [
+      'rows',
+      'columns',
+      'currentRow',
+      'selectedRows',
+      'aggregateResult',
+      'selectionAggregateResult',
+      'total',
+      'page',
+      'pageSize',
+      'requestState',
+      'mutating',
+      'loadingError',
+      'mutatingError',
+    ] as const
+
+    for (const field of fields) {
+      expect(parseDataKey(`Users@default@${field}`)?.field).toBe(field)
+    }
+  })
+
+  it('rejects malformed data keys', () => {
+    expect(parseDataKey('Users@default@invalidField')).toBeNull()
+    expect(parseDataKey('#DS@Users@rows')).toBeNull()
+    expect(parseDataKey('#DS@Users@default')).toBeNull()
+    expect(parseDataKey('dataset.tables.Users.rows')).toBeNull()
+  })
+
+  it('builds data keys with explicit viewId', () => {
+    expect(buildDataKey('Users', 'rows')).toBe('Users@default@rows')
+    expect(buildDataKey('Users', 'rows', 'grid')).toBe('Users@grid@rows')
+    expect(buildDataKey('Users', 'rows', 'grid', 'SharedDS')).toBe('#SharedDS@Users@grid@rows')
+    expect(deriveDataKeyFromViewKey('Users@grid', 'currentRow')).toBe('Users@grid@currentRow')
+    expect(deriveDataKeyFromViewKey('#SharedDS@Users@grid', 'selectedRows')).toBe('#SharedDS@Users@grid@selectedRows')
+  })
+
+  it('extracts view identity from parsed keys', () => {
+    expect(getViewKey(parseDataKey('Users@grid@rows')!)).toBe('Users.grid')
+    expect(getViewKey(parseViewKey('#SharedDS@Users@grid')!)).toBe('Users.grid')
+  })
+})
+
+describe('DataKey resolution', () => {
+  let dataSet: DataSet
+
+  beforeEach(() => {
+    dataSet = createFixtureDataSet()
+  })
+
+  it('resolves rows as row arrays, not DataView', () => {
+    const rows = resolveDataKey(parseDataKey('Users@default@rows')!, dataSet)
+    expect(Array.isArray(rows)).toBe(true)
+    expect(rows).toHaveLength(2)
+  })
+
+  it('resolves columns, pagination, request and mutation fields', () => {
+    expect(resolveRawKey('Users@default@columns', dataSet)).toHaveLength(4)
+    expect(resolveRawKey('Users@default@total', dataSet)).toBe(0)
+    expect(resolveRawKey('Users@default@page', dataSet)).toBe(1)
+    expect(resolveRawKey('Users@default@pageSize', dataSet)).toBe(20)
+    expect(resolveRawKey('Users@default@requestState', dataSet)).toBe(RequestState.Idle)
+    expect(resolveRawKey('Users@default@mutating', dataSet)).toBe(false)
+    expect(resolveRawKey('Users@default@loadingError', dataSet)).toBeNull()
+    expect(resolveRawKey('Users@default@mutatingError', dataSet)).toBeNull()
+  })
+
+  it('resolves currentRow and field paths', () => {
+    const view = dataSet.getView('Users', 'default')!
+    view.selection.setCurrentRowById(1)
+
+    expect(resolveRawKey('Users@default@currentRow.name', dataSet)).toBe('张三')
+    expect(resolveRawKey('Users@default@aggregateResult.totalAmount', dataSet)).toBe(30)
+  })
+
+  it('returns structured bindings with the owning source', () => {
+    const binding = resolveDataKeyBinding('Users@default@rows', dataSet)
+    expect(binding?.kind).toBe('value')
+    expect(binding?.source.tableName).toBe('Users')
+    expect(binding?.descriptor.field).toBe('rows')
+    expect(Array.isArray(binding?.value)).toBe(true)
+  })
+
+  it('diagnoses field paths and empty row states', () => {
+    expect(diagnoseDataKey('Users@default@currentRow.name', dataSet).status).toBe('empty-current-row')
+    expect(diagnoseDataKey('Users@default@selectedRows', dataSet).status).toBe('empty-selection')
+
+    const view = dataSet.getView('Users', 'default')!
+    view.selection.setCurrentRowById(1)
+    expect(diagnoseDataKey('Users@default@currentRow.missing', dataSet).status).toBe('missing-field')
+    expect(diagnoseDataKey('Users@default@rows.id', dataSet).status).toBe('unsupported-field-path')
   })
 })
