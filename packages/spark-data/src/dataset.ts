@@ -554,10 +554,7 @@ export class DataSet implements IDataSet {
 
     const parentKey = typeof rel.parentField === 'string' ? rel.parentField : parentView.primaryKey
     const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
-    const values = Array.from(new Set(parentRows.map((row, rowIndex) => {
-      if (row === null || typeof row !== 'object' || Array.isArray(row)) {
-        throw new Error(`远端关系过滤收到非法父行数据(index=${rowIndex}, field=${parentKey}) [${rel.childTable}:${rel.childViewId ?? 'default'}]`)
-      }
+    const values = Array.from(new Set(parentRows.map((row) => {
       if (!(parentKey in row)) {
         throw new Error(`远端关系过滤引用了不存在的父字段 "${parentKey}" [${rel.childTable}:${rel.childViewId ?? 'default'}]`)
       }
