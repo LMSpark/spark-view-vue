@@ -166,10 +166,9 @@ export namespace SparkData {
    * @example
    * ```ts
    * SparkData.createViewDependency({
-   *   id: 'orders-by-user',
-   *   targetViewKey: 'Orders@default',
-   *   sources: [{ id: 'users', type: 'view', viewKey: 'Users@default', state: 'selectedRows' }],
-   *   bindings: [{ sourceId: 'users', sourceField: 'id', targetField: 'userId' }]
+  *   parentTable: 'Users',
+  *   childTable: 'Orders',
+  *   dependencyType: 'selectedRows'
    * })
    * ```
    */

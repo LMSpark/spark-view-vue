@@ -3,18 +3,14 @@ import { SparkData } from '@spark-view/spark-data'
 import { RequestState } from '../types'
 
 function viewDependency(
-  id: string,
   parent: string,
   child: string,
-  childField: string,
   state = 'allRows',
-  parentField = 'id',
 ) {
   return {
-    id,
-    targetViewKey: `${child}@default`,
-    sources: [{ id: parent.toLowerCase(), type: 'view' as const, viewKey: `${parent}@default`, state }],
-    bindings: [{ sourceId: parent.toLowerCase(), sourceField: parentField, targetField: childField, required: true }],
+    parentTable: parent,
+    childTable: child,
+    dependencyType: state,
   }
 }
 
@@ -30,7 +26,7 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
       ],
       viewDependencies: [
-        viewDependency('children-by-parent', 'Parents', 'Children', 'parentId')
+        viewDependency('Parents', 'Children')
       ]
     })
 
@@ -75,7 +71,7 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
       ],
       viewDependencies: [
-        viewDependency('children-by-parent', 'Parents', 'Children', 'parentId')
+        viewDependency('Parents', 'Children')
       ]
     })
 
@@ -114,7 +110,7 @@ describe('DataView.requestData orchestration', () => {
         }
       ],
       viewDependencies: [
-        viewDependency('children-by-parent-uuid', 'Parents', 'Children', 'parentUuid', 'currentRow', 'uuid')
+        viewDependency('Parents', 'Children', 'currentRow')
       ],
     })
 
@@ -179,7 +175,7 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'Parents', childTable: 'Children', parentField: 'id', childField: 'parentId' },
       ],
       viewDependencies: [
-        viewDependency('children-by-parent', 'Parents', 'Children', 'parentId'),
+        viewDependency('Parents', 'Children'),
       ],
     })
 
@@ -226,8 +222,8 @@ describe('DataView.requestData orchestration', () => {
         { parentTable: 'B', childTable: 'C', childField: 'bId' },
       ],
       viewDependencies: [
-        viewDependency('b-by-a', 'A', 'B', 'aId'),
-        viewDependency('c-by-b', 'B', 'C', 'bId'),
+        viewDependency('A', 'B'),
+        viewDependency('B', 'C'),
       ]
     })
 

@@ -102,16 +102,6 @@ export type {
   CrudResult,
   HttpEndpoint,
   QueryParams,
-  DependencySource,
-  DependencyBinding,
-  DependencyBindingOperator,
-  FieldDependency,
-  FieldDependencyLookup,
-  FieldDependencyScope,
-  FieldDependencyValuePolicy,
-  FieldChangeNotification,
-  ViewDependencyEmptyPolicy,
-  ViewDependencySourceType,
 
   // 视图配置
   IViewMetadata,

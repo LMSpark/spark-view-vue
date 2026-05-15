@@ -19,48 +19,16 @@
   ],
   "viewDependencies": [
     {
-      "id": "user-orders",
-      "targetViewKey": "Orders@default",
-      "sources": [
-        {
-          "id": "users",
-          "type": "view",
-          "viewKey": "Users@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "users",
-          "sourceField": "id",
-          "targetField": "userId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Users",
+      "childTable": "Orders",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     },
     {
-      "id": "order-items",
-      "targetViewKey": "OrderItems@default",
-      "sources": [
-        {
-          "id": "orders",
-          "type": "view",
-          "viewKey": "Orders@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "orders",
-          "sourceField": "id",
-          "targetField": "orderId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Orders",
+      "childTable": "OrderItems",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     }
   ],
   "tables": {

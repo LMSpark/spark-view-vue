@@ -729,92 +729,28 @@
   ],
   "viewDependencies": [
     {
-      "id": "order-items",
-      "targetViewKey": "OrderItems@default",
-      "sources": [
-        {
-          "id": "orders",
-          "type": "view",
-          "viewKey": "Orders@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "orders",
-          "sourceField": "id",
-          "targetField": "orderId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Orders",
+      "childTable": "OrderItems",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     },
     {
-      "id": "customer-contacts",
-      "targetViewKey": "Contacts@default",
-      "sources": [
-        {
-          "id": "customers",
-          "type": "view",
-          "viewKey": "Customers@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "customers",
-          "sourceField": "id",
-          "targetField": "customerId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Customers",
+      "childTable": "Contacts",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     },
     {
-      "id": "department-employees",
-      "targetViewKey": "Employees@default",
-      "sources": [
-        {
-          "id": "departments",
-          "type": "view",
-          "viewKey": "Departments@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "departments",
-          "sourceField": "id",
-          "targetField": "departmentId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Departments",
+      "childTable": "Employees",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     },
     {
-      "id": "employee-orders",
-      "targetViewKey": "Orders@default",
-      "sources": [
-        {
-          "id": "employees",
-          "type": "view",
-          "viewKey": "Employees@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "employees",
-          "sourceField": "id",
-          "targetField": "employeeId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Employees",
+      "childTable": "Orders",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     }
   ],
   "pageId": "5b481dfc-ad4f-4427-aa05-488675d85195",

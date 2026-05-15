@@ -44,10 +44,9 @@ function createStructureDataSet(): DataSet {
     ],
     viewDependencies: [
       {
-        id: 'items-by-order',
-        targetViewKey: 'Items@default',
-        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: 'currentRow' }],
-        bindings: [{ sourceId: 'orders', sourceField: 'id', targetField: 'orderId', required: true }],
+        parentTable: 'Orders',
+        childTable: 'Items',
+        dependencyType: 'currentRow',
         autoLoad: true,
       },
     ],
@@ -89,7 +88,7 @@ describe('DataSet structure CRUD', () => {
     expect(ds.getView('Drafts', 'default')).toBeUndefined()
   })
 
-  it('updateRelation should rebuild table relation metadata without rewriting explicit view dependencies', () => {
+  it('updateRelation should rebuild resolved dependency metadata from table relation fields', () => {
     const ds = createStructureDataSet()
 
     const updated = ds.updateRelation(
@@ -106,24 +105,24 @@ describe('DataSet structure CRUD', () => {
 
     const parentRelations = ds.getParentRelations('Items', 'default')
     expect(parentRelations).toHaveLength(1)
-    expect(parentRelations[0]?.parentField).toBe('id')
-    expect(parentRelations[0]?.childField).toBe('orderId')
+    expect(parentRelations[0]?.parentField).toBe('code')
+    expect(parentRelations[0]?.childField).toBe('orderCode')
   })
 
   it('updateDependency should rebuild resolved dependency metadata', () => {
     const ds = createStructureDataSet()
 
-    const updated = ds.updateDependency('items-by-order', {
-      sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: 'selectedRows' }],
+    const updated = ds.updateDependency('Orders', 'Items', {
+      dependencyType: 'selectedRows',
       autoLoad: false,
     })
 
-    expect(updated.sources[0]?.state).toBe('selectedRows')
+    expect(updated.dependencyType).toBe('selectedRows')
     expect(updated.autoLoad).toBe(false)
 
     const parentRelations = ds.getParentRelations('Items', 'default')
     expect(parentRelations).toHaveLength(1)
-    expect(parentRelations[0]?.sources?.[0]?.state).toBe('selectedRows')
+    expect(parentRelations[0]?.dependencyType).toBe('selectedRows')
     expect(parentRelations[0]?.autoLoad).toBe(false)
     expect(parentRelations[0]).not.toHaveProperty('filterExpression')
   })

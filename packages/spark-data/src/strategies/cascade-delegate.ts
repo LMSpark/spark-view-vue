@@ -2,8 +2,8 @@
  * CascadeDelegate — 级联订阅委托
  *
  * 从 DataView 提取的级联职责：
- * - 订阅 view source 独立事件（currentRowChanged / selectedRowsChanged / rowsChanged / cleared）
- * - 订阅 fields source 变化事件
+ * - 订阅父视图独立事件（currentRowChanged / selectedRowsChanged / rowsChanged / cleared）
+ * - 按 dependencyType 选择订阅哪些事件
  * - 响应源数据变化：清空 or 重新请求
  * - 可取消的级联请求管理
  *
@@ -11,8 +11,8 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { DataRelation } from '../types'
-import { resolveViewKey } from '../core/data-key'
+import type { DataRelation, IDataSource, IEventEmitter } from '../types'
+import { getParentRows } from '../core/utils'
 import type { ICascadeHost } from './types'
 
 const logger = Logger('DataView:Cascade')
@@ -39,8 +39,8 @@ export class CascadeDelegate {
   /**
    * 建立级联监听
    *
-   * 沿 DataSet 查询以本视图为 target 的关系 →
-   * 按 source 类型订阅父视图事件或字段源事件。
+  * 沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →
+  * 按 dependencyType 订阅对应的父视图独立事件。
    */
   setupCascade(): void {
     this.teardownCascade()
@@ -51,40 +51,28 @@ export class CascadeDelegate {
     const parentRels = dataSet.getParentRelations(this.host.tableName, this.host.viewId)
 
     for (const rel of parentRels) {
-      for (const source of rel.sources ?? []) {
-        const handler = () => this.respondToSourceChange(rel)
+      const parentView = dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      if (!parentView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
 
-        if (source.type === 'view') {
-          const parentView = resolveViewKey(source.viewKey, dataSet)
-          if (!parentView) throw new Error(`父视图 ${source.viewKey} 不存在，请检查 DataSet 关系配置`)
+      const handler = () => this.respondToParentChange(rel, parentView)
 
-          // rowsChanged + cleared 对所有 dep 类型都相关
-          parentView.events.on('rowsChanged', handler)
-          parentView.events.on('cleared', handler)
-          this.cascadeUnsubscribers.push(
-            () => parentView.events.off('rowsChanged', handler),
-            () => parentView.events.off('cleared', handler),
-          )
+      // rowsChanged + cleared 对所有 dep 类型都相关
+      parentView.events.on('rowsChanged', handler)
+      parentView.events.on('cleared', handler)
+      this.cascadeUnsubscribers.push(
+        () => parentView.events.off('rowsChanged', handler),
+        () => parentView.events.off('cleared', handler),
+      )
 
-          const dep = source.state ?? 'currentRow'
-          if (dep === 'currentRow') {
-            parentView.events.on('currentRowChanged', handler)
-            this.cascadeUnsubscribers.push(() => parentView.events.off('currentRowChanged', handler))
-          } else if (dep === 'selectedRows') {
-            parentView.events.on('selectedRowsChanged', handler)
-            this.cascadeUnsubscribers.push(() => parentView.events.off('selectedRowsChanged', handler))
-          }
-        } else {
-          const fields = source.fields ?? (rel.bindings
-            ?.filter(binding => binding.sourceId === source.id)
-            .map(binding => binding.sourceField) ?? [])
-          for (const field of new Set(fields)) {
-            this.cascadeUnsubscribers.push(
-              dataSet.subscribeFieldSource(source.viewKey, source.scope ?? 'editContext', field, handler),
-            )
-          }
-        }
+      const dep = rel.dependencyType ?? 'currentRow'
+      if (dep === 'currentRow') {
+        parentView.events.on('currentRowChanged', handler)
+        this.cascadeUnsubscribers.push(() => parentView.events.off('currentRowChanged', handler))
+      } else if (dep === 'selectedRows') {
+        parentView.events.on('selectedRowsChanged', handler)
+        this.cascadeUnsubscribers.push(() => parentView.events.off('selectedRowsChanged', handler))
       }
+      // allRows / pagedRows: 只响应 rowsChanged + cleared（已订阅）
     }
   }
 
@@ -107,58 +95,54 @@ export class CascadeDelegate {
   // ─────────────────────────────────────────────
 
   /**
-   * 响应源状态变化
+   * 响应父视图状态变化
    *
-   * 由 setupCascade 中按 source 类型订阅的具体事件触发，
+   * 由 setupCascade 中按 dependencyType 订阅的具体事件触发，
    * 无需再做 changeType 过滤——订阅时已完成过滤。
    */
-  private respondToSourceChange(rel: DataRelation): Promise<void> {
+  private respondToParentChange(rel: DataRelation, parentView: IDataSource & { events: IEventEmitter }): void {
     // 取消待处理的级联请求
     if (this.pendingCascadeRequest) {
       this.pendingCascadeRequest.cancel()
-      logger.debug(`取消级联请求 ${this.pendingCascadeRequest.requestId} (依赖 ${rel.dependencyId ?? rel.relationName ?? ''} 变化)`)
+      logger.debug(`取消级联请求 ${this.pendingCascadeRequest.requestId} (父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 变化)`)
       this.pendingCascadeRequest = undefined
     }
 
-    const requestId = ++this.nextCascadeRequestId
-    let cancelled = false
-    const dataSet = this.host.dataSet
-    if (!dataSet) return Promise.resolve()
+    const parentRows = getParentRows(parentView, rel.dependencyType ?? 'currentRow')
 
-    const run = async (): Promise<void> => {
-      const filter = dataSet.resolveDependencyFilter(rel)
-      if (filter === null) {
-        const emptyPolicy = rel.emptyPolicy ?? 'clearRows'
-        if (emptyPolicy === 'clearRows') this.host.clearAll()
-        return
-      }
+    if (!parentRows.length) {
+      this.host.clearAll()
+      return
+    }
 
-      if (rel.autoLoad === false) return
-
+    if (rel.autoLoad !== false) {
+      // 无 API 配置（内联静态数据）→ 内存级联过滤，无需发起网络请求
       if (!this.host.crudService) {
-        this.host.applyInMemoryCascade(rel, [])
+        logger.debug(`内存级联过滤 ${this.host.tableName}:${this.host.viewId}（无 API 配置）`)
+        this.host.applyInMemoryCascade(rel, parentRows)
         return
       }
 
-      await this.host.refresh()
-    }
+      const requestId = ++this.nextCascadeRequestId
+      let cancelled = false
 
-    this.pendingCascadeRequest = {
-      requestId,
-      cancel: () => { cancelled = true }
-    }
+      void this.host.refresh()
+        .then(() => {
+          if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
+            this.pendingCascadeRequest = undefined
+          }
+        })
+        .catch((err: unknown) => {
+          if (!cancelled) {
+            logger.error(`级联加载 ${this.host.tableName}:${this.host.viewId} 失败 [${requestId}]`, err)
+          }
+        })
 
-    return run()
-      .then(() => {
-        if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
-          this.pendingCascadeRequest = undefined
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          logger.error(`级联加载 ${this.host.tableName}:${this.host.viewId} 失败 [${requestId}]`, err)
-        }
-      })
+      this.pendingCascadeRequest = {
+        requestId,
+        cancel: () => { cancelled = true }
+      }
+    }
   }
 
   // ─────────────────────────────────────────────

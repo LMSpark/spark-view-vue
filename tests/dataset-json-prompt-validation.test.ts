@@ -38,34 +38,17 @@ function fromPromptJson(json: Record<string, unknown>): DataSet {
 }
 
 function viewDependency(
-  id: string,
+  _id: string,
   parentTable: string,
   childTable: string,
-  childField: string,
-  parentField = 'id',
+  _childField: string,
+  _parentField = 'id',
 ): Record<string, unknown> {
-  const sourceId = `${parentTable}Source`
   return {
-    id,
-    targetViewKey: `${childTable}@default`,
-    sources: [
-      {
-        id: sourceId,
-        type: 'view',
-        viewKey: `${parentTable}@default`,
-        state: 'currentRow',
-      },
-    ],
-    bindings: [
-      {
-        sourceId,
-        sourceField: parentField,
-        targetField: childField,
-        required: true,
-      },
-    ],
+    parentTable,
+    childTable,
+    dependencyType: 'currentRow',
     autoLoad: true,
-    emptyPolicy: 'clearRows',
   }
 }
 

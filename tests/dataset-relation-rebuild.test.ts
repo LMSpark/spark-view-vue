@@ -35,10 +35,9 @@ describe('DataSet relation rebuild', () => {
       ],
       viewDependencies: [
         {
-          id: 'employees-by-department',
-          targetViewKey: 'Employees@default',
-          sources: [{ id: 'departments', type: 'view', viewKey: 'Departments@default' }],
-          bindings: [{ sourceId: 'departments', sourceField: 'id', targetField: 'deptId' }],
+          parentTable: 'Departments',
+          childTable: 'Employees',
+          dependencyType: 'currentRow',
         },
       ],
     })
@@ -94,10 +93,9 @@ describe('DataSet relation rebuild', () => {
       childField: 'deptId',
     })
     ds.addDependency({
-      id: 'employees-by-department',
-      targetViewKey: 'Employees@default',
-      sources: [{ id: 'departments', type: 'view', viewKey: 'Departments@default' }],
-      bindings: [{ sourceId: 'departments', sourceField: 'id', targetField: 'deptId' }],
+      parentTable: 'Departments',
+      childTable: 'Employees',
+      dependencyType: 'currentRow',
     })
 
     const parent = ds.getView('Departments', 'default')

@@ -17,7 +17,6 @@ import type {
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
   IEventEmitter,
-  FieldDependency,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -28,7 +27,6 @@ import type { DataValidator } from './validation'
 import { Logger, toErrorMessage, toError } from '@spark-view/spark-utils'
 import { createEventEmitter } from './core/event-emitter'
 import { assertNoSeparator } from './core/utils'
-import { resolveViewKey } from './core/data-key'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
 import { SelectionDelegate } from './strategies/selection-delegate'
@@ -569,9 +567,6 @@ export class DataView implements IDataSource, IDataViewStore {
 
   /** 视图级聚合配置——行变更后自动重算 aggregateResult / selectionAggregateResult。仅由 applyViewConfig() 初始化 */
   readonly aggregates: Record<string, AggregateColumnConfig> = {}
-
-  /** 字段依赖——字段统一变更入口读取后投影到 ViewDependency。 */
-  fieldDependencies: FieldDependency[] = []
 
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
@@ -1163,7 +1158,7 @@ export class DataView implements IDataSource, IDataViewStore {
     const run = async (): Promise<void> => {
       this.setRequestState(RequestState.Preparing)
 
-      // 逐个父/字段源检查依赖是否满足
+      // 逐个父视图检查依赖是否满足
       const ds = this.dataSet
       const parents = ds ? ds.getParentRelations(this.tableName, this.viewId) : []
 
@@ -1205,7 +1200,7 @@ export class DataView implements IDataSource, IDataViewStore {
         return
       }
 
-      // 子视图级联由 rowsChanged / fields source 事件驱动，无需主动推
+      // 子视图级联由 rowsChanged 等父视图事件驱动，无需主动推
     }
 
     this._pendingRequestData = run()
@@ -1219,12 +1214,9 @@ export class DataView implements IDataSource, IDataViewStore {
   private requestIdleDependencyViewSources(rel: DataRelation): void {
     const ds = this.dataSet
     if (!ds) return
-    for (const source of rel.sources ?? []) {
-      if (source.type !== 'view') continue
-      const view = resolveViewKey(source.viewKey, ds)
-      if (view?.requestState === RequestState.Idle) {
-        void view.requestData()
-      }
+    const parentView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+    if (parentView?.requestState === RequestState.Idle) {
+      void parentView.requestData()
     }
   }
 
@@ -1862,7 +1854,6 @@ export class DataView implements IDataSource, IDataViewStore {
     if (vc.labelField !== undefined) this.labelField = vc.labelField
     if (vc.selectionDelimiter !== undefined) this.selectionDelimiter = vc.selectionDelimiter
     if (vc.aggregates !== undefined) (this as { aggregates: Record<string, AggregateColumnConfig> }).aggregates = vc.aggregates
-    if (vc.fieldDependencies !== undefined) this.fieldDependencies = [...vc.fieldDependencies]
     this.page = vc.page ?? 1
     this.pageSize = vc.pageSize ?? 20
     if (vc.filterExpression !== undefined && this._shouldApplyStaticLocalFilter()) {
@@ -1932,7 +1923,6 @@ export class DataView implements IDataSource, IDataViewStore {
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
     if (Object.keys(this.aggregates).length > 0) result.aggregates = this.aggregates
-    if (this.fieldDependencies.length > 0) result.fieldDependencies = this.fieldDependencies
     return result
   }
 

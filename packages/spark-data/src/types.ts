@@ -729,13 +729,6 @@ export interface IViewMetadata {
    * ```
    */
   aggregates?: Record<string, AggregateColumnConfig>
-  /**
-   * 字段依赖。
-   *
-   * 声明当前编辑域内“下游字段依赖哪些父字段”，字段变化后由 DataSet
-   * 更新字段源快照并通知目标 DataView 的 ViewDependency 订阅。
-   */
-  fieldDependencies?: FieldDependency[]
 }
 
 /**
@@ -800,9 +793,9 @@ export interface IDataSetLayoutMetadata {
 // ===== 过滤和排序类型 =====
 
 /**
- * view source 响应父视图的数据变化触发源。
+ * 子视图响应父视图的数据变化触发源。
  *
- * 配置在 `ViewDependency.sources[].state`，决定父视图"哪种数据变化"会触发目标视图重新级联加载。
+ * 配置在 `ViewDependency.dependencyType`，决定父视图"哪种数据变化"会触发子视图重新级联加载。
  *
  * - `'currentRow'`   — 父视图当前聚焦行变化时触发（默认值）；子视图用当前行主键过滤
  * - `'selectedRows'` — 父视图选中行集合变化时触发；子视图用所有选中行的主键 in-list 过滤
@@ -815,70 +808,6 @@ export type DependencyType =
   | 'allRows'
   | 'pagedRows'
   | (string & {})
-
-export type FieldDependencyScope = 'editContext' | 'currentRow'
-export type FieldDependencyValuePolicy = 'clear' | 'keep' | 'keepIfValid'
-export type ViewDependencySourceType = 'view' | 'fields'
-export type ViewDependencyEmptyPolicy = 'clearRows' | 'skipLoad' | 'keepRows'
-export type DependencyBindingOperator = '==' | 'in'
-
-export interface FieldDependencyLookup {
-  /** 选项 DataView 的 ViewKey，例如 `Cities@byRegion`。 */
-  viewKey: string
-  /** 选项行中用于匹配当前字段值的字段名。 */
-  matchField: string
-  /** 当前编辑域目标字段 -> 选项行源字段。 */
-  map: Record<string, string>
-}
-
-export interface FieldDependency {
-  /** 下游字段名，例如 `cityId`。 */
-  field: string
-  /** 当前编辑域内的父字段列表，例如 `countryId/provinceId`。 */
-  dependsOn: string[]
-  /** 对应的视图依赖 ID，标记该字段的选项 DataView 由哪条依赖维护。 */
-  optionDependencyId?: string
-  /** 父字段变化时对下游字段的处理策略，默认 `clear`。 */
-  valuePolicy?: FieldDependencyValuePolicy
-  /** 父字段变化时需要一并清空的派生/更下游字段。 */
-  clearAlso?: string[]
-  /** 当前字段选中后，从选项 DataView 回填 label/code 等字段。 */
-  lookup?: FieldDependencyLookup
-}
-
-export interface DependencySource {
-  id: string
-  type: ViewDependencySourceType
-  /** 源 DataView 的 ViewKey。 */
-  viewKey: string
-  /** `type: "view"` 时读取父视图哪类行状态，默认 `currentRow`。 */
-  state?: DependencyType
-  /** `type: "fields"` 时读取哪个编辑域快照，默认 `editContext`。 */
-  scope?: FieldDependencyScope
-  /** `type: "fields"` 时声明该源依赖哪些字段，供字段变更快速定位。 */
-  fields?: string[]
-}
-
-export interface DependencyBinding {
-  /** 指向 ViewDependency.sources[].id。 */
-  sourceId: string
-  /** 源行/编辑域字段。 */
-  sourceField: string
-  /** 目标 DataView 过滤字段。 */
-  targetField: string
-  /** 过滤操作符；多源值默认自动使用 `in`，否则使用 `==`。 */
-  op?: DependencyBindingOperator
-  /** 值为空时是否视为依赖不满足，默认 false。 */
-  required?: boolean
-}
-
-export interface FieldChangeNotification {
-  viewKey: string
-  scope?: FieldDependencyScope
-  row: IDataRow
-  field: string
-  value?: unknown
-}
 
 /** 排序方向（小写） */
 export type SortDirection = 'asc' | 'desc'
@@ -1021,49 +950,39 @@ export interface TableRelation {
 /**
  * 视图依赖 — 声明子视图如何响应父视图数据变化。
  *
- * 显式声明 source view / 编辑域字段如何投影为 target view 的过滤条件。
- * tableRelations 只保留表间业务事实；运行时联动只认 viewDependencies。
+ * 基于 TableRelation 的字段信息工作，独立描述视图层面的联动策略。
+ * 省略 `viewDependencies` 时框架为每条 TableRelation 自动生成默认依赖。
  *
  * @example
  * ```json
  * {
- *   "id": "cities-by-region",
- *   "targetViewKey": "Cities@byRegion",
- *   "sources": [{ "id": "address", "type": "fields", "viewKey": "Address@editor", "fields": ["provinceId"] }],
- *   "bindings": [{ "sourceId": "address", "sourceField": "provinceId", "targetField": "provinceId", "required": true }]
+ *   "parentTable": "Users", "childTable": "Orders",
+ *   "dependencyType": "selectedRows"
  * }
  * ```
  */
 export interface ViewDependency {
-  id: string
-  /** 目标 DataView 的 ViewKey，例如 `Cities@byRegion`。 */
-  targetViewKey: string
-  /** 一个依赖可来自多个父视图或字段编辑域。 */
-  sources: DependencySource[]
-  /** 将源字段投影成目标视图过滤条件，多个 binding 以 AND 合并。 */
-  bindings: DependencyBinding[]
+  /** 与 TableRelation 对齐的父表名 */
+  parentTable: string
+  /** 与 TableRelation 对齐的子表名 */
+  childTable: string
+  /** 响应父视图的哪种数据变化（默认 'currentRow'） */
+  dependencyType?: DependencyType
   /** 父变化时是否自动级联加载子视图（默认 true） */
   autoLoad?: boolean
-  /** required 源值为空时目标视图如何处理，默认 `clearRows`。 */
-  emptyPolicy?: ViewDependencyEmptyPolicy
 }
 
 // ═══════════════════════════════════════════
-// 内部展开格式（显式 ViewDependency 的运行时索引项）
+// 内部展开格式（TableRelation + ViewDependency 合并后）
 // ═══════════════════════════════════════════
 
 /**
- * 展开后的内部关系格式 — 一条显式 ViewDependency 对应一个目标视图关系。
+ * 展开后的内部关系格式 — TableRelation + ViewDependency 合并后的字段绑定结果。
  *
  * @internal 仅供 spark-data 内部消费（CascadeDelegate / DataView）。
- * 外部配置使用 `ViewDependency`；`tableRelations` 只描述表级业务事实。
+ * 外部配置使用 `TableRelation` + `ViewDependency`。
  */
 export interface DataRelation {
-  dependencyId?: string
-  targetViewKey?: string
-  sources?: DependencySource[]
-  bindings?: DependencyBinding[]
-  emptyPolicy?: ViewDependencyEmptyPolicy
   parentTable: string
   parentViewId?: string
   childTable: string
@@ -1072,6 +991,8 @@ export interface DataRelation {
   parentField?: string
   /** 子表中用于匹配的字段（简写模式必填） */
   childField?: string
+  /** 依赖类型（默认 'currentRow'） */
+  dependencyType?: DependencyType
   cascadeUpdate?: boolean
   cascadeDelete?: boolean
   /** 父变化时是否自动级联加载子视图（默认 true——仅 `false` 时跳过） */
@@ -1298,21 +1219,13 @@ export interface IDataSet {
   addDependency(dependency: ViewDependency): void
   /** 更新视图依赖 */
   updateDependency(
-    id: string,
+    parentTable: string,
+    childTable: string,
     updates: Partial<ViewDependency>,
   ): ViewDependency
   /** 删除视图依赖 */
-  removeDependency(id: string): void
-  /** 字段统一变更入口；更新字段源快照并发出字段源变化事件。 */
-  notifyFieldChanged(change: FieldChangeNotification): Promise<void>
-  /** 订阅字段源变化；目标 DataView 的 CascadeDelegate 用它响应 fields source。 */
-  subscribeFieldSource(
-    viewKey: string,
-    scope: FieldDependencyScope | undefined,
-    field: string,
-    handler: () => void | Promise<void>,
-  ): () => void
-  /** 将运行时关系解析为目标视图过滤表达式；返回 null 表示 required 源值不满足。 */
+  removeDependency(parentTable: string, childTable: string): void
+  /** 将运行时关系解析为目标视图过滤表达式；返回 null 表示父视图依赖不满足。 */
   resolveDependencyFilter(rel: DataRelation): FilterExpression | undefined | null
   /** 获取数据表 */
   getTable(name: string): DataTable | undefined

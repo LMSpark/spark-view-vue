@@ -39,10 +39,9 @@ function makeDs(sourceState: string) {
     ],
     viewDependencies: [
       {
-        id: 'items-by-orders',
-        targetViewKey: 'Items@default',
-        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: sourceState }],
-        bindings: [{ sourceId: 'orders', sourceField: 'id', targetField: 'orderId', required: true }],
+        parentTable: 'Orders',
+        childTable: 'Items',
+        dependencyType: sourceState,
         autoLoad: true,
       }
     ]

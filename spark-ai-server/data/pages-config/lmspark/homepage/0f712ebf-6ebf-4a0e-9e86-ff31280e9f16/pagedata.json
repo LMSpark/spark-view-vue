@@ -306,26 +306,10 @@
   ],
   "viewDependencies": [
     {
-      "id": "voucher-items",
-      "targetViewKey": "VoucherItems@default",
-      "sources": [
-        {
-          "id": "voucher",
-          "type": "view",
-          "viewKey": "Vouchers@default",
-          "state": "currentRow"
-        }
-      ],
-      "bindings": [
-        {
-          "sourceId": "voucher",
-          "sourceField": "id",
-          "targetField": "voucherId",
-          "required": true
-        }
-      ],
-      "autoLoad": true,
-      "emptyPolicy": "clearRows"
+      "parentTable": "Vouchers",
+      "childTable": "VoucherItems",
+      "dependencyType": "currentRow",
+      "autoLoad": true
     }
   ]
 }

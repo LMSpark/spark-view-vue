@@ -186,26 +186,26 @@ describe('DataSetCrudTool', () => {
 
     tool.createDependency({
       dependency: {
-        id: 'items-by-order',
-        targetViewKey: 'Items@default',
-        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: 'currentRow' }],
-        bindings: [{ sourceId: 'orders', sourceField: 'id', targetField: 'orderId', required: true }],
+        parentTable: 'Orders',
+        childTable: 'Items',
+        dependencyType: 'currentRow',
         autoLoad: true,
       },
     })
-    expect(tool.getDependency({ id: 'items-by-order' })?.sources[0]?.state).toBe('currentRow')
+    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })?.dependencyType).toBe('currentRow')
 
     tool.updateDependency({
-      id: 'items-by-order',
+      parentTable: 'Orders',
+      childTable: 'Items',
       updates: {
-        sources: [{ id: 'orders', type: 'view', viewKey: 'Orders@default', state: 'selectedRows' }],
+        dependencyType: 'selectedRows',
         autoLoad: false,
       },
     })
-    expect(tool.getDependency({ id: 'items-by-order' })?.sources[0]?.state).toBe('selectedRows')
+    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })?.dependencyType).toBe('selectedRows')
 
-    tool.deleteDependency({ id: 'items-by-order' })
-    expect(tool.getDependency({ id: 'items-by-order' })).toBeUndefined()
+    tool.deleteDependency({ parentTable: 'Orders', childTable: 'Items' })
+    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })).toBeUndefined()
   })
 
   it('SparkData namespace should expose createDataSetCrudTool factory', () => {
