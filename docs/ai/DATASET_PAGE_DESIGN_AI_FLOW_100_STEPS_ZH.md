@@ -22,7 +22,7 @@ SPARK View 的页面不是由 Vue 单文件组件直接写死，而是由四文�
 -> 页面规划（区域 / 工作流 / 操作）
 -> 数据利用规划（每个 UI 消费点需要哪个 DataView 能力）
 -> 按消费点选择/创建 DataView（同表多 UI 按运行态隔离拆分）
--> viewDependencies（只连接真实消费的视图联动）
+-> viewDependencies（按 parentTable / childTable 声明表关系级联动）
 -> rule.json viewKey / dataKey / field 绑定
 -> script.js / style.css 补齐行为和表现
 ```
@@ -50,11 +50,11 @@ flowchart TB
   PageData["pagedata.json"] --> Parser["parsePageData()"]
   Parser --> DataSet["DataSet<br/>页面数据空间协调器"]
   DataSet --> TableA["DataTable: Orders<br/>表结构/API/视图容器"]
-  TableA --> ViewA1["DataView: mainList<br/>主列表 rows/selection/requestState"]
+  TableA --> ViewA1["DataView: default<br/>主列表 rows/selection/requestState"]
   TableA --> ViewA2["DataView: selector<br/>弹窗选择器过滤/分页"]
   TableA --> ViewA3["DataView: summary<br/>统计聚合"]
   DataSet --> TableB["DataTable: OrderItems<br/>表结构/API/视图容器"]
-  TableB --> ViewB1["DataView: forSelectedOrder<br/>子表 rows/currentRow"]
+  TableB --> ViewB1["DataView: default<br/>子表 rows/currentRow"]
   DataSet --> Relations["tableRelations + viewDependencies"]
   Relations --> ViewA1
   Relations --> ViewB1
@@ -64,7 +64,7 @@ flowchart TB
   ViewB1 --> UI4["r-table 明细列表"]
 ```
 
-这张图的重点是消费边界：同一张 `DataTable: Orders` 可以被多个 `DataView` 投影成不同 UI 场景。UI 不能直接消费 `DataTable`，也不应该默认都挤到某个兜底视图；UI 应该通过 `viewKey` 选择自己真正需要的 `DataView`。
+这张图的重点是消费边界：同一张 `DataTable: Orders` 可以被多个 `DataView` 投影成不同 UI 场景。UI 不能直接消费 `DataTable`。独立分页、筛选、统计、选择器可以使用命名视图；但当前旧版 `viewDependencies` 只按 `parentTable / childTable` 工作，运行时会把关系展开到父子表的 `default` 视图。
 
 ### 2.1 DataSet 是页面数据空间协调器
 
@@ -94,7 +94,7 @@ flowchart TB
 - 保存列定义与校验器。
 - 保存表级 API 与 CRUD 策略。
 - 作为多个 DataView 的宿主。
-- 实现层会保留 `default` 视图作为兼容和简单场景兜底，但设计时不要把它当成 UI 默认消费原则。
+- 实现层会保留 `default` 视图；当前表关系级视图依赖也固定展开到父子表的 `default` 视图。
 - 对静态表保存全量 `rows`，供内存级联过滤复用。
 
 它不做的事：
@@ -114,7 +114,7 @@ flowchart TB
 - 每个真实 UI 数据消费点都要先判断是否需要独立 DataView。
 - 多个 UI 区域只有在刻意共享 `rows/currentRow/selectedRows/requestState` 时，才共享同一个 DataView。
 - 独立分页、独立筛选、独立当前行、弹窗选择器、主从区域、统计面板，都是独立 DataView 的候选。
-- `default` 可以存在，但它不是架构原则；清晰的命名视图更适合表达页面意图。
+- 命名视图适合表达独立消费意图；依赖 `tableRelations / viewDependencies` 做主从级联时，父子容器应绑定到当前协议实际消费的 `default` 视图。
 
 ## 3. ViewKey / DataKey：容器与值级绑定协议
 
@@ -362,7 +362,7 @@ flowchart TB
 | `rule.json` 修改组件 `id` | `script.js` 中 `$components.getApi(id)` 是否同步 |
 | `rule.json` 新增 class | `style.css` 是否定义对应选择器 |
 | `pagedata.json` 新增 aggregates | `rule.json` 是否用 `Table@view@aggregateResult.xxx` 展示 |
-| `pagedata.json` 新增 relation/dependency | 主从 UI 的父子 `viewKey` / `dataKey` 是否匹配 |
+| `pagedata.json` 新增 relation/dependency | `viewDependencies` 是否与 `tableRelations` 的 parentTable / childTable 对齐；主从 UI 是否绑定当前协议实际消费的 `default` 视图 |
 
 ## 7. 页面加载顺序
 
@@ -423,7 +423,7 @@ PageDesign 子模块边界：
 5. **再做页面规划**：确认列表、详情、表单、统计、筛选、弹窗、树等区域。
 6. **再做数据利用规划**：每个页面区域消费哪个 DataView，以及它需要 `rows`、`currentRow`、`selectedRows` 还是 `aggregateResult`。
 7. **按消费点构建 DataView**：同表多处 UI 先判断运行态是否独立；独立分页、筛选、当前行、选择、聚合就建独立 view。
-8. **最后建视图依赖**：只有真实父子视图联动、特殊加载顺序或跨视图状态传播才显式写 `viewDependencies`。
+8. **最后确认视图依赖**：`viewDependencies` 使用 `parentTable / childTable / dependencyType`，省略时会从 `tableRelations` 自动推导；只有需要改 `dependencyType`、`autoLoad` 或显式禁用时才额外处理。
 9. **再改 rule/script/style**：`rule.json` 绑定真实 `viewKey`、值级 `dataKey` 和字段 `field`，`script.js` 只补无法配置化表达的业务分支，`style.css` 只补 rule 中确实使用的 class。
 10. **完成后做交叉校验**：表名、字段、viewId、handler、class、component id、relation、dependency 都要闭合。
 
@@ -435,7 +435,7 @@ PageDesign 子模块边界：
 -> tableRelations
 -> UI 数据消费点清单
 -> 按消费点创建或复用 DataView
--> viewDependencies
+-> viewDependencies（parentTable / childTable / dependencyType）
 -> computeExpression / aggregates
 ```
 
@@ -458,7 +458,7 @@ PageDesign 子模块边界：
 | 13 | 盘点 | 列出每张表的 columns 和 primaryKey | 字段事实可见 |
 | 14 | 盘点 | 列出 tableRelations | 现有父子关系可见 |
 | 15 | 盘点 | 列出 viewDependencies | 显式视图联动可见 |
-| 16 | 盘点 | 列出每张表的 views | 兜底 default 与业务命名 view 可见 |
+| 16 | 盘点 | 列出每张表的 views | `default` 与业务命名 view 可见 |
 | 17 | 盘点 | 读取 `rule.json` 根节点和现有 `viewKey` / `dataKey` | 组件树和绑定列表可见 |
 | 18 | 盘点 | 收集 rule 中现有 handler 名 | 为 script 校验做准备 |
 | 19 | 盘点 | 读取 `script.js` | 明确已有 `__init__` 和 `handle*` 函数 |
@@ -490,7 +490,7 @@ PageDesign 子模块边界：
 | 45 | 表关系 | 校验 childField 存在 | 不出现悬空子字段 |
 | 46 | 表关系 | 判断是否需要 cascadeUpdate | 只在业务明确要求时设置 |
 | 47 | 表关系 | 判断是否需要 cascadeDelete | 只在业务明确要求时设置 |
-| 48 | 表关系 | 暂不急着写 `viewDependencies` | 先确认后续有哪些真实父子视图消费 |
+| 48 | 表关系 | 暂不急着写 `viewDependencies` | 先确认后续是否有真实主从级联消费 |
 | 49 | 表关系 | 检查是否把数据库外键概念误写进配置 | 保持 DataSet 页面数据模型口径 |
 | 50 | 表关系 | 复核表关系对页面是否有真实价值 | 没有消费场景的关系先不建 |
 | 51 | 页面规划 | 规划页面信息架构 | 列表、详情、表单、统计、筛选、弹窗、树等区域 |
@@ -523,12 +523,12 @@ PageDesign 子模块边界：
 | 78 | 按需视图 | 为过滤需求配置 filterExpression | 复杂过滤用结构化表达 |
 | 79 | 按需视图 | 设置 view 的自动加载策略 | `autoLoad` 与首屏行为一致 |
 | 80 | 按需视图 | 设置 view 的首行策略 | `autoCurrentFirst` / `autoSelectFirst` 与页面行为一致 |
-| 81 | 视图依赖 | 判断是否需要显式 `viewDependencies` | 只有真实跨 view 联动才写 |
-| 82 | 视图依赖 | 为父子 view 建依赖 | parent/child 表和 view 关系清楚 |
-| 83 | 视图依赖 | 判断 dependencyType | currentRow、selectedRows 或其他类型语义明确 |
-| 84 | 视图依赖 | 判断子 view 是否 autoLoad | 只在父状态变化后需要加载时开启 |
-| 85 | 视图依赖 | 校验依赖不会和表关系重复打架 | 避免重复加载、重复过滤、循环联动 |
-| 86 | 视图依赖 | 校验父 view 和子 view 都存在 | 不出现悬空依赖 |
+| 81 | 视图依赖 | 判断是否需要显式 `viewDependencies` | 省略会从 `tableRelations` 自动推导；`[]` 表示明确禁用 |
+| 82 | 视图依赖 | 为父子表建依赖 | `parentTable` / `childTable` 与 `tableRelations` 对齐 |
+| 83 | 视图依赖 | 判断 `dependencyType` | currentRow、selectedRows、allRows、pagedRows 语义明确 |
+| 84 | 视图依赖 | 判断子表是否 `autoLoad` | 只在父状态变化后需要加载时开启 |
+| 85 | 视图依赖 | 校验依赖对应的表关系存在 | 字段绑定由 `tableRelations` 提供，避免悬空依赖 |
+| 86 | 视图依赖 | 校验父表和子表的 `default` view 可用 | 当前旧协议运行时展开到 `default` view |
 | 87 | 视图依赖 | 校验依赖链不会循环 | 避免 A 触发 B、B 又触发 A |
 | 88 | 视图依赖 | 再次序列化 DataSetCrudTool toJson | `pagedata.json` canonical、可 round-trip |
 | 89 | 结构 | 查询组件 payload 列表 | 选择合法 `r-*` 组件 |
@@ -557,10 +557,10 @@ flowchart TD
   ReadRule --> PagePlan
   PagePlan --> DataUse["数据利用规划<br/>UI 消费点 / rows / currentRow / selectedRows / aggregateResult"]
   DataUse --> NeedView{"该消费点是否需要独立 DataView？"}
-  NeedView -->|复用已有 view| NeedDependency{"是否需要跨 view 联动？"}
+  NeedView -->|复用已有 view| NeedDependency{"是否需要表关系级联动？"}
   NeedView -->|需要隔离状态| CreateView["按消费点创建 DataView"]
   CreateView --> NeedDependency
-  NeedDependency -->|需要| CreateDependency["创建 viewDependencies"]
+  NeedDependency -->|需要| CreateDependency["创建或确认 viewDependencies<br/>parentTable / childTable"]
   NeedDependency -->|不需要| QueryPayload["查询组件 payload"]
   CreateDependency --> QueryPayload
   QueryPayload --> NeedUI{"是否新增/替换组件？"}
@@ -585,7 +585,7 @@ flowchart TD
 | 模式 | `pagedata.json` | `rule.json` |
 | --- | --- | --- |
 | 单表列表页 | 一张主表，columns，`mainList` view rows 或 api.list | `r-table viewKey=Table@mainList` + toolbar + row fragments |
-| 主从页 | 父表、子表、父子消费 view、`tableRelations`，必要时 `viewDependencies` | 父 `r-table viewKey=Parent@mainList`，子 `r-table viewKey=Child@forSelectedParent` |
+| 主从页 | 父表、子表、`tableRelations`，必要时 `viewDependencies` | 依赖内置级联时父子容器绑定 `Parent@default` / `Child@default`；命名 view 只用于非级联的独立消费 |
 | 表格 + 详情/表单 | 单表，`mainList` view，字段校验 | `r-table viewKey=Users@mainList` + `r-form viewKey=Users@mainList` / `contextDataKey=Users@mainList@currentRow` |
 | 树页 | tree table，`treeConfig`，必要时 tree API | `r-tree` 或树表格 |
 | 聚合统计页 | view `aggregates` 配置 | display 组件通过 `Table@summary@aggregateResult.xxx` 展示 |
@@ -606,7 +606,7 @@ flowchart TD
 | rule 中写不存在的 handler | 补 `script.js` 函数或删除事件绑定 |
 | style.css 写了无对应 class 的样式 | 从 rule 反查 class，删除死 CSS |
 | 选择项写死在每一行 | 复用选项建独立字典表，字段用 `optionKey` |
-| 主从联动靠脚本监听手写过滤 | 优先用 `tableRelations` / `viewDependencies` |
+| 主从联动靠脚本监听手写过滤 | 优先用 `tableRelations` / `viewDependencies`；当前旧协议要求依赖与 parentTable / childTable 对齐，并作用于 `default` view |
 
 ## 14. 最小可落地模板
 
@@ -733,28 +733,28 @@ function handleRefreshOrders() {
 | 弹窗选择器有独立筛选和分页 | 创建 `selector` view |
 | 统计区基于当前列表结果 | 在 `mainList` 上加 `aggregates` |
 | 统计区基于另一套过滤条件 | 创建 `summary` view 并配置 aggregates |
-| 子表跟随父表某个 currentRow | 创建子表消费 view，再按需写 `viewDependencies` |
+| 子表跟随父表某个 currentRow | 父表/子表使用 `default` view 承接内置级联，再按需写 `viewDependencies` |
 | 同表两个列表需要互不干扰 | 分别创建两个 view，不共享分页、筛选和 selection |
 
 这个判断能同时防止两种问题：一种是“视图爆炸”，每个可能性都预建 view；另一种是“状态串线”，多个 UI 明明需要独立分页、筛选或当前行，却挤在同一个 view 上互相污染。
 
 ### 15.4 viewDependencies 为什么最后写
 
-`viewDependencies` 不是 `tableRelations` 的镜像，也不是所有主从关系都要显式写一遍。`tableRelations` 描述业务父子事实，`viewDependencies` 描述某几个具体 DataView 之间的运行时联动。
+`viewDependencies` 不是任意两个命名 DataView 之间的连线。当前恢复后的旧协议只声明 `parentTable`、`childTable`、`dependencyType` 和 `autoLoad`；字段绑定来自对应 `tableRelations`，运行时展开为父子表 `default` view 之间的联动。
+
+省略 `viewDependencies` 时，框架会为每条 `tableRelations` 自动推导默认依赖；显式传 `[]` 才表示不建立视图联动。因此 AI 不应该为了“完整”重复生成一份与 `tableRelations` 完全等价的依赖列表。
 
 应该显式写 `viewDependencies` 的情况：
 
-- 父子 UI 已经明确绑定到具体 viewId，需要把这两个 view 连起来。
-- 子 view 是否自动加载需要特别控制。
-- 联动不是普通 currentRow。
-- 同一父子表有多条关系，需要明确哪条关系服务哪个 view。
-- 页面有弹窗、抽屉、选择器等独立视图状态。
+- 需要把 `dependencyType` 改成 `selectedRows`、`allRows` 或 `pagedRows`。
+- 需要显式关闭或控制 `autoLoad`。
+- 需要让某条父子表关系参与级联，但又不想依赖自动推导的默认值。
 
 不应该显式写的情况：
 
 - 没有 UI 区域消费这个联动。
 - 只是为了“看起来完整”把 tableRelations 再复制一遍。
-- 两个区域并没有独立 DataView，只是在同一 view 内部读字段或当前行。
+- 想表达任意命名 DataView 之间的自由连线；当前旧协议只支持 parentTable / childTable 关系。
 
 ### 15.5 AI 判断门：每一步都要问“谁消费它”
 
@@ -764,7 +764,7 @@ function handleRefreshOrders() {
 | 字段 | 哪个业务含义、组件 field 或 `$[fieldName]` 会用到？ |
 | tableRelation | 哪个父子业务链或页面联动会用到？ |
 | DataView | 哪个页面区域需要独立 rows/currentRow/selection/requestState？ |
-| viewDependency | 哪个父子或跨区域 DataView 联动需要它？ |
+| viewDependency | 哪个 parentTable / childTable 关系需要覆盖默认 dependencyType 或 autoLoad？ |
 | aggregate | 哪个统计展示或逻辑判断会读取它？ |
 | rule 节点 | 它承担哪个页面区域或交互？ |
 | script 函数 | 哪个 rule handler 或初始化流程会调用它？ |
@@ -776,9 +776,9 @@ function handleRefreshOrders() {
 
 如果要把 AI 页面设计做成稳定产品能力，建议围绕下面四个闭环建设：
 
-1. **数据闭环**：DataSetCrudTool 对 `pagedata.json` 做结构化 CRUD、undo/redo、canonical 序列化。
+1. **数据闭环**：DataSetCrudTool 对 `pagedata.json` 做结构化 CRUD、canonical 序列化和交叉校验。
 2. **结构闭环**：SparkNodeTree 对 `rule.json` 做节点级精细编辑，避免整文件重写。
 3. **文本闭环**：script/style 走完整文本模型，但写前做 API 契约和 class/handler 校验。
 4. **验证闭环**：每轮修改后跑四文件交叉校验和 DevPreview 预览，把错误反馈重新归因到具体文件。
 
-最重要的工程口径是：**先立业务数据事实，再立表关系；先规划页面有哪些数据消费点，再按消费点创建或复用 DataView；最后才补 viewDependencies、rule.json、script.js 和 style.css。**
+最重要的工程口径是：**先立业务数据事实，再立表关系；先规划页面有哪些数据消费点，再按消费点创建或复用 DataView；最后才确认 viewDependencies、rule.json、script.js 和 style.css。**

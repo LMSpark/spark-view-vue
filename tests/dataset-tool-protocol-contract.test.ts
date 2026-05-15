@@ -11,9 +11,21 @@ import {
 const catalog = new PageDesignDatasetCatalog()
 
 const LEGACY_EXAMPLE_FUNCTIONS = new Set(['getAggregate', 'setComputeExpression'])
+const REMOVED_FIELD_DEPENDENCY_FUNCTIONS = [
+  'listFieldDependencies',
+  'getFieldDependency',
+  'addFieldDependency',
+  'updateFieldDependency',
+  'removeFieldDependency',
+] as const
 
 function isActiveFunction(functionId: string): boolean {
   return functionId.length > 0
+}
+
+function propertiesOf(schema: unknown): Record<string, unknown> {
+  expect(schema).toMatchObject({ properties: expect.any(Object) })
+  return (schema as { properties: Record<string, unknown> }).properties
 }
 
 describe('dataset tool protocol contract', () => {
@@ -87,6 +99,34 @@ describe('dataset tool protocol contract', () => {
   it('does not expose removed legacy signatures in protocol lookup', () => {
     const legacyDeleteRelation = catalog.getParameterRow('deleteRelationLegacy')
     expect(legacyDeleteRelation).toBeUndefined()
+  })
+
+  it('keeps view dependency tools on the parent/child table protocol', () => {
+    const listDependencyParams = propertiesOf(catalog.getParameterRow('listDependencies')?.paramsSchema)
+    expect(listDependencyParams).toHaveProperty('parentTable')
+    expect(listDependencyParams).toHaveProperty('childTable')
+    expect(listDependencyParams).not.toHaveProperty('id')
+    expect(listDependencyParams).not.toHaveProperty('targetViewKey')
+
+    const createDependencyParams = propertiesOf(catalog.getParameterRow('createDependency')?.paramsSchema)
+    const dependencySchema = createDependencyParams['dependency']
+    const dependencyProperties = propertiesOf(dependencySchema)
+    expect(dependencyProperties).toHaveProperty('parentTable')
+    expect(dependencyProperties).toHaveProperty('childTable')
+    expect(dependencyProperties).toHaveProperty('dependencyType')
+    expect(dependencyProperties).toHaveProperty('autoLoad')
+    expect(dependencyProperties).not.toHaveProperty('targetViewKey')
+    expect(dependencyProperties).not.toHaveProperty('sources')
+    expect(dependencyProperties).not.toHaveProperty('bindings')
+    expect(dependencyProperties).not.toHaveProperty('emptyPolicy')
+    expect((dependencySchema as { required?: readonly string[] }).required).toEqual(['parentTable', 'childTable'])
+  })
+
+  it('does not expose removed field dependency tools', () => {
+    for (const functionId of REMOVED_FIELD_DEPENDENCY_FUNCTIONS) {
+      expect(catalog.getParameterRow(functionId)).toBeUndefined()
+      expect(catalog.getCapabilityRow(functionId)).toBeUndefined()
+    }
   })
 
   it('exposes recommended enum dictionaries for table semantic metadata fields', () => {
