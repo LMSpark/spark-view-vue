@@ -95,7 +95,7 @@ function RenderToolbar() {
  * 数据表格：原生 HTML table + 操作列
  *
  * ⚠️ 注意：h('el-table', ...) 用字符串组件名会被 Vue 当作原生 HTML 元素，
- * 不会解析为 Element Plus 组件。若需使用 el-table，应在 rule.json 中配置 dataKey 绑定。
+ * 不会解析为 Element Plus 组件。若需使用 el-table，应在 rule.json 中配置 dataViewKey 绑定。
  * Render* 函数中请使用原生 HTML 标签。
  */
 function RenderTable() {

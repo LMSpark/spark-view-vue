@@ -33,10 +33,11 @@
                   "label": "所在部门",
                   "placeholder": "请选择部门",
                   "required": true,
-                  "optionKey": "Departments@default@rows",
                   "optionLabelField": "name",
                   "optionValueField": "code",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "optionDataViewKey": "Departments@default",
+                  "optionDataMember": "rows"
                 }
               },
               {
@@ -46,10 +47,11 @@
                   "label": "请假类型",
                   "placeholder": "请选择请假类型",
                   "required": true,
-                  "optionKey": "LeaveTypes@default@rows",
                   "optionLabelField": "name",
                   "optionValueField": "code",
-                  "colSpan": 12
+                  "colSpan": 12,
+                  "optionDataViewKey": "LeaveTypes@default",
+                  "optionDataMember": "rows"
                 }
               },
               {
@@ -111,8 +113,8 @@
             "props": {
               "labelWidth": "100px",
               "labelPosition": "right",
-              "viewKey": "LeaveApplications@default",
-              "contextDataKey": "LeaveApplications@default@currentRow"
+              "dataViewKey": "LeaveApplications@default",
+              "contextDataMember": "currentRow"
             }
           }
         ],
@@ -141,9 +143,10 @@
                   "field": "status",
                   "label": "审批状态",
                   "width": 120,
-                  "optionKey": "ApprovalStatus@default@rows",
                   "optionLabelField": "name",
-                  "optionValueField": "code"
+                  "optionValueField": "code",
+                  "optionDataViewKey": "ApprovalStatus@default",
+                  "optionDataMember": "rows"
                 }
               },
               {
@@ -173,7 +176,7 @@
                   "type": "RenderApprovalActions"
                 }
               ],
-              "viewKey": "ApprovalRecords@default"
+              "dataViewKey": "ApprovalRecords@default"
             }
           }
         ],

@@ -173,7 +173,7 @@
                   "align": "center"
                 }
               },
-              "viewKey": "Users@default"
+              "dataViewKey": "Users@default"
             }
           }
         ],

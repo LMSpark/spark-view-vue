@@ -83,22 +83,24 @@
                 "type": "r-select",
                 "props": {
                   "label": "节点类型",
-                  "optionKey": "NodeKindFilterOptions@default@rows",
                   "optionLabelField": "label",
                   "optionValueField": "value",
                   "colSpan": 7,
-                  "field": "nodeKindFilter"
+                  "field": "nodeKindFilter",
+                  "optionDataViewKey": "NodeKindFilterOptions@default",
+                  "optionDataMember": "rows"
                 }
               },
               {
                 "type": "r-select",
                 "props": {
                   "label": "子项布局",
-                  "optionKey": "PlacementFilterOptions@default@rows",
                   "optionLabelField": "label",
                   "optionValueField": "value",
                   "colSpan": 7,
-                  "field": "placementFilter"
+                  "field": "placementFilter",
+                  "optionDataViewKey": "PlacementFilterOptions@default",
+                  "optionDataMember": "rows"
                 }
               }
             ],
@@ -106,8 +108,8 @@
               "gridColumns": 24,
               "gridGap": 12,
               "labelWidth": "88px",
-              "viewKey": "EditorFilters@default",
-              "contextDataKey": "EditorFilters@default@currentRow"
+              "dataViewKey": "EditorFilters@default",
+              "contextDataMember": "currentRow"
             }
           }
         ],
@@ -378,11 +380,12 @@
                                 "props": {
                                   "label": "节点类型",
                                   "buttonStyle": true,
-                                  "optionKey": "NodeKindOptions@default@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
                                   "colSpan": 24,
-                                  "field": "nodeKind"
+                                  "field": "nodeKind",
+                                  "optionDataViewKey": "NodeKindOptions@default",
+                                  "optionDataMember": "rows"
                                 }
                               },
                               {
@@ -397,22 +400,24 @@
                                 "type": "r-select",
                                 "props": {
                                   "label": "链接打开方式",
-                                  "optionKey": "LinkTargetOptions@default@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
                                   "colSpan": 12,
-                                  "field": "linkTarget"
+                                  "field": "linkTarget",
+                                  "optionDataViewKey": "LinkTargetOptions@default",
+                                  "optionDataMember": "rows"
                                 }
                               },
                               {
                                 "type": "r-select",
                                 "props": {
                                   "label": "子项布局",
-                                  "optionKey": "ChildPlacementOptions@default@rows",
                                   "optionLabelField": "label",
                                   "optionValueField": "value",
                                   "colSpan": 12,
-                                  "field": "childPlacement"
+                                  "field": "childPlacement",
+                                  "optionDataViewKey": "ChildPlacementOptions@default",
+                                  "optionDataMember": "rows"
                                 }
                               },
                               {
@@ -461,8 +466,8 @@
                               "gridColumns": 24,
                               "gridGap": 18,
                               "labelWidth": "108px",
-                              "viewKey": "NavigationNodes@default",
-                              "contextDataKey": "NavigationNodes@default@currentRow"
+                              "dataViewKey": "NavigationNodes@default",
+                              "contextDataMember": "currentRow"
                             }
                           }
                         ],
@@ -474,7 +479,7 @@
                       }
                     ]
                   },
-                  "viewKey": "NavigationNodes@default"
+                  "dataViewKey": "NavigationNodes@default"
                 }
               }
             ],

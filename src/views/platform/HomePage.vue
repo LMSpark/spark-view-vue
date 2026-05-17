@@ -236,7 +236,7 @@
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="OfficeBuilding" :size="32" /></div>
           <h3>权限与数据一体化</h3>
-          <p>DataKey、DataRelation、_perm 和页面模式进入同一条渲染链，配置一次，就能稳定覆盖联动、权限和展示状态。</p>
+          <p>DataViewKey、DataRelation、_perm 和页面模式进入同一条渲染链，配置一次，就能稳定覆盖联动、权限和展示状态。</p>
         </div>
       </div>
     </section>
@@ -355,7 +355,7 @@
             <tr>
               <td>数据绑定</td>
               <td>手写 ref / reactive / computed</td>
-              <td class="highlight-col">DataKey 配置（零代码）</td>
+              <td class="highlight-col">DataViewKey配置（零代码）</td>
             </tr>
             <tr>
               <td>父子联动</td>
@@ -423,14 +423,14 @@
           <span class="arch-num">4</span>
           <div class="arch-content">
             <h4>查询协议</h4>
-            <p>按需查询组件 Props · 表结构 · 字典 · DataKey 帮助</p>
+            <p>按需查询组件 Props · 表结构 · 字典 · DataViewKey帮助</p>
           </div>
         </div>
         <div class="arch-layer arch-layer--3">
           <span class="arch-num">3</span>
           <div class="arch-content">
             <h4>语义验证管线</h4>
-            <p>L1 JSON 语法 → L2 DataKey 格式 → L3 表引用 → L4 组件类型 → L5 脚本引用</p>
+            <p>L1 JSON 语法 → L2 DataViewKey格式 → L3 表引用 → L4 组件类型 → L5 脚本引用</p>
           </div>
         </div>
         <div class="arch-layer arch-layer--2">

@@ -39,7 +39,7 @@
         <p class="custom-r-table-demo__panel-desc">
           下方表格就是原始 RendererTable，页面层只负责提供 PAGE_DATASET。
         </p>
-        <RendererTable type="r-table" :view-key="tableViewKey" border stripe>
+        <RendererTable type="r-table" :data-view-key="tableViewKey" border stripe>
           <FieldText type="r-text" field="name" label="姓名" :width="160" />
           <FieldNumber type="r-number" field="age" label="年龄" :width="100" />
           <FieldNumber type="r-number" field="score" label="绩效分" :width="120" />
@@ -61,7 +61,7 @@
       <ul>
         <li>这里展示的就是原始 RendererTable，本页没有再包额外的表格宿主组件。</li>
         <li>FieldNumber 在 r-table 宿主下会渲染成表格列，而不是输入框。</li>
-        <li>只要页面层提供 PAGE_DATASET，RendererTable 内部的 viewKey 与 DATA_SOURCE 链路就还是原来的实现。</li>
+        <li>只要页面层提供 PAGE_DATASET，RendererTable 内部的 dataViewKey 与 DATA_SOURCE 链路就还是原来的实现。</li>
         <li>外部 slot 透传字段的桥接点在 RendererTable 内部，通用组件就是 SparkChildrenBridge。</li>
       </ul>
     </section>
@@ -121,7 +121,7 @@ sparkProvide(PAGE_DATASET, employeeDataSet)
 <\/script>
 
 <template>
-  <RendererTable :view-key="tableViewKey" border stripe>
+  <RendererTable :data-view-key="tableViewKey" border stripe>
     <FieldText type="r-text" field="name" label="姓名" :width="160" />
     <FieldNumber type="r-number" field="age" label="年龄" :width="100" />
   </RendererTable>

@@ -11,12 +11,13 @@
       {
         "type": "r-tabs",
         "props": {
-          "dataKey": "Orders@default@rows",
           "toolbar": [
             {
               "type": "RenderToolbar"
             }
-          ]
+          ],
+          "dataViewKey": "Orders@default",
+          "dataMember": "rows"
         },
         "children": [
           {
@@ -36,7 +37,7 @@
                       "type": "RenderRowActions"
                     }
                   ],
-                  "viewKey": "Orders@default"
+                  "dataViewKey": "Orders@default"
                 },
                 "children": [
                   {
@@ -60,10 +61,11 @@
                     "props": {
                       "field": "status",
                       "label": "状态",
-                      "optionKey": "OrderStatusOptions@default@rows",
                       "optionLabelField": "label",
                       "optionValueField": "value",
-                      "width": 100
+                      "width": 100,
+                      "optionDataViewKey": "OrderStatusOptions@default",
+                      "optionDataMember": "rows"
                     }
                   },
                   {
@@ -99,7 +101,7 @@
                     "type": "r-table",
                     "props": {
                       "border": true,
-                      "viewKey": "OrderItems@default"
+                      "dataViewKey": "OrderItems@default"
                     },
                     "children": [
                       {
@@ -157,7 +159,7 @@
                       "type": "RenderCustomerActions"
                     }
                   ],
-                  "viewKey": "Customers@default"
+                  "dataViewKey": "Customers@default"
                 },
                 "children": [
                   {
@@ -201,7 +203,7 @@
                     "type": "r-table",
                     "props": {
                       "border": true,
-                      "viewKey": "Contacts@default"
+                      "dataViewKey": "Contacts@default"
                     },
                     "children": [
                       {
@@ -258,7 +260,7 @@
                       "type": "RenderProductActions"
                     }
                   ],
-                  "viewKey": "Products@default"
+                  "dataViewKey": "Products@default"
                 },
                 "children": [
                   {

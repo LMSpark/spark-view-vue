@@ -262,8 +262,8 @@ export interface RootFieldEntry {
  * ----------------------------------------------------------------------- */
 
 export interface PlatformConstraints {
-  /** DataKey 正则（字符串形式，校验器重建 RegExp） */
-  dataKeyPattern: CatalogConstraintEntry<string>
+  /** DataViewKey字段正则（字符串形式，校验器重建 RegExp） */
+  dataViewKeyPattern: CatalogConstraintEntry<string>
   /** 合法组件类型前缀 */
   validTypePrefixes: CatalogConstraintEntry<string[]>
   /** 合法聚合类型 */
@@ -305,13 +305,13 @@ export interface NestingRule {
  * 构建时由 VCM props 自动推断（r-*）或静态声明（el-*）。
  */
 export interface CatalogBindingDescriptor {
-  /** LLM 可读绑定说明，解释该组件如何参与 dataKey/field/options/value 管线。 */
+  /** LLM 可读绑定说明，解释该组件如何参与 dataViewKey/dataMember/dataField/field/options/value 管线。 */
   description?: string
   /** 可直接参考的绑定配置示例。 */
   examples?: unknown[]
   /** 数据绑定委托：'table' | 'pagination' | 'form-element' */
   bindingDelegate?: 'table' | 'pagination' | 'form-element'
-  /** dataKey 自解析（组件自行 consume PAGE_DATASET） */
+  /** DataView 自解析（组件自行 consume PAGE_DATASET） */
   selfResolving?: boolean
   /** 数据容器（向子组件传递 DataSource） */
   dataContainer?: boolean

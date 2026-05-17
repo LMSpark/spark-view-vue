@@ -70,14 +70,15 @@
                         "type": "r-statistic",
                         "props": {
                           "title": "产品数",
-                          "dataKey": "Products@cards@aggregateResult",
                           "field": "stock",
                           "prefix": "库存合计：",
                           "valueStyle": {
                             "fontSize": "16px",
                             "fontWeight": "bold",
                             "color": "#409EFF"
-                          }
+                          },
+                          "dataViewKey": "Products@cards",
+                          "dataMember": "aggregateResult"
                         }
                       }
                     ]
@@ -298,7 +299,7 @@
               "emptyText": "暂无产品数据",
               "gridColumns": 24,
               "gridGap": "8px",
-              "viewKey": "Products@cards"
+              "dataViewKey": "Products@cards"
             }
           }
         ],
@@ -473,7 +474,7 @@
               },
               "gridColumns": 24,
               "gridGap": "8px",
-              "viewKey": "TeamMembers@default"
+              "dataViewKey": "TeamMembers@default"
             }
           }
         ],
@@ -599,7 +600,7 @@
                 "borderBottom": "1px solid #F2F6FC"
               },
               "gridColumns": 24,
-              "viewKey": "Products@simple"
+              "dataViewKey": "Products@simple"
             }
           }
         ],
@@ -733,7 +734,7 @@
               "rowKey": "id",
               "gridColumns": 24,
               "gridGap": "4px",
-              "viewKey": "Products@default"
+              "dataViewKey": "Products@default"
             }
           }
         ],

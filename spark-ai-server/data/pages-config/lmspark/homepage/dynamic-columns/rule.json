@@ -89,7 +89,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "viewKey": "Projects@default"
+          "dataViewKey": "Projects@default"
         }
       }
     ],

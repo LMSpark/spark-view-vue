@@ -16,9 +16,9 @@
 
 ## `pagedata.json`：页面数据空间
 
-`pagedata.json` 描述 DataSet 元数据，而不是后端数据库结构。表、列、视图、关系、依赖、聚合配置都可以进入这个文件。运行时再把它解释成 DataSet/DataTable/DataView。这样组件只绑定 DataKey，不需要知道接口细节或数据联动脚本。
+`pagedata.json` 描述 DataSet 元数据，而不是后端数据库结构。表、列、视图、关系、依赖、聚合配置都可以进入这个文件。运行时再把它解释成 DataSet/DataTable/DataView。这样组件只绑定 DataViewKey，不需要知道接口细节或数据联动脚本。
 
-这个文件的价值在于，它把页面级数据结构从组件 props 中剥离出来。同一个 DataTable 可以有多个 DataView，主从表可以通过依赖关系联动，聚合结果也能作为 DataKey 被组件消费。
+这个文件的价值在于，它把页面级数据结构从组件 props 中剥离出来。同一个 DataTable 可以有多个 DataView，主从表可以通过依赖关系联动，聚合结果也能作为 DataViewKey 被组件消费。
 
 ## 脚本和样式的边界
 

@@ -21,7 +21,7 @@ export const skillCatalog: SkillMeta[] = [
     type: 'r-table',
     description: '表格容器',
     props: [
-      { name: 'dataKey', type: 'string', required: false, description: '数据绑定键' },
+      { name: 'dataViewKey', type: 'string', required: false, description: 'DataView 定位键' },
       { name: 'stripe', type: 'boolean', required: false, description: '斑马纹' },
       { name: 'size', type: '"small" | "default" | "large"', required: false, description: '尺寸' },
     ],

@@ -28,7 +28,7 @@ export function createRuleJsonSchema(
         properties: {
           type: withMeta('组件类型 Component Type', '组件注册名（kebab-case），如 r-table / el-button / div。', { type: 'string', enum: metadata.types }),
           id: withMeta('节点标识 Component ID', 'SparkNode 顶层稳定 id，用于脚本寻址和渲染 key。不要放到 props.id。', { type: 'string' }),
-          props: withMeta('组件属性 Props', '传给组件的业务属性。viewKey / dataKey / contextDataKey / field / label / on / visible / disabled 等在此声明；id 必须写在节点顶层。', {
+          props: withMeta('组件属性 Props', '传给组件的业务属性。dataViewKey / dataMember / dataField / contextDataMember / contextDataField / field / label / on / visible / disabled 等在此声明；id 必须写在节点顶层。', {
             type: 'object',
             additionalProperties: true,
           }),
@@ -42,9 +42,14 @@ export function createRuleJsonSchema(
               ],
             },
           }),
-          viewKey: withMeta('视图绑定键 View Key', '容器级 ViewKey 格式：table@viewId 或 #scope@table@viewId。', { type: 'string' }),
-          dataKey: withMeta('DataView 输出读取键 Data Key', 'DataView 输出读取 DataKey 格式：table@viewId@field 或 #scope@table@viewId@field。', { type: 'string' }),
-          contextDataKey: withMeta('上下文输出绑定键 Context Data Key', 'r-form / r-detail 的上下文 DataKey，格式同 dataKey。默认通常为 table@viewId@currentRow。', { type: 'string' }),
+          dataViewKey: withMeta('DataView 定位键 DataView Key', 'DataViewKey 格式：table@viewId 或 #scope@table@viewId。', { type: 'string' }),
+          dataMember: withMeta('DataView 成员 Data Member', 'DataView 成员枚举，如 rows、currentRow、aggregateResult。', {
+            type: 'string',
+            enum: ['rows', 'columns', 'currentRow', 'selectedRows', 'aggregateResult', 'selectionAggregateResult', 'total', 'page', 'pageSize', 'requestState', 'mutating', 'loadingError', 'mutatingError'],
+          }),
+          dataField: withMeta('DataView 成员字段 Data Field', 'DataView 成员内部业务字段或点路径，如 name、totalAmount。', { type: 'string' }),
+          contextDataMember: withMeta('上下文 DataView 成员 Context Data Member', 'r-form / r-detail 的上下文成员，默认通常为 currentRow。', { type: 'string' }),
+          contextDataField: withMeta('上下文字段 Context Data Field', '上下文成员内部业务字段或点路径。', { type: 'string' }),
           field: withMeta('字段名 Field', '字段组件绑定的列名。', { type: 'string' }),
           label: withMeta('标签 Label', '字段组件或列的显示标题。', { type: 'string' }),
           on: withMeta('事件绑定 Events', '事件名到 script.js 函数名的映射，如 { "click": "handleClick" }。', {

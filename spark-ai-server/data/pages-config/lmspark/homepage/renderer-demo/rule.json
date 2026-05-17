@@ -67,7 +67,7 @@
                 "tableProps": {
                   "rowKey": "id"
                 },
-                "viewKey": "users@default"
+                "dataViewKey": "users@default"
               }
             }
           ],
@@ -150,7 +150,7 @@
                 "tableProps": {
                   "rowKey": "id"
                 },
-                "viewKey": "education_dict@default"
+                "dataViewKey": "education_dict@default"
               }
             }
           ],
@@ -344,7 +344,7 @@
               "rowKey": "id"
             },
             "highlightCurrentRow": true,
-            "viewKey": "user_resumes@default"
+            "dataViewKey": "user_resumes@default"
           }
         }
       ],
@@ -401,8 +401,8 @@
                 }
               ],
               "props": {
-                "viewKey": "users@default",
-                "contextDataKey": "users@default@currentRow"
+                "dataViewKey": "users@default",
+                "contextDataMember": "currentRow"
               }
             }
           ],
@@ -475,8 +475,8 @@
                 }
               ],
               "props": {
-                "viewKey": "user_resumes@default",
-                "contextDataKey": "user_resumes@default@currentRow"
+                "dataViewKey": "user_resumes@default",
+                "contextDataMember": "currentRow"
               }
             }
           ],

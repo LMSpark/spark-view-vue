@@ -86,7 +86,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
         toolbar: { type: 'r-toolbar', children: [{ type: 'form-toolbar-action' }] },
       },
       slots: {
@@ -131,7 +131,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
         toolbar: { type: 'r-toolbar', children: [{ type: 'form-toolbar-prop-action' }] },
       },
       global: {
@@ -180,7 +180,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
       },
       slots: {
         default: () => h(DirectFormFields),
@@ -224,7 +224,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererDetail as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
         toolbar: { type: 'r-toolbar', children: [{ type: 'detail-toolbar-action' }] },
       },
       slots: {
@@ -268,7 +268,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererDetail as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
         toolbar: { type: 'r-toolbar', children: [{ type: 'detail-toolbar-prop-action' }] },
       },
       global: {
@@ -305,7 +305,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
       },
       global: {
         stubs: {
@@ -383,7 +383,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererDetail as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
       },
       global: {
         stubs: {
@@ -458,7 +458,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
         onAddRow: async (_row: Record<string, unknown>, control: { cancel: boolean }) => { control.cancel = true },
         onEditRow: async (_id: number, _patch: Record<string, unknown>, control: { cancel: boolean }) => { control.cancel = true },
         onRemoveRow: async (_id: number, control: { cancel: boolean }) => { control.cancel = true },
@@ -505,7 +505,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
       props: {
-        viewKey: 'Users@default',
+        dataViewKey: 'Users@default',
       },
       slots: {
         default: () => h(FieldText as any, {

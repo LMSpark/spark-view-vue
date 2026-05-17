@@ -108,7 +108,7 @@
                             },
                             "props": {
                               "type": "string",
-                              "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                              "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                             },
                             "children": {
                               "type": "string",
@@ -168,9 +168,9 @@
                     ],
                     "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
                   },
-                  "dataKey": {
+                  "dataViewKey/dataMember/dataField": {
                     "type": "string",
-                    "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
+                    "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 dataViewKey。"
                   }
                 },
                 "description": "r-toolbar props 配置对象。"
@@ -193,7 +193,7 @@
                     },
                     "props": {
                       "type": "string",
-                      "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                      "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                     },
                     "children": {
                       "type": "string",
@@ -205,7 +205,7 @@
                 "description": "子节点列表；每一项都是 SparkNode。"
               }
             },
-            "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。"
+            "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。"
           },
           "filter": {
             "type": "object",
@@ -221,9 +221,9 @@
               "props": {
                 "type": "object",
                 "properties": {
-                  "viewKey": {
+                  "dataViewKey": {
                     "type": "string",
-                    "description": "DataView 定位键（viewKey）。"
+                    "description": "DataView 定位键（dataViewKey）。"
                   },
                   "collapsible": {
                     "type": "boolean",
@@ -286,7 +286,7 @@
                     },
                     "props": {
                       "type": "string",
-                      "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                      "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                     },
                     "children": {
                       "type": "string",
@@ -298,7 +298,7 @@
                 "description": "子节点列表；每一项都是 SparkNode。"
               }
             },
-            "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。"
+            "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。"
           },
           "actions": {
             "type": "object",
@@ -361,7 +361,7 @@
                             },
                             "props": {
                               "type": "string",
-                              "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                              "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                             },
                             "children": {
                               "type": "string",
@@ -421,9 +421,9 @@
                     ],
                     "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
                   },
-                  "dataKey": {
+                  "dataViewKey/dataMember/dataField": {
                     "type": "string",
-                    "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
+                    "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 dataViewKey。"
                   }
                 },
                 "description": "r-toolbar props 配置对象。"
@@ -446,7 +446,7 @@
                     },
                     "props": {
                       "type": "string",
-                      "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                      "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                     },
                     "children": {
                       "type": "string",
@@ -458,7 +458,7 @@
                 "description": "子节点列表；每一项都是 SparkNode。"
               }
             },
-            "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。"
+            "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。"
           },
           "permissionDeniedMode": {
             "type": "string",
@@ -468,9 +468,9 @@
             ],
             "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
           },
-          "dataKey": {
+          "dataViewKey/dataMember/dataField": {
             "type": "string",
-            "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
+            "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 dataViewKey。"
           },
           "onAddRow": {
             "type": "string",
@@ -555,7 +555,7 @@
         "schema": {
           "title": "r-toolbar",
           "type": "object",
-          "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+          "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。",
           "properties": {
             "type": {
               "type": "string",
@@ -614,7 +614,7 @@
                           },
                           "props": {
                             "type": "string",
-                            "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                            "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                           },
                           "children": {
                             "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
@@ -691,9 +691,9 @@
                   "type": "string",
                   "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
                 },
-                "dataKey": {
+                "dataViewKey/dataMember/dataField": {
                   "type": "string",
-                  "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
+                  "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 dataViewKey。"
                 }
               }
             },
@@ -714,7 +714,7 @@
                   },
                   "props": {
                     "type": "string",
-                    "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                    "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                   },
                   "children": {
                     "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
@@ -747,7 +747,7 @@
         "schema": {
           "title": "r-filter",
           "type": "object",
-          "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+          "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。",
           "properties": {
             "type": {
               "type": "string",
@@ -758,9 +758,9 @@
               "type": "object",
               "description": "r-filter props 配置对象。",
               "properties": {
-                "viewKey": {
+                "dataViewKey": {
                   "type": "string",
-                  "description": "DataView 定位键（viewKey）。"
+                  "description": "DataView 定位键（dataViewKey）。"
                 },
                 "collapsible": {
                   "type": "boolean",
@@ -824,7 +824,7 @@
                   },
                   "props": {
                     "type": "string",
-                    "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                    "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                   },
                   "children": {
                     "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
@@ -857,7 +857,7 @@
         "schema": {
           "title": "r-toolbar",
           "type": "object",
-          "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+          "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。",
           "properties": {
             "type": {
               "type": "string",
@@ -916,7 +916,7 @@
                           },
                           "props": {
                             "type": "string",
-                            "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                            "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                           },
                           "children": {
                             "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
@@ -993,9 +993,9 @@
                   "type": "string",
                   "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
                 },
-                "dataKey": {
+                "dataViewKey/dataMember/dataField": {
                   "type": "string",
-                  "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
+                  "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 dataViewKey。"
                 }
               }
             },
@@ -1016,7 +1016,7 @@
                   },
                   "props": {
                     "type": "string",
-                    "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+                    "description": "组件属性（业务输入通过 props 传递，如 dataViewKey/dataMember/dataField / class / 组件自有配置项）"
                   },
                   "children": {
                     "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
@@ -1056,9 +1056,9 @@
         }
       },
       {
-        "name": "dataKey",
+        "name": "dataViewKey/dataMember/dataField",
         "type": "string",
-        "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 viewKey。"
+        "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，\n用于读取 DataView 的 rows/currentRow/aggregateResult 等输出；容器绑定 DataView 请使用 dataViewKey。"
       },
       {
         "name": "onAddRow",
@@ -1101,7 +1101,7 @@
         ],
         "resolved": true,
         "category": "container",
-        "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+        "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。",
         "requiredProps": [],
         "optionalPropsPreview": [
           "tail",
@@ -1111,7 +1111,7 @@
           "align",
           "justify",
           "permissionDeniedMode",
-          "dataKey"
+          "dataViewKey/dataMember/dataField"
         ]
       },
       {
@@ -1121,10 +1121,10 @@
         ],
         "resolved": true,
         "category": "container",
-        "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataKey，向子组件提供数据上下文。 关键 props：dataKey。",
+        "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving dataViewKey/dataMember/dataField，向子组件提供数据上下文。 关键 props：dataViewKey/dataMember/dataField。",
         "requiredProps": [],
         "optionalPropsPreview": [
-          "dataKey",
+          "dataViewKey/dataMember/dataField",
           "collapsible",
           "defaultCollapsed",
           "autoFitMinWidth",

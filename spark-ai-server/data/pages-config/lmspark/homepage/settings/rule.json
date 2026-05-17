@@ -37,8 +37,8 @@
           "style": {
             "marginTop": "20px"
           },
-          "viewKey": "settings@default",
-          "contextDataKey": "settings@default@currentRow"
+          "dataViewKey": "settings@default",
+          "contextDataMember": "currentRow"
         }
       }
     ]

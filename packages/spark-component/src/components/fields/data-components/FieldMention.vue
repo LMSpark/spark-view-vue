@@ -136,8 +136,8 @@ const resolvedFilterOption = computed(() => {
 // Mention 的公开配置输入只来自 mentionTriggers；
 // `props.options` 只作为内部运行时结果覆盖值，不参与页面配置解析。
 const mentionOptionSource = {
-  get optionKey() {
-    return activeTrigger.value.options?.dataKey
+  get optionDataViewKey() {
+    return activeTrigger.value.options?.dataViewKey
   },
   get optionLabelField() {
     return activeTrigger.value.options?.labelField
@@ -210,4 +210,3 @@ function handleSearch(pattern: string, prefix: string) {
   emit('search', pattern, prefix)
 }
 </script>
-

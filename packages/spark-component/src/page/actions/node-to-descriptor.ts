@@ -9,7 +9,7 @@
  * ```
  * SparkNode.props
  *   → pickDecorator()  提取 UI 装饰字段
- *   → pickDataKey() / pickIdField()  提取通用 CRUD 字段
+ *   → pickDataViewKey() / pickIdField()  提取通用 CRUD 字段
  *   → mapBuiltinAction()  按 BuiltinActionName switch 映射为具体 descriptor
  * ```
  */
@@ -105,9 +105,9 @@ function pickIdField(props: Record<string, unknown>): string | undefined {
   return readString(props['idField'])
 }
 
-/** 读取 dataKey prop（DataView 输出读取路径，省略时使用容器作用域 DataView）。 */
-function pickDataKey(props: Record<string, unknown>): string | undefined {
-  return readString(props['dataKey'])
+/** 读取 dataViewKey prop（省略时使用容器作用域 DataView）。 */
+function pickDataViewKey(props: Record<string, unknown>): string | undefined {
+  return readString(props['dataViewKey'])
 }
 
 function readSaveDataSetViews(value: unknown): SaveDataSetAction['views'] | undefined {
@@ -166,13 +166,13 @@ export function nodeToActionDescriptor(node: SparkNode): ActionDescriptor | null
  */
 function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown>): ActionDescriptor | null {
   const decorator = pickDecorator(props)
-  const dataKey = pickDataKey(props)
+  const dataViewKey = pickDataViewKey(props)
   const idField = pickIdField(props)
 
   switch (name) {
     case 'append-row': {
       const desc: AppendRowAction = { action: 'append-row', ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       const payload = asRecord(props['appendPayload'])
       if (payload) desc.appendPayload = payload
@@ -186,7 +186,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
 
     case 'prompt-append': {
       const desc: AppendRowAction = { action: 'append-row', ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       const payload = asRecord(props['appendPayload'])
       if (payload) desc.appendPayload = payload
@@ -203,7 +203,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
     case 'prompt-edit': {
       const target: ActionRowTarget = readString(props['targetRow']) === 'current' ? 'current' : 'scope'
       const desc: PatchAction = { action: 'patch', target, ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       const prompt = pickPrompt(props, 'edit')
       if (prompt) desc.prompt = prompt
@@ -212,7 +212,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
 
     case 'submit-current-form': {
       const desc: SubmitCurrentFormAction = { action: 'submit-current-form', ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       const validateMessage = readString(props['validateMessage'])
       if (validateMessage) desc.validateMessage = validateMessage
@@ -236,13 +236,13 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
 
     case 'clear-rows': {
       const desc: ClearRowsAction = { action: 'clear-rows', ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       return withThen(desc, props)
     }
 
     case 'refresh': {
       const desc: RefreshAction = { action: 'refresh', ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       return withThen(desc, props)
     }
 
@@ -250,7 +250,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
     case 'move-current': {
       const target = name === 'move-row' ? 'scope' : 'current'
       const desc: MoveAction = { action: 'move', target, ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       if (Object.prototype.hasOwnProperty.call(props, 'newParentId')) {
         const v = props['newParentId']
@@ -271,7 +271,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       const target: ActionRowTarget =
         name === 'delete-row' ? 'scope' : name === 'delete-current' ? 'current' : 'selected'
       const desc: DeleteAction = { action: 'delete', target, ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       return withThen(desc, props)
     }
@@ -282,7 +282,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       const target: ActionRowTarget =
         name === 'patch-row' ? 'scope' : name === 'patch-current' ? 'current' : 'selected'
       const desc: PatchAction = { action: 'patch', target, ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       if (idField) desc.idField = idField
       const patch = asRecord(props['patch'])
       if (patch) desc.patch = patch
@@ -298,7 +298,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
     case 'message-current': {
       const target = name === 'message-row' ? 'scope' : 'current'
       const desc: MessageRowAction = { action: 'message-row', target, ...decorator }
-      if (dataKey) desc.dataKey = dataKey
+      if (dataViewKey) desc.dataViewKey = dataViewKey
       const message = readString(props['message'])
       if (message) desc.message = message
       const messageFields = readOptionalStringArray(props['messageFields'])

@@ -28,7 +28,7 @@
 {{/if}}
  * @description {{description}}
  *
- * dataKey 行为：{{dataKeyBehavior}}
+ * DataViewKey行为：{{dataBindingBehavior}}
  * 能力角色：{{capabilityRole}}
  *
  * 注册示例：
@@ -90,12 +90,12 @@ const {
 
 // ── DataSet 接入（self-resolve 模式） ──────────────────────────────────────
 const dataSet = sparkConsume(PAGE_DATASET)
-const dataKey = props.config.props?.['dataKey'] as string | undefined
-// const binding = dataKey && dataSet
-//   ? SparkData.resolveDataKeyBinding(dataKey, dataSet)
+const dataViewKey = props.config.props?.['dataViewKey'] as string | undefined
+// const dataSource = dataViewKey && dataSet
+//   ? SparkData.resolveDataViewKey(dataViewKey, dataSet)
 //   : null
-// if (binding?.kind === 'view') {
-//   sparkProvide(DATA_SOURCE, binding.source)
+// if (dataSource) {
+//   sparkProvide(DATA_SOURCE, dataSource)
 // }
 {{/if}}
 

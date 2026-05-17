@@ -274,7 +274,7 @@ FieldContextRenderer / 具体字段组件按宿主规则渲染
 // rule.json — 无需任何权限判断代码
 {
   "type": "r-form",
-  "props": { "viewKey": "Users@default" },
+  "props": { "dataViewKey": "Users@default" },
   "children": [
     { "type": "r-text", "field": "name",       "props": { "label": "姓名" } },
     { "type": "r-text", "field": "phone",      "props": { "label": "手机" } },
@@ -300,7 +300,7 @@ FieldContextRenderer / 具体字段组件按宿主规则渲染
 // rule.json
 {
   "type": "r-table",
-  "props": { "viewKey": "Users@default" },
+  "props": { "dataViewKey": "Users@default" },
   "children": [
     // ── 工具栏：模型级动作 ──
     {

@@ -135,7 +135,7 @@ function suggestChildKey(target: JsonObject, parentPath: JsonPath, metadata: Rul
   }
 
   if (isPropsObject(parentPath)) {
-    const preferredProps = ['dataKey', 'field', 'label', 'visible', 'disabled']
+    const preferredProps = ['dataViewKey', 'dataMember', 'dataField', 'field', 'label', 'visible', 'disabled']
     for (const key of preferredProps) {
       if (!(key in target)) return key
     }

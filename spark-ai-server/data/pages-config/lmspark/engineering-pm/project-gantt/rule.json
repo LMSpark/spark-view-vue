@@ -93,7 +93,7 @@
       "border": true,
       "stripe": true,
       "highlightCurrentRow": true,
-      "viewKey": "GanttData@default"
+      "dataViewKey": "GanttData@default"
     }
   }
 ]

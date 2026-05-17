@@ -149,7 +149,7 @@ describe('transaction validation page configs', () => {
     const descriptor = nodeToActionDescriptor(conflictButton as Parameters<typeof nodeToActionDescriptor>[0])
     expect(descriptor).toMatchObject({
       action: 'append-row',
-      dataKey: 'SparkTxAudit@default@id',
+      dataViewKey: 'SparkTxAudit@default', idField: 'id',
       appendPayload: {
         id: 9202,
         message: 'conflict-submit',

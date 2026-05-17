@@ -227,10 +227,10 @@ describe('PageConfigEditWorkspace', () => {
 describe('DevSystem rule and pagedata edit policy', () => {
   const metadata: RuleEditorComponentMetadata = {
     types: ['r-table'],
-    propNames: { 'r-table': ['dataKey', 'mode'] },
+    propNames: { 'r-table': ['dataViewKey', 'mode'] },
     propEnums: { 'r-table': { mode: ['compact', 'comfortable'] } },
     typeLabels: { 'r-table': '[表格] r-table' },
-    requiredProps: { 'r-table': { dataKey: 'orders' } },
+    requiredProps: { 'r-table': { dataViewKey: 'orders@default' } },
   }
 
   it('creates framework-free rule tree policy and schema from metadata', () => {
@@ -241,7 +241,7 @@ describe('DevSystem rule and pagedata edit policy', () => {
     expect(policy.getValueLabels?.(['type'])?.map(item => item.value)).toContain('div')
     expect(policy.getValueOptions?.(['props', 'mode'])).toEqual(['compact', 'comfortable'])
     expect(policy.getAutoPopulate?.(['type'], 'r-table')).toEqual([
-      { targetPath: [], entries: { props: { dataKey: 'orders' } } },
+      { targetPath: [], entries: { props: { dataViewKey: 'orders@default' } } },
     ])
 
     const defs = schema['$defs'] as Record<string, unknown>

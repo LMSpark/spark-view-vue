@@ -5,7 +5,7 @@
  * 用于纯 TS 文件中接受 ref-like 对象而无需 import vue。
  */
 import type { SparkNodeChildren } from '../core/types.js'
-import type { IDataSource } from '@spark-view/spark-data'
+import type { DataMember, IDataSource } from '@spark-view/spark-data'
 import type {
   AddRowHandler,
   EditRowHandler,
@@ -113,6 +113,12 @@ export interface SparkDataDisplayProps<TValue = unknown> {
    * 适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。
    */
   value?: TValue
+  /** DataView 定位键，用于从页面数据空间读取展示值。 */
+  dataViewKey?: string
+  /** DataView 成员枚举值。 */
+  dataMember?: DataMember | `${DataMember}`
+  /** DataView 成员内部业务字段或点路径。 */
+  dataField?: string
   /**
    * 数据字段绑定键。
    *
@@ -490,8 +496,8 @@ export type SparkOptionValueMode = 'auto' | 'array' | 'separated-string'
  *
  * 说明：
  * - `options / optionLabelField / optionValueField / optionDisabledField / optionChildrenField` 继承自 `SparkOptionSourceProps`
- * - `options` 表示本地静态候选项入口；若组件同时提供 `optionKey`，运行时通常先解析动态数据源，再在缺失时回退到本地 `options`
- * - `optionKey` 负责指向动态选项数据源，而不是选项对象内部的主键字段
+ * - `options` 表示本地静态候选项入口；若组件同时提供 `optionDataViewKey`，运行时通常先解析动态数据源，再在缺失时回退到本地 `options`
+ * - `optionDataViewKey` 负责指向动态选项数据源，而不是选项对象内部的主键字段
  * - 某些组件可通过为 `SparkOptionFieldProps<TValue, TOption>` 传入更具体的 `TOption` 收窄本地 `options` 类型，无需在组件 props 中重复声明 `options`
  * - 如果某组件只有“候选项结构”语义，而没有 field/value/placeholder 等字段语义，可直接复用 `SparkOptionSourceProps`
  */
@@ -502,16 +508,20 @@ export interface SparkOptionFieldProps<TValue = unknown, TOption = unknown>
    *
    * 作用：
    * - 为字段组件提供当前 DataView / IDataSource 上下文
-   * - 让组件可以结合 `optionKey` 等配置解析出真实选项列表
+   * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表
    */
   dataSource?: IDataSource
   /**
-   * 选项绑定键。
+   * 选项 DataView 定位键。
    *
-   * 通常指向某个 DataView 的行集，例如 `Categories@default@rows`，
+   * 通常指向某个 DataView，例如 `Categories@default`，
    * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。
    */
-  optionKey?: string
+  optionDataViewKey?: string
+  /** 选项来源 DataView 成员，默认 rows。 */
+  optionDataMember?: DataMember | `${DataMember}`
+  /** 选项来源成员内部字段或路径。 */
+  optionDataField?: string
   /**
    * 值分隔符。
    *
@@ -577,7 +587,7 @@ export interface SparkHierarchicalOptionFieldProps<TValue = unknown, TOption = u
 
 /**
  * 选项源配置（源层通用）：
- * 只描述“候选项本身的结构”，不包含 field 语义，也不负责动态 DataKey 绑定。
+ * 只描述“候选项本身的结构”，不包含 field 语义，也不负责动态 DataViewKey 绑定。
  *
  * 适合：
  * - 静态枚举
@@ -586,7 +596,7 @@ export interface SparkHierarchicalOptionFieldProps<TValue = unknown, TOption = u
  *
  * 注意：
  * - 这里的 `options` 只是在类型层描述“本地直接传入的候选项”
- * - 若具体字段组件还支持 `optionKey`，动态候选项会在运行时由共享解析链补进来，而不是受这里的静态类型声明限制
+ * - 若具体字段组件还支持 `optionDataViewKey`，动态候选项会在运行时由共享解析链补进来，而不是受这里的静态类型声明限制
  */
 export interface SparkOptionSourceProps<TOption = unknown> {
   /**
@@ -681,7 +691,7 @@ export interface SparkGridLayoutProps {
 
 /**
  * 表级模型属性（第五层）：
- * 用于 DataView / DataKey 驱动的数据容器，描述它们和页面数据空间的连接点。
+ * 用于 DataView 驱动的数据容器，描述它们和页面数据空间的连接点。
  */
 export interface SparkTableModelProps {
   /**
@@ -695,12 +705,11 @@ export interface SparkTableModelProps {
    * DataView 定位键。
    * 固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。
    */
-  viewKey?: string
-  /**
-   * DataView 输出读取键。
-   * 固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。
-   */
-  dataKey?: string
+  dataViewKey?: string
+  /** DataView 成员枚举值，用于读取 DataView 输出成员。 */
+  dataMember?: DataMember | `${DataMember}`
+  /** DataView 成员内部业务字段或点路径。 */
+  dataField?: string
   /** 是否显示 DataView 元信息栏。 */
   showDataViewMeta?: boolean
   /** 是否显示全量聚合摘要。 */
@@ -756,7 +765,7 @@ export interface SparkRowInteractionEventProps {
 /**
  * 数据容器语义。
  *
- * 作为 DataView/DataKey 驱动容器的命名中间层，统一表达它们与页面数据空间的绑定关系。
+ * 作为 DataView 驱动容器的命名中间层，统一表达它们与页面数据空间的绑定关系。
  */
 export interface SparkDataContainerProps extends SparkTableModelProps {}
 

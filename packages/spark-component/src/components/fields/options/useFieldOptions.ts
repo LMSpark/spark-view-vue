@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkOptionFieldProps } from '../../shared-types.js'
 import { PAGE_DATASET, useSparkConsume } from '../../internal'
-import { resolveViewFromDataKey } from '@spark-view/spark-data'
+import { DataMember, resolveDataViewKey, resolveDataViewMember } from '@spark-view/spark-data'
 import { useFieldPermission } from '../context/useFieldPermission'
 import type { FieldPermissionProps } from '../context/useFieldPermission'
 import { buildOptionSourceFromView } from './option-source.js'
@@ -33,7 +33,9 @@ type FieldOptionProps = OptionalWithUndefined<Pick<
   | 'optionValueField'
   | 'optionDisabledField'
   | 'optionChildrenField'
-  | 'optionKey'
+  | 'optionDataViewKey'
+  | 'optionDataMember'
+  | 'optionDataField'
   | 'valueSeparator'
 >>
 
@@ -56,40 +58,50 @@ interface UseOptionFieldOptions<TValue> {
 }
 
 export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
-  const resolvedOptionKey = computed(() => props.optionKey)
+  const resolvedOptionDataViewKey = computed(() => props.optionDataViewKey)
+  const resolvedOptionDataMember = computed(() => props.optionDataMember ?? DataMember.Rows)
   const { sparkConsume } = useSparkConsume()
   const pageDataSet = sparkConsume(PAGE_DATASET)
 
-  const optionKeyView = computed(() => {
-    const key = resolvedOptionKey.value
-    return resolveViewFromDataKey(key, pageDataSet)
+  const optionDataView = computed(() => {
+    const key = resolvedOptionDataViewKey.value
+    return resolveDataViewKey(key, pageDataSet)
   })
 
   const optionLabelField = computed(() =>
     props.optionLabelField
-    ?? optionKeyView.value?.labelField
-    ?? optionKeyView.value?.treeConfig?.textField
+    ?? optionDataView.value?.labelField
+    ?? optionDataView.value?.treeConfig?.textField
     ?? 'label'
   )
   const optionValueField = computed(() =>
     props.optionValueField
-    ?? (typeof optionKeyView.value?.valueField === 'string' ? optionKeyView.value.valueField : undefined)
-    ?? optionKeyView.value?.primaryKey
-    ?? optionKeyView.value?.treeConfig?.idField
+    ?? (typeof optionDataView.value?.valueField === 'string' ? optionDataView.value.valueField : undefined)
+    ?? optionDataView.value?.primaryKey
+    ?? optionDataView.value?.treeConfig?.idField
     ?? 'value'
   )
   const optionDisabledField = computed(() => props.optionDisabledField ?? 'disabled')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
-  const valueSeparator = computed(() => props.valueSeparator ?? optionKeyView.value?.selectionDelimiter ?? ',')
+  const valueSeparator = computed(() => props.valueSeparator ?? optionDataView.value?.selectionDelimiter ?? ',')
 
   const options = computed<FieldOption[]>(() => {
-    const view = optionKeyView.value
+    const view = optionDataView.value
     if (view) {
-      return buildOptionSourceFromView(
-        view,
-        optionLabelField.value,
-        optionChildrenField.value,
-      )
+      const source = resolvedOptionDataMember.value === DataMember.Rows
+        ? buildOptionSourceFromView(
+            view,
+            optionLabelField.value,
+            optionChildrenField.value,
+          )
+        : resolveDataViewMember({
+            dataViewKey: resolvedOptionDataViewKey.value,
+            dataMember: resolvedOptionDataMember.value,
+            dataField: props.optionDataField,
+          }, pageDataSet)
+
+      const rows = Array.isArray(source) ? source : []
+      return rows
         .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value, optionDisabledField.value))
         .filter((item): item is FieldOption => item !== null)
     }

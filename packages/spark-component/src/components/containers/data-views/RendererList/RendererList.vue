@@ -102,7 +102,7 @@
  * @skill r-list
  * @description 列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。
  * @category container
- * @binding viewKey-driven
+ * @binding dataViewKey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @notes 使用结构化 `toolbar` / `actions` 区域声明工具栏与列表项操作
@@ -151,7 +151,7 @@ const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
-  viewKey: toRef(props, 'viewKey'),
+  dataViewKey: toRef(props, 'dataViewKey'),
   sparkConsume,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,

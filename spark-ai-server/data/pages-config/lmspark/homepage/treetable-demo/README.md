@@ -24,7 +24,7 @@
 {
   "type": "r-table",
   "props": {
-    "viewKey": "OrgRows@default",
+    "dataViewKey": "OrgRows@default",
     "row-key": "id",
     "default-expand-all": true,
     "tree-props": {

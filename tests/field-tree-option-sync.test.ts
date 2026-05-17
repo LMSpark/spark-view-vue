@@ -93,7 +93,7 @@ function mountTreeOptionField(
     type,
     model,
     fieldName,
-    componentProps: { optionKey: 'Categories@default@rows' },
+    componentProps: { optionDataViewKey: 'Categories@default', optionDataMember: 'rows' },
     pageDataSet: dataSet,
     global: {
       stubs: {

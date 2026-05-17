@@ -1,94 +1,95 @@
-# SPARK View — Codex Agent Instructions
+# SPARK View — Codex 代理说明
 
-## Environment Setup
+## 环境设置
 
-**Required runtimes:**
-- Node >= 20 (use `node --version` to verify)
-- pnpm >= 10 (`npm install -g pnpm@10` if missing)
-- JDK 17+ is required **only** for Java backend tasks (`spark-ai-server/`). Skip for frontend-only work.
+**必需运行时：**
+- Node >= 20（用 `node --version` 验证）
+- pnpm >= 10（缺失时执行 `npm install -g pnpm@10`）
+- 只有 Java 后端任务（`spark-ai-server/`）需要 JDK 17+。纯前端工作跳过。
 
-**Install dependencies (frontend only — preferred for most tasks):**
+**安装依赖（仅前端，适合大多数任务）：**
 ```bash
 pnpm install --frozen-lockfile
 ```
 
-**Do NOT run these unless explicitly needed:**
-- `pnpm run dev` — starts full stack (Java + Vite), slow to boot
-- `cd spark-ai-server && mvn install` — downloads Maven deps, very slow
-- `pnpm run build` — full pipeline including Java, avoid unless testing build
+**除非明确需要，否则不要运行：**
+- `pnpm run dev` — 启动全栈（Java + Vite），启动较慢
+- `cd spark-ai-server && mvn install` — 下载 Maven 依赖，非常慢
+- `pnpm run build` — 包含 Java 的完整流水线，除非测试构建，否则避免运行
 
-**Validation commands (fast, run these after changes):**
+**验证命令（较快，变更后运行）：**
 ```bash
-pnpm run typecheck   # TypeScript strict check
+pnpm run typecheck   # TypeScript 严格检查
 pnpm run lint        # ESLint
-pnpm run test        # Vitest unit tests
+pnpm run test        # Vitest 单元测试
 ```
 
-## Repository Map
+## 仓库地图
 
 ```
 packages/
-├── spark-utils/        # Pure TS primitives — capability keys, logger, HTTP
-├── spark-data/         # DataSet, DataTable, DataView, TreeManager, data-key
-├── spark-page-config/  # Page config parsing, script context, config loading
-├── spark-component/    # Vue renderer, component registry, capability wiring
-├── spark-app/          # App shell, router, auth, plugins, bootstrap
-├── spark-ai/           # AI runtime — SSE, Stills execution, tool protocol
-├── vite-plugin-spark-catalog/ # Build-time catalog extraction plugin
-└── vxe-table/          # VXE Table integration
-spark-ai-server/        # Spring Boot backend (Java) — skip unless Java task
-src/                    # App entry, views, bootstrap
-tests/                  # Root-level Vitest tests
+├── spark-utils/        # 纯 TS 基础能力：capability key、logger、HTTP
+├── spark-data/         # DataSet、DataTable、DataView、TreeManager、data-view-key
+├── spark-page-config/  # 页面配置解析、脚本上下文、配置加载
+├── spark-component/    # Vue 渲染器、组件注册表、能力接线
+├── spark-app/          # 应用壳、路由、认证、插件、启动引导
+├── spark-ai/           # AI 运行时：SSE、Stills 执行、工具协议
+├── vite-plugin-spark-catalog/ # 构建期目录提取插件
+└── vxe-table/          # VXE Table 集成
+spark-ai-server/        # Spring Boot 后端（Java）— 非 Java 任务跳过
+src/                    # 应用入口、视图、启动引导
+tests/                  # 根级 Vitest 测试
 ```
 
-**Package dependency order (strict, acyclic):**
+**包依赖顺序（严格、无环）：**
 `spark-utils` ← `spark-data` ← `spark-page-config` ← `spark-component` ← `spark-app`
 
-## Key Entry Points
+## 关键入口
 
-- `packages/spark-component/src/core/useSparkComponent.ts` — component hook
-- `packages/spark-component/src/page/usePageDataSet.ts` — page data wiring
-- `packages/spark-component/src/page/binding/bindRules.ts` — rule binding
-- `packages/spark-data/src/core/data-key.ts` — DataKey format
-- `packages/spark-utils/src/capability.ts` — capability Symbol keys
-- `spark-ai-server/data/pages-config/` — live page configs (source of truth)
+- `packages/spark-component/src/core/useSparkComponent.ts` — 组件 hook
+- `packages/spark-component/src/page/usePageDataSet.ts` — 页面数据接线
+- `packages/spark-component/src/page/binding/bindRules.ts` — 规则绑定
+- `packages/spark-data/src/core/data-view-key.ts` — DataViewKey/DataMember 绑定格式
+- `packages/spark-utils/src/capability.ts` — capability Symbol key
+- `spark-ai-server/data/pages-config/` — 运行中页面配置（真源）
 
-## Non-Negotiable Rules
+## 不可协商规则
 
-1. **Package boundaries are strict.** Never use relative imports across packages. Use `@spark-view/*` package names only.
-2. **`spark-utils`, `spark-data`, `spark-page-config` must stay framework-free.** No `vue`, `vue-router`, or `element-plus` imports in these packages.
-3. **Capability DI ≠ Vue DI.** Use `sparkProvide` / `sparkConsume` for business capabilities. Vue `provide/inject` is infrastructure only.
-4. **DataSet pipeline is one-way:** `pagedata.json` → `parsePageData()` → `DataSet` → `usePageDataSet()` → `PAGE_DATASET` → `DataKey` → `DataView` → UI. Do not bypass with `pageData` or `$data` side channels.
-5. **Never call `DataSet.destroy()` in `clearDataSet()`.** DataSet instances are cached and reused across navigations.
-6. **Config-first.** Prefer `rule.json`, `pagedata.json`, and existing renderer capabilities. Use `script.js` only when config cannot express the behavior.
-7. **Fail-fast.** No silent fallbacks that mask missing APIs, invalid config, or inconsistent state.
-8. **Commit scopes are restricted** to: `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
+1. **包边界严格。** 跨包绝不要使用相对导入，只使用 `@spark-view/*` 包名。
+2. **`spark-utils`、`spark-data`、`spark-page-config` 必须保持框架无关。** 这些包里不要导入 `vue`、`vue-router` 或 `element-plus`。
+3. **Capability DI ≠ Vue DI。** 业务能力使用 `sparkProvide` / `sparkConsume`。Vue `provide/inject` 只用于基础设施。
+4. **DataSet 管线单向：** `pagedata.json` → `parsePageData()` → `DataSet` → `usePageDataSet()` → `PAGE_DATASET` → `dataViewKey + dataMember + dataField` → `DataView` → UI. 不要用 `pageData` 或 `$data` 旁路绕开。
+5. **绝不要在 `clearDataSet()` 中调用 `DataSet.destroy()`。** DataSet 实例会跨导航缓存复用。
+6. **配置优先。** 优先使用 `rule.json`、`pagedata.json` 和现有渲染器能力。只有配置无法表达行为时才使用 `script.js`。
+7. **Fail-fast。** 不要添加掩盖缺失 API、无效配置或状态不一致的静默回退。
+8. **Commit scope 仅限于： `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
 
-## DataKey Format
+## DataViewKey 绑定格式
 
-- Standard: `table@field` or `table@viewId@field`
-- Cross-page: `#scope@table@...`
-- Do NOT use legacy dot-notation keys
+- `dataViewKey`: DataView 定位键, `table@viewId` or `#scope@table@viewId`
+- `dataMember`: DataView 成员枚举字符串，例如 `rows`, `currentRow`, `aggregateResult`
+- `dataField`: 可选的对象型成员字段路径，例如 `customer.name`
+- 不要使用旧的成员拼接键或点号数据路径
 
-## Script Sandbox (`script.js`)
+## 脚本沙箱（`script.js`）
 
-Allowed globals: `$page`, `$route`, `$dataSet`, `$query`, `SparkData`, `h`
+允许的全局变量： `$page`, `$route`, `$dataSet`, `$query`, `SparkData`, `h`
 
-Forbidden: `$data`, ESM `import`, `window.xxx` globals, direct `ElMessage` / `ElMessageBox`, direct Vue Router imports
+禁止： `$data`, ESM `import`, `window.xxx` globals, direct `ElMessage` / `ElMessageBox`, direct Vue Router imports
 
-## Large Files — Do Not Modify
+## 大文件 — 不要直接修改
 
-These catalog files are large and should not be edited directly:
+这些目录文件很大，不应直接编辑：
 - `packages/spark-ai/src/catalog/component-catalog.json` (~94MB)
 - `spark-ai-server/data/component-metadata.json` (~13MB)
 
-## Commit Message Format
+## Commit Message 格式
 
 ```
 <type>(<scope>): <description>
 ```
 
-Examples:
+示例：
 - `feat(spark-data): add computed column API`
-- `fix(spark-component): resolve DataView binding race`
+- `fix(spark-component): resolve DataViewKey race`
 - `refactor(spark-ai): split session orchestrator`

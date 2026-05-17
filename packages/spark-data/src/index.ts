@@ -7,7 +7,7 @@
  * 精简公共 API，只暴露外部消费者实际需要的最小集合：
  * - 命名空间：`SparkData`
  * - 核心类：`DataSet`、`DataView`（纯 TS，无框架依赖）
- * - DataKey 解析工具函数
+ * - DataViewKey / DataMember 解析工具函数
  * - 权限渲染常量
  * - 数据配置所需的类型
  */
@@ -40,39 +40,34 @@ export type {
   DataSetHistoryStorageAdapter,
 } from './dataset-history'
 
-// ===== DataKey 统一解析 =====
+// ===== DataViewKey / DataMember 统一解析 =====
 
 export {
-  isViewKey,
-  parseViewKey,
-  diagnoseViewKey,
-  resolveViewKey,
-  buildViewKey,
-  isDataKey,
-  parseDataKey,
-  diagnoseDataKey,
-  resolveDataKey,
-  resolveDataKeyBinding,
-  resolveRawKey,
-  getViewFromRawKey,
-  buildDataKey,
-  getViewKey,
-} from './core/data-key'
+  DataMember,
+  isDataViewKey,
+  parseDataViewKey,
+  diagnoseDataViewKey,
+  resolveDataViewKey,
+  buildDataViewKey,
+  resolveDataViewMember,
+  diagnoseDataViewMember,
+  resolveDataViewMemberBinding,
+  getDataViewIdentity,
+  resolveDataViewCapabilities,
+} from './core/data-view-key'
 export type {
-  DataKeyBinding,
-  DataKeyDiagnostic,
-  DataKeyDiagnosticStatus,
-  ViewKeyDescriptor,
-  ViewKeyDiagnostic,
-  ViewKeyDiagnosticStatus,
-} from './core/data-key'
-export {
-  resolveDataCapabilitiesFromDataKey,
-  resolveViewFromDataKey,
-  deriveDataKeyFromViewKey,
-  deriveSiblingFieldDataKey,
-} from './core/data-key'
-export type { DataKeyDescriptor, DataKeyField, ResolvedDataCapabilities } from './core/data-key'
+  DataViewKeyDescriptor,
+  DataViewKeyDiagnostic,
+  DataViewKeyDiagnosticStatus,
+  DataViewMemberBinding,
+  DataViewMemberDescriptor,
+  DataViewMemberDiagnostic,
+  DataViewMemberDiagnosticStatus,
+  DataViewMemberInput,
+  DataViewMemberResolvedValue,
+  DataViewMemberValue,
+  ResolvedDataViewCapabilities,
+} from './core/data-view-key'
 
 // ===== 核心类型 =====
 

@@ -51,7 +51,7 @@
                 "type": "r-form",
                 "id": "tx-orders-edit-form",
                 "props": {
-                    "viewKey": "TxOrders@default",
+                    "dataViewKey": "TxOrders@default",
                     "labelWidth": "96px",
                     "gridColumns": 24,
                     "gridGap": 12
@@ -129,7 +129,7 @@
                                 "type": "r-table",
                                 "id": "tx-orders-table",
                                 "props": {
-                                    "viewKey": "TxOrders@default",
+                                    "dataViewKey": "TxOrders@default",
                                     "border": true,
                                     "stripe": true,
                                     "highlightCurrentRow": true
@@ -195,7 +195,7 @@
                                 "type": "r-table",
                                 "id": "tx-items-table",
                                 "props": {
-                                    "viewKey": "TxItems@default",
+                                    "dataViewKey": "TxItems@default",
                                     "border": true,
                                     "stripe": true,
                                     "highlightCurrentRow": true

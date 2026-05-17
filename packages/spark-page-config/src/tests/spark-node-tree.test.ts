@@ -18,7 +18,7 @@ function createSparkNodeTree(): SparkNode {
         type: 'r-table',
         id: 'table',
         props: {
-          viewKey: 'Users@default',
+          dataViewKey: 'Users@default',
           border: true,
         },
         children: [
@@ -57,7 +57,7 @@ describe('SparkNodeTree', () => {
     })
     expect(tree.hasNode({ componentId: 'toolbar' })).toBe(true)
     expect(tree.countNodes()).toBe(4)
-    expect([...tree.collectDataKeys()]).toEqual(['Users@default'])
+    expect([...tree.collectDataViewKeys()]).toEqual(['Users@default'])
     expect([...tree.collectHandlerNames()]).toEqual(['handleToolbarClick'])
     expect(tree.root).toMatchObject(root)
     expect(expectNode(tree.root.children?.[0]).children).toEqual([])
@@ -288,18 +288,18 @@ describe('SparkNodeTree', () => {
     })
 
     expect(merged.node.props).toEqual({
-      viewKey: 'Users@default',
+      dataViewKey: 'Users@default',
       border: true,
       stripe: true,
     })
 
     const replaced = tree.setProps({
       componentId: 'table',
-      props: { viewKey: 'Orders@default' },
+      props: { dataViewKey: 'Orders@default' },
       merge: false,
     })
 
-    expect(replaced.node.props).toEqual({ viewKey: 'Orders@default' })
+    expect(replaced.node.props).toEqual({ dataViewKey: 'Orders@default' })
   })
 
   it('setPropsBatch 应支持一次更新多个节点', () => {

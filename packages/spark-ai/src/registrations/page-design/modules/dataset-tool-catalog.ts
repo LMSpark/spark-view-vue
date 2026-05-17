@@ -208,7 +208,7 @@ const VIEW_METADATA_SCHEMA = objectSchema({
   sortExpression: arraySchema(objectSchema({}, { additionalProperties: true }), '例如 [{ field: "createdAt", direction: "desc" }]'),
   aggregates: AGGREGATES_SCHEMA,
 }, {
-  description: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成。UI 可通过 Table@viewId@aggregateResult / Table@viewId@selectionAggregateResult 这类 DataKey 引用结果行。',
+  description: '只传需要的键；如果包含 rows，会先 replaceRows 再应用其他视图配置。若配置 aggregates，完整语义由 aggregates[key] 配置与 aggregateResult[key]/selectionAggregateResult[key] 结果共同组成。UI 可通过 dataViewKey=Table@viewId 且 dataMember=aggregateResult / selectionAggregateResult 引用结果行。',
 })
 
 const CRUD_HTTP_ENDPOINT_SCHEMA = objectSchema({
@@ -921,7 +921,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
     usageRules: [
       DEFAULT_VIEW_RULE,
       '若该视图配置了 aggregates，运行时汇总结果位于 view.aggregateResult / view.selectionAggregateResult。',
-      'UI 侧引用聚合结果时，优先使用完整 DataKey：TableName@viewId@aggregateResult、TableName@viewId@selectionAggregateResult，或继续追加字段路径如 Orders@summary@aggregateResult.totalAmount。',
+      'UI 侧引用聚合结果时，优先使用 dataViewKey + dataMember：dataViewKey=TableName@viewId 且 dataMember=aggregateResult / selectionAggregateResult；字段路径继续放在 dataField，如 totalAmount。',
       '不存在时返回 undefined，而不是抛错。',
       RUNTIME_WIRED_RULE,
     ],

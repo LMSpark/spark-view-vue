@@ -103,7 +103,8 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "Users@default@rows"
+          "dataViewKey": "Users@default",
+          "dataMember": "rows"
         }
       }
     ],

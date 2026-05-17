@@ -17,7 +17,7 @@ export interface SparkNode {
   type: string
   /** 节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准） */
   id?: string
-  /** 组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项） */
+  /** 组件属性（业务输入通过 props 传递，如 dataViewKey / class / 组件自有配置项） */
   props?: Record<string, unknown>
   /** 子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点 */
   children?: SparkNodeChildren

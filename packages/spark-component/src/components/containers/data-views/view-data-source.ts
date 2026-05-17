@@ -1,13 +1,14 @@
 import { computed, toValue, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import {
-  diagnoseViewKey,
-  resolveDataCapabilitiesFromDataKey,
-  resolveViewKey,
-  type DataKeyDiagnostic,
+  diagnoseDataViewKey,
+  resolveDataViewCapabilities,
+  resolveDataViewKey,
+  type DataMember,
+  type DataViewKeyDiagnostic,
+  type DataViewMemberDiagnostic,
   type DataView,
   type IDataRow,
-  type ViewKeyDiagnostic,
 } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../internal'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
@@ -29,7 +30,7 @@ const DEFAULT_DATA_SOURCE_LOGGER: DataSourceLoggerLike = {
   error: () => {},
 }
 
-type ContainerDataSourceDiagnostic = ViewKeyDiagnostic | DataKeyDiagnostic
+type ContainerDataSourceDiagnostic = DataViewKeyDiagnostic | DataViewMemberDiagnostic
 
 function resolveMaybeValue<T>(source: MaybeRefOrGetter<T> | undefined): T | undefined {
   return source === undefined ? undefined : toValue(source)
@@ -42,8 +43,9 @@ function pickRowFromSource(source: unknown): IDataRow | null {
 }
 
 interface UseContainerDataSourceOptions<TSource> {
-  viewKey: MaybeRefOrGetter<string | undefined>
-  contextDataKey?: MaybeRefOrGetter<string | undefined>
+  dataViewKey: MaybeRefOrGetter<string | undefined>
+  contextDataMember?: MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>
+  contextDataField?: MaybeRefOrGetter<string | undefined>
   sparkConsume: SparkCapabilityConsumer
   mapView: (view: DataView) => TSource
   externalDataSource?: MaybeRefOrGetter<TSource | undefined>
@@ -75,20 +77,24 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
   const pageDataSet = options.sparkConsume(PAGE_DATASET)
 
   const diagnostic = computed(() => {
-    const rawKey = toValue(options.viewKey)
+    const rawKey = toValue(options.dataViewKey)
     if (typeof rawKey !== 'string' || rawKey.trim().length === 0) return null
-    return diagnoseViewKey(rawKey, pageDataSet)
+    return diagnoseDataViewKey(rawKey, pageDataSet)
   })
 
   const contextCapabilities = computed(() =>
-    resolveDataCapabilitiesFromDataKey(toValue(options.contextDataKey), pageDataSet),
+    resolveDataViewCapabilities({
+      dataViewKey: toValue(options.dataViewKey),
+      dataMember: toValue(options.contextDataMember),
+      dataField: toValue(options.contextDataField),
+    }, pageDataSet),
   )
 
   const resolvedView = computed<TSource | null>(() => {
     const provided = resolveMaybeValue(options.externalDataSource)
     if (provided !== undefined) return provided
 
-    const view = resolveViewKey(toValue(options.viewKey), pageDataSet)
+    const view = resolveDataViewKey(toValue(options.dataViewKey), pageDataSet)
     if (view) return options.mapView(view)
 
     if (contextCapabilities.value.dataSource) {

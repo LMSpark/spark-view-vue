@@ -1,48 +1,48 @@
 ---
-description: "Fix a SPARK frontend regression in renderer, field, container, data binding, or component registration code. Use when diagnosing broken UI behavior, DataKey wiring, missing table columns, or capability-chain regressions."
-name: "Frontend Regression Fix"
+description: "修复 SPARK 前端在渲染器、字段、容器、数据绑定或组件注册代码中的回归。用于诊断 UI 行为异常、DataViewKey 接线、表格列缺失或能力链回归。"
+name: "前端回归修复"
 argument-hint: "描述回归现象、相关文件、失败测试或页面路径"
 agent: "agent"
 ---
 
-Use [frontend-spark.instructions.md](../instructions/frontend-spark.instructions.md) and [tests-and-validation.instructions.md](../instructions/tests-and-validation.instructions.md).
+使用 [frontend-spark.instructions.md](../instructions/frontend-spark.instructions.md) 和 [tests-and-validation.instructions.md](../instructions/tests-and-validation.instructions.md)。
 
-Fix the SPARK frontend regression described below.
+修复下面描述的 SPARK 前端回归。
 
-Inputs may include:
+输入可能包含：
 
-- a broken page or route
-- a component type or symbol
-- a failing test or error message
-- a suspected file or code path
+- 出问题的页面或路由
+- 组件类型或符号
+- 失败测试或错误信息
+- 疑似文件或代码路径
 
-Workflow:
+工作流：
 
-1. Start from the most concrete local anchor available: failing file, symbol, behavior, or test.
-2. Check the nearest controlling frontend path before widening scope. Typical hotspots are:
+1. 从最具体的本地锚点开始：失败文件、符号、行为或测试。
+2. 扩大范围前先检查最近的前端控制路径。常见热点包括：
    - `SparkComponentRenderer.vue`
    - container children forwarding
    - `bindRules.ts`
    - `useSparkComponent.ts`
-   - `data-key.ts`
+   - `data-view-key.ts`
    - component registration paths
-3. Explicitly check whether the regression is caused by one of these SPARK-specific mistakes:
-   - broken `el-table` -> `el-table-column` direct structure
-   - async registration in a table-direct component path
-   - lost `DATA_SOURCE` / `PAGE_DATASET` capability wiring
-   - invalid `@`-based `dataKey`
-   - reintroduced raw page-data or side-channel data flow
-4. Make the smallest plausible fix at the owning abstraction.
-5. Run the cheapest focused validation first: nearby test, targeted typecheck signal, or other narrow executable check.
-6. Report the root cause, the fix, and what you validated.
+3. 明确检查回归是否由以下 SPARK 特有问题导致：
+   - 破坏 `el-table` -> `el-table-column` 直接结构
+   - 表格直连组件路径中出现异步注册
+   - `DATA_SOURCE` / `PAGE_DATASET` 能力接线丢失
+   - 基于 `@` 的 `dataViewKey` 或 `dataMember` 无效
+   - 重新引入 raw page-data 或旁路数据流
+4. 在所属抽象层做最小可行修复。
+5. 先运行最便宜的聚焦验证：邻近测试、定向类型检查信号或其他窄范围可执行检查。
+6. 报告根因、修复内容和验证结果。
 
-Output expectations:
+输出要求：
 
-- root cause
-- changed files
-- validation run
-- remaining risk or missing coverage
+- 根因
+- 变更文件
+- 已运行验证
+- 剩余风险或覆盖缺口
 
-Request:
+请求：
 
 {{input}}

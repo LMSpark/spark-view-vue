@@ -9,7 +9,7 @@ import { DataView } from './data-view'
 import { DataSetCrudTool } from './dataset-crud-tool'
 import { CrudService } from './crud-service'
 import * as DataSetHistoryModule from './dataset-history'
-import * as DataKeyModule from './core/data-key'
+import * as DataViewKeyModule from './core/data-view-key'
 import * as ColumnValidationModule from './column-validation'
 import type { CrudApi, TableRelation, ViewDependency, FlatTreeNode, TreeConfig, IDataSetMetadata, ITableMetadata, IViewMetadata } from './types'
 import type { RequestConfig } from '@spark-view/spark-utils'
@@ -178,46 +178,40 @@ export namespace SparkData {
     }
   }
 
-  // ===== DataKey 统一解析 =====
+  // ===== DataViewKey / DataMember 统一解析 =====
 
-  /** 判断 viewKey 是否为 DataView 定位键 */
-  export const isViewKey = DataKeyModule.isViewKey
+  /** DataView 成员枚举 */
+  export const DataMember = DataViewKeyModule.DataMember
 
-  /** 解析 viewKey 为结构化描述符 */
-  export const parseViewKey = DataKeyModule.parseViewKey
+  /** 判断 dataViewKey 是否为 DataView 定位键 */
+  export const isDataViewKey = DataViewKeyModule.isDataViewKey
 
-  /** 诊断 ViewKey 绑定链路 */
-  export const diagnoseViewKey = DataKeyModule.diagnoseViewKey
+  /** 解析 dataViewKey 为结构化描述符 */
+  export const parseDataViewKey = DataViewKeyModule.parseDataViewKey
 
-  /** 从 DataSet 中解析 ViewKey 对应的 DataView */
-  export const resolveViewKey = DataKeyModule.resolveViewKey
+  /** 诊断 DataViewKey 绑定链路 */
+  export const diagnoseDataViewKey = DataViewKeyModule.diagnoseDataViewKey
 
-  /** 判断 dataKey 是否为 DataSet 数据键 */
-  export const isDataKey = DataKeyModule.isDataKey
+  /** 从 DataSet 中解析 DataViewKey 对应的 DataView */
+  export const resolveDataViewKey = DataViewKeyModule.resolveDataViewKey
 
-  /** 解析 dataKey 为结构化描述符 */
-  export const parseDataKey = DataKeyModule.parseDataKey
+  /** 构建标准化 DataViewKey 字符串 */
+  export const buildDataViewKey = DataViewKeyModule.buildDataViewKey
 
-  /** 诊断 DataKey 绑定链路 */
-  export const diagnoseDataKey = DataKeyModule.diagnoseDataKey
+  /** 从 DataSet 中解析 DataView 成员值 */
+  export const resolveDataViewMember = DataViewKeyModule.resolveDataViewMember
 
-  /** 从 DataSet 中解析数据键对应的值 */
-  export const resolveDataKey = DataKeyModule.resolveDataKey
+  /** 诊断 DataView 成员读取链路 */
+  export const diagnoseDataViewMember = DataViewKeyModule.diagnoseDataViewMember
 
-  /** 解析 DataKey 为渲染绑定描述符（判别联合，避免 instanceof DataView） */
-  export const resolveDataKeyBinding = DataKeyModule.resolveDataKeyBinding
-
-  /** 构建标准化 ViewKey 字符串 */
-  export const buildViewKey = DataKeyModule.buildViewKey
-
-  /** 构建标准化 DataKey 字符串 */
-  export const buildDataKey = DataKeyModule.buildDataKey
-
-  /** 从 ViewKey 派生同视图 DataKey */
-  export const deriveDataKeyFromViewKey = DataKeyModule.deriveDataKeyFromViewKey
+  /** 解析 DataView 成员绑定描述符 */
+  export const resolveDataViewMemberBinding = DataViewKeyModule.resolveDataViewMemberBinding
 
   /** 从描述符提取视图唯一键 */
-  export const getViewKey = DataKeyModule.getViewKey
+  export const getDataViewIdentity = DataViewKeyModule.getDataViewIdentity
+
+  /** 解析 DataView 与可选行上下文 */
+  export const resolveDataViewCapabilities = DataViewKeyModule.resolveDataViewCapabilities
 
   // ===== 列验证规则提取 =====
 

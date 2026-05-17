@@ -81,7 +81,7 @@
  * @skill r-tree
  * @description 树形容器，支持懒加载、节点操作和编辑器侧面板。
  * @category container
- * @binding viewKey-driven
+ * @binding dataViewKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
@@ -90,7 +90,7 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 内部通过 useContainerDataSource 统一解析 viewKey，并走能力链读取 PAGE_DATASET。
+ * 内部通过 useContainerDataSource 统一解析 dataViewKey，并走能力链读取 PAGE_DATASET。
  */
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import {
@@ -143,7 +143,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 
 const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
-  viewKey: toRef(props, 'viewKey'),
+  dataViewKey: toRef(props, 'dataViewKey'),
   sparkConsume,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,

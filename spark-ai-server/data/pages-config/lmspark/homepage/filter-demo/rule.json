@@ -181,7 +181,7 @@
               }
             ]
           },
-          "viewKey": "Employees@default"
+          "dataViewKey": "Employees@default"
         }
       }
     ],

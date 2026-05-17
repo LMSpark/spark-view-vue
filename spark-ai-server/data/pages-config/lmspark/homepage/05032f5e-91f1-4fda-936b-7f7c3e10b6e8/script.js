@@ -391,7 +391,7 @@ function onVoucherChange(row) {
     syncVoucherSelection(row.id)
   }
   syncEntriesForCurrentVoucher()
-  // 框架会自动根据 dataKey 绑定刷新分录表格
+  // 框架会自动根据 dataViewKey 绑定刷新分录表格
   console.log('当前凭证切换:', row ? row.voucherNo : '无')
 }
 

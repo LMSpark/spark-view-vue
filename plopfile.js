@@ -77,8 +77,8 @@ export default function (plop) {
       },
       {
         type: 'list',
-        name: 'dataKeyBehavior',
-        message: 'DataKey 行为（组件如何处理数据绑定）：',
+        name: 'dataBindingBehavior',
+        message: 'DataViewKey行为（组件如何处理数据绑定）：',
         choices: [
           { name: 'none         — 不接入 DataSet', value: 'none' },
           { name: 'self-resolve — 自行消费 PAGE_DATASET', value: 'self-resolve' }
@@ -96,7 +96,7 @@ export default function (plop) {
       const SCREAMING_NAME = componentName.toUpperCase().replace(/-/g, '_');
       const isProvider = ['provider', 'both'].includes(data.capabilityRole);
       const isConsumer = ['consumer', 'both'].includes(data.capabilityRole);
-      const isDataSelfResolve = data.dataKeyBehavior === 'self-resolve';
+      const isDataSelfResolve = data.dataBindingBehavior === 'self-resolve';
       const isCatalogInternal = data.catalogExposure === 'internal';
       const isCatalogIgnore = data.catalogExposure === 'ignore';
 
@@ -110,7 +110,7 @@ export default function (plop) {
         isCatalogInternal,
         isCatalogIgnore,
         capabilityRole: data.capabilityRole,
-        dataKeyBehavior: data.dataKeyBehavior,
+        dataBindingBehavior: data.dataBindingBehavior,
         isProvider,
         isConsumer,
         isDataSelfResolve,

@@ -33,7 +33,7 @@ rule.json / pagedata.json
 SparkPageRenderer
   ↓ provide(PAGE_DATASET, dataSet)
 r-tree
-  ↓ dataKey -> DataView
+  ↓ dataViewKey/dataMember/dataField -> DataView
 RendererTree
   ↓ provide(DATA_SOURCE, view)
 DataView
@@ -190,7 +190,7 @@ RendererTree 是当前树容器主入口，定位不是“一个普通 Vue 组�
 
 它当前承担的能力包括：
 
-1. 消费 PAGE_DATASET 并根据 dataKey 自动解析 DataView。
+1. 消费 PAGE_DATASET 并根据 dataViewKey/dataMember/dataField 自动解析 DataView。
 2. provide(DATA_SOURCE) 给子树节点内容组件。
 3. 接收平铺 rows，并在需要时自动重建嵌套 treeData。
 4. 同步当前选中节点到 DataView.currentRow。
@@ -293,7 +293,7 @@ RendererTree 支持按 dock 分区：
 {
   "type": "r-tree",
   "props": {
-    "viewKey": "NavigationNodes@default",
+    "dataViewKey": "NavigationNodes@default",
     "nodeKey": "id"
   },
   "children": [
@@ -458,7 +458,7 @@ RendererTree 仍兼容旧式：
   {
     "type": "r-tree",
     "props": {
-      "viewKey": "NavigationNodes@default",
+      "dataViewKey": "NavigationNodes@default",
       "nodeKey": "id",
       "highlightCurrent": true,
       "draggable": true,
@@ -503,7 +503,7 @@ RendererTree 仍兼容旧式：
 
 优先级建议：
 
-1. 优先用 r-tree + dataKey。
+1. 优先用 r-tree + dataViewKey/dataMember/dataField。
 2. 优先在 pagedata.json 配 treeConfig 和 api。
 3. 优先用 dock=toolbar / actions + builtinAction。
 4. 只有确实无法表达的业务分支，才进入 script.js。
@@ -517,7 +517,7 @@ RendererTree 仍兼容旧式：
 ```text
 r-tree mounted
   ↓
-解析 dataKey -> DataView
+解析 dataViewKey/dataMember/dataField -> DataView
   ↓
 view.loadFromServer()
   ↓

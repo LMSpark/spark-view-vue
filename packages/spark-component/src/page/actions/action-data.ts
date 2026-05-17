@@ -96,15 +96,15 @@ function canRefreshRemoteList(view: DataView): boolean {
  * 确保 DataView 就绪并返回；不就绪时发出警告并返回 null（fail-fast 前置守卫）。
  *
  * 优先从 ctx.getDataSource() 获取作用域 DataView（容器注入），
- * 若无 dataSource 则通过 resolveActionDataCapabilities 按 dataKey 解析。
+ * 若无 dataSource 则通过 resolveActionDataCapabilities 按 dataViewKey 解析。
  * 未就绪时发出 `emptyMessage`（默认"数据视图未就绪"）警告并返回 null。
  */
 function ensureView(
-  desc: { dataKey?: string } & ActionUiDecorator,
+  desc: { dataViewKey?: string } & ActionUiDecorator,
   ctx: ActionExecutionContext,
   notifier: ActionNotifier,
 ): DataView | null {
-  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  const { dataSource } = resolveActionDataCapabilities(desc.dataViewKey, ctx)
   if (!dataSource) {
     const fallback = desc.emptyMessage ?? '数据视图未就绪'
     if (fallback.length > 0) notifier.notify('warning', fallback)
@@ -538,7 +538,7 @@ export function executeMessageRow(
   scope: ActionExecutionScope | undefined,
 ): void {
   const notifier = createActionNotifier(ctx, desc)
-  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  const { dataSource } = resolveActionDataCapabilities(desc.dataViewKey, ctx)
   if (!dataSource) {
     if (desc.emptyMessage) notifier.notify('warning', desc.emptyMessage)
     return
@@ -616,7 +616,7 @@ export async function executeClearRows(
  * 操作失败（无 currentRow 或无 idField）时静默返回，不上报错误。
  */
 export async function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): Promise<void> {
-  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  const { dataSource, currentRow } = resolveActionDataCapabilities(desc.dataViewKey, ctx)
   if (!dataSource || !currentRow) return
   const idField = desc.idField ?? 'id'
   const id = resolveRowId(currentRow, idField)
@@ -649,7 +649,7 @@ export async function executeSubmitCurrentForm(
     return
   }
 
-  const { dataSource } = resolveActionDataCapabilities(desc.dataKey, ctx)
+  const { dataSource } = resolveActionDataCapabilities(desc.dataViewKey, ctx)
   if (!dataSource) {
     notifier.notify('warning', desc.emptyMessage ?? '数据视图未就绪')
     return

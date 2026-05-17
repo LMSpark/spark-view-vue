@@ -852,7 +852,7 @@ export function projectComponentDirectory(catalog: ComponentCatalog): ComponentD
     },
     configurationPrinciples: [
       '先按 components 的 type/category 选择组件，再按单组件配置指南填写 props。',
-      'dataKey 与 binding 必须按 catalog 声明使用，不允许猜测字段。',
+      'dataViewKey / dataMember / dataField 与 binding 必须按 catalog 声明使用，不允许猜测字段。',
       '事件能力以 emits 为准；无 emits 的组件不得编造 on.* 绑定。',
       'required props 必填，default 仅作默认值提示，业务值需显式传入。',
     ],
@@ -970,7 +970,7 @@ function inferExampleValue(type: string, required: boolean): unknown {
  * 内部辅助：将嵌套的 RootFieldEntry 树形结构展开为带层级路径的扁平字符串列表。
  *
  * 例：`[{ name: 'a', children: [{ name: 'b' }] }]` -> `['a', 'a.b']`
- * 路径使用 `.` 分隔，与 DataKey 格式对齐。
+ * 路径使用 `.` 分隔，与 dataField 点路径格式对齐。
  *
  * @param fields 根字段声明列表（可嵌套）
  * @param prefix 当前递归层级的路径前缀（初始调用时为空字符串）

@@ -8,7 +8,7 @@
 
 企业后台页面的数据状态从来不只是一个数组。它包含表结构、字段元数据、视图过滤、分页、树形关系、主从关联、聚合结果、计算列、字段权限和动作权限。若让表格、表单、筛选器分别维护状态，页面越复杂，状态越难对齐。
 
-SPARK_VIEW 的数据层把这些复杂度拆成三层：DataSet 管数据空间，DataTable 管表与字段，DataView 管某个交互视图。组件只需要通过 DataKey 或显式绑定接入 DataView，就能复用统一的数据行为。
+SPARK_VIEW 的数据层把这些复杂度拆成三层：DataSet 管数据空间，DataTable 管表与字段，DataView 管某个交互视图。组件只需要通过 DataViewKey 或显式绑定接入 DataView，就能复用统一的数据行为。
 
 ## DataSet 是页面数据空间
 
@@ -56,4 +56,4 @@ flowchart TB
 
 ## 小结
 
-三层数据模型让页面数据从组件状态升级为页面资产。下一篇继续看 DataKey：组件如何用一门轻量表达式语言定位 DataSet/DataView 中的数据。
+三层数据模型让页面数据从组件状态升级为页面资产。下一篇继续看 DataViewKey：组件如何用一门轻量表达式语言定位 DataSet/DataView 中的数据。

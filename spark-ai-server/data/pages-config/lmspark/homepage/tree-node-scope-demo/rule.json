@@ -44,7 +44,7 @@
             "defaultExpandAll": true,
             "draggable": true
           },
-          "viewKey": "TreeData@default"
+          "dataViewKey": "TreeData@default"
         }
       },
       {

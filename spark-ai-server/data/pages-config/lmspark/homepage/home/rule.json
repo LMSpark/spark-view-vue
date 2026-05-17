@@ -142,7 +142,9 @@
                     "fontWeight": "bold",
                     "marginTop": "10px"
                   },
-                  "dataKey": "stats@default@currentRow.totalUsers"
+                  "dataViewKey": "stats@default",
+                  "dataMember": "currentRow",
+                  "dataField": "totalUsers"
                 }
               }
             ],
@@ -177,7 +179,9 @@
                     "marginTop": "10px",
                     "color": "#67c23a"
                   },
-                  "dataKey": "stats@default@currentRow.todayOrders"
+                  "dataViewKey": "stats@default",
+                  "dataMember": "currentRow",
+                  "dataField": "todayOrders"
                 }
               }
             ],
@@ -211,7 +215,9 @@
                     "fontWeight": "bold",
                     "marginTop": "10px"
                   },
-                  "dataKey": "stats@default@currentRow.revenue"
+                  "dataViewKey": "stats@default",
+                  "dataMember": "currentRow",
+                  "dataField": "revenue"
                 }
               }
             ],
@@ -246,7 +252,9 @@
                     "marginTop": "10px",
                     "color": "#e6a23c"
                   },
-                  "dataKey": "stats@default@currentRow.pending"
+                  "dataViewKey": "stats@default",
+                  "dataMember": "currentRow",
+                  "dataField": "pending"
                 }
               }
             ],
@@ -326,7 +334,8 @@
               "data": [],
               "stripe": true,
               "border": true,
-              "dataKey": "tableData@default@rows"
+              "dataViewKey": "tableData@default",
+              "dataMember": "rows"
             }
           }
         ],
@@ -393,8 +402,10 @@
               "field": "status",
               "title": "状态",
               "value": "激活",
-              "dataKey": "formOptions@default@currentRow.statusOptions",
-              "options": []
+              "options": [],
+              "dataViewKey": "formOptions@default",
+              "dataMember": "currentRow",
+              "dataField": "statusOptions"
             }
           },
           {
@@ -403,8 +414,10 @@
               "field": "gender",
               "title": "性别",
               "value": "男",
-              "dataKey": "formOptions@default@currentRow.genderOptions",
-              "options": []
+              "options": [],
+              "dataViewKey": "formOptions@default",
+              "dataMember": "currentRow",
+              "dataField": "genderOptions"
             }
           },
           {

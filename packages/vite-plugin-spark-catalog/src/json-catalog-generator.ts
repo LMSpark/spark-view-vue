@@ -144,14 +144,14 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
 /**
  * 顶层目录约束。
  *
- * 这里保存的是消费者需要共享遵循的平台规则，例如 DataKey 正则、容器上下文映射、
+ * 这里保存的是消费者需要共享遵循的平台规则，例如 DataViewKey正则、容器上下文映射、
  * 有效组件类型前缀等。它们属于目录的一部分，而不是临时构建细节。
  */
 const DEFAULT_CONSTRAINTS: PlatformConstraints = {
-  dataKeyPattern: {
-    value: String.raw`^(#[\w-]+@)?[\w-]+@[\w-]+@(rows|columns|currentRow|selectedRows|aggregateResult|selectionAggregateResult|total|page|pageSize|requestState|mutating|loadingError|mutatingError)(\.[\w.]+)?$`,
-    description: 'DataKey format constraint; 用于读取 DataView 的具体输出字段。格式固定为 table@viewId@field 或 #scope@table@viewId@field。',
-    examples: ['orders@default@rows', 'orders@grid@currentRow.name', '#main@orders@grid@selectedRows', 'orders@grid@aggregateResult.totalAmount'],
+  dataViewKeyPattern: {
+    value: String.raw`^(#[\w-]+@)?[\w-]+@[\w-]+$`,
+    description: 'DataViewKey format constraint; 用于定位 DataView。成员读取请使用 dataMember/dataField。',
+    examples: ['orders@default', 'orders@grid', '#main@orders@grid'],
   },
   validTypePrefixes: {
     value: ['r-', 'spark-'],
@@ -233,14 +233,14 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   const names = new Set(props.map((prop) => prop.name))
   const descriptor: CatalogBindingDescriptor = {}
 
-  if (names.has('dataKey') || names.has('viewKey')) {
+  if (names.has('dataMember') || names.has('dataViewKey')) {
     descriptor.selfResolving = true
   }
-  if (names.has('viewKey')) {
+  if (names.has('dataViewKey') && names.has('dataSource')) {
     descriptor.dataContainer = true
   }
   if (names.has('field')) descriptor.fieldProvider = true
-  if (names.has('options') || names.has('optionKey')) descriptor.hasOptions = true
+  if (names.has('options') || names.has('optionDataViewKey')) descriptor.hasOptions = true
 
   const modelValue = props.find((prop) => prop.name === 'modelValue')
   if (modelValue?.type.includes('boolean') === true) descriptor.valueType = 'boolean'
@@ -248,7 +248,7 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   else if (modelValue !== undefined) descriptor.valueType = 'string'
 
   if (names.has('field')) descriptor.bindingDelegate = 'form-element'
-  if (names.has('viewKey') && names.has('children')) descriptor.bindingDelegate = 'table'
+  if (names.has('dataViewKey') && names.has('children')) descriptor.bindingDelegate = 'table'
 
   return Object.keys(descriptor).length > 0 ? descriptor : undefined
 }
@@ -257,12 +257,12 @@ function createBindingDescriptorDescription(type: string, binding: CatalogBindin
   const parts: string[] = []
   if (binding.selfResolving === true) {
     parts.push(binding.dataContainer === true
-      ? 'self-resolving binding，会从页面数据空间解析容器级 viewKey'
-      : 'self-resolving binding，会从页面数据空间解析 DataView 输出 dataKey')
+      ? 'self-resolving binding，会从页面数据空间解析容器级 dataViewKey'
+      : 'self-resolving binding，会从页面数据空间解析 DataView 输出成员')
   }
   if (binding.dataContainer === true) parts.push('data container，会向子组件提供 DataSource 上下文')
   if (binding.fieldProvider === true) parts.push('field provider，通过 field 读取或写入当前行字段')
-  if (binding.hasOptions === true) parts.push('options provider，支持 options/optionKey 候选项来源')
+  if (binding.hasOptions === true) parts.push('options provider，支持 options/optionDataViewKey 候选项来源')
   if (binding.bindingDelegate !== undefined) parts.push(`binding delegate 为 ${binding.bindingDelegate}`)
   if (binding.valueType !== undefined) parts.push(`受控值类型为 ${binding.valueType}`)
   if (binding.actionComponent === true) parts.push('action component，会参与动作权限控制')
@@ -274,10 +274,10 @@ function createBindingDescriptorDescription(type: string, binding: CatalogBindin
 function createBindingDescriptorExamples(type: string, binding: CatalogBindingDescriptor): unknown[] {
   const examples: unknown[] = []
   if (binding.dataContainer === true) {
-    examples.push({ type, props: { viewKey: 'orders@default' } })
+    examples.push({ type, props: { dataViewKey: 'orders@default' } })
   }
   else if (binding.selfResolving === true) {
-    examples.push({ type, props: { dataKey: 'orders@default@rows' } })
+    examples.push({ type, props: { dataViewKey: 'orders@default', dataMember: 'rows' } })
   }
   if (binding.fieldProvider === true) {
     examples.push({ type, props: { field: 'name' } })
@@ -691,8 +691,9 @@ function createGenericPropDescription(name: string, type: string): string {
   if (name === 'modelValue') return 'Bound model value; 由 v-model 同步的当前值。'
   if (name === 'value') return 'Display or input value; 用于展示或绑定当前字段值。'
   if (name === 'field') return 'Data field key; 绑定 rows/currentRow 中的字段名。'
-  if (name === 'viewKey') return 'ViewKey; 指向页面数据上下文中的 DataView，格式为 table@viewId。'
-  if (name === 'dataKey') return 'DataKey; 指向 DataView 的具体输出字段，格式为 table@viewId@field。'
+  if (name === 'dataViewKey') return 'DataViewKey; 指向页面数据上下文中的 DataView，格式为 table@viewId。'
+  if (name === 'dataMember') return 'DataMember; DataView 成员枚举，例如 rows/currentRow/aggregateResult。'
+  if (name === 'dataField') return 'DataField; DataView 成员内部业务字段或点路径。'
   if (name === 'children') return 'Child SparkNode list; 用于声明嵌套组件。'
   if (name === 'options') return 'Option list; 用于 select/radio 等选项型组件。'
   if (name === 'disabled') return 'Disabled state; true 时禁止用户交互。'
@@ -872,19 +873,20 @@ function bindingDescription(binding: CatalogBindingDescriptor | undefined): stri
   if (binding === undefined) return undefined
   const parts: string[] = []
   if (binding.selfResolving === true) {
-    parts.push(binding.dataContainer === true ? 'self-resolving viewKey' : 'self-resolving dataKey')
+    parts.push(binding.dataContainer === true ? 'self-resolving dataViewKey' : 'self-resolving DataView member')
   }
   if (binding.dataContainer === true) parts.push('向子组件提供数据上下文')
   if (binding.fieldProvider === true) parts.push('通过 field 绑定行字段')
-  if (binding.hasOptions === true) parts.push('支持 options/optionKey 选项数据')
+  if (binding.hasOptions === true) parts.push('支持 options/optionDataViewKey 选项数据')
   if (binding.bindingDelegate !== undefined) parts.push(`bindingDelegate=${binding.bindingDelegate}`)
   if (binding.valueType !== undefined) parts.push(`valueType=${binding.valueType}`)
   return parts.length > 0 ? `绑定语义：${parts.join('，')}。` : undefined
 }
 
 const COMPONENT_KEY_PROP_ORDER = [
-  'viewKey',
-  'dataKey',
+  'dataViewKey',
+  'dataMember',
+  'dataField',
   'field',
   'value',
   'modelValue',
@@ -894,7 +896,7 @@ const COMPONENT_KEY_PROP_ORDER = [
   'actions',
   'items',
   'options',
-  'optionKey',
+  'optionDataViewKey',
   'action',
   'label',
   'title',
@@ -933,7 +935,7 @@ function buildComponentDescription(options: {
   if (requiredProps.length > 0) parts.push(`必填 props：${requiredProps.join(', ')}。`)
 
   const keyProps = options.binding?.dataContainer === true
-    ? selectKeyProps(options.props).filter(prop => prop !== 'dataKey')
+    ? selectKeyProps(options.props).filter(prop => prop !== 'dataMember' && prop !== 'dataField')
     : selectKeyProps(options.props)
   if (keyProps.length > 0) parts.push(`关键 props：${keyProps.join(', ')}。`)
 

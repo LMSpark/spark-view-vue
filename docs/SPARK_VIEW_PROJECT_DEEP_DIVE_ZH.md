@@ -2,7 +2,7 @@
 
 > 本文面向第一次深入了解 SPARK View 的开发者、维护者和技术评审者。它不逐项复述目录，而是回答四个问题：这个项目解决什么问题，核心运行链路如何成立，各包分别承担什么职责，下一阶段最值得投入的优化空间在哪里。
 >
-> 更新基准：2026-05-16，覆盖 ViewKey/DataKey 绑定规则、DataView 输出面、DataSet 事务保存、统一 API envelope、页面配置存储抽象、AI 会话持久化和后端生产化基线。
+> 更新基准：2026-05-16，覆盖 DataViewKey规则、DataView 输出面、DataSet 事务保存、统一 API envelope、页面配置存储抽象、AI 会话持久化和后端生产化基线。
 
 ## 1. 执行摘要
 
@@ -327,7 +327,7 @@ flowchart LR
 | 结构化诊断 | 将加载错误扩展为 `code/path/fileName/status/detail/suggestion` |
 | schema 迁移 | 为页面整体配置引入版本迁移管线，兼容历史配置 |
 | 远程缓存 | 支持 ETag、If-None-Match 或显式 timestamp 协议 |
-| schema 示例 | 为 `saveChanges.transaction`、`viewKey/dataKey`、聚合和状态字段提供最小可运行样例 |
+| schema 示例 | 为 `saveChanges.transaction`、`dataViewKey/dataViewKey/dataMember/dataField`、聚合和状态字段提供最小可运行样例 |
 
 如果这个边界变得更强，DevSystem 和 AI 都可以基于同一套诊断对象给出可操作反馈。
 
@@ -417,7 +417,7 @@ flowchart TD
 
 ## 10. `spark-data`：数据空间与绑定协议
 
-`spark-data` 是复杂后台页面的核心支撑。它让页面不再把数据散落在组件内部，而是通过 DataSet、DataTable、DataView、ViewKey/DataKey 和关系管理形成统一数据空间。
+`spark-data` 是复杂后台页面的核心支撑。它让页面不再把数据散落在组件内部，而是通过 DataSet、DataTable、DataView、DataViewKey 和关系管理形成统一数据空间。
 
 ```mermaid
 flowchart TD
@@ -425,7 +425,7 @@ flowchart TD
   DataSet["DataSet"]
   Table["DataTable"]
   View["DataView"]
-  Key["ViewKey / DataKey"]
+  Key["DataViewKey"]
   Component["组件"]
   Crud["CRUD Delegate"]
   Relation["关系 / 级联"]
@@ -443,7 +443,7 @@ flowchart TD
 
 ### 10.1 DataSet / DataTable / DataView
 
-DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，DataView 表示面向组件绑定和交互的视图。组件通常不直接关心接口细节：表级容器通过 `viewKey` 定位某个 DataView，展示组件或动作上下文通过 `dataKey` 读取该 DataView 的 rows、currentRow、selection、aggregateResult 或状态字段。
+DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，DataView 表示面向组件绑定和交互的视图。组件通常不直接关心接口细节：表级容器通过 `dataViewKey` 定位某个 DataView，展示组件或动作上下文通过 `dataViewKey/dataMember/dataField` 读取该 DataView 的 rows、currentRow、selection、aggregateResult 或状态字段。
 
 这套分层让 SPARK 页面能表达后台页面常见模式：
 
@@ -459,28 +459,28 @@ DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，Da
 | 历史记录 | 支持撤销、回滚和变更追踪的基础 |
 | 计算列/聚合 | 将业务派生数据纳入平台模型 |
 
-### 10.2 ViewKey / DataKey
+### 10.2 DataViewKey
 
-ViewKey 和 DataKey 是组件和数据视图之间的绑定协议。两者都用稳定字符串表达数据来源，但职责不同：
+DataViewKey 和 DataViewKey 是组件和数据视图之间的绑定协议。两者都用稳定字符串表达数据来源，但职责不同：
 
 | 协议 | 示例 | 含义 |
 |---|---|---|
-| ViewKey | `Users@mainList` | 容器级绑定，定位 `Users` 表的 `mainList` DataView |
-| ViewKey | `#SharedDS@Users@lookup` | 跨 scope 定位共享 DataView |
-| DataKey | `Users@mainList@rows` | 读取某个 DataView 的行集合 |
-| DataKey | `Users@mainList@currentRow.name` | 读取当前行的 `name` 字段 |
-| DataKey | `Users@mainList@selectedRows` | 读取当前多选集合 |
-| DataKey | `Users@summary@aggregateResult.totalAmount` | 读取聚合结果字段 |
-| DataKey | `Users@mainList@requestState` | 读取请求状态 |
-| DataKey | `Users@mainList@loadingError` | 读取加载错误 |
+| DataViewKey | `Users@mainList` | 容器级绑定，定位 `Users` 表的 `mainList` DataView |
+| DataViewKey | `#SharedDS@Users@lookup` | 跨 scope 定位共享 DataView |
+| DataViewKey | `Users@mainList@rows` | 读取某个 DataView 的行集合 |
+| DataViewKey | `Users@mainList@currentRow.name` | 读取当前行的 `name` 字段 |
+| DataViewKey | `Users@mainList@selectedRows` | 读取当前多选集合 |
+| DataViewKey | `Users@summary@aggregateResult.totalAmount` | 读取聚合结果字段 |
+| DataViewKey | `Users@mainList@requestState` | 读取请求状态 |
+| DataViewKey | `Users@mainList@loadingError` | 读取加载错误 |
 
-当前规则下，表级容器使用 `viewKey`，DataView 输出读取使用完整 `dataKey`。不再把 `Users@rows` 作为新配置范式；应该写 `viewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataKey: "Users@summary@aggregateResult.xxx"`。
+当前规则下，表级容器使用 `dataViewKey`，DataView 输出读取使用完整 `dataViewKey/dataMember/dataField`。不再把 `Users@rows` 作为新配置范式；应该写 `dataViewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataViewKey/dataMember/dataField: "Users@summary@aggregateResult.xxx"`。
 
 在容器已经提供 `DATA_ROW` 的子树中，还可以使用 `$[fieldName]` 把当前行字段投影到任意 prop，这适合按钮文案、tag 类型、tooltip、标题、前后缀等轻量展示，不需要额外脚本拼装。
 
-当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接监听 DataView 领域事件，并按需读取 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `viewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataKey` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
+当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接监听 DataView 领域事件，并按需读取 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `dataViewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataMember/contextDataField` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
 
-建议后续增强 DataKey 诊断：当解析失败时，不只返回 null，而是返回失败原因、候选 view、候选字段和修复建议。这个能力对 DevSystem 和 AI 都很重要。
+建议后续增强 DataViewKey 诊断：当解析失败时，不只返回 null，而是返回失败原因、候选 view、候选字段和修复建议。这个能力对 DevSystem 和 AI 都很重要。
 
 ### 10.3 关系、级联、计算列和聚合
 
@@ -670,7 +670,7 @@ DevSystem 应该被视为 SPARK View 的一等产品，而不是附属调试页�
 
 | 工作流 | 说明 |
 |---|---|
-| 页面健康检查 | 四文件完整性、schema、组件注册、DataKey、权限、请求配置 |
+| 页面健康检查 | 四文件完整性、schema、组件注册、DataViewKey、权限、请求配置 |
 | 节点树编辑 | 节点选择、拖拽/插入、属性编辑、beforeRender 结果 |
 | DataSet 可视化 | 表、视图、关系、依赖、请求状态和当前行 |
 | AI 调用回放 | 工具调用参数、影响范围、变更前后和验证结果 |
@@ -751,14 +751,14 @@ flowchart TB
 
 ## 15. 测试、脚本与质量体系
 
-项目已经有较丰富的测试和质量入口。根 `tests/` 覆盖 AI runtime、AI panel、组件查询目录、权限、动态路由、DataView CRUD、DataKey、DevSystem、字段组件、渲染器、工具栏、布局容器和协议解析等内容。各包内部也有自己的测试。
+项目已经有较丰富的测试和质量入口。根 `tests/` 覆盖 AI runtime、AI panel、组件查询目录、权限、动态路由、DataView CRUD、DataViewKey、DevSystem、字段组件、渲染器、工具栏、布局容器和协议解析等内容。各包内部也有自己的测试。
 
 质量体系可以分成四类：
 
 | 类型 | 示例 |
 |---|---|
 | 运行时行为测试 | renderer、field、toolbar、tabs、dialog、table datasource |
-| 数据层回归测试 | DataKey、DataView CRUD、relation rebuild、computed column、editingRows、transaction save |
+| 数据层回归测试 | DataViewKey、DataView CRUD、relation rebuild、computed column、editingRows、transaction save |
 | AI 与协议测试 | ai-runtime、page-design-business、dataset-tool-protocol、validator |
 | 后端生产化测试 | envelope controller、AI session、page config service、dynamic data transaction、navigation service |
 | 架构约束测试 | `verify-architecture.mjs`、forbidden imports、public API |
@@ -807,7 +807,7 @@ SPARK View 当前最突出的优势有五点。
 
 第二，页面模型有深度。项目不是只渲染表单 JSON，而是把结构、数据、脚本、样式、权限、导航和 AI 编辑放进同一体系。
 
-第三，数据层扎实。DataSet、DataTable、DataView、DataKey、关系、级联、计算列、聚合和 CRUD 委托能覆盖复杂后台页面的常见需求。
+第三，数据层扎实。DataSet、DataTable、DataView、DataViewKey、关系、级联、计算列、聚合和 CRUD 委托能覆盖复杂后台页面的常见需求。
 
 第四，AI 方向克制。项目没有把“生成代码”作为核心卖点，而是强调受约束配置生成、函数工具、组件知识目录和稳定运行时。
 
@@ -823,9 +823,9 @@ SPARK View 当前最突出的优势有五点。
 
 ### 17.2 配置诊断还不够产品化
 
-配置化平台最怕错误难查。当前已有加载错误、运行时错误、FC error monitor 和 SSE debug，但页面作者仍需要更明确的诊断：哪个节点错、哪个 DataKey 错、哪个关系错、哪个权限让按钮消失、哪个请求参数没有解析出来。
+配置化平台最怕错误难查。当前已有加载错误、运行时错误、FC error monitor 和 SSE debug，但页面作者仍需要更明确的诊断：哪个节点错、哪个 DataViewKey 错、哪个关系错、哪个权限让按钮消失、哪个请求参数没有解析出来。
 
-建议把诊断对象前移到 loader、DataKey、renderer、permission 和 DataView 请求链。
+建议把诊断对象前移到 loader、DataViewKey、renderer、permission 和 DataView 请求链。
 
 ### 17.3 设计时和运行时闭环还不够紧
 
@@ -856,7 +856,7 @@ DevSystem 已经具备许多能力，但编辑、预览、诊断、AI、版本�
 建议任务：
 
 1. 为 `ConfigLoadResult` 扩展结构化错误码和修复建议。
-2. 为 DataKey 解析返回诊断对象。
+2. 为 DataViewKey 解析返回诊断对象。
 3. 在 DevSystem 增加当前节点诊断面板。
 4. 在 DataView 增加请求调试日志：触发源、参数、URL、状态、耗时、错误。
 5. 将 `onRuntimeError`、FC error 和 SSE debug 汇总到统一错误面板。
@@ -882,7 +882,7 @@ DevSystem 已经具备许多能力，但编辑、预览、诊断、AI、版本�
 
 建议任务：
 
-1. 页面健康检查：四文件、schema、DataKey、组件注册、权限和请求配置。
+1. 页面健康检查：四文件、schema、DataViewKey、组件注册、权限和请求配置。
 2. DataSet 可视化：表、视图、关系、依赖、聚合和请求状态。
 3. 节点树可视化：节点选择、属性编辑、beforeRender、权限来源。
 4. 版本 diff：四文件差异、AI 调用差异和恢复点。
@@ -963,8 +963,8 @@ flowchart LR
 7. [packages/spark-component/src/components/SparkComponentRenderer.vue](../packages/spark-component/src/components/SparkComponentRenderer.vue)：理解递归渲染器。
 8. [packages/spark-component/src/core/spark-node-tree.ts](../packages/spark-component/src/core/spark-node-tree.ts)：理解节点树模型。
 9. [packages/spark-data/src/dataset.ts](../packages/spark-data/src/dataset.ts)：理解数据空间协调器。
-10. [packages/spark-data/src/core/data-key.ts](../packages/spark-data/src/core/data-key.ts)：理解组件到 DataView 的绑定协议。
-11. [packages/spark-component/src/components/containers/data-views/view-data-source.ts](../packages/spark-component/src/components/containers/data-views/view-data-source.ts)：理解容器如何通过 `viewKey` 解析 DataView。
+10. [packages/spark-data/src/core/data-view-key.ts](../packages/spark-data/src/core/data-view-key.ts)：理解组件到 DataView 的绑定协议。
+11. [packages/spark-component/src/components/containers/data-views/view-data-source.ts](../packages/spark-component/src/components/containers/data-views/view-data-source.ts)：理解容器如何通过 `dataViewKey` 解析 DataView。
 12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView 领域事件如何映射到 UI 状态。
 13. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Core 组合根和函数调用边界。
 14. [packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts)：理解 page-design 工具如何绑定页面编辑服务。

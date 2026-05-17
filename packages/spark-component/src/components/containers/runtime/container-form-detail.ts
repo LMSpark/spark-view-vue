@@ -10,7 +10,7 @@
  *
  * 工作流程（6 分区）：
  *   1. 布局层     : children → CSS Grid 投影（useContainerGrid）
- *   2. 能力接入层  : viewKey → DataView 解析 + 能力注入（useContainerDataSource）
+ *   2. 能力接入层  : dataViewKey → DataView 解析 + 能力注入（useContainerDataSource）
  *   3. 上下文镜像层 : DataView.currentRow / aggregateResult → contextData（shallowReactive）
  *   4. 工具栏投影层 : toolbar SparkNode → 可见性/位置（useContainerToolbar）
  *   5. 作用域构建层 : contextData → 字段渲染默认作用域（createCurrentRowScope）
@@ -20,7 +20,7 @@
  */
 
 import { computed, shallowReactive, toRef, watch } from 'vue'
-import { deriveDataKeyFromViewKey, type DataColumn, type DataView, type IDataRow } from '@spark-view/spark-data'
+import { DataMember, type DataColumn, type DataView, type IDataRow } from '@spark-view/spark-data'
 import {
   DATA_SOURCE,
   MODULE_CONTEXT,
@@ -40,11 +40,6 @@ import { useContainerModuleContext, useContainerToolbar } from './container-ui.j
 // § 常量
 // ============================================================
 
-/** 汇总结果 dataKey 片段（全量行聚合）。 */
-const DATAKEY_SEGMENT_AGGREGATE_RESULT = '@aggregateResult'
-/** 选中行汇总片段。 */
-const DATAKEY_SEGMENT_SELECTION_AGGREGATE_RESULT = '@selectionAggregateResult'
-
 /** 表单容器日志前缀。 */
 const FORM_CONTAINER_LOG_PREFIX = 'RendererForm'
 /** 详情容器日志前缀。 */
@@ -63,26 +58,14 @@ const DEFAULT_AUTO_ROWS = 'minmax(32px, auto)'
 const DEFAULT_GRID_GAP = 0
 
 // ============================================================
-// § 内部工具函数
-// ============================================================
-
-/**
- * 标准化 DataView 输出 DataKey：非字符串或空字符串返回 null，否则返回去空后的字符串。
- */
-function getNormalizedDataKey(rawKey: unknown): string | null {
-  if (typeof rawKey !== 'string') return null
-  const normalized = rawKey.trim()
-  return normalized.length > 0 ? normalized : null
-}
-
-// ============================================================
 // § 入参类型
 // ============================================================
 
 /** 容器内部完整属性形状（包括私有布局字段）。 */
 interface FormDetailContainerProps extends SparkNode {
-  viewKey: string | undefined
-  contextDataKey: string | undefined
+  dataViewKey: string | undefined
+  contextDataMember: DataMember | `${DataMember}` | undefined
+  contextDataField: string | undefined
   dataSource?: DataView
   toolbar?: RToolbarProps
   autoColumns: boolean | undefined
@@ -102,8 +85,9 @@ export interface FormDetailContainerConsumerProps {
   toolbar?: RToolbarProps
   children?: SparkNode['children']
   dataSource?: DataView
-  viewKey: string | undefined
-  contextDataKey: string | undefined
+  dataViewKey: string | undefined
+  contextDataMember: DataMember | `${DataMember}` | undefined
+  contextDataField: string | undefined
   autoColumns: boolean | undefined
   gridColumns: number | undefined
   gridGap: number | string | undefined
@@ -124,8 +108,9 @@ export function buildFormDetailContainerProps(
     ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
     ...(props.children !== undefined ? { children: props.children } : {}),
     ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
-    viewKey: props.viewKey,
-    contextDataKey: props.contextDataKey,
+    dataViewKey: props.dataViewKey,
+    contextDataMember: props.contextDataMember,
+    contextDataField: props.contextDataField,
     autoColumns: props.autoColumns,
     gridColumns: props.gridColumns,
     gridGap: props.gridGap,
@@ -152,10 +137,9 @@ export function useFormDetailContainer(
 
   const dataState = useContainerDataSource({
     externalDataSource: toRef(props, 'dataSource'),
-    viewKey: toRef(props, 'viewKey'),
-    contextDataKey: computed(() =>
-      props.contextDataKey ?? deriveDataKeyFromViewKey(props.viewKey, 'currentRow'),
-    ),
+    dataViewKey: toRef(props, 'dataViewKey'),
+    contextDataMember: computed(() => props.contextDataMember ?? DataMember.CurrentRow),
+    contextDataField: toRef(props, 'contextDataField'),
     sparkConsume,
     provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
     logger,
@@ -197,7 +181,7 @@ export function useFormDetailContainer(
   // ==========================================================================
   // 分区 2：能力接入层（capability / DataView 解析）
   //
-  // 目标：统一获取页面能力、模块上下文，并解析 viewKey 对应的 DataView 与上下文行。
+  // 目标：统一获取页面能力、模块上下文，并解析 dataViewKey 对应的 DataView 与上下文行。
   // ==========================================================================
 
   // ==========================================================================
@@ -214,22 +198,19 @@ export function useFormDetailContainer(
    * 解析当前容器应绑定的"上下文行"。
    *
    * 优先级：
-   * 1) contextDataKey 指向汇总结果 → 返回聚合行（aggregateResult / selectionAggregateResult）
-   * 2) contextDataKey 已解析到的行（resolvedDataRow）
+   * 1) contextDataMember 指向汇总结果 → 返回聚合行（aggregateResult / selectionAggregateResult）
+   * 2) contextDataMember 已解析到的行（resolvedDataRow）
    * 3) 回落到 DataView.currentRow
    */
   function resolveContextRow(): IDataRow | null {
-    const normalizedKey = getNormalizedDataKey(props.contextDataKey)
-    if (normalizedKey) {
-      const view = dataState.resolvedView.value
-      // 选中行汇总：仅统计 selectedRows 的聚合输出。
-      if (normalizedKey.includes(DATAKEY_SEGMENT_SELECTION_AGGREGATE_RESULT)) {
-        return (view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value) as IDataRow
-      }
-      // 全量汇总：统计当前视图 rows 的聚合输出。
-      if (normalizedKey.includes(DATAKEY_SEGMENT_AGGREGATE_RESULT)) {
-        return (view?.aggregateResult ?? dataState.aggregateResult.value) as IDataRow
-      }
+    const view = dataState.resolvedView.value
+    // 选中行汇总：仅统计 selectedRows 的聚合输出。
+    if (props.contextDataMember === DataMember.SelectionAggregateResult) {
+      return (view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value) as IDataRow
+    }
+    // 全量汇总：统计当前视图 rows 的聚合输出。
+    if (props.contextDataMember === DataMember.AggregateResult) {
+      return (view?.aggregateResult ?? dataState.aggregateResult.value) as IDataRow
     }
     return dataState.resolvedDataRow.value ?? dataState.currentRow.value
   }
@@ -261,7 +242,7 @@ export function useFormDetailContainer(
   // 事件桥接：捕获 DataView 细粒度变化，保证 contextData 与数据态持续一致。
   useDataViewEventBridge({
     resolvedView: dataState.resolvedView,
-    // currentRow 变化：以 resolveContextRow 为准，确保汇总 contextDataKey 不被 currentRow 覆盖。
+    // currentRow 变化：以 resolveContextRow 为准，确保汇总 contextDataMember 不被 currentRow 覆盖。
     onCurrentRowChanged: ({ row }) => {
       syncContextDataFromCurrentRow(resolveContextRow() ?? row)
     },

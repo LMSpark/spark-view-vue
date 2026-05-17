@@ -167,7 +167,7 @@ const emit = defineEmits<{
 
 - `component_catalog_constraints`
   - `build_id`。
-  - `name`：约束名，例如 `dataKeyPattern`、`validTypePrefixes`。
+  - `name`：约束名，例如 `dataViewKeyPattern`、`validTypePrefixes`。
   - `value_json`：约束真实值。
   - `description`：LLM 可读说明。
   - `examples_json`：合法示例数组。

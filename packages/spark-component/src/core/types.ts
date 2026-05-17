@@ -81,7 +81,7 @@ export interface FilterItemConfig {
   component?: 'text' | 'select' | 'date' | 'date-range' | 'number' | 'number-range' | 'checkbox' | 'radio' | (string & {})
   /** 可选项列表（`component = select / radio / checkbox` 时使用） */
   options?: Array<{ label: string; value: unknown }>
-  /** 选项字段映射（options 来自 DataKey 时使用） */
+  /** 选项字段映射（options 来自 DataView 成员时使用） */
   optionLabelField?: string
   optionValueField?: string
   /** 与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承） */

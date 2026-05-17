@@ -56,7 +56,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "viewKey": "Projects@default"
+          "dataViewKey": "Projects@default"
         }
       }
     ],
@@ -115,7 +115,7 @@
         "props": {
           "border": true,
           "stripe": true,
-          "viewKey": "WeeklyProgress@default"
+          "dataViewKey": "WeeklyProgress@default"
         }
       }
     ],

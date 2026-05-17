@@ -115,7 +115,8 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "Pages@default@rows"
+          "dataViewKey": "Pages@default",
+          "dataMember": "rows"
         }
       }
     ],

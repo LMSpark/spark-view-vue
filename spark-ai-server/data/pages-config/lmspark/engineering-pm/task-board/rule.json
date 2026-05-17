@@ -62,7 +62,7 @@
             "props": {
               "border": false,
               "stripe": false,
-              "viewKey": "TodoTasks@default"
+              "dataViewKey": "TodoTasks@default"
             }
           }
         ],
@@ -116,7 +116,7 @@
             "props": {
               "border": false,
               "stripe": false,
-              "viewKey": "InProgressTasks@default"
+              "dataViewKey": "InProgressTasks@default"
             }
           }
         ],
@@ -170,7 +170,7 @@
             "props": {
               "border": false,
               "stripe": false,
-              "viewKey": "DoneTasks@default"
+              "dataViewKey": "DoneTasks@default"
             }
           }
         ],

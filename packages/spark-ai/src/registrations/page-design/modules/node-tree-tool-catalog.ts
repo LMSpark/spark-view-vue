@@ -230,13 +230,13 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
-    functionId: 'collectDataKeys',
+    functionId: 'collectDataViewKeys',
     target: 'tree',
-    coreMethod: 'collectDataKeys',
-    description: '收集当前组件实例子树中出现过的全部唯一 viewKey / dataKey / contextDataKey，用于确认页面现有数据绑定。',
+    coreMethod: 'collectDataViewKeys',
+    description: '收集当前组件实例子树中出现过的全部唯一 dataViewKey / optionDataViewKey，用于确认页面现有数据绑定。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
-      dataKeys: 'Set<string> — 唯一数据视图键集合（包含 viewKey / dataKey / contextDataKey）',
+      dataViewKeys: 'Set<string> — 唯一 DataView 定位键集合（包含 dataViewKey / optionDataViewKey）',
     },
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],

@@ -571,7 +571,7 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
   // API 级联行为的测试见 dataset-request-orchestration.test.ts。
   it('C-5: DataSet 含 api 配置时显式 viewDependencies 能正常展开', () => {
     const ds = fromPromptJson(CASE_C_JSON)
-    // viewDependencies 展开后 parentViewId/childViewId 均来自显式 viewKey
+    // viewDependencies 展开后 parentViewId/childViewId 均来自显式 dataViewKey
     const rel = ds._resolvedRelations?.[0]
     expect(rel?.parentTable).toBe('Departments')
     expect(rel?.childTable).toBe('Employees')

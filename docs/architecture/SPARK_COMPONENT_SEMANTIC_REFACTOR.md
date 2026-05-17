@@ -11,7 +11,7 @@
 spark-component 是 SPARK 体系的**渲染层**。它的核心理念可以归纳为三条：
 
 1. **Config-first 渲染管线**：`rule.json` → `bindRules` → `SparkNode` 树 → `SparkComponentRenderer` 递归 → Vue 组件。
-2. **DataView-first 容器**：所有数据容器（`r-table` / `r-form` / `r-detail` / `r-tree`）通过 [`DataKey`](../../packages/spark-data/src/core/data-key.ts) 解析 [`DataView`](../../packages/spark-data/src/data-view.ts)，并通过 `DATA_SOURCE` capability 向后代提供；行级容器再以 `DATA_ROW` 提供当前行镜像。
+2. **DataView-first 容器**：所有数据容器（`r-table` / `r-form` / `r-detail` / `r-tree`）通过 [`DataViewKey`](../../packages/spark-data/src/core/data-view-key.ts) 解析 [`DataView`](../../packages/spark-data/src/data-view.ts)，并通过 `DATA_SOURCE` capability 向后代提供；行级容器再以 `DATA_ROW` 提供当前行镜像。
 3. **Capability DI（非 Vue DI）**：业务能力通过 `sparkProvide` / `sparkConsume` 流动；Vue `provide/inject` 只承载基础设施（registry / 全局服务）。
 
 包内存在四类“真源”概念：
@@ -100,7 +100,7 @@ src/
 
 四个共有动作都是**容器数据动作**。它们在两套体系内都需要：
 
-- 取数据源（`DATA_SOURCE` / `dataKey` 解析）
+- 取数据源（`DATA_SOURCE` / `dataViewKey/dataMember/dataField` 解析）
 - 行/选择行解析
 - 权限投影
 - 确认对话 + 文案插值
@@ -146,7 +146,7 @@ pagedata.json
    ↓ parsePageData()      (spark-page-config)
 DataSet
    ↓ usePageDataSet()     → sparkProvide(PAGE_DATASET)
-   ↓ DataKey('table@view@field')
+   ↓ DataViewKey('table@view@field')
 DataView
    ↓ sparkProvide(DATA_SOURCE)        (容器层)
    ↓ sparkProvide(DATA_ROW)           (RendererHostScope/FieldScope)

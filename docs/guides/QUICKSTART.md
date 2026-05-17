@@ -597,7 +597,7 @@ const pageConfig = {
   layout: {
     type: 'container',
     children: [
-      { type: 'r-table', id: 'userGrid', props: { viewKey: 'Users@default' } }
+      { type: 'r-table', id: 'userGrid', props: { dataViewKey: 'Users@default' } }
     ]
   },
   dataSet: {

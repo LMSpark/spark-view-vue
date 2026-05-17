@@ -98,7 +98,7 @@
                 "currentChange": "handleRowChange",
                 "selectionChange": "handleSelection"
               },
-              "viewKey": "users@default"
+              "dataViewKey": "users@default"
             }
           }
         ],

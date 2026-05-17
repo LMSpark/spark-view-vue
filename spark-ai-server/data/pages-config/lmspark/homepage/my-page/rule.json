@@ -126,7 +126,7 @@
                   "position": "top"
                 }
               },
-              "viewKey": "Permissions@default"
+              "dataViewKey": "Permissions@default"
             }
           }
         ],
@@ -221,8 +221,8 @@
               }
             ],
             "props": {
-              "viewKey": "Permissions@default",
-              "contextDataKey": "Permissions@default@currentRow"
+              "dataViewKey": "Permissions@default",
+              "contextDataMember": "currentRow"
             }
           }
         ],

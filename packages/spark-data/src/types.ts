@@ -284,7 +284,7 @@ export interface ICurrentRowSource extends IRowDataSource {
  *
  * 边界：
  * - DataView 对应 table + viewId 的 API 视图（含 requestData/refresh/requestState）。
- * - IDataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataKey 解析得到）。
+ * - IDataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataViewKey 解析得到）。
  *
  * 1. 行级计算列：`columns[].computeExpression` 对每一行求值，结果写回该行字段。
  *    表达式可直接读取行字段，可通过 `ctx` 读取外部上下文，也可通过
@@ -294,9 +294,8 @@ export interface ICurrentRowSource extends IRowDataSource {
  * 3. 运行时聚合结果：`aggregateResult` 基于当前 `rows` 计算，`selectionAggregateResult`
  *    基于当前 `selectedRows` 计算；二者都是由 aggregates 配置生成的“聚合结果输出行”，
  *    字段名来自 aggregates 的输出 key，字段值是对应聚合计算结果。
- * 4. UI / DataKey 消费：组件可直接读取 `dataSource.aggregateResult`，也可通过
- *    `Table@default@aggregateResult.totalAmount` 或
- *    `Table@default@selectionAggregateResult.totalAmount` 引用。
+ * 4. UI / DataView 成员消费：组件可直接读取 `dataSource.aggregateResult`，也可通过
+ *    dataViewKey=`Table@default` + dataMember=`aggregateResult` + dataField=`totalAmount` 引用。
  * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */

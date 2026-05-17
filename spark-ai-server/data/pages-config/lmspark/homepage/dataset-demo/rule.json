@@ -133,7 +133,7 @@
                   }
                 ]
               },
-              "viewKey": "Users@default"
+              "dataViewKey": "Users@default"
             }
           }
         ],
@@ -258,7 +258,7 @@
                   }
                 ]
               },
-              "viewKey": "Orders@default"
+              "dataViewKey": "Orders@default"
             }
           }
         ],
@@ -374,7 +374,7 @@
                   }
                 ]
               },
-              "viewKey": "OrderItems@default"
+              "dataViewKey": "OrderItems@default"
             }
           }
         ],

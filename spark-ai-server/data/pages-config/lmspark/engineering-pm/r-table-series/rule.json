@@ -417,7 +417,7 @@
                   "label": "操作"
                 }
               },
-              "viewKey": "Orders@default"
+              "dataViewKey": "Orders@default"
             }
           }
         ],
@@ -469,8 +469,8 @@
                   }
                 ],
                 "props": {
-                  "viewKey": "Orders@default",
-                  "contextDataKey": "Orders@default@aggregateResult"
+                  "dataViewKey": "Orders@default",
+                  "contextDataMember": "aggregateResult"
                 }
               },
               {
@@ -510,8 +510,8 @@
                   }
                 ],
                 "props": {
-                  "viewKey": "Orders@default",
-                  "contextDataKey": "Orders@default@selectionAggregateResult"
+                  "dataViewKey": "Orders@default",
+                  "contextDataMember": "selectionAggregateResult"
                 }
               }
             ],
@@ -615,8 +615,8 @@
             "props": {
               "gridColumns": 24,
               "gridGap": 12,
-              "viewKey": "Orders@default",
-              "contextDataKey": "Orders@default@currentRow"
+              "dataViewKey": "Orders@default",
+              "contextDataMember": "currentRow"
             }
           }
         ],
@@ -707,7 +707,7 @@
                   }
                 ]
               },
-              "viewKey": "OrderItems@default"
+              "dataViewKey": "OrderItems@default"
             }
           }
         ],

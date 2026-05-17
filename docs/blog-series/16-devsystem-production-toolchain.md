@@ -18,7 +18,7 @@ DevSystem 面向的是文件级页面资产。`rule.json`、`pagedata.json`、`s
 
 ## 预览复用正式运行时
 
-DevPreviewTab 的价值在于把当前内存态配置送进正式 `SparkPageRenderer`。这样预览中出现的 DataKey、权限、脚本、组件能力和错误表现都尽量接近真实页面。开发者不用在“设计器预览”和“线上运行”之间猜差异。
+DevPreviewTab 的价值在于把当前内存态配置送进正式 `SparkPageRenderer`。这样预览中出现的 DataViewKey、权限、脚本、组件能力和错误表现都尽量接近真实页面。开发者不用在“设计器预览”和“线上运行”之间猜差异。
 
 这也给人工编辑和数据设计器提供了快速反馈路径。节点、数据或脚本修改后，预览立即反映结果；如果错误发生，runtime error 能回到 DevSystem 状态栏，辅助定位问题。
 

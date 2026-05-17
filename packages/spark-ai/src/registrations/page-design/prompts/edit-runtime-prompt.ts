@@ -67,18 +67,18 @@ export class PageDesignEditRuntimePrompt {
         ① 优先调用 nodeTree.findByType({ type: 'r-tabs' }) 按类型一步拿到真实 id
         ② 或调用 nodeTree.listChildren({parentComponentId:null}) 逐层遍历，
            从每个节点的顶层 id 字段读取真实 id，再调用 getNode / setProps / moveNode / removeNode
-    ⚠ ViewKey / DataKey 详细约束（rule 编辑必须遵守）：
-      • 容器级绑定只写 viewKey：table@viewId、#scope@table@viewId；严禁省略 viewId
-      • DataView 输出读取只写 dataKey：table@viewId@field、#scope@table@viewId@field；不再允许 table@field 或 #scope@table@field
-      • field 只允许：rows / columns / currentRow / selectedRows / aggregateResult / selectionAggregateResult / total / page / pageSize / requestState / mutating / loadingError / mutatingError；允许对象字段路径后缀，如 stats@default@currentRow.totalUsers
-      • r-table / r-list / r-tree / r-filter 用 viewKey 定位 DataView；不要写 dataKey: table@viewId@rows
-      • r-form / r-detail 用 viewKey 定位 DataView，用 contextDataKey 选择上下文值；默认 contextDataKey 是 table@viewId@currentRow，也可配置 table@viewId@aggregateResult / table@viewId@selectionAggregateResult
-      • 展示组件、字段候选项、toolbar/action 的上下文值读取才使用 dataKey；rows / currentRow / selectedRows / aggregateResult / selectionAggregateResult / 分页状态字段都必须写完整 viewId
-      • dataKey 绑定的是 DataView 输出值，不是任意列名；列组件、表单字段通常在容器上下文中使用 field，不要写成 Users@default@name 或 Orders@default@amount 这类非法 dataKey
+    ⚠ DataViewKey详细约束（rule 编辑必须遵守）：
+      • 所有 DataView 定位只写 dataViewKey：table@viewId、#scope@table@viewId；严禁省略 viewId
+      • DataView 输出读取必须拆成 dataViewKey + dataMember + dataField；dataMember 只允许枚举字符串 rows / columns / currentRow / selectedRows / aggregateResult / selectionAggregateResult / total / page / pageSize / requestState / mutating / loadingError / mutatingError
+      • dataField 只用于对象型成员 currentRow / aggregateResult / selectionAggregateResult，允许点路径，如 dataViewKey: "stats@default", dataMember: "currentRow", dataField: "totalUsers"
+      • rows / selectedRows 这类集合成员不能追加字段路径；不要写 rows.id、selectedRows.name 这类非法组合
+      • r-table / r-list / r-tree / r-filter 用 dataViewKey 定位 DataView，通常不需要 dataMember
+      • r-form / r-detail 用 dataViewKey 定位 DataView，用 contextDataMember/contextDataField 选择上下文值；默认 contextDataMember 是 currentRow，也可配置 aggregateResult / selectionAggregateResult
+      • 展示组件、字段候选项、toolbar/action 的上下文值读取使用 dataViewKey + dataMember + dataField；字段列和表单字段通常在容器上下文中使用 field
       • 数据容器提供 DATA_ROW 后，任意组件的任意 prop 都可以用 $[fieldName] 读取当前行字段；例如 r-tag.content="$[age] 岁"、r-tag.tagType="$[ageBadgeType]"、r-statistic.title="$[name] 的年龄"
-      • 纯 $[fieldName] 保留字段原始类型；混合文本会字符串化；它只消费当前行字段，不替代 viewKey / dataKey / field
-      • 旧点号格式一律禁止：dataset.tables.Users.rows、dataset.tables.Orders.views.grid.rows 都不是合法 DataKey
-      • 若不确定应绑定哪个 table / viewId / field，先调用 nodeTree.collectDataKeys 或读取同类节点，复用当前页面现有 viewKey / dataKey 模式
+      • 纯 $[fieldName] 保留字段原始类型；混合文本会字符串化；它只消费当前行字段，不替代 dataViewKey / dataMember / dataField / field
+      • 旧点号格式一律禁止：dataset.tables.Users.rows、dataset.tables.Orders.views.grid.rows 都不是合法 DataViewKey
+      • 若不确定应绑定哪个 table / viewId / member / field，先调用 nodeTree.collectDataViewKeys 或读取同类节点，复用当前页面现有 dataViewKey 模式
   - 修改 pagedata.json：使用 dataset 函数
   - 修改 script.js：使用 textModel.readScript / textModel.writeScript
     ⚠ script.js 沙箱运行时契约（写入前必须遵守）：

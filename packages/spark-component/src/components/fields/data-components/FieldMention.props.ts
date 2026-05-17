@@ -20,7 +20,7 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
    * - `prefix`：触发字符
    * - `split`：选中后写回文本的分隔符
    * - `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段
-   * - `options.dataKey`：候选项数据源
+   * - `options.dataViewKey`：候选项数据源
     * - `options.valueField / labelField / disabledField`：候选项字段映射
    * - `searchable`：是否启用本地候选项过滤
    *
@@ -47,8 +47,8 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
     searchable?: boolean
     /** 候选项来源与字段映射。 */
     options?: {
-      /** 候选项数据源，例如 `Users@default@rows`。 */
-      dataKey?: SparkText
+      /** 候选项 DataView，例如 `Users@default`。 */
+      dataViewKey?: SparkText
       /**
        * 候选项值字段。
        *

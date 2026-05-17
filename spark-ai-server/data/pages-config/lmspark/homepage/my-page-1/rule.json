@@ -168,11 +168,12 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "dataKey": "Scores@default@rows",
           "on": {
             "currentChange": "handleCurrentChange",
             "selectionChange": "handleSelectionChange"
-          }
+          },
+          "dataViewKey": "Scores@default",
+          "dataMember": "rows"
         }
       },
       {

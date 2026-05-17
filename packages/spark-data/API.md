@@ -2,7 +2,7 @@
 
 ## SparkData 命名空间
 
-### DataKey 概览
+### DataViewKey概览
 
 `SparkData` 是数据空间的统一入口，提供优雅的工厂方法来创建数据管理对象。
 
@@ -339,94 +339,109 @@ import type {
 
 ---
 
-## DataKey / ViewKey 数据视图绑定键
+## DataViewKey / DataMember 数据视图绑定
 
 ### 概览
 
-ViewKey 用于在页面配置（rule.json）中定位 DataView；DataKey 用于读取 DataView 输出字段。两者都使用 `@` 分隔的标准格式。
+`dataViewKey` 用于在页面配置（rule.json）中定位 DataView；`dataMember` 用于读取 DataView 成员；`dataField` 用于对象型成员内部字段或点路径。
 
 ### 格式
 
 ```
-tableName@viewId                 # ViewKey：容器定位 DataView
-#scope@tableName@viewId          # 跨页面 ViewKey
-tableName@viewId@field           # DataKey：读取 DataView 输出字段
-#scope@tableName@viewId@field    # 跨页面 DataKey
+tableName@viewId                 # dataViewKey：容器定位 DataView
+#scope@tableName@viewId          # 跨页面 dataViewKey
 ```
 
 - **scope** — 跨页面页面 ID 或 DataSet 名称（`dataSetName`），必须使用 `#` 前缀
 - **tableName** — 表名
 - **viewId** — 视图 ID，必须显式写出；默认视图也写 `default`
-- **field** — `rows` | `columns` | `currentRow` | `selectedRows` | `aggregateResult` | `selectionAggregateResult` | `total` | `page` | `pageSize` | `requestState` | `mutating` | `loadingError` | `mutatingError`
+- **dataMember** — `rows` | `columns` | `currentRow` | `selectedRows` | `aggregateResult` | `selectionAggregateResult` | `total` | `page` | `pageSize` | `requestState` | `mutating` | `loadingError` | `mutatingError`
+- **dataField** — 仅对 `currentRow`、`aggregateResult`、`selectionAggregateResult` 生效，支持 `customer.name` 这种点路径
 
 ### API
 
-#### `isDataKey(dataKey: string): boolean`
+#### `isDataViewKey(dataViewKey: string): boolean`
 
-判断字符串是否为 DataKey 格式。
+判断字符串是否为 DataView 定位键格式。
 
-#### `parseDataKey(dataKey: string): DataKeyDescriptor | null`
+#### `parseDataViewKey(dataViewKey: string): DataViewKeyDescriptor | null`
 
-解析 DataKey 字符串为结构化描述符。非 DataKey 格式返回 `null`。
+解析 DataView 定位键为结构化描述符。非定位键格式返回 `null`。
 
 统一格式（`@` 分隔符；跨页面必须带 `#scope` 前缀）：
 
 | 段数 | 格式 | 示例 |
 |------|------|------|
-| 3 段 | `table@viewId@field` | `Users@grid@rows` |
-| 4 段 | `#scope@table@viewId@field` | `#SharedDS@Users@grid@rows` |
+| 2 段 | `table@viewId` | `Users@grid` |
+| 3 段 | `#scope@table@viewId` | `#SharedDS@Users@grid` |
 
-旧式 `table@field`、`#scope@table@field`、`scope@table@viewId@field` 和点号链式 DataKey 不再支持。
+旧式把成员拼入键的写法和点号链式数据路径不再支持。
 
 ```typescript
-import { parseDataKey } from '@spark-view/spark-data'
+import { DataMember, parseDataViewKey, resolveDataViewMember } from '@spark-view/spark-data'
 
-parseDataKey('Users@rows')
+parseDataViewKey('Users@rows')
 // → null（旧短写不再合法，必须显式写 viewId）
 
-parseDataKey('Users@grid@rows')
-// → { tableName: 'Users', viewId: 'grid', field: 'rows', raw: 'Users@grid@rows' }
+parseDataViewKey('Users@grid')
+// → { tableName: 'Users', viewId: 'grid', raw: 'Users@grid' }
 
-parseDataKey('#SharedDS@Users@grid@rows')
-// → { scope: 'SharedDS', tableName: 'Users', viewId: 'grid', field: 'rows', raw: '#SharedDS@Users@grid@rows', crossPage: true }
+parseDataViewKey('#SharedDS@Users@grid')
+// → { scope: 'SharedDS', tableName: 'Users', viewId: 'grid', raw: '#SharedDS@Users@grid', crossPage: true }
 
-parseDataKey('settings.siteName')
-// → null（非 DataKey，回落到 pageData 路径）
+resolveDataViewMember({
+  dataViewKey: 'Users@default',
+  dataMember: DataMember.CurrentRow,
+  dataField: 'profile.name'
+}, dataSet)
+// → DataView.currentRow.profile.name
 ```
 
-#### `resolveDataKey(descriptor: DataKeyDescriptor, dataSet: DataSet): IDataRow[] | IDataRow | null | undefined`
+#### `resolveDataViewKey(dataViewKey: string | undefined, dataSet: DataSet | null | undefined): DataView | undefined`
 
-从 DataSet 中解析数据键对应的值。
+从 DataSet 中解析定位键对应的 DataView。
+
+#### `resolveDataViewMember(input, dataSet): unknown`
+
+读取 DataView 成员，可选 `dataField` 继续读取对象型成员内部字段。
+
+#### `buildDataViewKey(tableName, viewId?, scope?): string`
+
+构建标准化 DataView 定位键。viewId 为 `'default'` 时也会显式输出。
 
 ```typescript
-const dk = parseDataKey('Users@default@rows')!
-const rows = resolveDataKey(dk, dataSet)  // → DataView.rows
+buildDataViewKey('Users')                    // → 'Users@default'
+buildDataViewKey('Users', 'grid')            // → 'Users@grid'
+buildDataViewKey('Users', 'grid', 'Shared')  // → '#Shared@Users@grid'
 ```
 
-#### `buildDataKey(tableName, field, viewId?): string`
+#### `diagnoseDataViewKey` / `diagnoseDataViewMember`
 
-构建标准化 DataKey 字符串。viewId 为 `'default'` 时也会显式输出。
-
-```typescript
-buildDataKey('Users', 'rows')           // → 'Users@default@rows'
-buildDataKey('Users', 'rows', 'grid')   // → 'Users@grid@rows'
-```
-
-#### `getViewKey(descriptor: DataKeyDescriptor): string`
-
-从描述符提取视图唯一键（`tableName.viewId`），用于订阅去重。
+返回可用于 fail-fast 日志的诊断对象，覆盖无效键、缺少 DataSet、表不存在、视图不存在、成员非法、字段组合非法等状态。
 
 ### 类型
 
 ```typescript
-type DataKeyField = 'rows' | 'columns' | 'currentRow' | 'selectedRows' | 'aggregateResult' | 'selectionAggregateResult' | 'total' | 'page' | 'pageSize' | 'requestState' | 'mutating' | 'loadingError' | 'mutatingError'
+enum DataMember {
+  Rows = 'rows',
+  Columns = 'columns',
+  CurrentRow = 'currentRow',
+  SelectedRows = 'selectedRows',
+  AggregateResult = 'aggregateResult',
+  SelectionAggregateResult = 'selectionAggregateResult',
+  Total = 'total',
+  Page = 'page',
+  PageSize = 'pageSize',
+  RequestState = 'requestState',
+  Mutating = 'mutating',
+  LoadingError = 'loadingError',
+  MutatingError = 'mutatingError'
+}
 
-interface DataKeyDescriptor {
+interface DataViewKeyDescriptor {
   scope?: string        // 仅跨页面 #scope 前缀存在
   tableName: string
   viewId: string
-  field: DataKeyField
-  fieldPath?: string    // 如 'currentRow.totalUsers' → fieldPath = 'totalUsers'
   raw: string
 }
 ```
@@ -437,14 +452,14 @@ interface DataKeyDescriptor {
 {
   "type": "r-table",
   "props": {
-    "viewKey": "Users@default",
+    "dataViewKey": "Users@default",
     "border": true,
     "highlightCurrentRow": true
   }
 }
 ```
 
-展示组件、动作和 `contextDataKey` 需要读取 DataView 输出时，使用完整 DataKey，例如 `Users@default@currentRow.name` 或 `Users@summary@aggregateResult.totalAmount`。
+展示组件、动作和详情上下文需要读取 DataView 输出时，使用显式三元组，例如 `dataViewKey: "Users@default", dataMember: "currentRow", dataField: "name"` 或 `dataViewKey: "Users@summary", dataMember: "aggregateResult", dataField: "totalAmount"`。
 
 ---
 

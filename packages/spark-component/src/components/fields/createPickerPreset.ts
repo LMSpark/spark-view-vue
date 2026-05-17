@@ -41,8 +41,8 @@ const SHARED_PROPS = {
   modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
   /** 可选项数组 */
   options: { type: Array as PropType<unknown[]>, default: undefined },
-  /** 选项绑定键 */
-  optionKey: { type: String, default: undefined },
+  /** 选项 DataView 定位键 */
+  optionDataViewKey: { type: String, default: undefined },
   /** 选项显示字段 */
   optionLabelField: { type: String, default: undefined },
   /** 选项值字段 */
@@ -87,7 +87,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
         // 定义值 prop 列表（仅在 !== undefined 时透传，避免覆盖 EntityPicker 默认值）
         const conditionalKeys = [
           'label', 'width',
-          'options', 'optionKey', 'optionLabelField', 'optionValueField', 'children',
+          'options', 'optionDataViewKey', 'optionLabelField', 'optionValueField', 'children',
         ] as const
 
         for (const key of conditionalKeys) {

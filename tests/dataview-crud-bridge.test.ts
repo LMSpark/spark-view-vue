@@ -180,7 +180,7 @@ describe('DataView CRUD bridge', () => {
       type: 'r-button',
       props: {
         action: 'append-row',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
         appendPayload: { id: 2, name: 'Bob' },
       },
     })!
@@ -199,7 +199,7 @@ describe('DataView CRUD bridge', () => {
       type: 'r-button',
       props: {
         action: 'append-row',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
         setCurrentRowOnSuccess: true,
         appendPayload: { id: 2, name: 'Bob' },
       },
@@ -223,7 +223,7 @@ describe('DataView CRUD bridge', () => {
       type: 'r-button',
       props: {
         action: 'prompt-edit',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
         targetRow: 'current',
         field: 'name',
       },
@@ -253,7 +253,7 @@ describe('DataView CRUD bridge', () => {
       type: 'r-button',
       props: {
         action: 'submit-current-form',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
       },
     })!
     const scope: ActionExecutionScope = { formApi }
@@ -298,7 +298,7 @@ describe('DataView CRUD bridge', () => {
       type: 'r-button',
       props: {
         action: 'prompt-append',
-        dataKey: 'Nodes@default@rows',
+        dataViewKey: 'Nodes@default', dataMember: 'rows',
         field: 'title',
         inheritFieldMap: { parentId: 'id' },
         appendPayload: { nodeKind: 'page' },
@@ -332,7 +332,7 @@ describe('DataView CRUD bridge', () => {
       type: 'r-button',
       props: {
         action: 'clear-rows',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
       },
     })!
     await executeActionDescriptor(desc, createActionContext(dataSet, pageService))
@@ -389,7 +389,7 @@ describe('DataView CRUD bridge', () => {
     await executeActionDescriptor(
       {
         action: 'append-row',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
         appendPayload: { id: 2, name: 'Bob' },
       },
       createActionContext(dataSet, pageService),
@@ -411,7 +411,7 @@ describe('DataView CRUD bridge', () => {
       {
         action: 'delete',
         target: 'current',
-        dataKey: 'Users@default@rows',
+        dataViewKey: 'Users@default',
         confirmMessage: '确认删除？',
       },
       createActionContext(dataSet, pageService),

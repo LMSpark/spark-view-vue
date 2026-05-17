@@ -51,7 +51,7 @@
  * @skill r-detail
  * @description 数据详情容器，与 r-form 结构一致但不可编辑。
  * @category container
- * @binding viewKey-driven
+ * @binding dataViewKey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
@@ -111,8 +111,9 @@ const {
     ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
     ...(props.children !== undefined ? { children: props.children } : {}),
     ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
-    viewKey: props.viewKey,
-    contextDataKey: props.contextDataKey,
+    dataViewKey: props.dataViewKey,
+    contextDataMember: props.contextDataMember,
+    contextDataField: props.contextDataField,
     autoColumns: props.autoColumns,
     gridColumns: props.gridColumns,
     gridGap: props.gridGap,

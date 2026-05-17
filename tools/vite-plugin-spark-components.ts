@@ -89,7 +89,7 @@ export type LoadStrategy = 'sync' | 'async'
  *  * @provides spark:capability:data-source
  *  * @provides spark:capability:field-context
  *  * @consumes spark:capability:page-dataset
- *  * @input { dataKey: string, nodeKey?: string, defaultExpandAll?: boolean }
+ *  * @input { dataViewKey: string, nodeKey?: string, defaultExpandAll?: boolean }
  *  * /
  * ```
  */

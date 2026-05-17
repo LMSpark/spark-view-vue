@@ -79,8 +79,8 @@
                     ],
                     "props": {
                       "labelWidth": "100px",
-                      "viewKey": "profile@default",
-                      "contextDataKey": "profile@default@currentRow"
+                      "dataViewKey": "profile@default",
+                      "contextDataMember": "currentRow"
                     }
                   }
                 ],
@@ -133,8 +133,8 @@
                       }
                     ],
                     "props": {
-                      "viewKey": "profile@default",
-                      "contextDataKey": "profile@default@currentRow"
+                      "dataViewKey": "profile@default",
+                      "contextDataMember": "currentRow"
                     }
                   }
                 ],

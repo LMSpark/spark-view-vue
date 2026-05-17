@@ -150,7 +150,7 @@
           "fixed": "right"
         }
       },
-      "viewKey": "Projects@default"
+      "dataViewKey": "Projects@default"
     }
   }
 ]

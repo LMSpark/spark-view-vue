@@ -16,7 +16,7 @@ $items = @(
   @{ File = 'screenshot-08-component-renderer.png'; Title = 'SparkComponentRenderer'; Subtitle = 'SparkNode 递归解释为 Vue 组件'; Accent = '#8A3FFC' },
   @{ File = 'screenshot-09-capability.png'; Title = '组件注册与能力系统'; Subtitle = 'Registry 解析 type，Capability 串联跨组件协作'; Accent = '#B83280' },
   @{ File = 'screenshot-10-data-model.png'; Title = 'DataSet / DataTable / DataView'; Subtitle = '页面数据空间、表事实、交互视图'; Accent = '#0072CE' },
-  @{ File = 'screenshot-11-datakey.png'; Title = 'DataKey 与级联加载'; Subtitle = '组件访问数据空间的声明式语言'; Accent = '#417505' },
+  @{ File = 'screenshot-11-dataview-binding.png'; Title = 'DataViewKey与级联加载'; Subtitle = '组件访问数据空间的声明式语义'; Accent = '#417505' },
   @{ File = 'screenshot-12-crud-aggregate.png'; Title = 'CRUD、聚合、计算列与树数据'; Subtitle = '企业后台高频数据能力沉到数据层'; Accent = '#A15C00' },
   @{ File = 'screenshot-13-permission.png'; Title = '权限系统真实边界'; Subtitle = '前端只是装饰层，后端鉴权才是安全边界'; Accent = '#B00020' },
   @{ File = 'screenshot-14-ai-runtime.png'; Title = '受约束 AI 架构'; Subtitle = 'core 管协议，PageDesign 管页面设计语义'; Accent = '#5E35B1' },

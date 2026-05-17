@@ -142,7 +142,7 @@
           "fixed": "right"
         }
       },
-      "viewKey": "Documents@default"
+      "dataViewKey": "Documents@default"
     }
   }
 ]

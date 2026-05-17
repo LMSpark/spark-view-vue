@@ -291,7 +291,7 @@ export type SparkNodeTreeMethodKey =
   | 'listChildren'
   | 'countNodes'
   | 'getAllData'
-  | 'collectDataKeys'
+  | 'collectDataViewKeys'
   | 'collectHandlerNames'
   | 'findByType'
   | 'addNode'
@@ -326,7 +326,7 @@ export type SparkNodeTreeMethodKey =
  *
  * 当前公开能力大致可分为四类：
  * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。
- * 2. 子树统计：countNodes / collectDataKeys / collectHandlerNames。
+ * 2. 子树统计：countNodes / collectDataViewKeys / collectHandlerNames。
  * 3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。
  * 4. 属性写入：setProps / setPropsBatch。
  *
@@ -574,13 +574,13 @@ export class SparkNodeTree {
   }
 
   /**
-  * 收集当前组件实例子树中出现过的全部唯一数据视图键。
+  * 收集当前组件实例子树中出现过的全部唯一 DataView 定位键。
    *
-  * 包括容器级 viewKey、DataView 输出 dataKey 以及表单/详情上下文 contextDataKey。
+  * 包括容器、展示、动作、选项等 props.dataViewKey / props.optionDataViewKey。
    */
-  collectDataKeys(): Set<string> {
+  collectDataViewKeys(): Set<string> {
     const keys = new Set<string>()
-    collectDataKeysRecursive(this._root, keys)
+    collectDataViewKeysRecursive(this._root, keys)
     return keys
   }
 
@@ -1636,27 +1636,22 @@ function countRecursive(node: SparkNode): number {
 }
 
 /**
- * 递归收集所有 props.viewKey / props.dataKey / props.contextDataKey。
+ * 递归收集所有 props.dataViewKey / props.optionDataViewKey。
  */
-function collectDataKeysRecursive(node: SparkNode, out: Set<string>): void {
-  const viewKey = node.props?.['viewKey']
-  if (typeof viewKey === 'string' && viewKey.length > 0) {
-    out.add(viewKey)
+function collectDataViewKeysRecursive(node: SparkNode, out: Set<string>): void {
+  const dataViewKey = node.props?.['dataViewKey']
+  if (typeof dataViewKey === 'string' && dataViewKey.length > 0) {
+    out.add(dataViewKey)
   }
 
-  const dataKey = node.props?.['dataKey']
-  if (typeof dataKey === 'string' && dataKey.length > 0) {
-    out.add(dataKey)
-  }
-
-  const contextDataKey = node.props?.['contextDataKey']
-  if (typeof contextDataKey === 'string' && contextDataKey.length > 0) {
-    out.add(contextDataKey)
+  const optionDataViewKey = node.props?.['optionDataViewKey']
+  if (typeof optionDataViewKey === 'string' && optionDataViewKey.length > 0) {
+    out.add(optionDataViewKey)
   }
 
   if (!Array.isArray(node.children)) return
   for (const child of node.children) {
-    if (isSparkNode(child)) collectDataKeysRecursive(child, out)
+    if (isSparkNode(child)) collectDataViewKeysRecursive(child, out)
   }
 }
 

@@ -207,8 +207,8 @@ export interface OpenAction extends ActionDescriptorBase {
  */
 export interface SetFieldAction extends ActionDescriptorBase {
   action: 'set-field'
-  /** 可选 DataKey，省略时使用容器作用域 DataView 的 currentRow */
-  dataKey?: string
+  /** 可选 DataViewKey，省略时使用容器作用域 DataView 的 currentRow */
+  dataViewKey?: string
   /** 目标字段名 */
   field: string
   /** 新值 */
@@ -239,8 +239,8 @@ export interface ActionPromptConfig {
 /** 追加新行动作。 */
 export interface AppendRowAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'append-row'
-  /** 目标 DataView 的 DataKey；省略时使用容器作用域 DataView */
-  dataKey?: string
+  /** 目标 DataViewKey；省略时使用容器作用域 DataView */
+  dataViewKey?: string
   /** 新行初始字段值（会与 inheritFields 合并，idField 不足时自动生成） */
   appendPayload?: Record<string, unknown>
   /** 主键字段名，默认 `'id'` */
@@ -260,7 +260,7 @@ export interface DeleteAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'delete'
   /** 删除目标：`scope`=行内当前行，`current`=视图 currentRow，`selected`=批量删除 */
   target: ActionRowTarget
-  dataKey?: string
+  dataViewKey?: string
   idField?: string
 }
 
@@ -268,7 +268,7 @@ export interface DeleteAction extends ActionDescriptorBase, ActionUiDecorator {
 export interface PatchAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'patch'
   target: ActionRowTarget
-  dataKey?: string
+  dataViewKey?: string
   idField?: string
   /** 静态 patch 对象（多字段批量赋值，与 field/value 互斥） */
   patch?: Record<string, unknown>
@@ -285,7 +285,7 @@ export interface MoveAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'move'
   /** 移动目标：`scope`=行内当前行，`current`=视图 currentRow */
   target: 'scope' | 'current'
-  dataKey?: string
+  dataViewKey?: string
   idField?: string
   /** 静态目标父节点 ID（null 表示移到根节点） */
   newParentId?: string | number | null
@@ -301,7 +301,7 @@ export interface MoveAction extends ActionDescriptorBase, ActionUiDecorator {
 export interface MessageRowAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'message-row'
   target: 'scope' | 'current'
-  dataKey?: string
+  dataViewKey?: string
   /** 自定义消息模板，支持 `{field}` 插值（优先于 messageFields） */
   message?: string
   /** 展示哪些字段（格式：`字段: 值 | 字段: 值`） */
@@ -313,19 +313,19 @@ export interface MessageRowAction extends ActionDescriptorBase, ActionUiDecorato
 /** 刷新数据视图（重新触发远程加载）。 */
 export interface RefreshAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'refresh'
-  dataKey?: string
+  dataViewKey?: string
 }
 
 /** 清空数据视图的所有行（本地操作，不发远程请求）。 */
 export interface ClearRowsAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'clear-rows'
-  dataKey?: string
+  dataViewKey?: string
 }
 
 /** 提交当前表单（读取 formApi 数据，调用 editRowById 保存）。 */
 export interface SubmitCurrentFormAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'submit-current-form'
-  dataKey?: string
+  dataViewKey?: string
   idField?: string
   /** 表单校验失败时的提示文案 */
   validateMessage?: string
@@ -370,13 +370,13 @@ export function isActionDescriptor(value: unknown): value is ActionDescriptor {
  * 从而保持执行器框架无关性并支持懒解析。
  */
 export interface ActionExecutionContext {
-  /** 获取当前页面的 DataSet 实例（用于 DataKey 解析）；页面未就绪时返回 null */
+  /** 获取当前页面的 DataSet 实例（用于 DataViewKey 解析）；页面未就绪时返回 null */
   getDataSet: () => IDataSet | null
   /**
    * 可选：获取容器作用域 DataView（调用方已确定 DataView 时提供）。
    *
    * 适用于容器明确持有 DataView 的场景（如 r-table 内置按钮），
-   * 此时可省略 descriptor 上的 dataKey，避免误报"数据视图未就绪"。
+   * 此时可省略 descriptor 上的 DataViewKey，避免误报"数据视图未就绪"。
    */
   getDataSource?: () => DataView | null
   /** 获取页面服务能力（消息/确认/弹窗等 UI 交互）；未注册时返回 null */

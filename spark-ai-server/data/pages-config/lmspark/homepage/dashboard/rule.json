@@ -363,7 +363,8 @@
                           "style": {
                             "width": "100%"
                           },
-                          "dataKey": "pageTypes@default@rows"
+                          "dataViewKey": "pageTypes@default",
+                          "dataMember": "rows"
                         }
                       }
                     ],

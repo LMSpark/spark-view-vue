@@ -1,4 +1,4 @@
-import type { DataView } from '@spark-view/spark-data'
+import type { DataMember, DataView } from '@spark-view/spark-data'
 import type {
   SparkCrudDataContainerProps,
   SparkGridLayoutProps,
@@ -19,8 +19,10 @@ export interface RDetailProps
   dataSource?: DataView
   /** 结构化工具栏 */
   toolbar?: RToolbarProps
-  /** 上下文输出绑定，默认由 viewKey 派生为 currentRow。 */
-  contextDataKey?: string
+  /** 上下文 DataView 成员，默认 currentRow。 */
+  contextDataMember?: DataMember | `${DataMember}`
+  /** 上下文成员内部业务字段或点路径。 */
+  contextDataField?: string
   /** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */
   autoColumns?: boolean
   /** 标题对齐 */

@@ -15,8 +15,7 @@
  * 10. ActionDescriptor 禁用判断 — isActionDescriptorDisabled
  */
 
-import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { resolveDataKeyBinding } from '@spark-view/spark-data'
+import { resolveDataViewKey, type DataView, type IDataRow } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
@@ -39,7 +38,7 @@ export function asRecord(value: unknown): Record<string, unknown> | null {
 
 /**
  * 读取非空字符串值，自动 trim；空字符串或非字符串类型返回 undefined。
- * 用于从 SparkNode props 中读取可选字符串配置（dataKey、idField 等）。
+ * 用于从 SparkNode props 中读取可选字符串配置（dataViewKey、idField 等）。
  */
 export function readString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
@@ -313,22 +312,22 @@ export interface ResolvedActionDataCapabilities {
 }
 
 /**
- * 根据 dataKey 和执行上下文解析数据能力三元组。
+ * 根据 dataViewKey 和执行上下文解析数据能力三元组。
  *
  * 解析优先级：
- * 1. 无 dataKey → 使用 `ctx.getDataSource()` 作用域 DataView（容器注入）
- * 2. 有 dataKey → 通过 `resolveDataKeyBinding` 从 DataSet 查找所属 DataView
+ * 1. 无 dataViewKey → 使用 `ctx.getDataSource()` 作用域 DataView（容器注入）
+ * 2. 有 dataViewKey → 从 DataSet 查找所属 DataView
  *
  * 任何环节不满足都返回全 null/空 的空结果，调用方负责 fail-fast。
  */
 export function resolveActionDataCapabilities(
-  dataKey: string | undefined,
+  dataViewKey: string | undefined,
   ctx: ActionExecutionContext,
 ): ResolvedActionDataCapabilities {
   const empty: ResolvedActionDataCapabilities = { dataSource: null, currentRow: null, selectedRows: [] }
   const scopedView = ctx.getDataSource?.() ?? null
 
-  if (!dataKey) {
+  if (!dataViewKey) {
     if (!scopedView) return empty
     return {
       dataSource: scopedView,
@@ -340,15 +339,12 @@ export function resolveActionDataCapabilities(
   const ds = ctx.getDataSet()
   if (!ds) return empty
 
-  const binding = resolveDataKeyBinding(dataKey, ds)
-  if (!binding) return empty
+  const dataSource = resolveDataViewKey(dataViewKey, ds)
+  if (!dataSource) return empty
 
-  const dataSource = binding.source as DataView
   return {
     dataSource,
-    currentRow: isRowLike(binding.value)
-      ? binding.value
-      : (isRowLike(dataSource.currentRow) ? dataSource.currentRow : null),
+    currentRow: isRowLike(dataSource.currentRow) ? dataSource.currentRow : null,
     selectedRows: getSelectedRows(dataSource),
   }
 }

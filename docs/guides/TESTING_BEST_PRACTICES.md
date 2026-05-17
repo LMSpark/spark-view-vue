@@ -224,14 +224,14 @@ describe('DataSet', () => {
     expect(view.rows[0].name).toBe('Alice')
   })
 
-  it('resolves DataKey binding', () => {
+  it('resolves DataViewKey', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'TestDS',
       tables: {
         Users: { tableName: 'Users', columns: [], rows: [{ id: 1 }] }
       }
     })
-    const binding = SparkData.resolveDataKeyBinding('Users@default@rows', ds)
+    const binding = SparkData.resolveDataViewMemberBinding('Users@default@rows', ds)
     expect(binding?.kind).toBe('value')
   })
 })

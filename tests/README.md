@@ -5,7 +5,7 @@
 ## 当前测试类型
 
 - 渲染器与字段组件行为测试
-- DataKey、DataView、CRUD 桥接回归测试
+- DataViewKey、DataView、CRUD 桥接回归测试
 - 路由、导航、权限、协议对齐测试
 - 公共导出面与目录结构约束测试
 

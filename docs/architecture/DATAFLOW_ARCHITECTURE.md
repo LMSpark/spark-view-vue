@@ -14,7 +14,7 @@ PageRenderer (SparkPageRenderer + useRendererSetup)
   ↓  sparkProvide(PAGE_DATASET, ...)
 Table容器 (e.g. r-table)
   ↓  sparkConsume(PAGE_DATASET) → DataSet
-  ↓  resolveDataKeyBinding(config.dataKey, dataSet) → DataView
+  ↓  resolveDataViewMemberBinding(config.dataViewKey/dataMember/dataField, dataSet) → DataView
   ↓  sparkProvide(DATA_SOURCE, dataView)
   ↓  sparkProvide(SELECTION, ...)
 Row组件 (e.g. r-row)
@@ -110,14 +110,14 @@ DataView → DataTable → DataSet
 ```
 DataSet 不持有 DataView 引用，不直接操控 DataView 状态。
 
-### ViewKey / DataKey 数据视图键
+### DataViewKey 数据视图键
 
 统一格式（无 scope，SPA 单 DataSet）：`tableName@viewId@field`
 
 ```typescript
-// ViewKey：容器定位 DataView
+// DataViewKey：容器定位 DataView
 'Users@grid'
-// DataKey：读取 DataView 输出字段
+// DataViewKey：读取 DataView 输出字段
 'Users@grid@rows'
 ```
 
@@ -131,13 +131,13 @@ DataSet 不持有 DataView 引用，不直接操控 DataView 状态。
 import { SparkData } from '@spark-view/spark-data'
 
 // 解析（渲染层首选）
-const binding = SparkData.resolveDataKeyBinding('Users@grid@rows', dataSet)
+const binding = SparkData.resolveDataViewMemberBinding('Users@grid@rows', dataSet)
 if (binding?.kind === 'view') {
   const dataSource: IDataSource = binding.source
 }
 
 // 构建
-const key = SparkData.buildDataKey('Users', 'rows', 'grid')
+const key = SparkData.buildDataViewKey('Users', 'rows', 'grid')
 // → 'Users@grid@rows'
 ```
 
@@ -175,8 +175,8 @@ const { sparkConsume, sparkProvide } = useSparkComponent(props.config)
 // 消费页面级 DataSet
 const dataSet = sparkConsume(PAGE_DATASET)
 
-// 解析 dataKey → DataView
-const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
+// 解析 dataViewKey/dataMember/dataField → DataView
+const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
 const dataView = binding?.kind === 'view' ? binding.source : null
 
 // 向子组件提供数据源和选择能力

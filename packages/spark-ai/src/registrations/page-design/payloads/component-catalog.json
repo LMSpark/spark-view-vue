@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-17T12:48:42.343Z",
+  "buildTime": "2026-05-17T14:48:18.391Z",
   "componentCount": 109,
   "components": {
     "about": {
@@ -846,7 +846,7 @@
       "type": "display-avatar",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayAvatar.vue",
       "category": "feature",
-      "description": "头像展示组件，支持图片/图标/文字多种模式和尺寸配置。 配置入口：type=\"display-avatar\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：field, value。",
+      "description": "头像展示组件，支持图片/图标/文字多种模式和尺寸配置。 配置入口：type=\"display-avatar\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。",
       "props": [
         {
           "name": "avatarSize",
@@ -951,6 +951,43 @@
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
         {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
           "name": "field",
           "type": "string",
           "required": false,
@@ -964,7 +1001,7 @@
       "type": "display-badge",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayBadge.vue",
       "category": "feature",
-      "description": "徽章展示组件。 配置入口：type=\"display-badge\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：field, value。",
+      "description": "徽章展示组件。 配置入口：type=\"display-badge\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。",
       "props": [
         {
           "name": "badgeValue",
@@ -1063,6 +1100,43 @@
           "type": "string | number",
           "required": false,
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
+        },
+        {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "field",
@@ -1533,7 +1607,7 @@
       "type": "display-image",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayImage.vue",
       "category": "feature",
-      "description": "图片展示组件，支持懒加载、预览画廊和加载占位。 配置入口：type=\"display-image\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：field, value。",
+      "description": "图片展示组件，支持懒加载、预览画廊和加载占位。 配置入口：type=\"display-image\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。",
       "props": [
         {
           "name": "src",
@@ -1652,6 +1726,43 @@
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
         {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
           "name": "field",
           "type": "string",
           "required": false,
@@ -1762,7 +1873,7 @@
       "type": "display-progress",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayProgress.vue",
       "category": "feature",
-      "description": "进度条展示组件，支持动态颜色。 配置入口：type=\"display-progress\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：field, value。",
+      "description": "进度条展示组件，支持动态颜色。 配置入口：type=\"display-progress\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。",
       "props": [
         {
           "name": "percentage",
@@ -1893,6 +2004,43 @@
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
         {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
           "name": "field",
           "type": "string",
           "required": false,
@@ -2019,19 +2167,13 @@
       "type": "display-statistic",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayStatistic.vue",
       "category": "feature",
-      "description": "统计数值展示组件，支持精度、前后缀和千分位分隔。 配置入口：type=\"display-statistic\"，category=feature（功能组件）。 绑定语义：self-resolving dataKey，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataKey, field, value, title。",
+      "description": "统计数值展示组件，支持精度、前后缀和千分位分隔。 配置入口：type=\"display-statistic\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value, title。",
       "props": [
         {
           "name": "title",
           "type": "string",
           "required": false,
           "description": "统计标题"
-        },
-        {
-          "name": "dataKey",
-          "type": "string",
-          "required": false,
-          "description": "DataView 输出读取键"
         },
         {
           "name": "precision",
@@ -2093,6 +2235,43 @@
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
         {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
           "name": "field",
           "type": "string",
           "required": false,
@@ -2106,7 +2285,7 @@
       "type": "display-tag",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayTag.vue",
       "category": "feature",
-      "description": "标签展示组件，支持类型/尺寸/主题样式和可关闭功能。 配置入口：type=\"display-tag\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：field, value。 主要事件：close。",
+      "description": "标签展示组件，支持类型/尺寸/主题样式和可关闭功能。 配置入口：type=\"display-tag\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。 主要事件：close。",
       "props": [
         {
           "name": "content",
@@ -2226,6 +2405,43 @@
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
         {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
           "name": "field",
           "type": "string",
           "required": false,
@@ -2245,7 +2461,7 @@
       "type": "display-text",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayText.vue",
       "category": "feature",
-      "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。 配置入口：type=\"display-text\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：field, value, placeholder。",
+      "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。 配置入口：type=\"display-text\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value, placeholder。",
       "props": [
         {
           "name": "tag",
@@ -2327,6 +2543,43 @@
           "type": "unknown",
           "required": false,
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
+        },
+        {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "field",
@@ -3272,7 +3525,7 @@
       "type": "r-cascader",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldCascader.vue",
       "category": "field",
-      "description": "级联选择字段，绑定路径数组值。 配置入口：type=\"r-cascader\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "级联选择字段，绑定路径数组值。 配置入口：type=\"r-cascader\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "emitPath",
@@ -3296,10 +3549,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -3756,7 +4040,7 @@
       "type": "r-checkbox-group",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.vue",
       "category": "field",
-      "description": "复选框组字段，绑定数组值，可切换按钮样式。 配置入口：type=\"r-checkbox-group\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "复选框组字段，绑定数组值，可切换按钮样式。 配置入口：type=\"r-checkbox-group\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "permissionDeniedMode",
@@ -3773,10 +4057,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -4738,7 +5053,7 @@
       "type": "r-dept-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldDeptPicker.vue",
       "category": "field",
-      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionKey, label, placeholder。 主要事件：update:modelValue。",
+      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "placeholder",
@@ -4791,10 +5106,10 @@
           "description": "是否允许清空"
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键"
+          "description": "选项 DataView 定位键"
         },
         {
           "name": "valueSeparator",
@@ -4888,7 +5203,7 @@
       "type": "r-detail",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.vue",
       "category": "container",
-      "description": "数据详情容器，与 r-form 结构一致但不可编辑。 配置入口：type=\"r-detail\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey, toolbar。",
+      "description": "数据详情容器，与 r-form 结构一致但不可编辑。 配置入口：type=\"r-detail\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, toolbar。",
       "props": [
         {
           "name": "toolbar",
@@ -4900,10 +5215,35 @@
           }
         },
         {
-          "name": "contextDataKey",
+          "name": "contextDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "上下文 DataView 成员，默认 currentRow。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "上下文 DataView 成员，默认 currentRow。"
+          }
+        },
+        {
+          "name": "contextDataField",
           "type": "string",
           "required": false,
-          "description": "上下文输出绑定，默认由 viewKey 派生为 currentRow。"
+          "description": "上下文成员内部业务字段或点路径。"
         },
         {
           "name": "autoColumns",
@@ -4966,16 +5306,41 @@
           }
         },
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
           "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
         },
         {
-          "name": "dataKey",
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
           "type": "string",
           "required": false,
-          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "showDataViewMeta",
@@ -5542,7 +5907,7 @@
       "type": "r-entity-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldEntityPicker.vue",
       "category": "field",
-      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。 配置入口：type=\"r-entity-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。 配置入口：type=\"r-entity-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "searchable",
@@ -5573,10 +5938,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -6216,13 +6612,13 @@
       "type": "r-filter",
       "filePath": "packages/spark-component/src/components/containers/zones/RendererFilter.vue",
       "category": "container",
-      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey。",
+      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey。",
       "props": [
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
-          "description": "DataView 定位键（viewKey）。"
+          "description": "DataView 定位键（dataViewKey）。"
         },
         {
           "name": "collapsible",
@@ -6342,7 +6738,7 @@
       "type": "r-form",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.vue",
       "category": "container",
-      "description": "数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。 配置入口：type=\"r-form\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey, toolbar。",
+      "description": "数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。 配置入口：type=\"r-form\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, toolbar。",
       "props": [
         {
           "name": "toolbar",
@@ -6354,10 +6750,35 @@
           }
         },
         {
-          "name": "contextDataKey",
+          "name": "contextDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "上下文 DataView 成员，默认 currentRow。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "上下文 DataView 成员，默认 currentRow。"
+          }
+        },
+        {
+          "name": "contextDataField",
           "type": "string",
           "required": false,
-          "description": "上下文输出绑定，默认由 viewKey 派生为 currentRow。"
+          "description": "上下文成员内部业务字段或点路径。"
         },
         {
           "name": "autoColumns",
@@ -6393,16 +6814,41 @@
           }
         },
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
           "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
         },
         {
-          "name": "dataKey",
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
           "type": "string",
           "required": false,
-          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "showDataViewMeta",
@@ -6664,7 +7110,7 @@
       "type": "r-icon",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldIcon.vue",
       "category": "field",
-      "description": "图标选择字段，绑定图标名称字符串。 配置入口：type=\"r-icon\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "图标选择字段，绑定图标名称字符串。 配置入口：type=\"r-icon\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "classPrefix",
@@ -6688,10 +7134,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -7197,7 +7674,7 @@
       "type": "r-list",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererList/RendererList.vue",
       "category": "container",
-      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。 配置入口：type=\"r-list\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey, columns, toolbar, actions。",
+      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。 配置入口：type=\"r-list\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, columns, toolbar, actions。",
       "props": [
         {
           "name": "toolbar",
@@ -7329,16 +7806,41 @@
           }
         },
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
           "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
         },
         {
-          "name": "dataKey",
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
           "type": "string",
           "required": false,
-          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "showDataViewMeta",
@@ -7409,9 +7911,9 @@
       "props": [
         {
           "name": "mentionTriggers",
-          "type": "{ prefix: string; split?: string; writebackField?: string; searchable?: boolean; options?: { dataKey?: string; valueField?: string; labelField?: string; disabledField?: string; }; }[]",
+          "type": "{ prefix: string; split?: string; writebackField?: string; searchable?: boolean; options?: { dataViewKey?: string; valueField?: string; labelField?: string; disabledField?: string; }; }[]",
           "required": false,
-          "description": "完整的提及触发规则列表。\n\n每一项描述一个前缀触发器的完整结构：\n- `prefix`：触发字符\n- `split`：选中后写回文本的分隔符\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\n- `options.dataKey`：候选项数据源\n - `options.valueField / labelField / disabledField`：候选项字段映射\n- `searchable`：是否启用本地候选项过滤\n\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\n- `modelValue` 表示当前 Mention 输入框中的文本值\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\n\n注意：底层 el-mention 只支持一个全局 `split`；\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
+          "description": "完整的提及触发规则列表。\n\n每一项描述一个前缀触发器的完整结构：\n- `prefix`：触发字符\n- `split`：选中后写回文本的分隔符\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\n- `options.dataViewKey`：候选项数据源\n - `options.valueField / labelField / disabledField`：候选项字段映射\n- `searchable`：是否启用本地候选项过滤\n\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\n- `modelValue` 表示当前 Mention 输入框中的文本值\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\n\n注意：底层 el-mention 只支持一个全局 `split`；\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
         },
         {
           "name": "placement",
@@ -7661,7 +8163,7 @@
       "type": "r-multi-select",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.vue",
       "category": "field",
-      "description": "多选下拉字段，绑定数组值，支持标签折叠（collapseTags）显示。 配置入口：type=\"r-multi-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "多选下拉字段，绑定数组值，支持标签折叠（collapseTags）显示。 配置入口：type=\"r-multi-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "collapseTags",
@@ -7699,10 +8201,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -8423,7 +8956,7 @@
       "type": "r-product-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldProductPicker.vue",
       "category": "field",
-      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionKey, label, placeholder。 主要事件：update:modelValue。",
+      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "placeholder",
@@ -8476,10 +9009,10 @@
           "description": "是否允许清空"
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键"
+          "description": "选项 DataView 定位键"
         },
         {
           "name": "valueSeparator",
@@ -8573,7 +9106,7 @@
       "type": "r-radio",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldRadio.vue",
       "category": "field",
-      "description": "单选按钮组字段，绑定 string/number 值，可切换按钮样式渲染。 配置入口：type=\"r-radio\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "单选按钮组字段，绑定 string/number 值，可切换按钮样式渲染。 配置入口：type=\"r-radio\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "permissionDeniedMode",
@@ -8590,10 +9123,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -9146,7 +9710,7 @@
       "type": "r-segmented",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldSegmented.vue",
       "category": "field",
-      "description": "分段选择器字段，绑定 string/number 值。 配置入口：type=\"r-segmented\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：change, update:modelValue。",
+      "description": "分段选择器字段，绑定 string/number 值。 配置入口：type=\"r-segmented\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：change, update:modelValue。",
       "props": [
         {
           "name": "size",
@@ -9187,10 +9751,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -9408,7 +10003,7 @@
       "type": "r-select",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldSelect.vue",
       "category": "field",
-      "description": "单选下拉字段，绑定 string/number 值，支持静态选项列表或 optionKey 动态数据源绑定。 配置入口：type=\"r-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "单选下拉字段，绑定 string/number 值，支持静态选项列表或 optionDataViewKey 动态数据源绑定。 配置入口：type=\"r-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "permissionDeniedMode",
@@ -9425,10 +10020,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -10321,7 +10947,7 @@
       "type": "r-table",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.vue",
       "category": "container",
-      "description": "数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。 配置入口：type=\"r-table\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey, toolbar, filter, actions。",
+      "description": "数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。 配置入口：type=\"r-table\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, toolbar, filter, actions。",
       "props": [
         {
           "name": "tableProps",
@@ -10413,16 +11039,41 @@
           }
         },
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
           "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
         },
         {
-          "name": "dataKey",
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
           "type": "string",
           "required": false,
-          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "showDataViewMeta",
@@ -11312,7 +11963,7 @@
       "type": "r-toolbar",
       "filePath": "packages/spark-component/src/components/containers/layout/RendererToolbar.vue",
       "category": "container",
-      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField。",
       "props": [
         {
           "name": "tail",
@@ -11398,16 +12049,41 @@
           }
         },
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
           "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
         },
         {
-          "name": "dataKey",
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
           "type": "string",
           "required": false,
-          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "showDataViewMeta",
@@ -11639,7 +12315,7 @@
       "type": "r-transfer",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldTransfer.vue",
       "category": "field",
-      "description": "穿梭框字段，绑定数组值，支持搜索过滤。 配置入口：type=\"r-transfer\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "穿梭框字段，绑定数组值，支持搜索过滤。 配置入口：type=\"r-transfer\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "titles",
@@ -11687,10 +12363,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -11922,7 +12629,7 @@
       "type": "r-tree",
       "filePath": "packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.vue",
       "category": "container",
-      "description": "树形容器，支持懒加载、节点操作和编辑器侧面板。 配置入口：type=\"r-tree\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey, toolbar, actions。",
+      "description": "树形容器，支持懒加载、节点操作和编辑器侧面板。 配置入口：type=\"r-tree\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, toolbar, actions。",
       "props": [
         {
           "name": "toolbar",
@@ -12014,16 +12721,41 @@
           }
         },
         {
-          "name": "viewKey",
+          "name": "dataViewKey",
           "type": "string",
           "required": false,
           "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
         },
         {
-          "name": "dataKey",
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
           "type": "string",
           "required": false,
-          "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+          "description": "DataView 成员内部业务字段或点路径。"
         },
         {
           "name": "showDataViewMeta",
@@ -12069,7 +12801,7 @@
       "type": "r-tree-select",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.vue",
       "category": "field",
-      "description": "树形选择字段，绑定单值或数组。 配置入口：type=\"r-tree-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionKey, label。 主要事件：update:modelValue。",
+      "description": "树形选择字段，绑定单值或数组。 配置入口：type=\"r-tree-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "defaultExpandAll",
@@ -12100,10 +12832,41 @@
           }
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@default@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+          "description": "选项 DataView 定位键。\n\n通常指向某个 DataView，例如 `Categories@default`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
+        },
+        {
+          "name": "optionDataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "选项来源 DataView 成员，默认 rows。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "选项来源 DataView 成员，默认 rows。"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "type": "string",
+          "required": false,
+          "description": "选项来源成员内部字段或路径。"
         },
         {
           "name": "valueSeparator",
@@ -12565,7 +13328,7 @@
       "type": "r-user-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldUserPicker.vue",
       "category": "field",
-      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionKey, label, placeholder。 主要事件：update:modelValue。",
+      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "placeholder",
@@ -12618,10 +13381,10 @@
           "description": "是否允许清空"
         },
         {
-          "name": "optionKey",
+          "name": "optionDataViewKey",
           "type": "string",
           "required": false,
-          "description": "选项绑定键"
+          "description": "选项 DataView 定位键"
         },
         {
           "name": "valueSeparator",
@@ -13724,7 +14487,7 @@
     "r-filter": {
       "title": "r-filter",
       "type": "object",
-      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey。",
+      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey。",
       "properties": {
         "type": {
           "type": "string",
@@ -13735,9 +14498,9 @@
           "type": "object",
           "description": "r-filter props 配置对象。",
           "properties": {
-            "viewKey": {
+            "dataViewKey": {
               "type": "string",
-              "description": "DataView 定位键（viewKey）。"
+              "description": "DataView 定位键（dataViewKey）。"
             },
             "collapsible": {
               "type": "boolean",
@@ -13940,7 +14703,7 @@
     "r-toolbar": {
       "title": "r-toolbar",
       "type": "object",
-      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving viewKey，向子组件提供数据上下文。 关键 props：viewKey。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField。",
       "properties": {
         "type": {
           "type": "string",
@@ -14007,13 +14770,32 @@
               "type": "string",
               "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
             },
-            "viewKey": {
+            "dataViewKey": {
               "type": "string",
               "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
             },
-            "dataKey": {
+            "dataMember": {
+              "enum": [
+                "rows",
+                "columns",
+                "selectedRows",
+                "total",
+                "page",
+                "pageSize",
+                "requestState",
+                "mutating",
+                "loadingError",
+                "mutatingError",
+                "aggregateResult",
+                "selectionAggregateResult",
+                "currentRow"
+              ],
               "type": "string",
-              "description": "DataView 输出读取键。\n固定格式为 `table@viewId@field` 或 `#scope@table@viewId@field`，用于读取 DataView 的具体输出字段。"
+              "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+            },
+            "dataField": {
+              "type": "string",
+              "description": "DataView 成员内部业务字段或点路径。"
             },
             "showDataViewMeta": {
               "type": "boolean",
@@ -14094,7 +14876,7 @@
         },
         "props": {
           "type": "string",
-          "description": "组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项）"
+          "description": "组件属性（业务输入通过 props 传递，如 dataViewKey / class / 组件自有配置项）"
         },
         "children": {
           "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"

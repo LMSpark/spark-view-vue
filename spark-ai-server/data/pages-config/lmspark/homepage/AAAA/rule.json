@@ -62,7 +62,8 @@
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
-                  "dataKey": "Users@default@rows"
+                  "dataViewKey": "Users@default",
+                  "dataMember": "rows"
                 }
               }
             ],
@@ -111,8 +112,8 @@
                 ],
                 "props": {
                   "labelWidth": "100px",
-                  "viewKey": "Users@default",
-                  "contextDataKey": "Users@default@currentRow"
+                  "dataViewKey": "Users@default",
+                  "contextDataMember": "currentRow"
                 }
               }
             ],

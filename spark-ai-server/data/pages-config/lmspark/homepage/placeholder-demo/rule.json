@@ -136,7 +136,7 @@
                       "stripe": true,
                       "highlightCurrentRow": true,
                       "size": "large",
-                      "viewKey": "employees@default"
+                      "dataViewKey": "employees@default"
                     }
                   }
                 ],
@@ -227,8 +227,8 @@
                       }
                     ],
                     "props": {
-                      "viewKey": "employees@default",
-                      "contextDataKey": "employees@default@currentRow"
+                      "dataViewKey": "employees@default",
+                      "contextDataMember": "currentRow"
                     }
                   }
                 ],

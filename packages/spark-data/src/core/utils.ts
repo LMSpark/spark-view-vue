@@ -4,11 +4,11 @@
 
 import type { IDataRow, IDataSource, DependencyType, CrudApi } from '../types'
 
-/** DataKey 分隔符，名称中禁止包含 */
+/** DataViewKey 分隔符，名称中禁止包含 */
 const SEPARATOR = '@'
 
 /**
- * 校验名称中不含 DataKey 分隔符 '@'
+ * 校验名称中不含 DataViewKey 分隔符 '@'
  * @throws 如果名称含 '@'
  * @internal
  */

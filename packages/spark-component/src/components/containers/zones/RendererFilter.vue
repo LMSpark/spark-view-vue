@@ -108,7 +108,7 @@ const isPanelMode = computed(() => {
 const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
 
 const dataState = useContainerDataSource({
-  viewKey: toRef(props, 'viewKey'),
+  dataViewKey: toRef(props, 'dataViewKey'),
   sparkConsume,
   inheritedDataSource,
   skipEffects: true,
@@ -119,7 +119,7 @@ watch(
   ([panelMode, view]) => {
     if (panelMode && !view) {
       throw new Error(
-        'RendererFilter: 面板模式必须能解析到 DataView，请通过 viewKey 显式绑定，'
+        'RendererFilter: 面板模式必须能解析到 DataView，请通过 dataViewKey 显式绑定，'
         + '或确保父容器通过 DATA_SOURCE 能力向下注入。',
       )
     }

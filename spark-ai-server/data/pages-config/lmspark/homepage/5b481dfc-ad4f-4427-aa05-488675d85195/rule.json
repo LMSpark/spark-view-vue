@@ -21,7 +21,8 @@
         "props": {
           "header": "总订单数",
           "shadow": "always",
-          "dataKey": "Orders@orderListView@aggregateResult"
+          "dataViewKey": "Orders@orderListView",
+          "dataMember": "aggregateResult"
         }
       },
       {
@@ -42,7 +43,8 @@
         "props": {
           "header": "总金额",
           "shadow": "always",
-          "dataKey": "Orders@orderListView@aggregateResult"
+          "dataViewKey": "Orders@orderListView",
+          "dataMember": "aggregateResult"
         }
       },
       {
@@ -63,7 +65,8 @@
         "props": {
           "header": "平均金额",
           "shadow": "always",
-          "dataKey": "Orders@orderListView@aggregateResult"
+          "dataViewKey": "Orders@orderListView",
+          "dataMember": "aggregateResult"
         }
       },
       {
@@ -84,7 +87,8 @@
         "props": {
           "header": "待处理订单",
           "shadow": "always",
-          "dataKey": "Orders@pendingOrdersView@aggregateResult"
+          "dataViewKey": "Orders@pendingOrdersView",
+          "dataMember": "aggregateResult"
         }
       },
       {
@@ -105,7 +109,8 @@
         "props": {
           "header": "客户总数",
           "shadow": "always",
-          "dataKey": "Customers@default@aggregateResult"
+          "dataViewKey": "Customers@default",
+          "dataMember": "aggregateResult"
         }
       },
       {
@@ -126,7 +131,8 @@
         "props": {
           "header": "产品总数",
           "shadow": "always",
-          "dataKey": "Products@default@aggregateResult"
+          "dataViewKey": "Products@default",
+          "dataMember": "aggregateResult"
         }
       },
       {
@@ -147,7 +153,8 @@
         "props": {
           "header": "员工总数",
           "shadow": "always",
-          "dataKey": "Employees@default@aggregateResult"
+          "dataViewKey": "Employees@default",
+          "dataMember": "aggregateResult"
         }
       }
     ],
@@ -201,12 +208,13 @@
                 "props": {
                   "field": "customerId",
                   "label": "客户名称",
-                  "optionKey": "Customers@default@rows",
                   "optionLabelField": "name",
                   "optionValueField": "id",
                   "readonly": true,
                   "width": 120,
-                  "placeholder": "请选择客户"
+                  "placeholder": "请选择客户",
+                  "optionDataViewKey": "Customers@default",
+                  "optionDataMember": "rows"
                 }
               },
               {
@@ -216,12 +224,13 @@
                 "props": {
                   "field": "employeeId",
                   "label": "业务人",
-                  "optionKey": "Employees@default@rows",
                   "optionLabelField": "name",
                   "optionValueField": "id",
                   "readonly": true,
                   "width": 120,
-                  "placeholder": "请选择业务人"
+                  "placeholder": "请选择业务人",
+                  "optionDataViewKey": "Employees@default",
+                  "optionDataMember": "rows"
                 }
               },
               {
@@ -362,7 +371,7 @@
                   "align": "center"
                 }
               },
-              "viewKey": "Orders@orderListView"
+              "dataViewKey": "Orders@orderListView"
             }
           }
         ],
@@ -510,7 +519,7 @@
                   "align": "center"
                 }
               },
-              "viewKey": "Customers@default"
+              "dataViewKey": "Customers@default"
             }
           }
         ],
@@ -661,7 +670,7 @@
                   "align": "center"
                 }
               },
-              "viewKey": "Products@default"
+              "dataViewKey": "Products@default"
             }
           }
         ],

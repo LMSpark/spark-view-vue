@@ -34,7 +34,7 @@
 rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 每个节点严格对齐 h(type, props, children) 三段式：
 - type: 必填，组件类型
-- props: 组件全部属性（id、style、class、on、field、label、dataKey 等统统放在 props 内）
+- props: 组件全部属性（id、style、class、on、field、label、dataViewKey、dataMember、dataField 等统统放在 props 内）
 - children: 子组件或文本数组
 
 props 内常用字段：
@@ -45,7 +45,9 @@ props 内常用字段：
 - label: 显示标签（r-* 字段组件的表头/标签）
 - value: 表单默认值
 - id: 组件唯一标识
-- dataKey: SPARK DataView 输出读取键
+- dataViewKey: SPARK DataView 定位键
+- dataMember: DataView 成员枚举字符串
+- dataField: 对象型成员内部字段路径
 
 ⚠️ 除 type/props/children 外，不要在节点根级写其他字段。
 运行时有兼容层会自动归并根级字段到 props，但新生成的配置必须遵守三段式。
@@ -115,7 +117,7 @@ props 内常用字段：
 - r-section / r-block 可在 props.headerActions 中声明头部动作区，值为组件配置数组；优先使用 Render*，不要直接放 el-button / el-alert / el-tag 等未注册组件
 - r-section / r-block / r-dialog / r-drawer / r-step / r-tab-pane / r-collapse-item 的内容区与动作区，都不要直接放 el-button / el-alert / el-tag / el-input / el-card；需要交互或提示时优先用 Render* 或纯 HTML 文本布局
 - children 中的纯字符串会被渲染为文本节点
-- 不允许使用 {{variable}} 模板插值；动态内容请用 Render* 或 dataKey
+- 不允许使用 {{variable}} 模板插值；动态内容请用 Render* 或 dataViewKey + dataMember + dataField
 
 事件规则：
 - 标准事件写在 on 中，值为 script.js 的函数名字符串
@@ -124,12 +126,12 @@ props 内常用字段：
 - 对标准 el-table / r-table 容器，currentChange / selectionChange 会由框架自动同步到 DataView，通常不要在回调里重复调用 setCurrentRow / setSelectedRows
 - 若使用 Render*、原生 table/div 列表、或其他非标准选择组件自行实现选中逻辑，则需要手动把 UI 选择结果同步回 DataView.selection
 
-DataKey / ViewKey 规则：
-- 容器使用 viewKey 定位 DataView：表名@视图ID 或 #scope@表名@视图ID
-- dataKey/contextDataKey 读取 DataView 输出：表名@视图ID@字段 或 #scope@表名@视图ID@字段
-- 常用字段：rows, columns, currentRow, selectedRows, aggregateResult, selectionAggregateResult, total, page, pageSize, requestState, mutating, loadingError, mutatingError
-- 允许字段路径：如 Users@default@currentRow.name
-- 不再使用 Users@rows / Users@currentRow 这类省略 viewId 的旧写法
+- DataViewKey规则：
+- 使用 dataViewKey 定位 DataView：表名@视图ID 或 #scope@表名@视图ID
+- 使用 dataMember 读取 DataView 成员：rows, columns, currentRow, selectedRows, aggregateResult, selectionAggregateResult, total, page, pageSize, requestState, mutating, loadingError, mutatingError
+- 使用 dataField 读取对象型成员内部字段路径：如 { "dataViewKey": "Users@default", "dataMember": "currentRow", "dataField": "name" }
+- dataField 只允许用于 currentRow / aggregateResult / selectionAggregateResult；rows.id、selectedRows.name 这类集合成员字段读取是非法组合
+- 不再使用 Users@rows / Users@default@rows 这类把成员拼进键里的旧写法
 - 表名必须与 pagedata.json 中 tables 的键完全一致，大小写也必须一致
 
 布局与样式：
@@ -249,7 +251,7 @@ Render* 规则：
 - 计算列不要在 rows 中手动填值，由系统在运行时自动计算
 - views.default.aggregates 是“视图级聚合”，负责自动维护 aggregateResult 和 selectionAggregateResult；它与 computeExpression 独立，前者做整列汇总，后者做逐行计算
 - aggregates 支持 sum、count、avg、min、max、join；field 可选，join 可额外配置 separator
-- 需要在 UI 上展示汇总时，优先通过完整 DataKey 读取 table@viewId@aggregateResult 或 table@viewId@selectionAggregateResult，而不是在 script.js 中手写统计逻辑
+- 需要在 UI 上展示汇总时，优先使用 dataViewKey + dataMember，例如 dataViewKey=table@viewId 且 dataMember=aggregateResult / selectionAggregateResult，而不是在 script.js 中手写统计逻辑
 
 tableRelations + viewDependencies 规则（两层关系模型）：
 
@@ -266,7 +268,7 @@ viewDependencies 合法字段（仅 dependencyType 非 currentRow 或 autoLoad �
 - tableRelations 应最后生成：先确定 tables、columns、api、选项表、treeConfig、views.default 和命名视图，再统一输出 tableRelations
 - 如果关系来自字段输入级联，先看"哪个输入字段驱动哪个选项表或子表过滤"，再反推 parentTable / childTable / parentField / childField
 - tableRelation 的本质是"父表与子表之间的外键映射"；视图联动策略由 viewDependencies 单独表达
-- SPARK 已内置 0 代码级联机制：标准主从表、三级联动、字典过滤、批量联动，优先通过 tableRelations + dataKey 表达，不要默认写 script.js 监听父表再手工过滤子表
+- SPARK 已内置 0 代码级联机制：标准主从表、三级联动、字典过滤、批量联动，优先通过 tableRelations + dataViewKey 表达，不要默认写 script.js 监听父表再手工过滤子表
 - parentField 默认取父表主键；childField 是子表中的匹配字段，必须能与父字段建立稳定映射
 - dependencyType 决定父视图用哪种状态驱动子视图：currentRow（主从钻取，最常用，也是默认值）、selectedRows（批量联动）、allRows（全集/字典联动）
 - 子视图无 api 时，框架会基于 tableRelation 自动做内存级联过滤；子视图有 api 时，框架会在父状态变化后自动请求子视图数据
@@ -290,7 +292,7 @@ viewDependencies 合法字段（仅 dependencyType 非 currentRow 或 autoLoad �
 字段编辑选项规则：
 - pagedata.json 负责为选择类字段提供选项数据源，不要把 options 数组重复塞进主表每一行
 - 若需求里有下拉、单选、多选、树选项、级联目录、状态字典，优先创建独立字典表，如 StatusOptions、RoleOptions、CategoryOptions
-- rule.json 中选择类字段优先通过 optionKey 读取字典表视图行集合，例如 StatusOptions@default@rows
+- rule.json 中选择类字段优先通过 optionDataViewKey + optionDataMember 读取字典表视图行集合，例如 optionDataViewKey=StatusOptions@default 且 optionDataMember=rows
 - 选项显示字段常用 label、text、name；取值字段常用 value、id、code；命名不标准时在 rule.json 中补 optionLabelField、optionValueField
 - 树选项或级联选项若来自 DataSet，应在对应选项视图补 treeConfig，或保证 rows 已是带 children 的嵌套结构
 - 若字段编辑选项存在级联，第一阶段先建选项表和级联键列，第二阶段再用 tableRelation 把主表或上级选项与这些 Options 表连接起来
@@ -312,7 +314,7 @@ script.js 运行在 with(__ctx) 沙箱中，不支持 import。所有依赖都�
 - h: Vue h 函数
 
 数据建模原则：
-- 主数据、子表、树数据、字典/下拉选项优先放入 DataSet，通过 dataKey / DataView / tableRelations 访问；不要在 script.js 中再维护一份旁路数据
+- 主数据、子表、树数据、字典/下拉选项优先放入 DataSet，通过 dataViewKey / DataMember / DataView / tableRelations 访问；不要在 script.js 中再维护一份旁路数据
 
 脚本结构要求：
 - __init__() 是页面加载入口（渲染器挂载后自动调用），$dataSet 在此时已就绪；有任何初始化操作必须写在 __init__ 中
@@ -385,7 +387,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 【5】跨文件一致性（必须严格遵守）
 ═══════════════════════════════════════════════════
 
-1. rule.json 中的 dataKey 表名必须在 pagedata.json 中存在且大小写完全一致
+1. rule.json 中的 dataViewKey 表名必须在 pagedata.json 中存在且大小写完全一致
 2. rule.json 中 on 引用的每个函数名，script.js 中都必须存在
 3. rule.json 中的每个 Render* type，script.js 中都必须存在同名函数
 4. rule.json 中使用的 class，style.css 中应有对应选择器
@@ -439,7 +441,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 生成时优先保证：
 - 输出 JSON 合法
 - 文件齐全且符合当前轮次要求
-- dataKey、事件函数、Render 函数、字段名完全对齐
+- dataViewKey、dataMember、dataField、事件函数、Render 函数、字段名完全对齐
 - 不要输出未注册组件或沙箱中不可用的 API
 
 ═══════════════════════════════════════════════════
@@ -462,5 +464,5 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 | 事件 handler 解构 | `({ currentRow }) => ...` 或 `event.view.currentRow` | `(currentRow) => ...`（第一个参数直接是值） |
 | _pageState 顶层直接赋值 | `_pageState.xxx = 1`（在函数外顶层） | 顶层只声明 `let _pageState = {}`，赋值在 __init__ 内 |
 | script.js 缺少 __init__ | 没有定义 __init__ 函数 | 必须定义 `function __init__() {...}` |
-| dataKey 大小写不一致 | `"dataKey": "users@default@rows"`，表名定义为 `"Users"` | 大小写必须与 pagedata.json tables 键完全相同 |
+| dataViewKey 大小写不一致 | `"dataViewKey": "users@default"`，表名定义为 `"Users"` | 大小写必须与 pagedata.json tables 键完全相同 |
 | 树场景 UI 更新 | 树节点事件内触发重建 | 改用 `view.replaceRows()` + DOM 直写 |

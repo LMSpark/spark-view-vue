@@ -242,7 +242,7 @@ const selectedUsers = computed(() => view.selectedRows)
 
 ---
 
-## 7. DataKey 绑定（渲染层使用）
+## 7. DataViewKey（渲染层使用）
 
 ```typescript
 import { SparkData } from '@spark-view/spark-data'
@@ -253,22 +253,22 @@ import { useSparkComponent } from '@spark-view/spark-component'
 const { sparkConsume } = useSparkComponent(props.config)
 const dataSet = sparkConsume(PAGE_DATASET)
 
-// 容器级绑定使用 ViewKey 定位 DataView
-const view = SparkData.resolveViewKey('Users@grid', dataSet)
+// 容器级绑定使用 DataViewKey 定位 DataView
+const view = SparkData.resolveDataViewKey('Users@grid', dataSet)
 
-// 展示、动作等需要读取 DataView 输出时使用完整 DataKey
-const binding = SparkData.resolveDataKeyBinding('Users@grid@rows', dataSet)
+// 展示、动作等需要读取 DataView 输出时使用完整 DataViewKey
+const binding = SparkData.resolveDataViewMemberBinding('Users@grid@rows', dataSet)
 const rows = computed(() => binding?.value ?? [])
 ```
 
-ViewKey / DataKey 格式：
+DataViewKey 格式：
 
 | 类型 | 格式 | 示例 |
 |------|------|------|
-| ViewKey | `table@viewId` | `Users@grid` |
-| ViewKey | `#scope@table@viewId` | `#Shared@Users@grid` |
-| DataKey | `table@viewId@field` | `Users@grid@rows` |
-| DataKey | `#scope@table@viewId@field` | `#Shared@Users@grid@currentRow.name` |
+| DataViewKey | `table@viewId` | `Users@grid` |
+| DataViewKey | `#scope@table@viewId` | `#Shared@Users@grid` |
+| DataViewKey | `table@viewId@field` | `Users@grid@rows` |
+| DataViewKey | `#scope@table@viewId@field` | `#Shared@Users@grid@currentRow.name` |
 
 `table@field`、`#scope@table@field` 这类省略 viewId 的旧写法不再合法。
 
@@ -340,7 +340,7 @@ import { SparkData } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-component'
 
 interface UserGridConfig extends SparkNode {
-  dataKey: string
+  dataViewKey/dataMember/dataField: string
 }
 
 const props = defineProps<{ config: UserGridConfig }>()
@@ -349,8 +349,8 @@ const { consume, logger } = useSparkComponent(props.config)
 // 消费 DataSet
 const dataSet = sparkConsume(PAGE_DATASET)
 
-// 通过 DataKey 解析 DataView
-const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
+// 通过 DataViewKey 解析 DataView
+const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
 const view = binding?.kind === 'view' ? binding.source : null
 
 // 响应式数据

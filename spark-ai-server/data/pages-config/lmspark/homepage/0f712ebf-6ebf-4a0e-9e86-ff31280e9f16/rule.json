@@ -81,8 +81,8 @@
               "labelWidth": "100px",
               "gridColumns": 24,
               "gridGap": "12px",
-              "viewKey": "Vouchers@default",
-              "contextDataKey": "Vouchers@default@currentRow"
+              "dataViewKey": "Vouchers@default",
+              "contextDataMember": "currentRow"
             },
             "id": "form__voucher"
           },
@@ -95,10 +95,11 @@
                   "field": "accountCode",
                   "label": "会计科目",
                   "width": 180,
-                  "optionKey": "Accounts@default@rows",
                   "optionLabelField": "accountName",
                   "optionValueField": "accountCode",
-                  "filterable": true
+                  "filterable": true,
+                  "optionDataViewKey": "Accounts@default",
+                  "optionDataMember": "rows"
                 },
                 "id": "col__accountCode"
               },
@@ -192,7 +193,7 @@
                 "props": {},
                 "id": "actions__details"
               },
-              "viewKey": "VoucherItems@default"
+              "dataViewKey": "VoucherItems@default"
             },
             "id": "table__details"
           }
@@ -357,7 +358,7 @@
                 "props": {},
                 "id": "actions__voucherList"
               },
-              "viewKey": "Vouchers@default"
+              "dataViewKey": "Vouchers@default"
             },
             "id": "table__voucherList"
           }

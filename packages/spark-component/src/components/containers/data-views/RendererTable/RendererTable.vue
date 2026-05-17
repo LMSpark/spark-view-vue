@@ -120,7 +120,7 @@
  * @skill r-table
  * @description 数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
  * @category container
- * @binding viewKey-driven
+ * @binding dataViewKey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @consumes PAGE_SERVICE
@@ -128,7 +128,7 @@
  * @notes 结构化区域使用 props.toolbar / props.filter / props.actions，不再使用 dock 分流
  * @notes highlightCurrentRow 必须显式声明才生效
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
- * @notes 提示词模板（数据绑定）：table viewKey 使用 table@viewId；统计输出优先使用 display 组件 + dataKey（aggregateResult/currentRow）而不是 children 文本插值。
+ * @notes 提示词模板（数据绑定）：table dataViewKey 使用 table@viewId；统计输出优先使用 display 组件 + dataMember/dataField（aggregateResult/currentRow）而不是 children 文本插值。
  */
 import { computed, nextTick, provide, ref, toRef, watch } from 'vue'
 import {
@@ -148,7 +148,7 @@ import { buildTreeTableRows } from '../view-tree-state'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import DataViewMetaBar from '../DataViewMetaBar.vue'
-import { deriveDataKeyFromViewKey } from '@spark-view/spark-data'
+import { DataMember } from '@spark-view/spark-data'
 import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnContext'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
@@ -157,12 +157,12 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
-// ── 能力注入与 DataView 解析（viewKey 优先，回落外部 dataSource）、向下提供 DATA_SOURCE ─────────────
+// ── 能力注入与 DataView 解析（dataViewKey 优先，回落外部 dataSource）、向下提供 DATA_SOURCE ─────────────
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
 const dataState = useContainerDataSource({
   externalDataSource: toRef(props, 'dataSource'),
-  viewKey: toRef(props, 'viewKey'),
+  dataViewKey: toRef(props, 'dataViewKey'),
   sparkConsume,
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
@@ -211,17 +211,25 @@ const toolbarNode = computed<SparkNode | undefined>(() => {
   const toolbar = props.toolbar
   if (!toolbar) return undefined
 
-  const { type: _type, id, children, dataKey: existingDataKey, ...propsFields } = toolbar
-  const resolvedDataKey = (existingDataKey !== undefined && existingDataKey !== '')
-    ? existingDataKey
-    : deriveDataKeyFromViewKey(props.viewKey, 'currentRow')
+  const {
+    type: _type,
+    id,
+    children,
+    dataViewKey: existingDataViewKey,
+    dataMember: existingDataMember,
+    ...propsFields
+  } = toolbar
+  const resolvedDataViewKey = (existingDataViewKey !== undefined && existingDataViewKey !== '')
+    ? existingDataViewKey
+    : props.dataViewKey
 
   return {
     type: 'r-toolbar',
     ...(id !== undefined ? { id } : {}),
     props: {
       ...propsFields,
-      ...(resolvedDataKey !== undefined ? { dataKey: resolvedDataKey } : {}),
+      ...(resolvedDataViewKey !== undefined ? { dataViewKey: resolvedDataViewKey } : {}),
+      dataMember: existingDataMember ?? DataMember.CurrentRow,
     },
     ...(children !== undefined ? { children } : {}),
   }
@@ -256,10 +264,10 @@ const hasFilters = computed(() => (props.filter?.children?.length ?? 0) > 0)
 
 const filterSparkNode = computed<SparkNode>(() => {
   const filter = props.filter ?? {}
-  const { type: _type, id, children, class: userClass, viewKey: existingViewKey, ...rest } = filter
-  const resolvedViewKey = (existingViewKey !== undefined && existingViewKey !== '')
-    ? existingViewKey
-    : props.viewKey
+  const { type: _type, id, children, class: userClass, dataViewKey: existingDataViewKey, ...rest } = filter
+  const resolvedDataViewKey = (existingDataViewKey !== undefined && existingDataViewKey !== '')
+    ? existingDataViewKey
+    : props.dataViewKey
   return {
     type: 'r-filter',
     ...(id !== undefined ? { id } : {}),
@@ -267,7 +275,7 @@ const filterSparkNode = computed<SparkNode>(() => {
       autoFitMinWidth: '220px',
       itemSpan: 1,
       ...rest,
-      ...(resolvedViewKey !== undefined ? { viewKey: resolvedViewKey } : {}),
+      ...(resolvedDataViewKey !== undefined ? { dataViewKey: resolvedDataViewKey } : {}),
       class: ['renderer-table-filter-panel', userClass].filter(Boolean).join(' '),
     },
     children: children ?? [],
@@ -619,4 +627,3 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 }
 
 </style>
-

@@ -9,7 +9,7 @@
  * 2. 类型精度（检测 unknown / object 等低信号类型）
  * 3. Schema type 引用一致性（组件属性/事件的复杂类型必须指向存在的 schema type）
  * 4. Emit 语义完整性（emit 应有 description）
- * 5. 绑定描述符完整性（有 dataKey 的组件应有绑定信息）
+ * 5. 绑定描述符完整性（有 DataViewKey的组件应有绑定信息）
  * 6. field / value 优先级文档（display 组件同时有 field 和 value 时需说明优先级）
  *
  * @module catalog-quality-audit
@@ -188,7 +188,7 @@ function auditBindingDescriptorDocs(catalog: AuditableComponentCatalog, issues: 
         severity: 'warning',
         rule: 'binding-description-missing',
         component: type,
-        message: `bindingDescriptors.${type} 缺少 description（需要解释 viewKey/dataKey/field/options/value 绑定语义）`,
+        message: `bindingDescriptors.${type} 缺少 description（需要解释 dataViewKey/dataMember/dataField/field/options/value 绑定语义）`,
       })
     }
     if (!Array.isArray(descriptor.examples)) {
@@ -204,7 +204,7 @@ function auditBindingDescriptorDocs(catalog: AuditableComponentCatalog, issues: 
 
 function auditConstraintDocs(catalog: AuditableComponentCatalog, issues: AuditIssue[]): void {
   const constraintNames = [
-    'dataKeyPattern',
+    'dataViewKeyPattern',
     'validTypePrefixes',
     'validAggregateTypes',
     'nonFieldRTypes',

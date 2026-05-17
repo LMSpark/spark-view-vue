@@ -18,7 +18,7 @@ SPARK_VIEW 的答案不是单点能力，而是一组互相咬合的工程边界
 
 第二步是解释运行。`SparkPageRenderer` 负责把四文件装配成运行时上下文，`SparkComponentRenderer` 负责把 SparkNode 递归解释为 Vue 组件。组件注册和 Capability 系统让一棵递归组件树具备跨节点协作能力，而不是停留在静态 JSON 拼装。
 
-第三步是数据内核。DataSet、DataTable、DataView 把复杂后台的数据状态沉到统一模型里；DataKey 让组件有稳定的数据访问语言；CRUD、聚合、计算列、树数据则通过数据层工具和委托收口。
+第三步是数据内核。DataSet、DataTable、DataView 把复杂后台的数据状态沉到统一模型里；DataViewKey 让组件有稳定的数据访问语言；CRUD、聚合、计算列、树数据则通过数据层工具和委托收口。
 
 第四步是治理边界。权限系统必须说清楚：前端只是装饰层，真正安全边界在后端鉴权。`_modelPerm` / `_perm` 是权限快照事实源，`permAction`、`permissionMode`、字段渲染和按钮显隐只是消费端。
 
@@ -56,7 +56,7 @@ flowchart LR
 | 8 | [SparkComponentRenderer：一棵 SparkNode 如何长成 Vue 页面](08-spark-component-renderer-recursive-interpreter.md) | SparkNode 如何被递归解释为真实组件树。 |
 | 9 | [组件注册与能力系统：让递归组件树学会协作](09-component-registry-and-capability-system.md) | Registry 与 Capability 如何支撑跨组件协作。 |
 | 10 | [三层数据模型：DataSet、DataTable、DataView 的后台秩序](10-dataset-datatable-dataview.md) | 后台复杂数据状态为什么要沉到三层数据模型。 |
-| 11 | [DataKey：组件通往数据空间的那把钥匙](11-datakey-and-cascade-loading.md) | 组件如何通过 DataKey 声明式访问数据空间。 |
+| 11 | [DataViewKey：组件通往数据空间的那把钥匙](11-dataview-binding-and-cascade-loading.md) | 组件如何通过 DataViewKey 声明式访问数据空间。 |
 | 12 | [CRUD 之外：聚合、计算列与树数据的工程化收口](12-crud-aggregate-computed-tree.md) | 企业后台高频数据能力如何被数据层工具收口。 |
 | 13 | [权限别演戏：前端只是装饰，后端鉴权才是边界](13-permission-boundary-frontend-decoration.md) | `_modelPerm` / `_perm` 的事实源地位，以及前端权限的真实边界。 |
 | 16 | [DevSystem：把运行时框架推进生产车间](16-devsystem-production-toolchain.md) | DevSystem 如何把编辑、预览、数据设计和版本管理连成闭环。 |
@@ -72,7 +72,7 @@ flowchart LR
 - 四文件协议：`rule.json`、`pagedata.json`、`script.js`、`style.css`。
 - SparkNode：运行时组件节点模型，结构字段是顶层 `id`、`type`、`props`、`children`。
 - DataSet/DataTable/DataView：数据空间、表元数据、交互视图三层模型。
-- DataKey：配置组件访问数据空间的表达式。
+- DataViewKey：配置组件访问数据空间的表达式。
 - Permission Snapshot：后端鉴权后下发的 `_modelPerm` / `_perm` 快照；前端只做装饰性消费。
 - AI Runtime：AI 会话、知识投影、函数调用翻译和历史记录的通用协议层。
 - Business AI Module：接入 AI Runtime 的业务模块，负责自己的状态、函数目录、知识 payload 和执行器。

@@ -2,7 +2,7 @@ import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CrudApi, TableResourceType } from '@spark-view/spark-data'
 import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/data-views/view-data-source'
-import type { DataKeyDiagnostic } from '@spark-view/spark-data'
+import type { DataViewMemberDiagnostic } from '@spark-view/spark-data'
 
 interface AutoLoadViewLike {
   autoLoad?: boolean
@@ -53,7 +53,7 @@ async function mountAutoLoadEffect(source: AutoLoadViewLike | null) {
   return { scope, logger }
 }
 
-async function mountDiagnosticEffect(diagnostic: DataKeyDiagnostic | null) {
+async function mountDiagnosticEffect(diagnostic: DataViewMemberDiagnostic | null) {
   const scope = effectScope()
   const logger = {
     warn: vi.fn<(message: string) => void>(),
@@ -61,7 +61,7 @@ async function mountDiagnosticEffect(diagnostic: DataKeyDiagnostic | null) {
   }
 
   scope.run(() => {
-    const resolvedDiagnostic = ref<DataKeyDiagnostic | null>(diagnostic)
+    const resolvedDiagnostic = ref<DataViewMemberDiagnostic | null>(diagnostic)
     useContainerDataSourceEffects<AutoLoadViewLike>({
       resolvedView: computed(() => null),
       diagnostic: computed(() => resolvedDiagnostic.value),
@@ -135,24 +135,24 @@ describe('useContainerDataSourceEffects', () => {
       status: 'empty-current-row',
       rawKey: 'columns@currentRow',
       descriptor: null,
-      message: 'DataKey 当前行为空: columns@currentRow',
+      message: 'DataMember 当前行为空: columns@currentRow',
     })
 
     expect(logger.warn).not.toHaveBeenCalled()
     scope.stop()
   })
 
-  it('会继续输出结构性 DataKey 诊断告警', async () => {
+  it('会继续输出结构性 DataView 诊断告警', async () => {
     const { scope, logger } = await mountDiagnosticEffect({
       ok: false,
       status: 'missing-table',
       rawKey: 'missing@rows',
       descriptor: null,
-      message: 'DataKey 表不存在: missing',
+      message: 'DataViewKey 表不存在: missing',
     })
 
     expect(logger.warn).toHaveBeenCalledTimes(1)
-    expect(logger.warn).toHaveBeenCalledWith('test: DataKey 表不存在: missing')
+    expect(logger.warn).toHaveBeenCalledWith('test: DataViewKey 表不存在: missing')
     scope.stop()
   })
 })

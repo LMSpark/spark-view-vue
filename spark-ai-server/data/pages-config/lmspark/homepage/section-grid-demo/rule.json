@@ -206,7 +206,7 @@
                   "label": "⚙ 操作"
                 }
               },
-              "viewKey": "Users@default"
+              "dataViewKey": "Users@default"
             }
           }
         ],
@@ -279,8 +279,8 @@
               }
             ],
             "props": {
-              "viewKey": "Users@default",
-              "contextDataKey": "Users@default@currentRow"
+              "dataViewKey": "Users@default",
+              "contextDataMember": "currentRow"
             }
           }
         ],

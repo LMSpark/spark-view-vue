@@ -20,7 +20,7 @@
 - **四文件协议**：`rule.json`、`pagedata.json`、`script.js`、`style.css` 共同构成一个页面资产。
 - **SparkNode**：运行时组件节点模型，是 `rule.json` 被解释后的核心结构。
 - **DataSet/DataTable/DataView**：数据空间、表元数据、交互视图三层模型。
-- **ViewKey / DataKey**：容器用 ViewKey 定位 DataView，例如 `Users@default`；展示和动作读取 DataView 输出时用完整 DataKey，例如 `Orders@detail@currentRow.total`。
+- **DataViewKey**：容器用 DataViewKey 定位 DataView，例如 `Users@default`；展示和动作读取 DataView 输出时用完整 DataViewKey，例如 `Orders@detail@currentRow.total`。
 - **Capability**：组件、页面、数据、行上下文之间的能力传递机制。
 - **Permission Snapshot**：后端鉴权后下发的模型级 `_modelPerm` 与行级 `_perm` 快照；前端只消费快照做 UI 显隐、禁用、脱敏等装饰性渲染。
 - **AI Runtime**：AI 会话、函数暴露、函数调用翻译与记录的通用核心运行时。
@@ -353,7 +353,7 @@ flowchart LR
 
 - 流程图：SparkNode -> registry -> props patch -> context -> Vue component。
 - 决策图：unregistered、host mismatch、visible false、normal render。
-- 配置样例：一个带 `onBeforeRender` 和 `dataKey` 的节点。
+- 配置样例：一个带 `onBeforeRender` 和 `dataViewKey + dataMember + dataField` 的节点。
 
 **开篇角度**
 
@@ -443,43 +443,43 @@ flowchart LR
 
 **结尾落点**
 
-引出第 11 篇：数据模型建好后，组件需要用 DataKey 绑定它。
+引出第 11 篇：数据模型建好后，组件需要用 DataViewKey它。
 
 ---
 
-### 第 11 篇：DataKey 与级联加载
+### 第 11 篇：DataViewKey 与级联加载
 
-**一句话核心论点**：DataKey 是配置组件访问数据空间的语言，级联委托则让主从表联动从页面脚本中解耦。
+**一句话核心论点**：DataViewKey 是配置组件访问数据空间的语言，级联委托则让主从表联动从页面脚本中解耦。
 
 **目标读者与收益**
 
 - 适合写配置、排查数据绑定、设计复杂联动页面的人。
-- 读完能掌握 DataKey 语法和父子数据加载顺序。
+- 读完能掌握 DataViewKey 语法和父子数据加载顺序。
 
 **正文大纲**
 
-1. DataKey 语法：默认 view、指定 view、scope、字段路径。
+1. DataViewKey 语法：默认 view、指定 view、scope、字段路径。
 2. `rows`、`currentRow`、`selectedRows`、聚合结果分别代表什么。
-3. DataKey 解析后如何返回 value 或 DataView capability。
+3. DataViewKey 解析后如何返回 value 或 DataView capability。
 4. Cascade delegate：子 view 订阅父 view，而不是父 view 硬编码子表。
 5. 请求状态与防重复：`requestData` 如何处理 pending promise 和父级未就绪。
 
 **源码锚点**
 
-- `packages/spark-data/src/core/data-key.ts`
+- `packages/spark-data/src/core/data-view-key.ts`
 - `packages/spark-data/src/strategies/cascade-delegate.ts`
 - `packages/spark-data/src/data-view.ts`
 - `docs/architecture/DATAFLOW_ARCHITECTURE.md`
 
 **配图方案**
 
-- 速查表：DataKey 语法与返回类型。
+- 速查表：DataViewKey 语法与返回类型。
 - 时序图：父表加载、选择行、子表刷新。
 - 状态图：DataView 请求状态转换。
 
 **开篇角度**
 
-> 在 SPARK_VIEW 里，组件不应该知道数据从哪个接口来；它只需要知道自己绑定哪个 DataKey。
+> 在 SPARK_VIEW 里，组件不应该知道数据从哪个接口来；它只需要知道自己绑定哪个 DataViewKey。
 
 **结尾落点**
 
@@ -763,7 +763,7 @@ flowchart LR
 
 ### 第三批：补齐高级能力与边界
 
-1. 第 11 篇：DataKey 与级联加载。
+1. 第 11 篇：DataViewKey 与级联加载。
 2. 第 12 篇：CRUD、聚合、计算列与树数据。
 3. 第 13 篇：权限系统的真实边界。
 4. 第 15 篇：业务 AI 落地样例：以 Page Design 为第一块试金石。

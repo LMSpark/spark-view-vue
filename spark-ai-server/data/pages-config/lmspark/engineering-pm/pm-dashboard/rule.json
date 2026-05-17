@@ -1068,7 +1068,7 @@
                   "stripe": false,
                   "highlightCurrentRow": true,
                   "class": "dashboard-task-table",
-                  "viewKey": "MyTasks@default"
+                  "dataViewKey": "MyTasks@default"
                 }
               }
             ],

@@ -346,7 +346,7 @@
                   "label": "操作"
                 }
               },
-              "viewKey": "Orders@default"
+              "dataViewKey": "Orders@default"
             }
           }
         ],
@@ -507,7 +507,7 @@
                   }
                 ]
               },
-              "viewKey": "Customers@default"
+              "dataViewKey": "Customers@default"
             }
           }
         ],
@@ -567,7 +567,7 @@
                       "position": "top"
                     }
                   },
-                  "viewKey": "Orders@default"
+                  "dataViewKey": "Orders@default"
                 }
               },
               {
@@ -613,7 +613,7 @@
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
-                  "viewKey": "OrderItems@default"
+                  "dataViewKey": "OrderItems@default"
                 }
               }
             ],
@@ -723,8 +723,8 @@
               }
             ],
             "props": {
-              "viewKey": "Orders@default",
-              "contextDataKey": "Orders@default@currentRow"
+              "dataViewKey": "Orders@default",
+              "contextDataMember": "currentRow"
             }
           }
         ],

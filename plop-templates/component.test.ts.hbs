@@ -89,7 +89,7 @@ describe('{{pascalName}}', () => {
 {{#if isDataSelfResolve}}
 
   describe('DataSet 接入', () => {
-    it('dataKey 不存在时不应崩溃', async () => {
+    it('dataViewKey 不存在时不应崩溃', async () => {
       const wrapper = mountComponent(makeConfig())
       await flushPromises()
       expect(wrapper.exists()).toBe(true)

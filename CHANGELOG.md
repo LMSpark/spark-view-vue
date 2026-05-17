@@ -362,7 +362,7 @@ const services = consume(APP_SERVICES)
 - 减少认知负担，统一使用 Composables 模式
 
 ### Documentation
-- 更新 `ASYNC_DATA_LOADING.md` 文档，添加 dataKey 绑定详细说明
+- 更新 `ASYNC_DATA_LOADING.md` 文档，添加 DataViewKey详细说明
 - 更新 `ASYNC_DATA_QUICK_REF.md` 快速参考，补充文本绑定示例
 
 ## [0.1.0] - 2026-02-04

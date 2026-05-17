@@ -164,7 +164,7 @@
           "fixed": "right"
         }
       },
-      "viewKey": "Tasks@default"
+      "dataViewKey": "Tasks@default"
     }
   }
 ]
