@@ -64,8 +64,8 @@ vi.mock('@spark-view/spark-utils', async (importOriginal) => {
 
 // ── 工具函数 ──────────────────────────────────────────────────────────────────
 
-function fileOk<T>(data: T, fromCache = false): FileLoadResult<T> {
-  return { success: true, data, timestamp: 'ts-1', fromCache }
+function fileOk<T>(data: T, fromCache = false, timestamp = 'ts-1'): FileLoadResult<T> {
+  return { success: true, data, timestamp, fromCache }
 }
 
 function fileFail(error: string): FileLoadResult<never> {
@@ -118,6 +118,25 @@ describe('PageConfigLoader', () => {
       expect(r.success).toBe(true)
       expect(r.data).toEqual(rules)
       expect(mockFileLoader.load).toHaveBeenCalledWith('/order-page/rule.json')
+    })
+
+    it('loadRule: 保留后端文件时间戳和 notModified 缓存状态', async () => {
+      const rules = [{ type: 'div', props: { id: 'root' } }]
+      mockFileLoader.load.mockResolvedValue({
+        success: true,
+        data: rules,
+        timestamp: '1775376073936',
+        fromCache: true,
+        notModified: true,
+      })
+
+      const r = await loader.loadRule('order-page')
+
+      expect(r.success).toBe(true)
+      expect(r.timestamp).toBe(1775376073936)
+      expect(r.sourceTimestamp).toBe('1775376073936')
+      expect(r.fromCache).toBe(true)
+      expect(r.notModified).toBe(true)
     })
 
     it('loadPageData: 成功返回页面数据', async () => {
@@ -175,6 +194,19 @@ describe('PageConfigLoader', () => {
       expect(r.data?.data).toEqual(data)
       expect(r.data?.script).toBe('// script')
       expect(r.data?.css).toBe('.app{}')
+    })
+
+    it('loadPageConfig: 组合结果时间戳取四文件最新后端时间戳', async () => {
+      mockFileLoader.load
+        .mockResolvedValueOnce(fileOk([{ type: 'div' }], false, '1000')) // rule.json
+        .mockResolvedValueOnce(fileOk({ title: '订单' }, false, '3000')) // pagedata.json
+        .mockResolvedValueOnce(fileOk('// script', false, '2000'))       // script.js
+        .mockResolvedValueOnce(fileOk('.app{}', false, '2500'))          // style.css
+
+      const r = await loader.loadPageConfig('order-page')
+
+      expect(r.success).toBe(true)
+      expect(r.timestamp).toBe(3000)
     })
 
     it('loadPageConfig: rule 失败 → 快速返回 false', async () => {
@@ -430,11 +462,13 @@ describe('PageConfigLoader', () => {
     })
 
     it('loadPageFileContent: 读取原始文本并支持强制刷新', async () => {
-      mockFileLoader.load.mockResolvedValue(fileOk('[]\n'))
+      mockFileLoader.load.mockResolvedValue(fileOk('[]\n', false, '1775376073936'))
 
       const r = await loader.loadPageFileContent('my-page', 'rule.json', { forceReload: true })
 
       expect(r).toMatchObject({ success: true, data: '[]\n', source: 'remote' })
+      expect(r.timestamp).toBe(1775376073936)
+      expect(r.sourceTimestamp).toBe('1775376073936')
       expect(mockFileLoader.load).toHaveBeenCalledWith('/my-page/rule.json', {
         parseJSON: false,
         forceRefresh: true,

@@ -187,6 +187,11 @@
           "name": "refId",
           "type": "string",
           "allowDBNull": true
+        },
+        {
+          "name": "editorProfileKey",
+          "type": "string",
+          "computeExpression": "if (nodeKind === 'system-directory' || nodeKind === 'module') return 'container'; if (nodeKind === 'system-page' || nodeKind === 'page' || nodeKind === 'sub-page') return 'page'; if (nodeKind === 'link') return 'link'; if (nodeKind === 'ref') return 'ref'; if (nodeKind === 'system-action') return 'action'; return 'page';"
         }
       ],
       "api": {

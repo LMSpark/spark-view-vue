@@ -64,6 +64,19 @@ class ControllersTest {
     }
 
     @Test
+    void getFile_forwardsTimestampAndReturnsNotModifiedWithoutContent() throws Exception {
+        when(pageConfigService.readFile("t1", "p1", "my-page", "rule.json", "123"))
+                .thenReturn(Map.of("notModified", true, "timestamp", "123"));
+
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/pages-config/my-page/rule.json")
+                        .param("timestamp", "123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.notModified").value(true))
+                .andExpect(jsonPath("$.data.timestamp").value("123"))
+                .andExpect(jsonPath("$.data.content").doesNotExist());
+    }
+
+    @Test
     void getFile_returns404WhenNotFound() throws Exception {
         when(pageConfigService.readFile("t1", "p1", "missing", "rule.json", null))
                 .thenThrow(new NoSuchFileException("not found"));

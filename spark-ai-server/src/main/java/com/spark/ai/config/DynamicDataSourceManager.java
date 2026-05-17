@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
@@ -34,6 +35,7 @@ public class DynamicDataSourceManager {
     /** databaseId → DataSourceEntry 缓存 */
     private final Map<Long, DataSourceEntry> cache = new ConcurrentHashMap<>();
 
+    @Autowired
     public DynamicDataSourceManager(DataSource primaryDataSource,
                                     JdbcTemplate primaryJdbcTemplate,
                                     CryptoUtil cryptoUtil) {

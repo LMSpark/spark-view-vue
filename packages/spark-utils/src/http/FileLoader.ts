@@ -50,8 +50,8 @@ const DEFAULT_EXPIRATION_TIERS: CacheExpirationTier[] = [
 ]
 
 interface FileResponse {
-  content: string
-  timestamp: string
+  content?: string
+  timestamp?: string
   notModified?: boolean
 }
 
@@ -189,7 +189,9 @@ export class FileLoader {
       // 同时读两层缓存
       const xformEntry = forceRefresh ? null : this.readEntryMem<T>(xformKey)
       const rawEntry   = forceRefresh ? null : this.readEntry<string>(rawKey)
-      // timestamp 优先用 raw（与 localStorage 同源），次用 xform
+      // 注意：这是“源文件时间戳”，不是前端缓存写入时间。
+      // 后端用它判断页面四文件是否变化；未变化时只返回 notModified，不返回文件内容。
+      // 因此请求参数必须来自上一次响应的 sourceTimestamp，不能替换成 Date.now()/cachedAt。
       const knownTimestamp = rawEntry?.sourceTimestamp ?? xformEntry?.sourceTimestamp ?? ''
 
       try {
@@ -383,7 +385,7 @@ export class FileLoader {
     const prefix = this.opts.cachePrefix
     const keys = Array.from(this.memCache.keys()).map(k =>
       k.startsWith(prefix) ? k.slice(prefix.length) : k
-    )
+    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
     return { size: this.memCache.size, keys }
   }
 
@@ -403,6 +405,8 @@ export class FileLoader {
   private async loadRaw(fileName: string, forceRefresh: boolean, expirationLevel?: number): Promise<FileLoadResult<string>> {
     try {
       const cached = forceRefresh ? null : this.readEntry<string>(fileName)
+      // 同上：这里的 timestamp 是后端文件版本戳，用于条件读取。
+      // 如果随手改成 lastAccess/cachedAt，服务端会误判为变化并重复返回文件内容。
       const knownTimestamp = cached?.sourceTimestamp ?? ''
 
       const params = FileLoader.timestampParams(knownTimestamp)
@@ -594,13 +598,16 @@ export class FileLoader {
         }
 
         if (attempt === 0) {
-          // 先清理过期项，避免无谓驱逐有效缓存。
+          // 先清理过期项（当前 prefix + 全局），避免无谓驱逐有效缓存。
           this.cleanupExpiredCache()
+          this.cleanupExpiredCacheGlobal()
           attempt++
           continue
         }
 
-        const evictedKey = this.evictLeastRecentlyUsedStorageEntry(key)
+        // 先尝试当前 prefix 内驱逐，失败则升级为跨租户全局驱逐
+        let evictedKey = this.evictLeastRecentlyUsedStorageEntry(key)
+        evictedKey ??= this.evictGlobalStorageEntry(key)
         if (!evictedKey) {
           logger.error('缓存写入失败（配额已满且无可驱逐项）', { key, error: e })
           return
@@ -668,6 +675,73 @@ export class FileLoader {
       return target.key
     } catch {
       return null
+    }
+  }
+
+  /** 跨租户全局驱逐：当当前 prefix 下无可驱逐项时，从所有 spark_page_ 缓存中驱逐最旧条目 */
+  private evictGlobalStorageEntry(protectedKey: string): string | null {
+    if (this.opts.storage === 'memory') return null
+    const storage = this.storage
+    if (!storage) return null
+
+    const globalPrefix = 'spark_page_'
+    const entries: Array<{ key: string; lastAccess: number }> = []
+
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i)
+      if (!key?.startsWith(globalPrefix) || key === protectedKey) continue
+      try {
+        const raw = storage.getItem(key)
+        if (!raw) continue
+        const entry = JSON.parse(raw) as CacheEntry<unknown>
+        entries.push({ key, lastAccess: entry.lastAccess || entry.cachedAt || 0 })
+      } catch {
+        entries.push({ key, lastAccess: 0 })
+      }
+    }
+
+    if (entries.length === 0) return null
+
+    entries.sort((a, b) => a.lastAccess - b.lastAccess)
+    const target = entries[0]
+    if (!target) return null
+    try {
+      storage.removeItem(target.key)
+      return target.key
+    } catch {
+      return null
+    }
+  }
+
+  /** 跨租户全局过期清理：清理所有 spark_page_ 前缀下的闲置过期缓存 */
+  private cleanupExpiredCacheGlobal(): void {
+    const storage = this.storage
+    if (!storage) return
+    const now = Date.now()
+    const globalPrefix = 'spark_page_'
+    let cleaned = 0
+
+    for (let i = storage.length - 1; i >= 0; i--) {
+      const key = storage.key(i)
+      if (!key?.startsWith(globalPrefix)) continue
+      try {
+        const raw = storage.getItem(key)
+        if (!raw) continue
+        const entry = JSON.parse(raw) as CacheEntry<unknown>
+        const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
+        const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
+        if (maxAge !== Infinity && idleTime > maxAge) {
+          storage.removeItem(key)
+          cleaned++
+        }
+      } catch {
+        storage.removeItem(key)
+        cleaned++
+      }
+    }
+
+    if (cleaned > 0) {
+      logger.info('全局清理闲置缓存完成', { cleaned })
     }
   }
 
@@ -770,8 +844,10 @@ export class FileLoader {
     if (this.opts.storage === 'memory') return
     const s = this.storage
     if (!s) return
-    for (const k of Object.keys(s)) {
-      if (k.startsWith(this.opts.cachePrefix)) s.removeItem(k)
+    // 倒序遍历，避免删除后索引偏移
+    for (let i = s.length - 1; i >= 0; i--) {
+      const k = s.key(i)
+      if (k?.startsWith(this.opts.cachePrefix)) s.removeItem(k)
     }
   }
 }

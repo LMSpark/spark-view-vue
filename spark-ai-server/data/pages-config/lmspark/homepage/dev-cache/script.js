@@ -23,8 +23,8 @@ function _addLog(type, message) {
 
 function _refreshStats() {
   var dev = _getDevTools()
-  if (dev.getCacheStats) {
-    _cacheStats = dev.getCacheStats()
+  if (dev.getPageCacheStats) {
+    _cacheStats = dev.getPageCacheStats()
   }
 }
 

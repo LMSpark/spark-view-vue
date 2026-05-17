@@ -391,10 +391,11 @@ public class PageConfigService {
         String serverTimestamp = String.valueOf(storage.pageFileTimestamp(tenantId, projectId, pageId, filename));
 
         if (clientTimestamp != null && clientTimestamp.equals(serverTimestamp)) {
+            // 条件读取协议：timestamp 命中说明客户端已有同版本文件内容。
+            // 不返回 content，避免把“未变化”响应误当成空文件，也减少四文件重复传输。
             return Map.of(
                     "notModified", true,
-                    "timestamp", serverTimestamp,
-                    "content", ""
+                    "timestamp", serverTimestamp
             );
         }
         String content = storage.readPageFile(tenantId, projectId, pageId, filename);
@@ -448,10 +449,10 @@ public class PageConfigService {
         if (storage.rootFileExists(tenantId, projectId, filename)) {
             String timestamp = String.valueOf(storage.rootFileTimestamp(tenantId, projectId, filename));
             if (clientTimestamp != null && clientTimestamp.equals(timestamp)) {
+                // routes.json 同样遵守 FileLoader 的 timestamp/notModified 协议。
                 return Map.of(
                         "notModified", true,
-                        "timestamp", timestamp,
-                        "content", ""
+                        "timestamp", timestamp
                 );
             }
             return Map.of(
@@ -464,10 +465,10 @@ public class PageConfigService {
         String timestamp = String.valueOf(content.hashCode());
 
         if (clientTimestamp != null && clientTimestamp.equals(timestamp)) {
+            // 动态生成的 routes.json 没有文件 mtime，用内容 hash 作为源版本戳。
             return Map.of(
                     "notModified", true,
-                    "timestamp", timestamp,
-                    "content", ""
+                    "timestamp", timestamp
             );
         }
         return Map.of(

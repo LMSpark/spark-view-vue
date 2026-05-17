@@ -134,6 +134,12 @@ export interface ConfigLoadResult<T = unknown> {
   reason?: string
   source?: 'remote'
   timestamp?: number
+  /** Raw source timestamp returned by the page-config file API. */
+  sourceTimestamp?: string
+  /** Whether the result was resolved from client cache after a notModified response. */
+  fromCache?: boolean
+  /** Whether the server reported the source file was unchanged. */
+  notModified?: boolean
 }
 
 /**

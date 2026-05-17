@@ -26,8 +26,12 @@
           max-height="520"
           style="width: 100%"
         >
-          <el-table-column prop="key" label="缓存键" min-width="280" show-overflow-tooltip />
-          <el-table-column prop="sizeKB" label="大小 (KB)" width="100" align="right" sortable />
+          <el-table-column prop="key" label="缓存键" min-width="280" show-overflow-tooltip sortable :sort-method="compareKey" />
+          <el-table-column prop="sizeKB" label="大小 (KB)" width="100" align="right" sortable :sort-method="compareSize">
+            <template #default="{ row }">
+              {{ formatSizeKB(row.sizeKB) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="expirationLevel" label="过期级别" width="100" align="center" sortable>
             <template #default="{ row }">
               <el-tag :type="expirationTagType(row.expirationLevel)" size="small">
@@ -35,8 +39,16 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="cachedAtStr" label="缓存时间" width="170" sortable />
-          <el-table-column prop="lastAccessStr" label="最后访问" width="170" sortable />
+          <el-table-column prop="sourceTimestampMs" label="文件时间" width="170" sortable :sort-method="compareSourceTimestamp">
+            <template #default="{ row }">
+              <span :title="row.sourceTimestamp">{{ row.sourceTimestampStr }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="lastAccess" label="最后访问" width="170" sortable :sort-method="compareLastAccess">
+            <template #default="{ row }">
+              {{ row.lastAccessStr }}
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="100" align="center" fixed="right">
             <template #default="{ row }">
               <el-button type="danger" size="small" link @click="handleRemoveFrontend(row.key)">
@@ -136,10 +148,11 @@ const feLoading = ref(false)
 
 interface FeCacheRow {
   key: string
-  sizeKB: string
+  sizeKB: number
+  sourceTimestamp: string
+  sourceTimestampMs: number
+  sourceTimestampStr: string
   expirationLevel: number
-  cachedAt: number
-  cachedAtStr: string
   lastAccess: number
   lastAccessStr: string
 }
@@ -147,13 +160,54 @@ interface FeCacheRow {
 const feEntries = ref<FeCacheRow[]>([])
 
 const feTotalSizeKB = computed(() => {
-  const total = feEntries.value.reduce((sum, e) => sum + parseFloat(e.sizeKB), 0)
+  const total = feEntries.value.reduce((sum, e) => sum + e.sizeKB, 0)
   return total.toFixed(1)
 })
+
+function formatSizeKB(sizeKB: number): string {
+  return sizeKB.toFixed(1)
+}
+
+function compareKey(a: FeCacheRow, b: FeCacheRow): number {
+  return a.key.localeCompare(b.key, undefined, { numeric: true })
+}
+
+function compareSize(a: FeCacheRow, b: FeCacheRow): number {
+  return a.sizeKB - b.sizeKB
+}
+
+function compareSourceTimestamp(a: FeCacheRow, b: FeCacheRow): number {
+  return a.sourceTimestampMs - b.sourceTimestampMs
+}
+
+function compareLastAccess(a: FeCacheRow, b: FeCacheRow): number {
+  return a.lastAccess - b.lastAccess
+}
 
 function formatTime(ts: number): string {
   if (!ts) return '—'
   return new Date(ts).toLocaleString('zh-CN')
+}
+
+function normalizeSourceTimestamp(value: unknown): { raw: string; time: number; text: string } {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (value > 10_000_000_000) return { raw: String(value), time: value, text: formatTime(value) }
+    return { raw: String(value), time: 0, text: String(value) }
+  }
+  if (typeof value !== 'string') return { raw: '', time: 0, text: '—' }
+
+  const raw = value.trim()
+  if (!raw) return { raw: '', time: 0, text: '—' }
+
+  const numeric = Number(raw)
+  if (Number.isFinite(numeric) && numeric > 10_000_000_000) {
+    return { raw, time: numeric, text: formatTime(numeric) }
+  }
+
+  const parsed = Date.parse(raw)
+  if (Number.isFinite(parsed)) return { raw, time: parsed, text: formatTime(parsed) }
+
+  return { raw, time: 0, text: raw }
 }
 
 function expirationTagType(level: number): '' | 'success' | 'warning' | 'danger' | 'info' {
@@ -177,15 +231,18 @@ function loadFrontendCache() {
       if (!raw) continue
 
       const sizeBytes = new Blob([raw]).size
-      let cachedAt = 0
       let lastAccess = 0
       let expirationLevel = 3
+      // 页面四文件缓存的“新旧”看 sourceTimestamp：它来自后端文件 mtime/版本戳。
+      // cachedAt 只是浏览器写入 localStorage 的时间，页面没改但本地重建缓存时会变化；
+      // 用 cachedAt 展示或排序会让缓存管理页看起来像文件更新了，实际不是。
+      let sourceTimestamp = normalizeSourceTimestamp(undefined)
 
       try {
         const parsed: unknown = JSON.parse(raw)
         if (parsed && typeof parsed === 'object') {
           const obj = parsed as Record<string, unknown>
-          if (typeof obj['cachedAt'] === 'number') cachedAt = obj['cachedAt'] as number
+          sourceTimestamp = normalizeSourceTimestamp(obj['sourceTimestamp'])
           if (typeof obj['lastAccess'] === 'number') lastAccess = obj['lastAccess'] as number
           if (typeof obj['expirationLevel'] === 'number') expirationLevel = obj['expirationLevel'] as number
         }
@@ -195,16 +252,17 @@ function loadFrontendCache() {
 
       entries.push({
         key,
-        sizeKB: (sizeBytes / 1024).toFixed(1),
+        sizeKB: sizeBytes / 1024,
+        sourceTimestamp: sourceTimestamp.raw,
+        sourceTimestampMs: sourceTimestamp.time,
+        sourceTimestampStr: sourceTimestamp.text,
         expirationLevel,
-        cachedAt,
-        cachedAtStr: formatTime(cachedAt),
         lastAccess,
         lastAccessStr: formatTime(lastAccess),
       })
     }
 
-    entries.sort((a, b) => b.cachedAt - a.cachedAt)
+    entries.sort((a, b) => (b.sourceTimestampMs - a.sourceTimestampMs) || compareKey(a, b))
     feEntries.value = entries
   } finally {
     feLoading.value = false

@@ -245,7 +245,7 @@ export class PageConfigLoader implements ConfigLoader {
         css: cssResult.data,
       },
       ...(ruleResult.source !== undefined && { source: ruleResult.source }),
-      timestamp: Date.now()
+      timestamp: this.latestResultTimestamp(ruleResult, dataResult, scriptResult, cssResult)
     }
   }
 
@@ -364,12 +364,12 @@ export class PageConfigLoader implements ConfigLoader {
     knownFiles: Set<PageConfigFileName> | null,
   ): Promise<ConfigLoadResult<T | undefined>> {
     if (this.isKnownMissing(knownFiles, filename)) {
-      return { success: true, source: 'remote', timestamp: Date.now() }
+      return { success: true, source: 'remote' }
     }
 
     const result = await this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
     if (!result.success && result.reason === 'not-found') {
-      return { success: true, source: 'remote', timestamp: Date.now() }
+      return { success: true, source: 'remote' }
     }
     return result
   }
@@ -377,11 +377,16 @@ export class PageConfigLoader implements ConfigLoader {
   /**
    * FileLoader 加载结果转换为 ConfigLoadResult。
    * 只转换文件 API 的结果，不触发其他来源补读。
+   *
+   * 这里刻意把 FileLoader 返回的 source timestamp 继续上抛。
+   * 页面四文件的缓存一致性由后端文件时间戳驱动，不由前端本地缓存写入时间驱动；
+   * 如果改成 Date.now()，调用方会看到“加载时间”而不是“源文件版本”，排查缓存时会被带偏。
    */
   private fileResultFromData<T>(
-    r: { success: boolean; error?: string; fromCache?: boolean; data?: T; reason?: string },
+    r: { success: boolean; error?: string; fromCache?: boolean; data?: T; reason?: string; timestamp?: string; notModified?: boolean },
     path: string
   ): ConfigLoadResult<T> {
+    const timestamp = this.resultTimestamp(r.timestamp)
     if (!r.success) {
       const rawError = r.error ?? ''
       const fromEvent = this.recentMissingFiles.has(path)
@@ -395,11 +400,19 @@ export class PageConfigLoader implements ConfigLoader {
         success: false,
         error: `${this.pagesConfigBase}${path}: ${r.error ?? ''}`,
         ...(isNotFound ? { reason: 'not-found' as const } : (r.reason !== undefined ? { reason: r.reason } : {})),
-        timestamp: Date.now()
+        timestamp
       }
     }
     pageLogger.debug('页面配置加载成功', { path, source: 'remote', fromCache: r.fromCache })
-    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'remote', timestamp: Date.now() }
+    return {
+      success: true,
+      ...(r.data !== undefined && { data: r.data }),
+      source: 'remote',
+      timestamp,
+      ...(r.timestamp !== undefined && { sourceTimestamp: r.timestamp }),
+      ...(r.fromCache !== undefined && { fromCache: r.fromCache }),
+      ...(r.notModified !== undefined && { notModified: r.notModified }),
+    }
   }
 
   /**
@@ -425,19 +438,43 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   private pageFileContentResultFromData(
-    result: { success: boolean; data?: string; error?: string; reason?: string },
+    result: { success: boolean; data?: string; error?: string; reason?: string; timestamp?: string; fromCache?: boolean; notModified?: boolean },
     path: string,
   ): ConfigLoadResult<string> {
+    const timestamp = this.resultTimestamp(result.timestamp)
     if (result.success) {
-      return { success: true, data: result.data ?? '', source: 'remote', timestamp: Date.now() }
+      return {
+        success: true,
+        data: result.data ?? '',
+        source: 'remote',
+        timestamp,
+        ...(result.timestamp !== undefined && { sourceTimestamp: result.timestamp }),
+        ...(result.fromCache !== undefined && { fromCache: result.fromCache }),
+        ...(result.notModified !== undefined && { notModified: result.notModified }),
+      }
     }
 
     return {
       success: false,
       error: result.error ?? `${path} 加载失败`,
       ...(result.reason !== undefined && { reason: result.reason }),
-      timestamp: Date.now(),
+      timestamp,
     }
+  }
+
+  private resultTimestamp(sourceTimestamp: string | undefined): number {
+    if (sourceTimestamp === undefined || sourceTimestamp.trim() === '') return Date.now()
+    const numeric = Number(sourceTimestamp)
+    if (Number.isFinite(numeric)) return numeric
+    const parsed = Date.parse(sourceTimestamp)
+    return Number.isFinite(parsed) ? parsed : Date.now()
+  }
+
+  private latestResultTimestamp(...results: Array<ConfigLoadResult<unknown>>): number {
+    const timestamps = results
+      .map(result => result.timestamp)
+      .filter((timestamp): timestamp is number => typeof timestamp === 'number' && Number.isFinite(timestamp))
+    return timestamps.length > 0 ? Math.max(...timestamps) : Date.now()
   }
 
   private toPageFilePath(pageId: string, filename: string): string {

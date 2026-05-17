@@ -80,6 +80,22 @@ class PageConfigServiceTest {
         assertNotNull(result.get("timestamp"));
     }
 
+    @Test
+    void readFile_returnsNotModifiedWithoutContentForMatchingTimestamp() throws Exception {
+        service.createPage("t1", "p1", "demo-page", "演示页面", "Document");
+
+        Map<String, Object> first = service.readFile(
+                "t1", "p1", "demo-page", "rule.json", null);
+        String timestamp = (String) first.get("timestamp");
+
+        Map<String, Object> second = service.readFile(
+                "t1", "p1", "demo-page", "rule.json", timestamp);
+
+        assertEquals(true, second.get("notModified"));
+        assertEquals(timestamp, second.get("timestamp"));
+        assertFalse(second.containsKey("content"));
+    }
+
     // ── 文件级版本管理 ──
 
     @Test

@@ -630,16 +630,35 @@ export class DataSet implements IDataSet {
 
     const parentKey = typeof rel.parentField === 'string' ? rel.parentField : parentView.primaryKey
     const childKey = typeof rel.childField === 'string' ? rel.childField : parentKey
-    const values = Array.from(new Set(parentRows.map((row) => {
-      if (!(parentKey in row)) {
-        throw new Error(`远端关系过滤引用了不存在的父字段 "${parentKey}" [${rel.childTable}:${rel.childViewId ?? 'default'}]`)
-      }
-      return row[parentKey]
-    })))
 
-    if (values.some(value => value === undefined)) {
-      throw new Error(`远端关系过滤字段 "${parentKey}" 解析为 undefined [${rel.childTable}:${rel.childViewId ?? 'default'}]`)
+    // 检查父字段是否为计算列（computeExpression），已定义但尚未求值时可优雅降级
+    const isComputedField = parentView.columns.some(c => c.name === parentKey && c.computeExpression !== undefined)
+
+    const values: unknown[] = []
+    const seen = new Set<unknown>()
+    for (const row of parentRows) {
+      if (parentKey in row) {
+        const v = row[parentKey]
+        if (v === undefined) {
+          if (!isComputedField) {
+            throw new Error(`远端关系过滤字段 "${parentKey}" 解析为 undefined [${rel.childTable}:${rel.childViewId ?? 'default'}]`)
+          }
+          // 计算列字段为 undefined 时跳过（可能尚未求值完成），等待下次级联重试
+          continue
+        }
+        if (!seen.has(v)) {
+          seen.add(v)
+          values.push(v)
+        }
+      } else {
+        if (!isComputedField) {
+          throw new Error(`远端关系过滤引用了不存在的父字段 "${parentKey}" [${rel.childTable}:${rel.childViewId ?? 'default'}]`)
+        }
+        // 计算列字段缺失时跳过，等待下次级联重试
+      }
     }
+
+    if (values.length === 0) return null
 
     return values.length > 1
       ? { field: childKey, op: 'in', value: values as FilterValueExpression[] }

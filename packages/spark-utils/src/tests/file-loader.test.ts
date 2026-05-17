@@ -170,6 +170,13 @@ describe('FileLoader', () => {
       expect(result.success).toBe(true)
       expect(result.fromCache).toBe(true)
       expect(result.notModified).toBe(true)
+      expect(result.timestamp).toBe('2024-02-11T10:00:00Z')
+      expect(mockAxiosInstance.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          params: { timestamp: '2024-02-11T10:00:00Z' },
+        }),
+      )
     })
 
     it('应该在强制刷新时忽略缓存', async () => {
@@ -670,6 +677,12 @@ describe('FileLoader', () => {
       expect(result2.success).toBe(true)
       expect(result2.fromCache).toBe(true)
       expect(callCount).toBe(1) // transform 只执行一次
+      expect(mockAxiosInstance.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          params: { timestamp: 'ts-same' },
+        }),
+      )
     })
 
     it('forceRefresh 跳过变换缓存，重新执行 transform', async () => {

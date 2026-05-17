@@ -161,7 +161,7 @@ export class DataView implements IDataSource {
     this._primaryKeyDelegate.ensurePkColumn()
     // 注入 _pk 列元数据（table.columns + _columnMap）
     this._ensurePkColumnMeta(table)
-    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
+    if (this.rows.length > 0) this._applyComputedColumns(this.rows)
     this._computedDelegate.invalidateCache()
     this._computedDelegate.syncFromConfig()
     if (this._shouldApplyStaticLocalFilter() && this.filterExpression !== undefined && this.rows.length > 0) {
@@ -185,7 +185,7 @@ export class DataView implements IDataSource {
     // 重新注册 _pk 计算列（基于新的覆盖字段）
     this._primaryKeyDelegate.ensurePkColumn()
     if (this._dataTable) this._ensurePkColumnMeta(this._dataTable)
-    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
+    if (this.rows.length > 0) this._applyComputedColumns(this.rows)
     this.emitConfigChanged()
   }
 
@@ -195,7 +195,7 @@ export class DataView implements IDataSource {
     // 重新注册 _pk 计算列（基于列定义推导）
     this._primaryKeyDelegate.ensurePkColumn()
     if (this._dataTable) this._ensurePkColumnMeta(this._dataTable)
-    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
+    if (this.rows.length > 0) this._applyComputedColumns(this.rows)
     this.emitConfigChanged()
   }
 
@@ -585,14 +585,14 @@ export class DataView implements IDataSource {
   /** 设置计算列共享上下文（表达式中通过 ctx 引用），重新编译并对现有 rows 求值 */
   setComputedContext(ctx: ComputedColumnContext): void {
     this._computedDelegate.setContext(ctx)
-    this._computedDelegate.apply(this.rows)
+    this._applyComputedColumns(this.rows)
     this.aggregateDelegate.recompute(this.rows, this.selectedRows)
     this.emitRowsChanged()
   }
 
   /** 手动触发全量计算列重新求值 + 聚合重算。常规行操作已自动触发，仅用于特殊场景 */
   recomputeColumns(options?: { emit?: boolean }): void {
-    this._computedDelegate.apply(this.rows)
+    this._applyComputedColumns(this.rows)
     const aggregateOptions = options?.emit === undefined ? undefined : { emit: options.emit }
     this.aggregateDelegate.recompute(this.rows, this.selectedRows, aggregateOptions)
     if (options?.emit !== false) this.emitRowsChanged()
@@ -637,9 +637,20 @@ export class DataView implements IDataSource {
     }
   }
 
-  /** 对行集合执行计算列求值（就地写入）——供 DataView 内部调用。 */
+  /** 对行集合及其嵌套子节点执行计算列求值（就地写入）——供 DataView 内部调用。 */
   private _applyComputedColumns(rows: IDataRow[]): void {
-    this._computedDelegate.apply(rows)
+    const allRows: IDataRow[] = []
+    const stack = [...rows]
+    while (stack.length > 0) {
+      const row = stack.shift()
+      if (row === undefined) continue
+      allRows.push(row)
+      const children = (row as Record<string, unknown>)['children']
+      if (Array.isArray(children) && children.length > 0) {
+        stack.unshift(...children.filter((c): c is IDataRow => c !== null && c !== undefined && typeof c === 'object'))
+      }
+    }
+    this._computedDelegate.apply(allRows)
   }
 
   // ─────────────────────────────────────────────
@@ -994,7 +1005,7 @@ export class DataView implements IDataSource {
   /** 手工编辑追踪委托 */
   get dirtyTracking(): DirtyTrackingDelegate { return this.dirtyTrackingDelegate }
 
-  /** 当前编辑态行集合（按 rows 顺序返回 overlay 后的浅拷贝）。 */
+  /** 当前编辑态行集合（按 rows 顺序返回 overlay 后的浅拷贝，含重新求值的计算列）。 */
   get editingRows(): IDataRow[] {
     if (this._editingPatches.size === 0) return []
     const result: IDataRow[] = []
@@ -1012,6 +1023,7 @@ export class DataView implements IDataSource {
       const original = this._editingOriginalRows.get(rowId)
       if (original) result.push({ ...original, ...patch })
     }
+    if (result.length > 0) this._computedDelegate.apply(result)
     return result
   }
 
@@ -1175,6 +1187,8 @@ export class DataView implements IDataSource {
 
       if (result.success && result.data !== undefined) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
+        // 确保树形数据的所有子节点计算列已求值，再触发 autoFirst（会级联到子视图）
+        this._applyComputedColumns(this.rows)
         this.selectionDelegate.applyAutoFirst()
         this.setRequestState(RequestState.Loaded)
       } else {
@@ -1255,6 +1269,8 @@ export class DataView implements IDataSource {
       }
 
       this.updateFromServer(rows as IDataRow[])
+      // 确保树形数据的所有子节点计算列已求值，再触发 autoFirst（会级联到子视图）
+      this._applyComputedColumns(this.rows)
       this.selectionDelegate.applyAutoFirst()
       this.setRequestState(RequestState.Loaded)
       return { success: true, data: rows }
@@ -1361,7 +1377,11 @@ export class DataView implements IDataSource {
     const row = this.getRowById(id) ?? this._editingOriginalRows.get(id) ?? null
     if (!row) return null
     const patch = this._editingPatches.get(id)
-    return patch ? { ...row, ...patch } : row
+    if (!patch) return row
+    // 合并编辑态变更后重新求值计算列，使依赖已编辑字段的计算列反映最新编辑状态
+    const merged = { ...row, ...patch }
+    this._computedDelegate.apply([merged])
+    return merged
   }
 
   /** 将 UI 字段值写入编辑态，不直接污染 rows。 */

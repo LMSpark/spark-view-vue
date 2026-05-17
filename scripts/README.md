@@ -9,6 +9,8 @@
 - `publish-packages.mjs`：工作区包发布脚本。
 - `upload-component-metadata.mjs`：上传组件元数据到后端。
 - `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`、`verify-ai-session-stream-smoke.mjs`：链路验证脚本。
+- `claude-model.ps1`：Claude Code 后端模型环境切换、备份和冒烟验证脚本；默认只影响当前进程，显式传入 `-Persist` 才写入用户环境变量。
+- `setup-claude-deepseek.ps1`：历史 DeepSeek 接入脚本；新配置优先使用 `claude-model.ps1`。
 - `migrate-*.mjs`：结构迁移或批量修复脚本。
 
 ## 放置原则
