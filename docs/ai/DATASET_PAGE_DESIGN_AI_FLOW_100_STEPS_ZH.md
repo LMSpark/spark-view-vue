@@ -116,14 +116,15 @@ flowchart TB
 - 独立分页、独立筛选、独立当前行、弹窗选择器、主从区域、统计面板，都是独立 DataView 的候选。
 - 命名视图适合表达独立消费意图；依赖 `tableRelations / viewDependencies` 做主从级联时，父子容器应绑定到当前协议实际消费的 `default` 视图。
 
-## 3. DataViewKey：容器与值级绑定协议
+## 3. DataViewKey：容器定位与成员读取协议
 
-`DataViewKey` 和 `DataViewKey` 都是字符串协议，但职责不同：
+DataView 绑定拆成三个显式语义：
 
-- `DataViewKey`：容器级绑定，告诉 `r-table / r-list / r-tree / r-form / r-detail` 消费哪一个 `DataView`。
-- `DataViewKey`：值级绑定，从某个 `DataView` 读取 `rows/currentRow/selectedRows/aggregateResult` 等具体值。
+- `dataViewKey`：容器级定位，告诉 `r-table / r-list / r-tree / r-form / r-detail` 消费哪一个 `DataView`。
+- `dataMember`：成员级读取，从某个 `DataView` 读取 `rows/currentRow/selectedRows/aggregateResult` 等具体成员。
+- `dataField`：对象型成员内部字段或点路径，只用于 `currentRow / aggregateResult / selectionAggregateResult`。
 
-`DataViewKey` 合法格式：
+`dataViewKey` 合法格式：
 
 | 格式 | 含义 |
 | --- | --- |
@@ -131,41 +132,33 @@ flowchart TB
 | `Orders@selector` | 表 `Orders` 的 `selector` 视图，常用于弹窗选择器 |
 | `#Shared@Orders@lookup` | 跨页面或共享 scope 的 `lookup` 视图 |
 
-`DataViewKey` 合法格式：
+`dataMember` 合法值：
 
-| 格式 | 含义 |
+| 值 | 含义 |
 | --- | --- |
-| `Orders@mainList@rows` | 读取 `mainList` 视图行集 |
-| `Orders@mainList@currentRow` | 读取 `mainList` 当前行 |
-| `Orders@mainList@selectedRows` | 读取 `mainList` 选中行集合 |
-| `Orders@summary@aggregateResult.totalAmount` | 读取 `summary` 视图聚合结果 |
-| `#Shared@Orders@lookup@rows` | 跨页面或共享 scope 引用某个值 |
-
-常用 DataViewKey field：
-
-- `rows`
-- `columns`
-- `currentRow`
-- `selectedRows`
-- `aggregateResult`
-- `selectionAggregateResult`
-- `total`
-- `page`
-- `pageSize`
-- `requestState`
-- `mutating`
-- `loadingError`
-- `mutatingError`
+| `rows` | 视图行集 |
+| `columns` | 视图列定义 |
+| `currentRow` | 当前行 |
+| `selectedRows` | 当前选中行集合 |
+| `aggregateResult` | 当前行集聚合结果 |
+| `selectionAggregateResult` | 选中行聚合结果 |
+| `total` | 总数 |
+| `page` | 当前页 |
+| `pageSize` | 每页条数 |
+| `requestState` | 请求状态 |
+| `mutating` | 是否正在提交变更 |
+| `loadingError` | 加载错误 |
+| `mutatingError` | 提交错误 |
 
 常见错误：
 
 ```json
 {
-  "dataViewKey/dataMember/dataField": "Orders@amount"
+  "dataViewKey": "Orders@amount"
 }
 ```
 
-这是错误的，因为 `amount` 是列名，不是 DataViewKey field。另一个旧写法 `Orders@rows` 也不应该继续作为新文档范式，因为当前 DataViewKey 需要显式 viewId。正确做法是在容器上用 `dataViewKey` 绑定 DataView，在子字段节点上写 `field`。
+这是错误的，因为 `amount` 是列名，不是 viewId。旧写法 `Orders@mainList@rows` 也不应继续作为新文档范式，因为成员不能拼进 `dataViewKey`。正确做法是在容器上用 `dataViewKey: "Orders@mainList"` 绑定 DataView，在子字段节点上写 `field`；展示组件需要读取成员时再显式写 `dataMember` 和可选 `dataField`。
 
 ## 4. `$[fieldName]`：任意组件 prop 消费容器字段
 
@@ -178,14 +171,14 @@ flowchart TB
 - 纯占位符保留原始类型：`"tagType": "$[ageBadgeType]"` 拿到字段真实值。
 - 混合文本退化为字符串：`"content": "$[age] 岁"` 做字符串拼接。
 - 字段缺失、`null`、`undefined` 在混合文本里解析为空字符串。
-- 这个能力只读当前行字段，不替代 `dataViewKey`、`dataViewKey/dataMember/dataField` 或 `field`。
+- 这个能力只读当前行字段，不替代 `dataViewKey`、`dataMember`、`dataField` 或 `field`。
 
 DATA_ROW 来源：
 
 | 容器 | 触发方式 | 典型场景 |
 | --- | --- | --- |
 | `r-table` 行模板 | 每行渲染时自动注入该行数据 | 表格单元格模板 |
-| `r-detail`、`r-form`、`r-list` | 通过 `contextDataMember/contextDataField` 注入指定 DataViewKey 的值 | 独立详情/表单面板 |
+| `r-detail`、`r-form`、`r-list` | 通过 `contextDataMember` / `contextDataField` 注入指定 DataView 成员值 | 独立详情/表单面板 |
 
 表格行模板示例：
 
@@ -221,7 +214,7 @@ DATA_ROW 来源：
   "type": "r-detail",
   "props": {
     "dataViewKey": "employees@default",
-    "contextDataMember/contextDataField": "employees@default@currentRow"
+    "contextDataMember": "currentRow"
   },
   "children": [
     {
@@ -258,12 +251,12 @@ flowchart LR
   Resolver --> View["DataView"]
   View --> ProvideView["provide DATA_SOURCE"]
   ProvideView --> Child["字段 / 按钮 / 显示组件"]
-  Child --> Row["DATA_ROW / DATA_SOURCE.currentRow / dataViewKey/dataMember/dataField 值 / $[fieldName]"]
+  Child --> Row["DATA_ROW / DATA_SOURCE.currentRow / DataView 成员值 / $[fieldName]"]
 ```
 
 ### 5.1 r-table
 
-`r-table` 消费 `PAGE_DATASET`，通过 `props.dataViewKey` 解析到某个 `DataView`，再把该 DataView 向下提供为 `DATA_SOURCE`。表格列里只写 `field`，不要用列名拼 `dataViewKey/dataMember/dataField`。
+`r-table` 消费 `PAGE_DATASET`，通过 `props.dataViewKey` 解析到某个 `DataView`，再把该 DataView 向下提供为 `DATA_SOURCE`。表格列里只写 `field`，不要把列名拼进 `dataViewKey`。
 
 ```json
 {
@@ -287,7 +280,7 @@ flowchart LR
 
 ### 5.2 r-form / r-detail
 
-表单和详情也通过 `dataViewKey` 绑定 DataView。默认情况下，字段组件从该 DataView 的 `currentRow` 或容器注入的 `DATA_ROW` 读取字段；如果要让表单跟随另一条数据线，可以用 `contextDataMember/contextDataField` 指向明确的值级上下文。
+表单和详情也通过 `dataViewKey` 绑定 DataView。默认情况下，字段组件从该 DataView 的 `currentRow` 或容器注入的 `DATA_ROW` 读取字段；如果要让表单跟随聚合结果或选中行聚合结果，可以用 `contextDataMember` / `contextDataField` 指向明确的成员上下文。
 
 ```json
 {
@@ -295,7 +288,7 @@ flowchart LR
   "id": "order-form",
   "props": {
     "dataViewKey": "Orders@mainList",
-    "contextDataMember/contextDataField": "Orders@mainList@currentRow"
+    "contextDataMember": "currentRow"
   },
   "children": [
     { "type": "r-input", "props": { "field": "orderNo", "label": "订单号" } },
@@ -306,7 +299,7 @@ flowchart LR
 
 ### 5.3 字典选项
 
-当选择项需要复用、远程加载、级联或多字段映射时，优先放到 `pagedata.json` 的独立字典表里，再在字段组件中通过选项键引用。`optionDataViewKey` 指向选项视图的 `rows` 值，仍然要显式写出 viewId。
+当选择项需要复用、远程加载、级联或多字段映射时，优先放到 `pagedata.json` 的独立字典表里，再在字段组件中通过选项数据源引用。`optionDataViewKey` 指向选项视图，默认 `optionDataMember` 为 `rows`。
 
 ```json
 {
@@ -314,7 +307,8 @@ flowchart LR
   "props": {
     "field": "status",
     "label": "状态",
-    "optionDataViewKey": "StatusOptions@lookup@rows",
+    "optionDataViewKey": "StatusOptions@lookup",
+    "optionDataMember": "rows",
     "optionLabelField": "label",
     "optionValueField": "value"
   }
