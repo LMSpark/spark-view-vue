@@ -11,7 +11,7 @@
 | 概念 | 英文 | 层级 | 存储 | 生命周期 |
 |------|------|------|------|----------|
 | **本地快照** | Local Snapshot | 前端 | `localStorage`（ring buffer） | 浏览器级别，切设备即丢失 |
-| **后端版本** | File Version | 后端 | 磁盘 `{version}__{filename}` + H2 DB 元数据 | 持久化，团队共享 |
+| **后端版本** | File Version | 后端 | 磁盘 `{version}__{filename}` + MySQL 元数据 | 持久化，团队共享 |
 
 **关键区分**：
 - **快照 ≠ 版本**：快照 = 纯前端 localStorage undo/redo 检查点；版本 = 后端持久化的单文件内容归档
@@ -46,7 +46,7 @@
 │       ↓ HTTP POST（创建版本快照）                │
 └───────────────────────────────────────────────┘
                     ↓
-┌─────────────── 后端（Java + H2） ─────────────┐
+┌──────────── 后端（Java + Docker MySQL） ───────┐
 │                                               │
 │  writeFile()                                   │
 │       ↓                                        │
@@ -59,7 +59,7 @@
 │  1. 读取当前工作文件内容                         │
 │  2. maxVersion + 1 → 新版本号                   │
 │  3. 写入 {version}__{filename} 到磁盘           │
-│  4. 写入 file_version 记录到 H2 DB             │
+│  4. 写入 file_version 记录到 MySQL             │
 │  5. 返回 { version, isCurrent, createdAt }     │
 │                                               │
 └───────────────────────────────────────────────┘
@@ -212,7 +212,7 @@ commitFileTextHistory(name, text)          // rule.json / script.js / style.css
 
 ### 2.3 后端数据模型
 
-**FileVersionEntity（H2 `file_version` 表）**：
+**FileVersionEntity（MySQL `file_version` 表）**：
 
 ```java
 @Entity
@@ -329,14 +329,14 @@ data/pages-config/{tenantId}/{projectId}/
 - 手动升版让用户在有意义的检查点创建版本（如"完成表单布局"、"修复计算列"）
 - 减少磁盘 I/O 和 DB 写入
 
-### D3: H2 DB（元数据）+ 文件系统（内容）
+### D3: MySQL（元数据）+ 文件系统（内容）
 
-**决策**：版本元数据（版本号、isCurrent、创建时间）存 H2 嵌入式数据库；版本内容存磁盘文件。
+**决策**：版本元数据（版本号、isCurrent、创建时间）存 MySQL；版本内容存磁盘文件。
 
 **理由**：
 - 元数据查询需要排序、过滤、聚合——DB 天然支持
 - 文件内容可能很大——存 DB 会增加数据库体积和备份成本
-- H2 嵌入式无需额外运维，`ddl-auto: update` 自动建表
+- 本地和部署统一使用 MySQL，避免 H2/MySQL 双库切换造成数据错觉
 - 文件内容 git-tracked，版本快照可选择性 gitignore
 
 ### D4: 扁平磁盘命名 `{version}__{filename}`
@@ -382,7 +382,7 @@ data/pages-config/{tenantId}/{projectId}/
 
 | 旧概念 | 状态 | 替代方案 |
 |--------|------|----------|
-| `__page-meta.json` | **已删除** | H2 DB `file_version` 表 |
+| `__page-meta.json` | **已删除** | MySQL `file_version` 表 |
 | `__project-meta.json` | **已删除** | 无（routes.json 无版本管理） |
 | `__versions/{v}.json` | **已删除** | `{version}__{filename}` 扁平命名 |
 | `writeBatch()` / `__batch` | **已删除** | 逐文件 `PUT` |
@@ -393,4 +393,4 @@ data/pages-config/{tenantId}/{projectId}/
 
 ### 数据迁移
 
-旧架构的 `__page-meta.json`、`__project-meta.json`、`__versions/` 目录在升级后不再使用。可手动清理或保留（不影响新架构运行）。H2 数据库 `ddl-auto: update` 会自动创建 `file_version` 表。
+旧架构的 `__page-meta.json`、`__project-meta.json`、`__versions/` 目录在升级后不再使用。可手动清理或保留（不影响新架构运行）。MySQL 会通过 JPA/Flyway 管理 `file_version` 表结构。

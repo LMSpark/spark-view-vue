@@ -134,6 +134,28 @@ export {
   useNav,
   useNavigation,
 } from './navigation/useNavigation'
+export {
+  normalizeNavRuntimePath,
+  resolveNavNodeRuntimeTarget,
+} from './navigation/runtime-target'
+export type {
+  NavNodeActionTarget,
+  NavNodeContainerTarget,
+  NavNodeExternalTarget,
+  NavNodeHiddenTarget,
+  NavNodeRouteTarget,
+  NavNodeRouteTargetKind,
+  NavNodeRuntimeTarget,
+} from './navigation/runtime-target'
+export {
+  createNavigationActionRegistry,
+  NAVIGATION_ACTION_REGISTRY_KEY,
+} from './navigation/action-registry'
+export type {
+  NavigationActionContext,
+  NavigationActionHandler,
+  NavigationActionRegistry,
+} from './navigation/action-registry'
 export { useTabPages } from './navigation/useTabPages'
 export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './navigation/useColorScheme'
 export { NAV_KEY } from './navigation/nav-types'

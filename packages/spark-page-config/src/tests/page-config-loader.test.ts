@@ -266,9 +266,35 @@ describe('PageConfigLoader', () => {
         baseUrl: pagesConfigBaseUrl,
         getHeaders,
       }))
-      expect(vi.mocked(createRequest)).toHaveBeenLastCalledWith(expect.objectContaining({
+      expect(vi.mocked(createRequest)).toHaveBeenCalledWith(expect.objectContaining({
         baseURL: '/api',
       }))
+      expect(vi.mocked(createRequest)).toHaveBeenCalledWith(expect.objectContaining({
+        baseURL: pagesConfigBaseUrl,
+      }))
+    })
+
+    it('pagesConfigBaseUrl: 支持项目切换后动态重建四文件加载上下文', async () => {
+      let projectId = 'homepage'
+      loader = new PageConfigLoader({
+        apiBaseUrl: '/api',
+        pagesConfigBaseUrl: () => `/api/tenants/lmspark/projects/${projectId}/pages-config`,
+      })
+      expect(vi.mocked(createFileLoader)).toHaveBeenLastCalledWith(expect.objectContaining({
+        baseUrl: '/api/tenants/lmspark/projects/homepage/pages-config',
+      }))
+
+      projectId = 'engineering-pm'
+      mockFileLoader.load.mockResolvedValue(fileOk([{ type: 'div', id: 'remote-root', props: {} }]))
+
+      const r = await loader.loadRule('pm-dashboard')
+
+      expect(r.success).toBe(true)
+      expect(vi.mocked(createFileLoader)).toHaveBeenLastCalledWith(expect.objectContaining({
+        baseUrl: '/api/tenants/lmspark/projects/engineering-pm/pages-config',
+        cachePrefix: 'spark_page_api_tenants_lmspark_projects_engineering_pm_pages_config_',
+      }))
+      expect(mockFileLoader.load).toHaveBeenLastCalledWith('/pm-dashboard/rule.json')
     })
 
     it('loadRule: 远程读取 pages-config 文件接口并编译规则', async () => {
@@ -333,33 +359,38 @@ describe('PageConfigLoader', () => {
       expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-data-page/pagedata.json')
     })
 
-    it('loadPageConfig: 远程 script.js 不存在时 fail-fast', async () => {
+    it('loadPageConfig: 清单确认无 script.js/style.css 时按零代码页面加载', async () => {
+      mockRequestClient.get.mockResolvedValue([
+        { pageId: 'zero-code-page', files: ['rule.json', 'pagedata.json'] },
+      ])
       mockFileLoader.load
         .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
         .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
-        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
-      const r = await loader.loadPageConfig('missing-assets-page')
+      const r = await loader.loadPageConfig('zero-code-page')
 
-      expect(r.success).toBe(false)
-      expect(r.reason).toBe('not-found')
-      expect(mockFileLoader.load).toHaveBeenCalledTimes(3)
-      expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-assets-page/script.js')
+      expect(r.success).toBe(true)
+      expect(r.data?.script).toBeUndefined()
+      expect(r.data?.css).toBeUndefined()
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(2)
+      expect(mockFileLoader.load).toHaveBeenNthCalledWith(1, '/zero-code-page/rule.json')
+      expect(mockFileLoader.load).toHaveBeenNthCalledWith(2, '/zero-code-page/pagedata.json')
     })
 
-    it('loadPageConfig: 远程 style.css 不存在时 fail-fast', async () => {
+    it('loadPageConfig: 清单不可用时忽略可选脚本和样式 404', async () => {
+      mockRequestClient.get.mockRejectedValue(new Error('manifest unavailable'))
       mockFileLoader.load
         .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
         .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
-        .mockResolvedValueOnce(fileOk(''))
+        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
         .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
-      const r = await loader.loadPageConfig('missing-style-page')
+      const r = await loader.loadPageConfig('zero-code-page')
 
-      expect(r.success).toBe(false)
-      expect(r.reason).toBe('not-found')
+      expect(r.success).toBe(true)
+      expect(r.data?.script).toBeUndefined()
+      expect(r.data?.css).toBeUndefined()
       expect(mockFileLoader.load).toHaveBeenCalledTimes(4)
-      expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-style-page/style.css')
     })
 
     it('loadScript: 远程 fetch 文本文件', async () => {

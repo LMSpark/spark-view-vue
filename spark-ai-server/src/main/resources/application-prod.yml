@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${MYSQL_JDBC_URL:jdbc:mysql://localhost:3306/spark_ai?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3307/spark_ai?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER:spark}
     password: ${MYSQL_PASSWORD:spark}
@@ -14,6 +14,8 @@ spring:
     baseline-on-migrate: true
 
 spark:
+  datasource:
+    mode: ${SPARK_DATASOURCE_MODE:direct}
   pages:
     config-dir: ${PAGES_CONFIG_DIR:/data/pages-config}
     storage:

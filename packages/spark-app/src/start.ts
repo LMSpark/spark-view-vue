@@ -77,7 +77,7 @@ export interface PageConfigOptions {
    *
    * apiBaseUrl 保持为通用 HTTP client 基址；四文件加载在多租户项目下使用该 scoped 路径。
    */
-  pagesConfigBaseUrl?: string
+  pagesConfigBaseUrl?: string | (() => string)
   /** 请求超时时间 */
   timeout?: number
   /** 动态请求头回调（每次请求时调用，注入租户上下文） */

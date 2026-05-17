@@ -9,7 +9,7 @@ import { ErrorType } from './types'
 import { createLogger } from './logger'
 import { toError } from '@spark-view/spark-utils'
 
-const errorLogger = createLogger('error')
+const errorLogger = createLogger('error', { suppressErrorConsoleTrace: true })
 
 const VUE_INTERNAL_FRAME_RE = /(runtime-core\.esm-bundler\.js|reactivity\.esm-bundler\.js|runtime-dom\.esm-bundler\.js|node_modules[\\/](vue|@vue)[\\/])/i
 
@@ -40,6 +40,15 @@ function compactStackLikeText(raw: string | undefined, maxFrames = 12): string |
   }
 
   return kept.join('\n')
+}
+
+function toLoggedErrorMeta(raw: unknown): Record<string, unknown> {
+  const error = toError(raw)
+  return {
+    rawType: raw instanceof Error ? raw.name || 'Error' : raw === null ? 'null' : typeof raw,
+    message: error.message,
+    stack: compactStackLikeText(error.stack),
+  }
 }
 
 /**
@@ -83,7 +92,6 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       message: error.message,
       context,
       stack: compactStackLikeText(error.stack),
-      rawError: err,
     })
 
     // 追加一条摘要日志，避免控制台预览折叠成 "Object" 时丢失关键信息。
@@ -112,7 +120,9 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
   if (typeof window !== 'undefined') {
     const rejectionHandler = (event: PromiseRejectionEvent) => {
       // event.reason 类型为 any，转为 Error 或字符串记录
-      const reason = event.reason instanceof Error ? event.reason : { reason: String(event.reason) }
+      const reason = event.reason instanceof Error
+        ? toLoggedErrorMeta(event.reason)
+        : { reason: String(event.reason) }
       errorLogger.error('[Unhandled Promise]', reason)
       event.preventDefault()
       
@@ -200,7 +210,7 @@ export function createErrorBoundary(fallbackRender?: (error: Error) => unknown) 
     },
     errorCaptured(err: unknown) {
       this.error = err instanceof Error ? err : new Error(String(err))
-      errorLogger.error('[Error Boundary]', this.error)
+      errorLogger.error('[Error Boundary]', toLoggedErrorMeta(this.error))
       return false // 阻止错误继续传播
     },
     render() {

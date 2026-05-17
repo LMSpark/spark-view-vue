@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-15T17:02:53.607Z",
-  "componentCount": 106,
+  "buildTime": "2026-05-17T02:44:39.422Z",
+  "componentCount": 107,
   "components": {
     "about": {
       "type": "about",
@@ -727,6 +727,15 @@
           "description": "showSelectionSummary prop (boolean); 用于配置该组件的 showSelectionSummary 行为或展示。"
         }
       ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "dbms": {
+      "type": "dbms",
+      "filePath": "src/views/app/DBMS.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"dbms\" 引用。 配置入口：type=\"dbms\"，category=feature（功能组件）。",
+      "props": [],
       "emits": [],
       "source": "vcm"
     },
@@ -2957,7 +2966,7 @@
       "props": [
         {
           "name": "action",
-          "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\"",
+          "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | \"save-dataset\"",
           "required": false,
           "description": "CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行。",
           "schema": {
@@ -2977,7 +2986,8 @@
               "patch-current",
               "patch-selected",
               "message-row",
-              "message-current"
+              "message-current",
+              "save-dataset"
             ],
             "type": "string",
             "description": "CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行。",
@@ -3061,6 +3071,10 @@
                 "const": "message-current",
                 "title": "查看 currentRow",
                 "description": "展示数据视图当前选中 currentRow 的字段信息，不修改数据。"
+              },
+              {
+                "const": "save-dataset",
+                "title": "save-dataset"
               }
             ]
           }

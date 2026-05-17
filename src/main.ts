@@ -44,12 +44,15 @@ import {
   PluginManager,
   configureRemoteLogger,
   createLogger,
+  getNavTree,
   getNavHomePath,
   loadAppConfig,
   registerBuiltinPlugins,
+  resolveNavNodeRuntimeTarget,
 } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
+import type { NavNode } from '@spark-view/spark-page-config'
 
 import { getUser, isAuthenticated, switchProject } from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
@@ -58,6 +61,7 @@ import {
   parseTenantScope,
   stripTenantScope,
 } from './services/tenant-scope'
+import type { Router } from 'vue-router'
 const startupLogger = createLogger('main')
 
 // late-binding pageId（路由就绪后由 afterMount 注入）
@@ -89,6 +93,44 @@ function extractPageId(path: string): string | undefined {
   const raw = parseTenantScope(path) ? stripTenantScope(path) : path.replace(/^\/+/, '')
   const trimmed = raw.replace(/^\/+/, '').replace(/\/+$/, '')
   return trimmed.length > 0 ? trimmed : undefined
+}
+
+function normalizeRoutePath(path: string): string {
+  const trimmed = path.trim()
+  if (trimmed === '' || trimmed === '/') return '/'
+  return `/${trimmed.replace(/^\/+/, '').replace(/\/+$/, '')}`
+}
+
+function navigationContainsPath(nodes: NavNode[], targetPath: string): boolean {
+  const normalizedTargetPath = normalizeRoutePath(targetPath)
+  for (const node of nodes) {
+    const runtimeTarget = resolveNavNodeRuntimeTarget(node)
+    if (runtimeTarget.kind === 'route' && normalizeRoutePath(runtimeTarget.path) === normalizedTargetPath) return true
+    if (node.children !== undefined && navigationContainsPath(node.children, normalizedTargetPath)) return true
+  }
+  return false
+}
+
+async function ensureCurrentScopedRouteIsNavigable(router: Router): Promise<void> {
+  const scope = parseTenantScope(window.location.pathname)
+  if (!scope) return
+
+  const navTree = getNavTree()
+  if (navTree === null) return
+
+  const scopedPath = normalizeRoutePath(stripTenantScope(window.location.pathname))
+  const isKnownPath = scopedPath === normalizeRoutePath(navTree.homePath ?? getNavHomePath())
+    || navigationContainsPath(navTree.children, scopedPath)
+  if (isKnownPath) return
+
+  const replacementPath = buildTenantPath(scope, getNavHomePath())
+  const replacementLocation = `${replacementPath}${window.location.search}${window.location.hash}`
+  startupLogger.warn('当前租户作用域路径未在项目导航中注册，已切换到项目首页', {
+    currentPath: window.location.pathname,
+    replacementPath,
+  })
+  window.history.replaceState(window.history.state, '', replacementLocation)
+  await router.replace(replacementLocation)
 }
 
 function mountStartupError(error: unknown, fallbackMessage: string): void {
@@ -262,7 +304,7 @@ async function startApp() {
       // === 页面配置系统（路由从 DB 动态加载）===
       pageConfig: {
         ...appConfig.pageConfig,
-        pagesConfigBaseUrl: getPageApi(),
+        pagesConfigBaseUrl: getPageApi,
         pageComponent: SparkPageRenderer,
         componentMap,
         // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）
@@ -336,6 +378,8 @@ async function startApp() {
           }
           return undefined
         })
+
+        await ensureCurrentScopedRouteIsNavigable(router)
 
         startupLogger.info('✅ 应用准备挂载')
         

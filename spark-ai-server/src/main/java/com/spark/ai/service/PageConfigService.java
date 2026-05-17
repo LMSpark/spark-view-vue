@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  *
  * <h3>文件级版本管理</h3>
  * <p>每个配置文件（rule.json / pagedata.json / script.js / style.css）拥有独立版本链。
- * 版本元数据存储在 H2 数据库（file_version 表），文件内容存储在磁盘。
+ * 版本元数据存储在关系数据库（file_version 表），文件内容存储在磁盘。
  *
  * <h3>磁盘命名约定</h3>
  * <ul>

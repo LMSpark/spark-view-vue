@@ -37,6 +37,7 @@ let backendExited = false
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
+const COMPOSE_FILE = resolve(SERVER_DIR, 'docker-compose.yml')
 const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
 const existingPath = mergedEnv['PATH'] ?? mergedEnv['Path'] ?? process.env['PATH'] ?? process.env['Path'] ?? ''
 
@@ -63,6 +64,11 @@ const javaEnv = javaHome
 function run(cmd, opts = {}) {
   console.log(`\n> ${cmd}\n`)
   execSync(cmd, { stdio: 'inherit', ...opts })
+}
+
+function ensureMysqlService() {
+  console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3307/spark_ai')
+  run(`docker compose -f "${COMPOSE_FILE}" up -d mysql`, { cwd: ROOT_DIR })
 }
 
 function getBackendUrl() {
@@ -237,6 +243,7 @@ try {
       process.exit(1)
     }
 
+    ensureMysqlService()
     backendPort = await resolveBackendPort()
 
     console.log(`\n🚀 启动 Java 后端 (port ${backendPort})...`)

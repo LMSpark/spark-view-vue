@@ -262,6 +262,7 @@ public class ProjectNavigationTreeService {
         }
 
         insertFlatRow(tenantId, projectId, parentNodeId, sanitized, sortOrder);
+        sanitized.put("order", sortOrder);
         log.info("[Navigation] 新增节点 id={} tenant={} project={}", newId, tenantId, projectId);
         return sanitized;
     }
@@ -276,6 +277,9 @@ public class ProjectNavigationTreeService {
         }
         if (!nodeExists(tenantId, projectId, id)) {
             throw new IllegalArgumentException("节点不存在: " + id);
+        }
+        if (patch.containsKey("order") || patch.containsKey("sortOrder")) {
+            throw new IllegalArgumentException("排序只能通过 moveNode 调整");
         }
 
         Map<String, Object> merged = new LinkedHashMap<>(patch);
@@ -356,7 +360,7 @@ public class ProjectNavigationTreeService {
 
         log.info("[Navigation] 移动节点 id={} newParentId={} tenant={} project={}",
             id, parentNodeId, tenantId, projectId);
-        return Map.of("id", id);
+        return Map.of("id", id, "order", sortOrder);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -698,8 +702,8 @@ public class ProjectNavigationTreeService {
         if (Boolean.TRUE.equals(node.get("disabled"))) {
             item.put("disabled", true);
         }
-        if (node.get("sortOrder") instanceof Number sortOrder) {
-            item.put("sortOrder", sortOrder.intValue());
+        if (node.get("order") instanceof Number order) {
+            item.put("order", order.intValue());
         }
         if (node.containsKey("context") && node.get("context") != null) {
             item.put("context", node.get("context"));
@@ -1016,12 +1020,6 @@ public class ProjectNavigationTreeService {
             kind = inferNodeKind(raw, id);
         }
 
-        String linkPath = asTrimmedString(raw.get("path"));
-        String rawLinkTarget = asTrimmedString(raw.get("linkTarget"));
-        if ("page".equals(kind) && (!linkPath.isBlank() || !rawLinkTarget.isBlank())) {
-            kind = "link";
-        }
-
         return kind;
     }
 
@@ -1161,7 +1159,7 @@ public class ProjectNavigationTreeService {
             putIfNotBlank(node, "linkTarget", asTrimmedString(row.get("LINK_TARGET")));
             putIfNotBlank(node, "refId", asTrimmedString(row.get("REF_ID")));
             if (sortOrder != null) {
-                node.put("sortOrder", sortOrder);
+                node.put("order", sortOrder);
             }
 
             String contextJson = asTrimmedString(row.get("CONTEXT"));

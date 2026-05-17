@@ -151,6 +151,19 @@ describe('AppLogger', () => {
       const meta = callArgs(errorSpy)[1]
       expect(meta).toEqual(obj)
     })
+
+    it('suppressErrorConsoleTrace=true → 控制台不用 console.error，但 transport 保持 error 级别', () => {
+      const transport: LogTransport = { send: vi.fn() }
+      const logger = createAppLogger({ level: 'error', suppressErrorConsoleTrace: true })
+      const meta = { code: 500 }
+      logger.addTransport(transport)
+
+      logger.error('failed', meta)
+
+      expect(errorSpy).not.toHaveBeenCalled()
+      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('failed'), meta)
+      expect(transport.send).toHaveBeenCalledWith('error', 'failed', meta)
+    })
   })
 
   // ── success ──

@@ -3,6 +3,9 @@ import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { compileRule, parsePageData } from '@spark-view/spark-page-config'
 import type { HttpClient } from '@spark-view/spark-utils'
+import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
+import { executeSaveDataSet } from '../packages/spark-component/src/page/actions/action-data'
+import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions/action-types'
 
 const pageRoot = join(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/homepage')
 
@@ -33,6 +36,17 @@ function collectActions(nodes: unknown[]): string[] {
   }
   for (const node of nodes) visit(node)
   return actions
+}
+
+function findNodeById(nodes: unknown[], id: string): RuleNodeLike | undefined {
+  for (const node of nodes) {
+    if (node === null || typeof node !== 'object' || Array.isArray(node)) continue
+    const current = node as RuleNodeLike & { id?: unknown }
+    if (current.id === id) return current
+    const found = findNodeById(current.children ?? [], id)
+    if (found) return found
+  }
+  return undefined
 }
 
 function readOperations(data: unknown): Array<Record<string, unknown>> {
@@ -125,5 +139,133 @@ describe('transaction validation page configs', () => {
     ])
     expect(orders!.dirtyTracking.hasPendingChanges()).toBe(false)
     expect(items!.dirtyTracking.hasPendingChanges()).toBe(false)
+  })
+
+  it('tx-transaction-retry conflict button stages a different payload before reusing requestId', async () => {
+    const compiledRule = compileRule(readPageFile('tx-transaction-retry', 'rule.json'))
+    const conflictButton = findNodeById(compiledRule, 'btn-save-retry-conflict')
+    expect(conflictButton).toBeDefined()
+
+    const descriptor = nodeToActionDescriptor(conflictButton as Parameters<typeof nodeToActionDescriptor>[0])
+    expect(descriptor).toMatchObject({
+      action: 'append-row',
+      dataKey: 'SparkTxAudit@default@id',
+      appendPayload: {
+        id: 9202,
+        message: 'conflict-submit',
+      },
+      then: {
+        action: 'save-dataset',
+        mode: 'transaction',
+        requestId: 'tx-config-retry-v1',
+      },
+    })
+
+    const dataSet = parsePageData(readPageFile('tx-transaction-retry', 'pagedata.json'))
+    dataSet.setPageRoute({ params: { tenantId: 'lmspark', projectId: 'homepage' } })
+    const posts: CapturedPost[] = []
+    dataSet.setSharedHttpClient(createMockHttpClient(posts))
+
+    const audit = dataSet.getView('SparkTxAudit', 'default')
+    expect(audit).toBeDefined()
+
+    await audit!.addRow({
+      id: 9201,
+      requestKey: 'tx-config-retry-v1',
+      message: 'first-submit',
+      status: 'committed',
+    })
+    await dataSet.saveChanges({ mode: 'transaction', transaction: { requestId: 'tx-config-retry-v1' } })
+
+    await audit!.addRow({
+      id: 9202,
+      requestKey: 'tx-config-retry-v1',
+      message: 'conflict-submit',
+      status: 'conflict',
+    })
+    await dataSet.saveChanges({ mode: 'transaction', transaction: { requestId: 'tx-config-retry-v1' } })
+
+    expect(posts).toHaveLength(2)
+    expect((posts[0]!.data as { requestId?: string }).requestId).toBe('tx-config-retry-v1')
+    expect((posts[1]!.data as { requestId?: string }).requestId).toBe('tx-config-retry-v1')
+
+    const firstOperations = readOperations(posts[0]!.data)
+    const secondOperations = readOperations(posts[1]!.data)
+    expect(firstOperations).toHaveLength(1)
+    expect(secondOperations).toHaveLength(1)
+    expect(firstOperations[0]!['data']).toMatchObject({ message: 'first-submit' })
+    expect(secondOperations[0]!['data']).toMatchObject({ message: 'conflict-submit' })
+    expect(JSON.stringify(firstOperations)).not.toBe(JSON.stringify(secondOperations))
+  })
+
+  it('save-dataset supports zero-code auto requestId while fixed requestId keeps priority', async () => {
+    const autoNode = {
+      type: 'r-button',
+      props: {
+        action: 'save-dataset',
+        mode: 'transaction',
+        requestIdStrategy: 'auto',
+      },
+    }
+    const autoDescriptor = nodeToActionDescriptor(autoNode)
+    expect(autoDescriptor).toMatchObject({
+      action: 'save-dataset',
+      mode: 'transaction',
+      requestIdStrategy: 'auto',
+    })
+
+    const fixedDescriptor = nodeToActionDescriptor({
+      type: 'r-button',
+      props: {
+        action: 'save-dataset',
+        mode: 'transaction',
+        requestId: 'fixed-request-id',
+        requestIdStrategy: 'auto',
+      },
+    })
+    expect(fixedDescriptor).toMatchObject({
+      action: 'save-dataset',
+      mode: 'transaction',
+      requestId: 'fixed-request-id',
+      requestIdStrategy: 'auto',
+    })
+
+    const dataSet = parsePageData(readPageFile('tx-transaction-commit', 'pagedata.json'))
+    dataSet.setPageRoute({ params: { tenantId: 'lmspark', projectId: 'homepage' } })
+    const posts: CapturedPost[] = []
+    dataSet.setSharedHttpClient(createMockHttpClient(posts))
+
+    const orders = dataSet.getView('SparkTxOrders', 'default')
+    expect(orders).toBeDefined()
+    await orders!.addRow({ id: 9301, orderNo: 'TX-AUTO-001', owner: 'River', status: 'draft' })
+
+    const messages: Array<{ type: string; message: string }> = []
+    const ctx: ActionExecutionContext = {
+      getDataSet: () => dataSet,
+      getPageService: () => ({
+        showMessage: (message, type = 'info') => {
+          messages.push({ type, message })
+        },
+        showConfirm: vi.fn(async () => true),
+        showPrompt: vi.fn(async () => null),
+        showAlert: vi.fn(async () => undefined),
+        showDialog: vi.fn(async () => 'cancel' as const),
+        selectEntities: vi.fn(async () => []),
+        browseFiles: vi.fn(async () => []),
+        uploadFiles: vi.fn(async () => []),
+        showLoading: vi.fn(),
+        navigate: vi.fn(),
+      }),
+      getRouter: () => null,
+    }
+
+    await executeSaveDataSet(autoDescriptor as Parameters<typeof executeSaveDataSet>[0], ctx)
+
+    expect(messages.at(-1)?.type).toBe('success')
+    expect(posts).toHaveLength(1)
+    const requestId = (posts[0]!.data as { requestId?: string }).requestId
+    expect(requestId).toBeDefined()
+    expect(requestId).not.toBe('fixed-request-id')
+    expect(requestId!.length).toBeGreaterThan(10)
   })
 })

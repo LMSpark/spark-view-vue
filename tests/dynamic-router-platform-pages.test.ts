@@ -211,6 +211,76 @@ describe('DynamicRouter platform pages', () => {
     expect(route?.meta['refPageId']).toBe('dataset-demo')
   })
 
+  it('registers iframe links on stable virtual routes', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: [] })
+    const loadNavigation = vi.fn().mockResolvedValue({
+      id: 'tenant-root',
+      title: 'tenant-root',
+      childPlacement: 'header',
+      children: [
+        {
+          id: 'docs-link',
+          title: 'docs',
+          nodeKind: 'link',
+          linkTarget: 'iframe',
+          path: 'https://example.com/docs',
+          children: [],
+        },
+      ],
+    } satisfies AppNavRoot)
+
+    const dynamicRouter = createDynamicRouter({
+      router,
+      configLoader: {} as never,
+      pageComponent: DummyPage,
+      loadNavigation,
+      isAuthenticated: () => true,
+      tenantPathPrefix: '/t/:tenantId/:projectId',
+    })
+
+    await expect(dynamicRouter.registerRoutes()).resolves.toBeUndefined()
+
+    const route = router.getRoutes().find(item => item.path === '/t/:tenantId/:projectId/__link/docs-link')
+    expect(route?.name).toBe('nav-docs-link')
+    expect(route?.meta['type']).toBe('external-link')
+    expect(route?.meta['linkUrl']).toBe('https://example.com/docs')
+    expect(router.getRoutes().some(item => item.path === 'https://example.com/docs')).toBe(false)
+  })
+
+  it('keeps permissionMode separate from route access permissions', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: [] })
+    const loadNavigation = vi.fn().mockResolvedValue({
+      id: 'tenant-root',
+      title: 'tenant-root',
+      childPlacement: 'header',
+      children: [
+        {
+          id: 'orders',
+          title: 'orders',
+          nodeKind: 'page',
+          path: '/orders',
+          permissionMode: 'invisible',
+          children: [],
+        },
+      ],
+    } satisfies AppNavRoot)
+
+    const dynamicRouter = createDynamicRouter({
+      router,
+      configLoader: {} as never,
+      pageComponent: DummyPage,
+      loadNavigation,
+      isAuthenticated: () => true,
+      tenantPathPrefix: '/t/:tenantId/:projectId',
+    })
+
+    await expect(dynamicRouter.registerRoutes()).resolves.toBeUndefined()
+
+    const route = router.getRoutes().find(item => item.path === '/t/:tenantId/:projectId/orders')
+    expect(route?.meta['permissionMode']).toBe('invisible')
+    expect(route?.meta['permissions']).toBeUndefined()
+  })
+
   it('does not fall back to config pages for unresolved ref host routes', async () => {
     const router = createRouter({ history: createMemoryHistory(), routes: [] })
     const loadNavigation = vi.fn().mockResolvedValue({

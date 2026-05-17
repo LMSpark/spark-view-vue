@@ -1,21 +1,19 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/sparkdb;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3307/spark_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER:spark}
+    password: ${MYSQL_PASSWORD:spark}
   jpa:
     hibernate:
       ddl-auto: update
     open-in-view: false
   flyway:
     enabled: false
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
 
 spark:
+  datasource:
+    mode: ${SPARK_DATASOURCE_MODE:direct}
   pages:
     storage:
       type: file

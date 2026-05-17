@@ -315,7 +315,7 @@ describe('@spark-view/spark-ai framework boundary', () => {
     const actionSchema = actionProp?.schema as { enum?: unknown[]; oneOf?: Array<Record<string, unknown>>; examples?: unknown[] } | undefined
     expect(actionSchema?.enum).toEqual(expect.arrayContaining(['append-row', 'delete-selected', 'message-current']))
     const actionBranches = actionSchema?.oneOf ?? []
-    expect(actionBranches).toHaveLength(16)
+    expect(actionBranches).toHaveLength(17)
     expect(actionBranches).toContainEqual(expect.objectContaining({
       const: 'append-row',
       title: '新增行',

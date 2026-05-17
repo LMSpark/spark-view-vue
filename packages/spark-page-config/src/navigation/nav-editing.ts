@@ -96,7 +96,7 @@ export function inferNavNodeKind(node: NavNode, parentPlacement?: string): NavNo
   if (node.nodeKind !== undefined) return node.nodeKind
   if (parentPlacement !== undefined && SYSTEM_CHILD_PLACEMENTS.has(parentPlacement)) return 'system-action'
   if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
-  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
+  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab' || node.linkTarget === 'self') return 'link'
   return 'page'
 }
 
@@ -111,7 +111,7 @@ export function normalizeNavNode(node: NavNode, parentPlacement?: string): NavNo
   } else if (cloned.nodeKind === 'link') {
     delete cloned.redirect
     delete cloned.parentPageId
-    if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab') {
+    if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab' && cloned.linkTarget !== 'self') {
       cloned.linkTarget = 'iframe'
     }
   } else {
@@ -242,7 +242,7 @@ export function createNavigationNodeDraft(node: NavNode): NavigationNodeDraftInp
     description: node.description ?? '',
     path: node.path ?? '',
     redirect: node.redirect ?? '',
-    linkTarget: node.linkTarget === 'new-tab' ? 'new-tab' : 'iframe',
+    linkTarget: node.linkTarget === 'new-tab' || node.linkTarget === 'self' ? node.linkTarget : 'iframe',
     parentPageId: node.parentPageId ?? '',
     refId: node.refId ?? '',
     childPlacement: node.childPlacement ?? '',
@@ -398,7 +398,6 @@ export function createNavigationNodePatch(input: NavigationNodeDraftInput): Navi
   }
   if (draft.parentPageId) patch.parentPageId = draft.parentPageId
   if (draft.childPlacement) patch.childPlacement = draft.childPlacement as ChildPlacement
-  if (draft.order !== 0) patch.order = draft.order
   if (draft.hidden !== false) patch.hidden = draft.hidden
   if (draft.disabled !== false) patch.disabled = draft.disabled
   patch.permissionMode = draft.permissionMode
@@ -434,7 +433,6 @@ export function applyNavigationNodeDraftToNode(node: NavNode, input: NavigationN
   if (!('linkTarget' in result.patch)) delete node.linkTarget
   if (!('parentPageId' in result.patch)) delete node.parentPageId
   if (!('childPlacement' in result.patch)) delete node.childPlacement
-  if (!('order' in result.patch)) delete node.order
   if (!('hidden' in result.patch)) delete node.hidden
   if (!('disabled' in result.patch)) delete node.disabled
   if (!('context' in result.patch)) delete node.context

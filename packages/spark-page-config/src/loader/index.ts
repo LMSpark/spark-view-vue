@@ -45,6 +45,7 @@ export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } 
 const pageLogger = Logger('PageConfig')
 
 const REQUEST_TIMEOUT = 10_000
+const REQUIRED_PAGE_CONFIG_FILE_NAMES = ['rule.json', 'pagedata.json'] as const
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -64,21 +65,27 @@ function trimTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')
 }
 
+function cacheScopePrefix(baseUrl: string): string {
+  const scope = baseUrl.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+  return `spark_page_${scope}_`
+}
+
 function resolvePagesConfigBaseUrl(options: ResolvedConfigLoaderOptions): string {
-  if (options.pagesConfigBaseUrl !== undefined) {
-    return trimTrailingSlash(options.pagesConfigBaseUrl)
+  const baseUrl = options.pagesConfigBaseUrl
+  if (baseUrl !== undefined) {
+    return trimTrailingSlash(typeof baseUrl === 'function' ? baseUrl() : baseUrl)
   }
   return `${trimTrailingSlash(options.apiBaseUrl)}/pages-config`
 }
 
 export class PageConfigLoader implements ConfigLoader {
   private opts: ResolvedConfigLoaderOptions
-  private fileLoader: FileLoader
+  private fileLoader!: FileLoader
   /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
   private request: HttpClient
   /** 页面配置文件 API 请求实例，baseURL 固定到 .../pages-config。 */
-  private fileApiRequest: HttpClient
-  private readonly pagesConfigBase: string
+  private fileApiRequest!: HttpClient
+  private pagesConfigBase = ''
   private readonly recentMissingFiles = new Set<string>()
   private pageFileManifest: Map<string, Set<PageConfigFileName>> | null = null
 
@@ -86,19 +93,13 @@ export class PageConfigLoader implements ConfigLoader {
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
    * 相同 timestamp → 直接返回缓存结果，跳过 transform 函数。
    */
-  private readonly ruleLoader: DerivedLoader<RuleConfig[]>
-  private readonly dataLoader: DerivedLoader<PageDataConfig>
-  private readonly scriptLoader: DerivedLoader<PageScriptConfig>
-  private readonly cssLoader: DerivedLoader<PageCssConfig>
+  private ruleLoader!: DerivedLoader<RuleConfig[]>
+  private dataLoader!: DerivedLoader<PageDataConfig>
+  private scriptLoader!: DerivedLoader<PageScriptConfig>
+  private cssLoader!: DerivedLoader<PageCssConfig>
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
-    this.pagesConfigBase = resolvePagesConfigBaseUrl(this.opts)
-
-    this.fileApiRequest = createRequest({
-      baseURL: this.pagesConfigBase,
-      timeout: this.opts.timeout,
-    })
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
     this.request = createRequest({
       baseURL: this.opts.apiBaseUrl,
@@ -113,13 +114,34 @@ export class PageConfigLoader implements ConfigLoader {
           return config
         }
       }
-      this.fileApiRequest.interceptors.request.use(headerInterceptor)
       this.request.interceptors.request.use(headerInterceptor)
     }
+    this.resetPageFileContext(resolvePagesConfigBaseUrl(this.opts))
+  }
+
+  private resetPageFileContext(pagesConfigBase: string): void {
+    this.pagesConfigBase = pagesConfigBase
+    this.pageFileManifest = null
+    this.recentMissingFiles.clear()
+
+    this.fileApiRequest = createRequest({
+      baseURL: this.pagesConfigBase,
+      timeout: this.opts.timeout,
+    })
+    if (this.opts.getHeaders) {
+      const getHeaders = this.opts.getHeaders
+      this.fileApiRequest.interceptors.request.use({
+        onRequest: (config) => {
+          config.headers = { ...config.headers, ...getHeaders() }
+          return config
+        }
+      })
+    }
+
     this.fileLoader = createFileLoader({
       baseUrl: this.pagesConfigBase,
       storage: this.opts.fileStorage,
-      cachePrefix: 'spark_page_',
+      cachePrefix: cacheScopePrefix(this.pagesConfigBase),
       fallbackToCache: false,
       timeout: this.opts.timeout,
       // 动态请求头（认证 / 租户上下文）
@@ -129,6 +151,24 @@ export class PageConfigLoader implements ConfigLoader {
       maxCacheSize: 50             // 最多缓存 50 个页面配置
     })
 
+    this.bindFileLoaderEvents()
+    this.ruleLoader = this.fileLoader.withTransform(compileRule)
+    this.dataLoader = this.fileLoader.withTransform(parsePageData)
+    this.scriptLoader = this.fileLoader.withTransform(parseScript)
+    this.cssLoader = this.fileLoader.withTransform(parseCss)
+  }
+
+  private ensurePageFileContext(): void {
+    const pagesConfigBase = resolvePagesConfigBaseUrl(this.opts)
+    if (pagesConfigBase === this.pagesConfigBase) return
+    pageLogger.info('页面配置项目作用域变更，重建文件加载上下文', {
+      previousBase: this.pagesConfigBase,
+      nextBase: pagesConfigBase,
+    })
+    this.resetPageFileContext(pagesConfigBase)
+  }
+
+  private bindFileLoaderEvents(): void {
     // 订阅 FileLoader 事件：将文件缺失转为可消费状态，避免上层只能依赖字符串兜底。
     this.fileLoader.on('file-missing', (evt: FileLoaderEventMap['file-missing']) => {
       this.recentMissingFiles.add(evt.fileName)
@@ -137,40 +177,40 @@ export class PageConfigLoader implements ConfigLoader {
     this.fileLoader.on('file-loaded', (evt: FileLoaderEventMap['file-loaded']) => {
       this.recentMissingFiles.delete(evt.fileName)
     })
-    // 绑定编译函数——函数名自动成为派生缓存的 key 后缀
-    this.ruleLoader = this.fileLoader.withTransform(compileRule)
-    this.dataLoader = this.fileLoader.withTransform(parsePageData)
-    this.scriptLoader = this.fileLoader.withTransform(parseScript)
-    this.cssLoader = this.fileLoader.withTransform(parseCss)
   }
 
   // ── 公开 API ──────────────────────────────────────────────────────
 
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+    this.ensurePageFileContext()
     pageLogger.info('加载页面规则', { pageId })
     return this.loadRequiredPageFile(pageId, 'rule.json', this.ruleLoader)
   }
 
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+    this.ensurePageFileContext()
     pageLogger.info('加载页面数据', { pageId })
     return this.loadRequiredPageFile(pageId, 'pagedata.json', this.dataLoader)
   }
 
   async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+    this.ensurePageFileContext()
     pageLogger.debug('加载页面样式', { pageId })
     return this.loadRequiredPageFile(pageId, 'style.css', this.cssLoader)
   }
 
   async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+    this.ensurePageFileContext()
     pageLogger.debug('加载页面脚本', { pageId })
     return this.loadRequiredPageFile(pageId, 'script.js', this.scriptLoader)
   }
 
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+    this.ensurePageFileContext()
     pageLogger.info('加载完整页面配置', { pageId })
     const knownFiles = await this.getKnownPageFiles(pageId)
-    const missingKnownFile = PAGE_CONFIG_FILE_NAMES.find(filename => this.isKnownMissing(knownFiles, filename))
+    const missingKnownFile = REQUIRED_PAGE_CONFIG_FILE_NAMES.find(filename => this.isKnownMissing(knownFiles, filename))
     if (missingKnownFile !== undefined) {
       return this.missingPageFileResult(pageId, missingKnownFile)
     }
@@ -181,10 +221,10 @@ export class PageConfigLoader implements ConfigLoader {
     const dataResult = await this.loadPageData(pageId)
     if (!dataResult.success) return this.failFrom(dataResult.error, dataResult.reason)
 
-    const scriptResult = await this.loadScript(pageId)
+    const scriptResult = await this.loadOptionalPageFile(pageId, 'script.js', this.scriptLoader, knownFiles)
     if (!scriptResult.success) return this.failFrom(scriptResult.error, scriptResult.reason)
 
-    const cssResult = await this.loadCss(pageId)
+    const cssResult = await this.loadOptionalPageFile(pageId, 'style.css', this.cssLoader, knownFiles)
     if (!cssResult.success) return this.failFrom(cssResult.error, cssResult.reason)
 
     pageLogger.debug('页面附加资源加载完成', {
@@ -214,6 +254,7 @@ export class PageConfigLoader implements ConfigLoader {
     filename: PageConfigFileName,
     options?: PageConfigFileLoadOptions,
   ): Promise<ConfigLoadResult<string>> {
+    this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)
     const result = await this.fileLoader.load<string>(path, {
       parseJSON: false,
@@ -223,6 +264,7 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   clearCache(key?: string): void {
+    this.ensurePageFileContext()
     this.fileLoader.clearCache(key)
     if (!key) {
       this.recentMissingFiles.clear()
@@ -233,6 +275,7 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   getCacheStats(): { size: number; keys: string[] } {
+    this.ensurePageFileContext()
     return this.fileLoader.getCacheStats()
   }
 
@@ -312,6 +355,23 @@ export class PageConfigLoader implements ConfigLoader {
     localLoader: DerivedLoader<T>,
   ): Promise<ConfigLoadResult<T>> {
     return this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
+  }
+
+  private async loadOptionalPageFile<T>(
+    pageId: string,
+    filename: PageConfigFileName,
+    localLoader: DerivedLoader<T>,
+    knownFiles: Set<PageConfigFileName> | null,
+  ): Promise<ConfigLoadResult<T | undefined>> {
+    if (this.isKnownMissing(knownFiles, filename)) {
+      return { success: true, source: 'remote', timestamp: Date.now() }
+    }
+
+    const result = await this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
+    if (!result.success && result.reason === 'not-found') {
+      return { success: true, source: 'remote', timestamp: Date.now() }
+    }
+    return result
   }
 
   /**

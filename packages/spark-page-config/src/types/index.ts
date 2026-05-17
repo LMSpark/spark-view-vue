@@ -95,9 +95,10 @@ export interface ConfigLoaderOptions {
    * 页面配置四文件 API 基础路径。
    *
    * 必须指向 `.../pages-config`，用于 rule.json / pagedata.json / script.js / style.css。
-   * 多租户项目下应传入 `/api/tenants/{tenantId}/projects/{projectId}/pages-config`。
+  * 多租户项目下应传入 `/api/tenants/{tenantId}/projects/{projectId}/pages-config`。
+  * SPA 内切换项目时可传函数，加载器会在每次读取前重新解析当前项目作用域。
    */
-  pagesConfigBaseUrl?: string
+  pagesConfigBaseUrl?: string | (() => string)
   
   /**
    * FileLoader 客户端缓存存储方式

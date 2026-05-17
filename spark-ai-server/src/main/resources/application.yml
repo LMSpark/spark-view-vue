@@ -1,13 +1,12 @@
 server:
   port: 8080
 
-# ── H2 嵌入式数据库 ────────────────────────────────────────────────────────
 spring:
   datasource:
-    url: jdbc:h2:file:./data/sparkdb;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3307/spark_ai?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER:spark}
+    password: ${MYSQL_PASSWORD:spark}
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,12 +14,12 @@ spring:
     open-in-view: false
   flyway:
     enabled: false
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
 
 spark:
+  datasource:
+    # direct: application-managed Hikari pools; jta-jndi: container-managed XA DataSources by JNDI.
+    mode: ${SPARK_DATASOURCE_MODE:direct}
+
   pages:
     # 页面配置目录（仅用于 DataInitializer 首次迁移）
     config-dir: ${PAGES_CONFIG_DIR:./data/pages-config}

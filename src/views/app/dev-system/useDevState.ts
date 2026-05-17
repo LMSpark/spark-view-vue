@@ -567,7 +567,7 @@ export function useDevState() {
       addStatus(`系统目录 ${node.title} 仅允许编辑子项，跳过节点保存`, 'warning')
       return
     }
-    const { children: _children, ...patch } = node
+    const { children: _children, order: _order, ...patch } = node
     navSaving.value = true
     try {
       await navigationClient.updateNode(node.id, patch)

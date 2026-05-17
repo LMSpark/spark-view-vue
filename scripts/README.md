@@ -4,8 +4,8 @@
 
 ## 目录内容
 
-- `start-dev.mjs`：一键启动 Java 后端和前端开发环境。
-- `build-all.mjs`：完整构建流水线。
+- `start-dev.mjs`：一键启动项目 Docker MySQL、Java 后端和前端开发环境。
+- `build-all.mjs`：完整构建流水线；需要临时后端上传元数据时会先启动项目 Docker MySQL。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `upload-component-metadata.mjs`：上传组件元数据到后端。
 - `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`、`verify-ai-session-stream-smoke.mjs`：链路验证脚本。

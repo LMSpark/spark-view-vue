@@ -48,6 +48,8 @@ export interface AppLoggerConfig {
   showTimestamp?: boolean
   /** 日志前缀 */
   prefix?: string
+  /** error 级别是否避免使用 console.error 输出，防止浏览器自动展开调用栈 */
+  suppressErrorConsoleTrace?: boolean
   /** 远程日志端点 */
   remoteEndpoint?: string
   /** 远程上报的最小日志级别（默认 'debug'，即上报所有级别） */
@@ -254,7 +256,7 @@ export function configureRemoteLogger(options: BatchTransportOptions): LogTransp
  * 应用层 Logger 实现
  */
 class AppLogger {
-  private config: Required<Pick<AppLoggerConfig, 'level' | 'enableColors' | 'showTimestamp' | 'prefix'>>
+  private config: Required<Pick<AppLoggerConfig, 'level' | 'enableColors' | 'showTimestamp' | 'prefix' | 'suppressErrorConsoleTrace'>>
   private transports: LogTransport[] = []
 
   constructor(config: AppLoggerConfig = {}) {
@@ -263,6 +265,7 @@ class AppLogger {
       enableColors: config.enableColors ?? true,
       showTimestamp: config.showTimestamp ?? false,
       prefix: config.prefix ?? '',
+      suppressErrorConsoleTrace: config.suppressErrorConsoleTrace ?? false,
     }
   }
 
@@ -334,6 +337,7 @@ class AppLogger {
     const consoleFn = level === 'debug' ? console.debug :
                      level === 'info' ? console.info :
                      level === 'warn' ? console.warn :
+                     this.config.suppressErrorConsoleTrace ? console.info :
                      console.error
 
     if (meta) {

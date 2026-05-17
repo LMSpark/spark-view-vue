@@ -59,7 +59,19 @@
  * ```
  */
 import {
-  computed, ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, onErrorCaptured, onUnmounted,
+  cloneVNode,
+  computed,
+  ref,
+  watch,
+  nextTick,
+  getCurrentInstance,
+  shallowRef,
+  defineComponent,
+  markRaw,
+  onErrorCaptured,
+  onUnmounted,
+  isVNode,
+  type VNode,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
@@ -107,6 +119,12 @@ interface PageRuntimeErrorPayload {
 
 type RenderFunction = (props?: Record<string, unknown>) => unknown
 type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
+type RenderFunctionRevisionRef = ReturnType<typeof shallowRef<number>>
+interface RenderFunctionRegistration {
+  fnRef: RenderFunctionRef
+  revisionRef: RenderFunctionRevisionRef
+  invalidatePage?: () => void
+}
 const RENDER_FUNCTION_REGISTRY_KEY = Symbol.for('spark:page-render-function-registry')
 
 type RenderFunctionRegistryOwner = {
@@ -114,16 +132,101 @@ type RenderFunctionRegistryOwner = {
   component(name: string, component: object): void
 } & Record<PropertyKey, unknown>
 
-function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRef> {
+function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegistration> {
   const owner = app as RenderFunctionRegistryOwner
   const existing = owner[RENDER_FUNCTION_REGISTRY_KEY]
   if (existing instanceof Map) {
-    return existing as Map<string, RenderFunctionRef>
+    return existing as Map<string, RenderFunctionRegistration>
   }
 
-  const created = new Map<string, RenderFunctionRef>()
+  const created = new Map<string, RenderFunctionRegistration>()
   owner[RENDER_FUNCTION_REGISTRY_KEY] = created
   return created
+}
+
+function invalidateRenderFunctionRegistration(registration: RenderFunctionRegistration): void {
+  registration.revisionRef.value = (registration.revisionRef.value ?? 0) + 1
+}
+
+function isRenderEventProp(key: string, value: unknown): boolean {
+  if (!key.startsWith('on') || key.length <= 2) return false
+  if (key.startsWith('onVnode')) return false
+  if (typeof value === 'function') return true
+  return Array.isArray(value) && value.some(item => typeof item === 'function')
+}
+
+function wrapRenderEventHandler(
+  handler: (...args: unknown[]) => unknown,
+  invalidate: () => void,
+): (...args: unknown[]) => unknown {
+  return function wrappedRenderEvent(this: unknown, ...args: unknown[]) {
+    try {
+      const result = handler.apply(this, args)
+      if (isPromiseLike(result)) {
+        return Promise.resolve(result).finally(invalidate)
+      }
+      invalidate()
+      return result
+    } catch (error) {
+      invalidate()
+      throw error
+    }
+  }
+}
+
+function wrapRenderEventProp(value: unknown, invalidate: () => void): unknown {
+  if (typeof value === 'function') {
+    return wrapRenderEventHandler(value as (...args: unknown[]) => unknown, invalidate)
+  }
+  if (Array.isArray(value)) {
+    return value.map(item => typeof item === 'function'
+      ? wrapRenderEventHandler(item as (...args: unknown[]) => unknown, invalidate)
+      : item)
+  }
+  return value
+}
+
+function wrapScriptRenderOutput(output: unknown, invalidate: () => void): unknown {
+  if (Array.isArray(output)) {
+    return output.map(item => wrapScriptRenderOutput(item, invalidate))
+  }
+  if (!isVNode(output)) return output
+
+  const cloned = cloneVNode(output as VNode)
+  const props = cloned.props
+  if (props) {
+    let hasWrappedEvent = false
+    const nextProps: Record<string, unknown> = { ...props }
+    for (const [key, value] of Object.entries(props)) {
+      if (!isRenderEventProp(key, value)) continue
+      nextProps[key] = wrapRenderEventProp(value, invalidate)
+      hasWrappedEvent = true
+    }
+    if (hasWrappedEvent) {
+      cloned.props = nextProps
+    }
+  }
+
+  if (Array.isArray(cloned.children)) {
+    cloned.children = cloned.children.map(item => wrapScriptRenderOutput(item, invalidate)) as typeof cloned.children
+  }
+
+  return cloned
+}
+
+function invalidateRenderFunctionsForPage(
+  app: object,
+  pageFunctions: Record<string, (...args: unknown[]) => unknown>,
+): void {
+  const fnMap = getRenderFunctionRegistry(app)
+  const invalidated = new Set<RenderFunctionRegistration>()
+  for (const name of Object.keys(pageFunctions)) {
+    if (!name.startsWith('Render')) continue
+    const registration = fnMap.get(name)
+    if (!registration || invalidated.has(registration)) continue
+    invalidateRenderFunctionRegistration(registration)
+    invalidated.add(registration)
+  }
 }
 
 function createPageRoute(route: RouteLocationNormalizedLoaded): IPageRoute {
@@ -162,20 +265,40 @@ function registerRenderFunctionsForPage(
   for (const [name, fn] of Object.entries(pageFunctions)) {
     if (!name.startsWith('Render') || typeof fn !== 'function') continue
     const camelName = name.charAt(0).toLowerCase() + name.slice(1)
+    const invalidatePage = () => invalidateRenderFunctionsForPage(app, pageFunctions)
 
     const existingRef = fnMap.get(name) ?? fnMap.get(camelName)
     if (existingRef) {
-      if (existingRef) existingRef.value = fn as RenderFunction
+      existingRef.fnRef.value = fn as RenderFunction
+      existingRef.invalidatePage = invalidatePage
+      fnMap.set(name, existingRef)
+      fnMap.set(camelName, existingRef)
+      invalidateRenderFunctionRegistration(existingRef)
       continue
     }
 
     const fnRef = shallowRef<RenderFunction | null>(fn as RenderFunction)
-    fnMap.set(name, fnRef)
-    fnMap.set(camelName, fnRef)
+    const registration: RenderFunctionRegistration = {
+      fnRef,
+      revisionRef: shallowRef(0),
+      invalidatePage,
+    }
+    fnMap.set(name, registration)
+    fnMap.set(camelName, registration)
 
     const component = markRaw(defineComponent({
       name,
-      setup: (_, { attrs }) => () => fnRef.value?.({ ...attrs }),
+      setup: (_, { attrs }) => () => {
+        registration.revisionRef.value
+        const invalidate = () => {
+          if (registration.invalidatePage) {
+            registration.invalidatePage()
+            return
+          }
+          invalidateRenderFunctionRegistration(registration)
+        }
+        return wrapScriptRenderOutput(registration.fnRef.value?.({ ...attrs }), invalidate)
+      },
     }))
     vueApp.component(name, component)
     vueApp.component(camelName, component)
@@ -373,6 +496,11 @@ function reportRuntimeError(phase: PageRuntimeErrorPhase, pageId: string, errorL
   })
 }
 
+function invalidateCurrentRenderFunctions(): void {
+  if (!vueApp) return
+  invalidateRenderFunctionsForPage(vueApp, pageFunctions.value)
+}
+
 onErrorCaptured((capturedError, _instance, info) => {
   if (wasRuntimeErrorReported(capturedError)) return
   const suffix = info ? `\n\n[vueInfo]\n${info}` : ''
@@ -399,16 +527,24 @@ function callPageFunction(functionName: string, ...args: unknown[]): unknown {
     try {
       const result = fn(...args)
       if (isPromiseLike(result)) {
-        return Promise.resolve(result).catch((e: unknown) => {
-          logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
-          reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
-          throw e
-        })
+        return Promise.resolve(result)
+          .then((value: unknown) => {
+            invalidateCurrentRenderFunctions()
+            return value
+          })
+          .catch((e: unknown) => {
+            logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
+            reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
+            invalidateCurrentRenderFunctions()
+            throw e
+          })
       }
+      invalidateCurrentRenderFunctions()
       return result
     } catch (e) {
       logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
       reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
+      invalidateCurrentRenderFunctions()
       throw e
     }
   }
@@ -525,6 +661,7 @@ async function loadConfig(options: { force?: boolean } = {}): Promise<void> {
     }
     pds.dataSet?.triggerAutoLoad()
     pds.dataSet?.initAutoSelection()
+    invalidateCurrentRenderFunctions()
   }
 }
 

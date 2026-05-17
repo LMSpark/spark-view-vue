@@ -12,6 +12,7 @@ Java Spring Boot 后端，当前主要承载三类能力：通用聊天流式接
 
 - Java 17+
 - Maven 3.8+（或使用 `./mvnw` wrapper）
+- Docker Desktop（项目数据库使用 Docker MySQL，宿主机端口为 `3307`）
 - 有效的 OpenAI API Key（或其他兼容端点的 Key）
 
 ## 快速启动
@@ -45,11 +46,15 @@ AI_MODEL=deepseek-chat
 ### 2. 编译并运行
 
 ```bash
+docker compose -f spark-ai-server/docker-compose.yml up -d mysql
+
 cd spark-ai-server
 mvn spring-boot:run
 ```
 
 服务启动后监听 `http://localhost:8080`。
+
+如果从仓库根目录执行 `pnpm run dev` 或 `pnpm run build`，脚本会先自动确认上述 Docker MySQL 已启动；只有手动直接跑 Maven 时需要先执行 `docker compose ... up -d mysql`。
 
 ### 3. 启用 Vite 代理（接入前端）
 

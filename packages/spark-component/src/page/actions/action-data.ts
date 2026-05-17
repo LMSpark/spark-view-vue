@@ -695,6 +695,14 @@ export async function executeSubmitCurrentForm(
   )
 }
 
+function createAutoRequestId(): string {
+  const cryptoLike = globalThis.crypto as Crypto | undefined
+  if (cryptoLike?.randomUUID) {
+    return cryptoLike.randomUUID()
+  }
+  return `tx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export async function executeSaveDataSet(
   desc: SaveDataSetAction,
   ctx: ActionExecutionContext,
@@ -710,7 +718,8 @@ export async function executeSaveDataSet(
   if (desc.mode !== undefined) options.mode = desc.mode
   if (desc.applyEditingRows !== undefined) options.applyEditingRows = desc.applyEditingRows
   if (desc.views !== undefined) options.views = desc.views
-  if (desc.requestId !== undefined) options.transaction = { requestId: desc.requestId }
+  const requestId = desc.requestId ?? (desc.requestIdStrategy === 'auto' ? createAutoRequestId() : undefined)
+  if (requestId !== undefined) options.transaction = { requestId }
 
   const result = await dataSet.saveChanges(options)
   if (result.success) {

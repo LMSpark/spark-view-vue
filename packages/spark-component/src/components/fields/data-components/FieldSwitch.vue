@@ -47,7 +47,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
-const { boundColumn, contextData, currentRow, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
+const { boundColumn, contextData, dataSource, currentRow, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
 
 const isSwitchEditable = computed(() => {
   // 字段级开关在无行上下文或未绑定字段时默认可编辑；
@@ -59,6 +59,7 @@ const isSwitchEditable = computed(() => {
 useSwitchNullValue({
   boundColumn,
   contextData,
+  dataSource,
   fieldName,
   syncValue,
 })

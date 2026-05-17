@@ -166,6 +166,7 @@ public class ProjectService {
     @Transactional
     public void ensureHomepage(String tenantId) {
         if (projectRepo.existsByTenantIdAndProjectId(tenantId, HOMEPAGE_PROJECT_ID)) {
+            ensureAppNavigation(tenantId, HOMEPAGE_PROJECT_ID);
             return;
         }
 
@@ -179,6 +180,7 @@ public class ProjectService {
         homepage.setSortOrder(0);
         projectRepo.save(homepage);
         ensureProjectMember(tenantId, HOMEPAGE_PROJECT_ID, "admin", "owner");
+        ensureAppNavigation(tenantId, HOMEPAGE_PROJECT_ID);
         log.info("[Project] 自动创建企业管理平台: tenant={}", tenantId);
     }
 
@@ -196,6 +198,21 @@ public class ProjectService {
         member.setUsername(username);
         member.setRole(role != null && !role.isBlank() ? role : "member");
         memberRepo.save(member);
+    }
+
+    /**
+     * 确保项目拥有默认导航配置（幂等）。
+     * 仅当 NAVIGATION_NODE_FLAT 中无当前项目的数据时才会写入。
+     */
+    private void ensureAppNavigation(String tenantId, String projectId) {
+        try {
+            Map<String, Object> existing = navigationTreeService.getNavConfig(tenantId, projectId);
+            if (existing == null) {
+                initAppNavigation(tenantId, projectId);
+            }
+        } catch (Exception e) {
+            log.warn("[Project] 检查/初始化导航失败: tenant={}, project={}", tenantId, projectId, e);
+        }
     }
 
     /**

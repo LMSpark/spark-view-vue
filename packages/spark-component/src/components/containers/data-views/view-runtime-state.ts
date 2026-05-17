@@ -1,4 +1,4 @@
-import { computed, shallowRef, watchEffect } from 'vue'
+import { computed, shallowRef } from 'vue'
 import type { ComputedRef } from 'vue'
 import {
   RequestState,
@@ -12,6 +12,7 @@ import {
 import type { ValueRef } from '../../shared-types.js'
 import { extractModelPermission } from '../../../permission/index.js'
 import { toDataRecord } from './data-row-utils.js'
+import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
 
 /**
  * DataView 标识态：来自 DataView 快照的静态元信息。
@@ -125,54 +126,27 @@ function useDataViewRuntimeRevisions(resolvedView: ResolvedViewRef): DataViewRun
     bumpRevision(editingRevision)
   }
 
-  watchEffect((onCleanup) => {
-    const view = resolvedView.value
-    bumpAll()
-    if (!view) return
-    const cleanups: Array<() => void> = []
+  const handleRowsChanged = () => {
+    bumpRevision(rowsRevision)
+    // currentRow/selectedRows are row-derived getters; refresh them when row objects are replaced.
+    bumpRevision(selectionRevision)
+    bumpRevision(aggregateRevision)
+  }
 
-    const handleRowsChanged = () => {
-      bumpRevision(rowsRevision)
-      // currentRow/selectedRows are row-derived getters; refresh them when row objects are replaced.
-      bumpRevision(selectionRevision)
-      bumpRevision(aggregateRevision)
-    }
-    const handleCurrentRowChanged = () => bumpRevision(selectionRevision)
-    const handleSelectedRowsChanged = () => bumpRevision(selectionRevision)
-    const handleRequestStateChanged = () => bumpRevision(requestRevision)
-    const handleMutatingChanged = () => bumpRevision(mutationRevision)
-    const handleSummaryChanged = () => bumpRevision(aggregateRevision)
-    const handleSelectionSummaryChanged = () => bumpRevision(aggregateRevision)
-    const handleConfigChanged = () => bumpRevision(configRevision)
-    const handleEditingChanged = () => bumpRevision(editingRevision)
-
-    view.events.on('rowsChanged', handleRowsChanged)
-    view.events.on('currentRowChanged', handleCurrentRowChanged)
-    view.events.on('selectedRowsChanged', handleSelectedRowsChanged)
-    view.events.on('requestStateChanged', handleRequestStateChanged)
-    view.events.on('mutatingChanged', handleMutatingChanged)
-    view.events.on('summaryChanged', handleSummaryChanged)
-    view.events.on('selectionSummaryChanged', handleSelectionSummaryChanged)
-    view.events.on('configChanged', handleConfigChanged)
-    view.events.on('editingChanged', handleEditingChanged)
-    view.events.on('cleared', bumpAll)
-
-    cleanups.push(
-      () => view.events.off('rowsChanged', handleRowsChanged),
-      () => view.events.off('currentRowChanged', handleCurrentRowChanged),
-      () => view.events.off('selectedRowsChanged', handleSelectedRowsChanged),
-      () => view.events.off('requestStateChanged', handleRequestStateChanged),
-      () => view.events.off('mutatingChanged', handleMutatingChanged),
-      () => view.events.off('summaryChanged', handleSummaryChanged),
-      () => view.events.off('selectionSummaryChanged', handleSelectionSummaryChanged),
-      () => view.events.off('configChanged', handleConfigChanged),
-      () => view.events.off('editingChanged', handleEditingChanged),
-      () => view.events.off('cleared', bumpAll),
-    )
-
-    onCleanup(() => {
-      for (const cleanup of cleanups) cleanup()
-    })
+  useDataViewEventBridge({
+    resolvedView,
+    onDetached: bumpAll,
+    onAttached: bumpAll,
+    onRowsChanged: handleRowsChanged,
+    onCurrentRowChanged: () => bumpRevision(selectionRevision),
+    onSelectedRowsChanged: () => bumpRevision(selectionRevision),
+    onRequestStateChanged: () => bumpRevision(requestRevision),
+    onMutatingChanged: () => bumpRevision(mutationRevision),
+    onSummaryChanged: () => bumpRevision(aggregateRevision),
+    onSelectionSummaryChanged: () => bumpRevision(aggregateRevision),
+    onConfigChanged: () => bumpRevision(configRevision),
+    onEditingChanged: () => bumpRevision(editingRevision),
+    onCleared: bumpAll,
   })
 
   return {

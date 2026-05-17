@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { config as testUtilsConfig, flushPromises, mount } from '@vue/test-utils'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineComponent, h } from 'vue'
@@ -9,6 +9,26 @@ import { SparkData } from '@spark-view/spark-data'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
+
+function disableSparkComponentRendererStub(): () => void {
+  const stubs = (testUtilsConfig.global.stubs ?? {}) as Record<string, unknown>
+  const hadPascal = Object.prototype.hasOwnProperty.call(stubs, 'SparkComponentRenderer')
+  const hadKebab = Object.prototype.hasOwnProperty.call(stubs, 'spark-component-renderer')
+  const previousPascal = stubs['SparkComponentRenderer']
+  const previousKebab = stubs['spark-component-renderer']
+
+  delete stubs['SparkComponentRenderer']
+  delete stubs['spark-component-renderer']
+  testUtilsConfig.global.stubs = stubs as typeof testUtilsConfig.global.stubs
+
+  return () => {
+    if (hadPascal) stubs['SparkComponentRenderer'] = previousPascal
+    else delete stubs['SparkComponentRenderer']
+    if (hadKebab) stubs['spark-component-renderer'] = previousKebab
+    else delete stubs['spark-component-renderer']
+    testUtilsConfig.global.stubs = stubs as typeof testUtilsConfig.global.stubs
+  }
+}
 
 describe('SparkPageRenderer root props aggregation', () => {
   function createActionContext(): ActionExecutionContext {
@@ -496,5 +516,115 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     expect(callFunc).toHaveBeenCalledWith('getCurrentNode')
     expect(callFunc).toHaveBeenCalledWith('getCheckedNodes')
+  })
+
+  it('refreshes page script Render components after __init__ mutates script state', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/pages/render-init',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+        },
+      ],
+    })
+
+    await router.push('/pages/render-init')
+    await router.isReady()
+
+    const restoreSparkRendererStub = disableSparkComponentRendererStub()
+    try {
+      const wrapper = mount(SparkPageRenderer, {
+        props: {
+          pageId: 'render-init',
+          pageConfig: {
+            ...createPageConfig('render-init'),
+            pageId: 'render-init',
+            rule: [{ type: 'RenderInitProbe' }],
+            script: `
+              let _pageState = { label: 'before-init' }
+              function __init__() { _pageState.label = 'after-init' }
+              function RenderInitProbe() {
+                return h('div', { class: 'init-probe' }, _pageState.label)
+              }
+            `,
+          },
+        },
+        global: {
+          plugins: [Spark.createPlugin(), router],
+        },
+      })
+
+      await flushPromises()
+      await flushPromises()
+
+      expect(wrapper.find('.init-probe').exists(), wrapper.html()).toBe(true)
+      expect(wrapper.find('.init-probe').text()).toBe('after-init')
+    } finally {
+      restoreSparkRendererStub()
+    }
+  })
+
+  it('refreshes nested page script Render events after script state changes', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/pages/render-click',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+        },
+      ],
+    })
+
+    await router.push('/pages/render-click')
+    await router.isReady()
+
+    const restoreSparkRendererStub = disableSparkComponentRendererStub()
+    try {
+      const wrapper = mount(SparkPageRenderer, {
+        props: {
+          pageId: 'render-click',
+          pageConfig: {
+            ...createPageConfig('render-click'),
+            pageId: 'render-click',
+            rule: [{ type: 'RenderClickProbe' }, { type: 'RenderMirrorProbe' }],
+            script: `
+              let _pageState = { current: 'user1' }
+              function selectRole(next) { _pageState.current = next }
+              function RenderClickProbe() {
+                var current = _pageState.current
+                return h('div', { class: 'click-probe', 'data-current': current }, [
+                  h('button', {
+                    class: 'click-probe-button',
+                    onClick: function() { selectRole('manager') }
+                  }, current)
+                ])
+              }
+              function RenderMirrorProbe() {
+                return h('div', { class: 'mirror-probe', 'data-current': _pageState.current }, _pageState.current)
+              }
+            `,
+          },
+        },
+        global: {
+          plugins: [Spark.createPlugin(), router],
+        },
+      })
+
+      await flushPromises()
+      expect(wrapper.find('.click-probe').exists(), wrapper.html()).toBe(true)
+      expect(wrapper.find('.click-probe').attributes('data-current')).toBe('user1')
+      expect(wrapper.find('.mirror-probe').attributes('data-current')).toBe('user1')
+
+      await wrapper.find('.click-probe-button').trigger('click')
+      await flushPromises()
+
+      expect(wrapper.find('.click-probe').attributes('data-current')).toBe('manager')
+      expect(wrapper.find('.click-probe-button').text()).toBe('manager')
+      expect(wrapper.find('.mirror-probe').attributes('data-current')).toBe('manager')
+      expect(wrapper.find('.mirror-probe').text()).toBe('manager')
+    } finally {
+      restoreSparkRendererStub()
+    }
   })
 })

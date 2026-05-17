@@ -3232,12 +3232,6 @@
             "items": {
               "$ref": "#/components/schemas/DataModelColumnInput"
             }
-          },
-          "views": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/DataViewConfig"
-            }
           }
         }
       },
@@ -3368,12 +3362,6 @@
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/DataModelColumn"
-                }
-              },
-              "views": {
-                "type": "object",
-                "additionalProperties": {
-                  "$ref": "#/components/schemas/DataViewConfig"
                 }
               }
             }
@@ -3869,12 +3857,6 @@
                 },
                 "logicalTableName": {
                   "type": "string"
-                },
-                "views": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "$ref": "#/components/schemas/DataViewConfig"
-                  }
                 }
               }
             }
@@ -4119,33 +4101,7 @@
               "name": "parentId",
               "type": "number"
             }
-          ],
-          "views": {
-            "default": {
-              "viewId": "default",
-              "page": 1,
-              "pageSize": 20,
-              "sortExpression": [
-                {
-                  "field": "amount",
-                  "direction": "desc"
-                }
-              ],
-              "treeConfig": {
-                "idField": "id",
-                "parentIdField": "parentId",
-                "textField": "name",
-                "treeMode": "flat",
-                "filterMode": "include-ancestors"
-              },
-              "aggregates": {
-                "totalAmount": {
-                  "type": "sum",
-                  "field": "amount"
-                }
-              }
-            }
-          }
+          ]
         }
       },
       "CreateOrderRecord": {
@@ -4205,19 +4161,7 @@
           "tables": [
             {
               "physicalTableName": "LEGACY_ITEM",
-              "logicalTableName": "LegacyItem",
-              "views": {
-                "default": {
-                  "page": 1,
-                  "pageSize": 20,
-                  "sortExpression": [
-                    {
-                      "field": "name",
-                      "direction": "asc"
-                    }
-                  ]
-                }
-              }
+              "logicalTableName": "LegacyItem"
             }
           ]
         }

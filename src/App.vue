@@ -133,10 +133,12 @@ import {
   AppPageUiHost,
   clearAllPageCache,
   appPageUiService,
+  createNavigationActionRegistry,
   getPageCacheHandle,
   getNavHomePath,
   getNavTree,
   getPageCacheStats,
+  NAVIGATION_ACTION_REGISTRY_KEY,
   refreshRoutes,
   useColorScheme,
   useNavigation,
@@ -208,7 +210,11 @@ const currentUsername = computed(() => {
   const user = getUser()
   return user?.displayName ?? user?.username ?? '管理员'
 })
-const activeProjectId = ref(getUser()?.defaultProjectId ?? 'homepage')
+function resolveActiveProjectId(): string {
+  return parseTenantScope(route.path)?.projectId ?? getUser()?.defaultProjectId ?? 'homepage'
+}
+
+const activeProjectId = ref(resolveActiveProjectId())
 const headerTitle = computed(() =>
   activeProjectId.value === 'homepage' ? 'SPARK 应用工场' : `SPARK · ${activeProjectId.value}`
 )
@@ -326,11 +332,68 @@ const projectSwitchService: ProjectSwitchService = {
 }
 provide(PROJECT_SWITCH_KEY, projectSwitchService)
 
+const navigationActionRegistry = createNavigationActionRegistry()
+provide(NAVIGATION_ACTION_REGISTRY_KEY, navigationActionRegistry)
+
+function emitNavigationAction(command: string): void {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent('spark:navigation-action', { detail: { command } }))
+}
+
+async function toggleFullscreen(): Promise<void> {
+  if (typeof document === 'undefined') return
+  if (document.fullscreenElement) {
+    await document.exitFullscreen()
+    return
+  }
+  await document.documentElement.requestFullscreen()
+}
+
+navigationActionRegistry.register('profile', () => {
+  emitNavigationAction('profile')
+})
+navigationActionRegistry.register('settings', () => {
+  showConfigurator.value = true
+})
+navigationActionRegistry.register('ai-chat', () => {
+  void aiPanelStore.open(appAiPanelConfig)
+})
+navigationActionRegistry.register('home', () => {
+  const user = getUser()
+  if (user && user.defaultProjectId !== 'homepage') {
+    void projectSwitchService.switchAndReload('homepage').then(() => {
+      void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: 'homepage' }, getNavHomePath()))
+    })
+  } else if (user) {
+    void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath()))
+  } else {
+    void router.push('/')
+  }
+})
+navigationActionRegistry.register('logout', () => {
+  logout()
+  clearAllPageCache()
+  window.location.replace(router.resolve('/login').href)
+})
+navigationActionRegistry.register('search', () => {
+  emitNavigationAction('search')
+})
+navigationActionRegistry.register('fullscreen', () => {
+  void toggleFullscreen()
+})
+navigationActionRegistry.register('notifications', () => {
+  emitNavigationAction('notifications')
+})
+navigationActionRegistry.register('theme-toggle', () => {
+  toggleTheme()
+})
+
 /* ── 导航模型（预认证时使用 preAuthNavTree，登录后使用远程导航树） ── */
 const _navRoot = reactive({ title: '', childPlacement: 'header' as AppNavRoot['childPlacement'], children: [] as NavNode[] })
 const nav = useNavigation(_navRoot, {
   onCrossAppNavigate: handleCrossAppNavigate,
   getHeaders: createAuthHeaders,
+  actionRegistry: navigationActionRegistry,
 })
 const pageUiService = appPageUiService
 sparkProvide(APP_SERVICES, { pageService: pageUiService })
@@ -427,6 +490,14 @@ watch(
   },
 )
 
+watch(
+  () => route.path,
+  () => {
+    activeProjectId.value = resolveActiveProjectId()
+  },
+  { immediate: true },
+)
+
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
 function applyNavTree(navData: AppNavRoot | null): void {
   const safeChildren = Array.isArray(navData?.children) ? navData.children : []
@@ -472,55 +543,36 @@ watch(isLoginPage, (isLogin, wasLogin) => {
   }
 })
 
-/* ── 用户菜单命令 ── */
+/* ── Header / 用户菜单命令 ── */
 function handleUserCommand(command: string) {
-  switch (command) {
-    case 'profile':
-      break
-    case 'settings':
-      showConfigurator.value = true
-      break
-    case 'ai-chat':
-      void aiPanelStore.open(appAiPanelConfig)
-      break
-    case 'home': {
-      const user = getUser()
-      if (user && user.defaultProjectId !== 'homepage') {
-        void projectSwitchService.switchAndReload('homepage').then(() => {
-          void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: 'homepage' }, getNavHomePath()))
-        })
-      } else if (user) {
-        void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath()))
-      } else {
-        void router.push('/')
-      }
-      break
+  void navigationActionRegistry.execute(command, { source: 'app-shell' }).then((handled) => {
+    if (handled) return
+
+    // 跨应用导航：@app:projectId/path — 切换项目后跳转
+    if (command.startsWith('@app:')) {
+      void handleCrossAppNavigate(command)
+      return
     }
-    case 'logout':
-      logout()
-      clearAllPageCache()
-      window.location.replace(router.resolve('/login').href)
-      break
-    default:
-      // 跨应用导航：@app:projectId/path — 切换项目后跳转
-      if (command.startsWith('@app:')) {
-        void handleCrossAppNavigate(command)
-      } else {
-        // 用户菜单导航项：通过 command(=item.path??redirect??id) 找到节点 → nav.navigateTo
-        const userMenuItem = nav.regionItems.value.userMenu.find(
-          item => (item.path ?? item.redirect ?? item.id) === command
-        )
-        if (userMenuItem) {
-          nav.navigateTo(userMenuItem)
-        } else if (command.startsWith('/')) {
-          // 兜底：path 带 '/' 但不在 userMenuItems 中（理论外路径）
-          nav.navigateToPath(command)
-        } else if (import.meta.env.DEV) {
-          console.error(`[handleUserCommand] 未处理的用户菜单命令: "${command}"`)
-        }
-      }
-      break
-  }
+
+    // 用户菜单导航项：通过 command(=item.path??redirect??id) 找到节点 → nav.navigateTo
+    const userMenuItem = nav.regionItems.value.userMenu.find(
+      item => (item.path ?? item.redirect ?? item.id) === command
+    )
+    if (userMenuItem) {
+      nav.navigateTo(userMenuItem)
+      return
+    }
+
+    if (command.startsWith('/')) {
+      // 兜底：path 带 '/' 但不在 userMenuItems 中（理论外路径）
+      nav.navigateToPath(command)
+      return
+    }
+
+    if (import.meta.env.DEV) {
+      console.error(`[handleUserCommand] 未处理的用户菜单命令: "${command}"`)
+    }
+  })
 }
 
 /**

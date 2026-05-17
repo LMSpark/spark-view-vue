@@ -70,10 +70,21 @@
                         "props": {
                             "label": "冲突 requestId 提交",
                             "template": "danger",
-                            "action": "save-dataset",
-                            "mode": "transaction",
-                            "requestId": "tx-config-retry-v1",
-                            "failureMessage": "后端应拒绝相同 requestId 的不同 payload"
+                            "action": "append-row",
+                            "dataKey": "SparkTxAudit@default@id",
+                            "appendPayload": {
+                                "id": 9202,
+                                "requestKey": "tx-config-retry-v1",
+                                "message": "conflict-submit",
+                                "status": "conflict"
+                            },
+                            "silent": true,
+                            "then": {
+                                "action": "save-dataset",
+                                "mode": "transaction",
+                                "requestId": "tx-config-retry-v1",
+                                "failureMessage": "后端应拒绝相同 requestId 的不同 payload"
+                            }
                         },
                         "children": []
                     },

@@ -18,8 +18,20 @@
       <!-- 自定义操作槽位（AI 按钮等，仅当导航配置中存在对应 action 时显示） -->
       <slot name="actions" />
 
+      <el-tooltip
+        v-for="item in genericToolbarItems"
+        :key="item.id"
+        :content="item.title"
+        placement="bottom"
+        :show-after="300"
+      >
+        <button class="header-btn" :disabled="item.disabled" @click="$emit('user-command', toolbarCommand(item))">
+          <NavIcon :name="item.icon" />
+        </button>
+      </el-tooltip>
+
       <!-- AI 宿主 -->
-      <el-tooltip content="AI 宿主" placement="bottom" :show-after="300">
+      <el-tooltip v-if="hasAction('ai-chat')" content="AI 宿主" placement="bottom" :show-after="300">
         <button class="header-btn" @click="$emit('user-command', 'ai-chat')">
           <el-icon :size="18"><ChatDotRound /></el-icon>
         </button>
@@ -27,14 +39,14 @@
 
       <!-- 搜索 -->
       <el-tooltip v-if="hasAction('search')" content="搜索" placement="bottom" :show-after="300">
-        <button class="header-btn" @click="$emit('search')">
+        <button class="header-btn" @click="$emit('user-command', 'search')">
           <el-icon :size="18"><Search /></el-icon>
         </button>
       </el-tooltip>
 
       <!-- 全屏 -->
       <el-tooltip v-if="hasAction('fullscreen')" :content="isFullscreen ? '退出全屏' : '全屏'" placement="bottom" :show-after="300">
-        <button class="header-btn" @click="toggleFullscreen">
+        <button class="header-btn" @click="$emit('user-command', 'fullscreen')">
           <el-icon :size="18"><FullScreen /></el-icon>
         </button>
       </el-tooltip>
@@ -89,7 +101,7 @@
 
       <!-- 主题切换 -->
       <el-tooltip v-if="hasAction('theme-toggle')" :content="isDark ? '浅色模式' : '深色模式'" placement="bottom" :show-after="300">
-        <button class="header-btn" @click="$emit('toggle-theme')">
+        <button class="header-btn" @click="$emit('user-command', 'theme-toggle')">
           <el-icon :size="18"><Sunny v-if="isDark" /><Moon v-else /></el-icon>
         </button>
       </el-tooltip>
@@ -183,10 +195,18 @@ const emit = defineEmits<{
 
 const safeToolbarItems = computed<NavNode[]>(() => Array.isArray(props.toolbarItems) ? props.toolbarItems : [])
 const safeUserMenuItems = computed<NavNode[]>(() => Array.isArray(props.userMenuItems) ? props.userMenuItems : [])
+const builtInToolbarActions = new Set(['ai-chat', 'search', 'fullscreen', 'notifications', 'theme-toggle'])
+const genericToolbarItems = computed<NavNode[]>(() =>
+  safeToolbarItems.value.filter(item => !builtInToolbarActions.has(toolbarCommand(item))),
+)
 
 /** 检查导航配置中是否包含指定 action 的工具栏项 */
 function hasAction(action: string): boolean {
-  return safeToolbarItems.value.some(item => item.path === action)
+  return safeToolbarItems.value.some(item => toolbarCommand(item) === action)
+}
+
+function toolbarCommand(item: NavNode): string {
+  return String(item.path ?? item.redirect ?? item.id).replace(/^\/+/, '')
 }
 /* 通知（SSE 实时驱动） */
 const { notifications, unreadCount, markRead, markAllRead, clearAll, removeItem } = useNotifications()
@@ -205,16 +225,8 @@ const avatarText = computed(() => {
   return username.charAt(0)
 })
 
-/* 全屏切换 */
+/* 全屏状态 */
 const isFullscreen = ref(false)
-
-function toggleFullscreen() {
-  if (document.fullscreenElement) {
-    void document.exitFullscreen()
-  } else {
-    void document.documentElement.requestFullscreen()
-  }
-}
 
 function onFullscreenChange() {
   isFullscreen.value = Boolean(document.fullscreenElement)

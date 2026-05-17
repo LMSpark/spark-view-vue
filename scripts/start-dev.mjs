@@ -13,7 +13,7 @@
  *   BACKEND_PORT       — 后端端口（默认 8080）
  */
 
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import http from 'node:http'
@@ -24,6 +24,7 @@ const BACKEND_PORT = process.env['BACKEND_PORT'] || '8080'
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
+const COMPOSE_FILE = resolve(SERVER_DIR, 'docker-compose.yml')
 const VITE_CLI = resolve(ROOT_DIR, 'node_modules', 'vite', 'bin', 'vite.js')
 const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
 const existingPath = mergedEnv['PATH'] ?? mergedEnv['Path'] ?? process.env['PATH'] ?? process.env['Path'] ?? ''
@@ -144,6 +145,24 @@ async function findAvailablePort(startPort, maxAttempts = 20) {
   throw new Error(`未找到可用前端端口，起始端口=${startPort}`)
 }
 
+function ensureMysqlService() {
+  console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3307/spark_ai')
+  const result = spawnSync('docker', ['compose', '-f', COMPOSE_FILE, 'up', '-d', 'mysql'], {
+    cwd: ROOT_DIR,
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  })
+
+  if (result.error) {
+    console.error(`❌ Docker MySQL 启动失败: ${result.error.message}`)
+    process.exit(1)
+  }
+  if (result.status !== 0) {
+    console.error(`❌ Docker MySQL 启动失败，退出码=${result.status}`)
+    process.exit(result.status ?? 1)
+  }
+}
+
 // ── 启动 Java 后端 ──────────────────────────────────────────────────────────
 console.log(`\n🚀 启动 Java 后端 (port ${BACKEND_PORT})...`)
 console.log(`   JAVA_HOME: ${javaHome}`)
@@ -179,6 +198,7 @@ let backend = null
 if (canReuseExistingBackend) {
   console.warn(`⚠️ 检测到 ${BACKEND_URL} 已有可用后端，将复用现有进程，不重复拉起 Java。`)
 } else {
+  ensureMysqlService()
   backend = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
     cwd: SERVER_DIR,
     env: javaEnv,

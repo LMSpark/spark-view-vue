@@ -18,6 +18,8 @@ import { NAV_KEY } from './nav-types'
 import { refreshRoutes } from './nav-access'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from '../router/cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../router/cross-project-ref-route'
+import { resolveNavNodeRuntimeTarget } from './runtime-target'
+import type { NavigationActionRegistry } from './action-registry'
 
 /* ══════════════════════════════════════════════════════════
  * useNavigation — 应用导航核心 composable
@@ -74,6 +76,8 @@ interface UseNavigationOptions {
   onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>
   /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */
   getHeaders?: () => Record<string, string>
+  /** system-action 命令执行器 */
+  actionRegistry?: NavigationActionRegistry
 }
 
 export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptions): NavigationContext {
@@ -113,25 +117,8 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   }
 
   function resolveNodeRoutePath(node: NavNode): string | null {
-    if (typeof node.path === 'string' && node.path.trim() !== '') {
-      // link + new-tab / self 节点：不注册路由，由 navigateTo 处理
-      if (node.nodeKind === 'link' && (node.linkTarget === 'new-tab' || node.linkTarget === 'self')) {
-        return null
-      }
-      // link + iframe 节点：path 是外部 URL，注册为虚拟路由
-      if (node.nodeKind === 'link') {
-        return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
-      }
-      return normalizePath(node.path)
-    }
-
-    return null
-  }
-
-  function resolveRefHostPath(node: NavNode): string {
-    const explicitPath = typeof node.path === 'string' ? normalizePath(node.path) : ''
-    if (explicitPath.includes('/__ref/')) return explicitPath
-    return normalizePath(`/__ref/${encodeURIComponent(node.id)}`)
+    const target = resolveNavNodeRuntimeTarget(node)
+    return target.kind === 'route' ? target.path : null
   }
 
   /** 为裸路径添加当前租户+项目前缀（/xxx → /t/{tenantId}/{projectId}/xxx） */
@@ -475,6 +462,9 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   }
 
   async function navigateToRefNode(node: NavNode): Promise<void> {
+    const target = resolveNavNodeRuntimeTarget(node)
+    if (target.kind !== 'route') return
+
     const refNodeId = node.id
     await refreshRoutes().catch(() => null)
     const tenantId = route.params['tenantId']
@@ -495,7 +485,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       return
     }
 
-    const targetPath = addTenantPrefix(resolveRefHostPath(node))
+    const targetPath = addTenantPrefix(target.path)
     void router.push(targetPath)
   }
 
@@ -566,11 +556,17 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   function navigateTo(node: NavNode) {
     if (node.disabled) return
-    if (isSubPageNode(node)) return
+    const target = resolveNavNodeRuntimeTarget(node)
+    if (target.kind === 'hidden') return
+
+    if (target.kind === 'action') {
+      void _options?.actionRegistry?.execute(target.command, { node, source: 'navigation' })
+      return
+    }
 
     // self 链接：当前窗口导航（同源+跨项目走 switchAndReload，同项目走 router.push，跨域走 location.href）
-    if (node.nodeKind === 'link' && node.linkTarget === 'self' && typeof node.path === 'string' && node.path.trim() !== '') {
-      const url = node.path.trim()
+    if (target.kind === 'external' && target.mode === 'self' && target.href !== '') {
+      const url = target.href
       try {
         const parsed = new URL(url, window.location.origin)
         if (parsed.origin === window.location.origin) {
@@ -595,36 +591,32 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     }
 
     // new-tab 外部链接：直接新标签页打开
-    if (node.nodeKind === 'link' && node.linkTarget === 'new-tab' && typeof node.path === 'string' && node.path.trim() !== '') {
-      window.open(node.path, '_blank', 'noopener,noreferrer')
+    if (target.kind === 'external' && target.mode === 'new-tab' && target.href !== '') {
+      window.open(target.href, '_blank', 'noopener,noreferrer')
       return
     }
 
     // iframe 外部链接：跳转到虚拟路由
-    if (node.nodeKind === 'link') {
-      const linkPath = resolveNodeRoutePath(node)
-      if (linkPath !== null) {
-        navigateByPath(linkPath)
-        return
-      }
+    if (target.kind === 'route' && target.routeKind === 'external-link') {
+      navigateByPath(target.path)
+      return
     }
 
     // 跨工程引用：进入本项目宿主路由，再由 CrossProjectRefPage 加载目标项目页面。
-    if (node.nodeKind === 'ref') {
+    if (target.kind === 'route' && target.routeKind === 'cross-project-ref') {
       void navigateToRefNode(node)
       return
     }
 
     // 重定向
-    if (node.redirect) {
-      navigateByPath(node.redirect)
+    if (target.kind === 'container' && target.redirect !== undefined) {
+      navigateByPath(target.redirect)
       return
     }
 
     // 叶子节点
-    const nodePath = resolveNodeRoutePath(node)
-    if (nodePath !== null) {
-      navigateByPath(nodePath)
+    if (target.kind === 'route') {
+      navigateByPath(target.path)
       return
     }
 

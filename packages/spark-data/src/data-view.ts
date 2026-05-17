@@ -76,8 +76,7 @@ interface DataViewEventMap extends Record<string, any[]> {
   'crud:after': [CrudLifecycleEvent]
 }
 
-/** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
-const ROWS_CHANGED_DEBOUNCE_MS = 16
+/** rowsChanged 事件按微任务合并，保证同一同步批次只通知一次，同时让 Vue nextTick 可观测。 */
 const REQUEST_SUPERSEDED_MESSAGE = 'Request superseded'
 
 const LEGACY_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$\[/
@@ -744,8 +743,8 @@ export class DataView implements IDataSource {
   private _pendingRequestData: Promise<void> | null = null
   /** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */
   rowIndexMap?: Map<IDataRow, number> | undefined
-  /** rowsChanged 事件防抖定时器 */
-  private rowsChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
+  /** rowsChanged 事件微任务合并标记 */
+  private rowsChangedDebouncer = false
   /** rowsChanged 防抖窗口内是否需要补发 selection/currentRow 领域事件 */
   private pendingRowsSelectionChanged = false
 
@@ -1026,6 +1025,11 @@ export class DataView implements IDataSource {
     assertNoSeparator(viewId, 'viewId')
     this.tableName = tableName
     this.viewId = viewId
+  }
+
+  /** 视图是否已销毁 */
+  get destroyed(): boolean {
+    return this._isDestroyed
   }
 
   // ─────────────────────────────────────────────
@@ -1693,14 +1697,16 @@ export class DataView implements IDataSource {
     this.events.emit('configChanged')
   }
 
-  /** 发射 rowsChanged 事件（防抖 16ms 合并批量更新） */
+  /** 发射 rowsChanged 事件（微任务合并批量更新） */
   private emitRowsChanged(options?: { selectionChanged?: boolean }): void {
     this.pendingRowsSelectionChanged ||= options?.selectionChanged === true
 
     if (this.rowsChangedDebouncer) {
-      clearTimeout(this.rowsChangedDebouncer)
+      return
     }
-    this.rowsChangedDebouncer = setTimeout(() => {
+    this.rowsChangedDebouncer = true
+    queueMicrotask(() => {
+      if (this._isDestroyed) return
       const selectionChanged = this.pendingRowsSelectionChanged
       this.pendingRowsSelectionChanged = false
       this.events.emit('rowsChanged')
@@ -1709,8 +1715,8 @@ export class DataView implements IDataSource {
         this._selectionIdsVersion++
         this.events.emit('selectedRowsChanged', this.selectedRows)
       }
-      this.rowsChangedDebouncer = undefined
-    }, ROWS_CHANGED_DEBOUNCE_MS)
+      this.rowsChangedDebouncer = false
+    })
   }
 
   /** 将 SortExpression 序列化为查询字符串格式（如 `name:asc` 或 `name:asc,age:desc`） */
@@ -1824,11 +1830,8 @@ export class DataView implements IDataSource {
     this._crudDelegate?.destroy()
     this._crudDelegate = undefined
 
-    // 3. 清除防抖定时器
-    if (this.rowsChangedDebouncer) {
-      clearTimeout(this.rowsChangedDebouncer)
-      this.rowsChangedDebouncer = undefined
-    }
+    // 3. 清除 rowsChanged 微任务合并状态；已排队微任务会通过 _isDestroyed 退出。
+    this.rowsChangedDebouncer = false
     this.pendingRowsSelectionChanged = false
 
     // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）

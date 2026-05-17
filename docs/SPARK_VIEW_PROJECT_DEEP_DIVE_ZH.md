@@ -159,7 +159,7 @@ flowchart LR
 
 值得注意的是，仓库包含 [tools/verify-architecture.mjs](../tools/verify-architecture.mjs)。它约束主应用 `src/` 不应重新实现渲染器、模板编译、沙箱等基础能力，也会检查 workspace 包之间的依赖边界。这说明项目已经把包分层当作工程纪律，而不是只写在文档里的愿望。
 
-后端配置也开始按环境分层：`application-dev.yml` 保留 H2/文件存储的开发体验，`application-prod.yml` 面向 MySQL、Flyway validate、Actuator/Prometheus 和生产部署；页面配置默认仍是文件系统，但可通过 `spark.pages.storage.type=file|database|s3|git` 切换存储后端。
+后端配置也开始按环境分层：`application-dev.yml` 和 `application-prod.yml` 均面向 Docker MySQL；本地统一使用 `127.0.0.1:3307/spark_ai`，避免与宿主机 3306 混淆。页面配置默认仍是文件系统，但可通过 `spark.pages.storage.type=file|database|s3|git` 切换存储后端。
 
 ## 5. 端到端运行链路
 
@@ -710,7 +710,7 @@ flowchart TB
   Envelope["ApiEnvelopeAdvice"]
   Guard["AccessGuardService"]
   Storage["PageConfigStorage<br/>file / database / s3 / git"]
-  DB["MySQL / H2<br/>Flyway schema"]
+  DB["Docker MySQL<br/>schema"]
   LLM["OpenAI 兼容端点"]
 
   FE --> Envelope

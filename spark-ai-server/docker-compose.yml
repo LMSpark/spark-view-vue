@@ -7,7 +7,9 @@ services:
       MYSQL_PASSWORD: spark
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      # Host uses 3307 to avoid colliding with any local MySQL on 3306.
+      # Containers still reach this service on mysql:3306 inside the Compose network.
+      - "3307:3306"
     volumes:
       - spark-ai-mysql:/var/lib/mysql
     healthcheck:
@@ -23,6 +25,7 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      # Compose-internal connection; host tools use 127.0.0.1:3307.
       MYSQL_JDBC_URL: jdbc:mysql://mysql:3306/spark_ai?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       MYSQL_USER: spark
       MYSQL_PASSWORD: spark

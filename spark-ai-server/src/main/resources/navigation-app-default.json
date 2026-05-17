@@ -33,6 +33,13 @@
                     "path": "/dev"
                 },
                 {
+                    "id": "dbms",
+                    "nodeKind": "system-page",
+                    "title": "数据库管理",
+                    "icon": "DataBase",
+                    "path": "/dbms"
+                },
+                {
                     "id": "cache-manager",
                     "nodeKind": "system-page",
                     "title": "缓存管理",

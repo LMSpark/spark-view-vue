@@ -59,6 +59,7 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   '/capability-demo': { title: '能力管理演示', icon: 'SetUp',        scope: 'app',      source: 'src/views/app/CapabilityDemo.vue',              load: () => import('../views/app/CapabilityDemo.vue') },
   '/dev':             { title: '开发系统',    icon: 'Tools',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue') },
   '/skill-catalog':   { title: '组件目录',    icon: 'Notebook',     scope: 'platform',  source: 'src/views/app/SkillCatalog.vue',                 load: () => import('../views/app/SkillCatalog.vue'), description: 'SPARK 组件配置目录（Props / 能力 / 示例）', hidden: true },
+  '/dbms':            { title: '数据库管理',  icon: 'DataBase',     scope: 'app',       source: 'src/views/app/DBMS.vue',                       load: () => import('../views/app/DBMS.vue'), description: '多层级数据源元数据管理（服务器→数据库→表→关系）' },
 }
 
 /**

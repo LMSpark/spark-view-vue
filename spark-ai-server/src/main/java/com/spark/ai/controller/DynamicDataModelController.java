@@ -20,7 +20,14 @@ public class DynamicDataModelController {
     }
 
     @GetMapping("/tables")
-    public ResponseEntity<?> listTables(@PathVariable String tenantId, @PathVariable String projectId) {
+    public ResponseEntity<?> listTables(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @RequestParam(name = "databaseId", required = false) Long databaseId
+    ) {
+        if (databaseId != null) {
+            return ResponseEntity.ok(modelService.listTablesByDatabase(tenantId, projectId, databaseId));
+        }
         return ResponseEntity.ok(modelService.listTables(tenantId, projectId));
     }
 

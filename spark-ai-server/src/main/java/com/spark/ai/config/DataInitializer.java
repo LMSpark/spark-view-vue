@@ -40,6 +40,18 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         seedTenants();
+        ensureAllHomepagesHaveNavigation();
+    }
+
+    /**
+     * 确保所有已有租户的 homepage 项目拥有默认导航（升级兼容）。
+     * ensureHomepage() 现在自带导航幂等检查，调用即可。
+     */
+    private void ensureAllHomepagesHaveNavigation() {
+        var tenants = tenantRepo.findAll();
+        for (var tenant : tenants) {
+            projectService.ensureHomepage(tenant.getTenantId());
+        }
     }
 
     // ── 种子租户数据 ──────────────────────────────────────────────────────────

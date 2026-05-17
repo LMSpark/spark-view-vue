@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ProjectNavigationTreeServiceTest {
@@ -81,6 +82,30 @@ class ProjectNavigationTreeServiceTest {
 
         assertEquals(1, nodes.size());
         assertEquals("root", nodes.get(0).get("id"));
+    }
+
+    @Test
+    void navigationOrder_isExposedAsOrderAndOnlyChangedByMoveNode() throws Exception {
+        service.saveNavConfig("t1", "p1", createNavRoot(
+                createNode("first", "第一", "page", List.of()),
+                createNode("second", "第二", "page", List.of())
+        ));
+
+        List<Map<String, Object>> nodes = service.listNodes("t1", "p1");
+        assertEquals(0, nodes.get(0).get("order"));
+        assertEquals(1, nodes.get(1).get("order"));
+        assertFalse(nodes.get(0).containsKey("sortOrder"));
+
+        Map<String, Object> moved = service.moveNode("t1", "p1", "second", null, 0);
+        assertEquals(0, moved.get("order"));
+
+        List<Map<String, Object>> reordered = service.listNodes("t1", "p1");
+        assertEquals("second", reordered.get(0).get("id"));
+        assertEquals(0, reordered.get(0).get("order"));
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.updateNode("t1", "p1", "second", Map.of("order", 9)));
+        assertEquals("排序只能通过 moveNode 调整", error.getMessage());
     }
 
         private Map<String, Object> createNavRoot(Map<String, Object>... children) {

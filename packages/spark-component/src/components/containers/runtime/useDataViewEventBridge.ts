@@ -29,8 +29,10 @@ export type DataViewBridgeEventName =
   | 'summaryChanged'
   | 'selectionSummaryChanged'
   | 'mutatingChanged'
+  | 'configChanged'
+  | 'editingChanged'
 
-type NoArgBridgeEventName = Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged'>
+type NoArgBridgeEventName = Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged' | 'configChanged' | 'editingChanged'>
 type OriginatorBridgeEventName = Extract<DataViewBridgeEventName, 'currentRowChanged' | 'selectedRowsChanged'>
 
 /** 桥接层基础上下文：用于统一错误处理、诊断与日志。 */
@@ -85,6 +87,16 @@ export interface MutatingChangedContext {
   eventName: 'mutatingChanged'
 }
 
+export interface ConfigChangedContext {
+  view: DataView
+  eventName: 'configChanged'
+}
+
+export interface EditingChangedContext {
+  view: DataView
+  eventName: 'editingChanged'
+}
+
 export interface OriginatorFilterContext {
   originatorId: string | undefined
   view: DataView
@@ -127,6 +139,10 @@ export interface DataViewEventBridgeOptions {
   onSelectionSummaryChanged?: (context: SelectionSummaryChangedContext) => void | Promise<void>
   /** mutatingChanged 事件回调。 */
   onMutatingChanged?: (context: MutatingChangedContext) => void | Promise<void>
+  /** configChanged 事件回调。 */
+  onConfigChanged?: (context: ConfigChangedContext) => void | Promise<void>
+  /** editingChanged 事件回调。 */
+  onEditingChanged?: (context: EditingChangedContext) => void | Promise<void>
   /** 事件被 originatorId 过滤时触发。 */
   onIgnoredByOriginatorId?: (context: OriginatorFilterContext) => void
   /** 统一错误处理；未提供时默认抛错。 */
@@ -353,6 +369,9 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       )
     }
 
+    const handleConfigChanged = createNoArgBridgeHandler('configChanged', options.onConfigChanged)
+    const handleEditingChanged = createNoArgBridgeHandler('editingChanged', options.onEditingChanged)
+
     const registrations: BridgeRegistrationFactory[] = []
 
     // 小辅助：保持注册配置集中，避免长数组字面量影响可读性。
@@ -376,6 +395,8 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
     addRegistration(Boolean(options.onSummaryChanged), 'summaryChanged', () => handleSummaryChanged)
     addRegistration(Boolean(options.onSelectionSummaryChanged), 'selectionSummaryChanged', () => handleSelectionSummaryChanged)
     addRegistration(Boolean(options.onMutatingChanged), 'mutatingChanged', () => handleMutatingChanged)
+    addRegistration(Boolean(options.onConfigChanged), 'configChanged', () => handleConfigChanged)
+    addRegistration(Boolean(options.onEditingChanged), 'editingChanged', () => handleEditingChanged)
 
     onCleanup(registerDataViewEvents(view, registrations))
   })

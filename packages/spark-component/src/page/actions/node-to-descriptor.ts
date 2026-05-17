@@ -130,6 +130,20 @@ function readSaveDataSetViews(value: unknown): SaveDataSetAction['views'] | unde
   return views.length > 0 ? views : undefined
 }
 
+function readNestedActionDescriptor(value: unknown): ActionDescriptor | undefined {
+  const record = asRecord(value)
+  if (!record) return undefined
+  const rawAction = readString(record['action'])
+  if (!rawAction || !isBuiltinActionName(rawAction)) return undefined
+  return mapBuiltinAction(rawAction, record) ?? undefined
+}
+
+function withThen<T extends ActionDescriptor>(desc: T, props: Record<string, unknown>): T {
+  const then = readNestedActionDescriptor(props['then'])
+  if (then) desc.then = then
+  return desc
+}
+
 // ── 公开翻译入口 ──────────────────────────────────────────────────────────
 
 /**
@@ -167,7 +181,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       const inheritFieldMap = asRecord(props['inheritFieldMap'])
       if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap as Record<string, string>
       if (readBoolean(props['setCurrentRowOnSuccess']) === true) desc.setCurrentRowOnSuccess = true
-      return desc
+      return withThen(desc, props)
     }
 
     case 'prompt-append': {
@@ -183,7 +197,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (readBoolean(props['setCurrentRowOnSuccess']) === true) desc.setCurrentRowOnSuccess = true
       const prompt = pickPrompt(props, 'append')
       if (prompt) desc.prompt = prompt
-      return desc
+      return withThen(desc, props)
     }
 
     case 'prompt-edit': {
@@ -193,7 +207,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (idField) desc.idField = idField
       const prompt = pickPrompt(props, 'edit')
       if (prompt) desc.prompt = prompt
-      return desc
+      return withThen(desc, props)
     }
 
     case 'submit-current-form': {
@@ -202,7 +216,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (idField) desc.idField = idField
       const validateMessage = readString(props['validateMessage'])
       if (validateMessage) desc.validateMessage = validateMessage
-      return desc
+      return withThen(desc, props)
     }
 
     case 'save-dataset': {
@@ -211,23 +225,25 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (mode === 'perView' || mode === 'transaction') desc.mode = mode
       const requestId = readString(props['requestId'])
       if (requestId) desc.requestId = requestId
+      const requestIdStrategy = readString(props['requestIdStrategy'])
+      if (requestIdStrategy === 'auto') desc.requestIdStrategy = requestIdStrategy
       const applyEditingRows = readBoolean(props['applyEditingRows'])
       if (applyEditingRows !== undefined) desc.applyEditingRows = applyEditingRows
       const views = readSaveDataSetViews(props['views'])
       if (views) desc.views = views
-      return desc
+      return withThen(desc, props)
     }
 
     case 'clear-rows': {
       const desc: ClearRowsAction = { action: 'clear-rows', ...decorator }
       if (dataKey) desc.dataKey = dataKey
-      return desc
+      return withThen(desc, props)
     }
 
     case 'refresh': {
       const desc: RefreshAction = { action: 'refresh', ...decorator }
       if (dataKey) desc.dataKey = dataKey
-      return desc
+      return withThen(desc, props)
     }
 
     case 'move-row':
@@ -246,7 +262,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (tpf) desc.targetParentField = tpf
       const idx = props['index']
       if (typeof idx === 'number' && Number.isFinite(idx)) desc.index = idx
-      return desc
+      return withThen(desc, props)
     }
 
     case 'delete-row':
@@ -257,7 +273,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       const desc: DeleteAction = { action: 'delete', target, ...decorator }
       if (dataKey) desc.dataKey = dataKey
       if (idField) desc.idField = idField
-      return desc
+      return withThen(desc, props)
     }
 
     case 'patch-row':
@@ -275,7 +291,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
         desc.field = field
         if ('value' in props) desc.value = props['value']
       }
-      return desc
+      return withThen(desc, props)
     }
 
     case 'message-row':
@@ -289,7 +305,7 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (messageFields) desc.messageFields = messageFields
       const messageType = readOptionalMessageType(props['messageType'])
       if (messageType) desc.messageType = messageType
-      return desc
+      return withThen(desc, props)
     }
   }
 }

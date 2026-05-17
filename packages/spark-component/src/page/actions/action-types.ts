@@ -336,6 +336,7 @@ export interface SaveDataSetAction extends ActionDescriptorBase, ActionUiDecorat
   action: 'save-dataset'
   mode?: DataSetSaveChangesMode
   requestId?: string
+  requestIdStrategy?: 'auto'
   applyEditingRows?: boolean
   views?: DataSetSaveChangesViewSelector[]
 }

@@ -14,6 +14,8 @@ import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-pr
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 import { InvalidSystemPage } from './invalid-system-page'
+import { resolveNavNodeRuntimeTarget } from '../navigation/runtime-target'
+import { resolveCrossProjectRefPageId, resolveNavRoutePageId } from './route-helpers'
 
 function isUnauthorizedError(error: unknown): boolean {
   if (error === null || error === undefined || typeof error !== 'object') return false
@@ -25,10 +27,6 @@ function isUnauthorizedError(error: unknown): boolean {
 
 const routerLogger = createLogger('DynamicRouter')
 export { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
-
-function isUuidLike(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
-}
 
 function shouldLogDynamicRouteDetails(): boolean {
   if (typeof globalThis === 'undefined') return false
@@ -241,49 +239,6 @@ export class DynamicRouter {
     return this.normalizePath(refPath)
   }
 
-  private resolveCrossProjectRefPageId(node: NavNode): string | null {
-    const refPath = typeof node.refPath === 'string' ? node.refPath.trim() : ''
-    if (refPath === '') return null
-
-    const match = /^@app:[^/]+(\/.*)?$/.exec(refPath)
-    const targetPath = (match?.[1] ?? refPath).split('#', 1)[0]?.split('?', 1)[0] ?? ''
-    const pageId = targetPath.replace(/^\/+/, '').replace(/\/+$/, '')
-    return pageId === '' ? null : pageId
-  }
-
-  private resolveCrossProjectRefHostPath(node: NavNode): string | null {
-    if (node.nodeKind !== 'ref') return null
-
-    const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
-    if (nodePath !== '' && this.normalizePath(nodePath).includes('/__ref/')) return nodePath
-
-    return `/__ref/${encodeURIComponent(node.id)}`
-  }
-
-  private resolvePageId(node: NavNode, rawNodePath: string): string {
-    if (node.nodeKind === 'ref') {
-      return this.resolveCrossProjectRefPageId(node) ?? node.refId ?? node.id
-    }
-
-    const normalizedPath = this.normalizePath(rawNodePath)
-    const slug = normalizedPath.replace(/^\/+/, '').replace(/\/+$/, '')
-    const slugSegments = slug.split('/').filter(Boolean)
-    const isConfigLikeNode =
-      node.nodeKind !== 'system-page' &&
-      node.nodeKind !== 'system-action' &&
-      node.nodeKind !== 'link'
-
-    if (isConfigLikeNode && slugSegments.length === 1) {
-      return slugSegments[0] as string
-    }
-
-    if (isConfigLikeNode && slugSegments.length > 1 && isUuidLike(node.id)) {
-      return slugSegments[slugSegments.length - 1] as string
-    }
-
-    return node.id
-  }
-
   /** 注册所有路由（从导航树派生） */
   async registerRoutes(): Promise<void> {
     routerLogger.info('开始注册动态路由')
@@ -351,26 +306,10 @@ export class DynamicRouter {
     this.registerCrossProjectRefHostRoute(skipTenantPrefix)
 
     for (const node of nodes) {
-      const isLinkNode = node.nodeKind === 'link'
-      const isRefNode = node.nodeKind === 'ref'
-      const isSelfNode = isLinkNode && node.linkTarget === 'self'
-      const isIframeNode = isLinkNode && node.linkTarget !== 'new-tab' && !isSelfNode
-      const crossProjectRefUrl = isRefNode ? this.resolveCrossProjectRefUrl(node) : null
-      const crossProjectRefHostPath = isRefNode ? this.resolveCrossProjectRefHostPath(node) : null
-      const isCrossProjectRefNode = isRefNode && crossProjectRefHostPath !== null
-      const isNewTabNode = isLinkNode && node.linkTarget === 'new-tab'
-      const isActionNode = node.nodeKind === 'system-action'
-      const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
-      const rawNodePath = isCrossProjectRefNode
-        ? crossProjectRefHostPath
-        : nodePath !== ''
-          ? node.path as string
-          : isIframeNode
-            ? `/__link/${encodeURIComponent(node.id)}`
-            : ''
+      const target = resolveNavNodeRuntimeTarget(node)
 
-      // new-tab / self / system-action 节点不注册路由
-      if (isNewTabNode || isSelfNode || isActionNode || rawNodePath === '') {
+      // external / action / container / hidden 节点不注册路由
+      if (target.kind !== 'route') {
         // 仍然递归子节点
         if (node.children?.length) {
           this.registerRoutesFromNav(node.children, skipTenantPrefix)
@@ -378,10 +317,16 @@ export class DynamicRouter {
         continue
       }
 
+      const rawNodePath = target.path
+      const isIframeNode = target.routeKind === 'external-link'
+      const isCrossProjectRefNode = target.routeKind === 'cross-project-ref'
+      const crossProjectRefUrl = isCrossProjectRefNode ? this.resolveCrossProjectRefUrl(node) : null
+      const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
       const relativePath = this.normalizePath(rawNodePath)
       const component = this.staticComponentMap.get(relativePath)
-      const useStaticComponent = node.nodeKind === 'system-page' || component !== undefined
-      const pageId = this.resolvePageId(node, rawNodePath)
+      const useStaticComponent = target.routeKind === 'page' && (node.nodeKind === 'system-page' || component !== undefined)
+      const pageId = resolveNavRoutePageId(node, rawNodePath)
+      const refPageId = isCrossProjectRefNode ? resolveCrossProjectRefPageId(node.refPath) : null
       // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
       const routePath = skipTenantPrefix
         ? this.normalizePath(rawNodePath)
@@ -445,7 +390,7 @@ export class DynamicRouter {
         const linkUrl = isIframeNode
           ? nodePath
           : crossProjectRefUrl
-        if (isIframeNode && linkUrl === null) {
+        if (isIframeNode && linkUrl === '') {
           if (node.children?.length) {
             this.registerRoutesFromNav(node.children, skipTenantPrefix)
           }
@@ -464,7 +409,7 @@ export class DynamicRouter {
                 ...(node.description !== undefined && { description: node.description }),
                 refPath: node.refPath,
                 ...(node.refProjectId !== undefined && { refProjectId: node.refProjectId }),
-                ...(this.resolveCrossProjectRefPageId(node) !== null && { refPageId: this.resolveCrossProjectRefPageId(node) }),
+                ...(refPageId !== null && { refPageId }),
                 ...(node.icon !== undefined && { icon: node.icon }),
                 ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
               },

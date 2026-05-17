@@ -82,13 +82,13 @@
  * @description 应用列表页面，以卡片网格展示已创建的项目/应用及入口；属于租户路由页，不允许作为 SparkNode 组件配置生成。
  */
 import { ref, onMounted, computed, inject } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
-import { buildTenantPath } from '@/services/tenant-scope'
+import { buildTenantPath, stripTenantScope } from '@/services/tenant-scope'
 import NavIcon from '@/components/NavIcon.vue'
 import { getNavHomePath } from '@spark-view/spark-app'
 
@@ -102,12 +102,13 @@ interface ProjectItem {
 }
 
 const router = useRouter()
+const route = useRoute()
 const projectSwitch = inject(PROJECT_SWITCH_KEY)
 const projects = ref<ProjectItem[]>([])
 const showCreateDialog = ref(false)
 const creating = ref(false)
 
-const currentProjectId = computed(() => getUser()?.defaultProjectId ?? 'homepage')
+const currentProjectId = computed(() => getRouteProjectId() ?? getUser()?.defaultProjectId ?? 'homepage')
 
 const createForm = ref({
   projectId: '',
@@ -119,6 +120,20 @@ const createForm = ref({
 async function loadProjects() {
   const data = await http.get<ProjectItem[]>(getProjectApi())
   projects.value = data
+}
+
+function getProjectSwitch() {
+  if (!projectSwitch) throw new Error('应用管理页缺少项目切换服务，无法同步项目上下文')
+  return projectSwitch
+}
+
+function getRouteProjectId(): string | null {
+  const projectId = route.params['projectId']
+  return typeof projectId === 'string' && projectId.trim().length > 0 ? projectId : null
+}
+
+function getCurrentSubPath(): string {
+  return stripTenantScope(route.path) || '/app-list'
 }
 
 async function handleCreate() {
@@ -143,11 +158,12 @@ async function handleCreate() {
 }
 
 async function handleSwitch(project: ProjectItem) {
-  await projectSwitch?.switchAndReload(project.projectId)
-  ElMessage.success(`已切换到「${project.name}」`)
   const user = getUser()
+  if (!user) throw new Error('未登录，无法切换应用')
+  await getProjectSwitch().switchAndReload(project.projectId)
+  ElMessage.success(`已切换到「${project.name}」`)
   if (user) {
-    void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath()))
+    void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: project.projectId }, getNavHomePath()))
   }
 }
 
@@ -167,10 +183,11 @@ async function handleDelete(project: ProjectItem) {
 }
 
 onMounted(async () => {
-  // 应用列表始终在 homepage 上下文中运行
   const user = getUser()
-  if (user && user.defaultProjectId !== 'homepage') {
-    await projectSwitch?.switchAndReload('homepage')
+  if (user && (user.defaultProjectId !== 'homepage' || currentProjectId.value !== 'homepage')) {
+    await getProjectSwitch().switchAndReload('homepage')
+    const homepagePath = buildTenantPath({ tenantId: user.tenantId, projectId: 'homepage' }, getCurrentSubPath())
+    if (route.path !== homepagePath) await router.replace(homepagePath)
   }
   await loadProjects()
 })

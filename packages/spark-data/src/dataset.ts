@@ -1214,69 +1214,90 @@ export class DataSet implements IDataSet {
     const targets = this.resolveSaveChangesTargets(options)
     const mode = options?.mode ?? this.saveChangesConfig?.mode ?? 'perView'
     if (mode === 'transaction') {
-      return this.saveChangesInTransaction(targets, options)
+      return this.withCascadeSuspended(() => this.saveChangesInTransaction(targets, options))
     }
 
-    const result = emptyDataSetSaveChangesResult(targets.length)
-    const shouldApplyEditingRows = options?.applyEditingRows ?? true
+    return this.withCascadeSuspended(async () => {
+      const result = emptyDataSetSaveChangesResult(targets.length)
+      const shouldApplyEditingRows = options?.applyEditingRows ?? true
 
-    for (const target of targets) {
-      const view = target.view
-      const shouldApply = shouldApplyEditingRows && hasEditingChanges(view, target.ids)
-      const shouldSave = hasPendingChanges(view, target.ids)
-      if (!shouldApply && !shouldSave) continue
+      for (const target of targets) {
+        const view = target.view
+        const shouldApply = shouldApplyEditingRows && hasEditingChanges(view, target.ids)
+        const shouldSave = hasPendingChanges(view, target.ids)
+        if (!shouldApply && !shouldSave) continue
 
-      const viewResult: DataSetSaveChangesViewResult = {
-        tableName: view.tableName,
-        viewId: view.viewId,
-        appliedEditingRows: 0,
-        failedEditingRows: 0,
-        createdCount: 0,
-        savedCount: 0,
-        deletedCount: 0,
-        failedCount: 0,
-        failedIds: [],
-        failedErrors: {},
-      }
-
-      if (shouldApply) {
-        const applyResult = await view.applyEditingRows(target.ids)
-        const applyData = applyResult.data
-        viewResult.appliedEditingRows = applyData?.appliedCount ?? 0
-        viewResult.failedEditingRows = applyData?.failedCount ?? 0
-        if (applyData) {
-          viewResult.failedIds.push(...applyData.failedIds)
-          Object.assign(viewResult.failedErrors, applyData.failedErrors)
+        const viewResult: DataSetSaveChangesViewResult = {
+          tableName: view.tableName,
+          viewId: view.viewId,
+          appliedEditingRows: 0,
+          failedEditingRows: 0,
+          createdCount: 0,
+          savedCount: 0,
+          deletedCount: 0,
+          failedCount: 0,
+          failedIds: [],
+          failedErrors: {},
         }
-      }
 
-      if (viewResult.failedEditingRows === 0 && (shouldSave || viewResult.appliedEditingRows > 0)) {
-        const saveResult = await view.saveChanges(target.ids)
-        const saveData = saveResult.data
-        if (saveData) {
-          viewResult.createdCount = saveData.createdCount
-          viewResult.savedCount = saveData.savedCount
-          viewResult.deletedCount = saveData.deletedCount
-          viewResult.failedCount = saveData.failedCount
-          viewResult.failedIds.push(...saveData.failedIds)
-          for (const [id, message] of Object.entries(saveData.failedErrors)) {
-            viewResult.failedErrors[id] = message
+        if (shouldApply) {
+          const applyResult = await view.applyEditingRows(target.ids)
+          const applyData = applyResult.data
+          viewResult.appliedEditingRows = applyData?.appliedCount ?? 0
+          viewResult.failedEditingRows = applyData?.failedCount ?? 0
+          if (applyData) {
+            viewResult.failedIds.push(...applyData.failedIds)
+            Object.assign(viewResult.failedErrors, applyData.failedErrors)
           }
-        } else if (!saveResult.success) {
-          viewResult.failedCount = 1
-          viewResult.failedErrors['*'] = saveResult.message ?? saveResult.error?.message ?? '保存失败'
         }
+
+        if (viewResult.failedEditingRows === 0 && (shouldSave || viewResult.appliedEditingRows > 0)) {
+          const saveResult = await view.saveChanges(target.ids)
+          const saveData = saveResult.data
+          if (saveData) {
+            viewResult.createdCount = saveData.createdCount
+            viewResult.savedCount = saveData.savedCount
+            viewResult.deletedCount = saveData.deletedCount
+            viewResult.failedCount = saveData.failedCount
+            viewResult.failedIds.push(...saveData.failedIds)
+            for (const [id, message] of Object.entries(saveData.failedErrors)) {
+              viewResult.failedErrors[id] = message
+            }
+          } else if (!saveResult.success) {
+            viewResult.failedCount = 1
+            viewResult.failedErrors['*'] = saveResult.message ?? saveResult.error?.message ?? '保存失败'
+          }
+        }
+
+        mergeViewResult(result, viewResult)
       }
 
-      mergeViewResult(result, viewResult)
+      return {
+        success: result.failedCount === 0 && result.failedEditingRows === 0,
+        message: result.failedCount === 0 && result.failedEditingRows === 0
+          ? `保存 ${result.viewResults.length} 个视图：新增 ${result.createdCount}，更新 ${result.savedCount}，删除 ${result.deletedCount}`
+          : `保存 ${result.viewResults.length} 个视图存在失败：编辑态失败 ${result.failedEditingRows}，提交失败 ${result.failedCount}`,
+        data: result,
+      }
+    })
+  }
+
+  private async withCascadeSuspended<T>(work: () => Promise<T>): Promise<T> {
+    const views: SparkDataView[] = []
+    for (const table of Object.values(this.tables)) {
+      table.forEachView((view) => {
+        view.cascade.teardownCascade()
+        views.push(view)
+      })
     }
 
-    return {
-      success: result.failedCount === 0 && result.failedEditingRows === 0,
-      message: result.failedCount === 0 && result.failedEditingRows === 0
-        ? `保存 ${result.viewResults.length} 个视图：新增 ${result.createdCount}，更新 ${result.savedCount}，删除 ${result.deletedCount}`
-        : `保存 ${result.viewResults.length} 个视图存在失败：编辑态失败 ${result.failedEditingRows}，提交失败 ${result.failedCount}`,
-      data: result,
+    try {
+      return await work()
+    } finally {
+      await Promise.resolve()
+      for (const view of views) {
+        if (!view.destroyed) view.cascade.setupCascade()
+      }
     }
   }
 

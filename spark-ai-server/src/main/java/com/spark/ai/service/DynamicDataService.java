@@ -1,16 +1,21 @@
 package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.config.DynamicDataSourceManager;
 import com.spark.ai.crud.FilterExpressionSqlBuilder;
 import com.spark.ai.crud.FilterExpressionSqlBuilder.SqlFragment;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,6 +53,7 @@ public class DynamicDataService {
     private final ObjectMapper objectMapper;
     private final DynamicDataModelService modelService;
     private final SseService sseService;
+    private final PlatformTransactionManager transactionManager;
 
     public DynamicDataService(
             JdbcTemplate jdbcTemplate,
@@ -55,10 +61,22 @@ public class DynamicDataService {
             DynamicDataModelService modelService,
             SseService sseService
     ) {
+        this(jdbcTemplate, objectMapper, modelService, sseService, null);
+    }
+
+    @Autowired
+    public DynamicDataService(
+            JdbcTemplate jdbcTemplate,
+            ObjectMapper objectMapper,
+            DynamicDataModelService modelService,
+            SseService sseService,
+            PlatformTransactionManager transactionManager
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
         this.modelService = modelService;
         this.sseService = sseService;
+        this.transactionManager = transactionManager;
     }
 
     public Map<String, Object> query(String tenantId, String projectId, String tableName, Map<String, Object> body) {
@@ -70,9 +88,29 @@ public class DynamicDataService {
         return queryFlat(tenantId, projectId, definition, spec);
     }
 
+    private JdbcTemplate jdbcFor(DynamicDataModelService.TableDefinition definition) {
+        return modelService.jdbcTemplateFor(definition);
+    }
+
+    private String q(DynamicDataModelService.TableDefinition definition, String identifier) {
+        return definition.dialect().quoteIdentifier(identifier);
+    }
+
     @Transactional
     public Map<String, Object> createRecord(String tenantId, String projectId, String tableName, Map<String, Object> body) {
         DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
+        Map<String, Object> created = createRecordInternal(tenantId, projectId, tableName, definition, body);
+        emitDataChange(tenantId, projectId, tableName, "create", null);
+        return created;
+    }
+
+    private Map<String, Object> createRecordInternal(
+            String tenantId,
+            String projectId,
+            String tableName,
+            DynamicDataModelService.TableDefinition definition,
+            Map<String, Object> body
+    ) {
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         List<DynamicDataModelService.ColumnInfo> insertColumns = definition.columns().stream()
                 .filter(column -> !column.autoIncrement())
@@ -81,23 +119,24 @@ public class DynamicDataService {
 
         List<String> physicalColumns = new ArrayList<>();
         List<Object> args = new ArrayList<>();
-        physicalColumns.add(DynamicDataModelService.q("TENANT_ID"));
+        physicalColumns.add(q(definition, "TENANT_ID"));
         args.add(tenantId);
-        physicalColumns.add(DynamicDataModelService.q("PROJECT_ID"));
+        physicalColumns.add(q(definition, "PROJECT_ID"));
         args.add(projectId);
         for (DynamicDataModelService.ColumnInfo column : insertColumns) {
-            physicalColumns.add(DynamicDataModelService.q(column.physicalColumnName()));
+            physicalColumns.add(q(definition, column.physicalColumnName()));
             args.add(toDbValue(column, body.get(column.columnName())));
         }
 
         String placeholders = String.join(", ", Collections.nCopies(physicalColumns.size(), "?"));
-        String sql = "INSERT INTO " + DynamicDataModelService.q(definition.table().physicalTableName())
+        String sql = "INSERT INTO " + q(definition, definition.table().physicalTableName())
                 + " (" + String.join(", ", physicalColumns) + ") VALUES (" + placeholders + ")";
 
+        JdbcTemplate targetJdbc = jdbcFor(definition);
         Object pkValue = body.get(pk.columnName());
         if (pk.autoIncrement()) {
             KeyHolder keyHolder = new GeneratedKeyHolder();
-            jdbcTemplate.update(connection -> {
+            targetJdbc.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 for (int i = 0; i < args.size(); i++) {
                     statement.setObject(i + 1, args.get(i));
@@ -109,27 +148,35 @@ public class DynamicDataService {
                 pkValue = key;
             }
         } else {
-            jdbcTemplate.update(sql, args.toArray());
+            targetJdbc.update(sql, args.toArray());
         }
 
-        Map<String, Object> created = getRecord(tenantId, projectId, tableName, Map.of(pk.columnName(), pkValue));
-        emitDataChange(tenantId, projectId, tableName, "create", null);
-        return created;
+        return requireRecord(tenantId, projectId, tableName, definition, Map.of(pk.columnName(), pkValue));
     }
 
     public Map<String, Object> getRecord(String tenantId, String projectId, String tableName, Map<String, Object> pkPayload) {
         DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
+        return getRecord(tenantId, projectId, tableName, definition, pkPayload);
+    }
+
+    private Map<String, Object> getRecord(
+            String tenantId,
+            String projectId,
+            String tableName,
+            DynamicDataModelService.TableDefinition definition,
+            Map<String, Object> pkPayload
+    ) {
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(pkPayload, pk.columnName());
         List<Object> args = new ArrayList<>();
         args.add(tenantId);
         args.add(projectId);
         args.add(pkValue);
-        List<Map<String, Object>> rows = jdbcTemplate.query(
-                "SELECT " + projection(definition.columns()) + " FROM " + DynamicDataModelService.q(definition.table().physicalTableName())
-                        + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q(pk.physicalColumnName()) + " = ?",
+        List<Map<String, Object>> rows = jdbcFor(definition).query(
+                "SELECT " + projection(definition, definition.columns()) + " FROM " + q(definition, definition.table().physicalTableName())
+                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
+                        + " AND " + q(definition, pk.physicalColumnName()) + " = ?",
                 (rs, rowNum) -> rowMap(rs, definition.columns()),
                 args.toArray()
         );
@@ -139,6 +186,18 @@ public class DynamicDataService {
     @Transactional
     public Map<String, Object> updateRecord(String tenantId, String projectId, String tableName, Map<String, Object> body) {
         DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
+        Map<String, Object> record = updateRecordInternal(tenantId, projectId, tableName, definition, body);
+        emitDataChange(tenantId, projectId, tableName, "update", null);
+        return record;
+    }
+
+    private Map<String, Object> updateRecordInternal(
+            String tenantId,
+            String projectId,
+            String tableName,
+            DynamicDataModelService.TableDefinition definition,
+            Map<String, Object> body
+    ) {
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(body, pk.columnName());
 
@@ -146,42 +205,50 @@ public class DynamicDataService {
         List<Object> args = new ArrayList<>();
         for (DynamicDataModelService.ColumnInfo column : definition.columns()) {
             if (column.primaryKey() || !body.containsKey(column.columnName())) continue;
-            assignments.add(DynamicDataModelService.q(column.physicalColumnName()) + " = ?");
+            assignments.add(q(definition, column.physicalColumnName()) + " = ?");
             args.add(toDbValue(column, body.get(column.columnName())));
         }
         if (assignments.isEmpty()) {
-            return requireRecord(tenantId, projectId, tableName, Map.of(pk.columnName(), pkValue));
+            return requireRecord(tenantId, projectId, tableName, definition, Map.of(pk.columnName(), pkValue));
         }
         args.add(tenantId);
         args.add(projectId);
         args.add(pkValue);
 
-        int updated = jdbcTemplate.update(
-                "UPDATE " + DynamicDataModelService.q(definition.table().physicalTableName())
+        int updated = jdbcFor(definition).update(
+                "UPDATE " + q(definition, definition.table().physicalTableName())
                         + " SET " + String.join(", ", assignments)
-                        + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q(pk.physicalColumnName()) + " = ?",
+                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
+                        + " AND " + q(definition, pk.physicalColumnName()) + " = ?",
                 args.toArray()
         );
         if (updated == 0) {
             throw new NoSuchElementException("记录不存在: " + pkValue);
         }
-        Map<String, Object> record = requireRecord(tenantId, projectId, tableName, Map.of(pk.columnName(), pkValue));
-        emitDataChange(tenantId, projectId, tableName, "update", null);
-        return record;
+        return requireRecord(tenantId, projectId, tableName, definition, Map.of(pk.columnName(), pkValue));
     }
 
     @Transactional
     public void deleteRecord(String tenantId, String projectId, String tableName, Map<String, Object> pkPayload) {
         DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
+        deleteRecordInternal(tenantId, projectId, definition, pkPayload);
+        emitDataChange(tenantId, projectId, tableName, "delete", null);
+    }
+
+    private void deleteRecordInternal(
+            String tenantId,
+            String projectId,
+            DynamicDataModelService.TableDefinition definition,
+            Map<String, Object> pkPayload
+    ) {
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(pkPayload, pk.columnName());
-        int deleted = jdbcTemplate.update(
-                "DELETE FROM " + DynamicDataModelService.q(definition.table().physicalTableName())
-                        + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q(pk.physicalColumnName()) + " = ?",
+        int deleted = jdbcFor(definition).update(
+                "DELETE FROM " + q(definition, definition.table().physicalTableName())
+                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
+                        + " AND " + q(definition, pk.physicalColumnName()) + " = ?",
                 tenantId,
                 projectId,
                 pkValue
@@ -189,7 +256,6 @@ public class DynamicDataService {
         if (deleted == 0) {
             throw new NoSuchElementException("记录不存在: " + pkValue);
         }
-        emitDataChange(tenantId, projectId, tableName, "delete", null);
     }
 
     public Map<String, Object> batchCreate(String tenantId, String projectId, String tableName, List<Map<String, Object>> rows) {
@@ -299,18 +365,18 @@ public class DynamicDataService {
         }
         DynamicDataModelService.ColumnInfo parentColumn = columnByLogical(definition, fields.parentIdField());
         DynamicDataModelService.ColumnInfo idColumn = columnByLogical(definition, fields.idField());
-        jdbcTemplate.update(
-                "UPDATE " + DynamicDataModelService.q(definition.table().physicalTableName())
-                        + " SET " + DynamicDataModelService.q(parentColumn.physicalColumnName()) + " = ?"
-                        + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q(idColumn.physicalColumnName()) + " = ?",
+        jdbcFor(definition).update(
+                "UPDATE " + q(definition, definition.table().physicalTableName())
+                        + " SET " + q(definition, parentColumn.physicalColumnName()) + " = ?"
+                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
+                        + " AND " + q(definition, idColumn.physicalColumnName()) + " = ?",
                 newParentId,
                 tenantId,
                 projectId,
                 id
         );
-        Map<String, Object> node = requireRecord(tenantId, projectId, tableName, Map.of(fields.idField(), id));
+        Map<String, Object> node = requireRecord(tenantId, projectId, tableName, definition, Map.of(fields.idField(), id));
         emitDataChange(tenantId, projectId, tableName, "tree-move", null);
         return Map.of("node", toFlatTreeNode(node, fields));
     }
@@ -377,13 +443,29 @@ public class DynamicDataService {
         return Map.of("jobId", jobId, "status", "queued");
     }
 
-    @Transactional
     public Map<String, Object> executeTransaction(String tenantId, String projectId, Map<String, Object> body) {
         List<Map<String, Object>> operations = readOperations(body);
         if (operations.isEmpty()) {
             throw new IllegalArgumentException("operations 不能为空");
         }
+        Map<String, DynamicDataModelService.TableDefinition> definitions = resolveOperationDefinitions(tenantId, projectId, operations);
+        validateTransactionDatabases(definitions.values());
 
+        if (transactionManager == null || TransactionSynchronizationManager.isActualTransactionActive()) {
+            return executeTransactionInCurrentTransaction(tenantId, projectId, body, operations, definitions);
+        }
+        return new TransactionTemplate(transactionManager).execute(status ->
+                executeTransactionInCurrentTransaction(tenantId, projectId, body, operations, definitions)
+        );
+    }
+
+    private Map<String, Object> executeTransactionInCurrentTransaction(
+            String tenantId,
+            String projectId,
+            Map<String, Object> body,
+            List<Map<String, Object>> operations,
+            Map<String, DynamicDataModelService.TableDefinition> definitions
+    ) {
         String requestId = body == null ? null : stringOrNull(body.get("requestId"));
         String requestHash = requestId == null ? null : transactionRequestHash(operations);
         Map<String, Object> replayed = requestId == null ? null : readCommittedTransaction(tenantId, projectId, requestId, requestHash);
@@ -410,7 +492,7 @@ public class DynamicDataService {
             index++;
             String operationId = stringOrDefault(operation.get("operationId"), String.valueOf(index));
             try {
-                Map<String, Object> itemResult = executeTransactionOperation(tenantId, projectId, operation);
+                Map<String, Object> itemResult = executeTransactionOperation(tenantId, projectId, operation, definitions);
                 results.add(Map.of(
                         "operationId", operationId,
                         "status", "success",
@@ -441,13 +523,13 @@ public class DynamicDataService {
         SqlFragment where = buildWhere(definition, spec.filter());
         List<Object> baseArgs = scopedArgs(tenantId, projectId, where);
         String fromWhere = scopedFromWhere(definition, where);
-        int total = count(fromWhere, baseArgs);
+        int total = count(definition, fromWhere, baseArgs);
         List<Object> args = new ArrayList<>(baseArgs);
         args.add(spec.pageSize());
         args.add((spec.page() - 1) * spec.pageSize());
         List<DynamicDataModelService.ColumnInfo> selected = selectedColumns(definition, spec.fields());
-        List<Map<String, Object>> rows = jdbcTemplate.query(
-                "SELECT " + projection(selected)
+        List<Map<String, Object>> rows = jdbcFor(definition).query(
+                "SELECT " + projection(definition, selected)
                         + " " + fromWhere
                         + orderBy(definition, spec.sort())
                         + " LIMIT ? OFFSET ?",
@@ -540,11 +622,11 @@ public class DynamicDataService {
         List<DynamicDataModelService.ColumnInfo> selected = selectedOverride == null || selectedOverride.isEmpty()
                 ? definition.columns()
                 : selectedOverride;
-        return jdbcTemplate.query(
-                "SELECT " + projection(selected)
-                        + " FROM " + DynamicDataModelService.q(definition.table().physicalTableName())
-                        + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?",
+        return jdbcFor(definition).query(
+                "SELECT " + projection(definition, selected)
+                        + " FROM " + q(definition, definition.table().physicalTableName())
+                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                        + " AND " + q(definition, "PROJECT_ID") + " = ?",
                 (rs, rowNum) -> rowMap(rs, selected),
                 tenantId,
                 projectId
@@ -565,10 +647,10 @@ public class DynamicDataService {
         args.add(projectId);
         String parentWhere;
         if (parentId == null) {
-            parentWhere = " AND (" + DynamicDataModelService.q(parentColumn.physicalColumnName()) + " IS NULL OR "
-                    + DynamicDataModelService.q(parentColumn.physicalColumnName()) + " = '')";
+            parentWhere = " AND (" + q(definition, parentColumn.physicalColumnName()) + " IS NULL OR "
+                    + q(definition, parentColumn.physicalColumnName()) + " = '')";
         } else {
-            parentWhere = " AND " + DynamicDataModelService.q(parentColumn.physicalColumnName()) + " = ?";
+            parentWhere = " AND " + q(definition, parentColumn.physicalColumnName()) + " = ?";
             args.add(parentId);
         }
         String limitSql = "";
@@ -576,11 +658,11 @@ public class DynamicDataService {
             limitSql = " LIMIT ?";
             args.add(limit);
         }
-        return jdbcTemplate.query(
-                "SELECT " + projection(definition.columns())
-                        + " FROM " + DynamicDataModelService.q(definition.table().physicalTableName())
-                        + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                        + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?"
+        return jdbcFor(definition).query(
+                "SELECT " + projection(definition, definition.columns())
+                        + " FROM " + q(definition, definition.table().physicalTableName())
+                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
                         + parentWhere
                         + orderBy(definition, null)
                         + limitSql,
@@ -596,22 +678,22 @@ public class DynamicDataService {
             List<Object> args,
             String sort
     ) {
-        return jdbcTemplate.query(
-                "SELECT " + projection(selected) + " " + fromWhere + orderBy(definition, sort),
+        return jdbcFor(definition).query(
+                "SELECT " + projection(definition, selected) + " " + fromWhere + orderBy(definition, sort),
                 (rs, rowNum) -> rowMap(rs, selected),
                 args.toArray()
         );
     }
 
-    private int count(String fromWhere, List<Object> args) {
-        Integer total = jdbcTemplate.queryForObject("SELECT COUNT(*) " + fromWhere, Integer.class, args.toArray());
+    private int count(DynamicDataModelService.TableDefinition definition, String fromWhere, List<Object> args) {
+        Integer total = jdbcFor(definition).queryForObject("SELECT COUNT(*) " + fromWhere, Integer.class, args.toArray());
         return total == null ? 0 : total;
     }
 
     private String scopedFromWhere(DynamicDataModelService.TableDefinition definition, SqlFragment where) {
-        String base = "FROM " + DynamicDataModelService.q(definition.table().physicalTableName())
-                + " WHERE " + DynamicDataModelService.q("TENANT_ID") + " = ?"
-                + " AND " + DynamicDataModelService.q("PROJECT_ID") + " = ?";
+        String base = "FROM " + q(definition, definition.table().physicalTableName())
+                + " WHERE " + q(definition, "TENANT_ID") + " = ?"
+                + " AND " + q(definition, "PROJECT_ID") + " = ?";
         if (where.sql().isBlank()) {
             return base;
         }
@@ -635,24 +717,21 @@ public class DynamicDataService {
     private String orderBy(DynamicDataModelService.TableDefinition definition, String sort) {
         FilterExpressionSqlBuilder builder = new FilterExpressionSqlBuilder(fieldSqlMap(definition));
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
-        return builder.buildOrderBy(sort, DynamicDataModelService.q(pk.physicalColumnName()));
+        return builder.buildOrderBy(sort, q(definition, pk.physicalColumnName()));
     }
 
     private Map<String, String> fieldSqlMap(DynamicDataModelService.TableDefinition definition) {
         Map<String, String> result = new LinkedHashMap<>();
         for (DynamicDataModelService.ColumnInfo column : definition.columns()) {
-            result.put(column.columnName(), DynamicDataModelService.q(column.physicalColumnName()));
+            result.put(column.columnName(), q(definition, column.physicalColumnName()));
         }
         return result;
     }
 
     private QuerySpec resolveQuerySpec(DynamicDataModelService.TableDefinition definition, Map<String, Object> body) {
         Map<String, Object> query = extractQuery(body);
-        String viewId = stringOrDefault(body == null ? null : body.get("viewId"), stringOrDefault(query.get("viewId"), "default"));
-        Map<String, Object> storedView = new LinkedHashMap<>(definition.views().getOrDefault(viewId, definition.views().getOrDefault("default", Map.of())));
         Map<String, Object> requestView = readViewConfig(body, query);
-        Map<String, Object> mergedView = new LinkedHashMap<>(storedView);
-        mergedView.putAll(requestView);
+        Map<String, Object> mergedView = new LinkedHashMap<>(requestView);
 
         Object filter = combineFilters(
                 mergedView.get("filterExpression"),
@@ -785,9 +864,9 @@ public class DynamicDataService {
         return selected.isEmpty() ? definition.columns() : selected;
     }
 
-    private String projection(List<DynamicDataModelService.ColumnInfo> columns) {
+    private String projection(DynamicDataModelService.TableDefinition definition, List<DynamicDataModelService.ColumnInfo> columns) {
         return columns.stream()
-                .map(column -> DynamicDataModelService.q(column.physicalColumnName()))
+                .map(column -> q(definition, column.physicalColumnName()))
                 .reduce((left, right) -> left + ", " + right)
                 .orElse("*");
     }
@@ -827,7 +906,18 @@ public class DynamicDataService {
     }
 
     private Map<String, Object> requireRecord(String tenantId, String projectId, String tableName, Map<String, Object> pk) {
-        Map<String, Object> record = getRecord(tenantId, projectId, tableName, pk);
+        DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
+        return requireRecord(tenantId, projectId, tableName, definition, pk);
+    }
+
+    private Map<String, Object> requireRecord(
+            String tenantId,
+            String projectId,
+            String tableName,
+            DynamicDataModelService.TableDefinition definition,
+            Map<String, Object> pk
+    ) {
+        Map<String, Object> record = getRecord(tenantId, projectId, tableName, definition, pk);
         if (record == null) {
             throw new NoSuchElementException("记录不存在");
         }
@@ -1053,13 +1143,12 @@ public class DynamicDataService {
         if (tableName == null || op == null) {
             throw new IllegalArgumentException("operation.tableName/op 不能为空");
         }
-        Map<String, Object> payload = readMap(operation.get("data"));
-        if (payload.isEmpty()) payload = readMap(operation.get("pk"));
+        DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
         Map<String, Object> result = switch (op) {
-            case "create" -> createRecord(tenantId, projectId, tableName, readMap(operation.get("data")));
-            case "update" -> updateRecord(tenantId, projectId, tableName, merged(readMap(operation.get("data")), readMap(operation.get("pk"))));
+            case "create" -> createRecordInternal(tenantId, projectId, tableName, definition, readMap(operation.get("data")));
+            case "update" -> updateRecordInternal(tenantId, projectId, tableName, definition, merged(readMap(operation.get("data")), readMap(operation.get("pk"))));
             case "delete" -> {
-                deleteRecord(tenantId, projectId, tableName, readMap(operation.get("pk")));
+                deleteRecordInternal(tenantId, projectId, definition, readMap(operation.get("pk")));
                 yield Map.of("deleted", true);
             }
             default -> throw new IllegalArgumentException("未知批量操作: " + op);
@@ -1068,21 +1157,32 @@ public class DynamicDataService {
         return result;
     }
 
-    private Map<String, Object> executeTransactionOperation(String tenantId, String projectId, Map<String, Object> operation) {
+    private Map<String, Object> executeTransactionOperation(
+            String tenantId,
+            String projectId,
+            Map<String, Object> operation,
+            Map<String, DynamicDataModelService.TableDefinition> definitions
+    ) {
         String tableName = stringOrDefault(operation.get("tableName"), null);
         String op = stringOrDefault(operation.get("op"), stringOrDefault(operation.get("operation"), null));
         if (tableName == null || op == null) {
             throw new IllegalArgumentException("operation.tableName/op 不能为空");
         }
-        return switch (op) {
-            case "create" -> createRecord(tenantId, projectId, tableName, readMap(operation.get("data")));
-            case "update" -> updateRecord(tenantId, projectId, tableName, merged(readMap(operation.get("data")), readMap(operation.get("pk"))));
+        DynamicDataModelService.TableDefinition definition = definitions.get(tableName);
+        if (definition == null) {
+            throw new IllegalArgumentException("数据表元数据不存在: " + tableName);
+        }
+        Map<String, Object> result = switch (op) {
+            case "create" -> createRecordInternal(tenantId, projectId, tableName, definition, readMap(operation.get("data")));
+            case "update" -> updateRecordInternal(tenantId, projectId, tableName, definition, merged(readMap(operation.get("data")), readMap(operation.get("pk"))));
             case "delete" -> {
-                deleteRecord(tenantId, projectId, tableName, readMap(operation.get("pk")));
+                deleteRecordInternal(tenantId, projectId, definition, readMap(operation.get("pk")));
                 yield Map.of("deleted", true);
             }
             default -> throw new IllegalArgumentException("未知事务操作: " + op);
         };
+        emitDataChange(tenantId, projectId, tableName, op, null);
+        return result;
     }
 
     private void insertJobItem(String jobId, Map<String, Object> operation, String status, Object result, String error) {
@@ -1253,6 +1353,60 @@ public class DynamicDataService {
             }
             return toStringKeyMap(rawMap);
         }).toList();
+    }
+
+    private Map<String, DynamicDataModelService.TableDefinition> resolveOperationDefinitions(
+            String tenantId,
+            String projectId,
+            List<Map<String, Object>> operations
+    ) {
+        Map<String, DynamicDataModelService.TableDefinition> definitions = new LinkedHashMap<>();
+        for (Map<String, Object> operation : operations) {
+            String tableName = stringOrDefault(operation.get("tableName"), null);
+            String op = stringOrDefault(operation.get("op"), stringOrDefault(operation.get("operation"), null));
+            if (tableName == null || op == null) {
+                throw new IllegalArgumentException("operation.tableName/op 不能为空");
+            }
+            definitions.computeIfAbsent(tableName, name -> modelService.requireDefinition(tenantId, projectId, name));
+        }
+        return definitions;
+    }
+
+    private void validateTransactionDatabases(Collection<DynamicDataModelService.TableDefinition> definitions) {
+        Set<Long> databaseIds = new LinkedHashSet<>();
+        for (DynamicDataModelService.TableDefinition definition : definitions) {
+            databaseIds.add(definition.table().databaseId());
+        }
+        if (databaseIds.size() <= 1) {
+            return;
+        }
+        if (!modelService.isJtaJndiMode()) {
+            throw new IllegalArgumentException("跨数据库事务需要启用 jta-jndi 模式");
+        }
+        if (!(transactionManager instanceof JtaTransactionManager)) {
+            throw new IllegalArgumentException("跨数据库事务需要 JtaTransactionManager");
+        }
+        List<Long> dynamicDatabaseIds = new ArrayList<>();
+        for (Long databaseId : databaseIds) {
+            if (databaseId == null) {
+                continue;
+            }
+            DynamicDataSourceManager.DatabaseConnectionInfo info = modelService.databaseConnectionInfo(databaseId);
+            if (!info.isJndiXa()) {
+                throw new IllegalArgumentException("跨数据库事务要求所有数据库为 JNDI_XA");
+            }
+            if (info.jndiName() == null || info.jndiName().isBlank()) {
+                throw new IllegalArgumentException("跨数据库事务要求所有数据库为 JNDI_XA: databaseId=" + databaseId + " 缺少 jndiName");
+            }
+            dynamicDatabaseIds.add(databaseId);
+        }
+        for (Long databaseId : dynamicDatabaseIds) {
+            try {
+                modelService.jdbcTemplateFor(databaseId);
+            } catch (IllegalStateException e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
+        }
     }
 
     private String transactionRequestHash(List<Map<String, Object>> operations) {

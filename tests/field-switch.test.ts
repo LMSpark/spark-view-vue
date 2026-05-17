@@ -27,6 +27,7 @@ function mountFieldSwitch(
   fieldName: string,
   componentProps?: Record<string, unknown>,
   columns?: DataColumn[],
+  dataSource?: unknown,
 ) {
   return mountFieldInContext({
     component: FieldSwitch,
@@ -34,7 +35,9 @@ function mountFieldSwitch(
     model,
     fieldName,
     componentProps,
-    ...(columns !== undefined ? { dataSource: { columns } } : {}),
+    ...((dataSource ?? (columns !== undefined ? { columns } : undefined)) !== undefined
+      ? { dataSource: dataSource ?? { columns } }
+      : {}),
     global: {
       stubs: {
         'el-form-item': ElFormItemStub,
@@ -88,6 +91,30 @@ describe('FieldSwitch 业务回调模式', () => {
     await nextTick()
 
     expect(model['hidden']).toBe(false)
+  })
+
+  it('绑定 DataView 且当前行缺少主键时应跳过初始化归一写回', async () => {
+    const model = reactive<Record<string, unknown>>({ active: '' })
+    const updateEditingValue = vi.fn()
+
+    mountFieldSwitch(
+      model,
+      'active',
+      undefined,
+      undefined,
+      {
+        columns: [{ name: 'active', type: 'boolean', allowDBNull: false }],
+        getPkKey: vi.fn(() => undefined),
+        hasEditingChanges: vi.fn(() => false),
+        getEditingRow: vi.fn(() => null),
+        updateEditingValue,
+      },
+    )
+
+    await nextTick()
+
+    expect(updateEditingValue).not.toHaveBeenCalled()
+    expect(model['active']).toBe('')
   })
 
   it('应尊重组件 disabled 配置', async () => {
