@@ -1,0 +1,256 @@
+<template>
+  <div class="platform-tenants">
+    <div class="page-toolbar">
+      <div>
+        <h2>租户管理</h2>
+        <p>平台租户、管理员和入口状态统一维护。</p>
+      </div>
+      <div class="toolbar-actions">
+        <el-button :icon="Refresh" @click="loadTenants">刷新</el-button>
+        <el-button type="primary" :icon="Plus" @click="openCreateDialog">新建租户</el-button>
+      </div>
+    </div>
+
+    <el-table v-loading="loading" :data="tenants" row-key="tenantId" class="tenant-table">
+      <el-table-column prop="tenantId" label="租户 ID" min-width="150" />
+      <el-table-column prop="tenantName" label="租户名称" min-width="180" />
+      <el-table-column prop="tenantCode" label="编码" min-width="120" />
+      <el-table-column prop="adminUserName" label="管理员" min-width="120" />
+      <el-table-column label="状态" width="110">
+        <template #default="{ row }">
+          <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'warning'">
+            {{ row.status === 'ACTIVE' ? '启用' : '禁用' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="updatedAt" label="更新时间" min-width="180" />
+      <el-table-column label="操作" fixed="right" width="360">
+        <template #default="{ row }">
+          <el-button size="small" type="primary" text @click="enterTenant(row)">进入</el-button>
+          <el-button size="small" text @click="openEditDialog(row)">编辑</el-button>
+          <el-button
+            v-if="row.tenantId !== 'platform' && row.status === 'ACTIVE'"
+            size="small"
+            text
+            type="warning"
+            @click="disableTenant(row)"
+          >
+            禁用
+          </el-button>
+          <el-button
+            v-if="row.tenantId !== 'platform' && row.status !== 'ACTIVE'"
+            size="small"
+            text
+            type="success"
+            @click="enableTenant(row)"
+          >
+            启用
+          </el-button>
+          <el-button
+            v-if="row.tenantId !== 'platform'"
+            size="small"
+            text
+            type="danger"
+            @click="deleteTenant(row)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-dialog v-model="dialogVisible" :title="editingTenant ? '编辑租户' : '新建租户'" width="520px">
+      <el-form :model="form" label-width="100px">
+        <el-form-item label="租户 ID">
+          <el-input v-model="form.tenantId" :disabled="Boolean(editingTenant)" placeholder="例如 acme" />
+        </el-form-item>
+        <el-form-item label="租户名称">
+          <el-input v-model="form.tenantName" placeholder="显示名称" />
+        </el-form-item>
+        <el-form-item label="租户编码">
+          <el-input v-model="form.tenantCode" placeholder="例如 ACME" />
+        </el-form-item>
+        <template v-if="!editingTenant">
+          <el-form-item label="管理员">
+            <el-input v-model="form.adminUsername" placeholder="admin" />
+          </el-form-item>
+          <el-form-item label="初始密码">
+            <el-input v-model="form.adminPassword" type="password" show-password placeholder="至少 6 位" />
+          </el-form-item>
+        </template>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitTenant">保存</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Refresh } from '@element-plus/icons-vue'
+import { http } from '@/services/http'
+import { getPlatformTenantApi } from '@/services/api-paths'
+import { buildTenantPath } from '@/services/tenant-scope'
+
+interface PlatformTenant {
+  tenantId: string
+  tenantName: string
+  tenantCode: string
+  status: 'ACTIVE' | 'DISABLED' | string
+  defaultProjectId: string
+  adminUserName: string
+  updatedAt?: string
+}
+
+const router = useRouter()
+const loading = ref(false)
+const submitting = ref(false)
+const tenants = ref<PlatformTenant[]>([])
+const dialogVisible = ref(false)
+const editingTenant = ref<PlatformTenant | null>(null)
+const form = reactive({
+  tenantId: '',
+  tenantName: '',
+  tenantCode: '',
+  adminUsername: 'admin',
+  adminPassword: 'admin123',
+})
+
+function resetForm(): void {
+  form.tenantId = ''
+  form.tenantName = ''
+  form.tenantCode = ''
+  form.adminUsername = 'admin'
+  form.adminPassword = 'admin123'
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+async function loadTenants(): Promise<void> {
+  loading.value = true
+  try {
+    tenants.value = await http.get<PlatformTenant[]>(getPlatformTenantApi())
+  } catch (error) {
+    ElMessage.error(`加载租户失败: ${errorMessage(error)}`)
+  } finally {
+    loading.value = false
+  }
+}
+
+function openCreateDialog(): void {
+  editingTenant.value = null
+  resetForm()
+  dialogVisible.value = true
+}
+
+function openEditDialog(row: PlatformTenant): void {
+  editingTenant.value = row
+  form.tenantId = row.tenantId
+  form.tenantName = row.tenantName
+  form.tenantCode = row.tenantCode
+  form.adminUsername = row.adminUserName || 'admin'
+  form.adminPassword = ''
+  dialogVisible.value = true
+}
+
+async function submitTenant(): Promise<void> {
+  if (!form.tenantId.trim() || !form.tenantName.trim()) {
+    ElMessage.warning('请填写租户 ID 和租户名称')
+    return
+  }
+  submitting.value = true
+  try {
+    if (editingTenant.value) {
+      await http.put(`${getPlatformTenantApi()}/${encodeURIComponent(form.tenantId)}`, {
+        tenantName: form.tenantName,
+        tenantCode: form.tenantCode,
+      })
+    } else {
+      await http.post(getPlatformTenantApi(), { ...form })
+    }
+    ElMessage.success('租户已保存')
+    dialogVisible.value = false
+    await loadTenants()
+  } catch (error) {
+    ElMessage.error(`保存失败: ${errorMessage(error)}`)
+  } finally {
+    submitting.value = false
+  }
+}
+
+async function enableTenant(row: PlatformTenant): Promise<void> {
+  await http.post(`${getPlatformTenantApi()}/${encodeURIComponent(row.tenantId)}/enable`)
+  ElMessage.success('租户已启用')
+  await loadTenants()
+}
+
+async function disableTenant(row: PlatformTenant): Promise<void> {
+  try {
+    await ElMessageBox.confirm(`确定禁用租户「${row.tenantName || row.tenantId}」？`, '禁用租户', { type: 'warning' })
+    await http.post(`${getPlatformTenantApi()}/${encodeURIComponent(row.tenantId)}/disable`)
+    ElMessage.success('租户已禁用')
+    await loadTenants()
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error(`禁用失败: ${errorMessage(error)}`)
+  }
+}
+
+async function deleteTenant(row: PlatformTenant): Promise<void> {
+  try {
+    await ElMessageBox.confirm(`确定删除租户「${row.tenantName || row.tenantId}」？此操作为软删除。`, '删除租户', { type: 'warning' })
+    await http.delete(`${getPlatformTenantApi()}/${encodeURIComponent(row.tenantId)}`)
+    ElMessage.success('租户已删除')
+    await loadTenants()
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error(`删除失败: ${errorMessage(error)}`)
+  }
+}
+
+function enterTenant(row: PlatformTenant): void {
+  const projectId = row.defaultProjectId || 'homepage'
+  void router.push(buildTenantPath({ tenantId: row.tenantId, projectId }, '/dashboard'))
+}
+
+onMounted(() => {
+  void loadTenants()
+})
+</script>
+
+<style scoped>
+.platform-tenants {
+  padding: 20px;
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-toolbar h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.page-toolbar p {
+  margin: 0;
+  color: var(--el-text-color-secondary);
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tenant-table {
+  width: 100%;
+}
+</style>

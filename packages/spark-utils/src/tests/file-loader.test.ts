@@ -392,7 +392,7 @@ describe('FileLoader', () => {
       expect(loader.getTimestamp('stats2.json')).toBe('2024-02-11T10:00:00Z')
     })
 
-    it('localStorage 配额不足时应驱逐最旧项并重试写入', () => {
+    it('localStorage 配额不足时应按 lastAccess 驱逐，不按 sourceTimestamp 驱逐', () => {
       interface FakeStorageRecord {
         value: string
       }
@@ -439,14 +439,14 @@ describe('FileLoader', () => {
 
       fakeStorage.setItem('spark_page_old-a.json', JSON.stringify({
         data: 'a',
-        sourceTimestamp: 'ts-a',
+        sourceTimestamp: '9999',
         cachedAt: now - 1000,
         lastAccess: now - 1000,
         expirationLevel: 3,
       }))
       fakeStorage.setItem('spark_page_old-b.json', JSON.stringify({
         data: 'b',
-        sourceTimestamp: 'ts-b',
+        sourceTimestamp: '1000',
         cachedAt: now - 500,
         lastAccess: now - 500,
         expirationLevel: 3,
@@ -466,6 +466,7 @@ describe('FileLoader', () => {
       localLoader.store('new.json', 'new-content', 'ts-new')
 
       expect(fakeStorage.getItem(quotaTarget)).not.toBeNull()
+      // old-a 的 sourceTimestamp 更新，但本地访问更旧；清理顺序必须仍然优先驱逐 old-a。
       expect(fakeStorage.getItem('spark_page_old-a.json')).toBeNull()
       expect(fakeStorage.getItem('spark_page_old-b.json')).not.toBeNull()
     })

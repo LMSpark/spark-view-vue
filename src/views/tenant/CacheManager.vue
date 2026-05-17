@@ -262,6 +262,8 @@ function loadFrontendCache() {
       })
     }
 
+    // 这里仅是管理页展示顺序。真正的前端缓存回收仍由 FileLoader 按 lastAccess LRU 处理，
+    // 不能复用这个 sourceTimestamp 排序去决定清缓存先后。
     entries.sort((a, b) => (b.sourceTimestampMs - a.sourceTimestampMs) || compareKey(a, b))
     feEntries.value = entries
   } finally {

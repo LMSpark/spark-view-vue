@@ -63,6 +63,8 @@ import {
 } from './services/tenant-scope'
 import type { Router } from 'vue-router'
 const startupLogger = createLogger('main')
+const PLATFORM_PATH_PREFIX = '/platform'
+const PLATFORM_HOME_PATH = '/platform/dashboard'
 
 // late-binding pageId（路由就绪后由 afterMount 注入）
 let _currentPageId: string | undefined
@@ -99,6 +101,27 @@ function normalizeRoutePath(path: string): string {
   const trimmed = path.trim()
   if (trimmed === '' || trimmed === '/') return '/'
   return `/${trimmed.replace(/^\/+/, '').replace(/\/+$/, '')}`
+}
+
+function isPlatformWorkspacePath(path: string): boolean {
+  const normalized = normalizeRoutePath(path)
+  return normalized === PLATFORM_PATH_PREFIX || normalized.startsWith(`${PLATFORM_PATH_PREFIX}/`)
+}
+
+function isPlatformAdminUser(user = getUser()): boolean {
+  return user?.tenantId === 'platform' && Array.isArray(user.roles) && user.roles.includes('platform_admin')
+}
+
+function normalizeNavData(data: { childPlacement?: string; children?: unknown[]; homePath?: string }): {
+  childPlacement: 'header' | 'sidebar'
+  children: unknown[]
+  homePath?: string
+} {
+  return {
+    childPlacement: (data.childPlacement ?? 'header') as 'header' | 'sidebar',
+    children: Array.isArray(data.children) ? data.children : [],
+    ...(data.homePath ? { homePath: data.homePath } : {}),
+  }
 }
 
 function navigationContainsPath(nodes: NavNode[], targetPath: string): boolean {
@@ -252,16 +275,16 @@ async function startApp() {
     
     // 4. 构建 Vue 组件页面映射（统一定义在 vue-page-map.ts，单一维护点）
     startupLogger.info('📄 构建 Vue 组件页面映射...')
-    const { buildComponentMap, buildPreAuthNavTree, getPlatformPaths } = await import('./config/vue-page-map')
+    const { buildComponentMap, buildPreAuthNavTree, getPublicPaths } = await import('./config/vue-page-map')
     const componentMap = await buildComponentMap()
 
-    // 登录前导航树 — 从 VUE_PAGE_MAP scope='platform' 自动派生
+    // 登录前导航树 — 从 VUE_PAGE_MAP scope='public' 自动派生
     const preAuthNavTree = buildPreAuthNavTree()
-    // 平台级路径集合 — 路由守卫用（未登录时只允许这些路径）
-    const platformPaths = getPlatformPaths()
-    startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
+    // 公共路径集合 — 路由守卫用（未登录时只允许这些路径）
+    const publicPaths = getPublicPaths()
+    startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, publicPaths: ${publicPaths.size} 个`)
 
-    const { getNavApi, getPageApi } = await import('./services/api-paths')
+    const { getNavApi, getPageApi, getPlatformNavApi } = await import('./services/api-paths')
 
     // 5.1 URL → localStorage 项目上下文预同步
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
@@ -315,12 +338,14 @@ async function startApp() {
         // 导航树作为路由唯一来源 — DynamicRouter 从导航树派生路由
         loadNavigation: async () => {
           const data = await appHttpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getNavApi())
-          return {
-            childPlacement: (data.childPlacement ?? 'header') as 'header' | 'sidebar',
-            children: Array.isArray(data.children) ? data.children : [],
-            ...(data.homePath ? { homePath: data.homePath } : {}),
-          }
+          return normalizeNavData(data)
         },
+        loadPlatformNavigation: async () => {
+          const data = await appHttpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getPlatformNavApi())
+          return normalizeNavData(data)
+        },
+        isPlatformNavigationEnabled: () => isPlatformAdminUser(),
+        platformPathPrefix: PLATFORM_PATH_PREFIX,
       },
       
       // === 应用基础配置（从 JSON 加载）===
@@ -346,21 +371,29 @@ async function startApp() {
         })
 
         // ── 认证路由守卫（租户隔离） ──
-        // platformPaths 从 VUE_PAGE_MAP scope='platform' 自动派生，消除硬编码
+        // publicPaths 从 VUE_PAGE_MAP scope='public' 自动派生，消除硬编码
         router.beforeEach((to) => {
-          const platformHomePath = preAuthNavTree.homePath ?? '/'
-          const isPlatformUtilityPath = platformPaths.has(to.path) && to.path !== platformHomePath && to.path !== '/login'
+          const publicHomePath = preAuthNavTree.homePath ?? '/'
+          const isPublicPath = publicPaths.has(to.path)
+          const isPublicUtilityPath = isPublicPath && to.path !== publicHomePath && to.path !== '/login'
           if (!isAuthenticated()) {
             // 未登录：停留在平台域（平台首页/登录页/平台公开页）
-            if (to.path.startsWith('/t/')) return platformHomePath
-            return platformPaths.has(to.path) ? undefined : platformHomePath
+            if (to.path.startsWith('/t/') || isPlatformWorkspacePath(to.path)) return publicHomePath
+            return isPublicPath ? undefined : publicHomePath
           }
           const u = getUser()
-          const tenantId = u?.tenantId ?? 'default'
-          const projectId = u?.defaultProjectId ?? 'homepage'
+          if (isPlatformAdminUser(u)) {
+            if (to.path === publicHomePath || to.path === '/login') return PLATFORM_HOME_PATH
+            if (isPublicUtilityPath || isPlatformWorkspacePath(to.path) || to.path.startsWith('/t/')) return undefined
+            return PLATFORM_HOME_PATH
+          }
+          const tenantId = u?.tenantId
+          const projectId = u?.defaultProjectId
+          if (!tenantId || !projectId) return '/login'
           const currentScope = { tenantId, projectId }
           // 已登录：默认进入租户主应用首页；但保留 about / hidden demos 这类平台静态工具页的直达访问。
-          if (isPlatformUtilityPath) return undefined
+          if (isPublicUtilityPath) return undefined
+          if (isPlatformWorkspacePath(to.path)) return buildTenantPath(currentScope, getNavHomePath())
           if (!to.path.startsWith('/t/')) return buildTenantPath(currentScope, getNavHomePath())
 
           // 租户路径：验证 URL 中的 tenantId/projectId 与当前用户一致

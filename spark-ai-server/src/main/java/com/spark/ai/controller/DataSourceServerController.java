@@ -25,22 +25,23 @@ public class DataSourceServerController {
     @GetMapping
     public ResponseEntity<?> listServers(HttpServletRequest request) {
         var ctx = AuthenticatedRequestContext.currentOrNull();
-        String tenantId = ctx != null ? ctx.tenantId() : null;
-        boolean isPlatformAdmin = ctx != null && ctx.roles().contains("platform_admin");
-        return ResponseEntity.ok(serverService.listServers(tenantId != null ? tenantId : "default", isPlatformAdmin));
+        if (ctx == null) throw new SecurityException("UNAUTHORIZED");
+        return ResponseEntity.ok(serverService.listServers(ctx.tenantId(), ctx.isPlatformAdmin()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getServer(@PathVariable Long id) {
-        return ResponseEntity.ok(serverService.getServer(id));
+        var ctx = requireContext();
+        return ResponseEntity.ok(serverService.getServer(id, ctx.isPlatformAdmin(), ctx.tenantId()));
     }
 
     @PostMapping
     public ResponseEntity<?> createServer(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         var ctx = AuthenticatedRequestContext.currentOrNull();
-        boolean isPlatformAdmin = ctx != null && ctx.roles().contains("platform_admin");
-        String currentTenant = ctx != null ? ctx.tenantId() : "default";
-        String createdBy = ctx != null ? ctx.username() : "system";
+        if (ctx == null) throw new SecurityException("UNAUTHORIZED");
+        boolean isPlatformAdmin = ctx.isPlatformAdmin();
+        String currentTenant = ctx.tenantId();
+        String createdBy = ctx.username();
         try {
             return ResponseEntity.ok(serverService.createServer(body, isPlatformAdmin, currentTenant, createdBy));
         } catch (IllegalArgumentException e) {
@@ -51,8 +52,9 @@ public class DataSourceServerController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateServer(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpServletRequest request) {
         var ctx = AuthenticatedRequestContext.currentOrNull();
-        boolean isPlatformAdmin = ctx != null && ctx.roles().contains("platform_admin");
-        String currentTenant = ctx != null ? ctx.tenantId() : "default";
+        if (ctx == null) throw new SecurityException("UNAUTHORIZED");
+        boolean isPlatformAdmin = ctx.isPlatformAdmin();
+        String currentTenant = ctx.tenantId();
         try {
             return ResponseEntity.ok(serverService.updateServer(id, body, isPlatformAdmin, currentTenant));
         } catch (IllegalArgumentException e) {
@@ -62,13 +64,15 @@ public class DataSourceServerController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteServer(@PathVariable Long id) {
-        serverService.deleteServer(id);
+        var ctx = requireContext();
+        serverService.deleteServer(id, ctx.isPlatformAdmin(), ctx.tenantId());
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
     @PostMapping("/{id}/test")
     public ResponseEntity<?> testConnection(@PathVariable Long id) {
-        return ResponseEntity.ok(serverService.testConnection(id));
+        var ctx = requireContext();
+        return ResponseEntity.ok(serverService.testConnection(id, ctx.isPlatformAdmin(), ctx.tenantId()));
     }
 
     @PostMapping("/test-new")
@@ -91,5 +95,11 @@ public class DataSourceServerController {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("error", message);
         return payload;
+    }
+
+    private AuthenticatedRequestContext requireContext() {
+        var ctx = AuthenticatedRequestContext.currentOrNull();
+        if (ctx == null) throw new SecurityException("UNAUTHORIZED");
+        return ctx;
     }
 }

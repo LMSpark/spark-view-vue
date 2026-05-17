@@ -49,9 +49,10 @@ public class DataSourceServerService {
         return servers;
     }
 
-    public Map<String, Object> getServer(Long id) {
+    public Map<String, Object> getServer(Long id, boolean isPlatformAdmin, String currentTenant) {
         Map<String, Object> server = jdbc.queryForMap(
                 "SELECT * FROM DATA_SOURCE_SERVER WHERE ID = ?", id);
+        requireServerAccess(server, isPlatformAdmin, currentTenant);
         server.put("password", "***");
         return server;
     }
@@ -102,12 +103,13 @@ public class DataSourceServerService {
 
         Long id = generatedId(keyHolder);
         log.info("[Server] {} 注册服务器 id={}, host={}:{}", createdBy, id, host, port);
-        return getServer(id);
+        return getServer(id, isPlatformAdmin, currentTenant);
     }
 
     @Transactional
     public Map<String, Object> updateServer(Long id, Map<String, Object> body, boolean isPlatformAdmin, String currentTenant) {
         Map<String, Object> existing = jdbc.queryForMap("SELECT * FROM DATA_SOURCE_SERVER WHERE ID = ?", id);
+        requireServerAccess(existing, isPlatformAdmin, currentTenant);
 
         String serverName = stringOrDefault(body.get("serverName"), (String) existing.get("SERVER_NAME"));
         String host = stringOrDefault(body.get("host"), (String) existing.get("HOST"));
@@ -134,17 +136,21 @@ public class DataSourceServerService {
         dsManager.evictByServerId(id);
 
         log.info("[Server] 更新服务器 id={}", id);
-        return getServer(id);
+        return getServer(id, isPlatformAdmin, currentTenant);
     }
 
     @Transactional
-    public void deleteServer(Long id) {
+    public void deleteServer(Long id, boolean isPlatformAdmin, String currentTenant) {
+        Map<String, Object> existing = jdbc.queryForMap("SELECT * FROM DATA_SOURCE_SERVER WHERE ID = ?", id);
+        requireServerAccess(existing, isPlatformAdmin, currentTenant);
         jdbc.update("DELETE FROM DATA_SOURCE_SERVER WHERE ID = ?", id);
         dsManager.evictByServerId(id);
         log.info("[Server] 删除服务器 id={}", id);
     }
 
-    public Map<String, Object> testConnection(Long id) {
+    public Map<String, Object> testConnection(Long id, boolean isPlatformAdmin, String currentTenant) {
+        Map<String, Object> existing = jdbc.queryForMap("SELECT * FROM DATA_SOURCE_SERVER WHERE ID = ?", id);
+        requireServerAccess(existing, isPlatformAdmin, currentTenant);
         Map<String, Object> server = jdbc.queryForMap(
                 "SELECT HOST, PORT, DB_TYPE, USERNAME, PASSWORD FROM DATA_SOURCE_SERVER WHERE ID = ?", id);
         String host = (String) server.get("HOST");
@@ -162,6 +168,20 @@ public class DataSourceServerService {
             result.put("message", "连接失败，请检查主机地址、端口和认证信息");
         }
         return result;
+    }
+
+    private void requireServerAccess(Map<String, Object> server, boolean isPlatformAdmin, String currentTenant) {
+        if (isPlatformAdmin) {
+            return;
+        }
+        String isolationMode = Objects.toString(server.get("ISOLATION_MODE"), "");
+        String tenantId = Objects.toString(server.get("TENANT_ID"), "");
+        if ("SHARED".equals(isolationMode)) {
+            return;
+        }
+        if (!currentTenant.equals(tenantId)) {
+            throw new SecurityException("DATA_SOURCE_SERVER_ACCESS_DENIED");
+        }
     }
 
     private String require(Object value, String fieldName) {

@@ -1,5 +1,6 @@
 package com.spark.ai.controller;
 
+import com.spark.ai.security.AccessGuardService;
 import com.spark.ai.service.TenantService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,11 @@ import java.util.Map;
 public class AppConfigController {
 
     private final TenantService tenantService;
+    private final AccessGuardService accessGuard;
 
-    public AppConfigController(TenantService tenantService) {
+    public AppConfigController(TenantService tenantService, AccessGuardService accessGuard) {
         this.tenantService = tenantService;
+        this.accessGuard = accessGuard;
     }
 
     // ── 默认配置 ──────────────────────────────────────────────────────────────
@@ -64,6 +67,7 @@ public class AppConfigController {
 
     @GetMapping("/api/config/tenant/{tenantId}")
     public ResponseEntity<?> getTenantConfig(@PathVariable String tenantId) throws IOException {
+        accessGuard.requireTenantUser(tenantId);
         Map<String, Object> config = tenantService.getTenantConfig(tenantId);
         if (config == null) {
             return ResponseEntity.status(404).body(Map.of(
@@ -79,6 +83,7 @@ public class AppConfigController {
     public ResponseEntity<Map<String, Object>> updateTenantConfig(
             @PathVariable String tenantId,
             @RequestBody Map<String, Object> config) throws IOException {
+        accessGuard.requirePlatformAdmin();
         tenantService.saveTenantConfig(tenantId, config);
         return ResponseEntity.ok(Map.of(
             "success", true,
@@ -88,6 +93,7 @@ public class AppConfigController {
 
     @DeleteMapping("/api/config/tenant/{tenantId}")
     public ResponseEntity<?> deleteTenantConfig(@PathVariable String tenantId) {
+        accessGuard.requirePlatformAdmin();
         if (!tenantService.deleteTenantConfig(tenantId)) {
             return ResponseEntity.status(404).body(Map.of(
                 "error", "TENANT_NOT_FOUND",
@@ -105,6 +111,7 @@ public class AppConfigController {
 
     @GetMapping("/api/tenants")
     public ResponseEntity<List<Map<String, Object>>> listTenants() {
+        accessGuard.requirePlatformAdmin();
         return ResponseEntity.ok(tenantService.listTenants());
     }
 

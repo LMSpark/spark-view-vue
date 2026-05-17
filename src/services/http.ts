@@ -25,8 +25,8 @@
  * ```
  */
 
-import { createRequest } from '@spark-view/spark-utils'
-import type { HttpClient } from '@spark-view/spark-utils'
+import { createHttpClient, createRequest } from '@spark-view/spark-utils'
+import type { FetchHttpClient, HttpClient } from '@spark-view/spark-utils'
 import { getToken, getUser, clearAuth } from './auth'
 
 export function createAuthHeaders(): Record<string, string> {
@@ -40,6 +40,7 @@ export function createAuthHeaders(): Record<string, string> {
 }
 
 let _instance: HttpClient | null = null
+let _fetchInstance: FetchHttpClient | null = null
 
 /**
  * 获取带认证拦截器的全局 Request 实例（懒初始化单例）
@@ -72,6 +73,31 @@ export function getHttpClient(): HttpClient {
   })
 
   return _instance
+}
+
+export function getFetchHttpClient(): FetchHttpClient {
+  if (_fetchInstance) return _fetchInstance
+
+  _fetchInstance = createHttpClient({ adapter: 'fetch', timeout: 30_000 })
+  _fetchInstance.interceptors.request.use({
+    onRequest: (config) => {
+      const authHeaders = createAuthHeaders()
+      config.headers = { ...config.headers, ...authHeaders }
+      return config
+    },
+  })
+  _fetchInstance.interceptors.response.use({
+    onResponseError: (error) => {
+      if (error.status === 401 && !error.config.url.includes('/api/auth/')) {
+        clearAuth()
+        if (window.location.pathname !== '/') {
+          window.location.href = '/'
+        }
+      }
+      throw error
+    },
+  })
+  return _fetchInstance
 }
 
 /** 全局 HTTP 客户端（带认证拦截器） */

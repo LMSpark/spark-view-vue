@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 租户配置持久化服务 — 结构化列 + 扩展 JSON。
@@ -38,8 +40,20 @@ public class TenantService {
      */
     public Map<String, Object> getTenantConfig(String tenantId) throws IOException {
         return tenantRepo.findById(tenantId)
+                .filter(entity -> entity.getDeletedAt() == null)
                 .map(this::entityToMap)
                 .orElse(null);
+    }
+
+    public Optional<TenantConfigEntity> findActiveTenant(String tenantId) {
+        return tenantRepo.findById(tenantId)
+                .filter(entity -> entity.getDeletedAt() == null);
+    }
+
+    public boolean isTenantUsable(String tenantId) {
+        return findActiveTenant(tenantId)
+                .map(entity -> !"DISABLED".equalsIgnoreCase(nullToEmpty(entity.getStatus())))
+                .orElse(false);
     }
 
     /**
@@ -52,22 +66,28 @@ public class TenantService {
                     TenantConfigEntity e = new TenantConfigEntity();
                     e.setTenantId(tenantId);
                     return e;
-                });
+        });
         mapToEntity(config, entity);
+        if (entity.getStatus() == null || entity.getStatus().isBlank()) {
+            entity.setStatus("ACTIVE");
+        }
         tenantRepo.save(entity);
         log.info("[Tenant] 租户配置已保存: {}", tenantId);
     }
 
     /**
-     * 删除租户配置。
+     * 软删除租户配置。
      */
     @Transactional
     public boolean deleteTenantConfig(String tenantId) {
-        if (!tenantRepo.existsById(tenantId)) {
+        TenantConfigEntity entity = tenantRepo.findById(tenantId).orElse(null);
+        if (entity == null || entity.getDeletedAt() != null) {
             return false;
         }
-        tenantRepo.deleteById(tenantId);
-        log.info("[Tenant] 租户配置已删除: {}", tenantId);
+        entity.setDeletedAt(Instant.now());
+        entity.setStatus("DISABLED");
+        tenantRepo.save(entity);
+        log.info("[Tenant] 租户配置已软删除: {}", tenantId);
         return true;
     }
 
@@ -75,14 +95,19 @@ public class TenantService {
      * 列出所有租户摘要信息。
      */
     public List<Map<String, Object>> listTenants() {
-        List<TenantConfigEntity> entities = tenantRepo.findAll();
+        List<TenantConfigEntity> entities = tenantRepo.findByDeletedAtIsNull();
         List<Map<String, Object>> result = new ArrayList<>();
         for (TenantConfigEntity entity : entities) {
-            result.add(Map.of(
-                    "tenantId", entity.getTenantId(),
-                    "tenantName", nullToEmpty(entity.getTenantName()),
-                    "tenantCode", nullToEmpty(entity.getTenantCode())
-            ));
+            result.add(summaryToMap(entity));
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> listTenantSummaries(boolean includeDeleted) {
+        List<TenantConfigEntity> entities = includeDeleted ? tenantRepo.findAll() : tenantRepo.findByDeletedAtIsNull();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (TenantConfigEntity entity : entities) {
+            result.add(summaryToMap(entity));
         }
         return result;
     }
@@ -105,6 +130,10 @@ public class TenantService {
             entity.setTenantName(asString(tenant.get("tenantName")));
             entity.setTenantCode(asString(tenant.get("tenantCode")));
             entity.setLogo(asString(tenant.get("logo")));
+            String status = asString(tenant.get("status"));
+            if (status != null && !status.isBlank()) {
+                entity.setStatus(status.trim().toUpperCase());
+            }
             Map<String, Object> theme = asMap(tenant.get("theme"));
             if (theme != null) {
                 entity.setPrimaryColor(asString(theme.get("primaryColor")));
@@ -154,6 +183,8 @@ public class TenantService {
         tenant.put("tenantId", entity.getTenantId());
         tenant.put("tenantName", nullToEmpty(entity.getTenantName()));
         tenant.put("tenantCode", nullToEmpty(entity.getTenantCode()));
+        tenant.put("status", nullToEmpty(entity.getStatus()));
+        tenant.put("deletedAt", entity.getDeletedAt() != null ? entity.getDeletedAt().toString() : null);
         tenant.put("logo", nullToEmpty(entity.getLogo()));
         Map<String, Object> theme = new LinkedHashMap<>();
         theme.put("primaryColor", nullToEmpty(entity.getPrimaryColor()));
@@ -188,6 +219,19 @@ public class TenantService {
             }
         }
 
+        return result;
+    }
+
+    private Map<String, Object> summaryToMap(TenantConfigEntity entity) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("tenantId", entity.getTenantId());
+        result.put("tenantName", nullToEmpty(entity.getTenantName()));
+        result.put("tenantCode", nullToEmpty(entity.getTenantCode()));
+        result.put("status", nullToEmpty(entity.getStatus()));
+        result.put("deletedAt", entity.getDeletedAt() != null ? entity.getDeletedAt().toString() : null);
+        result.put("homePath", nullToEmpty(entity.getHomePath()));
+        result.put("createdAt", entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
+        result.put("updatedAt", entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
         return result;
     }
 

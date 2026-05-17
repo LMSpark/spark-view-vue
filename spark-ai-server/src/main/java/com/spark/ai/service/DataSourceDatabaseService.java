@@ -36,13 +36,20 @@ public class DataSourceDatabaseService {
         this.primaryDataSource = primaryDataSource;
     }
 
-    public List<Map<String, Object>> listDatabases(String tenantId, String projectId) {
+    public List<Map<String, Object>> listDatabases(String tenantId, String projectId, Long serverId) {
         String sql = "SELECT d.*, s.SERVER_NAME, s.HOST, s.PORT, s.DB_TYPE"
                 + " FROM DATA_SOURCE_DATABASE d"
                 + " JOIN DATA_SOURCE_SERVER s ON d.SERVER_ID = s.ID"
-                + " WHERE d.TENANT_ID = ? AND (d.PROJECT_ID IS NULL OR d.PROJECT_ID = ?)"
-                + " ORDER BY d.CREATED_AT DESC";
-        return jdbc.queryForList(sql, tenantId, projectId);
+                + " WHERE d.TENANT_ID = ? AND (d.PROJECT_ID IS NULL OR d.PROJECT_ID = ?)";
+        List<Object> args = new ArrayList<>();
+        args.add(tenantId);
+        args.add(projectId);
+        if (serverId != null) {
+            sql += " AND d.SERVER_ID = ?";
+            args.add(serverId);
+        }
+        sql += " ORDER BY d.CREATED_AT DESC";
+        return jdbc.queryForList(sql, args.toArray());
     }
 
     public Map<String, Object> getDatabase(Long id) {

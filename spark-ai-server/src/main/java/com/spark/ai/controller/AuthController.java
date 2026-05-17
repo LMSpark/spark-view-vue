@@ -137,6 +137,12 @@ public class AuthController {
                 "message", "租户 ID 须以字母开头，3-32 个字母/数字/下划线/连字符"
             ));
         }
+        if (ProjectService.PLATFORM_TENANT_ID.equals(tenantId)) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "RESERVED_TENANT_ID",
+                "message", "platform 是保留租户 ID"
+            ));
+        }
 
         if (adminPassword.length() < 6) {
             return ResponseEntity.badRequest().body(Map.of(

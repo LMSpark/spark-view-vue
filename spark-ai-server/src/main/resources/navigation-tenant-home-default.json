@@ -1,0 +1,55 @@
+{
+    "childPlacement": "header",
+    "homePath": "/dashboard",
+    "children": [
+        {
+            "id": "home",
+            "nodeKind": "system-page",
+            "title": "企业管理平台",
+            "description": "租户主站工作台",
+            "icon": "DataBoard",
+            "path": "/dashboard"
+        },
+        {
+            "id": "app-list",
+            "nodeKind": "system-page",
+            "title": "应用管理",
+            "description": "创建和进入租户下的软件项目",
+            "icon": "Grid",
+            "path": "/app-list"
+        },
+        {
+            "id": "system-settings",
+            "nodeKind": "module",
+            "title": "系统设置",
+            "description": "租户级页面、导航、数据源和缓存管理",
+            "icon": "Setting",
+            "childPlacement": "sidebar",
+            "redirect": "/dev",
+            "children": [
+                {
+                    "id": "dev-workbench",
+                    "nodeKind": "system-page",
+                    "title": "开发工作台",
+                    "icon": "Lightning",
+                    "path": "/dev"
+                },
+                {
+                    "id": "dbms",
+                    "nodeKind": "system-page",
+                    "title": "数据库管理",
+                    "description": "租户级服务器、数据库和模型管理",
+                    "icon": "DataBase",
+                    "path": "/dbms"
+                },
+                {
+                    "id": "cache-manager",
+                    "nodeKind": "system-page",
+                    "title": "缓存管理",
+                    "icon": "Coin",
+                    "path": "/cache-manager"
+                }
+            ]
+        }
+    ]
+}

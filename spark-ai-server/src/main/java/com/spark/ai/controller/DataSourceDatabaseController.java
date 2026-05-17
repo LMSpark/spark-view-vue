@@ -1,6 +1,7 @@
 package com.spark.ai.controller;
 
 import com.spark.ai.security.AuthenticatedRequestContext;
+import com.spark.ai.security.AccessGuardService;
 import com.spark.ai.service.DataSourceDatabaseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +14,19 @@ import java.util.Map;
 public class DataSourceDatabaseController {
 
     private final DataSourceDatabaseService databaseService;
+    private final AccessGuardService accessGuard;
 
-    public DataSourceDatabaseController(DataSourceDatabaseService databaseService) {
+    public DataSourceDatabaseController(DataSourceDatabaseService databaseService, AccessGuardService accessGuard) {
         this.databaseService = databaseService;
+        this.accessGuard = accessGuard;
     }
 
     @GetMapping
-    public ResponseEntity<?> listDatabases(@PathVariable String tenantId, @PathVariable String projectId) {
-        return ResponseEntity.ok(databaseService.listDatabases(tenantId, projectId));
+    public ResponseEntity<?> listDatabases(@PathVariable String tenantId,
+                                           @PathVariable String projectId,
+                                           @RequestParam(name = "serverId", required = false) Long serverId) {
+        accessGuard.requireProjectAccess(tenantId, projectId);
+        return ResponseEntity.ok(databaseService.listDatabases(tenantId, projectId, serverId));
     }
 
     @GetMapping("/{id}")
@@ -34,8 +40,10 @@ public class DataSourceDatabaseController {
             @PathVariable String projectId,
             @RequestBody Map<String, Object> body
     ) {
+        accessGuard.requireProjectAdmin(tenantId, projectId);
         var ctx = AuthenticatedRequestContext.currentOrNull();
-        String createdBy = ctx != null ? ctx.username() : "system";
+        if (ctx == null) throw new SecurityException("UNAUTHORIZED");
+        String createdBy = ctx.username();
         try {
             return ResponseEntity.ok(databaseService.createDatabase(tenantId, projectId, body, createdBy));
         } catch (IllegalArgumentException e) {
@@ -44,15 +52,22 @@ public class DataSourceDatabaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateDatabase(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> updateDatabase(@PathVariable String tenantId,
+                                            @PathVariable String projectId,
+                                            @PathVariable Long id,
+                                            @RequestBody Map<String, Object> body) {
+        accessGuard.requireProjectAdmin(tenantId, projectId);
         return ResponseEntity.ok(databaseService.updateDatabase(id, body));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDatabase(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
             @PathVariable Long id,
             @RequestParam(name = "dropPhysical", defaultValue = "false") boolean dropPhysical
     ) {
+        accessGuard.requireProjectAdmin(tenantId, projectId);
         databaseService.deleteDatabase(id, dropPhysical);
         return ResponseEntity.ok(Map.of("ok", true));
     }

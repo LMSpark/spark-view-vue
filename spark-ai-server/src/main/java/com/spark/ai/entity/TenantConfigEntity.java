@@ -22,6 +22,12 @@ public class TenantConfigEntity {
     @Column(name = "tenant_code", length = 64)
     private String tenantCode;
 
+    @Column(name = "status", length = 32, nullable = false)
+    private String status = "ACTIVE";
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     @Column(name = "logo", length = 512)
     private String logo;
 
@@ -91,6 +97,12 @@ public class TenantConfigEntity {
 
     public String getTenantCode() { return tenantCode; }
     public void setTenantCode(String tenantCode) { this.tenantCode = tenantCode; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
 
     public String getLogo() { return logo; }
     public void setLogo(String logo) { this.logo = logo; }

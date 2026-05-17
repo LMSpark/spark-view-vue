@@ -37,7 +37,7 @@ public class DataModelRelationService {
                 tableId, tableId);
     }
 
-    public List<Map<String, Object>> listAllRelations(String tenantId, String projectId) {
+    public List<Map<String, Object>> listRelations(String tenantId, String projectId, Long tableId) {
         return jdbc.queryForList(
                 "SELECT r.*,"
                         + " pt.LOGICAL_TABLE_NAME AS parentTableName,"
@@ -45,23 +45,59 @@ public class DataModelRelationService {
                         + " FROM DATA_MODEL_RELATION r"
                         + " JOIN DATA_MODEL_TABLE pt ON r.PARENT_TABLE_ID = pt.ID"
                         + " JOIN DATA_MODEL_TABLE ct ON r.CHILD_TABLE_ID = ct.ID"
-                        + " WHERE pt.TENANT_ID = ? AND pt.PROJECT_ID = ?"
+                        + " WHERE " + scopedAlias("pt")
+                        + " AND " + scopedAlias("ct")
+                        + " AND (r.PARENT_TABLE_ID = ? OR r.CHILD_TABLE_ID = ?)"
                         + " ORDER BY r.CREATED_AT DESC",
-                tenantId, projectId);
+                tenantId, projectId, tenantId, projectId, tableId, tableId);
+    }
+
+    public List<Map<String, Object>> listAllRelations(String tenantId, String projectId) {
+        return listAllRelations(tenantId, projectId, null);
+    }
+
+    public List<Map<String, Object>> listAllRelations(String tenantId, String projectId, Long databaseId) {
+        String sql = "SELECT r.*,"
+                + " pt.LOGICAL_TABLE_NAME AS parentTableName,"
+                + " ct.LOGICAL_TABLE_NAME AS childTableName"
+                + " FROM DATA_MODEL_RELATION r"
+                + " JOIN DATA_MODEL_TABLE pt ON r.PARENT_TABLE_ID = pt.ID"
+                + " JOIN DATA_MODEL_TABLE ct ON r.CHILD_TABLE_ID = ct.ID"
+                + " WHERE " + scopedAlias("pt")
+                + " AND " + scopedAlias("ct");
+        List<Object> args = new ArrayList<>();
+        args.add(tenantId);
+        args.add(projectId);
+        args.add(tenantId);
+        args.add(projectId);
+        if (databaseId != null) {
+            sql += " AND pt.DATABASE_ID = ? AND ct.DATABASE_ID = ?";
+            args.add(databaseId);
+            args.add(databaseId);
+        }
+        sql += " ORDER BY r.CREATED_AT DESC";
+        return jdbc.queryForList(sql, args.toArray());
     }
 
     @Transactional
     public Map<String, Object> createRelation(Map<String, Object> body) {
+        return createRelation(null, null, body);
+    }
+
+    @Transactional
+    public Map<String, Object> createRelation(String tenantId, String projectId, Map<String, Object> body) {
         Long parentTableId = longParam(body.get("parentTableId"), null);
         Long childTableId = longParam(body.get("childTableId"), null);
         String parentField = require(body.get("parentField"), "parentField");
         String childField = require(body.get("childField"), "childField");
         String relationName = stringOrDefault(body.get("relationName"),
                 parentTableId + "_" + childTableId + "_" + parentField);
+        Long databaseId = longParam(body.get("databaseId"), null);
 
         if (parentTableId == null || childTableId == null) {
             throw new IllegalArgumentException("parentTableId 和 childTableId 不能为空");
         }
+        requireTablesInScope(tenantId, projectId, parentTableId, childTableId, databaseId);
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
@@ -87,10 +123,54 @@ public class DataModelRelationService {
         return jdbc.queryForMap("SELECT * FROM DATA_MODEL_RELATION WHERE ID = ?", id);
     }
 
+    private void requireTablesInScope(String tenantId, String projectId, Long parentTableId, Long childTableId, Long databaseId) {
+        if (tenantId == null || projectId == null) return;
+        String sql = "SELECT COUNT(*) FROM DATA_MODEL_TABLE"
+                + " WHERE ID IN (?, ?)"
+                + " AND TENANT_ID = ?"
+                + " AND (PROJECT_ISOLATION = FALSE OR PROJECT_ID = ?)";
+        List<Object> args = new ArrayList<>(List.of(parentTableId, childTableId, tenantId, projectId));
+        if (databaseId != null) {
+            sql += " AND DATABASE_ID = ?";
+            args.add(databaseId);
+        }
+        Integer count = jdbc.queryForObject(sql, Integer.class, args.toArray());
+        int expected = Objects.equals(parentTableId, childTableId) ? 1 : 2;
+        if (count == null || count != expected) {
+            throw new IllegalArgumentException("表关系必须属于当前项目和所选数据库");
+        }
+    }
+
+    private String scopedAlias(String alias) {
+        return alias + ".TENANT_ID = ? AND (" + alias + ".PROJECT_ISOLATION = FALSE OR " + alias + ".PROJECT_ID = ?)";
+    }
+
+    @Transactional
+    public void deleteRelation(String tenantId, String projectId, Long id) {
+        requireRelationInScope(tenantId, projectId, id);
+        deleteRelation(id);
+    }
+
     @Transactional
     public void deleteRelation(Long id) {
         jdbc.update("DELETE FROM DATA_MODEL_RELATION WHERE ID = ?", id);
         log.info("[Relation] 删除表关系 id={}", id);
+    }
+
+    private void requireRelationInScope(String tenantId, String projectId, Long relationId) {
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*)"
+                        + " FROM DATA_MODEL_RELATION r"
+                        + " JOIN DATA_MODEL_TABLE pt ON r.PARENT_TABLE_ID = pt.ID"
+                        + " JOIN DATA_MODEL_TABLE ct ON r.CHILD_TABLE_ID = ct.ID"
+                        + " WHERE r.ID = ?"
+                        + " AND " + scopedAlias("pt")
+                        + " AND " + scopedAlias("ct"),
+                Integer.class,
+                relationId, tenantId, projectId, tenantId, projectId);
+        if (count == null || count != 1) {
+            throw new IllegalArgumentException("表关系不存在或不属于当前项目");
+        }
     }
 
     private String require(Object value, String fieldName) {

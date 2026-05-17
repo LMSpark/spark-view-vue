@@ -1,0 +1,63 @@
+{
+    "childPlacement": "header",
+    "homePath": "/dashboard",
+    "children": [
+        {
+            "id": "platform-dashboard",
+            "nodeKind": "system-page",
+            "title": "平台首页",
+            "description": "平台管理员工作台",
+            "icon": "DataBoard",
+            "path": "/dashboard"
+        },
+        {
+            "id": "platform-tenants",
+            "nodeKind": "system-page",
+            "title": "租户管理",
+            "description": "创建、启用、禁用和软删除租户",
+            "icon": "OfficeBuilding",
+            "path": "/tenants"
+        },
+        {
+            "id": "platform-apps",
+            "nodeKind": "system-page",
+            "title": "应用管理",
+            "description": "跨租户查看项目与进入业务工作台",
+            "icon": "Grid",
+            "path": "/apps"
+        },
+        {
+            "id": "platform-dbms",
+            "nodeKind": "system-page",
+            "title": "DBMS",
+            "description": "平台级服务器、数据库和模型管理",
+            "icon": "DataBase",
+            "path": "/dbms"
+        },
+        {
+            "id": "platform-system",
+            "nodeKind": "module",
+            "title": "平台工具",
+            "description": "开发、缓存和诊断能力",
+            "icon": "Setting",
+            "childPlacement": "sidebar",
+            "redirect": "/dev",
+            "children": [
+                {
+                    "id": "platform-dev",
+                    "nodeKind": "system-page",
+                    "title": "开发工作台",
+                    "icon": "Lightning",
+                    "path": "/dev"
+                },
+                {
+                    "id": "platform-cache",
+                    "nodeKind": "system-page",
+                    "title": "缓存管理",
+                    "icon": "Coin",
+                    "path": "/cache-manager"
+                }
+            ]
+        }
+    ]
+}

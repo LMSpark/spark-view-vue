@@ -5,7 +5,7 @@ import type {
 import {
   AiInvocationProtocol,
 } from '@spark-view/spark-ai'
-import { createAuthHeaders } from '@/services/http'
+import { createAuthHeaders, getFetchHttpClient } from '@/services/http'
 import {
   createAppAiStreamKey,
   toRuntimeScope,
@@ -56,17 +56,6 @@ function unwrapApiEnvelope(value: unknown): unknown {
     ? value.error['message']
     : 'AI request failed'
   throw new Error(message)
-}
-
-function envelopeErrorMessage(value: unknown): string | null {
-  if (!isApiEnvelope(value) || value.ok) return null
-  if (isRecord(value.error) && typeof value.error['message'] === 'string' && value.error['message'].trim() !== '') {
-    return value.error['message'].trim()
-  }
-  if (isRecord(value.error) && typeof value.error['code'] === 'string' && value.error['code'].trim() !== '') {
-    return value.error['code'].trim()
-  }
-  return 'AI request failed'
 }
 
 function extractJsonObject(text: string): Record<string, unknown> | null {
@@ -120,28 +109,6 @@ function buildRoutePrompt(input: AppAiRouteBusinessInput): string {
     `候选业务注册信息：${JSON.stringify(input.candidates)}`,
     `用户输入：${input.userInput}`,
   ].join('\n\n')
-}
-
-async function readTextResponse(response: Response): Promise<string> {
-  const text = await response.text()
-  const parsed = tryParseJson(text)
-  if (!response.ok) {
-    throw new Error(envelopeErrorMessage(parsed) ?? (text || `HTTP ${response.status}`))
-  }
-  const unwrapped = unwrapApiEnvelope(parsed)
-  return typeof unwrapped === 'string' ? unwrapped : JSON.stringify(unwrapped)
-}
-
-async function readJsonResponse(response: Response): Promise<unknown> {
-  return unwrapApiEnvelope(tryParseJson(await readTextResponse(response)))
-}
-
-async function assertResponseOk(response: Response): Promise<void> {
-  if (!response.ok) {
-    const text = await response.text()
-    const parsed = tryParseJson(text)
-    throw new Error(envelopeErrorMessage(parsed) ?? (text || `HTTP ${response.status}`))
-  }
 }
 
 function readToolCalls(value: unknown): readonly AppAiTransportToolCall[] {
@@ -213,11 +180,12 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
   }
 
   async streamTurn(input: AppAiStreamTurnInput): Promise<AppAiStreamTurnResult> {
-    const response = await fetch(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`, {
+    const response = await getFetchHttpClient().stream({
+      url: `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`,
       method: 'POST',
       headers: this.jsonHeaders(),
       ...(input.signal === undefined ? {} : { signal: input.signal }),
-      body: JSON.stringify({
+      data: {
         protocolVersion: PROTOCOL_VERSION,
         systemPrompt: input.systemPrompt,
         tools: input.tools,
@@ -225,15 +193,8 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
         scope: toRuntimeScope(input.scope),
         turn: toTransportTurn(input.turn),
         messages: input.messages,
-      }),
+      },
     })
-
-    await assertResponseOk(response)
-
-    if (!response.body) {
-      const text = await response.text()
-      return { text, toolCalls: [] }
-    }
 
     const decoder = new TextDecoder()
     let buffer = ''
@@ -307,17 +268,14 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
   }
 
   async appendMessages(input: AppAiAppendMessagesInput): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
-      method: 'POST',
+    const body = await getFetchHttpClient().post<unknown>(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
+      protocolVersion: PROTOCOL_VERSION,
+      scope: toRuntimeScope(input.scope),
+      turn: toTransportTurn(input.turn),
+      messages: input.messages,
+    }, {
       headers: this.jsonHeaders(),
-      body: JSON.stringify({
-        protocolVersion: PROTOCOL_VERSION,
-        scope: toRuntimeScope(input.scope),
-        turn: toTransportTurn(input.turn),
-        messages: input.messages,
-      }),
     })
-    const body = await readJsonResponse(response)
     if (!isRecord(body)) {
       throw new Error('AI append response missing body')
     }
@@ -338,12 +296,9 @@ export async function uploadAppAiAttachment(
   const form = new FormData()
   form.append('file', file)
 
-  const response = await fetch(`${baseUrl}/upload`, {
-    method: 'POST',
+  const body = await getFetchHttpClient().post<unknown>(`${baseUrl}/upload`, form, {
     headers: getHeaders(),
-    body: form,
   })
-  const body = await readJsonResponse(response)
   if (!isRecord(body) || typeof body['fileId'] !== 'string' || body['fileId'].trim().length === 0) {
     throw new Error('AI upload response missing fileId')
   }

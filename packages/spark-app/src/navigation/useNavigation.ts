@@ -29,6 +29,7 @@ import type { NavigationActionRegistry } from './action-registry'
  * ══════════════════════════════════════════════════════════ */
 
 const CONTEXT_STORAGE_PREFIX = 'spark-nav-ctx:'
+const PLATFORM_PATH_PREFIX = '/platform'
 const _contextCache = new Map<string, NavContextItem[]>()
 
 function contextSourceKey(nodeId: string, source: string): string {
@@ -98,10 +99,13 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   // ── 路由变化 → 重算活动路径 + 模块上下文 ──
 
-  /** 从实际路由路径中剥离租户前缀（/t/:tenantId/:projectId/xxx → /xxx） */
-  function stripTenantPrefix(path: string): string {
+  /** 从实际路由路径中剥离工作台前缀（/t/:tenantId/:projectId/xxx 或 /platform/xxx → /xxx） */
+  function stripWorkspacePrefix(path: string): string {
     const match = /^\/t\/[^/]+\/[^/]+(.*)$/.exec(path)
-    return match ? (match[1] ?? '/') : path
+    if (match) return match[1] ?? '/'
+    if (path === PLATFORM_PATH_PREFIX) return '/'
+    if (path.startsWith(`${PLATFORM_PATH_PREFIX}/`)) return path.slice(PLATFORM_PATH_PREFIX.length) || '/'
+    return path
   }
 
   function normalizePath(path: string): string {
@@ -113,7 +117,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   }
 
   function normalizeComparablePath(path: string): string {
-    return normalizePath(stripTenantPrefix(path))
+    return normalizePath(stripWorkspacePrefix(path))
   }
 
   function resolveNodeRoutePath(node: NavNode): string | null {
@@ -140,6 +144,11 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
     // 已有真实租户前缀 → 直接返回
     if (normalized.startsWith('/t/')) return normalized
+    if (normalized === PLATFORM_PATH_PREFIX || normalized.startsWith(`${PLATFORM_PATH_PREFIX}/`)) return normalized
+
+    if (route.path === PLATFORM_PATH_PREFIX || route.path.startsWith(`${PLATFORM_PATH_PREFIX}/`)) {
+      return normalizePath(`${PLATFORM_PATH_PREFIX}${normalized}`)
+    }
 
     if (typeof tenantId === 'string' && tenantId) {
       const resolvedProject = typeof projectId === 'string' && projectId ? projectId : 'homepage'
@@ -151,7 +160,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   watch(
     [() => route.path, () => navRoot.children] as const,
     ([path]) => {
-      const shortPath = stripTenantPrefix(path)
+      const shortPath = stripWorkspacePrefix(path)
       _activePath.value = findActivePath(navRoot.children, shortPath)
       syncModuleContext()
     },

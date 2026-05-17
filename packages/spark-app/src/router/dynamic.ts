@@ -78,6 +78,20 @@ export interface DynamicRouterOptions {
   loadNavigation?: (() => Promise<AppNavRoot>) | undefined
 
   /**
+   * 平台工作台导航加载函数。
+   *
+   * 返回的节点 path 仍保持相对形态（如 /dashboard、/tenants），
+   * 注册路由时统一映射到 platformPathPrefix 下（默认 /platform）。
+   */
+  loadPlatformNavigation?: (() => Promise<AppNavRoot>) | undefined
+
+  /** 平台工作台路由前缀（默认 /platform）。 */
+  platformPathPrefix?: string | undefined
+
+  /** 是否注册平台工作台导航。通常仅 platform_admin 返回 true。 */
+  isPlatformNavigationEnabled?: (() => boolean) | undefined
+
+  /**
    * 登录前本地导航树 — 未认证时使用的静态导航数据。
    *
    * 当 `registerRoutes()` 在未登录状态调用时（无法调用 loadNavigation），
@@ -96,6 +110,12 @@ export interface DynamicRouterOptions {
   isAuthenticated?: (() => boolean) | undefined
 }
 
+interface RouteRegistrationOptions {
+  skipTenantPrefix?: boolean
+  routePathPrefix?: string
+  routeNamePrefix?: string
+}
+
 /**
  * 动态路由管理器
  */
@@ -112,8 +132,14 @@ export class DynamicRouter {
   private tenantPathRegex: RegExp | null
   /** 导航数据加载函数（提供后从导航树派生路由） */
   private _loadNavigation: (() => Promise<AppNavRoot>) | undefined
+  /** 平台工作台导航数据加载函数 */
+  private _loadPlatformNavigation: (() => Promise<AppNavRoot>) | undefined
+  private platformPathPrefix: string
+  private _isPlatformNavigationEnabled: () => boolean
   /** 登录前本地导航树 */
   private _preAuthNavTree: AppNavRoot | null = null
+  private _tenantNavTree: AppNavRoot | null = null
+  private _platformNavTree: AppNavRoot | null = null
   /** 认证状态检查回调 */
   private _isAuthenticated: () => boolean
   /** 已加载的导航树（UI 侧栏/顶栏共享此数据） */
@@ -138,6 +164,9 @@ export class DynamicRouter {
 
     // 导航加载函数（统一数据源）
     this._loadNavigation = options.loadNavigation
+    this._loadPlatformNavigation = options.loadPlatformNavigation
+    this.platformPathPrefix = this.normalizePath(options.platformPathPrefix ?? '/platform')
+    this._isPlatformNavigationEnabled = options.isPlatformNavigationEnabled ?? (() => false)
     this._preAuthNavTree = options.preAuthNavTree ?? null
     this._isAuthenticated = options.isAuthenticated ?? (() => true)
 
@@ -172,6 +201,28 @@ export class DynamicRouter {
     if (normalizedPath.startsWith(this.tenantPathPrefix)) return normalizedPath
     if (this.tenantPathRegex?.test(normalizedPath)) return normalizedPath
     return this.normalizePath(`${this.tenantPathPrefix}${normalizedPath}`)
+  }
+
+  private addRoutePathPrefix(prefix: string, path: string): string {
+    const normalizedPrefix = this.normalizePath(prefix)
+    const normalizedPath = this.normalizePath(path)
+    if (normalizedPath === '/') return normalizedPrefix
+    if (normalizedPath.startsWith(`${normalizedPrefix}/`) || normalizedPath === normalizedPrefix) {
+      return normalizedPath
+    }
+    return this.normalizePath(`${normalizedPrefix}${normalizedPath}`)
+  }
+
+  private isCurrentPlatformRoute(): boolean {
+    const currentPath = this.normalizePath(this.router.currentRoute.value.path || (typeof window !== 'undefined' ? window.location.pathname : '/'))
+    return currentPath === this.platformPathPrefix || currentPath.startsWith(`${this.platformPathPrefix}/`)
+  }
+
+  private activeNavTree(): AppNavRoot | null {
+    if (this.isCurrentPlatformRoute() && this._platformNavTree !== null) {
+      return this._platformNavTree
+    }
+    return this._tenantNavTree ?? this._preAuthNavTree
   }
 
   private buildScopedRefPath(path: string, targetProjectId: string): string {
@@ -246,12 +297,16 @@ export class DynamicRouter {
     // 平台级静态页面（about / hidden demos 等）始终保留，
     // 避免登录后 refreshRoutes() 仅保留远程导航树时把这些本地路由冲掉。
     if (this._preAuthNavTree) {
-      this.registerRoutesFromNav(this._preAuthNavTree.children, true)
+      this.registerRoutesFromNav(this._preAuthNavTree.children, { skipTenantPrefix: true, routeNamePrefix: 'public' })
     }
 
     if (this._loadNavigation && this._isAuthenticated()) {
       try {
         await this.loadAndRegisterFromNav()
+        if (this._loadPlatformNavigation && this._isPlatformNavigationEnabled()) {
+          await this.loadAndRegisterPlatformNav()
+        }
+        this._navTree = this.activeNavTree()
       } catch (error: unknown) {
         if (isUnauthorizedError(error) && this._preAuthNavTree) {
           routerLogger.warn('远程导航加载返回 401，回退到 preAuthNavTree', {
@@ -260,7 +315,7 @@ export class DynamicRouter {
           })
           this._navTree = this._preAuthNavTree
           this._navRouteMap = new WeakMap()
-          this.registerRoutesFromNav(this._preAuthNavTree.children, true)
+          this.registerRoutesFromNav(this._preAuthNavTree.children, { skipTenantPrefix: true, routeNamePrefix: 'public' })
         } else {
           throw error
         }
@@ -281,10 +336,27 @@ export class DynamicRouter {
       throw new Error('[DynamicRouter] _loadNavigation not set')
     }
     const navRoot = await this._loadNavigation()
+    this._tenantNavTree = navRoot
     this._navTree = navRoot
     this._navRouteMap = new WeakMap()
     this.registerRoutesFromNav(navRoot.children)
     routerLogger.info('导航树路由注册完成', { nodeCount: navRoot.children.length })
+  }
+
+  private async loadAndRegisterPlatformNav(): Promise<void> {
+    if (!this._loadPlatformNavigation) {
+      throw new Error('[DynamicRouter] _loadPlatformNavigation not set')
+    }
+    const navRoot = await this._loadPlatformNavigation()
+    this._platformNavTree = navRoot
+    this.registerRoutesFromNav(navRoot.children, {
+      routePathPrefix: this.platformPathPrefix,
+      routeNamePrefix: 'platform',
+    })
+    routerLogger.info('平台导航树路由注册完成', {
+      nodeCount: navRoot.children.length,
+      prefix: this.platformPathPrefix,
+    })
   }
 
   /**
@@ -300,10 +372,12 @@ export class DynamicRouter {
    * - nodeKind='system-action' → 不注册路由（动作按钮，由 AppHeader 处理）
    * - nodeKind='system-page' 或路径命中 componentMap → 静态组件路由
    * - 其他页面类节点 → pageComponent (PageRenderer)
-   * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
+   * @param options 路由注册作用域；public 跳过租户前缀，platform 使用 /platform 前缀
    */
-  private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
-    this.registerCrossProjectRefHostRoute(skipTenantPrefix)
+  private registerRoutesFromNav(nodes: NavNode[], options: RouteRegistrationOptions = {}): void {
+    const skipTenantPrefix = options.skipTenantPrefix === true
+    const routePathPrefix = options.routePathPrefix
+    this.registerCrossProjectRefHostRoute(skipTenantPrefix || routePathPrefix !== undefined)
 
     for (const node of nodes) {
       const target = resolveNavNodeRuntimeTarget(node)
@@ -312,7 +386,7 @@ export class DynamicRouter {
       if (target.kind !== 'route') {
         // 仍然递归子节点
         if (node.children?.length) {
-          this.registerRoutesFromNav(node.children, skipTenantPrefix)
+          this.registerRoutesFromNav(node.children, options)
         }
         continue
       }
@@ -328,10 +402,14 @@ export class DynamicRouter {
       const pageId = resolveNavRoutePageId(node, rawNodePath)
       const refPageId = isCrossProjectRefNode ? resolveCrossProjectRefPageId(node.refPath) : null
       // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
-      const routePath = skipTenantPrefix
-        ? this.normalizePath(rawNodePath)
-        : this.addTenantPrefix(rawNodePath)
-      const routeName = `nav-${node.id}`
+      const routePath = routePathPrefix !== undefined
+        ? this.addRoutePathPrefix(routePathPrefix, rawNodePath)
+        : skipTenantPrefix
+          ? this.normalizePath(rawNodePath)
+          : this.addTenantPrefix(rawNodePath)
+      const routeName = options.routeNamePrefix !== undefined
+        ? `nav-${options.routeNamePrefix}-${node.id}`
+        : `nav-${node.id}`
       const expectedRouteType = isIframeNode
         ? 'external-link'
         : isCrossProjectRefNode
@@ -380,7 +458,7 @@ export class DynamicRouter {
             routerLogger.debug(`路由已注册，跳过: ${routePath}`)
           }
           if (node.children?.length) {
-            this.registerRoutesFromNav(node.children, skipTenantPrefix)
+            this.registerRoutesFromNav(node.children, options)
           }
           continue
         }
@@ -392,7 +470,7 @@ export class DynamicRouter {
           : crossProjectRefUrl
         if (isIframeNode && linkUrl === '') {
           if (node.children?.length) {
-            this.registerRoutesFromNav(node.children, skipTenantPrefix)
+            this.registerRoutesFromNav(node.children, options)
           }
           continue
         }
@@ -504,7 +582,7 @@ export class DynamicRouter {
 
       // 递归子节点
       if (node.children?.length) {
-        this.registerRoutesFromNav(node.children, skipTenantPrefix)
+        this.registerRoutesFromNav(node.children, options)
       }
     }
   }
@@ -536,7 +614,7 @@ export class DynamicRouter {
       if (this._preAuthNavTree) {
         this._navTree = this._preAuthNavTree
         this._navRouteMap = new WeakMap()
-        this.registerRoutesFromNav(this._preAuthNavTree.children, true)
+        this.registerRoutesFromNav(this._preAuthNavTree.children, { skipTenantPrefix: true, routeNamePrefix: 'public' })
       }
       throw error
     }
@@ -557,6 +635,7 @@ export class DynamicRouter {
 
   /** 获取已加载的导航树（导航模式下可用） */
   getNavTree(): AppNavRoot | null {
+    this._navTree = this.activeNavTree()
     return this._navTree
   }
 

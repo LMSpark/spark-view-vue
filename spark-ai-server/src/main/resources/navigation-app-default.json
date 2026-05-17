@@ -1,26 +1,20 @@
 {
     "childPlacement": "header",
+    "homePath": "/dashboard",
     "children": [
         {
             "id": "home",
             "nodeKind": "system-page",
-            "title": "工作台",
-            "description": "个人工作台仪表板",
+            "title": "项目工作台",
+            "description": "当前软件项目工作台",
             "icon": "DataBoard",
             "path": "/dashboard"
         },
         {
-            "id": "back-to-homepage",
-            "nodeKind": "system-page",
-            "title": "返回应用工场",
-            "icon": "HomeFilled",
-            "path": "/app-list"
-        },
-        {
-            "id": "system-settings",
+            "id": "project-settings",
             "nodeKind": "module",
-            "title": "系统设置",
-            "description": "页面、导航、站点等系统配置管理",
+            "title": "项目设置",
+            "description": "当前软件项目的页面、导航和开发配置",
             "icon": "Setting",
             "childPlacement": "sidebar",
             "redirect": "/dev",
@@ -31,20 +25,6 @@
                     "title": "开发工作台",
                     "icon": "Lightning",
                     "path": "/dev"
-                },
-                {
-                    "id": "dbms",
-                    "nodeKind": "system-page",
-                    "title": "数据库管理",
-                    "icon": "DataBase",
-                    "path": "/dbms"
-                },
-                {
-                    "id": "cache-manager",
-                    "nodeKind": "system-page",
-                    "title": "缓存管理",
-                    "icon": "Coin",
-                    "path": "/cache-manager"
                 }
             ]
         }

@@ -27,6 +27,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AuthService authService;
 
     private static final String DEFAULT_TENANT = "lmspark";
+    private static final String PLATFORM_TENANT = ProjectService.PLATFORM_TENANT_ID;
 
     public DataInitializer(TenantConfigRepository tenantRepo,
                             ProjectService projectService,
@@ -40,32 +41,38 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         seedTenants();
-        ensureAllHomepagesHaveNavigation();
+        ensureAllProjectsHaveNavigation();
     }
 
     /**
-     * 确保所有已有租户的 homepage 项目拥有默认导航（升级兼容）。
-     * ensureHomepage() 现在自带导航幂等检查，调用即可。
+     * 确保所有已有活跃租户的主站和项目导航符合当前层级规则。
      */
-    private void ensureAllHomepagesHaveNavigation() {
-        var tenants = tenantRepo.findAll();
+    private void ensureAllProjectsHaveNavigation() {
+        var tenants = tenantRepo.findByDeletedAtIsNull();
         for (var tenant : tenants) {
             projectService.ensureHomepage(tenant.getTenantId());
+            projectService.ensureAllProjectNavigations(tenant.getTenantId());
         }
     }
 
     // ── 种子租户数据 ──────────────────────────────────────────────────────────
 
     private void seedTenants() {
-        if (tenantRepo.count() > 0) {
-            log.info("[DataInit] 租户数据已存在，跳过种子");
-            return;
-        }
+        ensurePlatformTenant();
+        ensureDefaultTenant();
+    }
 
-        TenantConfigEntity entity = new TenantConfigEntity();
-        entity.setTenantId(DEFAULT_TENANT);
+    private void ensureDefaultTenant() {
+        TenantConfigEntity entity = tenantRepo.findById(DEFAULT_TENANT)
+                .orElseGet(() -> {
+                    TenantConfigEntity created = new TenantConfigEntity();
+                    created.setTenantId(DEFAULT_TENANT);
+                    return created;
+                });
         entity.setTenantName("领码SPARK");
         entity.setTenantCode("LMSPARK");
+        entity.setStatus("ACTIVE");
+        entity.setDeletedAt(null);
         entity.setLogo("");
         entity.setPrimaryColor("#409eff");
         entity.setBorderRadius("4px");
@@ -80,6 +87,34 @@ public class DataInitializer implements CommandLineRunner {
         projectService.ensureHomepage(DEFAULT_TENANT);
         authService.ensureAdminUser(DEFAULT_TENANT, "admin", "admin123");
 
-        log.info("[DataInit] 种子租户数据已写入: 领码SPARK ({})", DEFAULT_TENANT);
+        log.info("[DataInit] 默认业务租户已就绪: 领码SPARK ({})", DEFAULT_TENANT);
+    }
+
+    private void ensurePlatformTenant() {
+        TenantConfigEntity entity = tenantRepo.findById(PLATFORM_TENANT)
+                .orElseGet(() -> {
+                    TenantConfigEntity created = new TenantConfigEntity();
+                    created.setTenantId(PLATFORM_TENANT);
+                    return created;
+                });
+        entity.setTenantName("SPARK 平台");
+        entity.setTenantCode("PLATFORM");
+        entity.setStatus("ACTIVE");
+        entity.setDeletedAt(null);
+        entity.setLogo("");
+        entity.setPrimaryColor("#409eff");
+        entity.setBorderRadius("4px");
+        entity.setHomePath("/platform/dashboard");
+        entity.setApiBaseUrl("/api");
+        entity.setLogLevel("info");
+        entity.setEnableAi(true);
+        entity.setEnableExport(true);
+        entity.setEnableOffline(false);
+        tenantRepo.save(entity);
+
+        projectService.ensureHomepage(PLATFORM_TENANT);
+        authService.ensurePlatformAdminUser(PLATFORM_TENANT, "admin", "admin123");
+
+        log.info("[DataInit] 平台租户已就绪: {}", PLATFORM_TENANT);
     }
 }

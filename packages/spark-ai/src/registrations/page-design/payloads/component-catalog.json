@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-17T09:12:15.436Z",
-  "componentCount": 107,
+  "buildTime": "2026-05-17T12:48:42.343Z",
+  "componentCount": 109,
   "components": {
     "about": {
       "type": "about",
@@ -2628,6 +2628,24 @@
       "props": [],
       "emits": [],
       "source": "vcm+meta"
+    },
+    "platform-apps": {
+      "type": "platform-apps",
+      "filePath": "src/views/platform/PlatformApps.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"platform-apps\" 引用。 配置入口：type=\"platform-apps\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm"
+    },
+    "platform-tenant-management": {
+      "type": "platform-tenant-management",
+      "filePath": "src/views/platform/PlatformTenantManagement.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"platform-tenant-management\" 引用。 配置入口：type=\"platform-tenant-management\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm"
     },
     "r-anchor": {
       "type": "r-anchor",

@@ -156,12 +156,18 @@ function goHome() {
 }
 
 function getUserHomePath(user: { tenantId: string; defaultProjectId: string }): string {
+  const roles = 'roles' in user && Array.isArray((user as { roles?: unknown }).roles)
+    ? (user as { roles: string[] }).roles
+    : []
+  if (user.tenantId === 'platform' && roles.includes('platform_admin')) {
+    return '/platform/dashboard'
+  }
   return buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath())
 }
 
 // ── 登录表单 ────────────────────────────────────────────────────────────────
 
-const loginForm = reactive({ tenantId: 'lmspark', username: '', password: '' })
+const loginForm = reactive({ tenantId: 'platform', username: '', password: '' })
 const loginFormRef = ref<FormInstance>()
 const loginRules: FormRules = {
   tenantId: [{ required: true, message: '请输入租户 ID', trigger: 'blur' }],

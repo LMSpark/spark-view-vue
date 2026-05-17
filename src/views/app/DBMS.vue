@@ -62,7 +62,11 @@
               <el-tag size="small" :type="db.ISOLATION_MODE === 'PROJECT_ISOLATED' ? 'primary' : 'info'">
                 {{ db.ISOLATION_MODE === 'PROJECT_ISOLATED' ? '项目隔离' : '租户共享' }}
               </el-tag>
+              <el-tag size="small" :type="db.CONNECTION_MODE === 'JNDI_XA' ? 'success' : 'info'">
+                {{ db.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : '直连' }}
+              </el-tag>
             </div>
+            <div class="item-sub" v-if="db.CONNECTION_MODE === 'JNDI_XA'">{{ db.JNDI_NAME }}</div>
             <div class="item-actions" v-if="selectedDatabase?.ID === db.ID">
               <el-button size="small" text type="danger" @click.stop="deleteDatabaseConfirm(db)">删除</el-button>
             </div>
@@ -238,9 +242,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { Plus, Loading, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUser } from '@/services/auth'
+import { http } from '@/services/http'
+import { parseTenantScope } from '@/services/tenant-scope'
 
 interface DbmsServer {
   ID: number
@@ -253,8 +260,11 @@ interface DbmsServer {
 
 interface DbmsDatabase {
   ID: number
+  SERVER_ID: number
   DATABASE_NAME: string
   ISOLATION_MODE: string
+  CONNECTION_MODE?: 'DIRECT' | 'JNDI_XA'
+  JNDI_NAME?: string | null
 }
 
 interface DbmsColumn {
@@ -308,15 +318,39 @@ interface TableCreatePayload {
 }
 
 // ── 当前上下文 ──
+const route = useRoute()
 const user = computed(() => getUser())
-const currentTenant = computed(() => user.value?.tenantId ?? 'default')
-const currentProject = computed(() => user.value?.defaultProjectId ?? 'homepage')
 const isPlatformAdmin = computed(() => {
   const roles = user.value?.roles
-  return roles?.includes('platform_admin') ?? false
+  return user.value?.tenantId === 'platform' && (roles?.includes('platform_admin') ?? false)
+})
+const currentTenant = computed(() => {
+  const scoped = parseTenantScope(route.path)
+  if (isPlatformAdmin.value && scoped) return scoped.tenantId
+  if (!user.value?.tenantId) throw new Error('缺少 tenantId，无法加载 DBMS')
+  return user.value.tenantId
+})
+const currentProject = computed(() => {
+  const scoped = parseTenantScope(route.path)
+  if (isPlatformAdmin.value && scoped) return scoped.projectId
+  if (!user.value?.defaultProjectId) throw new Error('缺少 projectId，无法加载 DBMS')
+  return user.value.defaultProjectId
 })
 
 const scopePath = computed(() => `/api/tenants/${currentTenant.value}/projects/${currentProject.value}`)
+
+function apiErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.trim().length > 0) return error.message
+  if (error && typeof error === 'object') {
+    const response = (error as { response?: unknown }).response
+    if (response && typeof response === 'object') {
+      const payload = response as Record<string, unknown>
+      const message = payload['error'] ?? payload['message']
+      if (typeof message === 'string' && message.trim().length > 0) return message
+    }
+  }
+  return String(error)
+}
 
 // ── 状态 ──
 const loading = reactive({ servers: false, databases: false, tables: false })
@@ -335,49 +369,80 @@ const selectedDatabase = ref<DbmsDatabase | null>(null)
 async function loadServers() {
   loading.servers = true
   try {
-    const res = await fetch('/api/servers')
-    if (res.ok) servers.value = await res.json() as DbmsServer[]
+    servers.value = await http.get<DbmsServer[]>('/api/servers')
+    if (selectedServer.value && !servers.value.some((srv) => srv.ID === selectedServer.value?.ID)) {
+      selectedServer.value = null
+      selectedDatabase.value = null
+      databases.value = []
+      tables.value = []
+      relations.value = []
+    }
+  } catch (error) {
+    ElMessage.error(`加载服务器失败: ${apiErrorMessage(error)}`)
+    servers.value = []
   } finally { loading.servers = false }
 }
 
 async function loadDatabases() {
   if (!selectedServer.value) return
+  const serverId = selectedServer.value.ID
   loading.databases = true
   try {
-    const res = await fetch(`${scopePath.value}/databases`)
-    if (res.ok) databases.value = await res.json() as DbmsDatabase[]
+    const rows = await http.get<DbmsDatabase[]>(`${scopePath.value}/databases`, { serverId })
+    if (selectedServer.value?.ID === serverId) databases.value = rows
+  } catch (error) {
+    if (selectedServer.value?.ID === serverId) {
+      ElMessage.error(`加载数据库失败: ${apiErrorMessage(error)}`)
+      databases.value = []
+    }
   } finally { loading.databases = false }
 }
 
 async function loadTables() {
   if (!selectedDatabase.value) return
+  const databaseId = selectedDatabase.value.ID
   loading.tables = true
   try {
-    const res = await fetch(`${scopePath.value}/data-model/tables?databaseId=${selectedDatabase.value.ID}`)
-    if (res.ok) tables.value = await res.json() as DbmsTable[]
+    const rows = await http.get<DbmsTable[]>(`${scopePath.value}/data-model/tables`, { databaseId })
+    if (selectedDatabase.value?.ID === databaseId) tables.value = rows
+  } catch (error) {
+    if (selectedDatabase.value?.ID === databaseId) {
+      ElMessage.error(`加载数据表失败: ${apiErrorMessage(error)}`)
+      tables.value = []
+    }
   } finally { loading.tables = false }
 }
 
 async function loadRelations() {
   if (!selectedDatabase.value) return
+  const databaseId = selectedDatabase.value.ID
   try {
-    const res = await fetch(`${scopePath.value}/table-relations`)
-    if (res.ok) relations.value = await res.json() as DbmsRelation[]
-  } catch { relations.value = [] }
+    const rows = await http.get<DbmsRelation[]>(`${scopePath.value}/table-relations`, { databaseId })
+    if (selectedDatabase.value?.ID === databaseId) relations.value = rows
+  } catch (error) {
+    if (selectedDatabase.value?.ID === databaseId) {
+      ElMessage.error(`加载表关系失败: ${apiErrorMessage(error)}`)
+      relations.value = []
+    }
+  }
 }
 
 // ── 选择 ──
 function selectServer(srv: DbmsServer) {
   selectedServer.value = srv
   selectedDatabase.value = null
+  databases.value = []
   tables.value = []
-  loadDatabases()
+  relations.value = []
+  void loadDatabases()
 }
 
 function selectDatabase(db: DbmsDatabase) {
   selectedDatabase.value = db
-  loadTables()
-  loadRelations()
+  tables.value = []
+  relations.value = []
+  void loadTables()
+  void loadRelations()
 }
 
 // ── 服务器 Dialog ──
@@ -391,60 +456,61 @@ function resetServerForm() {
   dlgServer.form = { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
 }
 
-function openCreateServer() { dlgServer.visible = true }
+function openCreateServer() {
+  resetServerForm()
+  dlgServer.visible = true
+}
 
 async function testNewConnection() {
   testingNew.value = true
   try {
-    const res = await fetch('/api/servers/test-new', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dlgServer.form)
-    })
-    const data = await res.json() as ApiMessage
+    const data = await http.post<ApiMessage>('/api/servers/test-new', dlgServer.form)
     if (data.success) ElMessage.success('连接成功')
     else ElMessage.warning(data.message || '连接失败')
-  } catch { ElMessage.error('测试请求失败') }
+  } catch (error) { ElMessage.error(`测试请求失败: ${apiErrorMessage(error)}`) }
   finally { testingNew.value = false }
 }
 
 async function submitCreateServer() {
   dlgServer.loading = true
   try {
-    const res = await fetch('/api/servers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dlgServer.form)
-    })
-    if (res.ok) {
-      ElMessage.success('服务器注册成功')
-      dlgServer.visible = false
-      loadServers()
-    } else {
-      const err = await res.json() as ApiMessage
-      ElMessage.error(err.error || '注册失败')
-    }
+    await http.post<DbmsServer>('/api/servers', dlgServer.form)
+    ElMessage.success('服务器注册成功')
+    dlgServer.visible = false
+    void loadServers()
+  } catch (error) {
+    ElMessage.error(`注册失败: ${apiErrorMessage(error)}`)
   } finally { dlgServer.loading = false }
 }
 
 async function testServerConnection(srv: DbmsServer) {
   testingId.value = srv.ID
   try {
-    const res = await fetch(`/api/servers/${srv.ID}/test`, { method: 'POST' })
-    const data = await res.json() as ApiMessage
+    const data = await http.post<ApiMessage>(`/api/servers/${srv.ID}/test`)
     if (data.success) ElMessage.success('连接成功')
     else ElMessage.warning(data.message || '连接失败')
+  } catch (error) {
+    ElMessage.error(`测试失败: ${apiErrorMessage(error)}`)
   } finally { testingId.value = null }
 }
 
 async function deleteServerConfirm(srv: DbmsServer) {
   try {
     await ElMessageBox.confirm(`确定删除服务器 "${srv.SERVER_NAME}"？`, '确认删除', { type: 'warning' })
-    await fetch(`/api/servers/${srv.ID}`, { method: 'DELETE' })
+    await http.delete(`/api/servers/${srv.ID}`)
     ElMessage.success('已删除')
-    if (selectedServer.value?.ID === srv.ID) { selectedServer.value = null; selectedDatabase.value = null }
-    loadServers()
-  } catch { /* cancelled */ }
+    if (selectedServer.value?.ID === srv.ID) {
+      selectedServer.value = null
+      selectedDatabase.value = null
+      databases.value = []
+      tables.value = []
+      relations.value = []
+    }
+    void loadServers()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'cancel') return
+    ElMessage.error(`删除失败: ${apiErrorMessage(error)}`)
+  }
 }
 
 // ── 数据库 Dialog ──
@@ -458,7 +524,10 @@ function resetDbForm() {
   dlgDb.form = { databaseName: '', createNew: false, isolationMode: 'PROJECT_ISOLATED', connectionMode: 'DIRECT', jndiName: '', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' }
 }
 
-function openCreateDatabase() { dlgDb.visible = true }
+function openCreateDatabase() {
+  resetDbForm()
+  dlgDb.visible = true
+}
 
 async function submitCreateDatabase() {
   dlgDb.loading = true
@@ -480,19 +549,12 @@ async function submitCreateDatabase() {
       body.charset = dlgDb.form.charset
       body.collation = dlgDb.form.collation
     }
-    const res = await fetch(`${scopePath.value}/databases`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    if (res.ok) {
-      ElMessage.success('数据库注册成功')
-      dlgDb.visible = false
-      loadDatabases()
-    } else {
-      const err = await res.json() as ApiMessage
-      ElMessage.error(err.error || '注册失败')
-    }
+    await http.post<DbmsDatabase>(`${scopePath.value}/databases`, body)
+    ElMessage.success('数据库注册成功')
+    dlgDb.visible = false
+    void loadDatabases()
+  } catch (error) {
+    ElMessage.error(`注册失败: ${apiErrorMessage(error)}`)
   } finally { dlgDb.loading = false }
 }
 
@@ -503,11 +565,18 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
       '确认删除',
       { type: 'warning' }
     )
-    await fetch(`${scopePath.value}/databases/${db.ID}?dropPhysical=false`, { method: 'DELETE' })
+    await http.delete(`${scopePath.value}/databases/${db.ID}`, { dropPhysical: false })
     ElMessage.success('已删除')
-    if (selectedDatabase.value?.ID === db.ID) selectedDatabase.value = null
-    loadDatabases()
-  } catch { /* cancelled */ }
+    if (selectedDatabase.value?.ID === db.ID) {
+      selectedDatabase.value = null
+      tables.value = []
+      relations.value = []
+    }
+    void loadDatabases()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'cancel') return
+    ElMessage.error(`删除失败: ${apiErrorMessage(error)}`)
+  }
 }
 
 // ── 表 Dialog ──
@@ -526,7 +595,10 @@ function addColumn() {
   dlgTable.form.columns.push({ name: '', type: 'string', maxLength: 255, primaryKey: false, required: false })
 }
 
-function openCreateTable() { dlgTable.visible = true }
+function openCreateTable() {
+  resetTableForm()
+  dlgTable.visible = true
+}
 
 async function submitCreateTable() {
   dlgTable.loading = true
@@ -543,29 +615,26 @@ async function submitCreateTable() {
       columns: dlgTable.form.columns.map(c => ({ name: c.name, type: c.type, maxLength: c.maxLength, primaryKey: c.primaryKey, required: c.required }))
     }
     if (dlgTable.form.physicalTableName) body.physicalTableName = dlgTable.form.physicalTableName
-    const res = await fetch(`${scopePath.value}/data-model/tables`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    if (res.ok) {
-      ElMessage.success('表创建成功')
-      dlgTable.visible = false
-      loadTables()
-    } else {
-      const err = await res.json() as ApiMessage
-      ElMessage.error(err.error || '创建失败')
-    }
+    await http.post<DbmsTable>(`${scopePath.value}/data-model/tables`, body)
+    ElMessage.success('表创建成功')
+    dlgTable.visible = false
+    void loadTables()
+  } catch (error) {
+    ElMessage.error(`创建失败: ${apiErrorMessage(error)}`)
   } finally { dlgTable.loading = false }
 }
 
 async function deleteTableConfirm(tbl: DbmsTable) {
   try {
     await ElMessageBox.confirm(`确定删除表 "${tbl.tableName}"？`, '确认删除', { type: 'warning' })
-    await fetch(`${scopePath.value}/data-model/tables/${tbl.tableName}?dropPhysical=false`, { method: 'DELETE' })
+    await http.delete(`${scopePath.value}/data-model/tables/${encodeURIComponent(tbl.tableName)}`, { dropPhysical: false })
     ElMessage.success('已删除')
-    loadTables()
-  } catch { /* cancelled */ }
+    void loadTables()
+    void loadRelations()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'cancel') return
+    ElMessage.error(`删除失败: ${apiErrorMessage(error)}`)
+  }
 }
 
 // ── 表关系 Dialog ──
@@ -592,11 +661,12 @@ async function fetchTableColumns(tableId: number): Promise<DbmsColumn[]> {
   const tbl = tables.value.find((t) => t.id === tableId)
   if (!tbl) return []
   try {
-    const res = await fetch(`${scopePath.value}/data-model/tables/${encodeURIComponent(tbl.tableName)}`)
-    if (!res.ok) return []
-    const full = await res.json()
+    const full = await http.get<DbmsTable>(`${scopePath.value}/data-model/tables/${encodeURIComponent(tbl.tableName)}`)
     return (full.columns as DbmsColumn[]) ?? []
-  } catch { return [] }
+  } catch (error) {
+    ElMessage.error(`加载字段失败: ${apiErrorMessage(error)}`)
+    return []
+  }
 }
 
 async function onParentTableChange(tableId: number) {
@@ -608,37 +678,42 @@ async function onChildTableChange(tableId: number) {
 }
 
 async function submitCreateRelation() {
+  const database = selectedDatabase.value
+  if (!database) {
+    ElMessage.warning('请先选择数据库')
+    return
+  }
   if (!dlgRelation.form.parentTableId || !dlgRelation.form.childTableId || !dlgRelation.form.parentField || !dlgRelation.form.childField) {
     ElMessage.warning('请填写完整的表关系信息')
     return
   }
   dlgRelation.loading = true
   try {
-    const res = await fetch(`${scopePath.value}/table-relations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dlgRelation.form)
+    await http.post<DbmsRelation>(`${scopePath.value}/table-relations`, {
+      ...dlgRelation.form,
+      databaseId: database.ID
     })
-    if (res.ok) {
-      ElMessage.success('表关系创建成功')
-      resetRelationForm()
-      loadRelations()
-    } else {
-      const err = await res.json() as ApiMessage
-      ElMessage.error(err.error || '创建失败')
-    }
+    ElMessage.success('表关系创建成功')
+    resetRelationForm()
+    void loadRelations()
+  } catch (error) {
+    ElMessage.error(`创建失败: ${apiErrorMessage(error)}`)
   } finally { dlgRelation.loading = false }
 }
 
 async function deleteRelation(id: number) {
-  await fetch(`${scopePath.value}/table-relations/${id}`, { method: 'DELETE' })
-  ElMessage.success('已删除')
-  loadRelations()
+  try {
+    await http.delete(`${scopePath.value}/table-relations/${id}`)
+    ElMessage.success('已删除')
+    void loadRelations()
+  } catch (error) {
+    ElMessage.error(`删除失败: ${apiErrorMessage(error)}`)
+  }
 }
 
 // ── 初始化 ──
 onMounted(() => {
-  loadServers()
+  void loadServers()
 })
 </script>
 

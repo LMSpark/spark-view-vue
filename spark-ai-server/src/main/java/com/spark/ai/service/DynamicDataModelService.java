@@ -88,6 +88,7 @@ public class DynamicDataModelService {
     @PostConstruct
     void ensureMetadataSchema() {
         if (isMySql()) {
+            ensureMySqlMetadataSchema();
             return;
         }
         jdbcTemplate.execute("""
@@ -270,6 +271,216 @@ public class DynamicDataModelService {
             CREATE INDEX IF NOT EXISTS IDX_DATA_TRANSACTION_COMMIT_SCOPE
             ON DATA_TRANSACTION_COMMIT (TENANT_ID, PROJECT_ID, CREATED_AT)
             """);
+    }
+
+    private void ensureMySqlMetadataSchema() {
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_SOURCE_SERVER (
+              ID BIGINT NOT NULL AUTO_INCREMENT,
+              SERVER_NAME VARCHAR(255) NOT NULL,
+              HOST VARCHAR(255) NOT NULL,
+              PORT INT NOT NULL,
+              DB_TYPE VARCHAR(64) NOT NULL DEFAULT 'mysql',
+              USERNAME VARCHAR(255) NOT NULL,
+              PASSWORD VARCHAR(512) NOT NULL,
+              ISOLATION_MODE VARCHAR(32) NOT NULL DEFAULT 'TENANT_ISOLATED',
+              TENANT_ID VARCHAR(255),
+              CREATED_BY VARCHAR(255),
+              STATUS VARCHAR(64) NOT NULL DEFAULT 'active',
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              PRIMARY KEY (ID),
+              KEY IDX_DSS_ISOLATION (ISOLATION_MODE, TENANT_ID),
+              KEY IDX_DSS_STATUS (STATUS)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_SOURCE_DATABASE (
+              ID BIGINT NOT NULL AUTO_INCREMENT,
+              SERVER_ID BIGINT NOT NULL,
+              DATABASE_NAME VARCHAR(255) NOT NULL,
+              ISOLATION_MODE VARCHAR(32) NOT NULL DEFAULT 'TENANT_ISOLATED',
+              TENANT_ID VARCHAR(255) NOT NULL,
+              PROJECT_ID VARCHAR(255),
+              CONNECTION_MODE VARCHAR(32) NOT NULL DEFAULT 'DIRECT',
+              JNDI_NAME VARCHAR(512),
+              CREATED_BY VARCHAR(255),
+              STATUS VARCHAR(64) NOT NULL DEFAULT 'active',
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              PRIMARY KEY (ID),
+              UNIQUE KEY uk_dsd_scope (TENANT_ID, PROJECT_ID, DATABASE_NAME),
+              KEY IDX_DSD_SERVER (SERVER_ID),
+              KEY IDX_DSD_TENANT (TENANT_ID),
+              KEY IDX_DSD_CONNECTION_MODE (CONNECTION_MODE)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_MODEL_TABLE (
+              ID BIGINT NOT NULL AUTO_INCREMENT,
+              TENANT_ID VARCHAR(255) NOT NULL,
+              PROJECT_ID VARCHAR(255) NOT NULL,
+              LOGICAL_TABLE_NAME VARCHAR(255) NOT NULL,
+              ORIGIN VARCHAR(64) NOT NULL,
+              MANAGED_MODE VARCHAR(64) NOT NULL,
+              PHYSICAL_TABLE_NAME VARCHAR(255) NOT NULL,
+              PRIMARY_KEY_FIELD VARCHAR(255) NOT NULL,
+              RESOURCE_TYPE VARCHAR(64),
+              RESOURCE_ID VARCHAR(255),
+              BUSINESS_CATEGORY VARCHAR(64),
+              DATABASE_ID BIGINT,
+              PROJECT_ISOLATION BOOLEAN NOT NULL DEFAULT TRUE,
+              SCHEMA_VERSION INT NOT NULL DEFAULT 1,
+              DDL_HASH VARCHAR(128),
+              STATUS VARCHAR(64) NOT NULL DEFAULT 'active',
+              LAST_INTROSPECTED_AT DATETIME(6),
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              PRIMARY KEY (ID),
+              UNIQUE KEY uk_data_model_table_scope (TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME),
+              KEY IDX_DATA_MODEL_TABLE_SCOPE (TENANT_ID, PROJECT_ID),
+              KEY IDX_DMT_DATABASE (DATABASE_ID)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_MODEL_COLUMN (
+              ID BIGINT NOT NULL AUTO_INCREMENT,
+              TABLE_ID BIGINT NOT NULL,
+              COLUMN_NAME VARCHAR(255) NOT NULL,
+              PHYSICAL_COLUMN_NAME VARCHAR(255) NOT NULL,
+              DATA_TYPE VARCHAR(64) NOT NULL,
+              SQL_TYPE VARCHAR(255) NOT NULL,
+              ORDINAL_POSITION INT NOT NULL,
+              IS_PRIMARY_KEY BOOLEAN NOT NULL DEFAULT FALSE,
+              IS_AUTO_INCREMENT BOOLEAN NOT NULL DEFAULT FALSE,
+              IS_NULLABLE BOOLEAN NOT NULL DEFAULT TRUE,
+              IS_REQUIRED BOOLEAN NOT NULL DEFAULT FALSE,
+              MAX_LENGTH INT,
+              NUMERIC_PRECISION INT,
+              NUMERIC_SCALE INT,
+              DEFAULT_VALUE VARCHAR(2000),
+              LABEL VARCHAR(255),
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              PRIMARY KEY (ID),
+              UNIQUE KEY uk_data_model_column (TABLE_ID, COLUMN_NAME),
+              KEY IDX_DATA_MODEL_COLUMN_TABLE (TABLE_ID, ORDINAL_POSITION)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_MODEL_RELATION (
+              ID BIGINT NOT NULL AUTO_INCREMENT,
+              PARENT_TABLE_ID BIGINT NOT NULL,
+              CHILD_TABLE_ID BIGINT NOT NULL,
+              PARENT_FIELD VARCHAR(255) NOT NULL,
+              CHILD_FIELD VARCHAR(255) NOT NULL,
+              RELATION_NAME VARCHAR(255),
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              PRIMARY KEY (ID),
+              UNIQUE KEY uk_dmr_relation (PARENT_TABLE_ID, CHILD_TABLE_ID, PARENT_FIELD, CHILD_FIELD),
+              KEY IDX_DMR_PARENT (PARENT_TABLE_ID)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_BATCH_JOB (
+              JOB_ID VARCHAR(64) NOT NULL,
+              TENANT_ID VARCHAR(255) NOT NULL,
+              PROJECT_ID VARCHAR(255) NOT NULL,
+              REQUEST_ID VARCHAR(255),
+              STATUS VARCHAR(64) NOT NULL,
+              TOTAL_COUNT INT NOT NULL DEFAULT 0,
+              COMPLETED_COUNT INT NOT NULL DEFAULT 0,
+              SUCCESS_COUNT INT NOT NULL DEFAULT 0,
+              FAILURE_COUNT INT NOT NULL DEFAULT 0,
+              PAYLOAD LONGTEXT,
+              RESULT LONGTEXT,
+              ERROR_MESSAGE LONGTEXT,
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              COMPLETED_AT DATETIME(6),
+              PRIMARY KEY (JOB_ID),
+              KEY IDX_DATA_BATCH_JOB_SCOPE (TENANT_ID, PROJECT_ID, CREATED_AT)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_BATCH_JOB_ITEM (
+              ID BIGINT NOT NULL AUTO_INCREMENT,
+              JOB_ID VARCHAR(64) NOT NULL,
+              OPERATION_ID VARCHAR(255),
+              TABLE_NAME VARCHAR(255) NOT NULL,
+              OPERATION VARCHAR(64) NOT NULL,
+              STATUS VARCHAR(64) NOT NULL,
+              PAYLOAD LONGTEXT,
+              RESULT LONGTEXT,
+              ERROR_MESSAGE LONGTEXT,
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              PRIMARY KEY (ID)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS DATA_TRANSACTION_COMMIT (
+              TRANSACTION_ID VARCHAR(64) NOT NULL,
+              TENANT_ID VARCHAR(255) NOT NULL,
+              PROJECT_ID VARCHAR(255) NOT NULL,
+              REQUEST_ID VARCHAR(255) NOT NULL,
+              REQUEST_HASH VARCHAR(128) NOT NULL,
+              STATUS VARCHAR(64) NOT NULL,
+              PAYLOAD LONGTEXT,
+              RESULT LONGTEXT,
+              CREATED_AT DATETIME(6) NOT NULL,
+              UPDATED_AT DATETIME(6) NOT NULL,
+              COMPLETED_AT DATETIME(6),
+              PRIMARY KEY (TRANSACTION_ID),
+              UNIQUE KEY uk_data_transaction_commit_request (TENANT_ID, PROJECT_ID, REQUEST_ID),
+              KEY IDX_DATA_TRANSACTION_COMMIT_SCOPE (TENANT_ID, PROJECT_ID, CREATED_AT)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+
+        addMySqlColumnIfMissing("DATA_MODEL_TABLE", "DATABASE_ID", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN DATABASE_ID BIGINT");
+        addMySqlColumnIfMissing("DATA_MODEL_TABLE", "PROJECT_ISOLATION", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN PROJECT_ISOLATION BOOLEAN NOT NULL DEFAULT TRUE");
+        addMySqlColumnIfMissing("DATA_SOURCE_DATABASE", "CONNECTION_MODE", "ALTER TABLE DATA_SOURCE_DATABASE ADD COLUMN CONNECTION_MODE VARCHAR(32) NOT NULL DEFAULT 'DIRECT'");
+        addMySqlColumnIfMissing("DATA_SOURCE_DATABASE", "JNDI_NAME", "ALTER TABLE DATA_SOURCE_DATABASE ADD COLUMN JNDI_NAME VARCHAR(512)");
+
+        createMySqlIndexIfMissing("DATA_MODEL_TABLE", "IDX_DMT_DATABASE", "CREATE INDEX IDX_DMT_DATABASE ON DATA_MODEL_TABLE (DATABASE_ID)");
+        createMySqlIndexIfMissing("DATA_SOURCE_DATABASE", "IDX_DSD_CONNECTION_MODE", "CREATE INDEX IDX_DSD_CONNECTION_MODE ON DATA_SOURCE_DATABASE (CONNECTION_MODE)");
+        createMySqlIndexIfMissing("DATA_SOURCE_DATABASE", "IDX_DSD_SERVER", "CREATE INDEX IDX_DSD_SERVER ON DATA_SOURCE_DATABASE (SERVER_ID)");
+        createMySqlIndexIfMissing("DATA_MODEL_RELATION", "IDX_DMR_PARENT", "CREATE INDEX IDX_DMR_PARENT ON DATA_MODEL_RELATION (PARENT_TABLE_ID)");
+    }
+
+    private void addMySqlColumnIfMissing(String tableName, String columnName, String ddl) {
+        if (!mysqlColumnExists(tableName, columnName)) {
+            jdbcTemplate.execute(ddl);
+        }
+    }
+
+    private void createMySqlIndexIfMissing(String tableName, String indexName, String ddl) {
+        if (!mysqlIndexExists(tableName, indexName)) {
+            jdbcTemplate.execute(ddl);
+        }
+    }
+
+    private boolean mysqlColumnExists(String tableName, String columnName) {
+        Integer count = jdbcTemplate.queryForObject("""
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND UPPER(TABLE_NAME) = UPPER(?)
+              AND UPPER(COLUMN_NAME) = UPPER(?)
+            """, Integer.class, tableName, columnName);
+        return count != null && count > 0;
+    }
+
+    private boolean mysqlIndexExists(String tableName, String indexName) {
+        Integer count = jdbcTemplate.queryForObject("""
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND UPPER(TABLE_NAME) = UPPER(?)
+              AND UPPER(INDEX_NAME) = UPPER(?)
+            """, Integer.class, tableName, indexName);
+        return count != null && count > 0;
     }
 
     private boolean isMySql() {

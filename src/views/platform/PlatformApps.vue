@@ -1,0 +1,227 @@
+<template>
+  <div class="platform-apps">
+    <div class="page-toolbar">
+      <div>
+        <h2>应用管理</h2>
+        <p>按租户查看项目，并进入对应业务工作台。</p>
+      </div>
+      <div class="toolbar-actions">
+        <el-select v-model="selectedTenantId" placeholder="选择租户" style="width: 220px" @change="loadProjects">
+          <el-option
+            v-for="tenant in tenants"
+            :key="tenant.tenantId"
+            :label="`${tenant.tenantName || tenant.tenantId} (${tenant.tenantId})`"
+            :value="tenant.tenantId"
+          />
+        </el-select>
+        <el-button :icon="Refresh" @click="loadAll">刷新</el-button>
+        <el-button type="primary" :icon="Plus" :disabled="!selectedTenantId" @click="openCreateDialog">新建应用</el-button>
+      </div>
+    </div>
+
+    <el-table v-loading="loading" :data="projects" row-key="projectId" class="project-table">
+      <el-table-column prop="projectId" label="项目 ID" min-width="150" />
+      <el-table-column prop="name" label="名称" min-width="180" />
+      <el-table-column prop="projectType" label="类型" width="120">
+        <template #default="{ row }">
+          <el-tag :type="row.projectType === 'homepage' ? 'warning' : 'info'">
+            {{ row.projectType === 'homepage' ? '应用工场' : '应用' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="description" label="描述" min-width="260" show-overflow-tooltip />
+      <el-table-column label="操作" fixed="right" width="180">
+        <template #default="{ row }">
+          <el-button size="small" type="primary" text @click="enterProject(row)">进入</el-button>
+          <el-button
+            v-if="row.projectType !== 'homepage'"
+            size="small"
+            type="danger"
+            text
+            @click="deleteProject(row)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-dialog v-model="dialogVisible" title="新建应用" width="500px">
+      <el-form :model="form" label-width="90px">
+        <el-form-item label="应用 ID">
+          <el-input v-model="form.projectId" placeholder="例如 crm" />
+        </el-form-item>
+        <el-form-item label="应用名称">
+          <el-input v-model="form.name" placeholder="显示名称" />
+        </el-form-item>
+        <el-form-item label="图标">
+          <el-input v-model="form.icon" placeholder="例如 Box" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="form.description" type="textarea" :rows="3" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitProject">创建</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Refresh } from '@element-plus/icons-vue'
+import { http } from '@/services/http'
+import { getPlatformTenantApi } from '@/services/api-paths'
+import { buildTenantPath } from '@/services/tenant-scope'
+
+interface PlatformTenant {
+  tenantId: string
+  tenantName: string
+  status: string
+}
+
+interface ProjectItem {
+  projectId: string
+  name: string
+  projectType: string
+  icon: string
+  description: string
+}
+
+const router = useRouter()
+const tenants = ref<PlatformTenant[]>([])
+const selectedTenantId = ref('')
+const projects = ref<ProjectItem[]>([])
+const loading = ref(false)
+const submitting = ref(false)
+const dialogVisible = ref(false)
+const form = reactive({
+  projectId: '',
+  name: '',
+  icon: 'Box',
+  description: '',
+})
+
+function selectedProjectApi(): string {
+  if (!selectedTenantId.value) throw new Error('请先选择租户')
+  return `/api/tenants/${encodeURIComponent(selectedTenantId.value)}/projects`
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+async function loadTenants(): Promise<void> {
+  tenants.value = (await http.get<PlatformTenant[]>(getPlatformTenantApi()))
+    .filter((tenant) => tenant.status === 'ACTIVE')
+  if (!selectedTenantId.value && tenants.value.length > 0) {
+    selectedTenantId.value = tenants.value[0]?.tenantId ?? ''
+  }
+}
+
+async function loadProjects(): Promise<void> {
+  if (!selectedTenantId.value) {
+    projects.value = []
+    return
+  }
+  loading.value = true
+  try {
+    projects.value = await http.get<ProjectItem[]>(selectedProjectApi())
+  } catch (error) {
+    ElMessage.error(`加载应用失败: ${errorMessage(error)}`)
+    projects.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadAll(): Promise<void> {
+  await loadTenants()
+  await loadProjects()
+}
+
+function openCreateDialog(): void {
+  form.projectId = ''
+  form.name = ''
+  form.icon = 'Box'
+  form.description = ''
+  dialogVisible.value = true
+}
+
+async function submitProject(): Promise<void> {
+  if (!form.projectId.trim()) {
+    ElMessage.warning('请输入应用 ID')
+    return
+  }
+  submitting.value = true
+  try {
+    await http.post(selectedProjectApi(), { ...form })
+    ElMessage.success('应用已创建')
+    dialogVisible.value = false
+    await loadProjects()
+  } catch (error) {
+    ElMessage.error(`创建失败: ${errorMessage(error)}`)
+  } finally {
+    submitting.value = false
+  }
+}
+
+async function deleteProject(project: ProjectItem): Promise<void> {
+  try {
+    await ElMessageBox.confirm(`确定删除应用「${project.name || project.projectId}」？`, '删除应用', { type: 'warning' })
+    await http.delete(`${selectedProjectApi()}/${encodeURIComponent(project.projectId)}`)
+    ElMessage.success('应用已删除')
+    await loadProjects()
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error(`删除失败: ${errorMessage(error)}`)
+  }
+}
+
+function enterProject(project: ProjectItem): void {
+  if (!selectedTenantId.value) return
+  void router.push(buildTenantPath({ tenantId: selectedTenantId.value, projectId: project.projectId }, '/dashboard'))
+}
+
+onMounted(() => {
+  void loadAll()
+})
+</script>
+
+<style scoped>
+.platform-apps {
+  padding: 20px;
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-toolbar h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.page-toolbar p {
+  margin: 0;
+  color: var(--el-text-color-secondary);
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.project-table {
+  width: 100%;
+}
+</style>

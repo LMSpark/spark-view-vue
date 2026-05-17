@@ -20,6 +20,10 @@ public record AuthenticatedRequestContext(
         return roles != null && roles.contains("admin");
     }
 
+    public boolean isPlatformAdmin() {
+        return roles != null && roles.contains("platform_admin");
+    }
+
     public static AuthenticatedRequestContext currentOrNull() {
         RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
         if (!(attrs instanceof ServletRequestAttributes servletAttrs)) {

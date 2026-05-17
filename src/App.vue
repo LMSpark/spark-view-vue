@@ -170,7 +170,7 @@ import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
-import { getPlatformPaths } from '@/config/vue-page-map'
+import { getPublicPaths } from '@/config/vue-page-map'
 import {
   AppAiBusinessRegistry,
   AppAiHost,
@@ -187,7 +187,9 @@ const aiPanelStore = useAiPanelStore()
 const route = useRoute()
 const router = useRouter()
 const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
-const platformPaths = getPlatformPaths()
+const publicPaths = getPublicPaths()
+const PLATFORM_PATH_PREFIX = '/platform'
+const PLATFORM_HOME_PATH = '/platform/dashboard'
 const appAiRegistry = new AppAiBusinessRegistry()
 registerAppAiBusinesses({
   registry: appAiRegistry,
@@ -210,13 +212,25 @@ const currentUsername = computed(() => {
   const user = getUser()
   return user?.displayName ?? user?.username ?? '管理员'
 })
+
+function isPlatformWorkspacePath(path: string): boolean {
+  return path === PLATFORM_PATH_PREFIX || path.startsWith(`${PLATFORM_PATH_PREFIX}/`)
+}
+
+function isPlatformAdminUser(user = getUser()): boolean {
+  return user?.tenantId === 'platform' && Array.isArray(user.roles) && user.roles.includes('platform_admin')
+}
+
 function resolveActiveProjectId(): string {
+  if (isPlatformWorkspacePath(route.path)) return 'platform'
   return parseTenantScope(route.path)?.projectId ?? getUser()?.defaultProjectId ?? 'homepage'
 }
 
 const activeProjectId = ref(resolveActiveProjectId())
 const headerTitle = computed(() =>
-  activeProjectId.value === 'homepage' ? 'SPARK 应用工场' : `SPARK · ${activeProjectId.value}`
+  activeProjectId.value === 'platform'
+    ? 'SPARK 平台管理'
+    : activeProjectId.value === 'homepage' ? 'SPARK 应用工场' : `SPARK · ${activeProjectId.value}`
 )
 const theme = useTheme()
 const isDark = computed(() => theme?.isDark ?? false)
@@ -250,7 +264,8 @@ const contextGuard = computed<AppContextGuardState | null>(() => {
   const user = getUser()
 
   if (scoped === null) {
-    if (platformPaths.has(currentPath)) return null
+    if (publicPaths.has(currentPath)) return null
+    if (isPlatformWorkspacePath(currentPath) && token && user && isPlatformAdminUser(user)) return null
     const expectedPath = user?.tenantId && user.defaultProjectId
       ? buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, currentPath)
       : undefined
@@ -278,6 +293,10 @@ const contextGuard = computed<AppContextGuardState | null>(() => {
       primaryActionLabel: '前往登录页',
       expectedPath: '/login',
     }
+  }
+
+  if (isPlatformAdminUser(user)) {
+    return null
   }
 
   if (scoped.tenantId !== user.tenantId || scoped.projectId !== user.defaultProjectId) {
@@ -360,7 +379,9 @@ navigationActionRegistry.register('ai-chat', () => {
 })
 navigationActionRegistry.register('home', () => {
   const user = getUser()
-  if (user && user.defaultProjectId !== 'homepage') {
+  if (isPlatformAdminUser(user)) {
+    void router.push(PLATFORM_HOME_PATH)
+  } else if (user && user.defaultProjectId !== 'homepage') {
     void projectSwitchService.switchAndReload('homepage').then(() => {
       void router.push(buildTenantPath({ tenantId: user.tenantId, projectId: 'homepage' }, getNavHomePath()))
     })
@@ -494,6 +515,7 @@ watch(
   () => route.path,
   () => {
     activeProjectId.value = resolveActiveProjectId()
+    applyNavTree(getNavTree())
   },
   { immediate: true },
 )

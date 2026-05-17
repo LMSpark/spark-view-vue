@@ -492,7 +492,8 @@ export class FileLoader {
 
     if (!entry) return null
 
-    // 滑动过期：基于 expirationLevel 检查闲置时间
+    // 滑动过期只看前端本地闲置时间。
+    // sourceTimestamp 是后端源文件版本戳，只用于条件读取；不能拿来决定清缓存顺序。
     const now = Date.now()
     const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
     const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
@@ -650,6 +651,8 @@ export class FileLoader {
     if (!storage) return null
 
     const prefix = this.opts.cachePrefix
+    // 配额不足时按本地 LRU 驱逐。
+    // 页面四文件的 sourceTimestamp 可能很旧但仍被频繁访问，不能因此优先清掉。
     const entries: Array<{ key: string; lastAccess: number }> = []
 
     for (let i = 0; i < storage.length; i++) {
@@ -678,13 +681,15 @@ export class FileLoader {
     }
   }
 
-  /** 跨租户全局驱逐：当当前 prefix 下无可驱逐项时，从所有 spark_page_ 缓存中驱逐最旧条目 */
+  /** 跨租户全局驱逐：当当前 prefix 下无可驱逐项时，从所有 spark_page_ 缓存中按本地 LRU 驱逐 */
   private evictGlobalStorageEntry(protectedKey: string): string | null {
     if (this.opts.storage === 'memory') return null
     const storage = this.storage
     if (!storage) return null
 
     const globalPrefix = 'spark_page_'
+    // 这里同样是 lastAccess/cachedAt 顺序，不是 sourceTimestamp 顺序。
+    // sourceTimestamp 排序属于“文件版本展示”，不属于“前端空间回收”。
     const entries: Array<{ key: string; lastAccess: number }> = []
 
     for (let i = 0; i < storage.length; i++) {
@@ -751,7 +756,7 @@ export class FileLoader {
     }
   }
 
-  /** 清理过期缓存（基于分级过期策略） */
+  /** 清理过期缓存（基于前端闲置时间 + 分级过期策略） */
   private cleanupExpiredCache(): void {
     const now = Date.now()
     const prefix = this.opts.cachePrefix
@@ -798,7 +803,7 @@ export class FileLoader {
     }
   }
 
-  /** 强制执行缓存数量限制（LRU 策略） */
+  /** 强制执行缓存数量限制（前端 LRU 策略，禁止按 sourceTimestamp 驱逐） */
   private enforceMaxCacheSize(): void {
     const prefix = this.opts.cachePrefix
     const entries: Array<{ key: string; lastAccess: number }> = []

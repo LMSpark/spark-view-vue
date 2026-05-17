@@ -11,11 +11,11 @@ import type { AppNavRoot } from '@spark-view/spark-page-config'
 
 /**
  * 页面作用域级别
- * - platform: 平台公共页面，无需登录，不绑定租户（如首页、登录、关于）
+ * - public:   登录前公共页面，无需登录，不绑定租户（如首页、登录、关于）
  * - tenant:   租户级页面，需登录+租户前缀，租户内共享（如设置、缓存管理）
  * - app:      应用级页面，需登录+租户前缀+绑定具体应用/项目（如仪表盘、开发系统）
  */
-export type PageScope = 'platform' | 'tenant' | 'app'
+export type PageScope = 'public' | 'tenant' | 'app'
 
 /** 组件页面描述 */
 export interface VuePageEntry {
@@ -42,23 +42,25 @@ export interface VuePageEntry {
  * - `load` 使用动态 import，首次访问时加载
  */
 export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
-  // ── platform: 平台公共页面 ──
-  '/':                { title: '平台首页',    icon: 'HomeFilled',   scope: 'platform', source: 'src/views/platform/HomePage.vue',              load: () => import('../views/platform/HomePage.vue') },
-  '/login':           { title: '登录',        icon: 'Key',          scope: 'platform', source: 'src/views/platform/LoginView.vue',             load: () => import('../views/platform/LoginView.vue'), description: '用户登录页面', hidden: true },
-  '/about':           { title: '关于',        icon: 'InfoFilled',   scope: 'platform', source: 'src/views/platform/About.vue',                 load: () => import('../views/platform/About.vue') },
-  '/demo/custom-r-table': { title: 'r-table Demo', icon: 'Grid', scope: 'platform', source: 'src/views/app/CustomRTableDemo.vue', load: () => import('../views/app/CustomRTableDemo.vue'), description: '原始 RendererTable 与模板字段桥接演示', hidden: true },
-  '/demo/r-form-compare': { title: 'r-form Demo', icon: 'Tickets', scope: 'platform', source: 'src/views/app/RFormCompareDemo.vue', load: () => import('../views/app/RFormCompareDemo.vue'), description: '原始 RendererForm 配置式与模板式对照演示', hidden: true },
+  // ── public: 登录前公共页面 ──
+  '/':                { title: '平台首页',    icon: 'HomeFilled',   scope: 'public', source: 'src/views/platform/HomePage.vue',              load: () => import('../views/platform/HomePage.vue') },
+  '/login':           { title: '登录',        icon: 'Key',          scope: 'public', source: 'src/views/platform/LoginView.vue',             load: () => import('../views/platform/LoginView.vue'), description: '用户登录页面', hidden: true },
+  '/about':           { title: '关于',        icon: 'InfoFilled',   scope: 'public', source: 'src/views/platform/About.vue',                 load: () => import('../views/platform/About.vue') },
+  '/demo/custom-r-table': { title: 'r-table Demo', icon: 'Grid', scope: 'public', source: 'src/views/app/CustomRTableDemo.vue', load: () => import('../views/app/CustomRTableDemo.vue'), description: '原始 RendererTable 与模板字段桥接演示', hidden: true },
+  '/demo/r-form-compare': { title: 'r-form Demo', icon: 'Tickets', scope: 'public', source: 'src/views/app/RFormCompareDemo.vue', load: () => import('../views/app/RFormCompareDemo.vue'), description: '原始 RendererForm 配置式与模板式对照演示', hidden: true },
   '/demo/template-dsl': { title: 'Template DSL Demo', icon: 'SetUp', scope: 'app', source: 'src/views/app/TemplateDslDemo.vue', load: () => import('../views/app/TemplateDslDemo.vue'), description: '模板 DSL 演示页（system-page 路由占位）', hidden: true },
   // ── tenant: 租户级页面 ──
   '/settings':        { title: '设置',        icon: 'Setting',      scope: 'tenant',   source: 'src/views/tenant/Settings.vue',                load: () => import('../views/tenant/Settings.vue') },
   '/tenant-config':   { title: '租户配置',    icon: 'OfficeBuilding', scope: 'tenant', source: 'src/views/tenant/TenantConfig.vue',             load: () => import('../views/tenant/TenantConfig.vue') },
   '/cache-manager':   { title: '缓存管理',    icon: 'Coin',         scope: 'tenant',   source: 'src/views/tenant/CacheManager.vue',             load: () => import('../views/tenant/CacheManager.vue') },
   '/app-list':        { title: '应用列表',    icon: 'Grid',         scope: 'tenant',   source: 'src/views/tenant/AppList.vue',                  load: () => import('../views/tenant/AppList.vue') },
+  '/tenants':         { title: '租户管理',    icon: 'OfficeBuilding', scope: 'tenant', source: 'src/views/platform/PlatformTenantManagement.vue', load: () => import('../views/platform/PlatformTenantManagement.vue'), description: '平台租户管理工作台' },
+  '/apps':            { title: '平台应用管理', icon: 'Grid',         scope: 'tenant',   source: 'src/views/platform/PlatformApps.vue',             load: () => import('../views/platform/PlatformApps.vue'), description: '跨租户项目入口' },
   // ── app: 应用级页面 ──
   '/dashboard':       { title: '仪表盘',      icon: 'DataBoard',    scope: 'app',      source: 'src/views/app/Dashboard.vue',                   load: () => import('../views/app/Dashboard.vue') },
   '/capability-demo': { title: '能力管理演示', icon: 'SetUp',        scope: 'app',      source: 'src/views/app/CapabilityDemo.vue',              load: () => import('../views/app/CapabilityDemo.vue') },
   '/dev':             { title: '开发系统',    icon: 'Tools',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue') },
-  '/skill-catalog':   { title: '组件目录',    icon: 'Notebook',     scope: 'platform',  source: 'src/views/app/SkillCatalog.vue',                 load: () => import('../views/app/SkillCatalog.vue'), description: 'SPARK 组件配置目录（Props / 能力 / 示例）', hidden: true },
+  '/skill-catalog':   { title: '组件目录',    icon: 'Notebook',     scope: 'public',    source: 'src/views/app/SkillCatalog.vue',                 load: () => import('../views/app/SkillCatalog.vue'), description: 'SPARK 组件配置目录（Props / 能力 / 示例）', hidden: true },
   '/dbms':            { title: '数据库管理',  icon: 'DataBase',     scope: 'app',       source: 'src/views/app/DBMS.vue',                       load: () => import('../views/app/DBMS.vue'), description: '多层级数据源元数据管理（服务器→数据库→表→关系）' },
 }
 
@@ -79,26 +81,29 @@ export async function buildComponentMap(): Promise<Record<string, Component>> {
 }
 
 /**
- * 平台级路径集合（用于路由守卫：未登录时只允许这些路径）。
- * 从 VUE_PAGE_MAP 中 scope='platform' 的条目自动派生，消除硬编码。
+ * 公共路径集合（用于路由守卫：未登录时只允许这些路径）。
+ * 从 VUE_PAGE_MAP 中 scope='public' 的条目自动派生，消除硬编码。
  */
-export function getPlatformPaths(): Set<string> {
+export function getPublicPaths(): Set<string> {
   return new Set(
     Object.entries(VUE_PAGE_MAP)
-      .filter(([, entry]) => entry.scope === 'platform')
+      .filter(([, entry]) => entry.scope === 'public')
       .map(([path]) => path),
   )
 }
 
+/** @deprecated use getPublicPaths(); platform is now the reserved admin tenant. */
+export const getPlatformPaths = getPublicPaths
+
 /**
- * 从 VUE_PAGE_MAP platform 条目自动构建登录前导航树。
+ * 从 VUE_PAGE_MAP public 条目自动构建登录前导航树。
  *
- * 替代 main.ts 中硬编码的 preAuthNavTree，确保 platform 页面变更只需修改 VUE_PAGE_MAP。
+ * 替代 main.ts 中硬编码的 preAuthNavTree，确保 public 页面变更只需修改 VUE_PAGE_MAP。
  * 登录后 DynamicRouter.refreshRoutes() 会用远程导航树完全替换。
  */
 export function buildPreAuthNavTree(): AppNavRoot {
   const children = Object.entries(VUE_PAGE_MAP)
-    .filter(([, entry]) => entry.scope === 'platform')
+    .filter(([, entry]) => entry.scope === 'public')
     .map(([path, entry]) => ({
       id: `platform-${path === '/' ? 'home' : path.slice(1)}`,
       title: entry.title,

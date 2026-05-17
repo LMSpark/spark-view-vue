@@ -103,6 +103,12 @@ export interface PageConfigOptions {
    * refreshRoutes() 返回加载后的导航树供 UI 直接消费。
    */
   loadNavigation?: () => Promise<{ childPlacement: 'header' | 'sidebar'; children: unknown[] }>
+  /** 平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。 */
+  loadPlatformNavigation?: () => Promise<{ childPlacement: 'header' | 'sidebar'; children: unknown[] }>
+  /** 是否启用平台工作台导航注册。 */
+  isPlatformNavigationEnabled?: () => boolean
+  /** 平台工作台路由前缀，默认 /platform。 */
+  platformPathPrefix?: string
   /**
    * 登录前本地导航树 — 未认证时使用的静态导航数据。
    *
@@ -321,6 +327,9 @@ export async function start(options: StartOptions): Promise<void> {
         ...(pageConfig.componentMap !== undefined && { componentMap: pageConfig.componentMap }),
         ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix }),
         loadNavigation: pageConfig.loadNavigation as DynamicRouterOptions['loadNavigation'],
+        loadPlatformNavigation: pageConfig.loadPlatformNavigation as DynamicRouterOptions['loadPlatformNavigation'],
+        isPlatformNavigationEnabled: pageConfig.isPlatformNavigationEnabled,
+        ...(pageConfig.platformPathPrefix !== undefined && { platformPathPrefix: pageConfig.platformPathPrefix }),
         preAuthNavTree: pageConfig.preAuthNavTree as DynamicRouterOptions['preAuthNavTree'],
         isAuthenticated: pageConfig.isAuthenticated,
       }

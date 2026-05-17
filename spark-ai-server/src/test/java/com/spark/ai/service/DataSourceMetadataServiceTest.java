@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DataSourceMetadataServiceTest {
@@ -91,5 +92,108 @@ class DataSourceMetadataServiceTest {
 
         assertNotNull(relation.get("ID"));
         assertEquals(1, relationService.listAllRelations("t1", "p1").size());
+    }
+
+    @Test
+    void listDatabasesFiltersBySelectedServer() {
+        Number serverOneId = createServer("Server One");
+        Number serverTwoId = createServer("Server Two");
+        Number databaseOneId = createDatabase("t1", "p1", serverOneId, "appdb_one");
+        createDatabase("t1", "p1", serverTwoId, "appdb_two");
+
+        List<Map<String, Object>> selectedServerDatabases =
+                databaseService.listDatabases("t1", "p1", serverOneId.longValue());
+
+        assertEquals(1, selectedServerDatabases.size());
+        assertEquals(databaseOneId.longValue(), ((Number) selectedServerDatabases.get(0).get("ID")).longValue());
+    }
+
+    @Test
+    void listRelationsFiltersBySelectedDatabase() {
+        Number serverId = createServer("Relation Server");
+        Number databaseOneId = createDatabase("t1", "p1", serverId, "relation_db_one");
+        Number databaseTwoId = createDatabase("t1", "p1", serverId, "relation_db_two");
+
+        Map<String, Object> parentOne = createTable("OrdersForDbOne");
+        Map<String, Object> childOne = createTable("ItemsForDbOne");
+        Map<String, Object> parentTwo = createTable("OrdersForDbTwo");
+        Map<String, Object> childTwo = createTable("ItemsForDbTwo");
+        assignDatabase(parentOne, databaseOneId);
+        assignDatabase(childOne, databaseOneId);
+        assignDatabase(parentTwo, databaseTwoId);
+        assignDatabase(childTwo, databaseTwoId);
+
+        relationService.createRelation("t1", "p1", Map.of(
+                "parentTableId", parentOne.get("id"),
+                "childTableId", childOne.get("id"),
+                "parentField", "id",
+                "childField", "parentId",
+                "relationName", "db_one_relation",
+                "databaseId", databaseOneId.longValue()
+        ));
+        relationService.createRelation("t1", "p1", Map.of(
+                "parentTableId", parentTwo.get("id"),
+                "childTableId", childTwo.get("id"),
+                "parentField", "id",
+                "childField", "parentId",
+                "relationName", "db_two_relation",
+                "databaseId", databaseTwoId.longValue()
+        ));
+
+        List<Map<String, Object>> selectedDatabaseRelations =
+                relationService.listAllRelations("t1", "p1", databaseOneId.longValue());
+
+        assertEquals(1, selectedDatabaseRelations.size());
+        assertEquals("db_one_relation", selectedDatabaseRelations.get(0).get("RELATION_NAME"));
+        assertEquals(2, relationService.listAllRelations("t1", "p1").size());
+        assertThrows(IllegalArgumentException.class, () -> relationService.createRelation("t1", "p1", Map.of(
+                "parentTableId", parentOne.get("id"),
+                "childTableId", childTwo.get("id"),
+                "parentField", "id",
+                "childField", "parentId",
+                "databaseId", databaseOneId.longValue()
+        )));
+    }
+
+    private Number createServer(String serverName) {
+        Map<String, Object> server = serverService.createServer(Map.of(
+                "serverName", serverName,
+                "host", "localhost",
+                "port", 9092,
+                "dbType", "h2",
+                "username", "sa",
+                "password", "secret",
+                "isolationMode", "SHARED"
+        ), true, "t1", "tester");
+        return (Number) server.get("ID");
+    }
+
+    private Number createDatabase(String tenantId, String projectId, Number serverId, String databaseName) {
+        Map<String, Object> database = databaseService.createDatabase(tenantId, projectId, Map.of(
+                "serverId", serverId.longValue(),
+                "databaseName", databaseName,
+                "isolationMode", "PROJECT_ISOLATED",
+                "createNew", false,
+                "connectionMode", "DIRECT"
+        ), "tester");
+        return (Number) database.get("ID");
+    }
+
+    private Map<String, Object> createTable(String tableName) {
+        return modelService.createTable("t1", "p1", Map.of(
+                "tableName", tableName,
+                "columns", List.of(
+                        Map.of("name", "parentId", "type", "number"),
+                        Map.of("name", "name", "type", "string")
+                )
+        ));
+    }
+
+    private void assignDatabase(Map<String, Object> table, Number databaseId) {
+        jdbcTemplate.update(
+                "UPDATE DATA_MODEL_TABLE SET DATABASE_ID = ? WHERE ID = ?",
+                databaseId.longValue(),
+                ((Number) table.get("id")).longValue()
+        );
     }
 }
