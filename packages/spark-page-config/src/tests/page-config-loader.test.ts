@@ -306,15 +306,37 @@ describe('PageConfigLoader', () => {
       }))
     })
 
+    it('pagesConfigBaseUrl: 函数型地址在首次读取前不提前解析', () => {
+      vi.clearAllMocks()
+
+      const pagesConfigBaseUrl = vi.fn(() => {
+        throw new Error('should not resolve during construction')
+      })
+
+      expect(() => {
+        loader = new PageConfigLoader({
+          apiBaseUrl: '/api',
+          pagesConfigBaseUrl,
+        })
+      }).not.toThrow()
+
+      expect(pagesConfigBaseUrl).not.toHaveBeenCalled()
+      expect(vi.mocked(createFileLoader)).not.toHaveBeenCalled()
+      expect(vi.mocked(createRequest)).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(createRequest)).toHaveBeenCalledWith(expect.objectContaining({
+        baseURL: '/api',
+      }))
+    })
+
     it('pagesConfigBaseUrl: 支持项目切换后动态重建四文件加载上下文', async () => {
+      vi.clearAllMocks()
+
       let projectId = 'homepage'
       loader = new PageConfigLoader({
         apiBaseUrl: '/api',
         pagesConfigBaseUrl: () => `/api/tenants/lmspark/projects/${projectId}/pages-config`,
       })
-      expect(vi.mocked(createFileLoader)).toHaveBeenLastCalledWith(expect.objectContaining({
-        baseUrl: '/api/tenants/lmspark/projects/homepage/pages-config',
-      }))
+      expect(vi.mocked(createFileLoader)).not.toHaveBeenCalled()
 
       projectId = 'engineering-pm'
       mockFileLoader.load.mockResolvedValue(fileOk([{ type: 'div', id: 'remote-root', props: {} }]))

@@ -25,8 +25,8 @@
           >
             <div class="item-main">
               <span class="item-name">{{ srv.SERVER_NAME }}</span>
-              <el-tag size="small" :type="srv.ISOLATION_MODE === 'SHARED' ? 'success' : 'warning'">
-                {{ srv.ISOLATION_MODE === 'SHARED' ? '共享' : '租户' }}
+              <el-tag size="small" :type="isolationTagType(srv.ISOLATION_MODE)">
+                {{ isolationModeLabel(srv.ISOLATION_MODE) }}
               </el-tag>
             </div>
             <div class="item-sub">{{ srv.HOST }}:{{ srv.PORT }} ({{ srv.DB_TYPE }})</div>
@@ -59,8 +59,8 @@
           >
             <div class="item-main">
               <span class="item-name">{{ db.DATABASE_NAME }}</span>
-              <el-tag size="small" :type="db.ISOLATION_MODE === 'PROJECT_ISOLATED' ? 'primary' : 'info'">
-                {{ db.ISOLATION_MODE === 'PROJECT_ISOLATED' ? '项目隔离' : '租户共享' }}
+              <el-tag size="small" :type="isolationTagType(db.ISOLATION_MODE)">
+                {{ isolationModeLabel(db.ISOLATION_MODE) }}
               </el-tag>
               <el-tag size="small" :type="db.CONNECTION_MODE === 'JNDI_XA' ? 'success' : 'info'">
                 {{ db.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : '直连' }}
@@ -90,8 +90,8 @@
           <div v-for="tbl in tables" :key="tbl.id" class="list-item">
             <div class="item-main">
               <span class="item-name">{{ tbl.tableName }}</span>
-              <el-tag size="small" :type="tbl.projectIsolation ? 'primary' : 'info'">
-                {{ tbl.projectIsolation ? '项目隔离' : '租户共享' }}
+              <el-tag size="small" :type="isolationTagType(tbl.isolationMode)">
+                {{ isolationModeLabel(tbl.isolationMode) }}
               </el-tag>
             </div>
             <div class="item-sub">{{ tbl.physicalTableName }}</div>
@@ -117,11 +117,10 @@
         <el-form-item label="密码"><el-input v-model="dlgServer.form.password" type="password" show-password /></el-form-item>
         <el-form-item label="隔离模式" v-if="isPlatformAdmin">
           <el-radio-group v-model="dlgServer.form.isolationMode">
-            <el-radio value="SHARED">全平台共享</el-radio>
-            <el-radio value="TENANT_ISOLATED">指定租户</el-radio>
+            <el-radio v-for="option in isolationModeOptions" :key="option.value" :value="option.value">{{ option.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="归属租户" v-if="dlgServer.form.isolationMode === 'SHARED' ? false : true">
+        <el-form-item label="归属租户" v-if="dlgServer.form.isolationMode !== 'TENANT_SHARED'">
           {{ currentTenant }}（自动）
         </el-form-item>
       </el-form>
@@ -145,8 +144,7 @@
         </el-form-item>
         <el-form-item label="隔离模式">
           <el-radio-group v-model="dlgDb.form.isolationMode">
-            <el-radio value="PROJECT_ISOLATED">仅当前项目</el-radio>
-            <el-radio value="TENANT_ISOLATED">租户所有项目共享</el-radio>
+            <el-radio v-for="option in databaseIsolationOptions" :key="option.value" :value="option.value">{{ option.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="连接模式">
@@ -174,8 +172,10 @@
       <el-form :model="dlgTable.form" label-width="120px">
         <el-form-item label="逻辑表名"><el-input v-model="dlgTable.form.tableName" placeholder="如：CustomerOrders" /></el-form-item>
         <el-form-item label="物理表名（可选）"><el-input v-model="dlgTable.form.physicalTableName" placeholder="留空自动生成" /></el-form-item>
-        <el-form-item label="项目隔离">
-          <el-switch v-model="dlgTable.form.projectIsolation" active-text="隔离" inactive-text="共享" />
+        <el-form-item label="隔离模式">
+          <el-radio-group v-model="dlgTable.form.isolationMode">
+            <el-radio v-for="option in tableIsolationOptions" :key="option.value" :value="option.value">{{ option.label }}</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="字段列表">
           <div v-for="(col, idx) in dlgTable.form.columns" :key="idx" class="column-row">
@@ -255,14 +255,14 @@ interface DbmsServer {
   HOST: string
   PORT: number
   DB_TYPE: string
-  ISOLATION_MODE: string
+  ISOLATION_MODE: IsolationMode
 }
 
 interface DbmsDatabase {
   ID: number
   SERVER_ID: number
   DATABASE_NAME: string
-  ISOLATION_MODE: string
+  ISOLATION_MODE: IsolationMode
   CONNECTION_MODE?: 'DIRECT' | 'JNDI_XA'
   JNDI_NAME?: string | null
 }
@@ -279,7 +279,7 @@ interface DbmsTable {
   id: number
   tableName: string
   physicalTableName?: string
-  projectIsolation?: boolean
+  isolationMode: IsolationMode
   columns?: DbmsColumn[]
 }
 
@@ -301,7 +301,7 @@ interface ApiMessage {
 interface DatabaseCreatePayload {
   serverId: number
   databaseName: string
-  isolationMode: string
+  isolationMode: IsolationMode
   createNew: boolean
   connectionMode: string
   jndiName?: string
@@ -312,10 +312,60 @@ interface DatabaseCreatePayload {
 interface TableCreatePayload {
   tableName: string
   databaseId: number
-  projectIsolation: boolean
+  isolationMode: IsolationMode
   columns: ColumnForm[]
   physicalTableName?: string
 }
+
+type IsolationMode = 'TENANT_SHARED' | 'TENANT_ISOLATED' | 'PROJECT_SHARED' | 'PROJECT_ISOLATED'
+type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
+
+const isolationModeOptions: Array<{ value: IsolationMode; label: string }> = [
+  { value: 'TENANT_SHARED', label: '租户共享' },
+  { value: 'TENANT_ISOLATED', label: '租户隔离' },
+  { value: 'PROJECT_SHARED', label: '工程共享' },
+  { value: 'PROJECT_ISOLATED', label: '工程隔离' },
+]
+
+const isolationModeRanks: Record<IsolationMode, number> = {
+  TENANT_SHARED: 0,
+  TENANT_ISOLATED: 1,
+  PROJECT_SHARED: 2,
+  PROJECT_ISOLATED: 3,
+}
+
+function isolationModeLabel(mode: string | undefined): string {
+  const option = isolationModeOptions.find((item) => item.value === mode)
+  return option?.label ?? `未知模式: ${mode ?? '空'}`
+}
+
+function isolationTagType(mode: string | undefined): TagType {
+  if (mode === 'TENANT_SHARED') return 'success'
+  if (mode === 'TENANT_ISOLATED') return 'warning'
+  if (mode === 'PROJECT_SHARED') return 'info'
+  if (mode === 'PROJECT_ISOLATED') return 'primary'
+  return 'danger'
+}
+
+function isolationRank(mode: string | undefined): number | null {
+  if (!mode || !(mode in isolationModeRanks)) return null
+  return isolationModeRanks[mode as IsolationMode]
+}
+
+function childIsolationOptions(parentMode: string | undefined) {
+  const parentRank = isolationRank(parentMode)
+  if (parentRank === null) return []
+  return isolationModeOptions.filter((option) => isolationModeRanks[option.value] >= parentRank)
+}
+
+function canContainIsolation(parentMode: string | undefined, childMode: string | undefined): boolean {
+  const parentRank = isolationRank(parentMode)
+  const childRank = isolationRank(childMode)
+  return parentRank !== null && childRank !== null && childRank >= parentRank
+}
+
+const databaseIsolationOptions = computed(() => childIsolationOptions(selectedServer.value?.ISOLATION_MODE))
+const tableIsolationOptions = computed(() => childIsolationOptions(selectedDatabase.value?.ISOLATION_MODE))
 
 // ── 当前上下文 ──
 const route = useRoute()
@@ -449,7 +499,7 @@ function selectDatabase(db: DbmsDatabase) {
 const dlgServer = reactive({
   visible: false,
   loading: false,
-  form: { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
+  form: { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' as IsolationMode }
 })
 
 function resetServerForm() {
@@ -517,7 +567,7 @@ async function deleteServerConfirm(srv: DbmsServer) {
 const dlgDb = reactive({
   visible: false,
   loading: false,
-  form: { databaseName: '', createNew: false, isolationMode: 'PROJECT_ISOLATED', connectionMode: 'DIRECT', jndiName: '', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' }
+  form: { databaseName: '', createNew: false, isolationMode: 'PROJECT_ISOLATED' as IsolationMode, connectionMode: 'DIRECT', jndiName: '', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' }
 })
 
 function resetDbForm() {
@@ -526,6 +576,8 @@ function resetDbForm() {
 
 function openCreateDatabase() {
   resetDbForm()
+  const first = databaseIsolationOptions.value[0]
+  if (first) dlgDb.form.isolationMode = first.value
   dlgDb.visible = true
 }
 
@@ -535,6 +587,10 @@ async function submitCreateDatabase() {
     const server = selectedServer.value
     if (!server) {
       ElMessage.warning('请先选择服务器')
+      return
+    }
+    if (!canContainIsolation(server.ISOLATION_MODE, dlgDb.form.isolationMode)) {
+      ElMessage.error('数据库隔离模式不能比服务器更宽')
       return
     }
     const body: DatabaseCreatePayload = {
@@ -584,11 +640,11 @@ interface ColumnForm { name: string; type: string; maxLength: number | null; pri
 const dlgTable = reactive({
   visible: false,
   loading: false,
-  form: { tableName: '', physicalTableName: '', projectIsolation: true, columns: [] as ColumnForm[] }
+  form: { tableName: '', physicalTableName: '', isolationMode: 'PROJECT_ISOLATED' as IsolationMode, columns: [] as ColumnForm[] }
 })
 
 function resetTableForm() {
-  dlgTable.form = { tableName: '', physicalTableName: '', projectIsolation: true, columns: [{ name: 'id', type: 'integer', maxLength: null, primaryKey: true, required: true }] }
+  dlgTable.form = { tableName: '', physicalTableName: '', isolationMode: 'PROJECT_ISOLATED', columns: [{ name: 'id', type: 'integer', maxLength: null, primaryKey: true, required: true }] }
 }
 
 function addColumn() {
@@ -597,6 +653,8 @@ function addColumn() {
 
 function openCreateTable() {
   resetTableForm()
+  const first = tableIsolationOptions.value[0]
+  if (first) dlgTable.form.isolationMode = first.value
   dlgTable.visible = true
 }
 
@@ -608,10 +666,14 @@ async function submitCreateTable() {
       ElMessage.warning('请先选择数据库')
       return
     }
+    if (!canContainIsolation(database.ISOLATION_MODE, dlgTable.form.isolationMode)) {
+      ElMessage.error('表隔离模式不能比数据库更宽')
+      return
+    }
     const body: TableCreatePayload = {
       tableName: dlgTable.form.tableName,
       databaseId: database.ID,
-      projectIsolation: dlgTable.form.projectIsolation,
+      isolationMode: dlgTable.form.isolationMode,
       columns: dlgTable.form.columns.map(c => ({ name: c.name, type: c.type, maxLength: c.maxLength, primaryKey: c.primaryKey, required: c.required }))
     }
     if (dlgTable.form.physicalTableName) body.physicalTableName = dlgTable.form.physicalTableName

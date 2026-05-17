@@ -116,6 +116,8 @@ export class PageConfigLoader implements ConfigLoader {
       }
       this.request.interceptors.request.use(headerInterceptor)
     }
+    // 函数型 pagesConfigBaseUrl 可能依赖登录态或当前项目，首次真实读取前不提前解析。
+    if (typeof this.opts.pagesConfigBaseUrl === 'function') return
     this.resetPageFileContext(resolvePagesConfigBaseUrl(this.opts))
   }
 

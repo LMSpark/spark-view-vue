@@ -168,15 +168,13 @@ public class DynamicDataService {
     ) {
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(pkPayload, pk.columnName());
-        List<Object> args = new ArrayList<>();
-        args.add(tenantId);
-        args.add(projectId);
+        ScopeClause scope = scopeClause(tenantId, projectId, definition);
+        List<Object> args = new ArrayList<>(scope.args());
         args.add(pkValue);
+        String where = appendCondition(scope.sql(), q(definition, pk.physicalColumnName()) + " = ?");
         List<Map<String, Object>> rows = jdbcFor(definition).query(
                 "SELECT " + projection(definition, definition.columns()) + " FROM " + q(definition, definition.table().physicalTableName())
-                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
-                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
-                        + " AND " + q(definition, pk.physicalColumnName()) + " = ?",
+                + " WHERE " + where,
                 (rs, rowNum) -> rowMap(rs, definition.columns()),
                 args.toArray()
         );
@@ -211,16 +209,15 @@ public class DynamicDataService {
         if (assignments.isEmpty()) {
             return requireRecord(tenantId, projectId, tableName, definition, Map.of(pk.columnName(), pkValue));
         }
-        args.add(tenantId);
-        args.add(projectId);
+        ScopeClause scope = scopeClause(tenantId, projectId, definition);
+        args.addAll(scope.args());
         args.add(pkValue);
+        String where = appendCondition(scope.sql(), q(definition, pk.physicalColumnName()) + " = ?");
 
         int updated = jdbcFor(definition).update(
                 "UPDATE " + q(definition, definition.table().physicalTableName())
                         + " SET " + String.join(", ", assignments)
-                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
-                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
-                        + " AND " + q(definition, pk.physicalColumnName()) + " = ?",
+                + " WHERE " + where,
                 args.toArray()
         );
         if (updated == 0) {
@@ -244,14 +241,14 @@ public class DynamicDataService {
     ) {
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(pkPayload, pk.columnName());
+        ScopeClause scope = scopeClause(tenantId, projectId, definition);
+        List<Object> args = new ArrayList<>(scope.args());
+        args.add(pkValue);
+        String where = appendCondition(scope.sql(), q(definition, pk.physicalColumnName()) + " = ?");
         int deleted = jdbcFor(definition).update(
                 "DELETE FROM " + q(definition, definition.table().physicalTableName())
-                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
-                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
-                        + " AND " + q(definition, pk.physicalColumnName()) + " = ?",
-                tenantId,
-                projectId,
-                pkValue
+                + " WHERE " + where,
+            args.toArray()
         );
         if (deleted == 0) {
             throw new NoSuchElementException("记录不存在: " + pkValue);
@@ -521,8 +518,8 @@ public class DynamicDataService {
             QuerySpec spec
     ) {
         SqlFragment where = buildWhere(definition, spec.filter());
-        List<Object> baseArgs = scopedArgs(tenantId, projectId, where);
-        String fromWhere = scopedFromWhere(definition, where);
+        List<Object> baseArgs = scopedArgs(tenantId, projectId, definition, where);
+        String fromWhere = scopedFromWhere(tenantId, projectId, definition, where);
         int total = count(definition, fromWhere, baseArgs);
         List<Object> args = new ArrayList<>(baseArgs);
         args.add(spec.pageSize());
@@ -587,8 +584,8 @@ public class DynamicDataService {
             TreeFields treeFields
     ) {
         SqlFragment where = buildWhere(definition, spec.filter());
-        List<Object> args = scopedArgs(tenantId, projectId, where);
-        List<Map<String, Object>> matchingRows = fetchAllRows(definition, selected, scopedFromWhere(definition, where), args, spec.sort());
+        List<Object> args = scopedArgs(tenantId, projectId, definition, where);
+        List<Map<String, Object>> matchingRows = fetchAllRows(definition, selected, scopedFromWhere(tenantId, projectId, definition, where), args, spec.sort());
         if (where.sql().isBlank()) {
             return matchingRows;
         }
@@ -625,11 +622,9 @@ public class DynamicDataService {
         return jdbcFor(definition).query(
                 "SELECT " + projection(definition, selected)
                         + " FROM " + q(definition, definition.table().physicalTableName())
-                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
-                        + " AND " + q(definition, "PROJECT_ID") + " = ?",
+                + scopeWhereSql(tenantId, projectId, definition),
                 (rs, rowNum) -> rowMap(rs, selected),
-                tenantId,
-                projectId
+            scopeClause(tenantId, projectId, definition).args().toArray()
         );
     }
 
@@ -642,17 +637,21 @@ public class DynamicDataService {
             Integer limit
     ) {
         DynamicDataModelService.ColumnInfo parentColumn = columnByLogical(definition, treeFields.parentIdField());
-        List<Object> args = new ArrayList<>();
-        args.add(tenantId);
-        args.add(projectId);
+        ScopeClause scope = scopeClause(tenantId, projectId, definition);
+        List<String> conditions = new ArrayList<>();
+        if (!scope.sql().isBlank()) {
+            conditions.add(scope.sql());
+        }
+        List<Object> args = new ArrayList<>(scope.args());
         String parentWhere;
         if (parentId == null) {
-            parentWhere = " AND (" + q(definition, parentColumn.physicalColumnName()) + " IS NULL OR "
+            parentWhere = "(" + q(definition, parentColumn.physicalColumnName()) + " IS NULL OR "
                     + q(definition, parentColumn.physicalColumnName()) + " = '')";
         } else {
-            parentWhere = " AND " + q(definition, parentColumn.physicalColumnName()) + " = ?";
+            parentWhere = q(definition, parentColumn.physicalColumnName()) + " = ?";
             args.add(parentId);
         }
+        conditions.add(parentWhere);
         String limitSql = "";
         if (limit != null) {
             limitSql = " LIMIT ?";
@@ -661,9 +660,7 @@ public class DynamicDataService {
         return jdbcFor(definition).query(
                 "SELECT " + projection(definition, definition.columns())
                         + " FROM " + q(definition, definition.table().physicalTableName())
-                        + " WHERE " + q(definition, "TENANT_ID") + " = ?"
-                        + " AND " + q(definition, "PROJECT_ID") + " = ?"
-                        + parentWhere
+                + " WHERE " + String.join(" AND ", conditions)
                         + orderBy(definition, null)
                         + limitSql,
                 (rs, rowNum) -> rowMap(rs, definition.columns()),
@@ -690,23 +687,53 @@ public class DynamicDataService {
         return total == null ? 0 : total;
     }
 
-    private String scopedFromWhere(DynamicDataModelService.TableDefinition definition, SqlFragment where) {
-        String base = "FROM " + q(definition, definition.table().physicalTableName())
-                + " WHERE " + q(definition, "TENANT_ID") + " = ?"
-                + " AND " + q(definition, "PROJECT_ID") + " = ?";
-        if (where.sql().isBlank()) {
-            return base;
+    private String scopedFromWhere(String tenantId, String projectId, DynamicDataModelService.TableDefinition definition, SqlFragment where) {
+        ScopeClause scope = scopeClause(tenantId, projectId, definition);
+        List<String> conditions = new ArrayList<>();
+        if (!scope.sql().isBlank()) {
+            conditions.add(scope.sql());
         }
-        return base + " AND " + where.sql();
+        if (!where.sql().isBlank()) {
+            conditions.add(where.sql());
+        }
+        String from = "FROM " + q(definition, definition.table().physicalTableName());
+        if (conditions.isEmpty()) {
+            return from;
+        }
+        return from + " WHERE " + String.join(" AND ", conditions);
     }
 
-    private List<Object> scopedArgs(String tenantId, String projectId, SqlFragment where) {
-        List<Object> args = new ArrayList<>();
-        args.add(tenantId);
-        args.add(projectId);
+    private List<Object> scopedArgs(String tenantId, String projectId, DynamicDataModelService.TableDefinition definition, SqlFragment where) {
+        List<Object> args = new ArrayList<>(scopeClause(tenantId, projectId, definition).args());
         args.addAll(where.parameters());
         return args;
     }
+
+    private ScopeClause scopeClause(String tenantId, String projectId, DynamicDataModelService.TableDefinition definition) {
+        DataIsolationMode mode = DataIsolationMode.parse(definition.table().isolationMode(), "table.isolationMode");
+        return switch (mode) {
+            case TENANT_SHARED -> new ScopeClause("", List.of());
+            case TENANT_ISOLATED, PROJECT_SHARED -> new ScopeClause(q(definition, "TENANT_ID") + " = ?", List.of(tenantId));
+            case PROJECT_ISOLATED -> new ScopeClause(
+                    q(definition, "TENANT_ID") + " = ? AND " + q(definition, "PROJECT_ID") + " = ?",
+                    List.of(tenantId, projectId)
+            );
+        };
+    }
+
+    private String scopeWhereSql(String tenantId, String projectId, DynamicDataModelService.TableDefinition definition) {
+        String scope = scopeClause(tenantId, projectId, definition).sql();
+        return scope.isBlank() ? "" : " WHERE " + scope;
+    }
+
+    private String appendCondition(String base, String condition) {
+        if (base == null || base.isBlank()) {
+            return condition;
+        }
+        return base + " AND " + condition;
+    }
+
+    private record ScopeClause(String sql, List<Object> args) {}
 
     private SqlFragment buildWhere(DynamicDataModelService.TableDefinition definition, Object filter) {
         Object normalized = normalizeFilter(filter);

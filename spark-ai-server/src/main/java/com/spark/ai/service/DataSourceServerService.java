@@ -37,8 +37,8 @@ public class DataSourceServerService {
             sql = "SELECT * FROM DATA_SOURCE_SERVER ORDER BY CREATED_AT DESC";
             args = new Object[0];
         } else {
-            sql = "SELECT * FROM DATA_SOURCE_SERVER WHERE ISOLATION_MODE = 'SHARED'"
-                    + " OR (ISOLATION_MODE = 'TENANT_ISOLATED' AND TENANT_ID = ?)"
+            sql = "SELECT * FROM DATA_SOURCE_SERVER WHERE ISOLATION_MODE = 'TENANT_SHARED'"
+                    + " OR (ISOLATION_MODE <> 'TENANT_SHARED' AND TENANT_ID = ?)"
                     + " ORDER BY CREATED_AT DESC";
             args = new Object[]{tenantId};
         }
@@ -71,10 +71,11 @@ public class DataSourceServerService {
         String isolationMode;
         String tenantId;
         if (isPlatformAdmin) {
-            isolationMode = stringOrDefault(body.get("isolationMode"), "TENANT_ISOLATED");
-            tenantId = "SHARED".equals(isolationMode) ? null : stringOrDefault(body.get("tenantId"), currentTenant);
+            DataIsolationMode mode = DataIsolationMode.parseOrDefault(body.get("isolationMode"), DataIsolationMode.TENANT_ISOLATED, "isolationMode");
+            isolationMode = mode.name();
+            tenantId = mode == DataIsolationMode.TENANT_SHARED ? null : stringOrDefault(body.get("tenantId"), currentTenant);
         } else {
-            isolationMode = "TENANT_ISOLATED";
+            isolationMode = DataIsolationMode.TENANT_ISOLATED.name();
             tenantId = currentTenant;
         }
 
@@ -125,8 +126,9 @@ public class DataSourceServerService {
         String isolationMode = (String) existing.get("ISOLATION_MODE");
         String tenantId = (String) existing.get("TENANT_ID");
         if (isPlatformAdmin && body.containsKey("isolationMode")) {
-            isolationMode = (String) body.get("isolationMode");
-            tenantId = "SHARED".equals(isolationMode) ? null : stringOrDefault(body.get("tenantId"), currentTenant);
+            DataIsolationMode mode = DataIsolationMode.parse(body.get("isolationMode"), "isolationMode");
+            isolationMode = mode.name();
+            tenantId = mode == DataIsolationMode.TENANT_SHARED ? null : stringOrDefault(body.get("tenantId"), currentTenant);
         }
 
         jdbc.update(
@@ -176,7 +178,7 @@ public class DataSourceServerService {
         }
         String isolationMode = Objects.toString(server.get("ISOLATION_MODE"), "");
         String tenantId = Objects.toString(server.get("TENANT_ID"), "");
-        if ("SHARED".equals(isolationMode)) {
+        if (DataIsolationMode.TENANT_SHARED.name().equals(isolationMode)) {
             return;
         }
         if (!currentTenant.equals(tenantId)) {

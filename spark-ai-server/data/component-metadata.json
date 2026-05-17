@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-17T16:15:41.294Z",
+  "buildTime": "2026-05-17T18:16:37.950Z",
   "componentCount": 109,
   "components": {
     "about": {
@@ -598,7 +598,7 @@
       "type": "cache-manager",
       "filePath": "src/views/tenant/CacheManager.vue",
       "category": "feature",
-      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"cache-manager\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"cache-manager\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
       "internal": true,
       "configurable": false,
       "props": [],

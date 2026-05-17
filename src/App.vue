@@ -394,7 +394,7 @@ navigationActionRegistry.register('home', () => {
 navigationActionRegistry.register('logout', () => {
   logout()
   clearAllPageCache()
-  window.location.replace(router.resolve('/login').href)
+  window.location.replace(router.resolve('/').href)
 })
 navigationActionRegistry.register('search', () => {
   emitNavigationAction('search')

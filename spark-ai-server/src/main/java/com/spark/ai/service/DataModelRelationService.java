@@ -49,7 +49,7 @@ public class DataModelRelationService {
                         + " AND " + scopedAlias("ct")
                         + " AND (r.PARENT_TABLE_ID = ? OR r.CHILD_TABLE_ID = ?)"
                         + " ORDER BY r.CREATED_AT DESC",
-                tenantId, projectId, tenantId, projectId, tableId, tableId);
+                    tenantId, tenantId, projectId, tenantId, tenantId, projectId, tableId, tableId);
     }
 
     public List<Map<String, Object>> listAllRelations(String tenantId, String projectId) {
@@ -67,7 +67,9 @@ public class DataModelRelationService {
                 + " AND " + scopedAlias("ct");
         List<Object> args = new ArrayList<>();
         args.add(tenantId);
+        args.add(tenantId);
         args.add(projectId);
+        args.add(tenantId);
         args.add(tenantId);
         args.add(projectId);
         if (databaseId != null) {
@@ -127,9 +129,8 @@ public class DataModelRelationService {
         if (tenantId == null || projectId == null) return;
         String sql = "SELECT COUNT(*) FROM DATA_MODEL_TABLE"
                 + " WHERE ID IN (?, ?)"
-                + " AND TENANT_ID = ?"
-                + " AND (PROJECT_ISOLATION = FALSE OR PROJECT_ID = ?)";
-        List<Object> args = new ArrayList<>(List.of(parentTableId, childTableId, tenantId, projectId));
+            + " AND " + scopedAlias("");
+        List<Object> args = new ArrayList<>(List.of(parentTableId, childTableId, tenantId, tenantId, projectId));
         if (databaseId != null) {
             sql += " AND DATABASE_ID = ?";
             args.add(databaseId);
@@ -142,7 +143,10 @@ public class DataModelRelationService {
     }
 
     private String scopedAlias(String alias) {
-        return alias + ".TENANT_ID = ? AND (" + alias + ".PROJECT_ISOLATION = FALSE OR " + alias + ".PROJECT_ID = ?)";
+        String prefix = alias == null || alias.isBlank() ? "" : alias + ".";
+        return "(" + prefix + "ISOLATION_MODE = 'TENANT_SHARED'"
+                + " OR (" + prefix + "ISOLATION_MODE IN ('TENANT_ISOLATED', 'PROJECT_SHARED') AND " + prefix + "TENANT_ID = ?)"
+                + " OR (" + prefix + "ISOLATION_MODE = 'PROJECT_ISOLATED' AND " + prefix + "TENANT_ID = ? AND " + prefix + "PROJECT_ID = ?))";
     }
 
     @Transactional
@@ -167,7 +171,7 @@ public class DataModelRelationService {
                         + " AND " + scopedAlias("pt")
                         + " AND " + scopedAlias("ct"),
                 Integer.class,
-                relationId, tenantId, projectId, tenantId, projectId);
+                    relationId, tenantId, tenantId, projectId, tenantId, tenantId, projectId);
         if (count == null || count != 1) {
             throw new IllegalArgumentException("表关系不存在或不属于当前项目");
         }

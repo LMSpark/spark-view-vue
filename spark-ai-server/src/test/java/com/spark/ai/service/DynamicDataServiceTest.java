@@ -15,6 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BooleanSupplier;
 
@@ -101,6 +102,37 @@ class DynamicDataServiceTest {
         assertEquals(30.0, (Double) aggregate.get("totalAmount"), 0.001);
         assertTrue((Boolean) modelService.consistency("t1", "p1", "Orders").get("consistent"));
     }
+
+        @Test
+        void dynamicTable_appliesIsolationModeToRuntimeQueries() {
+                modelService.createTable("t1", "p1", Map.of(
+                                "tableName", "TenantSharedItems",
+                                "isolationMode", "TENANT_SHARED",
+                                "columns", List.of(Map.of("name", "name", "type", "string"))
+                ));
+                Map<String, Object> shared = dataService.createRecord("t1", "p1", "TenantSharedItems", Map.of("name", "shared"));
+
+                Map<String, Object> tenantSharedResult = dataService.query("t2", "p9", "TenantSharedItems", Map.of());
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> tenantSharedRows = (List<Map<String, Object>>) tenantSharedResult.get("rows");
+
+                assertEquals(1, tenantSharedRows.size());
+                assertEquals(shared.get("id"), tenantSharedRows.get(0).get("id"));
+
+                modelService.createTable("t1", "p1", Map.of(
+                                "tableName", "ProjectSharedItems",
+                                "isolationMode", "PROJECT_SHARED",
+                                "columns", List.of(Map.of("name", "name", "type", "string"))
+                ));
+                dataService.createRecord("t1", "p1", "ProjectSharedItems", Map.of("name", "same-tenant"));
+
+                Map<String, Object> sameTenantResult = dataService.query("t1", "p2", "ProjectSharedItems", Map.of());
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> sameTenantRows = (List<Map<String, Object>>) sameTenantResult.get("rows");
+
+                assertEquals(1, sameTenantRows.size());
+                assertThrows(NoSuchElementException.class, () -> dataService.query("t2", "p1", "ProjectSharedItems", Map.of()));
+        }
 
     @Test
     void dataModelMetadata_rejectsViewsAndOmitsViewsInPayload() {
@@ -443,7 +475,7 @@ class DynamicDataServiceTest {
                 SERVER_NAME, HOST, PORT, DB_TYPE, USERNAME, PASSWORD,
                 ISOLATION_MODE, TENANT_ID, CREATED_BY, STATUS, CREATED_AT, UPDATED_AT
             ) VALUES ('XA Test Server', 'localhost', 3306, 'mysql', 'spark', 'encrypted',
-                'SHARED', NULL, 'tester', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                                'TENANT_SHARED', NULL, 'tester', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """);
         DynamicDataService jtaDataService = new DynamicDataService(
                 jdbcTemplate,

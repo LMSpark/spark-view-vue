@@ -19,13 +19,12 @@
             "path": "/app-list"
         },
         {
-            "id": "system-settings",
+            "id": "dev-center",
             "nodeKind": "module",
-            "title": "系统设置",
-            "description": "租户级页面、导航、数据源和缓存管理",
-            "icon": "Setting",
+            "title": "开发中心",
+            "description": "开发、数据源和缓存管理",
+            "icon": "Tools",
             "childPlacement": "sidebar",
-            "redirect": "/dev",
             "children": [
                 {
                     "id": "dev-workbench",
@@ -38,7 +37,7 @@
                     "id": "dbms",
                     "nodeKind": "system-page",
                     "title": "数据库管理",
-                    "description": "租户级服务器、数据库和模型管理",
+                    "description": "服务器、数据库和模型管理",
                     "icon": "DataBase",
                     "path": "/dbms"
                 },

@@ -105,7 +105,7 @@ public class DynamicDataModelService {
                 RESOURCE_ID VARCHAR(255),
                 BUSINESS_CATEGORY VARCHAR(64),
                 DATABASE_ID BIGINT,
-                PROJECT_ISOLATION BOOLEAN NOT NULL DEFAULT TRUE,
+                ISOLATION_MODE VARCHAR(32) NOT NULL DEFAULT 'PROJECT_ISOLATED',
                 SCHEMA_VERSION INT NOT NULL DEFAULT 1,
                 DDL_HASH VARCHAR(128),
                 STATUS VARCHAR(64) NOT NULL DEFAULT 'active',
@@ -329,7 +329,7 @@ public class DynamicDataModelService {
               RESOURCE_ID VARCHAR(255),
               BUSINESS_CATEGORY VARCHAR(64),
               DATABASE_ID BIGINT,
-              PROJECT_ISOLATION BOOLEAN NOT NULL DEFAULT TRUE,
+                            ISOLATION_MODE VARCHAR(32) NOT NULL DEFAULT 'PROJECT_ISOLATED',
               SCHEMA_VERSION INT NOT NULL DEFAULT 1,
               DDL_HASH VARCHAR(128),
               STATUS VARCHAR(64) NOT NULL DEFAULT 'active',
@@ -439,7 +439,7 @@ public class DynamicDataModelService {
             """);
 
         addMySqlColumnIfMissing("DATA_MODEL_TABLE", "DATABASE_ID", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN DATABASE_ID BIGINT");
-        addMySqlColumnIfMissing("DATA_MODEL_TABLE", "PROJECT_ISOLATION", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN PROJECT_ISOLATION BOOLEAN NOT NULL DEFAULT TRUE");
+        addMySqlColumnIfMissing("DATA_MODEL_TABLE", "ISOLATION_MODE", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN ISOLATION_MODE VARCHAR(32) NOT NULL DEFAULT 'PROJECT_ISOLATED'");
         addMySqlColumnIfMissing("DATA_SOURCE_DATABASE", "CONNECTION_MODE", "ALTER TABLE DATA_SOURCE_DATABASE ADD COLUMN CONNECTION_MODE VARCHAR(32) NOT NULL DEFAULT 'DIRECT'");
         addMySqlColumnIfMissing("DATA_SOURCE_DATABASE", "JNDI_NAME", "ALTER TABLE DATA_SOURCE_DATABASE ADD COLUMN JNDI_NAME VARCHAR(512)");
 
@@ -489,27 +489,26 @@ public class DynamicDataModelService {
 
     public List<Map<String, Object>> listTables(String tenantId, String projectId) {
         guardProject(tenantId, projectId);
-        return jdbcTemplate.query("""
-            SELECT * FROM DATA_MODEL_TABLE
-            WHERE TENANT_ID = ? AND (PROJECT_ISOLATION = FALSE OR PROJECT_ID = ?)
-            ORDER BY LOGICAL_TABLE_NAME
-            """, (rs, rowNum) -> toTableSummary(readTableInfo(rs)), tenantId, projectId);
+        ScopePredicate scope = tableScopePredicate(tenantId, projectId, "");
+        return jdbcTemplate.query(
+                "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY LOGICAL_TABLE_NAME",
+                (rs, rowNum) -> toTableSummary(readTableInfo(rs)),
+                scope.args().toArray()
+        );
     }
 
     public List<Map<String, Object>> listTablesByDatabase(String tenantId, String projectId, Long databaseId) {
         guardProject(tenantId, projectId);
-        if (databaseId == null) {
-            return jdbcTemplate.query("""
-                SELECT * FROM DATA_MODEL_TABLE
-                WHERE TENANT_ID = ? AND (PROJECT_ISOLATION = FALSE OR PROJECT_ID = ?) AND DATABASE_ID IS NULL
-                ORDER BY LOGICAL_TABLE_NAME
-                """, (rs, rowNum) -> toTableSummary(readTableInfo(rs)), tenantId, projectId);
+        ScopePredicate scope = tableScopePredicate(tenantId, projectId, databaseId == null ? "DATABASE_ID IS NULL" : "DATABASE_ID = ?");
+        List<Object> args = new ArrayList<>(scope.args());
+        if (databaseId != null) {
+            args.add(databaseId);
         }
-        return jdbcTemplate.query("""
-            SELECT * FROM DATA_MODEL_TABLE
-            WHERE TENANT_ID = ? AND (PROJECT_ISOLATION = FALSE OR PROJECT_ID = ?) AND DATABASE_ID = ?
-            ORDER BY LOGICAL_TABLE_NAME
-            """, (rs, rowNum) -> toTableSummary(readTableInfo(rs)), tenantId, projectId, databaseId);
+        return jdbcTemplate.query(
+                "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY LOGICAL_TABLE_NAME",
+                (rs, rowNum) -> toTableSummary(readTableInfo(rs)),
+                args.toArray()
+        );
     }
 
     public Map<String, Object> getTablePayload(String tenantId, String projectId, String logicalTableName) {
@@ -540,7 +539,7 @@ public class DynamicDataModelService {
             databaseId = n.longValue();
         }
 
-        boolean projectIsolation = !Boolean.FALSE.equals(body.get("projectIsolation"));
+        DataIsolationMode isolationMode = tableIsolationMode(body, databaseId);
 
         DatabaseDialect targetDialect = dialectFor(databaseId);
         JdbcTemplate targetJdbc = jdbcTemplateFor(databaseId);
@@ -549,7 +548,7 @@ public class DynamicDataModelService {
         IntrospectedTable introspected = scanPhysicalTable(targetJdbc, physicalName);
         Map<String, Object> requestBody = new LinkedHashMap<>(body);
         requestBody.put("databaseId", databaseId);
-        requestBody.put("projectIsolation", projectIsolation);
+        requestBody.put("isolationMode", isolationMode.name());
         Map<String, Object> result = persistImportedOrCreatedTable(
                 tenantId,
                 projectId,
@@ -799,12 +798,11 @@ public class DynamicDataModelService {
         Timestamp now = Timestamp.from(Instant.now());
         String ddlHash = hashTable(introspected);
         Long databaseId = readNullableLong(requestBody.get("databaseId"));
-        boolean projectIsolation = readBoolean(requestBody.get("projectIsolation"), true);
         jdbcTemplate.update("""
             INSERT INTO DATA_MODEL_TABLE (
                 TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME, ORIGIN, MANAGED_MODE,
                 PHYSICAL_TABLE_NAME, PRIMARY_KEY_FIELD, RESOURCE_TYPE, RESOURCE_ID,
-                BUSINESS_CATEGORY, DATABASE_ID, PROJECT_ISOLATION, SCHEMA_VERSION, DDL_HASH, STATUS,
+                BUSINESS_CATEGORY, DATABASE_ID, ISOLATION_MODE, SCHEMA_VERSION, DDL_HASH, STATUS,
                 LAST_INTROSPECTED_AT, CREATED_AT, UPDATED_AT
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
             """,
@@ -819,7 +817,7 @@ public class DynamicDataModelService {
                 stringOrDefault(requestBody.get("resourceId"), logicalName),
                 stringOrDefault(requestBody.get("businessCategory"), null),
                 databaseId,
-                projectIsolation,
+                DataIsolationMode.parseOrDefault(requestBody.get("isolationMode"), DataIsolationMode.PROJECT_ISOLATED, "isolationMode").name(),
                 1,
                 ddlHash,
                 now,
@@ -1073,13 +1071,21 @@ public class DynamicDataModelService {
     }
 
     private TableInfo findTable(String tenantId, String projectId, String logicalTableName) {
+        ScopePredicate scope = tableScopePredicate(tenantId, projectId, "LOGICAL_TABLE_NAME = ?");
+        List<Object> args = new ArrayList<>(scope.args());
+        args.add(logicalTableName);
         try {
-            return jdbcTemplate.queryForObject("""
-                SELECT * FROM DATA_MODEL_TABLE
-                WHERE TENANT_ID = ? AND (PROJECT_ISOLATION = FALSE OR PROJECT_ID = ?) AND LOGICAL_TABLE_NAME = ?
-                ORDER BY PROJECT_ISOLATION DESC, UPDATED_AT DESC
-                LIMIT 1
-                """, (rs, rowNum) -> readTableInfo(rs), tenantId, projectId, logicalTableName);
+            return jdbcTemplate.queryForObject(
+                    "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY "
+                            + "CASE ISOLATION_MODE "
+                            + "WHEN 'PROJECT_ISOLATED' THEN 4 "
+                            + "WHEN 'PROJECT_SHARED' THEN 3 "
+                            + "WHEN 'TENANT_ISOLATED' THEN 2 "
+                            + "WHEN 'TENANT_SHARED' THEN 1 "
+                            + "ELSE 0 END DESC, UPDATED_AT DESC LIMIT 1",
+                    (rs, rowNum) -> readTableInfo(rs),
+                    args.toArray()
+            );
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -1127,7 +1133,7 @@ public class DynamicDataModelService {
                 rs.getString("DDL_HASH"),
                 rs.getString("STATUS"),
                 readNullableLong(rs.getObject("DATABASE_ID")),
-                rs.getBoolean("PROJECT_ISOLATION")
+                rs.getString("ISOLATION_MODE")
         );
     }
 
@@ -1187,7 +1193,7 @@ public class DynamicDataModelService {
         payload.put("ddlHash", table.ddlHash());
         payload.put("status", table.status());
         payload.put("databaseId", table.databaseId());
-        payload.put("projectIsolation", table.projectIsolation());
+        payload.put("isolationMode", table.isolationMode());
         return payload;
     }
 
@@ -1497,8 +1503,39 @@ public class DynamicDataModelService {
             String ddlHash,
             String status,
             Long databaseId,
-            boolean projectIsolation
+            String isolationMode
     ) {}
+
+    private ScopePredicate tableScopePredicate(String tenantId, String projectId, String extraCondition) {
+        List<Object> args = new ArrayList<>();
+        args.add(tenantId);
+        args.add(tenantId);
+        args.add(projectId);
+        String sql = "(ISOLATION_MODE = 'TENANT_SHARED'"
+                + " OR (ISOLATION_MODE IN ('TENANT_ISOLATED', 'PROJECT_SHARED') AND TENANT_ID = ?)"
+                + " OR (ISOLATION_MODE = 'PROJECT_ISOLATED' AND TENANT_ID = ? AND PROJECT_ID = ?))";
+        if (extraCondition != null && !extraCondition.isBlank()) {
+            sql += " AND " + extraCondition;
+        }
+        return new ScopePredicate(sql, args);
+    }
+
+    private DataIsolationMode tableIsolationMode(Map<String, Object> body, Long databaseId) {
+        DataIsolationMode mode = DataIsolationMode.parseOrDefault(body.get("isolationMode"), DataIsolationMode.PROJECT_ISOLATED, "isolationMode");
+        if (databaseId != null) {
+            DataIsolationMode databaseMode = DataIsolationMode.parse(jdbcTemplate.queryForObject(
+                    "SELECT ISOLATION_MODE FROM DATA_SOURCE_DATABASE WHERE ID = ?",
+                    String.class,
+                    databaseId
+            ), "database.isolationMode");
+            if (!databaseMode.canContain(mode)) {
+                throw new IllegalArgumentException("表隔离模式不能比数据库更宽");
+            }
+        }
+        return mode;
+    }
+
+    private record ScopePredicate(String sql, List<Object> args) {}
 
     public record ColumnInfo(
             long id,

@@ -27,21 +27,12 @@
             "path": "/apps"
         },
         {
-            "id": "platform-dbms",
-            "nodeKind": "system-page",
-            "title": "DBMS",
-            "description": "平台级服务器、数据库和模型管理",
-            "icon": "DataBase",
-            "path": "/dbms"
-        },
-        {
-            "id": "platform-system",
+            "id": "platform-dev-center",
             "nodeKind": "module",
-            "title": "平台工具",
-            "description": "开发、缓存和诊断能力",
-            "icon": "Setting",
+            "title": "开发中心",
+            "description": "开发、数据源和缓存管理",
+            "icon": "Tools",
             "childPlacement": "sidebar",
-            "redirect": "/dev",
             "children": [
                 {
                     "id": "platform-dev",
@@ -49,6 +40,14 @@
                     "title": "开发工作台",
                     "icon": "Lightning",
                     "path": "/dev"
+                },
+                {
+                    "id": "platform-dbms",
+                    "nodeKind": "system-page",
+                    "title": "数据库管理",
+                    "description": "服务器、数据库和模型管理",
+                    "icon": "DataBase",
+                    "path": "/dbms"
                 },
                 {
                     "id": "platform-cache",

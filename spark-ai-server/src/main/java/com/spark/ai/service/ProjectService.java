@@ -37,7 +37,10 @@ public class ProjectService {
     private static final String APP_PROJECT_NAVIGATION_TEMPLATE = "navigation-app-default.json";
     private static final String PLATFORM_NAVIGATION_TEMPLATE = "navigation-platform-default.json";
     private static final String PATH_APP_LIST = "/app-list";
+    private static final String PATH_DEV = "/dev";
     private static final String PATH_DBMS = "/dbms";
+    private static final String PATH_CACHE_MANAGER = "/cache-manager";
+    private static final String PATH_PLATFORM_APPS = "/apps";
 
     private final ProjectRepository projectRepo;
     private final ProjectMemberRepository memberRepo;
@@ -309,12 +312,13 @@ public class ProjectService {
             return prunePaths(children, Set.of(PATH_APP_LIST, PATH_DBMS));
         }
         if (PLATFORM_TENANT_ID.equals(tenantId)) {
-            return ensureRootNode(children, platformDbmsNode());
+            return rebuildDevelopmentCenter(children, tenantId, projectId, true);
         }
 
-        boolean changed = normalizeLegacyAppListNode(children, tenantId, projectId);
-        changed |= ensureRootNode(children, appListNode(tenantId, projectId));
-        changed |= ensureDbmsNode(children, tenantId, projectId);
+        boolean changed = removeNodesByPath(children, Set.of(PATH_APP_LIST));
+        insertAt(children, appListNode(tenantId, projectId), indexAfterPath(children, "/dashboard"));
+        changed = true;
+        changed |= rebuildDevelopmentCenter(children, tenantId, projectId, false);
         return changed;
     }
 
@@ -338,58 +342,83 @@ public class ProjectService {
         return changed;
     }
 
-    private boolean ensureRootNode(List<Map<String, Object>> children, Map<String, Object> node) {
-        if (containsNode(children, asString(node.get("id")), asString(node.get("path")))) {
-            return false;
-        }
-        children.add(node);
+    @SuppressWarnings("unchecked")
+    private boolean rebuildDevelopmentCenter(List<Map<String, Object>> children, String tenantId, String projectId, boolean platform) {
+        boolean changed = removeNodesByIdSuffix(children, Set.of("system-settings", "platform-system", "dev-center", "platform-dev-center"));
+        changed |= removeNodesByPath(children, Set.of(PATH_DEV, PATH_DBMS, PATH_CACHE_MANAGER));
+        int index = platform ? indexAfterPath(children, PATH_PLATFORM_APPS) : indexAfterPath(children, PATH_APP_LIST);
+        insertAt(children, developmentCenterNode(tenantId, projectId, platform), index);
         return true;
     }
 
-    private boolean normalizeLegacyAppListNode(List<Map<String, Object>> children, String tenantId, String projectId) {
-        Map<String, Object> existing = findNodeByPath(children, PATH_APP_LIST);
-        if (existing == null) {
-            return false;
+    private void insertAt(List<Map<String, Object>> children, Map<String, Object> node, int index) {
+        if (index < 0 || index > children.size()) {
+            children.add(node);
+            return;
         }
-        String id = asString(existing.get("id"));
-        String title = asString(existing.get("title"));
-        if (!"back-to-homepage".equals(id) && !"返回应用工场".equals(title)) {
-            return false;
+        children.add(index, node);
+    }
+
+    private int indexAfterPath(List<Map<String, Object>> nodes, String path) {
+        String normalizedPath = normalizePath(path);
+        for (int i = 0; i < nodes.size(); i++) {
+            if (normalizedPath.equals(normalizePath(asString(nodes.get(i).get("path"))))) {
+                return i + 1;
+            }
         }
-        Map<String, Object> normalized = appListNode(tenantId, projectId);
-        existing.put("id", normalized.get("id"));
-        existing.put("nodeKind", normalized.get("nodeKind"));
-        existing.put("title", normalized.get("title"));
-        existing.put("description", normalized.get("description"));
-        existing.put("icon", normalized.get("icon"));
-        existing.put("path", normalized.get("path"));
-        return true;
+        return nodes.size();
     }
 
     @SuppressWarnings("unchecked")
-    private boolean ensureDbmsNode(List<Map<String, Object>> children, String tenantId, String projectId) {
-        if (containsNode(children, "dbms", PATH_DBMS)) {
-            return false;
+    private boolean removeNodesByPath(List<Map<String, Object>> nodes, Set<String> paths) {
+        Set<String> normalizedPaths = new HashSet<>();
+        for (String path : paths) {
+            normalizedPaths.add(normalizePath(path));
         }
-        Map<String, Object> dbmsNode = dbmsNode(tenantId, projectId);
-        Map<String, Object> systemSettings = findNodeByIdSuffix(children, "system-settings");
-        if (systemSettings == null) {
-            children.add(dbmsNode);
-            return true;
+        boolean changed = false;
+        Iterator<Map<String, Object>> iterator = nodes.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> node = iterator.next();
+            if (normalizedPaths.contains(normalizePath(asString(node.get("path"))))) {
+                iterator.remove();
+                changed = true;
+                continue;
+            }
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                changed |= removeNodesByPath((List<Map<String, Object>>) childList, paths);
+            }
         }
-        Object childValue = systemSettings.get("children");
-        List<Map<String, Object>> settingsChildren;
-        if (childValue instanceof List<?> rawChildren) {
-            settingsChildren = (List<Map<String, Object>>) rawChildren;
-        } else {
-            settingsChildren = new ArrayList<>();
-            systemSettings.put("children", settingsChildren);
+        return changed;
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean removeNodesByIdSuffix(List<Map<String, Object>> nodes, Set<String> idSuffixes) {
+        boolean changed = false;
+        Iterator<Map<String, Object>> iterator = nodes.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> node = iterator.next();
+            String id = asString(node.get("id"));
+            if (matchesAnyIdSuffix(id, idSuffixes)) {
+                iterator.remove();
+                changed = true;
+                continue;
+            }
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                changed |= removeNodesByIdSuffix((List<Map<String, Object>>) childList, idSuffixes);
+            }
         }
-        if (containsNode(settingsChildren, "dbms", PATH_DBMS)) {
-            return false;
+        return changed;
+    }
+
+    private boolean matchesAnyIdSuffix(String id, Set<String> idSuffixes) {
+        for (String suffix : idSuffixes) {
+            if (suffix.equals(id) || id.endsWith("-" + suffix)) {
+                return true;
+            }
         }
-        settingsChildren.add(dbmsNode);
-        return true;
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -459,9 +488,35 @@ public class ProjectService {
         node.put("id", scopedNodeId(tenantId, projectId, "dbms"));
         node.put("nodeKind", "system-page");
         node.put("title", "数据库管理");
-        node.put("description", "租户级服务器、数据库和模型管理");
+        node.put("description", "服务器、数据库和模型管理");
         node.put("icon", "DataBase");
         node.put("path", PATH_DBMS);
+        return node;
+    }
+
+    private Map<String, Object> developmentCenterNode(String tenantId, String projectId, boolean platform) {
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put("id", platform ? "platform-dev-center" : scopedNodeId(tenantId, projectId, "dev-center"));
+        node.put("nodeKind", "module");
+        node.put("title", "开发中心");
+        node.put("description", "开发、数据源和缓存管理");
+        node.put("icon", "Tools");
+        node.put("childPlacement", "sidebar");
+        node.put("children", List.of(
+                devWorkbenchNode(tenantId, projectId, platform),
+                platform ? platformDbmsNode() : dbmsNode(tenantId, projectId),
+                cacheManagerNode(tenantId, projectId, platform)
+        ));
+        return node;
+    }
+
+    private Map<String, Object> devWorkbenchNode(String tenantId, String projectId, boolean platform) {
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put("id", platform ? "platform-dev" : scopedNodeId(tenantId, projectId, "dev-workbench"));
+        node.put("nodeKind", "system-page");
+        node.put("title", "开发工作台");
+        node.put("icon", "Lightning");
+        node.put("path", PATH_DEV);
         return node;
     }
 
@@ -469,10 +524,20 @@ public class ProjectService {
         Map<String, Object> node = new LinkedHashMap<>();
         node.put("id", "platform-dbms");
         node.put("nodeKind", "system-page");
-        node.put("title", "DBMS");
-        node.put("description", "平台级服务器、数据库和模型管理");
+        node.put("title", "数据库管理");
+        node.put("description", "服务器、数据库和模型管理");
         node.put("icon", "DataBase");
         node.put("path", PATH_DBMS);
+        return node;
+    }
+
+    private Map<String, Object> cacheManagerNode(String tenantId, String projectId, boolean platform) {
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put("id", platform ? "platform-cache" : scopedNodeId(tenantId, projectId, "cache-manager"));
+        node.put("nodeKind", "system-page");
+        node.put("title", "缓存管理");
+        node.put("icon", "Coin");
+        node.put("path", PATH_CACHE_MANAGER);
         return node;
     }
 

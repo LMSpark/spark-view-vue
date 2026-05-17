@@ -51,7 +51,7 @@ class DataSourceMetadataServiceTest {
                 "dbType", "h2",
                 "username", "sa",
                 "password", "secret",
-                "isolationMode", "SHARED"
+                "isolationMode", "TENANT_SHARED"
         ), true, "t1", "tester");
         Number serverId = (Number) server.get("ID");
         assertNotNull(serverId);
@@ -155,6 +155,47 @@ class DataSourceMetadataServiceTest {
         )));
     }
 
+    @Test
+    void dataIsolationRejectsLegacyAndWiderChildModes() {
+        assertThrows(IllegalArgumentException.class, () -> serverService.createServer(Map.of(
+                "serverName", "Legacy Shared Server",
+                "host", "localhost",
+                "port", 9092,
+                "dbType", "h2",
+                "username", "sa",
+                "password", "secret",
+                "isolationMode", "SHARED"
+        ), true, "t1", "tester"));
+
+        Map<String, Object> projectIsolatedServer = serverService.createServer(Map.of(
+                "serverName", "Project Server",
+                "host", "localhost",
+                "port", 9092,
+                "dbType", "h2",
+                "username", "sa",
+                "password", "secret",
+                "isolationMode", "PROJECT_ISOLATED"
+        ), true, "t1", "tester");
+
+        assertThrows(IllegalArgumentException.class, () -> databaseService.createDatabase("t1", "p1", Map.of(
+                "serverId", ((Number) projectIsolatedServer.get("ID")).longValue(),
+                "databaseName", "too_wide_db",
+                "isolationMode", "TENANT_ISOLATED",
+                "createNew", false,
+                "connectionMode", "DIRECT"
+        ), "tester"));
+
+        Number serverId = createServer("Database Boundary Server");
+        Number databaseId = createDatabase("t1", "p1", serverId, "project_isolated_db");
+
+        assertThrows(IllegalArgumentException.class, () -> modelService.createTable("t1", "p1", Map.of(
+                "tableName", "TooWideTable",
+                "databaseId", databaseId.longValue(),
+                "isolationMode", "TENANT_ISOLATED",
+                "columns", List.of(Map.of("name", "name", "type", "string"))
+        )));
+    }
+
     private Number createServer(String serverName) {
         Map<String, Object> server = serverService.createServer(Map.of(
                 "serverName", serverName,
@@ -163,7 +204,7 @@ class DataSourceMetadataServiceTest {
                 "dbType", "h2",
                 "username", "sa",
                 "password", "secret",
-                "isolationMode", "SHARED"
+                "isolationMode", "TENANT_SHARED"
         ), true, "t1", "tester");
         return (Number) server.get("ID");
     }

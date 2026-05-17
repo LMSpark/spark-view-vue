@@ -40,8 +40,11 @@ public class DataSourceDatabaseService {
         String sql = "SELECT d.*, s.SERVER_NAME, s.HOST, s.PORT, s.DB_TYPE"
                 + " FROM DATA_SOURCE_DATABASE d"
                 + " JOIN DATA_SOURCE_SERVER s ON d.SERVER_ID = s.ID"
-                + " WHERE d.TENANT_ID = ? AND (d.PROJECT_ID IS NULL OR d.PROJECT_ID = ?)";
+                + " WHERE (d.ISOLATION_MODE = 'TENANT_SHARED'"
+                + " OR (d.ISOLATION_MODE IN ('TENANT_ISOLATED', 'PROJECT_SHARED') AND d.TENANT_ID = ?)"
+                + " OR (d.ISOLATION_MODE = 'PROJECT_ISOLATED' AND d.TENANT_ID = ? AND d.PROJECT_ID = ?))";
         List<Object> args = new ArrayList<>();
+        args.add(tenantId);
         args.add(tenantId);
         args.add(projectId);
         if (serverId != null) {
@@ -65,15 +68,20 @@ public class DataSourceDatabaseService {
         Long serverId = longParam(body.get("serverId"), null);
         if (serverId == null) throw new IllegalArgumentException("serverId 不能为空");
         String databaseName = require(body.get("databaseName"), "databaseName");
-        String isolationMode = stringOrDefault(body.get("isolationMode"), "PROJECT_ISOLATED");
-        String targetProjectId = "TENANT_ISOLATED".equals(isolationMode) ? null : projectId;
+        DataIsolationMode mode = DataIsolationMode.parseOrDefault(body.get("isolationMode"), DataIsolationMode.PROJECT_ISOLATED, "isolationMode");
+        String isolationMode = mode.name();
+        String targetProjectId = mode == DataIsolationMode.PROJECT_ISOLATED ? projectId : null;
         String connectionMode = normalizeConnectionMode(body.get("connectionMode"), "DIRECT");
         String jndiName = optionalString(body.get("jndiName"));
         validateConnectionMode(connectionMode, jndiName);
         boolean createNew = booleanParam(body.get("createNew"), false);
 
         Map<String, Object> server = jdbc.queryForMap(
-                "SELECT HOST, PORT, DB_TYPE, USERNAME, PASSWORD FROM DATA_SOURCE_SERVER WHERE ID = ?", serverId);
+            "SELECT HOST, PORT, DB_TYPE, USERNAME, PASSWORD, ISOLATION_MODE FROM DATA_SOURCE_SERVER WHERE ID = ?", serverId);
+        DataIsolationMode serverMode = DataIsolationMode.parse(server.get("ISOLATION_MODE"), "server.isolationMode");
+        if (!serverMode.canContain(mode)) {
+            throw new IllegalArgumentException("数据库隔离模式不能比服务器更宽");
+        }
 
         if (createNew) {
             String charset = stringOrDefault(body.get("charset"), "utf8mb4");
@@ -117,7 +125,17 @@ public class DataSourceDatabaseService {
         Map<String, Object> existing = jdbc.queryForMap("SELECT * FROM DATA_SOURCE_DATABASE WHERE ID = ?", id);
         String databaseName = stringOrDefault(body.get("databaseName"), (String) existing.get("DATABASE_NAME"));
         String status = stringOrDefault(body.get("status"), (String) existing.get("STATUS"));
-        String isolationMode = stringOrDefault(body.get("isolationMode"), (String) existing.get("ISOLATION_MODE"));
+        DataIsolationMode mode = DataIsolationMode.parseOrDefault(body.get("isolationMode"), DataIsolationMode.parse(existing.get("ISOLATION_MODE"), "isolationMode"), "isolationMode");
+        DataIsolationMode serverMode = DataIsolationMode.parse(jdbc.queryForObject(
+            "SELECT ISOLATION_MODE FROM DATA_SOURCE_SERVER WHERE ID = ?",
+            String.class,
+            ((Number) existing.get("SERVER_ID")).longValue()
+        ), "server.isolationMode");
+        if (!serverMode.canContain(mode)) {
+            throw new IllegalArgumentException("数据库隔离模式不能比服务器更宽");
+        }
+        String isolationMode = mode.name();
+        String projectId = mode == DataIsolationMode.PROJECT_ISOLATED ? (String) existing.get("PROJECT_ID") : null;
         String connectionMode = normalizeConnectionMode(body.get("connectionMode"), (String) existing.get("CONNECTION_MODE"));
         String jndiName = body.containsKey("jndiName")
                 ? optionalString(body.get("jndiName"))
@@ -125,8 +143,8 @@ public class DataSourceDatabaseService {
         validateConnectionMode(connectionMode, jndiName);
 
         jdbc.update(
-                "UPDATE DATA_SOURCE_DATABASE SET DATABASE_NAME=?, ISOLATION_MODE=?, CONNECTION_MODE=?, JNDI_NAME=?, STATUS=?, UPDATED_AT=? WHERE ID=?",
-                databaseName, isolationMode, connectionMode, jndiName, status, LocalDateTime.now(), id);
+        "UPDATE DATA_SOURCE_DATABASE SET DATABASE_NAME=?, ISOLATION_MODE=?, PROJECT_ID=?, CONNECTION_MODE=?, JNDI_NAME=?, STATUS=?, UPDATED_AT=? WHERE ID=?",
+        databaseName, isolationMode, projectId, connectionMode, jndiName, status, LocalDateTime.now(), id);
         dsManager.evict(id);
 
         return getDatabase(id);

@@ -61,9 +61,14 @@ class ProjectServiceNavigationSeedTest {
 
         Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
         assertTrue(containsPath(nav, "/app-list"));
+        assertTrue(containsPath(nav, "/dev"));
         assertTrue(containsPath(nav, "/dbms"));
+        assertTrue(containsPath(nav, "/cache-manager"));
         assertEquals(1, countPath(nav, "/app-list"));
+        assertEquals(1, countPath(nav, "/dev"));
         assertEquals(1, countPath(nav, "/dbms"));
+        assertEquals(1, countPath(nav, "/cache-manager"));
+        assertEquals("开发中心", parentTitleForPath(nav, "/dbms"));
     }
 
     @Test
@@ -99,10 +104,14 @@ class ProjectServiceNavigationSeedTest {
     }
 
     @Test
-    void existingHomepageNavigationNormalizesLegacyAppListEntry() throws Exception {
+        void existingHomepageNavigationRebuildsDevelopmentCenter() throws Exception {
         navigationTreeService.saveNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
                 node("home", "工作台", "/dashboard"),
-                node("back-to-homepage", "返回应用工场", "/app-list")
+            node("back-to-homepage", "返回应用工场", "/app-list"),
+            node("dbms", "DBMS", "/dbms"),
+            module("system-settings", "系统设置",
+                node("legacy-dev", "开发系统", "/dev"),
+                node("legacy-cache", "缓存", "/cache-manager"))
         ));
         when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc("lmspark"))
                 .thenReturn(List.of(project("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
@@ -111,7 +120,33 @@ class ProjectServiceNavigationSeedTest {
 
         Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
         assertEquals("应用管理", titleForPath(nav, "/app-list"));
-        assertTrue(containsPath(nav, "/dbms"));
+        assertEquals("开发中心", parentTitleForPath(nav, "/dbms"));
+        assertEquals("数据库管理", titleForPath(nav, "/dbms"));
+        assertEquals(1, countPath(nav, "/dev"));
+        assertEquals(1, countPath(nav, "/dbms"));
+        assertEquals(1, countPath(nav, "/cache-manager"));
+        }
+
+        @Test
+        void existingPlatformHomepageRemovesTopLevelDbmsAndRebuildsDevelopmentCenter() throws Exception {
+        navigationTreeService.saveNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
+            node("platform-dashboard", "平台首页", "/dashboard"),
+            node("platform-tenants", "租户管理", "/tenants"),
+            node("platform-apps", "应用管理", "/apps"),
+            node("platform-dbms", "DBMS", "/dbms"),
+            module("platform-system", "平台工具",
+                node("platform-dev", "开发系统", "/dev"),
+                node("platform-cache", "缓存管理", "/cache-manager"))
+        ));
+        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(ProjectService.PLATFORM_TENANT_ID))
+            .thenReturn(List.of(project(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
+
+        projectService.ensureAllProjectNavigations(ProjectService.PLATFORM_TENANT_ID);
+
+        Map<String, Object> nav = navigationTreeService.getNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID);
+        assertEquals(1, countPath(nav, "/dbms"));
+        assertEquals("开发中心", parentTitleForPath(nav, "/dbms"));
+        assertEquals("数据库管理", titleForPath(nav, "/dbms"));
     }
 
     @Test
@@ -151,7 +186,9 @@ class ProjectServiceNavigationSeedTest {
 
         Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
         assertEquals(1, countPath(nav, "/app-list"));
+        assertEquals(1, countPath(nav, "/dev"));
         assertEquals(1, countPath(nav, "/dbms"));
+        assertEquals(1, countPath(nav, "/cache-manager"));
     }
 
     private static ProjectEntity project(String tenantId, String projectId, String projectType) {
@@ -182,6 +219,17 @@ class ProjectServiceNavigationSeedTest {
         return node;
     }
 
+    private static Map<String, Object> module(String id, String title, Map<String, Object>... children) {
+        Map<String, Object> node = new java.util.LinkedHashMap<>();
+        node.put("id", id);
+        node.put("nodeKind", "module");
+        node.put("title", title);
+        node.put("childPlacement", "sidebar");
+        node.put("redirect", "/dev");
+        node.put("children", new ArrayList<>(List.of(children)));
+        return node;
+    }
+
     @SuppressWarnings("unchecked")
     private static boolean containsPath(Map<String, Object> root, String path) {
         return countPath(root, path) > 0;
@@ -199,6 +247,13 @@ class ProjectServiceNavigationSeedTest {
         Object children = root.get("children");
         if (!(children instanceof List<?> childList)) return "";
         return titleForPathInNodes((List<Map<String, Object>>) childList, path);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String parentTitleForPath(Map<String, Object> root, String path) {
+        Object children = root.get("children");
+        if (!(children instanceof List<?> childList)) return "";
+        return parentTitleForPathInNodes((List<Map<String, Object>>) childList, path, "");
     }
 
     @SuppressWarnings("unchecked")
@@ -221,6 +276,19 @@ class ProjectServiceNavigationSeedTest {
             Object children = node.get("children");
             if (children instanceof List<?> childList) {
                 String title = titleForPathInNodes((List<Map<String, Object>>) childList, path);
+                if (!title.isBlank()) return title;
+            }
+        }
+        return "";
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String parentTitleForPathInNodes(List<Map<String, Object>> nodes, String path, String parentTitle) {
+        for (Map<String, Object> node : nodes) {
+            if (path.equals(node.get("path"))) return parentTitle;
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                String title = parentTitleForPathInNodes((List<Map<String, Object>>) childList, path, String.valueOf(node.get("title")));
                 if (!title.isBlank()) return title;
             }
         }
