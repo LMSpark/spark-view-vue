@@ -21,7 +21,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,8 +50,6 @@ class ProjectServiceNavigationSeedTest {
         navigationTreeService.ensureSchema();
         projectService = new ProjectService(projectRepo, memberRepo, navigationTreeService, new ObjectMapper(), accessGuard);
         projectService.loadNavigationTemplates();
-
-        when(projectRepo.save(any(ProjectEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -154,16 +151,19 @@ class ProjectServiceNavigationSeedTest {
     }
 
     private static Map<String, Object> navRoot(Map<String, Object>... children) {
-        return Map.of("childPlacement", "header", "children", new ArrayList<>(List.of(children)));
+        Map<String, Object> root = new java.util.LinkedHashMap<>();
+        root.put("childPlacement", "header");
+        root.put("children", new ArrayList<>(List.of(children)));
+        return root;
     }
 
     private static Map<String, Object> node(String id, String title, String path) {
-        return Map.of(
-                "id", id,
-                "nodeKind", "system-page",
-                "title", title,
-                "path", path
-        );
+        Map<String, Object> node = new java.util.LinkedHashMap<>();
+        node.put("id", id);
+        node.put("nodeKind", "system-page");
+        node.put("title", title);
+        node.put("path", path);
+        return node;
     }
 
     @SuppressWarnings("unchecked")
