@@ -41,6 +41,18 @@ public class ProjectService {
     private static final String PATH_DBMS = "/dbms";
     private static final String PATH_CACHE_MANAGER = "/cache-manager";
     private static final String PATH_PLATFORM_APPS = "/apps";
+    private static final String PLATFORM_VUE_CLEANUP_MODULE_ID = "platform-vue-cleanup";
+    private static final String PLATFORM_VUE_CLEANUP_MODULE_TITLE = "Vue 清理候选";
+    private static final List<VueCleanupCandidate> PLATFORM_VUE_CLEANUP_CANDIDATES = List.of(
+            new VueCleanupCandidate("dashboard", "仪表盘候选", "假数据 Vue dashboard，删除前需要替换默认落地页。", "DataBoard", "/dashboard"),
+            new VueCleanupCandidate("about", "关于页候选", "旧系统介绍页。", "InfoFilled", "/about"),
+            new VueCleanupCandidate("settings", "设置页候选", "localStorage/mock 设置页。", "Setting", "/settings"),
+            new VueCleanupCandidate("tenant-config", "租户配置候选", "旧多租户配置演示页。", "OfficeBuilding", "/tenant-config"),
+            new VueCleanupCandidate("capability-demo", "能力演示候选", "mock 能力系统演示页。", "SetUp", "/capability-demo"),
+            new VueCleanupCandidate("template-dsl", "Template DSL 候选", "占位 system-page 路由。", "SetUp", "/demo/template-dsl"),
+            new VueCleanupCandidate("custom-r-table", "r-table Demo 候选", "公开 RendererTable 演示页。", "Grid", "/demo/custom-r-table"),
+            new VueCleanupCandidate("r-form-compare", "r-form Demo 候选", "公开 RendererForm 对照演示页。", "Tickets", "/demo/r-form-compare")
+    );
 
     private final ProjectRepository projectRepo;
     private final ProjectMemberRepository memberRepo;
@@ -312,7 +324,9 @@ public class ProjectService {
             return prunePaths(children, Set.of(PATH_APP_LIST, PATH_DBMS));
         }
         if (PLATFORM_TENANT_ID.equals(tenantId)) {
-            return rebuildDevelopmentCenter(children, tenantId, projectId, true);
+            boolean changed = rebuildDevelopmentCenter(children, tenantId, projectId, true);
+            changed |= rebuildPlatformVueCleanupCandidates(children);
+            return changed;
         }
 
         boolean changed = removeNodesByPath(children, Set.of(PATH_APP_LIST));
@@ -419,6 +433,47 @@ public class ProjectService {
             }
         }
         return false;
+    }
+
+    private boolean rebuildPlatformVueCleanupCandidates(List<Map<String, Object>> children) {
+        removePlatformVueCleanupNodes(children);
+        int index = indexAfterPath(children, PATH_PLATFORM_APPS);
+        Map<String, Object> developmentCenter = findNodeByIdSuffix(children, "platform-dev-center");
+        if (developmentCenter != null) {
+            int devCenterIndex = children.indexOf(developmentCenter);
+            if (devCenterIndex >= 0) {
+                index = devCenterIndex + 1;
+            }
+        }
+        insertAt(children, platformVueCleanupModule(), index);
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean removePlatformVueCleanupNodes(List<Map<String, Object>> nodes) {
+        boolean changed = false;
+        Iterator<Map<String, Object>> iterator = nodes.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> node = iterator.next();
+            String id = asString(node.get("id"));
+            String title = asString(node.get("title"));
+            if (isPlatformVueCleanupNode(id, title)) {
+                iterator.remove();
+                changed = true;
+                continue;
+            }
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                changed |= removePlatformVueCleanupNodes((List<Map<String, Object>>) childList);
+            }
+        }
+        return changed;
+    }
+
+    private boolean isPlatformVueCleanupNode(String id, String title) {
+        return PLATFORM_VUE_CLEANUP_MODULE_TITLE.equals(title)
+                || PLATFORM_VUE_CLEANUP_MODULE_ID.equals(id)
+                || id.startsWith(PLATFORM_VUE_CLEANUP_MODULE_ID + "-");
     }
 
     @SuppressWarnings("unchecked")
@@ -541,6 +596,31 @@ public class ProjectService {
         return node;
     }
 
+    private Map<String, Object> platformVueCleanupModule() {
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put("id", PLATFORM_VUE_CLEANUP_MODULE_ID);
+        node.put("nodeKind", "module");
+        node.put("title", PLATFORM_VUE_CLEANUP_MODULE_TITLE);
+        node.put("description", "仅用于审查待删除的旧 Vue 页面，确认后再从 VUE_PAGE_MAP 移除。");
+        node.put("icon", "WarningFilled");
+        node.put("childPlacement", "sidebar");
+        node.put("children", PLATFORM_VUE_CLEANUP_CANDIDATES.stream()
+                .map(this::platformVueCleanupCandidateNode)
+                .toList());
+        return node;
+    }
+
+    private Map<String, Object> platformVueCleanupCandidateNode(VueCleanupCandidate candidate) {
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put("id", PLATFORM_VUE_CLEANUP_MODULE_ID + "-" + candidate.idSuffix());
+        node.put("nodeKind", "system-page");
+        node.put("title", candidate.title());
+        node.put("description", candidate.description());
+        node.put("icon", candidate.icon());
+        node.put("path", candidate.path());
+        return node;
+    }
+
     private void applyHomepageDefaults(ProjectEntity homepage, String tenantId) {
         homepage.setName(PLATFORM_TENANT_ID.equals(tenantId) ? "平台管理工作台" : "企业管理平台");
         homepage.setProjectType(HOMEPAGE_PROJECT_TYPE);
@@ -609,4 +689,6 @@ public class ProjectService {
         m.put("updatedAt", p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : null);
         return m;
     }
+
+    private record VueCleanupCandidate(String idSuffix, String title, String description, String icon, String path) {}
 }

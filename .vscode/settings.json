@@ -20,5 +20,6 @@
     "MD040": false,
     "MD047": false,
     "MD060": false
-  }
+  },
+  "claudeCode.useTerminal": true
 }

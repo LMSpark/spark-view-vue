@@ -54,7 +54,7 @@ import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
 import type { NavNode } from '@spark-view/spark-page-config'
 
-import { getUser, isAuthenticated, switchProject } from './services/auth'
+import { consumePendingLogout, getUser, isAuthenticated, switchProject } from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
 import {
   buildTenantPath,
@@ -65,6 +65,8 @@ import type { Router } from 'vue-router'
 const startupLogger = createLogger('main')
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'
+
+consumePendingLogout()
 
 // late-binding pageId（路由就绪后由 afterMount 注入）
 let _currentPageId: string | undefined

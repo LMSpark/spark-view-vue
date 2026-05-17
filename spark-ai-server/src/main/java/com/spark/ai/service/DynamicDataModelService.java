@@ -59,7 +59,9 @@ public class DynamicDataModelService {
             "DATA_TRANSACTION_COMMIT",
             "DATA_SOURCE_SERVER",
             "DATA_SOURCE_DATABASE",
-            "DATA_MODEL_RELATION"
+            "DATA_MODEL_RELATION",
+            "DATA_MODEL_VIEW",
+            "FLYWAY_SCHEMA_HISTORY"
     );
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
@@ -691,7 +693,11 @@ public class DynamicDataModelService {
     @Transactional
     public List<Map<String, Object>> importExistingTables(String tenantId, String projectId, Map<String, Object> body) {
         guardProject(tenantId, projectId);
-        List<Map<String, Object>> tables = readImportTables(body);
+        Long defaultDatabaseId = readNullableLong(body == null ? null : body.get("databaseId"));
+        DataIsolationMode defaultIsolationMode = tableIsolationMode(body == null ? Map.of() : body, defaultDatabaseId);
+        JdbcTemplate defaultTargetJdbc = jdbcTemplateFor(defaultDatabaseId);
+        DatabaseDialect defaultTargetDialect = dialectFor(defaultDatabaseId);
+        List<Map<String, Object>> tables = readImportTables(body, defaultTargetJdbc);
         List<Map<String, Object>> imported = new ArrayList<>();
         for (Map<String, Object> tableRequest : tables) {
             rejectViewMetadata(tableRequest);
@@ -700,14 +706,35 @@ public class DynamicDataModelService {
             if (logicalName == null) {
                 logicalName = toLowerCamel(physicalName);
             }
-            if (findTable(tenantId, projectId, logicalName) != null) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "逻辑表已存在: " + logicalName);
+
+            Map<String, Object> requestBody = new LinkedHashMap<>(tableRequest);
+            if (!requestBody.containsKey("databaseId") && defaultDatabaseId != null) {
+                requestBody.put("databaseId", defaultDatabaseId);
+            }
+            if (!requestBody.containsKey("isolationMode")) {
+                requestBody.put("isolationMode", defaultIsolationMode.name());
             }
 
-            IntrospectedTable before = scanPhysicalTable(physicalName);
-            ensureManagedPhysicalShape(tenantId, projectId, before);
-            IntrospectedTable after = scanPhysicalTable(physicalName);
-            Map<String, Object> requestBody = new LinkedHashMap<>(tableRequest);
+            Long databaseId = readNullableLong(requestBody.get("databaseId"));
+            JdbcTemplate targetJdbc = databaseId == null ? defaultTargetJdbc : jdbcTemplateFor(databaseId);
+            DatabaseDialect targetDialect = databaseId == null ? defaultTargetDialect : dialectFor(databaseId);
+            DataIsolationMode isolationMode = tableIsolationMode(requestBody, databaseId);
+            TableInfo existing = findTableByPhysicalName(tenantId, projectId, physicalName);
+            TableInfo existingByLogicalName = findTable(tenantId, projectId, logicalName);
+            if (existing == null && existingByLogicalName != null) {
+                if (!existingByLogicalName.physicalTableName().equalsIgnoreCase(physicalName)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "逻辑表已存在: " + logicalName);
+                }
+                existing = existingByLogicalName;
+            }
+
+            IntrospectedTable before = scanPhysicalTable(targetJdbc, physicalName);
+            ensureManagedPhysicalShape(tenantId, projectId, targetJdbc, targetDialect, before);
+            IntrospectedTable after = scanPhysicalTable(targetJdbc, physicalName);
+            if (existing != null) {
+                imported.add(refreshExistingTableMetadata(tenantId, projectId, existing, requestBody, isolationMode, after));
+                continue;
+            }
             requestBody.put("resourceType", "database-table");
             requestBody.put("resourceId", logicalName);
             imported.add(persistImportedOrCreatedTable(
@@ -841,24 +868,33 @@ public class DynamicDataModelService {
     }
 
     private void ensureManagedPhysicalShape(String tenantId, String projectId, IntrospectedTable table) {
+        ensureManagedPhysicalShape(tenantId, projectId, jdbcTemplate, dialect, table);
+    }
+
+    private void ensureManagedPhysicalShape(String tenantId, String projectId, JdbcTemplate targetJdbc, DatabaseDialect targetDialect, IntrospectedTable table) {
         boolean hasPrimaryKey = !table.primaryKeyColumns().isEmpty();
         if (!hasColumn(table, "TENANT_ID")) {
-            jdbcTemplate.execute(dialect.addRawColumnSql(table.tableName(), "TENANT_ID", "VARCHAR(255)"));
-            jdbcTemplate.update("UPDATE " + q(table.tableName()) + " SET " + q("TENANT_ID") + " = ? WHERE " + q("TENANT_ID") + " IS NULL", tenantId);
-            tryAlter(dialect.setNotNullSql(table.tableName(), "TENANT_ID", "VARCHAR(255)"));
+            targetJdbc.execute(targetDialect.addRawColumnSql(table.tableName(), "TENANT_ID", "VARCHAR(255)"));
+            targetJdbc.update("UPDATE " + targetDialect.quoteIdentifier(table.tableName())
+                    + " SET " + targetDialect.quoteIdentifier("TENANT_ID")
+                    + " = ? WHERE " + targetDialect.quoteIdentifier("TENANT_ID") + " IS NULL", tenantId);
+            tryAlter(targetJdbc, targetDialect.setNotNullSql(table.tableName(), "TENANT_ID", "VARCHAR(255)"));
         }
         if (!hasColumn(table, "PROJECT_ID")) {
-            jdbcTemplate.execute(dialect.addRawColumnSql(table.tableName(), "PROJECT_ID", "VARCHAR(255)"));
-            jdbcTemplate.update("UPDATE " + q(table.tableName()) + " SET " + q("PROJECT_ID") + " = ? WHERE " + q("PROJECT_ID") + " IS NULL", projectId);
-            tryAlter(dialect.setNotNullSql(table.tableName(), "PROJECT_ID", "VARCHAR(255)"));
+            targetJdbc.execute(targetDialect.addRawColumnSql(table.tableName(), "PROJECT_ID", "VARCHAR(255)"));
+            targetJdbc.update("UPDATE " + targetDialect.quoteIdentifier(table.tableName())
+                    + " SET " + targetDialect.quoteIdentifier("PROJECT_ID")
+                    + " = ? WHERE " + targetDialect.quoteIdentifier("PROJECT_ID") + " IS NULL", projectId);
+            tryAlter(targetJdbc, targetDialect.setNotNullSql(table.tableName(), "PROJECT_ID", "VARCHAR(255)"));
         }
         if (!hasPrimaryKey) {
-            jdbcTemplate.execute(dialect.addIdentityPrimaryKeyColumnSql(table.tableName(), "ID"));
-            if (dialect != DatabaseDialect.MYSQL) {
-                tryAlter("ALTER TABLE " + q(table.tableName()) + " ADD PRIMARY KEY (" + q("ID") + ")");
+            targetJdbc.execute(targetDialect.addIdentityPrimaryKeyColumnSql(table.tableName(), "ID"));
+            if (targetDialect != DatabaseDialect.MYSQL) {
+                tryAlter(targetJdbc, "ALTER TABLE " + targetDialect.quoteIdentifier(table.tableName())
+                        + " ADD PRIMARY KEY (" + targetDialect.quoteIdentifier("ID") + ")");
             }
         }
-        createIndexIfMissing(table.tableName(), "IDX_" + table.tableName() + "_SCOPE", List.of("TENANT_ID", "PROJECT_ID"));
+        createIndexIfMissing(targetJdbc, targetDialect, table.tableName(), "IDX_" + table.tableName() + "_SCOPE", List.of("TENANT_ID", "PROJECT_ID"));
     }
 
     private void createIndexIfMissing(JdbcTemplate targetJdbc, DatabaseDialect targetDialect, String tableName, String indexName, List<String> columnNames) {
@@ -896,8 +932,12 @@ public class DynamicDataModelService {
     }
 
     private void tryAlter(String sql) {
+        tryAlter(jdbcTemplate, sql);
+    }
+
+    private void tryAlter(JdbcTemplate targetJdbc, String sql) {
         try {
-            jdbcTemplate.execute(sql);
+            targetJdbc.execute(sql);
         } catch (Exception ignored) {
             // 部分历史表约束变更会被数据库拒绝；接管流程随后用 consistency 暴露差异。
         }
@@ -974,7 +1014,15 @@ public class DynamicDataModelService {
     }
 
     private List<String> listPhysicalTableNames() {
-        try (Connection connection = dataSource.getConnection()) {
+        return listPhysicalTableNames(jdbcTemplate);
+    }
+
+    private List<String> listPhysicalTableNames(JdbcTemplate targetJdbc) {
+        DataSource targetDataSource = targetJdbc.getDataSource();
+        if (targetDataSource == null) {
+            targetDataSource = dataSource;
+        }
+        try (Connection connection = targetDataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
             List<String> names = new ArrayList<>();
             try (ResultSet rs = metaData.getTables(null, null, null, new String[]{"TABLE"})) {
@@ -999,6 +1047,9 @@ public class DynamicDataModelService {
         String upper = tableName.toUpperCase(Locale.ROOT);
         if (upperSchema.contains("INFORMATION_SCHEMA")) return false;
         if (upper.startsWith("SYS")) return false;
+        if (upper.startsWith("DATA_MODEL_")) return false;
+        if (upper.startsWith("DATA_SOURCE_")) return false;
+        if (upper.startsWith("DATA_BATCH_")) return false;
         return !RESERVED_TABLES.contains(upper);
     }
 
@@ -1083,6 +1134,21 @@ public class DynamicDataModelService {
                             + "WHEN 'TENANT_ISOLATED' THEN 2 "
                             + "WHEN 'TENANT_SHARED' THEN 1 "
                             + "ELSE 0 END DESC, UPDATED_AT DESC LIMIT 1",
+                    (rs, rowNum) -> readTableInfo(rs),
+                    args.toArray()
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    private TableInfo findTableByPhysicalName(String tenantId, String projectId, String physicalTableName) {
+        ScopePredicate scope = tableScopePredicate(tenantId, projectId, "PHYSICAL_TABLE_NAME = ?");
+        List<Object> args = new ArrayList<>(scope.args());
+        args.add(physicalTableName);
+        try {
+            return jdbcTemplate.queryForObject(
+                    "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY UPDATED_AT DESC LIMIT 1",
                     (rs, rowNum) -> readTableInfo(rs),
                     args.toArray()
             );
@@ -1232,8 +1298,13 @@ public class DynamicDataModelService {
         return payload;
     }
 
-    private List<Map<String, Object>> readImportTables(Map<String, Object> body) {
+    private List<Map<String, Object>> readImportTables(Map<String, Object> body, JdbcTemplate targetJdbc) {
         Object tablesValue = body == null ? null : body.get("tables");
+        if (!(tablesValue instanceof List<?>) && readBoolean(body == null ? null : body.get("includeAllTables"), false)) {
+            return listPhysicalTableNames(targetJdbc).stream()
+                    .map(name -> Map.<String, Object>of("physicalTableName", name))
+                    .toList();
+        }
         if (!(tablesValue instanceof List<?> rawList)) {
             throw new IllegalArgumentException("tables 必须是数组");
         }
@@ -1245,6 +1316,37 @@ public class DynamicDataModelService {
             tables.add(toStringKeyMap(rawMap));
         }
         return tables;
+    }
+
+    private Map<String, Object> refreshExistingTableMetadata(
+            String tenantId,
+            String projectId,
+            TableInfo existing,
+            Map<String, Object> requestBody,
+            DataIsolationMode isolationMode,
+            IntrospectedTable introspected
+    ) {
+        Long databaseId = requestBody.containsKey("databaseId")
+                ? readNullableLong(requestBody.get("databaseId"))
+                : existing.databaseId();
+        String ddlHash = hashTable(introspected);
+        replaceColumnsFromIntrospection(existing.id(), introspected);
+        Timestamp now = Timestamp.from(Instant.now());
+        jdbcTemplate.update("""
+            UPDATE DATA_MODEL_TABLE
+            SET DATABASE_ID = ?, ISOLATION_MODE = ?, DDL_HASH = ?,
+                SCHEMA_VERSION = ?, LAST_INTROSPECTED_AT = ?, UPDATED_AT = ?
+            WHERE ID = ?
+            """,
+                databaseId,
+                isolationMode.name(),
+                ddlHash,
+                existing.schemaVersion() + 1,
+                now,
+                now,
+                existing.id()
+        );
+        return getTablePayload(tenantId, projectId, existing.logicalTableName());
     }
 
     private List<ColumnDraft> readColumnDrafts(Object value) {

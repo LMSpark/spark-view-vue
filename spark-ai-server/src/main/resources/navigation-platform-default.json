@@ -57,6 +57,80 @@
                     "path": "/cache-manager"
                 }
             ]
+        },
+        {
+            "id": "platform-vue-cleanup",
+            "nodeKind": "module",
+            "title": "Vue 清理候选",
+            "description": "仅用于审查待删除的旧 Vue 页面，确认后再从 VUE_PAGE_MAP 移除。",
+            "icon": "WarningFilled",
+            "childPlacement": "sidebar",
+            "children": [
+                {
+                    "id": "platform-vue-cleanup-dashboard",
+                    "nodeKind": "system-page",
+                    "title": "仪表盘候选",
+                    "description": "假数据 Vue dashboard，删除前需要替换默认落地页。",
+                    "icon": "DataBoard",
+                    "path": "/dashboard"
+                },
+                {
+                    "id": "platform-vue-cleanup-about",
+                    "nodeKind": "system-page",
+                    "title": "关于页候选",
+                    "description": "旧系统介绍页。",
+                    "icon": "InfoFilled",
+                    "path": "/about"
+                },
+                {
+                    "id": "platform-vue-cleanup-settings",
+                    "nodeKind": "system-page",
+                    "title": "设置页候选",
+                    "description": "localStorage/mock 设置页。",
+                    "icon": "Setting",
+                    "path": "/settings"
+                },
+                {
+                    "id": "platform-vue-cleanup-tenant-config",
+                    "nodeKind": "system-page",
+                    "title": "租户配置候选",
+                    "description": "旧多租户配置演示页。",
+                    "icon": "OfficeBuilding",
+                    "path": "/tenant-config"
+                },
+                {
+                    "id": "platform-vue-cleanup-capability-demo",
+                    "nodeKind": "system-page",
+                    "title": "能力演示候选",
+                    "description": "mock 能力系统演示页。",
+                    "icon": "SetUp",
+                    "path": "/capability-demo"
+                },
+                {
+                    "id": "platform-vue-cleanup-template-dsl",
+                    "nodeKind": "system-page",
+                    "title": "Template DSL 候选",
+                    "description": "占位 system-page 路由。",
+                    "icon": "SetUp",
+                    "path": "/demo/template-dsl"
+                },
+                {
+                    "id": "platform-vue-cleanup-custom-r-table",
+                    "nodeKind": "system-page",
+                    "title": "r-table Demo 候选",
+                    "description": "公开 RendererTable 演示页。",
+                    "icon": "Grid",
+                    "path": "/demo/custom-r-table"
+                },
+                {
+                    "id": "platform-vue-cleanup-r-form-compare",
+                    "nodeKind": "system-page",
+                    "title": "r-form Demo 候选",
+                    "description": "公开 RendererForm 对照演示页。",
+                    "icon": "Tickets",
+                    "path": "/demo/r-form-compare"
+                }
+            ]
         }
     ]
 }

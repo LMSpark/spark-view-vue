@@ -14,6 +14,7 @@ import type { RequestError } from '@spark-view/spark-utils'
 
 const TOKEN_KEY = 'spark_token'
 const USER_KEY = 'spark_user'
+const LOGOUT_PENDING_KEY = 'spark_logout_pending'
 
 export interface AuthUser {
   userId: string
@@ -58,6 +59,18 @@ function saveAuth(token: string, user: AuthUser): void {
 export function clearAuth(): void {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+}
+
+export function markLogoutPending(): void {
+  if (typeof window === 'undefined') return
+  sessionStorage.setItem(LOGOUT_PENDING_KEY, '1')
+}
+
+export function consumePendingLogout(): void {
+  if (typeof window === 'undefined') return
+  if (sessionStorage.getItem(LOGOUT_PENDING_KEY) !== '1') return
+  sessionStorage.removeItem(LOGOUT_PENDING_KEY)
+  clearAuth()
 }
 
 /**

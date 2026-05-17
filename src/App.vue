@@ -155,7 +155,7 @@ import {
   type IModuleContext,
   type ModuleContextCapability,
 } from '@spark-view/spark-component'
-import { getToken, getUser, isAuthenticated, logout, switchProject } from '@/services/auth'
+import { getToken, getUser, isAuthenticated, markLogoutPending, switchProject } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -392,7 +392,7 @@ navigationActionRegistry.register('home', () => {
   }
 })
 navigationActionRegistry.register('logout', () => {
-  logout()
+  markLogoutPending()
   clearAllPageCache()
   window.location.replace(router.resolve('/').href)
 })

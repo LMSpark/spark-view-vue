@@ -2,6 +2,7 @@ package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.config.CryptoUtil;
+import com.spark.ai.config.DatabaseDialect;
 import com.spark.ai.config.DynamicDataSourceManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DataSourceMetadataServiceTest {
 
@@ -34,7 +36,17 @@ class DataSourceMetadataServiceTest {
         jdbcTemplate = new JdbcTemplate(dataSource);
         ObjectMapper objectMapper = new ObjectMapper();
         CryptoUtil cryptoUtil = new CryptoUtil("SparkViewTestCryptoSecretKey00000001");
-        DynamicDataSourceManager dsManager = new DynamicDataSourceManager(dataSource, jdbcTemplate, cryptoUtil);
+        DynamicDataSourceManager dsManager = new DynamicDataSourceManager(dataSource, jdbcTemplate, cryptoUtil) {
+            @Override
+            public JdbcTemplate getJdbcTemplate(Long databaseId) {
+                return jdbcTemplate;
+            }
+
+            @Override
+            public DatabaseDialect getDialect(Long databaseId) {
+                return DatabaseDialect.H2;
+            }
+        };
         modelService = new DynamicDataModelService(jdbcTemplate, objectMapper, dataSource, null, dsManager);
         modelService.ensureMetadataSchema();
         serverService = new DataSourceServerService(jdbcTemplate, cryptoUtil, dsManager);
@@ -196,6 +208,54 @@ class DataSourceMetadataServiceTest {
         )));
     }
 
+    @Test
+    void importExistingTablesBindsExistingPhysicalMetadataWithoutDuplicating() {
+        Number serverId = createServer("Import Existing Server");
+        Number databaseId = createDatabase("t1", "p1", serverId, "import_existing_db");
+        Map<String, Object> table = modelService.createTable("t1", "p1", Map.of(
+                "tableName", "AlreadyImported",
+                "columns", List.of(Map.of("name", "name", "type", "string"))
+        ));
+        String physicalTableName = (String) table.get("physicalTableName");
+        Integer beforeCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_TABLE", Integer.class);
+
+        List<Map<String, Object>> imported = modelService.importExistingTables("t1", "p1", Map.of(
+                "databaseId", databaseId.longValue(),
+                "tables", List.of(Map.of("physicalTableName", physicalTableName))
+        ));
+
+        Integer afterCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_TABLE", Integer.class);
+        assertEquals(beforeCount, afterCount);
+        assertEquals("AlreadyImported", imported.get(0).get("tableName"));
+        assertEquals(databaseId.longValue(), ((Number) imported.get(0).get("databaseId")).longValue());
+        assertEquals(databaseId.longValue(), jdbcTemplate.queryForObject(
+                "SELECT DATABASE_ID FROM DATA_MODEL_TABLE WHERE LOGICAL_TABLE_NAME = ?",
+                Number.class,
+                "AlreadyImported"
+        ).longValue());
+    }
+
+    @Test
+    void importExistingTablesCanImportAllNonMetadataTables() {
+        jdbcTemplate.execute("CREATE TABLE LEGACY_RECORD (NAME VARCHAR(64))");
+
+        List<Map<String, Object>> imported = modelService.importExistingTables("t1", "p1", Map.of(
+                "includeAllTables", true
+        ));
+
+        assertEquals(1, imported.size());
+        assertEquals("legacyRecord", imported.get(0).get("tableName"));
+        List<Map<String, Object>> columns = modelService.requireDefinition("t1", "p1", "legacyRecord")
+                .columns()
+                .stream()
+                .map(column -> Map.<String, Object>of("name", column.columnName()))
+                .toList();
+        assertTrue(columns.stream().anyMatch(column -> "id".equals(column.get("name"))));
+        assertTrue(columns.stream().anyMatch(column -> "name".equals(column.get("name"))));
+        assertTrue(columns.stream().noneMatch(column -> "tenantId".equals(column.get("name"))));
+        assertTrue(columns.stream().noneMatch(column -> "projectId".equals(column.get("name"))));
+    }
+
     private Number createServer(String serverName) {
         Map<String, Object> server = serverService.createServer(Map.of(
                 "serverName", serverName,
@@ -221,7 +281,11 @@ class DataSourceMetadataServiceTest {
     }
 
     private Map<String, Object> createTable(String tableName) {
-        return modelService.createTable("t1", "p1", Map.of(
+        return createTable("t1", "p1", tableName);
+    }
+
+    private Map<String, Object> createTable(String tenantId, String projectId, String tableName) {
+        return modelService.createTable(tenantId, projectId, Map.of(
                 "tableName", tableName,
                 "columns", List.of(
                         Map.of("name", "parentId", "type", "number"),

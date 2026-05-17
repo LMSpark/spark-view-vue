@@ -15,9 +15,21 @@
             @submit.prevent="handleLogin"
           >
             <el-form-item prop="tenantId">
-              <el-input v-model="loginForm.tenantId" placeholder="租户 ID" prefix-icon="el-icon-office-building">
-                <template #prefix><el-icon><OfficeBuilding /></el-icon></template>
-              </el-input>
+              <el-select
+                v-model="loginForm.tenantId"
+                filterable
+                allow-create
+                default-first-option
+                placeholder="选择租户"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="option in loginTenantOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
             </el-form-item>
             <el-form-item prop="username">
               <el-input v-model="loginForm.username" placeholder="用户名">
@@ -169,8 +181,12 @@ function getUserHomePath(user: { tenantId: string; defaultProjectId: string }): 
 
 const loginForm = reactive({ tenantId: 'platform', username: '', password: '' })
 const loginFormRef = ref<FormInstance>()
+const loginTenantOptions = [
+  { label: 'SPARK 平台 (platform)', value: 'platform' },
+  { label: '领码SPARK (lmspark)', value: 'lmspark' },
+]
 const loginRules: FormRules = {
-  tenantId: [{ required: true, message: '请输入租户 ID', trigger: 'blur' }],
+  tenantId: [{ required: true, message: '请选择或输入租户 ID', trigger: 'change' }],
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }

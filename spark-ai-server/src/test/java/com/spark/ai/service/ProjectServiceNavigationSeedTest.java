@@ -20,11 +20,22 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceNavigationSeedTest {
+    private static final List<String> EXPECTED_PLATFORM_VUE_CLEANUP_PATHS = List.of(
+            "/dashboard",
+            "/about",
+            "/settings",
+            "/tenant-config",
+            "/capability-demo",
+            "/demo/template-dsl",
+            "/demo/custom-r-table",
+            "/demo/r-form-compare"
+    );
 
     @Mock
     private ProjectRepository projectRepo;
@@ -69,6 +80,7 @@ class ProjectServiceNavigationSeedTest {
         assertEquals(1, countPath(nav, "/dbms"));
         assertEquals(1, countPath(nav, "/cache-manager"));
         assertEquals("开发中心", parentTitleForPath(nav, "/dbms"));
+        assertEquals(0, countModuleByTitle(nav, "Vue 清理候选"));
     }
 
     @Test
@@ -82,6 +94,7 @@ class ProjectServiceNavigationSeedTest {
         assertFalse(containsPath(nav, "/dbms"));
         assertTrue(containsPath(nav, "/dashboard"));
         assertTrue(containsPath(nav, "/dev"));
+        assertEquals(0, countModuleByTitle(nav, "Vue 清理候选"));
     }
 
     @Test
@@ -128,7 +141,7 @@ class ProjectServiceNavigationSeedTest {
         }
 
         @Test
-        void existingPlatformHomepageRemovesTopLevelDbmsAndRebuildsDevelopmentCenter() throws Exception {
+    void existingPlatformHomepageRemovesTopLevelDbmsAndRebuildsDevelopmentCenter() throws Exception {
         navigationTreeService.saveNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
             node("platform-dashboard", "平台首页", "/dashboard"),
             node("platform-tenants", "租户管理", "/tenants"),
@@ -147,6 +160,50 @@ class ProjectServiceNavigationSeedTest {
         assertEquals(1, countPath(nav, "/dbms"));
         assertEquals("开发中心", parentTitleForPath(nav, "/dbms"));
         assertEquals("数据库管理", titleForPath(nav, "/dbms"));
+    }
+
+    @Test
+    void platformHomepageStagesVueCleanupCandidates() throws Exception {
+        when(projectRepo.findByTenantIdAndProjectId(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID))
+                .thenReturn(Optional.empty());
+
+        projectService.ensureHomepage(ProjectService.PLATFORM_TENANT_ID);
+
+        Map<String, Object> nav = navigationTreeService.getNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID);
+        Map<String, Object> cleanupModule = findModuleByTitle(nav, "Vue 清理候选");
+        assertNotNull(cleanupModule);
+        assertEquals(1, countModuleByTitle(nav, "Vue 清理候选"));
+        assertEquals("platform-vue-cleanup", cleanupModule.get("id"));
+        assertEquals("module", cleanupModule.get("nodeKind"));
+        assertEquals(EXPECTED_PLATFORM_VUE_CLEANUP_PATHS, childPaths(cleanupModule));
+        assertAllCleanupChildrenAreSystemPages(cleanupModule);
+    }
+
+    @Test
+    void existingPlatformHomepageRebuildsSingleVueCleanupCandidateModule() throws Exception {
+        navigationTreeService.saveNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
+            node("platform-dashboard", "平台首页", "/dashboard"),
+            node("platform-tenants", "租户管理", "/tenants"),
+            node("platform-apps", "应用管理", "/apps"),
+            module("platform-vue-cleanup-old", "Vue 清理候选",
+                node("platform-vue-cleanup-old-settings", "旧设置候选", "/settings")),
+            module("legacy-review", "旧 Vue 审核",
+                node("platform-vue-cleanup-about", "旧关于候选", "/about")),
+            module("platform-dev-center", "开发中心",
+                node("platform-dev", "开发系统", "/dev"))
+        ));
+        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(ProjectService.PLATFORM_TENANT_ID))
+            .thenReturn(List.of(project(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
+
+        projectService.ensureAllProjectNavigations(ProjectService.PLATFORM_TENANT_ID);
+
+        Map<String, Object> nav = navigationTreeService.getNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID);
+        Map<String, Object> cleanupModule = findModuleByTitle(nav, "Vue 清理候选");
+        assertNotNull(cleanupModule);
+        assertEquals(1, countModuleByTitle(nav, "Vue 清理候选"));
+        assertEquals(EXPECTED_PLATFORM_VUE_CLEANUP_PATHS, childPaths(cleanupModule));
+        assertAllCleanupChildrenAreSystemPages(cleanupModule);
+        assertEquals("开发中心", parentTitleForPath(nav, "/dev"));
     }
 
     @Test
@@ -231,6 +288,16 @@ class ProjectServiceNavigationSeedTest {
     }
 
     @SuppressWarnings("unchecked")
+    private static void assertAllCleanupChildrenAreSystemPages(Map<String, Object> module) {
+        Object children = module.get("children");
+        assertTrue(children instanceof List<?>);
+        for (Map<String, Object> child : (List<Map<String, Object>>) children) {
+            assertTrue(String.valueOf(child.get("id")).startsWith("platform-vue-cleanup-"));
+            assertEquals("system-page", child.get("nodeKind"));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     private static boolean containsPath(Map<String, Object> root, String path) {
         return countPath(root, path) > 0;
     }
@@ -257,6 +324,31 @@ class ProjectServiceNavigationSeedTest {
     }
 
     @SuppressWarnings("unchecked")
+    private static Map<String, Object> findModuleByTitle(Map<String, Object> root, String title) {
+        Object children = root.get("children");
+        if (!(children instanceof List<?> childList)) return null;
+        return findModuleByTitleInNodes((List<Map<String, Object>>) childList, title);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int countModuleByTitle(Map<String, Object> root, String title) {
+        Object children = root.get("children");
+        if (!(children instanceof List<?> childList)) return 0;
+        return countModuleByTitleInNodes((List<Map<String, Object>>) childList, title);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> childPaths(Map<String, Object> node) {
+        Object children = node.get("children");
+        if (!(children instanceof List<?> childList)) return List.of();
+        List<String> paths = new ArrayList<>();
+        for (Map<String, Object> child : (List<Map<String, Object>>) childList) {
+            paths.add(String.valueOf(child.get("path")));
+        }
+        return paths;
+    }
+
+    @SuppressWarnings("unchecked")
     private static int countPathInNodes(List<Map<String, Object>> nodes, String path) {
         int count = 0;
         for (Map<String, Object> node : nodes) {
@@ -264,6 +356,32 @@ class ProjectServiceNavigationSeedTest {
             Object children = node.get("children");
             if (children instanceof List<?> childList) {
                 count += countPathInNodes((List<Map<String, Object>>) childList, path);
+            }
+        }
+        return count;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> findModuleByTitleInNodes(List<Map<String, Object>> nodes, String title) {
+        for (Map<String, Object> node : nodes) {
+            if ("module".equals(node.get("nodeKind")) && title.equals(node.get("title"))) return node;
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                Map<String, Object> found = findModuleByTitleInNodes((List<Map<String, Object>>) childList, title);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int countModuleByTitleInNodes(List<Map<String, Object>> nodes, String title) {
+        int count = 0;
+        for (Map<String, Object> node : nodes) {
+            if ("module".equals(node.get("nodeKind")) && title.equals(node.get("title"))) count++;
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                count += countModuleByTitleInNodes((List<Map<String, Object>>) childList, title);
             }
         }
         return count;
