@@ -312,7 +312,8 @@ public class ProjectService {
             return ensureRootNode(children, platformDbmsNode());
         }
 
-        boolean changed = ensureRootNode(children, appListNode(tenantId, projectId));
+        boolean changed = normalizeLegacyAppListNode(children, tenantId, projectId);
+        changed |= ensureRootNode(children, appListNode(tenantId, projectId));
         changed |= ensureDbmsNode(children, tenantId, projectId);
         return changed;
     }
@@ -342,6 +343,26 @@ public class ProjectService {
             return false;
         }
         children.add(node);
+        return true;
+    }
+
+    private boolean normalizeLegacyAppListNode(List<Map<String, Object>> children, String tenantId, String projectId) {
+        Map<String, Object> existing = findNodeByPath(children, PATH_APP_LIST);
+        if (existing == null) {
+            return false;
+        }
+        String id = asString(existing.get("id"));
+        String title = asString(existing.get("title"));
+        if (!"back-to-homepage".equals(id) && !"返回应用工场".equals(title)) {
+            return false;
+        }
+        Map<String, Object> normalized = appListNode(tenantId, projectId);
+        existing.put("id", normalized.get("id"));
+        existing.put("nodeKind", normalized.get("nodeKind"));
+        existing.put("title", normalized.get("title"));
+        existing.put("description", normalized.get("description"));
+        existing.put("icon", normalized.get("icon"));
+        existing.put("path", normalized.get("path"));
         return true;
     }
 
@@ -400,6 +421,22 @@ public class ProjectService {
             Object children = node.get("children");
             if (children instanceof List<?> childList) {
                 Map<String, Object> found = findNodeByIdSuffix((List<Map<String, Object>>) childList, idSuffix);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> findNodeByPath(List<Map<String, Object>> nodes, String path) {
+        String normalizedPath = normalizePath(path);
+        for (Map<String, Object> node : nodes) {
+            if (normalizedPath.equals(normalizePath(asString(node.get("path"))))) {
+                return node;
+            }
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                Map<String, Object> found = findNodeByPath((List<Map<String, Object>>) childList, path);
                 if (found != null) return found;
             }
         }

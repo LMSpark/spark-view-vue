@@ -99,6 +99,22 @@ class ProjectServiceNavigationSeedTest {
     }
 
     @Test
+    void existingHomepageNavigationNormalizesLegacyAppListEntry() throws Exception {
+        navigationTreeService.saveNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
+                node("home", "工作台", "/dashboard"),
+                node("back-to-homepage", "返回应用工场", "/app-list")
+        ));
+        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc("lmspark"))
+                .thenReturn(List.of(project("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
+
+        projectService.ensureAllProjectNavigations("lmspark");
+
+        Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
+        assertEquals("应用管理", titleForPath(nav, "/app-list"));
+        assertTrue(containsPath(nav, "/dbms"));
+    }
+
+    @Test
     void ensureHomepageRepairsProjectSeedFields() {
         ProjectEntity platform = project(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, "legacy");
         when(projectRepo.findByTenantIdAndProjectId(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID))
@@ -179,6 +195,13 @@ class ProjectServiceNavigationSeedTest {
     }
 
     @SuppressWarnings("unchecked")
+    private static String titleForPath(Map<String, Object> root, String path) {
+        Object children = root.get("children");
+        if (!(children instanceof List<?> childList)) return "";
+        return titleForPathInNodes((List<Map<String, Object>>) childList, path);
+    }
+
+    @SuppressWarnings("unchecked")
     private static int countPathInNodes(List<Map<String, Object>> nodes, String path) {
         int count = 0;
         for (Map<String, Object> node : nodes) {
@@ -189,5 +212,18 @@ class ProjectServiceNavigationSeedTest {
             }
         }
         return count;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String titleForPathInNodes(List<Map<String, Object>> nodes, String path) {
+        for (Map<String, Object> node : nodes) {
+            if (path.equals(node.get("path"))) return String.valueOf(node.get("title"));
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                String title = titleForPathInNodes((List<Map<String, Object>>) childList, path);
+                if (!title.isBlank()) return title;
+            }
+        }
+        return "";
     }
 }
