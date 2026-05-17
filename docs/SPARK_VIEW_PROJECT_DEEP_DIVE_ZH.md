@@ -327,7 +327,7 @@ flowchart LR
 | 结构化诊断 | 将加载错误扩展为 `code/path/fileName/status/detail/suggestion` |
 | schema 迁移 | 为页面整体配置引入版本迁移管线，兼容历史配置 |
 | 远程缓存 | 支持 ETag、If-None-Match 或显式 timestamp 协议 |
-| schema 示例 | 为 `saveChanges.transaction`、`dataViewKey/dataViewKey/dataMember/dataField`、聚合和状态字段提供最小可运行样例 |
+| schema 示例 | 为 `saveChanges.transaction`、`dataViewKey + dataMember + dataField`、聚合和状态字段提供最小可运行样例 |
 
 如果这个边界变得更强，DevSystem 和 AI 都可以基于同一套诊断对象给出可操作反馈。
 
@@ -443,7 +443,7 @@ flowchart TD
 
 ### 10.1 DataSet / DataTable / DataView
 
-DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，DataView 表示面向组件绑定和交互的视图。组件通常不直接关心接口细节：表级容器通过 `dataViewKey` 定位某个 DataView，展示组件或动作上下文通过 `dataViewKey/dataMember/dataField` 读取该 DataView 的 rows、currentRow、selection、aggregateResult 或状态字段。
+DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，DataView 表示面向组件绑定和交互的视图。组件通常不直接关心接口细节：表级容器通过 `dataViewKey` 定位某个 DataView，展示组件或动作上下文通过 `dataViewKey + dataMember + dataField` 读取该 DataView 的 rows、currentRow、selection、aggregateResult 或状态字段。
 
 这套分层让 SPARK 页面能表达后台页面常见模式：
 
@@ -459,26 +459,26 @@ DataSet 是页面数据空间协调器，DataTable 表示表级数据容器，Da
 | 历史记录 | 支持撤销、回滚和变更追踪的基础 |
 | 计算列/聚合 | 将业务派生数据纳入平台模型 |
 
-### 10.2 DataViewKey
+### 10.2 DataViewKey 与 DataMember
 
-DataViewKey 和 DataViewKey 是组件和数据视图之间的绑定协议。两者都用稳定字符串表达数据来源，但职责不同：
+DataViewKey 和 DataMember 是组件和数据视图之间的绑定协议。DataViewKey 用稳定字符串定位 DataView，DataMember 用枚举字符串选择 DataView 输出成员，DataField 再选择对象成员内部的业务字段或点路径：
 
 | 协议 | 示例 | 含义 |
 |---|---|---|
 | DataViewKey | `Users@mainList` | 容器级绑定，定位 `Users` 表的 `mainList` DataView |
 | DataViewKey | `#SharedDS@Users@lookup` | 跨 scope 定位共享 DataView |
-| DataViewKey | `Users@mainList@rows` | 读取某个 DataView 的行集合 |
-| DataViewKey | `Users@mainList@currentRow.name` | 读取当前行的 `name` 字段 |
-| DataViewKey | `Users@mainList@selectedRows` | 读取当前多选集合 |
-| DataViewKey | `Users@summary@aggregateResult.totalAmount` | 读取聚合结果字段 |
-| DataViewKey | `Users@mainList@requestState` | 读取请求状态 |
-| DataViewKey | `Users@mainList@loadingError` | 读取加载错误 |
+| DataMember | `rows` | 读取某个 DataView 的行集合 |
+| DataMember + DataField | `currentRow` + `name` | 读取当前行的 `name` 字段 |
+| DataMember | `selectedRows` | 读取当前多选集合 |
+| DataMember + DataField | `aggregateResult` + `totalAmount` | 读取聚合结果字段 |
+| DataMember | `requestState` | 读取请求状态 |
+| DataMember | `loadingError` | 读取加载错误 |
 
-当前规则下，表级容器使用 `dataViewKey`，DataView 输出读取使用完整 `dataViewKey/dataMember/dataField`。不再把 `Users@rows` 作为新配置范式；应该写 `dataViewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示才写 `dataViewKey/dataMember/dataField: "Users@summary@aggregateResult.xxx"`。
+当前规则下，表级容器使用 `dataViewKey`，DataView 输出读取使用 `dataViewKey + dataMember + dataField`。例如列表容器写 `dataViewKey: "Users@mainList"`，字段节点写 `field: "name"`，统计展示写 `dataViewKey: "Users@summary", dataMember: "aggregateResult", dataField: "totalAmount"`。
 
 在容器已经提供 `DATA_ROW` 的子树中，还可以使用 `$[fieldName]` 把当前行字段投影到任意 prop，这适合按钮文案、tag 类型、tooltip、标题、前后缀等轻量展示，不需要额外脚本拼装。
 
-当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接监听 DataView 领域事件，并按需读取 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `dataViewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataMember/contextDataField` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
+当前 DataView 的 UI 输出面已经不只是 `rows`。容器状态桥接监听 DataView 领域事件，并按需读取 `rows`、`columns`、`currentRow`、`selectedRows`、`editingRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`、权限和树配置。`r-table/r-list/r-tree/r-filter` 等表级容器通过 `dataViewKey` 解析 DataView；`r-form/r-detail` 通过 `contextDataMember` 和 `contextDataField` 选择 currentRow、aggregateResult 或 selectionAggregateResult 作为字段上下文。
 
 建议后续增强 DataViewKey 诊断：当解析失败时，不只返回 null，而是返回失败原因、候选 view、候选字段和修复建议。这个能力对 DevSystem 和 AI 都很重要。
 

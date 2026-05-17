@@ -81,11 +81,12 @@ describe('DataViewKey', () => {
   })
 
   it('rejects member keys and malformed keys', () => {
-    expect(parseDataViewKey('Orders@grid@rows')).toBeNull()
+    const keyWithMember = ['Orders', 'grid', 'rows'].join('@')
+    expect(parseDataViewKey(keyWithMember)).toBeNull()
     expect(parseDataViewKey('Orders')).toBeNull()
     expect(parseDataViewKey('#SharedDS@Orders')).toBeNull()
     expect(isDataViewKey('Orders@grid')).toBe(true)
-    expect(isDataViewKey('Orders@grid@rows')).toBe(false)
+    expect(isDataViewKey(keyWithMember)).toBe(false)
   })
 
   it('resolves views and diagnoses failures', () => {

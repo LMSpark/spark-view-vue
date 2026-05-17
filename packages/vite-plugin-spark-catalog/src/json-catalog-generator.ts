@@ -150,7 +150,7 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
 const DEFAULT_CONSTRAINTS: PlatformConstraints = {
   dataViewKeyPattern: {
     value: String.raw`^(#[\w-]+@)?[\w-]+@[\w-]+$`,
-    description: 'DataViewKey format constraint; 用于定位 DataView。成员读取请使用 dataMember/dataField。',
+    description: 'DataViewKey format constraint; 用于定位 DataView。成员读取请使用 dataMember 和 dataField。',
     examples: ['orders@default', 'orders@grid', '#main@orders@grid'],
   },
   validTypePrefixes: {

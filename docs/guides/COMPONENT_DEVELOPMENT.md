@@ -239,40 +239,48 @@ APP (sparkProvide APP_SERVICES)
 
 ## 5. 数据绑定
 
-### 5.1 DataViewKey 格式
+### 5.1 DataViewKey 与成员读取
 
-SPARK 以统一的 DataViewKey 字符串描述数据来源：
+SPARK 用 DataViewKey 定位 DataView，用 `dataMember` 和 `dataField` 读取 DataView 的具体输出。DataViewKey 本身不包含成员名或字段路径：
 
 ```
-{scope}@{tableName}@{viewId}@{field}
+{tableName}@{viewId}
+#scope@{tableName}@{viewId}
 ```
 
-| 段数 | 示例 | 说明 |
+| 类型 | 示例 | 说明 |
 |------|------|------|
-| 3 段 | `Users@grid@rows` | 同页 DataViewKey，显式 viewId |
-| 4 段 | `#UserDS@Users@grid@rows` | 跨 scope DataViewKey，显式 viewId |
+| 同页 DataViewKey | `Users@grid` | 定位当前页面 DataSet 中的 DataView |
+| 跨 scope DataViewKey | `#UserDS@Users@grid` | 定位指定 scope 中的 DataView |
+| 成员读取 | `dataMember: "rows"` | 读取 DataView 输出成员 |
+| 字段读取 | `dataMember: "currentRow", dataField: "profile.name"` | 读取对象成员内部字段路径 |
 
-`field` 可选值：`rows`、`columns`、`currentRow`、`selectedRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`。
+`dataMember` 可选值：`rows`、`columns`、`currentRow`、`selectedRows`、`aggregateResult`、`selectionAggregateResult`、`total`、`page`、`pageSize`、`requestState`、`mutating`、`loadingError`、`mutatingError`。`dataField` 只用于 `currentRow`、`aggregateResult`、`selectionAggregateResult` 这类对象型成员。
 
 ### 5.2 解析 DataViewKey → 数据视图
 
 ```typescript
 import { PAGE_DATASET } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-view/spark-data'
 
 const { sparkConsume } = useSparkComponent(props.config)
 const dataSet = sparkConsume(PAGE_DATASET)
 
-// resolveDataViewMemberBinding 返回判别联合（渲染层首选）
-const binding = props.config.dataViewKey/dataMember/dataField
-  ? SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
+// 容器组件用 dataViewKey 定位 DataView
+const dataSource = props.config.dataViewKey
+  ? SparkData.resolveDataViewKey(props.config.dataViewKey, dataSet)
+  : undefined
+
+// 展示或动作需要读取成员时显式声明 dataMember
+const rowsBinding = props.config.dataViewKey
+  ? SparkData.resolveDataViewMemberBinding({
+      dataViewKey: props.config.dataViewKey,
+      dataMember: DataMember.Rows,
+    }, dataSet)
   : null
 
-// kind === 'view' 时，source 是 IDataSource（DataView 的公开接口）
-const dataSource = binding?.kind === 'view' ? binding.source : null
-
 // 响应式读取行数据
-const rows = computed(() => dataSource?.rows ?? [])
+const rows = computed(() => rowsBinding?.value ?? [])
 const currentRow = computed(() => dataSource?.currentRow ?? null)
 ```
 
@@ -324,8 +332,7 @@ import { SparkData } from '@spark-view/spark-data'
 const { sparkProvide, sparkConsume } = useSparkComponent(props.config)
 
 const dataSet = sparkConsume(PAGE_DATASET)
-const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
-const dataView = binding?.kind === 'view' ? binding.source : null
+const dataView = SparkData.resolveDataViewKey(props.config.dataViewKey, dataSet)
 
 if (dataView) {
   sparkProvide(DATA_SOURCE, dataView)   // 子组件通过 sparkConsume(DATA_SOURCE) 获取
@@ -570,7 +577,7 @@ it('provides and consumes capability', () => {
 ### 10.3 DataView 数据绑定测试
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-view/spark-data'
 
 it('resolves DataViewKey to rows', () => {
   const dataSet = SparkData.createDataSet({
@@ -584,10 +591,13 @@ it('resolves DataViewKey to rows', () => {
     }
   })
 
-  const binding = SparkData.resolveDataViewMemberBinding('Items@default@rows', dataSet)
+  const binding = SparkData.resolveDataViewMemberBinding({
+    dataViewKey: 'Items@default',
+    dataMember: DataMember.Rows,
+  }, dataSet)
   expect(binding?.kind).toBe('value')
   if (binding?.kind === 'value') {
-    expect(binding.source.rows).toHaveLength(2)
+    expect(binding.value).toHaveLength(2)
   }
 })
 ```
@@ -600,7 +610,8 @@ it('resolves DataViewKey to rows', () => {
 
 ```typescript
 // ✅ 必须 kebab-case
-Spark.register('user-detail-form', ...)\nSpark.register('r-table', ...)", "oldString": "Spark.register('user-detail-form', ...)\nSpark.register('spark-ej2-grid', ...)
+Spark.register('user-detail-form', ...)
+Spark.register('r-table', ...)
 
 // ❌ 禁止
 Spark.register('UserDetailForm', ...)
@@ -612,7 +623,7 @@ Spark.register('userDetailForm', ...)
 ```typescript
 // ✅ 继承 SparkNode，只声明本组件需要的字段
 interface MyGridConfig extends SparkNode {
-  dataViewKey/dataMember/dataField?: string          // DataViewKey 字符串
+  dataViewKey?: string          // DataViewKey 字符串
   pageSize?: number
   showPagination?: boolean
 }
@@ -735,20 +746,19 @@ pnpm run plop
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-data'
+import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-component'
 
 interface MasterGridConfig extends SparkNode {
-  dataViewKey/dataMember/dataField: string
+  dataViewKey: string
 }
 
 const props = defineProps<{ config: MasterGridConfig }>()
 const { sparkConsume, sparkProvide, logger } = useSparkComponent(props.config)
 
 const dataSet = sparkConsume(PAGE_DATASET)
-const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
-const ds = binding?.kind === 'view' ? binding.source : null
+const ds = SparkData.resolveDataViewKey(props.config.dataViewKey, dataSet)
 
 // 向子组件提供数据源
 if (ds) sparkProvide(DATA_SOURCE, ds)
@@ -776,15 +786,14 @@ import { SparkData } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-component'
 
 interface DetailGridConfig extends SparkNode {
-  dataViewKey/dataMember/dataField: string
+  dataViewKey: string
 }
 
 const props = defineProps<{ config: DetailGridConfig }>()
 const { sparkConsume } = useSparkComponent(props.config)
 
 const dataSet = sparkConsume(PAGE_DATASET)
-const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
-const ds = binding?.kind === 'view' ? binding.source : null
+const ds = SparkData.resolveDataViewKey(props.config.dataViewKey, dataSet)
 
 // 父表 currentRow 变化时 CascadeDelegate 自动触发 refresh()
 const rows = computed(() => ds?.rows ?? [])

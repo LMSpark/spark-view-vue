@@ -138,7 +138,7 @@ pnpm run test
 2. **页面数据模型**
    用 `pagedata.json` 描述 DataSet、表、视图、关系、计算列和聚合。
 3. **页面数据绑定**
-   通过 DataViewKey 把容器和 DataView 连接起来，例如 `Users@default`；展示和动作需要读取 DataView 输出时使用完整 DataViewKey，例如 `Orders@detail@currentRow.total`。
+   通过 DataViewKey 把容器和 DataView 连接起来，例如 `Users@default`；展示和动作需要读取 DataView 输出时使用 `dataViewKey + dataMember + dataField`，例如 `dataViewKey: "Orders@detail", dataMember: "currentRow", dataField: "total"`。
 4. **页面行为脚本**
    在 `script.js` 里只写最小化业务分支和页面行为，数据管理仍然通过 DataSet 流转。
 5. **组件能力系统**
@@ -174,7 +174,7 @@ pnpm run test
 
 - 页面结构配置决定渲染什么
 - 页面数据模型决定数据从哪里来
-- DataViewKey 决定容器绑定到哪个 DataView，DataViewKey 用于读取 DataView 的具体输出
+- DataViewKey 决定容器绑定到哪个 DataView，`dataMember` 和 `dataField` 决定读取 DataView 的哪个成员与业务字段
 - 权限和页面模式决定字段最终是否可见、可编辑、可操作
 
 ## 对外理解的 4 个核心概念

@@ -389,7 +389,7 @@ export interface AggregateColumnConfig {
    *
    * 注意：`field` 只决定从行里读哪个源字段，结果仍写入 aggregates 的 key。
    * 例如 `{ totalAmount: { type: 'sum', field: 'amount' } }` 的结果位于
-   * `aggregateResult.totalAmount`，不是 `aggregateResult.amount`。
+   * 读取聚合结果时，dataMember 使用 aggregateResult，dataField 使用聚合输出键。
    */
   field?: string
   /** join 聚合分隔符（默认 ', '），仅 type='join' 时有效 */

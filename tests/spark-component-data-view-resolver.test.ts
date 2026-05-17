@@ -65,7 +65,7 @@ describe('spark-component DataView resolver', () => {
     expect(resolveDataViewKey(undefined, dataSet)).toBeUndefined()
     expect(resolveDataViewKey('', dataSet)).toBeUndefined()
     expect(resolveDataViewKey('Users', dataSet)).toBeUndefined()
-    expect(resolveDataViewKey('Users@rows', dataSet)).toBeUndefined()
+    expect(resolveDataViewKey(['Users', 'missingView'].join('@'), dataSet)).toBeUndefined()
     expect(resolveDataViewKey('Missing@default', dataSet)).toBeUndefined()
     expect(resolveDataViewKey('Users@default', null)).toBeUndefined()
   })

@@ -130,8 +130,7 @@ props 内常用字段：
 - 使用 dataViewKey 定位 DataView：表名@视图ID 或 #scope@表名@视图ID
 - 使用 dataMember 读取 DataView 成员：rows, columns, currentRow, selectedRows, aggregateResult, selectionAggregateResult, total, page, pageSize, requestState, mutating, loadingError, mutatingError
 - 使用 dataField 读取对象型成员内部字段路径：如 { "dataViewKey": "Users@default", "dataMember": "currentRow", "dataField": "name" }
-- dataField 只允许用于 currentRow / aggregateResult / selectionAggregateResult；rows.id、selectedRows.name 这类集合成员字段读取是非法组合
-- 不再使用 Users@rows / Users@default@rows 这类把成员拼进键里的旧写法
+- dataField 只允许用于 currentRow / aggregateResult / selectionAggregateResult；集合成员不接受 dataField
 - 表名必须与 pagedata.json 中 tables 的键完全一致，大小写也必须一致
 
 布局与样式：
@@ -197,7 +196,7 @@ Render* 规则：
 
 表定义要求：
 - tables 下每张表都必须有 views.default（没有 views.default 表格将无法渲染；即使只有静态 rows 或只有 api，也必须写成 views: { default: { ... } }）
-- 行数据统一放在 views.default.rows 中；不要再生成表根级 rows 作为新标准写法
+- 行数据统一放在 views.default.rows 中
 - 提供 3 到 5 条有代表性的测试数据
 - 常用列属性：name, type, label, isPrimaryKey, computeExpression
 - 级联父表必须将主键字段标记 isPrimaryKey: true；子表匹配字段列需显式存在并与 childField 对应；否则 tableRelation 不生效
@@ -215,13 +214,13 @@ Render* 规则：
 - 先提取业务实体、主从层次、树层次、统计需求、字段编辑方式，以及是否存在远程数据
 - 第一阶段先完成“数据与 API 建模”：tables、columns、主键与关联字段、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型
 - 第二阶段再完成"视图与关系建模"：views.default、命名视图、autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为、tableRelations
-- 输出前做错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能有 tableRelation/viewDependency 非法字段、不能把 options 重复塞进主表 rows
+- 输出前做结构闭合检查：每张表都有 columns 与 views.default，行数据位于 view 的 rows 中，tableRelations/viewDependencies 字段符合 schema，选项数据独立建模
 
-错误结构黑名单：
-- 不要生成表根级 rows，例如 { tableName, columns, rows }
-- 不要生成只有 api 没有 views.default 的表
-- 不要在 tableRelations 中生成 autoLoad、lazyLoad、apiEnabled、parentViewId、childViewId
-- 不要把 options 数组重复塞进主表 rows
+输出结构要求：
+- 行数据写入对应 view 的 rows
+- 每张表同时声明 columns 与 views.default
+- tableRelations 只包含 schema 支持的关系字段
+- 选项数据放入独立字典表、引用表或动态选项 DataView
 
 根据用户需求建模策略：
 - 先识别业务实体，再决定 tables；不要把“页面区域名”直接当表名

@@ -100,7 +100,7 @@ src/
 
 四个共有动作都是**容器数据动作**。它们在两套体系内都需要：
 
-- 取数据源（`DATA_SOURCE` / `dataViewKey/dataMember/dataField` 解析）
+- 取数据源（`DATA_SOURCE` / `dataViewKey + dataMember + dataField` 解析）
 - 行/选择行解析
 - 权限投影
 - 确认对话 + 文案插值
@@ -146,7 +146,7 @@ pagedata.json
    ↓ parsePageData()      (spark-page-config)
 DataSet
    ↓ usePageDataSet()     → sparkProvide(PAGE_DATASET)
-   ↓ DataViewKey('table@view@field')
+   ↓ DataViewKey：table@view + dataMember 和 dataField
 DataView
    ↓ sparkProvide(DATA_SOURCE)        (容器层)
    ↓ sparkProvide(DATA_ROW)           (RendererHostScope/FieldScope)

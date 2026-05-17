@@ -14,7 +14,7 @@ PageRenderer (SparkPageRenderer + useRendererSetup)
   ↓  sparkProvide(PAGE_DATASET, ...)
 Table容器 (e.g. r-table)
   ↓  sparkConsume(PAGE_DATASET) → DataSet
-  ↓  resolveDataViewMemberBinding(config.dataViewKey/dataMember/dataField, dataSet) → DataView
+  ↓  resolveDataViewKey(config.dataViewKey, dataSet) → DataView
   ↓  sparkProvide(DATA_SOURCE, dataView)
   ↓  sparkProvide(SELECTION, ...)
 Row组件 (e.g. r-row)
@@ -112,33 +112,40 @@ DataSet 不持有 DataView 引用，不直接操控 DataView 状态。
 
 ### DataViewKey 数据视图键
 
-统一格式（无 scope，SPA 单 DataSet）：`tableName@viewId@field`
+DataViewKey 只负责定位 DataView，不包含成员名或业务字段。
+
+统一格式（无 scope，SPA 单 DataSet）：`tableName@viewId`
+跨 scope 格式：`#scope@tableName@viewId`
 
 ```typescript
 // DataViewKey：容器定位 DataView
 'Users@grid'
-// DataViewKey：读取 DataView 输出字段
-'Users@grid@rows'
+// 读取 DataView 输出时额外声明 dataMember 和 dataField
+{ dataViewKey: 'Users@grid', dataMember: 'currentRow', dataField: 'name' }
 ```
 
 | 段 | 含义 | 示例 |
 |----|------|------|
+| `scope` | 可选 DataSet scope | `#Shared` |
 | `tableName` | DataTable 的键名 | `Users` |
 | `viewId` | DataView 的 viewId | `grid`、`default` |
-| `field` | 绑定字段 | `rows`、`currentRow`、`selectedRows` |
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-view/spark-data'
 
-// 解析（渲染层首选）
-const binding = SparkData.resolveDataViewMemberBinding('Users@grid@rows', dataSet)
-if (binding?.kind === 'view') {
-  const dataSource: IDataSource = binding.source
-}
+// 容器解析 DataView
+const dataView = SparkData.resolveDataViewKey('Users@grid', dataSet)
+
+// 展示/动作读取 DataView 成员
+const binding = SparkData.resolveDataViewMemberBinding({
+  dataViewKey: 'Users@grid',
+  dataMember: DataMember.Rows,
+}, dataSet)
+const rows = binding?.value ?? []
 
 // 构建
-const key = SparkData.buildDataViewKey('Users', 'rows', 'grid')
-// → 'Users@grid@rows'
+const key = SparkData.buildDataViewKey('Users', 'grid')
+// → 'Users@grid'
 ```
 
 ### DataView 请求状态机
@@ -175,9 +182,8 @@ const { sparkConsume, sparkProvide } = useSparkComponent(props.config)
 // 消费页面级 DataSet
 const dataSet = sparkConsume(PAGE_DATASET)
 
-// 解析 dataViewKey/dataMember/dataField → DataView
-const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
-const dataView = binding?.kind === 'view' ? binding.source : null
+// 解析 dataViewKey → DataView
+const dataView = SparkData.resolveDataViewKey(props.config.dataViewKey, dataSet)
 
 // 向子组件提供数据源和选择能力
 sparkProvide(DATA_SOURCE, dataView)

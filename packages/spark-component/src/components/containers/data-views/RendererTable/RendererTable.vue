@@ -128,7 +128,7 @@
  * @notes 结构化区域使用 props.toolbar / props.filter / props.actions，不再使用 dock 分流
  * @notes highlightCurrentRow 必须显式声明才生效
  * @notes 提示词模板（可提取）：默认包含 toolbar/filter/actions 三块，具体动作模板见对应 props 注释。
- * @notes 提示词模板（数据绑定）：table dataViewKey 使用 table@viewId；统计输出优先使用 display 组件 + dataMember/dataField（aggregateResult/currentRow）而不是 children 文本插值。
+ * @notes 提示词模板（数据绑定）：table dataViewKey 使用 table@viewId；统计输出优先使用 display 组件 + dataMember 和 dataField（aggregateResult/currentRow）而不是 children 文本插值。
  */
 import { computed, nextTick, provide, ref, toRef, watch } from 'vue'
 import {

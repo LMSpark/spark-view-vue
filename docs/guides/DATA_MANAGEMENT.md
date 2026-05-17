@@ -22,7 +22,7 @@ SPARK 数据层核心对象：
 ## 1. 创建 DataSet
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-view/spark-data'
 
 const dataSet = SparkData.createDataSet({
   dataSetName: 'UserManagement',
@@ -256,8 +256,11 @@ const dataSet = sparkConsume(PAGE_DATASET)
 // 容器级绑定使用 DataViewKey 定位 DataView
 const view = SparkData.resolveDataViewKey('Users@grid', dataSet)
 
-// 展示、动作等需要读取 DataView 输出时使用完整 DataViewKey
-const binding = SparkData.resolveDataViewMemberBinding('Users@grid@rows', dataSet)
+// 展示、动作等需要读取 DataView 输出时显式声明 dataMember
+const binding = SparkData.resolveDataViewMemberBinding({
+  dataViewKey: 'Users@grid',
+  dataMember: DataMember.Rows,
+}, dataSet)
 const rows = computed(() => binding?.value ?? [])
 ```
 
@@ -267,10 +270,8 @@ DataViewKey 格式：
 |------|------|------|
 | DataViewKey | `table@viewId` | `Users@grid` |
 | DataViewKey | `#scope@table@viewId` | `#Shared@Users@grid` |
-| DataViewKey | `table@viewId@field` | `Users@grid@rows` |
-| DataViewKey | `#scope@table@viewId@field` | `#Shared@Users@grid@currentRow.name` |
 
-`table@field`、`#scope@table@field` 这类省略 viewId 的旧写法不再合法。
+DataViewKey 只包含定位信息。读取成员时使用 `dataMember`，读取对象成员内部字段时再使用 `dataField`。
 
 ---
 
@@ -340,7 +341,7 @@ import { SparkData } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-component'
 
 interface UserGridConfig extends SparkNode {
-  dataViewKey/dataMember/dataField: string
+  dataViewKey: string
 }
 
 const props = defineProps<{ config: UserGridConfig }>()
@@ -350,8 +351,7 @@ const { consume, logger } = useSparkComponent(props.config)
 const dataSet = sparkConsume(PAGE_DATASET)
 
 // 通过 DataViewKey 解析 DataView
-const binding = SparkData.resolveDataViewMemberBinding(props.config.dataViewKey/dataMember/dataField, dataSet)
-const view = binding?.kind === 'view' ? binding.source : null
+const view = SparkData.resolveDataViewKey(props.config.dataViewKey, dataSet)
 
 // 响应式数据
 const rows = computed(() => view?.rows ?? [])

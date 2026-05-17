@@ -8,7 +8,7 @@ SPARK View 的页面不是由 Vue 单文件组件直接写死，而是由四文�
 
 | 文件 | 真正职责 | 运行时落点 |
 | --- | --- | --- |
-| `rule.json` | 声明页面组件树、布局、组件 props、事件名、`dataViewKey`、`dataViewKey/dataMember/dataField`、`field`、class | `SparkNodeTree` -> `buildPageChildren` -> `SparkComponentRenderer` |
+| `rule.json` | 声明页面组件树、布局、组件 props、事件名、`dataViewKey`、`dataViewKey + dataMember + dataField`、`field`、class | `SparkNodeTree` -> `buildPageChildren` -> `SparkComponentRenderer` |
 | `pagedata.json` | 声明页面数据空间：表、列、视图、静态行、API、关系、依赖、计算列、聚合 | `parsePageData` -> `DataSet` -> `DataTable` -> `DataView` |
 | `script.js` | 声明页面初始化函数、事件函数和少量业务动作 | `compileFunctions` -> 沙箱函数表 -> `__init__` / `handle*` |
 | `style.css` | 页面级样式，通常配合 `rule.json` 中的 class 使用 | `setScopedCss` -> 页面作用域 CSS |
@@ -23,7 +23,7 @@ SPARK View 的页面不是由 Vue 单文件组件直接写死，而是由四文�
 -> 数据利用规划（每个 UI 消费点需要哪个 DataView 能力）
 -> 按消费点选择/创建 DataView（同表多 UI 按运行态隔离拆分）
 -> viewDependencies（按 parentTable / childTable 声明表关系级联动）
--> rule.json dataViewKey / dataViewKey/dataMember/dataField / field 绑定
+-> rule.json dataViewKey / dataViewKey + dataMember + dataField / field 绑定
 -> script.js / style.css 补齐行为和表现
 ```
 
@@ -150,15 +150,7 @@ DataView 绑定拆成三个显式语义：
 | `loadingError` | 加载错误 |
 | `mutatingError` | 提交错误 |
 
-常见错误：
-
-```json
-{
-  "dataViewKey": "Orders@amount"
-}
-```
-
-这是错误的，因为 `amount` 是列名，不是 viewId。旧写法 `Orders@mainList@rows` 也不应继续作为新文档范式，因为成员不能拼进 `dataViewKey`。正确做法是在容器上用 `dataViewKey: "Orders@mainList"` 绑定 DataView，在子字段节点上写 `field`；展示组件需要读取成员时再显式写 `dataMember` 和可选 `dataField`。
+绑定规则：容器上用 `dataViewKey: "Orders@mainList"` 绑定 DataView；字段节点在容器上下文中写 `field`；展示组件需要读取 DataView 成员时，再显式写 `dataMember` 和可选 `dataField`。
 
 ## 4. `$[fieldName]`：任意组件 prop 消费容器字段
 
@@ -339,7 +331,7 @@ function handleCreateOrder() {
 
 ```mermaid
 flowchart TB
-  Rule["rule.json<br/>组件树 / dataViewKey / dataViewKey/dataMember/dataField / class / on"] -->|dataViewKey/dataViewKey/dataMember/dataField| PageData["pagedata.json<br/>DataSet / tables / views"]
+  Rule["rule.json<br/>组件树 / dataViewKey / dataViewKey + dataMember + dataField / class / on"] -->|dataViewKey + dataMember + dataField| PageData["pagedata.json<br/>DataSet / tables / views"]
   Rule -->|on: handleX| Script["script.js<br/>函数定义"]
   Rule -->|class| Style["style.css<br/>选择器"]
   Script -->|$dataSet.getView(table, view)| PageData
@@ -350,12 +342,12 @@ flowchart TB
 
 | 如果改了 | 需要同步检查 |
 | --- | --- |
-| `pagedata.json` 新增表/字段/view | `rule.json` 的 `dataViewKey`、`dataViewKey/dataMember/dataField`、字段 `field`、`script.js` 的 `getView()` |
-| `rule.json` 新增 `dataViewKey` 或 `dataViewKey/dataMember/dataField` | `pagedata.json` 是否存在对应表和 view |
+| `pagedata.json` 新增表/字段/view | `rule.json` 的 `dataViewKey`、`dataViewKey + dataMember + dataField`、字段 `field`、`script.js` 的 `getView()` |
+| `rule.json` 新增 `dataViewKey` 或 `dataViewKey + dataMember + dataField` | `pagedata.json` 是否存在对应表和 view |
 | `rule.json` 新增 `on.click = handleX` | `script.js` 是否有 `function handleX(...)` |
 | `rule.json` 修改组件 `id` | `script.js` 中 `$components.getApi(id)` 是否同步 |
 | `rule.json` 新增 class | `style.css` 是否定义对应选择器 |
-| `pagedata.json` 新增 aggregates | `rule.json` 是否用 `Table@view@aggregateResult.xxx` 展示 |
+| `pagedata.json` 新增 aggregates | `rule.json` 是否用 `dataViewKey + dataMember + dataField` 展示聚合字段 |
 | `pagedata.json` 新增 relation/dependency | `viewDependencies` 是否与 `tableRelations` 的 parentTable / childTable 对齐；主从 UI 是否绑定当前协议实际消费的 `default` 视图 |
 
 ## 7. 页面加载顺序
@@ -381,7 +373,7 @@ sequenceDiagram
   Renderer->>Data: initAutoSelection()
 ```
 
-虽然加载顺序中 CSS 和 script 先被处理，但 AI 设计流程应该“数据优先”。原因是 UI 的 `dataViewKey`、`dataViewKey/dataMember/dataField`、字段、聚合、主从关系都依赖数据模型；先稳定 `pagedata.json`，后续 rule/script/style 才不容易互相打架。
+虽然加载顺序中 CSS 和 script 先被处理，但 AI 设计流程应该“数据优先”。原因是 UI 的 `dataViewKey`、`dataViewKey + dataMember + dataField`、字段、聚合、主从关系都依赖数据模型；先稳定 `pagedata.json`，后续 rule/script/style 才不容易互相打架。
 
 ## 8. PageDesign AI 模块怎么改四文件
 
@@ -418,7 +410,7 @@ PageDesign 子模块边界：
 6. **再做数据利用规划**：每个页面区域消费哪个 DataView，以及它需要 `rows`、`currentRow`、`selectedRows` 还是 `aggregateResult`。
 7. **按消费点构建 DataView**：同表多处 UI 先判断运行态是否独立；独立分页、筛选、当前行、选择、聚合就建独立 view。
 8. **最后确认视图依赖**：`viewDependencies` 使用 `parentTable / childTable / dependencyType`，省略时会从 `tableRelations` 自动推导；只有需要改 `dependencyType`、`autoLoad` 或显式禁用时才额外处理。
-9. **再改 rule/script/style**：`rule.json` 绑定真实 `dataViewKey`、值级 `dataViewKey/dataMember/dataField` 和字段 `field`，`script.js` 只补无法配置化表达的业务分支，`style.css` 只补 rule 中确实使用的 class。
+9. **再改 rule/script/style**：`rule.json` 绑定真实 `dataViewKey`、值级 `dataViewKey + dataMember + dataField` 和字段 `field`，`script.js` 只补无法配置化表达的业务分支，`style.css` 只补 rule 中确实使用的 class。
 10. **完成后做交叉校验**：表名、字段、viewId、handler、class、component id、relation、dependency 都要闭合。
 
 `pagedata.json` 内部顺序：
@@ -453,13 +445,13 @@ PageDesign 子模块边界：
 | 14 | 盘点 | 列出 tableRelations | 现有父子关系可见 |
 | 15 | 盘点 | 列出 viewDependencies | 显式视图联动可见 |
 | 16 | 盘点 | 列出每张表的 views | `default` 与业务命名 view 可见 |
-| 17 | 盘点 | 读取 `rule.json` 根节点和现有 `dataViewKey` / `dataViewKey/dataMember/dataField` | 组件树和绑定列表可见 |
+| 17 | 盘点 | 读取 `rule.json` 根节点和现有 `dataViewKey` / `dataViewKey + dataMember + dataField` | 组件树和绑定列表可见 |
 | 18 | 盘点 | 收集 rule 中现有 handler 名 | 为 script 校验做准备 |
 | 19 | 盘点 | 读取 `script.js` | 明确已有 `__init__` 和 `handle*` 函数 |
 | 20 | 盘点 | 读取 `style.css` | 明确已有页面 class 和布局规则 |
 | 21 | 数据规划 | 把用户需求翻译成业务对象 | 例如客户、订单、订单明细、状态字典 |
 | 22 | 数据规划 | 区分主表、子表、引用表、字典表、树节点表 | 形成表角色清单 |
-| 23 | 数据规划 | 确定每个业务对象的稳定表名 | 表名大小写与后续 `dataViewKey` / `dataViewKey/dataMember/dataField` 一致 |
+| 23 | 数据规划 | 确定每个业务对象的稳定表名 | 表名大小写与后续 `dataViewKey` / `dataViewKey + dataMember + dataField` 一致 |
 | 24 | 数据规划 | 确定每张表的主键字段 | 单字段主键优先，多字段交给 `_pk` 机制 |
 | 25 | 数据规划 | 规划必要字段和字段类型 | 只放业务必要字段，不提前塞 UI 临时状态 |
 | 26 | 数据规划 | 规划字段 label | 后续表格、表单、详情可复用 |
@@ -499,11 +491,11 @@ PageDesign 子模块边界：
 | 60 | 页面规划 | 形成页面区域到数据对象的映射草图 | 每个区域消费哪张表、是否共享状态清楚 |
 | 61 | 数据利用 | 为每个区域标注 DataView 消费点 | 区域、表名、预期 viewId 草案明确 |
 | 62 | 数据利用 | 为列表/树区域标注 `rows` | 容器使用 `dataViewKey=Table@view` |
-| 63 | 数据利用 | 为详情/表单区域标注 `currentRow` | 来自同一 view 或显式 `contextDataMember/contextDataField` |
+| 63 | 数据利用 | 为详情/表单区域标注 `currentRow` | 来自同一 view 或显式 `contextDataMember + contextDataField` |
 | 64 | 数据利用 | 为批量操作标注 `selectedRows` | 多选表格或列表有独立消费点 |
 | 65 | 数据利用 | 为统计区域标注 `aggregateResult` | 明确统计依附哪个 DataView |
 | 66 | 数据利用 | 为选中统计标注 `selectionAggregateResult` | 批量选择统计有明确 DataView 来源 |
-| 67 | 数据利用 | 为字段节点和任意 prop 占位符规划字段消费 | `field` 与 `$[fieldName]` 都来自当前 DATA_ROW，不写非法 dataViewKey/dataMember/dataField |
+| 67 | 数据利用 | 为字段节点和任意 prop 占位符规划字段消费 | `field` 与 `$[fieldName]` 都来自当前 DATA_ROW，不写非法 dataViewKey + dataMember + dataField |
 | 68 | 数据利用 | 为选项组件规划 `optionDataViewKey` | 字典表 view rows 能被复用 |
 | 69 | 数据利用 | 为按钮和普通组件规划数据作用域 | 行内、工具栏、页面级动作区分清楚；需要当前行文案/颜色时用 `$[fieldName]` |
 | 70 | 数据利用 | 校验每个数据消费都有真实页面区域 | 避免先建没人用的数据出口 |
@@ -527,13 +519,13 @@ PageDesign 子模块边界：
 | 88 | 视图依赖 | 再次序列化 DataSetCrudTool toJson | `pagedata.json` canonical、可 round-trip |
 | 89 | 结构 | 查询组件 payload 列表 | 选择合法 `r-*` 组件 |
 | 90 | 结构 | 对目标组件调用 guidePayload | 获取 props schema 和使用规则 |
-| 91 | 结构 | 写入页面节点树 | `rule.json` 区域、组件、`dataViewKey`、`dataViewKey/dataMember/dataField`、field 对齐 |
+| 91 | 结构 | 写入页面节点树 | `rule.json` 区域、组件、`dataViewKey`、`dataViewKey + dataMember + dataField`、field 对齐 |
 | 92 | 结构 | 为需要脚本访问的组件设置稳定 id | `$components.getApi(id)` 有真实目标 |
 | 93 | 行为 | 对照 rule 中 handlers 生成函数清单 | 缺失函数列表明确 |
 | 94 | 行为 | 补 `__init__` 和事件函数 | `$dataSet.getView(table, view)` 读写 DataView |
 | 95 | 行为 | 替换或补全 script.js 全文 | 不使用 forbidden `$page` 伪 API |
 | 96 | 样式 | 从 rule 收集 class 并补 style.css | 选择器与 rule class 对齐 |
-| 97 | 交叉校验 | 校验 `dataViewKey`、`dataViewKey/dataMember/dataField`、field、relation、dependency | 表、字段、view、关系全部闭合 |
+| 97 | 交叉校验 | 校验 `dataViewKey`、`dataViewKey + dataMember + dataField`、field、relation、dependency | 表、字段、view、关系全部闭合 |
 | 98 | 交叉校验 | 校验 handler、component id、class | rule/script/style 互相闭合 |
 | 99 | 预览修正 | 触发 DevPreviewTab 或页面渲染并回补错误 | 解析、渲染、自动加载、主从联动正常 |
 | 100 | 收尾 | 总结修改与剩余风险 | 用户知道改了哪些文件、如何验证 |
@@ -580,9 +572,9 @@ flowchart TD
 | --- | --- | --- |
 | 单表列表页 | 一张主表，columns，`mainList` view rows 或 api.list | `r-table dataViewKey=Table@mainList` + toolbar + row fragments |
 | 主从页 | 父表、子表、`tableRelations`，必要时 `viewDependencies` | 依赖内置级联时父子容器绑定 `Parent@default` / `Child@default`；命名 view 只用于非级联的独立消费 |
-| 表格 + 详情/表单 | 单表，`mainList` view，字段校验 | `r-table dataViewKey=Users@mainList` + `r-form dataViewKey=Users@mainList` / `contextDataMember/contextDataField=Users@mainList@currentRow` |
+| 表格 + 详情/表单 | 单表，`mainList` view，字段校验 | `r-table dataViewKey=Users@mainList` + `r-form dataViewKey=Users@mainList, contextDataMember=currentRow` |
 | 树页 | tree table，`treeConfig`，必要时 tree API | `r-tree` 或树表格 |
-| 聚合统计页 | view `aggregates` 配置 | display 组件通过 `Table@summary@aggregateResult.xxx` 展示 |
+| 聚合统计页 | view `aggregates` 配置 | display 组件通过 `dataViewKey=Table@summary, dataMember=aggregateResult, dataField=xxx` 展示 |
 | 行上下文占位符页 | 表字段中包含 UI 需要展示或映射的派生字段 | 数据容器通过 `dataViewKey` 提供 `DATA_ROW`；任意子组件 prop 可写 `$[fieldName]` |
 
 ## 13. 常见陷阱清单
@@ -591,12 +583,12 @@ flowchart TD
 | --- | --- |
 | 把 DataSet 当数据库设计外键/索引/事务 | 只建页面数据空间与视图联动 |
 | UI 直接消费 DataTable | 容器必须通过 `dataViewKey` 消费 DataView |
-| `dataViewKey/dataMember/dataField: "Users@name"` 或 `dataViewKey/dataMember/dataField: "Users@rows"` | 容器用 `dataViewKey: "Users@mainList"`，字段用 `field: "name"` |
+| 把字段名或成员名写进 `dataViewKey` | 容器用 `dataViewKey: "Users@mainList"`，字段用 `field: "name"`；展示 DataView 成员时再写 `dataMember` / `dataField` |
 | 为了让普通组件显示当前行字段而写脚本拼 props | 放在数据容器上下文里，用 `$[fieldName]` 写任意 prop |
 | 把组件类型当 componentId | 先 list/find，读取节点顶层真实 `id` |
 | 先写 UI 再补数据 | 涉及数据时先稳定 `pagedata.json` |
 | script 中用 `$page.getDataSet()` | 用 `$dataSet?.getView("Table", "mainList")` |
-| script 中手写聚合结果 | 用 view `aggregates`，UI 读 `Table@summary@aggregateResult.xxx` |
+| script 中手写聚合结果 | 用 view `aggregates`，UI 通过 `dataViewKey=Table@summary, dataMember=aggregateResult, dataField=xxx` 读取 |
 | rule 中写不存在的 handler | 补 `script.js` 函数或删除事件绑定 |
 | style.css 写了无对应 class 的样式 | 从 rule 反查 class，删除死 CSS |
 | 选择项写死在每一行 | 复用选项建独立字典表，字段用 `optionDataViewKey` |
@@ -722,7 +714,7 @@ function handleRefreshOrders() {
 | 需求 | DataView 策略 |
 | --- | --- |
 | 主列表需要一批行和当前行 | 创建或复用 `mainList` view |
-| 详情区刻意跟随主列表当前行 | 复用 `mainList`，或用 `contextDataMember/contextDataField=Table@mainList@currentRow` |
+| 详情区刻意跟随主列表当前行 | 复用 `mainList`，并在详情/表单中设置 `contextDataMember=currentRow`；需要具体字段时再设置 `contextDataField` |
 | 编辑区需要独立草稿/保存状态 | 创建 `editor` view |
 | 弹窗选择器有独立筛选和分页 | 创建 `selector` view |
 | 统计区基于当前列表结果 | 在 `mainList` 上加 `aggregates` |

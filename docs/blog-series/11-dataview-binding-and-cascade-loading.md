@@ -32,8 +32,8 @@ AI 修改页面时，如果只知道组件位置，不知道数据绑定，生�
 
 ```mermaid
 flowchart LR
-  Node["SparkNode props<br/>dataViewKey/dataMember/dataField/dataViewKey/field"]
-  Parser["DataViewKey 解析"]
+  Node["SparkNode props<br/>dataViewKey / dataMember / dataField / field"]
+  Parser["DataViewKey 与 DataMember 解析"]
   DataSet["DataSet"]
   View["DataView"]
   Cascade["Cascade Delegate"]
@@ -45,7 +45,7 @@ flowchart LR
 
 ## 源码锚点
 
-- [../../packages/spark-data/src/data-view-key.ts](../../packages/spark-data/src/data-view-key.ts)
+- [../../packages/spark-data/src/core/data-view-key.ts](../../packages/spark-data/src/core/data-view-key.ts)
 - [../../packages/spark-data/src/cascade-delegate.ts](../../packages/spark-data/src/cascade-delegate.ts)
 - [../../packages/spark-data/src/data-view.ts](../../packages/spark-data/src/data-view.ts)
 - [../architecture/DATAFLOW_ARCHITECTURE.md](../architecture/DATAFLOW_ARCHITECTURE.md)

@@ -305,7 +305,7 @@ export interface NestingRule {
  * 构建时由 VCM props 自动推断（r-*）或静态声明（el-*）。
  */
 export interface CatalogBindingDescriptor {
-  /** LLM 可读绑定说明，解释该组件如何参与 dataViewKey/dataMember/dataField/field/options/value 管线。 */
+  /** LLM 可读绑定说明，解释该组件如何参与 dataViewKey、dataMember、dataField、field、options、value 管线。 */
   description?: string
   /** 可直接参考的绑定配置示例。 */
   examples?: unknown[]

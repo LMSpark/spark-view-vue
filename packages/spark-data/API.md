@@ -375,13 +375,10 @@ tableName@viewId                 # dataViewKey：容器定位 DataView
 | 2 段 | `table@viewId` | `Users@grid` |
 | 3 段 | `#scope@table@viewId` | `#SharedDS@Users@grid` |
 
-旧式把成员拼入键的写法和点号链式数据路径不再支持。
+成员名和字段路径不写入 DataViewKey；读取成员时使用 `dataMember`，读取对象成员内部字段时使用 `dataField`。
 
 ```typescript
 import { DataMember, parseDataViewKey, resolveDataViewMember } from '@spark-view/spark-data'
-
-parseDataViewKey('Users@rows')
-// → null（旧短写不再合法，必须显式写 viewId）
 
 parseDataViewKey('Users@grid')
 // → { tableName: 'Users', viewId: 'grid', raw: 'Users@grid' }

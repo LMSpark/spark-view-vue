@@ -1005,7 +1005,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       STATIC_ROWS_ONLY_RULE,
       '如果 updates.rows 存在，会先 replaceRows，再 applyViewConfig。',
       '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 aggregateResult / selectionAggregateResult 上的字段名。',
-      '聚合配置生效后，UI 侧可用 TableName@viewId@aggregateResult、TableName@viewId@selectionAggregateResult，或字段路径 TableName@summary@aggregateResult.totalScore 进行绑定。',
+      '聚合配置生效后，UI 侧使用 dataViewKey 定位目标 view，使用 dataMember 选择 aggregateResult 或 selectionAggregateResult，使用 dataField 选择聚合字段。',
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [
@@ -1666,7 +1666,7 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       DEFAULT_VIEW_RULE,
       JSON_OBJECT_RULE,
       '视图聚合新增步骤：先选 viewId（不传即 default）→ 指定 key（输出字段名）→ 设 config.type（sum/count/avg/min/max/join）与 field。',
-      'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取仍用 aggregateResult.totalAmount。',
+      'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取时使用 dataMember=aggregateResult、dataField=totalAmount。',
       '新增后 aggregates[key] 保留配置全貌；容器侧从 aggregateResult[key]（全量）或 selectionAggregateResult[key]（选中集）读取对应聚合结果。',
       'key 已存在时抛错，改用 dataset.updateAggregate。',
       'config.field 省略时默认与 key 同名，该字段必须在列定义中存在。',

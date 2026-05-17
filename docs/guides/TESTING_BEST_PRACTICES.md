@@ -231,7 +231,10 @@ describe('DataSet', () => {
         Users: { tableName: 'Users', columns: [], rows: [{ id: 1 }] }
       }
     })
-    const binding = SparkData.resolveDataViewMemberBinding('Users@default@rows', ds)
+    const binding = SparkData.resolveDataViewMemberBinding({
+      dataViewKey: 'Users@default',
+      dataMember: SparkData.DataMember.Rows,
+    }, ds)
     expect(binding?.kind).toBe('value')
   })
 })
