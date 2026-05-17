@@ -6,14 +6,40 @@
         <span class="subtitle">服务器 → 数据库 → 表（层级元数据管理）</span>
       </div>
       <div class="header-actions">
-        <el-button type="primary" @click="openCreateServer"><el-icon><Plus /></el-icon> 注册服务器</el-button>
+        <el-button type="primary" :icon="Plus" @click="openCreateServer">注册服务器</el-button>
+      </div>
+    </div>
+
+    <div class="context-strip" aria-label="当前数据库管理层级">
+      <div :class="['context-card', { active: selectedServer }]">
+        <span class="context-label">01 服务器</span>
+        <strong>{{ selectedServer?.SERVER_NAME ?? '未选择服务器' }}</strong>
+        <span>{{ servers.length }} 个服务器</span>
+      </div>
+      <div :class="['context-card', { active: selectedDatabase, disabled: !selectedServer }]">
+        <span class="context-label">02 数据库</span>
+        <strong>{{ selectedDatabase?.DATABASE_NAME ?? '未选择数据库' }}</strong>
+        <span>{{ selectedServer ? databases.length + ' 个数据库' : '待选择服务器' }}</span>
+      </div>
+      <div :class="['context-card', { active: selectedDatabase, disabled: !selectedDatabase }]">
+        <span class="context-label">03 数据表</span>
+        <strong>{{ selectedDatabase ? selectedDatabase.DATABASE_NAME : '未选择数据库' }}</strong>
+        <span>{{ selectedDatabase ? tables.length + ' 张表' : '待选择数据库' }}</span>
       </div>
     </div>
 
     <div class="dbms-body">
       <!-- 服务器列表 -->
       <div class="panel panel-left">
-        <div class="panel-header">数据库服务器</div>
+        <div class="panel-header">
+          <div class="panel-heading">
+            <div class="panel-title-row">
+              <span class="panel-index">01</span>
+              <span class="panel-title">数据库服务器</span>
+            </div>
+            <div class="panel-meta">{{ loading.servers ? '加载中' : servers.length + ' 个服务器' }}</div>
+          </div>
+        </div>
         <div class="panel-body">
           <div v-if="loading.servers" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
           <div v-else-if="!servers.length" class="empty">暂无服务器</div>
@@ -24,14 +50,16 @@
             @click="selectServer(srv)"
           >
             <div class="item-main">
-              <span class="item-name">{{ srv.SERVER_NAME }}</span>
-              <el-tag size="small" :type="isolationTagType(srv.ISOLATION_MODE)">
-                {{ isolationModeLabel(srv.ISOLATION_MODE) }}
-              </el-tag>
+              <span class="item-name" :title="srv.SERVER_NAME">{{ srv.SERVER_NAME }}</span>
+              <div class="item-tags">
+                <el-tag size="small" :type="isolationTagType(srv.ISOLATION_MODE)">
+                  {{ isolationModeLabel(srv.ISOLATION_MODE) }}
+                </el-tag>
+              </div>
             </div>
             <div class="item-sub">{{ srv.HOST }}:{{ srv.PORT }} ({{ srv.DB_TYPE }})</div>
             <div class="item-actions" v-if="selectedServer?.ID === srv.ID">
-              <el-button size="small" text @click="testServerConnection(srv)" :loading="testingId === srv.ID">测试</el-button>
+              <el-button size="small" text @click.stop="testServerConnection(srv)" :loading="testingId === srv.ID">测试</el-button>
               <el-button size="small" text type="danger" @click.stop="deleteServerConfirm(srv)">删除</el-button>
             </div>
           </div>
@@ -41,11 +69,16 @@
       <!-- 数据库列表 -->
       <div class="panel panel-center">
         <div class="panel-header">
-          数据库
-          <template v-if="selectedServer">
-            <span class="panel-server-hint"> — {{ selectedServer.SERVER_NAME }}</span>
-            <el-button size="small" type="primary" @click="openCreateDatabase" style="margin-left: auto">+ 注册数据库</el-button>
-          </template>
+          <div class="panel-heading">
+            <div class="panel-title-row">
+              <span class="panel-index">02</span>
+              <span class="panel-title">数据库</span>
+            </div>
+            <div class="panel-meta">
+              {{ selectedServer ? selectedServer.SERVER_NAME + ' · ' + databases.length + ' 个数据库' : '待选择服务器' }}
+            </div>
+          </div>
+          <el-button v-if="selectedServer" size="small" type="primary" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
         </div>
         <div class="panel-body">
           <div v-if="!selectedServer" class="empty">请先选择服务器</div>
@@ -58,13 +91,15 @@
             @click="selectDatabase(db)"
           >
             <div class="item-main">
-              <span class="item-name">{{ db.DATABASE_NAME }}</span>
-              <el-tag size="small" :type="isolationTagType(db.ISOLATION_MODE)">
-                {{ isolationModeLabel(db.ISOLATION_MODE) }}
-              </el-tag>
-              <el-tag size="small" :type="db.CONNECTION_MODE === 'JNDI_XA' ? 'success' : 'info'">
-                {{ db.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : '直连' }}
-              </el-tag>
+              <span class="item-name" :title="db.DATABASE_NAME">{{ db.DATABASE_NAME }}</span>
+              <div class="item-tags">
+                <el-tag size="small" :type="isolationTagType(db.ISOLATION_MODE)">
+                  {{ isolationModeLabel(db.ISOLATION_MODE) }}
+                </el-tag>
+                <el-tag size="small" :type="db.CONNECTION_MODE === 'JNDI_XA' ? 'success' : 'info'">
+                  {{ db.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : '直连' }}
+                </el-tag>
+              </div>
             </div>
             <div class="item-sub" v-if="db.CONNECTION_MODE === 'JNDI_XA'">{{ db.JNDI_NAME }}</div>
             <div class="item-actions" v-if="selectedDatabase?.ID === db.ID">
@@ -77,11 +112,16 @@
       <!-- 表列表 -->
       <div class="panel panel-right">
         <div class="panel-header">
-          数据表
-          <template v-if="selectedDatabase">
-            <span class="panel-server-hint"> — {{ selectedDatabase.DATABASE_NAME }}</span>
-            <el-button size="small" type="primary" @click="openCreateTable" style="margin-left: auto">+ 创建表</el-button>
-          </template>
+          <div class="panel-heading">
+            <div class="panel-title-row">
+              <span class="panel-index">03</span>
+              <span class="panel-title">数据表</span>
+            </div>
+            <div class="panel-meta">
+              {{ selectedDatabase ? selectedDatabase.DATABASE_NAME + ' · ' + tables.length + ' 张表' : '待选择数据库' }}
+            </div>
+          </div>
+          <el-button v-if="selectedDatabase" size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
         </div>
         <div class="panel-body">
           <div v-if="!selectedDatabase" class="empty">请先选择数据库</div>
@@ -89,10 +129,12 @@
           <div v-else-if="!tables.length" class="empty">暂无数据表</div>
           <div v-for="tbl in tables" :key="tbl.id" class="list-item">
             <div class="item-main">
-              <span class="item-name">{{ tbl.tableName }}</span>
-              <el-tag size="small" :type="isolationTagType(tbl.isolationMode)">
-                {{ isolationModeLabel(tbl.isolationMode) }}
-              </el-tag>
+              <span class="item-name" :title="tbl.tableName">{{ tbl.tableName }}</span>
+              <div class="item-tags">
+                <el-tag size="small" :type="isolationTagType(tbl.isolationMode)">
+                  {{ isolationModeLabel(tbl.isolationMode) }}
+                </el-tag>
+              </div>
             </div>
             <div class="item-sub">{{ tbl.physicalTableName }}</div>
             <div class="item-actions">
@@ -780,34 +822,426 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.dbms-page { height: 100%; display: flex; flex-direction: column; padding: 16px; gap: 12px; }
-.dbms-header { display: flex; justify-content: space-between; align-items: flex-start; }
-.dbms-header h2 { margin: 0 0 4px 0; }
-.subtitle { color: #909399; font-size: 13px; }
+.dbms-page {
+  --dbms-text: #172033;
+  --dbms-muted: #6f7d90;
+  --dbms-border: #dce5f1;
+  --dbms-panel: #ffffff;
+  --dbms-accent: #2563eb;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+  padding: 20px 24px 18px;
+  color: var(--dbms-text);
+  background: #f3f6fa;
+}
 
-.dbms-body { flex: 1; display: flex; gap: 12px; min-height: 0; }
-.panel { flex: 1; display: flex; flex-direction: column; border: 1px solid #e4e7ed; border-radius: 6px; overflow: hidden; min-width: 0; }
-.panel-header { background: #f5f7fa; padding: 10px 14px; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e4e7ed; display: flex; align-items: center; gap: 6px; }
-.panel-body { flex: 1; overflow-y: auto; padding: 6px; }
-.panel-server-hint { font-weight: 400; color: #909399; font-size: 12px; }
+.dbms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
 
-.list-item { padding: 10px 12px; border-radius: 4px; cursor: pointer; transition: background .15s; position: relative; }
-.list-item:hover { background: #f0f2f5; }
-.list-item.active { background: #ecf5ff; border: 1px solid #b3d8ff; }
-.item-main { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-.item-name { font-weight: 500; }
-.item-sub { font-size: 12px; color: #909399; }
-.item-actions { display: flex; gap: 4px; margin-top: 4px; }
+.header-info {
+  min-width: 0;
+}
 
-.loading, .empty { display: flex; justify-content: center; align-items: center; height: 80px; color: #909399; font-size: 13px; }
+.dbms-header h2 {
+  margin: 0;
+  color: var(--dbms-text);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
 
-.column-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.subtitle {
+  display: block;
+  margin-top: 6px;
+  color: var(--dbms-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
 
-.relation-list { max-height: 200px; overflow-y: auto; }
-.relation-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
-.rel-name { font-weight: 500; min-width: 120px; }
-.rel-arrow { color: #606266; font-size: 13px; flex: 1; }
-.relation-db-hint { color: #909399; font-size: 13px; margin-bottom: 8px; }
-.rel-form-title { font-weight: 600; margin-bottom: 8px; }
-.rel-form-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.header-actions {
+  flex-shrink: 0;
+}
+
+.context-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.context-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  overflow: hidden;
+  padding: 12px 14px 12px 16px;
+  border: 1px solid var(--dbms-border);
+  border-radius: 8px;
+  background: var(--dbms-panel);
+  box-shadow: 0 10px 28px rgb(24 39 75 / 5%);
+}
+
+.context-card::before {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #14b8a6;
+  content: '';
+}
+
+.context-card:nth-child(2)::before {
+  background: #3b82f6;
+}
+
+.context-card:nth-child(3)::before {
+  background: #f59e0b;
+}
+
+.context-card.active {
+  border-color: #9cc8ff;
+  box-shadow: 0 12px 30px rgb(37 99 235 / 10%);
+}
+
+.context-card.disabled {
+  color: #98a3b3;
+  background: #f8fafc;
+}
+
+.context-label {
+  color: #54708f;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.context-card strong {
+  overflow: hidden;
+  color: var(--dbms-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-card.disabled strong {
+  color: #8a96a6;
+}
+
+.context-card > span:last-child {
+  overflow: hidden;
+  color: var(--dbms-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbms-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.95fr) minmax(300px, 1fr) minmax(360px, 1.05fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.panel {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--dbms-border);
+  border-radius: 8px;
+  background: var(--dbms-panel);
+  box-shadow: 0 14px 34px rgb(24 39 75 / 6%);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 68px;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--dbms-border);
+  background: linear-gradient(180deg, #fbfcfe 0%, #f6f8fb 100%);
+}
+
+.panel-heading {
+  min-width: 0;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.panel-index {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #e8f2ff;
+  color: var(--dbms-accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.panel-left .panel-index {
+  color: #0f766e;
+  background: #e7f8f4;
+}
+
+.panel-right .panel-index {
+  color: #b45309;
+  background: #fff4df;
+}
+
+.panel-title {
+  overflow: hidden;
+  color: var(--dbms-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-meta {
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--dbms-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-header :deep(.el-button) {
+  flex-shrink: 0;
+}
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+}
+
+.list-item {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.list-item + .list-item {
+  margin-top: 8px;
+}
+
+.list-item:hover {
+  border-color: #cdddf0;
+  background: #fbfdff;
+  box-shadow: 0 8px 20px rgb(24 39 75 / 7%);
+  transform: translateY(-1px);
+}
+
+.list-item.active {
+  border-color: #7eb8f4;
+  background: linear-gradient(90deg, #eef7ff 0%, #ffffff 78%);
+  box-shadow: inset 0 0 0 1px rgb(64 158 255 / 18%), 0 10px 22px rgb(37 99 235 / 9%);
+}
+
+.list-item.active::before {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--dbms-accent);
+  content: '';
+}
+
+.panel-right .list-item {
+  cursor: default;
+}
+
+.item-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.item-name {
+  overflow: hidden;
+  min-width: 0;
+  color: #263244;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-tags {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.item-tags :deep(.el-tag) {
+  flex-shrink: 0;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.item-sub {
+  overflow: hidden;
+  margin-top: 6px;
+  color: var(--dbms-muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #edf2f7;
+}
+
+.item-actions :deep(.el-button) {
+  font-weight: 600;
+}
+
+.loading,
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 128px;
+  border: 1px dashed #d8e2ee;
+  border-radius: 8px;
+  color: var(--dbms-muted);
+  background: #f8fafc;
+  font-size: 13px;
+}
+
+.loading .el-icon {
+  font-size: 18px;
+}
+
+.column-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.relation-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.relation-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rel-name {
+  min-width: 120px;
+  font-weight: 500;
+}
+
+.rel-arrow {
+  flex: 1;
+  color: #606266;
+  font-size: 13px;
+}
+
+.relation-db-hint {
+  margin-bottom: 8px;
+  color: var(--dbms-muted);
+  font-size: 13px;
+}
+
+.rel-form-title {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.rel-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 1200px) {
+  .dbms-page {
+    padding: 16px;
+  }
+
+  .dbms-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .panel {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 760px) {
+  .dbms-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .context-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 </style>

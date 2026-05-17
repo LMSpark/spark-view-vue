@@ -3,7 +3,7 @@
     :model-value="modelValue"
     title="主题配置"
     direction="rtl"
-    size="300px"
+    size="360px"
     :z-index="2001"
     @update:model-value="$emit('update:modelValue', $event)"
   >
@@ -23,6 +23,42 @@
             <span class="theme-card__label">{{ opt.label }}</span>
           </div>
         </div>
+      </div>
+    </div>
+
+    <el-divider />
+
+    <!-- 全局风格 -->
+    <div class="config-section">
+      <div class="config-section__title">全局风格</div>
+      <div class="config-section__content">
+        <div class="style-preset-grid">
+          <button
+            v-for="(preset, i) in STYLE_PRESETS"
+            :key="preset.name"
+            type="button"
+            class="style-preset-card"
+            :class="{ 'style-preset-card--active': stylePresetIndex === i }"
+            :style="stylePresetCardStyle(preset)"
+            @click="setStylePreset(i)"
+          >
+            <span class="style-preset-card__preview">
+              <span class="style-preset-card__nav" />
+              <span class="style-preset-card__body">
+                <span class="style-preset-card__bar" />
+                <span class="style-preset-card__line" />
+              </span>
+            </span>
+            <span class="style-preset-card__meta">
+              <span class="style-preset-card__name">
+                <NavIcon :name="preset.icon" :size="13" />
+                {{ preset.name }}
+              </span>
+              <span class="style-preset-card__desc">{{ preset.description }}</span>
+            </span>
+          </button>
+        </div>
+        <div class="config-hint">当前：{{ currentStylePreset.name }} · {{ currentStylePreset.description }}</div>
       </div>
     </div>
 
@@ -152,7 +188,8 @@ import { computed } from 'vue'
 import { useTheme } from '@spark-view/spark-app'
 import type { ThemeMode } from '@spark-view/spark-app'
 import type { PageMode } from '@spark-view/spark-app'
-import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from '@spark-view/spark-app'
+import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS, STYLE_PRESETS } from '@spark-view/spark-app'
+import type { StylePreset } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
 defineProps<{
@@ -173,8 +210,18 @@ defineEmits<{
 
 const theme = useTheme()
 const currentTheme = computed(() => theme?.mode ?? 'light')
+const isDark = computed(() => theme?.isDark ?? false)
 
-const { primaryColor, navPresetIndex, currentNavPreset, setPrimaryColor, setNavPreset } = useColorScheme()
+const {
+  stylePresetIndex,
+  currentStylePreset,
+  primaryColor,
+  navPresetIndex,
+  currentNavPreset,
+  setStylePreset,
+  setPrimaryColor,
+  setNavPreset,
+} = useColorScheme()
 const navDisplayColor = computed(() => currentNavPreset.value.light.sidebarBg)
 
 const themeModes: { value: ThemeMode; label: string; icon: string }[] = [
@@ -185,6 +232,21 @@ const themeModes: { value: ThemeMode; label: string; icon: string }[] = [
 
 function setThemeMode(mode: ThemeMode) {
   theme?.setMode(mode)
+}
+
+function stylePresetCardStyle(preset: StylePreset): Record<string, string> {
+  const colors = isDark.value ? preset.dark : preset.light
+  const navPreset = NAV_PRESETS[preset.navIndex] ?? currentNavPreset.value
+  const navColors = isDark.value ? navPreset.dark : navPreset.light
+  return {
+    '--style-bg': colors.bg,
+    '--style-page': colors.page,
+    '--style-soft': colors.soft,
+    '--style-text': colors.textPrimary,
+    '--style-border': colors.border,
+    '--style-primary': preset.primaryColor,
+    '--style-nav': navColors.sidebarBg,
+  }
 }
 </script>
 
@@ -240,6 +302,104 @@ function setThemeMode(mode: ThemeMode) {
 .theme-card__label {
   font-size: 12px;
   color: var(--spark-text-regular);
+}
+
+/* 全局风格预设 */
+.style-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.style-preset-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 62px;
+  padding: 8px;
+  border: 2px solid var(--spark-border-light);
+  border-radius: 8px;
+  color: var(--spark-text-primary);
+  background: var(--spark-bg-page);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.style-preset-card:hover {
+  border-color: var(--el-color-primary-light-3);
+  transform: translateY(-1px);
+}
+
+.style-preset-card--active {
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
+
+.style-preset-card__preview {
+  display: flex;
+  width: 42px;
+  height: 36px;
+  border: 1px solid var(--style-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--style-bg);
+}
+
+.style-preset-card__nav {
+  width: 13px;
+  flex-shrink: 0;
+  background: var(--style-nav);
+}
+
+.style-preset-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  background: var(--style-page);
+}
+
+.style-preset-card__bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--style-primary);
+}
+
+.style-preset-card__line {
+  width: 70%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--style-soft);
+}
+
+.style-preset-card__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.style-preset-card__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--spark-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.style-preset-card__desc {
+  margin-top: 3px;
+  color: var(--spark-text-secondary);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 布局预览卡片 */

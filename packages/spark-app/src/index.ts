@@ -157,7 +157,7 @@ export type {
   NavigationActionRegistry,
 } from './navigation/action-registry'
 export { useTabPages } from './navigation/useTabPages'
-export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './navigation/useColorScheme'
+export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS, STYLE_PRESETS } from './navigation/useColorScheme'
 export { NAV_KEY } from './navigation/nav-types'
 export type { NavigationContext } from './navigation/nav-types'
 export type {
@@ -177,7 +177,7 @@ export type {
   NavPermissionMode,
 } from './navigation/nav-model'
 export type { TabPage, PageMode } from './navigation/useTabPages'
-export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'
+export type { PrimaryPreset, NavPreset, NavColorSet, StylePreset, StyleColorSet } from './navigation/useColorScheme'
 
 // ── Navigation Access（DynamicRouter 同步读取接口） ──
 export {
