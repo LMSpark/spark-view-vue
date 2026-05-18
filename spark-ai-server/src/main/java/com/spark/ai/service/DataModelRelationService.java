@@ -28,7 +28,13 @@ public class DataModelRelationService {
         return jdbc.queryForList(
                 "SELECT r.*,"
                         + " pt.LOGICAL_TABLE_NAME AS parentTableName,"
-                        + " ct.LOGICAL_TABLE_NAME AS childTableName"
+                        + " pt.PHYSICAL_TABLE_NAME AS parentPhysicalTableName,"
+                        + " pt.OBJECT_TYPE AS parentObjectType,"
+                        + " pt.SCHEMA_NAME AS parentSchemaName,"
+                        + " ct.LOGICAL_TABLE_NAME AS childTableName,"
+                        + " ct.PHYSICAL_TABLE_NAME AS childPhysicalTableName,"
+                        + " ct.OBJECT_TYPE AS childObjectType,"
+                        + " ct.SCHEMA_NAME AS childSchemaName"
                         + " FROM DATA_MODEL_RELATION r"
                         + " JOIN DATA_MODEL_TABLE pt ON r.PARENT_TABLE_ID = pt.ID"
                         + " JOIN DATA_MODEL_TABLE ct ON r.CHILD_TABLE_ID = ct.ID"
@@ -41,7 +47,13 @@ public class DataModelRelationService {
         return jdbc.queryForList(
                 "SELECT r.*,"
                         + " pt.LOGICAL_TABLE_NAME AS parentTableName,"
-                        + " ct.LOGICAL_TABLE_NAME AS childTableName"
+                        + " pt.PHYSICAL_TABLE_NAME AS parentPhysicalTableName,"
+                        + " pt.OBJECT_TYPE AS parentObjectType,"
+                        + " pt.SCHEMA_NAME AS parentSchemaName,"
+                        + " ct.LOGICAL_TABLE_NAME AS childTableName,"
+                        + " ct.PHYSICAL_TABLE_NAME AS childPhysicalTableName,"
+                        + " ct.OBJECT_TYPE AS childObjectType,"
+                        + " ct.SCHEMA_NAME AS childSchemaName"
                         + " FROM DATA_MODEL_RELATION r"
                         + " JOIN DATA_MODEL_TABLE pt ON r.PARENT_TABLE_ID = pt.ID"
                         + " JOIN DATA_MODEL_TABLE ct ON r.CHILD_TABLE_ID = ct.ID"
@@ -59,7 +71,13 @@ public class DataModelRelationService {
     public List<Map<String, Object>> listAllRelations(String tenantId, String projectId, Long databaseId) {
         String sql = "SELECT r.*,"
                 + " pt.LOGICAL_TABLE_NAME AS parentTableName,"
-                + " ct.LOGICAL_TABLE_NAME AS childTableName"
+                + " pt.PHYSICAL_TABLE_NAME AS parentPhysicalTableName,"
+                + " pt.OBJECT_TYPE AS parentObjectType,"
+                + " pt.SCHEMA_NAME AS parentSchemaName,"
+                + " ct.LOGICAL_TABLE_NAME AS childTableName,"
+                + " ct.PHYSICAL_TABLE_NAME AS childPhysicalTableName,"
+                + " ct.OBJECT_TYPE AS childObjectType,"
+                + " ct.SCHEMA_NAME AS childSchemaName"
                 + " FROM DATA_MODEL_RELATION r"
                 + " JOIN DATA_MODEL_TABLE pt ON r.PARENT_TABLE_ID = pt.ID"
                 + " JOIN DATA_MODEL_TABLE ct ON r.CHILD_TABLE_ID = ct.ID"
@@ -100,6 +118,10 @@ public class DataModelRelationService {
             throw new IllegalArgumentException("parentTableId 和 childTableId 不能为空");
         }
         requireTablesInScope(tenantId, projectId, parentTableId, childTableId, databaseId);
+        Map<String, Object> existing = findExistingRelation(parentTableId, childTableId, parentField, childField);
+        if (existing != null) {
+            return existing;
+        }
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
@@ -123,6 +145,16 @@ public class DataModelRelationService {
         log.info("[Relation] 创建表关系 id={}, {}:{} → {}:{}", id,
                 parentTableId, parentField, childTableId, childField);
         return jdbc.queryForMap("SELECT * FROM DATA_MODEL_RELATION WHERE ID = ?", id);
+    }
+
+    private Map<String, Object> findExistingRelation(Long parentTableId, Long childTableId, String parentField, String childField) {
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT * FROM DATA_MODEL_RELATION"
+                        + " WHERE PARENT_TABLE_ID = ? AND CHILD_TABLE_ID = ?"
+                        + " AND PARENT_FIELD = ? AND CHILD_FIELD = ?"
+                        + " ORDER BY ID LIMIT 1",
+                parentTableId, childTableId, parentField, childField);
+        return rows.isEmpty() ? null : rows.get(0);
     }
 
     private void requireTablesInScope(String tenantId, String projectId, Long parentTableId, Long childTableId, Long databaseId) {

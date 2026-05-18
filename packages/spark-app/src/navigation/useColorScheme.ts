@@ -521,21 +521,72 @@ interface SchemeState {
   styleIndex: number
 }
 
-function loadState(): SchemeState {
+function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
+  if (typeof scopeKey !== 'string') return null
+  const trimmed = scopeKey.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function getScopedStorageKey(scopeKey: string | null): string {
+  return scopeKey === null ? STORAGE_KEY : `${STORAGE_KEY}:${scopeKey}`
+}
+
+function getDefaultState(): SchemeState {
+  return { primaryColor: '#409eff', navIndex: 0, styleIndex: 0 }
+}
+
+function normalizeState(raw: unknown): SchemeState | null {
+  if (raw === null || typeof raw !== 'object') return null
+  const parsed = raw as Partial<SchemeState>
+  return {
+    primaryColor: typeof parsed.primaryColor === 'string' ? parsed.primaryColor : '#409eff',
+    navIndex: typeof parsed.navIndex === 'number' && Number.isFinite(parsed.navIndex) ? parsed.navIndex : 0,
+    styleIndex: typeof parsed.styleIndex === 'number' && Number.isFinite(parsed.styleIndex) ? parsed.styleIndex : 0,
+  }
+}
+
+function readStateFromStorage(storageKey: string): SchemeState | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    if (typeof localStorage === 'undefined') return null
+    const raw = localStorage.getItem(storageKey)
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<SchemeState>
-      return {
-        primaryColor: typeof parsed.primaryColor === 'string' ? parsed.primaryColor : '#409eff',
-        navIndex: typeof parsed.navIndex === 'number' ? parsed.navIndex : 0,
-        styleIndex: typeof parsed.styleIndex === 'number' ? parsed.styleIndex : 0,
-      }
+      return normalizeState(JSON.parse(raw))
     }
   } catch {
     // ignore
   }
-  return { primaryColor: '#409eff', navIndex: 0, styleIndex: 0 }
+  return null
+}
+
+function writeStateToStorage(storageKey: string, state: SchemeState): void {
+  try {
+    if (typeof localStorage === 'undefined') return
+    localStorage.setItem(storageKey, JSON.stringify(state))
+  } catch {
+    // localStorage may be unavailable in restricted browser contexts.
+  }
+}
+
+let _storageScope: string | null = null
+
+function loadState(): SchemeState {
+  const scopedKey = getScopedStorageKey(_storageScope)
+  const scopedState = readStateFromStorage(scopedKey)
+  if (scopedState !== null) return scopedState
+
+  if (_storageScope !== null) {
+    const legacyState = readStateFromStorage(STORAGE_KEY)
+    if (legacyState !== null) {
+      writeStateToStorage(scopedKey, legacyState)
+      return legacyState
+    }
+  }
+
+  return getDefaultState()
+}
+
+function persistState(): void {
+  writeStateToStorage(getScopedStorageKey(_storageScope), _state.value)
 }
 
 const FALLBACK_NAV: NavPreset = {
@@ -551,6 +602,7 @@ let _initialized = false
 // ── Apply helpers ──
 
 function applyPrimaryColor(color: string, isDark: boolean) {
+  if (typeof document === 'undefined') return
   const el = document.documentElement
   const mixBase = isDark ? '#141414' : '#ffffff'
 
@@ -565,6 +617,7 @@ function applyPrimaryColor(color: string, isDark: boolean) {
 }
 
 function applyStylePreset(preset: StylePreset, isDark: boolean) {
+  if (typeof document === 'undefined') return
   const el = document.documentElement
   const colors = isDark ? preset.dark : preset.light
 
@@ -594,6 +647,7 @@ function applyStylePreset(preset: StylePreset, isDark: boolean) {
 }
 
 function applyNavColors(preset: NavPreset, isDark: boolean) {
+  if (typeof document === 'undefined') return
   const el = document.documentElement
   const colors = isDark ? preset.dark : preset.light
   el.style.setProperty('--spark-header-bg', colors.headerBg)
@@ -603,14 +657,25 @@ function applyNavColors(preset: NavPreset, isDark: boolean) {
 }
 
 function getIsDark(): boolean {
+  if (typeof document === 'undefined') return false
   return document.documentElement.classList.contains('dark')
 }
 
 function applyAll() {
+  if (typeof document === 'undefined') return
   const isDark = getIsDark()
   applyStylePreset(STYLE_PRESETS[_state.value.styleIndex] ?? FALLBACK_STYLE, isDark)
   applyPrimaryColor(_state.value.primaryColor, isDark)
   applyNavColors(NAV_PRESETS[_state.value.navIndex] ?? FALLBACK_NAV, isDark)
+}
+
+export function setColorSchemeStorageScope(scopeKey: string | null): void {
+  const nextScope = normalizeScopeKey(scopeKey)
+  if (nextScope === _storageScope) return
+  _storageScope = nextScope
+  _state.value = loadState()
+  persistState()
+  applyAll()
 }
 
 // ── Composable ──
@@ -618,6 +683,9 @@ function applyAll() {
 export function useColorScheme() {
   if (!_initialized) {
     _initialized = true
+    if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') {
+      return createColorSchemeApi()
+    }
     const isDark = ref(getIsDark())
     const observer = new MutationObserver(() => {
       isDark.value = getIsDark()
@@ -630,15 +698,19 @@ export function useColorScheme() {
     applyAll()
   }
 
+  return createColorSchemeApi()
+}
+
+function createColorSchemeApi() {
   function setPrimaryColor(color: string) {
     _state.value = { ..._state.value, primaryColor: color }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(_state.value))
+    persistState()
     applyPrimaryColor(color, getIsDark())
   }
 
   function setNavPreset(index: number) {
     _state.value = { ..._state.value, navIndex: index }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(_state.value))
+    persistState()
     applyNavColors(NAV_PRESETS[index] ?? FALLBACK_NAV, getIsDark())
   }
 
@@ -650,7 +722,7 @@ export function useColorScheme() {
       primaryColor: preset.primaryColor,
       navIndex: preset.navIndex,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(_state.value))
+    persistState()
     applyAll()
   }
 

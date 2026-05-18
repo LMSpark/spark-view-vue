@@ -57,6 +57,19 @@ public class DynamicDataModelController {
         }
     }
 
+    @GetMapping("/tables/by-id/{tableId:[0-9]+}")
+    public ResponseEntity<?> getTableById(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable long tableId
+    ) {
+        try {
+            return ResponseEntity.ok(modelService.getTablePayloadById(tenantId, projectId, tableId));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PutMapping("/tables/{tableName}")
     public ResponseEntity<?> updateTable(
             @PathVariable String tenantId,

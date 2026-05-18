@@ -101,6 +101,8 @@ public class DynamicDataModelService {
                 LOGICAL_TABLE_NAME VARCHAR(255) NOT NULL,
                 ORIGIN VARCHAR(64) NOT NULL,
                 MANAGED_MODE VARCHAR(64) NOT NULL,
+                OBJECT_TYPE VARCHAR(16) NOT NULL DEFAULT 'TABLE',
+                SCHEMA_NAME VARCHAR(255) NOT NULL DEFAULT '',
                 PHYSICAL_TABLE_NAME VARCHAR(255) NOT NULL,
                 PRIMARY_KEY_FIELD VARCHAR(255) NOT NULL,
                 RESOURCE_TYPE VARCHAR(64),
@@ -114,7 +116,7 @@ public class DynamicDataModelService {
                 LAST_INTROSPECTED_AT TIMESTAMP,
                 CREATED_AT TIMESTAMP NOT NULL,
                 UPDATED_AT TIMESTAMP NOT NULL,
-                UNIQUE (TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME)
+                UNIQUE (DATABASE_ID, OBJECT_TYPE, SCHEMA_NAME, PHYSICAL_TABLE_NAME)
             )
             """);
         jdbcTemplate.execute("""
@@ -137,7 +139,7 @@ public class DynamicDataModelService {
                 LABEL VARCHAR(255),
                 CREATED_AT TIMESTAMP NOT NULL,
                 UPDATED_AT TIMESTAMP NOT NULL,
-                UNIQUE (TABLE_ID, COLUMN_NAME)
+                UNIQUE (TABLE_ID, PHYSICAL_COLUMN_NAME)
             )
             """);
         jdbcTemplate.execute("""
@@ -250,6 +252,14 @@ public class DynamicDataModelService {
             ON DATA_MODEL_TABLE (DATABASE_ID)
             """);
         jdbcTemplate.execute("""
+            CREATE INDEX IF NOT EXISTS IDX_DATA_MODEL_TABLE_LOGICAL_ALIAS
+            ON DATA_MODEL_TABLE (TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME)
+            """);
+        jdbcTemplate.execute("""
+            CREATE INDEX IF NOT EXISTS IDX_DATA_MODEL_COLUMN_ALIAS
+            ON DATA_MODEL_COLUMN (TABLE_ID, COLUMN_NAME)
+            """);
+        jdbcTemplate.execute("""
             CREATE INDEX IF NOT EXISTS IDX_DATA_SOURCE_SERVER_ISOLATION
             ON DATA_SOURCE_SERVER (ISOLATION_MODE, TENANT_ID)
             """);
@@ -325,6 +335,8 @@ public class DynamicDataModelService {
               LOGICAL_TABLE_NAME VARCHAR(255) NOT NULL,
               ORIGIN VARCHAR(64) NOT NULL,
               MANAGED_MODE VARCHAR(64) NOT NULL,
+              OBJECT_TYPE VARCHAR(16) NOT NULL DEFAULT 'TABLE',
+              SCHEMA_NAME VARCHAR(255) NOT NULL DEFAULT '',
               PHYSICAL_TABLE_NAME VARCHAR(255) NOT NULL,
               PRIMARY_KEY_FIELD VARCHAR(255) NOT NULL,
               RESOURCE_TYPE VARCHAR(64),
@@ -339,7 +351,8 @@ public class DynamicDataModelService {
               CREATED_AT DATETIME(6) NOT NULL,
               UPDATED_AT DATETIME(6) NOT NULL,
               PRIMARY KEY (ID),
-              UNIQUE KEY uk_data_model_table_scope (TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME),
+              UNIQUE KEY uk_dmt_physical_object (DATABASE_ID, OBJECT_TYPE, SCHEMA_NAME, PHYSICAL_TABLE_NAME),
+              KEY IDX_DMT_LOGICAL_ALIAS (TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME),
               KEY IDX_DATA_MODEL_TABLE_SCOPE (TENANT_ID, PROJECT_ID),
               KEY IDX_DMT_DATABASE (DATABASE_ID)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -365,7 +378,8 @@ public class DynamicDataModelService {
               CREATED_AT DATETIME(6) NOT NULL,
               UPDATED_AT DATETIME(6) NOT NULL,
               PRIMARY KEY (ID),
-              UNIQUE KEY uk_data_model_column (TABLE_ID, COLUMN_NAME),
+              UNIQUE KEY uk_dmc_physical_column (TABLE_ID, PHYSICAL_COLUMN_NAME),
+              KEY IDX_DMC_ALIAS (TABLE_ID, COLUMN_NAME),
               KEY IDX_DATA_MODEL_COLUMN_TABLE (TABLE_ID, ORDINAL_POSITION)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """);
@@ -442,9 +456,17 @@ public class DynamicDataModelService {
 
         addMySqlColumnIfMissing("DATA_MODEL_TABLE", "DATABASE_ID", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN DATABASE_ID BIGINT");
         addMySqlColumnIfMissing("DATA_MODEL_TABLE", "ISOLATION_MODE", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN ISOLATION_MODE VARCHAR(32) NOT NULL DEFAULT 'PROJECT_ISOLATED'");
+        addMySqlColumnIfMissing("DATA_MODEL_TABLE", "OBJECT_TYPE", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN OBJECT_TYPE VARCHAR(16) NOT NULL DEFAULT 'TABLE'");
+        addMySqlColumnIfMissing("DATA_MODEL_TABLE", "SCHEMA_NAME", "ALTER TABLE DATA_MODEL_TABLE ADD COLUMN SCHEMA_NAME VARCHAR(255) NOT NULL DEFAULT ''");
         addMySqlColumnIfMissing("DATA_SOURCE_DATABASE", "CONNECTION_MODE", "ALTER TABLE DATA_SOURCE_DATABASE ADD COLUMN CONNECTION_MODE VARCHAR(32) NOT NULL DEFAULT 'DIRECT'");
         addMySqlColumnIfMissing("DATA_SOURCE_DATABASE", "JNDI_NAME", "ALTER TABLE DATA_SOURCE_DATABASE ADD COLUMN JNDI_NAME VARCHAR(512)");
 
+        dropMySqlIndexIfExists("DATA_MODEL_TABLE", "uk_data_model_table_scope");
+        dropMySqlIndexIfExists("DATA_MODEL_COLUMN", "uk_data_model_column");
+        createMySqlIndexIfMissing("DATA_MODEL_TABLE", "uk_dmt_physical_object", "CREATE UNIQUE INDEX uk_dmt_physical_object ON DATA_MODEL_TABLE (DATABASE_ID, OBJECT_TYPE, SCHEMA_NAME, PHYSICAL_TABLE_NAME)");
+        createMySqlIndexIfMissing("DATA_MODEL_TABLE", "IDX_DMT_LOGICAL_ALIAS", "CREATE INDEX IDX_DMT_LOGICAL_ALIAS ON DATA_MODEL_TABLE (TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME)");
+        createMySqlIndexIfMissing("DATA_MODEL_COLUMN", "uk_dmc_physical_column", "CREATE UNIQUE INDEX uk_dmc_physical_column ON DATA_MODEL_COLUMN (TABLE_ID, PHYSICAL_COLUMN_NAME)");
+        createMySqlIndexIfMissing("DATA_MODEL_COLUMN", "IDX_DMC_ALIAS", "CREATE INDEX IDX_DMC_ALIAS ON DATA_MODEL_COLUMN (TABLE_ID, COLUMN_NAME)");
         createMySqlIndexIfMissing("DATA_MODEL_TABLE", "IDX_DMT_DATABASE", "CREATE INDEX IDX_DMT_DATABASE ON DATA_MODEL_TABLE (DATABASE_ID)");
         createMySqlIndexIfMissing("DATA_SOURCE_DATABASE", "IDX_DSD_CONNECTION_MODE", "CREATE INDEX IDX_DSD_CONNECTION_MODE ON DATA_SOURCE_DATABASE (CONNECTION_MODE)");
         createMySqlIndexIfMissing("DATA_SOURCE_DATABASE", "IDX_DSD_SERVER", "CREATE INDEX IDX_DSD_SERVER ON DATA_SOURCE_DATABASE (SERVER_ID)");
@@ -460,6 +482,12 @@ public class DynamicDataModelService {
     private void createMySqlIndexIfMissing(String tableName, String indexName, String ddl) {
         if (!mysqlIndexExists(tableName, indexName)) {
             jdbcTemplate.execute(ddl);
+        }
+    }
+
+    private void dropMySqlIndexIfExists(String tableName, String indexName) {
+        if (mysqlIndexExists(tableName, indexName)) {
+            jdbcTemplate.execute("DROP INDEX " + indexName + " ON " + tableName);
         }
     }
 
@@ -493,7 +521,7 @@ public class DynamicDataModelService {
         guardProject(tenantId, projectId);
         ScopePredicate scope = tableScopePredicate(tenantId, projectId, "");
         return jdbcTemplate.query(
-                "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY LOGICAL_TABLE_NAME",
+                "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY DATABASE_ID, SCHEMA_NAME, OBJECT_TYPE, PHYSICAL_TABLE_NAME",
                 (rs, rowNum) -> toTableSummary(readTableInfo(rs)),
                 scope.args().toArray()
         );
@@ -507,7 +535,7 @@ public class DynamicDataModelService {
             args.add(databaseId);
         }
         return jdbcTemplate.query(
-                "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY LOGICAL_TABLE_NAME",
+                "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql() + " ORDER BY SCHEMA_NAME, OBJECT_TYPE, PHYSICAL_TABLE_NAME",
                 (rs, rowNum) -> toTableSummary(readTableInfo(rs)),
                 args.toArray()
         );
@@ -516,6 +544,12 @@ public class DynamicDataModelService {
     public Map<String, Object> getTablePayload(String tenantId, String projectId, String logicalTableName) {
         guardProject(tenantId, projectId);
         TableDefinition definition = requireDefinition(tenantId, projectId, logicalTableName);
+        return toFullTablePayload(definition);
+    }
+
+    public Map<String, Object> getTablePayloadById(String tenantId, String projectId, long tableId) {
+        guardProject(tenantId, projectId);
+        TableDefinition definition = requireDefinitionById(tenantId, projectId, tableId);
         return toFullTablePayload(definition);
     }
 
@@ -760,6 +794,26 @@ public class DynamicDataModelService {
         return new TableDefinition(table, columns, dialectFor(table.databaseId()));
     }
 
+    public TableDefinition requireDefinitionById(String tenantId, String projectId, long tableId) {
+        guardProject(tenantId, projectId);
+        ScopePredicate scope = tableScopePredicate(tenantId, projectId, "ID = ?");
+        List<Object> args = new ArrayList<>(scope.args());
+        args.add(tableId);
+        try {
+            TableInfo table = jdbcTemplate.queryForObject(
+                    "SELECT * FROM DATA_MODEL_TABLE WHERE " + scope.sql(),
+                    (rs, rowNum) -> readTableInfo(rs),
+                    args.toArray()
+            );
+            if (table == null) {
+                throw new NoSuchElementException("数据表元数据不存在: " + tableId);
+            }
+            return new TableDefinition(table, listColumns(table.id()), dialectFor(table.databaseId()));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NoSuchElementException("数据表元数据不存在: " + tableId);
+        }
+    }
+
     public JdbcTemplate jdbcTemplateFor(TableDefinition definition) {
         return jdbcTemplateFor(definition.table().databaseId());
     }
@@ -820,24 +874,25 @@ public class DynamicDataModelService {
     ) {
         String primaryKey = introspected.primaryKeyColumns().stream()
                 .findFirst()
-                .map(DynamicDataModelService::toLowerCamel)
-                .orElse("id");
+                .orElse("ID");
         Timestamp now = Timestamp.from(Instant.now());
         String ddlHash = hashTable(introspected);
         Long databaseId = readNullableLong(requestBody.get("databaseId"));
         jdbcTemplate.update("""
             INSERT INTO DATA_MODEL_TABLE (
                 TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME, ORIGIN, MANAGED_MODE,
-                PHYSICAL_TABLE_NAME, PRIMARY_KEY_FIELD, RESOURCE_TYPE, RESOURCE_ID,
+                OBJECT_TYPE, SCHEMA_NAME, PHYSICAL_TABLE_NAME, PRIMARY_KEY_FIELD, RESOURCE_TYPE, RESOURCE_ID,
                 BUSINESS_CATEGORY, DATABASE_ID, ISOLATION_MODE, SCHEMA_VERSION, DDL_HASH, STATUS,
                 LAST_INTROSPECTED_AT, CREATED_AT, UPDATED_AT
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
             """,
                 tenantId,
                 projectId,
                 logicalName,
                 origin,
                 MANAGED_MODE_STRICT,
+                "TABLE",
+                "",
                 introspected.tableName(),
                 primaryKey,
                 stringOrDefault(requestBody.get("resourceType"), "database-table"),
@@ -1079,10 +1134,7 @@ public class DynamicDataModelService {
         Timestamp now = Timestamp.from(Instant.now());
         int ordinal = 0;
         for (IntrospectedColumn physical : table.columns()) {
-            if (SYSTEM_PHYSICAL_COLUMNS.contains(physical.columnName().toUpperCase(Locale.ROOT))) {
-                continue;
-            }
-            String logical = toLowerCamel(physical.columnName());
+            String logical = physical.columnName();
             jdbcTemplate.update("""
                 INSERT INTO DATA_MODEL_COLUMN (
                     TABLE_ID, COLUMN_NAME, PHYSICAL_COLUMN_NAME, DATA_TYPE, SQL_TYPE,
@@ -1190,6 +1242,8 @@ public class DynamicDataModelService {
                 rs.getString("LOGICAL_TABLE_NAME"),
                 rs.getString("ORIGIN"),
                 rs.getString("MANAGED_MODE"),
+                rs.getString("OBJECT_TYPE"),
+                rs.getString("SCHEMA_NAME"),
                 rs.getString("PHYSICAL_TABLE_NAME"),
                 rs.getString("PRIMARY_KEY_FIELD"),
                 rs.getString("RESOURCE_TYPE"),
@@ -1204,15 +1258,15 @@ public class DynamicDataModelService {
     }
 
     private List<Map<String, Object>> diff(TableDefinition definition, IntrospectedTable physical) {
-        Map<String, IntrospectedColumn> physicalByLogical = new LinkedHashMap<>();
+        Map<String, IntrospectedColumn> physicalByName = new LinkedHashMap<>();
         for (IntrospectedColumn column : physical.columns()) {
-            physicalByLogical.put(toLowerCamel(column.columnName()), column);
+            physicalByName.put(column.columnName().toUpperCase(Locale.ROOT), column);
         }
         List<Map<String, Object>> differences = new ArrayList<>();
         for (ColumnInfo column : definition.columns()) {
-            IntrospectedColumn physicalColumn = physicalByLogical.get(column.columnName());
+            IntrospectedColumn physicalColumn = physicalByName.get(column.physicalColumnName().toUpperCase(Locale.ROOT));
             if (physicalColumn == null) {
-                differences.add(Map.of("kind", "missing-physical-column", "column", column.columnName()));
+                differences.add(Map.of("kind", "missing-physical-column", "column", column.physicalColumnName()));
                 continue;
             }
             String physicalSqlType = normalizeSqlType(sqlTypeFromIntrospection(physicalColumn));
@@ -1225,12 +1279,13 @@ public class DynamicDataModelService {
                 ));
             }
         }
-        Set<String> metadataNames = new LinkedHashSet<>(definition.columns().stream().map(ColumnInfo::columnName).toList());
+        Set<String> metadataNames = new LinkedHashSet<>(definition.columns().stream()
+                .map(column -> column.physicalColumnName().toUpperCase(Locale.ROOT))
+                .toList());
         for (IntrospectedColumn column : physical.columns()) {
-            if (SYSTEM_PHYSICAL_COLUMNS.contains(column.columnName().toUpperCase(Locale.ROOT))) continue;
-            String logical = toLowerCamel(column.columnName());
-            if (!metadataNames.contains(logical)) {
-                differences.add(Map.of("kind", "missing-metadata-column", "column", logical));
+            String physicalName = column.columnName().toUpperCase(Locale.ROOT);
+            if (!metadataNames.contains(physicalName)) {
+                differences.add(Map.of("kind", "missing-metadata-column", "column", column.columnName()));
             }
         }
         return differences;
@@ -1250,7 +1305,12 @@ public class DynamicDataModelService {
         payload.put("tableName", table.logicalTableName());
         payload.put("origin", table.origin());
         payload.put("managedMode", table.managedMode());
+        String objectType = stringOrDefault(table.objectType(), "TABLE");
+        String schemaName = stringOrDefault(table.schemaName(), "");
+        payload.put("objectType", objectType);
+        payload.put("schemaName", schemaName.isBlank() ? null : schemaName);
         payload.put("physicalTableName", table.physicalTableName());
+        payload.put("physicalName", table.physicalTableName());
         payload.put("primaryKeyField", table.primaryKeyField());
         payload.put("resourceType", table.resourceType());
         payload.put("resourceId", table.resourceId());
@@ -1260,6 +1320,12 @@ public class DynamicDataModelService {
         payload.put("status", table.status());
         payload.put("databaseId", table.databaseId());
         payload.put("isolationMode", table.isolationMode());
+        Map<String, Object> physicalObjectKey = new LinkedHashMap<>();
+        physicalObjectKey.put("databaseId", table.databaseId());
+        physicalObjectKey.put("objectType", objectType);
+        physicalObjectKey.put("schemaName", schemaName);
+        physicalObjectKey.put("physicalName", table.physicalTableName());
+        payload.put("physicalObjectKey", physicalObjectKey);
         return payload;
     }
 
@@ -1284,7 +1350,7 @@ public class DynamicDataModelService {
 
     private Map<String, Object> toIntrospectionPayload(IntrospectedColumn column) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("name", toLowerCamel(column.columnName()));
+        payload.put("name", column.columnName());
         payload.put("physicalColumnName", column.columnName());
         payload.put("type", dataTypeFromSqlType(column));
         payload.put("sqlType", sqlTypeFromIntrospection(column));
@@ -1596,6 +1662,8 @@ public class DynamicDataModelService {
             String logicalTableName,
             String origin,
             String managedMode,
+            String objectType,
+            String schemaName,
             String physicalTableName,
             String primaryKeyField,
             String resourceType,

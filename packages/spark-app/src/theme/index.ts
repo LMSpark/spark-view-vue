@@ -1,7 +1,7 @@
 /**
  * SPARK 主题服务
  *
- * 基于 @vueuse/core useColorMode 实现，支持：
+ * 基于 Vue 响应式状态实现，支持：
  * - light / dark / auto（跟随系统偏好）三模式
  * - Element Plus 暗黑模式自动切换（html.dark class）
  * - localStorage 持久化
@@ -17,14 +17,14 @@
  * ```
  */
 
-import { useColorMode, type BasicColorMode } from '@vueuse/core'
-import { computed, inject, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
+import { computed, getCurrentScope, inject, onScopeDispose, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 export interface IThemeCapability {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
+  setStorageScope(scopeKey: string | null): void
   readonly isDark: boolean
   toggle(): void
 }
@@ -38,14 +38,77 @@ export interface ThemeServiceOptions {
   initialMode?: ThemeMode
   /** localStorage 存储键名（默认 'spark-theme-mode'） */
   storageKey?: string
+  /** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */
+  storageScope?: string | null
 }
 
 /** 响应式主题服务（内部使用，组件层可直接读 ref） */
 export interface ThemeServiceReactive extends IThemeCapability {
   /** 响应式当前模式 */
-  readonly modeRef: Ref<string>
+  readonly modeRef: Ref<ThemeMode>
   /** 响应式 isDark */
   readonly isDarkRef: ComputedRef<boolean>
+}
+
+const THEME_MODES = new Set<ThemeMode>(['light', 'dark', 'auto'])
+
+function isThemeMode(value: unknown): value is ThemeMode {
+  return typeof value === 'string' && THEME_MODES.has(value as ThemeMode)
+}
+
+function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
+  if (typeof scopeKey !== 'string') return null
+  const trimmed = scopeKey.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function getScopedStorageKey(storageKey: string, scopeKey: string | null): string {
+  return scopeKey === null ? storageKey : `${storageKey}:${scopeKey}`
+}
+
+function safeGetItem(key: string): string | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeSetItem(key: string, value: string): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // localStorage may be unavailable in restricted browser contexts.
+  }
+}
+
+function readStoredThemeMode(storageKey: string, scopeKey: string | null, fallback: ThemeMode): ThemeMode {
+  const scopedStorageKey = getScopedStorageKey(storageKey, scopeKey)
+  const scopedValue = safeGetItem(scopedStorageKey)
+  if (isThemeMode(scopedValue)) return scopedValue
+
+  if (scopeKey !== null) {
+    const legacyValue = safeGetItem(storageKey)
+    if (isThemeMode(legacyValue)) {
+      safeSetItem(scopedStorageKey, legacyValue)
+      return legacyValue
+    }
+  }
+
+  return fallback
+}
+
+function getSystemThemeMode(): 'light' | 'dark' {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function syncDocumentTheme(isDark: boolean): void {
+  if (typeof document === 'undefined') return
+  document.documentElement.classList.toggle('dark', isDark)
+  document.documentElement.setAttribute('data-vxe-ui-theme', isDark ? 'dark' : 'light')
 }
 
 /**
@@ -57,47 +120,71 @@ export function createThemeService(options: ThemeServiceOptions = {}): ThemeServ
   const {
     initialMode = 'auto',
     storageKey = 'spark-theme-mode',
+    storageScope = null,
   } = options
 
-  const colorMode = useColorMode({
-    // 'auto' = 跟随系统 prefers-color-scheme，'light' / 'dark' = 强制
-    initialValue: initialMode === 'auto' ? 'auto' : initialMode,
-    storageKey,
-    // Element Plus 暗黑模式通过 html.dark class 触发
-    attribute: 'class',
-    modes: {
-      dark: 'dark',
-      light: '',
-    },
-  })
-
-  // colorMode.store = 用户设置（可能是 'auto'）
-  // colorMode.state = 实际解析后的值（'light' | 'dark'）
-  const storeMode = colorMode.store
-  const resolvedMode = colorMode
-
+  const fallbackMode = isThemeMode(initialMode) ? initialMode : 'auto'
+  let currentStorageScope = normalizeScopeKey(storageScope)
+  const systemMode = ref<'light' | 'dark'>(getSystemThemeMode())
+  const storeMode = ref<ThemeMode>(readStoredThemeMode(storageKey, currentStorageScope, fallbackMode))
+  const resolvedMode = computed<'light' | 'dark'>(() =>
+    storeMode.value === 'auto' ? systemMode.value : storeMode.value,
+  )
   const isDarkRef = computed(() => resolvedMode.value === 'dark')
 
-  // 同步 VXE Table 主题属性（vxe-table 使用 data-vxe-ui-theme 切换暗色）
-  if (typeof document !== 'undefined') {
-    const syncVxeTheme = (dark: boolean) => {
-      document.documentElement.setAttribute('data-vxe-ui-theme', dark ? 'dark' : 'light')
-    }
-    // 初始同步
-    syncVxeTheme(isDarkRef.value)
-    // 响应式同步
-    watch(isDarkRef, syncVxeTheme)
+  const mediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null
+  const handleSystemThemeChange = (event: MediaQueryListEvent | MediaQueryList) => {
+    systemMode.value = event.matches ? 'dark' : 'light'
   }
+
+  if (mediaQuery !== null) {
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleSystemThemeChange)
+      if (getCurrentScope() !== undefined) {
+        onScopeDispose(() => mediaQuery.removeEventListener('change', handleSystemThemeChange))
+      }
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleSystemThemeChange)
+      if (getCurrentScope() !== undefined) {
+        onScopeDispose(() => mediaQuery.removeListener(handleSystemThemeChange))
+      }
+    }
+  }
+
+  function persistMode(mode: ThemeMode): void {
+    safeSetItem(getScopedStorageKey(storageKey, currentStorageScope), mode)
+  }
+
+  function loadCurrentScopeMode(): void {
+    const nextMode = readStoredThemeMode(storageKey, currentStorageScope, fallbackMode)
+    storeMode.value = nextMode
+    persistMode(nextMode)
+    syncDocumentTheme(isDarkRef.value)
+  }
+
+  watch(storeMode, persistMode, { immediate: true, flush: 'sync' })
+  watch(isDarkRef, syncDocumentTheme, { immediate: true, flush: 'sync' })
 
   const service: ThemeServiceReactive = {
     get current(): 'light' | 'dark' {
-      return resolvedMode.value as BasicColorMode
+      return resolvedMode.value
     },
     get mode(): ThemeMode {
-      return storeMode.value as ThemeMode
+      return storeMode.value
     },
     setMode(mode: ThemeMode): void {
+      if (!isThemeMode(mode)) {
+        throw new Error(`Invalid theme mode: ${String(mode)}`)
+      }
       storeMode.value = mode
+    },
+    setStorageScope(scopeKey: string | null): void {
+      const nextScope = normalizeScopeKey(scopeKey)
+      if (nextScope === currentStorageScope) return
+      currentStorageScope = nextScope
+      loadCurrentScopeMode()
     },
     get isDark(): boolean {
       return isDarkRef.value

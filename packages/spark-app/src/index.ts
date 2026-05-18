@@ -157,7 +157,7 @@ export type {
   NavigationActionRegistry,
 } from './navigation/action-registry'
 export { useTabPages } from './navigation/useTabPages'
-export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS, STYLE_PRESETS } from './navigation/useColorScheme'
+export { useColorScheme, setColorSchemeStorageScope, PRIMARY_PRESETS, NAV_PRESETS, STYLE_PRESETS } from './navigation/useColorScheme'
 export { NAV_KEY } from './navigation/nav-types'
 export type { NavigationContext } from './navigation/nav-types'
 export type {

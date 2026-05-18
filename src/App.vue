@@ -140,6 +140,7 @@ import {
   getPageCacheStats,
   NAVIGATION_ACTION_REGISTRY_KEY,
   refreshRoutes,
+  setColorSchemeStorageScope,
   useColorScheme,
   useNavigation,
   useTabPages,
@@ -169,6 +170,7 @@ import { createAuthHeaders } from '@/services/http'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
+import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project-ui-settings'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPublicPaths } from '@/config/vue-page-map'
 import {
@@ -241,12 +243,71 @@ const showFooter = ref(true)
 const showConfigurator = ref(false)
 const { mode, setMode } = useTabPages()
 useColorScheme()
+const activeSettingsScope = ref<string | null>(null)
+let isApplyingProjectUiSettings = false
 let _stopPageConfigChange: (() => void) | null = null
 const pageConfigRefreshRevision = ref(0)
 const sparkRendererRouteKey = computed(() => {
   const base = mode.value === 'multi' ? route.path : route.fullPath
   return `${base}::page-config-${pageConfigRefreshRevision.value}`
 })
+
+function toTenantProjectSettingsScope(tenantId: string | undefined, projectId: string | undefined): string | null {
+  if (!tenantId || !projectId) return null
+  return `tenant:${tenantId}:project:${projectId}`
+}
+
+function resolveActiveSettingsScope(): string | null {
+  if (isPlatformWorkspacePath(route.path)) return 'platform:platform'
+  const scoped = parseTenantScope(route.path)
+  if (scoped !== null) return toTenantProjectSettingsScope(scoped.tenantId, scoped.projectId)
+  const user = getUser()
+  return toTenantProjectSettingsScope(user?.tenantId, user?.defaultProjectId)
+}
+
+function resolveProjectSettingsScope(projectId: string): string | null {
+  if (projectId === 'platform') return 'platform:platform'
+  const user = getUser()
+  return toTenantProjectSettingsScope(user?.tenantId, projectId)
+}
+
+function normalizeSettingsScope(scopeKey: string | null): string | null {
+  if (typeof scopeKey !== 'string') return null
+  const trimmed = scopeKey.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function applyProjectSettingsScope(scopeKey: string | null, force = false): void {
+  const normalizedScope = normalizeSettingsScope(scopeKey)
+  if (!force && activeSettingsScope.value === normalizedScope) return
+
+  activeSettingsScope.value = normalizedScope
+  theme?.setStorageScope(normalizedScope)
+  setColorSchemeStorageScope(normalizedScope)
+
+  const settings = loadProjectUiSettings(normalizedScope)
+  isApplyingProjectUiSettings = true
+  try {
+    headerFirst.value = settings.headerFirst
+    sidebarCollapsed.value = settings.sidebarCollapsed
+    showFooter.value = settings.showFooter
+    setMode(settings.pageMode)
+  } finally {
+    isApplyingProjectUiSettings = false
+  }
+}
+
+function persistCurrentProjectUiSettings(): void {
+  if (isApplyingProjectUiSettings) return
+  saveProjectUiSettings(activeSettingsScope.value, {
+    headerFirst: headerFirst.value,
+    sidebarCollapsed: sidebarCollapsed.value,
+    showFooter: showFooter.value,
+    pageMode: mode.value,
+  })
+}
+
+watch([headerFirst, sidebarCollapsed, showFooter, mode], persistCurrentProjectUiSettings, { flush: 'sync' })
 
 interface AppContextGuardState {
   title: string
@@ -342,6 +403,7 @@ const projectSwitchService: ProjectSwitchService = {
   async switchAndReload(projectId: string) {
     switchProject(projectId)
     activeProjectId.value = projectId
+    applyProjectSettingsScope(resolveProjectSettingsScope(projectId))
     try {
       await reloadNavigation()
     } catch (e) {
@@ -515,6 +577,7 @@ watch(
   () => route.path,
   () => {
     activeProjectId.value = resolveActiveProjectId()
+    applyProjectSettingsScope(resolveActiveSettingsScope())
     applyNavTree(getNavTree())
   },
   { immediate: true },

@@ -125,6 +125,16 @@ public class DynamicDataSourceManager {
         }
     }
 
+    public Connection createDatabaseConnection(String host, int port, String dbType, String databaseName, String username, String password) {
+        try {
+            DatabaseDialect dialect = parseDialect(dbType);
+            String url = dialect.jdbcUrl(host, port, databaseName);
+            return DriverManager.getConnection(url, username, password);
+        } catch (Exception e) {
+            throw new RuntimeException("连接数据库失败: " + host + ":" + port + "/" + databaseName, e);
+        }
+    }
+
     /**
      * 测试服务器连接。
      */
