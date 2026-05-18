@@ -96,6 +96,12 @@ public class DynamicDataService {
         return definition.dialect().quoteIdentifier(identifier);
     }
 
+    private void requireWritableObject(DynamicDataModelService.TableDefinition definition) {
+        if ("VIEW".equalsIgnoreCase(definition.table().objectType())) {
+            throw new IllegalArgumentException("视图对象为只读，不能执行写入型 CRUD: " + definition.table().physicalTableName());
+        }
+    }
+
     @Transactional
     public Map<String, Object> createRecord(String tenantId, String projectId, String tableName, Map<String, Object> body) {
         DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
@@ -111,6 +117,7 @@ public class DynamicDataService {
             DynamicDataModelService.TableDefinition definition,
             Map<String, Object> body
     ) {
+        requireWritableObject(definition);
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         List<DynamicDataModelService.ColumnInfo> insertColumns = definition.columns().stream()
                 .filter(column -> !column.autoIncrement())
@@ -196,6 +203,7 @@ public class DynamicDataService {
             DynamicDataModelService.TableDefinition definition,
             Map<String, Object> body
     ) {
+        requireWritableObject(definition);
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(body, pk.columnName());
 
@@ -239,6 +247,7 @@ public class DynamicDataService {
             DynamicDataModelService.TableDefinition definition,
             Map<String, Object> pkPayload
     ) {
+        requireWritableObject(definition);
         DynamicDataModelService.ColumnInfo pk = primaryKeyColumn(definition);
         Object pkValue = readRequired(pkPayload, pk.columnName());
         ScopeClause scope = scopeClause(tenantId, projectId, definition);

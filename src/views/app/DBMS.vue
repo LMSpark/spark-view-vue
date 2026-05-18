@@ -3,9 +3,10 @@
     <div class="dbms-header">
       <div class="header-info">
         <h2>数据库管理</h2>
-        <span class="subtitle">服务器 → 数据库 → 表（层级元数据管理）</span>
+        <span class="subtitle">服务器 → 数据库 → schema → 表/视图 → 列 → 关系</span>
       </div>
       <div class="header-actions">
+        <el-button v-if="selectedServer" :icon="Refresh" @click="openSyncCatalog">同步服务器</el-button>
         <el-button type="primary" :icon="Plus" @click="openCreateServer">注册服务器</el-button>
       </div>
     </div>
@@ -15,9 +16,10 @@
         <span>对象资源管理器</span>
         <span v-if="selectedServer">{{ selectedServer.SERVER_NAME }}</span>
         <span v-if="selectedDatabase">{{ selectedDatabase.DATABASE_NAME }}</span>
-        <span v-if="selectedTable">{{ selectedTable.tableName }}</span>
+        <span v-if="selectedTable">{{ selectedTable.physicalTableName || selectedTable.tableName }}</span>
       </div>
       <div class="toolbar-actions">
+        <el-button v-if="selectedServer" size="small" :icon="Refresh" @click="openSyncCatalog">同步服务器</el-button>
         <el-button v-if="selectedServer" size="small" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
         <el-button v-if="selectedDatabase" size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
       </div>
@@ -64,13 +66,13 @@
                       <span class="tree-expander">▾</span>
                       <el-icon><FolderOpened /></el-icon>
                       <span class="tree-label">Tables</span>
-                      <span class="tree-count">{{ tables.length }}</span>
+                      <span class="tree-count">{{ tableObjects.length }}</span>
                     </button>
                     <div v-if="loading.tables" class="tree-loading">加载数据表...</div>
-                    <div v-else-if="!tables.length" class="tree-empty">暂无数据表</div>
+                    <div v-else-if="!tableObjects.length" class="tree-empty">暂无数据表</div>
                     <template v-else>
                       <button
-                        v-for="tbl in tables"
+                        v-for="tbl in tableObjects"
                         :key="tbl.id"
                         type="button"
                         :class="['tree-node', 'table-node', { active: selectedTable?.id === tbl.id }]"
@@ -78,7 +80,27 @@
                       >
                         <span class="tree-expander"></span>
                         <el-icon><Grid /></el-icon>
-                        <span class="tree-label" :title="tbl.tableName">{{ tbl.tableName }}</span>
+                        <span class="tree-label" :title="tbl.physicalTableName || tbl.tableName">{{ tbl.physicalTableName || tbl.tableName }}</span>
+                      </button>
+                    </template>
+                    <button type="button" class="tree-node folder-node">
+                      <span class="tree-expander">▾</span>
+                      <el-icon><FolderOpened /></el-icon>
+                      <span class="tree-label">Views</span>
+                      <span class="tree-count">{{ viewObjects.length }}</span>
+                    </button>
+                    <div v-if="!loading.tables && !viewObjects.length" class="tree-empty">暂无视图</div>
+                    <template v-else>
+                      <button
+                        v-for="view in viewObjects"
+                        :key="view.id"
+                        type="button"
+                        :class="['tree-node', 'table-node', { active: selectedTable?.id === view.id }]"
+                        @click="selectTable(view)"
+                      >
+                        <span class="tree-expander"></span>
+                        <el-icon><Grid /></el-icon>
+                        <span class="tree-label" :title="view.physicalTableName || view.tableName">{{ view.physicalTableName || view.tableName }}</span>
                       </button>
                     </template>
                   </div>
@@ -102,7 +124,8 @@
           </div>
           <div class="workspace-stats">
             <span>{{ databases.length }} 数据库</span>
-            <span>{{ tables.length }} 表</span>
+            <span>{{ tableObjects.length }} 表</span>
+            <span>{{ viewObjects.length }} 视图</span>
           </div>
         </div>
 
@@ -111,7 +134,10 @@
           <div v-else-if="!selectedDatabase" class="table-wrap">
             <div class="grid-title">
               <strong>数据库</strong>
-              <el-button size="small" type="primary" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
+              <div class="grid-actions">
+                <el-button size="small" :icon="Refresh" @click="openSyncCatalog">同步服务器</el-button>
+                <el-button size="small" type="primary" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
+              </div>
             </div>
             <div v-if="loading.databases" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
             <div v-else-if="!databases.length" class="empty">暂无数据库</div>
@@ -145,16 +171,21 @@
           </div>
           <div v-else class="table-wrap">
             <div class="grid-title">
-              <strong>数据表</strong>
-              <el-button size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
+              <strong>物理对象</strong>
+              <div class="grid-actions">
+                <el-button size="small" :icon="Refresh" @click="openSyncCatalog">同步服务器</el-button>
+                <el-button size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
+              </div>
             </div>
             <div v-if="loading.tables" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
-            <div v-else-if="!tables.length" class="empty">暂无数据表</div>
+            <div v-else-if="!tables.length" class="empty">暂无物理对象</div>
             <table v-else class="dbms-table">
               <thead>
                 <tr>
-                  <th>逻辑表名</th>
                   <th>物理表名</th>
+                  <th>显示别名</th>
+                  <th>类型</th>
+                  <th>Schema</th>
                   <th>隔离模式</th>
                   <th>字段数</th>
                   <th class="operation-col">操作</th>
@@ -167,10 +198,12 @@
                   :class="{ selected: selectedTable?.id === tbl.id }"
                   @click="selectTable(tbl)"
                 >
-                  <td class="object-name"><el-icon><Grid /></el-icon>{{ tbl.tableName }}</td>
-                  <td class="mono-cell">{{ tbl.physicalTableName || '-' }}</td>
+                  <td class="object-name"><el-icon><Grid /></el-icon>{{ tbl.physicalTableName || tbl.tableName }}</td>
+                  <td>{{ tbl.tableName }}</td>
+                  <td><el-tag size="small" :type="tbl.objectType === 'VIEW' ? 'info' : 'primary'">{{ objectTypeLabel(tbl.objectType) }}</el-tag></td>
+                  <td class="mono-cell">{{ tbl.schemaName || '-' }}</td>
                   <td><el-tag size="small" :type="isolationTagType(tbl.isolationMode)">{{ isolationModeLabel(tbl.isolationMode) }}</el-tag></td>
-                  <td>{{ tbl.columns?.length ?? '-' }}</td>
+                  <td>{{ tableColumnCount(tbl) }}</td>
                   <td class="operation-col">
                     <el-button size="small" text @click.stop="viewTableRelation(tbl)">关系</el-button>
                     <el-button size="small" text type="danger" @click.stop="deleteTableConfirm(tbl)">删除</el-button>
@@ -191,18 +224,23 @@
         </div>
         <dl class="property-list">
           <template v-if="selectedTable">
-            <dt>对象类型</dt><dd>数据表</dd>
-            <dt>逻辑表名</dt><dd>{{ selectedTable.tableName }}</dd>
+            <dt>对象类型</dt><dd>{{ objectTypeLabel(selectedTable.objectType) }}</dd>
             <dt>物理表名</dt><dd>{{ selectedTable.physicalTableName || '-' }}</dd>
+            <dt>显示别名</dt><dd>{{ selectedTable.tableName }}</dd>
+            <dt>Schema</dt><dd>{{ selectedTable.schemaName || '-' }}</dd>
             <dt>隔离模式</dt><dd>{{ isolationModeLabel(selectedTable.isolationMode) }}</dd>
-            <dt>字段数量</dt><dd>{{ selectedTable.columns?.length ?? '-' }}</dd>
+            <dt>字段数量</dt><dd>{{ tableColumnCount(selectedTable) }}</dd>
+            <template v-for="col in selectedTableColumns" :key="col.physicalColumnName || col.name">
+              <dt>列</dt><dd class="mono-cell">{{ col.physicalColumnName || col.name }}</dd>
+            </template>
           </template>
           <template v-else-if="selectedDatabase">
             <dt>对象类型</dt><dd>数据库</dd>
             <dt>数据库名</dt><dd>{{ selectedDatabase.DATABASE_NAME }}</dd>
             <dt>连接模式</dt><dd>{{ selectedDatabase.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : 'DIRECT' }}</dd>
             <dt>隔离模式</dt><dd>{{ isolationModeLabel(selectedDatabase.ISOLATION_MODE) }}</dd>
-            <dt>数据表</dt><dd>{{ tables.length }} 张</dd>
+            <dt>数据表</dt><dd>{{ tableObjects.length }} 张</dd>
+            <dt>视图</dt><dd>{{ viewObjects.length }} 个</dd>
           </template>
           <template v-else-if="selectedServer">
             <dt>对象类型</dt><dd>服务器</dd>
@@ -219,6 +257,7 @@
         </dl>
         <div class="property-actions">
           <el-button v-if="selectedServer" size="small" @click="testServerConnection(selectedServer)" :loading="testingId === selectedServer.ID">测试连接</el-button>
+          <el-button v-if="selectedServer" size="small" @click="openSyncCatalog">同步服务器</el-button>
           <el-button v-if="selectedTable" size="small" @click="viewTableRelation(selectedTable)">表关系</el-button>
           <el-button v-if="selectedDatabase" size="small" type="primary" @click="openCreateTable">创建表</el-button>
         </div>
@@ -316,6 +355,57 @@
       </template>
     </el-dialog>
 
+    <!-- 同步服务器 Dialog -->
+    <el-dialog v-model="dlgSync.visible" title="同步服务器 Catalog" width="820px" class="sync-dialog">
+      <div class="sync-summary">
+        <span>{{ selectedServer?.SERVER_NAME || '未选择服务器' }}</span>
+        <span>{{ catalogDatabases.length }} 个物理库</span>
+        <span>{{ catalogObjectCount }} 个对象</span>
+        <span>{{ catalogRelationCount }} 条外键</span>
+      </div>
+      <div v-if="dlgSync.loading" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
+      <div v-else-if="!dlgSync.catalog" class="empty">尚未读取 catalog</div>
+      <div v-else class="catalog-preview">
+        <div v-for="db in catalogDatabases" :key="db.databaseName" class="catalog-db">
+          <div class="catalog-db-title">
+            <strong>{{ db.databaseName }}</strong>
+            <el-tag size="small" :type="db.registered ? 'success' : 'info'">{{ db.registered ? '已注册' : '未注册' }}</el-tag>
+          </div>
+          <div v-for="schema in db.schemas" :key="schema.schemaName || '__default__'" class="catalog-schema">
+            <div class="catalog-schema-title">{{ schema.schemaName || '(default schema)' }}</div>
+            <div class="catalog-objects">
+              <div
+                v-for="obj in schemaObjects(schema)"
+                :key="`${obj.objectType}:${obj.schemaName || ''}:${obj.physicalName}`"
+                class="catalog-object-row"
+              >
+                <div>
+                  <span class="mono-cell">{{ obj.physicalName }}</span>
+                  <el-tag size="small" :type="obj.objectType === 'VIEW' ? 'info' : 'primary'">{{ objectTypeLabel(obj.objectType) }}</el-tag>
+                  <el-tag v-if="obj.registered" size="small" type="success">已注册</el-tag>
+                </div>
+                <div class="catalog-object-meta">
+                  <span>{{ obj.columns.length }} 列</span>
+                  <el-checkbox
+                    v-if="obj.objectType === 'TABLE' && obj.physicalObjectKey.databaseId"
+                    :model-value="isMutateSelected(obj)"
+                    @change="toggleMutateObject(obj)"
+                  >
+                    托管结构
+                  </el-checkbox>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="dlgSync.visible = false">关闭</el-button>
+        <el-button @click="loadServerCatalog" :loading="dlgSync.loading">重新扫描</el-button>
+        <el-button type="primary" @click="submitSyncServer" :loading="dlgSync.syncing">同步元数据</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 创建表 Dialog -->
     <el-dialog v-model="dlgTable.visible" title="创建数据表" width="600px" @closed="resetTableForm">
       <el-form :model="dlgTable.form" label-width="120px">
@@ -355,7 +445,7 @@
       <div class="relation-list" v-if="relations.length">
         <div v-for="rel in relations" :key="rel.ID" class="relation-row">
           <span class="rel-name">{{ rel.RELATION_NAME }}</span>
-          <span class="rel-arrow">{{ rel.parentTableName }}.{{ rel.PARENT_FIELD }} → {{ rel.childTableName }}.{{ rel.CHILD_FIELD }}</span>
+          <span class="rel-arrow">{{ rel.parentPhysicalTableName || rel.parentTableName }}.{{ rel.PARENT_FIELD }} → {{ rel.childPhysicalTableName || rel.childTableName }}.{{ rel.CHILD_FIELD }}</span>
           <el-button size="small" type="danger" text @click="deleteRelation(rel.ID)">删除</el-button>
         </div>
       </div>
@@ -365,19 +455,19 @@
         <div class="rel-form-title">添加关系</div>
         <div class="rel-form-row">
           <el-select v-model="dlgRelation.form.parentTableId" placeholder="父表" size="small" style="width: 160px" @change="onParentTableChange">
-            <el-option v-for="tbl in tables" :key="tbl.id" :label="tbl.tableName" :value="tbl.id" />
+            <el-option v-for="tbl in tableObjects" :key="tbl.id" :label="tbl.physicalTableName || tbl.tableName" :value="tbl.id" />
           </el-select>
           <span>.</span>
           <el-select v-model="dlgRelation.form.parentField" placeholder="字段" size="small" style="width: 140px">
-            <el-option v-for="col in parentColumns" :key="col.name" :label="col.name" :value="col.name" />
+            <el-option v-for="col in parentColumns" :key="col.physicalColumnName || col.name" :label="col.physicalColumnName || col.name" :value="col.physicalColumnName || col.name" />
           </el-select>
           <span style="margin: 0 6px">→</span>
           <el-select v-model="dlgRelation.form.childTableId" placeholder="子表" size="small" style="width: 160px" @change="onChildTableChange">
-            <el-option v-for="tbl in tables" :key="tbl.id" :label="tbl.tableName" :value="tbl.id" />
+            <el-option v-for="tbl in tableObjects" :key="tbl.id" :label="tbl.physicalTableName || tbl.tableName" :value="tbl.id" />
           </el-select>
           <span>.</span>
           <el-select v-model="dlgRelation.form.childField" placeholder="字段" size="small" style="width: 140px">
-            <el-option v-for="col in childColumns" :key="col.name" :label="col.name" :value="col.name" />
+            <el-option v-for="col in childColumns" :key="col.physicalColumnName || col.name" :label="col.physicalColumnName || col.name" :value="col.physicalColumnName || col.name" />
           </el-select>
           <el-button size="small" type="primary" @click="submitCreateRelation" :loading="dlgRelation.loading">创建</el-button>
         </div>
@@ -418,17 +508,33 @@ interface DbmsDatabase {
 
 interface DbmsColumn {
   name: string
+  physicalColumnName?: string
   type?: string
+  sqlType?: string
   maxLength?: number | null
   primaryKey?: boolean
   required?: boolean
 }
 
+type DbmsObjectType = 'TABLE' | 'VIEW'
+
+interface PhysicalObjectKey {
+  databaseId: number | null
+  objectType: DbmsObjectType
+  schemaName: string | null
+  physicalName: string
+}
+
 interface DbmsTable {
   id: number
   tableName: string
+  objectType?: DbmsObjectType
+  schemaName?: string | null
   physicalTableName?: string
+  physicalName?: string
   isolationMode: IsolationMode
+  columnCount?: number
+  physicalObjectKey?: PhysicalObjectKey
   columns?: DbmsColumn[]
 }
 
@@ -436,9 +542,44 @@ interface DbmsRelation {
   ID: number
   RELATION_NAME: string
   parentTableName: string
+  parentPhysicalTableName?: string
   PARENT_FIELD: string
   childTableName: string
+  childPhysicalTableName?: string
   CHILD_FIELD: string
+}
+
+interface DbmsCatalogObject {
+  databaseId: number | null
+  objectId: number | null
+  objectType: DbmsObjectType
+  schemaName: string | null
+  physicalName: string
+  logicalName?: string | null
+  registered: boolean
+  readOnly: boolean
+  columns: DbmsColumn[]
+  physicalObjectKey: PhysicalObjectKey
+}
+
+interface DbmsCatalogSchema {
+  schemaName: string | null
+  tables: DbmsCatalogObject[]
+  views: DbmsCatalogObject[]
+}
+
+interface DbmsCatalogDatabase {
+  databaseName: string
+  databaseId: number | null
+  registered: boolean
+  schemas: DbmsCatalogSchema[]
+  relations: unknown[]
+}
+
+interface DbmsCatalog {
+  serverId: number
+  serverName: string
+  databases: DbmsCatalogDatabase[]
 }
 
 interface ApiMessage {
@@ -562,10 +703,17 @@ const tables = ref<DbmsTable[]>([])
 const relations = ref<DbmsRelation[]>([])
 const physicalDatabaseNames = ref<string[]>([])
 const physicalDatabasesLoading = ref(false)
+const dlgSync = reactive({
+  visible: false,
+  loading: false,
+  syncing: false,
+  catalog: null as DbmsCatalog | null,
+})
 
 const selectedServer = ref<DbmsServer | null>(null)
 const selectedDatabase = ref<DbmsDatabase | null>(null)
 const selectedTable = ref<DbmsTable | null>(null)
+const selectedTableColumns = ref<DbmsColumn[]>([])
 
 const registeredDatabaseNames = computed(() => new Set(
   databases.value.map((db) => db.DATABASE_NAME.toLowerCase())
@@ -574,9 +722,17 @@ const physicalDatabaseOptions = computed(() => physicalDatabaseNames.value.map((
   name,
   registered: registeredDatabaseNames.value.has(name.toLowerCase()),
 })))
+const tableObjects = computed(() => tables.value.filter((tbl) => (tbl.objectType ?? 'TABLE') === 'TABLE'))
+const viewObjects = computed(() => tables.value.filter((tbl) => tbl.objectType === 'VIEW'))
+const catalogDatabases = computed(() => dlgSync.catalog?.databases ?? [])
+const catalogObjectCount = computed(() => catalogDatabases.value.reduce((total, db) => (
+  total + db.schemas.reduce((schemaTotal, schema) => schemaTotal + schema.tables.length + schema.views.length, 0)
+), 0))
+const catalogRelationCount = computed(() => catalogDatabases.value.reduce((total, db) => total + db.relations.length, 0))
 
 const selectedObjectTitle = computed(() => (
-  selectedTable.value?.tableName
+  selectedTable.value?.physicalTableName
+  ?? selectedTable.value?.tableName
   ?? selectedDatabase.value?.DATABASE_NAME
   ?? selectedServer.value?.SERVER_NAME
   ?? '连接概览'
@@ -586,10 +742,19 @@ const selectedObjectPath = computed(() => {
   const parts = [
     selectedServer.value?.SERVER_NAME,
     selectedDatabase.value?.DATABASE_NAME,
-    selectedTable.value?.tableName,
+    selectedTable.value?.schemaName || undefined,
+    selectedTable.value?.physicalTableName ?? selectedTable.value?.tableName,
   ].filter((part): part is string => typeof part === 'string' && part.length > 0)
   return parts.length > 0 ? parts.join(' / ') : '未选择对象'
 })
+
+function objectTypeLabel(type: DbmsObjectType | undefined): string {
+  return type === 'VIEW' ? '视图' : '表'
+}
+
+function tableColumnCount(table: DbmsTable): number | string {
+  return table.columnCount ?? table.columns?.length ?? '-'
+}
 
 // ── 数据加载 ──
 async function loadServers() {
@@ -635,6 +800,7 @@ async function loadTables() {
       tables.value = rows
       if (selectedTable.value && !rows.some((tbl) => tbl.id === selectedTable.value?.id)) {
         selectedTable.value = null
+        selectedTableColumns.value = []
       }
     }
   } catch (error) {
@@ -642,6 +808,7 @@ async function loadTables() {
       ElMessage.error(`加载数据表失败: ${apiErrorMessage(error)}`)
       tables.value = []
       selectedTable.value = null
+      selectedTableColumns.value = []
     }
   } finally { loading.tables = false }
 }
@@ -665,6 +832,9 @@ function selectServer(srv: DbmsServer) {
   selectedServer.value = srv
   selectedDatabase.value = null
   selectedTable.value = null
+  selectedTableColumns.value = []
+  dlgSync.catalog = null
+  mutatePhysicalObjectKeys.value = new Set()
   databases.value = []
   tables.value = []
   relations.value = []
@@ -674,6 +844,7 @@ function selectServer(srv: DbmsServer) {
 function selectDatabase(db: DbmsDatabase) {
   selectedDatabase.value = db
   selectedTable.value = null
+  selectedTableColumns.value = []
   tables.value = []
   relations.value = []
   void loadTables()
@@ -686,6 +857,103 @@ function dbRowClass(db: DbmsDatabase) {
 
 function selectTable(tbl: DbmsTable) {
   selectedTable.value = tbl
+  selectedTableColumns.value = tbl.columns ?? []
+  void loadTableDetail(tbl)
+}
+
+async function loadTableDetail(tbl: DbmsTable) {
+  try {
+    const full = await http.get<DbmsTable>(`${scopePath.value}/data-model/tables/by-id/${tbl.id}`)
+    if (selectedTable.value?.id === tbl.id) {
+      selectedTable.value = { ...tbl, ...full }
+      selectedTableColumns.value = full.columns ?? []
+    }
+  } catch (error) {
+    ElMessage.error(`加载对象详情失败: ${apiErrorMessage(error)}`)
+  }
+}
+
+function schemaObjects(schema: DbmsCatalogSchema): DbmsCatalogObject[] {
+  return [...schema.tables, ...schema.views]
+}
+
+function mutateKey(obj: DbmsCatalogObject): string {
+  return JSON.stringify({
+    databaseId: obj.physicalObjectKey.databaseId,
+    objectType: obj.objectType,
+    schemaName: obj.physicalObjectKey.schemaName || '',
+    physicalName: obj.physicalName,
+  })
+}
+
+const mutatePhysicalObjectKeys = ref(new Set<string>())
+
+function isMutateSelected(obj: DbmsCatalogObject): boolean {
+  return mutatePhysicalObjectKeys.value.has(mutateKey(obj))
+}
+
+function toggleMutateObject(obj: DbmsCatalogObject) {
+  const next = new Set(mutatePhysicalObjectKeys.value)
+  const key = mutateKey(obj)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  mutatePhysicalObjectKeys.value = next
+}
+
+async function openSyncCatalog() {
+  if (!selectedServer.value) {
+    ElMessage.warning('请先选择服务器')
+    return
+  }
+  dlgSync.visible = true
+  if (!dlgSync.catalog || dlgSync.catalog.serverId !== selectedServer.value.ID) {
+    await loadServerCatalog()
+  }
+}
+
+async function loadServerCatalog() {
+  const server = selectedServer.value
+  if (!server) return
+  dlgSync.loading = true
+  mutatePhysicalObjectKeys.value = new Set()
+  try {
+    dlgSync.catalog = await http.get<DbmsCatalog>(`${scopePath.value}/dbms/servers/${server.ID}/catalog`)
+  } catch (error) {
+    dlgSync.catalog = null
+    ElMessage.error(`扫描 catalog 失败: ${apiErrorMessage(error)}`)
+  } finally {
+    dlgSync.loading = false
+  }
+}
+
+async function submitSyncServer() {
+  const server = selectedServer.value
+  if (!server) {
+    ElMessage.warning('请先选择服务器')
+    return
+  }
+  dlgSync.syncing = true
+  try {
+    const mutateKeys = Array.from(mutatePhysicalObjectKeys.value).map((text) => JSON.parse(text) as PhysicalObjectKey)
+    await http.post(`${scopePath.value}/dbms/servers/${server.ID}/sync`, {
+      scopeMode: 'PLATFORM_SHARED',
+      includeTables: true,
+      includeViews: true,
+      includeRelations: true,
+      mutatePhysicalObjectKeys: mutateKeys,
+    })
+    ElMessage.success('服务器元数据同步完成')
+    await loadDatabases()
+    if (selectedDatabase.value) {
+      await loadTables()
+      await loadRelations()
+    }
+    await loadServerCatalog()
+  } catch (error) {
+    ElMessage.error(`同步失败: ${apiErrorMessage(error)}`)
+  } finally {
+    dlgSync.syncing = false
+  }
 }
 
 // ── 服务器 Dialog ──
@@ -851,6 +1119,7 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
     if (selectedDatabase.value?.ID === db.ID) {
       selectedDatabase.value = null
       selectedTable.value = null
+      selectedTableColumns.value = []
       tables.value = []
       relations.value = []
     }
@@ -917,7 +1186,10 @@ async function deleteTableConfirm(tbl: DbmsTable) {
     await ElMessageBox.confirm(`确定删除表 "${tbl.tableName}"？`, '确认删除', { type: 'warning' })
     await http.delete(`${scopePath.value}/data-model/tables/${encodeURIComponent(tbl.tableName)}`, { dropPhysical: false })
     ElMessage.success('已删除')
-    if (selectedTable.value?.id === tbl.id) selectedTable.value = null
+    if (selectedTable.value?.id === tbl.id) {
+      selectedTable.value = null
+      selectedTableColumns.value = []
+    }
     void loadTables()
     void loadRelations()
   } catch (error) {
@@ -950,7 +1222,7 @@ async function fetchTableColumns(tableId: number): Promise<DbmsColumn[]> {
   const tbl = tables.value.find((t) => t.id === tableId)
   if (!tbl) return []
   try {
-    const full = await http.get<DbmsTable>(`${scopePath.value}/data-model/tables/${encodeURIComponent(tbl.tableName)}`)
+    const full = await http.get<DbmsTable>(`${scopePath.value}/data-model/tables/by-id/${tbl.id}`)
     return (full.columns as DbmsColumn[]) ?? []
   } catch (error) {
     ElMessage.error(`加载字段失败: ${apiErrorMessage(error)}`)
@@ -1366,6 +1638,79 @@ onMounted(() => {
 
 .database-picker :deep(.el-select) {
   width: 100%;
+}
+
+.sync-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sync-summary span {
+  padding: 4px 8px;
+  border: 1px solid #d0d5dd;
+  border-radius: 3px;
+  color: #475467;
+  background: #f9fafb;
+  font-size: 12px;
+}
+
+.catalog-preview {
+  max-height: 480px;
+  overflow: auto;
+  border: 1px solid var(--dbms-border);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.catalog-db {
+  border-bottom: 1px solid var(--dbms-soft-border);
+}
+
+.catalog-db:last-child {
+  border-bottom: 0;
+}
+
+.catalog-db-title,
+.catalog-schema-title,
+.catalog-object-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.catalog-db-title {
+  padding: 10px 12px;
+  background: #f8fafc;
+}
+
+.catalog-schema-title {
+  padding: 8px 12px;
+  color: #475467;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.catalog-object-row {
+  min-height: 34px;
+  padding: 6px 12px 6px 24px;
+  border-top: 1px solid #edf1f6;
+  font-size: 12px;
+}
+
+.catalog-object-row > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+}
+
+.catalog-object-meta {
+  flex-shrink: 0;
+  color: #667085;
 }
 
 .relation-list {
@@ -1794,6 +2139,13 @@ onMounted(() => {
 .grid-title strong {
   color: #111827;
   font-size: 14px;
+}
+
+.grid-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .dbms-table {

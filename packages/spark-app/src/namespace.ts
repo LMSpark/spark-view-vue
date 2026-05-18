@@ -123,7 +123,7 @@ export const SparkApp = {
   /**
    * 创建主题服务
    *
-   * 基于 @vueuse/core useColorMode，支持 light / dark / auto 三模式。
+   * 支持 light / dark / auto 三模式。
    * Element Plus 暗黑模式通过 html.dark class 自动切换。
    *
    * @example

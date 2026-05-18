@@ -1320,6 +1320,7 @@ public class DynamicDataModelService {
         payload.put("status", table.status());
         payload.put("databaseId", table.databaseId());
         payload.put("isolationMode", table.isolationMode());
+        payload.put("columnCount", countColumns(table.id()));
         Map<String, Object> physicalObjectKey = new LinkedHashMap<>();
         physicalObjectKey.put("databaseId", table.databaseId());
         physicalObjectKey.put("objectType", objectType);
@@ -1327,6 +1328,15 @@ public class DynamicDataModelService {
         physicalObjectKey.put("physicalName", table.physicalTableName());
         payload.put("physicalObjectKey", physicalObjectKey);
         return payload;
+    }
+
+    private int countColumns(long tableId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM DATA_MODEL_COLUMN WHERE TABLE_ID = ?",
+                Integer.class,
+                tableId
+        );
+        return count == null ? 0 : count;
     }
 
     private Map<String, Object> toColumnPayload(ColumnInfo column) {
