@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git stash *)",
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(mv .claude .claude_tmp && git stash pop)"
+    ],
+    "additionalDirectories": [
+      "D:\\SPARK_VIEW\\.claude"
+    ]
+  }
+}
