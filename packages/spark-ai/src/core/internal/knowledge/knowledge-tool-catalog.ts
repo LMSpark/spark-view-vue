@@ -26,18 +26,6 @@ export type AiKnowledgeFunctionParameterRow = AiKnowledgeFunctionBaseFields & {
   target: AiKnowledgeFunctionTarget
 }
 
-export type AiKnowledgeFunctionCapabilityRow = Pick<
-  AiKnowledgeFunctionParameterRow,
-  'functionId' | 'type' | 'target' | 'description'
-> & {
-  integrationStatus: 'runtime-wired'
-  paramsRef: string
-  rules?: readonly string[]
-  failureCodes?: readonly string[]
-  params?: LlmParameterSchemaRoot
-  example?: LlmJsonObject
-}
-
 export type AiKnowledgeCatalogRowOptions = Omit<
   AiKnowledgeFunctionParameterRow,
   'functionId' | 'type' | 'target'
@@ -61,29 +49,10 @@ const STRING_PARAM = (description: string, options: { minLength?: number } = {})
   ...(options.minLength !== undefined ? { minLength: options.minLength } : {}),
 }) as const
 
-function createAiKnowledgeCapabilityRow(row: AiKnowledgeFunctionParameterRow): AiKnowledgeFunctionCapabilityRow {
-  return {
-    functionId: row.functionId,
-    type: row.type,
-    target: row.target,
-    description: row.description,
-    integrationStatus: 'runtime-wired',
-    paramsRef: row.functionId,
-    ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
-    ...(row.failureModes.length > 0 ? { failureCodes: row.failureModes.map((item) => item.code) } : {}),
-    params: row.paramsSchema,
-    ...(Object.keys(row.example).length > 0 ? { example: row.example } : {}),
-  }
-}
-
 export class AiKnowledgeCatalog {
   readonly parameterTable: readonly AiKnowledgeFunctionParameterRow[]
 
-  readonly capabilityTable: readonly AiKnowledgeFunctionCapabilityRow[]
-
   private readonly parameterIndex: ReadonlyMap<string, AiKnowledgeFunctionParameterRow>
-
-  private readonly capabilityIndex: ReadonlyMap<string, AiKnowledgeFunctionCapabilityRow>
 
   constructor(options: AiKnowledgeCatalogOptions) {
     this.parameterTable = [
@@ -167,17 +136,11 @@ export class AiKnowledgeCatalog {
         ...options.guidePayload,
       },
     ]
-    this.capabilityTable = this.parameterTable.map(createAiKnowledgeCapabilityRow)
     this.parameterIndex = new Map(this.parameterTable.map((row) => [row.functionId, row]))
-    this.capabilityIndex = new Map(this.capabilityTable.map((row) => [row.functionId, row]))
   }
 
   getParameterRow(functionId: string): AiKnowledgeFunctionParameterRow | undefined {
     return this.parameterIndex.get(functionId)
-  }
-
-  getCapabilityRow(functionId: string): AiKnowledgeFunctionCapabilityRow | undefined {
-    return this.capabilityIndex.get(functionId)
   }
 
   validateParams(functionId: string, params: unknown): string | null {

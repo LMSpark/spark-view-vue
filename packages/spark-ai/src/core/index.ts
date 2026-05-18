@@ -182,7 +182,6 @@ export type {
 export type {
   AiKnowledgeCatalogOptions,
   AiKnowledgeCatalogRowOptions,
-  AiKnowledgeFunctionCapabilityRow,
   AiKnowledgeFunctionFailureMode,
   AiKnowledgeFunctionId,
   AiKnowledgeFunctionParameterRow,

@@ -4,6 +4,11 @@ import type {
   AiRegisteredBusinessApi,
   AiRegisteredModuleApi,
 } from '../../protocol/runtime-contracts'
+import {
+  moduleToBusinessRegistration,
+  moduleDataToBusinessData,
+  moduleStoreToBusinessStoreSnapshot,
+} from './ai-runtime-support'
 import type { AiRegistrationRepository } from './ai-registration-repository'
 import type { AiSessionLedger } from './ai-session-ledger'
 import type { AiProjectionService } from './ai-projection-service'
@@ -52,14 +57,14 @@ export class AiRegisteredApiFactory {
 
   createRegisteredBusinessApi(moduleApi: AiRegisteredModuleApi): AiRegisteredBusinessApi {
     const businessId = moduleApi.moduleId
-    const businessRegistration: AiBusinessRegistration = this.registrations.moduleToBusinessRegistration(moduleApi.getRegistration())
+    const businessRegistration: AiBusinessRegistration = moduleToBusinessRegistration(moduleApi.getRegistration())
     return {
       ...moduleApi,
       businessId,
       businessRegistration,
-      getBusinessRegistration: () => this.registrations.moduleToBusinessRegistration(moduleApi.getRegistration()),
-      getBusinessRegistrationData: () => this.registrations.moduleDataToBusinessData(moduleApi.getRegistrationData()),
-      getBusinessRegistrationStoreSnapshot: () => this.registrations.moduleStoreToBusinessStoreSnapshot(moduleApi.getRegistrationStoreSnapshot()),
+      getBusinessRegistration: () => moduleToBusinessRegistration(moduleApi.getRegistration()),
+      getBusinessRegistrationData: () => moduleDataToBusinessData(moduleApi.getRegistrationData()),
+      getBusinessRegistrationStoreSnapshot: () => moduleStoreToBusinessStoreSnapshot(moduleApi.getRegistrationStoreSnapshot()),
     }
   }
 }

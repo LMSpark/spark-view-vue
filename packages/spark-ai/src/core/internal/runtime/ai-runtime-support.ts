@@ -1,4 +1,7 @@
 import type {
+  AiBusinessRegistration,
+  AiBusinessRegistrationData,
+  AiBusinessRegistrationStoreSnapshot,
   AiFunctionRegistration,
   AiFunctionRegistrationData,
   AiFunctionRegistrationFailureMode,
@@ -16,6 +19,7 @@ import type {
   AiRuntimeInstanceScope,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
+import type { ParameterPayloadProvider } from '../../protocol/parameter-payload-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../../protocol/llm-params-validator'
 
@@ -730,5 +734,116 @@ export class AiRuntimeArgValidator {
   validateArgsBySchema(schema: LlmParameterSchemaRoot, args: unknown): string | null {
     const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, schema)
     return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+  }
+}
+
+// ── Business↔Module 投影转换：在不同命名约定之间转换字段名 ──
+
+/** 识别 Business 源是否为运行时实例（有 getFunctions 方法）。 */
+export function isBusinessRegistrationInstance(source: unknown): source is AiBusinessRegistration {
+  return typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function'
+}
+
+/** 判断是否为 BusinessData 格式。 */
+export function isBusinessRegistrationDataFormat(source: unknown): source is AiBusinessRegistrationData {
+  return typeof source === 'object'
+    && source !== null
+    && !isBusinessRegistrationInstance(source)
+    && typeof (source as { readonly businessId?: unknown }).businessId === 'string'
+    && Array.isArray((source as { readonly functions?: unknown }).functions)
+    && Array.isArray((source as { readonly modules?: unknown }).modules)
+}
+
+/** 判断是否为 BusinessStoreSnapshot 格式。 */
+export function isBusinessStoreSnapshotFormat(source: unknown): source is AiBusinessRegistrationStoreSnapshot {
+  return typeof source === 'object'
+    && source !== null
+    && typeof (source as { readonly rootBusinessPath?: unknown }).rootBusinessPath === 'string'
+    && typeof (source as { readonly rootModulePath?: unknown }).rootModulePath === 'string'
+    && Array.isArray((source as { readonly modules?: unknown }).modules)
+    && Array.isArray((source as { readonly functions?: unknown }).functions)
+}
+
+/** 从 Business 源提取参数荷载提供者（仅实例格式有此属性）。 */
+export function parameterPayloadProvidersFromBusiness(source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): readonly ParameterPayloadProvider[] {
+  if (isBusinessRegistrationInstance(source)) return source.parameterPayloadProviders ?? []
+  return []
+}
+
+/** Business 源转为 Module 源（识别类型后路由到具体转换）。 */
+export function moduleSourceFromBusiness(
+  source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot,
+): AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot {
+  if (isBusinessRegistrationInstance(source)) return businessToModuleRegistration(source)
+  if (isBusinessStoreSnapshotFormat(source)) {
+    return {
+      rootModulePath: source.rootModulePath,
+      modules: source.modules,
+      functions: source.functions,
+      usageRules: source.usageRules,
+      failureModes: source.failureModes,
+    }
+  }
+  if (isBusinessRegistrationDataFormat(source)) return businessDataToModuleData(source)
+  return businessToModuleRegistration(source)
+}
+
+/** Business 实例 → Module 实例（重命名字段 businessId→moduleId）。 */
+export function businessToModuleRegistration(business: AiBusinessRegistration): AiModuleRegistration {
+  return {
+    moduleId: business.businessId,
+    name: business.name,
+    description: business.description,
+    ...(business.prompt === undefined ? {} : { prompt: business.prompt }),
+    ...(business.modules === undefined ? {} : { modules: business.modules }),
+    ...(business.instanceParam === undefined ? {} : { instanceParam: business.instanceParam }),
+    getFunctions: () => business.getFunctions(),
+  }
+}
+
+/** Module 实例 → Business 实例（反向转换）。 */
+export function moduleToBusinessRegistration(module: AiModuleRegistration): AiBusinessRegistration {
+  return {
+    businessId: module.moduleId,
+    name: module.name,
+    description: module.description,
+    ...(module.prompt === undefined ? {} : { prompt: module.prompt }),
+    ...(module.modules === undefined ? {} : { modules: module.modules }),
+    ...(module.instanceParam === undefined ? {} : { instanceParam: module.instanceParam }),
+    getFunctions: () => module.getFunctions(),
+  }
+}
+
+/** BusinessData → ModuleData（字段重命名）。 */
+export function businessDataToModuleData(data: AiBusinessRegistrationData): AiModuleRegistrationData {
+  return {
+    moduleId: data.businessId,
+    name: data.name,
+    description: data.description,
+    ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
+    ...(data.instanceParam === undefined ? {} : { instanceParam: data.instanceParam }),
+    functions: data.functions,
+    modules: data.modules,
+  }
+}
+
+/** ModuleData → BusinessData（字段重命名）。 */
+export function moduleDataToBusinessData(data: AiModuleRegistrationData): AiBusinessRegistrationData {
+  return {
+    businessId: data.moduleId,
+    name: data.name,
+    description: data.description,
+    ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
+    ...(data.instanceParam === undefined ? {} : { instanceParam: data.instanceParam }),
+    functions: data.functions,
+    modules: data.modules,
+  }
+}
+
+/** Module 快照 → Business 快照（新增 rootBusinessPath 字段）。 */
+export function moduleStoreToBusinessStoreSnapshot(snapshot: AiModuleRegistrationStoreSnapshot): AiBusinessRegistrationStoreSnapshot {
+  return {
+    rootBusinessPath: snapshot.rootModulePath,
+    ...snapshot,
   }
 }

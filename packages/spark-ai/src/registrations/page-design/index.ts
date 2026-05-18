@@ -26,15 +26,15 @@ export {
   assertPageDesignContext,
 } from './page-design-module'
 
-export { PageDesignLifecycleCatalog } from './modules/lifecycle-tool-catalog'
+export { LIFECYCLE_CATALOG_ROWS, validateLifecycleParams } from './modules/lifecycle-tool-catalog'
 
-export { PageDesignKnowledgeCatalog } from './modules/knowledge-tool-catalog'
+export { KNOWLEDGE_CATALOG_ROWS, validateKnowledgeParams } from './modules/knowledge-tool-catalog'
 
-export { PageDesignTextModelCatalog } from './modules/text-model-tool-catalog'
+export { TEXT_MODEL_CATALOG_ROWS, validateTextModelParams } from './modules/text-model-tool-catalog'
 
-export { PageDesignNodeTreeCatalog } from './modules/node-tree-tool-catalog'
+export { NODE_TREE_CATALOG_ROWS, validateNodeTreeParams } from './modules/node-tree-tool-catalog'
 
-export { PageDesignDatasetCatalog } from './modules/dataset-tool-catalog'
+export { DATASET_CATALOG_ROWS, validateDatasetParams } from './modules/dataset-tool-catalog'
 
 export interface PageDesignModuleContext {
   pageId?: string
@@ -53,42 +53,27 @@ export type {
 
 export type {
   DatasetCrudToolFunctionFailureMode,
-  DatasetCrudToolFunctionTarget,
   DatasetCrudToolFunctionId,
-  DatasetCrudToolFunctionParameterRow,
-  DatasetCrudToolFunctionCapabilityRow,
 } from './modules/dataset-tool-catalog'
 
 export type {
   EditLifecycleFunctionFailureMode,
-  EditLifecycleFunctionTarget,
   EditLifecycleFunctionId,
-  EditLifecycleFunctionParameterRow,
-  EditLifecycleFunctionCapabilityRow,
 } from './modules/lifecycle-tool-catalog'
 
 export type {
   PageDesignKnowledgeFunctionFailureMode,
-  PageDesignKnowledgeFunctionTarget,
   PageDesignKnowledgeFunctionId,
-  PageDesignKnowledgeFunctionParameterRow,
-  PageDesignKnowledgeFunctionCapabilityRow,
 } from './modules/knowledge-tool-catalog'
 
 export type {
   SparkNodeTreeToolFailureMode,
-  SparkNodeTreeToolTarget,
   SparkNodeTreeToolFunctionId,
-  SparkNodeTreeToolParameterRow,
-  SparkNodeTreeToolCapabilityRow,
 } from './modules/node-tree-tool-catalog'
 
 export type {
   TextModelFunctionFailureMode,
-  TextModelFunctionTarget,
   TextModelFunctionFileKey,
   TextModelFunctionId,
-  TextModelFunctionParameterRow,
-  TextModelFunctionCapabilityRow,
 } from './modules/text-model-tool-catalog'
 

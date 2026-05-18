@@ -180,6 +180,11 @@ export interface AiFunctionRegistration {
    * - `instance`：需要父级模块实例 ID，并额外需要当前模块自己的 instanceParam。
    */
   readonly scope?: 'collection' | 'instance'
+  /**
+   * 面向 LLM 的调用示例。
+   * core 不解释该值，可透传给投影层供 LLM 参考。
+   */
+  readonly example?: LlmJsonObject | undefined
 }
 
 /** 可直接持久化的函数注册数据；只保留描述，不保留执行器或运行时 provider。 */
@@ -200,6 +205,8 @@ export interface AiFunctionRegistrationData {
   readonly failureModes?: readonly FunctionFailureMode[] | undefined
   /** 函数作用域。 */
   readonly scope?: 'collection' | 'instance'
+  /** 调用示例。 */
+  readonly example?: LlmJsonObject | undefined
 }
 
 /** 可直接持久化的递归模块注册数据；运行时方法、动态 prompt provider 都不属于这里。 */
@@ -430,6 +437,8 @@ export interface AiRuntimeFunctionExposure {
   readonly usageRules?: readonly string[] | undefined
   /** 预声明失败模式。 */
   readonly failureModes?: readonly FunctionFailureMode[] | undefined
+  /** 调用示例。 */
+  readonly example?: LlmJsonObject | undefined
   /** 由模块层级推导出的上下文参数列表。 */
   readonly contextParams: readonly AiRuntimeFunctionContextParam[]
 }

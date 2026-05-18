@@ -1,46 +1,30 @@
-import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
-import {
-  createPageDesignCapabilityRow,
-  type PageDesignFunctionRuntimeBinding,
-  PageDesignToolCatalog,
-} from './tool-catalog'
+import { LlmParamsValidator, type AiFunctionRegistration, type FunctionFailureMode } from '../../../core'
 import { anySchema, arraySchema, booleanSchema, noParamsSchema, numberSchema, objectSchema, paramsSchema, stringSchema } from './json-schema-helpers'
-import type { SparkNodeTreeMethodKey } from '@spark-view/spark-page-config'
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
-export type SparkNodeTreeToolTarget = 'tree' | 'node' | 'children' | 'props'
-export type SparkNodeTreeToolFunctionId = SparkNodeTreeMethodKey
-type SparkNodeTreeToolBaseFields = {
-  functionId: SparkNodeTreeToolFunctionId
-  type: 'describe' | 'request'
-  description: string
-  paramsSchema: LlmParameterSchemaRoot
-  resultSchema: LlmJsonObject
-  example: LlmJsonObject
-  usageRules: readonly string[]
-}
-
-export type SparkNodeTreeToolParameterRow = SparkNodeTreeToolBaseFields & {
-  failureModes: readonly SparkNodeTreeToolFailureMode[]
-  target: SparkNodeTreeToolTarget
-  coreMethod: SparkNodeTreeToolFunctionId
-  runtimeBinding: PageDesignFunctionRuntimeBinding
-  runtimeRegistration: 'registered'
-}
-export type SparkNodeTreeToolCapabilityRow = Pick<
-  SparkNodeTreeToolParameterRow,
-  'functionId' | 'type' | 'target' | 'coreMethod' | 'description'
-> & {
-  integrationStatus: 'runtime-wired'
-  paramsRef: string
-  rules?: readonly string[]
-  failureCodes?: readonly string[]
-  params?: LlmParameterSchemaRoot
-  example?: LlmJsonObject
-}
+export type SparkNodeTreeToolFunctionId =
+  | 'getNode'
+  | 'getLocation'
+  | 'hasNode'
+  | 'getParent'
+  | 'listChildren'
+  | 'countNodes'
+  | 'getAllData'
+  | 'collectDataKeys'
+  | 'collectHandlerNames'
+  | 'findByType'
+  | 'addNode'
+  | 'addNodes'
+  | 'moveNode'
+  | 'setProps'
+  | 'setPropsBatch'
+  | 'replaceNode'
+  | 'replaceNodes'
+  | 'removeNode'
+  | 'removeNodes'
 
 const NO_PARAMS = noParamsSchema('该 nodeTree 读取函数不接受参数，请传 {} 或留空。')
-const EMPTY_EXAMPLE: LlmJsonObject = {}
+const EMPTY_EXAMPLE = {} as const
 const COMPONENT_ID_SCHEMA = stringSchema(
   '节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段）；绝对禁止使用组件类型名（r-table、r-tabs、r-text、r-select 等）作为 componentId，类型名不是 id',
 )
@@ -89,39 +73,9 @@ const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点�
 const SCALAR_PARENT_COMPONENT_RULE = 'parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。'
 const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实例对应的 root；如需最新子树快照，请读取 tree.root 或 toJSON()。'
 
-type SparkNodeTreeToolRowWithoutType = Omit<SparkNodeTreeToolParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
-
-const defineDescribeRow = (row: SparkNodeTreeToolRowWithoutType): SparkNodeTreeToolParameterRow => ({
-  type: 'describe',
-  runtimeBinding: {
-    kind: 'page-design-service',
-    method: 'useNodeTreeMethod',
-    targetMethod: row.coreMethod,
-  },
-  runtimeRegistration: 'registered',
-  ...row,
-})
-
-const defineRequestRow = (row: SparkNodeTreeToolRowWithoutType): SparkNodeTreeToolParameterRow => ({
-  type: 'request',
-  runtimeBinding: {
-    kind: 'page-design-service',
-    method: 'useNodeTreeMethod',
-    targetMethod: row.coreMethod,
-  },
-  runtimeRegistration: 'registered',
-  ...row,
-})
-
-function toCapabilityRow(row: SparkNodeTreeToolParameterRow): SparkNodeTreeToolCapabilityRow {
-  return createPageDesignCapabilityRow(row, 'runtime-wired', { coreMethod: row.coreMethod })
-}
-
-const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
-  defineDescribeRow({
+export const NODE_TREE_CATALOG_ROWS = [
+  {
     functionId: 'getNode',
-    target: 'node',
-    coreMethod: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -132,11 +86,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getLocation',
-    target: 'node',
-    coreMethod: 'getLocation',
     description: '查找节点并返回其父节点、层级深度和直接索引位置。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -147,11 +99,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'hasNode',
-    target: 'node',
-    coreMethod: 'hasNode',
     description: '判断指定 componentId 是否存在于当前树中。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -162,11 +112,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getParent',
-    target: 'node',
-    coreMethod: 'getParent',
     description: '获取指定节点的直接父节点；当前绑定 root 或未命中时返回 null。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -177,11 +125,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listChildren',
-    target: 'children',
-    coreMethod: 'listChildren',
     description: '读取当前组件实例或指定子组件的直接 children 数组。',
     paramsSchema: paramsSchema(
       { parentComponentId: PARENT_COMPONENT_ID_SCHEMA },
@@ -202,11 +148,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '先通过 nodeTree.getNode 或 nodeTree.hasNode 确认父节点存在。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'countNodes',
-    target: 'tree',
-    coreMethod: 'countNodes',
     description: '统计当前组件实例子树中的结构节点数量，不包含字符串/数字字面量子节点。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -215,11 +159,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getAllData',
-    target: 'tree',
-    coreMethod: 'getAllData',
     description: '获取当前绑定组件实例完整子树的全部数据快照（包含递归 children）。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -228,11 +170,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
-    functionId: 'collectDataViewKeys',
-    target: 'tree',
-    coreMethod: 'collectDataViewKeys',
+  },
+  {
+    functionId: 'collectDataKeys',
     description: '收集当前组件实例子树中出现过的全部唯一 dataViewKey / optionDataViewKey，用于确认页面现有数据绑定。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -241,11 +181,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'collectHandlerNames',
-    target: 'tree',
-    coreMethod: 'collectHandlerNames',
     description: '收集当前组件实例子树 props.on 中出现的全部唯一处理器名。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -254,11 +192,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: EMPTY_EXAMPLE,
     usageRules: [INSTANCE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'findByType',
-    target: 'tree',
-    coreMethod: 'findByType',
     description:
       '按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父节点 id。' +
       '当知道目标组件的 type（如 r-tabs、r-form）但不知道其节点 id 时，用本动作代替多步 listChildren→getNode，' +
@@ -289,11 +225,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '先通过 nodeTree.hasNode 确认 startComponentId 存在，或省略 startComponentId 从根节点开始搜索。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'addNode',
-    target: 'children',
-    coreMethod: 'addNode',
     description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
     paramsSchema: paramsSchema({
       node: NODE_PARAM,
@@ -321,11 +255,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '至少传入合法的 SparkNode.type，并保证 node 是完整对象。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'addNodes',
-    target: 'children',
-    coreMethod: 'addNodes',
     description: '向同一个子组件容器批量插入多个新节点。警告：入参 nodes 必须是由指定 type 的 props schema 组装而成的合法 SparkNode 数组。构造前必须查阅组件规格，绝对禁止凭空猜测 props。',
     paramsSchema: paramsSchema({
       nodes: NODES_SCHEMA,
@@ -333,7 +265,7 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       index: INDEX_SCHEMA,
     }, ['nodes'], 'nodes 为必填；parentComponentId 必须是 string/null 原子值。'),
     resultSchema: {
-      nodes: 'SparkNode[] — 按传入顺序成功插入的节点',
+      nodes: 'SparkNode[] — 按顺序成功插入的节点',
       indexes: 'number[] — 每个节点的实际插入位置',
     },
     example: {
@@ -356,11 +288,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '保证 nodes 至少包含一个完整 SparkNode 对象。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'moveNode',
-    target: 'children',
-    coreMethod: 'moveNode',
     description: '把已有节点移动到新的父节点或兄弟位置。用于调整布局顺序或容器归属，避免 removeNode + addNode 重建已有子树造成大块文本输出。',
     paramsSchema: paramsSchema({
       componentId: COMPONENT_ID_SCHEMA,
@@ -411,11 +341,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '选择被移动节点外部的父节点作为 parentComponentId。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'setProps',
-    target: 'props',
-    coreMethod: 'setProps',
     description: '写入或替换目标节点的 props。',
     paramsSchema: paramsSchema({
       componentId: COMPONENT_ID_SCHEMA,
@@ -438,11 +366,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '先通过 nodeTree.getNode 或 nodeTree.hasNode 确认目标节点存在。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'setPropsBatch',
-    target: 'props',
-    coreMethod: 'setPropsBatch',
     description: '批量写入多个节点的 props，整个批次只提交一次树状态。',
     paramsSchema: paramsSchema({ items: SET_PROPS_BATCH_ITEMS_SCHEMA }, ['items']),
     resultSchema: {
@@ -467,11 +393,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '同一批次内每个 componentId 只保留一条更新。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'replaceNode',
-    target: 'node',
-    coreMethod: 'replaceNode',
     description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA, node: NODE_PARAM }, ['componentId', 'node']),
     resultSchema: {
@@ -495,11 +419,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '保证 node 至少含有合法 type，必要时保留原 id。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'replaceNodes',
-    target: 'node',
-    coreMethod: 'replaceNodes',
     description: '批量替换多个节点，适合一次性重建多个字段或容器节点。',
     paramsSchema: paramsSchema({ items: REPLACE_NODES_ITEMS_SCHEMA }, ['items']),
     resultSchema: {
@@ -524,11 +446,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '同一批次内同一个节点只保留一次 replace。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'removeNode',
-    target: 'node',
-    coreMethod: 'removeNode',
     description: '删除当前组件实例子树内的指定节点，并返回被删除节点和原始索引。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -551,11 +471,9 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '只删除根节点的子节点，或重新创建 SparkNodeTree 实例并替换整个 root。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'removeNodes',
-    target: 'node',
-    coreMethod: 'removeNodes',
     description: '按 componentIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态。',
     paramsSchema: paramsSchema({ componentIds: COMPONENT_IDS_SCHEMA }, ['componentIds']),
     resultSchema: {
@@ -582,17 +500,12 @@ const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         fix: '只删除根节点的子节点。',
       },
     ],
-  }),
-] as const satisfies readonly SparkNodeTreeToolParameterRow[]
+  },
+] as const satisfies readonly AiFunctionRegistration[]
 
-const SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE: readonly SparkNodeTreeToolCapabilityRow[] =
-  SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.map(toCapabilityRow)
-
-export class PageDesignNodeTreeCatalog extends PageDesignToolCatalog<
-  SparkNodeTreeToolParameterRow,
-  SparkNodeTreeToolCapabilityRow
-> {
-  constructor() {
-    super(SPARK_NODE_TREE_TOOL_PARAMETER_TABLE, SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE)
-  }
+export function validateNodeTreeParams(functionId: string, params: unknown): string | null {
+  const row = NODE_TREE_CATALOG_ROWS.find((r) => r.functionId === functionId)
+  if (!row) return `未知 ${functionId} 函数`
+  const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
+  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
 }

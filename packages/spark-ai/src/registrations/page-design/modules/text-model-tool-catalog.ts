@@ -1,45 +1,9 @@
-import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
-import {
-  createPageDesignCapabilityRow,
-  type PageDesignFunctionRuntimeBinding,
-  PageDesignToolCatalog,
-} from './tool-catalog'
+import { LlmParamsValidator, type AiFunctionRegistration, type FunctionFailureMode } from '../../../core'
 import { noParamsSchema, paramsSchema, stringSchema } from './json-schema-helpers'
 
 export type TextModelFunctionFailureMode = FunctionFailureMode
-export type TextModelFunctionTarget = 'script' | 'style'
 export type TextModelFunctionFileKey = 'script' | 'style'
 export type TextModelFunctionId = 'readScript' | 'writeScript' | 'readStyle' | 'writeStyle'
-
-type TextModelFunctionBaseFields = {
-  functionId: TextModelFunctionId
-  type: 'describe' | 'request'
-  description: string
-  paramsSchema: LlmParameterSchemaRoot
-  resultSchema: LlmJsonObject
-  example: LlmJsonObject
-  usageRules: readonly string[]
-}
-
-export type TextModelFunctionParameterRow = TextModelFunctionBaseFields & {
-  failureModes: readonly TextModelFunctionFailureMode[]
-  target: TextModelFunctionTarget
-  fileKey: TextModelFunctionFileKey
-  runtimeBinding: PageDesignFunctionRuntimeBinding
-  runtimeRegistration: 'registered'
-}
-
-export type TextModelFunctionCapabilityRow = Pick<
-  TextModelFunctionParameterRow,
-  'functionId' | 'type' | 'target' | 'description' | 'fileKey'
-> & {
-  integrationStatus: 'runtime-wired'
-  paramsRef: string
-  rules?: readonly string[]
-  failureCodes?: readonly string[]
-  params?: LlmParameterSchemaRoot
-  example?: LlmJsonObject
-}
 
 const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')
 const CONTENT_SCHEMA = stringSchema('完整文本内容（全量覆盖写入，不支持 patch）')
@@ -48,39 +12,9 @@ const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.boot
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
-type TextModelFunctionRowWithoutType = Omit<TextModelFunctionParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
-
-const defineDescribeRow = (row: TextModelFunctionRowWithoutType): TextModelFunctionParameterRow => ({
-  type: 'describe',
-  runtimeBinding: {
-    kind: 'page-design-service',
-    method: 'readTextModel',
-    fileKey: row.fileKey,
-  },
-  runtimeRegistration: 'registered',
-  ...row,
-})
-
-const defineRequestRow = (row: TextModelFunctionRowWithoutType): TextModelFunctionParameterRow => ({
-  type: 'request',
-  runtimeBinding: {
-    kind: 'page-design-service',
-    method: 'writeTextModel',
-    fileKey: row.fileKey,
-  },
-  runtimeRegistration: 'registered',
-  ...row,
-})
-
-function toCapabilityRow(row: TextModelFunctionParameterRow): TextModelFunctionCapabilityRow {
-  return createPageDesignCapabilityRow(row, 'runtime-wired', { fileKey: row.fileKey })
-}
-
-const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
-  defineDescribeRow({
+export const TEXT_MODEL_CATALOG_ROWS = [
+  {
     functionId: 'readScript',
-    target: 'script',
-    fileKey: 'script',
     description: '读取 script.js 当前完整文本模型内容。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -95,11 +29,9 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 lifecycle.bootstrap 并确保宿主提供 readScript。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'writeScript',
-    target: 'script',
-    fileKey: 'script',
     description: '覆盖写入 script.js 全量文本模型内容。',
     paramsSchema: paramsSchema({ content: CONTENT_SCHEMA }, ['content']),
     resultSchema: {
@@ -121,11 +53,9 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '改用 $page/$dataSet/$components.getApi 的受支持能力。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'readStyle',
-    target: 'style',
-    fileKey: 'style',
     description: '读取 style.css 当前完整文本模型内容。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -140,11 +70,9 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 lifecycle.bootstrap 并确保宿主提供 readStyle。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'writeStyle',
-    target: 'style',
-    fileKey: 'style',
     description: '覆盖写入 style.css 全量文本模型内容。',
     paramsSchema: paramsSchema({ content: CONTENT_SCHEMA }, ['content']),
     resultSchema: {
@@ -161,16 +89,12 @@ const TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 lifecycle.bootstrap 并确保宿主提供 writeStyle。',
       },
     ],
-  }),
-] as const satisfies readonly TextModelFunctionParameterRow[]
+  },
+] as const satisfies readonly AiFunctionRegistration[]
 
-const TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE = TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
-
-export class PageDesignTextModelCatalog extends PageDesignToolCatalog<
-  TextModelFunctionParameterRow,
-  TextModelFunctionCapabilityRow
-> {
-  constructor() {
-    super(TEXT_MODEL_FUNCTIONS_PARAMETER_TABLE, TEXT_MODEL_FUNCTIONS_CAPABILITY_TABLE)
-  }
+export function validateTextModelParams(functionId: string, params: unknown): string | null {
+  const row = TEXT_MODEL_CATALOG_ROWS.find((r) => r.functionId === functionId)
+  if (!row) return `未知 ${functionId} 函数`
+  const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
+  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
 }

@@ -114,43 +114,132 @@ function pageDesignEditHostUnavailableMessage(result: AiRuntimeFunctionCallResul
   return null
 }
 
-class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
-  readonly moduleId = LEAVE_REQUEST_MODULE_ID
+/**
+ * 基于模块的业务运行时抽象基类。
+ *
+ * LeaveRequestBusinessRuntime 和 PageDesignBusinessRuntime 有大量重复委托代码——
+ * startSession、appendMessage、executeFunctionCall、endBusinessInstance、
+ * getSessionHistory、releaseModuleInstance 都是把调用者的 options 注入
+ * moduleId 后委托给内部模块。
+ *
+ * 提取此基类后，子类只需覆盖：
+ * - moduleId — 业务模块标识
+ * - resolveBusinessInstance — 实例解析逻辑（各业务不同）
+ * - afterFunctionCall — 函数调用后的业务特有回调
+ * - getSystemPrompt / canReuseSelection — 可选覆盖
+ */
+abstract class ModuleBackedBusinessRuntime implements AppAiBusinessRuntime {
+  /** 业务模块 ID */
+  abstract readonly moduleId: string
+
+  /**
+   * 内部持有的业务模块实例，所有操作委托给它。
+   * 用 object 类型而非具体接口，避免两个模块 context 类型的协变冲突；
+   * 子类通过 override 声明为具体模块类型。
+   */
+  protected module: object
 
   constructor(
-    private readonly module: LeaveRequestModule,
-    private readonly resolveInstanceId: (input: AppAiBusinessResolveInput) => string,
-  ) {}
+    module: object,
+    /** 实例 ID 解析函数，返回 null 表示无法解析 */
+    protected readonly resolveInstanceId: (input: AppAiBusinessResolveInput) => string | null,
+  ) {
+    this.module = module
+  }
 
+  /** 解析业务实例 ID — 各业务实现不同，必须由子类提供 */
+  abstract resolveBusinessInstance(input: AppAiBusinessResolveInput): string
+
+  /** 注册数据（子类可覆盖，默认委托） */
   getRegistrationData(): AiModuleRegistrationData {
-    return this.module.getRegistrationData()
+    return (this.module as { getRegistrationData(): AiModuleRegistrationData }).getRegistrationData()
   }
 
+  /** 业务注册数据（子类可覆盖，默认委托） */
   getBusinessRegistrationData(): AiBusinessRegistrationData {
-    return this.module.getBusinessRegistrationData()
+    return (this.module as { getBusinessRegistrationData(): AiBusinessRegistrationData }).getBusinessRegistrationData()
   }
 
-  resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
-    return this.resolveInstanceId(input)
+  /** 开始 AI 会话 — 注入 moduleId 后委托给内部模块 */
+  startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {
+    return (this.module as { startSession(o: Record<string, unknown>): Promise<AiRuntimeStartSessionResult> })
+      .startSession({ ...context, moduleId: this.moduleId })
   }
 
-  getSystemPrompt(_context: AppAiBusinessRuntimeContext): string {
+  /** 追加消息到会话 — 注入 moduleId 后委托给内部模块 */
+  appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry {
+    return (this.module as { appendMessage(o: Record<string, unknown>): AiRuntimeMessageHistoryEntry })
+      .appendMessage({ ...options, moduleId: this.moduleId })
+  }
+
+  /** 执行函数调用 — 注入 moduleId 后委托给内部模块 */
+  executeFunctionCall(options: AppAiBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
+    return (this.module as { executeFunctionCall(o: Record<string, unknown>): Promise<AiRuntimeFunctionCallResult<unknown>> })
+      .executeFunctionCall({ ...options, moduleId: this.moduleId })
+  }
+
+  /** 函数调用后的生命周期指令 — 子类可覆盖，默认继续 */
+  afterFunctionCall(_options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
+    return { status: 'continue' }
+  }
+
+  /** 结束业务实例 — 注入 moduleId 后停止会话并可选释放实例 */
+  endBusinessInstance(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void {
+    ;(this.module as { stopSession(o: Record<string, unknown>): void }).stopSession({
+      ...context,
+      moduleId: this.moduleId,
+      reason: directive.reason ?? directive.status,
+    })
+    if (directive.releaseInstance === true) {
+      ;(this.module as { releaseModuleInstance(id: string): void }).releaseModuleInstance(context.moduleInstanceId)
+    }
+  }
+
+  /** 获取会话历史 — 注入 moduleId 后委托给内部模块 */
+  getSessionHistory(context: AppAiBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[] {
+    return (this.module as { getSessionHistory(o: Record<string, unknown>): readonly AiRuntimeHistoryEntry[] })
+      .getSessionHistory({ ...context, moduleId: this.moduleId })
+  }
+
+  /** 释放模块实例 — 委托给内部模块 */
+  releaseModuleInstance(moduleInstanceId: string): void {
+    ;(this.module as { releaseModuleInstance(id: string): void }).releaseModuleInstance(moduleInstanceId)
+  }
+
+  /** 获取系统提示词（可选覆盖，默认无） */
+  getSystemPrompt?(_context: AppAiBusinessRuntimeContext): string | undefined
+}
+
+/**
+ * 人工请假业务运行时。
+ *
+ * 差异点：
+ * - 需要自定义系统提示词（含时区和当前日期，LLM 据此解析相对日期）
+ * - submitDraft / cancelDraft 后自动结束会话并释放实例
+ * - 实例 ID 解析不会失败（始终通过 resolveLeaveDraftId 生成新 draftId）
+ */
+class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
+  override readonly moduleId = LEAVE_REQUEST_MODULE_ID
+
+  /** LeaveRequest 业务模块实例，持有草稿状态和 AI 运行时 */
+  declare protected readonly module: LeaveRequestModule
+
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- constructor narrows parameter types
+  constructor(module: LeaveRequestModule, resolveInstanceId: (input: AppAiBusinessResolveInput) => string | null) {
+    super(module, resolveInstanceId)
+  }
+
+  override resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
+    const id = this.resolveInstanceId(input)
+    if (id === null) throw new Error('LeaveRequest instance id resolver returned null')
+    return id
+  }
+
+  override getSystemPrompt(_context: AppAiBusinessRuntimeContext): string {
     return createLeaveRequestSystemPrompt()
   }
 
-  startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {
-    return this.module.startSession({ ...context, moduleId: LEAVE_REQUEST_MODULE_ID })
-  }
-
-  appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry {
-    return this.module.appendMessage({ ...options, moduleId: LEAVE_REQUEST_MODULE_ID })
-  }
-
-  executeFunctionCall(options: AppAiBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
-    return this.module.executeFunctionCall({ ...options, moduleId: LEAVE_REQUEST_MODULE_ID })
-  }
-
-  afterFunctionCall(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
+  override afterFunctionCall(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
     const functionId = actionFunctionId(options.action)
     if (functionId === 'submitDraft' && options.result.ok) {
       return {
@@ -170,44 +259,25 @@ class LeaveRequestBusinessRuntime implements AppAiBusinessRuntime {
     }
     return { status: 'continue' }
   }
-
-  endBusinessInstance(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void {
-    this.module.stopSession({
-      ...context,
-      moduleId: LEAVE_REQUEST_MODULE_ID,
-      reason: directive.reason ?? directive.status,
-    })
-    if (directive.releaseInstance === true) {
-      this.module.releaseModuleInstance(context.moduleInstanceId)
-    }
-  }
-
-  getSessionHistory(context: AppAiBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[] {
-    return this.module.getSessionHistory({ ...context, moduleId: LEAVE_REQUEST_MODULE_ID })
-  }
-
-  releaseModuleInstance(moduleInstanceId: string): void {
-    this.module.releaseModuleInstance(moduleInstanceId)
-  }
 }
 
-class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
-  readonly moduleId = PAGE_DESIGN_MODULE_ID
+/**
+ * 页面设计业务运行时。
+ *
+ * 差异点：
+ * - 实例 ID 解析依赖当前选中的页面，未选中时抛错
+ * - 支持 canReuseSelection（用户切换页面时可复用当前会话）
+ * - EditHost 不可用时自动结束会话
+ */
+class PageDesignBusinessRuntime extends ModuleBackedBusinessRuntime {
+  override readonly moduleId = PAGE_DESIGN_MODULE_ID
 
-  constructor(
-    private readonly module: PageDesignModule,
-    private readonly resolveInstanceId: (input: AppAiBusinessResolveInput) => string | null,
-  ) {}
-
-  getRegistrationData(): AiModuleRegistrationData {
-    return this.module.getRegistrationData()
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- constructor narrows parameter types
+  constructor(module: PageDesignModule, resolveInstanceId: (input: AppAiBusinessResolveInput) => string | null) {
+    super(module, resolveInstanceId)
   }
 
-  getBusinessRegistrationData(): AiBusinessRegistrationData {
-    return this.module.getBusinessRegistrationData()
-  }
-
-  resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
+  override resolveBusinessInstance(input: AppAiBusinessResolveInput): string {
     const pageId = this.resolveInstanceId(input)
     if (pageId === null || pageId.trim() === '') {
       throw new Error('PageDesign 需要先在开发系统中打开并选中一个配置页面。')
@@ -224,23 +294,7 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
     }
   }
 
-  async startSession(context: AppAiBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {
-    return this.module.startSession({ ...context, moduleId: PAGE_DESIGN_MODULE_ID })
-  }
-
-  appendMessage(options: AppAiBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry {
-    return this.module.appendMessage({ ...options, moduleId: PAGE_DESIGN_MODULE_ID })
-  }
-
-  executeFunctionCall(options: AppAiBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
-    return this.module.executeFunctionCall({
-      ...options,
-      moduleId: PAGE_DESIGN_MODULE_ID,
-      projection: options.projection,
-    })
-  }
-
-  afterFunctionCall(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
+  override afterFunctionCall(options: AppAiBusinessAfterFunctionCallOptions): AppAiBusinessLifecycleDirective {
     const unavailableMessage = pageDesignEditHostUnavailableMessage(options.result)
     if (unavailableMessage !== null) {
       return {
@@ -251,25 +305,6 @@ class PageDesignBusinessRuntime implements AppAiBusinessRuntime {
       }
     }
     return { status: 'continue' }
-  }
-
-  endBusinessInstance(context: AppAiBusinessRuntimeContext, directive: AppAiBusinessLifecycleDirective): void {
-    this.module.stopSession({
-      ...context,
-      moduleId: PAGE_DESIGN_MODULE_ID,
-      reason: directive.reason ?? directive.status,
-    })
-    if (directive.releaseInstance === true) {
-      this.module.releaseModuleInstance(context.moduleInstanceId)
-    }
-  }
-
-  getSessionHistory(context: AppAiBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[] {
-    return this.module.getSessionHistory({ ...context, moduleId: PAGE_DESIGN_MODULE_ID })
-  }
-
-  releaseModuleInstance(moduleInstanceId: string): void {
-    this.module.releaseModuleInstance(moduleInstanceId)
   }
 }
 

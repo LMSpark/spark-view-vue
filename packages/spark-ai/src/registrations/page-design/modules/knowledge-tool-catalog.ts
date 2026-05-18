@@ -1,14 +1,8 @@
-import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
+import { LlmParamsValidator, type AiFunctionRegistration, type FunctionFailureMode } from '../../../core'
 import { SPARK_COMPONENT_PAYLOAD_REF } from '../payloads/component-payload-catalog'
-import {
-  createPageDesignCapabilityRow,
-  type PageDesignFunctionRuntimeBinding,
-  PageDesignToolCatalog,
-} from './tool-catalog'
 import { noParamsSchema, paramsSchema, stringSchema } from './json-schema-helpers'
 
 export type PageDesignKnowledgeFunctionFailureMode = FunctionFailureMode
-export type PageDesignKnowledgeFunctionTarget = 'knowledge'
 export type PageDesignKnowledgeFunctionId =
   | 'queryFunctions'
   | 'queryModules'
@@ -16,47 +10,11 @@ export type PageDesignKnowledgeFunctionId =
   | 'queryPayloads'
   | 'guidePayload'
 
-type PageDesignKnowledgeFunctionBaseFields = {
-  functionId: PageDesignKnowledgeFunctionId
-  type: 'describe'
-  description: string
-  paramsSchema: LlmParameterSchemaRoot
-  resultSchema: LlmJsonObject
-  example: LlmJsonObject
-  usageRules: readonly string[]
-}
-
-export type PageDesignKnowledgeFunctionParameterRow = PageDesignKnowledgeFunctionBaseFields & {
-  failureModes: readonly PageDesignKnowledgeFunctionFailureMode[]
-  target: PageDesignKnowledgeFunctionTarget
-  runtimeBinding: PageDesignFunctionRuntimeBinding
-  runtimeRegistration: 'registered'
-}
-
-export type PageDesignKnowledgeFunctionCapabilityRow = Pick<
-  PageDesignKnowledgeFunctionParameterRow,
-  'functionId' | 'type' | 'target' | 'description'
-> & {
-  integrationStatus: 'runtime-wired'
-  paramsRef: string
-  rules?: readonly string[]
-  failureCodes?: readonly string[]
-  params?: LlmParameterSchemaRoot
-  example?: LlmJsonObject
-}
-
-const KNOWLEDGE_TARGET = 'knowledge'
 const NO_PARAMS = noParamsSchema('queryModules 不接受参数，请传 {} 或留空。')
 
-function toCapabilityRow(row: PageDesignKnowledgeFunctionParameterRow): PageDesignKnowledgeFunctionCapabilityRow {
-  return createPageDesignCapabilityRow(row, 'runtime-wired')
-}
-
-const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
+export const KNOWLEDGE_CATALOG_ROWS = [
   {
     functionId: 'queryFunctions',
-    type: 'describe',
-    target: KNOWLEDGE_TARGET,
     description: '查询当前 AI 会话可调用的函数目录（按 modulePath/moduleId/keyword 过滤）。',
     paramsSchema: paramsSchema({
       modulePath: stringSchema('按模块路径过滤，例如 knowledge、nodeTree、dataset。'),
@@ -71,17 +29,10 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
       '需要确认某个能力是否可调用，先查函数目录。',
       '再用 guideFunction(action) 查看单函数完整指南。',
     ],
-    runtimeBinding: {
-      kind: 'page-design-knowledge',
-      method: 'queryFunctions',
-    },
-    runtimeRegistration: 'registered',
     failureModes: [],
   },
   {
     functionId: 'queryModules',
-    type: 'describe',
-    target: KNOWLEDGE_TARGET,
     description: '查询当前 AI 会话的模块目录（含根模块与子模块）。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -91,17 +42,10 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     usageRules: [
       '用于确认模块边界与模块路径。',
     ],
-    runtimeBinding: {
-      kind: 'page-design-knowledge',
-      method: 'queryModules',
-    },
-    runtimeRegistration: 'registered',
     failureModes: [],
   },
   {
     functionId: 'guideFunction',
-    type: 'describe',
-    target: KNOWLEDGE_TARGET,
     description: '查询单个函数指南（按 action 精确查询）。',
     paramsSchema: paramsSchema({
       action: stringSchema('函数 action，例如 page-1@nodeTree@addNode。', { minLength: 1 }),
@@ -115,11 +59,6 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
     usageRules: [
       '执行函数前先查 guideFunction，避免参数结构猜测。',
     ],
-    runtimeBinding: {
-      kind: 'page-design-knowledge',
-      method: 'guideFunction',
-    },
-    runtimeRegistration: 'registered',
     failureModes: [
       {
         code: 'FUNCTION_NOT_FOUND',
@@ -130,8 +69,6 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
   },
   {
     functionId: 'queryPayloads',
-    type: 'describe',
-    target: KNOWLEDGE_TARGET,
     description: '查询 page-design 组件目录，返回可用于 SparkNode node 参数的组件 type 摘要。',
     paramsSchema: paramsSchema({
       category: stringSchema('组件分类过滤，例如 container / field / group / meta。'),
@@ -158,17 +95,10 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
       'queryPayloads 默认只返回前 24 条摘要；需要更多时可传 limit，但完整组件参数只能通过 guidePayload(key) 查询。',
       `无需传 payloadRef；本模块固定查询 ${SPARK_COMPONENT_PAYLOAD_REF}。`,
     ],
-    runtimeBinding: {
-      kind: 'page-design-knowledge',
-      method: 'queryPayloads',
-    },
-    runtimeRegistration: 'registered',
     failureModes: [],
   },
   {
     functionId: 'guidePayload',
-    type: 'describe',
-    target: KNOWLEDGE_TARGET,
     description: '读取指定组件 type 的 SparkNode 参数荷载指南，返回标准 paramsSchema 与原始组件语义指南。',
     paramsSchema: paramsSchema({
       key: stringSchema('组件 type，例如 r-table、r-form、el-button。', { minLength: 1 }),
@@ -183,11 +113,6 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
       '构造 nodeTree.addNode / replaceNode / addNodes / replaceNodes 的 node 参数前，必须先读取目标 type 的指南。',
       '返回 PAYLOAD_NOT_FOUND 时改用 queryPayloads 重新选择可用组件，不要反复用同一个缺失 key 重试。',
     ],
-    runtimeBinding: {
-      kind: 'page-design-knowledge',
-      method: 'guidePayload',
-    },
-    runtimeRegistration: 'registered',
     failureModes: [
       {
         code: 'PAYLOAD_NOT_FOUND',
@@ -196,15 +121,11 @@ const PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE = [
       },
     ],
   },
-] as const satisfies readonly PageDesignKnowledgeFunctionParameterRow[]
+] as const satisfies readonly AiFunctionRegistration[]
 
-const PAGE_DESIGN_KNOWLEDGE_FUNCTION_CAPABILITY_TABLE = PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE.map(toCapabilityRow)
-
-export class PageDesignKnowledgeCatalog extends PageDesignToolCatalog<
-  PageDesignKnowledgeFunctionParameterRow,
-  PageDesignKnowledgeFunctionCapabilityRow
-> {
-  constructor() {
-    super(PAGE_DESIGN_KNOWLEDGE_FUNCTION_PARAMETER_TABLE, PAGE_DESIGN_KNOWLEDGE_FUNCTION_CAPABILITY_TABLE)
-  }
+export function validateKnowledgeParams(functionId: string, params: unknown): string | null {
+  const row = KNOWLEDGE_CATALOG_ROWS.find((r) => r.functionId === functionId)
+  if (!row) return `未知 ${functionId} 函数`
+  const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
+  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
 }

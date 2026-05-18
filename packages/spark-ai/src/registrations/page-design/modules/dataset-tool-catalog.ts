@@ -1,10 +1,4 @@
-import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { FunctionFailureMode, LlmJsonObject, LlmParameterSchemaRoot } from '../../../core'
-import {
-  createPageDesignCapabilityRow,
-  type PageDesignFunctionRuntimeBinding,
-  PageDesignToolCatalog,
-} from './tool-catalog'
+import { LlmParamsValidator, type AiFunctionRegistration, type FunctionFailureMode } from '../../../core'
 import {
   anySchema,
   arraySchema,
@@ -17,60 +11,9 @@ import {
   stringSchema,
 } from './json-schema-helpers'
 
-type MethodKey<T> = Extract<{
-  [K in keyof T]-?: T[K] extends (...args: infer _Args) => unknown ? K : never
-}[keyof T], string>
-type DataSetCrudToolMethodKey = MethodKey<DataSetCrudTool>
-  | 'getCanUndo'
-  | 'getCanRedo'
-  | 'getHistoryCursor'
-  | 'listAggregates'
-  | 'getAggregate'
-  | 'addAggregate'
-  | 'updateAggregate'
-  | 'removeAggregate'
-  | 'getComputeExpression'
-  | 'setComputeExpression'
-  | 'clearComputeExpression'
-
 export type DatasetCrudToolFunctionFailureMode = FunctionFailureMode
-export type DatasetCrudToolFunctionTarget =
-  | 'dataset'
-  | 'table'
-  | 'column'
-  | 'view'
-  | 'row'
-  | 'relation'
-  | 'dependency'
 export type DatasetCrudToolFunctionId = string
-type DatasetCrudToolFunctionBaseFields = {
-  functionId: DatasetCrudToolFunctionId
-  type: 'describe' | 'request'
-  description: string
-  paramsSchema: LlmParameterSchemaRoot
-  resultSchema: LlmJsonObject
-  example: LlmJsonObject
-  usageRules: readonly string[]
-}
 
-export type DatasetCrudToolFunctionParameterRow = DatasetCrudToolFunctionBaseFields & {
-  failureModes: readonly DatasetCrudToolFunctionFailureMode[]
-  target: DatasetCrudToolFunctionTarget
-  crudToolMethod: DataSetCrudToolMethodKey
-  runtimeBinding: PageDesignFunctionRuntimeBinding
-  runtimeRegistration: 'registered'
-}
-export type DatasetCrudToolFunctionCapabilityRow = Pick<
-  DatasetCrudToolFunctionParameterRow,
-  'functionId' | 'type' | 'target' | 'crudToolMethod' | 'description'
-> & {
-  integrationStatus: 'runtime-wired'
-  paramsRef: string
-  rules?: readonly string[]
-  failureCodes?: readonly string[]
-  params?: LlmParameterSchemaRoot
-  example?: LlmJsonObject
-}
 const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请传 {} 或留空。')
 const TABLE_NAME_PARAM = stringSchema('表名')
 const VIEW_ID_PARAM = stringSchema('视图 ID；省略时默认 default')
@@ -342,38 +285,9 @@ const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.ge
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
 const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用当前 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
 
-type DatasetCrudToolFunctionRowWithoutType = Omit<DatasetCrudToolFunctionParameterRow, 'type' | 'runtimeBinding' | 'runtimeRegistration'>
-
-const defineDescribeRow = (row: DatasetCrudToolFunctionRowWithoutType): DatasetCrudToolFunctionParameterRow => ({
-  type: 'describe',
-  runtimeBinding: {
-    kind: 'page-design-service',
-    method: 'useDatasetMethod',
-    targetMethod: row.crudToolMethod,
-  },
-  runtimeRegistration: 'registered',
-  ...row,
-})
-
-const defineRequestRow = (row: DatasetCrudToolFunctionRowWithoutType): DatasetCrudToolFunctionParameterRow => ({
-  type: 'request',
-  runtimeBinding: {
-    kind: 'page-design-service',
-    method: 'useDatasetMethod',
-    targetMethod: row.crudToolMethod,
-  },
-  runtimeRegistration: 'registered',
-  ...row,
-})
-
-function toCapabilityRow(row: DatasetCrudToolFunctionParameterRow): DatasetCrudToolFunctionCapabilityRow {
-  return createPageDesignCapabilityRow(row, 'runtime-wired', { crudToolMethod: row.crudToolMethod })
-}
-const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
-  defineDescribeRow({
+export const DATASET_CATALOG_ROWS = [
+  {
     functionId: 'export',
-    target: 'dataset',
-    crudToolMethod: 'toJson',
     description: '导出当前 DataSet 元数据快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -386,11 +300,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'canUndo',
-    target: 'dataset',
-    crudToolMethod: 'getCanUndo',
     description: '读取当前历史栈是否可撤销',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -402,11 +314,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'canRedo',
-    target: 'dataset',
-    crudToolMethod: 'getCanRedo',
     description: '读取当前历史栈是否可重做',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -418,11 +328,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'historyCursor',
-    target: 'dataset',
-    crudToolMethod: 'getHistoryCursor',
     description: '读取当前历史游标位置',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -434,11 +342,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'undo',
-    target: 'dataset',
-    crudToolMethod: 'undo',
     description: '撤销最近一次写操作快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -456,11 +362,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查返回值；若为 false，先执行至少一次写操作，或跳过 undo。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'redo',
-    target: 'dataset',
-    crudToolMethod: 'redo',
     description: '重做最近一次被撤销的写操作快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -478,11 +382,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查返回值；若为 false，先执行 undo 产生可重做快照，或跳过 redo。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'clearHistory',
-    target: 'dataset',
-    crudToolMethod: 'clearHistory',
     description: '清空历史栈并以当前状态重建基线快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -494,11 +396,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listTables',
-    target: 'dataset',
-    crudToolMethod: 'listTables',
     description: '列出当前 DataSet 的全部数据表',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -510,11 +410,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getTable',
-    target: 'table',
-    crudToolMethod: 'getTable',
     description: '获取指定数据表',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -530,11 +428,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listColumns',
-    target: 'column',
-    crudToolMethod: 'listColumns',
     description: '列出指定表的全部列定义',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -556,11 +452,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先确认表名，或先执行 dataset.listTables。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getColumn',
-    target: 'column',
-    crudToolMethod: 'getColumn',
     description: '获取指定表中的单个列定义',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -584,11 +478,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先确认表名，或先执行 dataset.listTables。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createColumn',
-    target: 'column',
-    crudToolMethod: 'createColumn',
     description: '向指定表追加一列',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -618,11 +510,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查 column.name、column.type 与现有 schema。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateColumn',
-    target: 'column',
-    crudToolMethod: 'updateColumn',
     description: '更新指定列定义',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -649,11 +539,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getColumn 或 dataset.listColumns。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'renameColumn',
-    target: 'column',
-    crudToolMethod: 'renameColumn',
     description: '重命名指定列，并同步更新该表视图、静态 rows 与相关关系引用',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -690,11 +578,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '换一个未占用的新列名，或先清理冲突列。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteColumn',
-    target: 'column',
-    crudToolMethod: 'deleteColumn',
     description: '删除指定列',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -718,11 +604,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getColumn 或 dataset.listColumns。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createTable',
-    target: 'table',
-    crudToolMethod: 'createTable',
     description: '创建数据表，并按需初始化资源语义、API、CRUD 配置和视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -766,11 +650,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先缩小到最小可用 schema，再逐步补齐配置。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateTable',
-    target: 'table',
-    crudToolMethod: 'updateTable',
     description: '更新数据表结构、资源语义及运行配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -815,11 +697,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '拆分成多个小更新动作，逐步定位失败点。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'renameTable',
-    target: 'table',
-    crudToolMethod: 'renameTable',
     description: '重命名数据表，并同步更新视图、关系、依赖与布局引用',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -849,11 +729,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '换一个未占用的新表名，或先处理冲突表。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteTable',
-    target: 'table',
-    crudToolMethod: 'deleteTable',
     description: '删除指定数据表',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -875,11 +753,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先删除关系和依赖，再删除表。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listViews',
-    target: 'view',
-    crudToolMethod: 'listViews',
     description: '列出指定表下的全部视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -901,11 +777,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listTables。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getView',
-    target: 'view',
-    crudToolMethod: 'getView',
     description: '获取指定视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -926,11 +800,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createView',
-    target: 'view',
-    crudToolMethod: 'createView',
     description: '创建一个非 default 视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -969,11 +841,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '改用 dataset.updateView 更新 default 视图。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateView',
-    target: 'view',
-    crudToolMethod: 'updateView',
     description: '更新指定视图的元数据配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1015,11 +885,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listViews 或 dataset.createView。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteView',
-    target: 'view',
-    crudToolMethod: 'deleteView',
     description: '删除指定视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1043,11 +911,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '保留 default 视图，仅删除命名视图。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listRows',
-    target: 'row',
-    crudToolMethod: 'listRows',
     description: '列出指定视图当前持有的全部行',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1072,11 +938,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getView 或 dataset.createView。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getRow',
-    target: 'row',
-    crudToolMethod: 'getRow',
     description: '按主键查找一条行数据，支持树形 children 递归扫描',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1097,11 +961,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createRow',
-    target: 'row',
-    crudToolMethod: 'createRow',
     description: '在指定视图中创建一条新行',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1129,11 +991,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查 data 是否满足列定义与主键约束。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createRows',
-    target: 'row',
-    crudToolMethod: 'createRows',
     description: '批量创建多条行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1164,11 +1024,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查 result.data.results 明细，定位失败记录并重试。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateRow',
-    target: 'row',
-    crudToolMethod: 'updateRow',
     description: '更新指定主键的行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1198,11 +1056,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getRow 确认目标主键可命中。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateRows',
-    target: 'row',
-    crudToolMethod: 'updateRows',
     description: '批量更新多条行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1236,11 +1092,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查 result.data.results 明细，先确认每条 id 均可命中。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteRow',
-    target: 'row',
-    crudToolMethod: 'deleteRow',
     description: '删除指定主键的行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1267,11 +1121,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getRow 确认目标主键可命中。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteRows',
-    target: 'row',
-    crudToolMethod: 'deleteRows',
     description: '批量删除多条行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1298,11 +1150,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查 result.data.results 明细，定位不存在或删除失败的 id。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listRelations',
-    target: 'relation',
-    crudToolMethod: 'listRelations',
     description: '列出 DataSet 中的表关系，可按 parentTable 或 childTable 过滤',
     paramsSchema: paramsSchema({
       parentTable: stringSchema('可选父表过滤条件'),
@@ -1319,11 +1169,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getRelation',
-    target: 'relation',
-    crudToolMethod: 'getRelation',
     description: '获取单条表关系；命中多条关系时要求字段级消歧',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1351,11 +1199,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '补充 parentField 与 childField。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createRelation',
-    target: 'relation',
-    crudToolMethod: 'createRelation',
     description: '创建一条表关系',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1384,11 +1230,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先核对 schema，再创建关系。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateRelation',
-    target: 'relation',
-    crudToolMethod: 'updateRelation',
     description: '更新一条表关系',
     paramsSchema: paramsSchema({
       selector: RELATION_SELECTOR_SCHEMA,
@@ -1413,11 +1257,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listRelations 或 dataset.getRelation。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteRelation',
-    target: 'relation',
-    crudToolMethod: 'deleteRelation',
     description: '删除一条表关系（单一签名：关系选择器）',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1447,11 +1289,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '改用 selector，并补 parentField 与 childField。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listDependencies',
-    target: 'dependency',
-    crudToolMethod: 'listDependencies',
     description: '列出 DataSet 中的视图依赖，可按 parentTable 或 childTable 过滤',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1468,11 +1308,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getDependency',
-    target: 'dependency',
-    crudToolMethod: 'getDependency',
     description: '获取一条视图依赖',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1490,11 +1328,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
       RUNTIME_WIRED_RULE,
     ],
     failureModes: [],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'createDependency',
-    target: 'dependency',
-    crudToolMethod: 'createDependency',
     description: '创建一条视图依赖',
     paramsSchema: paramsSchema({
       dependency: VIEW_DEPENDENCY_SCHEMA,
@@ -1521,11 +1357,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先确认 parentTable / childTable 与 tableRelations 中的父子表一致。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateDependency',
-    target: 'dependency',
-    crudToolMethod: 'updateDependency',
     description: '更新一条视图依赖',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1553,11 +1387,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getDependency，或确认 parentTable / childTable 后调用 dataset.createDependency。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'deleteDependency',
-    target: 'dependency',
-    crudToolMethod: 'deleteDependency',
     description: '删除一条视图依赖',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1581,11 +1413,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.getDependency 确认 parentTable / childTable。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'listAggregates',
-    target: 'view',
-    crudToolMethod: 'listAggregates',
     description: '列出指定视图当前的全部聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1612,11 +1442,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listViews 确认视图存在。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getAggregate',
-    target: 'view',
-    crudToolMethod: 'getAggregate',
     description: '获取指定视图中单条聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1642,11 +1470,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listViews 确认视图存在。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'addAggregate',
-    target: 'view',
-    crudToolMethod: 'addAggregate',
     description: '向指定视图新增一条聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1684,11 +1510,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listColumns 确认字段存在，或补充正确 field 值。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'updateAggregate',
-    target: 'view',
-    crudToolMethod: 'updateAggregate',
     description: '更新指定视图中一条已有聚合配置（浅合并 updates）',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1729,11 +1553,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listColumns 确认字段存在。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'removeAggregate',
-    target: 'view',
-    crudToolMethod: 'removeAggregate',
     description: '删除指定视图中一条聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1760,11 +1582,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listAggregates 确认 key 存在。',
       },
     ],
-  }),
-  defineDescribeRow({
+  },
+  {
     functionId: 'getComputeExpression',
-    target: 'column',
-    crudToolMethod: 'getComputeExpression',
     description: '获取指定列的计算表达式字符串',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1793,11 +1613,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listColumns 确认列存在。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'setComputeExpression',
-    target: 'column',
-    crudToolMethod: 'setComputeExpression',
     description: '设置（或替换）指定列的计算表达式；设置后自动重编译并对现有行立即重算',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1877,11 +1695,9 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '检查括号匹配、字段名拼写、子表名格式；多语句体须确保每条路径都有 return。',
       },
     ],
-  }),
-  defineRequestRow({
+  },
+  {
     functionId: 'clearComputeExpression',
-    target: 'column',
-    crudToolMethod: 'clearComputeExpression',
     description: '移除指定列的计算表达式，恢复为普通列（值保留，但不再重算）',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1910,16 +1726,12 @@ const DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE = [
         fix: '先执行 dataset.listColumns 确认列存在。',
       },
     ],
-  }),
-] as const satisfies readonly DatasetCrudToolFunctionParameterRow[]
-const DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE: readonly DatasetCrudToolFunctionCapabilityRow[] =
-  DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE.map(toCapabilityRow)
+  },
+] as const satisfies readonly AiFunctionRegistration[]
 
-export class PageDesignDatasetCatalog extends PageDesignToolCatalog<
-  DatasetCrudToolFunctionParameterRow,
-  DatasetCrudToolFunctionCapabilityRow
-> {
-  constructor() {
-    super(DATASET_CRUD_TOOL_FUNCTIONS_PARAMETER_TABLE, DATASET_CRUD_TOOL_FUNCTIONS_CAPABILITY_TABLE)
-  }
+export function validateDatasetParams(functionId: string, params: unknown): string | null {
+  const row = DATASET_CATALOG_ROWS.find((r) => r.functionId === functionId)
+  if (!row) return `未知 ${functionId} 函数`
+  const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
+  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
 }

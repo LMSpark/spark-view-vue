@@ -4,8 +4,6 @@ import {
   type AiBusinessRegistration,
   type AiBusinessRegistrationData,
   type AiBusinessRegistrationStoreSnapshot,
-  type AiRegisteredBusinessApi,
-  type AiKnowledgeProjection,
   type AiModuleRegistration,
   type AiModuleRegistrationData,
   type AiModuleRegistrationStoreSnapshot,
@@ -20,6 +18,8 @@ import {
   type AiRuntimeSessionRecord,
   type AiRuntimeStartSessionResult,
   type AiRuntimeStopSessionResult,
+  type AiKnowledgeProjection,
+  type AiRegisteredBusinessApi,
   type FunctionExecutionContext,
   type ParameterPayloadProvider,
 } from '../../core'
@@ -30,23 +30,11 @@ import {
   type PageDesignEditHost,
   type PageDesignServiceContext,
 } from '@spark-view/spark-page-config'
-import { PageDesignDatasetCatalog } from './modules/dataset-tool-catalog'
-import { PageDesignLifecycleCatalog } from './modules/lifecycle-tool-catalog'
-import { PageDesignNodeTreeCatalog } from './modules/node-tree-tool-catalog'
-import { PageDesignTextModelCatalog } from './modules/text-model-tool-catalog'
-import { PageDesignKnowledgeCatalog } from './modules/knowledge-tool-catalog'
-import type {
-  PageDesignFunctionCatalogRow,
-  PageDesignKnowledgeRuntimeBinding,
-  PageDesignServiceRuntimeBinding,
-} from './modules/tool-catalog'
-import {
-  PAGE_DESIGN_DATASET_MODULE_PROMPT,
-  PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT,
-  PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT,
-  PAGE_DESIGN_NODE_TREE_MODULE_PROMPT,
-  PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT,
-} from './prompts/module-prompts'
+import { DATASET_CATALOG_ROWS, validateDatasetParams } from './modules/dataset-tool-catalog'
+import { LIFECYCLE_CATALOG_ROWS, validateLifecycleParams } from './modules/lifecycle-tool-catalog'
+import { NODE_TREE_CATALOG_ROWS, validateNodeTreeParams } from './modules/node-tree-tool-catalog'
+import { TEXT_MODEL_CATALOG_ROWS, validateTextModelParams } from './modules/text-model-tool-catalog'
+import { KNOWLEDGE_CATALOG_ROWS, validateKnowledgeParams } from './modules/knowledge-tool-catalog'
 import {
   SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
   SPARK_COMPONENT_PAYLOAD_REF,
@@ -101,25 +89,12 @@ export function assertPageDesignContext(context: { readonly moduleId: string }):
   }
 }
 
-type PageDesignFunctionDefinition<TModuleId extends PageDesignModuleId> = AiFunctionRegistration & {
-  readonly moduleId: TModuleId
-  validate?(args: unknown, context: FunctionExecutionContext): string | null
-  apply(args: unknown, context: FunctionExecutionContext): object | AiRuntimeFunctionCallResult<unknown> | Promise<object | AiRuntimeFunctionCallResult<unknown>>
-}
+type PageDesignFunctionApply = (args: unknown, context: FunctionExecutionContext) => object | AiRuntimeFunctionCallResult<unknown> | Promise<object | AiRuntimeFunctionCallResult<unknown>>
 
-type PageDesignFunctionHandler<TModuleId extends PageDesignModuleId> = {
+interface PageDesignFunctionHandler<_TModuleId extends PageDesignModuleId> {
   readonly functionId: string
   validate?: (args: unknown, context: FunctionExecutionContext) => string | null
-  apply: PageDesignFunctionDefinition<TModuleId>['apply']
-}
-
-type PageDesignFunctionApplyResult =
-  | object
-  | AiRuntimeFunctionCallResult<unknown>
-  | Promise<object | AiRuntimeFunctionCallResult<unknown>>
-
-type PageDesignCatalogLike = {
-  validateParams(functionId: string, params: unknown): string | null
+  apply: PageDesignFunctionApply
 }
 
 interface PageDesignFunctionBindingRuntime {
@@ -128,120 +103,17 @@ interface PageDesignFunctionBindingRuntime {
   readonly payloadRef: string
 }
 
-interface PageDesignBindingApplyInput {
-  readonly row: PageDesignFunctionCatalogRow
-  readonly args: unknown
-  readonly context: FunctionExecutionContext
-  readonly runtime: PageDesignFunctionBindingRuntime
-}
-
-interface PageDesignServiceBindingApplyInput extends PageDesignBindingApplyInput {
-  readonly binding: PageDesignServiceRuntimeBinding
-}
-
-interface PageDesignKnowledgeBindingApplyInput extends PageDesignBindingApplyInput {
-  readonly binding: PageDesignKnowledgeRuntimeBinding
-}
-
-interface PageDesignModuleFactoryOptions<TModuleId extends PageDesignModuleId> {
-  moduleId: TModuleId
-  name: string
-  description: string
-  prompt: string
-  catalogRows: readonly PageDesignFunctionCatalogRow[]
-  getRuntimeHandlers: () => ReadonlyArray<PageDesignFunctionHandler<TModuleId>>
-}
-
-function createFunctionDefinitionsFromCatalog<TModuleId extends PageDesignModuleId>(
-  moduleId: TModuleId,
-  rows: readonly PageDesignFunctionCatalogRow[],
-  serviceHandlers: ReadonlyArray<PageDesignFunctionHandler<TModuleId>>,
-): ReadonlyArray<PageDesignFunctionDefinition<TModuleId>> {
-  const handlerIndex = new Map(serviceHandlers.map((handler) => [handler.functionId, handler]))
-  const definitions = rows.map((row) => {
-    const serviceHandler = handlerIndex.get(row.functionId)
-    if (serviceHandler === undefined) {
-      throw new Error(`Missing service handler for ${moduleId}.${row.functionId}`)
-    }
-
-    return {
-      moduleId,
-      functionId: row.functionId,
-      description: row.description,
-      paramsSchema: row.paramsSchema,
-      resultSchema: row.resultSchema,
-      usageRules: row.usageRules,
-      failureModes: row.failureModes,
-      ...(serviceHandler.validate === undefined ? {} : { validate: serviceHandler.validate }),
-      apply: serviceHandler.apply,
-    }
-  })
-
-  if (definitions.length !== serviceHandlers.length) {
-    const definedIds = new Set(rows.map((row) => row.functionId))
-    const extraHandlers = serviceHandlers
-      .map((handler) => handler.functionId)
-      .filter((functionId) => !definedIds.has(functionId))
-    if (extraHandlers.length > 0) {
-      throw new Error(`Unregistered service handlers for ${moduleId}: ${extraHandlers.join(', ')}`)
-    }
-  }
-
-  return definitions
-}
-
-const PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER: ParameterPayloadProvider = {
-  payloadRef: SPARK_COMPONENT_PAYLOAD_REF,
-  description: SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
-  queryPayloads: queryPageDesignComponentPayloads,
-  guidePayload: guidePageDesignComponentPayload,
+interface PageDesignServiceMethodBinding {
+  readonly serviceLabel: string
+  readonly methodName: string
+  readonly mutates: boolean
+  readonly fixHint: string
 }
 
 function toObject(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : null
-}
-
-const LIFECYCLE_CATALOG = new PageDesignLifecycleCatalog()
-const TEXT_MODEL_CATALOG = new PageDesignTextModelCatalog()
-const KNOWLEDGE_CATALOG = new PageDesignKnowledgeCatalog()
-const NODE_TREE_CATALOG = new PageDesignNodeTreeCatalog()
-const DATASET_CATALOG = new PageDesignDatasetCatalog()
-
-class PageDesignModuleRegistration<TModuleId extends PageDesignModuleId> extends AiModuleRegistrationBase {
-  constructor(options: PageDesignModuleFactoryOptions<TModuleId>) {
-    super(options.moduleId, options.name, options.description, options.prompt)
-    this.catalogRows = options.catalogRows
-    this.getRuntimeHandlers = options.getRuntimeHandlers
-  }
-
-  private readonly catalogRows: readonly PageDesignFunctionCatalogRow[]
-
-  private readonly getRuntimeHandlers: () => ReadonlyArray<PageDesignFunctionHandler<TModuleId>>
-
-  override getFunctions(): ReadonlyArray<PageDesignFunctionDefinition<TModuleId>> {
-    return createFunctionDefinitionsFromCatalog(this.moduleId as TModuleId, this.catalogRows, this.getRuntimeHandlers())
-  }
-}
-
-function toServiceMethodBinding(
-  row: PageDesignFunctionCatalogRow,
-  methodName: string,
-): Parameters<PageDesignService['useNodeTreeMethod']>[2] {
-  const parts = [`参数格式: ${JSON.stringify(row.paramsSchema)}`]
-  if (Object.keys(row.example).length > 0) {
-    parts.push(`示例: ${JSON.stringify(row.example)}`)
-  }
-  if (row.usageRules.length > 0) {
-    parts.push(`关键规则: ${row.usageRules.join('；')}`)
-  }
-  return {
-    serviceLabel: row.functionId,
-    methodName,
-    mutates: row.type === 'request',
-    fixHint: parts.join('；'),
-  }
 }
 
 function toServiceContext(context: PageDesignRuntimeContext | FunctionExecutionContext): PageDesignServiceContext {
@@ -258,118 +130,179 @@ function toKnowledgeScope(context: FunctionExecutionContext): { moduleId: string
   }
 }
 
-function getTextModelFileKey(binding: PageDesignServiceRuntimeBinding): 'script' | 'style' {
-  if ('fileKey' in binding) return binding.fileKey
-  throw new Error(`Service binding ${binding.method} must declare fileKey`)
-}
-
-function getTargetMethod(binding: PageDesignServiceRuntimeBinding): string {
-  if ('targetMethod' in binding) return binding.targetMethod
-  throw new Error(`Service binding ${binding.method} must declare targetMethod`)
-}
-
-type PageDesignServiceBindingApplier = (input: PageDesignServiceBindingApplyInput) => PageDesignFunctionApplyResult
-type PageDesignKnowledgeBindingApplier = (input: PageDesignKnowledgeBindingApplyInput) => PageDesignFunctionApplyResult
-
-const PAGE_DESIGN_SERVICE_BINDING_APPLIERS: Record<PageDesignServiceRuntimeBinding['method'], PageDesignServiceBindingApplier> = {
-  bootstrap: ({ runtime, context }) => runtime.service.bootstrap(toServiceContext(context)),
-  describeProgress: ({ runtime, context }) => runtime.service.describeProgress(toServiceContext(context)),
-  readTextModel: ({ runtime, binding, context }) => runtime.service.readTextModel(
-    toServiceContext(context),
-    getTextModelFileKey(binding),
-  ),
-  writeTextModel: ({ runtime, binding, args, context }) => runtime.service.writeTextModel(
-    toServiceContext(context),
-    getTextModelFileKey(binding),
-    (args as { content: string }).content,
-  ),
-  useNodeTreeMethod: ({ runtime, binding, row, args, context }) => runtime.service.useNodeTreeMethod(
-    toServiceContext(context),
-    args,
-    toServiceMethodBinding(row, getTargetMethod(binding)),
-  ),
-  useDatasetMethod: ({ runtime, binding, row, args, context }) => runtime.service.useDatasetMethod(
-    toServiceContext(context),
-    args,
-    toServiceMethodBinding(row, getTargetMethod(binding)),
-  ),
-}
-
-const PAGE_DESIGN_KNOWLEDGE_BINDING_APPLIERS: Record<PageDesignKnowledgeRuntimeBinding['method'], PageDesignKnowledgeBindingApplier> = {
-  queryFunctions: ({ runtime, args, context }) => {
-    const input = toObject(args) ?? {}
-    const items = runtime.knowledge.queryFunctions(toKnowledgeScope(context), {
-      ...(typeof input['modulePath'] === 'string' ? { modulePath: input['modulePath'] } : {}),
-      ...(typeof input['moduleId'] === 'string' ? { moduleId: input['moduleId'] } : {}),
-      ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
-    })
-    return { ok: true, data: { items }, summary: `已返回 ${items.length} 个函数目录项` }
-  },
-  queryModules: ({ runtime, context }) => {
-    const items = runtime.knowledge.queryModules(toKnowledgeScope(context))
-    return { ok: true, data: { items }, summary: `已返回 ${items.length} 个模块目录项` }
-  },
-  guideFunction: ({ runtime, args, context }) => {
-    const action = (args as { action: string }).action
-    const guide = runtime.knowledge.guideFunction(toKnowledgeScope(context), action)
-    if (guide === null) {
-      return pageDesignServiceFailure(
-        'FUNCTION_NOT_FOUND',
-        `函数 "${action}" 不在当前会话函数目录中`,
-        '先调用 queryFunctions 确认 action，再重试。',
-      )
-    }
-    return { ok: true, data: { guide }, summary: `${action} 函数指南已返回` }
-  },
-  queryPayloads: ({ runtime, args }) => {
-    const input = toObject(args) ?? {}
-    const filter = {
-      ...(typeof input['category'] === 'string' ? { category: input['category'] } : {}),
-      ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
-      ...(typeof input['expression'] === 'string' ? { expression: input['expression'] } : {}),
-      ...(typeof input['limit'] === 'number' ? { limit: input['limit'] } : {}),
-    }
-    const items = runtime.knowledge.queryPayloads(runtime.payloadRef, filter)
-    return { ok: true, data: { payloadRef: runtime.payloadRef, items }, summary: `已返回 ${items.length} 个组件目录摘要` }
-  },
-  guidePayload: ({ runtime, args }) => {
-    const key = (args as { key: string }).key
-    const guide = runtime.knowledge.guidePayload(runtime.payloadRef, key)
-    if (guide === null) {
-      return pageDesignServiceFailure(
-        'PAYLOAD_NOT_FOUND',
-        `组件 "${key}" 不在 ${runtime.payloadRef} 参数荷载目录中`,
-        '先调用 queryPayloads 选择可用组件 type。',
-      )
-    }
-    return { ok: true, data: { guide }, summary: `${key} 组件参数荷载指南已返回` }
-  },
-}
-
-function applyRuntimeBinding(input: PageDesignBindingApplyInput): PageDesignFunctionApplyResult {
-  const { runtimeBinding } = input.row
-  if (runtimeBinding.kind === 'page-design-service') {
-    return PAGE_DESIGN_SERVICE_BINDING_APPLIERS[runtimeBinding.method]({
-      ...input,
-      binding: runtimeBinding,
-    })
+function createServiceMethodBinding(row: AiFunctionRegistration, methodName: string, mutates: boolean): PageDesignServiceMethodBinding {
+  const parts = [`参数格式: ${JSON.stringify(row.paramsSchema)}`]
+  const example = row.example ?? {}
+  if (Object.keys(example).length > 0) {
+    parts.push(`示例: ${JSON.stringify(example)}`)
   }
-  return PAGE_DESIGN_KNOWLEDGE_BINDING_APPLIERS[runtimeBinding.method]({
-    ...input,
-    binding: runtimeBinding,
-  })
+  if (row.usageRules && row.usageRules.length > 0) {
+    parts.push(`关键规则: ${row.usageRules.join('；')}`)
+  }
+  return {
+    serviceLabel: row.functionId,
+    methodName,
+    mutates,
+    fixHint: parts.join('；'),
+  }
 }
 
-function createFunctionHandlers<TModuleId extends PageDesignModuleId>(
-  catalog: PageDesignCatalogLike,
-  rows: readonly PageDesignFunctionCatalogRow[],
-  runtime: PageDesignFunctionBindingRuntime,
-): ReadonlyArray<PageDesignFunctionHandler<TModuleId>> {
-  return rows.map((row) => ({
+// =========================================================
+// Lifecycle handler factory
+// =========================================================
+function createLifecycleHandlers(
+  service: PageDesignService,
+): ReadonlyArray<PageDesignFunctionHandler<typeof LIFECYCLE_MODULE_ID>> {
+  return LIFECYCLE_CATALOG_ROWS.map((row) => ({
     functionId: row.functionId,
-    validate: (args) => catalog.validateParams(row.functionId, args),
-    apply: (args, context) => applyRuntimeBinding({ row, args, context, runtime }),
+    validate: (args) => validateLifecycleParams(row.functionId, args),
+    apply: (_args, context) => {
+      switch (row.functionId) {
+        case 'bootstrap':
+          return service.bootstrap(toServiceContext(context))
+        case 'describeProgress':
+          return service.describeProgress(toServiceContext(context))
+      }
+    },
   }))
+}
+
+// =========================================================
+// TextModel handler factory
+// =========================================================
+function createTextModelHandlers(
+  service: PageDesignService,
+): ReadonlyArray<PageDesignFunctionHandler<typeof TEXT_MODEL_MODULE_ID>> {
+  return TEXT_MODEL_CATALOG_ROWS.map((row) => ({
+    functionId: row.functionId,
+    validate: (args) => validateTextModelParams(row.functionId, args),
+    apply: (args, context) => {
+      switch (row.functionId) {
+        case 'readScript':
+          return service.readTextModel(toServiceContext(context), 'script')
+        case 'writeScript':
+          return service.writeTextModel(toServiceContext(context), 'script', (args as { content: string }).content)
+        case 'readStyle':
+          return service.readTextModel(toServiceContext(context), 'style')
+        case 'writeStyle':
+          return service.writeTextModel(toServiceContext(context), 'style', (args as { content: string }).content)
+      }
+    },
+  }))
+}
+
+// =========================================================
+// Knowledge handler factory
+// =========================================================
+function createKnowledgeHandlers(
+  runtime: PageDesignFunctionBindingRuntime,
+): ReadonlyArray<PageDesignFunctionHandler<typeof KNOWLEDGE_MODULE_ID>> {
+  return KNOWLEDGE_CATALOG_ROWS.map((row) => ({
+    functionId: row.functionId,
+    validate: (args) => validateKnowledgeParams(row.functionId, args),
+    apply: (args, context) => {
+      switch (row.functionId) {
+        case 'queryFunctions': {
+          const input = toObject(args) ?? {}
+          const items = runtime.knowledge.queryFunctions(toKnowledgeScope(context), {
+            ...(typeof input['modulePath'] === 'string' ? { modulePath: input['modulePath'] } : {}),
+            ...(typeof input['moduleId'] === 'string' ? { moduleId: input['moduleId'] } : {}),
+            ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
+          })
+          return { ok: true, data: { items }, summary: `已返回 ${items.length} 个函数目录项` }
+        }
+        case 'queryModules': {
+          const items = runtime.knowledge.queryModules(toKnowledgeScope(context))
+          return { ok: true, data: { items }, summary: `已返回 ${items.length} 个模块目录项` }
+        }
+        case 'guideFunction': {
+          const action = (args as { action: string }).action
+          const guide = runtime.knowledge.guideFunction(toKnowledgeScope(context), action)
+          if (guide === null) {
+            return pageDesignServiceFailure(
+              'FUNCTION_NOT_FOUND',
+              `函数 "${action}" 不在当前会话函数目录中`,
+              '先调用 queryFunctions 确认 action，再重试。',
+            )
+          }
+          return { ok: true, data: { guide }, summary: `${action} 函数指南已返回` }
+        }
+        case 'queryPayloads': {
+          const input = toObject(args) ?? {}
+          const filter = {
+            ...(typeof input['category'] === 'string' ? { category: input['category'] } : {}),
+            ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
+            ...(typeof input['expression'] === 'string' ? { expression: input['expression'] } : {}),
+            ...(typeof input['limit'] === 'number' ? { limit: input['limit'] } : {}),
+          }
+          const items = runtime.knowledge.queryPayloads(runtime.payloadRef, filter)
+          return { ok: true, data: { payloadRef: runtime.payloadRef, items }, summary: `已返回 ${items.length} 个组件目录摘要` }
+        }
+        case 'guidePayload': {
+          const key = (args as { key: string }).key
+          const guide = runtime.knowledge.guidePayload(runtime.payloadRef, key)
+          if (guide === null) {
+            return pageDesignServiceFailure(
+              'PAYLOAD_NOT_FOUND',
+              `组件 "${key}" 不在 ${runtime.payloadRef} 参数荷载目录中`,
+              '先调用 queryPayloads 选择可用组件 type。',
+            )
+          }
+          return { ok: true, data: { guide }, summary: `${key} 组件参数荷载指南已返回` }
+        }
+      }
+    },
+  }))
+}
+
+// =========================================================
+// NodeTree handler factory
+// =========================================================
+function createNodeTreeHandlers(
+  service: PageDesignService,
+): ReadonlyArray<PageDesignFunctionHandler<typeof NODE_TREE_MODULE_ID>> {
+  return NODE_TREE_CATALOG_ROWS.map((row) => ({
+    functionId: row.functionId,
+    validate: (args) => validateNodeTreeParams(row.functionId, args),
+    apply: (args, context) => {
+      const methodBinding = createServiceMethodBinding(row, row.functionId, ['addNode', 'addNodes', 'moveNode', 'setProps', 'setPropsBatch', 'replaceNode', 'replaceNodes', 'removeNode', 'removeNodes'].includes(row.functionId))
+      return service.useNodeTreeMethod(toServiceContext(context), args, methodBinding)
+    },
+  }))
+}
+
+// =========================================================
+// Dataset handler factory
+// =========================================================
+function createDatasetHandlers(
+  service: PageDesignService,
+): ReadonlyArray<PageDesignFunctionHandler<typeof DATASET_MODULE_ID>> {
+  const mutates = new Set([
+    'undo', 'redo', 'clearHistory',
+    'createColumn', 'updateColumn', 'renameColumn', 'deleteColumn',
+    'createTable', 'updateTable', 'renameTable', 'deleteTable',
+    'createView', 'updateView', 'deleteView',
+    'createRow', 'createRows', 'updateRow', 'updateRows', 'deleteRow', 'deleteRows',
+    'createRelation', 'updateRelation', 'deleteRelation',
+    'createDependency', 'updateDependency', 'deleteDependency',
+    'addAggregate', 'updateAggregate', 'removeAggregate',
+    'setComputeExpression', 'clearComputeExpression',
+  ])
+  return DATASET_CATALOG_ROWS.map((row) => ({
+    functionId: row.functionId,
+    validate: (args) => validateDatasetParams(row.functionId, args),
+    apply: (args, context) => {
+      const methodBinding = createServiceMethodBinding(row, row.functionId, mutates.has(row.functionId))
+      return service.useDatasetMethod(toServiceContext(context), args, methodBinding)
+    },
+  }))
+}
+
+const PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER: ParameterPayloadProvider = {
+  payloadRef: SPARK_COMPONENT_PAYLOAD_REF,
+  description: SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
+  queryPayloads: queryPageDesignComponentPayloads,
+  guidePayload: guidePageDesignComponentPayload,
 }
 
 export class PageDesignModule implements AiBusinessRegistration {
@@ -401,6 +334,28 @@ export class PageDesignModule implements AiBusinessRegistration {
     }
   }
 
+  private createModule<TModuleId extends PageDesignModuleId>(
+    moduleId: TModuleId,
+    name: string,
+    description: string,
+    prompt: string,
+    handlers: ReadonlyArray<PageDesignFunctionHandler<TModuleId>>,
+  ): AiModuleRegistration {
+    return new (class extends AiModuleRegistrationBase {
+      constructor() { super(moduleId, name, description, prompt) }
+      override getFunctions(): ReadonlyArray<AiFunctionRegistration & { apply: PageDesignFunctionApply }> {
+        const allRows = [...LIFECYCLE_CATALOG_ROWS, ...TEXT_MODEL_CATALOG_ROWS, ...KNOWLEDGE_CATALOG_ROWS, ...NODE_TREE_CATALOG_ROWS, ...DATASET_CATALOG_ROWS] as readonly AiFunctionRegistration[]
+        return handlers.map((handler) => ({
+          functionId: handler.functionId,
+          description: allRows.find(r => r.functionId === handler.functionId)?.description ?? handler.functionId,
+          paramsSchema: allRows.find(r => r.functionId === handler.functionId)?.paramsSchema ?? { type: 'object', properties: {} },
+          ...(handler.validate === undefined ? {} : { validate: handler.validate }),
+          apply: handler.apply,
+        }))
+      }
+    })()
+  }
+
   constructor(options: PageDesignModuleOptions) {
     this.service = new PageDesignService({
       getEditHost: (context) => options.getEditToolHost({
@@ -409,67 +364,13 @@ export class PageDesignModule implements AiBusinessRegistration {
         moduleInstanceId: context.pageId,
       }),
     })
+    const runtime = this.getFunctionBindingRuntime()
     this.modules = [
-      new PageDesignModuleRegistration({
-        moduleId: LIFECYCLE_MODULE_ID,
-        name: 'Page Design Lifecycle',
-        description: '页面设计编辑运行态引导与进度查询。',
-        prompt: PAGE_DESIGN_LIFECYCLE_MODULE_PROMPT,
-        catalogRows: LIFECYCLE_CATALOG.parameterTable,
-        getRuntimeHandlers: () => createFunctionHandlers(
-          LIFECYCLE_CATALOG,
-          LIFECYCLE_CATALOG.parameterTable,
-          this.getFunctionBindingRuntime(),
-        ),
-      }),
-      new PageDesignModuleRegistration({
-        moduleId: TEXT_MODEL_MODULE_ID,
-        name: 'Page Design Text Model',
-        description: '当前页面 script.js/style.css live 文本模型读写。',
-        prompt: PAGE_DESIGN_TEXT_MODEL_MODULE_PROMPT,
-        catalogRows: TEXT_MODEL_CATALOG.parameterTable,
-        getRuntimeHandlers: () => createFunctionHandlers(
-          TEXT_MODEL_CATALOG,
-          TEXT_MODEL_CATALOG.parameterTable,
-          this.getFunctionBindingRuntime(),
-        ),
-      }),
-      new PageDesignModuleRegistration({
-        moduleId: KNOWLEDGE_MODULE_ID,
-        name: 'Page Design Knowledge',
-        description: '当前页面设计组件参数荷载知识查询。',
-        prompt: PAGE_DESIGN_KNOWLEDGE_MODULE_PROMPT,
-        catalogRows: KNOWLEDGE_CATALOG.parameterTable,
-        getRuntimeHandlers: () => createFunctionHandlers(
-          KNOWLEDGE_CATALOG,
-          KNOWLEDGE_CATALOG.parameterTable,
-          this.getFunctionBindingRuntime(),
-        ),
-      }),
-      new PageDesignModuleRegistration({
-        moduleId: NODE_TREE_MODULE_ID,
-        name: 'Page Design Node Tree',
-        description: '当前页面 SparkNodeTree/rule.json 结构读写。',
-        prompt: PAGE_DESIGN_NODE_TREE_MODULE_PROMPT,
-        catalogRows: NODE_TREE_CATALOG.parameterTable,
-        getRuntimeHandlers: () => createFunctionHandlers(
-          NODE_TREE_CATALOG,
-          NODE_TREE_CATALOG.parameterTable,
-          this.getFunctionBindingRuntime(),
-        ),
-      }),
-      new PageDesignModuleRegistration({
-        moduleId: DATASET_MODULE_ID,
-        name: 'Page Design DataSet',
-        description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
-        prompt: PAGE_DESIGN_DATASET_MODULE_PROMPT,
-        catalogRows: DATASET_CATALOG.parameterTable,
-        getRuntimeHandlers: () => createFunctionHandlers(
-          DATASET_CATALOG,
-          DATASET_CATALOG.parameterTable,
-          this.getFunctionBindingRuntime(),
-        ),
-      }),
+      this.createModule(LIFECYCLE_MODULE_ID, 'Page Design Lifecycle', '页面设计编辑运行态引导与进度查询。', '', createLifecycleHandlers(this.service)),
+      this.createModule(TEXT_MODEL_MODULE_ID, 'Page Design Text Model', '当前页面 script.js/style.css live 文本模型读写。', '', createTextModelHandlers(this.service)),
+      this.createModule(KNOWLEDGE_MODULE_ID, 'Page Design Knowledge', '当前页面设计组件参数荷载知识查询。', '', createKnowledgeHandlers(runtime)),
+      this.createModule(NODE_TREE_MODULE_ID, 'Page Design Node Tree', '当前页面 SparkNodeTree/rule.json 结构读写。', '', createNodeTreeHandlers(this.service)),
+      this.createModule(DATASET_MODULE_ID, 'Page Design DataSet', '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。', '', createDatasetHandlers(this.service)),
     ]
     this.ai = this.core.registerBusiness(this)
   }
@@ -562,10 +463,10 @@ export class PageDesignModule implements AiBusinessRegistration {
       args: options.args,
       ...(options.projection === undefined ? {} : { projection: options.projection }),
       validate: ({ functionRegistration, args, context }) => (
-        functionRegistration as PageDesignFunctionDefinition<PageDesignModuleId>
+        functionRegistration as AiFunctionRegistration & { validate?: (args: unknown, context: FunctionExecutionContext) => string | null }
       ).validate?.(args, context) ?? null,
       run: ({ functionRegistration, args, context }) => (
-        functionRegistration as PageDesignFunctionDefinition<PageDesignModuleId>
+        functionRegistration as AiFunctionRegistration & { apply: PageDesignFunctionApply }
       ).apply(args, context),
       normalizeResult: (value) => isPageDesignServiceResult(value)
         ? value
