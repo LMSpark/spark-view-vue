@@ -12,12 +12,10 @@ import type {
   AiRuntimeModuleId,
   AiRuntimeModuleInstanceId,
   AiRuntimeModulePath,
-} from './ai-host'
-import type {
   AiRuntimeFunctionCallFailure,
   AiRuntimeFunctionResultMessage,
   AiRuntimeKnowledgeProjection,
-} from './ai-host'
+} from '../internal/runtime-protocol'
 
 // ── 枚举类型 ──
 

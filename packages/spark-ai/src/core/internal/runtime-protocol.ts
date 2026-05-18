@@ -1,54 +1,19 @@
 /**
- * AI Host 交互协议。
+ * Core 内部运行时协议。
  *
- * Core 对外 API、注册 handle、会话生命周期通知、函数调用翻译与执行链路。
- * AI Host（上层应用）通过 `AiRuntimeApi` 注册业务/模块，
- * 通过 handle 的 `startSession` / `executeFunctionCall` 等方法驱动 AI 会话。
+ * 函数调用翻译/执行链路、知识投影子类型、API 接口等，
+ * app 层零消费的类型统一放在此处，避免 ai-host.ts 膨胀。
  */
 
-import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
-import type {
-  AiFunctionRegistration,
-  AiModuleRegistration,
-  IBusinessRegistration,
-  AiModuleInstanceParam,
-  AiModuleRegistrationStoreSnapshot,
-  IBusinessRegistrationStoreSnapshot,
-  IBusinessRegistrationData,
-  AiModuleRegistrationData,
-  FunctionFailureMode,
-  AiRuntimeModuleId,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeModulePath,
-  AiRuntimeFunctionId,
-} from './business-registration'
-import type {
-  AiRuntimeSessionRecord,
-  AiRuntimeHistoryEntry,
-  AiRuntimeMessageHistoryEntry,
-  AiRuntimeFunctionCallHistoryEntry,
-  AiRuntimeAppendMessageOptions,
-  AiRuntimeAppendFunctionCallOptions,
-  AiRuntimeRecordFunctionCallRequestOptions,
-  AiRuntimeCompleteFunctionCallOptions,
-  AiRuntimeStartSessionOptions,
-  AiRuntimeStartSessionResult,
-  AiRuntimeStopSessionOptions,
-  AiRuntimeStopSessionResult,
-} from './session-events'
+import type { LlmJsonObject, LlmParameterSchemaRoot } from '../protocol/parameter-schema'
+import type { AiModuleRegistration, AiFunctionRegistration, AiModuleInstanceParam, AiRuntimeModuleId, AiRuntimeModuleInstanceId, AiRuntimeModulePath, AiRuntimeFunctionId } from '../protocol/business-registration'
+import type { AiRuntimeSessionRecord, AiRuntimeHistoryEntry, AiRuntimeMessageHistoryEntry, AiRuntimeFunctionCallHistoryEntry } from '../protocol/session-events'
 
-// ── Re-export 基础 ID（business-registration 定义） ──
+export type { AiRuntimeModuleId, AiRuntimeModuleInstanceId, AiRuntimeModulePath, AiRuntimeFunctionId } from '../protocol/business-registration'
 
-export type {
-  AiRuntimeModuleId,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeModulePath,
-  AiRuntimeFunctionId,
-} from './business-registration'
+// ── Foundation ──
 
 export type AiRuntimeAction = string
-
-// ── 实例上下文 ──
 
 export interface AiRuntimeInstanceScope {
   readonly moduleId: AiRuntimeModuleId
@@ -85,7 +50,7 @@ export interface FunctionExecutionContext extends AiRuntimeInstanceScope {
   readonly activePath: AiRuntimeActivePathSnapshot
 }
 
-// ── 知识投影 ──
+// ── 知识投影子类型 ──
 
 export interface AiRuntimeFunctionContextParam {
   readonly modulePath: AiRuntimeModulePath
@@ -93,6 +58,8 @@ export interface AiRuntimeFunctionContextParam {
   readonly paramName: string
   readonly description: string
 }
+
+import type { FunctionFailureMode } from '../protocol/business-registration'
 
 export interface AiRuntimeFunctionExposure {
   readonly action: AiRuntimeAction
@@ -148,6 +115,13 @@ export interface AiRuntimeFunctionCallTranslation {
   readonly functionRegistration: AiFunctionRegistration
 }
 
+export interface AiRuntimeFunctionCallFailure {
+  readonly ok: false
+  readonly code: string
+  readonly msg: string
+  readonly fix: string
+}
+
 export type AiRuntimeFunctionCallTranslationResult =
   | { ok: true; translation: AiRuntimeFunctionCallTranslation }
   | AiRuntimeFunctionCallFailure
@@ -177,13 +151,6 @@ export interface AiRuntimeExecuteFunctionCallOptions extends AiRuntimeTranslateF
 }
 
 // ── 结果回传 ──
-
-export interface AiRuntimeFunctionCallFailure {
-  readonly ok: false
-  readonly code: string
-  readonly msg: string
-  readonly fix: string
-}
 
 export type AiRuntimeFunctionCallResult<TResult = unknown> =
   | { ok: true; data: TResult; summary: string }
@@ -244,14 +211,9 @@ export interface AiRuntimeApi {
   getKnowledgeProjection(): unknown
 }
 
-// ── Re-export 被 api 引用的类型（避免调用方再 import 其他文件） ──
+// ── 被 API 引用的 session-events 类型（避免调用方再 import） ──
 
-export type {
-  AiRuntimeSessionRecord,
-  AiRuntimeHistoryEntry,
-  AiRuntimeMessageHistoryEntry,
-  AiRuntimeFunctionCallHistoryEntry,
-  AiRuntimeHistoryEntryBase,
+import type {
   AiRuntimeAppendMessageOptions,
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeRecordFunctionCallRequestOptions,
@@ -260,27 +222,30 @@ export type {
   AiRuntimeStartSessionResult,
   AiRuntimeStopSessionOptions,
   AiRuntimeStopSessionResult,
-  AiRuntimeSessionLifecycleSnapshot,
-  AiRuntimeSessionStatus,
-  AiRuntimeMessageRole,
-  AiRuntimeMessageSource,
-  AiRuntimeFunctionCallHistoryStatus,
-} from './session-events'
+} from '../protocol/session-events'
+import type {
+  AiModuleRegistrationData,
+  IBusinessRegistration,
+  IBusinessRegistrationData,
+  IBusinessRegistrationStoreSnapshot,
+  AiModuleRegistrationStoreSnapshot,
+} from '../protocol/business-registration'
 
 export type {
-  AiFunctionRegistration,
+  AiRuntimeSessionRecord,
+  AiRuntimeHistoryEntry,
+  AiRuntimeMessageHistoryEntry,
+  AiRuntimeFunctionCallHistoryEntry,
+  AiRuntimeStartSessionResult,
+  AiRuntimeStopSessionResult,
+} from '../protocol/session-events'
+
+export type {
   AiModuleRegistration,
-  IBusinessRegistration,
-  IModuleRegistration,
+  AiFunctionRegistration,
   AiModuleRegistrationData,
+  IBusinessRegistration,
   IBusinessRegistrationData,
-  AiModuleRegistrationStoreModule,
-  AiFunctionRegistrationStoreFunction,
-  AiFunctionRegistrationUsageRule,
-  AiFunctionRegistrationFailureMode,
-  AiModuleRegistrationStoreSnapshot,
   IBusinessRegistrationStoreSnapshot,
-  AiModuleInstanceParam,
-  FunctionFailureMode,
-  ModulePromptProvider,
-} from './business-registration'
+  AiModuleRegistrationStoreSnapshot,
+} from '../protocol/business-registration'

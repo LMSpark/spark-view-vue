@@ -10,7 +10,7 @@
 import { computed, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
 import type { PageDesignEditHost, SparkNodeTree } from '@spark-view/spark-page-config'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { registerPageDesignEditHost } from '@/services/ai-host'
+import { registerPageDesignEditHost } from '@spark-view/spark-page-config'
 import { PAGE_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
 

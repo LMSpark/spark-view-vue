@@ -1,13 +1,15 @@
+/**
+ * 业务注册表。
+ */
+
 import type {
-  IBusinessRegistrationData,
+  AiHostBusinessRuntime,
+  AiHostRoutingCandidate,
   AiModuleRegistrationData,
-} from '@spark-view/spark-ai'
-import type {
-  AppAiBusinessRuntime,
-  AppAiRoutingCandidate,
+  IBusinessRegistrationData,
 } from './types'
 
-function collectFunctions(data: AiModuleRegistrationData): AppAiRoutingCandidate['functions'] {
+function collectFunctions(data: AiModuleRegistrationData): AiHostRoutingCandidate['functions'] {
   return [
     ...data.functions.map((fn) => ({
       functionId: fn.functionId,
@@ -17,7 +19,7 @@ function collectFunctions(data: AiModuleRegistrationData): AppAiRoutingCandidate
   ]
 }
 
-export function createRoutingCandidateFromRegistration(data: AiModuleRegistrationData): AppAiRoutingCandidate {
+export function createAiHostRoutingCandidateFromRegistration(data: AiModuleRegistrationData): AiHostRoutingCandidate {
   return {
     moduleId: data.moduleId,
     name: data.name,
@@ -27,7 +29,7 @@ export function createRoutingCandidateFromRegistration(data: AiModuleRegistratio
   }
 }
 
-export function createRoutingCandidateFromBusinessRegistration(data: IBusinessRegistrationData): AppAiRoutingCandidate {
+export function createAiHostRoutingCandidateFromBusiness(data: IBusinessRegistrationData): AiHostRoutingCandidate {
   return {
     moduleId: data.businessId,
     name: data.name,
@@ -45,30 +47,30 @@ export function createRoutingCandidateFromBusinessRegistration(data: IBusinessRe
   }
 }
 
-export class AppAiBusinessRegistry {
-  private readonly runtimes = new Map<string, AppAiBusinessRuntime>()
+export class AiHostBusinessRegistry {
+  private readonly runtimes = new Map<string, AiHostBusinessRuntime>()
 
-  register(runtime: AppAiBusinessRuntime): void {
+  register(runtime: AiHostBusinessRuntime): void {
     if (this.runtimes.has(runtime.moduleId)) {
-      throw new Error(`Duplicate APP AI business runtime: ${runtime.moduleId}`)
+      throw new Error(`Duplicate AI host business runtime: ${runtime.moduleId}`)
     }
     this.runtimes.set(runtime.moduleId, runtime)
   }
 
-  get(moduleId: string): AppAiBusinessRuntime | undefined {
+  get(moduleId: string): AiHostBusinessRuntime | undefined {
     return this.runtimes.get(moduleId)
   }
 
-  list(): readonly AppAiBusinessRuntime[] {
+  list(): readonly AiHostBusinessRuntime[] {
     return Array.from(this.runtimes.values())
   }
 
-  routingCandidates(): readonly AppAiRoutingCandidate[] {
+  routingCandidates(): readonly AiHostRoutingCandidate[] {
     return this.list().map((runtime) => {
       const businessData = runtime.getBusinessRegistrationData?.()
       return businessData === undefined
-        ? createRoutingCandidateFromRegistration(runtime.getRegistrationData())
-        : createRoutingCandidateFromBusinessRegistration(businessData)
+        ? createAiHostRoutingCandidateFromRegistration(runtime.getRegistrationData())
+        : createAiHostRoutingCandidateFromBusiness(businessData)
     })
   }
 }

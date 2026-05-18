@@ -177,11 +177,15 @@ import {
   AppAiBusinessRegistry,
   AppAiHost,
   FetchAppAiHostTransport,
-  registerAppAiBusinesses,
-  resolvePageDesignEditHost,
-  resolvePageDesignEditPageId,
   uploadAppAiAttachment,
 } from '@/services/ai-host'
+import {
+  registerAppAiBusinesses,
+} from '@spark-view/spark-ai/registrations'
+import {
+  resolvePageDesignEditHost,
+  resolvePageDesignEditPageId,
+} from '@spark-view/spark-page-config'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
 const aiPanelStore = useAiPanelStore()

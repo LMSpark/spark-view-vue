@@ -1,24 +1,26 @@
+import type { FileAttachment } from '@spark-view/spark-component'
 import type {
-  AiSseEventInput,
-  FileAttachment,
-} from '@spark-view/spark-component'
+  AiHostAppendMessagesInput,
+  AiHostRouteBusinessInput,
+  AiHostRouteDecision,
+  AiHostSseEvent,
+  AiHostStreamTurnInput,
+  AiHostStreamTurnResult,
+  AiHostTransport,
+  AiHostTransportToolCall,
+  AiHostBusinessRuntimeContext,
+  AiHostBusinessScope,
+} from '@spark-view/spark-ai/host'
 import {
-  AiInvocationProtocol,
-} from '@spark-view/spark-ai'
+  createAiHostStreamKey,
+  toAiHostRuntimeScope as toHostRuntimeScope,
+} from '@spark-view/spark-ai/host'
+import { AiInvocationProtocol } from '@spark-view/spark-ai'
 import { createAuthHeaders, getFetchHttpClient } from '@/services/http'
-import {
-  createAppAiStreamKey,
-  toRuntimeScope,
-} from './scope'
-import type {
-  AppAiAppendMessagesInput,
-  AppAiHostTransport,
-  AppAiRouteBusinessInput,
-  AppAiRouteDecision,
-  AppAiStreamTurnInput,
-  AppAiStreamTurnResult,
-  AppAiTransportToolCall,
-} from './types'
+
+function toRuntimeScope(scope: AiHostBusinessScope): AiHostBusinessRuntimeContext {
+  return toHostRuntimeScope(scope)
+}
 
 const PROTOCOL_VERSION = 3
 
@@ -65,7 +67,7 @@ function extractJsonObject(text: string): Record<string, unknown> | null {
   return isRecord(parsed) ? parsed : null
 }
 
-function normalizeRouteDecision(value: unknown): AppAiRouteDecision {
+function normalizeRouteDecision(value: unknown): AiHostRouteDecision {
   if (!isRecord(value)) return { moduleId: null, confidence: 0, reason: '路由模型没有返回 JSON 对象。' }
   const moduleId = typeof value['moduleId'] === 'string' && value['moduleId'].trim().length > 0
     ? value['moduleId'].trim()
@@ -77,30 +79,11 @@ function normalizeRouteDecision(value: unknown): AppAiRouteDecision {
   return { moduleId, confidence, reason }
 }
 
-function appendEventMetadata(
-  event: AiSseEventInput,
-  input: AppAiStreamTurnInput,
-  eventModuleId = 'llm',
-): AiSseEventInput {
-  const streamKey = createAppAiStreamKey(input.scope, eventModuleId, input.turn.turnId)
-  return {
-    ...event,
-    sessionId: input.sessionId,
-    streamKey,
-    scope: {
-      businessRegistrationId: input.scope.businessRegistrationId,
-      businessInstanceId: input.scope.businessInstanceId,
-      eventModuleId,
-      turnId: input.turn.turnId,
-    },
-  }
-}
-
-function toTransportTurn(input: AppAiStreamTurnInput['turn']): { turnId: string } {
+function toTransportTurn(input: AiHostStreamTurnInput['turn']): { turnId: string } {
   return { turnId: input.turnId }
 }
 
-function buildRoutePrompt(input: AppAiRouteBusinessInput): string {
+function buildRoutePrompt(input: AiHostRouteBusinessInput): string {
   return [
     '你是 SPARK 的 AI 业务路由器。只能从候选注册信息中选择业务。',
     '请只返回一个 JSON 对象，不要输出额外解释。',
@@ -111,8 +94,8 @@ function buildRoutePrompt(input: AppAiRouteBusinessInput): string {
   ].join('\n\n')
 }
 
-function readToolCalls(value: unknown): readonly AppAiTransportToolCall[] {
-  return Array.isArray(value) ? value.filter(isRecord) as AppAiTransportToolCall[] : []
+function readToolCalls(value: unknown): readonly AiHostTransportToolCall[] {
+  return Array.isArray(value) ? value.filter(isRecord) as AiHostTransportToolCall[] : []
 }
 
 interface ParsedSseEvent {
@@ -146,7 +129,7 @@ async function readResponseChunks(
   }
 }
 
-export class FetchAppAiHostTransport implements AppAiHostTransport {
+export class FetchAppAiHostTransport implements AiHostTransport {
   constructor(
     private readonly baseUrl = '/api/ai',
     private readonly getHeaders: AppAiHeaderProvider = createAuthHeaders,
@@ -159,7 +142,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
     }
   }
 
-  async routeBusiness(input: AppAiRouteBusinessInput): Promise<AppAiRouteDecision> {
+  async routeBusiness(input: AiHostRouteBusinessInput): Promise<AiHostRouteDecision> {
     const businessInstanceId = `route-${input.turn.turnId}`
     const sessionId = `appAiRouter:${businessInstanceId}`
     const result = await this.streamTurn({
@@ -179,7 +162,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
     return normalizeRouteDecision(extractJsonObject(result.text))
   }
 
-  async streamTurn(input: AppAiStreamTurnInput): Promise<AppAiStreamTurnResult> {
+  async streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult> {
     const response = await getFetchHttpClient().stream({
       url: `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`,
       method: 'POST',
@@ -200,21 +183,29 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
     let buffer = ''
     let finalText = ''
     let finalReasoning: string | undefined
-    let finalToolCalls: readonly AppAiTransportToolCall[] = []
+    let finalToolCalls: readonly AiHostTransportToolCall[] = []
 
-    const handle = (event: ParsedSseEvent): void => {
-      const rawPayload = tryParseJson(event.data)
+    const handle = (parsedEvent: ParsedSseEvent): void => {
+      const rawPayload = tryParseJson(parsedEvent.data)
       const payload = unwrapApiEnvelope(rawPayload)
-      input.onSseEvent?.(appendEventMetadata({
-        type: event.event,
+      const event: AiHostSseEvent = {
+        type: parsedEvent.event,
         data: typeof payload === 'string' ? payload : JSON.stringify(payload),
-      }, input))
+        streamKey: createAiHostStreamKey(input.scope, 'llm', input.turn.turnId),
+        scope: {
+          businessRegistrationId: input.scope.businessRegistrationId,
+          businessInstanceId: input.scope.businessInstanceId,
+          eventModuleId: 'llm',
+          turnId: input.turn.turnId,
+        },
+      }
+      input.onSseEvent?.(event)
 
-      if (event.event === 'error') {
+      if (parsedEvent.event === 'error') {
         throw new Error(typeof payload === 'string' ? payload : 'AI stream failed')
       }
 
-      if (event.event === 'delta') {
+      if (parsedEvent.event === 'delta') {
         const delta = isRecord(payload) && typeof payload['delta'] === 'string'
           ? payload['delta']
           : (typeof payload === 'string' ? payload : '')
@@ -224,7 +215,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
         }
         return
       }
-      if (event.event === 'reasoning') {
+      if (parsedEvent.event === 'reasoning') {
         const reasoning = isRecord(payload) && typeof payload['reasoning'] === 'string'
           ? payload['reasoning']
           : (typeof payload === 'string' ? payload : '')
@@ -234,11 +225,11 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
         }
         return
       }
-      if (event.event === 'usage' && isRecord(payload) && isRecord(payload['usage'])) {
+      if (parsedEvent.event === 'usage' && isRecord(payload) && isRecord(payload['usage'])) {
         input.onUsage?.(payload['usage'])
         return
       }
-      if (event.event === 'result' && isRecord(payload)) {
+      if (parsedEvent.event === 'result' && isRecord(payload)) {
         const responseSessionId = typeof payload['sessionId'] === 'string' ? payload['sessionId'] : ''
         const responseTurnId = typeof payload['turnId'] === 'string' ? payload['turnId'] : ''
         if (responseSessionId !== input.sessionId) {
@@ -267,7 +258,7 @@ export class FetchAppAiHostTransport implements AppAiHostTransport {
     }
   }
 
-  async appendMessages(input: AppAiAppendMessagesInput): Promise<void> {
+  async appendMessages(input: AiHostAppendMessagesInput): Promise<void> {
     const body = await getFetchHttpClient().post<unknown>(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
       protocolVersion: PROTOCOL_VERSION,
       scope: toRuntimeScope(input.scope),

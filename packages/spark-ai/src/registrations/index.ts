@@ -37,3 +37,11 @@ export {
   type LeaveRequestServiceResult,
   type LeaveRequestStopSessionOptions,
 } from './leave-request'
+
+export {
+  registerAppAiBusinesses,
+} from './app-ai-businesses'
+
+export type {
+  RegisterAppAiBusinessesOptions,
+} from './app-ai-businesses'

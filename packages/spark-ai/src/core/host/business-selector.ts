@@ -1,25 +1,24 @@
-import type { AiChatSendRequest } from '@spark-view/spark-component'
-import {
-  createAppAiBusinessScope,
-  toRuntimeScope,
-} from './scope'
+/**
+ * 业务选择器。
+ */
+
+import { createAiHostBusinessScope, toAiHostRuntimeScope } from './scope'
 import { latestUserInput } from './turn-utils'
-import type { AppAiHostOptions, AppAiTurnMeta } from './types'
-import type { AppAiSelectedBusiness } from './selected-business'
+import type { AiHostChatRequest, AiHostBusinessResolveInput, AiHostOptions, AiHostSelectedBusiness, AiHostTurnMeta } from './types'
 
 const ROUTE_CONFIDENCE_THRESHOLD = 0.65
 
-export class AppAiBusinessSelector {
-  constructor(private readonly options: AppAiHostOptions) {}
+export class AiHostBusinessSelector {
+  constructor(private readonly options: AiHostOptions) {}
 
   async selectBusiness(
-    request: AiChatSendRequest,
-    turn: AppAiTurnMeta,
-    current: AppAiSelectedBusiness | null,
+    request: AiHostChatRequest,
+    turn: AiHostTurnMeta,
+    current: AiHostSelectedBusiness | null,
     clearCurrent: () => void,
-  ): Promise<AppAiSelectedBusiness | null> {
+  ): Promise<AiHostSelectedBusiness | null> {
     const userInput = latestUserInput(request)
-    const resolveInput = {
+    const resolveInput: AiHostBusinessResolveInput = {
       userInput,
       context: this.options.context?.() ?? {},
     }
@@ -50,8 +49,8 @@ export class AppAiBusinessSelector {
 
     try {
       const businessInstanceId = runtime.resolveBusinessInstance(resolveInput)
-      const scope = createAppAiBusinessScope(runtime.moduleId, businessInstanceId)
-      const projection = await runtime.startSession(toRuntimeScope(scope))
+      const scope = createAiHostBusinessScope(runtime.moduleId, businessInstanceId)
+      const projection = await runtime.startSession(toAiHostRuntimeScope(scope))
       request.onDelta?.(`已进入 ${projection.module.name}。`)
       return { runtime, scope, projection }
     } catch (error) {

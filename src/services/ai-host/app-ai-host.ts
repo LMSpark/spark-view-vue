@@ -1,51 +1,47 @@
 import { shallowRef } from 'vue'
 import type {
   AiChatSendRequest,
+  AiFcCallInput,
   AiSessionConfig,
+  AiSseEventInput,
 } from '@spark-view/spark-component'
+import type {
+  AiHostChatRequest,
+  AiHostFcCallRecord,
+  AiHostOptions,
+  AiHostBusinessScope,
+  AiHostBusinessRuntimeContext,
+  AiHostSelectedBusiness,
+  AiHostSendContext,
+  AiHostSendInput,
+} from '@spark-view/spark-ai/host'
 import {
-  AppAiBusinessSelector,
-} from './business-selector'
+  AiHostMessageSender,
+} from '@spark-view/spark-ai/host'
 import {
-  AppAiToolLoopRunner,
-} from './tool-loop'
-import {
-  latestUserInput,
   normalizeTurn,
 } from './turn-utils'
-import {
-  toRuntimeScope,
-} from './scope'
-import type {
-  AppAiBusinessScope,
-  AppAiHostOptions,
-  AppAiHostSender,
-} from './types'
-import type {
-  AppAiSelectedBusiness,
-} from './selected-business'
 
+type AppAiHostOptions = AiHostOptions
+type AppAiHostSender = (request: AiChatSendRequest) => Promise<void>
+
+/**
+ * App AI Host — Vue 集成层。
+ *
+ * 核心发送逻辑委托给 spark-ai/host 的 AiHostMessageSender，
+ * 此类仅管理 Vue shallowRef 状态和 AiSessionConfig。
+ */
 export class AppAiHost {
-  private readonly selectedScope = shallowRef<AppAiBusinessScope | null>(null)
+  private readonly selectedScope = shallowRef<AiHostBusinessScope | null>(null)
+  private selected: AiHostSelectedBusiness | null = null
+  private readonly sender: AiHostMessageSender
 
-  private selected: AppAiSelectedBusiness | null = null
-
-  private readonly businessSelector: AppAiBusinessSelector
-
-  private readonly toolLoopRunner: AppAiToolLoopRunner
-
-  constructor(private readonly options: AppAiHostOptions) {
-    this.businessSelector = new AppAiBusinessSelector(options)
-    this.toolLoopRunner = new AppAiToolLoopRunner(options)
+  constructor(options: AppAiHostOptions) {
+    this.sender = new AiHostMessageSender(options)
   }
 
-  getSelectedScope(): AppAiBusinessScope | null {
+  getSelectedScope(): AiHostBusinessScope | null {
     return this.selectedScope.value
-  }
-
-  private clearSelected(): void {
-    this.selected = null
-    this.selectedScope.value = null
   }
 
   createSender(): AppAiHostSender {
@@ -72,40 +68,71 @@ export class AppAiHost {
     }
   }
 
-  private async selectBusiness(request: AiChatSendRequest, turn: ReturnType<typeof normalizeTurn>): Promise<AppAiSelectedBusiness | null> {
-    const selected = await this.businessSelector.selectBusiness(
-      request,
-      turn,
-      this.selected,
-      () => this.clearSelected(),
-    )
-    this.selected = selected
-    this.selectedScope.value = selected?.scope ?? null
-    return selected
-  }
-
   private async send(request: AiChatSendRequest): Promise<void> {
     const turn = normalizeTurn(request)
-    const selected = await this.selectBusiness(request, turn)
-    if (selected === null) return
-
-    const latestUser = latestUserInput(request)
-    if (latestUser !== '') {
-      selected.runtime.appendMessage({
-        ...toRuntimeScope(selected.scope),
-        role: 'user',
-        content: latestUser,
-        source: 'ui',
-      })
+    const clearSelected = () => {
+      this.selected = null
+      this.selectedScope.value = null
     }
-
-    await this.toolLoopRunner.runToolLoop(
-      selected.runtime,
-      selected.scope,
-      selected.projection,
-      request,
+    const sendCtx: AiHostSendContext = {
+      get selected() { return this.selected },
+      clearSelected,
+      setSelected: (s: AiHostSelectedBusiness) => {
+        this.selected = s
+        this.selectedScope.value = s.scope
+      },
+      appendUserMessage: (scope: AiHostBusinessRuntimeContext, content: string) => {
+        const runtime = this.selected?.runtime
+        if (runtime === undefined) return
+        runtime.appendMessage({
+          ...scope,
+          role: 'user',
+          content,
+          source: 'ui',
+        })
+      },
+    }
+    const sendInput: AiHostSendInput = {
+      request: this.toHostRequest(request),
       turn,
-      () => this.clearSelected(),
-    )
+    }
+    await this.sender.send(sendInput, sendCtx)
+  }
+
+  private toHostRequest(request: AiChatSendRequest): AiHostChatRequest {
+    const hostRequest: AiHostChatRequest = {
+      historyMsgs: request.historyMsgs,
+    }
+    if (request.systemPrompt !== undefined) hostRequest.systemPrompt = request.systemPrompt
+    if (request.signal !== undefined) hostRequest.signal = request.signal
+    if (request.onDelta !== undefined) hostRequest.onDelta = request.onDelta
+    if (request.onReasoning !== undefined) hostRequest.onReasoning = request.onReasoning
+    if (request.onUsage !== undefined) hostRequest.onUsage = request.onUsage
+    hostRequest.onSseEvent = (event) => request.onSseEvent?.(this.adaptSseEvent(event))
+    if (request.onFcCall !== undefined) {
+      const onFcCall = request.onFcCall
+      hostRequest.onFcCall = (record: AiHostFcCallRecord) => {
+        const input: AiFcCallInput = {
+          toolName: record.toolName,
+          args: record.args,
+          turnId: record.turnId,
+          round: record.round,
+          status: record.status,
+          result: record.result as unknown,
+          durationMs: record.durationMs,
+        }
+        if (record.callId !== undefined) input.callId = record.callId
+        onFcCall(input)
+      }
+    }
+    return hostRequest
+  }
+
+  private adaptSseEvent(event: { type: string; data: unknown }): AiSseEventInput {
+    const adapted: AiSseEventInput = {
+      type: event.type,
+      data: typeof event.data === 'string' ? event.data : JSON.stringify(event.data),
+    }
+    return adapted
   }
 }

@@ -180,3 +180,6 @@ export type {
 export {
   AiRuntime,
 } from './internal/runtime/ai-runtime'
+
+// 七、跨框架 AI Host 运行时。
+export * from './host'

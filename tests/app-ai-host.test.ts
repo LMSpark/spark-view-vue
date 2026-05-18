@@ -10,16 +10,16 @@ import {
   AppAiBusinessRegistry,
   AppAiHost,
   FetchAppAiHostTransport,
-  createAppAiToolCodec,
   registerAppAiBusinesses,
   uploadAppAiAttachment,
   type AppAiHostTransport,
 } from '@/services/ai-host'
+import { createAiHostToolCodec } from '@spark-view/spark-ai/host'
 import type {
   AppAiBusinessLifecycleDirective,
   AppAiBusinessRuntime,
-  AppAiStreamTurnInput,
 } from '@/services/ai-host'
+import type { AiHostStreamTurnInput } from '@spark-view/spark-ai/host'
 
 function resolveMaybeGetter<T>(value: T | (() => T)): T {
   return typeof value === 'function' ? (value as () => T)() : value
@@ -83,7 +83,7 @@ describe('AppAiHost', () => {
       resolveLeaveDraftId: () => 'leave-draft-1',
     })
 
-    const streamedTurns: AppAiStreamTurnInput[] = []
+    const streamedTurns: AiHostStreamTurnInput[] = []
     const transport: AppAiHostTransport = {
       routeBusiness: vi.fn(async () => ({ moduleId: 'manualLeave', confidence: 0.95, reason: 'leave request' })),
       streamTurn: vi.fn(async (input) => {
@@ -166,7 +166,7 @@ describe('AppAiHost', () => {
       moduleInstanceId: 'leave-draft-1',
       instanceId: 'ai:manualLeave:leave-draft-1',
     })
-    const codec = createAppAiToolCodec(projection)
+    const codec = createAiHostToolCodec(projection)
     const setDraftFields = codec.tools.find((tool) => tool.function.name.includes('setDraftFields'))
 
     expect(setDraftFields?.function.description).toContain('当前日期换算')
@@ -189,7 +189,7 @@ describe('AppAiHost', () => {
       moduleInstanceId: 'data-report',
       instanceId: 'pageDesign:data-report',
     })
-    const codec = createAppAiToolCodec(projection)
+    const codec = createAiHostToolCodec(projection)
     const issues: string[] = []
     codec.tools.forEach((tool, index) => {
       collectProviderSchemaIssues(tool.function.parameters, `tools[${index}].function.parameters`, issues)
@@ -493,8 +493,8 @@ describe('AppAiHost', () => {
     const registry = new AppAiBusinessRegistry()
     registry.register(runtime)
     const appendMessages = vi.fn(async () => {})
-    const streamInputs: AppAiStreamTurnInput[] = []
-    const streamTurn = vi.fn(async (input: AppAiStreamTurnInput) => {
+    const streamInputs: AiHostStreamTurnInput[] = []
+    const streamTurn = vi.fn(async (input: AiHostStreamTurnInput) => {
       streamInputs.push(input)
       return streamInputs.length === 1
         ? {
@@ -628,7 +628,7 @@ describe('AppAiHost', () => {
     }
     const registry = new AppAiBusinessRegistry()
     registry.register(runtime)
-    const streamTurn = vi.fn(async (_input: AppAiStreamTurnInput) => (
+    const streamTurn = vi.fn(async (_input: AiHostStreamTurnInput) => (
       streamTurn.mock.calls.length <= 5
         ? {
             text: `第 ${streamTurn.mock.calls.length} 步。`,
@@ -950,8 +950,8 @@ describe('AppAiHost', () => {
     }
     const registry = new AppAiBusinessRegistry()
     registry.register(runtime)
-    const streamInputs: AppAiStreamTurnInput[] = []
-    const streamTurn = vi.fn(async (input: AppAiStreamTurnInput) => {
+    const streamInputs: AiHostStreamTurnInput[] = []
+    const streamTurn = vi.fn(async (input: AiHostStreamTurnInput) => {
       streamInputs.push(input)
       if (streamInputs.length === 1) {
         expect(input.tools.some((tool) => tool.function.name.includes('dataset_createTable'))).toBe(false)
@@ -1016,7 +1016,7 @@ describe('AppAiHost', () => {
       resolvePageDesignInstanceId: () => activePageId,
     })
 
-    const streamedTurns: AppAiStreamTurnInput[] = []
+    const streamedTurns: AiHostStreamTurnInput[] = []
     const transport: AppAiHostTransport = {
       routeBusiness: vi.fn(async () => ({ moduleId: PageDesignModule.moduleId, confidence: 0.95, reason: 'page design' })),
       streamTurn: vi.fn(async (input) => {
@@ -1087,7 +1087,7 @@ describe('AppAiHost', () => {
     })
 
     const appendMessages = vi.fn(async () => {})
-    const streamTurn = vi.fn(async (input: AppAiStreamTurnInput) => {
+    const streamTurn = vi.fn(async (input: AiHostStreamTurnInput) => {
       const describeProgressTool = input.tools.find((tool) => tool.function.name.includes('lifecycle_describeProgress'))
       expect(describeProgressTool).toBeDefined()
       return {
@@ -1202,13 +1202,13 @@ describe('AppAiHost', () => {
     }
     registry.register(runtime)
 
-    const streamedTurns: AppAiStreamTurnInput[] = []
+    const streamedTurns: AiHostStreamTurnInput[] = []
     const transport: AppAiHostTransport = {
       routeBusiness: vi.fn(async () => ({ moduleId: 'task', confidence: 0.95, reason: 'task' })),
       streamTurn: vi.fn(async (input) => {
         streamedTurns.push(input)
         if (streamedTurns.length === 1) {
-          const finishTool = input.tools.find((tool: AppAiStreamTurnInput['tools'][number]) => tool.function.name.includes('finish'))
+          const finishTool = input.tools.find((tool: AiHostStreamTurnInput['tools'][number]) => tool.function.name.includes('finish'))
           return {
             text: '',
             toolCalls: [{

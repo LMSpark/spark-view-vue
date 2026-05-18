@@ -1,4 +1,11 @@
-import type { PageDesignEditHost } from '@spark-view/spark-page-config'
+/**
+ * 页面设计编辑宿主注册/解析。
+ *
+ * 全局注册的 PageDesignEditHost 快照池，
+ * 用于从页面编辑上下文获取当前激活的编辑宿主实例。
+ */
+
+import type { PageDesignEditHost } from '../page-design/editing/edit-session'
 
 export interface PageDesignEditHostSnapshot {
   readonly pageId: string

@@ -46,6 +46,10 @@
     "./registrations/page-design/payloads": {
       "import": "./dist/registrations/page-design/payloads/index.js",
       "types": "./dist/registrations/page-design/payloads/index.d.ts"
+    },
+    "./host": {
+      "import": "./dist/core/host/index.js",
+      "types": "./dist/core/host/index.d.ts"
     }
   },
   "dependencies": {

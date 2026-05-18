@@ -1,25 +1,22 @@
-import type { AiRuntimeKnowledgeProjection } from '@spark-view/spark-ai'
-import type { AiChatSendRequest } from '@spark-view/spark-component'
-import { createAppAiStreamKey, toRuntimeScope } from './scope'
-import { createAppAiToolCodec } from './tool-codec'
-import {
-  addGuidedToolAction,
-  createInitialToolActionSet,
-} from './tool-exposure-policy'
-import {
-  actionModuleId,
-  emitLlmDiagnosticEvent,
-  stringifyAiHostPayload,
-} from './diagnostics'
+/**
+ * AI Host 工具调用循环。
+ */
+
+import type { AiRuntimeKnowledgeProjection } from '../internal/runtime-protocol'
+import { createAiHostStreamKey, toAiHostRuntimeScope } from './scope'
+import { createAiHostToolCodec } from './tool-codec'
+import { addGuidedToolAction, createInitialToolActionSet } from './tool-exposure-policy'
+import { actionModuleId, emitLlmDiagnosticEvent, stringifyAiHostPayload } from './diagnostics'
 import { toCurrentTurnMessages } from './turn-utils'
 import type {
-  AppAiBusinessLifecycleDirective,
-  AppAiBusinessRuntime,
-  AppAiBusinessScope,
-  AppAiHostOptions,
-  AppAiTransportMessage,
-  AppAiTransportToolCall,
-  AppAiTurnMeta,
+  AiHostBusinessLifecycleDirective,
+  AiHostBusinessRuntime,
+  AiHostBusinessScope,
+  AiHostChatRequest,
+  AiHostOptions,
+  AiHostTransportMessage,
+  AiHostTransportToolCall,
+  AiHostTurnMeta,
 } from './types'
 
 function parseToolArgs(raw: string | undefined): unknown {
@@ -31,19 +28,19 @@ function parseToolArgs(raw: string | undefined): unknown {
   }
 }
 
-export class AppAiToolLoopRunner {
-  constructor(private readonly options: AppAiHostOptions) {}
+export class AiHostToolLoopRunner {
+  constructor(private readonly options: AiHostOptions) {}
 
   async runToolLoop(
-    runtime: AppAiBusinessRuntime,
-    scope: AppAiBusinessScope,
+    runtime: AiHostBusinessRuntime,
+    scope: AiHostBusinessScope,
     projection: AiRuntimeKnowledgeProjection,
-    request: AiChatSendRequest,
-    turn: AppAiTurnMeta,
+    request: AiHostChatRequest,
+    turn: AiHostTurnMeta,
     clearSelected: () => void,
   ): Promise<void> {
     const enabledActions = createInitialToolActionSet(projection)
-    const runtimeContext = toRuntimeScope(scope)
+    const runtimeContext = toAiHostRuntimeScope(scope)
     const systemPrompt = [
       runtime.getSystemPrompt?.(runtimeContext),
       request.systemPrompt,
@@ -56,7 +53,7 @@ export class AppAiToolLoopRunner {
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
       if (request.signal?.aborted) return
       const currentRound = round + 1
-      const codec = createAppAiToolCodec(
+      const codec = createAiHostToolCodec(
         projection,
         enabledActions === null ? {} : { includeActions: enabledActions },
       )
@@ -94,9 +91,9 @@ export class AppAiToolLoopRunner {
 
       if (result.toolCalls.length === 0) return
 
-      const toolMessages: AppAiTransportMessage[] = []
-      const executedToolCalls: AppAiTransportToolCall[] = []
-      let lifecycleDirective: AppAiBusinessLifecycleDirective | null = null
+      const toolMessages: AiHostTransportMessage[] = []
+      const executedToolCalls: AiHostTransportToolCall[] = []
+      let lifecycleDirective: AiHostBusinessLifecycleDirective | null = null
       for (const call of result.toolCalls) {
         const output = await this.executeToolCall(runtime, scope, projection, turn, currentRound, codec.actionOf.bind(codec), call, request)
         if (output !== null) {
@@ -109,12 +106,12 @@ export class AppAiToolLoopRunner {
           }
         }
       }
-      const assistantMessage: AppAiTransportMessage = {
+      const assistantMessage: AiHostTransportMessage = {
         role: 'assistant',
         content: result.text,
         tool_calls: executedToolCalls,
       }
-      const messagesToAppend: AppAiTransportMessage[] = [assistantMessage, ...toolMessages]
+      const messagesToAppend: AiHostTransportMessage[] = [assistantMessage, ...toolMessages]
       if (lifecycleDirective?.finalAssistantMessage !== undefined && lifecycleDirective.finalAssistantMessage.trim().length > 0) {
         request.onDelta?.(lifecycleDirective.finalAssistantMessage)
         runtime.appendMessage({
@@ -156,20 +153,20 @@ export class AppAiToolLoopRunner {
   }
 
   private async executeToolCall(
-    runtime: AppAiBusinessRuntime,
-    scope: AppAiBusinessScope,
+    runtime: AiHostBusinessRuntime,
+    scope: AiHostBusinessScope,
     projection: AiRuntimeKnowledgeProjection,
-    turn: AppAiTurnMeta,
+    turn: AiHostTurnMeta,
     round: number,
     actionOf: (toolName: string) => string | null,
-    call: AppAiTransportToolCall,
-    request: AiChatSendRequest,
+    call: AiHostTransportToolCall,
+    request: AiHostChatRequest,
   ): Promise<{
-    toolMessage: AppAiTransportMessage
-    directive: AppAiBusinessLifecycleDirective
+    toolMessage: AiHostTransportMessage
+    directive: AiHostBusinessLifecycleDirective
     action: string
     args: unknown
-    result: Awaited<ReturnType<AppAiBusinessRuntime['executeFunctionCall']>>
+    result: Awaited<ReturnType<AiHostBusinessRuntime['executeFunctionCall']>>
   } | null> {
     const toolName = call.function?.name ?? ''
     const action = actionOf(toolName)
@@ -179,7 +176,7 @@ export class AppAiToolLoopRunner {
     }
     const args = parseToolArgs(call.function?.arguments)
     const started = Date.now()
-    const runtimeContext = toRuntimeScope(scope)
+    const runtimeContext = toAiHostRuntimeScope(scope)
     const result = await runtime.executeFunctionCall({
       ...runtimeContext,
       action,
@@ -207,7 +204,7 @@ export class AppAiToolLoopRunner {
     request.onSseEvent?.({
       type: 'tool-result',
       data: stringifyAiHostPayload(result),
-      streamKey: createAppAiStreamKey(scope, eventModuleId, turn.turnId),
+      streamKey: createAiHostStreamKey(scope, eventModuleId, turn.turnId),
       scope: {
         businessRegistrationId: scope.businessRegistrationId,
         businessInstanceId: scope.businessInstanceId,

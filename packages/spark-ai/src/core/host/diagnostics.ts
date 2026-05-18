@@ -1,10 +1,10 @@
-import { AiInvocationProtocol } from '@spark-view/spark-ai'
-import type { AiChatSendRequest } from '@spark-view/spark-component'
-import { createAppAiStreamKey } from './scope'
-import type {
-  AppAiBusinessScope,
-  AppAiTurnMeta,
-} from './types'
+/**
+ * 诊断工具函数。
+ */
+
+import { AiInvocationProtocol } from '../index'
+import { createAiHostStreamKey } from './scope'
+import type { AiHostBusinessScope, AiHostChatRequest, AiHostTurnMeta } from './types'
 
 export function actionModuleId(action: string): string {
   return AiInvocationProtocol.tryParseActionPath(action)?.moduleId ?? 'tool'
@@ -15,17 +15,16 @@ export function stringifyAiHostPayload(data: unknown): string {
 }
 
 export function emitLlmDiagnosticEvent(
-  request: AiChatSendRequest,
-  scope: AppAiBusinessScope,
-  turn: AppAiTurnMeta,
+  request: AiHostChatRequest,
+  scope: AiHostBusinessScope,
+  turn: AiHostTurnMeta,
   type: 'llm-request' | 'llm-append',
   data: unknown,
 ): void {
   request.onSseEvent?.({
-    sessionId: scope.instanceId,
     type,
     data: stringifyAiHostPayload(data),
-    streamKey: createAppAiStreamKey(scope, 'llm', turn.turnId),
+    streamKey: createAiHostStreamKey(scope, 'llm', turn.turnId),
     scope: {
       businessRegistrationId: scope.businessRegistrationId,
       businessInstanceId: scope.businessInstanceId,
