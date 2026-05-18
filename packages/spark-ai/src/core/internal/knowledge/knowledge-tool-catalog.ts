@@ -1,6 +1,6 @@
 import type { FunctionFailureMode } from '../../protocol/runtime-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
-import { LlmParamsValidator } from '../../protocol/llm-params-validator'
+import { LlmParamsValidator } from '../llm-params-validator'
 
 export type AiKnowledgeFunctionFailureMode = FunctionFailureMode
 export type AiKnowledgeFunctionTarget = 'knowledge'

@@ -7,7 +7,7 @@ import type {
   AiRuntimeFunctionCallRunInput,
   AiRuntimeFunctionResultMessage,
 } from '../../protocol/runtime-contracts'
-import { AiInvocationProtocol } from '../../protocol/invocation-helpers'
+import { AiInvocationProtocol } from '../invocation-helpers'
 import type { AiSessionLedger } from './ai-session-ledger'
 import type { AiFunctionCallTranslator } from './ai-function-call-translator'
 import {

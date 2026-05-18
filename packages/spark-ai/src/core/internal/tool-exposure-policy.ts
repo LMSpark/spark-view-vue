@@ -1,4 +1,4 @@
-import type { AiRuntimeKnowledgeProjection } from './runtime-contracts'
+import type { AiRuntimeKnowledgeProjection } from '../protocol/runtime-contracts'
 import { AiInvocationProtocol } from './invocation-helpers'
 
 export interface AiRuntimeToolExposurePolicyOptions {

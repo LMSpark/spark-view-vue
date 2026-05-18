@@ -88,36 +88,36 @@ export {
 // 三、LLM 调用协议：action 地址、消息、流式回调与 token usage。
 export {
   AiInvocationProtocol,
-} from './protocol/invocation-helpers'
+} from './internal/invocation-helpers'
 
 export {
   createAiRuntimeToolCodec,
-} from './protocol/tool-codec'
+} from './internal/tool-codec'
 
 export {
   addGuidedAiToolAction,
   createInitialAiToolActionSet,
-} from './protocol/tool-exposure-policy'
+} from './internal/tool-exposure-policy'
 
 export type {
   ActionPathParts,
   TokenUsage,
-} from './protocol/invocation-helpers'
+} from './internal/invocation-helpers'
 
 export type {
   AiRuntimeToolCodec,
   AiRuntimeToolCodecOptions,
   AiRuntimeToolSpec,
-} from './protocol/tool-codec'
+} from './internal/tool-codec'
 
 export type {
   AiRuntimeToolExposurePolicyOptions,
-} from './protocol/tool-exposure-policy'
+} from './internal/tool-exposure-policy'
 
 // 四、LLM 参数校验：运行函数前对反序列化 JSON 参数做结构校验。
 export {
   LlmParamsValidator,
-} from './protocol/llm-params-validator'
+} from './internal/llm-params-validator'
 
 // 四.五、JSON Schema 便捷构造器：为函数参数 schema 提供统一 DSL。
 export {
@@ -130,16 +130,16 @@ export {
   objectSchema,
   paramsSchema,
   stringSchema,
-} from './protocol/json-schema-helpers'
+} from './internal/json-schema-helpers'
 
 export type {
   JsonSchemaProperties,
-} from './protocol/json-schema-helpers'
+} from './internal/json-schema-helpers'
 
 export type {
   LlmParamValidationIssue,
   LlmParamValidationResult,
-} from './protocol/llm-params-validator'
+} from './internal/llm-params-validator'
 
 export type {
   LlmJsonObject,

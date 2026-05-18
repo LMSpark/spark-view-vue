@@ -11,7 +11,7 @@ import type {
   AiRuntimeTranslateFunctionCallOptions,
   FunctionExecutionContext,
 } from '../../protocol/runtime-contracts'
-import { AiInvocationProtocol } from '../../protocol/invocation-helpers'
+import { AiInvocationProtocol } from '../invocation-helpers'
 import {
   AiRuntimeArgValidator,
 } from './ai-runtime-support'

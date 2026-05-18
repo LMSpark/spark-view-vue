@@ -19,7 +19,7 @@ import type {
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
-import { LlmParamsValidator } from '../../protocol/llm-params-validator'
+import { LlmParamsValidator } from '../llm-params-validator'
 
 /**
  * AiRuntime 的无状态支持模块。

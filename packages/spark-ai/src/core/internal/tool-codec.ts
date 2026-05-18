@@ -1,8 +1,8 @@
 import type {
   AiRuntimeFunctionExposure,
   AiRuntimeKnowledgeProjection,
-} from './runtime-contracts'
-import type { LlmParameterSchemaRoot } from './parameter-schema'
+} from '../protocol/runtime-contracts'
+import type { LlmParameterSchemaRoot } from '../protocol/parameter-schema'
 
 export interface AiRuntimeToolSpec {
   readonly type: 'function'

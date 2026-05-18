@@ -6,7 +6,7 @@ import type {
   AiRuntimeInstanceScope,
   AiRuntimeProjectKnowledgeOptions,
 } from '../../protocol/runtime-contracts'
-import { AiInvocationProtocol } from '../../protocol/invocation-helpers'
+import { AiInvocationProtocol } from '../invocation-helpers'
 
 /** 克隆 runtime 对外返回值，避免调用方修改 core 保存的 session/history 快照。 */
 export function cloneRuntimeValue<T>(value: T): T {
