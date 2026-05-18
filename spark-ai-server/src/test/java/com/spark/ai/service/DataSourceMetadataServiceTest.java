@@ -315,6 +315,7 @@ class DataSourceMetadataServiceTest {
                 NAME VARCHAR(64) NOT NULL
             )
             """);
+        jdbcTemplate.update("INSERT INTO CRM_SYNC.CUSTOMER (ID, NAME) VALUES (?, ?)", 1L, "Acme");
         jdbcTemplate.execute("""
             CREATE TABLE CRM_SYNC.CUSTOMER_ORDER (
                 ID BIGINT PRIMARY KEY,
@@ -374,6 +375,15 @@ class DataSourceMetadataServiceTest {
         assertTrue(String.valueOf(tableSql.get("ddl")).contains("CREATE TABLE"));
         assertTrue(String.valueOf(tableSql.get("relationSql")).contains("ALTER TABLE"));
 
+        Map<String, Object> tableData = catalogService.objectData("platform", "homepage", customerId.longValue(), 1, 20);
+        assertEquals(customerId.longValue(), ((Number) tableData.get("objectId")).longValue());
+        assertEquals(Boolean.TRUE, tableData.get("readOnly"));
+        assertEquals(1L, ((Number) tableData.get("total")).longValue());
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> dataRows = (List<Map<String, Object>>) tableData.get("rows");
+        assertEquals(1, dataRows.size());
+        assertEquals("Acme", dataRows.get(0).get("NAME"));
+
         Number viewId = jdbcTemplate.queryForObject(
                 "SELECT ID FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ? AND PHYSICAL_TABLE_NAME = ?",
                 Number.class,
@@ -384,6 +394,9 @@ class DataSourceMetadataServiceTest {
         assertEquals("VIEW", viewSql.get("objectType"));
         assertEquals(Boolean.TRUE, viewSql.get("readOnly"));
         assertTrue(String.valueOf(viewSql.get("ddl")).contains("CREATE VIEW"));
+        Map<String, Object> viewData = catalogService.objectData("platform", "homepage", viewId.longValue(), 1, 20);
+        assertEquals("VIEW", viewData.get("objectType"));
+        assertEquals(1L, ((Number) viewData.get("total")).longValue());
     }
 
     @Test

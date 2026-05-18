@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
@@ -77,6 +78,22 @@ public class DbmsCatalogController {
         accessGuard.requireProjectAccess(tenantId, projectId);
         try {
             return ResponseEntity.ok(catalogService.objectSql(tenantId, projectId, objectId));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(error(e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/objects/{objectId}/data")
+    public ResponseEntity<?> objectData(@PathVariable String tenantId,
+                                        @PathVariable String projectId,
+                                        @PathVariable Long objectId,
+                                        @RequestParam(name = "page", required = false) Integer page,
+                                        @RequestParam(name = "pageSize", required = false) Integer pageSize) {
+        accessGuard.requireProjectAccess(tenantId, projectId);
+        try {
+            return ResponseEntity.ok(catalogService.objectData(tenantId, projectId, objectId, page, pageSize));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(error(e.getMessage()));
         } catch (IllegalArgumentException e) {

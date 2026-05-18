@@ -160,6 +160,45 @@ public class DbmsCatalogService {
         return payload;
     }
 
+    public Map<String, Object> objectData(String tenantId, String projectId, long objectId, Integer page, Integer pageSize) {
+        DynamicDataModelService.TableDefinition definition = modelService.requireDefinitionById(tenantId, projectId, objectId);
+        int safePage = Math.max(page == null ? 1 : page, 1);
+        int safePageSize = Math.min(Math.max(pageSize == null ? 50 : pageSize, 1), 200);
+        int offset = (safePage - 1) * safePageSize;
+        String qualifiedName = qualifiedName(definition.dialect(), definition.table().schemaName(), definition.table().physicalTableName());
+        String projection = definition.columns().isEmpty()
+                ? "*"
+                : definition.columns().stream()
+                    .map(column -> definition.dialect().quoteIdentifier(column.physicalColumnName())
+                            + " AS " + definition.dialect().quoteIdentifier(column.physicalColumnName()))
+                    .reduce((left, right) -> left + ", " + right)
+                    .orElse("*");
+        String orderBy = definition.columns().stream()
+                .filter(DynamicDataModelService.ColumnInfo::primaryKey)
+                .map(column -> definition.dialect().quoteIdentifier(column.physicalColumnName()))
+                .reduce((left, right) -> left + ", " + right)
+                .map(columns -> " ORDER BY " + columns)
+                .orElse("");
+        JdbcTemplate targetJdbc = modelService.jdbcTemplateFor(definition);
+        Number total = targetJdbc.queryForObject("SELECT COUNT(*) FROM " + qualifiedName, Number.class);
+        List<Map<String, Object>> rows = targetJdbc.queryForList(
+                "SELECT " + projection + " FROM " + qualifiedName + orderBy + " LIMIT ? OFFSET ?",
+                safePageSize,
+                offset
+        );
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("objectId", objectId);
+        payload.put("objectType", definition.table().objectType());
+        payload.put("dialect", definition.dialect().name());
+        payload.put("columns", definition.columns().stream().map(this::dataColumnPayload).toList());
+        payload.put("rows", rows);
+        payload.put("page", safePage);
+        payload.put("pageSize", safePageSize);
+        payload.put("total", total == null ? 0 : total.longValue());
+        payload.put("readOnly", true);
+        return payload;
+    }
+
     private List<PhysicalDatabase> scanDatabases(String tenantId,
                                                  String projectId,
                                                  ServerInfo server,
@@ -497,6 +536,18 @@ public class DbmsCatalogService {
             lines.add(line);
         }
         return "CREATE TABLE " + qualifiedName + " (\n" + String.join(",\n", lines) + "\n);";
+    }
+
+    private Map<String, Object> dataColumnPayload(DynamicDataModelService.ColumnInfo column) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("name", column.columnName());
+        payload.put("physicalColumnName", column.physicalColumnName());
+        payload.put("sqlType", column.sqlType());
+        payload.put("type", column.dataType());
+        payload.put("primaryKey", column.primaryKey());
+        payload.put("nullable", column.nullable());
+        payload.put("ordinalPosition", column.ordinalPosition());
+        return payload;
     }
 
     private String relationSql(String tenantId, String projectId, long objectId, DatabaseDialect dialect) {

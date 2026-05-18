@@ -125,6 +125,11 @@
           >结构</button>
           <button
             type="button"
+            :class="['workspace-tab', { active: activeWorkspaceTab === 'data' }]"
+            @click="selectWorkspaceTab('data')"
+          >数据</button>
+          <button
+            type="button"
             :class="['workspace-tab', { active: activeWorkspaceTab === 'sql' }]"
             @click="selectWorkspaceTab('sql')"
           >SQL</button>
@@ -307,6 +312,43 @@
             <div class="overview-item">
               <span>关系</span>
               <strong>{{ relations.length }} 条</strong>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="activeWorkspaceTab === 'data'" class="data-grid">
+          <div v-if="!selectedTable" class="empty large-empty">请选择表或视图浏览数据</div>
+          <div v-else class="data-section">
+            <div class="grid-title">
+              <strong>数据浏览</strong>
+              <div class="grid-actions">
+                <span class="section-count">只读 · {{ objectData?.total ?? 0 }} 行</span>
+                <el-button size="small" :icon="Refresh" :loading="loading.data" @click="loadObjectData()">刷新</el-button>
+              </div>
+            </div>
+            <div v-if="loading.data" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
+            <div v-else-if="!objectData?.rows.length" class="empty">暂无数据</div>
+            <div v-else class="data-table-scroll">
+              <table class="dbms-table data-table">
+                <thead>
+                  <tr>
+                    <th v-for="col in objectData.columns" :key="col.physicalColumnName || col.name">
+                      <span class="mono-cell">{{ col.physicalColumnName || col.name }}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, rowIndex) in objectData.rows" :key="rowIndex">
+                    <td v-for="col in objectData.columns" :key="col.physicalColumnName || col.name" class="mono-cell">
+                      {{ dataCellValue(row, col) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-if="selectedTable" class="data-pager">
+              <el-button size="small" :disabled="dataPage <= 1 || loading.data" @click="changeDataPage(dataPage - 1)">上一页</el-button>
+              <span>第 {{ dataPage }} 页 / {{ dataPageCount }} 页</span>
+              <el-button size="small" :disabled="dataPage >= dataPageCount || loading.data" @click="changeDataPage(dataPage + 1)">下一页</el-button>
             </div>
           </div>
         </div>
@@ -685,6 +727,18 @@ interface DbmsObjectSql {
   readOnly: boolean
 }
 
+interface DbmsObjectData {
+  objectId: number
+  objectType: DbmsObjectType
+  dialect: string
+  columns: DbmsColumn[]
+  rows: Array<Record<string, unknown>>
+  page: number
+  pageSize: number
+  total: number
+  readOnly: boolean
+}
+
 interface DbmsCatalogObject {
   databaseId: number | null
   objectId: number | null
@@ -745,7 +799,7 @@ interface TableCreatePayload {
 
 type IsolationMode = 'TENANT_SHARED' | 'TENANT_ISOLATED' | 'PROJECT_SHARED' | 'PROJECT_ISOLATED'
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
-type WorkspaceTab = 'object' | 'structure' | 'sql'
+type WorkspaceTab = 'object' | 'structure' | 'data' | 'sql'
 
 const isolationModeOptions: Array<{ value: IsolationMode; label: string }> = [
   { value: 'TENANT_SHARED', label: '租户共享' },
@@ -830,7 +884,7 @@ function apiErrorMessage(error: unknown): string {
 }
 
 // ── 状态 ──
-const loading = reactive({ servers: false, databases: false, tables: false, sql: false })
+const loading = reactive({ servers: false, databases: false, tables: false, data: false, sql: false })
 const testingId = ref<number | null>(null)
 const testingNew = ref(false)
 
@@ -853,6 +907,9 @@ const selectedTable = ref<DbmsTable | null>(null)
 const selectedTableColumns = ref<DbmsColumn[]>([])
 const activeWorkspaceTab = ref<WorkspaceTab>('object')
 const objectSql = ref<DbmsObjectSql | null>(null)
+const objectData = ref<DbmsObjectData | null>(null)
+const dataPage = ref(1)
+const dataPageSize = ref(50)
 
 const registeredDatabaseNames = computed(() => new Set(
   databases.value.map((db) => db.DATABASE_NAME.toLowerCase())
@@ -867,6 +924,10 @@ const selectedTableRelations = computed(() => {
   const tableId = selectedTable.value?.id
   if (!tableId) return []
   return relations.value.filter((rel) => relationTableId(rel, 'parent') === tableId || relationTableId(rel, 'child') === tableId)
+})
+const dataPageCount = computed(() => {
+  const total = objectData.value?.total ?? 0
+  return Math.max(Math.ceil(total / dataPageSize.value), 1)
 })
 const catalogDatabases = computed(() => dlgSync.catalog?.databases ?? [])
 const catalogObjectCount = computed(() => catalogDatabases.value.reduce((total, db) => (
@@ -915,7 +976,16 @@ function relationTableLabel(rel: DbmsRelation, side: 'parent' | 'child'): string
 
 function selectWorkspaceTab(tab: WorkspaceTab) {
   activeWorkspaceTab.value = tab
+  if (tab === 'data') void loadObjectData()
   if (tab === 'sql') void loadObjectSql()
+}
+
+function dataCellValue(row: Record<string, unknown>, column: DbmsColumn): string {
+  const key = column.physicalColumnName || column.name
+  const value = row[key]
+  if (value === null || value === undefined) return '-'
+  if (typeof value === 'object') return JSON.stringify(value)
+  return String(value)
 }
 
 // ── 数据加载 ──
@@ -931,6 +1001,7 @@ async function loadServers() {
       tables.value = []
       relations.value = []
       objectSql.value = null
+      objectData.value = null
     }
   } catch (error) {
     ElMessage.error(`加载服务器失败: ${apiErrorMessage(error)}`)
@@ -965,6 +1036,7 @@ async function loadTables() {
         selectedTable.value = null
         selectedTableColumns.value = []
         objectSql.value = null
+        objectData.value = null
       }
     }
   } catch (error) {
@@ -974,6 +1046,7 @@ async function loadTables() {
       selectedTable.value = null
       selectedTableColumns.value = []
       objectSql.value = null
+      objectData.value = null
     }
   } finally { loading.tables = false }
 }
@@ -999,6 +1072,7 @@ function selectServer(srv: DbmsServer) {
   selectedTable.value = null
   selectedTableColumns.value = []
   objectSql.value = null
+  objectData.value = null
   dlgSync.catalog = null
   mutatePhysicalObjectKeys.value = new Set()
   databases.value = []
@@ -1012,6 +1086,7 @@ function selectDatabase(db: DbmsDatabase) {
   selectedTable.value = null
   selectedTableColumns.value = []
   objectSql.value = null
+  objectData.value = null
   tables.value = []
   relations.value = []
   void loadTables()
@@ -1026,7 +1101,10 @@ function selectTable(tbl: DbmsTable) {
   selectedTable.value = tbl
   selectedTableColumns.value = tbl.columns ?? []
   objectSql.value = null
+  objectData.value = null
+  dataPage.value = 1
   void loadTableDetail(tbl)
+  if (activeWorkspaceTab.value === 'data') void loadObjectData(tbl.id)
   if (activeWorkspaceTab.value === 'sql') void loadObjectSql(tbl.id)
 }
 
@@ -1063,6 +1141,37 @@ async function loadObjectSql(objectId = selectedTable.value?.id) {
       loading.sql = false
     }
   }
+}
+
+async function loadObjectData(objectId = selectedTable.value?.id) {
+  if (!objectId) {
+    objectData.value = null
+    return
+  }
+  loading.data = true
+  try {
+    const payload = await http.get<DbmsObjectData>(`${scopePath.value}/dbms/objects/${objectId}/data`, {
+      page: dataPage.value,
+      pageSize: dataPageSize.value,
+    })
+    if (selectedTable.value?.id === objectId) {
+      objectData.value = payload
+    }
+  } catch (error) {
+    if (selectedTable.value?.id === objectId) {
+      objectData.value = null
+      ElMessage.error(`加载数据失败: ${apiErrorMessage(error)}`)
+    }
+  } finally {
+    if (selectedTable.value?.id === objectId) {
+      loading.data = false
+    }
+  }
+}
+
+function changeDataPage(page: number) {
+  dataPage.value = Math.max(1, Math.min(page, dataPageCount.value))
+  void loadObjectData()
 }
 
 function schemaObjects(schema: DbmsCatalogSchema): DbmsCatalogObject[] {
@@ -1139,6 +1248,7 @@ async function submitSyncServer() {
     if (selectedDatabase.value) {
       await loadTables()
       await loadRelations()
+      if (activeWorkspaceTab.value === 'data' && selectedTable.value) await loadObjectData()
       if (activeWorkspaceTab.value === 'sql' && selectedTable.value) await loadObjectSql()
     }
     await loadServerCatalog()
@@ -1211,6 +1321,7 @@ async function _deleteServerConfirm(srv: DbmsServer) {
       tables.value = []
       relations.value = []
       objectSql.value = null
+      objectData.value = null
     }
     void loadServers()
   } catch (error) {
@@ -1317,6 +1428,7 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
       tables.value = []
       relations.value = []
       objectSql.value = null
+      objectData.value = null
     }
     void loadDatabases()
   } catch (error) {
@@ -1385,6 +1497,7 @@ async function deleteTableConfirm(tbl: DbmsTable) {
       selectedTable.value = null
       selectedTableColumns.value = []
       objectSql.value = null
+      objectData.value = null
     }
     void loadTables()
     void loadRelations()
@@ -2315,6 +2428,7 @@ onMounted(() => {
 }
 
 .structure-grid,
+.data-grid,
 .sql-grid {
   min-height: 0;
   overflow: auto;
@@ -2323,11 +2437,13 @@ onMounted(() => {
 }
 
 .structure-section,
+.data-section,
 .sql-section {
   min-width: 720px;
 }
 
 .structure-section + .structure-section,
+.data-section + .data-section,
 .sql-section + .sql-section {
   margin-top: 14px;
 }
@@ -2380,6 +2496,31 @@ onMounted(() => {
   font-size: 12px;
   line-height: 1.55;
   white-space: pre;
+}
+
+.data-table-scroll {
+  overflow: auto;
+  border: 1px solid var(--dbms-border);
+}
+
+.data-table {
+  min-width: 960px;
+  border: none;
+}
+
+.data-table th,
+.data-table td {
+  min-width: 140px;
+}
+
+.data-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 10px 0 0;
+  color: var(--dbms-muted);
+  font-size: 12px;
 }
 
 .table-wrap {
