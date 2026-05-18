@@ -11,7 +11,10 @@
       "Bash(mv .claude .claude_tmp && git stash pop)",
       "Bash(mv .claude_tmp .claude)",
       "Bash(vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json)",
-      "Bash(npx vue-tsc *)"
+      "Bash(npx vue-tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(curl -s \"http://127.0.0.1:8080/api/tenants/platform/projects/default/databases/catalog/physical-names?serverId=1\")",
+      "Bash(curl -s -H \"Authorization: Bearer test\" \"http://127.0.0.1:8080/api/tenants/platform/projects/default/databases/catalog/physical-names?serverId=1\")"
     ],
     "additionalDirectories": [
       "D:\\SPARK_VIEW\\.claude"

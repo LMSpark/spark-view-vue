@@ -104,6 +104,17 @@ function Set-ClaudeEnvValue {
   }
 }
 
+function Clear-ClaudeEnvValue {
+  param(
+    [string]$Name,
+    [switch]$Persist
+  )
+  Remove-Item -Path "Env:$Name" -ErrorAction SilentlyContinue
+  if ($Persist -and (Test-Path -Path "HKCU:\Environment")) {
+    Remove-ItemProperty -Path "HKCU:\Environment" -Name $Name -ErrorAction SilentlyContinue
+  }
+}
+
 function Resolve-ApiKey {
   param([string[]]$Names)
   if ($ApiKey) {
@@ -135,7 +146,7 @@ function Apply-ClaudeProfile {
 
   Set-ClaudeEnvValue -Name "ANTHROPIC_BASE_URL" -Value $ResolvedBaseUrl -Persist:$Persist
   Set-ClaudeEnvValue -Name "ANTHROPIC_AUTH_TOKEN" -Value $ResolvedApiKey -Persist:$Persist
-  Set-ClaudeEnvValue -Name "ANTHROPIC_API_KEY" -Value $ResolvedApiKey -Persist:$Persist
+  Clear-ClaudeEnvValue -Name "ANTHROPIC_API_KEY" -Persist:$Persist
   Set-ClaudeEnvValue -Name "ANTHROPIC_MODEL" -Value $ResolvedModel -Persist:$Persist
   Set-ClaudeEnvValue -Name "ANTHROPIC_DEFAULT_OPUS_MODEL" -Value $ResolvedOpusModel -Persist:$Persist
   Set-ClaudeEnvValue -Name "ANTHROPIC_DEFAULT_SONNET_MODEL" -Value $ResolvedSonnetModel -Persist:$Persist
@@ -151,6 +162,7 @@ function Apply-ClaudeProfile {
   Write-Output "ANTHROPIC_DEFAULT_HAIKU_MODEL=$ResolvedHaikuModel"
   Write-Output "CLAUDE_CODE_SUBAGENT_MODEL=$ResolvedSubagentModel"
   Write-Output "ANTHROPIC_AUTH_TOKEN=$(Mask-Secret -Value $ResolvedApiKey)"
+  Write-Output "ANTHROPIC_API_KEY=<cleared>"
 }
 
 function Invoke-ClaudeSmokeTest {
@@ -247,12 +259,12 @@ switch ($Action) {
       throw "Missing Coding Plan key. Pass -ApiKey with your sk-sp key or set ALIYUN_CODING_PLAN_API_KEY."
     }
     Apply-ClaudeProfile `
-      -ResolvedBaseUrl "https://coding.dashscope.aliyuncs.com/apps/anthropic" `
+      -ResolvedBaseUrl "https://token-plan.cn-beijing.maas.aliyuncs.com/apps/anthropic" `
       -ResolvedApiKey $resolvedKey `
       -ResolvedModel $resolvedModel `
       -ResolvedOpusModel $(if ($OpusModel) { $OpusModel } else { $resolvedModel }) `
       -ResolvedSonnetModel $(if ($SonnetModel) { $SonnetModel } else { $resolvedModel }) `
-      -ResolvedHaikuModel $(if ($HaikuModel) { $HaikuModel } else { "qwen3.6-flash" }) `
+      -ResolvedHaikuModel $(if ($HaikuModel) { $HaikuModel } else { $resolvedModel }) `
       -ResolvedSubagentModel $(if ($SubagentModel) { $SubagentModel } else { $resolvedModel }) `
       -Persist:$Persist
   }

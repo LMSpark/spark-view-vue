@@ -50,6 +50,17 @@ function Set-ClaudeEnv {
   }
 }
 
+function Clear-ClaudeEnv {
+  param(
+    [string]$Name,
+    [switch]$ProcessOnly
+  )
+  Remove-Item -Path "Env:$Name" -ErrorAction SilentlyContinue
+  if (-not $ProcessOnly -and (Test-Path -Path "HKCU:\Environment")) {
+    Remove-ItemProperty -Path "HKCU:\Environment" -Name $Name -ErrorAction SilentlyContinue
+  }
+}
+
 function Mask-Secret {
   param([string]$Value)
   if ($null -eq $Value -or $Value.Length -eq 0) {
@@ -86,7 +97,7 @@ $baseUrl = "https://api.deepseek.com/anthropic"
 
 Set-ClaudeEnv -Name "ANTHROPIC_BASE_URL" -Value $baseUrl -ProcessOnly:$ProcessOnly
 Set-ClaudeEnv -Name "ANTHROPIC_AUTH_TOKEN" -Value $apiKey -ProcessOnly:$ProcessOnly
-Set-ClaudeEnv -Name "ANTHROPIC_API_KEY" -Value $apiKey -ProcessOnly:$ProcessOnly
+Clear-ClaudeEnv -Name "ANTHROPIC_API_KEY" -ProcessOnly:$ProcessOnly
 Set-ClaudeEnv -Name "ANTHROPIC_MODEL" -Value $resolvedModel -ProcessOnly:$ProcessOnly
 Set-ClaudeEnv -Name "ANTHROPIC_DEFAULT_OPUS_MODEL" -Value $resolvedModel -ProcessOnly:$ProcessOnly
 Set-ClaudeEnv -Name "ANTHROPIC_DEFAULT_SONNET_MODEL" -Value $resolvedModel -ProcessOnly:$ProcessOnly

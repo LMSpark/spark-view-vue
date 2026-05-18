@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,15 @@ class DataSourceMetadataServiceTest {
             @Override
             public DatabaseDialect getDialect(Long databaseId) {
                 return DatabaseDialect.H2;
+            }
+
+            @Override
+            public Connection createSingleConnection(String host, int port, String dbType, String username, String password) {
+                try {
+                    return dataSource.getConnection();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         };
         modelService = new DynamicDataModelService(jdbcTemplate, objectMapper, dataSource, null, dsManager);
@@ -118,6 +129,17 @@ class DataSourceMetadataServiceTest {
 
         assertEquals(1, selectedServerDatabases.size());
         assertEquals(databaseOneId.longValue(), ((Number) selectedServerDatabases.get(0).get("ID")).longValue());
+    }
+
+    @Test
+    void listPhysicalDatabaseNamesReadsServerCatalogAndFiltersSystemSchemas() {
+        Number serverId = createServer("Physical Database Server");
+        jdbcTemplate.execute("CREATE SCHEMA CRM_DB");
+        jdbcTemplate.execute("CREATE SCHEMA SALES_DB");
+
+        List<String> names = databaseService.listPhysicalDatabaseNames(serverId.longValue(), true, "t1");
+
+        assertEquals(List.of("CRM_DB", "SALES_DB"), names);
     }
 
     @Test

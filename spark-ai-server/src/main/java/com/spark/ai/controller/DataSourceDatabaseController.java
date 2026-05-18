@@ -29,7 +29,25 @@ public class DataSourceDatabaseController {
         return ResponseEntity.ok(databaseService.listDatabases(tenantId, projectId, serverId));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/catalog/physical-names")
+    public ResponseEntity<?> listPhysicalDatabaseNames(@PathVariable String tenantId,
+                                                       @PathVariable String projectId,
+                                                       @RequestParam(name = "serverId") Long serverId) {
+        accessGuard.requireProjectAdmin(tenantId, projectId);
+        var ctx = AuthenticatedRequestContext.currentOrNull();
+        if (ctx == null) throw new SecurityException("UNAUTHORIZED");
+        try {
+            return ResponseEntity.ok(databaseService.listPhysicalDatabaseNames(
+                    serverId,
+                    ctx.isPlatformAdmin(),
+                    ctx.tenantId()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<?> getDatabase(@PathVariable Long id) {
         return ResponseEntity.ok(databaseService.getDatabase(id));
     }
@@ -51,7 +69,7 @@ public class DataSourceDatabaseController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public ResponseEntity<?> updateDatabase(@PathVariable String tenantId,
                                             @PathVariable String projectId,
                                             @PathVariable Long id,
@@ -60,7 +78,7 @@ public class DataSourceDatabaseController {
         return ResponseEntity.ok(databaseService.updateDatabase(id, body));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:[0-9]+}")
     public ResponseEntity<?> deleteDatabase(
             @PathVariable String tenantId,
             @PathVariable String projectId,

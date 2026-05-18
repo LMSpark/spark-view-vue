@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -53,6 +55,30 @@ public class DataSourceDatabaseService {
         }
         sql += " ORDER BY d.CREATED_AT DESC";
         return jdbc.queryForList(sql, args.toArray());
+    }
+
+    public List<String> listPhysicalDatabaseNames(Long serverId, boolean isPlatformAdmin, String currentTenant) {
+        if (serverId == null) throw new IllegalArgumentException("serverId 不能为空");
+        Map<String, Object> server = jdbc.queryForMap(
+                "SELECT HOST, PORT, DB_TYPE, USERNAME, PASSWORD, ISOLATION_MODE, TENANT_ID"
+                        + " FROM DATA_SOURCE_SERVER WHERE ID = ?",
+                serverId);
+        requireServerAccess(server, isPlatformAdmin, currentTenant);
+
+        String host = (String) server.get("HOST");
+        int port = ((Number) server.get("PORT")).intValue();
+        String dbType = (String) server.get("DB_TYPE");
+        String username = (String) server.get("USERNAME");
+        String password = cryptoUtil.decrypt((String) server.get("PASSWORD"));
+        DatabaseDialect dialect = parseDialect(dbType);
+
+        try (Connection conn = dsManager.createSingleConnection(host, port, dbType, username, password)) {
+            List<String> names = queryPhysicalDatabaseNames(conn, dialect);
+            names.sort(String.CASE_INSENSITIVE_ORDER);
+            return names;
+        } catch (Exception e) {
+            throw new RuntimeException("读取服务器数据库列表失败: " + e.getMessage(), e);
+        }
     }
 
     public Map<String, Object> getDatabase(Long id) {
@@ -169,6 +195,49 @@ public class DataSourceDatabaseService {
         log.info("[DB] 删除数据库 id={}", id);
     }
 
+    private List<String> queryPhysicalDatabaseNames(Connection conn, DatabaseDialect dialect) throws SQLException {
+        String sql = switch (dialect) {
+            case MYSQL -> "SHOW DATABASES";
+            case POSTGRESQL -> "SELECT datname FROM pg_database WHERE datallowconn = true AND datistemplate = false ORDER BY datname";
+            case H2 -> "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA ORDER BY SCHEMA_NAME";
+        };
+        List<String> names = new ArrayList<>();
+        Set<String> seen = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String name = optionalString(rs.getString(1));
+                if (name != null && isUserDatabaseName(dialect, name) && seen.add(name)) {
+                    names.add(name);
+                }
+            }
+        }
+        return names;
+    }
+
+    private boolean isUserDatabaseName(DatabaseDialect dialect, String databaseName) {
+        String normalized = databaseName.toLowerCase(Locale.ROOT);
+        return switch (dialect) {
+            case MYSQL -> !Set.of("information_schema", "mysql", "performance_schema", "sys").contains(normalized);
+            case POSTGRESQL -> !Set.of("template0", "template1").contains(normalized);
+            case H2 -> !Set.of("information_schema", "public").contains(normalized);
+        };
+    }
+
+    private void requireServerAccess(Map<String, Object> server, boolean isPlatformAdmin, String currentTenant) {
+        if (isPlatformAdmin) {
+            return;
+        }
+        String isolationMode = Objects.toString(server.get("ISOLATION_MODE"), "");
+        String tenantId = Objects.toString(server.get("TENANT_ID"), "");
+        if (DataIsolationMode.TENANT_SHARED.name().equals(isolationMode)) {
+            return;
+        }
+        if (!currentTenant.equals(tenantId)) {
+            throw new SecurityException("DATA_SOURCE_SERVER_ACCESS_DENIED");
+        }
+    }
+
     private void executeOnServer(Map<String, Object> server, DatabaseDialect dialect, String sql) {
         String host = (String) server.get("HOST");
         int port = ((Number) server.get("PORT")).intValue();
@@ -236,6 +305,7 @@ public class DataSourceDatabaseService {
         return switch (dbType.toLowerCase()) {
             case "mysql" -> DatabaseDialect.MYSQL;
             case "postgresql", "postgres" -> DatabaseDialect.POSTGRESQL;
+            case "h2" -> DatabaseDialect.H2;
             default -> DatabaseDialect.MYSQL;
         };
     }

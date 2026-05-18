@@ -256,12 +256,40 @@
     <el-dialog v-model="dlgDb.visible" title="注册数据库" width="500px" @closed="resetDbForm">
       <el-form :model="dlgDb.form" label-width="100px">
         <el-form-item label="服务器">{{ selectedServer?.SERVER_NAME }} ({{ selectedServer?.HOST }}:{{ selectedServer?.PORT }})</el-form-item>
-        <el-form-item label="数据库名"><el-input v-model="dlgDb.form.databaseName" placeholder="如：spark_crm" /></el-form-item>
         <el-form-item label="操作">
-          <el-radio-group v-model="dlgDb.form.createNew">
+          <el-radio-group v-model="dlgDb.form.createNew" @change="onDatabaseOperationChange">
             <el-radio :value="false">连接已有</el-radio>
             <el-radio :value="true">新建数据库</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item :label="dlgDb.form.createNew ? '数据库名' : '选择数据库'">
+          <el-input v-if="dlgDb.form.createNew" v-model="dlgDb.form.databaseName" placeholder="如：spark_crm" />
+          <div v-else class="database-picker">
+            <el-select
+              v-model="dlgDb.form.databaseName"
+              filterable
+              clearable
+              placeholder="请选择已有数据库"
+              no-data-text="暂无可选择数据库"
+              loading-text="加载数据库..."
+              :loading="physicalDatabasesLoading"
+              @visible-change="onDatabasePickerVisibleChange"
+            >
+              <el-option
+                v-for="option in physicalDatabaseOptions"
+                :key="option.name"
+                :label="option.registered ? `${option.name}（已注册）` : option.name"
+                :value="option.name"
+                :disabled="option.registered"
+              />
+            </el-select>
+            <el-button
+              :icon="Refresh"
+              :loading="physicalDatabasesLoading"
+              aria-label="刷新数据库列表"
+              @click="loadPhysicalDatabases"
+            />
+          </div>
         </el-form-item>
         <el-form-item label="隔离模式">
           <el-radio-group v-model="dlgDb.form.isolationMode">
@@ -364,7 +392,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Plus, Loading, Delete, Connection, Coin, FolderOpened, Grid } from '@element-plus/icons-vue'
+import { Plus, Loading, Delete, Connection, Coin, FolderOpened, Grid, Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
@@ -532,10 +560,20 @@ const servers = ref<DbmsServer[]>([])
 const databases = ref<DbmsDatabase[]>([])
 const tables = ref<DbmsTable[]>([])
 const relations = ref<DbmsRelation[]>([])
+const physicalDatabaseNames = ref<string[]>([])
+const physicalDatabasesLoading = ref(false)
 
 const selectedServer = ref<DbmsServer | null>(null)
 const selectedDatabase = ref<DbmsDatabase | null>(null)
 const selectedTable = ref<DbmsTable | null>(null)
+
+const registeredDatabaseNames = computed(() => new Set(
+  databases.value.map((db) => db.DATABASE_NAME.toLowerCase())
+))
+const physicalDatabaseOptions = computed(() => physicalDatabaseNames.value.map((name) => ({
+  name,
+  registered: registeredDatabaseNames.value.has(name.toLowerCase()),
+})))
 
 const selectedObjectTitle = computed(() => (
   selectedTable.value?.tableName
@@ -728,6 +766,7 @@ const dlgDb = reactive({
 
 function resetDbForm() {
   dlgDb.form = { databaseName: '', createNew: false, isolationMode: 'PROJECT_ISOLATED', connectionMode: 'DIRECT', jndiName: '', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' }
+  physicalDatabaseNames.value = []
 }
 
 function openCreateDatabase() {
@@ -735,6 +774,36 @@ function openCreateDatabase() {
   const first = databaseIsolationOptions.value[0]
   if (first) dlgDb.form.isolationMode = first.value
   dlgDb.visible = true
+  void loadPhysicalDatabases()
+}
+
+function onDatabaseOperationChange(value: string | number | boolean | undefined) {
+  dlgDb.form.databaseName = ''
+  if (value === false) void loadPhysicalDatabases()
+}
+
+function onDatabasePickerVisibleChange(visible: boolean) {
+  if (visible && physicalDatabaseNames.value.length === 0) void loadPhysicalDatabases()
+}
+
+async function loadPhysicalDatabases() {
+  const server = selectedServer.value
+  if (!server) return
+  const serverId = server.ID
+  physicalDatabasesLoading.value = true
+  try {
+    const names = await http.get<string[]>(`${scopePath.value}/databases/catalog/physical-names`, { serverId })
+    if (selectedServer.value?.ID === serverId) {
+      physicalDatabaseNames.value = names
+    }
+  } catch (error) {
+    if (selectedServer.value?.ID === serverId) {
+      physicalDatabaseNames.value = []
+      ElMessage.error(`加载数据库列表失败: ${apiErrorMessage(error)}`)
+    }
+  } finally {
+    physicalDatabasesLoading.value = false
+  }
 }
 
 async function submitCreateDatabase() {
@@ -1286,6 +1355,17 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
+}
+
+.database-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  gap: 8px;
+}
+
+.database-picker :deep(.el-select) {
+  width: 100%;
 }
 
 .relation-list {

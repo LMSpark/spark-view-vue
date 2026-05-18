@@ -118,7 +118,7 @@ public class DynamicDataSourceManager {
     public Connection createSingleConnection(String host, int port, String dbType, String username, String password) {
         try {
             DatabaseDialect dialect = parseDialect(dbType);
-            String url = dialect.jdbcUrl(host, port, "mysql".equals(dbType) ? "mysql" : "postgres");
+            String url = dialect.jdbcUrl(host, port, serverConnectionDatabaseName(dialect));
             return DriverManager.getConnection(url, username, password);
         } catch (Exception e) {
             throw new RuntimeException("连接服务器失败: " + host + ":" + port, e);
@@ -130,7 +130,7 @@ public class DynamicDataSourceManager {
      */
     public boolean testConnection(String host, int port, String dbType, String username, String password) {
         DatabaseDialect dialect = parseDialect(dbType);
-        String url = dialect.jdbcUrl(host, port, "mysql".equals(dbType) ? "mysql" : "postgres");
+        String url = dialect.jdbcUrl(host, port, serverConnectionDatabaseName(dialect));
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
@@ -145,6 +145,14 @@ public class DynamicDataSourceManager {
             log.warn("[DS] 连接测试失败: {}:{} {}", host, port, e.getMessage());
             return false;
         }
+    }
+
+    private String serverConnectionDatabaseName(DatabaseDialect dialect) {
+        return switch (dialect) {
+            case MYSQL -> "information_schema";
+            case POSTGRESQL -> "postgres";
+            case H2 -> "spark";
+        };
     }
 
     private DataSourceEntry createEntry(Long databaseId) {
