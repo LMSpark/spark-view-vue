@@ -10,140 +10,219 @@
       </div>
     </div>
 
-    <div class="context-strip" aria-label="当前数据库管理层级">
-      <div :class="['context-card', { active: selectedServer }]">
-        <span class="context-label">01 服务器</span>
-        <strong>{{ selectedServer?.SERVER_NAME ?? '未选择服务器' }}</strong>
-        <span>{{ servers.length }} 个服务器</span>
+    <div class="dbms-toolbar">
+      <div class="location-bar">
+        <span>对象资源管理器</span>
+        <span v-if="selectedServer">{{ selectedServer.SERVER_NAME }}</span>
+        <span v-if="selectedDatabase">{{ selectedDatabase.DATABASE_NAME }}</span>
+        <span v-if="selectedTable">{{ selectedTable.tableName }}</span>
       </div>
-      <div :class="['context-card', { active: selectedDatabase, disabled: !selectedServer }]">
-        <span class="context-label">02 数据库</span>
-        <strong>{{ selectedDatabase?.DATABASE_NAME ?? '未选择数据库' }}</strong>
-        <span>{{ selectedServer ? databases.length + ' 个数据库' : '待选择服务器' }}</span>
-      </div>
-      <div :class="['context-card', { active: selectedDatabase, disabled: !selectedDatabase }]">
-        <span class="context-label">03 数据表</span>
-        <strong>{{ selectedDatabase ? selectedDatabase.DATABASE_NAME : '未选择数据库' }}</strong>
-        <span>{{ selectedDatabase ? tables.length + ' 张表' : '待选择数据库' }}</span>
+      <div class="toolbar-actions">
+        <el-button v-if="selectedServer" size="small" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
+        <el-button v-if="selectedDatabase" size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
       </div>
     </div>
 
     <div class="dbms-body">
-      <!-- 服务器列表 -->
-      <div class="panel panel-left">
-        <div class="panel-header">
-          <div class="panel-heading">
-            <div class="panel-title-row">
-              <span class="panel-index">01</span>
-              <span class="panel-title">数据库服务器</span>
-            </div>
-            <div class="panel-meta">{{ loading.servers ? '加载中' : servers.length + ' 个服务器' }}</div>
+      <aside class="object-explorer">
+        <div class="pane-header">
+          <div>
+            <strong>对象资源管理器</strong>
+            <span>{{ servers.length }} 个连接</span>
           </div>
         </div>
-        <div class="panel-body">
+        <div class="tree-body">
           <div v-if="loading.servers" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
           <div v-else-if="!servers.length" class="empty">暂无服务器</div>
-          <div
-            v-for="srv in servers"
-            :key="srv.ID"
-            :class="['list-item', { active: selectedServer?.ID === srv.ID }]"
-            @click="selectServer(srv)"
-          >
-            <div class="item-main">
-              <span class="item-name" :title="srv.SERVER_NAME">{{ srv.SERVER_NAME }}</span>
-              <div class="item-tags">
-                <el-tag size="small" :type="isolationTagType(srv.ISOLATION_MODE)">
-                  {{ isolationModeLabel(srv.ISOLATION_MODE) }}
-                </el-tag>
+          <template v-else>
+            <div v-for="srv in servers" :key="srv.ID" class="tree-group">
+              <button
+                type="button"
+                :class="['tree-node', 'server-node', { active: selectedServer?.ID === srv.ID }]"
+                @click="selectServer(srv)"
+              >
+                <span class="tree-expander">{{ selectedServer?.ID === srv.ID ? '▾' : '▸' }}</span>
+                <el-icon><Connection /></el-icon>
+                <span class="tree-label" :title="srv.SERVER_NAME">{{ srv.SERVER_NAME }}</span>
+              </button>
+              <div v-if="selectedServer?.ID === srv.ID" class="tree-children">
+                <div class="tree-meta">{{ srv.HOST }}:{{ srv.PORT }} · {{ srv.DB_TYPE }}</div>
+                <div v-if="loading.databases" class="tree-loading">加载数据库...</div>
+                <div v-else-if="!databases.length" class="tree-empty">暂无数据库</div>
+                <div v-for="treeDb in databases" :key="treeDb.ID">
+                  <button
+                    type="button"
+                    :class="['tree-node', 'database-node', { active: selectedDatabase?.ID === treeDb.ID }]"
+                    @click="selectDatabase(treeDb)"
+                  >
+                    <span class="tree-expander">{{ selectedDatabase?.ID === treeDb.ID ? '▾' : '▸' }}</span>
+                    <el-icon><Coin /></el-icon>
+                    <span class="tree-label" :title="treeDb.DATABASE_NAME">{{ treeDb.DATABASE_NAME }}</span>
+                  </button>
+                  <div v-if="selectedDatabase?.ID === treeDb.ID" class="tree-children tables-branch">
+                    <button type="button" class="tree-node folder-node">
+                      <span class="tree-expander">▾</span>
+                      <el-icon><FolderOpened /></el-icon>
+                      <span class="tree-label">Tables</span>
+                      <span class="tree-count">{{ tables.length }}</span>
+                    </button>
+                    <div v-if="loading.tables" class="tree-loading">加载数据表...</div>
+                    <div v-else-if="!tables.length" class="tree-empty">暂无数据表</div>
+                    <template v-else>
+                      <button
+                        v-for="tbl in tables"
+                        :key="tbl.id"
+                        type="button"
+                        :class="['tree-node', 'table-node', { active: selectedTable?.id === tbl.id }]"
+                        @click="selectTable(tbl)"
+                      >
+                        <span class="tree-expander"></span>
+                        <el-icon><Grid /></el-icon>
+                        <span class="tree-label" :title="tbl.tableName">{{ tbl.tableName }}</span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="item-sub">{{ srv.HOST }}:{{ srv.PORT }} ({{ srv.DB_TYPE }})</div>
-            <div class="item-actions" v-if="selectedServer?.ID === srv.ID">
-              <el-button size="small" text @click.stop="testServerConnection(srv)" :loading="testingId === srv.ID">测试</el-button>
-              <el-button size="small" text type="danger" @click.stop="deleteServerConfirm(srv)">删除</el-button>
-            </div>
-          </div>
+          </template>
         </div>
-      </div>
+      </aside>
 
-      <!-- 数据库列表 -->
-      <div class="panel panel-center">
-        <div class="panel-header">
-          <div class="panel-heading">
-            <div class="panel-title-row">
-              <span class="panel-index">02</span>
-              <span class="panel-title">数据库</span>
-            </div>
-            <div class="panel-meta">
-              {{ selectedServer ? selectedServer.SERVER_NAME + ' · ' + databases.length + ' 个数据库' : '待选择服务器' }}
-            </div>
-          </div>
-          <el-button v-if="selectedServer" size="small" type="primary" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
+      <main class="workspace-main">
+        <div class="workspace-tabs">
+          <button type="button" class="workspace-tab active">对象</button>
+          <button type="button" class="workspace-tab" disabled>结构</button>
+          <button type="button" class="workspace-tab" disabled>SQL</button>
         </div>
-        <div class="panel-body">
-          <div v-if="!selectedServer" class="empty">请先选择服务器</div>
-          <div v-else-if="loading.databases" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
-          <div v-else-if="!databases.length" class="empty">暂无数据库</div>
-          <div
-            v-for="db in databases"
-            :key="db.ID"
-            :class="['list-item', { active: selectedDatabase?.ID === db.ID }]"
-            @click="selectDatabase(db)"
-          >
-            <div class="item-main">
-              <span class="item-name" :title="db.DATABASE_NAME">{{ db.DATABASE_NAME }}</span>
-              <div class="item-tags">
-                <el-tag size="small" :type="isolationTagType(db.ISOLATION_MODE)">
-                  {{ isolationModeLabel(db.ISOLATION_MODE) }}
-                </el-tag>
-                <el-tag size="small" :type="db.CONNECTION_MODE === 'JNDI_XA' ? 'success' : 'info'">
-                  {{ db.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : '直连' }}
-                </el-tag>
-              </div>
-            </div>
-            <div class="item-sub" v-if="db.CONNECTION_MODE === 'JNDI_XA'">{{ db.JNDI_NAME }}</div>
-            <div class="item-actions" v-if="selectedDatabase?.ID === db.ID">
-              <el-button size="small" text type="danger" @click.stop="deleteDatabaseConfirm(db)">删除</el-button>
-            </div>
+        <div class="workspace-header">
+          <div class="workspace-title">
+            <h3>{{ selectedObjectTitle }}</h3>
+            <span>{{ selectedObjectPath }}</span>
+          </div>
+          <div class="workspace-stats">
+            <span>{{ databases.length }} 数据库</span>
+            <span>{{ tables.length }} 表</span>
           </div>
         </div>
-      </div>
 
-      <!-- 表列表 -->
-      <div class="panel panel-right">
-        <div class="panel-header">
-          <div class="panel-heading">
-            <div class="panel-title-row">
-              <span class="panel-index">03</span>
-              <span class="panel-title">数据表</span>
+        <div class="object-grid">
+          <div v-if="!selectedServer" class="empty large-empty">请从左侧对象资源管理器选择服务器</div>
+          <div v-else-if="!selectedDatabase" class="table-wrap">
+            <div class="grid-title">
+              <strong>数据库</strong>
+              <el-button size="small" type="primary" :icon="Plus" @click="openCreateDatabase">注册数据库</el-button>
             </div>
-            <div class="panel-meta">
-              {{ selectedDatabase ? selectedDatabase.DATABASE_NAME + ' · ' + tables.length + ' 张表' : '待选择数据库' }}
-            </div>
+            <div v-if="loading.databases" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
+            <div v-else-if="!databases.length" class="empty">暂无数据库</div>
+            <table v-else class="dbms-table">
+              <thead>
+                <tr>
+                  <th>名称</th>
+                  <th>连接模式</th>
+                  <th>隔离模式</th>
+                  <th>JNDI</th>
+                  <th class="operation-col">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="db in databases"
+                  :key="db.ID"
+                  :class="dbRowClass(db)"
+                  @click="selectDatabase(db)"
+                >
+                  <td class="object-name"><el-icon><Coin /></el-icon>{{ db.DATABASE_NAME }}</td>
+                  <td>{{ db.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : 'DIRECT' }}</td>
+                  <td><el-tag size="small" :type="isolationTagType(db.ISOLATION_MODE)">{{ isolationModeLabel(db.ISOLATION_MODE) }}</el-tag></td>
+                  <td class="mono-cell">{{ db.JNDI_NAME || '-' }}</td>
+                  <td class="operation-col">
+                    <el-button size="small" text type="danger" @click.stop="deleteDatabaseConfirm(db)">删除</el-button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <el-button v-if="selectedDatabase" size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
-        </div>
-        <div class="panel-body">
-          <div v-if="!selectedDatabase" class="empty">请先选择数据库</div>
-          <div v-else-if="loading.tables" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
-          <div v-else-if="!tables.length" class="empty">暂无数据表</div>
-          <div v-for="tbl in tables" :key="tbl.id" class="list-item">
-            <div class="item-main">
-              <span class="item-name" :title="tbl.tableName">{{ tbl.tableName }}</span>
-              <div class="item-tags">
-                <el-tag size="small" :type="isolationTagType(tbl.isolationMode)">
-                  {{ isolationModeLabel(tbl.isolationMode) }}
-                </el-tag>
-              </div>
+          <div v-else class="table-wrap">
+            <div class="grid-title">
+              <strong>数据表</strong>
+              <el-button size="small" type="primary" :icon="Plus" @click="openCreateTable">创建表</el-button>
             </div>
-            <div class="item-sub">{{ tbl.physicalTableName }}</div>
-            <div class="item-actions">
-              <el-button size="small" text @click="viewTableRelation(tbl)">关系</el-button>
-              <el-button size="small" text type="danger" @click="deleteTableConfirm(tbl)">删除</el-button>
-            </div>
+            <div v-if="loading.tables" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
+            <div v-else-if="!tables.length" class="empty">暂无数据表</div>
+            <table v-else class="dbms-table">
+              <thead>
+                <tr>
+                  <th>逻辑表名</th>
+                  <th>物理表名</th>
+                  <th>隔离模式</th>
+                  <th>字段数</th>
+                  <th class="operation-col">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="tbl in tables"
+                  :key="tbl.id"
+                  :class="{ selected: selectedTable?.id === tbl.id }"
+                  @click="selectTable(tbl)"
+                >
+                  <td class="object-name"><el-icon><Grid /></el-icon>{{ tbl.tableName }}</td>
+                  <td class="mono-cell">{{ tbl.physicalTableName || '-' }}</td>
+                  <td><el-tag size="small" :type="isolationTagType(tbl.isolationMode)">{{ isolationModeLabel(tbl.isolationMode) }}</el-tag></td>
+                  <td>{{ tbl.columns?.length ?? '-' }}</td>
+                  <td class="operation-col">
+                    <el-button size="small" text @click.stop="viewTableRelation(tbl)">关系</el-button>
+                    <el-button size="small" text type="danger" @click.stop="deleteTableConfirm(tbl)">删除</el-button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
+      </main>
+
+      <aside class="property-pane">
+        <div class="pane-header">
+          <div>
+            <strong>属性</strong>
+            <span>{{ selectedObjectTitle }}</span>
+          </div>
+        </div>
+        <dl class="property-list">
+          <template v-if="selectedTable">
+            <dt>对象类型</dt><dd>数据表</dd>
+            <dt>逻辑表名</dt><dd>{{ selectedTable.tableName }}</dd>
+            <dt>物理表名</dt><dd>{{ selectedTable.physicalTableName || '-' }}</dd>
+            <dt>隔离模式</dt><dd>{{ isolationModeLabel(selectedTable.isolationMode) }}</dd>
+            <dt>字段数量</dt><dd>{{ selectedTable.columns?.length ?? '-' }}</dd>
+          </template>
+          <template v-else-if="selectedDatabase">
+            <dt>对象类型</dt><dd>数据库</dd>
+            <dt>数据库名</dt><dd>{{ selectedDatabase.DATABASE_NAME }}</dd>
+            <dt>连接模式</dt><dd>{{ selectedDatabase.CONNECTION_MODE === 'JNDI_XA' ? 'JNDI XA' : 'DIRECT' }}</dd>
+            <dt>隔离模式</dt><dd>{{ isolationModeLabel(selectedDatabase.ISOLATION_MODE) }}</dd>
+            <dt>数据表</dt><dd>{{ tables.length }} 张</dd>
+          </template>
+          <template v-else-if="selectedServer">
+            <dt>对象类型</dt><dd>服务器</dd>
+            <dt>名称</dt><dd>{{ selectedServer.SERVER_NAME }}</dd>
+            <dt>地址</dt><dd>{{ selectedServer.HOST }}:{{ selectedServer.PORT }}</dd>
+            <dt>类型</dt><dd>{{ selectedServer.DB_TYPE }}</dd>
+            <dt>隔离模式</dt><dd>{{ isolationModeLabel(selectedServer.ISOLATION_MODE) }}</dd>
+          </template>
+          <template v-else>
+            <dt>服务器</dt><dd>{{ servers.length }} 个</dd>
+            <dt>当前租户</dt><dd>{{ currentTenant }}</dd>
+            <dt>当前项目</dt><dd>{{ currentProject }}</dd>
+          </template>
+        </dl>
+        <div class="property-actions">
+          <el-button v-if="selectedServer" size="small" @click="testServerConnection(selectedServer)" :loading="testingId === selectedServer.ID">测试连接</el-button>
+          <el-button v-if="selectedTable" size="small" @click="viewTableRelation(selectedTable)">表关系</el-button>
+          <el-button v-if="selectedDatabase" size="small" type="primary" @click="openCreateTable">创建表</el-button>
+        </div>
+      </aside>
     </div>
 
     <!-- 注册服务器 Dialog -->
@@ -285,7 +364,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Plus, Loading, Delete } from '@element-plus/icons-vue'
+import { Plus, Loading, Delete, Connection, Coin, FolderOpened, Grid } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
@@ -456,6 +535,23 @@ const relations = ref<DbmsRelation[]>([])
 
 const selectedServer = ref<DbmsServer | null>(null)
 const selectedDatabase = ref<DbmsDatabase | null>(null)
+const selectedTable = ref<DbmsTable | null>(null)
+
+const selectedObjectTitle = computed(() => (
+  selectedTable.value?.tableName
+  ?? selectedDatabase.value?.DATABASE_NAME
+  ?? selectedServer.value?.SERVER_NAME
+  ?? '连接概览'
+))
+
+const selectedObjectPath = computed(() => {
+  const parts = [
+    selectedServer.value?.SERVER_NAME,
+    selectedDatabase.value?.DATABASE_NAME,
+    selectedTable.value?.tableName,
+  ].filter((part): part is string => typeof part === 'string' && part.length > 0)
+  return parts.length > 0 ? parts.join(' / ') : '未选择对象'
+})
 
 // ── 数据加载 ──
 async function loadServers() {
@@ -465,6 +561,7 @@ async function loadServers() {
     if (selectedServer.value && !servers.value.some((srv) => srv.ID === selectedServer.value?.ID)) {
       selectedServer.value = null
       selectedDatabase.value = null
+      selectedTable.value = null
       databases.value = []
       tables.value = []
       relations.value = []
@@ -496,11 +593,17 @@ async function loadTables() {
   loading.tables = true
   try {
     const rows = await http.get<DbmsTable[]>(`${scopePath.value}/data-model/tables`, { databaseId })
-    if (selectedDatabase.value?.ID === databaseId) tables.value = rows
+    if (selectedDatabase.value?.ID === databaseId) {
+      tables.value = rows
+      if (selectedTable.value && !rows.some((tbl) => tbl.id === selectedTable.value?.id)) {
+        selectedTable.value = null
+      }
+    }
   } catch (error) {
     if (selectedDatabase.value?.ID === databaseId) {
       ElMessage.error(`加载数据表失败: ${apiErrorMessage(error)}`)
       tables.value = []
+      selectedTable.value = null
     }
   } finally { loading.tables = false }
 }
@@ -523,6 +626,7 @@ async function loadRelations() {
 function selectServer(srv: DbmsServer) {
   selectedServer.value = srv
   selectedDatabase.value = null
+  selectedTable.value = null
   databases.value = []
   tables.value = []
   relations.value = []
@@ -531,10 +635,19 @@ function selectServer(srv: DbmsServer) {
 
 function selectDatabase(db: DbmsDatabase) {
   selectedDatabase.value = db
+  selectedTable.value = null
   tables.value = []
   relations.value = []
   void loadTables()
   void loadRelations()
+}
+
+function dbRowClass(db: DbmsDatabase) {
+  return { selected: selectedDatabase.value?.ID === db.ID }
+}
+
+function selectTable(tbl: DbmsTable) {
+  selectedTable.value = tbl
 }
 
 // ── 服务器 Dialog ──
@@ -586,7 +699,7 @@ async function testServerConnection(srv: DbmsServer) {
   } finally { testingId.value = null }
 }
 
-async function deleteServerConfirm(srv: DbmsServer) {
+async function _deleteServerConfirm(srv: DbmsServer) {
   try {
     await ElMessageBox.confirm(`确定删除服务器 "${srv.SERVER_NAME}"？`, '确认删除', { type: 'warning' })
     await http.delete(`/api/servers/${srv.ID}`)
@@ -594,6 +707,7 @@ async function deleteServerConfirm(srv: DbmsServer) {
     if (selectedServer.value?.ID === srv.ID) {
       selectedServer.value = null
       selectedDatabase.value = null
+      selectedTable.value = null
       databases.value = []
       tables.value = []
       relations.value = []
@@ -667,6 +781,7 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
     ElMessage.success('已删除')
     if (selectedDatabase.value?.ID === db.ID) {
       selectedDatabase.value = null
+      selectedTable.value = null
       tables.value = []
       relations.value = []
     }
@@ -733,6 +848,7 @@ async function deleteTableConfirm(tbl: DbmsTable) {
     await ElMessageBox.confirm(`确定删除表 "${tbl.tableName}"？`, '确认删除', { type: 'warning' })
     await http.delete(`${scopePath.value}/data-model/tables/${encodeURIComponent(tbl.tableName)}`, { dropPhysical: false })
     ElMessage.success('已删除')
+    if (selectedTable.value?.id === tbl.id) selectedTable.value = null
     void loadTables()
     void loadRelations()
   } catch (error) {
@@ -1242,6 +1358,503 @@ onMounted(() => {
   .panel-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+/* DBMS workbench layout: object explorer + object grid + property inspector. */
+.dbms-page {
+  --dbms-text: #1f2933;
+  --dbms-muted: #667085;
+  --dbms-border: #cfd7e3;
+  --dbms-soft-border: #e3e8ef;
+  --dbms-panel: #ffffff;
+  --dbms-chrome: #f2f4f7;
+  --dbms-chrome-dark: #e7ebf1;
+  --dbms-selected: #dbeafe;
+  --dbms-selected-border: #60a5fa;
+  --dbms-accent: #2563eb;
+  gap: 10px;
+  padding: 14px;
+  background: #eef2f7;
+}
+
+.dbms-header {
+  min-height: 40px;
+  padding: 0 2px;
+}
+
+.dbms-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.dbms-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--dbms-border);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f9fafb 0%, var(--dbms-chrome-dark) 100%);
+}
+
+.location-bar {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--dbms-muted);
+  font-size: 12px;
+}
+
+.location-bar span {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-bar span + span::before {
+  flex: 0 0 auto;
+  margin: 0 7px;
+  color: #98a2b3;
+  content: '/';
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.dbms-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px minmax(420px, 1fr) 280px;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.object-explorer,
+.workspace-main,
+.property-pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--dbms-border);
+  border-radius: 4px;
+  background: var(--dbms-panel);
+  box-shadow: none;
+}
+
+.object-explorer,
+.property-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-main {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dbms-border);
+  background: var(--dbms-chrome);
+}
+
+.pane-header div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pane-header strong {
+  overflow: hidden;
+  color: #111827;
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pane-header span {
+  overflow: hidden;
+  color: var(--dbms-muted);
+  font-size: 12px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px;
+  background: #fbfcfe;
+}
+
+.tree-group + .tree-group {
+  margin-top: 2px;
+}
+
+.tree-node {
+  display: grid;
+  grid-template-columns: 16px 18px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: 26px;
+  gap: 5px;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: #344054;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tree-node:hover {
+  border-color: #d0d5dd;
+  background: #f2f4f7;
+}
+
+.tree-node.active {
+  border-color: #93c5fd;
+  background: var(--dbms-selected);
+  color: #123b73;
+}
+
+.tree-node .el-icon {
+  color: #475467;
+  font-size: 15px;
+}
+
+.server-node .el-icon {
+  color: #155eef;
+}
+
+.database-node .el-icon {
+  color: #0f766e;
+}
+
+.table-node .el-icon,
+.folder-node .el-icon {
+  color: #7c2d12;
+}
+
+.tree-expander {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #667085;
+  font-size: 11px;
+}
+
+.tree-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-count {
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  color: #475467;
+  background: #e4e7ec;
+  font-size: 11px;
+  text-align: center;
+}
+
+.tree-children {
+  margin: 2px 0 2px 13px;
+  padding-left: 9px;
+  border-left: 1px solid #d8dee8;
+}
+
+.tables-branch {
+  margin-left: 17px;
+}
+
+.tree-meta,
+.tree-loading,
+.tree-empty {
+  padding: 3px 6px 5px 27px;
+  color: var(--dbms-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.workspace-tabs {
+  display: flex;
+  align-items: flex-end;
+  height: 34px;
+  padding: 5px 8px 0;
+  border-bottom: 1px solid var(--dbms-border);
+  background: var(--dbms-chrome);
+}
+
+.workspace-tab {
+  min-width: 74px;
+  height: 29px;
+  margin-right: 2px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  color: #475467;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.workspace-tab.active {
+  border-color: var(--dbms-border);
+  color: #111827;
+  background: #ffffff;
+  font-weight: 600;
+}
+
+.workspace-tab:disabled {
+  color: #98a2b3;
+  cursor: default;
+}
+
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 62px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--dbms-soft-border);
+  background: #ffffff;
+}
+
+.workspace-title {
+  min-width: 0;
+}
+
+.workspace-title h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-title span {
+  display: block;
+  overflow: hidden;
+  margin-top: 4px;
+  color: var(--dbms-muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-stats {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.workspace-stats span {
+  padding: 3px 8px;
+  border: 1px solid #d0d5dd;
+  border-radius: 3px;
+  color: #475467;
+  background: #f9fafb;
+  font-size: 12px;
+}
+
+.object-grid {
+  min-height: 0;
+  overflow: auto;
+  background: #ffffff;
+}
+
+.table-wrap {
+  min-width: 720px;
+  padding: 12px;
+}
+
+.grid-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.grid-title strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.dbms-table {
+  width: 100%;
+  border: 1px solid var(--dbms-border);
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.dbms-table th,
+.dbms-table td {
+  overflow: hidden;
+  height: 36px;
+  padding: 0 10px;
+  border-right: 1px solid var(--dbms-soft-border);
+  border-bottom: 1px solid var(--dbms-soft-border);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbms-table th {
+  color: #475467;
+  background: #f2f4f7;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dbms-table tbody tr {
+  cursor: pointer;
+}
+
+.dbms-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.dbms-table tbody tr.selected {
+  background: var(--dbms-selected);
+}
+
+.object-name {
+  color: #111827;
+  font-weight: 600;
+}
+
+.object-name .el-icon {
+  margin-right: 6px;
+  color: #475467;
+  vertical-align: -2px;
+}
+
+.mono-cell {
+  color: #475467;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.operation-col {
+  width: 150px;
+  text-align: right;
+}
+
+.property-list {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.property-list dt,
+.property-list dd {
+  min-height: 30px;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid #edf1f6;
+  line-height: 1.35;
+}
+
+.property-list dt {
+  color: var(--dbms-muted);
+}
+
+.property-list dd {
+  overflow: hidden;
+  color: #111827;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.property-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding: 10px;
+  border-top: 1px solid var(--dbms-border);
+  background: #fbfcfe;
+}
+
+.loading,
+.empty {
+  min-height: 96px;
+  border: 1px dashed #d0d5dd;
+  border-radius: 4px;
+  color: var(--dbms-muted);
+  background: #f9fafb;
+}
+
+.large-empty {
+  min-height: 260px;
+  margin: 12px;
+}
+
+@media (max-width: 1280px) {
+  .dbms-body {
+    grid-template-columns: 280px minmax(420px, 1fr);
+  }
+
+  .property-pane {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .dbms-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dbms-body {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .object-explorer,
+  .workspace-main {
+    min-height: 320px;
   }
 }
 </style>

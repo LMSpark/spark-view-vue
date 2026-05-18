@@ -1,123 +1,14 @@
 <template>
-  <div class="tenant-config-demo">
-    <h2>🏢 多租户配置演示</h2>
-    
-    <el-card class="info-card">
-      <template #header>
-        <div class="card-header">
-          <span>当前租户信息</span>
-        </div>
+  <div class="tenant-config-legacy">
+    <el-result
+      icon="info"
+      title="租户配置已整合"
+      sub-title="租户配置现在统一在平台租户管理中维护。"
+    >
+      <template #extra>
+        <el-button type="primary" @click="goToTenantManagement">前往租户管理</el-button>
       </template>
-      
-      <div v-if="tenantInfo" class="tenant-info">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="租户 ID">
-            <el-tag>{{ tenantInfo.tenantId }}</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="租户名称">
-            {{ tenantInfo.tenantName }}
-          </el-descriptions-item>
-          <el-descriptions-item label="租户代码" v-if="tenantInfo.tenantCode">
-            {{ tenantInfo.tenantCode }}
-          </el-descriptions-item>
-          <el-descriptions-item label="主题色" v-if="tenantInfo.theme?.primaryColor">
-            <div class="color-demo" :style="{ backgroundColor: tenantInfo.theme?.primaryColor }">
-              {{ tenantInfo.theme?.primaryColor }}
-            </div>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-      
-      <div v-else class="no-tenant">
-        <el-empty description="使用默认配置（无租户信息）" />
-      </div>
-    </el-card>
-    
-    <el-card class="config-card">
-      <template #header>
-        <div class="card-header">
-          <span>应用配置</span>
-        </div>
-      </template>
-      
-      <el-descriptions :column="1" border>
-        <el-descriptions-item label="API 地址">
-          {{ config.apiBaseUrl }}
-        </el-descriptions-item>
-        <el-descriptions-item label="应用版本">
-          {{ config.version }}
-        </el-descriptions-item>
-        <el-descriptions-item label="日志级别">
-          <el-tag :type="getLogLevelType(config.logLevel)">
-            {{ config.logLevel }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="Mock 开关">
-          <el-switch :model-value="config.enableMock" disabled />
-        </el-descriptions-item>
-        <el-descriptions-item label="首页路径">
-          {{ pageConfig.homePath }}
-        </el-descriptions-item>
-      </el-descriptions>
-    </el-card>
-    
-    <el-card class="features-card">
-      <template #header>
-        <div class="card-header">
-          <span>功能开关</span>
-        </div>
-      </template>
-      
-      <div class="features-list">
-        <el-tag 
-          v-for="(enabled, feature) in config.features" 
-          :key="feature"
-          :type="enabled ? 'success' : 'info'"
-          size="large"
-        >
-          {{ getFeatureName(feature) }}: {{ enabled ? '✓ 启用' : '✗ 禁用' }}
-        </el-tag>
-      </div>
-    </el-card>
-    
-    <el-card class="switch-card">
-      <template #header>
-        <div class="card-header">
-          <span>切换租户</span>
-        </div>
-      </template>
-      
-      <div class="tenant-buttons">
-        <el-button @click="switchTenant(null)" type="primary" plain>
-          默认配置
-        </el-button>
-        <el-button @click="switchTenant('demo')" type="success" plain>
-          切换到演示租户
-        </el-button>
-        <el-button @click="switchTenant('enterprise')" type="warning" plain>
-          切换到企业租户
-        </el-button>
-      </div>
-      
-      <el-alert 
-        title="提示" 
-        type="info" 
-        :closable="false"
-        style="margin-top: 16px"
-      >
-        切换租户后页面会自动刷新以加载新配置
-      </el-alert>
-    </el-card>
-    
-    <el-card class="raw-config-card">
-      <template #header>
-        <div class="card-header">
-          <span>完整配置 (JSON)</span>
-        </div>
-      </template>
-      
-      <pre class="config-json">{{ JSON.stringify(fullConfig, null, 2) }}</pre>
-    </el-card>
+    </el-result>
   </div>
 </template>
 
@@ -125,190 +16,42 @@
 /**
  * @skill tenant-config
  * @catalogInternal
- * @description 多租户配置管理页面，展示和编辑租户级别的系统配置项；属于租户路由页，不允许作为 SparkNode 组件配置生成。
+ * @description 旧租户配置演示入口；已整合到平台租户管理页，仅保留兼容重定向。
  */
-/**
- * 多租户配置演示页面 - 租户隔离和配置管理
- * 
- * @component TenantConfigDemo
- * @description
- * 演示 SPARK 系统的多租户配置能力，展示如何根据不同租户加载不同的应用配置。
- * 支持租户切换、配置展示和完整 JSON 配置查看。
- * 
- * 核心功能：
- * 1. **租户信息展示**：显示当前租户 ID、名称、代码、主题色
- * 2. **应用配置展示**：展示 API 地址、版本、日志级别、Mock 开关、首页路径
- * 3. **功能开关展示**：显示各功能模块的启用状态
- * 4. **租户切换**：支持切换到默认配置、演示租户、企业租户
- * 5. **配置 JSON 查看**：展示完整的配置对象结构
- * 6. **自动刷新**：切换租户后自动刷新页面加载新配置
- * 
- * 租户配置结构：
- * - **租户信息**：tenantId, tenantName, tenantCode, theme
- * - **应用配置**：apiBaseUrl, version, logLevel, enableMock, features
- * - **页面配置**：apiBaseUrl, homePath
- * 
- * @example
- * 路由配置：
- * ```typescript
- * {
- *   path: '/tenant-config',
- *   component: TenantConfigDemo
- * }
- * ```
- * 
- * @example
- * 租户配置文件示例 (config/tenant-demo.json)：
- * ```json
- * {
- *   "tenant": {
- *     "tenantId": "demo",
- *     "tenantName": "演示租户",
- *     "tenantCode": "DEMO",
- *     "theme": { "primaryColor": "#409EFF" }
- *   },
- *   "config": {
- *     "apiBaseUrl": "https://demo-api.example.com",
- *     "logLevel": "info",
- *     "features": { "auth": true, "export": false }
- *   }
- * }
- * ```
- * 
- * @author SPARK Team
- * @since 1.0.0
- */
-import { ref, onMounted } from 'vue'
-import { TenantResolver, ConfigLoader } from '@spark-view/spark-app'
-import type { AppFullConfig, FullTenantInfo } from '@spark-view/spark-app'
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const tenantInfo = ref<FullTenantInfo | null>(null)
-const config = ref<AppFullConfig['config']>({
-  apiBaseUrl: '/api',
-  logLevel: 'debug',
-  version: '1.0.0',
-  features: {}
-})
-const pageConfig = ref<AppFullConfig['pageConfig']>({
-  apiBaseUrl: '/api',
-  homePath: '/home'
-})
-const fullConfig = ref<AppFullConfig | null>(null)
+const route = useRoute()
+const router = useRouter()
 
-onMounted(async () => {
-  // 获取当前租户
-  const tenantId = TenantResolver.resolve()
-  
-  // 加载配置
-  const loader = ConfigLoader.getInstance()
-  const appConfig = await loader.loadConfig(tenantId || undefined)
-  
-  tenantInfo.value = appConfig.tenant || null
-  config.value = appConfig.config
-  pageConfig.value = appConfig.pageConfig
-  fullConfig.value = appConfig
-})
-
-function switchTenant(tenantId: string | null) {
-  if (tenantId) {
-    TenantResolver.save(tenantId)
-    window.location.href = `${window.location.origin}${window.location.pathname}?tenant=${tenantId}`
-  } else {
-    localStorage.removeItem('tenantId')
-    window.location.href = `${window.location.origin}${window.location.pathname}`
+function legacyTenantQuery(): string | null {
+  const tenant = route.query['tenant']
+  if (typeof tenant === 'string' && tenant.trim()) return tenant.trim()
+  if (Array.isArray(tenant) && typeof tenant[0] === 'string' && tenant[0].trim()) {
+    return tenant[0].trim()
   }
+  return null
 }
 
-function getLogLevelType(level: string) {
-  const types: Record<string, string> = {
-    'debug': 'info',
-    'info': 'success',
-    'warn': 'warning',
-    'error': 'danger'
-  }
-  return types[level] ?? 'info'
+function goToTenantManagement(): void {
+  const tenant = legacyTenantQuery()
+  void router.replace({
+    path: '/platform/tenants',
+    query: tenant === null ? {} : { tenant },
+  })
 }
 
-function getFeatureName(feature: string): string {
-  const names: Record<string, string> = {
-    'enableAI': '智能功能',
-    'enableExport': '导出功能',
-    'enableOffline': '离线模式'
-  }
-  return names[feature] || feature
-}
+onMounted(() => {
+  goToTenantManagement()
+})
 </script>
 
 <style scoped>
-.tenant-config-demo {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.tenant-config-demo h2 {
-  margin-bottom: 20px;
-  color: #303133;
-}
-
-.el-card {
-  margin-bottom: 20px;
-}
-
-.card-header {
+.tenant-config-legacy {
   display: flex;
-  justify-content: space-between;
+  min-height: 360px;
   align-items: center;
-  font-weight: 600;
-}
-
-.tenant-info {
-  padding: 10px 0;
-}
-
-.no-tenant {
-  padding: 20px 0;
-}
-
-.color-demo {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 4px;
-  color: white;
-  font-weight: 500;
-}
-
-.features-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 10px 0;
-}
-
-.tenant-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.config-json {
-  background-color: #f5f7fa;
-  padding: 16px;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #303133;
-}
-
-@media (max-width: 768px) {
-  .tenant-buttons {
-    flex-direction: column;
-  }
-  
-  .tenant-buttons .el-button {
-    width: 100%;
-  }
+  justify-content: center;
+  padding: 24px;
 }
 </style>

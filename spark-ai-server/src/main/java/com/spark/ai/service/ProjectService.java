@@ -47,7 +47,7 @@ public class ProjectService {
             new VueCleanupCandidate("dashboard", "仪表盘候选", "假数据 Vue dashboard，删除前需要替换默认落地页。", "DataBoard", "/dashboard"),
             new VueCleanupCandidate("about", "关于页候选", "旧系统介绍页。", "InfoFilled", "/about"),
             new VueCleanupCandidate("settings", "设置页候选", "localStorage/mock 设置页。", "Setting", "/settings"),
-            new VueCleanupCandidate("tenant-config", "租户配置候选", "旧多租户配置演示页。", "OfficeBuilding", "/tenant-config"),
+            new VueCleanupCandidate("tenant-config", "租户配置旧入口", "旧多租户配置演示入口，访问会重定向到租户管理。", "OfficeBuilding", "/tenant-config"),
             new VueCleanupCandidate("capability-demo", "能力演示候选", "mock 能力系统演示页。", "SetUp", "/capability-demo"),
             new VueCleanupCandidate("template-dsl", "Template DSL 候选", "占位 system-page 路由。", "SetUp", "/demo/template-dsl"),
             new VueCleanupCandidate("custom-r-table", "r-table Demo 候选", "公开 RendererTable 演示页。", "Grid", "/demo/custom-r-table"),
@@ -618,6 +618,9 @@ public class ProjectService {
         node.put("description", candidate.description());
         node.put("icon", candidate.icon());
         node.put("path", candidate.path());
+        if ("tenant-config".equals(candidate.idSuffix())) {
+            node.put("hidden", true);
+        }
         return node;
     }
 

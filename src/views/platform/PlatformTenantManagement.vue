@@ -24,9 +24,10 @@
         </template>
       </el-table-column>
       <el-table-column prop="updatedAt" label="更新时间" min-width="180" />
-      <el-table-column label="操作" fixed="right" width="360">
+      <el-table-column label="操作" fixed="right" width="420">
         <template #default="{ row }">
           <el-button size="small" type="primary" text @click="enterTenant(row)">进入</el-button>
+          <el-button size="small" text @click="openConfigDrawer(row)">配置</el-button>
           <el-button size="small" text @click="openEditDialog(row)">编辑</el-button>
           <el-button
             v-if="row.tenantId !== 'platform' && row.status === 'ACTIVE'"
@@ -84,17 +85,32 @@
         <el-button type="primary" :loading="submitting" @click="submitTenant">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-drawer
+      v-model="configDrawerVisible"
+      :title="configDrawerTitle"
+      size="min(720px, 100vw)"
+      destroy-on-close
+      @closed="handleConfigDrawerClosed"
+    >
+      <TenantConfigPanel
+        v-if="selectedConfigTenantId"
+        :tenant-id="selectedConfigTenantId"
+        @updated="handleConfigUpdated"
+      />
+    </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { http } from '@/services/http'
 import { getPlatformTenantApi } from '@/services/api-paths'
 import { buildTenantPath } from '@/services/tenant-scope'
+import TenantConfigPanel from './TenantConfigPanel.vue'
 
 interface PlatformTenant {
   tenantId: string
@@ -106,18 +122,26 @@ interface PlatformTenant {
   updatedAt?: string
 }
 
+const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const submitting = ref(false)
 const tenants = ref<PlatformTenant[]>([])
 const dialogVisible = ref(false)
 const editingTenant = ref<PlatformTenant | null>(null)
+const configDrawerVisible = ref(false)
+const selectedConfigTenantId = ref('')
+const selectedConfigTenantName = ref('')
 const form = reactive({
   tenantId: '',
   tenantName: '',
   tenantCode: '',
   adminUsername: 'admin',
   adminPassword: 'admin123',
+})
+const configDrawerTitle = computed(() => {
+  const label = selectedConfigTenantName.value || selectedConfigTenantId.value
+  return label ? `租户配置 - ${label}` : '租户配置'
 })
 
 function resetForm(): void {
@@ -136,10 +160,71 @@ async function loadTenants(): Promise<void> {
   loading.value = true
   try {
     tenants.value = await http.get<PlatformTenant[]>(getPlatformTenantApi())
+    syncConfigDrawerFromRoute()
   } catch (error) {
     ElMessage.error(`加载租户失败: ${errorMessage(error)}`)
   } finally {
     loading.value = false
+  }
+}
+
+function getRouteTenantId(): string | null {
+  const tenantQuery = route.query['tenant']
+  if (typeof tenantQuery === 'string' && tenantQuery.trim()) return tenantQuery.trim()
+  if (Array.isArray(tenantQuery) && typeof tenantQuery[0] === 'string' && tenantQuery[0].trim()) {
+    return tenantQuery[0].trim()
+  }
+  return null
+}
+
+function replaceTenantQuery(tenantId: string | null): void {
+  const nextQuery: Record<string, string> = {}
+  for (const [key, value] of Object.entries(route.query)) {
+    if (key === 'tenant') continue
+    if (typeof value === 'string') nextQuery[key] = value
+  }
+  if (tenantId !== null) nextQuery['tenant'] = tenantId
+  void router.replace({ path: route.path, query: nextQuery })
+}
+
+function selectConfigTenant(row: PlatformTenant): void {
+  selectedConfigTenantId.value = row.tenantId
+  selectedConfigTenantName.value = row.tenantName || row.tenantId
+  configDrawerVisible.value = true
+}
+
+function openConfigDrawer(row: PlatformTenant): void {
+  selectConfigTenant(row)
+  if (getRouteTenantId() !== row.tenantId) {
+    replaceTenantQuery(row.tenantId)
+  }
+}
+
+function syncConfigDrawerFromRoute(): void {
+  const tenantId = getRouteTenantId()
+  if (tenantId === null) return
+
+  const row = tenants.value.find(item => item.tenantId === tenantId)
+  if (row) {
+    selectConfigTenant(row)
+    return
+  }
+
+  if (tenants.value.length > 0) {
+    ElMessage.warning(`租户「${tenantId}」不存在或未在平台租户列表中启用`)
+    replaceTenantQuery(null)
+  }
+}
+
+function handleConfigUpdated(): void {
+  void loadTenants()
+}
+
+function handleConfigDrawerClosed(): void {
+  selectedConfigTenantId.value = ''
+  selectedConfigTenantName.value = ''
+  if (getRouteTenantId() !== null) {
+    replaceTenantQuery(null)
   }
 }
 
@@ -220,6 +305,13 @@ function enterTenant(row: PlatformTenant): void {
 onMounted(() => {
   void loadTenants()
 })
+
+watch(
+  () => route.query['tenant'],
+  () => {
+    syncConfigDrawerFromRoute()
+  },
+)
 </script>
 
 <style scoped>
@@ -252,5 +344,9 @@ onMounted(() => {
 
 .tenant-table {
   width: 100%;
+}
+
+:deep(.el-drawer__body) {
+  padding-top: 10px;
 }
 </style>

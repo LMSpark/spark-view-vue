@@ -176,6 +176,7 @@ class ProjectServiceNavigationSeedTest {
         assertEquals("platform-vue-cleanup", cleanupModule.get("id"));
         assertEquals("module", cleanupModule.get("nodeKind"));
         assertEquals(EXPECTED_PLATFORM_VUE_CLEANUP_PATHS, childPaths(cleanupModule));
+        assertTrue(childHidden(cleanupModule, "/tenant-config"));
         assertAllCleanupChildrenAreSystemPages(cleanupModule);
     }
 
@@ -202,6 +203,7 @@ class ProjectServiceNavigationSeedTest {
         assertNotNull(cleanupModule);
         assertEquals(1, countModuleByTitle(nav, "Vue 清理候选"));
         assertEquals(EXPECTED_PLATFORM_VUE_CLEANUP_PATHS, childPaths(cleanupModule));
+        assertTrue(childHidden(cleanupModule, "/tenant-config"));
         assertAllCleanupChildrenAreSystemPages(cleanupModule);
         assertEquals("开发中心", parentTitleForPath(nav, "/dev"));
     }
@@ -346,6 +348,18 @@ class ProjectServiceNavigationSeedTest {
             paths.add(String.valueOf(child.get("path")));
         }
         return paths;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean childHidden(Map<String, Object> node, String path) {
+        Object children = node.get("children");
+        if (!(children instanceof List<?> childList)) return false;
+        for (Map<String, Object> child : (List<Map<String, Object>>) childList) {
+            if (path.equals(child.get("path"))) {
+                return Boolean.TRUE.equals(child.get("hidden"));
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")

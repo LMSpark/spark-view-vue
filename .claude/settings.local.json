@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git stash *)",
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(mv .claude .claude_tmp && git stash pop)",
+      "Bash(mv .claude_tmp .claude)",
+      "Bash(vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json)",
+      "Bash(npx vue-tsc *)"
+    ],
+    "additionalDirectories": [
+      "D:\\SPARK_VIEW\\.claude"
+    ]
+  }
+}

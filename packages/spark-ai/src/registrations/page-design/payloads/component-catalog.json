@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-17T19:48:52.239Z",
-  "componentCount": 109,
+  "buildTime": "2026-05-18T02:47:43.178Z",
+  "componentCount": 110,
   "components": {
     "about": {
       "type": "about",
@@ -13706,12 +13706,34 @@
       "type": "tenant-config",
       "filePath": "src/views/tenant/TenantConfig.vue",
       "category": "feature",
-      "description": "多租户配置管理页面，展示和编辑租户级别的系统配置项；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"tenant-config\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "description": "旧租户配置演示入口；已整合到平台租户管理页，仅保留兼容重定向。 配置入口：type=\"tenant-config\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
       "internal": true,
       "configurable": false,
       "props": [],
       "emits": [],
       "source": "vcm+meta"
+    },
+    "tenant-config-panel": {
+      "type": "tenant-config-panel",
+      "filePath": "src/views/platform/TenantConfigPanel.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config-panel\" 引用。 配置入口：type=\"tenant-config-panel\"，category=feature（功能组件）。 必填 props：tenantId。 关键 props：tenantId。 主要事件：updated。",
+      "props": [
+        {
+          "name": "tenantId",
+          "type": "string",
+          "required": true,
+          "description": "tenantId prop (string); 用于配置该组件的 tenantId 行为或展示。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "updated",
+          "type": "[]",
+          "description": "Emitted when updated occurs; 用于通知父级处理该事件。"
+        }
+      ],
+      "source": "vcm"
     },
     "tree-node-summary": {
       "type": "tree-node-summary",

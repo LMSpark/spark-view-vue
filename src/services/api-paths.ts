@@ -95,3 +95,7 @@ export function getPlatformNavApi(): string {
 export function getPlatformTenantApi(): string {
   return '/api/platform/tenants'
 }
+
+export function getTenantConfigApi(tenantId: string): string {
+  return `/api/config/tenant/${encodeURIComponent(tenantId)}`
+}
