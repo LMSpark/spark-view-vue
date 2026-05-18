@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  LEAVE_REQUEST_MODULE_ID,
   LeaveRequestModule,
   type LeaveRequestRuntimeContext,
 } from '../packages/spark-ai/src'
 
 function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:session`): LeaveRequestRuntimeContext {
   return {
-    moduleId: LEAVE_REQUEST_MODULE_ID,
+    moduleId: LeaveRequestModule.moduleId,
     moduleInstanceId: leaveDraftId,
     instanceId,
   }
@@ -22,7 +21,7 @@ describe('leave-request module', () => {
 
     expect(JSON.parse(JSON.stringify(registrationData))).toEqual(registrationData)
     expect(JSON.parse(JSON.stringify(registrationStore))).toEqual(registrationStore)
-    expect(registrationData.moduleId).toBe(LEAVE_REQUEST_MODULE_ID)
+    expect(registrationData.moduleId).toBe(LeaveRequestModule.moduleId)
     expect(registrationData.functions.map((item) => item.functionId)).toEqual([
       'describeDraft',
       'setDraftFields',

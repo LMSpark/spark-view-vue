@@ -8,8 +8,6 @@ export type AiKnowledgeFunctionId =
   | 'queryFunctions'
   | 'queryModules'
   | 'guideFunction'
-  | 'queryPayloads'
-  | 'guidePayload'
 
 type AiKnowledgeFunctionBaseFields = {
   functionId: AiKnowledgeFunctionId
@@ -31,10 +29,7 @@ export type AiKnowledgeCatalogRowOptions = Omit<
   'functionId' | 'type' | 'target'
 >
 
-export interface AiKnowledgeCatalogOptions {
-  queryPayloads: AiKnowledgeCatalogRowOptions
-  guidePayload: AiKnowledgeCatalogRowOptions
-}
+export interface AiKnowledgeCatalogOptions {}
 
 const KNOWLEDGE_TARGET: AiKnowledgeFunctionTarget = 'knowledge'
 const NO_PARAMS: LlmParameterSchemaRoot = {
@@ -54,7 +49,7 @@ export class AiKnowledgeCatalog {
 
   private readonly parameterIndex: ReadonlyMap<string, AiKnowledgeFunctionParameterRow>
 
-  constructor(options: AiKnowledgeCatalogOptions) {
+  constructor(_options: AiKnowledgeCatalogOptions) {
     this.parameterTable = [
       {
         functionId: 'queryFunctions',
@@ -122,18 +117,6 @@ export class AiKnowledgeCatalog {
             fix: '先调用 queryFunctions 确认 action，再重试。',
           },
         ],
-      },
-      {
-        functionId: 'queryPayloads',
-        type: 'describe',
-        target: KNOWLEDGE_TARGET,
-        ...options.queryPayloads,
-      },
-      {
-        functionId: 'guidePayload',
-        type: 'describe',
-        target: KNOWLEDGE_TARGET,
-        ...options.guidePayload,
       },
     ]
     this.parameterIndex = new Map(this.parameterTable.map((row) => [row.functionId, row]))

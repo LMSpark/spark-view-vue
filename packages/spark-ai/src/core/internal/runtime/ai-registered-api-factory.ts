@@ -1,5 +1,5 @@
 import type {
-  AiBusinessRegistration,
+  IBusinessRegistration,
   AiModuleRegistration,
   AiRegisteredBusinessApi,
   AiRegisteredModuleApi,
@@ -57,7 +57,7 @@ export class AiRegisteredApiFactory {
 
   createRegisteredBusinessApi(moduleApi: AiRegisteredModuleApi): AiRegisteredBusinessApi {
     const businessId = moduleApi.moduleId
-    const businessRegistration: AiBusinessRegistration = moduleToBusinessRegistration(moduleApi.getRegistration())
+    const businessRegistration: IBusinessRegistration = moduleToBusinessRegistration(moduleApi.getRegistration())
     return {
       ...moduleApi,
       businessId,

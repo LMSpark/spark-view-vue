@@ -1,11 +1,8 @@
 import {
   AiInvocationProtocol,
-  LEAVE_REQUEST_MODULE_ID,
   LeaveRequestModule,
-  PAGE_DESIGN_MODULE_ID,
   PageDesignModule,
-  createLeaveDraftId,
-  type AiBusinessRegistrationData,
+  type IBusinessRegistrationData,
   type AiModuleRegistrationData,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeHistoryEntry,
@@ -156,8 +153,8 @@ abstract class ModuleBackedBusinessRuntime implements AppAiBusinessRuntime {
   }
 
   /** 业务注册数据（子类可覆盖，默认委托） */
-  getBusinessRegistrationData(): AiBusinessRegistrationData {
-    return (this.module as { getBusinessRegistrationData(): AiBusinessRegistrationData }).getBusinessRegistrationData()
+  getBusinessRegistrationData(): IBusinessRegistrationData {
+    return (this.module as { getBusinessRegistrationData(): IBusinessRegistrationData }).getBusinessRegistrationData()
   }
 
   /** 开始 AI 会话 — 注入 moduleId 后委托给内部模块 */
@@ -219,7 +216,7 @@ abstract class ModuleBackedBusinessRuntime implements AppAiBusinessRuntime {
  * - 实例 ID 解析不会失败（始终通过 resolveLeaveDraftId 生成新 draftId）
  */
 class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
-  override readonly moduleId = LEAVE_REQUEST_MODULE_ID
+  override readonly moduleId = LeaveRequestModule.moduleId
 
   /** LeaveRequest 业务模块实例，持有草稿状态和 AI 运行时 */
   declare protected readonly module: LeaveRequestModule
@@ -270,7 +267,7 @@ class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
  * - EditHost 不可用时自动结束会话
  */
 class PageDesignBusinessRuntime extends ModuleBackedBusinessRuntime {
-  override readonly moduleId = PAGE_DESIGN_MODULE_ID
+  override readonly moduleId = PageDesignModule.moduleId
 
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- constructor narrows parameter types
   constructor(module: PageDesignModule, resolveInstanceId: (input: AppAiBusinessResolveInput) => string | null) {
@@ -312,7 +309,7 @@ export function registerAppAiBusinesses(options: RegisterAppAiBusinessesOptions)
   const leaveModule = new LeaveRequestModule()
   options.registry.register(new LeaveRequestBusinessRuntime(
     leaveModule,
-    options.resolveLeaveDraftId ?? (() => createLeaveDraftId()),
+    options.resolveLeaveDraftId ?? (() => LeaveRequestModule.createDraftId()),
   ))
 
   if (options.getPageDesignEditHost === undefined) return

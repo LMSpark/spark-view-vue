@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   AiRuntime,
-  type AiBusinessRegistration,
+  type IBusinessRegistration,
   type AiFunctionRegistration,
   type AiKnowledgeProjection,
   type AiModuleRegistration,
@@ -103,12 +103,13 @@ describe('AI core module projection and translation API', () => {
   it('registers business roots without owning business live state', async () => {
     const core = createDeterministicRuntime()
     const liveState = { touched: false }
-    const business: AiBusinessRegistration = {
+    const business: IBusinessRegistration = {
+      moduleId: 'leaveApproval',
       businessId: 'leaveApproval',
       name: 'Leave approval',
-      description: 'Help users finish a leave request.',
-      prompt: 'Collect leave reason only.',
-      getFunctions: () => [{
+      entity: {},
+      prompt: 'Help users finish a leave request. Collect leave reason only.',
+      functions: [{
         functionId: 'setReason',
         description: 'Set leave reason.',
         paramsSchema: {

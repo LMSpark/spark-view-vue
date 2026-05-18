@@ -2,9 +2,18 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LlmParamsValidator,
+  DatasetModule,
   type LlmParameterSchemaRoot,
-  validateDatasetParams,
 } from '../packages/spark-ai/src'
+
+const DATASET_ROWS = new DatasetModule().functions
+
+function validateDatasetParams(functionId: string, args: unknown): string | null {
+  const row = DATASET_ROWS.find(r => r.functionId === functionId)
+  if (!row) return `unknown ${functionId}`
+  const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+}
 
 const NO_PARAMS_SCHEMA: LlmParameterSchemaRoot = {
   type: 'object',

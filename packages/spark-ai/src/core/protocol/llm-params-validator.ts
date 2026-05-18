@@ -36,14 +36,6 @@ function isObjectSchemaRoot(value: unknown): value is LlmParameterSchemaRoot & {
 export class LlmParamsValidator {
   private constructor() {}
 
-  static missingParam(name: string): string {
-    return `缺少 ${name} 参数`
-  }
-
-  static isNonEmptyString(value: unknown): value is string {
-    return typeof value === 'string' && value.length > 0
-  }
-
   static validateLlmDeserializedParams(
     params: unknown,
     schema: LlmParameterSchemaRoot,
@@ -60,13 +52,6 @@ export class LlmParamsValidator {
       return {
         ok: false,
         issues: [{ path: '$', message: 'schema 根节点必须是 type=object 的标准 JSON Schema' }],
-      }
-    }
-
-    if (LlmParamsValidator.containsKind(schema)) {
-      return {
-        ok: false,
-        issues: [{ path: '$', message: 'schema 不允许使用 kind；请改用标准 JSON Schema type' }],
       }
     }
 
@@ -89,13 +74,6 @@ export class LlmParamsValidator {
     const head = issues.slice(0, maxCount).map(issue => `${issue.path} ${issue.message}`)
     const suffix = issues.length > maxCount ? `；另有 ${issues.length - maxCount} 个问题` : ''
     return `参数校验失败：${head.join('；')}${suffix}`
-  }
-
-  private static containsKind(value: unknown): boolean {
-    if (Array.isArray(value)) return value.some(item => LlmParamsValidator.containsKind(item))
-    if (!isPlainRecord(value)) return false
-    if ('kind' in value) return true
-    return Object.values(value).some(item => LlmParamsValidator.containsKind(item))
   }
 
   private static issueFromAjvError(error: ErrorObject): LlmParamValidationIssue {

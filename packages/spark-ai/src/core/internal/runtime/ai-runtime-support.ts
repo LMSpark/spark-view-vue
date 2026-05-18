@@ -1,9 +1,8 @@
 import type {
-  AiBusinessRegistration,
-  AiBusinessRegistrationData,
-  AiBusinessRegistrationStoreSnapshot,
+  IBusinessRegistration,
+  IBusinessRegistrationData,
+  IBusinessRegistrationStoreSnapshot,
   AiFunctionRegistration,
-  AiFunctionRegistrationData,
   AiFunctionRegistrationFailureMode,
   AiFunctionRegistrationStoreFunction,
   AiFunctionRegistrationUsageRule,
@@ -19,7 +18,6 @@ import type {
   AiRuntimeInstanceScope,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
-import type { ParameterPayloadProvider } from '../../protocol/parameter-payload-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../../protocol/llm-params-validator'
 
@@ -326,7 +324,7 @@ export class AiRuntimeProjector {
       description: module.description,
       ...(prompt !== undefined ? { prompt } : {}),
       ...(module.instanceParam !== undefined ? { instanceParam: { ...module.instanceParam } } : {}),
-      functions: module.getFunctions().map((definition): AiFunctionRegistrationData => ({
+      functions: module.getFunctions().map((definition): AiFunctionRegistration => ({
         functionId: definition.functionId,
         description: definition.description,
         paramsSchema: cloneRegistrationJsonObject(definition.paramsSchema, `${modulePath}.${definition.functionId}.paramsSchema`),
@@ -360,7 +358,7 @@ export class AiRuntimeProjector {
   }
 
   /** 克隆并校验纯数据形态的函数注册。 */
-  private cloneFunctionData(definition: AiFunctionRegistrationData, modulePath: string): AiFunctionRegistrationData {
+  private cloneFunctionData(definition: AiFunctionRegistration, modulePath: string): AiFunctionRegistration {
     return {
       functionId: definition.functionId,
       description: definition.description,
@@ -391,7 +389,7 @@ export class AiRuntimeProjector {
   }
 
   /** 将纯数据函数注册适配成运行时函数注册。 */
-  private functionRegistrationFromData(definition: AiFunctionRegistrationData, modulePath: string): AiFunctionRegistration {
+  private functionRegistrationFromData(definition: AiFunctionRegistration, modulePath: string): AiFunctionRegistration {
     return this.cloneFunctionRegistration(definition, modulePath)
   }
 
@@ -551,7 +549,7 @@ export class AiRuntimeProjector {
       const modulePath = row.modulePath
       const functions = [...(functionRowsByModule.get(modulePath) ?? [])]
         .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((definition): AiFunctionRegistrationData => {
+        .map((definition): AiFunctionRegistration => {
           const key = this.storeFunctionKey(modulePath, definition.functionId)
           const usageRules = [...(usageRulesByFunction.get(key) ?? [])]
             .sort((left, right) => left.sortOrder - right.sortOrder)
@@ -740,12 +738,12 @@ export class AiRuntimeArgValidator {
 // ── Business↔Module 投影转换：在不同命名约定之间转换字段名 ──
 
 /** 识别 Business 源是否为运行时实例（有 getFunctions 方法）。 */
-export function isBusinessRegistrationInstance(source: unknown): source is AiBusinessRegistration {
+export function isBusinessRegistrationInstance(source: unknown): source is IBusinessRegistration {
   return typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function'
 }
 
 /** 判断是否为 BusinessData 格式。 */
-export function isBusinessRegistrationDataFormat(source: unknown): source is AiBusinessRegistrationData {
+export function isBusinessRegistrationDataFormat(source: unknown): source is IBusinessRegistrationData {
   return typeof source === 'object'
     && source !== null
     && !isBusinessRegistrationInstance(source)
@@ -755,7 +753,7 @@ export function isBusinessRegistrationDataFormat(source: unknown): source is AiB
 }
 
 /** 判断是否为 BusinessStoreSnapshot 格式。 */
-export function isBusinessStoreSnapshotFormat(source: unknown): source is AiBusinessRegistrationStoreSnapshot {
+export function isBusinessStoreSnapshotFormat(source: unknown): source is IBusinessRegistrationStoreSnapshot {
   return typeof source === 'object'
     && source !== null
     && typeof (source as { readonly rootBusinessPath?: unknown }).rootBusinessPath === 'string'
@@ -764,15 +762,9 @@ export function isBusinessStoreSnapshotFormat(source: unknown): source is AiBusi
     && Array.isArray((source as { readonly functions?: unknown }).functions)
 }
 
-/** 从 Business 源提取参数荷载提供者（仅实例格式有此属性）。 */
-export function parameterPayloadProvidersFromBusiness(source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): readonly ParameterPayloadProvider[] {
-  if (isBusinessRegistrationInstance(source)) return source.parameterPayloadProviders ?? []
-  return []
-}
-
 /** Business 源转为 Module 源（识别类型后路由到具体转换）。 */
 export function moduleSourceFromBusiness(
-  source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot,
+  source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot,
 ): AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot {
   if (isBusinessRegistrationInstance(source)) return businessToModuleRegistration(source)
   if (isBusinessStoreSnapshotFormat(source)) {
@@ -789,33 +781,34 @@ export function moduleSourceFromBusiness(
 }
 
 /** Business 实例 → Module 实例（重命名字段 businessId→moduleId）。 */
-export function businessToModuleRegistration(business: AiBusinessRegistration): AiModuleRegistration {
+export function businessToModuleRegistration(business: IBusinessRegistration): AiModuleRegistration {
   return {
     moduleId: business.businessId,
     name: business.name,
-    description: business.description,
-    ...(business.prompt === undefined ? {} : { prompt: business.prompt }),
+    description: business.prompt,
+    prompt: business.prompt,
     ...(business.modules === undefined ? {} : { modules: business.modules }),
     ...(business.instanceParam === undefined ? {} : { instanceParam: business.instanceParam }),
-    getFunctions: () => business.getFunctions(),
+    getFunctions: () => business.functions,
   }
 }
 
 /** Module 实例 → Business 实例（反向转换）。 */
-export function moduleToBusinessRegistration(module: AiModuleRegistration): AiBusinessRegistration {
+export function moduleToBusinessRegistration(module: AiModuleRegistration): IBusinessRegistration {
   return {
+    moduleId: module.moduleId,
     businessId: module.moduleId,
     name: module.name,
-    description: module.description,
-    ...(module.prompt === undefined ? {} : { prompt: module.prompt }),
+    entity: {},
+    prompt: typeof module.prompt === 'string' ? module.prompt : module.description,
+    functions: module.getFunctions(),
     ...(module.modules === undefined ? {} : { modules: module.modules }),
     ...(module.instanceParam === undefined ? {} : { instanceParam: module.instanceParam }),
-    getFunctions: () => module.getFunctions(),
   }
 }
 
 /** BusinessData → ModuleData（字段重命名）。 */
-export function businessDataToModuleData(data: AiBusinessRegistrationData): AiModuleRegistrationData {
+export function businessDataToModuleData(data: IBusinessRegistrationData): AiModuleRegistrationData {
   return {
     moduleId: data.businessId,
     name: data.name,
@@ -828,7 +821,7 @@ export function businessDataToModuleData(data: AiBusinessRegistrationData): AiMo
 }
 
 /** ModuleData → BusinessData（字段重命名）。 */
-export function moduleDataToBusinessData(data: AiModuleRegistrationData): AiBusinessRegistrationData {
+export function moduleDataToBusinessData(data: AiModuleRegistrationData): IBusinessRegistrationData {
   return {
     businessId: data.moduleId,
     name: data.name,
@@ -841,7 +834,7 @@ export function moduleDataToBusinessData(data: AiModuleRegistrationData): AiBusi
 }
 
 /** Module 快照 → Business 快照（新增 rootBusinessPath 字段）。 */
-export function moduleStoreToBusinessStoreSnapshot(snapshot: AiModuleRegistrationStoreSnapshot): AiBusinessRegistrationStoreSnapshot {
+export function moduleStoreToBusinessStoreSnapshot(snapshot: AiModuleRegistrationStoreSnapshot): IBusinessRegistrationStoreSnapshot {
   return {
     rootBusinessPath: snapshot.rootModulePath,
     ...snapshot,

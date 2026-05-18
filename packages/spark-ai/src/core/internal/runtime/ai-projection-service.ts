@@ -2,7 +2,6 @@ import type {
   AiRuntimeKnowledgeProjection,
   AiRuntimeProjectKnowledgeOptions,
 } from '../../protocol/runtime-contracts'
-import { ParameterPayloadRegistry } from '../knowledge/parameter-payload-registry'
 import { AiKnowledgeProjector } from '../knowledge/knowledge-projection'
 import type { AiKnowledgeProjection } from '../knowledge/knowledge-projection'
 import type { AiRuntimeProjector } from './ai-runtime-support'
@@ -10,7 +9,7 @@ import type { AiRegistrationRepository } from './ai-registration-repository'
 import type { AiSessionLedger } from './ai-session-ledger'
 
 export class AiProjectionService {
-  private readonly knowledgeProjector = new AiKnowledgeProjector(ParameterPayloadRegistry.defaultRegistry)
+  private readonly knowledgeProjector = new AiKnowledgeProjector()
 
   constructor(
     private readonly registrations: AiRegistrationRepository,

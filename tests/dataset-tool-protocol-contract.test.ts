@@ -5,9 +5,9 @@ import {
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
 } from '../packages/spark-data/src'
 import {
-  DATASET_CATALOG_ROWS,
-  validateDatasetParams,
+  DatasetModule,
 } from '../packages/spark-ai/src/registrations/page-design/modules/dataset-tool-catalog'
+import { LlmParamsValidator } from '../packages/spark-ai/src'
 
 const LEGACY_EXAMPLE_FUNCTIONS = new Set(['getAggregate', 'setComputeExpression'])
 
@@ -20,18 +20,27 @@ function propertiesOf(schema: unknown): Record<string, unknown> {
   return (schema as { properties: Record<string, unknown> }).properties
 }
 
+const DATASET_ROWS = new DatasetModule().functions
+
 function getRow(functionId: string) {
-  return DATASET_CATALOG_ROWS.find(r => r.functionId === functionId)
+  return DATASET_ROWS.find(r => r.functionId === functionId)
+}
+
+function validateDatasetParams(functionId: string, args: unknown): string | null {
+  const row = DATASET_ROWS.find(r => r.functionId === functionId)
+  if (!row) return `unknown ${functionId}`
+  const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
 }
 
 describe('dataset tool protocol contract', () => {
   it('has active function rows', () => {
-    const activeRows = DATASET_CATALOG_ROWS.filter(row => isActiveFunction(row.functionId))
+    const activeRows = DATASET_ROWS.filter(row => isActiveFunction(row.functionId))
     expect(activeRows.length).toBeGreaterThan(0)
   })
 
   it('accepts catalog examples as valid protocol payloads', () => {
-    for (const row of DATASET_CATALOG_ROWS.filter(item => isActiveFunction(item.functionId))) {
+    for (const row of DATASET_ROWS.filter(item => isActiveFunction(item.functionId))) {
       if (LEGACY_EXAMPLE_FUNCTIONS.has(row.functionId)) continue
       const error = validateDatasetParams(row.functionId, row.example)
       expect(error, `${row.functionId} example should pass validator`).toBeNull()

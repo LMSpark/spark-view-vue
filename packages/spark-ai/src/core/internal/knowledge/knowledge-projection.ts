@@ -1,9 +1,4 @@
 import type {
-  ParameterPayloadGuide,
-  ParameterPayloadQueryFilter,
-  ParameterPayloadSummary,
-} from '../../protocol/parameter-payload-contracts'
-import type {
   AiRuntimeFunctionExposure,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
@@ -35,8 +30,6 @@ export interface AiKnowledgeModuleSummary {
 }
 
 export interface AiKnowledgeProjection {
-  queryPayloads(payloadRef: string, filter?: ParameterPayloadQueryFilter): readonly ParameterPayloadSummary[]
-  guidePayload(payloadRef: string, key: string): ParameterPayloadGuide | null
   queryFunctions(
     scope: AiKnowledgeScope,
     filter?: { readonly modulePath?: string; readonly moduleId?: string; readonly keyword?: string },
@@ -55,23 +48,8 @@ interface RuntimeProjectionSnapshot {
 export class AiKnowledgeProjector implements AiKnowledgeProjection {
   private readonly projections = new Map<string, RuntimeProjectionSnapshot>()
 
-  constructor(
-    private readonly payloadRegistry: {
-      readonly queryPayloads: (ref: string, filter?: ParameterPayloadQueryFilter) => readonly ParameterPayloadSummary[]
-      readonly guidePayload: (ref: string, key: string) => ParameterPayloadGuide | null
-    },
-  ) {}
-
   updateProjection(projection: RuntimeProjectionSnapshot): void {
     this.projections.set(AiKnowledgeProjector.scopeKey(projection.scope), projection)
-  }
-
-  queryPayloads(payloadRef: string, filter?: ParameterPayloadQueryFilter): readonly ParameterPayloadSummary[] {
-    return this.payloadRegistry.queryPayloads(payloadRef, filter)
-  }
-
-  guidePayload(payloadRef: string, key: string): ParameterPayloadGuide | null {
-    return this.payloadRegistry.guidePayload(payloadRef, key)
   }
 
   queryFunctions(

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PAGE_DESIGN_MODULE_ID } from '@spark-view/spark-ai'
+import { PageDesignModule } from '@spark-view/spark-ai'
 import type {
   AiRuntimeFunctionCallResult,
   AiRuntimeMessageHistoryEntry,
@@ -150,7 +150,7 @@ describe('AppAiHost', () => {
     })
 
     expect(registry.get('manualLeave')).toBeDefined()
-    expect(registry.get(PAGE_DESIGN_MODULE_ID)).toBeDefined()
+    expect(registry.get(PageDesignModule.moduleId)).toBeDefined()
   })
 
   it('passes function usage rules into LLM tool descriptions', async () => {
@@ -180,12 +180,12 @@ describe('AppAiHost', () => {
       getPageDesignEditHost: () => ({}) as PageDesignEditHost,
       resolvePageDesignInstanceId: () => 'data-report',
     })
-    const runtime = registry.get(PAGE_DESIGN_MODULE_ID)
+    const runtime = registry.get(PageDesignModule.moduleId)
     expect(runtime).toBeDefined()
     if (runtime === undefined) return
 
     const projection = await runtime.startSession({
-      moduleId: PAGE_DESIGN_MODULE_ID,
+      moduleId: PageDesignModule.moduleId,
       moduleInstanceId: 'data-report',
       instanceId: 'pageDesign:data-report',
     })
@@ -859,13 +859,13 @@ describe('AppAiHost', () => {
     }
     const projection = {
       scope: {
-        moduleId: PAGE_DESIGN_MODULE_ID,
+        moduleId: PageDesignModule.moduleId,
         moduleInstanceId: 'page-1',
         instanceId: 'pageDesign:page-1',
         runtimeInstanceId: 'pageDesign:page-1',
       },
       module: {
-        moduleId: PAGE_DESIGN_MODULE_ID,
+        moduleId: PageDesignModule.moduleId,
         modulePath: 'pageDesign',
         moduleIds: ['pageDesign'],
         name: 'Page Design',
@@ -910,9 +910,9 @@ describe('AppAiHost', () => {
       ],
     } as unknown as AiRuntimeStartSessionResult
     const runtime: AppAiBusinessRuntime = {
-      moduleId: PAGE_DESIGN_MODULE_ID,
+      moduleId: PageDesignModule.moduleId,
       getRegistrationData: () => ({
-        moduleId: PAGE_DESIGN_MODULE_ID,
+        moduleId: PageDesignModule.moduleId,
         name: 'Page Design',
         description: 'Edit pages.',
         functions: [],
@@ -986,7 +986,7 @@ describe('AppAiHost', () => {
     const host = new AppAiHost({
       registry,
       transport: {
-        routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page' })),
+        routeBusiness: vi.fn(async () => ({ moduleId: PageDesignModule.moduleId, confidence: 0.95, reason: 'page' })),
         streamTurn,
         appendMessages: vi.fn(async () => {}),
       },
@@ -1018,7 +1018,7 @@ describe('AppAiHost', () => {
 
     const streamedTurns: AppAiStreamTurnInput[] = []
     const transport: AppAiHostTransport = {
-      routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page design' })),
+      routeBusiness: vi.fn(async () => ({ moduleId: PageDesignModule.moduleId, confidence: 0.95, reason: 'page design' })),
       streamTurn: vi.fn(async (input) => {
         streamedTurns.push(input)
         return { text: '已进入页面设计', toolCalls: [] }
@@ -1043,7 +1043,7 @@ describe('AppAiHost', () => {
     expect(transport.routeBusiness).toHaveBeenCalledTimes(2)
     expect(streamedTurns.map((turn) => turn.scope.businessInstanceId)).toEqual(['page-a', 'page-b'])
     expect(host.getSelectedScope()).toMatchObject({
-      businessRegistrationId: PAGE_DESIGN_MODULE_ID,
+      businessRegistrationId: PageDesignModule.moduleId,
       businessInstanceId: 'page-b',
     })
   })
@@ -1057,7 +1057,7 @@ describe('AppAiHost', () => {
     })
 
     const transport: AppAiHostTransport = {
-      routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page design' })),
+      routeBusiness: vi.fn(async () => ({ moduleId: PageDesignModule.moduleId, confidence: 0.95, reason: 'page design' })),
       streamTurn: vi.fn(async () => ({ text: '', toolCalls: [] })),
       appendMessages: vi.fn(async () => {}),
     }
@@ -1105,7 +1105,7 @@ describe('AppAiHost', () => {
     const host = new AppAiHost({
       registry,
       transport: {
-        routeBusiness: vi.fn(async () => ({ moduleId: PAGE_DESIGN_MODULE_ID, confidence: 0.95, reason: 'page design' })),
+        routeBusiness: vi.fn(async () => ({ moduleId: PageDesignModule.moduleId, confidence: 0.95, reason: 'page design' })),
         streamTurn,
         appendMessages,
       },

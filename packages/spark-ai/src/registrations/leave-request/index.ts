@@ -1,21 +1,23 @@
 export {
-  LEAVE_REQUEST_MODULE_ID,
   LeaveRequestModule,
-  LeaveRequestService,
-  assertLeaveRequestContext,
-  createLeaveDraftId,
-  isLeaveRequestServiceResult,
-  leaveRequestServiceFailure,
+  LeaveRequestModuleRegistration,
 } from './leave-request-module'
+
+export {
+  LeaveRequestService,
+} from './leave-request-service'
 
 export type {
   LeaveRequestAppendMessageOptions,
+  LeaveRequestExecuteFunctionCallOptions,
+  LeaveRequestRuntimeContext,
+  LeaveRequestStopSessionOptions,
+} from './leave-request-module'
+
+export type {
   LeaveRequestDraftFields,
   LeaveRequestDraftState,
   LeaveRequestDraftStatus,
-  LeaveRequestExecuteFunctionCallOptions,
-  LeaveRequestRuntimeContext,
   LeaveRequestServiceContext,
   LeaveRequestServiceResult,
-  LeaveRequestStopSessionOptions,
-} from './leave-request-module'
+} from './leave-request-service'

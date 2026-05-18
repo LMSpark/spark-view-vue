@@ -1,18 +1,19 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  NODE_TREE_CATALOG_ROWS,
-  validateNodeTreeParams,
+  NodeTreeModule,
 } from '../packages/spark-ai/src/registrations/page-design/modules/node-tree-tool-catalog'
 
+const NODE_TREE_ROWS = new NodeTreeModule().functions
+
 function getRow(functionId: string) {
-  return NODE_TREE_CATALOG_ROWS.find(r => r.functionId === functionId)
+  return NODE_TREE_ROWS.find(r => r.functionId === functionId)
 }
 
 describe('SparkNodeTree tool catalog', () => {
   it('应提供完整的函数行', () => {
-    expect(NODE_TREE_CATALOG_ROWS.length).toBeGreaterThan(0)
-    expect(NODE_TREE_CATALOG_ROWS.every(row => !row.functionId.includes('/'))).toBe(true)
+    expect(NODE_TREE_ROWS.length).toBeGreaterThan(0)
+    expect(NODE_TREE_ROWS.every(row => !row.functionId.includes('/'))).toBe(true)
   })
 
   it('应能按 functionId 查询', () => {
@@ -31,7 +32,7 @@ describe('SparkNodeTree tool catalog', () => {
     expect(addNode?.usageRules).toContain('该动作直接作用于当前 PageDesignEditHost.getNodeTree() 返回的 SparkNodeTree/rule.json 模型。')
     expect(addNode?.usageRules).toContain('运行时应优先使用命名参数对象，而不是位置参数。')
     expect(addNode?.usageRules).toContain('parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。')
-    expect(addNode?.failureModes.some(item => item.code === 'PARENT_NOT_FOUND')).toBe(true)
+    expect((addNode?.failureModes ?? []).some(item => item.code === 'PARENT_NOT_FOUND')).toBe(true)
   })
 
   it('catalog 应对高风险 children 写动作声明必填字段', () => {
@@ -81,6 +82,6 @@ describe('SparkNodeTree tool catalog', () => {
       index: expect.any(String),
     })
     expect(row?.resultSchema).not.toHaveProperty('node')
-    expect(row?.usageRules.some(rule => rule.includes('不要用 removeNode + addNode'))).toBe(true)
+    expect((row?.usageRules ?? []).some(rule => rule.includes('不要用 removeNode + addNode'))).toBe(true)
   })
 })

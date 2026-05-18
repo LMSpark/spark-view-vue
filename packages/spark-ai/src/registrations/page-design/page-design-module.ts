@@ -1,9 +1,11 @@
 import {
   AiRuntime,
   AiModuleRegistrationBase,
-  type AiBusinessRegistration,
-  type AiBusinessRegistrationData,
-  type AiBusinessRegistrationStoreSnapshot,
+  AiKnowledgeCatalog,
+  LlmParamsValidator,
+  type IBusinessRegistration,
+  type IBusinessRegistrationData,
+  type IBusinessRegistrationStoreSnapshot,
   type AiModuleRegistration,
   type AiModuleRegistrationData,
   type AiModuleRegistrationStoreSnapshot,
@@ -21,7 +23,6 @@ import {
   type AiKnowledgeProjection,
   type AiRegisteredBusinessApi,
   type FunctionExecutionContext,
-  type ParameterPayloadProvider,
 } from '../../core'
 import {
   PageDesignService,
@@ -30,24 +31,17 @@ import {
   type PageDesignEditHost,
   type PageDesignServiceContext,
 } from '@spark-view/spark-page-config'
-import { DATASET_CATALOG_ROWS, validateDatasetParams } from './modules/dataset-tool-catalog'
-import { LIFECYCLE_CATALOG_ROWS, validateLifecycleParams } from './modules/lifecycle-tool-catalog'
-import { NODE_TREE_CATALOG_ROWS, validateNodeTreeParams } from './modules/node-tree-tool-catalog'
-import { TEXT_MODEL_CATALOG_ROWS, validateTextModelParams } from './modules/text-model-tool-catalog'
-import { KNOWLEDGE_CATALOG_ROWS, validateKnowledgeParams } from './modules/knowledge-tool-catalog'
-import {
-  SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
-  SPARK_COMPONENT_PAYLOAD_REF,
-  guidePageDesignComponentPayload,
-  queryPageDesignComponentPayloads,
-} from './payloads/component-payload-catalog'
+import { DatasetModule } from './modules/dataset-tool-catalog'
+import { LifecycleModule } from './modules/lifecycle-tool-catalog'
+import { NodeTreeModule } from './modules/node-tree-tool-catalog'
+import { TextModelModule } from './modules/text-model-tool-catalog'
 
-export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
-export const LIFECYCLE_MODULE_ID = 'lifecycle'
-export const TEXT_MODEL_MODULE_ID = 'textModel'
-export const NODE_TREE_MODULE_ID = 'nodeTree'
-export const DATASET_MODULE_ID = 'dataset'
-export const KNOWLEDGE_MODULE_ID = 'knowledge'
+const PAGE_DESIGN_MODULE_ID = 'pageDesign'
+const LIFECYCLE_MODULE_ID = 'lifecycle'
+const TEXT_MODEL_MODULE_ID = 'textModel'
+const NODE_TREE_MODULE_ID = 'nodeTree'
+const DATASET_MODULE_ID = 'dataset'
+const KNOWLEDGE_MODULE_ID = 'knowledge'
 
 export type PageDesignModuleId =
   | typeof LIFECYCLE_MODULE_ID
@@ -83,11 +77,6 @@ export interface PageDesignStopSessionOptions extends PageDesignRuntimeContext {
   readonly reason?: string | undefined
 }
 
-export function assertPageDesignContext(context: { readonly moduleId: string }): asserts context is PageDesignRuntimeContext {
-  if (context.moduleId !== PAGE_DESIGN_MODULE_ID) {
-    throw new Error(`PageDesign context moduleId must be ${PAGE_DESIGN_MODULE_ID}, got ${context.moduleId}`)
-  }
-}
 
 type PageDesignFunctionApply = (args: unknown, context: FunctionExecutionContext) => object | AiRuntimeFunctionCallResult<unknown> | Promise<object | AiRuntimeFunctionCallResult<unknown>>
 
@@ -100,7 +89,6 @@ interface PageDesignFunctionHandler<_TModuleId extends PageDesignModuleId> {
 interface PageDesignFunctionBindingRuntime {
   readonly service: PageDesignService
   readonly knowledge: AiKnowledgeProjection
-  readonly payloadRef: string
 }
 
 interface PageDesignServiceMethodBinding {
@@ -153,15 +141,20 @@ function createServiceMethodBinding(row: AiFunctionRegistration, methodName: str
 function createLifecycleHandlers(
   service: PageDesignService,
 ): ReadonlyArray<PageDesignFunctionHandler<typeof LIFECYCLE_MODULE_ID>> {
-  return LIFECYCLE_CATALOG_ROWS.map((row) => ({
+  return new LifecycleModule().functions.map((row) => ({
     functionId: row.functionId,
-    validate: (args) => validateLifecycleParams(row.functionId, args),
+    validate: (args) => {
+      const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+      return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+    },
     apply: (_args, context) => {
       switch (row.functionId) {
         case 'bootstrap':
           return service.bootstrap(toServiceContext(context))
         case 'describeProgress':
           return service.describeProgress(toServiceContext(context))
+        default:
+          throw new Error(`unreachable: ${row.functionId}`)
       }
     },
   }))
@@ -173,9 +166,12 @@ function createLifecycleHandlers(
 function createTextModelHandlers(
   service: PageDesignService,
 ): ReadonlyArray<PageDesignFunctionHandler<typeof TEXT_MODEL_MODULE_ID>> {
-  return TEXT_MODEL_CATALOG_ROWS.map((row) => ({
+  return new TextModelModule().functions.map((row) => ({
     functionId: row.functionId,
-    validate: (args) => validateTextModelParams(row.functionId, args),
+    validate: (args) => {
+      const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+      return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+    },
     apply: (args, context) => {
       switch (row.functionId) {
         case 'readScript':
@@ -186,6 +182,8 @@ function createTextModelHandlers(
           return service.readTextModel(toServiceContext(context), 'style')
         case 'writeStyle':
           return service.writeTextModel(toServiceContext(context), 'style', (args as { content: string }).content)
+        default:
+          throw new Error(`unreachable: ${row.functionId}`)
       }
     },
   }))
@@ -197,9 +195,12 @@ function createTextModelHandlers(
 function createKnowledgeHandlers(
   runtime: PageDesignFunctionBindingRuntime,
 ): ReadonlyArray<PageDesignFunctionHandler<typeof KNOWLEDGE_MODULE_ID>> {
-  return KNOWLEDGE_CATALOG_ROWS.map((row) => ({
+  return new AiKnowledgeCatalog({}).parameterTable.map((row) => ({
     functionId: row.functionId,
-    validate: (args) => validateKnowledgeParams(row.functionId, args),
+    validate: (args) => {
+      const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+      return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+    },
     apply: (args, context) => {
       switch (row.functionId) {
         case 'queryFunctions': {
@@ -227,29 +228,8 @@ function createKnowledgeHandlers(
           }
           return { ok: true, data: { guide }, summary: `${action} 函数指南已返回` }
         }
-        case 'queryPayloads': {
-          const input = toObject(args) ?? {}
-          const filter = {
-            ...(typeof input['category'] === 'string' ? { category: input['category'] } : {}),
-            ...(typeof input['keyword'] === 'string' ? { keyword: input['keyword'] } : {}),
-            ...(typeof input['expression'] === 'string' ? { expression: input['expression'] } : {}),
-            ...(typeof input['limit'] === 'number' ? { limit: input['limit'] } : {}),
-          }
-          const items = runtime.knowledge.queryPayloads(runtime.payloadRef, filter)
-          return { ok: true, data: { payloadRef: runtime.payloadRef, items }, summary: `已返回 ${items.length} 个组件目录摘要` }
-        }
-        case 'guidePayload': {
-          const key = (args as { key: string }).key
-          const guide = runtime.knowledge.guidePayload(runtime.payloadRef, key)
-          if (guide === null) {
-            return pageDesignServiceFailure(
-              'PAYLOAD_NOT_FOUND',
-              `组件 "${key}" 不在 ${runtime.payloadRef} 参数荷载目录中`,
-              '先调用 queryPayloads 选择可用组件 type。',
-            )
-          }
-          return { ok: true, data: { guide }, summary: `${key} 组件参数荷载指南已返回` }
-        }
+        default:
+          throw new Error(`unreachable: ${row.functionId}`)
       }
     },
   }))
@@ -261,9 +241,12 @@ function createKnowledgeHandlers(
 function createNodeTreeHandlers(
   service: PageDesignService,
 ): ReadonlyArray<PageDesignFunctionHandler<typeof NODE_TREE_MODULE_ID>> {
-  return NODE_TREE_CATALOG_ROWS.map((row) => ({
+  return new NodeTreeModule().functions.map((row) => ({
     functionId: row.functionId,
-    validate: (args) => validateNodeTreeParams(row.functionId, args),
+    validate: (args) => {
+      const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+      return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+    },
     apply: (args, context) => {
       const methodBinding = createServiceMethodBinding(row, row.functionId, ['addNode', 'addNodes', 'moveNode', 'setProps', 'setPropsBatch', 'replaceNode', 'replaceNodes', 'removeNode', 'removeNodes'].includes(row.functionId))
       return service.useNodeTreeMethod(toServiceContext(context), args, methodBinding)
@@ -288,9 +271,12 @@ function createDatasetHandlers(
     'addAggregate', 'updateAggregate', 'removeAggregate',
     'setComputeExpression', 'clearComputeExpression',
   ])
-  return DATASET_CATALOG_ROWS.map((row) => ({
+  return new DatasetModule().functions.map((row) => ({
     functionId: row.functionId,
-    validate: (args) => validateDatasetParams(row.functionId, args),
+    validate: (args) => {
+      const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
+      return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+    },
     apply: (args, context) => {
       const methodBinding = createServiceMethodBinding(row, row.functionId, mutates.has(row.functionId))
       return service.useDatasetMethod(toServiceContext(context), args, methodBinding)
@@ -298,15 +284,14 @@ function createDatasetHandlers(
   }))
 }
 
-const PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER: ParameterPayloadProvider = {
-  payloadRef: SPARK_COMPONENT_PAYLOAD_REF,
-  description: SPARK_COMPONENT_PAYLOAD_DESCRIPTION,
-  queryPayloads: queryPageDesignComponentPayloads,
-  guidePayload: guidePageDesignComponentPayload,
-}
-
-export class PageDesignModule implements AiBusinessRegistration {
+export class PageDesignModule implements IBusinessRegistration {
   static readonly moduleId = PAGE_DESIGN_MODULE_ID
+
+  static assertContext(context: { readonly moduleId: string }): asserts context is PageDesignRuntimeContext {
+    if (context.moduleId !== PAGE_DESIGN_MODULE_ID) {
+      throw new Error(`PageDesign context moduleId must be ${PAGE_DESIGN_MODULE_ID}, got ${context.moduleId}`)
+    }
+  }
 
   readonly businessId = PAGE_DESIGN_MODULE_ID
 
@@ -316,9 +301,13 @@ export class PageDesignModule implements AiBusinessRegistration {
 
   readonly description = '单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。'
 
-  readonly modules: readonly AiModuleRegistration[]
+  readonly entity: Record<string, () => unknown> = {}
 
-  readonly parameterPayloadProviders = [PAGE_DESIGN_COMPONENT_PAYLOAD_PROVIDER]
+  readonly prompt = '你正在处理页面设计业务，支持 lifecycle、textModel、nodeTree、dataset、knowledge 五大子模块。'
+
+  readonly functions: readonly AiFunctionRegistration[] = []
+
+  readonly modules: readonly AiModuleRegistration[]
 
   private readonly service: PageDesignService
 
@@ -330,7 +319,6 @@ export class PageDesignModule implements AiBusinessRegistration {
     return {
       service: this.service,
       knowledge: this.core.getKnowledgeProjection(),
-      payloadRef: SPARK_COMPONENT_PAYLOAD_REF,
     }
   }
 
@@ -344,7 +332,7 @@ export class PageDesignModule implements AiBusinessRegistration {
     return new (class extends AiModuleRegistrationBase {
       constructor() { super(moduleId, name, description, prompt) }
       override getFunctions(): ReadonlyArray<AiFunctionRegistration & { apply: PageDesignFunctionApply }> {
-        const allRows = [...LIFECYCLE_CATALOG_ROWS, ...TEXT_MODEL_CATALOG_ROWS, ...KNOWLEDGE_CATALOG_ROWS, ...NODE_TREE_CATALOG_ROWS, ...DATASET_CATALOG_ROWS] as readonly AiFunctionRegistration[]
+        const allRows = [...new LifecycleModule().functions, ...new TextModelModule().functions, ...new NodeTreeModule().functions, ...new DatasetModule().functions, ...new AiKnowledgeCatalog({}).parameterTable] as readonly AiFunctionRegistration[]
         return handlers.map((handler) => ({
           functionId: handler.functionId,
           description: allRows.find(r => r.functionId === handler.functionId)?.description ?? handler.functionId,
@@ -376,7 +364,7 @@ export class PageDesignModule implements AiBusinessRegistration {
   }
 
   async projectKnowledge(context: PageDesignRuntimeContext): Promise<AiRuntimeKnowledgeProjection> {
-    assertPageDesignContext(context)
+    PageDesignModule.assertContext(context)
     return this.ai.projectKnowledge({
       instanceId: context.instanceId,
       moduleInstanceId: context.moduleInstanceId,
@@ -385,7 +373,7 @@ export class PageDesignModule implements AiBusinessRegistration {
   }
 
   async startSession(context: PageDesignRuntimeContext): Promise<AiRuntimeStartSessionResult> {
-    assertPageDesignContext(context)
+    PageDesignModule.assertContext(context)
     return this.ai.startSession({
       instanceId: context.instanceId,
       moduleInstanceId: context.moduleInstanceId,
@@ -394,7 +382,7 @@ export class PageDesignModule implements AiBusinessRegistration {
   }
 
   stopSession(options: PageDesignStopSessionOptions): AiRuntimeStopSessionResult {
-    assertPageDesignContext(options)
+    PageDesignModule.assertContext(options)
     return this.ai.stopSession({
       instanceId: options.instanceId,
       moduleInstanceId: options.moduleInstanceId,
@@ -403,7 +391,7 @@ export class PageDesignModule implements AiBusinessRegistration {
   }
 
   appendMessage(options: PageDesignAppendMessageOptions): AiRuntimeMessageHistoryEntry {
-    assertPageDesignContext(options)
+    PageDesignModule.assertContext(options)
     return this.ai.appendMessage({
       instanceId: options.instanceId,
       moduleInstanceId: options.moduleInstanceId,
@@ -416,12 +404,12 @@ export class PageDesignModule implements AiBusinessRegistration {
   }
 
   getSession(context: PageDesignRuntimeContext): AiRuntimeSessionRecord | null {
-    assertPageDesignContext(context)
+    PageDesignModule.assertContext(context)
     return this.ai.getSession(context.moduleInstanceId)
   }
 
   getSessionHistory(context: PageDesignRuntimeContext): readonly AiRuntimeHistoryEntry[] {
-    assertPageDesignContext(context)
+    PageDesignModule.assertContext(context)
     return this.ai.getSessionHistory(context.moduleInstanceId)
   }
 
@@ -429,7 +417,7 @@ export class PageDesignModule implements AiBusinessRegistration {
     return this.ai.getRegistrationData()
   }
 
-  getBusinessRegistrationData(): AiBusinessRegistrationData {
+  getBusinessRegistrationData(): IBusinessRegistrationData {
     return this.ai.getBusinessRegistrationData()
   }
 
@@ -437,12 +425,12 @@ export class PageDesignModule implements AiBusinessRegistration {
     return this.ai.getRegistrationStoreSnapshot()
   }
 
-  getBusinessRegistrationStoreSnapshot(): AiBusinessRegistrationStoreSnapshot {
+  getBusinessRegistrationStoreSnapshot(): IBusinessRegistrationStoreSnapshot {
     return this.ai.getBusinessRegistrationStoreSnapshot()
   }
 
   async translateFunctionCall(options: PageDesignExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult> {
-    assertPageDesignContext(options)
+    PageDesignModule.assertContext(options)
     return this.ai.translateFunctionCall({
       instanceId: options.instanceId,
       moduleInstanceId: options.moduleInstanceId,
@@ -454,7 +442,7 @@ export class PageDesignModule implements AiBusinessRegistration {
   }
 
   async executeFunctionCall(options: PageDesignExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
-    assertPageDesignContext(options)
+    PageDesignModule.assertContext(options)
     return this.ai.executeFunctionCall({
       instanceId: options.instanceId,
       moduleInstanceId: options.moduleInstanceId,

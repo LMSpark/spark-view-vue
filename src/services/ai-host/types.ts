@@ -1,5 +1,5 @@
 import type {
-  AiBusinessRegistrationData,
+  IBusinessRegistrationData,
   AiModuleRegistrationData,
   AiRuntimeFunctionCallResult,
   AiRuntimeHistoryEntry,
@@ -66,7 +66,7 @@ export interface AppAiBusinessAfterFunctionCallOptions extends AppAiBusinessRunt
 export interface AppAiBusinessRuntime {
   readonly moduleId: string
   getRegistrationData(): AiModuleRegistrationData
-  getBusinessRegistrationData?(): AiBusinessRegistrationData
+  getBusinessRegistrationData?(): IBusinessRegistrationData
   resolveBusinessInstance(input: AppAiBusinessResolveInput): string
   canReuseSelection?(input: AppAiBusinessResolveInput, currentScope: AppAiBusinessScope): boolean
   getSystemPrompt?(context: AppAiBusinessRuntimeContext): string | undefined

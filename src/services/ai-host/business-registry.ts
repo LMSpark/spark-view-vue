@@ -1,5 +1,5 @@
 import type {
-  AiBusinessRegistrationData,
+  IBusinessRegistrationData,
   AiModuleRegistrationData,
 } from '@spark-view/spark-ai'
 import type {
@@ -27,7 +27,7 @@ export function createRoutingCandidateFromRegistration(data: AiModuleRegistratio
   }
 }
 
-export function createRoutingCandidateFromBusinessRegistration(data: AiBusinessRegistrationData): AppAiRoutingCandidate {
+export function createRoutingCandidateFromBusinessRegistration(data: IBusinessRegistrationData): AppAiRoutingCandidate {
   return {
     moduleId: data.businessId,
     name: data.name,

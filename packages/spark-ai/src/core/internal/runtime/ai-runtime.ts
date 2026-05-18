@@ -1,7 +1,7 @@
 import type {
-  AiBusinessRegistration,
-  AiBusinessRegistrationData,
-  AiBusinessRegistrationStoreSnapshot,
+  IBusinessRegistration,
+  IBusinessRegistrationData,
+  IBusinessRegistrationStoreSnapshot,
   AiModuleRegistration,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreSnapshot,
@@ -67,7 +67,7 @@ export class AiRuntime implements AiRuntimeApi {
     )
   }
 
-  registerBusiness(source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi {
+  registerBusiness(source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi {
     const registration = this.registrations.registerBusiness(source)
     return this.apiFactory.createRegisteredBusinessApi(this.apiFactory.createRegisteredModuleApi(registration))
   }

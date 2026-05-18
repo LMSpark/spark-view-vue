@@ -1,5 +1,4 @@
-import { LlmParamsValidator, type AiFunctionRegistration, type FunctionFailureMode } from '../../../core'
-import { noParamsSchema, paramsSchema, stringSchema } from './json-schema-helpers'
+import { type AiFunctionRegistration, type FunctionFailureMode, type IModuleRegistration, noParamsSchema, paramsSchema, stringSchema } from '../../../core'
 
 export type TextModelFunctionFailureMode = FunctionFailureMode
 export type TextModelFunctionFileKey = 'script' | 'style'
@@ -12,7 +11,12 @@ const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.boot
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
-export const TEXT_MODEL_CATALOG_ROWS = [
+export class TextModelModule implements IModuleRegistration {
+  readonly moduleId = 'textModel'
+  readonly name = 'Page Design Text Model'
+  readonly entity: Record<string, () => unknown> = {}
+  readonly prompt = '当前页面 script.js/style.css live 文本模型读写。'
+  readonly functions: readonly AiFunctionRegistration[] = [
   {
     functionId: 'readScript',
     description: '读取 script.js 当前完整文本模型内容。',
@@ -90,11 +94,5 @@ export const TEXT_MODEL_CATALOG_ROWS = [
       },
     ],
   },
-] as const satisfies readonly AiFunctionRegistration[]
-
-export function validateTextModelParams(functionId: string, params: unknown): string | null {
-  const row = TEXT_MODEL_CATALOG_ROWS.find((r) => r.functionId === functionId)
-  if (!row) return `未知 ${functionId} 函数`
-  const result = LlmParamsValidator.validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
-  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+  ]
 }

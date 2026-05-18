@@ -1,19 +1,17 @@
 import type {
-  AiBusinessRegistration,
-  AiBusinessRegistrationData,
-  AiBusinessRegistrationStoreSnapshot,
+  IBusinessRegistration,
+  IBusinessRegistrationData,
+  IBusinessRegistrationStoreSnapshot,
   AiModuleRegistration,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreSnapshot,
 } from '../../protocol/runtime-contracts'
-import { ParameterPayloadRegistry } from '../knowledge/parameter-payload-registry'
 import type { AiRuntimeProjector } from './ai-runtime-support'
 import {
   moduleSourceFromBusiness,
   moduleStoreToBusinessStoreSnapshot,
   moduleToBusinessRegistration,
   moduleDataToBusinessData,
-  parameterPayloadProvidersFromBusiness,
 } from './ai-runtime-support'
 
 export class AiRegistrationRepository {
@@ -23,14 +21,13 @@ export class AiRegistrationRepository {
 
   constructor(private readonly projector: AiRuntimeProjector) {}
 
-  registerBusiness(source: AiBusinessRegistration | AiBusinessRegistrationData | AiBusinessRegistrationStoreSnapshot): AiModuleRegistration {
+  registerBusiness(source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot): AiModuleRegistration {
     const moduleSource = moduleSourceFromBusiness(source)
     const registration = this.projector.createRuntimeRegistration(moduleSource)
     this.projector.assertUniqueRegistrationKeys(registration)
     if (this.modules.has(registration.moduleId)) {
       throw new Error(`Duplicate AI business registration: ${registration.moduleId}`)
     }
-    this.registerParameterPayloadProviders(parameterPayloadProvidersFromBusiness(source))
     this.modules.set(registration.moduleId, registration)
     this.businessIds.add(registration.moduleId)
     return registration
@@ -80,61 +77,42 @@ export class AiRegistrationRepository {
     return Array.from(this.modules.values()).map((registration) => this.projector.createRegistrationStoreSnapshot(registration))
   }
 
-  getBusinessRegistration(businessId: string): AiBusinessRegistration | undefined {
+  getBusinessRegistration(businessId: string): IBusinessRegistration | undefined {
     if (!this.businessIds.has(businessId)) return undefined
     const registration = this.modules.get(businessId)
     return registration === undefined ? undefined : moduleToBusinessRegistration(registration)
   }
 
-  listBusinessRegistrations(): readonly AiBusinessRegistration[] {
+  listBusinessRegistrations(): readonly IBusinessRegistration[] {
     return Array.from(this.businessIds.values()).flatMap((businessId) => {
       const registration = this.modules.get(businessId)
       return registration === undefined ? [] : [moduleToBusinessRegistration(registration)]
     })
   }
 
-  getBusinessRegistrationData(businessId: string): AiBusinessRegistrationData | undefined {
+  getBusinessRegistrationData(businessId: string): IBusinessRegistrationData | undefined {
     if (!this.businessIds.has(businessId)) return undefined
     const data = this.getModuleRegistrationData(businessId)
     return data === undefined ? undefined : moduleDataToBusinessData(data)
   }
 
-  listBusinessRegistrationData(): readonly AiBusinessRegistrationData[] {
+  listBusinessRegistrationData(): readonly IBusinessRegistrationData[] {
     return Array.from(this.businessIds.values()).flatMap((businessId) => {
       const data = this.getBusinessRegistrationData(businessId)
       return data === undefined ? [] : [data]
     })
   }
 
-  getBusinessRegistrationStoreSnapshot(businessId: string): AiBusinessRegistrationStoreSnapshot | undefined {
+  getBusinessRegistrationStoreSnapshot(businessId: string): IBusinessRegistrationStoreSnapshot | undefined {
     if (!this.businessIds.has(businessId)) return undefined
     const snapshot = this.getModuleRegistrationStoreSnapshot(businessId)
     return snapshot === undefined ? undefined : moduleStoreToBusinessStoreSnapshot(snapshot)
   }
 
-  listBusinessRegistrationStoreSnapshots(): readonly AiBusinessRegistrationStoreSnapshot[] {
+  listBusinessRegistrationStoreSnapshots(): readonly IBusinessRegistrationStoreSnapshot[] {
     return Array.from(this.businessIds.values()).flatMap((businessId) => {
       const snapshot = this.getBusinessRegistrationStoreSnapshot(businessId)
       return snapshot === undefined ? [] : [snapshot]
     })
-  }
-
-  private registerParameterPayloadProviders(providers: ReadonlyArray<NonNullable<AiBusinessRegistration['parameterPayloadProviders']>[number]>): void {
-    for (const provider of providers) {
-      const existing = ParameterPayloadRegistry.defaultRegistry.getProvider(provider.payloadRef)
-      if (existing === null) {
-        ParameterPayloadRegistry.register(provider)
-        continue
-      }
-      if (
-        existing.payloadRef === provider.payloadRef
-        && existing.description === provider.description
-        && existing.queryPayloads === provider.queryPayloads
-        && existing.guidePayload === provider.guidePayload
-      ) {
-        continue
-      }
-      throw new Error(`Duplicate parameter payload provider: ${provider.payloadRef}`)
-    }
   }
 }

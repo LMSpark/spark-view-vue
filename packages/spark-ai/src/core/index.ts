@@ -18,27 +18,18 @@ export type {
   AiModuleRegistrationData,
   AiModuleRegistrationStoreModule,
   AiModuleRegistrationStoreSnapshot,
-  AiBusinessRegistration,
-  AiBusinessRegistrationData,
-  AiBusinessRegistrationStoreSnapshot,
+  IBusinessRegistration,
+  IBusinessRegistrationData,
+  IBusinessRegistrationStoreSnapshot,
   AiModuleInstanceBinding,
   AiModuleInstanceParam,
   AiFunctionRegistration,
-  AiFunctionRegistrationData,
+  IModuleRegistration,
   AiFunctionRegistrationFailureMode,
   AiFunctionRegistrationStoreFunction,
   AiFunctionRegistrationUsageRule,
   AiRegisteredModuleApi,
   AiRegisteredBusinessApi,
-  AiRegisteredModuleAppendFunctionCallOptions,
-  AiRegisteredModuleAppendMessageOptions,
-  AiRegisteredModuleCompleteFunctionCallOptions,
-  AiRegisteredModuleExecuteFunctionCallOptions,
-  AiRegisteredModuleProjectKnowledgeOptions,
-  AiRegisteredModuleRecordFunctionCallRequestOptions,
-  AiRegisteredModuleStartSessionOptions,
-  AiRegisteredModuleStopSessionOptions,
-  AiRegisteredModuleTranslateFunctionCallOptions,
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeAppendMessageOptions,
   AiRuntimeCompleteFunctionCallOptions,
@@ -63,10 +54,7 @@ export type {
   AiRuntimeFunctionResultMessage,
   AiRuntimeHistoryEntry,
   AiRuntimeHistoryEntryBase,
-  AiRuntimeHistoryEntryKind,
-  AiRuntimeInstanceLifecycleSnapshot,
   AiRuntimeInstanceScope,
-  AiRuntimeInstanceStatus,
   AiRuntimeKnowledgeProjection,
   AiRuntimeMessageHistoryEntry,
   AiRuntimeMessageRole,
@@ -74,7 +62,6 @@ export type {
   AiRuntimeModuleExposure,
   AiRuntimeModuleId,
   AiRuntimeModuleInstanceId,
-  AiRuntimeModuleInstanceScope,
   AiRuntimeModulePath,
   AiRuntimeOptions,
   AiRuntimeProjectKnowledgeOptions,
@@ -114,10 +101,7 @@ export {
 
 export type {
   ActionPathParts,
-  ProtocolRole,
-  ProtocolMessage,
   TokenUsage,
-  StreamCallbacks,
 } from './protocol/invocation-helpers'
 
 export type {
@@ -135,6 +119,23 @@ export {
   LlmParamsValidator,
 } from './protocol/llm-params-validator'
 
+// 四.五、JSON Schema 便捷构造器：为函数参数 schema 提供统一 DSL。
+export {
+  anySchema,
+  arraySchema,
+  booleanSchema,
+  enumSchema,
+  noParamsSchema,
+  numberSchema,
+  objectSchema,
+  paramsSchema,
+  stringSchema,
+} from './protocol/json-schema-helpers'
+
+export type {
+  JsonSchemaProperties,
+} from './protocol/json-schema-helpers'
+
 export type {
   LlmParamValidationIssue,
   LlmParamValidationResult,
@@ -150,20 +151,7 @@ export type {
   LlmParameterSchemaRoot,
 } from './protocol/parameter-schema'
 
-// 五、参数 payload 注册中心：把外部参数源按 payloadRef 暴露。
-export {
-  ParameterPayloadRegistry,
-} from './internal/knowledge/parameter-payload-registry'
-
-export type {
-  ParameterPayloadFailureMode,
-  ParameterPayloadGuide,
-  ParameterPayloadProvider,
-  ParameterPayloadQueryFilter,
-  ParameterPayloadSummary,
-} from './protocol/parameter-payload-contracts'
-
-// 五.五、核心层知识投影统一窗口：为 LLM FC、后端 API 提供统一的知识查询入口（函数、模块、参数目录）。
+// 五、核心层知识投影统一窗口：为 LLM FC、后端 API 提供统一的知识查询入口（函数、模块目录）。
 export {
   AiKnowledgeProjector,
 } from './internal/knowledge/knowledge-projection'

@@ -3,7 +3,7 @@ import type {
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmParameterSchemaRoot,
-} from '../../../core'
+} from './parameter-schema'
 
 export type JsonSchemaProperties = Readonly<Record<string, LlmJsonSchema>>
 
