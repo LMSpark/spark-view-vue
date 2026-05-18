@@ -103,7 +103,7 @@ public class DbmsCatalogService {
         int relationCount = 0;
         for (PhysicalDatabase database : scanned) {
             long databaseId = upsertTenantSharedDatabase(server, database.databaseName(), tenantId, createdBy);
-            mergeDuplicateDatabaseMetadata(server.id(), database.databaseName(), databaseId);
+            mergeDuplicateDatabaseMetadata(server.id(), database.databaseName(), databaseId, tenantId, projectId);
             Map<ObjectLookupKey, Long> tableIds = new LinkedHashMap<>();
             List<Map<String, Object>> syncedObjects = new ArrayList<>();
             for (PhysicalObject object : database.objects()) {
@@ -506,13 +506,15 @@ public class DbmsCatalogService {
         }
         List<String> statements = new ArrayList<>();
         for (Map<String, Object> relation : relations) {
-            String relationName = stringValue(relation.get("RELATION_NAME"), "fk_" + relation.get("ID"));
-            String parentTable = stringValue(relation.get("parentPhysicalTableName"), stringValue(relation.get("parentTableName"), ""));
-            String childTable = stringValue(relation.get("childPhysicalTableName"), stringValue(relation.get("childTableName"), ""));
-            String parentSchema = normalizeSchemaName(stringValue(relation.get("parentSchemaName"), ""));
-            String childSchema = normalizeSchemaName(stringValue(relation.get("childSchemaName"), ""));
-            String parentField = stringValue(relation.get("PARENT_FIELD"), "");
-            String childField = stringValue(relation.get("CHILD_FIELD"), "");
+            String relationName = stringValue(mapValue(relation, "RELATION_NAME"), "fk_" + mapValue(relation, "ID"));
+            String parentTable = stringValue(mapValue(relation, "parentPhysicalTableName"),
+                    stringValue(mapValue(relation, "parentTableName"), ""));
+            String childTable = stringValue(mapValue(relation, "childPhysicalTableName"),
+                    stringValue(mapValue(relation, "childTableName"), ""));
+            String parentSchema = normalizeSchemaName(stringValue(mapValue(relation, "parentSchemaName"), ""));
+            String childSchema = normalizeSchemaName(stringValue(mapValue(relation, "childSchemaName"), ""));
+            String parentField = stringValue(mapValue(relation, "PARENT_FIELD"), "");
+            String childField = stringValue(mapValue(relation, "CHILD_FIELD"), "");
             if (parentTable.isBlank() || childTable.isBlank() || parentField.isBlank() || childField.isBlank()) {
                 continue;
             }
@@ -523,6 +525,18 @@ public class DbmsCatalogService {
                     + " (" + dialect.quoteIdentifier(parentField) + ");");
         }
         return String.join("\n", statements);
+    }
+
+    private static Object mapValue(Map<String, Object> row, String key) {
+        if (row.containsKey(key)) {
+            return row.get(key);
+        }
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private PhysicalObject mutateManagedShape(ServerInfo server,
@@ -735,11 +749,11 @@ public class DbmsCatalogService {
               AND SERVER_ID = ?
               AND DATABASE_NAME = ?
             ORDER BY CASE ISOLATION_MODE
-                WHEN 'PROJECT_ISOLATED' THEN 4
-                WHEN 'PROJECT_SHARED' THEN 3
+                WHEN 'TENANT_SHARED' THEN 0
+                WHEN 'PROJECT_ISOLATED' THEN 1
                 WHEN 'TENANT_ISOLATED' THEN 2
-                WHEN 'TENANT_SHARED' THEN 1
-                ELSE 0 END DESC, ID
+                WHEN 'PROJECT_SHARED' THEN 3
+                ELSE 4 END, ID
             LIMIT 1
             """, Long.class, args.toArray());
         return ids.isEmpty() ? null : ids.get(0);
@@ -752,6 +766,116 @@ public class DbmsCatalogService {
             ORDER BY ID LIMIT 1
             """, Long.class, serverId, databaseName);
         return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    private void mergeDuplicateDatabaseMetadata(long serverId,
+                                                String databaseName,
+                                                long canonicalDatabaseId,
+                                                String tenantId,
+                                                String projectId) {
+        List<Long> duplicateDatabaseIds = jdbc.queryForList("""
+            SELECT ID FROM DATA_SOURCE_DATABASE
+            WHERE SERVER_ID = ? AND DATABASE_NAME = ? AND ID <> ?
+            ORDER BY ID
+            """, Long.class, serverId, databaseName, canonicalDatabaseId);
+        if (duplicateDatabaseIds.isEmpty()) {
+            return;
+        }
+        Timestamp now = Timestamp.from(Instant.now());
+        for (Long duplicateDatabaseId : duplicateDatabaseIds) {
+            List<Map<String, Object>> duplicateObjects = jdbc.queryForList("""
+                SELECT ID, OBJECT_TYPE, SCHEMA_NAME, PHYSICAL_TABLE_NAME
+                FROM DATA_MODEL_TABLE
+                WHERE DATABASE_ID = ?
+                ORDER BY ID
+                """, duplicateDatabaseId);
+            for (Map<String, Object> duplicateObject : duplicateObjects) {
+                Long duplicateObjectId = readLong(duplicateObject.get("ID"));
+                if (duplicateObjectId == null) {
+                    continue;
+                }
+                Long canonicalObjectId = findCanonicalObjectId(canonicalDatabaseId, duplicateObject);
+                if (canonicalObjectId == null) {
+                    jdbc.update("""
+                        UPDATE DATA_MODEL_TABLE
+                        SET DATABASE_ID = ?, TENANT_ID = ?, PROJECT_ID = ?, ISOLATION_MODE = 'TENANT_SHARED',
+                            STATUS = 'active', UPDATED_AT = ?
+                        WHERE ID = ?
+                        """, canonicalDatabaseId, tenantId, projectId, now, duplicateObjectId);
+                    continue;
+                }
+                if (!Objects.equals(canonicalObjectId, duplicateObjectId)) {
+                    mergeRelationReferences(duplicateObjectId, canonicalObjectId);
+                    jdbc.update("""
+                        UPDATE DATA_MODEL_TABLE
+                        SET STATUS = 'merged', UPDATED_AT = ?
+                        WHERE ID = ?
+                        """, now, duplicateObjectId);
+                }
+            }
+        }
+    }
+
+    private Long findCanonicalObjectId(long canonicalDatabaseId, Map<String, Object> duplicateObject) {
+        String objectType = normalizeObjectType(stringValue(duplicateObject.get("OBJECT_TYPE"), OBJECT_TABLE));
+        String schemaName = normalizeSchemaName(stringValue(duplicateObject.get("SCHEMA_NAME"), ""));
+        String physicalName = stringValue(duplicateObject.get("PHYSICAL_TABLE_NAME"), "");
+        List<Long> ids = jdbc.queryForList("""
+            SELECT ID
+            FROM DATA_MODEL_TABLE
+            WHERE DATABASE_ID = ? AND OBJECT_TYPE = ? AND SCHEMA_NAME = ? AND PHYSICAL_TABLE_NAME = ?
+            ORDER BY CASE STATUS WHEN 'active' THEN 0 ELSE 1 END, ID
+            LIMIT 1
+            """, Long.class, canonicalDatabaseId, objectType, schemaName, physicalName);
+        return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    private void mergeRelationReferences(long duplicateTableId, long canonicalTableId) {
+        List<Map<String, Object>> relations = jdbc.queryForList("""
+            SELECT ID, PARENT_TABLE_ID, CHILD_TABLE_ID, PARENT_FIELD, CHILD_FIELD
+            FROM DATA_MODEL_RELATION
+            WHERE PARENT_TABLE_ID = ? OR CHILD_TABLE_ID = ?
+            ORDER BY ID
+            """, duplicateTableId, duplicateTableId);
+        Timestamp now = Timestamp.from(Instant.now());
+        for (Map<String, Object> relation : relations) {
+            Long relationId = readLong(relation.get("ID"));
+            Long parentTableId = readLong(relation.get("PARENT_TABLE_ID"));
+            Long childTableId = readLong(relation.get("CHILD_TABLE_ID"));
+            if (relationId == null || parentTableId == null || childTableId == null) {
+                continue;
+            }
+            long mergedParentId = Objects.equals(parentTableId, duplicateTableId) ? canonicalTableId : parentTableId;
+            long mergedChildId = Objects.equals(childTableId, duplicateTableId) ? canonicalTableId : childTableId;
+            String parentField = stringValue(relation.get("PARENT_FIELD"), "");
+            String childField = stringValue(relation.get("CHILD_FIELD"), "");
+            if (relationExists(relationId, mergedParentId, mergedChildId, parentField, childField)) {
+                jdbc.update("DELETE FROM DATA_MODEL_RELATION WHERE ID = ?", relationId);
+                continue;
+            }
+            jdbc.update("""
+                UPDATE DATA_MODEL_RELATION
+                SET PARENT_TABLE_ID = ?, CHILD_TABLE_ID = ?, UPDATED_AT = ?
+                WHERE ID = ?
+                """, mergedParentId, mergedChildId, now, relationId);
+        }
+    }
+
+    private boolean relationExists(long excludedRelationId,
+                                   long parentTableId,
+                                   long childTableId,
+                                   String parentField,
+                                   String childField) {
+        Integer count = jdbc.queryForObject("""
+            SELECT COUNT(*)
+            FROM DATA_MODEL_RELATION
+            WHERE ID <> ?
+              AND PARENT_TABLE_ID = ?
+              AND CHILD_TABLE_ID = ?
+              AND PARENT_FIELD = ?
+              AND CHILD_FIELD = ?
+            """, Integer.class, excludedRelationId, parentTableId, childTableId, parentField, childField);
+        return count != null && count > 0;
     }
 
     private Map<ObjectLookupKey, RegisteredObject> registeredObjects(String tenantId, String projectId, Long databaseId) {

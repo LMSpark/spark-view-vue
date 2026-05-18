@@ -73,7 +73,7 @@ class DataSourceMetadataServiceTest {
         serverService = new DataSourceServerService(jdbcTemplate, cryptoUtil, dsManager);
         databaseService = new DataSourceDatabaseService(jdbcTemplate, cryptoUtil, dsManager, dataSource);
         relationService = new DataModelRelationService(jdbcTemplate);
-        catalogService = new DbmsCatalogService(jdbcTemplate, cryptoUtil, dsManager, relationService);
+        catalogService = new DbmsCatalogService(jdbcTemplate, cryptoUtil, dsManager, relationService, modelService);
     }
 
     @Test
@@ -140,6 +140,22 @@ class DataSourceMetadataServiceTest {
 
         assertEquals(1, selectedServerDatabases.size());
         assertEquals(databaseOneId.longValue(), ((Number) selectedServerDatabases.get(0).get("ID")).longValue());
+    }
+
+    @Test
+    void listDatabasesDeduplicatesByPhysicalDatabaseAndPrefersTenantShared() {
+        Number serverId = createServer("Duplicate Database Server");
+        Number projectDatabaseId = createDatabase("t1", "p1", serverId, "duplicate_db");
+        Number sharedDatabaseId = createDatabase("t1", "p1", serverId, "duplicate_db", "TENANT_SHARED");
+
+        List<Map<String, Object>> databases =
+                databaseService.listDatabases("t1", "p1", serverId.longValue());
+
+        assertEquals(1, databases.size());
+        assertEquals(sharedDatabaseId.longValue(), ((Number) databases.get(0).get("ID")).longValue());
+        assertEquals(sharedDatabaseId.longValue(), ((Number) databases.get(0).get("canonicalDatabaseId")).longValue());
+        Object duplicateIds = databases.get(0).get("duplicateDatabaseIds");
+        assertTrue(duplicateIds instanceof List<?> ids && ids.contains(projectDatabaseId.longValue()));
     }
 
     @Test
@@ -351,6 +367,87 @@ class DataSourceMetadataServiceTest {
         assertEquals("CustomerAlias", jdbcTemplate.queryForObject("SELECT LOGICAL_TABLE_NAME FROM DATA_MODEL_TABLE WHERE ID = ?", String.class, customerId.longValue()));
         assertEquals(3, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ?", Integer.class, databaseId.longValue()));
         assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_RELATION", Integer.class));
+
+        Map<String, Object> tableSql = catalogService.objectSql("platform", "homepage", customerId.longValue());
+        assertEquals(customerId.longValue(), ((Number) tableSql.get("objectId")).longValue());
+        assertEquals(Boolean.TRUE, tableSql.get("readOnly"));
+        assertTrue(String.valueOf(tableSql.get("ddl")).contains("CREATE TABLE"));
+        assertTrue(String.valueOf(tableSql.get("relationSql")).contains("ALTER TABLE"));
+
+        Number viewId = jdbcTemplate.queryForObject(
+                "SELECT ID FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ? AND PHYSICAL_TABLE_NAME = ?",
+                Number.class,
+                databaseId.longValue(),
+                "CUSTOMER_VIEW"
+        );
+        Map<String, Object> viewSql = catalogService.objectSql("platform", "homepage", viewId.longValue());
+        assertEquals("VIEW", viewSql.get("objectType"));
+        assertEquals(Boolean.TRUE, viewSql.get("readOnly"));
+        assertTrue(String.valueOf(viewSql.get("ddl")).contains("CREATE VIEW"));
+    }
+
+    @Test
+    void dbmsSyncMigratesDuplicateDatabaseMetadataToCanonicalDatabase() {
+        Number serverId = createServer("Duplicate Metadata Server");
+        Number duplicateDatabaseId = createDatabase("lmspark", "homepage", serverId, "DUP_SYNC");
+        jdbcTemplate.execute("CREATE SCHEMA DUP_SYNC");
+        jdbcTemplate.execute("""
+            CREATE TABLE DUP_SYNC.LEGACY_CUSTOMER (
+                ID BIGINT PRIMARY KEY,
+                NAME VARCHAR(64)
+            )
+            """);
+        jdbcTemplate.update("""
+            INSERT INTO DATA_MODEL_TABLE (
+                TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME, ORIGIN, MANAGED_MODE,
+                OBJECT_TYPE, SCHEMA_NAME, PHYSICAL_TABLE_NAME, PRIMARY_KEY_FIELD,
+                DATABASE_ID, ISOLATION_MODE, SCHEMA_VERSION, STATUS, CREATED_AT, UPDATED_AT
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """,
+                "lmspark",
+                "homepage",
+                "LegacyCustomerAlias",
+                "existing-imported",
+                "readonly",
+                "TABLE",
+                "DUP_SYNC",
+                "LEGACY_CUSTOMER",
+                "ID",
+                duplicateDatabaseId.longValue(),
+                "PROJECT_ISOLATED");
+        Number legacyTableId = jdbcTemplate.queryForObject(
+                "SELECT ID FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ? AND PHYSICAL_TABLE_NAME = ?",
+                Number.class,
+                duplicateDatabaseId.longValue(),
+                "LEGACY_CUSTOMER"
+        );
+
+        catalogService.sync("platform", "homepage", serverId.longValue(), Map.of(
+                "scopeMode", "PLATFORM_SHARED",
+                "databaseNames", List.of("DUP_SYNC"),
+                "includeTables", true,
+                "includeViews", true,
+                "includeRelations", true,
+                "mutatePhysicalObjectKeys", List.of()
+        ), "admin", true, "platform");
+
+        Number canonicalDatabaseId = jdbcTemplate.queryForObject("""
+            SELECT ID FROM DATA_SOURCE_DATABASE
+            WHERE SERVER_ID = ? AND DATABASE_NAME = ? AND ISOLATION_MODE = 'TENANT_SHARED'
+            """, Number.class, serverId.longValue(), "DUP_SYNC");
+        Map<String, Object> migrated = jdbcTemplate.queryForMap(
+                "SELECT TENANT_ID, PROJECT_ID, LOGICAL_TABLE_NAME, DATABASE_ID, ISOLATION_MODE FROM DATA_MODEL_TABLE WHERE ID = ?",
+                legacyTableId.longValue()
+        );
+        assertEquals(canonicalDatabaseId.longValue(), ((Number) migrated.get("DATABASE_ID")).longValue());
+        assertEquals("platform", migrated.get("TENANT_ID"));
+        assertEquals("homepage", migrated.get("PROJECT_ID"));
+        assertEquals("TENANT_SHARED", migrated.get("ISOLATION_MODE"));
+        assertEquals("LegacyCustomerAlias", migrated.get("LOGICAL_TABLE_NAME"));
+        assertEquals(1, jdbcTemplate.queryForObject("""
+            SELECT COUNT(*) FROM DATA_MODEL_TABLE
+            WHERE DATABASE_ID = ? AND PHYSICAL_TABLE_NAME = ?
+            """, Integer.class, canonicalDatabaseId.longValue(), "LEGACY_CUSTOMER"));
     }
 
     private Number createServer(String serverName) {
@@ -367,10 +464,14 @@ class DataSourceMetadataServiceTest {
     }
 
     private Number createDatabase(String tenantId, String projectId, Number serverId, String databaseName) {
+        return createDatabase(tenantId, projectId, serverId, databaseName, "PROJECT_ISOLATED");
+    }
+
+    private Number createDatabase(String tenantId, String projectId, Number serverId, String databaseName, String isolationMode) {
         Map<String, Object> database = databaseService.createDatabase(tenantId, projectId, Map.of(
                 "serverId", serverId.longValue(),
                 "databaseName", databaseName,
-                "isolationMode", "PROJECT_ISOLATED",
+                "isolationMode", isolationMode,
                 "createNew", false,
                 "connectionMode", "DIRECT"
         ), "tester");

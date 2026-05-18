@@ -77,6 +77,7 @@ public class DataSourceDatabaseService {
                     .filter(id -> !Objects.equals(id, canonicalId))
                     .toList();
             canonical.put("canonicalDatabaseId", canonicalId);
+            canonical.put("CANONICAL_DATABASE_ID", canonicalId);
             canonical.put("duplicateDatabaseIds", duplicateIds);
             canonical.put("DUPLICATE_DATABASE_IDS", duplicateIds);
             result.add(canonical);

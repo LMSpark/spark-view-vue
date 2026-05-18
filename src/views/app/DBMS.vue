@@ -113,9 +113,21 @@
 
       <main class="workspace-main">
         <div class="workspace-tabs">
-          <button type="button" class="workspace-tab active">对象</button>
-          <button type="button" class="workspace-tab" disabled>结构</button>
-          <button type="button" class="workspace-tab" disabled>SQL</button>
+          <button
+            type="button"
+            :class="['workspace-tab', { active: activeWorkspaceTab === 'object' }]"
+            @click="selectWorkspaceTab('object')"
+          >对象</button>
+          <button
+            type="button"
+            :class="['workspace-tab', { active: activeWorkspaceTab === 'structure' }]"
+            @click="selectWorkspaceTab('structure')"
+          >结构</button>
+          <button
+            type="button"
+            :class="['workspace-tab', { active: activeWorkspaceTab === 'sql' }]"
+            @click="selectWorkspaceTab('sql')"
+          >SQL</button>
         </div>
         <div class="workspace-header">
           <div class="workspace-title">
@@ -129,7 +141,7 @@
           </div>
         </div>
 
-        <div class="object-grid">
+        <div v-if="activeWorkspaceTab === 'object'" class="object-grid">
           <div v-if="!selectedServer" class="empty large-empty">请从左侧对象资源管理器选择服务器</div>
           <div v-else-if="!selectedDatabase" class="table-wrap">
             <div class="grid-title">
@@ -212,6 +224,111 @@
               </tbody>
             </table>
           </div>
+        </div>
+        <div v-else-if="activeWorkspaceTab === 'structure'" class="structure-grid">
+          <template v-if="selectedTable">
+            <div class="structure-section">
+              <div class="grid-title">
+                <strong>物理列</strong>
+                <el-tag v-if="selectedTable.objectType === 'VIEW'" size="small" type="info">只读视图</el-tag>
+              </div>
+              <table class="dbms-table structure-table">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>物理列名</th>
+                    <th>显示别名</th>
+                    <th>SQL 类型</th>
+                    <th>可空</th>
+                    <th>主键</th>
+                    <th>自增</th>
+                    <th>默认值</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(col, index) in selectedTableColumns" :key="col.physicalColumnName || col.name">
+                    <td>{{ col.ordinalPosition ?? index + 1 }}</td>
+                    <td class="mono-cell">{{ col.physicalColumnName || col.name }}</td>
+                    <td>{{ col.name }}</td>
+                    <td class="mono-cell">{{ col.sqlType || col.type || '-' }}</td>
+                    <td>{{ col.nullable === false || col.required ? '否' : '是' }}</td>
+                    <td>{{ col.primaryKey ? '是' : '-' }}</td>
+                    <td>{{ col.autoIncrement ? '是' : '-' }}</td>
+                    <td class="mono-cell">{{ col.defaultValue ?? '-' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="structure-section">
+              <div class="grid-title">
+                <strong>关系</strong>
+                <span class="section-count">{{ selectedTableRelations.length }} 条</span>
+              </div>
+              <div v-if="!selectedTableRelations.length" class="empty">暂无关系</div>
+              <table v-else class="dbms-table relation-structure-table">
+                <thead>
+                  <tr>
+                    <th>关系名</th>
+                    <th>父物理表</th>
+                    <th>父物理列</th>
+                    <th>子物理表</th>
+                    <th>子物理列</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="rel in selectedTableRelations" :key="rel.ID">
+                    <td>{{ rel.RELATION_NAME || '-' }}</td>
+                    <td class="mono-cell">{{ relationTableLabel(rel, 'parent') }}</td>
+                    <td class="mono-cell">{{ rel.PARENT_FIELD }}</td>
+                    <td class="mono-cell">{{ relationTableLabel(rel, 'child') }}</td>
+                    <td class="mono-cell">{{ rel.CHILD_FIELD }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+          <div v-else class="structure-overview">
+            <div class="overview-item">
+              <span>当前服务器</span>
+              <strong>{{ selectedServer?.SERVER_NAME ?? '未选择' }}</strong>
+            </div>
+            <div class="overview-item">
+              <span>当前数据库</span>
+              <strong>{{ selectedDatabase?.DATABASE_NAME ?? '未选择' }}</strong>
+            </div>
+            <div class="overview-item">
+              <span>物理对象</span>
+              <strong>{{ tables.length }} 个</strong>
+            </div>
+            <div class="overview-item">
+              <span>表 / 视图</span>
+              <strong>{{ tableObjects.length }} / {{ viewObjects.length }}</strong>
+            </div>
+            <div class="overview-item">
+              <span>关系</span>
+              <strong>{{ relations.length }} 条</strong>
+            </div>
+          </div>
+        </div>
+        <div v-else class="sql-grid">
+          <div v-if="!selectedTable" class="empty large-empty">请选择表或视图查看只读 DDL</div>
+          <div v-else-if="loading.sql" class="loading"><el-icon class="is-loading"><Loading /></el-icon></div>
+          <template v-else>
+            <div class="sql-section">
+              <div class="grid-title">
+                <strong>DDL</strong>
+                <el-tag size="small" type="info">{{ objectSql?.dialect || 'UNKNOWN' }}</el-tag>
+              </div>
+              <pre class="sql-code">{{ objectSql?.ddl || '暂无 DDL' }}</pre>
+            </div>
+            <div class="sql-section">
+              <div class="grid-title">
+                <strong>关系 SQL</strong>
+                <el-tag size="small" type="info">只读</el-tag>
+              </div>
+              <pre class="sql-code">{{ objectSql?.relationSql || '暂无关系 SQL' }}</pre>
+            </div>
+          </template>
         </div>
       </main>
 
@@ -504,6 +621,8 @@ interface DbmsDatabase {
   ISOLATION_MODE: IsolationMode
   CONNECTION_MODE?: 'DIRECT' | 'JNDI_XA'
   JNDI_NAME?: string | null
+  canonicalDatabaseId?: number
+  duplicateDatabaseIds?: number[]
 }
 
 interface DbmsColumn {
@@ -513,7 +632,11 @@ interface DbmsColumn {
   sqlType?: string
   maxLength?: number | null
   primaryKey?: boolean
+  autoIncrement?: boolean
+  nullable?: boolean
   required?: boolean
+  defaultValue?: string | null
+  ordinalPosition?: number
 }
 
 type DbmsObjectType = 'TABLE' | 'VIEW'
@@ -541,12 +664,25 @@ interface DbmsTable {
 interface DbmsRelation {
   ID: number
   RELATION_NAME: string
+  PARENT_TABLE_ID?: number
+  CHILD_TABLE_ID?: number
   parentTableName: string
   parentPhysicalTableName?: string
+  parentSchemaName?: string | null
   PARENT_FIELD: string
   childTableName: string
   childPhysicalTableName?: string
+  childSchemaName?: string | null
   CHILD_FIELD: string
+}
+
+interface DbmsObjectSql {
+  objectId: number
+  objectType: DbmsObjectType
+  dialect: string
+  ddl: string
+  relationSql: string
+  readOnly: boolean
 }
 
 interface DbmsCatalogObject {
@@ -609,6 +745,7 @@ interface TableCreatePayload {
 
 type IsolationMode = 'TENANT_SHARED' | 'TENANT_ISOLATED' | 'PROJECT_SHARED' | 'PROJECT_ISOLATED'
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
+type WorkspaceTab = 'object' | 'structure' | 'sql'
 
 const isolationModeOptions: Array<{ value: IsolationMode; label: string }> = [
   { value: 'TENANT_SHARED', label: '租户共享' },
@@ -693,7 +830,7 @@ function apiErrorMessage(error: unknown): string {
 }
 
 // ── 状态 ──
-const loading = reactive({ servers: false, databases: false, tables: false })
+const loading = reactive({ servers: false, databases: false, tables: false, sql: false })
 const testingId = ref<number | null>(null)
 const testingNew = ref(false)
 
@@ -714,6 +851,8 @@ const selectedServer = ref<DbmsServer | null>(null)
 const selectedDatabase = ref<DbmsDatabase | null>(null)
 const selectedTable = ref<DbmsTable | null>(null)
 const selectedTableColumns = ref<DbmsColumn[]>([])
+const activeWorkspaceTab = ref<WorkspaceTab>('object')
+const objectSql = ref<DbmsObjectSql | null>(null)
 
 const registeredDatabaseNames = computed(() => new Set(
   databases.value.map((db) => db.DATABASE_NAME.toLowerCase())
@@ -724,6 +863,11 @@ const physicalDatabaseOptions = computed(() => physicalDatabaseNames.value.map((
 })))
 const tableObjects = computed(() => tables.value.filter((tbl) => (tbl.objectType ?? 'TABLE') === 'TABLE'))
 const viewObjects = computed(() => tables.value.filter((tbl) => tbl.objectType === 'VIEW'))
+const selectedTableRelations = computed(() => {
+  const tableId = selectedTable.value?.id
+  if (!tableId) return []
+  return relations.value.filter((rel) => relationTableId(rel, 'parent') === tableId || relationTableId(rel, 'child') === tableId)
+})
 const catalogDatabases = computed(() => dlgSync.catalog?.databases ?? [])
 const catalogObjectCount = computed(() => catalogDatabases.value.reduce((total, db) => (
   total + db.schemas.reduce((schemaTotal, schema) => schemaTotal + schema.tables.length + schema.views.length, 0)
@@ -756,6 +900,24 @@ function tableColumnCount(table: DbmsTable): number | string {
   return table.columnCount ?? table.columns?.length ?? '-'
 }
 
+function relationTableId(rel: DbmsRelation, side: 'parent' | 'child'): number | null {
+  const value = side === 'parent' ? rel.PARENT_TABLE_ID : rel.CHILD_TABLE_ID
+  return typeof value === 'number' ? value : null
+}
+
+function relationTableLabel(rel: DbmsRelation, side: 'parent' | 'child'): string {
+  const tableName = side === 'parent'
+    ? (rel.parentPhysicalTableName || rel.parentTableName)
+    : (rel.childPhysicalTableName || rel.childTableName)
+  const schemaName = side === 'parent' ? rel.parentSchemaName : rel.childSchemaName
+  return schemaName ? `${schemaName}.${tableName}` : tableName
+}
+
+function selectWorkspaceTab(tab: WorkspaceTab) {
+  activeWorkspaceTab.value = tab
+  if (tab === 'sql') void loadObjectSql()
+}
+
 // ── 数据加载 ──
 async function loadServers() {
   loading.servers = true
@@ -768,6 +930,7 @@ async function loadServers() {
       databases.value = []
       tables.value = []
       relations.value = []
+      objectSql.value = null
     }
   } catch (error) {
     ElMessage.error(`加载服务器失败: ${apiErrorMessage(error)}`)
@@ -801,6 +964,7 @@ async function loadTables() {
       if (selectedTable.value && !rows.some((tbl) => tbl.id === selectedTable.value?.id)) {
         selectedTable.value = null
         selectedTableColumns.value = []
+        objectSql.value = null
       }
     }
   } catch (error) {
@@ -809,6 +973,7 @@ async function loadTables() {
       tables.value = []
       selectedTable.value = null
       selectedTableColumns.value = []
+      objectSql.value = null
     }
   } finally { loading.tables = false }
 }
@@ -833,6 +998,7 @@ function selectServer(srv: DbmsServer) {
   selectedDatabase.value = null
   selectedTable.value = null
   selectedTableColumns.value = []
+  objectSql.value = null
   dlgSync.catalog = null
   mutatePhysicalObjectKeys.value = new Set()
   databases.value = []
@@ -845,6 +1011,7 @@ function selectDatabase(db: DbmsDatabase) {
   selectedDatabase.value = db
   selectedTable.value = null
   selectedTableColumns.value = []
+  objectSql.value = null
   tables.value = []
   relations.value = []
   void loadTables()
@@ -858,7 +1025,9 @@ function dbRowClass(db: DbmsDatabase) {
 function selectTable(tbl: DbmsTable) {
   selectedTable.value = tbl
   selectedTableColumns.value = tbl.columns ?? []
+  objectSql.value = null
   void loadTableDetail(tbl)
+  if (activeWorkspaceTab.value === 'sql') void loadObjectSql(tbl.id)
 }
 
 async function loadTableDetail(tbl: DbmsTable) {
@@ -870,6 +1039,29 @@ async function loadTableDetail(tbl: DbmsTable) {
     }
   } catch (error) {
     ElMessage.error(`加载对象详情失败: ${apiErrorMessage(error)}`)
+  }
+}
+
+async function loadObjectSql(objectId = selectedTable.value?.id) {
+  if (!objectId) {
+    objectSql.value = null
+    return
+  }
+  loading.sql = true
+  try {
+    const payload = await http.get<DbmsObjectSql>(`${scopePath.value}/dbms/objects/${objectId}/sql`)
+    if (selectedTable.value?.id === objectId) {
+      objectSql.value = payload
+    }
+  } catch (error) {
+    if (selectedTable.value?.id === objectId) {
+      objectSql.value = null
+      ElMessage.error(`加载 SQL 失败: ${apiErrorMessage(error)}`)
+    }
+  } finally {
+    if (selectedTable.value?.id === objectId) {
+      loading.sql = false
+    }
   }
 }
 
@@ -947,6 +1139,7 @@ async function submitSyncServer() {
     if (selectedDatabase.value) {
       await loadTables()
       await loadRelations()
+      if (activeWorkspaceTab.value === 'sql' && selectedTable.value) await loadObjectSql()
     }
     await loadServerCatalog()
   } catch (error) {
@@ -1017,6 +1210,7 @@ async function _deleteServerConfirm(srv: DbmsServer) {
       databases.value = []
       tables.value = []
       relations.value = []
+      objectSql.value = null
     }
     void loadServers()
   } catch (error) {
@@ -1122,6 +1316,7 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
       selectedTableColumns.value = []
       tables.value = []
       relations.value = []
+      objectSql.value = null
     }
     void loadDatabases()
   } catch (error) {
@@ -1189,6 +1384,7 @@ async function deleteTableConfirm(tbl: DbmsTable) {
     if (selectedTable.value?.id === tbl.id) {
       selectedTable.value = null
       selectedTableColumns.value = []
+      objectSql.value = null
     }
     void loadTables()
     void loadRelations()
@@ -2060,11 +2256,6 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.workspace-tab:disabled {
-  color: #98a2b3;
-  cursor: default;
-}
-
 .workspace-header {
   display: flex;
   align-items: center;
@@ -2121,6 +2312,74 @@ onMounted(() => {
   min-height: 0;
   overflow: auto;
   background: #ffffff;
+}
+
+.structure-grid,
+.sql-grid {
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.structure-section,
+.sql-section {
+  min-width: 720px;
+}
+
+.structure-section + .structure-section,
+.sql-section + .sql-section {
+  margin-top: 14px;
+}
+
+.section-count {
+  color: var(--dbms-muted);
+  font-size: 12px;
+}
+
+.structure-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.overview-item {
+  display: grid;
+  gap: 5px;
+  min-height: 74px;
+  padding: 12px;
+  border: 1px solid var(--dbms-border);
+  border-radius: 6px;
+  background: #fbfcfe;
+}
+
+.overview-item span {
+  color: var(--dbms-muted);
+  font-size: 12px;
+}
+
+.overview-item strong {
+  overflow: hidden;
+  color: #111827;
+  font-size: 15px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sql-code {
+  min-height: 180px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  color: #111827;
+  background: #f8fafc;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
 }
 
 .table-wrap {

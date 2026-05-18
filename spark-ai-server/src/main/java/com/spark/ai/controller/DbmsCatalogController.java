@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/tenants/{tenantId}/projects/{projectId}/dbms")
@@ -64,6 +65,20 @@ public class DbmsCatalogController {
                     ctx.isPlatformAdmin(),
                     ctx.tenantId()
             ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/objects/{objectId}/sql")
+    public ResponseEntity<?> objectSql(@PathVariable String tenantId,
+                                       @PathVariable String projectId,
+                                       @PathVariable Long objectId) {
+        accessGuard.requireProjectAccess(tenantId, projectId);
+        try {
+            return ResponseEntity.ok(catalogService.objectSql(tenantId, projectId, objectId));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(error(e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(error(e.getMessage()));
         }
