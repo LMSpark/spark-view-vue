@@ -12,13 +12,13 @@
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
         <el-button
-          v-if="state.hasAnyDirty.value"
+          v-if="canSaveFromHeader"
           size="small"
           type="success"
           :loading="state.navSaving.value || state.fileSaving.value"
           @click="saveAll"
         >
-          <NavIcon name="FolderChecked" :size="14" /> 全部保存
+          <NavIcon name="FolderChecked" :size="14" /> {{ headerSaveLabel }}
         </el-button>
       </div>
     </div>
@@ -124,6 +124,8 @@ const {
   previewRefreshToken,
   currentWorkspaceFile,
   canPreviewCurrentPage,
+  canSaveFromHeader,
+  headerSaveLabel,
   previewPage,
   switchToPreview,
   saveAll,

@@ -49,15 +49,18 @@ public class DbmsCatalogService {
     private final CryptoUtil cryptoUtil;
     private final DynamicDataSourceManager dsManager;
     private final DataModelRelationService relationService;
+    private final DynamicDataModelService modelService;
 
     public DbmsCatalogService(JdbcTemplate jdbc,
                               CryptoUtil cryptoUtil,
                               DynamicDataSourceManager dsManager,
-                              DataModelRelationService relationService) {
+                              DataModelRelationService relationService,
+                              DynamicDataModelService modelService) {
         this.jdbc = jdbc;
         this.cryptoUtil = cryptoUtil;
         this.dsManager = dsManager;
         this.relationService = relationService;
+        this.modelService = modelService;
     }
 
     public Map<String, Object> catalog(String tenantId,
@@ -100,6 +103,7 @@ public class DbmsCatalogService {
         int relationCount = 0;
         for (PhysicalDatabase database : scanned) {
             long databaseId = upsertTenantSharedDatabase(server, database.databaseName(), tenantId, createdBy);
+            mergeDuplicateDatabaseMetadata(server.id(), database.databaseName(), databaseId);
             Map<ObjectLookupKey, Long> tableIds = new LinkedHashMap<>();
             List<Map<String, Object>> syncedObjects = new ArrayList<>();
             for (PhysicalObject object : database.objects()) {
@@ -139,6 +143,20 @@ public class DbmsCatalogService {
         payload.put("objectCount", objectCount);
         payload.put("relationCount", relationCount);
         payload.put("databases", syncedDatabases);
+        return payload;
+    }
+
+    public Map<String, Object> objectSql(String tenantId, String projectId, long objectId) {
+        DynamicDataModelService.TableDefinition definition = modelService.requireDefinitionById(tenantId, projectId, objectId);
+        String ddl = readNativeDdl(definition);
+        String relationSql = relationSql(tenantId, projectId, objectId, definition.dialect());
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("objectId", objectId);
+        payload.put("objectType", definition.table().objectType());
+        payload.put("dialect", definition.dialect().name());
+        payload.put("ddl", ddl);
+        payload.put("relationSql", relationSql);
+        payload.put("readOnly", true);
         return payload;
     }
 
@@ -433,6 +451,78 @@ public class DbmsCatalogService {
             synced++;
         }
         return synced;
+    }
+
+    private String readNativeDdl(DynamicDataModelService.TableDefinition definition) {
+        if (definition.dialect() == DatabaseDialect.MYSQL) {
+            String statement = "VIEW".equalsIgnoreCase(definition.table().objectType()) ? "SHOW CREATE VIEW " : "SHOW CREATE TABLE ";
+            try {
+                Map<String, Object> row = modelService.jdbcTemplateFor(definition).queryForMap(
+                        statement + qualifiedName(definition.dialect(), definition.table().schemaName(), definition.table().physicalTableName())
+                );
+                for (Map.Entry<String, Object> entry : row.entrySet()) {
+                    if (entry.getKey().toLowerCase(Locale.ROOT).contains("create")
+                            && entry.getValue() instanceof String text
+                            && !text.isBlank()) {
+                        return text;
+                    }
+                }
+            } catch (Exception ignored) {
+                // Fall back to portable metadata DDL below.
+            }
+        }
+        return fallbackDdl(definition);
+    }
+
+    private String fallbackDdl(DynamicDataModelService.TableDefinition definition) {
+        String qualifiedName = qualifiedName(definition.dialect(), definition.table().schemaName(), definition.table().physicalTableName());
+        if ("VIEW".equalsIgnoreCase(definition.table().objectType())) {
+            return "-- View definition is not available from this driver.\n"
+                    + "CREATE VIEW " + qualifiedName + " AS\n"
+                    + "-- inspect the physical database for the original SELECT body";
+        }
+        List<String> lines = new ArrayList<>();
+        for (DynamicDataModelService.ColumnInfo column : definition.columns()) {
+            String line = "  " + definition.dialect().quoteIdentifier(column.physicalColumnName())
+                    + " " + column.sqlType();
+            if (!column.nullable() || column.primaryKey()) {
+                line += " NOT NULL";
+            }
+            if (column.autoIncrement()) {
+                line += " AUTO_INCREMENT";
+            }
+            if (column.primaryKey()) {
+                line += " PRIMARY KEY";
+            }
+            lines.add(line);
+        }
+        return "CREATE TABLE " + qualifiedName + " (\n" + String.join(",\n", lines) + "\n);";
+    }
+
+    private String relationSql(String tenantId, String projectId, long objectId, DatabaseDialect dialect) {
+        List<Map<String, Object>> relations = relationService.listRelations(tenantId, projectId, objectId);
+        if (relations.isEmpty()) {
+            return "";
+        }
+        List<String> statements = new ArrayList<>();
+        for (Map<String, Object> relation : relations) {
+            String relationName = stringValue(relation.get("RELATION_NAME"), "fk_" + relation.get("ID"));
+            String parentTable = stringValue(relation.get("parentPhysicalTableName"), stringValue(relation.get("parentTableName"), ""));
+            String childTable = stringValue(relation.get("childPhysicalTableName"), stringValue(relation.get("childTableName"), ""));
+            String parentSchema = normalizeSchemaName(stringValue(relation.get("parentSchemaName"), ""));
+            String childSchema = normalizeSchemaName(stringValue(relation.get("childSchemaName"), ""));
+            String parentField = stringValue(relation.get("PARENT_FIELD"), "");
+            String childField = stringValue(relation.get("CHILD_FIELD"), "");
+            if (parentTable.isBlank() || childTable.isBlank() || parentField.isBlank() || childField.isBlank()) {
+                continue;
+            }
+            statements.add("ALTER TABLE " + qualifiedName(dialect, childSchema, childTable)
+                    + " ADD CONSTRAINT " + dialect.quoteIdentifier(relationName)
+                    + " FOREIGN KEY (" + dialect.quoteIdentifier(childField) + ")"
+                    + " REFERENCES " + qualifiedName(dialect, parentSchema, parentTable)
+                    + " (" + dialect.quoteIdentifier(parentField) + ");");
+        }
+        return String.join("\n", statements);
     }
 
     private PhysicalObject mutateManagedShape(ServerInfo server,

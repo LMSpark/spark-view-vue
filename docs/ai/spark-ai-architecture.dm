@@ -228,7 +228,7 @@ loop 最大 maxToolRounds 轮（默认无限制）
 
   == 阶段 3：工具调用执行 ==
 
-  loop 每个 toolCall
+  for each toolCall in result.toolCalls
     host -> runtime : executeFunctionCall(action, args, projection)
     activate runtime
 
@@ -546,26 +546,24 @@ package "spark-ai/registrations/page-design" {
   }
 }
 
-note as applyBinding
-  applyRuntimeBinding 派发器
-end note
+package "runtimeBinding 派发" {
+  component "applyRuntimeBinding()" as applyBinding
 
-note as svcBinding
-  Service 派发 (kind='page-design-service')
-  - PAGE_DESIGN_SERVICE_BINDING_APPLIERS
-  - bootstrap/describeProgress
-  - readTextModel/writeTextModel
-  - useNodeTreeMethod
-  - useDatasetMethod
-end note
+  package "Service 派发\n(kind='page-design-service')" as svcBinding {
+    component "PAGE_DESIGN_SERVICE_BINDING_APPLIERS" as svcAppliers
+    component "bootstrap/describeProgress" as svcLifecycle
+    component "readTextModel/writeTextModel" as svcText
+    component "useNodeTreeMethod" as svcNodeTree
+    component "useDatasetMethod" as svcDataset
+  }
 
-note as knBinding
-  Knowledge 派发 (kind='page-design-knowledge')
-  - PAGE_DESIGN_KNOWLEDGE_BINDING_APPLIERS
-  - queryFunctions/queryModules
-  - guideFunction
-  - queryPayloads/guidePayload
-end note
+  package "Knowledge 派发\n(kind='page-design-knowledge')" as knBinding {
+    component "PAGE_DESIGN_KNOWLEDGE_BINDING_APPLIERS" as knAppliers
+    component "queryFunctions/queryModules" as knQuery
+    component "guideFunction" as knGuideFn
+    component "queryPayloads/guidePayload" as knPayload
+  }
+}
 
 package "外部依赖" {
   class PageDesignService <<(C,#A5D6A7)>> {

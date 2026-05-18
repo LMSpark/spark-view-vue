@@ -59,6 +59,13 @@ export function useDevSystem() {
   const canPreviewCurrentPage = computed(
     () => Boolean(state.editForm.path || state.activePageId.value),
   )
+  const canSaveCleanNode = computed(() => {
+    if (workTab.value !== 'props') return false
+    const node = state.selectedNode.value
+    return Boolean(node) && !state.isSystemRootDirectory(node)
+  })
+  const canSaveFromHeader = computed(() => state.hasAnyDirty.value || canSaveCleanNode.value)
+  const headerSaveLabel = computed(() => state.hasAnyDirty.value ? '全部保存' : '保存')
 
   // 选中节点时自动切到节点属性页签
   watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
@@ -97,7 +104,6 @@ export function useDevSystem() {
   }
 
   function saveAll() {
-    if (!state.hasAnyDirty.value) return
     void state.saveAll()
   }
 
@@ -111,6 +117,8 @@ export function useDevSystem() {
     previewRefreshToken,
     currentWorkspaceFile,
     canPreviewCurrentPage,
+    canSaveFromHeader,
+    headerSaveLabel,
     previewPage,
     switchToPreview,
     saveAll,

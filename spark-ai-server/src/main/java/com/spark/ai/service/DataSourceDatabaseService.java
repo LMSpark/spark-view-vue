@@ -53,8 +53,57 @@ public class DataSourceDatabaseService {
             sql += " AND d.SERVER_ID = ?";
             args.add(serverId);
         }
-        sql += " ORDER BY d.CREATED_AT DESC";
-        return jdbc.queryForList(sql, args.toArray());
+        sql += " ORDER BY d.SERVER_ID, d.DATABASE_NAME, d.CREATED_AT DESC";
+        return canonicalizeDatabases(jdbc.queryForList(sql, args.toArray()), tenantId, projectId);
+    }
+
+    private List<Map<String, Object>> canonicalizeDatabases(List<Map<String, Object>> rows, String tenantId, String projectId) {
+        Map<String, List<Map<String, Object>>> groups = new LinkedHashMap<>();
+        for (Map<String, Object> row : rows) {
+            String key = String.valueOf(row.get("SERVER_ID")) + "::"
+                    + Objects.toString(row.get("DATABASE_NAME"), "").toLowerCase(Locale.ROOT);
+            groups.computeIfAbsent(key, ignored -> new ArrayList<>()).add(row);
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (List<Map<String, Object>> group : groups.values()) {
+            group.sort(Comparator
+                    .comparingInt((Map<String, Object> row) -> canonicalRank(row, tenantId, projectId))
+                    .thenComparing(row -> longParam(row.get("ID"), Long.MAX_VALUE)));
+            Map<String, Object> canonical = new LinkedHashMap<>(group.get(0));
+            Long canonicalId = longParam(canonical.get("ID"), null);
+            List<Long> duplicateIds = group.stream()
+                    .map(row -> longParam(row.get("ID"), null))
+                    .filter(Objects::nonNull)
+                    .filter(id -> !Objects.equals(id, canonicalId))
+                    .toList();
+            canonical.put("canonicalDatabaseId", canonicalId);
+            canonical.put("duplicateDatabaseIds", duplicateIds);
+            canonical.put("DUPLICATE_DATABASE_IDS", duplicateIds);
+            result.add(canonical);
+        }
+        result.sort(Comparator
+                .comparing((Map<String, Object> row) -> Objects.toString(row.get("DATABASE_NAME"), ""), String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(row -> longParam(row.get("ID"), Long.MAX_VALUE)));
+        return result;
+    }
+
+    private int canonicalRank(Map<String, Object> row, String tenantId, String projectId) {
+        String mode = Objects.toString(row.get("ISOLATION_MODE"), "");
+        String rowTenant = Objects.toString(row.get("TENANT_ID"), "");
+        String rowProject = Objects.toString(row.get("PROJECT_ID"), "");
+        if (DataIsolationMode.TENANT_SHARED.name().equals(mode)) {
+            return 0;
+        }
+        if (DataIsolationMode.PROJECT_ISOLATED.name().equals(mode)
+                && Objects.equals(rowTenant, tenantId)
+                && Objects.equals(rowProject, projectId)) {
+            return 1;
+        }
+        if ((DataIsolationMode.TENANT_ISOLATED.name().equals(mode) || DataIsolationMode.PROJECT_SHARED.name().equals(mode))
+                && Objects.equals(rowTenant, tenantId)) {
+            return 2;
+        }
+        return 3;
     }
 
     public List<String> listPhysicalDatabaseNames(Long serverId, boolean isPlatformAdmin, String currentTenant) {
