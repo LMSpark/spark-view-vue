@@ -99,7 +99,7 @@ public class DbmsCatalogService {
         int objectCount = 0;
         int relationCount = 0;
         for (PhysicalDatabase database : scanned) {
-            long databaseId = upsertTenantSharedDatabase(server, database.databaseName(), createdBy);
+            long databaseId = upsertTenantSharedDatabase(server, database.databaseName(), tenantId, createdBy);
             Map<ObjectLookupKey, Long> tableIds = new LinkedHashMap<>();
             List<Map<String, Object>> syncedObjects = new ArrayList<>();
             for (PhysicalObject object : database.objects()) {
@@ -279,7 +279,7 @@ public class DbmsCatalogService {
         return result;
     }
 
-    private long upsertTenantSharedDatabase(ServerInfo server, String databaseName, String createdBy) {
+    private long upsertTenantSharedDatabase(ServerInfo server, String databaseName, String tenantId, String createdBy) {
         Long existing = findTenantSharedDatabaseId(server.id(), databaseName);
         Timestamp now = Timestamp.from(Instant.now());
         if (existing != null) {
@@ -300,7 +300,7 @@ public class DbmsCatalogService {
                 """, Statement.RETURN_GENERATED_KEYS);
             statement.setLong(1, server.id());
             statement.setString(2, databaseName);
-            statement.setString(3, server.tenantId() == null || server.tenantId().isBlank() ? "platform" : server.tenantId());
+            statement.setString(3, tenantId);
             statement.setString(4, createdBy);
             statement.setTimestamp(5, now);
             statement.setTimestamp(6, now);

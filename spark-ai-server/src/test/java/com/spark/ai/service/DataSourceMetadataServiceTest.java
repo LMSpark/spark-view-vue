@@ -26,6 +26,7 @@ class DataSourceMetadataServiceTest {
     private DataSourceServerService serverService;
     private DataSourceDatabaseService databaseService;
     private DataModelRelationService relationService;
+    private DbmsCatalogService catalogService;
 
     @BeforeEach
     void setUp() {
@@ -57,12 +58,22 @@ class DataSourceMetadataServiceTest {
                     throw new RuntimeException(e);
                 }
             }
+
+            @Override
+            public Connection createDatabaseConnection(String host, int port, String dbType, String databaseName, String username, String password) {
+                try {
+                    return dataSource.getConnection();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         };
         modelService = new DynamicDataModelService(jdbcTemplate, objectMapper, dataSource, null, dsManager);
         modelService.ensureMetadataSchema();
         serverService = new DataSourceServerService(jdbcTemplate, cryptoUtil, dsManager);
         databaseService = new DataSourceDatabaseService(jdbcTemplate, cryptoUtil, dsManager, dataSource);
         relationService = new DataModelRelationService(jdbcTemplate);
+        catalogService = new DbmsCatalogService(jdbcTemplate, cryptoUtil, dsManager, relationService);
     }
 
     @Test
@@ -272,10 +283,74 @@ class DataSourceMetadataServiceTest {
                 .stream()
                 .map(column -> Map.<String, Object>of("name", column.columnName()))
                 .toList();
-        assertTrue(columns.stream().anyMatch(column -> "id".equals(column.get("name"))));
-        assertTrue(columns.stream().anyMatch(column -> "name".equals(column.get("name"))));
-        assertTrue(columns.stream().noneMatch(column -> "tenantId".equals(column.get("name"))));
-        assertTrue(columns.stream().noneMatch(column -> "projectId".equals(column.get("name"))));
+        assertTrue(columns.stream().anyMatch(column -> "ID".equals(column.get("name"))));
+        assertTrue(columns.stream().anyMatch(column -> "NAME".equals(column.get("name"))));
+        assertTrue(columns.stream().anyMatch(column -> "TENANT_ID".equals(column.get("name"))));
+        assertTrue(columns.stream().anyMatch(column -> "PROJECT_ID".equals(column.get("name"))));
+    }
+
+    @Test
+    void dbmsSyncRegistersPhysicalCatalogAsTenantSharedAndIsIdempotent() {
+        Number serverId = createServer("DBMS Catalog Server");
+        jdbcTemplate.execute("CREATE SCHEMA CRM_SYNC");
+        jdbcTemplate.execute("""
+            CREATE TABLE CRM_SYNC.CUSTOMER (
+                ID BIGINT PRIMARY KEY,
+                NAME VARCHAR(64) NOT NULL
+            )
+            """);
+        jdbcTemplate.execute("""
+            CREATE TABLE CRM_SYNC.CUSTOMER_ORDER (
+                ID BIGINT PRIMARY KEY,
+                CUSTOMER_ID BIGINT NOT NULL,
+                AMOUNT DECIMAL(12,2),
+                CONSTRAINT FK_CUSTOMER_ORDER_CUSTOMER FOREIGN KEY (CUSTOMER_ID) REFERENCES CRM_SYNC.CUSTOMER(ID)
+            )
+            """);
+        jdbcTemplate.execute("CREATE VIEW CRM_SYNC.CUSTOMER_VIEW AS SELECT ID, NAME FROM CRM_SYNC.CUSTOMER");
+
+        Map<String, Object> request = Map.of(
+                "scopeMode", "PLATFORM_SHARED",
+                "databaseNames", List.of("CRM_SYNC"),
+                "includeTables", true,
+                "includeViews", true,
+                "includeRelations", true,
+                "mutatePhysicalObjectKeys", List.of()
+        );
+        Map<String, Object> firstSync = catalogService.sync("platform", "homepage", serverId.longValue(), request, "admin", true, "platform");
+        Map<String, Object> secondSync = catalogService.sync("platform", "homepage", serverId.longValue(), request, "admin", true, "platform");
+
+        assertEquals(1, ((Number) firstSync.get("databaseCount")).intValue());
+        assertEquals(((Number) firstSync.get("objectCount")).intValue(), ((Number) secondSync.get("objectCount")).intValue());
+        Number databaseId = jdbcTemplate.queryForObject("""
+            SELECT ID FROM DATA_SOURCE_DATABASE
+            WHERE SERVER_ID = ? AND DATABASE_NAME = ? AND ISOLATION_MODE = 'TENANT_SHARED'
+            """, Number.class, serverId.longValue(), "CRM_SYNC");
+        assertNotNull(databaseId);
+        assertEquals(3, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ?", Integer.class, databaseId.longValue()));
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_RELATION", Integer.class));
+
+        List<Map<String, Object>> objects = modelService.listTablesByDatabase("platform", "homepage", databaseId.longValue());
+        assertTrue(objects.stream().anyMatch(object -> "CUSTOMER".equals(object.get("physicalTableName")) && "TABLE".equals(object.get("objectType"))));
+        assertTrue(objects.stream().anyMatch(object -> "CUSTOMER_VIEW".equals(object.get("physicalTableName")) && "VIEW".equals(object.get("objectType"))));
+        Number customerId = jdbcTemplate.queryForObject(
+                "SELECT ID FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ? AND PHYSICAL_TABLE_NAME = ?",
+                Number.class,
+                databaseId.longValue(),
+                "CUSTOMER"
+        );
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> customerColumns = (List<Map<String, Object>>) modelService
+                .getTablePayloadById("platform", "homepage", customerId.longValue())
+                .get("columns");
+        assertTrue(customerColumns.stream().anyMatch(column -> "ID".equals(column.get("name"))));
+        assertTrue(customerColumns.stream().anyMatch(column -> "NAME".equals(column.get("physicalColumnName"))));
+
+        jdbcTemplate.update("UPDATE DATA_MODEL_TABLE SET LOGICAL_TABLE_NAME = ? WHERE ID = ?", "CustomerAlias", customerId.longValue());
+        catalogService.sync("platform", "homepage", serverId.longValue(), request, "admin", true, "platform");
+        assertEquals("CustomerAlias", jdbcTemplate.queryForObject("SELECT LOGICAL_TABLE_NAME FROM DATA_MODEL_TABLE WHERE ID = ?", String.class, customerId.longValue()));
+        assertEquals(3, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_TABLE WHERE DATABASE_ID = ?", Integer.class, databaseId.longValue()));
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM DATA_MODEL_RELATION", Integer.class));
     }
 
     private Number createServer(String serverName) {

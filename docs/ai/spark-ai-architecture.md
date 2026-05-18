@@ -2,303 +2,304 @@
 
 ## 图 1：分层架构
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  APP 层（通用宿主层）                                                        │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐                     │
-│  │  AppAiHost   │→│ Transport    │ │ AppAiBusinessSel │                     │
-│  └──────┬───────┘ └──────────────┘ └─────────────────┘                     │
-│         │                                    │                               │
-│  ┌──────▼───────┐ ┌──────────────────────────▼─────────┐                    │
-│  │ ToolLoopRunner│←│ PageDesignBusinessRuntime          │                    │
-│  └──────────────┘ │   / LeaveRequestBusinessRuntime    │                    │
-│                   └────────────────────────────────────┘                    │
-└──────────────────────────────┬──────────────────────────────────────────────┘
-                               │ HTTP SSE / 协议类型
-                               ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  核心层（Core）                                                              │
-│                                                                             │
-│  ┌──────────────────────┐                                                   │
-│  │  AiRuntime           │ ── 组合根，仅 3 个公开方法                        │
-│  │  (ai-runtime.ts)     │   registerBusiness() / registerModule()           │
-│  └──────────┬───────────┘   getKnowledgeProjection()                        │
-│             │owns                                                          │
-│    ┌────────┼────────────────┬────────┬────────┬────────┐                 │
-│    ▼        ▼        ▼        ▼        ▼        ▼        ▼                 │
-│  ┌────┐  ┌─────┐  ┌──────┐  ┌───────┐ ┌──────┐ ┌───────┐                  │
-│  │Repo│  │Ledg │  │Proj  │  │Trans  │ │Exec  │ │ApiF   │                  │
-│  │(注 │  │(会  │  │(投影 │  │(翻译) │ │(执行)│ │(工厂) │                  │
-│  │册) │  │话)  │  │服务) │  │       │ │      │ │       │                  │
-│  └─┬──┘  └──┬──  └──┬───┘  └──┬────┘ └──┬───┘ └──┬────┘                  │
-│    │         │         │         │         │         │                      │
-│    │         │         │    ┌────▼─────────▼────┐   │                      │
-│    │         │         │    │ AiRuntimeProjector │   │                      │
-│    │         │         │    │ (stateless util)   │   │                      │
-│    │         │         │    └─────────┬──────────┘   │                      │
-│    │         │         └──────────────┼──────────────┘                      │
-│    │         │                        ▼                                    │
-│    │         │              ┌──────────────────┐                           │
-│    │         │              │AiKnowledgeProject│                           │
-│    │         │              │  (知识查询窗口)   │                           │
-│    │         │              └──────────────────┘                           │
-│    │         │                                                             │
-│  ┌─▼──────────▼──────────────────────────────────────┐                    │
-│  │ Protocol: 类型定义 / 校验器 / 工具编码 / 调用协议   │                    │
-│  └───────────────────────────────────────────────────┘                    │
-──────────────────────────────┬──────────────────────────────────────────────┘
-                               │ registerBusiness / registerModule
-                               ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  业务注册层（Registrations）                                                  │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────┐           │
-│  │  PageDesignModule (AiBusinessRegistration)                    │           │
-│  │  ├── lifecycle    (2 函数)    bootstrap / describeProgress    │           │
-│  │  ├── textModel    (4 函数)    read/write script & style      │           │
-│  │  ├── knowledge    (5 函数)    query/guide functions/payloads  │           │
-│  │  ├── nodeTree     (19 函数)   getNode/addNode/setProps/...    │           │
-│  │  └── dataset      (40+ 函数)  表/列/视图/行 CRUD               │           │
-│  │                                                               │           │
-│  │  每个子模块:                                                    │           │
-│  │   ├── Catalog 定义函数签名 (CatalogRow[])                     │           │
-│  │   ├── FunctionHandler 提供运行时 apply                        │           │
-│  │   ├── PageDesignModuleRegistration 注册为 AiModule            │           │
-│  │   └── runtimeBinding 决定派发目标                             │           │
-│  └──────────────────────────────────────────────────────────────┘           │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────┐           │
-│  │  ComponentPayloadCatalog (组件荷载目录)                         │           │
-│  │  └── queryPayloads / guidePayload                              │           │
-│  └──────────────────────────────────────────────────────────────┘           │
-└──────────────────────────────┬──────────────────────────────────────────────┘
-                               │ runtimeBinding 派发
-                       ┌───────┴───────┐
-                       ▼               ▼
-              ┌─────────────┐  ┌──────────────┐
-              │ service 派发 │  │ knowledge 派发│
-              │ (PageDesign │  │ (AiKnowledge │
-              │  Service)   │  │  Projector)  │
-              └──────┬──────┘  └──────┬───────┘
-                     │                │
-                     ▼                ▼
-─────────────────────────────────────────────────────────────────────────────┐
-│  业务服务层                                                                   │
-│                                                                             │
-│  ┌──────────────────────────┐   ┌──────────────────────────────────┐        │
-│  │ PageDesignService        │   │ AiKnowledgeProjector             │        │
-│  │ - bootstrap()            │   │ - queryFunctions()               │        │
-│  │ - describeProgress()     │   │ - queryModules()                 │        │
-│  │ - readTextModel()        │   │ - guideFunction()                │        │
-│  │ - writeTextModel()       │   │ - queryPayloads()                │        │
-│  │ - useNodeTreeMethod()    │   │ - guidePayload()                 │        │
-│  │ - useDatasetMethod()     │   └──────────────────────────────────┘        │
-│  │                          │                                               │
-│  │ ──────────────────────┐ │                                               │
-│  │ │ PageDesignEditSession│ │                                               │
-│  │ │  phase + host        │ │                                               │
-│  │ └──────────┬───────────┘ │                                               │
-│  │            │              │                                               │
-│  │            ▼              │                                               │
-│  │ ┌──────────────────────┐ │                                               │
-│  │ │ PageDesignEditHost   │ │                                               │
-│  │ │  getNodeTree()       │ │                                               │
-│  │ │  onNodeTreeChanged() │ │                                               │
-│  │ │  getDataSetTool()    │ │                                               │
-│  │ │  onDataSetChanged()  │ │                                               │
-│  │ │  readScript()        │ │                                               │
-│  │ │  writeScript()       │ │                                               │
-│  │ │  readStyle()         │ │                                               │
-│  │ │  writeStyle()        │ │                                               │
-│  │ └──────────────────────┘ │                                               │
-│  │                          │                                               │
-│  │ ┌──────────────────────┐ │                                               │
-│  │ │ PageDesignNodeTree   │ │                                               │
-│  │ │ DataSetCrudTool      │ │                                               │
-│  │ └──────────────────────┘ │                                               │
-│  └──────────────────────────┘                                               │
-└─────────────────────────────────────────────────────────────────────────────
+```mermaid
+flowchart TB
+    subgraph APP["APP 层（通用宿主层）"]
+        direction TB
+        appHost["AppAiHost"]
+        transport["FetchAppAiHostTransport"]
+        selector["AppAiBusinessSelector"]
+        toolLoop["AppAiToolLoopRunner"]
+        registerBiz["registerAppAiBusinesses()"]
+        bizRuntime["PageDesignBusinessRuntime<br/>LeaveRequestBusinessRuntime"]
+
+        appHost --> transport
+        appHost --> selector
+        appHost --> toolLoop
+        registerBiz -.-> bizRuntime
+        bizRuntime -.-> selector
+    end
+
+    subgraph CORE["核心层（Core）"]
+        direction TB
+        aiRuntime["AiRuntime<br/>(组合根)"]
+        repo["AiRegistrationRepository"]
+        ledger["AiSessionLedger"]
+        projection["AiProjectionService"]
+        translator["AiFunctionCallTranslator"]
+        executor["AiFunctionCallExecutor"]
+        apiFactory["AiRegisteredApiFactory"]
+        knowledge["AiKnowledgeProjector"]
+        validator["LlmParamsValidator"]
+        toolCodec["createAiRuntimeToolCodec()"]
+        protocol["Protocol 类型定义"]
+
+        aiRuntime --> repo
+        aiRuntime --> ledger
+        aiRuntime --> projection
+        aiRuntime --> translator
+        aiRuntime --> executor
+        aiRuntime --> apiFactory
+        apiFactory --> repo
+        apiFactory --> ledger
+        apiFactory --> projection
+        apiFactory --> translator
+        apiFactory --> executor
+        translator --> projection
+        translator --> repo
+        translator --> ledger
+        executor --> ledger
+        executor --> translator
+        projection --> repo
+        projection --> ledger
+        projection --> knowledge
+        knowledge --> protocol
+        toolCodec --> knowledge
+    end
+
+    subgraph REG["业务注册层（Registrations）"]
+        direction TB
+        pageDesign["PageDesignModule<br/>(AiBusinessRegistration)"]
+        lifecycle["PageDesignLifecycleCatalog"]
+        textModel["PageDesignTextModelCatalog"]
+        knowledgeCatalog["PageDesignKnowledgeCatalog"]
+        nodeTree["PageDesignNodeTreeCatalog"]
+        dataset["PageDesignDatasetCatalog"]
+        toolCatalog["PageDesignToolCatalog<br/>(抽象基类)"]
+        payloadCatalog["ComponentPayloadCatalog<br/>(组件荷载目录)"]
+
+        pageDesign --> lifecycle
+        pageDesign --> textModel
+        pageDesign --> knowledgeCatalog
+        pageDesign --> nodeTree
+        pageDesign --> dataset
+        lifecycle -.-> toolCatalog
+        textModel -.-> toolCatalog
+        knowledgeCatalog -.-> toolCatalog
+        nodeTree -.-> toolCatalog
+        dataset -.-> toolCatalog
+        pageDesign --> payloadCatalog
+    end
+
+    subgraph SVC["业务服务层"]
+        direction TB
+        pdService["PageDesignService"]
+        editSession["PageDesignEditSession"]
+        editHost["PageDesignEditHost<br/>(接口)"]
+        nodeTreeModel["PageDesignNodeTree"]
+        dataSetTool["DataSetCrudTool"]
+
+        pdService --> editSession
+        pdService --> editHost
+        pdService --> nodeTreeModel
+        pdService --> dataSetTool
+    end
+
+    APP --> CORE
+    CORE -.-> REG
+    pageDesign --> pdService
+    pageDesign --> aiRuntime
+
+    bindingNote["runtimeBinding 派发机制:<br/>service → PageDesignService<br/>knowledge → AiKnowledgeProjector"]
+    lifecycle -.-> bindingNote
+    knowledgeCatalog -.-> bindingNote
+    bindingNote -.-> pdService
+    bindingNote -.-> knowledge
 ```
 
 ---
 
 ## 图 2：ReAct 工具循环数据流
 
-```
-用户
- │
- │ 1. send(userInput)
- ▼
-┌──────────────┐
-│  AppAiHost   │
-└──────┬───────┘
-       │
-       │ 2. selectBusiness(userInput)
-       ▼
-┌──────────────────┐
-│BusinessSelector  │──需要路由?──► Transport ──► 后端LLM ──► 返回moduleId
-└──────┬───────────┘
-       │
-       │ 3. startSession()
-       ▼
-┌──────────────────┐
-│ 注册层           │──► 初始化会话
-└──────┬───────────┘
-       │
-       │ 4. appendMessage(user)
-       ▼
-┌──────────────┐
-│  AiRuntime   │
-└──────┬───────┘
-       │
-       │ 5. getKnowledgeProjection()
-       ▼
-┌──────────────────────────────────────────────┐
-│  ReAct 工具循环 (loop maxToolRounds)          │
-│                                              │
-│  ┌────────────────────────────────────────  │
-│  │ LLM 推理轮                               │  │
-│  │                                        │  │
-│  │  Host → Transport → 后端LLM (SSE流式)  │  │
-│  │         ← text + toolCalls[]           │  │
-│  │                                        │  │
-│  │  toolCalls = [] ? ──是──► 循环结束     │  │
-│  │         │否                             │  │
-│  │         ▼                              │  │
-│  │  ──────────────────────────────────┐  │  │
-│  │  │ 工具执行 (for each toolCall)     │  │  │
-│  │  │                                  │  │  │
-│  │  │  Host → AiRuntime.executeCall   │  │  │
-│  │  │         │                        │  │  │
-│  │  │         ▼                        │  │  │
-│  │  │  注册层 → applyRuntimeBinding    │  │  │
-│  │  │         │                        │  │  │
-│  │  │    ┌────┴────┐                   │  │  │
-│  │  │    ▼         ▼                   │  │  │
-│  │  │ service   knowledge              │  │  │
-│  │  │  │         │                     │  │  │
-│  │  │  ▼         ▼                     │  │  │
-│  │  │ PdSvc   KnowProj                 │  │  │
-│  │  │  │         │                     │  │  │
-│  │  │  ▼         ▼                     │  │  │
-│  │  │Host    查询结果                   │  │  │
-│  │  │  │                               │  │  │
-│  │  │  ▼                               │  │  │
-│  │  │ 返回结果 ──► Host构建toolMessage │  │  │
-│  │  └──────────────────────────────────  │  │
-│  │                                        │  │
-│  │  6. appendMessages(assistant+tools)   │  │
-│  │     → Transport → 后端LLM (下一轮)     │  │
-│  └────────────────────────────────────────┘  │
-└──────────────────────────────────────────────┘
-       │
-       │ 循环终止条件：
-       │  - toolCalls = []
-       │  - lifecycleDirective != continue
-       │  - maxToolRounds
-       │  - user cancel
-       ▼
-     最终回复
+```mermaid
+flowchart LR
+    subgraph 阶段1["阶段1: 用户输入与业务路由"]
+        User["用户"]
+        host["AppAiHost"]
+        selector2["AppAiBusinessSelector"]
+        transport2["FetchAppAiHostTransport"]
+        llmServer["后端 LLM Server"]
+        registration["PageDesignModule"]
+
+        User --> host
+        host --> selector2
+        selector2 --> transport2
+        transport2 --> llmServer
+        llmServer --> transport2
+        transport2 --> selector2
+        selector2 --> registration
+        registration --> selector2
+        selector2 --> host
+    end
+
+    subgraph 阶段2["阶段2: ReAct 工具循环"]
+        runtime["AiRuntime"]
+        host2["AppAiHost"]
+
+        host2 --> runtime
+        runtime --> host2
+        host2 --> runtime
+        runtime --> host2
+    end
+
+    subgraph 阶段3["阶段3: 工具调用执行"]
+        reg2["PageDesignModule"]
+        service["PageDesignService"]
+        editHost2["PageDesignEditHost"]
+
+        host2 --> runtime
+        runtime --> reg2
+        reg2 --> service
+        service --> editHost2
+        editHost2 --> service
+        service --> reg2
+        reg2 --> runtime
+        runtime --> host2
+    end
+
+    subgraph 阶段4["阶段4: LLM 继续推理"]
+        host3["AppAiHost"]
+        transport3["FetchAppAiHostTransport"]
+        llmServer2["后端 LLM Server"]
+
+        host3 --> transport3
+        transport3 --> llmServer2
+        llmServer2 --> transport3
+        transport3 --> host3
+    end
+
+    阶段1 --> 阶段2
+    阶段2 --> 阶段3
+    阶段3 --> 阶段4
 ```
 
 ---
 
 ## 图 3：核心层内部组件关系
 
-```
-                     AiRuntime (组合根)
-                     ┌─────────────────┐
-                     │ registerBusiness│
-                     │ registerModule  │
-                     │ getKnowledge... │
-                     └────────┬────────┘
-                              │ 组合
-          ┌─────────┬─────────┼─────────┬─────────┬─────────┬─────────┐
-          ▼         ▼         ▼         ▼         ▼         ▼         ▼
-     ┌────────┐ ┌──────┐ ┌────────┐ ┌───────┐ ┌──────┐ ┌──────┐ ┌──────────┐
-     │ 注册   │ │会话  │ │投影    │ │翻译   │ │执行  │ │工厂  │ │投影器    │
-     │仓库    │ │账本  │ │服务    │ │       │ │      │ │      │ │          │
-     └───┬────┘ └──┬───┘ └───┬──── └───┬───┘ └──┬───┘ └──┬───┘ └────┬─────┘
-         │          │         │          │          │          │        │
-         │          │         │          │          │          │        │
-         │    ┌─────┴─────────┴──────────┴──────────┴──────────┘        │
-         │    │              AiRuntimeProjector (stateless)              │
-         │    └──────────────┬───────────────────────────────────────────┘
-         │                   │
-         │              ┌────▼────┐
-         │              │知识投影 │
-         │              │窗口     │
-         │              └────┬────┘
-         │                   │
-    ┌────┴───────────────────┴──────────────────┐
-    │         Protocol 协议层                    │
-    │  类型定义 / LlmParamsValidator / 工具编码   │
-    └───────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph runtime["runtime"]
+        direction TB
+        aiRuntime["AiRuntime<br/>(组合根)"]
+        repo["AiRegistrationRepository"]
+        ledger["AiSessionLedger"]
+        projection["AiProjectionService"]
+        translator["AiFunctionCallTranslator"]
+        executor["AiFunctionCallExecutor"]
+        apiFactory["AiRegisteredApiFactory"]
+        projector["AiRuntimeProjector"]
+    end
 
-组合关系 (*--): AiRuntime 拥有所有子服务实例
-依赖关系 (-->) : 子服务之间通过接口协作，不直接持有实例
+    subgraph knowledge["knowledge"]
+        knowledgeProj["AiKnowledgeProjector"]
+    end
+
+    subgraph protocol["protocol"]
+        direction TB
+        api1["AiRuntimeApi"]
+        api2["AiRegisteredModuleApi"]
+        api3["AiRegisteredBusinessApi"]
+        api4["AiKnowledgeProjection"]
+        validator["LlmParamsValidator"]
+        invocation["AiInvocationProtocol"]
+    end
+
+    %% Composition
+    aiRuntime *-- repo
+    aiRuntime *-- ledger
+    aiRuntime *-- projection
+    aiRuntime *-- translator
+    aiRuntime *-- executor
+    aiRuntime *-- apiFactory
+    aiRuntime *-- projector
+    projection *-- knowledgeProj
+
+    %% Dependencies
+    apiFactory --> repo
+    apiFactory --> ledger
+    apiFactory --> projection
+    apiFactory --> translator
+    apiFactory --> executor
+    translator --> repo
+    translator --> ledger
+    translator --> projection
+    executor --> ledger
+    executor --> translator
+    projection --> repo
+    projection --> ledger
+
+    %% Interface implementation
+    aiRuntime -.-> api1
+    apiFactory -.-> api2
+    apiFactory -.-> api3
+    knowledgeProj -.-> api4
+    validator -.-> executor
 ```
 
 ---
 
 ## 图 4：业务注册层模块关系与 runtimeBinding 派发
 
-```
-                     PageDesignModule
-                     ┌─────────────────────────┐
-                     │ businessId: pageDesign   │
-                     │ core: AiRuntime          │
-                     │ service: PageDesignSvc   │
-                     └────────────┬────────────┘
-                                  │
-          ┌───────────┬───────────┼───────────┬───────────┐
-          ▼           ▼           ▼           ▼           ▼
-     ┌────────┐  ┌────────  ┌────────┐  ┌────────┐  ┌────────┐
-     │lifecycle│  │textMdl │  │knowledge│  │nodeTree│  │dataset │
-     │(2函数)  │  │(4函数) │  │(5函数)  │  │(19函数)│  │(40+函数)│
-     └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘
-         │           │           │           │           │
-         └──────────────────────┴──────────────────────┘
-                             │
-                      每个函数含 runtimeBinding
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │  applyRuntimeBinding│
-                  │                     │
-                  │  binding.kind === ? │
-                  └──────────┬──────────┘
-                             │
-              ┌────────────────────────────┐
-              ▼                             ▼
-    ┌───────────────────┐       ┌─────────────────────┐
-    │ page-design-service│       │page-design-knowledge│
-    │                   │       │                     │
-    │ SERVICE_APPLIERS  │       │ KNOWLEDGE_APPLIERS  │
-    │ ├── bootstrap     │       │ ├── queryFunctions  │
-    │ ├── describeProg  │       │ ├── queryModules    │
-    │ ├── readTextModel │       │ ├── guideFunction   │
-    │ ├── writeTextModel│       │ ├── queryPayloads   │
-    │ ├── useNodeTreeM  │       │ ── guidePayload    │
-    │ └── useDatasetM   │       │                     │
-    ─────────┬─────────┘       └──────────┬──────────┘
-              │                            │
-              ▼                            ▼
-    ┌───────────────────┐       ┌─────────────────────┐
-    │ PageDesignService │       │ AiKnowledgeProjector│
-    │ - bootstrap()     │       │ - queryFunctions()  │
-    │ - describeProg()  │       │ - queryModules()    │
-    │ - readTextModel() │       │ - guideFunction()   │
-    │ - writeTextModel()│       │ - queryPayloads()   │
-    │ - useNodeTreeM()  │       │ - guidePayload()    │
-    │ - useDatasetM()   │       └─────────────────────┘
-    └─────────┬─────────┘
-              │
-              ▼
-    ┌───────────────────┐
-    │ PageDesignEditHost│
-    │ (前端内存模型读写) │
-    └───────────────────┘
+```mermaid
+flowchart TB
+    subgraph registrations["spark-ai/registrations/page-design"]
+        direction TB
+        pageDesign["PageDesignModule<br/>businessId: pageDesign"]
+        pdReg["PageDesignModuleRegistration"]
+        toolCatalog["PageDesignToolCatalog<br/>(抽象基类)"]
+        lifecycle["PageDesignLifecycleCatalog<br/>(2 函数)"]
+        textModel["PageDesignTextModelCatalog<br/>(4 函数)"]
+        knowledge["PageDesignKnowledgeCatalog<br/>(5 函数)"]
+        nodeTree["PageDesignNodeTreeCatalog<br/>(19 函数)"]
+        dataset["PageDesignDatasetCatalog<br/>(40+ 函数)"]
+        payload["ComponentPayloadCatalog"]
+        catalogRow["PageDesignFunctionCatalogRow"]
+    end
+
+    subgraph dispatch["runtimeBinding 派发"]
+        direction TB
+        applyBinding["applyRuntimeBinding"]
+        svcAppliers["PAGE_DESIGN_SERVICE_BINDING_APPLIERS<br/>bootstrap, describeProgress,<br/>readTextModel, writeTextModel,<br/>useNodeTreeMethod, useDatasetMethod"]
+        knAppliers["PAGE_DESIGN_KNOWLEDGE_BINDING_APPLIERS<br/>queryFunctions, queryModules,<br/>guideFunction, queryPayloads, guidePayload"]
+    end
+
+    subgraph external["外部依赖"]
+        direction TB
+        pdService["PageDesignService"]
+        knowledgeProj["AiKnowledgeProjector"]
+    end
+
+    %% Composition
+    pageDesign o-- pdReg
+    pageDesign --> pdService
+    pageDesign --> runtime_core["AiRuntime"]
+
+    %% Catalogs
+    lifecycle --> pdReg
+    textModel --> pdReg
+    knowledge --> pdReg
+    nodeTree --> pdReg
+    dataset --> pdReg
+
+    %% Inheritance
+    lifecycle --> toolCatalog
+    textModel --> toolCatalog
+    knowledge --> toolCatalog
+    nodeTree --> toolCatalog
+    dataset --> toolCatalog
+
+    %% Payload
+    payload --> pageDesign
+
+    %% runtimeBinding
+    catalogRow --> applyBinding
+    applyBinding --> svcAppliers
+    applyBinding --> knAppliers
+
+    %% Service dispatch
+    svcAppliers --> pdService
+    knAppliers --> knowledgeProj
 ```
 
 ---
