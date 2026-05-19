@@ -20,9 +20,6 @@ export {
 export type {
   AiRuntimeApi,
   AiRuntimeAction,
-  IBusinessRegistration,
-  IBusinessRegistrationData,
-  IBusinessRegistrationStoreSnapshot,
   AiModuleRegistration,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreModule,
@@ -78,7 +75,6 @@ export type {
   AiRuntimeToolCodecOptions,
   AiRuntimeToolExposurePolicyOptions,
   AiRuntimeToolSpec,
-  AiRegisteredBusinessApi,
   AiRuntimeInstanceScope,
   AiFunctionRegistration,
   AiFunctionRegistrationFailureMode,

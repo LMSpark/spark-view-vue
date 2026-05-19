@@ -9,7 +9,6 @@ import {
   AiInvocationProtocol,
   LeaveRequestModule,
   PageDesignModule,
-  type IBusinessRegistrationData,
   type AiModuleRegistrationData,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeHistoryEntry,
@@ -145,9 +144,6 @@ abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
   }
 
   /** 业务注册数据（子类可覆盖，默认委托） */
-  getBusinessRegistrationData(): IBusinessRegistrationData {
-    return (this.module as { getBusinessRegistrationData(): IBusinessRegistrationData }).getBusinessRegistrationData()
-  }
 
   /** 开始 AI 会话 — 注入 moduleId 后委托给内部模块 */
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {

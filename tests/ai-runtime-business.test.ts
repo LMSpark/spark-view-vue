@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   AiRuntime,
-  type IBusinessRegistration,
+
   type AiFunctionRegistration,
   type AiKnowledgeProjection,
   type AiModuleRegistration,
@@ -103,39 +103,15 @@ describe('AI core module projection and translation API', () => {
   it('registers business roots without owning business live state', async () => {
     const core = createDeterministicRuntime()
     const liveState = { touched: false }
-    const business: IBusinessRegistration = {
-      moduleId: 'leaveApproval',
-      businessId: 'leaveApproval',
-      name: 'Leave approval',
-      entity: {},
-      prompt: 'Help users finish a leave request. Collect leave reason only.',
-      functions: [{
-        functionId: 'setReason',
-        description: 'Set leave reason.',
-        paramsSchema: {
-          type: 'object',
-          properties: { reason: { type: 'string' } },
-          required: ['reason'],
-        },
-      }],
-    }
+const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      name: 'Leave approval',      description: 'Leave approval business.',      prompt: 'Help users finish a leave request. Collect leave reason only.',      getFunctions: () => [{        functionId: 'setReason',        description: 'Set leave reason.',        paramsSchema: {          type: 'object',          properties: { reason: { type: 'string' } },          required: ['reason'],        },      }],    }
 
-    const api = core.registerBusiness(business)
+    const api = core.registerModule(business)
     const started = await api.startSession({
       moduleInstanceId: 'leave-instance',
       instanceId: 'leave-session-1',
     })
 
-    expect(api.businessId).toBe('leaveApproval')
     expect(api.moduleId).toBe('leaveApproval')
-    expect(api.getBusinessRegistrationData()).toMatchObject({
-      businessId: 'leaveApproval',
-      name: 'Leave approval',
-    })
-    expect(api.getBusinessRegistrationStoreSnapshot()).toMatchObject({
-      rootBusinessPath: 'leaveApproval',
-      rootModulePath: 'leaveApproval',
-    })
     expect(started.availableFunctions.map((item) => item.action)).toEqual([
       'leave-instance@leaveApproval@setReason',
     ])
