@@ -45,7 +45,6 @@ export type {
   AiRuntimeHistoryEntryBase,
   AiKnowledgeFunctionSummary,
   AiKnowledgeModuleSummary,
-  AiKnowledgeProjection,
   AiKnowledgeScope,
   AiRuntimeFunctionId,
   AiRuntimeKnowledgeProjection,

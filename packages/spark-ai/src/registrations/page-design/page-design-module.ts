@@ -10,7 +10,7 @@ import type {
 } from '../../core/protocol/parameter-schema'
 import { AiRuntime } from '../../core/internal/runtime/ai-runtime'
 import { AiKnowledgeCatalog } from '../../core/internal/knowledge/knowledge-tool-catalog'
-import type { AiKnowledgeProjection } from '../../core/internal/knowledge/knowledge-projection'
+import type { AiKnowledgeProjector } from '../../core/internal/knowledge/knowledge-projection'
 import { LlmParamsValidator } from '../../core/internal/llm-params-validator'
 import {
   RuntimeBackedBusinessModule,
@@ -77,7 +77,7 @@ type PageDesignFunctionHandler = {
 
 type PageDesignFunctionBindingRuntime = {
   readonly service: PageDesignService
-  readonly knowledge: AiKnowledgeProjection
+  readonly knowledge: AiKnowledgeProjector
 }
 
 type PageDesignServiceMethodBinding = {

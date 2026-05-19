@@ -230,13 +230,18 @@ function isEqualRelation(a: TableRelation, b: TableRelation): boolean {
   )
 }
 
+function isViewDepArray(value: unknown): value is Array<Record<string, unknown>> {
+  return Array.isArray(value)
+}
+
 function isEqualViewDeps(
   a: DataSetMetadata['viewDependencies'],
   b: DataSetMetadata['viewDependencies'],
 ): boolean {
   if (!a && !b) return true
   if (!a || !b) return false
-  return isEqualArray(a as unknown[], b as unknown[])
+  if (!isViewDepArray(a) || !isViewDepArray(b)) return false
+  return isEqualArray(a, b)
 }
 
 function getObjectEntries(value: object): Array<[string, unknown]> {

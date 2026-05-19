@@ -29,23 +29,13 @@ export interface AiKnowledgeModuleSummary {
   readonly childModuleCount: number
 }
 
-export interface AiKnowledgeProjection {
-  queryFunctions(
-    scope: AiKnowledgeScope,
-    filter?: { readonly modulePath?: string; readonly moduleId?: string; readonly keyword?: string },
-  ): readonly AiKnowledgeFunctionSummary[]
-  guideFunction(scope: AiKnowledgeScope, action: string): AiRuntimeFunctionExposure | null
-  queryModules(scope: AiKnowledgeScope): readonly AiKnowledgeModuleSummary[]
-  guideModule(scope: AiKnowledgeScope, modulePath: string): AiKnowledgeModuleSummary | null
-}
-
-interface RuntimeProjectionSnapshot {
+type RuntimeProjectionSnapshot = {
   readonly scope: AiKnowledgeScope
   readonly availableFunctions: readonly AiRuntimeFunctionExposure[]
   readonly module: AiRuntimeModuleExposure
 }
 
-export class AiKnowledgeProjector implements AiKnowledgeProjection {
+export class AiKnowledgeProjector {
   private readonly projections = new Map<string, RuntimeProjectionSnapshot>()
 
   updateProjection(projection: RuntimeProjectionSnapshot): void {

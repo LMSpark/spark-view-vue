@@ -12,7 +12,26 @@ import { CrudService, createCrudService } from '../crud-service'
 import { SelectionDelegate } from '../strategies/selection-delegate'
 import { LocalMutationDelegate } from '../strategies/local-mutation-delegate'
 import { CrudDelegate } from '../strategies/crud-delegate'
-import type { CrudApi } from '../types'
+import type { HttpClient } from '@spark-view/spark-utils'
+import type { CrudApi, FilterExpression } from '../types'
+import { setMember } from './test-type-helpers'
+
+function createMockHttpClient() {
+  return {
+    interceptors: {
+      request: { use: vi.fn(() => () => undefined) },
+      response: { use: vi.fn(() => () => undefined) },
+    },
+    request: vi.fn(),
+    requestFull: vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    clearCache: vi.fn(),
+  } satisfies HttpClient
+}
 
 // ============================================================
 // M5: CrudService 共享 HTTP 客户端
@@ -24,14 +43,8 @@ describe('M5: CrudService shared HTTP client', () => {
 
   it('CrudService should accept a Request instance (duck-type check)', () => {
     // 创建一个模拟的 Request 对象（具有 get 方法）
-    const mockRequest = {
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-    }
-    const service = new CrudService(dummyApi, mockRequest as any)
+    const mockRequest = createMockHttpClient()
+    const service = new CrudService(dummyApi, mockRequest)
     expect(service.getHttpClient()).toBe(mockRequest)
   })
 
@@ -43,14 +56,8 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('createCrudService should pass through httpClient', () => {
-    const mockRequest = {
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-    }
-    const service = createCrudService(dummyApi, mockRequest as any)
+    const mockRequest = createMockHttpClient()
+    const service = createCrudService(dummyApi, mockRequest)
     expect(service.getHttpClient()).toBe(mockRequest)
   })
 
@@ -65,13 +72,13 @@ describe('M5: CrudService shared HTTP client', () => {
         },
       },
     })
-    const mockClient = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn(), request: vi.fn() }
-    ds.setSharedHttpClient(mockClient as any)
+    const mockClient = createMockHttpClient()
+    ds.setSharedHttpClient(mockClient)
     expect(ds._sharedHttpClient).toBe(mockClient)
   })
 
   it('DataTable.crudService should use shared client from DataSet', () => {
-    const mockClient = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn(), request: vi.fn() }
+    const mockClient = createMockHttpClient()
     const ds = new DataSet({
       dataSetName: 'Shared',
       tables: {
@@ -83,22 +90,15 @@ describe('M5: CrudService shared HTTP client', () => {
         },
       },
     })
-    ds.setSharedHttpClient(mockClient as any)
+    ds.setSharedHttpClient(mockClient)
     const table = ds.getTable('T')!
     const service = table.crudService!
     expect(service.getHttpClient()).toBe(mockClient)
   })
 
   it('DataTable.crudService should resolve {tenantId}/{projectId} from DataSet appServices route context', async () => {
-    const mockClient = {
-      get: vi.fn().mockResolvedValue([]),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      patch: vi.fn(),
-    }
+    const mockClient = createMockHttpClient()
+    mockClient.get.mockResolvedValue([])
     const ds = new DataSet({
       dataSetName: 'Scoped',
       tables: {
@@ -110,7 +110,7 @@ describe('M5: CrudService shared HTTP client', () => {
         },
       },
     })
-    ds.setSharedHttpClient(mockClient as any)
+    ds.setSharedHttpClient(mockClient)
     ds.setAppServices({
       router: {
         currentRoute: {
@@ -132,15 +132,8 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('DataTable.crudService should prepend project scope for platform-relative URLs', async () => {
-    const mockClient = {
-      get: vi.fn().mockResolvedValue([]),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      patch: vi.fn(),
-    }
+    const mockClient = createMockHttpClient()
+    mockClient.get.mockResolvedValue([])
     const ds = new DataSet({
       dataSetName: 'ScopedRelative',
       tables: {
@@ -152,7 +145,7 @@ describe('M5: CrudService shared HTTP client', () => {
         },
       },
     })
-    ds.setSharedHttpClient(mockClient as any)
+    ds.setSharedHttpClient(mockClient)
     ds.setAppServices({
       router: {
         currentRoute: {
@@ -174,15 +167,8 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('DataTable.crudService should fail-fast when URL template params are unresolved', async () => {
-    const mockClient = {
-      get: vi.fn().mockResolvedValue([]),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      patch: vi.fn(),
-    }
+    const mockClient = createMockHttpClient()
+    mockClient.get.mockResolvedValue([])
     const ds = new DataSet({
       dataSetName: 'ScopedFailFast',
       tables: {
@@ -194,7 +180,7 @@ describe('M5: CrudService shared HTTP client', () => {
         },
       },
     })
-    ds.setSharedHttpClient(mockClient as any)
+    ds.setSharedHttpClient(mockClient)
 
     const table = ds.getTable('T')!
     const service = table.crudService!
@@ -206,15 +192,8 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('DataTable.crudService should fail-fast when platform-relative URL misses route scope', async () => {
-    const mockClient = {
-      get: vi.fn().mockResolvedValue([]),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      patch: vi.fn(),
-    }
+    const mockClient = createMockHttpClient()
+    mockClient.get.mockResolvedValue([])
     const ds = new DataSet({
       dataSetName: 'ScopedRelativeFailFast',
       tables: {
@@ -226,7 +205,7 @@ describe('M5: CrudService shared HTTP client', () => {
         },
       },
     })
-    ds.setSharedHttpClient(mockClient as any)
+    ds.setSharedHttpClient(mockClient)
 
     const table = ds.getTable('T')!
     const service = table.crudService!
@@ -238,15 +217,8 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('DataTable.crudService should resolve {tenantId}/{projectId} from page route when APP_SERVICES is missing', async () => {
-    const mockClient = {
-      get: vi.fn().mockResolvedValue([]),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      patch: vi.fn(),
-    }
+    const mockClient = createMockHttpClient()
+    mockClient.get.mockResolvedValue([])
 
     const ds = new DataSet({
       dataSetName: 'ScopedByPageRoute',
@@ -260,7 +232,7 @@ describe('M5: CrudService shared HTTP client', () => {
       },
     })
 
-    ds.setSharedHttpClient(mockClient as any)
+    ds.setSharedHttpClient(mockClient)
     ds.setPageRoute({
       params: {},
       query: { tenantId: 'tenant-from-page', projectId: 'project-from-page' },
@@ -278,25 +250,18 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('CrudService.list should POST query envelope for POST list endpoints', async () => {
-    const mockClient = {
-      get: vi.fn(),
-      post: vi.fn().mockResolvedValue({ rows: [{ id: 1 }], total: 1, page: 2, pageSize: 5 }),
-      put: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      patch: vi.fn(),
-    }
+    const mockClient = createMockHttpClient()
+    mockClient.post.mockResolvedValue({ rows: [{ id: 1 }], total: 1, page: 2, pageSize: 5 })
 
     const service = new CrudService({
       list: { url: '/api/filter-expression-cases/query', method: 'POST' },
-    }, mockClient as any)
+    }, mockClient)
 
-    const filter = {
-      type: 'and' as const,
+    const filter: FilterExpression = {
+      type: 'and',
       children: [
         { field: 'status', op: '==', value: 'open' },
-        { field: 'amount', op: '>=', value: { kind: 'field' as const, field: 'threshold' } },
+        { field: 'amount', op: '>=', value: { kind: 'field', field: 'threshold' } },
       ],
     }
 
@@ -397,10 +362,8 @@ describe('S1: DataView public delegate accessors', () => {
       getHttpClient: vi.fn(),
     }
 
-    const tableInternal = table as any
-    const viewInternal = view as any
-    tableInternal._crudService = mockCrud
-    viewInternal._crudDelegate = undefined
+    setMember(table, '_crudService', mockCrud)
+    setMember(view, '_crudDelegate', undefined)
 
     const result = await view.crud.retrieveRecord({ id: 1 })
 
@@ -439,10 +402,8 @@ describe('S1: DataView public delegate accessors', () => {
       getHttpClient: vi.fn(),
     }
 
-    const tableInternal = table as any
-    const viewInternal = view as any
-    tableInternal._crudService = mockCrud
-    viewInternal._crudDelegate = undefined
+    setMember(table, '_crudService', mockCrud)
+    setMember(view, '_crudDelegate', undefined)
 
     const result = await view.retrieveRecordById(1, { setCurrentRow: true })
 

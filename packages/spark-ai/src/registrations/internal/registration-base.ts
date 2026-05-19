@@ -19,7 +19,7 @@ import {
 } from '../../core/protocol/runtime-contracts'
 import { AiRuntime } from '../../core/internal/runtime/ai-runtime'
 import type { AiRegisteredModule } from '../../core/internal/runtime/ai-registered-module'
-import type { AiKnowledgeProjection } from '../../core/internal/knowledge/knowledge-projection'
+import type { AiKnowledgeProjector } from '../../core/internal/knowledge/knowledge-projection'
 
 export type StaticAiToolModuleOptions = {
   readonly moduleId: string
@@ -96,7 +96,7 @@ export abstract class RuntimeBackedBusinessModule extends StaticAiToolModule {
     }
   }
 
-  getRuntimeKnowledgeProjection(): AiKnowledgeProjection {
+  getRuntimeKnowledgeProjection(): AiKnowledgeProjector {
     return this.core.getKnowledgeProjection()
   }
 

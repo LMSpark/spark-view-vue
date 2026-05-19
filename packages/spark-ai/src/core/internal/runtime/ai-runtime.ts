@@ -14,7 +14,7 @@ import {
   actionOf,
   assertRuntimeId,
 } from './runtime-utils'
-import type { AiKnowledgeProjection } from '../knowledge/knowledge-projection'
+import type { AiKnowledgeProjector } from '../knowledge/knowledge-projection'
 
 /**
  * SPARK AI core composition root.
@@ -65,7 +65,7 @@ export class AiRuntime {
     return this.apiFactory.createRegisteredModuleApi(registration)
   }
 
-  getKnowledgeProjection(): AiKnowledgeProjection {
+  getKnowledgeProjection(): AiKnowledgeProjector {
     return this.projections.getKnowledgeProjection()
   }
 }

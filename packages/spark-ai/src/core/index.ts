@@ -150,7 +150,6 @@ export type {
   AiKnowledgeFunctionSummary,
   AiKnowledgeModuleSummary,
   AiKnowledgeScope,
-  AiKnowledgeProjection,
 } from './internal/knowledge/knowledge-projection'
 
 export type {

@@ -3,7 +3,6 @@ import type {
   AiRuntimeProjectKnowledgeOptions,
 } from '../../protocol/runtime-contracts'
 import { AiKnowledgeProjector } from '../knowledge/knowledge-projection'
-import type { AiKnowledgeProjection } from '../knowledge/knowledge-projection'
 import type { AiRuntimeProjector } from './ai-runtime-support'
 import type { AiRegistrationRepository } from './ai-registration-repository'
 import type { AiSessionLedger } from './ai-session-ledger'
@@ -17,7 +16,7 @@ export class AiProjectionService {
     private readonly projector: AiRuntimeProjector,
   ) {}
 
-  getKnowledgeProjection(): AiKnowledgeProjection {
+  getKnowledgeProjection(): AiKnowledgeProjector {
     return this.knowledgeProjector
   }
 
