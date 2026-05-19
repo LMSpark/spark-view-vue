@@ -133,7 +133,131 @@ export function hasDesignerProjectionChanges(current: IDataSetMetadata, persiste
     return Object.keys(current.tables).length > 0 || (current.tableRelations?.length ?? 0) > 0
   }
 
-  return JSON.stringify(normalizeDesignerComparableMetadata(current)) !== JSON.stringify(normalizeDesignerComparableMetadata(persisted))
+  if (current === persisted) return false
+
+  return !isEqualComparableMetadata(
+    normalizeDesignerComparableMetadata(current),
+    normalizeDesignerComparableMetadata(persisted),
+  )
+}
+
+function isEqualComparableMetadata(a: IDataSetMetadata, b: IDataSetMetadata): boolean {
+  if (a.dataSetName !== b.dataSetName) return false
+
+  const aTableKeys = Object.keys(a.tables)
+  const bTableKeys = Object.keys(b.tables)
+  if (aTableKeys.length !== bTableKeys.length) return false
+  for (const key of aTableKeys) {
+    if (!isEqualTableMetadata(a.tables[key], b.tables[key])) return false
+  }
+
+  const aRels = a.tableRelations ?? []
+  const bRels = b.tableRelations ?? []
+  if (aRels.length !== bRels.length) return false
+  for (let i = 0; i < aRels.length; i++) {
+    if (!isEqualRelation(aRels[i], bRels[i])) return false
+  }
+
+  if (!isEqualViewDeps(a.viewDependencies, b.viewDependencies)) return false
+
+  const aPos = a.layout?.tablePositions
+  const bPos = b.layout?.tablePositions
+  if (aPos && bPos) {
+    const aKeys = Object.keys(aPos)
+    const bKeys = Object.keys(bPos)
+    if (aKeys.length !== bKeys.length) return false
+    for (const key of aKeys) {
+      const ap = aPos[key]
+      const bp = bPos[key]
+      if (!bp || ap.x !== bp.x || ap.y !== bp.y) return false
+    }
+  } else if (aPos !== bPos) {
+    return false
+  }
+
+  return true
+}
+
+function isEqualTableMetadata(a: ITableMetadata, b: ITableMetadata): boolean {
+  if (a.tableName !== b.tableName) return false
+
+  const aCols = a.columns
+  const bCols = b.columns
+  if (aCols.length !== bCols.length) return false
+  for (let i = 0; i < aCols.length; i++) {
+    if (!isEqualColumn(aCols[i], bCols[i])) return false
+  }
+
+  if (a.primaryKey !== b.primaryKey) return false
+  if (!isEqualObject(a.crudApi, b.crudApi)) return false
+  if (!isEqualObject(a.viewMetadata, b.viewMetadata)) return false
+
+  return true
+}
+
+function isEqualColumn(a: DataColumn, b: DataColumn): boolean {
+  return (
+    a.name === b.name &&
+    a.dataType === b.dataType &&
+    a.label === b.label &&
+    a.nullable === b.nullable &&
+    a.primaryKey === b.primaryKey &&
+    isEqualObject(a.defaultValue, b.defaultValue) &&
+    isEqualArray(a.enum, b.enum)
+  )
+}
+
+function isEqualRelation(a: TableRelation, b: TableRelation): boolean {
+  return (
+    a.parentTable === b.parentTable &&
+    a.childTable === b.childTable &&
+    a.parentField === b.parentField &&
+    a.childField === b.childField &&
+    a.relationName === b.relationName &&
+    a.condition === b.condition &&
+    a.cascadeUpdate === b.cascadeUpdate &&
+    a.cascadeDelete === b.cascadeDelete
+  )
+}
+
+function isEqualViewDeps(
+  a: IDataSetMetadata['viewDependencies'],
+  b: IDataSetMetadata['viewDependencies'],
+): boolean {
+  if (!a && !b) return true
+  if (!a || !b) return false
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+  if (aKeys.length !== bKeys.length) return false
+  for (const key of aKeys) {
+    if (!isEqualArray(a[key], b[key])) return false
+  }
+  return true
+}
+
+function isEqualObject(a: unknown, b: unknown): boolean {
+  if (a === b) return true
+  if (a == null || b == null) return false
+  if (typeof a !== 'object' || typeof b !== 'object') return false
+  if (Array.isArray(a) !== Array.isArray(b)) return false
+  if (Array.isArray(a)) return isEqualArray(a as unknown[], b as unknown[])
+  const aKeys = Object.keys(a as Record<string, unknown>)
+  const bKeys = Object.keys(b as Record<string, unknown>)
+  if (aKeys.length !== bKeys.length) return false
+  for (const key of aKeys) {
+    if (!isEqualObject((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) return false
+  }
+  return true
+}
+
+function isEqualArray(a: unknown[] | undefined, b: unknown[] | undefined): boolean {
+  if (a === b) return true
+  if (!a || !b) return false
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (!isEqualObject(a[i], b[i])) return false
+  }
+  return true
 }
 
 function normalizeDesignerComparableMetadata(metadata: IDataSetMetadata): IDataSetMetadata {

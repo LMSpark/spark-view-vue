@@ -2,10 +2,10 @@
  * AI Host 工具调用循环。
  */
 
-import type { AiRuntimeKnowledgeProjection } from '../internal/runtime-protocol'
+import type { AiRuntimeKnowledgeProjection } from '../protocol/runtime-protocol'
 import { createAiHostStreamKey, toAiHostRuntimeScope } from './scope'
-import { createAiHostToolCodec } from './tool-codec'
-import { addGuidedToolAction, createInitialToolActionSet } from './tool-exposure-policy'
+import { createAiRuntimeToolCodec } from '../internal/tool-codec'
+import { addGuidedAiToolAction, createInitialAiToolActionSet } from '../internal/tool-exposure-policy'
 import { actionModuleId, emitLlmDiagnosticEvent, stringifyAiHostPayload } from './diagnostics'
 import { toCurrentTurnMessages } from './turn-utils'
 import type {
@@ -39,7 +39,7 @@ export class AiHostToolLoopRunner {
     turn: AiHostTurnMeta,
     clearSelected: () => void,
   ): Promise<void> {
-    const enabledActions = createInitialToolActionSet(projection)
+    const enabledActions = createInitialAiToolActionSet(projection)
     const runtimeContext = toAiHostRuntimeScope(scope)
     const systemPrompt = [
       runtime.getSystemPrompt?.(runtimeContext),
@@ -53,7 +53,7 @@ export class AiHostToolLoopRunner {
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
       if (request.signal?.aborted) return
       const currentRound = round + 1
-      const codec = createAiHostToolCodec(
+      const codec = createAiRuntimeToolCodec(
         projection,
         enabledActions === null ? {} : { includeActions: enabledActions },
       )
@@ -99,7 +99,7 @@ export class AiHostToolLoopRunner {
         if (output !== null) {
           executedToolCalls.push(call)
           toolMessages.push(output.toolMessage)
-          addGuidedToolAction(projection, enabledActions, output.action, output.args, output.result)
+          addGuidedAiToolAction(projection, enabledActions, output.action, output.args, output.result)
           if (output.directive.status !== 'continue') {
             lifecycleDirective = output.directive
             break

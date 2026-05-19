@@ -20,6 +20,7 @@ import type {
 } from '../../protocol/runtime-contracts'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../llm-params-validator'
+import { cloneRuntimeValue, isRecord } from './runtime-utils'
 
 /**
  * AiRuntime 的无状态支持模块。
@@ -27,21 +28,6 @@ import { LlmParamsValidator } from '../llm-params-validator'
  * 这里集中处理快照 clone、模块树投影、上下文参数注入和轻量参数校验。
  * 不保存实例，不发布事件，也不执行注册方函数。
  */
-
-/** 克隆对外返回的投影值，避免调用方意外修改 core 生成的快照。 */
-function cloneRuntimeValue<T>(value: T): T {
-  if (value === null || value === undefined || typeof value !== 'object') return value
-  try {
-    return globalThis.structuredClone(value)
-  } catch {
-    return JSON.parse(JSON.stringify(value)) as T
-  }
-}
-
-/** 判断 unknown 是否为普通对象；数组和 null 不算对象。 */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 /** 判断值是否为可直接 JSON 持久化的普通对象。 */
 function isPlainJsonRecord(value: unknown): value is Record<string, unknown> {

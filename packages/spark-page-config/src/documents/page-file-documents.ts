@@ -6,7 +6,7 @@
  */
 import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
-import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName } from '../types'
+import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../types'
 import { SparkNodeTree } from '../spark-node-tree'
 import type { SparkNode } from '../spark-node'
 
@@ -502,5 +502,40 @@ export function forEachDocument(
 ): void {
   for (const name of PAGE_FILE_NAMES) {
     visit(name, registry[name])
+  }
+}
+
+/**
+ * 动态文档注册表：基于 PageFileRegistry 创建文档映射。
+ * 返回值中的 key 为注册表中声明的文件名，value 为对应的 PageFileDocument。
+ *
+ * 对于已知的四文件（rule.json / pagedata.json / script.js / style.css），
+ * 使用对应的领域文档工厂；对于未知文件类型，回退为 text-backed 文档。
+ */
+export function createPageDocumentsFromRegistry(
+  registry: PageFileRegistry = createDefaultFileRegistry(),
+): Record<string, PageFileDocument<unknown>> {
+  const result: Record<string, PageFileDocument<unknown>> = {}
+  for (const [name] of registry) {
+    if (name === 'rule.json') {
+      result[name] = createRuleDocument() as PageFileDocument<unknown>
+    } else if (name === 'pagedata.json') {
+      result[name] = createPageDataDocument() as PageFileDocument<unknown>
+    } else {
+      result[name] = createTextDocument(name as 'script.js' | 'style.css') as PageFileDocument<unknown>
+    }
+  }
+  return result
+}
+
+/**
+ * 遍历动态文档注册表中的所有文档。
+ */
+export function forEachDynamicDocument(
+  documents: Record<string, PageFileDocument<unknown>>,
+  visit: (name: string, doc: PageFileDocument<unknown>) => void,
+): void {
+  for (const [name, doc] of Object.entries(documents)) {
+    visit(name, doc)
   }
 }

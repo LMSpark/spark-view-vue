@@ -197,14 +197,14 @@ describe('SparkNodeTree', () => {
     expect(tree.getNode({ componentId: 'table' })?.props).toMatchObject({ stripe: true })
   })
 
-  it('findByType limit 应截断返回列表，但保留 total', () => {
+  it('findByType limit 应提前终止遍历并返回截断结果', () => {
     const tree = new SparkNodeTree({ root: createSparkNodeTree() })
     tree.addNode({ parentComponentId: 'toolbar', node: { type: 'r-button', id: 'btn-1' } })
     tree.addNode({ parentComponentId: 'toolbar', node: { type: 'r-button', id: 'btn-2' } })
 
     const result = tree.findByType({ type: 'r-button', limit: 1 })
 
-    expect(result.total).toBe(2)
+    expect(result.total).toBe(1)
     expect(result.matches).toHaveLength(1)
   })
 

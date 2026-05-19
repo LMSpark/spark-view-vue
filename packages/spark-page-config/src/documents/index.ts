@@ -3,7 +3,9 @@ export {
   canonicalizePageDataJson,
   canonicalizePageDataValue,
   createPageDocuments,
+  createPageDocumentsFromRegistry,
   forEachDocument,
+  forEachDynamicDocument,
   isPageFileDocumentDirty,
 } from './page-file-documents'
 

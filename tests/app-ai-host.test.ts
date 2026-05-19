@@ -14,7 +14,7 @@ import {
   uploadAppAiAttachment,
   type AppAiHostTransport,
 } from '@/services/ai-host'
-import { createAiHostToolCodec } from '@spark-view/spark-ai/host'
+import { createAiRuntimeToolCodec } from '@spark-view/spark-ai'
 import type {
   AppAiBusinessLifecycleDirective,
   AppAiBusinessRuntime,
@@ -166,7 +166,7 @@ describe('AppAiHost', () => {
       moduleInstanceId: 'leave-draft-1',
       instanceId: 'ai:manualLeave:leave-draft-1',
     })
-    const codec = createAiHostToolCodec(projection)
+    const codec = createAiRuntimeToolCodec(projection)
     const setDraftFields = codec.tools.find((tool) => tool.function.name.includes('setDraftFields'))
 
     expect(setDraftFields?.function.description).toContain('当前日期换算')
@@ -189,7 +189,7 @@ describe('AppAiHost', () => {
       moduleInstanceId: 'data-report',
       instanceId: 'pageDesign:data-report',
     })
-    const codec = createAiHostToolCodec(projection)
+    const codec = createAiRuntimeToolCodec(projection)
     const issues: string[] = []
     codec.tools.forEach((tool, index) => {
       collectProviderSchemaIssues(tool.function.parameters, `tools[${index}].function.parameters`, issues)

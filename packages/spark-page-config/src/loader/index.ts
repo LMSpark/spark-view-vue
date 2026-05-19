@@ -26,9 +26,10 @@ import type {
   RuleConfig,
   PageDataConfig,
   PageScriptConfig,
-  PageCssConfig
+  PageCssConfig,
+  PageFileRegistry,
 } from '../types'
-import { PAGE_CONFIG_FILE_NAMES } from '../types'
+import { PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from '../types'
 import {
   Logger,
   createFileLoader,
@@ -88,6 +89,8 @@ export class PageConfigLoader implements ConfigLoader {
   private pagesConfigBase = ''
   private readonly recentMissingFiles = new Set<string>()
   private pageFileManifest: Map<string, Set<PageConfigFileName>> | null = null
+  /** 页面文件注册表，用于动态控制加载哪些文件类型 */
+  private readonly fileRegistry: PageFileRegistry
 
   /**
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
@@ -100,6 +103,7 @@ export class PageConfigLoader implements ConfigLoader {
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
+    this.fileRegistry = options.fileRegistry ?? createDefaultFileRegistry()
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
     this.request = createRequest({
       baseURL: this.opts.apiBaseUrl,
@@ -285,6 +289,30 @@ export class PageConfigLoader implements ConfigLoader {
     return this.request
   }
 
+  async loadPageFile(
+    pageId: string,
+    filename: string,
+    options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<unknown>> {
+    this.ensurePageFileContext()
+    const descriptor = this.fileRegistry.get(filename)
+    if (!descriptor) {
+      return { success: false, error: `Unknown file type: ${filename}`, timestamp: Date.now() }
+    }
+    const path = this.toPageFilePath(pageId, filename)
+    const result = await this.fileLoader.load<string>(path, {
+      parseJSON: false,
+      forceRefresh: options?.forceReload === true,
+    })
+    if (!result.success) {
+      if (descriptor.required) {
+        return this.pageFileContentResultFromData(result, path) as ConfigLoadResult<never>
+      }
+      return { success: true, source: 'remote' }
+    }
+    return this.pageFileContentResultFromData(result, path)
+  }
+
   /** 从失败的 ConfigLoadResult 构建错误响应（DRY）*/
   private failFrom(error: string | undefined, reason?: string): ConfigLoadResult<never> {
     return { success: false, ...(error !== undefined && { error }), ...(reason !== undefined && { reason }), timestamp: Date.now() }
@@ -327,7 +355,7 @@ export class PageConfigLoader implements ConfigLoader {
 
   private isPageConfigFileName(value: unknown): value is PageConfigFileName {
     return typeof value === 'string'
-      && (PAGE_CONFIG_FILE_NAMES as readonly string[]).includes(value)
+      && ((PAGE_CONFIG_FILE_NAMES as readonly string[]).includes(value) || this.fileRegistry.has(value))
   }
 
   private isKnownMissing(

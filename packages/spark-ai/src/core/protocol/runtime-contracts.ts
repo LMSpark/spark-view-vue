@@ -90,7 +90,7 @@ export type {
   AiRegisteredModuleApi,
   AiRegisteredBusinessApi,
   AiRuntimeApi,
-} from '../internal/runtime-protocol'
+} from './runtime-protocol'
 
 // ── AI Host（app 层最小消费面） ──
 // 已由上方 business-registration / session-events / runtime-protocol 覆盖，

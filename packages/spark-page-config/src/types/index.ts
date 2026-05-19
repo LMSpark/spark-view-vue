@@ -66,6 +66,33 @@ export const PAGE_CONFIG_FILE_NAMES = [
 ] as const
 export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
 
+/**
+ * 页面配置文件的描述符，用于动态注册文件类型。
+ */
+export interface PageConfigFileDescriptor {
+  /** 文件名，如 'rule.json' */
+  name: string
+  /** 是否必需（加载失败时是否阻断） */
+  required: boolean
+}
+
+/**
+ * 页面文件注册表：按文件名映射到描述符。
+ */
+export type PageFileRegistry = ReadonlyMap<string, PageConfigFileDescriptor>
+
+/**
+ * 创建默认的四文件注册表。
+ */
+export function createDefaultFileRegistry(): PageFileRegistry {
+  return new Map(
+    PAGE_CONFIG_FILE_NAMES.map((name) => [
+      name,
+      { name, required: name === 'rule.json' || name === 'pagedata.json' },
+    ]),
+  )
+}
+
 export interface PageConfigFileLoadOptions {
   /**
    * 跳过客户端缓存，强制重新请求后端文件接口。
@@ -99,7 +126,7 @@ export interface ConfigLoaderOptions {
   * SPA 内切换项目时可传函数，加载器会在每次读取前重新解析当前项目作用域。
    */
   pagesConfigBaseUrl?: string | (() => string)
-  
+
   /**
    * FileLoader 客户端缓存存储方式
    * @default 'localStorage'
@@ -110,7 +137,7 @@ export interface ConfigLoaderOptions {
    * 启用配置验证
    */
   enableValidation?: boolean
-  
+
   /**
    * 加载超时（毫秒）
    */
@@ -121,6 +148,12 @@ export interface ConfigLoaderOptions {
    * 用于注入认证 / 租户上下文头（如 X-Tenant-Id、X-Project-Id）。
    */
   getHeaders?: () => Record<string, string>
+
+  /**
+   * 页面文件注册表，用于动态控制加载哪些文件类型。
+   * 未提供时使用默认的四文件注册表。
+   */
+  fileRegistry?: PageFileRegistry
 }
 
 /**
@@ -182,6 +215,16 @@ export interface ConfigLoader {
     filename: PageConfigFileName,
     options?: PageConfigFileLoadOptions,
   ): Promise<ConfigLoadResult<string>>
+
+  /**
+   * 按文件名动态加载单个页面配置文件（编译后结果）。
+   * 适用于通过 fileRegistry 注册的非标准文件类型。
+   */
+  loadPageFile?(
+    pageId: string,
+    filename: string,
+    options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<unknown>>
   
   /**
    * 清除缓存

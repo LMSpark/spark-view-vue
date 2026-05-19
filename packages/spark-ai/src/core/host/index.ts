@@ -70,22 +70,6 @@ export {
   AiHostToolLoopRunner,
 } from './tool-loop'
 
-// Tool codec
-export {
-  createAiHostToolCodec,
-} from './tool-codec'
-
-export type {
-  AiHostToolCodec,
-  AiHostToolCodecOptions,
-} from './tool-codec'
-
-// Tool exposure policy
-export {
-  addGuidedToolAction,
-  createInitialToolActionSet,
-} from './tool-exposure-policy'
-
 // 诊断工具
 export {
   actionModuleId,

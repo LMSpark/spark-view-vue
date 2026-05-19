@@ -96,12 +96,10 @@ export function rootOf(model: TreeModel): string {
   throw new Error('TreeModel has no root node')
 }
 
-/** UID 计数器（单调递增，确保唯一） */
-let _treeUidCounter = 0
-function generateUid(): string { return `n${++_treeUidCounter}` }
-
-/** 测试时重置计数器 */
-export function resetTreeUidCounter(): void { _treeUidCounter = 0 }
+/** 基于 crypto.randomUUID 的 UID 生成器，消除全局计数器冲突风险 */
+function generateUid(): string {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+}
 
 /** 按 order 排序返回某父节点的所有子节点 ID */
 function getChildIds(model: ReadonlyMap<string, TreeNode>, parentId: string): string[] {

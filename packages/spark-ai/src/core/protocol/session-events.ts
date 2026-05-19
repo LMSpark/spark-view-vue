@@ -15,7 +15,7 @@ import type {
   AiRuntimeFunctionCallFailure,
   AiRuntimeFunctionResultMessage,
   AiRuntimeKnowledgeProjection,
-} from '../internal/runtime-protocol'
+} from './runtime-protocol'
 
 // ── 枚举类型 ──
 

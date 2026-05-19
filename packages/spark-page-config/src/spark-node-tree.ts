@@ -279,7 +279,7 @@ export interface SparkNodeFindByTypeMatch {
 export interface SparkNodeFindByTypeResult {
   /** 按深度优先顺序排列的匹配结果数组 */
   matches: SparkNodeFindByTypeMatch[]
-  /** 实际命中总数（受 limit 截断前） */
+  /** 命中数；当提供 limit 且提前终止时，该值等于 matches.length（实际总数可能更大） */
   total: number
 }
 
@@ -340,6 +340,7 @@ export class SparkNodeTree {
   private _root: SparkNode
   private readonly _history: SnapshotHistory<SparkNode>
   private _version = -1
+  private _nodePaths: Map<string, number[]> | null = null
 
   /**
    * 从 JSON 输入创建 SparkNodeTree。
@@ -492,6 +493,26 @@ export class SparkNodeTree {
   }
 
   /**
+   * 估算单个快照的节点数量，用于评估历史栈的相对内存占用。
+   * 由于不可变树的结构共享特性，实际内存开销小于该值 × 历史长度。
+   */
+  estimateHistorySize(): number {
+    return countRecursive(this._root)
+  }
+
+  /**
+   * 返回历史栈的统计信息。
+   */
+  getHistoryStats(): { length: number; cursor: number; canUndo: boolean; canRedo: boolean } {
+    return {
+      length: this._history.length,
+      cursor: this._history.cursor,
+      canUndo: this._history.canUndo,
+      canRedo: this._history.canRedo,
+    }
+  }
+
+  /**
    * 加载新的根节点，替换当前根并以新根作为历史基线重新开始。
    * 清空既有历史栈，等价于 DataSetCrudTool.replaceFromJson。
    */
@@ -521,6 +542,33 @@ export class SparkNodeTree {
     this._root = nextRoot
     this._version++
     this._history.push(this._root)
+    this._nodePaths = null
+  }
+
+  // ─── 路径索引：将 O(n) 查找降为 O(depth) ────────────────────────
+
+  private _buildPathIndex(): Map<string, number[]> {
+    const index = new Map<string, number[]>()
+    buildPathIndexRecursive(this._root, [], index)
+    return index
+  }
+
+  private _ensurePathIndex(): Map<string, number[]> {
+    if (!this._nodePaths) {
+      this._nodePaths = this._buildPathIndex()
+    }
+    return this._nodePaths
+  }
+
+  private _findNodeByPath(path: number[]): SparkNode | null {
+    let node: SparkNode | undefined = this._root
+    for (const idx of path) {
+      if (!node || !Array.isArray(node.children) || idx >= node.children.length) return null
+      const child = node.children[idx]
+      if (!isSparkNode(child)) return null
+      node = child
+    }
+    return node
   }
 
   // ─── 查询 / 统计 API：供设计时工具读取、定位目标节点、推导下一步修改策略 ───────────
@@ -530,6 +578,10 @@ export class SparkNodeTree {
    */
   getNode(params: SparkNodeTreeLookupParams): SparkNode | null {
     const next = normalizeLookupParams(params, 'getNode')
+    const path = this._ensurePathIndex().get(next.componentId)
+    if (path !== undefined) {
+      return this._findNodeByPath(path)
+    }
     return findLocationRecursive(this._root, next.componentId, null, -1, 0)?.node ?? null
   }
 
@@ -538,6 +590,15 @@ export class SparkNodeTree {
    */
   getLocation(params: SparkNodeTreeLookupParams): SparkNodeLocation | null {
     const next = normalizeLookupParams(params, 'getLocation')
+    const path = this._ensurePathIndex().get(next.componentId)
+    if (path !== undefined) {
+      const node = this._findNodeByPath(path)
+      if (node) {
+        const parentPath = path.slice(0, -1)
+        const parent = parentPath.length > 0 ? this._findNodeByPath(parentPath) : null
+        return { node, parent, index: path[path.length - 1], depth: path.length }
+      }
+    }
     return findLocationRecursive(this._root, next.componentId, null, -1, 0)
   }
 
@@ -607,10 +668,8 @@ export class SparkNodeTree {
       ? requireLocation(this._root, next.startComponentId).node
       : this._root
     const allMatches: SparkNodeFindByTypeMatch[] = []
-    findByTypeRecursive(startNode, next.type, null, 0, allMatches)
-    const total = allMatches.length
-    const matches = next.limit !== undefined ? allMatches.slice(0, next.limit) : allMatches
-    return { matches, total }
+    findByTypeRecursive(startNode, next.type, null, 0, allMatches, next.limit)
+    return { matches: allMatches, total: allMatches.length }
   }
 
   /**
@@ -1205,6 +1264,26 @@ function findLocationRecursive(
 }
 
 /**
+ * 递归构建 nodeId → path 的映射表，path 是从根到该节点的 children 索引序列。
+ */
+function buildPathIndexRecursive(
+  current: SparkNode,
+  path: number[],
+  index: Map<string, number[]>,
+): void {
+  const id = readNodeId(current)
+  if (id !== undefined) {
+    index.set(id, [...path])
+  }
+  if (!Array.isArray(current.children) || current.children.length === 0) return
+  for (let i = 0; i < current.children.length; i++) {
+    const child = current.children[i]
+    if (!isSparkNode(child)) continue
+    buildPathIndexRecursive(child, [...path, i], index)
+  }
+}
+
+/**
  * 强制要求某个节点存在；不存在时立即 fail-fast。
  */
 function requireLocation(root: SparkNode, nodeId: string): SparkNodeLocation {
@@ -1224,7 +1303,8 @@ function resolveParentNode(root: SparkNode, parentId: string | null | undefined)
 }
 
 /**
- * 递归收集类型匹配的所有节点，结果按深度优先顺序追加到 out 数组。
+ * 递归收集类型匹配的节点，结果按深度优先顺序追加到 out 数组。
+ * 当提供 limit 且已收集足够结果时提前终止遍历。
  */
 function findByTypeRecursive(
   current: SparkNode,
@@ -1232,7 +1312,8 @@ function findByTypeRecursive(
   parentId: string | null | undefined,
   depth: number,
   out: SparkNodeFindByTypeMatch[],
-): void {
+  limit: number | undefined,
+): boolean {
   if (current.type === targetType) {
     out.push({
       id: readNodeId(current),
@@ -1240,15 +1321,17 @@ function findByTypeRecursive(
       depth,
       parentId,
     })
+    if (limit !== undefined && out.length >= limit) return true
   }
 
-  if (!Array.isArray(current.children) || current.children.length === 0) return
+  if (!Array.isArray(current.children) || current.children.length === 0) return false
 
   const currentId = readNodeId(current)
   for (const child of current.children) {
     if (!isSparkNode(child)) continue
-    findByTypeRecursive(child, targetType, currentId, depth + 1, out)
+    if (findByTypeRecursive(child, targetType, currentId, depth + 1, out, limit)) return true
   }
+  return false
 }
 
 /**
