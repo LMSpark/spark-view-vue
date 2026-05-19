@@ -56,11 +56,11 @@ const DEFAULT_OPTIONS = {
   fileStorage: 'localStorage' as const,
   enableValidation: false,
   timeout: REQUEST_TIMEOUT,
-} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl'>
+} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
 type ResolvedConfigLoaderOptions =
-  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl'>
-  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl'>
+  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
+  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
 function trimTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')

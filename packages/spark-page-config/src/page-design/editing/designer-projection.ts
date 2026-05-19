@@ -148,14 +148,20 @@ function isEqualComparableMetadata(a: IDataSetMetadata, b: IDataSetMetadata): bo
   const bTableKeys = Object.keys(b.tables)
   if (aTableKeys.length !== bTableKeys.length) return false
   for (const key of aTableKeys) {
-    if (!isEqualTableMetadata(a.tables[key], b.tables[key])) return false
+    const at = a.tables[key]
+    const bt = b.tables[key]
+    if (!at || !bt) return false
+    if (!isEqualTableMetadata(at, bt)) return false
   }
 
   const aRels = a.tableRelations ?? []
   const bRels = b.tableRelations ?? []
   if (aRels.length !== bRels.length) return false
   for (let i = 0; i < aRels.length; i++) {
-    if (!isEqualRelation(aRels[i], bRels[i])) return false
+    const ar = aRels[i]
+    const br = bRels[i]
+    if (!ar || !br) return false
+    if (!isEqualRelation(ar, br)) return false
   }
 
   if (!isEqualViewDeps(a.viewDependencies, b.viewDependencies)) return false
@@ -169,7 +175,7 @@ function isEqualComparableMetadata(a: IDataSetMetadata, b: IDataSetMetadata): bo
     for (const key of aKeys) {
       const ap = aPos[key]
       const bp = bPos[key]
-      if (!bp || ap.x !== bp.x || ap.y !== bp.y) return false
+      if (ap?.x !== bp?.x || ap?.y !== bp?.y) return false
     }
   } else if (aPos !== bPos) {
     return false
@@ -180,17 +186,22 @@ function isEqualComparableMetadata(a: IDataSetMetadata, b: IDataSetMetadata): bo
 
 function isEqualTableMetadata(a: ITableMetadata, b: ITableMetadata): boolean {
   if (a.tableName !== b.tableName) return false
+  if (a.resourceType !== b.resourceType) return false
+  if (a.resourceId !== b.resourceId) return false
+  if (a.businessCategory !== b.businessCategory) return false
 
   const aCols = a.columns
   const bCols = b.columns
   if (aCols.length !== bCols.length) return false
   for (let i = 0; i < aCols.length; i++) {
-    if (!isEqualColumn(aCols[i], bCols[i])) return false
+    const ac = aCols[i]
+    const bc = bCols[i]
+    if (!ac || !bc) return false
+    if (!isEqualColumn(ac, bc)) return false
   }
 
-  if (a.primaryKey !== b.primaryKey) return false
-  if (!isEqualObject(a.crudApi, b.crudApi)) return false
-  if (!isEqualObject(a.viewMetadata, b.viewMetadata)) return false
+  if (!isEqualObject(a.api, b.api)) return false
+  if (!isEqualObject(a.views, b.views)) return false
 
   return true
 }
@@ -198,12 +209,11 @@ function isEqualTableMetadata(a: ITableMetadata, b: ITableMetadata): boolean {
 function isEqualColumn(a: DataColumn, b: DataColumn): boolean {
   return (
     a.name === b.name &&
-    a.dataType === b.dataType &&
+    a.type === b.type &&
     a.label === b.label &&
-    a.nullable === b.nullable &&
-    a.primaryKey === b.primaryKey &&
-    isEqualObject(a.defaultValue, b.defaultValue) &&
-    isEqualArray(a.enum, b.enum)
+    a.allowDBNull === b.allowDBNull &&
+    a.isPrimaryKey === b.isPrimaryKey &&
+    isEqualObject(a.defaultValue, b.defaultValue)
   )
 }
 
@@ -226,18 +236,12 @@ function isEqualViewDeps(
 ): boolean {
   if (!a && !b) return true
   if (!a || !b) return false
-  const aKeys = Object.keys(a)
-  const bKeys = Object.keys(b)
-  if (aKeys.length !== bKeys.length) return false
-  for (const key of aKeys) {
-    if (!isEqualArray(a[key], b[key])) return false
-  }
-  return true
+  return isEqualArray(a as unknown[], b as unknown[])
 }
 
 function isEqualObject(a: unknown, b: unknown): boolean {
   if (a === b) return true
-  if (a == null || b == null) return false
+  if (a === null || a === undefined || b === null || b === undefined) return false
   if (typeof a !== 'object' || typeof b !== 'object') return false
   if (Array.isArray(a) !== Array.isArray(b)) return false
   if (Array.isArray(a)) return isEqualArray(a as unknown[], b as unknown[])

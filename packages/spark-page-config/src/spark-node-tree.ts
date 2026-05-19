@@ -554,19 +554,17 @@ export class SparkNodeTree {
   }
 
   private _ensurePathIndex(): Map<string, number[]> {
-    if (!this._nodePaths) {
-      this._nodePaths = this._buildPathIndex()
-    }
+    this._nodePaths ??= this._buildPathIndex()
     return this._nodePaths
   }
 
   private _findNodeByPath(path: number[]): SparkNode | null {
-    let node: SparkNode | undefined = this._root
+    let node = this._root
     for (const idx of path) {
-      if (!node || !Array.isArray(node.children) || idx >= node.children.length) return null
-      const child = node.children[idx]
-      if (!isSparkNode(child)) return null
-      node = child
+      if (!Array.isArray(node.children) || idx >= node.children.length) return null
+      const candidate = node.children[idx]
+      if (!isSparkNode(candidate)) return null
+      node = candidate
     }
     return node
   }
@@ -596,7 +594,8 @@ export class SparkNodeTree {
       if (node) {
         const parentPath = path.slice(0, -1)
         const parent = parentPath.length > 0 ? this._findNodeByPath(parentPath) : null
-        return { node, parent, index: path[path.length - 1], depth: path.length }
+        const lastIndex: number = path[path.length - 1] as number
+        return { node, parent, index: lastIndex, depth: path.length }
       }
     }
     return findLocationRecursive(this._root, next.componentId, null, -1, 0)
