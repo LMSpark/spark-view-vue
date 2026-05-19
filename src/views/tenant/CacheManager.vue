@@ -79,6 +79,12 @@
           >
             清除元数据缓存
           </el-button>
+          <el-button type="warning" @click="handleRefreshRoutes">
+            刷新路由
+          </el-button>
+          <el-button type="success" @click="handleReloadNavigation">
+            刷新导航
+          </el-button>
         </div>
 
         <el-row :gutter="20" style="margin-top: 16px">
@@ -139,7 +145,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
-import { clearAllPageCache } from '@spark-view/spark-app'
+import { clearAllPageCache, refreshRoutes } from '@spark-view/spark-app'
 import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────
@@ -336,6 +342,24 @@ async function handleClearMetadata() {
     if (e instanceof Error && e.message !== 'cancel') {
       ElMessage.error(`操作失败: ${e.message}`)
     }
+  }
+}
+
+async function handleRefreshRoutes() {
+  try {
+    const result = await refreshRoutes()
+    ElMessage.success(`路由已刷新，共 ${result?.children?.length ?? 0} 条导航项`)
+  } catch (e) {
+    ElMessage.error(`路由刷新失败: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
+async function handleReloadNavigation() {
+  try {
+    window.dispatchEvent(new CustomEvent('spark:reloadNavigation'))
+    ElMessage.success('导航菜单已刷新')
+  } catch (e) {
+    ElMessage.error(`导航刷新失败: ${e instanceof Error ? e.message : String(e)}`)
   }
 }
 

@@ -358,11 +358,42 @@ public class ProjectService {
 
     @SuppressWarnings("unchecked")
     private boolean rebuildDevelopmentCenter(List<Map<String, Object>> children, String tenantId, String projectId, boolean platform) {
-        boolean changed = removeNodesByIdSuffix(children, Set.of("system-settings", "platform-system", "dev-center", "platform-dev-center"));
-        changed |= removeNodesByPath(children, Set.of(PATH_DEV, PATH_DBMS, PATH_CACHE_MANAGER));
-        int index = platform ? indexAfterPath(children, PATH_PLATFORM_APPS) : indexAfterPath(children, PATH_APP_LIST);
-        insertAt(children, developmentCenterNode(tenantId, projectId, platform), index);
-        return true;
+        // 清理已废弃的旧模块节点
+        boolean changed = removeNodesByIdSuffix(children, Set.of("system-settings", "platform-system"));
+
+        // 查找已有的开发中心节点
+        String devCenterIdSuffix = platform ? "platform-dev-center" : "dev-center";
+        Map<String, Object> devCenter = findNodeByIdSuffix(children, devCenterIdSuffix);
+
+        if (devCenter == null) {
+            // 不存在则新建
+            int index = platform ? indexAfterPath(children, PATH_PLATFORM_APPS) : indexAfterPath(children, PATH_APP_LIST);
+            insertAt(children, developmentCenterNode(tenantId, projectId, platform), index);
+            return true;
+        }
+
+        // 已有开发中心，增量补齐缺失的子节点
+        Object devChildrenObj = devCenter.get("children");
+        List<Map<String, Object>> devChildren;
+        if (devChildrenObj instanceof List<?> rawChildren) {
+            devChildren = (List<Map<String, Object>>) rawChildren;
+        } else {
+            devChildren = new ArrayList<>();
+            devCenter.put("children", devChildren);
+        }
+
+        Map<String, Object> templateCenter = developmentCenterNode(tenantId, projectId, platform);
+        List<Map<String, Object>> templateChildren = (List<Map<String, Object>>) templateCenter.get("children");
+
+        for (Map<String, Object> templateChild : templateChildren) {
+            String templatePath = normalizePath(asString(templateChild.get("path")));
+            if (!containsNodeByPath(devChildren, templatePath)) {
+                devChildren.add(templateChild);
+                changed = true;
+            }
+        }
+
+        return changed;
     }
 
     private void insertAt(List<Map<String, Object>> children, Map<String, Object> node, int index) {
@@ -474,6 +505,17 @@ public class ProjectService {
         return PLATFORM_VUE_CLEANUP_MODULE_TITLE.equals(title)
                 || PLATFORM_VUE_CLEANUP_MODULE_ID.equals(id)
                 || id.startsWith(PLATFORM_VUE_CLEANUP_MODULE_ID + "-");
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean containsNodeByPath(List<Map<String, Object>> nodes, String path) {
+        String normalizedPath = normalizePath(path);
+        for (Map<String, Object> node : nodes) {
+            if (normalizedPath.equals(normalizePath(asString(node.get("path"))))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")

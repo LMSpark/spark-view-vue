@@ -615,6 +615,9 @@ onMounted(() => {
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
   w['__sparkDev'] = { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes }
+
+  // 允许任意组件通过自定义事件触发导航重新加载
+  window.addEventListener('spark:reloadNavigation', () => { void reloadNavigation() })
   void aiPanelStore.sync(appAiPanelConfig)
 })
 
