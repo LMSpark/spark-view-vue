@@ -27,7 +27,7 @@ import type { RuntimeBackedBusinessModule } from './internal/registration-base'
 import { LeaveRequestModule } from './leave-request'
 import { PageDesignModule } from './page-design'
 
-export interface RegisterAppAiBusinessesOptions {
+export type RegisterAppAiBusinessesOptions = {
   readonly registry: AiHostBusinessRegistry
   readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
 }
@@ -130,11 +130,6 @@ abstract class ModuleBackedHostRuntime implements AiHostBusinessRuntime {
   abstract readonly moduleId: string
 
   constructor(protected readonly module: RuntimeBackedBusinessModule) {}
-
-  /** 注册数据（子类可覆盖，默认委托） */
-  getRegistrationData() {
-    return this.module.getRegistrationData()
-  }
 
   /** 开始 AI 会话 — 注入 moduleId 后委托给内部模块 */
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {

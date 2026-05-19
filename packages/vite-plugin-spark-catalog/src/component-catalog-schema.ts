@@ -353,7 +353,7 @@ export interface ApiSurface {
   dataSet: ApiMethodEntry[]
   /** SparkData 命名空间函数 */
   sparkData: ApiMethodEntry[]
-  /** IScriptContext 沙箱注入变量 */
+  /** ScriptContext 沙箱注入变量 */
   scriptContext: ApiMemberEntry[]
   /** IPageServiceCapability 方法 */
   pageService: ApiMethodEntry[]

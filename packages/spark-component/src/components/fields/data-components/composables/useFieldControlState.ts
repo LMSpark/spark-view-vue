@@ -1,5 +1,5 @@
 import type { ComputedRef } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-types.js'
 import { useFieldContext } from '../../context/useFieldContext'
@@ -11,16 +11,16 @@ interface FieldContextStateLike {
   isCurrentFieldHidden: ComputedRef<boolean>
   shouldRenderCurrentField: ComputedRef<boolean>
   currentDisplayValue: ComputedRef<string>
-  isTableCellHidden: (row: IDataRow) => boolean
-  getTableCellDisplayValue: (row: IDataRow) => string
+  isTableCellHidden: (row: DataRow) => boolean
+  getTableCellDisplayValue: (row: DataRow) => string
   validationRules: ComputedRef<FormItemRule[]>
 }
 
 interface ControlledFieldStateLike<TValue> extends FieldContextStateLike {
   fieldValue: ComputedRef<TValue>
-  contextData: IDataRow | null
+  contextData: DataRow | null
   dataSource: unknown
-  currentRow: ComputedRef<IDataRow | null>
+  currentRow: ComputedRef<DataRow | null>
   syncValue: (value: TValue) => void
 }
 

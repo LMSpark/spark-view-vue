@@ -224,9 +224,9 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'RowClickHandler': {
     name: 'RowClickHandler',
-    definition: '(row: IDataRow, column: unknown, event: Event | undefined, control: InteractionControl) => void | Promise<void>',
+    definition: '(row: DataRow, column: unknown, event: Event | undefined, control: InteractionControl) => void | Promise<void>',
     fields: [
-      { name: 'row', type: 'IDataRow', desc: '被点击的行数据' },
+      { name: 'row', type: 'DataRow', desc: '被点击的行数据' },
       { name: 'column', type: 'unknown', desc: '列信息' },
       { name: 'event', type: 'Event | undefined', desc: '原生事件' },
       { name: 'control', type: 'InteractionControl', desc: '调用 control.cancel() 阻止默认行为' },
@@ -234,28 +234,28 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'RowSelectionHandler': {
     name: 'RowSelectionHandler',
-    definition: '(selection: IDataRow[], control: InteractionControl) => void | Promise<void>',
+    definition: '(selection: DataRow[], control: InteractionControl) => void | Promise<void>',
     fields: [
-      { name: 'selection', type: 'IDataRow[]', desc: '当前选中行数组' },
+      { name: 'selection', type: 'DataRow[]', desc: '当前选中行数组' },
       { name: 'control', type: 'InteractionControl', desc: '调用 control.cancel() 阻止默认行为' },
     ],
   },
   'CurrentRowChangeHandler': {
     name: 'CurrentRowChangeHandler',
-    definition: '(currentRow: IDataRow | null, oldRow: IDataRow | null | undefined, control: InteractionControl) => void | Promise<void>',
+    definition: '(currentRow: DataRow | null, oldRow: DataRow | null | undefined, control: InteractionControl) => void | Promise<void>',
     fields: [
-      { name: 'currentRow', type: 'IDataRow | null', desc: '新的当前行' },
-      { name: 'oldRow', type: 'IDataRow | null', desc: '旧的当前行' },
+      { name: 'currentRow', type: 'DataRow | null', desc: '新的当前行' },
+      { name: 'oldRow', type: 'DataRow | null', desc: '旧的当前行' },
       { name: 'control', type: 'InteractionControl', desc: '调用 control.cancel() 阻止默认行为' },
     ],
   },
   'AddRowHandler': {
     name: 'AddRowHandler',
-    definition: '(partialRow: Partial<IDataRow>, control: InteractionControl) => void | Promise<void>',
+    definition: '(partialRow: Partial<DataRow>, control: InteractionControl) => void | Promise<void>',
   },
   'EditRowHandler': {
     name: 'EditRowHandler',
-    definition: '(rowId: string | number, partialRow: Partial<IDataRow>, control: InteractionControl) => void | Promise<void>',
+    definition: '(rowId: string | number, partialRow: Partial<DataRow>, control: InteractionControl) => void | Promise<void>',
   },
   'RemoveRowHandler': {
     name: 'RemoveRowHandler',
@@ -278,8 +278,8 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
       { name: 'cancel()', type: 'void', desc: '调用后阻止框架默认处理（如自动选中、自动加载）' },
     ],
   },
-  'IDataRow': {
-    name: 'IDataRow',
+  'DataRow': {
+    name: 'DataRow',
     definition: 'Record<string, unknown> & { _id?: string | number }',
     fields: [
       { name: '_id', type: 'string | number', desc: '行标识（框架自动生成或从数据主键取）' },

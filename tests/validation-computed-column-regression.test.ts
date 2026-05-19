@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { DataColumn, IDataRow } from '@spark-view/spark-data'
+import type { DataColumn, DataRow } from '@spark-view/spark-data'
 import { createSchema, createValidator } from '../packages/spark-data/src/validation'
 
 describe('computed column validation regression', () => {
@@ -14,7 +14,7 @@ describe('computed column validation regression', () => {
     ]
 
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ id: 'node-1', nodeKind: 'page' } as IDataRow)
+    const result = validator.validate({ id: 'node-1', nodeKind: 'page' } as DataRow)
 
     expect(result.valid).toBe(true)
     expect(result.errors).toEqual([])

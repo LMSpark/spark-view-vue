@@ -9,7 +9,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import { RequestState } from '../types'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 
 // ─── 通用测试 DataSet 工厂 ─────────────────────────────────────
 
@@ -50,7 +50,7 @@ function makeDs(sourceState: string) {
 
 // ─── 帮助：手动模拟父视图已加载并有数据 ────────────────────────
 
-function setParentLoaded(pView: ReturnType<typeof SparkData.createDataSet>['tables'][string]['views'][string], rows: IDataRow[]) {
+function setParentLoaded(pView: ReturnType<typeof SparkData.createDataSet>['tables'][string]['views'][string], rows: DataRow[]) {
   pView.rows.splice(0, pView.rows.length, ...rows)
   pView.requestState = RequestState.Loaded
 }

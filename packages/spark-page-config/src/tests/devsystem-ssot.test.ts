@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { HttpClient } from '@spark-view/spark-utils'
-import type { IDataSetMetadata } from '@spark-view/spark-data'
+import type { DataSetMetadata } from '@spark-view/spark-data'
 import {
   NavigationConfigClient,
   PageConfigEditWorkspace,
@@ -20,6 +20,7 @@ import {
   projectDesignerTables,
   reconcileDesignerTableUiState,
   type AppNavRoot,
+  type ConfigLoadResult,
   type ConfigLoader,
   type NavNode,
   type RuleEditorComponentMetadata,
@@ -27,6 +28,10 @@ import {
 
 function createHttpMock(): HttpClient {
   return {
+    interceptors: {
+      request: { use: vi.fn(() => () => undefined) },
+      response: { use: vi.fn(() => () => undefined) },
+    },
     request: vi.fn(),
     requestFull: vi.fn(),
     get: vi.fn(),
@@ -35,26 +40,42 @@ function createHttpMock(): HttpClient {
     patch: vi.fn(),
     delete: vi.fn(),
     clearCache: vi.fn(),
-  } as unknown as HttpClient
+  }
+}
+
+function requireValue<T>(value: T | null | undefined, message: string): T {
+  if (value !== null && value !== undefined) return value
+  throw new Error(message)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function requireRecord(value: unknown, message: string): Record<string, unknown> {
+  if (isRecord(value)) return value
+  throw new Error(message)
 }
 
 function createLoader(files: Partial<Record<string, string>>): ConfigLoader {
   const loadPageFileContent = vi.fn(async (pageId: string, filename: string, options?: { forceReload?: boolean }) => {
     const key = `${pageId}/${filename}`
     if (!Object.hasOwn(files, key)) {
-      return {
+      const result: ConfigLoadResult<string> = {
         success: false,
         error: `${key} not found`,
-        reason: 'not-found' as const,
+        reason: 'not-found',
         timestamp: options?.forceReload ? 2 : 1,
       }
+      return result
     }
-    return {
+    const result: ConfigLoadResult<string> = {
       success: true,
       data: files[key] ?? '',
-      source: 'remote' as const,
+      source: 'remote',
       timestamp: options?.forceReload ? 2 : 1,
     }
+    return result
   })
 
   return {
@@ -96,11 +117,12 @@ describe('DevSystem navigation SSOT', () => {
     expect(root.children[0]?.children?.[2]?.hidden).toBe(true)
     expect(root.children[0]?.children?.[2]?.path).toBeUndefined()
 
-    const draft = createNavigationNodeDraft(page!)
+    const pageNode = requireValue(page, 'Expected orders page node')
+    const draft = createNavigationNodeDraft(pageNode)
     draft.draft.title = 'Orders'
     draft.draft.nodeKind = 'ref'
     draft.draft.refId = 'remote-page'
-    const result = applyNavigationNodeDraftToNode(page!, draft)
+    const result = applyNavigationNodeDraftToNode(pageNode, draft)
 
     expect(result.patch).toMatchObject({ id: 'page', title: 'Orders', nodeKind: 'ref', refId: 'remote-page' })
     expect(page?.path).toBeUndefined()
@@ -122,14 +144,21 @@ describe('DevSystem navigation SSOT', () => {
     expect(reserved).toMatchObject({ id: 'new-toolbar', title: 'Toolbar', childPlacement: 'toolbar' })
 
     const http = createHttpMock()
-    vi.mocked(http.get).mockResolvedValueOnce({ title: 'Remote', childPlacement: 'sidebar', children: [] } as AppNavRoot)
+    const remoteRoot: AppNavRoot = { title: 'Remote', childPlacement: 'sidebar', children: [] }
+    const initialNode: NavNode = { id: 'n1', title: 'N1' }
+    const updatedNode: NavNode = { id: 'n1', title: 'N2' }
+
+    vi.mocked(http.get).mockResolvedValueOnce(remoteRoot)
     vi.mocked(http.post).mockResolvedValueOnce({ node: { id: 'n1', title: 'N1' } })
-    vi.mocked(http.put).mockResolvedValue({})
+    vi.mocked(http.put)
+      .mockResolvedValueOnce({ node: updatedNode })
+      .mockResolvedValueOnce({ node: updatedNode })
+      .mockResolvedValueOnce({})
     vi.mocked(http.delete).mockResolvedValueOnce({ deleted: { id: 'n1' } })
     const client = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation/', http })
 
     await expect(client.loadRoot()).resolves.toMatchObject({ title: 'Remote', childPlacement: 'sidebar' })
-    await client.addNode({ parentId: 'parent', node: { id: 'n1', title: 'N1' } as NavNode, index: 1 })
+    await client.addNode({ parentId: 'parent', node: initialNode, index: 1 })
     await client.updateNode('n1', { title: 'N2' })
     await client.moveNode('n1', null, 0)
     await client.deleteNode('n1')
@@ -244,14 +273,15 @@ describe('DevSystem rule and pagedata edit policy', () => {
       { targetPath: [], entries: { props: { dataViewKey: 'orders@default' } } },
     ])
 
-    const defs = schema['$defs'] as Record<string, unknown>
-    const sparkNode = defs['sparkNode'] as Record<string, unknown>
-    const properties = sparkNode['properties'] as Record<string, unknown>
-    expect((properties['type'] as Record<string, unknown>)['enum']).toEqual(['r-table'])
+    const defs = requireRecord(schema['$defs'], 'Expected schema $defs')
+    const sparkNode = requireRecord(defs['sparkNode'], 'Expected sparkNode schema')
+    const properties = requireRecord(sparkNode['properties'], 'Expected sparkNode properties')
+    const typeProperty = requireRecord(properties['type'], 'Expected type property schema')
+    expect(typeProperty['enum']).toEqual(['r-table'])
   })
 
   it('validates structured pagedata availability and designer projection roundtrip', () => {
-    const metadataModel: IDataSetMetadata = {
+    const metadataModel: DataSetMetadata = {
       dataSetName: 'OrdersDS',
       tables: {
         orders: {

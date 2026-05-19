@@ -78,7 +78,7 @@ import { Logger } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { SparkNodeTree, type ConfigLoader, type IPageRoute, type PageConfig } from '@spark-view/spark-page-config'
+import { SparkNodeTree, type ConfigLoader, type PageRoute, type PageConfig } from '@spark-view/spark-page-config'
 import { nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
 import {
@@ -229,7 +229,7 @@ function invalidateRenderFunctionsForPage(
   }
 }
 
-function createPageRoute(route: RouteLocationNormalizedLoaded): IPageRoute {
+function createPageRoute(route: RouteLocationNormalizedLoaded): PageRoute {
   return {
     get path() { return route.path },
     get fullPath() { return route.fullPath },

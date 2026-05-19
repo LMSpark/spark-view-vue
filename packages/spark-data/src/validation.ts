@@ -5,7 +5,7 @@
  */
 
 import type { DataColumn } from './types.js'
-import type { IDataRow } from './types.js'
+import type { DataRow } from './types.js'
 
 // ===== 类型定义 =====
 
@@ -36,7 +36,7 @@ export interface ValidationResult {
 /**
  * 行级校验函数
  */
-export type RowValidator = (row: IDataRow) => ValidationError[] | null
+export type RowValidator = (row: DataRow) => ValidationError[] | null
 
 /**
  * 数据模式（包含列定义和校验规则）
@@ -63,7 +63,7 @@ export class DataValidator {
    * @param row - 行数据
    * @returns 校验结果
    */
-  validate(row: IDataRow): ValidationResult {
+  validate(row: DataRow): ValidationResult {
     const errors: ValidationError[] = []
 
     // 1. 字段级校验（基于列定义）
@@ -93,7 +93,7 @@ export class DataValidator {
    * @param rows - 行数据数组
    * @returns 每行的校验结果
    */
-  validateBatch(rows: IDataRow[]): ValidationResult[] {
+  validateBatch(rows: DataRow[]): ValidationResult[] {
     return rows.map(row => this.validate(row))
   }
 
@@ -181,7 +181,7 @@ export class DataValidator {
       case 'decimal':
       case 'float':
       case 'double':
-        if (actualType !== 'number' || isNaN(value as number)) {
+        if (typeof value !== 'number' || Number.isNaN(value)) {
           return {
             field: col.name,
             message: `${label} 必须是有效的数字`,
@@ -227,7 +227,7 @@ export class DataValidator {
           }
         }
         // 字符串日期格式校验
-        if (actualType === 'string' && isNaN(Date.parse(value as string))) {
+        if (typeof value === 'string' && Number.isNaN(Date.parse(value))) {
           return {
             field: col.name,
             message: `${label} 包含无效的日期格式`,
@@ -250,7 +250,7 @@ export class DataValidator {
    * @param row - 行数据
    * @returns 是否有效
    */
-  isValid(row: IDataRow): boolean {
+  isValid(row: DataRow): boolean {
     return this.validate(row).valid
   }
 
@@ -259,7 +259,7 @@ export class DataValidator {
    * @param row - 行数据
    * @returns 第一个错误或 null
    */
-  getFirstError(row: IDataRow): ValidationError | null {
+  getFirstError(row: DataRow): ValidationError | null {
     const result = this.validate(row)
     return result.errors[0] ?? null
   }

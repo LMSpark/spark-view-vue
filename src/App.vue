@@ -177,11 +177,13 @@ import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPublicPaths } from '@/config/vue-page-map'
 import {
-  AppAiBusinessRegistry,
   FetchAppAiTransport,
   createAppAiRuntimeMonitor,
   uploadAppAiAttachment,
 } from '@/services/app-ai'
+import {
+  AiHostBusinessRegistry,
+} from '@spark-view/spark-ai/host'
 import {
   registerAppAiBusinesses,
 } from '@spark-view/spark-ai/registrations'
@@ -197,7 +199,7 @@ const isLoginPage = computed(() => route.path === '/login' || route.path === '/'
 const publicPaths = getPublicPaths()
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'
-const appAiRegistry = new AppAiBusinessRegistry()
+const appAiRegistry = new AiHostBusinessRegistry()
 registerAppAiBusinesses({
   registry: appAiRegistry,
   getPageDesignEditHost: (context) => {

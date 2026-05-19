@@ -108,11 +108,11 @@ export {
 export { SparkPageConfig } from './namespace'
 
 // ==================== 业务脚本 API 契约 ====================
-// 框架无关的页面脚本上下文类型：IPageRoute、IScriptContext
+// 框架无关的页面脚本上下文类型：PageRoute、ScriptContext
 export type {
-  IPageRoute,
-  IScriptContext,
-  IPageServiceInScript,
-  IModuleContextInScript,
-  IModuleContextItemInScript,
+  PageRoute,
+  ScriptContext,
+  PageServiceInScript,
+  ModuleContextInScript,
+  ModuleContextItemInScript,
 } from './script-context-types'

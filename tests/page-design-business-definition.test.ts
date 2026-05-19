@@ -1,15 +1,24 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  AiRuntime,
   PageDesignModule,
 } from '../packages/spark-ai/src'
 import {
   PageDesignService,
   type PageDesignEditHost,
 } from '../packages/spark-page-config/src'
-import type { SparkNodeTree } from '../packages/spark-page-config/src'
-import type { DataSetCrudTool } from '../packages/spark-data/src'
+import { SparkNodeTree } from '../packages/spark-page-config/src'
+import { DataSetCrudTool } from '../packages/spark-data/src'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function resultItemCount(value: unknown): number {
+  if (!isRecord(value) || !isRecord(value['data'])) return 0
+  const items = value['data']['items']
+  return Array.isArray(items) ? items.length : 0
+}
 
 function createHost(options: { script?: string; style?: string } = {}): {
   host: PageDesignEditHost
@@ -19,19 +28,13 @@ function createHost(options: { script?: string; style?: string } = {}): {
   let style = options.style ?? '.page { color: red; }'
   let nodeChanged = 0
   let dataChanged = 0
-  const nodeTree = {
-    toJSON: () => ({ type: 'page', props: {}, children: [] }),
-    countNodes: () => ({ count: 1 }),
-  }
-  const dataSetTool = {
-    toJson: () => ({ tables: [] }),
-    listTables: () => ({ tables: [] }),
-  }
+  const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
+  const dataSetTool = new DataSetCrudTool('page-design-test')
   return {
     host: {
-      getNodeTree: () => nodeTree as unknown as SparkNodeTree,
+      getNodeTree: () => nodeTree,
       onNodeTreeChanged: () => { nodeChanged += 1 },
-      getDataSetTool: () => dataSetTool as unknown as DataSetCrudTool,
+      getDataSetTool: () => dataSetTool,
       onDataSetChanged: () => { dataChanged += 1 },
       readScript: () => script,
       writeScript: (content) => { script = content },
@@ -61,7 +64,7 @@ describe('pageDesign module definition', () => {
       methodName: 'countNodes',
       mutates: false,
     })
-    expect(counted).toMatchObject({ ok: true, data: { count: 1 } })
+    expect(counted).toMatchObject({ ok: true, data: 1 })
     expect(service.getState(context).phase).toBe('editing')
   })
 
@@ -86,41 +89,21 @@ describe('pageDesign module definition', () => {
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@dataset@listAggregates')).toBe(true)
     expect(projection.availableFunctions.every((item) => !('functionId' in item))).toBe(true)
 
-    const registrationData = pageDesign.getRegistrationData()
-    expect(JSON.parse(JSON.stringify(registrationData))).toEqual(registrationData)
-    expect(registrationData.description).toBe('单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。')
-    expect(registrationData.prompt).toBe('你正在处理页面设计业务，支持 lifecycle、textModel、nodeTree、dataset、knowledge 五大子模块。')
-    expect(registrationData.functions).toEqual([])
-    expect(registrationData.modules.every((module) => !('getFunctions' in module))).toBe(true)
-    expect(registrationData.modules.map((module) => module.moduleId)).toEqual([
+    expect('getRegistrationData' in pageDesign).toBe(false)
+    expect('getRegistrationStoreSnapshot' in pageDesign).toBe(false)
+    expect(pageDesign.description).toBe('单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。')
+    expect(pageDesign.prompt).toBe('你正在处理页面设计业务，支持 lifecycle、textModel、nodeTree、dataset、knowledge 五大子模块。')
+    expect(pageDesign.getFunctions()).toEqual([])
+    expect(pageDesign.modules.map((module) => module.moduleId)).toEqual([
       'lifecycle',
       'textModel',
       'knowledge',
       'nodeTree',
       'dataset',
     ])
-    expect(registrationData.modules
+    expect(pageDesign.modules
       .find((module) => module.moduleId === 'lifecycle')
-      ?.functions.some((definition) => definition.functionId === 'bootstrap')).toBe(true)
-
-    const registrationStoreSnapshot = pageDesign.getRegistrationStoreSnapshot()
-    expect(JSON.parse(JSON.stringify(registrationStoreSnapshot))).toEqual(registrationStoreSnapshot)
-    expect(registrationStoreSnapshot.modules.every((module) => !('modules' in module) && !('functions' in module))).toBe(true)
-    expect(registrationStoreSnapshot.functions.every((definition) => !('usageRules' in definition) && !('failureModes' in definition))).toBe(true)
-    expect(registrationStoreSnapshot.modules.map((module) => module.modulePath)).toContain('pageDesign/lifecycle')
-    expect(registrationStoreSnapshot.functions.some((definition) => (
-      definition.modulePath === 'pageDesign/lifecycle'
-      && definition.functionId === 'bootstrap'
-    ))).toBe(true)
-
-    const dataOnlyCore = new AiRuntime()
-    const dataOnlyPageDesign = dataOnlyCore.registerModule(registrationStoreSnapshot)
-    const dataOnlyProjection = await dataOnlyPageDesign.startSession({
-      moduleInstanceId: 'page-designer-data-only',
-      instanceId: 'page-design-data-only',
-    })
-    expect(dataOnlyProjection.availableFunctions.some((item) => item.action === 'page-designer-data-only@lifecycle@bootstrap')).toBe(true)
-    expect(dataOnlyProjection.availableFunctions.every((item) => !('functionId' in item))).toBe(true)
+      ?.getFunctions().some((definition) => definition.functionId === 'bootstrap')).toBe(true)
 
     pageDesign.appendMessage({
       moduleId: PageDesignModule.moduleId,
@@ -169,7 +152,7 @@ describe('pageDesign module definition', () => {
       args: {},
       projection,
     })
-    expect(countNodes).toMatchObject({ ok: true, data: { count: 1 } })
+    expect(countNodes).toMatchObject({ ok: true, data: 1 })
 
     const payloads = await pageDesign.executeFunctionCall({
       moduleId: PageDesignModule.moduleId,
@@ -180,7 +163,7 @@ describe('pageDesign module definition', () => {
       projection,
     })
     expect(payloads).toMatchObject({ ok: true })
-    expect(((payloads as { data?: { items?: unknown[] } }).data?.items ?? []).length).toBeLessThanOrEqual(1)
+    expect(resultItemCount(payloads)).toBeLessThanOrEqual(1)
 
     const listTables = await pageDesign.executeFunctionCall({
       moduleId: PageDesignModule.moduleId,
@@ -190,7 +173,7 @@ describe('pageDesign module definition', () => {
       args: {},
       projection,
     })
-    expect(listTables).toMatchObject({ ok: true, data: { tables: [] } })
+    expect(listTables).toMatchObject({ ok: true, data: [] })
 
     const history = pageDesign.getSessionHistory({
       moduleId: PageDesignModule.moduleId,

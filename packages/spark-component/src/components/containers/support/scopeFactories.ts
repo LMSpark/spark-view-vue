@@ -1,11 +1,11 @@
-import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
+import type { DataRow, ModelPermission } from '@spark-view/spark-data'
 import type { IModuleContext } from '../../internal'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 
 export interface BaseScopeContext<TSource> {
   dataSource: TSource | null | undefined
-  modelPermission: IModelPermission | undefined
+  modelPermission: ModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined
 }
 
@@ -34,9 +34,9 @@ export function createToolbarScope<TSource>(
 
 export function createRowScope<TSource>(params: {
   dataSource: TSource | null | undefined
-  modelPermission: IModelPermission | undefined
+  modelPermission: ModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined
-  row: IDataRow
+  row: DataRow
   index: number
   extra?: Record<string, unknown>
 }) {
@@ -49,10 +49,10 @@ export function createRowScope<TSource>(params: {
 
 export function createCurrentRowScope<TSource>(params: {
   dataSource: TSource | null | undefined
-  modelPermission: IModelPermission | undefined
+  modelPermission: ModelPermission | undefined
   moduleContext?: IModuleContext | null | undefined
-  row: IDataRow
-  model?: IDataRow
+  row: DataRow
+  model?: DataRow
 }) {
   return withBaseScopeContext(params, {
     row: params.row,

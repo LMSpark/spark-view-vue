@@ -90,7 +90,7 @@ defineOptions({ inheritAttrs: false })
 import { computed, inject } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import type { SparkNodeProps } from '../../shared-types.js'
 import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from '../context/useResolvedFieldContext'
@@ -128,9 +128,9 @@ interface Props extends SparkNodeProps {
   /** 当前显示值 */
   currentDisplayValue?: string | undefined
   /** 表格行级隐藏判断 */
-  isTableCellHidden?: ((row: IDataRow) => boolean) | undefined
+  isTableCellHidden?: ((row: DataRow) => boolean) | undefined
   /** 表格行级显示值获取 */
-  getTableCellDisplayValue?: ((row: IDataRow) => string) | undefined
+  getTableCellDisplayValue?: ((row: DataRow) => string) | undefined
   /** 表单验证规则 */
   validationRules?: FormItemRule[] | undefined
   /** 标题对齐（table/detail） */
@@ -192,11 +192,11 @@ const detailValueClassName = computed(() => (
     : 'field-align--var-value'
 ))
 
-function resolveTableCellHidden(row: IDataRow): boolean {
+function resolveTableCellHidden(row: DataRow): boolean {
   return props.isTableCellHidden?.(row) ?? false
 }
 
-function resolveTableCellDisplayValue(row: IDataRow): string {
+function resolveTableCellDisplayValue(row: DataRow): string {
   if (props.getTableCellDisplayValue) return props.getTableCellDisplayValue(row)
   const fieldName = resolvedFieldName.value
   if (!fieldName) return ''
@@ -205,7 +205,7 @@ function resolveTableCellDisplayValue(row: IDataRow): string {
 }
 
 defineSlots<{
-  'table-cell'(props: { row: IDataRow; value: string }): unknown
+  'table-cell'(props: { row: DataRow; value: string }): unknown
   'form'(): unknown
   'tree'(): unknown
   'detail'(): unknown

@@ -13,7 +13,7 @@
  * - `confirmIfNeeded` 实现统一确认弹窗，`confirmMessage=''` 表示有意跳过确认
  */
 
-import type { DataView, IDataRow, CrudResult, DataSetSaveChangesOptions } from '@spark-view/spark-data'
+import type { DataView, DataRow, CrudResult, DataSetSaveChangesOptions } from '@spark-view/spark-data'
 import type {
   ActionExecutionContext,
   ActionExecutionScope,
@@ -49,12 +49,12 @@ import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../componen
 /** 目标行解析结果：单行操作用 primary，批量操作用 rows。 */
 interface TargetRows {
   /** 操作目标行列表 */
-  rows: IDataRow[]
+  rows: DataRow[]
   /**
    * 单行场景（scope/current）的代表行；
    * selected 批量场景时为 null（直接迭代 rows）
    */
-  primary: IDataRow | null
+  primary: DataRow | null
 }
 
 /**
@@ -148,10 +148,10 @@ function applyInheritFields(
 
 /**
  * 从 CRUD 结果中提取实际的行数据。
- * - CrudResult<IDataRow>：取 result.data（失败时返回 null）
- * - 直接是 IDataRow：直接返回
+ * - CrudResult<DataRow>：取 result.data（失败时返回 null）
+ * - 直接是 DataRow：直接返回
  */
-function resolveCreatedRow(result: IDataRow | CrudResult<IDataRow>): IDataRow | null {
+function resolveCreatedRow(result: DataRow | CrudResult<DataRow>): DataRow | null {
   if (isCrudResult(result)) return result.success && result.data ? result.data : null
   return result
 }
@@ -219,7 +219,7 @@ async function doAppend(
   if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
     payload[idField] = inferNextRowId(view, idField)
   }
-  const result = await view.addRow(payload as IDataRow)
+  const result = await view.addRow(payload as DataRow)
   if (isCrudResult(result) && !result.success) {
     notifier.notify('warning', desc.failureMessage
       ? interpolate(desc.failureMessage, {}, null)
@@ -324,7 +324,7 @@ export async function executeDelete(
 // ── patch 执行器 ─────────────────────────────────────────────────────────
 
 /** 合并 desc.patch 和 desc.field/value 为统一的 patch 对象。 */
-function resolveStaticPatch(desc: PatchAction): Partial<IDataRow> {
+function resolveStaticPatch(desc: PatchAction): Partial<DataRow> {
   const out: Record<string, unknown> = { ...(desc.patch ?? {}) }
   if (desc.field !== undefined) out[desc.field] = desc.value
   return out
@@ -427,7 +427,7 @@ export async function executePatch(
 async function doUpdate(
   view: DataView,
   id: string | number,
-  patch: Partial<IDataRow>,
+  patch: Partial<DataRow>,
   decorator: ActionUiDecorator,
   notifier: ActionNotifier,
   successFallback: string,
@@ -510,7 +510,7 @@ export async function executeMove(
   }
 
   const mover = view as DataView & {
-    moveTreeNode?: (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<IDataRow | null>
+    moveTreeNode?: (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<DataRow | null>
   }
   if (typeof mover.moveTreeNode !== 'function') {
     notifier.notify('warning', desc.failureMessage ?? '移动失败')
@@ -554,7 +554,7 @@ export function executeMessageRow(
   notifier.notify(desc.messageType ?? 'info', text)
 }
 
-function formatRowMessage(row: IDataRow, desc: MessageRowAction): string {
+function formatRowMessage(row: DataRow, desc: MessageRowAction): string {
   if (desc.message) return interpolate(desc.message, {}, row)
   if (desc.messageFields && desc.messageFields.length > 0) {
     return desc.messageFields.map(f => `${f}: ${String(row[f] ?? '-')}`).join(' | ')

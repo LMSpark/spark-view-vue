@@ -2,7 +2,7 @@
  * spark-data 内部工具函数
  */
 
-import type { IDataRow, IDataSource, DependencyType, CrudApi } from '../types'
+import type { DataRow, DataSource, DependencyType, CrudApi } from '../types'
 
 /** DataViewKey 分隔符，名称中禁止包含 */
 const SEPARATOR = '@'
@@ -113,8 +113,8 @@ export function resolveApi(
  * @returns 是否相同
  */
 export function isSameRow(
-  row1: IDataRow | null, 
-  row2: IDataRow | null, 
+  row1: DataRow | null, 
+  row2: DataRow | null, 
   idField: string
 ): boolean {
   if (row1 === row2) return true
@@ -134,8 +134,8 @@ export function isSameRow(
  * @returns 主键值集合
  */
 export function buildPkSet(
-  rows: IDataRow[],
-  getPk: (row: IDataRow) => string | number | undefined,
+  rows: DataRow[],
+  getPk: (row: DataRow) => string | number | undefined,
 ): Set<string | number> {
   const set = new Set<string | number>()
   for (const r of rows) {
@@ -177,11 +177,11 @@ export function pruneInvalidSelections(
 
 /**
  * 根据依赖类型获取源视图的数据范围
- * @param sourceView 实现 IDataSource 的数据源（DataView 自然满足）
+ * @param sourceView 实现 DataSource 的数据源（DataView 自然满足）
  * @param dep 依赖类型
  * @returns 数据行数组
  */
-export function getParentRows(sourceView: IDataSource, dep: DependencyType): readonly IDataRow[] {
+export function getParentRows(sourceView: DataSource, dep: DependencyType): readonly DataRow[] {
   switch (dep) {
     case 'currentRow':   return sourceView.currentRow ? [sourceView.currentRow] : []
     case 'selectedRows': return sourceView.selectedRows ?? []

@@ -16,8 +16,9 @@ const AI_CORE_AND_CONSUMER_SOURCE_ROOTS: readonly string[] = [
   ...CONSUMER_SOURCE_ROOTS,
 ]
 
-const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAiRegisteredBusinessApi\b|\bregisterBusiness\s*\(|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
+const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi)\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
 const LEGACY_FUNCTIONS_READ_RE = /\.functions\b/
+const CONSUMER_INTERFACE_DECL_RE = /^\s*(?:export\s+)?interface\s+/
 const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/
 
 function stripNonCodeSegments(line: string, inBlockComment: boolean): { code: string; inBlockComment: boolean } {
@@ -117,6 +118,19 @@ function legacyFunctionsReadViolations(): string[] {
     })
 }
 
+function consumerInterfaceDeclViolations(): string[] {
+  return CONSUMER_SOURCE_ROOTS
+    .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
+    .flatMap((file) => {
+      const content = readFileSync(file, 'utf8')
+      return content.split(/\r?\n/).flatMap((line, index) => (
+        CONSUMER_INTERFACE_DECL_RE.test(line)
+          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          : []
+      ))
+    })
+}
+
 function typeAssertionViolations(): string[] {
   return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
     .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
@@ -144,6 +158,7 @@ describe('ai runtime class-only public surface', () => {
     expect('createAiRuntime' in SparkAi).toBe(false)
 
     expect(typeof SparkAi.AiRuntime).toBe('function')
+    expect(typeof SparkAi.AiRegisteredModule).toBe('function')
     expect('PageDesignBusiness' in SparkAi).toBe(false)
     expect(typeof SparkAi.PageDesignModule).toBe('function')
     expect(typeof SparkAi.LeaveRequestModule).toBe('function')
@@ -172,15 +187,8 @@ describe('ai runtime class-only public surface', () => {
     expect('entity' in leaveModule).toBe(false)
     expect(leaveModule.getFunctions().length).toBeGreaterThan(0)
     expect(pageDesignModule.getFunctions()).toEqual([])
-    expect(leaveModule.getRegistrationData()).toMatchObject({
-      moduleId: 'manualLeave',
-      description: '帮助员工收集、确认并提交人工请假申请。',
-      prompt: expect.stringContaining('你正在处理人工请假业务'),
-      functions: expect.any(Array),
-    })
-    expect(leaveModule.getRegistrationStoreSnapshot()).toMatchObject({
-      rootModulePath: 'manualLeave',
-    })
+    expect('getRegistrationData' in leaveModule).toBe(false)
+    expect('getRegistrationStoreSnapshot' in leaveModule).toBe(false)
   })
 
   it('removes legacy business registration entrypoints from core', () => {
@@ -194,6 +202,10 @@ describe('ai runtime class-only public surface', () => {
 
   it('keeps runtime-backed modules on getFunctions as the primary function path', () => {
     expect(legacyFunctionsReadViolations()).toEqual([])
+  })
+
+  it('keeps registrations and app-ai consumers off interface declarations', () => {
+    expect(consumerInterfaceDeclViolations()).toEqual([])
   })
 
   it('keeps ai core and consumers off TypeScript assertion escapes', () => {

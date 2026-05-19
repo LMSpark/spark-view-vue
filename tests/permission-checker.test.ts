@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { permission } from '../packages/spark-component/src/index'
-import type { IDataRow } from '../packages/spark-data/src/types'
+import type { DataRow } from '../packages/spark-data/src/types'
 
 const { canCreate, canImport, canExport, canDelete, canCreateChild, canEdit } = permission
 
 describe('PermissionChecker', () => {
   it('defaults rows without snapshot to baseline allow (max(baseline, snapshot))', () => {
-    const rowWithoutPerm = { id: 1 } as IDataRow
-    const rowWithEmptyPerm = { id: 2, _perm: {} } as IDataRow
+    const rowWithoutPerm = { id: 1 } as DataRow
+    const rowWithEmptyPerm = { id: 2, _perm: {} } as DataRow
 
     // 未声明 editableFields → 基线允许
     expect(canEdit(rowWithoutPerm)).toBe(true)
@@ -15,16 +15,16 @@ describe('PermissionChecker', () => {
   })
 
   it('treats empty editableFields as explicit deny', () => {
-    const row = { id: 3, _perm: { editableFields: [] } } as IDataRow
+    const row = { id: 3, _perm: { editableFields: [] } } as DataRow
 
     expect(canEdit(row)).toBe(false)
   })
 
   it('uses max(baseline=allow, snapshot) — only explicit false denies', () => {
     const modelPerm = { allowCreate: true, allowImport: true, allowExport: true }
-    const writableRow = { id: 4, _perm: { editableFields: ['name'], allowDelete: true, allowCreateChild: true } } as IDataRow
-    const rowWithoutPerm = { id: 5 } as IDataRow
-    const explicitDenyRow = { id: 6, _perm: { allowDelete: false, allowCreateChild: false } } as IDataRow
+    const writableRow = { id: 4, _perm: { editableFields: ['name'], allowDelete: true, allowCreateChild: true } } as DataRow
+    const rowWithoutPerm = { id: 5 } as DataRow
+    const explicitDenyRow = { id: 6, _perm: { allowDelete: false, allowCreateChild: false } } as DataRow
 
     expect(canCreate(modelPerm)).toBe(true)
     expect(canImport(modelPerm)).toBe(true)

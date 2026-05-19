@@ -73,10 +73,10 @@ export type {
 
 export type {
   // 基础数据行 / 数据源接口（分层 ISP）
-  IDataRow,
-  IRowDataSource,
-  ICurrentRowSource,
-  IDataSource,
+  DataRow,
+  RowDataSource,
+  CurrentRowSource,
+  DataSource,
   PkValue,
   DataViewEditingFieldChangeEvent,
   DataViewApplyEditingRowsResult,
@@ -92,11 +92,11 @@ export type {
   DataSetTransactionRequest,
   DataSetTransactionResponse,
   DataSetTransactionOperationResult,
-  IDataSet,
+  DataSetContract,
 
   // DataSet 配置（createDataSet / fromJson 参数类型）
-  IDataSetMetadata,
-  ITableMetadata,
+  DataSetMetadata,
+  TableMetadata,
   DataColumn,
   TableRelation,
   ViewDependency,
@@ -109,7 +109,7 @@ export type {
   QueryParams,
 
   // 视图配置
-  IViewMetadata,
+  ViewMetadata,
   FilterFieldRef,
   FilterExpression,
   FilterOperator,
@@ -131,9 +131,9 @@ export type {
   // 事件订阅
   ViewChangeHandlers,
 
-  // 权限快照（存储在 IDataRow._perm / IDataSource._modelPerm）
-  IInstancePermission,
-  IModelPermission,
+  // 权限快照（存储在 DataRow._perm / DataSource._modelPerm）
+  InstancePermission,
+  ModelPermission,
 } from './types'
 
 // ===== 枚举 & 权限渲染常量 =====
@@ -156,4 +156,4 @@ export type { ColumnValidationRule, ValidationRuleType } from './column-validati
 // ===== 事件发射器（spark-data 是 SSoT；spark-component 等下游 re-export） =====
 
 export { createEventEmitter } from './core/event-emitter'
-export type { IEventEmitter } from './types'
+export type { SparkEventEmitter } from './types'

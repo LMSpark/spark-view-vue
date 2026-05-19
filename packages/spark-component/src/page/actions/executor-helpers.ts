@@ -15,7 +15,7 @@
  * 10. ActionDescriptor 禁用判断 — isActionDescriptorDisabled
  */
 
-import { resolveDataViewKey, type DataView, type IDataRow } from '@spark-view/spark-data'
+import { resolveDataViewKey, type DataView, type DataRow } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
@@ -57,7 +57,7 @@ const INTERPOLATION = /\{(\w+(?:\.\w+)*)\}/g
 export function interpolate(
   template: string,
   vars: Record<string, string | number | undefined> = {},
-  row: IDataRow | null = null,
+  row: DataRow | null = null,
 ): string {
   return template.replace(INTERPOLATION, (_match, name: string) => {
     if (Object.prototype.hasOwnProperty.call(vars, name)) {
@@ -88,7 +88,7 @@ export function pickText(
   key: keyof ActionUiDecorator,
   fallback: string,
   vars?: Record<string, string | number | undefined>,
-  row?: IDataRow | null,
+  row?: DataRow | null,
 ): string {
   const raw = decorator?.[key]
   if (typeof raw !== 'string') return interpolate(fallback, vars, row ?? null)
@@ -102,7 +102,7 @@ export function pickText(
  * 判断值是否"类行"：非 null 的普通对象（非数组）。
  * 用于从 eventArgs 中安全识别行数据，避免误判基础类型或数组。
  */
-export function isRowLike(value: unknown): value is IDataRow {
+export function isRowLike(value: unknown): value is DataRow {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
@@ -110,7 +110,7 @@ export function isRowLike(value: unknown): value is IDataRow {
  * 安全读取行主键值；主键必须是字符串或数字类型，否则返回 null（fail-fast）。
  * 返回 null 时调用方应报 error 并中止操作，不应使用 0 / '' 作为兜底。
  */
-export function resolveRowId(row: IDataRow, idField: string): string | number | null {
+export function resolveRowId(row: DataRow, idField: string): string | number | null {
   const raw = row[idField]
   return typeof raw === 'string' || typeof raw === 'number' ? raw : null
 }
@@ -154,7 +154,7 @@ const ROW_LABEL_CANDIDATES = ['orderNo', 'name', 'title']
  * 从行数据中提取可读的显示标签，用于确认弹窗等人性化提示（如"确认删除 张三 吗？"）。
  * 候选字段顺序：orderNo → name → title → idField；都为空时返回 `'当前记录'`。
  */
-export function resolveRowLabel(row: IDataRow, idField: string): string {
+export function resolveRowLabel(row: DataRow, idField: string): string {
   for (const key of [...ROW_LABEL_CANDIDATES, idField]) {
     const value = row[key]
     if (typeof value === 'string' && value.trim().length > 0) return value
@@ -164,7 +164,7 @@ export function resolveRowLabel(row: IDataRow, idField: string): string {
 }
 
 /** 获取视图当前选中行的快照副本（浅拷贝数组，防止后续操作影响迭代）。 */
-export function getSelectedRows(view: DataView): IDataRow[] {
+export function getSelectedRows(view: DataView): DataRow[] {
   return view.selectedRows.slice()
 }
 
@@ -306,9 +306,9 @@ export interface ResolvedActionDataCapabilities {
   /** 解析到的目标 DataView；未就绪时为 null */
   dataSource: DataView | null
   /** DataView 当前行（currentRow）；无当前行时为 null */
-  currentRow: IDataRow | null
+  currentRow: DataRow | null
   /** DataView 当前选中行列表（快照副本） */
-  selectedRows: IDataRow[]
+  selectedRows: DataRow[]
 }
 
 /**
@@ -438,7 +438,7 @@ function _normalizeComparable(value: unknown): unknown {
 
 /** 判断行数据是否满足禁用条件（所有字段全部相等才匹配）。 */
 function _matchesRowCondition(
-  row: IDataRow | null | undefined,
+  row: DataRow | null | undefined,
   condition: Record<string, unknown>,
 ): boolean {
   if (!row) return false

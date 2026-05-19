@@ -74,7 +74,7 @@
  * 与 DataView.setFilter 同步，无需父容器注入桥接字段。
  */
 import { computed, ref, toRef, watch } from 'vue'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import { PAGE_PERMISSION_MODE } from '../../../permission'
 import { DATA_SOURCE, SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkPageComponent,
   type SparkNode,
@@ -206,7 +206,7 @@ const resolvedActionsStyle = computed<Record<string, string>>(() => {
 const fieldScopeConfig = computed<SparkNode>(() => ({
   type: 'r-field-scope',
   props: {
-    model: filterModel as IDataRow,
+    model: filterModel as DataRow,
     children: standaloneChildren.value,
     gridColumns: resolvedGridColumns.value,
     gridGap: resolvedGridGap.value,

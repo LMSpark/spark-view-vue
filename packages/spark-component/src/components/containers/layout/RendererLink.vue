@@ -22,7 +22,7 @@
  * @description 链接组件，可渲染子内容。
  */
 import { computed } from 'vue'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import {
   DATA_ROW,
   DATA_SOURCE,
@@ -55,17 +55,17 @@ function readActionNode(): SparkNode {
   }
 }
 
-function resolvePermissionScopeRows(): IDataRow[] {
+function resolvePermissionScopeRows(): DataRow[] {
   const dataRow = sparkConsume(DATA_ROW)
   if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
-    return [dataRow as IDataRow]
+    return [dataRow as DataRow]
   }
   const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
   if (dataSource && dataSource.isMultiSelect === true) {
     const selected = dataSource.selectedRows ?? []
     return selected.length > 0 ? selected.slice() : []
   }
-  const currentRow = (dataSource as { currentRow?: IDataRow } | null)?.currentRow
+  const currentRow = (dataSource as { currentRow?: DataRow } | null)?.currentRow
   return currentRow !== null && currentRow !== undefined ? [currentRow] : []
 }
 

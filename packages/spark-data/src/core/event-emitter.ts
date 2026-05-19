@@ -1,7 +1,7 @@
-import type { IEventEmitter } from '../types'
+import type { SparkEventEmitter } from '../types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>>(): IEventEmitter<TEventMap> {
+export function createEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>>(): SparkEventEmitter<TEventMap> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const listeners = new Map<string, Set<(...args: any[]) => void>>()
 

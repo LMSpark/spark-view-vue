@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { DataSet } from '@spark-view/spark-data'
+import { getMember } from './test-type-helpers'
 
 describe('Data Architecture Refactor', () => {
   it('DataTable 只提供配置，DataView 拥有数据', () => {
@@ -30,8 +31,8 @@ describe('Data Architecture Refactor', () => {
     // DataTable 只有配置，没有 CRUD 方法
     expect(table.api).toBeDefined()
     expect(table.columns).toBeDefined()
-    expect((table as any).loadFromServer).toBeUndefined()
-    expect((table as any).createRecord).toBeUndefined()
+    expect(getMember(table, 'loadFromServer')).toBeUndefined()
+    expect(getMember(table, 'createRecord')).toBeUndefined()
 
     // DataView 拥有数据和 CRUD 方法
     expect(view.rows).toBeDefined()

@@ -17,10 +17,10 @@
 
 import { DataView } from './data-view'
 import type {
-  IDataRow,
+  DataRow,
   DataColumn,
   CrudApi,
-  ITableMetadata,
+  TableMetadata,
   CrudOperationConfig,
   TableResourceType,
   TableBusinessCategory,
@@ -132,7 +132,7 @@ export class DataTable {
   * 按当前建模约定，该字段主要仅用于 resourceType = 'static-data' 的表；
   * 其他资源类型应视为远端数据来源，此字段通常保持空数组。
    */
-  rows: IDataRow[] = []
+  rows: DataRow[] = []
 
   /** 视图集合（包含 'default'） */
   views: Record<string, DataView> = {}
@@ -283,11 +283,16 @@ export class DataTable {
   // ===== 序列化 / 反序列化 =====
 
   /**
-   * 将 DataTable 序列化为 canonical ITableMetadata（表核 + views 壳）。
+   * 将 DataTable 序列化为 canonical TableMetadata（表核 + views 壳）。
    */
-  toJson(): ITableMetadata {
-    const viewsData = {} as ITableMetadata['views']
+  toJson(): TableMetadata {
+    const defaultView = this.views['default']
+    if (defaultView === undefined) {
+      throw new Error(`Table "${this.tableName}" is missing required default view`)
+    }
+    const viewsData: TableMetadata['views'] = { default: defaultView.toJson() }
     for (const [id, view] of Object.entries(this.views)) {
+      if (id === 'default') continue
       viewsData[id] = view.toJson()
     }
 
@@ -367,7 +372,7 @@ export class DataTable {
    * 追加模式：新行 append 到 table.rows 尾部，default 视图用完整 rows 替换。
    * @returns 追加后的总行数
    */
-  addRows(rows: IDataRow[]): number {
+  addRows(rows: DataRow[]): number {
     const nextRows = [...this.rows, ...rows]
     this.rows = nextRows
 
@@ -427,7 +432,7 @@ export class DataTable {
   /**
    * 从表元数据恢复 DataTable。
    */
-  static fromJson(data: ITableMetadata): DataTable {
+  static fromJson(data: TableMetadata): DataTable {
     const normalized = normalizeTableMetadata(data)
     const t = new DataTable(normalized.tableName, normalized.columns)
     // P2: API 简写展开（字符串 / true → CrudApi 对象）

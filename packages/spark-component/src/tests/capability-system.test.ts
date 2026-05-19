@@ -22,7 +22,7 @@ import {
   PAGE_COMPONENT_REGISTRY,
 } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import type { IEventEmitter } from '@spark-view/spark-data'
+import type { SparkEventEmitter } from '@spark-view/spark-data'
 import { createPageComponentRegistry } from '../page/context/page-component-registry'
 
 describe('Capability system integration', () => {
@@ -246,11 +246,11 @@ describe('Capability system integration', () => {
       const rowCtx = createContext({ type: 'row', id: 'row-1' }, gridCtx)
 
       // Provider 注册事件能力（使用自定义能力键）
-      const TEST_EVENTS = defineCapability<IEventEmitter>('test:grid-events')
+      const TEST_EVENTS = defineCapability<SparkEventEmitter>('test:grid-events')
       const handler = vi.fn()
       const eventBus: Record<string, Array<(...args: unknown[]) => void>> = {}
 
-      const eventImpl: IEventEmitter = {
+      const eventImpl: SparkEventEmitter = {
         on(event: string, fn: (...args: unknown[]) => void) {
           if (!eventBus[event]) eventBus[event] = []
           eventBus[event].push(fn)
@@ -273,7 +273,7 @@ describe('Capability system integration', () => {
       sparkProvide(gridCtx, TEST_EVENTS, eventImpl)
 
       // Consumer 通过 parent chain 找到事件能力
-      const found = sparkConsume<IEventEmitter>(rowCtx, TEST_EVENTS)
+      const found = sparkConsume<SparkEventEmitter>(rowCtx, TEST_EVENTS)
       expect(found).toBeTruthy()
 
       found!.on('rowClick', handler)

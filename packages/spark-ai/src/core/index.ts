@@ -15,23 +15,15 @@
 // 一、模块注册、生命周期通知、知识投影与函数调用翻译契约。
 export type {
   AiModuleRegistration,
-  AiModuleRegistrationData,
-  AiModuleRegistrationStoreModule,
-  AiModuleRegistrationStoreSnapshot,
   AiModuleInstanceBinding,
   AiModuleInstanceParam,
   AiFunctionRegistration,
-  AiFunctionRegistrationFailureMode,
-  AiFunctionRegistrationStoreFunction,
-  AiFunctionRegistrationUsageRule,
-  AiRegisteredModuleApi,
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeAppendMessageOptions,
   AiRuntimeCompleteFunctionCallOptions,
   AiRuntimeExecuteFunctionCallOptions,
   AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
-  AiRuntimeApi,
   AiRuntimeCreateFunctionResultMessageOptions,
   AiRuntimeFunctionContextParam,
   AiRuntimeFunctionExposure,
@@ -86,7 +78,7 @@ export {
 } from './internal/invocation-helpers'
 
 export {
-  createAiRuntimeToolCodec,
+  AiRuntimeToolCodec,
 } from './internal/tool-codec'
 
 export {
@@ -100,7 +92,6 @@ export type {
 } from './internal/invocation-helpers'
 
 export type {
-  AiRuntimeToolCodec,
   AiRuntimeToolCodecOptions,
   AiRuntimeToolSpec,
 } from './internal/tool-codec'
@@ -163,7 +154,6 @@ export type {
 } from './internal/knowledge/knowledge-projection'
 
 export type {
-  AiKnowledgeCatalogOptions,
   AiKnowledgeCatalogRowOptions,
   AiKnowledgeFunctionFailureMode,
   AiKnowledgeFunctionId,
@@ -175,6 +165,10 @@ export type {
 export {
   AiRuntime,
 } from './internal/runtime/ai-runtime'
+
+export {
+  AiRegisteredModule,
+} from './internal/runtime/ai-registered-module'
 
 // 七、跨框架 AI Host 运行时。
 export * from './host'

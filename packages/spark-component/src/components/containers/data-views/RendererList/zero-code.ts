@@ -1,4 +1,4 @@
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import { createContainerCrudContext } from '../zero-code-shared.js'
 import type { RendererListApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
@@ -6,7 +6,7 @@ import type { ValueRef } from '../../../shared-types.js'
 interface RendererListZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
-  rows: ValueRef<readonly IDataRow[]>
+  rows: ValueRef<readonly DataRow[]>
 }
 
 export function createRendererListZeroCode(options: RendererListZeroCodeOptions) {
@@ -18,7 +18,7 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
     eventDefaults: {
       'item-click': {
         systemDefault: (row: unknown) => {
-          resolvedView.value?.setCurrentRow(row as IDataRow)
+          resolvedView.value?.setCurrentRow(row as DataRow)
         },
       },
     },
@@ -27,7 +27,7 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
   const listApi: RendererListApi = {
     ...baseMethods,
     getRows() {
-      return rows.value as IDataRow[]
+      return rows.value as DataRow[]
     },
     getItemCount() {
       return rows.value.length

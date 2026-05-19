@@ -23,6 +23,44 @@ export interface JsonObject {
 /** 文档顶层：对象或数组 */
 export type JsonDocument = JsonObject | JsonValue[]
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/** 将未知值安全收窄为 JsonValue；不符合时返回 null */
+function asJsonValue(value: unknown): JsonValue | null {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) return value
+  if (Array.isArray(value)) {
+    const items: JsonValue[] = []
+    for (const item of value) {
+      const narrowed = asJsonValue(item)
+      if (narrowed === null && item !== null) return null
+      items.push(narrowed ?? null)
+    }
+    return items
+  }
+  if (isRecord(value)) {
+    const obj: JsonObject = {}
+    for (const [k, v] of Object.entries(value)) {
+      const narrowed = asJsonValue(v)
+      if (narrowed === null && v !== null) return null
+      obj[k] = narrowed ?? null
+    }
+    return obj
+  }
+  return null
+}
+
+/** 已知非容器值收窄为原始类型 */
+function toPrimitive(value: JsonValue): JsonPrimitive {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  return null
+}
+
+function objectKeyFromSegment(segment: JsonPathSegment): string {
+  return typeof segment === 'string' ? segment : String(segment)
+}
+
 // ── 路径类型 ────────────────────────────────────────────────
 
 export type JsonPathSegment = string | number
@@ -190,8 +228,9 @@ export function serializeJsonDocument(value: JsonDocument): string {
  * 归一化任意值为 JsonDocument（顶层仅允许对象或数组）。
  */
 export function normalizeJsonDocument(value: unknown): JsonDocument {
-  if (isJsonObject(value)) return value
-  if (Array.isArray(value)) return value as JsonValue[]
+  const narrowed = asJsonValue(value)
+  if (narrowed === null) throw new Error('JSON 顶层必须是对象或数组')
+  if (Array.isArray(narrowed) || isJsonObject(narrowed)) return narrowed
   throw new Error('JSON 顶层必须是对象或数组')
 }
 
@@ -213,13 +252,12 @@ function addNodeToMap(
 
   nodes.set(id, {
     id, parentId, segment, type,
-    value: isContainer ? null : (value as string | number | boolean | null),
+    value: isContainer ? null : toPrimitive(value),
     order,
   })
 
   if (isContainer && Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++)
-      addNodeToMap(nodes, value[i] as JsonValue, id, i, i)
+    value.forEach((item, i) => addNodeToMap(nodes, item, id, i, i))
   } else if (isContainer && isJsonObject(value)) {
     let idx = 0
     for (const [k, v] of Object.entries(value))
@@ -237,22 +275,27 @@ function toJsonValue(nodes: ReadonlyMap<string, TreeNode>, uid: string): JsonVal
   if (n.type === 'array') return children.map(c => toJsonValue(nodes, c))
   if (n.type === 'object') {
     const obj: JsonObject = {}
-    for (const c of children) { const ch = nodes.get(c); if (ch) obj[ch.segment as string] = toJsonValue(nodes, c) }
+    for (const c of children) {
+      const ch = nodes.get(c)
+      if (ch) obj[objectKeyFromSegment(ch.segment)] = toJsonValue(nodes, c)
+    }
     return obj
   }
-  return n.value as JsonValue
+  return n.value
 }
 
 /** 从 JSON 文档构建内部树模型 */
 export function buildTreeModel(doc: JsonDocument, policy?: Partial<JsonTreePolicy>): TreeModel {
   const nodes = new Map<string, TreeNode>()
-  addNodeToMap(nodes, doc as JsonValue, null, resolvePolicy(policy).rootLabel, 0)
+  addNodeToMap(nodes, doc, null, resolvePolicy(policy).rootLabel, 0)
   return nodes
 }
 
 /** 从 TreeModel 重建 JSON 文档 */
 export function exportJsonDocument(model: TreeModel): JsonDocument {
-  return toJsonValue(model, rootOf(model)) as JsonDocument
+  const value = toJsonValue(model, rootOf(model))
+  if (Array.isArray(value) || isJsonObject(value)) return value
+  throw new Error('文档根节点必须是对象或数组')
 }
 
 /** 从根到目标节点重建 JsonPath */
@@ -363,7 +406,7 @@ function collectSiblingKeys(model: TreeModel, parentId: string): JsonObject {
   const obj: JsonObject = {}
   for (const c of getChildIds(model, parentId)) {
     const ch = model.get(c)
-    if (ch && typeof ch.segment === 'string') obj[ch.segment] = null as unknown as JsonValue
+    if (ch && typeof ch.segment === 'string') obj[ch.segment] = null
   }
   return obj
 }
@@ -469,7 +512,7 @@ export function updateNodeType(model: TreeModel, uid: string, nextType: JsonNode
   const defaultValue = createValueByType(nextType)
   nodes.set(uid, {
     ...target, type: nextType,
-    value: isContainer ? null : (defaultValue as string | number | boolean | null),
+    value: isContainer ? null : toPrimitive(defaultValue),
   })
   return makeResult(nodes, uid)
 }
@@ -487,8 +530,7 @@ export function updateNodeValue(model: TreeModel, uid: string, nextValue: JsonVa
   if (isContainer) {
     // 重建子树
     if (Array.isArray(nextValue)) {
-      for (let i = 0; i < nextValue.length; i++)
-        addNodeToMap(nodes, nextValue[i] as JsonValue, uid, i, i)
+      nextValue.forEach((item, i) => addNodeToMap(nodes, item, uid, i, i))
     } else if (isJsonObject(nextValue)) {
       let idx = 0
       for (const [k, v] of Object.entries(nextValue))
@@ -496,7 +538,7 @@ export function updateNodeValue(model: TreeModel, uid: string, nextValue: JsonVa
     }
     nodes.set(uid, { ...target, type: newType, value: null })
   } else {
-    nodes.set(uid, { ...target, type: newType, value: nextValue as string | number | boolean | null })
+    nodes.set(uid, { ...target, type: newType, value: toPrimitive(nextValue) })
   }
   return makeResult(nodes, uid)
 }
@@ -729,17 +771,20 @@ function asSchemaRecord(value: unknown): JsonSchemaRecord | null {
  * 从 JSON 对象中读取指定路径的值。路径不存在时抛异常。
  */
 export function getValueAtJsonPath(root: JsonDocument, path: JsonPath): JsonValue {
-  let current: JsonValue = root as JsonValue
+  let current: unknown = root
   for (const segment of path) {
     if (typeof segment === 'number') {
       if (!Array.isArray(current)) throw new Error(`路径不是数组: ${formatJsonPath(path)}`)
-      current = current[segment] as JsonValue
+      current = current[segment]
     } else {
       if (!isJsonObject(current)) throw new Error(`路径不是对象: ${formatJsonPath(path)}`)
-      current = current[segment] as JsonValue
+      current = current[segment]
     }
   }
-  return current
+  if (typeof current === 'string' || typeof current === 'number' || typeof current === 'boolean' || current === null || Array.isArray(current) || isJsonObject(current)) {
+    return current
+  }
+  throw new Error(`路径指向无效值: ${formatJsonPath(path)}`)
 }
 
 /**
@@ -809,7 +854,7 @@ export interface FlatJsonTreeDocument {
  * 不包含虚拟根节点——顶层条目的 parentId 为 null，根类型由 rootType 字段表达。
  */
 export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocument {
-  const rootType = Array.isArray(doc) ? 'array' as const : 'object' as const
+  const rootType: FlatJsonTreeDocument['rootType'] = Array.isArray(doc) ? 'array' : 'object'
   const rows: TreeNode[] = []
 
   function walk(value: JsonValue, parentId: string | null, segment: string | number, order: number): void {
@@ -819,12 +864,12 @@ export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocum
 
     rows.push({
       id, parentId, segment, type,
-      value: isContainer ? null : (value as string | number | boolean | null),
+      value: isContainer ? null : toPrimitive(value),
       order,
     })
 
     if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) walk(value[i] as JsonValue, id, i, i)
+      value.forEach((item, i) => walk(item, id, i, i))
     } else if (isJsonObject(value)) {
       let idx = 0
       for (const [k, v] of Object.entries(value)) walk(v, id, k, idx++)
@@ -832,7 +877,7 @@ export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocum
   }
 
   if (Array.isArray(doc)) {
-    for (let i = 0; i < doc.length; i++) walk(doc[i] as JsonValue, null, i, i)
+    doc.forEach((item, i) => walk(item, null, i, i))
   } else {
     let idx = 0
     for (const [k, v] of Object.entries(doc)) walk(v, null, k, idx++)
@@ -873,19 +918,26 @@ export function restoreJsonDocumentFromFlat(flat: FlatJsonTreeDocument): JsonDoc
     if (row.type === 'array') return (children ?? []).map(c => buildValue(c))
     if (row.type === 'object') {
       const obj: JsonObject = {}
-      for (const c of children ?? []) obj[c.segment as string] = buildValue(c)
+      for (const c of children ?? []) {
+        const key = typeof c.segment === 'string' ? c.segment : String(c.segment)
+        obj[key] = buildValue(c)
+      }
       return obj
     }
-    return row.value as JsonValue
+    return row.value
   }
 
   const roots = childrenMap.get(null) ?? []
   if (rootType === 'array') {
-    return roots.map(r => buildValue(r)) as JsonDocument
+    const items: JsonValue[] = roots.map(r => buildValue(r))
+    return items
   }
   const obj: JsonObject = {}
-  for (const r of roots) obj[r.segment as string] = buildValue(r)
-  return obj as JsonDocument
+  for (const r of roots) {
+    const key = typeof r.segment === 'string' ? r.segment : String(r.segment)
+    obj[key] = buildValue(r)
+  }
+  return obj
 }
 
 /**
@@ -895,6 +947,6 @@ export function restoreJsonDocumentByOriginalType(
   rows: TreeNode[],
   originalData: JsonDocument,
 ): JsonDocument {
-  const rootType = Array.isArray(originalData) ? 'array' as const : 'object' as const
+  const rootType: FlatJsonTreeDocument['rootType'] = Array.isArray(originalData) ? 'array' : 'object'
   return restoreJsonDocumentFromFlat({ rootType, rows })
 }

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { RendererTable, FieldText, DATA_ROW, DATA_SOURCE, PAGE_SERVICE, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
+import type { DataRow, DataView, DataSetContract } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import type { SparkNode } from '@spark-view/spark-component'
@@ -644,7 +644,7 @@ const RendererFieldScopeStub = defineComponent({
   }
 })
 
-function createInlineDataSet(tableName: string, rows: IDataRow[]): IDataSet {
+function createInlineDataSet(tableName: string, rows: DataRow[]): DataSetContract {
   const sample = rows[0] ?? {}
   const columns = Object.keys(sample).map((name) => ({
     name,
@@ -928,7 +928,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [{ id: 1 }, { id: 2 }] as IDataRow[],
+              rows: [{ id: 1 }, { id: 2 }] as DataRow[],
             },
           },
         }
@@ -959,7 +959,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [] as IDataRow[],
+              rows: [] as DataRow[],
             },
           },
         }
@@ -991,7 +991,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [{ id: 1 }] as IDataRow[],
+              rows: [{ id: 1 }] as DataRow[],
             },
           },
         }
@@ -1019,7 +1019,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [] as IDataRow[],
+              rows: [] as DataRow[],
             },
           },
         }
@@ -1054,7 +1054,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
             },
           },
         }
@@ -1097,7 +1097,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
             },
           },
         }
@@ -1137,7 +1137,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
             },
           },
         }
@@ -1190,7 +1190,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                     { id: 'leaf', label: '叶子节点', children: [] },
                   ],
                 },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         }
@@ -1263,7 +1263,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
             default: {
               rows: [
                 { id: 'root', label: '根节点', children: [{ id: 'leaf', label: '叶子节点', children: [] }] },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         },
@@ -1271,7 +1271,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const dv = ds.getView('Nodes', 'default')!
-    const checkedNodes: IDataRow[] = [{ id: 'leaf', label: '叶子节点' }]
+    const checkedNodes: DataRow[] = [{ id: 'leaf', label: '叶子节点' }]
     const getCheckedNodesSpy = vi.fn((_leafOnly?: boolean, _includeHalfChecked?: boolean) => checkedNodes)
 
     const CheckedTreeStub = defineComponent({
@@ -1297,7 +1297,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const api = getMountedComponentApi<{
-      getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): IDataRow[]
+      getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): DataRow[]
     }>(wrapper, 'r-tree')
 
     expect(api.getCheckedNodes).toBeTypeOf('function')
@@ -1328,7 +1328,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                     },
                   ],
                 },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         }
@@ -1406,7 +1406,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 'root', parentId: null, label: '根节点' },
                 { id: 'leaf', parentId: null, label: '叶子节点' },
-              ] as IDataRow[],
+              ] as DataRow[],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1416,7 +1416,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     ds.getTable('Nodes')!.setApi({ move: { url: '/api/tree/{id}/move', method: 'PUT' } })
     const dv = ds.getView('Nodes', 'default')!
-    const moveSpy = vi.spyOn(dv, 'moveTreeNode').mockResolvedValue({ id: 'leaf', parentId: 'root', label: '叶子节点' } as IDataRow)
+    const moveSpy = vi.spyOn(dv, 'moveTreeNode').mockResolvedValue({ id: 'leaf', parentId: 'root', label: '叶子节点' } as DataRow)
 
     const wrapper = await mountRendererTreeWithView(dv, {}, {
       global: {
@@ -1449,7 +1449,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 'root', parentId: null, label: '根节点' },
                 { id: 'leaf', parentId: 'root', label: '叶子节点' },
-              ] as IDataRow[],
+              ] as DataRow[],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1500,7 +1500,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] as DataRow[],
             },
           },
         },
@@ -1700,7 +1700,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [] as IDataRow[],
+              rows: [] as DataRow[],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1795,7 +1795,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           },
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         },
@@ -1929,7 +1929,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }
@@ -2007,7 +2007,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }
@@ -2067,7 +2067,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }
@@ -2134,7 +2134,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 7, name: 'Alice', _perm: { allowDelete: true } },
                 { id: 8, name: 'Bob', _perm: { allowDelete: true } },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         }
@@ -2195,7 +2195,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                 { id: 1, name: 'Alice', _perm: { allowDelete: true } },
                 { id: 2, name: 'Bob', _perm: { allowDelete: true } },
                 { id: 3, name: 'Carol', _perm: { allowDelete: true } },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         }
@@ -2251,7 +2251,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }
@@ -2312,7 +2312,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }
@@ -2374,7 +2374,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice', _perm: { allowDelete: true } }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice', _perm: { allowDelete: true } }] as DataRow[],
             },
           },
         }
@@ -2467,7 +2467,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
             },
           },
           api: { list: { url: '/api/nodes', method: 'GET' } },
@@ -2860,7 +2860,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
             },
           },
         }
@@ -2897,7 +2897,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
             },
           },
         }
@@ -2982,7 +2982,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 1, _perm: { allowDelete: false } },
                 { id: 2, _perm: { allowDelete: true } },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         },
@@ -3035,7 +3035,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 1, _perm: { allowDelete: false } },
                 { id: 2, _perm: { allowDelete: true } },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         },
@@ -3088,7 +3088,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 1 },
                 { id: 2 },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         },
@@ -3148,7 +3148,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false, allowCreateChild: false } }] as IDataRow[],
+              rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false, allowCreateChild: false } }] as DataRow[],
             },
           },
         }
@@ -3221,7 +3221,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } }] as IDataRow[],
+              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } }] as DataRow[],
             },
           },
         }
@@ -3283,7 +3283,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         },
@@ -3315,7 +3315,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               props: {
                 action: 'delete-row',
                 label: '禁用行动作',
-                onBeforeRender: ({ row }: { row?: IDataRow | null }) => ({ disabled: row !== null && row !== undefined }),
+                onBeforeRender: ({ row }: { row?: DataRow | null }) => ({ disabled: row !== null && row !== undefined }),
               },
             },
           ],
@@ -3354,7 +3354,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                 { id: 1, name: 'Alice' },
                 { id: 2, name: 'Bob' },
                 { id: 3, name: 'Alicia' },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         }
@@ -3391,7 +3391,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     await filterInput.setValue('Ali')
     await nextTick()
 
-    const vm = wrapper.vm as unknown as { rows: IDataRow[] }
+    const vm = wrapper.vm as unknown as { rows: DataRow[] }
     expect(vm.rows).toHaveLength(2)
     expect(vm.rows.map(row => row['name'])).toEqual(['Alice', 'Alicia'])
   })
@@ -3405,7 +3405,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'name', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }
@@ -3460,7 +3460,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'name', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         },
@@ -3510,7 +3510,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                 { id: 1, score: 10, status: 'draft' },
                 { id: 2, score: 20, status: 'done' },
                 { id: 3, score: 30, status: 'archived' },
-              ] as IDataRow[],
+              ] as DataRow[],
             },
           },
         }
@@ -3541,7 +3541,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const filterWrapper = wrapper.findComponent(RendererFilter)
     const filterVm = filterWrapper.vm as unknown as { filterModel: Record<string, unknown> }
-    const vm = wrapper.vm as unknown as { rows: IDataRow[] }
+    const vm = wrapper.vm as unknown as { rows: DataRow[] }
     filterVm.filterModel['score'] = [15, 25]
     await nextTick()
     expect(vm.rows).toHaveLength(1)
@@ -3562,7 +3562,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'name', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
             },
           },
         }

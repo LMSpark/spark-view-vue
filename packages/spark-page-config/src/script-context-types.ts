@@ -7,7 +7,7 @@
  * `script.js` 沙箱的核心目标是**让业务逻辑与具体前端框架解耦**：
  * - 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $route / $dataSet`）
  * - 底层实现（Vue Router / Element Plus）由**渲染层**注入，脚本不感知
- * - 同一份 `script.js` 理论上可在任何实现了 `IScriptContext` 的渲染层上运行
+ * - 同一份 `script.js` 理论上可在任何实现了 `ScriptContext` 的渲染层上运行
  *
  * 这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router 的根本原因——**接口是契约，实现可替换**。
  *
@@ -19,7 +19,7 @@
  * ⚠️ **禁止将此文件改名为 `script-api.ts`**（见 copilot-instructions 规划节）
  */
 
-import type { FieldVisibility, IDataRow, IModelPermission } from '@spark-view/spark-data'
+import type { FieldVisibility, DataRow, ModelPermission } from '@spark-view/spark-data'
 
 // ==================== 路由快照 ====================
 
@@ -36,7 +36,7 @@ import type { FieldVisibility, IDataRow, IModelPermission } from '@spark-view/sp
  * const tab = $route.query.tab
  * ```
  */
-export interface IPageRoute {
+export interface PageRoute {
   /** 当前路径，如 `/users/123` */
   path: string
   /** 含 search/hash 的完整 URL，如 `/users/123?tab=info#detail` */
@@ -69,7 +69,7 @@ export interface IPageRoute {
  * **渲染层附加（非核心契约，实现层注入）**：
  * - `$dataSet` — DataSet 实例（由渲染层以具体类型注入，不在此契约层定义）
  * - `permission` — 权限 helper 命名空间（字段/动作权限判断）
- * - `SparkData` — SPARK 数据工具命名空间（在 IScriptContext 外单独注入）
+ * - `SparkData` — SPARK 数据工具命名空间（在 ScriptContext 外单独注入）
  * - `h` — Vue 渲染函数（仅供 Render* 渲染函数，非业务逻辑）
  *
  * @example
@@ -85,19 +85,19 @@ export interface IPageRoute {
  * $page.navigate('/orders')
  * ```
  */
-export interface IScriptContext {
+export interface ScriptContext {
   /**
    * 页面级组件访问 API。
    *
    * 可用于按组件 id / type 获取实例快照与容器组件暴露的包装 API。
    */
-  $components: IPageComponentAccessInScript
+  $components: PageComponentAccessInScript
 
   /**
    * 当前路由快照（底层 Vue Router 实现，只读，framework-agnostic）。
    * 通过代理实时反映当前路由，但接口类型不依赖 Vue Router。
    */
-  $route: IPageRoute
+  $route: PageRoute
 
   /** 当前页面容器 DOM 元素（可用于 focus、scroll 等操作） */
   $el: () => HTMLElement | null
@@ -125,7 +125,7 @@ export interface IScriptContext {
    * 实际运行时注入 `IPageServiceCapability` 实现。
    * 为保持此文件对 capability 系统无依赖，此处使用结构等价的内联类型。
    */
-  $page: IPageServiceInScript
+  $page: PageServiceInScript
 
   /**
    * 权限 helper 命名空间。
@@ -133,7 +133,7 @@ export interface IScriptContext {
    * 由渲染层注入，结构上对齐组件层公开的 `permission` API，
    * 可用于动作权限判断、字段权限状态解析与字段显示格式化。
    */
-  permission: IPermissionApiInScript
+  permission: PermissionApiInScript
 
   /**
    * 脚本日志接口（已桥接到框架 Logger 传输链）。
@@ -157,7 +157,7 @@ export interface IScriptContext {
    * }
    * ```
    */
-  $moduleContext: IModuleContextInScript | null
+  $moduleContext: ModuleContextInScript | null
 }
 
 /**
@@ -166,15 +166,15 @@ export interface IScriptContext {
  * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
  * 渲染层以 `IPageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
  */
-export interface IPageServiceInScript {
+export interface PageServiceInScript {
   /** 通用弹层（APP 层承载，页面层通过 service 调用） */
-  showDialog(options: IPageDialogOptionsInScript): Promise<PageDialogResultInScript>
+  showDialog(options: PageDialogOptionsInScript): Promise<PageDialogResultInScript>
   /** 打开通用实体选择器（APP 层承载，可用于选人/选部门/选商品等） */
-  selectEntities(options: IPageSelectEntitiesOptionsInScript): Promise<IPageSelectedEntityInScript[]>
+  selectEntities(options: PageSelectEntitiesOptionsInScript): Promise<PageSelectedEntityInScript[]>
   /** 打开文件浏览选择器（APP 层承载） */
-  browseFiles(options?: IPageBrowseFilesOptionsInScript): Promise<IPageSelectedFileInScript[]>
+  browseFiles(options?: PageBrowseFilesOptionsInScript): Promise<PageSelectedFileInScript[]>
   /** 选择文件并上传（APP 层承载） */
-  uploadFiles(options: IPageUploadFilesOptionsInScript): Promise<IPageUploadedFileInScript[]>
+  uploadFiles(options: PageUploadFilesOptionsInScript): Promise<PageUploadedFileInScript[]>
   /** 消息提示（替代 ElMessage） */
   showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
   /** 确认框，返回 true=确定 / false=取消（替代 ElMessageBox.confirm） */
@@ -201,12 +201,12 @@ export interface IPageServiceInScript {
   navigate(path: string, params?: Record<string, unknown>): void
 }
 
-export interface IPermissionActionContextInScript {
-  modelPermission?: IModelPermission
-  row?: IDataRow | null
+export interface PermissionActionContextInScript {
+  modelPermission?: ModelPermission
+  row?: DataRow | null
 }
 
-export interface IFieldRenderConfigInScript {
+export interface FieldRenderConfigInScript {
   field: string
   visible?: boolean
   editable?: boolean
@@ -214,7 +214,7 @@ export interface IFieldRenderConfigInScript {
   width?: number | string
 }
 
-export interface IFieldRenderStateInScript {
+export interface FieldRenderStateInScript {
   field: string
   visibility: FieldVisibility
   readable: boolean
@@ -229,60 +229,60 @@ export interface IFieldRenderStateInScript {
  * 所有函数可选接受 `permissionMode` 参数（脚本通常省略）。
  * 函数直接来自组件层 `permission/` 模块导出。
  */
-export interface IPermissionApiInScript {
+export interface PermissionApiInScript {
   // ── 动作权限 ──
-  isPermittedAction(action: string | undefined, context: IPermissionActionContextInScript): boolean
+  isPermittedAction(action: string | undefined, context: PermissionActionContextInScript): boolean
   isModelScopedPermAction(action: string | undefined): boolean
   isRowScopedPermAction(action: string | undefined): boolean
 
   // ── 模型级检查 ──
-  canCreate(modelPermission?: IModelPermission): boolean
-  canImport(modelPermission?: IModelPermission): boolean
-  canExport(modelPermission?: IModelPermission): boolean
+  canCreate(modelPermission?: ModelPermission): boolean
+  canImport(modelPermission?: ModelPermission): boolean
+  canExport(modelPermission?: ModelPermission): boolean
 
   // ── 行级检查 ──
-  canDelete(row: IDataRow): boolean
-  canCreateChild(row: IDataRow): boolean
-  canEdit(row: IDataRow): boolean
+  canDelete(row: DataRow): boolean
+  canCreateChild(row: DataRow): boolean
+  canEdit(row: DataRow): boolean
 
   // ── 字段级检查 ──
-  isFieldVisible(field: string, row: IDataRow): boolean
-  isFieldEditable(field: string, row: IDataRow): boolean
-  getFieldVisibility(field: string, row: IDataRow): FieldVisibility
+  isFieldVisible(field: string, row: DataRow): boolean
+  isFieldEditable(field: string, row: DataRow): boolean
+  getFieldVisibility(field: string, row: DataRow): FieldVisibility
 
   // ── 字段渲染状态 ──
   resolveFieldPermissionState(
     field: string | undefined,
-    row: IDataRow | null | undefined,
-    config?: Omit<IFieldRenderConfigInScript, 'field'>,
-  ): IFieldRenderStateInScript | null
-  computeFieldState(config: IFieldRenderConfigInScript, row: IDataRow): IFieldRenderStateInScript
+    row: DataRow | null | undefined,
+    config?: Omit<FieldRenderConfigInScript, 'field'>,
+  ): FieldRenderStateInScript | null
+  computeFieldState(config: FieldRenderConfigInScript, row: DataRow): FieldRenderStateInScript
 
   // ── 行过滤 ──
-  filterDeletableRows(rows: IDataRow[]): IDataRow[]
-  filterEditableRows(rows: IDataRow[]): IDataRow[]
-  filterFields(row: IDataRow): Record<string, unknown>
-  getEditableFields(row: IDataRow, allFields: string[]): string[]
-  getVisibleFields(row: IDataRow, allFields: string[]): string[]
-  filterDisplayableFields(row: IDataRow): IDataRow
+  filterDeletableRows(rows: DataRow[]): DataRow[]
+  filterEditableRows(rows: DataRow[]): DataRow[]
+  filterFields(row: DataRow): Record<string, unknown>
+  getEditableFields(row: DataRow, allFields: string[]): string[]
+  getVisibleFields(row: DataRow, allFields: string[]): string[]
+  filterDisplayableFields(row: DataRow): DataRow
 
   // ── 工具 ──
-  extractModelPermission(dataSource: { _modelPerm?: IModelPermission } | null | undefined): IModelPermission | undefined
+  extractModelPermission(dataSource: { _modelPerm?: ModelPermission } | null | undefined): ModelPermission | undefined
 }
 
 /** 页面内组件实例快照（脚本可读） */
-export interface IPageComponentInstanceInScript {
+export interface PageComponentInstanceInScript {
   id: string
   type: string
   props?: Record<string, unknown>
 }
 
 /** 页面级组件访问 API（脚本可用） */
-export interface IPageComponentAccessInScript {
+export interface PageComponentAccessInScript {
   /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
-  get(id: string): IPageComponentInstanceInScript | null
+  get(id: string): PageComponentInstanceInScript | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
-  list(type?: string): IPageComponentInstanceInScript[]
+  list(type?: string): PageComponentInstanceInScript[]
   /** 按组件 id 获取组件暴露 API（运行时实现可返回任意结构） */
   getApi<T = unknown>(id: string): T | null
   /** 按 type 获取同类组件 API 列表 */
@@ -291,7 +291,7 @@ export interface IPageComponentAccessInScript {
 
 export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'
 
-export interface IPageDialogOptionsInScript {
+export interface PageDialogOptionsInScript {
   title?: string
   message?: string
   content?: string
@@ -305,7 +305,7 @@ export interface IPageDialogOptionsInScript {
 
 export type PageSelectableValueInScript = string | number | boolean
 
-export interface IPageSelectorOptionInScript {
+export interface PageSelectorOptionInScript {
   label: string
   value: PageSelectableValueInScript
   description?: string
@@ -313,7 +313,7 @@ export interface IPageSelectorOptionInScript {
   raw?: unknown
 }
 
-export interface IPageSelectEntitiesOptionsInScript {
+export interface PageSelectEntitiesOptionsInScript {
   title?: string
   entityName?: string
   placeholder?: string
@@ -323,19 +323,19 @@ export interface IPageSelectEntitiesOptionsInScript {
   cancelText?: string
   emptyText?: string
   currentValue?: PageSelectableValueInScript | PageSelectableValueInScript[] | string
-  options?: IPageSelectorOptionInScript[]
+  options?: PageSelectorOptionInScript[]
 }
 
-export interface IPageSelectedEntityInScript extends IPageSelectorOptionInScript {}
+export interface PageSelectedEntityInScript extends PageSelectorOptionInScript {}
 
-export interface IPageBrowseFilesOptionsInScript {
+export interface PageBrowseFilesOptionsInScript {
   title?: string
   accept?: string
   multiple?: boolean
   currentValue?: string
 }
 
-export interface IPageSelectedFileInScript {
+export interface PageSelectedFileInScript {
   name: string
   size: number
   type: string
@@ -343,7 +343,7 @@ export interface IPageSelectedFileInScript {
   file: File
 }
 
-export interface IPageUploadFilesOptionsInScript extends IPageBrowseFilesOptionsInScript {
+export interface PageUploadFilesOptionsInScript extends PageBrowseFilesOptionsInScript {
   action: string
   method?: 'POST' | 'PUT' | 'PATCH'
   fieldName?: string
@@ -353,7 +353,7 @@ export interface IPageUploadFilesOptionsInScript extends IPageBrowseFilesOptions
   files?: File[]
 }
 
-export interface IPageUploadedFileInScript extends IPageSelectedFileInScript {
+export interface PageUploadedFileInScript extends PageSelectedFileInScript {
   response: unknown
   url?: string
 }
@@ -361,7 +361,7 @@ export interface IPageUploadedFileInScript extends IPageSelectedFileInScript {
 // ==================== 模块上下文（内联类型）====================
 
 /** 模块上下文选项（结构与 `IModuleContextItem` 等价） */
-export interface IModuleContextItemInScript {
+export interface ModuleContextItemInScript {
   id: string | number
   title: string
 }
@@ -372,11 +372,11 @@ export interface IModuleContextItemInScript {
  * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
  * 渲染层以 `IModuleContext` 作为实现类型；两者通过结构化类型兼容。
  */
-export interface IModuleContextInScript {
+export interface ModuleContextInScript {
   /** 当前选中值 */
   selected: string | number | null
   /** 可选项列表 */
-  items: readonly IModuleContextItemInScript[]
+  items: readonly ModuleContextItemInScript[]
   /** 上下文所属导航节点 ID */
   nodeId: string
 }

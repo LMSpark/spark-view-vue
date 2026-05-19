@@ -282,9 +282,9 @@ cap?.doWork()
 |---|---|---|
 | `APP_SERVICES` | `IAppServicesCapability` | `{ router?, logger?, tenant?, configLoader?, authService? }` |
 | `PAGE_SERVICE` | `IPageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
-| `PAGE_DATASET` | `IDataSet` | 页面级 DataSet，由 PageRenderer 提供 |
-| `DATA_SOURCE` | `IDataSource` | 组件级 DataView，由容器组件提供 |
-| `DATA_ROW` | `IDataRow` | 当前行作用域 |
+| `PAGE_DATASET` | `DataSetContract` | 页面级 DataSet，由 PageRenderer 提供 |
+| `DATA_SOURCE` | `DataSource` | 组件级 DataView，由容器组件提供 |
+| `DATA_ROW` | `DataRow` | 当前行作用域 |
 | `PAGE_PERMISSION_MODE` | `NavPermissionMode` | 页面权限模式 |
 
 ---

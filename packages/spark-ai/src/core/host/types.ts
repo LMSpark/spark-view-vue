@@ -14,8 +14,6 @@ import type {
   AiRuntimeSessionRecord,
   AiRuntimeStartSessionResult,
 } from '../protocol/runtime-contracts'
-import type { AiModuleRegistrationData } from '../protocol/business-registration'
-export type { AiModuleRegistrationData }
 
 // ── 聊天请求（框架无关的最小接口） ──
 
@@ -110,7 +108,6 @@ export interface AiHostBusinessAfterFunctionCallOptions extends AiHostBusinessRu
 
 export interface AiHostBusinessRuntime {
   readonly moduleId: string
-  getRegistrationData(): AiModuleRegistrationData
   getSystemPrompt?(context: AiHostBusinessRuntimeContext): string | undefined
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult>
   appendMessage(options: AiHostBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry

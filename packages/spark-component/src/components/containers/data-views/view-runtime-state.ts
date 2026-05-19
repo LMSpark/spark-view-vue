@@ -4,9 +4,9 @@ import {
   RequestState,
   type DataView,
   type DataColumn,
-  type IDataRow,
-  type IDataSource,
-  type IModelPermission,
+  type DataRow,
+  type DataSource,
+  type ModelPermission,
   type TreeConfig,
 } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
@@ -18,7 +18,7 @@ import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
  * DataView 标识态：来自 DataView 快照的静态元信息。
  */
 export interface DataViewIdentityState {
-  tableName: ComputedRef<IDataSource['tableName']>
+  tableName: ComputedRef<DataSource['tableName']>
   viewId: ComputedRef<string | undefined>
   primaryKey: ComputedRef<string | undefined>
   treeConfig: ComputedRef<TreeConfig | undefined>
@@ -26,30 +26,30 @@ export interface DataViewIdentityState {
 
 /** DataView 行数据态：当前视图下的行级数据与选择状态。 */
 export interface DataViewRowsState {
-  rows: ComputedRef<readonly IDataRow[]>
+  rows: ComputedRef<readonly DataRow[]>
   columns: ComputedRef<readonly DataColumn[]>
-  currentRow: ComputedRef<IDataRow | null>
-  selectedRows: ComputedRef<readonly IDataRow[]>
-  editingRows: ComputedRef<readonly IDataRow[]>
+  currentRow: ComputedRef<DataRow | null>
+  selectedRows: ComputedRef<readonly DataRow[]>
+  editingRows: ComputedRef<readonly DataRow[]>
   isMultiSelect: ComputedRef<boolean>
 }
 
 /** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */
 export interface DataViewDisplayState {
-  _modelPerm: ComputedRef<IDataSource['_modelPerm']>
-  value: ComputedRef<IDataSource['value']>
-  label: ComputedRef<IDataSource['label']>
-  labels: ComputedRef<IDataSource['labels']>
+  _modelPerm: ComputedRef<DataSource['_modelPerm']>
+  value: ComputedRef<DataSource['value']>
+  label: ComputedRef<DataSource['label']>
+  labels: ComputedRef<DataSource['labels']>
 }
 
 /** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */
 export interface DataViewPermissionState {
-  modelPermission: ComputedRef<IModelPermission | undefined>
+  modelPermission: ComputedRef<ModelPermission | undefined>
 }
 
 /** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */
 export interface DataViewRequestAndAggregateState {
-  requestState: ComputedRef<IDataSource['requestState']>
+  requestState: ComputedRef<DataSource['requestState']>
   aggregateResult: ComputedRef<AggregateResultState>
   selectionAggregateResult: ComputedRef<AggregateResultState>
   total: ComputedRef<number>
@@ -71,7 +71,7 @@ export type DataViewRuntimeState =
 /** 容器级数据解析上下文（不属于 DataView 原始字段）。 */
 export interface ContainerDataViewContextState {
   resolvedView: ComputedRef<DataView | null>
-  resolvedDataRow: ComputedRef<IDataRow | null>
+  resolvedDataRow: ComputedRef<DataRow | null>
 }
 
 /** 五类容器共享顶层视图态。 */
@@ -85,7 +85,7 @@ export type ResolvedViewRef = ValueRef<DataView | null>
 
 const EMPTY_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
-const EMPTY_ROWS: readonly IDataRow[] = Object.freeze([])
+const EMPTY_ROWS: readonly DataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
@@ -168,7 +168,7 @@ export function useDataViewState(
 ): DataViewRuntimeState & DataViewPermissionState {
   const revisions = useDataViewRuntimeRevisions(resolvedView)
 
-  const tableName = computed<IDataSource['tableName']>(() => {
+  const tableName = computed<DataSource['tableName']>(() => {
     revisions.configRevision.value
     return resolvedView.value?.tableName ?? ''
   })
@@ -187,7 +187,7 @@ export function useDataViewState(
     return resolvedView.value?.treeConfig
   })
 
-  const rows = computed<readonly IDataRow[]>(() => {
+  const rows = computed<readonly DataRow[]>(() => {
     revisions.rowsRevision.value
     return resolvedView.value?.rows ?? EMPTY_ROWS
   })
@@ -195,17 +195,17 @@ export function useDataViewState(
     revisions.configRevision.value
     return resolvedView.value?.columns ?? EMPTY_COLUMNS
   })
-  const currentRow = computed<IDataRow | null>(() => {
+  const currentRow = computed<DataRow | null>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     return resolvedView.value?.currentRow ?? null
   })
-  const selectedRows = computed<readonly IDataRow[]>(() => {
+  const selectedRows = computed<readonly DataRow[]>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     return resolvedView.value?.selectedRows ?? EMPTY_ROWS
   })
-  const editingRows = computed<readonly IDataRow[]>(() => {
+  const editingRows = computed<readonly DataRow[]>(() => {
     revisions.editingRevision.value
     revisions.rowsRevision.value
     return resolvedView.value?.editingRows ?? EMPTY_ROWS
@@ -215,30 +215,30 @@ export function useDataViewState(
     return resolvedView.value?.isMultiSelect ?? false
   })
 
-  const _modelPerm = computed<IDataSource['_modelPerm']>(() => {
+  const _modelPerm = computed<DataSource['_modelPerm']>(() => {
     revisions.configRevision.value
-    return (resolvedView.value as IDataSource | null)?._modelPerm
+    return (resolvedView.value as DataSource | null)?._modelPerm
   })
-  const value = computed<IDataSource['value']>(() => {
+  const value = computed<DataSource['value']>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     revisions.configRevision.value
     return resolvedView.value?.value ?? ''
   })
-  const label = computed<IDataSource['label']>(() => {
+  const label = computed<DataSource['label']>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     revisions.configRevision.value
     return resolvedView.value?.label ?? null
   })
-  const labels = computed<IDataSource['labels']>(() => {
+  const labels = computed<DataSource['labels']>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     revisions.configRevision.value
     return resolvedView.value?.labels ?? EMPTY_LABELS
   })
 
-  const requestState = computed<IDataSource['requestState']>(() => {
+  const requestState = computed<DataSource['requestState']>(() => {
     revisions.requestRevision.value
     return resolvedView.value?.requestState ?? RequestState.Idle
   })
@@ -282,9 +282,9 @@ export function useDataViewState(
     return resolvedView.value?.loadingError ?? null
   })
 
-  const modelPermission = computed<IModelPermission | undefined>(() => {
+  const modelPermission = computed<ModelPermission | undefined>(() => {
     revisions.configRevision.value
-    return extractModelPermission(resolvedView.value as IDataSource | null)
+    return extractModelPermission(resolvedView.value as DataSource | null)
   })
 
   return {

@@ -1,10 +1,10 @@
 import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import type { CrudApi, FilterExpression, IDataRow, TableResourceType } from '@spark-view/spark-data'
+import type { CrudApi, FilterExpression, DataRow, TableResourceType } from '@spark-view/spark-data'
 import { useFilterPanel } from '../packages/spark-component/src/components/containers/runtime/container-filter'
 
 interface FilterViewLike {
-  rows: IDataRow[]
+  rows: DataRow[]
   columns?: Array<{ name: string }>
   getColumn?: (name: string) => unknown
   filterExpression?: FilterExpression
@@ -17,7 +17,7 @@ interface FilterViewLike {
 }
 
 function createView(options?: {
-  rows?: IDataRow[]
+  rows?: DataRow[]
   columns?: Array<{ name: string }>
   filterExpression?: FilterExpression
   api?: CrudApi

@@ -8,7 +8,7 @@
 import { h, type Ref } from 'vue'
 import type { IPageServiceCapability } from '../../core/capability-keys.js'
 import type { IModuleContext, PageComponentRegistry } from '../../core/capability-keys.js'
-import type { IPageRoute } from '@spark-view/spark-page-config'
+import type { PageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
@@ -79,7 +79,7 @@ function createScriptConsole(): Pick<Console, 'log' | 'info' | 'warn' | 'error' 
 interface PageContextDeps {
   /** DataSet getter（闭包引用，每次调用返回最新值） */
   getDataSet: () => DataSet | null
-  pageRoute: IPageRoute
+  pageRoute: PageRoute
   pageContainer: Ref<HTMLElement | null>
   pageService: IPageServiceCapability
   /** 页面级组件注册中心 getter（可选） */
@@ -142,7 +142,7 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
     },
     console: scriptConsole,
     SparkData,
-    h: h as (type: unknown, ...args: unknown[]) => unknown,
+    h,
 
     // Timer APIs — safe wrappers delegating to global timers
     setTimeout:    (handler: (...args: unknown[]) => void, timeout?: number) => window.setTimeout(handler, timeout),

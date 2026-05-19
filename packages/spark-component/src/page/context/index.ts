@@ -4,5 +4,5 @@ export { createPageComponentRegistry } from './page-component-registry.js'
 export type {
   PageContext,
   PageConfig,
-  IPageRoute,
+  PageRoute,
 } from './types.js'

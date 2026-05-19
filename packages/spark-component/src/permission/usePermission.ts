@@ -9,7 +9,7 @@
  * - 前端权限仅为渲染层表现，真正安全由后端控制
  * - 所有权限判断收口到本模块，方便统一维护
  */
-import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
+import type { DataRow, ModelPermission } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'
@@ -31,15 +31,15 @@ export interface UsePermissionReturn {
   isPermitted(action: PermissionAction | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean
 
   /** 判断模型级动作（create/import/export）是否允许 */
-  isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined): boolean
+  isModelActionAllowed(action: SparkNode, modelPerm: ModelPermission | undefined): boolean
 
   /** 判断行级动作（edit/delete/create-child）是否允许 */
-  isRowActionAllowed(action: SparkNode, row: IDataRow | undefined): boolean
+  isRowActionAllowed(action: SparkNode, row: DataRow | undefined): boolean
 
   /** 解析字段权限状态（可见性 + 可编辑性） */
   resolveFieldState(
     field: string | undefined,
-    row: IDataRow | null | undefined,
+    row: DataRow | null | undefined,
     config?: Omit<IFieldRenderConfig, 'field'>,
   ): IFieldRenderState | null
 

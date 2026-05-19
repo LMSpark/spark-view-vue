@@ -1,8 +1,8 @@
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 
 export function syncReactiveRow(
-  target: IDataRow,
-  source: IDataRow | null | undefined,
+  target: DataRow,
+  source: DataRow | null | undefined,
 ): void {
   const incoming = source ?? {}
   const incomingKeys = new Set(Object.keys(incoming))

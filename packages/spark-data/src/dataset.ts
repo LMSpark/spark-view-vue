@@ -7,7 +7,7 @@
  */
 
 import type {
-  IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, IDataRow, DataColumn,
+  DataSetContract, DataSetMetadata, TableMetadata, DataRelation, TableRelation, ViewDependency, DataRow, DataColumn,
   ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression, CrudResult, PkValue,
   DataSetSaveChangesOptions, DataSetSaveChangesResult, DataSetSaveChangesViewResult,
   DataSetSaveChangesConfig, DataSetTransactionOperation, DataSetTransactionRequest,
@@ -15,7 +15,7 @@ import type {
 } from './types'
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
-import type { DataView as SparkDataView } from './data-view'
+import type { DataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
 import { deepClone, Logger } from '@spark-view/spark-utils'
 
@@ -53,22 +53,22 @@ function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
 
 function normalizePageDataTableMetadata(
   tableName: string,
-  table: Omit<ITableMetadata, 'tableName'> & { tableName?: string },
-): Omit<ITableMetadata, 'tableName'> & { tableName?: string } {
-  const rawTable = table as Record<string, unknown>
-
+  table: Omit<TableMetadata, 'tableName'> & { tableName?: string },
+): TableMetadata {
   return {
-    ...(rawTable as Omit<ITableMetadata, 'tableName'>),
-    tableName: typeof rawTable['tableName'] === 'string' && rawTable['tableName'].trim() !== ''
-      ? rawTable['tableName']
+    ...table,
+    tableName: typeof table.tableName === 'string' && table.tableName.trim() !== ''
+      ? table.tableName
       : tableName,
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
-  return value !== null && value !== undefined && typeof value === 'object'
-    ? value as Record<string, unknown>
-    : null
+  return isRecord(value) ? value : null
 }
 
 function pickFirstString(value: unknown): string | undefined {
@@ -113,13 +113,13 @@ function resolveRouteTemplateParams(routeLike: unknown): {
 }
 
 interface DataSetSaveChangesTarget {
-  view: SparkDataView
+  view: DataView
   ids?: PkValue[]
 }
 
 interface DataSetTransactionOperationPlan {
   operation: DataSetTransactionOperation
-  view: SparkDataView
+  view: DataView
   id: PkValue
   kind: DataSetTransactionOperation['op']
 }
@@ -127,6 +127,18 @@ interface DataSetTransactionOperationPlan {
 interface DataSetTransactionViewPlan {
   viewResult: DataSetSaveChangesViewResult
   operations: DataSetTransactionOperationPlan[]
+}
+
+type DataSetConfig = {
+  dataSetName: string
+  tables: Record<string, TableMetadata>
+  schemaVersion?: number | undefined
+  tableRelations?: TableRelation[] | undefined
+  viewDependencies?: ViewDependency[] | undefined
+  version?: number | undefined
+  pageId?: string | undefined
+  saveChanges?: DataSetSaveChangesConfig | undefined
+  layout?: DataSetMetadata['layout'] | undefined
 }
 
 function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesResult {
@@ -143,13 +155,13 @@ function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesRes
   }
 }
 
-function hasEditingChanges(view: SparkDataView, ids?: PkValue[]): boolean {
+function hasEditingChanges(view: DataView, ids?: PkValue[]): boolean {
   return ids === undefined
     ? view.hasEditingChanges()
     : ids.some(id => view.hasEditingChanges(id))
 }
 
-function hasPendingChanges(view: SparkDataView, ids?: PkValue[]): boolean {
+function hasPendingChanges(view: DataView, ids?: PkValue[]): boolean {
   if (ids === undefined) return view.dirtyTracking.hasPendingChanges()
   return ids.some(id =>
     view.dirtyTracking.isDirty(id)
@@ -158,8 +170,147 @@ function hasPendingChanges(view: SparkDataView, ids?: PkValue[]): boolean {
   )
 }
 
-function toUploadRecord(data: Partial<IDataRow>): Record<string, unknown> {
+function toUploadRecord(data: Partial<DataRow>): Record<string, unknown> {
   return { ...data }
+}
+
+function dataRowFromRecord(record: Record<string, unknown>): DataRow {
+  return { ...record }
+}
+
+function dataRowFromValue(value: unknown): DataRow {
+  return { value }
+}
+
+function toFilterScalar(value: unknown, fieldName: string): Exclude<FilterValueExpression, FilterValueExpression[]> {
+  if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return value
+  }
+  throw new Error(`远端关系过滤字段 "${fieldName}" 只支持 string/number/boolean/null 值`)
+}
+
+function isTableMetadataInput(value: unknown): value is Omit<TableMetadata, 'tableName'> & { tableName?: string } {
+  const record = asRecord(value)
+  return record !== null
+    && Array.isArray(record['columns'])
+    && isRecord(record['views'])
+    && isRecord(record['views']['default'])
+}
+
+function normalizeTableMap(rawTables: unknown): Record<string, TableMetadata> {
+  if (!isRecord(rawTables)) {
+    throw new Error('DataSet.fromJson: tables 必须是对象')
+  }
+
+  const normalizedTables: Record<string, TableMetadata> = {}
+  for (const [tableName, table] of Object.entries(rawTables)) {
+    if (!isTableMetadataInput(table)) {
+      throw new Error(`DataSet.fromJson: 表 "${tableName}" 缺少 columns 或 views.default`)
+    }
+    normalizedTables[tableName] = normalizePageDataTableMetadata(tableName, table)
+  }
+  return normalizedTables
+}
+
+function isTableRelation(value: unknown): value is TableRelation {
+  const record = asRecord(value)
+  return record !== null
+    && typeof record['parentTable'] === 'string'
+    && typeof record['childTable'] === 'string'
+}
+
+function readTableRelations(value: unknown): TableRelation[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value) || !value.every(isTableRelation)) {
+    throw new Error('DataSet.fromJson: tableRelations 必须是 TableRelation 数组')
+  }
+  return value
+}
+
+function isViewDependency(value: unknown): value is ViewDependency {
+  const record = asRecord(value)
+  return record !== null
+    && typeof record['parentTable'] === 'string'
+    && typeof record['childTable'] === 'string'
+}
+
+function readViewDependencies(value: unknown): ViewDependency[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value) || !value.every(isViewDependency)) {
+    throw new Error('DataSet.fromJson: viewDependencies 必须是 ViewDependency 数组')
+  }
+  return value
+}
+
+function isSaveChangesConfig(value: unknown): value is DataSetSaveChangesConfig {
+  const record = asRecord(value)
+  if (record === null) return false
+  const mode = record['mode']
+  if (mode !== undefined && mode !== 'perView' && mode !== 'transaction') return false
+  const transaction = record['transaction']
+  if (transaction === undefined) return true
+  const transactionRecord = asRecord(transaction)
+  const endpoint = asRecord(transactionRecord?.['endpoint'])
+  return endpoint !== null && typeof endpoint['url'] === 'string'
+}
+
+function readSaveChangesConfig(value: unknown): DataSetSaveChangesConfig | undefined {
+  if (value === undefined) return undefined
+  if (!isSaveChangesConfig(value)) {
+    throw new Error('DataSet.fromJson: saveChanges 配置无效')
+  }
+  return value
+}
+
+function isDataSetLayout(value: unknown): value is DataSetMetadata['layout'] {
+  const record = asRecord(value)
+  if (record === null) return false
+  const tablePositions = record['tablePositions']
+  if (tablePositions === undefined) return true
+  if (!isRecord(tablePositions)) return false
+  return Object.values(tablePositions).every((item) => {
+    const position = asRecord(item)
+    return position !== null
+      && typeof position['x'] === 'number'
+      && typeof position['y'] === 'number'
+  })
+}
+
+function readDataSetLayout(value: unknown): DataSetMetadata['layout'] | undefined {
+  if (value === undefined) return undefined
+  if (!isDataSetLayout(value)) {
+    throw new Error('DataSet.fromJson: layout 配置无效')
+  }
+  return value
+}
+
+function buildCanonicalDataSetConfig(rawJson: Record<string, unknown>): DataSetConfig {
+  const dataSetName = typeof rawJson['dataSetName'] === 'string' && rawJson['dataSetName'].trim() !== ''
+    ? rawJson['dataSetName']
+    : 'PageDataSet'
+
+  const config: DataSetConfig = {
+    dataSetName,
+    tables: normalizeTableMap(rawJson['tables']),
+  }
+
+  const tableRelations = readTableRelations(rawJson['tableRelations'])
+  if (tableRelations !== undefined) config.tableRelations = tableRelations
+
+  const viewDependencies = readViewDependencies(rawJson['viewDependencies'])
+  if (viewDependencies !== undefined) config.viewDependencies = viewDependencies
+
+  if (typeof rawJson['schemaVersion'] === 'number') config.schemaVersion = rawJson['schemaVersion']
+  if (typeof rawJson['version'] === 'number') config.version = rawJson['version']
+  if (typeof rawJson['pageId'] === 'string') config.pageId = rawJson['pageId']
+
+  const saveChanges = readSaveChangesConfig(rawJson['saveChanges'])
+  if (saveChanges !== undefined) config.saveChanges = saveChanges
+
+  const layout = readDataSetLayout(rawJson['layout'])
+  if (layout !== undefined) config.layout = layout
+
+  return config
 }
 
 function mergeViewResult(target: DataSetSaveChangesResult, viewResult: DataSetSaveChangesViewResult): void {
@@ -234,7 +385,7 @@ function expandRelations(
     trMap.set(`${tr.parentTable}:${tr.childTable}`, tr)
   }
 
-  return viewDependencies.map(vd => {
+  return viewDependencies.map((vd): DataRelation => {
     const tr = trMap.get(`${vd.parentTable}:${vd.childTable}`)
     const dependencyType = vd.dependencyType ?? 'currentRow'
 
@@ -245,23 +396,24 @@ function expandRelations(
       parentField = parentField ?? 'id'
     }
 
-    return {
+    const relation: DataRelation = {
       parentTable: vd.parentTable,
       childTable: vd.childTable,
       parentViewId: 'default',
       childViewId: 'default',
       parentField,
-      childField: tr?.childField,
       dependencyType,
-      autoLoad: vd.autoLoad,
-      cascadeUpdate: tr?.cascadeUpdate,
-      cascadeDelete: tr?.cascadeDelete,
-      relationName: tr?.relationName,
-    } as DataRelation
+    }
+    if (tr?.childField !== undefined) relation.childField = tr.childField
+    if (vd.autoLoad !== undefined) relation.autoLoad = vd.autoLoad
+    if (tr?.cascadeUpdate !== undefined) relation.cascadeUpdate = tr.cascadeUpdate
+    if (tr?.cascadeDelete !== undefined) relation.cascadeDelete = tr.cascadeDelete
+    if (tr?.relationName !== undefined) relation.relationName = tr.relationName
+    return relation
   })
 }
 
-export class DataSet implements IDataSet {
+export class DataSet implements DataSetContract {
 
   // ===== 属性定义 =====
 
@@ -296,7 +448,7 @@ export class DataSet implements IDataSet {
   saveChangesConfig: DataSetSaveChangesConfig | undefined
 
   /** 设计器布局信息（不参与运行时数据逻辑）。 */
-  layout: IDataSetMetadata['layout'] | undefined
+  layout: DataSetMetadata['layout'] | undefined
 
   /**
     * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 HttpClient 实例。
@@ -352,17 +504,7 @@ export class DataSet implements IDataSet {
    * 创建数据集实例
    * @param config 数据集配置
    */
-  constructor(config: {
-    dataSetName: string
-    tables: Record<string, ITableMetadata>
-    schemaVersion?: number | undefined
-    tableRelations?: TableRelation[] | undefined
-    viewDependencies?: ViewDependency[] | undefined
-    version?: number | undefined
-    pageId?: string | undefined
-    saveChanges?: DataSetSaveChangesConfig | undefined
-    layout?: IDataSetMetadata['layout'] | undefined
-  }) {
+  constructor(config: DataSetConfig) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
     this._applyNormalizedMetadata({
@@ -508,32 +650,73 @@ export class DataSet implements IDataSet {
   /** @internal 为单个视图订阅独立事件（onAnyViewChange 用） */
   private _subscribeViewChange(
     entry: (typeof this._activeViewSubs)[number],
-    view: SparkDataView,
+    view: DataView,
   ): void {
     const tn = view.tableName
     const vid = view.viewId
     const h = entry.handlers
 
-    // 数据驱动注册：每种事件统一 wrap (tableName, viewId, ...args)
-    const eventKeys = [
-      'currentRowChanged', 'selectedRowsChanged', 'rowsChanged',
-      'editingFieldChanged', 'editingChanged',
-      'cleared', 'configChanged', 'requestStateChanged', 'mutatingChanged',
-      'summaryChanged', 'selectionSummaryChanged',
-    ] as const
-    for (const key of eventKeys) {
-      const handler = h[key]
-      if (!handler) continue
-      const fn = (...args: unknown[]) => (handler as (...a: unknown[]) => void)(tn, vid, ...args)
-      view.events.on(key, fn)
-      entry.unsubs.push(() => view.events.off(key, fn))
+    if (h.currentRowChanged !== undefined) {
+      const fn = (currentRow: DataRow | null, originatorId?: string) => h.currentRowChanged?.(tn, vid, currentRow, originatorId)
+      view.events.on('currentRowChanged', fn)
+      entry.unsubs.push(() => view.events.off('currentRowChanged', fn))
+    }
+    if (h.selectedRowsChanged !== undefined) {
+      const fn = (selectedRows: DataRow[], originatorId?: string) => h.selectedRowsChanged?.(tn, vid, selectedRows, originatorId)
+      view.events.on('selectedRowsChanged', fn)
+      entry.unsubs.push(() => view.events.off('selectedRowsChanged', fn))
+    }
+    if (h.rowsChanged !== undefined) {
+      const fn = () => h.rowsChanged?.(tn, vid)
+      view.events.on('rowsChanged', fn)
+      entry.unsubs.push(() => view.events.off('rowsChanged', fn))
+    }
+    if (h.editingFieldChanged !== undefined) {
+      const fn = (event: Parameters<NonNullable<ViewChangeHandlers['editingFieldChanged']>>[2]) => h.editingFieldChanged?.(tn, vid, event)
+      view.events.on('editingFieldChanged', fn)
+      entry.unsubs.push(() => view.events.off('editingFieldChanged', fn))
+    }
+    if (h.editingChanged !== undefined) {
+      const fn = () => h.editingChanged?.(tn, vid)
+      view.events.on('editingChanged', fn)
+      entry.unsubs.push(() => view.events.off('editingChanged', fn))
+    }
+    if (h.cleared !== undefined) {
+      const fn = () => h.cleared?.(tn, vid)
+      view.events.on('cleared', fn)
+      entry.unsubs.push(() => view.events.off('cleared', fn))
+    }
+    if (h.configChanged !== undefined) {
+      const fn = () => h.configChanged?.(tn, vid)
+      view.events.on('configChanged', fn)
+      entry.unsubs.push(() => view.events.off('configChanged', fn))
+    }
+    if (h.requestStateChanged !== undefined) {
+      const fn = (requestState: RequestState) => h.requestStateChanged?.(tn, vid, requestState)
+      view.events.on('requestStateChanged', fn)
+      entry.unsubs.push(() => view.events.off('requestStateChanged', fn))
+    }
+    if (h.mutatingChanged !== undefined) {
+      const fn = (mutating: boolean) => h.mutatingChanged?.(tn, vid, mutating)
+      view.events.on('mutatingChanged', fn)
+      entry.unsubs.push(() => view.events.off('mutatingChanged', fn))
+    }
+    if (h.summaryChanged !== undefined) {
+      const fn = () => h.summaryChanged?.(tn, vid)
+      view.events.on('summaryChanged', fn)
+      entry.unsubs.push(() => view.events.off('summaryChanged', fn))
+    }
+    if (h.selectionSummaryChanged !== undefined) {
+      const fn = () => h.selectionSummaryChanged?.(tn, vid)
+      view.events.on('selectionSummaryChanged', fn)
+      entry.unsubs.push(() => view.events.off('selectionSummaryChanged', fn))
     }
   }
 
   /** @internal 为单个视图订阅 loadSuccess/loadError（on() 用） */
   private _subscribeOnView(
     entry: (typeof this._activeOnSubs)[number],
-    view: SparkDataView,
+    view: DataView,
   ): void {
     const h = (requestState: RequestState) => {
       if (entry.event === 'loadSuccess' && requestState === RequestState.Loaded) {
@@ -553,7 +736,7 @@ export class DataSet implements IDataSet {
    * 由 DataTable.getOrCreateView() 在创建新视图时调用。
    * @internal
    */
-  _subscribeNewView(view: SparkDataView): void {
+  _subscribeNewView(view: DataView): void {
     for (const entry of this._activeViewSubs) {
       this._subscribeViewChange(entry, view)
     }
@@ -634,7 +817,7 @@ export class DataSet implements IDataSet {
     // 检查父字段是否为计算列（computeExpression），已定义但尚未求值时可优雅降级
     const isComputedField = parentView.columns.some(c => c.name === parentKey && c.computeExpression !== undefined)
 
-    const values: unknown[] = []
+    const values: Array<Exclude<FilterValueExpression, FilterValueExpression[]>> = []
     const seen = new Set<unknown>()
     for (const row of parentRows) {
       if (parentKey in row) {
@@ -648,7 +831,7 @@ export class DataSet implements IDataSet {
         }
         if (!seen.has(v)) {
           seen.add(v)
-          values.push(v)
+          values.push(toFilterScalar(v, parentKey))
         }
       } else {
         if (!isComputedField) {
@@ -660,9 +843,13 @@ export class DataSet implements IDataSet {
 
     if (values.length === 0) return null
 
-    return values.length > 1
-      ? { field: childKey, op: 'in', value: values as FilterValueExpression[] }
-      : { field: childKey, op: '==', value: values[0] as Exclude<FilterValueExpression, FilterValueExpression[]> }
+    if (values.length > 1) {
+      return { field: childKey, op: 'in', value: values }
+    }
+    const firstValue = values[0]
+    return firstValue === undefined
+      ? null
+      : { field: childKey, op: '==', value: firstValue }
   }
 
   /**
@@ -734,19 +921,16 @@ export class DataSet implements IDataSet {
     }
   }
 
-  private _createTablesFromMetadata(tableDefs: Record<string, ITableMetadata>): void {
+  private _createTablesFromMetadata(tableDefs: Record<string, TableMetadata>): void {
     this.tables = {}
     for (const [name, td] of Object.entries(tableDefs)) {
-      if (!td.tableName) {
-        ;(td as { tableName: string }).tableName = name
-      }
       const table = DataTable.fromJson(td)
       table.setDataSet(this)
       this.tables[name] = table
     }
   }
 
-  private _applyNormalizedMetadata(normalized: IDataSetMetadata): void {
+  private _applyNormalizedMetadata(normalized: DataSetMetadata): void {
     this.dataSetName = normalized.dataSetName
     this.schemaVersion = normalized.schemaVersion ?? 2
     this.tableRelations = normalized.tableRelations
@@ -760,7 +944,7 @@ export class DataSet implements IDataSet {
     this._rebuildRelations(true)
   }
 
-  replaceFromJson(json: IDataSetMetadata | Record<string, unknown> | string): void {
+  replaceFromJson(json: DataSetMetadata | Record<string, unknown> | string): void {
     const normalized = normalizeDataSetMetadata(DataSet.fromJson(json).toJson())
 
     for (const table of Object.values(this.tables)) {
@@ -1217,7 +1401,7 @@ export class DataSet implements IDataSet {
   /**
    * 获取已存在的数据视图（不会创建新视图）
    */
-  getView(tableName: string, viewId = 'default'): SparkDataView | undefined {
+  getView(tableName: string, viewId = 'default'): DataView | undefined {
     const t = this.getTable(tableName)
     if (!t) return undefined
     return t.getView(viewId)
@@ -1302,7 +1486,7 @@ export class DataSet implements IDataSet {
   }
 
   private async withCascadeSuspended<T>(work: () => Promise<T>): Promise<T> {
-    const views: SparkDataView[] = []
+    const views: DataView[] = []
     for (const table of Object.values(this.tables)) {
       table.forEachView((view) => {
         view.cascade.teardownCascade()
@@ -1444,19 +1628,19 @@ export class DataSet implements IDataSet {
   }
 
   private collectTransactionOperations(
-    view: SparkDataView,
+    view: DataView,
     ids: PkValue[] | undefined,
     viewResult: DataSetSaveChangesViewResult,
   ): DataSetTransactionOperationPlan[] {
     const idFilter = ids !== undefined ? new Set<PkValue>(ids) : undefined
     const includesId = (id: PkValue): boolean => idFilter === undefined || idFilter.has(id)
     const plans: DataSetTransactionOperationPlan[] = []
-    const rowById = new Map<PkValue, IDataRow>()
+    const rowById = new Map<PkValue, DataRow>()
     for (const row of view.rows) {
       const rowId = view.getPkKey(row)
       if (rowId !== undefined) rowById.set(rowId, row)
     }
-    const pendingCreateRows = new Map<PkValue, IDataRow>()
+    const pendingCreateRows = new Map<PkValue, DataRow>()
     for (const row of view.dirtyTracking.pendingCreateRows) {
       const rowId = view.getPkKey(row)
       if (rowId !== undefined) pendingCreateRows.set(rowId, row)
@@ -1509,7 +1693,7 @@ export class DataSet implements IDataSet {
 
   private buildTransactionOperationId(
     kind: DataSetTransactionOperation['op'],
-    view: SparkDataView,
+    view: DataView,
     id: PkValue,
   ): string {
     return `${view.tableName}@${view.viewId}:${kind}:${String(id)}`
@@ -1530,19 +1714,19 @@ export class DataSet implements IDataSet {
       const serverRow = asRecord(rawResult)
       if (plan.kind === 'create') {
         plan.view.dirtyTracking.cancelCreate(plan.id)
-        if (serverRow) this.syncTransactionCreatedRow(plan.view, plan.id, serverRow as IDataRow)
+        if (serverRow) this.syncTransactionCreatedRow(plan.view, plan.id, dataRowFromRecord(serverRow))
         continue
       }
       if (plan.kind === 'update') {
         plan.view.dirtyTracking.clearDirty(plan.id)
-        if (serverRow) plan.view.updateRowById(plan.id, serverRow)
+        if (serverRow) plan.view.updateRowById(plan.id, dataRowFromRecord(serverRow))
         continue
       }
       plan.view.dirtyTracking.cancelDelete(plan.id)
     }
   }
 
-  private syncTransactionCreatedRow(view: SparkDataView, localId: PkValue, serverRow: IDataRow): void {
+  private syncTransactionCreatedRow(view: DataView, localId: PkValue, serverRow: DataRow): void {
     const serverId = view.getPkKey(serverRow)
     if (serverId !== undefined && serverId !== localId) {
       view.deleteRowById(localId)
@@ -1628,22 +1812,23 @@ export class DataSet implements IDataSet {
    * 序列化为 JSON 友好的元数据对象
    * @returns 数据集元数据
    */
-  toJson(): IDataSetMetadata {
-    const tables: Record<string, ITableMetadata> = {}
+  toJson(): DataSetMetadata {
+    const tables: Record<string, TableMetadata> = {}
     for (const [n, t] of Object.entries(this.tables)) {
       tables[n] = t.toJson()
     }
-    return {
+    const result: DataSetMetadata = {
       schemaVersion: this.schemaVersion,
       dataSetName: this.dataSetName,
       tables,
-      tableRelations: this.tableRelations,
-      viewDependencies: this.viewDependencies,
-      version: this.version,
-      pageId: this.pageId,
-      ...(this.saveChangesConfig !== undefined ? { saveChanges: this.saveChangesConfig } : {}),
-      ...(this.layout !== undefined ? { layout: this.layout } : {}),
-    } as IDataSetMetadata
+    }
+    if (this.tableRelations !== undefined) result.tableRelations = this.tableRelations
+    if (this.viewDependencies !== undefined) result.viewDependencies = this.viewDependencies
+    if (this.version !== undefined) result.version = this.version
+    if (this.pageId !== undefined) result.pageId = this.pageId
+    if (this.saveChangesConfig !== undefined) result.saveChanges = this.saveChangesConfig
+    if (this.layout !== undefined) result.layout = this.layout
+    return result
   }
 
   // ===== 反序列化工厂方法 =====
@@ -1661,7 +1846,7 @@ export class DataSet implements IDataSet {
    * @param json 数据集元数据对象、pagedata 原始对象或 JSON 字符串
    * @returns 数据集实例
    */
-  static fromJson(json: IDataSetMetadata | Record<string, unknown> | string): DataSet {
+  static fromJson(json: DataSetMetadata | Record<string, unknown> | string): DataSet {
     if (typeof json === 'string') {
       let parsed: unknown
       try {
@@ -1670,14 +1855,14 @@ export class DataSet implements IDataSet {
         throw new Error('DataSet.fromJson: 无效的 JSON 数据')
       }
 
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      if (!isRecord(parsed)) {
         return DataSet.fromJson({ value: parsed })
       }
 
-      return DataSet.fromJson(parsed as Record<string, unknown>)
+      return DataSet.fromJson(parsed)
     }
 
-    const rawJson = json as Record<string, unknown>
+    const rawJson: Record<string, unknown> = { ...json }
 
     const wrappedDataSetCandidate = asRecord(rawJson['dataset'])
     if (
@@ -1685,7 +1870,7 @@ export class DataSet implements IDataSet {
       && wrappedDataSetCandidate
       && ('tables' in wrappedDataSetCandidate || 'dataSetName' in wrappedDataSetCandidate)
     ) {
-      throw new Error('DataSet.fromJson: 不再支持 dataset 包裹结构，请传入 canonical IDataSetMetadata')
+      throw new Error('DataSet.fromJson: 不再支持 dataset 包裹结构，请传入 canonical DataSetMetadata')
     }
 
     const directDataSetCandidate = 'tables' in rawJson ? rawJson : null
@@ -1693,60 +1878,33 @@ export class DataSet implements IDataSet {
 
     // 情形 1：直接根级 DataSet → 规范化后透传
     if (canonicalCandidate) {
-      const rd = canonicalCandidate as {
-        dataSetName?: string
-        tables?: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
-        tableRelations?: TableRelation[]
-        viewDependencies?: ViewDependency[]
-        schemaVersion?: number
-        version?: number
-        pageId?: string
-        saveChanges?: DataSetSaveChangesConfig
-        layout?: IDataSetMetadata['layout']
-      }
-
-      const normalizedTables = Object.fromEntries(
-        Object.entries(rd.tables ?? {}).map(([tableName, table]) => [
-          tableName,
-          normalizePageDataTableMetadata(tableName, table),
-        ]),
-      ) as Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
-
-      return new DataSet({
-        dataSetName: rd.dataSetName ?? 'PageDataSet',
-        tables: normalizedTables as Record<string, ITableMetadata>,
-        ...(rd.tableRelations ? { tableRelations: rd.tableRelations } : {}),
-        ...(rd.viewDependencies ? { viewDependencies: rd.viewDependencies } : {}),
-        ...(rd.schemaVersion !== undefined ? { schemaVersion: rd.schemaVersion } : {}),
-        ...(rd.version !== undefined ? { version: rd.version } : {}),
-        ...(rd.pageId !== undefined ? { pageId: rd.pageId } : {}),
-        ...(rd.saveChanges !== undefined ? { saveChanges: rd.saveChanges } : {}),
-        ...(rd.layout !== undefined ? { layout: rd.layout } : {}),
-      })
+      return new DataSet(buildCanonicalDataSetConfig(canonicalCandidate))
     }
 
     const rawPageData = rawJson
 
     // 情形 2：将整个 pagedata 的每个 key 归一化为一张表
-    const tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName: string }> = {}
+    const tables: Record<string, Omit<TableMetadata, 'tableName'> & { tableName: string }> = {}
 
     for (const [key, val] of Object.entries(rawPageData)) {
       // 数组 → 表格行
       if (Array.isArray(val)) {
-        const rows: IDataRow[] = []
+        const rows: DataRow[] = []
         let columns: DataColumn[] = []
 
         if (val.length === 0) {
           columns = []
-        } else if (typeof val[0] === 'object' && val[0] !== null && !Array.isArray(val[0])) {
+        } else if (isRecord(val[0])) {
           // 对象数组：以第一个元素的键推断列
-          const sample = val[0] as Record<string, unknown>
+          const sample = dataRowFromRecord(val[0])
           columns = inferColumnsFromRecord(sample)
-          for (const r of val) rows.push(r as IDataRow)
+          for (const r of val) {
+            if (isRecord(r)) rows.push(dataRowFromRecord(r))
+          }
         } else {
           // 基础类型数组：单列 value
           columns = [{ name: 'value', type: inferColumnType(val[0]), label: 'value' }]
-          for (const r of val) rows.push({ value: r } as IDataRow)
+          for (const r of val) rows.push(dataRowFromValue(r))
         }
 
         tables[key] = { tableName: key, columns, views: { default: { rows } } }
@@ -1754,10 +1912,10 @@ export class DataSet implements IDataSet {
       }
 
       // 对象 → 单行表
-      if (val !== null && val !== undefined && typeof val === 'object') {
-        const obj = val as Record<string, unknown>
+      const obj = asRecord(val)
+      if (obj !== null) {
         const columns = inferColumnsFromRecord(obj)
-        const row = obj as IDataRow
+        const row = dataRowFromRecord(obj)
         tables[key] = { tableName: key, columns, views: { default: { rows: [row] } } }
         continue
       }
@@ -1766,11 +1924,11 @@ export class DataSet implements IDataSet {
       tables[key] = {
         tableName: key,
         columns: [{ name: 'value', type: inferColumnType(val), label: 'value' }],
-        views: { default: { rows: [{ value: val } as IDataRow] } },
+        views: { default: { rows: [dataRowFromValue(val)] } },
       }
     }
 
     // 构造函数会自动设置单行表的 currentRow
-    return new DataSet({ dataSetName: 'PageDataSet', tables: tables as Record<string, ITableMetadata> })
+    return new DataSet({ dataSetName: 'PageDataSet', tables })
   }
 }

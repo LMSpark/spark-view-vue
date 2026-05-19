@@ -18,19 +18,9 @@ export { NodeTreeModule } from './modules/node-tree-tool-catalog'
 
 export { DatasetModule } from './modules/dataset-tool-catalog'
 
-export interface PageDesignModuleContext {
-  pageId?: string
-  pageName?: string
-  phase?: string
-}
-
 export type {
-  PageDesignAppendMessageOptions,
-  PageDesignExecuteFunctionCallOptions,
   PageDesignModuleId,
   PageDesignModuleOptions,
-  PageDesignRuntimeContext,
-  PageDesignStopSessionOptions,
 } from './page-design-module'
 
 export type {

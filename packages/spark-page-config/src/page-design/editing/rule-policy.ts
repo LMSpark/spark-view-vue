@@ -140,7 +140,7 @@ function suggestChildKey(target: JsonObject, parentPath: JsonPath, metadata: Rul
       if (!(key in target)) return key
     }
     const sparkNode = parentPath.length >= 2 ? undefined : target
-    const typeValue = sparkNode !== undefined ? (sparkNode as Record<string, unknown>)['type'] : undefined
+    const typeValue = sparkNode !== undefined ? sparkNode['type'] : undefined
     if (typeof typeValue === 'string' && metadata.propNames[typeValue] !== undefined) {
       for (const key of metadata.propNames[typeValue]) {
         if (!(key in target)) return key
@@ -218,12 +218,18 @@ export function createRuleTreePolicy(
 
       const propsEntries: Record<string, JsonValue> = {}
       for (const [name, value] of Object.entries(requiredProps)) {
-        propsEntries[name] = value as JsonValue
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+          propsEntries[name] = value
+        } else if (Array.isArray(value)) {
+          propsEntries[name] = value
+        } else if (typeof value === 'object') {
+          propsEntries[name] = value
+        }
       }
 
       return [{
         targetPath: changedPath.slice(0, -1),
-        entries: { props: propsEntries as JsonValue },
+        entries: { props: propsEntries },
       }]
     },
   }

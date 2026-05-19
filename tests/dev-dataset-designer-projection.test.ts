@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { IDataSetMetadata } from '@spark-view/spark-data'
+import type { DataSetMetadata } from '@spark-view/spark-data'
 import {
   buildDataSetMetadataFromDesignerProjection,
   hasDesignerProjectionChanges,
@@ -9,7 +9,7 @@ import {
   type DesignerTableProjection,
 } from '@spark-view/spark-page-config'
 
-function createMetadata(partial?: Partial<IDataSetMetadata>): IDataSetMetadata {
+function createMetadata(partial?: Partial<DataSetMetadata>): DataSetMetadata {
   return {
     dataSetName: 'sales',
     tables: {

@@ -18,14 +18,16 @@
 import { describe, it, expect, vi } from 'vitest'
 import { DataSet } from '@spark-view/spark-data'
 import { DataTable } from '../data-table'
-import type { IDataRow, AggregateColumnConfig } from '@spark-view/spark-data'
+import type { DataRow, AggregateColumnConfig } from '@spark-view/spark-data'
+import { requireNumber } from './test-type-helpers'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 共享工具
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** 读取行字段（绕过 noPropertyAccessFromIndexSignature） */
-const f = (row: IDataRow | undefined, field: string): unknown => row?.[field]
+const f = (row: DataRow | undefined, field: string): unknown => row?.[field]
+const nf = (row: DataRow | undefined, field: string): number => requireNumber(f(row, field), `Expected ${field} to be a number`)
 
 /**
  * 默认测试数据（Orders + Items 主子关系）
@@ -34,13 +36,13 @@ const f = (row: IDataRow | undefined, field: string): unknown => row?.[field]
  *   Order 2 ── Item X(80)                  → sum=80,  count=1
  *   Order 3 ── (无子行)                     → sum=0,   count=0
  */
-const DEFAULT_ORDERS: IDataRow[] = [
+const DEFAULT_ORDERS: DataRow[] = [
   { id: 1, price: 100, qty: 6, score: 95, firstName: '张', lastName: '三', amount: 1500, n: 5, w: 65, h: 1.75, a: 5, b: 6, x: 4, obj: null, items: 'apple, banana, cherry' },
   { id: 2, price: 50,  qty: 2, score: 72, firstName: '李', lastName: '四', amount: 300,  n: 0, w: 90, h: 1.70, a: 3, b: 7, x: 8, obj: null, items: 'x, y' },
   { id: 3, price: 0,   qty: 99, score: 45, firstName: '王', lastName: '五', amount: 800,  n: 1, w: 50, h: 1.60, a: 0, b: 0, x: 0, obj: null, items: '' },
 ]
 
-const DEFAULT_ITEMS: IDataRow[] = [
+const DEFAULT_ITEMS: DataRow[] = [
   { id: 101, orderId: 1, name: 'A', amount: 100 },
   { id: 102, orderId: 1, name: 'B', amount: 200 },
   { id: 103, orderId: 1, name: 'C', amount: 50 },
@@ -57,8 +59,8 @@ const DEFAULT_ITEMS: IDataRow[] = [
  */
 function makeTestDS(
   computedCols: Array<{ name: string; type?: string; computeExpression?: string }> = [],
-  orderRows?: IDataRow[],
-  itemRows?: IDataRow[],
+  orderRows?: DataRow[],
+  itemRows?: DataRow[],
   aggregateMap?: Record<string, AggregateColumnConfig>,
 ) {
   const aggregates: Record<string, AggregateColumnConfig> = {
@@ -230,7 +232,7 @@ describe('链式计算列', () => {
       { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1' },
     ])
     expect(f(orders.rows[0], 'subtotal')).toBe(600)
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(60)
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(60)
   })
 
   it('subtotal → tax → grandTotal（三级链）', () => {
@@ -240,8 +242,8 @@ describe('链式计算列', () => {
       { name: 'grandTotal', type: 'number', computeExpression: 'subtotal + tax' },
     ])
     expect(f(orders.rows[0], 'subtotal')).toBe(600)
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(48)
-    expect(f(orders.rows[0], 'grandTotal') as number).toBeCloseTo(648)
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(48)
+    expect(nf(orders.rows[0], 'grandTotal')).toBeCloseTo(648)
   })
 })
 
@@ -252,16 +254,16 @@ describe('ctx 上下文', () => {
   it('ctx.taxRate 驱动税率计算', () => {
     const { orders } = makeTestDS([{ name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' }])
     orders.setComputedContext({ taxRate: 0.1 })
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(150) // 1500 * 0.1
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(150) // 1500 * 0.1
   })
 
   it('setComputedContext 切换后自动重算', () => {
     const { orders } = makeTestDS([{ name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' }])
     orders.setComputedContext({ taxRate: 0.05 })
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(75)   // 1500 * 0.05
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(75)   // 1500 * 0.05
 
     orders.setComputedContext({ taxRate: 0.15 })
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(225)  // 1500 * 0.15
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(225)  // 1500 * 0.15
   })
 
   it('ctx 多字段联合计算', () => {
@@ -271,7 +273,7 @@ describe('ctx 上下文', () => {
     }])
     orders.setComputedContext({ discount: 0.2, taxRate: 0.08 })
     // 1500 * 0.8 * 1.08 = 1296
-    expect(f(orders.rows[0], 'final') as number).toBeCloseTo(1296)
+    expect(nf(orders.rows[0], 'final')).toBeCloseTo(1296)
   })
 })
 
@@ -366,7 +368,7 @@ describe('聚合函数', () => {
 
   it('$avg — 子行均值', () => {
     const { orders } = makeTestDS([{ name: 'avg', type: 'number', computeExpression: "$avg('Items', 'amount')" }])
-    expect(f(orders.rows[0], 'avg') as number).toBeCloseTo(116.67, 1)
+    expect(nf(orders.rows[0], 'avg')).toBeCloseTo(116.67, 1)
   })
 
   it('$min / $max — 子行极值', () => {
@@ -424,17 +426,17 @@ describe('聚合函数', () => {
 describe('混合表达式', () => {
   it('聚合 + 算术：$sum * 1.08', () => {
     const { orders } = makeTestDS([{ name: 'taxTotal', type: 'number', computeExpression: "$sum('Items', 'amount') * 1.08" }])
-    expect(f(orders.rows[0], 'taxTotal') as number).toBeCloseTo(378)   // 350 * 1.08
-    expect(f(orders.rows[1], 'taxTotal') as number).toBeCloseTo(86.4)  // 80 * 1.08
+    expect(nf(orders.rows[0], 'taxTotal')).toBeCloseTo(378)   // 350 * 1.08
+    expect(nf(orders.rows[1], 'taxTotal')).toBeCloseTo(86.4)  // 80 * 1.08
   })
 
   it('聚合 + ctx：$sum * ctx.taxRate', () => {
     const { orders } = makeTestDS([{ name: 'tax', type: 'number', computeExpression: "$sum('Items', 'amount') * ctx.taxRate" }])
     orders.setComputedContext({ taxRate: 0.1 })
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(35)  // 350 * 0.1
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(35)  // 350 * 0.1
 
     orders.setComputedContext({ taxRate: 0.2 })
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(70)  // 350 * 0.2
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(70)  // 350 * 0.2
   })
 
   it('聚合 + 三元：$count > 0 ? $avg : 0', () => {
@@ -442,7 +444,7 @@ describe('混合表达式', () => {
       name: 'safeAvg', type: 'number',
       computeExpression: "$count('Items') > 0 ? $avg('Items', 'amount') : 0",
     }])
-    expect(f(orders.rows[0], 'safeAvg') as number).toBeCloseTo(116.67, 1)
+    expect(nf(orders.rows[0], 'safeAvg')).toBeCloseTo(116.67, 1)
   })
 
   it('聚合 + 字符串拼接', () => {
@@ -462,8 +464,8 @@ describe('混合表达式', () => {
     ])
     orders.setComputedContext({ taxRate: 0.1 })
     expect(f(orders.rows[0], 'subtotal')).toBe(350)
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(35)
-    expect(f(orders.rows[0], 'grandTotal') as number).toBeCloseTo(385)
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(35)
+    expect(nf(orders.rows[0], 'grandTotal')).toBeCloseTo(385)
   })
 })
 
@@ -705,7 +707,7 @@ describe('字符串内函数定义', () => {
       `,
     }])
     orders.setComputedContext({ taxRate: 0.13 })
-    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(195) // 1500*0.13
+    expect(nf(orders.rows[0], 'tax')).toBeCloseTo(195) // 1500*0.13
   })
 
   it('数组处理函数', () => {
@@ -811,7 +813,7 @@ describe('aggregateResult 列级聚合', () => {
       { name: 'unitPrice', type: 'number', computeExpression: 'amount / (qty || 1)' },
     ], undefined, undefined, { unitPrice: { type: 'avg' } })
     // row1: 1500/6=250, row2: 300/2=150, row3: 800/99≈8.08
-    expect(orders.aggregateResult['unitPrice'] as number).toBeCloseTo(136.03, 1)
+    expect(requireNumber(orders.aggregateResult['unitPrice'], 'Expected unitPrice aggregate to be a number')).toBeCloseTo(136.03, 1)
   })
 
   it('计算列 min/max — 三元 + 聚合', () => {
@@ -839,7 +841,7 @@ describe('aggregateResult 列级聚合', () => {
     ], undefined, undefined, { subtotal: { type: 'sum' }, tax: { type: 'sum' } })
     // subtotal: 600+100+0=700; tax: 60+10+0=70
     expect(orders.aggregateResult['subtotal']).toBe(700)
-    expect(orders.aggregateResult['tax'] as number).toBeCloseTo(70)
+    expect(requireNumber(orders.aggregateResult['tax'], 'Expected tax aggregate to be a number')).toBeCloseTo(70)
   })
 
   it('函数体计算列 + aggregate', () => {
@@ -903,10 +905,10 @@ describe('aggregateResult 列级聚合', () => {
     ], undefined, undefined, { tax: { type: 'sum' } })
     orders.setComputedContext({ taxRate: 0.1 })
     // 1500*0.1 + 300*0.1 + 800*0.1 = 260
-    expect(orders.aggregateResult['tax'] as number).toBeCloseTo(260)
+    expect(requireNumber(orders.aggregateResult['tax'], 'Expected tax aggregate to be a number')).toBeCloseTo(260)
 
     orders.setComputedContext({ taxRate: 0.2 })
-    expect(orders.aggregateResult['tax'] as number).toBeCloseTo(520)
+    expect(requireNumber(orders.aggregateResult['tax'], 'Expected tax aggregate to be a number')).toBeCloseTo(520)
   })
 
   it('子表聚合 + 列级聚合联合', () => {

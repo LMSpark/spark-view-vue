@@ -16,6 +16,7 @@ export default [
       '**/*.example.ts',
       'dist/**',
       'node_modules/**',
+      'vue-virtual-card-scroll-demo/**',
       'vite.config.ts',
       'vitest.config.ts',
       'vitest.spark-ai.config.ts',

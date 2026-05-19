@@ -1,13 +1,13 @@
-import type { IDataSetMetadata, ITableMetadata, IViewMetadata } from './types'
+import type { DataSetMetadata, TableMetadata, ViewMetadata } from './types'
 
-type TableMetadataLike = Omit<ITableMetadata, 'tableName'> & { tableName?: string }
+type TableMetadataLike = Omit<TableMetadata, 'tableName'> & { tableName?: string }
 
 function normalizeViewMetadata(
-  view: IViewMetadata,
+  view: ViewMetadata,
   tableName: string,
   viewId: string,
-): IViewMetadata {
-  const normalized: IViewMetadata = { ...view }
+): ViewMetadata {
+  const normalized: ViewMetadata = { ...view }
   normalized.tableName ??= tableName
   normalized.viewId ??= viewId
   return normalized
@@ -16,19 +16,23 @@ function normalizeViewMetadata(
 export function normalizeTableMetadata(
   input: TableMetadataLike,
   tableNameFromKey?: string,
-): ITableMetadata {
+): TableMetadata {
   const tableName = input.tableName ?? tableNameFromKey
   if (tableName === undefined || tableName.trim() === '') {
-    throw new Error('ITableMetadata.tableName 不能为空')
+    throw new Error('TableMetadata.tableName 不能为空')
   }
 
   if (!Object.prototype.hasOwnProperty.call(input.views, 'default')) {
     throw new Error(`表 ${tableName} 缺少 views.default`)
   }
 
-  const normalizedViews = Object.fromEntries(
-    Object.entries(input.views).map(([viewId, view]) => [viewId, normalizeViewMetadata(view, tableName, viewId)]),
-  ) as { default: IViewMetadata } & Record<string, IViewMetadata>
+  const normalizedViews: TableMetadata['views'] = {
+    default: normalizeViewMetadata(input.views.default, tableName, 'default'),
+  }
+  for (const [viewId, view] of Object.entries(input.views)) {
+    if (viewId === 'default') continue
+    normalizedViews[viewId] = normalizeViewMetadata(view, tableName, viewId)
+  }
 
   return {
     tableName,
@@ -42,8 +46,8 @@ export function normalizeTableMetadata(
   }
 }
 
-export function normalizeDataSetMetadata(input: IDataSetMetadata): IDataSetMetadata {
-  const normalizedTables: Record<string, ITableMetadata> = {}
+export function normalizeDataSetMetadata(input: DataSetMetadata): DataSetMetadata {
+  const normalizedTables: Record<string, TableMetadata> = {}
 
   for (const [tableName, rawTable] of Object.entries(input.tables)) {
     normalizedTables[tableName] = normalizeTableMetadata(rawTable, tableName)
@@ -54,11 +58,12 @@ export function normalizeDataSetMetadata(input: IDataSetMetadata): IDataSetMetad
     const raw = input.layout.tablePositions
     if (raw === undefined) return {}
 
-    const tablePositions = Object.fromEntries(
-      Object.entries(raw)
-        .filter(([, value]) => Number.isFinite(value.x) && Number.isFinite(value.y))
-        .map(([tableName, value]) => [tableName, { x: value.x, y: value.y }]),
-    ) as Record<string, { x: number; y: number }>
+    const tablePositions: Record<string, { x: number; y: number }> = {}
+    for (const [tableName, value] of Object.entries(raw)) {
+      if (Number.isFinite(value.x) && Number.isFinite(value.y)) {
+        tablePositions[tableName] = { x: value.x, y: value.y }
+      }
+    }
 
     return { tablePositions }
   })()

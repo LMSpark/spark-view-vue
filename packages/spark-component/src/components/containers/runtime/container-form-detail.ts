@@ -20,7 +20,7 @@
  */
 
 import { computed, shallowReactive, toRef, watch } from 'vue'
-import { DataMember, type DataColumn, type DataView, type IDataRow } from '@spark-view/spark-data'
+import { DataMember, type DataColumn, type DataView, type DataRow } from '@spark-view/spark-data'
 import {
   DATA_SOURCE,
   MODULE_CONTEXT,
@@ -191,7 +191,7 @@ export function useFormDetailContainer(
   // 约束：镜像是浅层同步，保持对象引用稳定，减少不必要响应式抖动。
   // ==========================================================================
 
-  const contextData = shallowReactive<IDataRow>({})
+  const contextData = shallowReactive<DataRow>({})
   let prevRow: unknown = Symbol('initial')
 
   /**
@@ -202,15 +202,15 @@ export function useFormDetailContainer(
    * 2) contextDataMember 已解析到的行（resolvedDataRow）
    * 3) 回落到 DataView.currentRow
    */
-  function resolveContextRow(): IDataRow | null {
+  function resolveContextRow(): DataRow | null {
     const view = dataState.resolvedView.value
     // 选中行汇总：仅统计 selectedRows 的聚合输出。
     if (props.contextDataMember === DataMember.SelectionAggregateResult) {
-      return (view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value) as IDataRow
+      return (view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value) as DataRow
     }
     // 全量汇总：统计当前视图 rows 的聚合输出。
     if (props.contextDataMember === DataMember.AggregateResult) {
-      return (view?.aggregateResult ?? dataState.aggregateResult.value) as IDataRow
+      return (view?.aggregateResult ?? dataState.aggregateResult.value) as DataRow
     }
     return dataState.resolvedDataRow.value ?? dataState.currentRow.value
   }
@@ -220,7 +220,7 @@ export function useFormDetailContainer(
    *
    * `skipSameRef=true` 跳过同引用重复写入，避免无意义的浅层同步。
    */
-  function syncContextDataFromCurrentRow(row: IDataRow | null, options?: { skipSameRef?: boolean }): void {
+  function syncContextDataFromCurrentRow(row: DataRow | null, options?: { skipSameRef?: boolean }): void {
     if (options?.skipSameRef === true && row === prevRow) return
     prevRow = row
     syncReactiveRow(contextData, row)

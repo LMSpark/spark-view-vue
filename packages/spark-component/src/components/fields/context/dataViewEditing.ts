@@ -1,4 +1,4 @@
-import type { IDataRow, PkValue } from '@spark-view/spark-data'
+import type { DataRow, PkValue } from '@spark-view/spark-data'
 
 export type DataViewEditingEventName =
   | 'editingFieldChanged'
@@ -14,10 +14,10 @@ export interface DataViewEditingEvents {
 }
 
 export interface DataViewEditingSource {
-  getPkKey(row: IDataRow): PkValue | undefined
+  getPkKey(row: DataRow): PkValue | undefined
   hasEditingChanges(id?: PkValue): boolean
-  getEditingRow(id: PkValue): IDataRow | null
-  updateEditingValue(id: PkValue, field: string, value: unknown): IDataRow
+  getEditingRow(id: PkValue): DataRow | null
+  updateEditingValue(id: PkValue, field: string, value: unknown): DataRow
   events?: DataViewEditingEvents
 }
 
@@ -33,14 +33,14 @@ export function isDataViewEditingSource(value: unknown): value is DataViewEditin
     && typeof value['updateEditingValue'] === 'function'
 }
 
-export function resolveDataViewEditingRow(source: unknown, row: IDataRow | null): IDataRow | null {
+export function resolveDataViewEditingRow(source: unknown, row: DataRow | null): DataRow | null {
   if (!row || !isDataViewEditingSource(source)) return null
   const rowId = source.getPkKey(row)
   if (rowId === undefined || !source.hasEditingChanges(rowId)) return null
   return source.getEditingRow(rowId)
 }
 
-export function writeDataViewEditingValue(source: unknown, row: IDataRow | null, field: string, value: unknown): boolean {
+export function writeDataViewEditingValue(source: unknown, row: DataRow | null, field: string, value: unknown): boolean {
   if (!row || !isDataViewEditingSource(source)) return false
   const rowId = source.getPkKey(row)
   if (rowId === undefined) {

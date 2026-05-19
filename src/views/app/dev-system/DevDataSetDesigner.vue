@@ -295,7 +295,7 @@ import type {
   CrudApi,
   DataColumn,
   TableRelation,
-  IDataSetMetadata,
+  DataSetMetadata,
   TableBusinessCategory,
   TableResourceType,
 } from '@spark-view/spark-data'
@@ -348,7 +348,7 @@ function buildColumnIdMap(table: DesignerTable): Record<string, string> {
   return Object.fromEntries(table.columns.map((column) => [column.name, column.id]))
 }
 
-const projectedMetadata = computed<IDataSetMetadata | null>(() => {
+const projectedMetadata = computed<DataSetMetadata | null>(() => {
   void props.state.pageFilesRevision.value
   // 以 DataSetCrudTool 为唯一数据源；pagedata 文档变更由 app 层 pageFilesRevision 接入 Vue 响应式。
   return getPageDataDocument().model.value?.toJson() ?? null
@@ -633,7 +633,7 @@ function deleteTableWithRelationFallback(
 }
 
 function projectDesignerFromMetadata(
-  metadata: IDataSetMetadata,
+  metadata: DataSetMetadata,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
   tableUiState.value = reconcileDesignerTableUiState(metadata, tables.value, generateId, layoutForNewTable)

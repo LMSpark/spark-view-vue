@@ -4,7 +4,7 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { DATA_ROW, DATA_SOURCE, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import RendererHostScope from '../packages/spark-component/src/components/containers/support/RendererHostScope.vue'
 import { useFieldPermission } from '../packages/spark-component/src/components/fields/context/useFieldPermission'
 
@@ -13,7 +13,7 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
     const Probe = defineComponent({
       setup() {
         const { sparkConsume } = useSparkComponent({ type: 'row-probe' } as SparkNode)
-        const row = sparkConsume(DATA_ROW) as IDataRow | null
+        const row = sparkConsume(DATA_ROW) as DataRow | null
 
         return () => h('div', {
           class: 'row-probe',
@@ -26,7 +26,7 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
     registry.register('row-probe', Probe)
     const plugin = Spark.createPlugin({ registry })
 
-    const rowRef = ref<IDataRow>({ id: 1, name: 'Alice' })
+    const rowRef = ref<DataRow>({ id: 1, name: 'Alice' })
 
     const Harness = defineComponent({
       setup() {

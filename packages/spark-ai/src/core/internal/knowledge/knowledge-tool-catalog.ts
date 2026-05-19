@@ -29,8 +29,6 @@ export type AiKnowledgeCatalogRowOptions = Omit<
   'functionId' | 'type' | 'target'
 >
 
-export interface AiKnowledgeCatalogOptions {}
-
 const KNOWLEDGE_TARGET: AiKnowledgeFunctionTarget = 'knowledge'
 const NO_PARAMS: LlmParameterSchemaRoot = {
   type: 'object',
@@ -51,7 +49,7 @@ export class AiKnowledgeCatalog {
 
   private readonly parameterIndex: ReadonlyMap<string, AiKnowledgeFunctionParameterRow>
 
-  constructor(_options: AiKnowledgeCatalogOptions) {
+  constructor() {
     this.parameterTable = [
       {
         functionId: 'queryFunctions',

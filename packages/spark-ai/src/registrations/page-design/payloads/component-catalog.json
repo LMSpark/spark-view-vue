@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-19T11:13:56.730Z",
+  "buildTime": "2026-05-19T15:25:33.635Z",
   "componentCount": 110,
   "components": {
     "about": {
@@ -450,7 +450,7 @@
       "type": "ai-launcher-button",
       "filePath": "packages/spark-component/src/components/ai/AiLauncherButton.vue",
       "category": "feature",
-      "description": "AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。 配置入口：type=\"ai-launcher-button\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：config。 关键 props：config, label。 主要事件：active-change, shortcut-trigger, resolve-target, before-open。",
+      "description": "AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。 配置入口：type=\"ai-launcher-button\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：config。 关键 props：config, label。 主要事件：active-change, shortcut-trigger, resolve-target, before-open, launch-error。",
       "internal": true,
       "configurable": false,
       "props": [
@@ -572,6 +572,11 @@
             ],
             "description": "即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。"
           }
+        },
+        {
+          "name": "launch-error",
+          "type": "[error: unknown]",
+          "description": "启动失败；用于业务页把 target 解析错误直接展示给用户。"
         }
       ],
       "source": "vcm+meta"
@@ -584,6 +589,27 @@
       "internal": true,
       "configurable": false,
       "props": [
+        {
+          "name": "resolveRuntimeSession",
+          "type": "((config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>)",
+          "required": false,
+          "description": "Resolve raw session config into an AI runtime session monitored by this panel."
+        },
+        {
+          "name": "resolveSessionConfig",
+          "type": "((config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>)",
+          "required": false,
+          "description": "resolveSessionConfig prop (((config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>)); 用于配置该组件的 resolveSessionConfig 行为或展示。"
+        },
+        {
+          "name": "runtimeMonitor",
+          "type": "RuntimeMonitor",
+          "required": false,
+          "description": "Runtime monitor; 面板只订阅并展示 AI core session，不持有业务状态事实。",
+          "schema": {
+            "$ref": "#/$defs/RuntimeMonitor"
+          }
+        },
         {
           "name": "streamAiChatText",
           "type": "StreamAiChatText",
@@ -647,10 +673,10 @@
       "props": [
         {
           "name": "rows",
-          "type": "readonly IDataRow[]",
+          "type": "readonly DataRow[]",
           "required": false,
           "default": "[]",
-          "description": "rows prop (readonly IDataRow[]); 用于配置该组件的 rows 行为或展示。"
+          "description": "rows prop (readonly DataRow[]); 用于配置该组件的 rows 行为或展示。"
         },
         {
           "name": "columns",
@@ -661,10 +687,10 @@
         },
         {
           "name": "selectedRows",
-          "type": "readonly IDataRow[]",
+          "type": "readonly DataRow[]",
           "required": false,
           "default": "[]",
-          "description": "selectedRows prop (readonly IDataRow[]); 用于配置该组件的 selectedRows 行为或展示。"
+          "description": "selectedRows prop (readonly DataRow[]); 用于配置该组件的 selectedRows 行为或展示。"
         },
         {
           "name": "total",
@@ -4756,13 +4782,13 @@
         },
         {
           "name": "isTableCellHidden",
-          "type": "((row: IDataRow) => boolean)",
+          "type": "((row: DataRow) => boolean)",
           "required": false,
           "description": "表格行级隐藏判断"
         },
         {
           "name": "getTableCellDisplayValue",
-          "type": "((row: IDataRow) => string)",
+          "type": "((row: DataRow) => string)",
           "required": false,
           "description": "表格行级显示值获取"
         },
@@ -13996,7 +14022,7 @@
         },
         "storageKey": {
           "type": "string",
-          "description": "持久化 key。默认由 target 派生：spark-ai:${businessRegistrationId}:${businessInstanceId}。"
+          "description": "AI core runtime 生成的持久化 key；业务按钮不应手写。"
         },
         "disablePersistence": {
           "type": "boolean",
@@ -14007,7 +14033,7 @@
           "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 businessInstanceId。"
         },
         "sender": {
-          "description": "聊天发送器——由 AppAiPanel resolver 注入；业务按钮不应手写。"
+          "description": "AI core runtime 生成的发送器；业务按钮不应手写。"
         },
         "title": {
           "type": "string",
@@ -14117,13 +14143,6 @@
         "systemPrompt": {
           "type": "string",
           "description": "自定义 system prompt。sender 可读取并随请求下发。"
-        },
-        "sender": {
-          "description": "聊天发送器——由 AppAiPanel resolver 注入；业务按钮不应手写。"
-        },
-        "storageKey": {
-          "type": "string",
-          "description": "持久化 key。默认由 target 派生：spark-ai:${businessRegistrationId}:${businessInstanceId}。"
         },
         "disablePersistence": {
           "type": "boolean",
@@ -14445,7 +14464,7 @@
           "type": "string",
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@776": {
+        "__@toPrimitive@12332": {
           "type": "string",
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
         }
@@ -14494,7 +14513,7 @@
         "toUTCString",
         "toISOString",
         "toJSON",
-        "__@toPrimitive@776"
+        "__@toPrimitive@12332"
       ],
       "description": "当前日期"
     },
@@ -15042,6 +15061,34 @@
         "value"
       ],
       "description": "Selected mention option."
+    },
+    "RuntimeMonitor": {
+      "title": "RuntimeMonitor",
+      "type": "object",
+      "properties": {
+        "getSnapshot": {},
+        "subscribe": {},
+        "focusSession": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "appendHumanMessage": {
+          "type": "string"
+        },
+        "closeSession": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "getSnapshot",
+        "subscribe",
+        "focusSession",
+        "appendHumanMessage",
+        "closeSession"
+      ],
+      "description": "Runtime monitor; 面板只订阅并展示 AI core session，不持有业务状态事实。"
     },
     "SparkNode": {
       "title": "SparkNode",

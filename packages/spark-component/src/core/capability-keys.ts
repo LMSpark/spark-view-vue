@@ -14,7 +14,7 @@
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
-import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
+import type { DataRow, DataSetContract, DataSource } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
   IPageServiceCapability,
@@ -112,9 +112,9 @@ export interface PageCssScopeCapability {
 
 declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
-    'spark:capability:page-dataset': IDataSet
-    'spark:capability:data-source': IDataSource
-    'spark:capability:data-row': IDataRow
+    'spark:capability:page-dataset': DataSetContract
+    'spark:capability:data-source': DataSource
+    'spark:capability:data-row': DataRow
     'spark:capability:page-component-registry': PageComponentRegistry
     'spark:capability:module-context': ModuleContextCapability
     'spark:capability:css-scope': PageCssScopeCapability
@@ -126,9 +126,9 @@ declare module '@spark-view/spark-utils' {
 
 // ── 能力键 ────────────────────────────────────────────────────────────────
 
-export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-dataset')
-export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
-export const DATA_ROW = defineCapability<IDataRow>('spark:capability:data-row')
+export const PAGE_DATASET = defineCapability<DataSetContract>('spark:capability:page-dataset')
+export const DATA_SOURCE = defineCapability<DataSource>('spark:capability:data-source')
+export const DATA_ROW = defineCapability<DataRow>('spark:capability:data-row')
 
 export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:capability:module-context')
 export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry')

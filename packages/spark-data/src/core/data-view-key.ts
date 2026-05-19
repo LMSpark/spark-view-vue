@@ -6,17 +6,17 @@
  *   - `#scope@tableName@viewId`
  *
  * DataMember identifies a DataView output member. dataField optionally reads a
- * business field/path from object-shaped members such as currentRow or
+ * business field/path from object-shaped members including currentRow or
  * aggregateResult.
  */
 
-import type { DataView as SparkDataView } from '../data-view'
+import type { DataView } from '../data-view'
 import type {
   AggregateResultRow,
   DataColumn,
-  IDataRow,
-  IDataSet,
-  IDataSource,
+  DataRow,
+  DataSetContract,
+  DataSource,
 } from '../types'
 
 export enum DataMember {
@@ -65,9 +65,9 @@ export type DataViewMemberScalar = string | number | boolean | bigint | symbol |
 export type DataViewMemberObject = Record<string, unknown>
 
 export type DataViewMemberValue =
-  | IDataRow
+  | DataRow
   | AggregateResultRow
-  | readonly IDataRow[]
+  | readonly DataRow[]
   | readonly DataColumn[]
   | DataViewMemberObject
   | readonly unknown[]
@@ -100,14 +100,18 @@ function normalizeDataField(dataField: string | undefined): string | undefined {
 
 function parseDataMember(value: DataViewMemberInput['dataMember']): DataMember | null {
   if (typeof value !== 'string') return null
-  return DATA_MEMBER_VALUES.has(value) ? value as DataMember : null
+  return isDataMember(value) ? value : null
+}
+
+function isDataMember(value: string): value is DataMember {
+  return DATA_MEMBER_VALUES.has(value)
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
-function isRowLike(value: unknown): value is IDataRow {
+function isRowLike(value: unknown): value is DataRow {
   return isObjectRecord(value)
 }
 
@@ -126,7 +130,29 @@ function extractDataField(value: unknown, dataField: string): unknown {
   return current
 }
 
-function getDataViewMemberValue(view: SparkDataView, dataMember: DataMember): DataViewMemberValue {
+function normalizeDataViewMemberValue(value: unknown): DataViewMemberValue {
+  if (value instanceof Error) return value
+  if (Array.isArray(value)) return value.map((item: unknown) => item)
+  if (isObjectRecord(value)) return value
+  if (value === null || value === undefined) return value
+
+  switch (typeof value) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+    case 'symbol':
+      return value
+    case 'undefined':
+    case 'object':
+    case 'function':
+      return undefined
+    default:
+      return undefined
+  }
+}
+
+function getDataViewMemberValue(view: DataView, dataMember: DataMember): DataViewMemberValue {
   switch (dataMember) {
     case DataMember.Rows: return view.rows
     case DataMember.Columns: return view.columns
@@ -152,7 +178,7 @@ function resolveValueWithField(
   if (dataField === undefined) return value
   if (!FIELD_ADDRESSABLE_MEMBERS.has(dataMember)) return undefined
   if (!isObjectRecord(value)) return undefined
-  return extractDataField(value, dataField) as DataViewMemberValue
+  return normalizeDataViewMemberValue(extractDataField(value, dataField))
 }
 
 export function isDataViewKey(dataViewKey: string): boolean {
@@ -188,8 +214,8 @@ export function buildDataViewKey(
 
 export function resolveDataViewKey(
   dataViewKey: string | undefined,
-  dataSet: IDataSet | null | undefined,
-): SparkDataView | undefined {
+  dataSet: DataSetContract | null | undefined,
+): DataView | undefined {
   if (!dataViewKey || !dataSet) return undefined
   const descriptor = parseDataViewKey(dataViewKey)
   if (!descriptor) return undefined
@@ -212,7 +238,7 @@ function parseDataViewMemberDescriptor(input: DataViewMemberInput): DataViewMemb
 
 export function resolveDataViewMember(
   input: DataViewMemberInput,
-  dataSet: IDataSet | null | undefined,
+  dataSet: DataSetContract | null | undefined,
 ): DataViewMemberResolvedValue {
   if (!dataSet) return undefined
   const descriptor = parseDataViewMemberDescriptor(input)
@@ -229,13 +255,13 @@ export function resolveDataViewMember(
 export type DataViewMemberBinding = {
   kind: 'value'
   value: DataViewMemberValue
-  source: IDataSource
+  source: DataSource
   descriptor: DataViewMemberDescriptor
 }
 
 export function resolveDataViewMemberBinding(
   input: DataViewMemberInput,
-  dataSet: IDataSet | null | undefined,
+  dataSet: DataSetContract | null | undefined,
 ): DataViewMemberBinding | null {
   if (!dataSet) return null
   const descriptor = parseDataViewMemberDescriptor(input)
@@ -318,7 +344,7 @@ function dataViewMemberDiagnostic(
 
 export function diagnoseDataViewKey(
   rawKey: string,
-  dataSet: IDataSet | null | undefined,
+  dataSet: DataSetContract | null | undefined,
 ): DataViewKeyDiagnostic {
   const normalizedKey = typeof rawKey === 'string' ? rawKey.trim() : ''
   const descriptor = normalizedKey ? parseDataViewKey(normalizedKey) : null
@@ -341,7 +367,7 @@ export function diagnoseDataViewKey(
 
 export function diagnoseDataViewMember(
   input: DataViewMemberInput,
-  dataSet: IDataSet | null | undefined,
+  dataSet: DataSetContract | null | undefined,
 ): DataViewMemberDiagnostic {
   const rawKey = typeof input.dataViewKey === 'string' ? input.dataViewKey : ''
   const normalizedKey = rawKey.trim()
@@ -405,14 +431,14 @@ export function getDataViewIdentity(descriptor: DataViewKeyDescriptor): string {
 
 export interface ResolvedDataViewCapabilities {
   /** Resolved DataView, or null when unavailable. */
-  dataSource: SparkDataView | null
+  dataSource: DataView | null
   /** Resolved row-like context, or null when unavailable. */
-  dataRow: IDataRow | null
+  dataRow: DataRow | null
 }
 
 export function resolveDataViewCapabilities(
   input: Partial<DataViewMemberInput>,
-  dataSet: IDataSet | null | undefined,
+  dataSet: DataSetContract | null | undefined,
 ): ResolvedDataViewCapabilities {
   const empty: ResolvedDataViewCapabilities = { dataSource: null, dataRow: null }
   if (!input.dataViewKey || !dataSet) return empty

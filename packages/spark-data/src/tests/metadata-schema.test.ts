@@ -4,14 +4,14 @@
 import { describe, it, expect } from 'vitest'
 import { DataSet } from '../dataset'
 import { DataTable } from '../data-table'
-import type { ITableMetadata, IViewMetadata, IDataSetMetadata } from '../types'
+import type { TableMetadata, ViewMetadata, DataSetMetadata } from '../types'
 
 // ============================================================
 // Table/View metadata 对齐
 // ============================================================
-describe('ITableMetadata canonical structure', () => {
-  it('ITableMetadata should contain table fields and views only', () => {
-    const tableMeta: ITableMetadata = {
+describe('TableMetadata canonical structure', () => {
+  it('TableMetadata should contain table fields and views only', () => {
+    const tableMeta: TableMetadata = {
       tableName: 'Users',
       columns: [{ name: 'id', type: 'number', label: 'ID' }],
       views: {
@@ -22,13 +22,13 @@ describe('ITableMetadata canonical structure', () => {
         },
       },
     }
-    const viewMeta: IViewMetadata = tableMeta.views.default
+    const viewMeta: ViewMetadata = tableMeta.views.default
     expect(viewMeta.rows).toEqual([{ id: 1 }])
     expect(viewMeta.page).toBe(1)
     expect(tableMeta).not.toHaveProperty('rows')
   })
 
-  it('DataTable.toJson() should return valid ITableMetadata with default view under views', () => {
+  it('DataTable.toJson() should return valid TableMetadata with default view under views', () => {
     const t = new DataTable('Products', [{ name: 'id', type: 'number', label: 'ID' }])
     const dv = t.getOrCreateView('default')
     dv.rows = [{ id: 1 }, { id: 2 }]
@@ -39,8 +39,8 @@ describe('ITableMetadata canonical structure', () => {
     expect(data.views.default.rows).toEqual([{ id: 1 }, { id: 2 }])
   })
 
-  it('DataTable semantic metadata should roundtrip through ITableMetadata', () => {
-    const data: ITableMetadata = {
+  it('DataTable semantic metadata should roundtrip through TableMetadata', () => {
+    const data: TableMetadata = {
       tableName: 'OrderSummary',
       columns: [{ name: 'id', type: 'number', label: 'ID' }],
       resourceType: 'database-view',
@@ -65,7 +65,7 @@ describe('ITableMetadata canonical structure', () => {
   })
 
   it('DataTable.fromJson() should read default view from views.default', () => {
-    const data: ITableMetadata = {
+    const data: TableMetadata = {
       tableName: 'Orders',
       columns: [{ name: 'oid', type: 'string', label: 'OID' }],
       views: {
@@ -86,7 +86,7 @@ describe('ITableMetadata canonical structure', () => {
   })
 
   it('DataTable.fromJson() should keep named views independent from default view', () => {
-    const data: ITableMetadata = {
+    const data: TableMetadata = {
       tableName: 'T',
       columns: [],
       views: {
@@ -166,7 +166,7 @@ describe('ITableMetadata canonical structure', () => {
 // ============================================================
 // L4: schemaVersion
 // ============================================================
-describe('L4: schemaVersion in IDataSetMetadata', () => {
+describe('L4: schemaVersion in DataSetMetadata', () => {
   it('DataSet should default schemaVersion to 2', () => {
     const ds = DataSet.fromJson({
       dataSetName: 'Test',
@@ -217,7 +217,7 @@ describe('L4: schemaVersion in IDataSetMetadata', () => {
       dataSetName: 'Old',
       tables: {},
       // version/pageId 未指定 — schemaVersion 默认按 canonical v2 处理
-    } satisfies Partial<IDataSetMetadata>
+    } satisfies Partial<DataSetMetadata>
     const ds = DataSet.fromJson(raw)
     expect(ds.schemaVersion).toBe(2)
   })

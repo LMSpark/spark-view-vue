@@ -4,7 +4,8 @@ import {
   AiRuntime,
 
   type AiFunctionRegistration,
-  type AiKnowledgeProjection,
+  type AiRuntimeFunctionCallResult,
+  type LlmParameterSchemaRoot,
   type AiModuleRegistration,
   type FunctionExecutionContext,
 } from '../packages/spark-ai/src'
@@ -13,17 +14,39 @@ type ExecutableFunctionRegistration = AiFunctionRegistration & {
   execute(args: unknown, context: FunctionExecutionContext): object
 }
 
-interface LeaveFormState {
-  draft: {
+type LeaveFormState = {
+  readonly draft: {
     reason: string | null
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isExecutableFunctionRegistration(value: AiFunctionRegistration): value is ExecutableFunctionRegistration {
+  return 'execute' in value && typeof value.execute === 'function'
+}
+
+function requireExecutableFunctionRegistration(value: AiFunctionRegistration): ExecutableFunctionRegistration {
+  if (!isExecutableFunctionRegistration(value)) {
+    throw new Error(`Expected executable function registration: ${value.functionId}`)
+  }
+  return value
+}
+
+function readReason(value: unknown): string {
+  if (!isRecord(value) || typeof value['reason'] !== 'string') {
+    throw new Error('Expected reason execution arg')
+  }
+  return value['reason']
 }
 
 const NO_PARAMS_SCHEMA = {
   type: 'object',
   properties: {},
   additionalProperties: false,
-} as const
+} satisfies LlmParameterSchemaRoot
 
 function createDeterministicRuntime(): AiRuntime {
   return new AiRuntime({
@@ -171,7 +194,7 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
     expect(started.availableFunctions[0]?.failureModes).toEqual([
       { code: 'REASON_REQUIRED', when: 'reason is empty', fix: 'Provide a non-empty reason.' },
     ])
-    const knowledge = core.getKnowledgeProjection() as AiKnowledgeProjection
+    const knowledge = core.getKnowledgeProjection()
     const summaries = knowledge.queryFunctions({
       moduleId: 'leaveApproval',
       moduleInstanceId: 'leave-instance',
@@ -255,7 +278,11 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
       functionId: translated.translation.context.functionId,
       activePath: translated.translation.context.activePath,
     })
-    const result = { ok: true, data: { accepted: true }, summary: 'accepted' } as const
+    const result: AiRuntimeFunctionCallResult<{ readonly accepted: true }> = {
+      ok: true,
+      data: { accepted: true },
+      summary: 'accepted',
+    }
     const resultMessage = leaveApi.createFunctionResultMessage({
       action: translated.translation.action,
       result,
@@ -282,159 +309,15 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
     })
   })
 
-  it('exports registration as JSON-persistable data without runtime methods', () => {
+  it('keeps registered module handles on the class-first runtime surface', () => {
     const core = createDeterministicRuntime()
     const departmentApi = core.registerModule(createDepartmentModule())
 
-    const data = departmentApi.getRegistrationData()
-    const storeSnapshot = departmentApi.getRegistrationStoreSnapshot()
-    const roundTripped = JSON.parse(JSON.stringify(data))
-    const storeRoundTripped = JSON.parse(JSON.stringify(storeSnapshot))
-
-    expect(roundTripped).toEqual(data)
-    expect(storeRoundTripped).toEqual(storeSnapshot)
-    expect(data).not.toHaveProperty('getFunctions')
-    expect(data.modules[0]).not.toHaveProperty('getFunctions')
-    expect(data.modules[0]?.modules[0]?.functions[0]).toMatchObject({
-      functionId: 'update',
-      description: 'Update person basic info.',
-      paramsSchema: {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-        },
-        required: ['name'],
-      },
-    })
-    expect(data.functions).toEqual([])
-    expect(storeSnapshot.modules.map((item) => item.modulePath)).toEqual([
-      'department',
-      'department/personnel',
-      'department/personnel/basicInfo',
-    ])
-    expect(storeSnapshot.functions).toMatchObject([{
-      modulePath: 'department/personnel/basicInfo',
-      functionId: 'update',
-      sortOrder: 0,
-    }])
-    expect(storeSnapshot.modules[0]).not.toHaveProperty('modules')
-    expect(storeSnapshot.modules[0]).not.toHaveProperty('functions')
-    expect(storeSnapshot.functions[0]).not.toHaveProperty('usageRules')
-    expect(storeSnapshot.functions[0]).not.toHaveProperty('failureModes')
-  })
-
-  it('splits function rules and failure modes into structured store rows', () => {
-    const core = createDeterministicRuntime()
-    const snapshot = core.registerModule(createLeaveModule()).getRegistrationStoreSnapshot()
-
-    expect(snapshot.modules).toEqual([{
-      modulePath: 'leaveApproval',
-      moduleId: 'leaveApproval',
-      sortOrder: 0,
-      name: 'Leave approval',
-      description: 'Help users finish a leave request.',
-      prompt: 'Collect leave reason only.',
-    }])
-    expect(snapshot.functions[0]).toMatchObject({
-      modulePath: 'leaveApproval',
-      functionId: 'setReason',
-      sortOrder: 0,
-      description: 'Set leave reason.',
-    })
-    expect(snapshot.functions[0]).not.toHaveProperty('failureModes')
-    expect(snapshot.failureModes).toEqual([{
-      modulePath: 'leaveApproval',
-      functionId: 'setReason',
-      sortOrder: 0,
-      code: 'REASON_REQUIRED',
-      when: 'reason is empty',
-      fix: 'Provide a non-empty reason.',
-    }])
-  })
-
-  it('registers pure registration data as a database-loaded module source', async () => {
-    const sourceCore = createDeterministicRuntime()
-    const data = sourceCore.registerModule(createDepartmentModule()).getRegistrationData()
-    const core = createDeterministicRuntime()
-    const api = core.registerModule(data)
-
-    const projection = await api.startSession({
-      moduleInstanceId: 'dept-1',
-      instanceId: 'department-session-from-data',
-    })
-
-    expect(api.getRegistrationData()).toEqual(data)
-    expect(projection.availableFunctions.map((item) => item.action)).toEqual([
-      'dept-1/{personId}@basicInfo@update',
-    ])
-    expect(projection.availableFunctions[0]).not.toHaveProperty('functionId')
-
-    const translated = await api.translateFunctionCall({
-      moduleInstanceId: 'dept-1',
-      instanceId: 'department-session-from-data',
-      runtimeInstanceId: 'department-session-from-data',
-      action: 'dept-1/person-9@basicInfo@update',
-      args: { name: 'Ada' },
-      activePath: [{ modulePath: 'department/personnel', instanceId: 'person-9' }],
-      projection,
-    })
-
-    expect(translated.ok).toBe(true)
-    if (!translated.ok) return
-    expect(translated.translation.executionArgs).toEqual({ name: 'Ada' })
-    expect(translated.translation.functionRegistration).not.toHaveProperty('execute')
-  })
-
-  it('registers store snapshots as a database-loaded module source', async () => {
-    const sourceCore = createDeterministicRuntime()
-    const sourceApi = sourceCore.registerModule(createDepartmentModule())
-    const data = sourceApi.getRegistrationData()
-    const snapshot = sourceApi.getRegistrationStoreSnapshot()
-    const core = createDeterministicRuntime()
-
-    const api = core.registerModule(snapshot)
-
-    const projection = await api.startSession({
-      moduleInstanceId: 'dept-1',
-      instanceId: 'department-session-from-store',
-    })
-
-    expect(api.getRegistrationData()).toEqual(data)
-    expect(projection.availableFunctions.map((item) => item.action)).toEqual([
-      'dept-1/{personId}@basicInfo@update',
-    ])
-    expect(projection.availableFunctions[0]).not.toHaveProperty('functionId')
-  })
-
-  it('rejects runtime providers when exporting registration data for persistence', () => {
-    const core = createDeterministicRuntime()
-    const dynamicApi = core.registerModule({
-      moduleId: 'dynamicPrompt',
-      name: 'Dynamic prompt',
-      description: 'Uses session data to render prompt.',
-      prompt: () => 'runtime-only prompt',
-      getFunctions: () => [],
-    })
-
-    expect(() => dynamicApi.getRegistrationData()).toThrow('Dynamic module prompt provider cannot be persisted')
-  })
-
-  it('rejects registration schemas that would be lossy in JSON persistence', () => {
-    const core = createDeterministicRuntime()
-    const invalidApi = core.registerModule({
-      moduleId: 'invalidSchema',
-      name: 'Invalid schema',
-      description: 'Contains runtime values in schema.',
-      getFunctions: () => [{
-        functionId: 'run',
-        description: 'Run invalid function.',
-        paramsSchema: {
-          createdAt: new Date('2026-05-11T00:00:00.000Z'),
-        } as unknown as AiFunctionRegistration['paramsSchema'],
-      }],
-    })
-
-    expect(() => invalidApi.getRegistrationData()).toThrow('must be JSON-persistable')
+    expect(departmentApi.getRegistration()).toBe(departmentApi.registration)
+    expect('getRegistrationData' in departmentApi).toBe(false)
+    expect('getRegistrationStoreSnapshot' in departmentApi).toBe(false)
+    expect(departmentApi.registration.getFunctions()).toEqual([])
+    expect(departmentApi.registration.modules?.map((module) => module.moduleId)).toEqual(['personnel'])
   })
 
   it('isolates AI sessions by module registration id and root module entity id', async () => {
@@ -541,10 +424,10 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
       action: 'leave-instance@leaveApproval@setReason',
     })
 
-    const executable = translated.translation.functionRegistration as ExecutableFunctionRegistration
+    const executable = requireExecutableFunctionRegistration(translated.translation.functionRegistration)
     const state: LeaveFormState = { draft: { reason: null } }
     const result = executable.execute(translated.translation.executionArgs, translated.translation.context)
-    state.draft.reason = (translated.translation.executionArgs as { reason: string }).reason
+    state.draft.reason = readReason(translated.translation.executionArgs)
 
     expect(result).toEqual({ accepted: true })
     expect(state.draft.reason).toBe('family care')

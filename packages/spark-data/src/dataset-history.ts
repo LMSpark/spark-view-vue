@@ -1,6 +1,6 @@
 import { deepClone } from '@spark-view/spark-utils'
 
-import type { IDataSet, IDataSetMetadata } from './types'
+import type { DataSetContract, DataSetMetadata } from './types'
 
 const DEFAULT_HISTORY_NAMESPACE = 'spark:data-history'
 const DEFAULT_HISTORY_LIMIT = 20
@@ -31,7 +31,7 @@ export interface DataSetHistorySnapshot {
   pageId?: string
   label?: string
   summary?: string
-  snapshot: IDataSetMetadata
+  snapshot: DataSetMetadata
   sourceData?: Record<string, unknown>
 }
 
@@ -204,7 +204,7 @@ function readEnvelope(key: string, adapter: DataSetHistoryStorageAdapter): DataS
     }
   }
   try {
-    return normalizeEnvelope(JSON.parse(raw) as unknown)
+    return normalizeEnvelope(JSON.parse(raw))
   } catch {
     return {
       entries: [],
@@ -222,7 +222,7 @@ function writeEnvelope(key: string, adapter: DataSetHistoryStorageAdapter, envel
   adapter.setItem(key, JSON.stringify(envelope))
 }
 
-function toSnapshot(dataSetOrSnapshot: IDataSet | IDataSetMetadata): IDataSetMetadata {
+function toSnapshot(dataSetOrSnapshot: DataSetContract | DataSetMetadata): DataSetMetadata {
   return 'toJson' in dataSetOrSnapshot
     ? deepClone(dataSetOrSnapshot.toJson())
     : deepClone(dataSetOrSnapshot)
@@ -309,7 +309,7 @@ export function getDataSetSnapshot(
 }
 
 export function commitDataSetSnapshot(
-  dataSetOrSnapshot: IDataSet | IDataSetMetadata,
+  dataSetOrSnapshot: DataSetContract | DataSetMetadata,
   options?: DataSetSnapshotCommitOptions,
 ): DataSetHistorySnapshot | null {
   const adapter = resolveAdapter(options?.adapter)
@@ -335,7 +335,7 @@ export function commitDataSetSnapshot(
   const latestVersion = getLatestVersion(current.entries)
   const resolvedVersion = options?.version ?? Math.max(baseSnapshot.version ?? 0, latestVersion) + 1
   const resolvedTimestamp = options?.timestamp ?? Date.now()
-  const snapshot: IDataSetMetadata = {
+  const snapshot: DataSetMetadata = {
     ...baseSnapshot,
     version: resolvedVersion,
     ...(scope.pageId !== undefined ? { pageId: scope.pageId } : {}),

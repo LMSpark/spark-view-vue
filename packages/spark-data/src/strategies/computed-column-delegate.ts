@@ -28,7 +28,7 @@
  */
 
 import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
-import type { IDataRow, ComputedColumnFn, TableRelation } from '../types'
+import type { DataRow, ComputedColumnFn, TableRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
 
@@ -46,7 +46,7 @@ export type ComputedColumnContext = Record<string, unknown>
  */
 export interface AggregateResolver {
   /** 解析子表匹配行（$sum/$count/$avg/$min/$max/$list/$join） */
-  resolveChildRows(childRef: string, parentRow: IDataRow): IDataRow[]
+  resolveChildRows(childRef: string, parentRow: DataRow): DataRow[]
 }
 
 // ─────────────────────────────────────────────
@@ -57,7 +57,7 @@ export interface AggregateResolver {
 const MAX_EXPRESSION_LENGTH = 2048
 
 /** 行数据安全代理（复用 spark-utils 共享沙箱策略） */
-const createSafeRowProxy = (row: IDataRow): IDataRow => createSafeProxy(row)
+const createSafeRowProxy = (row: DataRow): DataRow => createSafeProxy(row)
 
 /** 检测表达式中是否含有子表聚合函数调用 */
 const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
@@ -95,32 +95,25 @@ export function compileExpression(
 
   if (!hasAgg) {
     // 快速路径：无聚合函数
-    const compiled = new Function('__row', 'ctx', body,
-    ) as (row: IDataRow, ctx: ComputedColumnContext) => unknown
-    return (row: IDataRow) => compiled(createSafeRowProxy(row), _ctx)
+    const compiled = new Function('__row', 'ctx', body)
+    return (row: DataRow) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Computed expressions are the deliberate runtime Function boundary.
+      const value: unknown = compiled(createSafeRowProxy(row), _ctx)
+      return value
+    }
   }
 
   // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
   const compiled = new Function(
     '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join', 'ctx',
     body,
-  ) as (
-    row: IDataRow,
-    $sum: (t: string, f: string) => number,
-    $count: (t: string) => number,
-    $avg: (t: string, f: string) => number,
-    $min: (t: string, f: string) => number | undefined,
-    $max: (t: string, f: string) => number | undefined,
-    $list: (t: string, f: string) => unknown[],
-    $join: (t: string, f: string, sep?: string) => string,
-    ctx: ComputedColumnContext,
-  ) => unknown
+  )
 
   // 可变引用——逐行切换，避免每行创建新函数
-  let _row: IDataRow
-  const _cache = new Map<string, IDataRow[]>()
+  let _row: DataRow
+  const _cache = new Map<string, DataRow[]>()
 
-  const getChildRows = (ref: string): IDataRow[] => {
+  const getChildRows = (ref: string): DataRow[] => {
     let cached = _cache.get(ref)
     if (cached === undefined) {
       cached = resolver.resolveChildRows(ref, _row)
@@ -153,10 +146,12 @@ export function compileExpression(
   const $join  = (t: string, f: string, sep = ', '): string =>
     getChildRows(t).map(r => String(r[f] ?? '')).join(sep)
 
-  return (row: IDataRow) => {
+  return (row: DataRow) => {
     _row = row
     _cache.clear()
-    return compiled(createSafeRowProxy(row), $sum, $count, $avg, $min, $max, $list, $join, _ctx)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Computed expressions are the deliberate runtime Function boundary.
+    const value: unknown = compiled(createSafeRowProxy(row), $sum, $count, $avg, $min, $max, $list, $join, _ctx)
+    return value
   }
 }
 
@@ -165,7 +160,7 @@ export function compileExpression(
  * 编译失败的列跳过并打印警告，不中断其他列。
  */
 export function compileColumnsExpressions(
-  columns: Array<{ name: string; computeExpression?: string }>,
+  columns: ReadonlyArray<{ name: string; computeExpression?: string }>,
   ctx?: ComputedColumnContext,
   resolver?: AggregateResolver,
 ): Map<string, ComputedColumnFn> {
@@ -191,25 +186,25 @@ export function compileColumnsExpressions(
  * DataView 实现此接口，delegate 仅通过此接口访问宿主状态。
  * 遵循 ISP：只暴露计算列编排所需的最小属性集。
  */
-export interface IComputedColumnHost {
+export interface ComputedColumnHost {
   readonly tableName: string
   readonly viewId: string
   readonly primaryKey: string
   /** 宿主的行数据 */
-  readonly rows: IDataRow[]
+  readonly rows: DataRow[]
   /** DataTable 列定义（可能为 undefined——dataTable 尚未 attach） */
   readonly columns: ReadonlyArray<{ name: string; computeExpression?: string }> | undefined
   /** 获取 DataSet 实例（可能为 undefined——无 DataSet 上下文） */
-  getDataSet(): IComputedColumnDataSet | undefined
+  getDataSet(): ComputedColumnDataSet | undefined
 }
 
 /**
  * Delegate 所需的 DataSet 最小接口——避免导入完整 DataSet 类型。
  */
-export interface IComputedColumnDataSet {
+export interface ComputedColumnDataSet {
   readonly tableRelations: TableRelation[] | undefined
   getTableChildRelations(parentTable: string): TableRelation[]
-  getView(tableName: string, viewId?: string): { readonly rows: IDataRow[] } | undefined
+  getView(tableName: string, viewId?: string): { readonly rows: DataRow[] } | undefined
 }
 
 // ─────────────────────────────────────────────
@@ -219,7 +214,7 @@ export interface IComputedColumnDataSet {
 /**
  * 计算列管理器——编译、求值、缓存的统一委托。
  *
- * 通过 IComputedColumnHost 访问 DataView 状态，自身管理：
+ * 通过 ComputedColumnHost 访问 DataView 状态，自身管理：
  * - 已编译函数注册表（Map<name, fn>）
  * - 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）
  * - 聚合解析器构建（DataRelation → 子行解析）
@@ -227,14 +222,14 @@ export interface IComputedColumnDataSet {
 export class ComputedColumnDelegate {
   private _columns = new Map<string, ComputedColumnFn>()
   private _namesCache: ReadonlySet<string> | undefined
-  private _host: IComputedColumnHost
+  private _host: ComputedColumnHost
   /** 上次编译时的列表达式指纹（用于检测列定义变更） */
   private _compiledExprKey: string | undefined
   /** 上次编译时传入的 ctx 对象引用（用于检测 ctx 切换，不做深比较） */
   private _compiledCtxRef: ComputedColumnContext | undefined
   private _ctx: ComputedColumnContext = {}
 
-  constructor(host: IComputedColumnHost) {
+  constructor(host: ComputedColumnHost) {
     this._host = host
   }
 
@@ -285,11 +280,7 @@ export class ComputedColumnDelegate {
     this._compiledExprKey = exprFingerprint
     this._compiledCtxRef = this._ctx
 
-    const compiled = compileColumnsExpressions(
-      columns as Array<{ name: string; computeExpression?: string }>,
-      this._ctx,
-      this._createAggregateResolver(),
-    )
+    const compiled = compileColumnsExpressions(columns, this._ctx, this._createAggregateResolver())
     for (const [name, fn] of compiled) this._columns.set(name, fn)
     this._namesCache = undefined
   }
@@ -307,7 +298,7 @@ export class ComputedColumnDelegate {
   }
 
   /** 对行集合就地写入所有计算列。无计算列时短路返回，零开销。 */
-  apply(rows: IDataRow[]): void {
+  apply(rows: DataRow[]): void {
     if (this._columns.size === 0 || rows.length === 0) return
     for (const row of rows) {
       for (const [name, fn] of this._columns) {
@@ -323,11 +314,13 @@ export class ComputedColumnDelegate {
   }
 
   /** 剥离计算列字段，返回浅拷贝；无计算列时返回原对象（零开销）。 */
-  strip(data: Partial<IDataRow>): Partial<IDataRow> {
+  strip(data: Partial<DataRow>): Partial<DataRow> {
     if (this._columns.size === 0) return data
-    return Object.fromEntries(
-      Object.entries(data).filter(([key]) => !this._columns.has(key))
-    ) as Partial<IDataRow>
+    const result: Partial<DataRow> = {}
+    for (const [key, value] of Object.entries(data)) {
+      if (!this._columns.has(key)) result[key] = value
+    }
+    return result
   }
 
   /** 清空所有状态（DataView.destroy 时调用）。 */
@@ -361,7 +354,7 @@ export class ComputedColumnDelegate {
     const defaultParentField = this._host.primaryKey
 
     return {
-      resolveChildRows: (childRef: string, parentRow: IDataRow): IDataRow[] => {
+      resolveChildRows: (childRef: string, parentRow: DataRow): DataRow[] => {
         const rel = relMap.get(childRef)
         if (!rel) return []
         const parentField = rel.parentField ?? defaultParentField

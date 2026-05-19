@@ -14,7 +14,7 @@
  * 2. 渲染 children 子节点（也可用 slot 替代）。
  */
 import { shallowReactive, watch } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import {
   DATA_ROW,
   SparkComponentRenderer,
@@ -26,7 +26,7 @@ import { syncReactiveRow } from './row-mirror-sync'
 
 const props = withDefaults(defineProps<{
   type?: string
-  row?: IDataRow | undefined
+  row?: DataRow | undefined
   children?: SparkNode[]
 }>(), {
   type: 'r-host-data-scope',
@@ -35,10 +35,10 @@ const props = withDefaults(defineProps<{
 
 const { sparkProvide, sparkRemove } = useSparkComponent({ type: props.type })
 
-const rowMirror = shallowReactive<IDataRow>({})
+const rowMirror = shallowReactive<DataRow>({})
 let hasProvidedRow = false
 
-function resolveInputRow(): IDataRow | undefined {
+function resolveInputRow(): DataRow | undefined {
   return props.row
 }
 

@@ -16,7 +16,7 @@
  * ```
  */
 
-import type { DataView, IDataRow, IDataSet, DataSetSaveChangesMode, DataSetSaveChangesViewSelector } from '@spark-view/spark-data'
+import type { DataView, DataRow, DataSetContract, DataSetSaveChangesMode, DataSetSaveChangesViewSelector } from '@spark-view/spark-data'
 import type { IPageServiceCapability, PageMessageType } from '../../core/capability-keys.js'
 import type { CancellableControl } from '../../components/containers/support/interactionControl.js'
 
@@ -64,7 +64,7 @@ export interface ActionUiDecorator {
  */
 export interface ActionFormApi {
   /** 获取表单当前绑定的数据行（未绑定时返回 null） */
-  getCurrentRow(): IDataRow | null
+  getCurrentRow(): DataRow | null
   /** 获取表单当前填写的字段数据（不含主键） */
   getFormData(): Record<string, unknown>
   /** 可选：触发表单校验；返回 false 则执行器中止提交 */
@@ -79,7 +79,7 @@ export interface ActionFormApi {
  * - `formApi`：仅 submit-current-form 动作需要，由表单容器注入
  */
 export interface ActionExecutionScope {
-  row?: IDataRow
+  row?: DataRow
   index?: number
   formApi?: ActionFormApi
 }
@@ -371,7 +371,7 @@ export function isActionDescriptor(value: unknown): value is ActionDescriptor {
  */
 export interface ActionExecutionContext {
   /** 获取当前页面的 DataSet 实例（用于 DataViewKey 解析）；页面未就绪时返回 null */
-  getDataSet: () => IDataSet | null
+  getDataSet: () => DataSetContract | null
   /**
    * 可选：获取容器作用域 DataView（调用方已确定 DataView 时提供）。
    *

@@ -3,7 +3,7 @@
  *
  * Form / Detail / List 可直接展开使用；Table 展开后覆盖 setCurrentRow / setCurrentRowById。
  */
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import type { BaseContainerApi } from './base-container-api.js'
 import { createCancelledCrudResult } from './interactionControl.js'
@@ -29,14 +29,14 @@ export function createBaseCrudMethods(
       const view = resolvedView.value
       if (!view) return null
       const { cancel } = await dispatch('add-row', row)
-      if (cancel) return createCancelledCrudResult<IDataRow>('addRow cancelled by business handler')
+      if (cancel) return createCancelledCrudResult<DataRow>('addRow cancelled by business handler')
       return await view.addRow(row)
     },
     async editRowById(id, patch) {
       const view = resolvedView.value
       if (!view) return false
       const { cancel } = await dispatch('edit-row', id, patch)
-      if (cancel) return createCancelledCrudResult<IDataRow>('editRowById cancelled by business handler')
+      if (cancel) return createCancelledCrudResult<DataRow>('editRowById cancelled by business handler')
       return await view.editRowById(id, patch)
     },
     async removeRow(id) {

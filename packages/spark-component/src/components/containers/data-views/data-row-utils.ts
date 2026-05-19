@@ -1,4 +1,4 @@
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 
 const TREE_LABEL_FALLBACK_FIELDS = ['label', 'name', 'title'] as const
 
@@ -12,8 +12,8 @@ export function readStringField(record: Record<string, unknown>, key: string): s
   return typeof value === 'string' ? value : undefined
 }
 
-export function toMutableRows(rows: readonly IDataRow[]): IDataRow[] {
-  return rows as IDataRow[]
+export function toMutableRows(rows: readonly DataRow[]): DataRow[] {
+  return rows as DataRow[]
 }
 
 export function resolveTreeNodeText(

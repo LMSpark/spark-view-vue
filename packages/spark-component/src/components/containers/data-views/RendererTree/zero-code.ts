@@ -1,5 +1,5 @@
 import { nextTick } from 'vue'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import {
   createCancellableControl,
@@ -24,7 +24,7 @@ export interface TreeNode {
 export interface ElTreeNode {
   level: number
   expanded: boolean
-  data?: IDataRow
+  data?: DataRow
   parent?: ElTreeNode | null
   [key: string]: unknown
 }
@@ -49,7 +49,7 @@ export interface NativeTreeLike {
 
 export interface NativeTreeNodeLike {
   expand?: () => void
-  data?: IDataRow
+  data?: DataRow
 }
 
 export type TreeEventControl = CancellableControl
@@ -70,7 +70,7 @@ interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
 interface RendererTreeZeroCodeOptions {
   props: RendererTreeBehaviorProps
   resolvedView: ValueRef<DataView | null>
-  treeData: ValueRef<IDataRow[]>
+  treeData: ValueRef<DataRow[]>
   nativeTreeRef: ValueRef<unknown>
   logger: LoggerApi
   nodeKeyField: ValueRef<string>
@@ -89,7 +89,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   } = options
 
   function getNodeKey(data: unknown): string | number | null {
-    const node = data as IDataRow | null | undefined
+    const node = data as DataRow | null | undefined
     const key = node?.[nodeKeyField.value]
     return typeof key === 'string' || typeof key === 'number' ? key : null
   }
@@ -128,7 +128,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     getCurrentNode() {
       const tree = getNativeTree()
       if (!tree || typeof tree.getCurrentNode !== 'function') return null
-      return (tree.getCurrentNode() as IDataRow | null) ?? null
+      return (tree.getCurrentNode() as DataRow | null) ?? null
     },
     setCurrentKey(key) {
       syncCurrentByKey(key)
@@ -161,7 +161,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     getCheckedNodes(leafOnly, includeHalfChecked) {
       const tree = getNativeTree()
       if (!tree || typeof tree.getCheckedNodes !== 'function') return []
-      return tree.getCheckedNodes(leafOnly, includeHalfChecked) as IDataRow[]
+      return tree.getCheckedNodes(leafOnly, includeHalfChecked) as DataRow[]
     },
     getCheckedKeys() {
       const tree = getNativeTree()
@@ -202,7 +202,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     updateNode(key, patch) {
       const tree = getNativeTree()
       if (!tree) return false
-      const elNode = tree.getNode?.(key) as { data?: IDataRow } | undefined
+      const elNode = tree.getNode?.(key) as { data?: DataRow } | undefined
       if (elNode?.data === undefined) return false
       Object.assign(elNode.data, patch)
       return true

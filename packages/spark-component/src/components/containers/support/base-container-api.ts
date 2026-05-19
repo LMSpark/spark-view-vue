@@ -4,7 +4,7 @@
  * Table / Form / Detail / List 四大容器共享的 CRUD + 当前行方法签名。
  * Tree 的 CRUD 表面差异较大（appendNode / removeNode 等），不参与该基类。
  */
-import type { CrudResult, IDataSource, IDataRow } from '@spark-view/spark-data'
+import type { CrudResult, DataSource, DataRow } from '@spark-view/spark-data'
 
 /**
  * 数据容器 CRUD API（统一最小公约数）。
@@ -12,9 +12,9 @@ import type { CrudResult, IDataSource, IDataRow } from '@spark-view/spark-data'
  * 该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。
  */
 export interface BaseCrudContainerApi {
-  getDataSource(): IDataSource | null
-  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
-  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
+  getDataSource(): DataSource | null
+  addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>
+  editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>
   removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
 }
 
@@ -22,12 +22,12 @@ export interface BaseCrudContainerApi {
  * 表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。
  */
 export interface BaseContainerApi extends BaseCrudContainerApi {
-  getCurrentRow(): IDataRow | null
+  getCurrentRow(): DataRow | null
   refresh(): Promise<void>
-  appendRow(row: IDataRow): void
-  updateRowById(id: string | number, patch: Partial<IDataRow>): boolean
+  appendRow(row: DataRow): void
+  updateRowById(id: string | number, patch: Partial<DataRow>): boolean
   deleteRowById(id: string | number): boolean
-  setCurrentRow(row: IDataRow | null): void
+  setCurrentRow(row: DataRow | null): void
   setCurrentRowById(id: string | number | null): boolean
 }
 

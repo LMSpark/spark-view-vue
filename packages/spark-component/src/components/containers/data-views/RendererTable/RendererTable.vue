@@ -51,7 +51,7 @@
         >
           <template #default="scope">
             <div class="renderer-table-row-actions">
-              <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
+              <RendererHostScope :row="(scope.row as DataRow)" :children="actionScopeChildren" />
             </div>
           </template>
         </el-table-column>
@@ -72,7 +72,7 @@
             :class-name="rowFragmentStringProp(child, 'class')"
           >
             <template #default="scope">
-              <RendererHostScope :row="(scope.row as IDataRow)" :children="rowFragmentChildren(child)" />
+              <RendererHostScope :row="(scope.row as DataRow)" :children="rowFragmentChildren(child)" />
             </template>
           </el-table-column>
 
@@ -95,7 +95,7 @@
         >
           <template #default="scope">
             <div class="renderer-table-row-actions">
-              <RendererHostScope :row="(scope.row as IDataRow)" :children="actionScopeChildren" />
+              <RendererHostScope :row="(scope.row as DataRow)" :children="actionScopeChildren" />
             </div>
           </template>
         </el-table-column>
@@ -140,7 +140,7 @@ import {
   DATA_SOURCE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
-import type { DataColumn, IDataRow, DataView } from '@spark-view/spark-data'
+import type { DataColumn, DataRow, DataView } from '@spark-view/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { RequestState } from '@spark-view/spark-data'
 import { useContainerDataSource } from '../view-data-source'
@@ -418,9 +418,9 @@ const selectedRowIdSet = computed<Set<string | number>>(() => {
   return ids
 })
 
-const selectedRowRefSet = computed<Set<IDataRow>>(() => new Set(dataState.selectedRows.value))
+const selectedRowRefSet = computed<Set<DataRow>>(() => new Set(dataState.selectedRows.value))
 
-function isSelectedRow(row: IDataRow): boolean {
+function isSelectedRow(row: DataRow): boolean {
   const keyField = dataState.primaryKey.value
   if (typeof keyField === 'string' && keyField.length > 0) {
     const key = (row as Record<string, unknown>)[keyField]
@@ -466,8 +466,8 @@ watch(
       if (!table) return
       table.clearSelection?.()
       for (const row of rows.value) {
-        if (isSelectedRow(row as IDataRow)) {
-          table.toggleRowSelection?.(row as IDataRow, true)
+        if (isSelectedRow(row as DataRow)) {
+          table.toggleRowSelection?.(row as DataRow, true)
         }
       }
     } finally {
@@ -480,7 +480,7 @@ watch(
 /**
  * el-table row-class-name 回调：仅负责打上选中行样式类。
  */
-function tableRowClassName({ row }: { row: IDataRow }) {
+function tableRowClassName({ row }: { row: DataRow }) {
   return isSelectedRow(row) ? 'spark-selection-row' : ''
 }
 
@@ -489,18 +489,18 @@ function tableRowClassName({ row }: { row: IDataRow }) {
 // ============================================================================
 
 /** 当前行变化事件桥接。 */
-async function handleCurrentChange(currentRow: IDataRow | null, oldCurrentRow?: IDataRow | null) {
+async function handleCurrentChange(currentRow: DataRow | null, oldCurrentRow?: DataRow | null) {
   await dispatch('current-change', currentRow ?? null, oldCurrentRow)
 }
 
 /** 行点击事件桥接。 */
-async function handleRowClick(row: IDataRow, column?: unknown, event?: Event) {
+async function handleRowClick(row: DataRow, column?: unknown, event?: Event) {
   if (!row) return
   await dispatch('row-click', row, column, event)
 }
 
 /** 多选变更事件桥接。 */
-async function handleSelectionChange(selection: IDataRow[]) {
+async function handleSelectionChange(selection: DataRow[]) {
   if (_isSyncingSelection) return
   await dispatch('selection-change', Array.isArray(selection) ? selection : [])
 }

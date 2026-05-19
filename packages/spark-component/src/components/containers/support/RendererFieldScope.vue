@@ -38,7 +38,7 @@
 import { computed, shallowReactive, watch } from 'vue'
 import { DATA_ROW, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../runtime/container-layout'
 import { syncReactiveRow } from './row-mirror-sync'
 
@@ -46,7 +46,7 @@ interface RendererFieldScopeProps {
   type?: 'r-field-scope'
   id?: string
   /** 表单数据模型 */
-  model?: IDataRow
+  model?: DataRow
   /** 字段组件配置列表 */
   children?: SparkNode[]
   /** CSS Grid 列数 */
@@ -91,14 +91,14 @@ const { sparkProvide } = useSparkComponent({
   ...(props.id !== undefined ? { id: props.id } : {}),
 })
 
-const rowMirror = shallowReactive<IDataRow>({})
+const rowMirror = shallowReactive<DataRow>({})
 sparkProvide(DATA_ROW, rowMirror)
 
-function isDataRow(value: unknown): value is IDataRow {
+function isDataRow(value: unknown): value is DataRow {
   return value !== null && typeof value === 'object'
 }
 
-const formModel = computed<IDataRow>(() =>
+const formModel = computed<DataRow>(() =>
   isDataRow(props.model) ? props.model : rowMirror,
 )
 

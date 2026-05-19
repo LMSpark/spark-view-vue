@@ -17,7 +17,7 @@ import type {
   PageCssConfig
 } from '../types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
-import { isSparkNode, normalizeSparkNode } from '../spark-node'
+import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from '../spark-node'
 import { SparkNodeTree } from '../spark-node-tree'
 
 type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
@@ -26,22 +26,47 @@ function hasOwn(obj: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key)
 }
 
-function resolveCanonicalFactory(): ObjectFactory {
-  const sparkDataObj = SparkData as unknown as Record<string, unknown>
-  const dataSetCtor = DataSet as unknown as Record<string, unknown>
+function isStringFactory(
+  fn: unknown,
+): fn is (raw: string) => PageDataConfig {
+  return typeof fn === 'function'
+}
 
-  const fromJSON =
-    (typeof sparkDataObj['fromJSON'] === 'function' ? sparkDataObj['fromJSON'] : undefined)
-    ?? (typeof dataSetCtor['fromJSON'] === 'function' ? dataSetCtor['fromJSON'] : undefined)
-  if (fromJSON) {
-    return (input) => (fromJSON as (raw: string) => PageDataConfig)(JSON.stringify(input))
+function isObjectFactory(
+  fn: unknown,
+): fn is (raw: Record<string, unknown>) => PageDataConfig {
+  return typeof fn === 'function'
+}
+
+function isNonEmptyObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function getNamespaceRecord(target: unknown): Record<string, unknown> {
+  if (!isNonEmptyObject(target)) return {}
+  const record: Record<string, unknown> = {}
+  for (const key of Object.getOwnPropertyNames(target)) {
+    try {
+      record[key] = target[key]
+    } catch {
+      // ignore inaccessible properties
+    }
+  }
+  return record
+}
+
+function resolveCanonicalFactory(): ObjectFactory {
+  const sparkDataObj = getNamespaceRecord(SparkData)
+  const dataSetCtor = getNamespaceRecord(DataSet)
+
+  const fromJSON = sparkDataObj['fromJSON'] ?? dataSetCtor['fromJSON']
+  if (isStringFactory(fromJSON)) {
+    return (input) => fromJSON(JSON.stringify(input))
   }
 
-  const fromJson =
-    (typeof sparkDataObj['fromJson'] === 'function' ? sparkDataObj['fromJson'] : undefined)
-    ?? (typeof dataSetCtor['fromJson'] === 'function' ? dataSetCtor['fromJson'] : undefined)
-  if (fromJson) {
-    return (input) => (fromJson as (raw: Record<string, unknown>) => PageDataConfig)(input)
+  const fromJson = sparkDataObj['fromJson'] ?? dataSetCtor['fromJson']
+  if (isObjectFactory(fromJson)) {
+    return (input) => fromJson(input)
   }
 
   {
@@ -50,9 +75,10 @@ function resolveCanonicalFactory(): ObjectFactory {
 }
 
 function resolvePageDataFactory(): ObjectFactory {
-  const sparkDataObj = SparkData as unknown as Record<string, unknown>
-  if (typeof sparkDataObj['fromPageData'] === 'function') {
-    return (input) => (sparkDataObj['fromPageData'] as (raw: Record<string, unknown>) => PageDataConfig)(input)
+  const sparkDataObj = getNamespaceRecord(SparkData)
+  const fromPageData = sparkDataObj['fromPageData']
+  if (isObjectFactory(fromPageData)) {
+    return (input) => fromPageData(input)
   }
 
   // 未提供专用 pagedata 工厂时，退回 canonical 工厂
@@ -71,10 +97,9 @@ function normalizeCanonicalDataSetInput(input: Record<string, unknown>): Record<
     return normalized
   }
 
-  const tableMap = rawTables as Record<string, unknown>
   const normalizedTables: Record<string, unknown> = {}
-  for (const [tableName, tableMeta] of Object.entries(tableMap)) {
-    if (tableMeta === null || tableMeta === undefined || typeof tableMeta !== 'object' || Array.isArray(tableMeta)) {
+  for (const [tableName, tableMeta] of Object.entries(rawTables)) {
+    if (!isNonEmptyObject(tableMeta)) {
       normalizedTables[tableName] = {
         tableName,
         columns: [],
@@ -84,15 +109,15 @@ function normalizeCanonicalDataSetInput(input: Record<string, unknown>): Record<
       continue
     }
 
-    const table = { ...(tableMeta as Record<string, unknown>) }
+    const table: Record<string, unknown> = { ...tableMeta }
     table['tableName'] = typeof table['tableName'] === 'string' && table['tableName'].trim() !== ''
       ? table['tableName']
       : tableName
     const rawViews = table['views']
-    if (rawViews === undefined || rawViews === null || typeof rawViews !== 'object' || Array.isArray(rawViews)) {
+    if (!isNonEmptyObject(rawViews)) {
       table['views'] = { default: {} }
     } else {
-      const views = { ...(rawViews as Record<string, unknown>) }
+      const views: Record<string, unknown> = { ...rawViews }
       if (!hasOwn(views, 'default') || views['default'] === null || views['default'] === undefined || typeof views['default'] !== 'object') {
         views['default'] = {}
       }
@@ -137,7 +162,7 @@ export function compileRule(raw: string): RuleConfig[] {
     fillMissingComponentId: false,
     historyLimit: 0,
   })
-  return (tree.root.children ?? []) as RuleConfig[]
+  return getSparkNodeChildren(tree.root.children)
 }
 
 export function normalizeRuleNode(node: unknown): RuleConfig {
@@ -164,11 +189,10 @@ export function parsePageData(raw: string): PageDataConfig {
   if (parsed === null || parsed === undefined) {
     return createDefaultDataSet()
   }
-  if (typeof parsed !== 'object') {
+  if (!isNonEmptyObject(parsed)) {
     return createDataSetFromInput({ value: parsed })
   }
-  const obj = parsed as Record<string, unknown>
-  return createDataSetFromInput(obj)
+  return createDataSetFromInput(parsed)
 }
 
 // ── Script / CSS 编译 ────────────────────────────────────────────────

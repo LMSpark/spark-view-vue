@@ -11,16 +11,16 @@ import {
   useSparkComponent,
 } from '@spark-view/spark-component'
 import type { SparkNode, SparkCapabilityContext, ComponentRegistry, IPageServiceCapability } from '@spark-view/spark-component'
-import type { IDataRow, IDataSet } from '@spark-view/spark-data'
+import type { DataRow, DataSetContract } from '@spark-view/spark-data'
 
 interface MountFieldInContextOptions {
   component: unknown
   type: string
-  model: IDataRow
+  model: DataRow
   fieldName: string
   componentProps?: Record<string, unknown> | undefined
   global?: ComponentMountingOptions<unknown>['global'] | undefined
-  pageDataSet?: IDataSet | undefined
+  pageDataSet?: DataSetContract | undefined
   dataSource?: unknown
   pageService?: IPageServiceCapability | undefined
   hostType?: string | undefined

@@ -117,7 +117,7 @@ import {
   MODULE_CONTEXT,
 } from '../../../internal'
 import type { RListProps } from './RendererList.props'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import type { RendererListApi } from './types'
 import { useContainerToolbar, useContainerModuleContext } from '../../runtime/container-ui'
 import { useContainerDataSource } from '../view-data-source'
@@ -272,7 +272,7 @@ const {
 
 registerApi(listApi)
 
-function getItemKey(row: IDataRow, index: number): string | number {
+function getItemKey(row: DataRow, index: number): string | number {
   const keyValue = row[props.rowKey]
   if (typeof keyValue === 'string' || typeof keyValue === 'number') return keyValue
   return `${props.rowKey}-${index}`
@@ -286,7 +286,7 @@ function scopeBase() {
   }
 }
 
-function getRowScope(row: IDataRow, index: number) {
+function getRowScope(row: DataRow, index: number) {
   return createRowScope({
     ...scopeBase(),
     row,
@@ -294,7 +294,7 @@ function getRowScope(row: IDataRow, index: number) {
   })
 }
 
-async function handleItemClick(row: IDataRow, index: number, event: Event) {
+async function handleItemClick(row: DataRow, index: number, event: Event) {
   await dispatch('item-click', row, index, event)
 }
 

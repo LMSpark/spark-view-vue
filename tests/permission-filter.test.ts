@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { permission } from '../packages/spark-component/src/index'
 
 const { filterDisplayableFields } = permission
@@ -14,7 +14,7 @@ describe('PermissionFilter', () => {
         maskedFields: ['phone'],
         hiddenFields: ['secret'],
       },
-    } as IDataRow
+    } as DataRow
 
     const filtered = filterDisplayableFields(row)
 

@@ -48,7 +48,7 @@ import {
   useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender'
 import type { RToolbarProps } from './RendererToolbar.types'
 import { useContainerDataSource } from '../data-views/view-data-source'
@@ -123,7 +123,7 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
   // 若不存在则回退到当前 DataView.currentRow。
   const rowInput = inheritedDataRow ?? dataSource?.currentRow
   const row = rowInput !== null && rowInput !== undefined && typeof rowInput === 'object' && !Array.isArray(rowInput)
-    ? rowInput as IDataRow
+    ? rowInput as DataRow
     : undefined
 
   const beforeRender = resolveNodeBeforeRender(node, {

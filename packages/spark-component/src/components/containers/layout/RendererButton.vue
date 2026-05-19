@@ -50,7 +50,7 @@ import {
 import { resolveButtonStyle } from '../../../page/actions/index'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import { useActionButtonRuntime } from './useActionButtonRuntime'
 
 const props = withDefaults(defineProps<RButtonProps>(), {
@@ -80,23 +80,23 @@ function resolveActionView(): DataView | null {
 }
 
 // 优先 DATA_ROW；退化到 DATA_SOURCE.currentRow（覆盖行内按钮与工具栏按钮）
-function resolveScopedRow(): IDataRow | undefined {
+function resolveScopedRow(): DataRow | undefined {
   const dataSource = sparkConsume(DATA_SOURCE)
   const dataRow = sparkConsume(DATA_ROW)
-  return (dataRow ?? ((dataSource as { currentRow?: IDataRow } | null)?.currentRow)) ?? undefined
+  return (dataRow ?? ((dataSource as { currentRow?: DataRow } | null)?.currentRow)) ?? undefined
 }
 
-function resolvePermissionScopeRows(): IDataRow[] {
+function resolvePermissionScopeRows(): DataRow[] {
   const dataRow = sparkConsume(DATA_ROW)
   if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
-    return [dataRow as IDataRow]
+    return [dataRow as DataRow]
   }
   const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
   if (dataSource && dataSource.isMultiSelect === true) {
     const selected = dataSource.selectedRows ?? []
     return selected.length > 0 ? selected.slice() : []
   }
-  const currentRow = (dataSource as { currentRow?: IDataRow } | null)?.currentRow
+  const currentRow = (dataSource as { currentRow?: DataRow } | null)?.currentRow
   return currentRow !== null && currentRow !== undefined ? [currentRow] : []
 }
 

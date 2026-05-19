@@ -24,11 +24,11 @@ import { SparkData } from '@spark-view/spark-data'
 
 创建 DataSet 实例
 
-该入口是强约束入口，只接受 canonical `IDataSetMetadata`。
+该入口是强约束入口，只接受 canonical `DataSetMetadata`。
 如果输入是 JSON 字符串或 pagedata 原始对象，请改用 `SparkData.fromJson(...)`。
 
 **参数：**
-- `meta: IDataSetMetadata` - canonical DataSet 元数据
+- `meta: DataSetMetadata` - canonical DataSet 元数据
 
 **返回：** `DataSet`
 
@@ -157,11 +157,11 @@ type FilterExpression =
 #### `SparkData.fromJson(json)`
 
 从 JSON 字符串、canonical DataSet 对象或 pagedata 原始对象恢复 DataSet。
-历史 `{ dataset: ... }` 包裹结构已移除，请直接传入 canonical `IDataSetMetadata`。
+历史 `{ dataset: ... }` 包裹结构已移除，请直接传入 canonical `DataSetMetadata`。
 该入口负责宽输入归一化；当你需要强约束类型检查时，请优先使用 `createDataSet(meta)`。
 
 **参数：**
-- `json: string | Record<string, unknown> | IDataSetMetadata` - JSON 字符串或对象
+- `json: string | Record<string, unknown> | DataSetMetadata` - JSON 字符串或对象
 
 **返回：** `DataSet`
 
@@ -216,7 +216,7 @@ const treeManager = SparkData.createTreeManager(
 
 **参数：**
 - `tableName: string` - 表名
-- `meta?: IViewMetadata` - 视图元数据
+- `meta?: ViewMetadata` - 视图元数据
 
 **返回：** `DataView`
 
@@ -325,15 +325,15 @@ await view.requestData()
 
 ```typescript
 import type {
-  IDataSet,
-  IDataRow,
+  DataSetContract,
+  DataRow,
   DataColumn,
   TreeConfig,
   FlatTreeNode,
   FilterExpression,
   CrudApi,
-  ITableMetadata,
-  IViewMetadata
+  TableMetadata,
+  ViewMetadata
 } from '@spark-view/spark-data'
 ```
 

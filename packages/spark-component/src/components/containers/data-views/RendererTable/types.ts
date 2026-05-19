@@ -1,26 +1,26 @@
-import type { CrudResult, IDataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-view/spark-data'
+import type { CrudResult, DataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-view/spark-data'
 import type { BaseContainerApi } from '../../support/base-container-api.js'
 
 export interface RendererTreePath {
   pathIds: Array<string | number>
-  pathNodes?: IDataRow[]
+  pathNodes?: DataRow[]
 }
 
 export interface RendererTableApi extends BaseContainerApi {
-  getRows(): IDataRow[]
-  getSelectedRows(): IDataRow[]
+  getRows(): DataRow[]
+  getSelectedRows(): DataRow[]
   query(): Promise<void>
   loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<CrudResult<NestedTreeNode[]> | null>
-  loadTreeChildren(parentId: string | number | null, limit?: number): Promise<IDataRow[]>
+  loadTreeChildren(parentId: string | number | null, limit?: number): Promise<DataRow[]>
   loadTreePath(id: string | number): Promise<RendererTreePath | null>
   expandToNode(key: string | number): Promise<void>
-  moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null>
+  moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>
   searchTreeNested(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]>
-  setSelectedRows(rows: IDataRow[]): void
+  setSelectedRows(rows: DataRow[]): void
   setSelectedRowsById(ids: Array<string | number>): number
   clearSelectedRows(): void
   clearUiSelection(): void
-  toggleUiRowSelection(row: IDataRow, selected?: boolean): void
+  toggleUiRowSelection(row: DataRow, selected?: boolean): void
   doLayout(): void
   getNativeTable(): unknown
 }

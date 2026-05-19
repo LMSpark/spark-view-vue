@@ -1,9 +1,5 @@
 import type {
   AiModuleRegistration,
-  AiModuleRegistrationData,
-  AiModuleRegistrationStoreSnapshot,
-  AiRegisteredModuleApi,
-  AiRuntimeApi,
   AiRuntimeOptions,
 } from '../../protocol/runtime-contracts'
 import { AiRuntimeProjector } from './ai-runtime-support'
@@ -13,6 +9,7 @@ import { AiProjectionService } from './ai-projection-service'
 import { AiFunctionCallTranslator } from './ai-function-call-translator'
 import { AiFunctionCallExecutor } from './ai-function-call-executor'
 import { AiRegisteredApiFactory } from './ai-registered-api-factory'
+import type { AiRegisteredModule } from './ai-registered-module'
 import {
   actionOf,
   assertRuntimeId,
@@ -34,7 +31,7 @@ import type { AiKnowledgeProjection } from '../knowledge/knowledge-projection'
  * This keeps moduleId binding as the single public path and
  * prevents callers from bypassing the module registration boundary.
  */
-export class AiRuntime implements AiRuntimeApi {
+export class AiRuntime {
   private readonly projector = new AiRuntimeProjector(actionOf, assertRuntimeId)
 
   private readonly registrations = new AiRegistrationRepository(this.projector)
@@ -63,7 +60,7 @@ export class AiRuntime implements AiRuntimeApi {
     )
   }
 
-  registerModule(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi {
+  registerModule(source: AiModuleRegistration): AiRegisteredModule {
     const registration = this.registrations.registerModule(source)
     return this.apiFactory.createRegisteredModuleApi(registration)
   }

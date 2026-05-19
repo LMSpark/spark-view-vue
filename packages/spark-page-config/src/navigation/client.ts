@@ -12,6 +12,25 @@ export interface LinkProbeResult {
   reason: string
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isNavNode(value: unknown): value is NavNode {
+  if (!isRecord(value)) return false
+  const record = value
+  return typeof record['id'] === 'string' && typeof record['title'] === 'string'
+}
+
+function extractNavNode(response: Record<string, unknown>): NavNode {
+  if (isNavNode(response['node'])) return response['node']
+  throw new Error('服务器响应缺少节点数据')
+}
+
+function extractOptionalNavNode(response: Record<string, unknown>): NavNode | null {
+  return isNavNode(response['deleted']) ? response['deleted'] : null
+}
+
 export class NavigationConfigClient {
   private readonly getNavigationApi: () => string
   private readonly http: HttpClient
@@ -36,7 +55,7 @@ export class NavigationConfigClient {
       node: params.node,
       ...(params.index === undefined ? {} : { index: params.index }),
     })
-    return (response['node'] ?? params.node) as NavNode
+    return extractNavNode(response)
   }
 
   async updateNode(id: string, patch: Partial<NavNode>): Promise<NavNode> {
@@ -44,14 +63,14 @@ export class NavigationConfigClient {
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}`,
       patch,
     )
-    return (response['node'] ?? patch) as NavNode
+    return extractNavNode(response)
   }
 
   async deleteNode(id: string): Promise<NavNode | null> {
     const response = await this.http.delete<Record<string, unknown>>(
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}`,
     )
-    return (response['deleted'] ?? null) as NavNode | null
+    return extractOptionalNavNode(response)
   }
 
   async moveNode(id: string, newParentId: string | null, index: number): Promise<NavNode> {
@@ -59,7 +78,7 @@ export class NavigationConfigClient {
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}/move`,
       { newParentId, index },
     )
-    return response['node'] as NavNode
+    return extractNavNode(response)
   }
 
   async probeLink(url: string): Promise<LinkProbeResult> {

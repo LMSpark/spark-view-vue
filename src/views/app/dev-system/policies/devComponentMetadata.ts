@@ -1,4 +1,4 @@
-import type { RuleEditorComponentMetadata } from '@spark-view/spark-page-config'
+import type { JsonObject, JsonValue, RuleEditorComponentMetadata } from '@spark-view/spark-page-config'
 import { skillCatalog, type PropMeta, type SkillMeta } from 'virtual:spark-skill-catalog'
 
 const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
@@ -14,13 +14,30 @@ function parseEnumFromTypeString(type: string): string[] {
   return values.length >= 2 ? [...new Set(values)] : []
 }
 
-function inferDefaultFromProp(prop: PropMeta): unknown {
+function isJsonRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isJsonValue(value: unknown): value is JsonValue {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) return true
+  if (Array.isArray(value)) return value.every(isJsonValue)
+  if (!isJsonRecord(value)) return false
+  return Object.values(value).every(isJsonValue)
+}
+
+function parseJsonDefault(raw: string): JsonValue | null {
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!isJsonValue(parsed)) throw new Error('default prop metadata is not JSON serializable')
+    return parsed
+  } catch {
+    return raw
+  }
+}
+
+function inferDefaultFromProp(prop: PropMeta): JsonValue {
   if (prop.default !== undefined) {
-    try {
-      return JSON.parse(prop.default) as unknown
-    } catch {
-      return prop.default
-    }
+    return parseJsonDefault(prop.default)
   }
 
   const type = prop.type.toLowerCase()
@@ -73,18 +90,19 @@ export const DEV_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   devSkills.map(skill => [skill.type, createTypeLabel(skill)]),
 )
 
-export const DEV_REQUIRED_PROPS: Record<string, Record<string, unknown>> = Object.fromEntries(
-  devSkills
-    .map((skill): [string, Record<string, unknown>] => {
-      const requiredProps = Object.fromEntries(
-        (skill.props ?? [])
-          .filter(prop => prop.required && isConfigurableProp(prop))
-          .map(prop => [prop.name, inferDefaultFromProp(prop)]),
-      )
-      return [skill.type, requiredProps]
-    })
-    .filter(([, requiredProps]) => Object.keys(requiredProps).length > 0),
-)
+export const DEV_REQUIRED_PROPS: Record<string, JsonObject> = {}
+
+for (const skill of devSkills) {
+  const requiredProps: JsonObject = {}
+  for (const prop of skill.props ?? []) {
+    if (prop.required && isConfigurableProp(prop)) {
+      requiredProps[prop.name] = inferDefaultFromProp(prop)
+    }
+  }
+  if (Object.keys(requiredProps).length > 0) {
+    DEV_REQUIRED_PROPS[skill.type] = requiredProps
+  }
+}
 
 export const DEV_COMPONENT_METADATA: RuleEditorComponentMetadata = {
   types: DEV_TYPES,

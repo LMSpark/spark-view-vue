@@ -4,7 +4,7 @@ import type { VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { APP_SERVICES, PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import type { IDataSet, DataView } from '@spark-view/spark-data'
+import type { DataSetContract, DataView } from '@spark-view/spark-data'
 import type { PageComponentRegistry } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../../packages/spark-component/src/page/context/page-component-registry'
 
@@ -20,7 +20,7 @@ type MountedWithPageDataSetWrapper = VueWrapper<any> & {
 }
 
 interface MountWithPageDataSetOptions {
-  dataSet: IDataSet
+  dataSet: DataSetContract
   props?: Record<string, unknown>
   global?: ComponentMountingOptions<unknown>['global']
   slots?: Record<string, unknown>

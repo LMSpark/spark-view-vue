@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataSetMetadata, ITableMetadata, TreeConfig, IViewMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
+import type { DataSetMetadata, TableMetadata, TreeConfig, ViewMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
 
 describe('SparkData Namespace', () => {
   it('应该提供 createDataSet 工厂方法', () => {
@@ -53,7 +53,7 @@ describe('SparkData Namespace', () => {
   })
 
   it('应该提供 createDataView 工厂方法', () => {
-    const meta: IViewMetadata = { viewId: 'default' }
+    const meta: ViewMetadata = { viewId: 'default' }
     const view = SparkData.createDataView('Users', meta)
 
     expect(view).toBeDefined()
@@ -62,7 +62,7 @@ describe('SparkData Namespace', () => {
   })
 
   it('应该提供 createDataTable 工厂方法', () => {
-    const meta: ITableMetadata = {
+    const meta: TableMetadata = {
       tableName: 'Users',
       columns: [
         { name: 'id', type: 'number' },
@@ -136,8 +136,8 @@ describe('SparkData Namespace', () => {
     expect(dataSet1.constructor).toBe(dataSet2.constructor)
   })
 
-  it('createDataSet 应只接受 canonical IDataSetMetadata', () => {
-    const meta: IDataSetMetadata = {
+  it('createDataSet 应只接受 canonical DataSetMetadata', () => {
+    const meta: DataSetMetadata = {
       dataSetName: 'CanonicalOnlyDS',
       tables: {
         Users: {

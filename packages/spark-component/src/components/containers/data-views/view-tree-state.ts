@@ -3,7 +3,7 @@ import type { ComputedRef } from 'vue'
 import {
   SparkData,
   type DataView,
-  type IDataRow,
+  type DataRow,
   type TreeConfig,
 } from '@spark-view/spark-data'
 import type { TreeNode } from './RendererTree/zero-code'
@@ -38,7 +38,7 @@ interface TreeSeedBuildResult {
   hasParentLink: boolean
 }
 
-function toTreeRows(rows: readonly IDataRow[]): TreeNode[] {
+function toTreeRows(rows: readonly DataRow[]): TreeNode[] {
   return rows as unknown as TreeNode[]
 }
 
@@ -69,7 +69,7 @@ function resolveTreeFieldNames(
   }
 }
 
-function buildTreeSeedNodes(rows: readonly IDataRow[], fields: TreeFieldNames): TreeSeedBuildResult {
+function buildTreeSeedNodes(rows: readonly DataRow[], fields: TreeFieldNames): TreeSeedBuildResult {
   const seedNodes: TreeManagerSeedNode[] = []
   let hasParentLink = false
 
@@ -94,27 +94,27 @@ function buildTreeSeedNodes(rows: readonly IDataRow[], fields: TreeFieldNames): 
   return { seedNodes, hasParentLink }
 }
 
-function buildNestedTreeRows(fields: TreeFieldNames, seedNodes: TreeManagerSeedNode[]): IDataRow[] {
+function buildNestedTreeRows(fields: TreeFieldNames, seedNodes: TreeManagerSeedNode[]): DataRow[] {
   return SparkData.createTreeManager({
     idField: fields.idField,
     parentIdField: fields.parentIdField,
     textField: fields.textField,
     treeMode: 'nested',
-  }, seedNodes).buildNestedTree() as unknown as IDataRow[]
+  }, seedNodes).buildNestedTree() as unknown as DataRow[]
 }
 
 export function buildTreeTableRows(
   view: DataView | null | undefined,
-  rows: readonly IDataRow[],
+  rows: readonly DataRow[],
   treeConfig: TreeConfig | undefined,
   primaryKey: string | undefined,
-): IDataRow[] {
+): DataRow[] {
   if (rows.length === 0) return []
   if (isAlreadyNested(rows)) return toMutableRows(rows)
   if (!treeConfig) return toMutableRows(rows)
 
   if (view?.treeManager) {
-    return view.treeManager.buildNestedTree() as unknown as IDataRow[]
+    return view.treeManager.buildNestedTree() as unknown as DataRow[]
   }
 
   const fields = resolveTreeFieldNames(treeConfig, primaryKey)

@@ -3,7 +3,6 @@ import {
   type AiFunctionRegistration,
   type AiModuleInstanceParam,
   type AiModuleRegistration,
-  type AiRegisteredModuleApi,
   type AiRuntimeExecuteFunctionCallOptions,
   type AiRuntimeFunctionCallResult,
   type AiRuntimeFunctionCallTranslationResult,
@@ -19,6 +18,7 @@ import {
   type ModulePromptProvider,
 } from '../../core/protocol/runtime-contracts'
 import { AiRuntime } from '../../core/internal/runtime/ai-runtime'
+import type { AiRegisteredModule } from '../../core/internal/runtime/ai-registered-module'
 import type { AiKnowledgeProjection } from '../../core/internal/knowledge/knowledge-projection'
 
 export type StaticAiToolModuleOptions = {
@@ -82,7 +82,7 @@ export type RuntimeBackedBusinessModuleOptions = StaticAiToolModuleOptions & {
 export abstract class RuntimeBackedBusinessModule extends StaticAiToolModule {
   protected readonly core: AiRuntime
 
-  protected readonly ai: AiRegisteredModuleApi
+  protected readonly ai: AiRegisteredModule
 
   protected constructor(options: RuntimeBackedBusinessModuleOptions) {
     super(options)
@@ -152,14 +152,6 @@ export abstract class RuntimeBackedBusinessModule extends StaticAiToolModule {
   getSessionHistory(context: RuntimeBackedModuleContext): readonly AiRuntimeHistoryEntry[] {
     this.assertRuntimeContext(context)
     return this.ai.getSessionHistory(context.moduleInstanceId)
-  }
-
-  getRegistrationData() {
-    return this.ai.getRegistrationData()
-  }
-
-  getRegistrationStoreSnapshot() {
-    return this.ai.getRegistrationStoreSnapshot()
   }
 
   async translateFunctionCall(

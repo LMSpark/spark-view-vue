@@ -9,16 +9,28 @@ import type {
   CrudOperationConfig,
   CrudResult,
   DataColumn,
-  IDataSetMetadata,
-  IDataRow,
-  ITableMetadata,
-  IViewMetadata,
+  DataSetMetadata,
+  DataRow,
+  TableMetadata,
+  ViewMetadata,
   TableRelation,
   ViewDependency,
   TableSemanticMetadata,
   TableResourceType,
   TableBusinessCategory,
 } from './types'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isDataRow(value: unknown): value is DataRow {
+  return isRecord(value)
+}
+
+function isCrudResult(value: unknown): value is CrudResult {
+  return isRecord(value) && typeof value['success'] === 'boolean'
+}
 
 /**
  * 创建数据表时的输入参数。
@@ -46,7 +58,7 @@ interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
    * 需要一起创建或初始化的视图配置。
    * 其中 default 视图不会新建，只会复用建表时自动创建的实例并应用配置。
    */
-  views?: Record<string, IViewMetadata>
+  views?: Record<string, ViewMetadata>
 }
 
 /**
@@ -93,7 +105,7 @@ interface DataSetCrudToolUpdateTableOptions {
   /**
    * default 视图需要替换的整批行数据。
    */
-  defaultRows?: IDataRow[]
+  defaultRows?: DataRow[]
 }
 
 /**
@@ -125,7 +137,7 @@ export class DataSetCrudTool {
    * 当前工具类持有的 DataSet 实例。
    */
   private _dataSet: DataSet
-  private _history!: SnapshotHistory<IDataSetMetadata>
+  private _history!: SnapshotHistory<DataSetMetadata>
 
   /**
    * 创建一个绑定到指定 dataSetName 的统一 CRUD 工具。
@@ -145,7 +157,7 @@ export class DataSetCrudTool {
    * 从已有 DataSet 实例创建工具类。
    */
   static fromDataSet(dataSet: DataSet): DataSetCrudTool {
-    const tool = Object.create(DataSetCrudTool.prototype) as DataSetCrudTool
+    const tool = new DataSetCrudTool(dataSet.dataSetName)
     tool._dataSet = dataSet
     tool.initializeHistory()
     return tool
@@ -154,7 +166,7 @@ export class DataSetCrudTool {
   /**
    * 从 JSON 元数据创建工具类。
    */
-  static fromJson(json: IDataSetMetadata | Record<string, unknown> | string): DataSetCrudTool {
+  static fromJson(json: DataSetMetadata | Record<string, unknown> | string): DataSetCrudTool {
     const ds = DataSet.fromJson(json)
     return DataSetCrudTool.fromDataSet(ds)
   }
@@ -166,7 +178,7 @@ export class DataSetCrudTool {
    * - preserveHistory=true：在当前历史链中提交快照，支持 undo/redo。
    */
   static reconcileFromJson(
-    snapshot: IDataSetMetadata | Record<string, unknown> | string,
+    snapshot: DataSetMetadata | Record<string, unknown> | string,
     current?: DataSetCrudTool,
     options?: { preserveHistory?: boolean },
   ): DataSetCrudTool {
@@ -216,7 +228,7 @@ export class DataSetCrudTool {
    *
    * @returns 可用于持久化或传输的 DataSet 元数据。
    */
-  toJson(): IDataSetMetadata {
+  toJson(): DataSetMetadata {
     return this.dataSet.toJson()
   }
 
@@ -282,7 +294,7 @@ export class DataSetCrudTool {
    * 用外部快照替换当前 DataSet。
    * 默认会把替换结果压入历史栈，确保该替换可被撤销/重做。
    */
-  replaceFromJson(snapshot: IDataSetMetadata | Record<string, unknown> | string, options?: { commitHistory?: boolean }): void {
+  replaceFromJson(snapshot: DataSetMetadata | Record<string, unknown> | string, options?: { commitHistory?: boolean }): void {
     const normalizedSnapshot = DataSet.fromJson(snapshot).toJson()
     this._dataSet.replaceFromJson(normalizedSnapshot)
     if (options?.commitHistory === false) {
@@ -300,7 +312,7 @@ export class DataSetCrudTool {
   }
 
   private initializeHistory(): void {
-    this._history = new SnapshotHistory<IDataSetMetadata>(DataSetCrudTool.HISTORY_LIMIT)
+    this._history = new SnapshotHistory<DataSetMetadata>(DataSetCrudTool.HISTORY_LIMIT)
     this._history.push(this._dataSet.toJson())
   }
 
@@ -420,54 +432,46 @@ export class DataSetCrudTool {
       return nextRow
     }
 
-    const renameFieldRefs = (value: unknown): unknown => {
+    const renameFieldRefsInPlace = (value: unknown): void => {
       if (Array.isArray(value)) {
-        return value.map(item => renameFieldRefs(item))
+        for (const item of value) renameFieldRefsInPlace(item)
+        return
       }
-      if (value === null || value === undefined || typeof value !== 'object') {
-        return value
-      }
+      if (!isRecord(value)) return
 
-      const record = value as Record<string, unknown>
-      const nextRecord: Record<string, unknown> = {}
-      for (const [key, child] of Object.entries(record)) {
+      for (const [key, child] of Object.entries(value)) {
         if (key === 'field' && child === columnName) {
-          nextRecord[key] = newColumnName
+          value[key] = newColumnName
           continue
         }
         if (key === 'valueField') {
           if (child === columnName) {
-            nextRecord[key] = newColumnName
+            value[key] = newColumnName
             continue
           }
           if (Array.isArray(child)) {
-            nextRecord[key] = (child as string[]).map(item => item === columnName ? newColumnName : item)
+            value[key] = child.map((item: unknown): unknown => item === columnName ? newColumnName : item)
             continue
           }
         }
         if (key === 'labelField' && child === columnName) {
-          nextRecord[key] = newColumnName
+          value[key] = newColumnName
           continue
         }
         if ((key === 'sourceField' || key === 'targetField' || key === 'matchField') && child === columnName) {
-          nextRecord[key] = newColumnName
+          value[key] = newColumnName
           continue
         }
-        nextRecord[key] = renameFieldRefs(child)
+        renameFieldRefsInPlace(child)
       }
-      return nextRecord
     }
 
-    const renamedViews = Object.fromEntries(
-      Object.entries(table.views).map(([viewId, view]) => {
-        const nextView = renameFieldRefs(view) as IViewMetadata
-        if (Array.isArray(nextView.rows)) {
-          nextView.rows = nextView.rows.map(row => renameRowField(row))
-        }
-        return [viewId, nextView]
-      }),
-    ) as ITableMetadata['views']
-    table.views = renamedViews
+    for (const view of Object.values(table.views)) {
+      renameFieldRefsInPlace(view)
+      if (Array.isArray(view.rows)) {
+        view.rows = view.rows.map(row => renameRowField(row))
+      }
+    }
 
     if (snapshot.tableRelations) {
       snapshot.tableRelations = snapshot.tableRelations.map((relation) => ({
@@ -588,19 +592,24 @@ export class DataSetCrudTool {
       throw new Error(`renameTable: table ${newTableName} 已存在`)
     }
 
-    const nextTables: Record<string, ITableMetadata> = {}
+    const nextTables: Record<string, TableMetadata> = {}
     for (const [key, value] of Object.entries(snapshot.tables)) {
       if (key !== tableName) {
         nextTables[key] = value
         continue
       }
 
+      const views: TableMetadata['views'] = {
+        default: { ...value.views.default, tableName: newTableName },
+      }
+      for (const [viewId, view] of Object.entries(value.views)) {
+        if (viewId === 'default') continue
+        views[viewId] = { ...view, tableName: newTableName }
+      }
       nextTables[newTableName] = {
         ...value,
         tableName: newTableName,
-        views: Object.fromEntries(
-          Object.entries(value.views).map(([viewId, view]) => [viewId, { ...view, tableName: newTableName }]),
-        ) as ITableMetadata['views'],
+        views,
       }
     }
     snapshot.tables = nextTables
@@ -684,7 +693,7 @@ export class DataSetCrudTool {
    * @returns 新创建的视图实例。
    * @throws 当表不存在，或试图创建 default 视图时抛错。
    */
-  createView(params: { tableName: string; viewId: string; config?: IViewMetadata }): DataView {
+  createView(params: { tableName: string; viewId: string; config?: ViewMetadata }): DataView {
     const tableName = this.requireNonEmptyString(params.tableName, 'createView.tableName')
     const viewId = this.requireNonEmptyString(params.viewId, 'createView.viewId')
     // default 视图在建表时就存在，单独创建会破坏约定，因此强制改走 updateView。
@@ -709,7 +718,7 @@ export class DataSetCrudTool {
    * @returns 更新后的视图实例。
    * @throws 当表或视图不存在时抛错。
    */
-  updateView(params: { tableName: string; viewId?: string; updates: Partial<IViewMetadata> }): DataView {
+  updateView(params: { tableName: string; viewId?: string; updates: Partial<ViewMetadata> }): DataView {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateView.tableName')
     const viewId = params.viewId ?? 'default'
     const updates = this.requireObjectArg(params.updates, 'updateView.updates')
@@ -836,7 +845,7 @@ export class DataSetCrudTool {
    * @returns 行数组副本。
    * @throws 当表或视图不存在时抛错。
    */
-  listRows(params: { tableName: string; viewId?: string }): IDataRow[] {
+  listRows(params: { tableName: string; viewId?: string }): DataRow[] {
     const tableName = this.requireNonEmptyString(params.tableName, 'listRows.tableName')
     return [...this.getViewOrThrow(tableName, params.viewId ?? 'default').rows]
   }
@@ -850,7 +859,7 @@ export class DataSetCrudTool {
    * @returns 命中的行；不存在时返回 undefined。
    * @throws 当表或视图不存在时抛错。
    */
-  getRow(params: { tableName: string; id: string | number; viewId?: string }): IDataRow | undefined {
+  getRow(params: { tableName: string; id: string | number; viewId?: string }): DataRow | undefined {
     const tableName = this.requireNonEmptyString(params.tableName, 'getRow.tableName')
     const viewId = params.viewId ?? 'default'
     const view = this.getViewOrThrow(tableName, viewId)
@@ -864,10 +873,10 @@ export class DataSetCrudTool {
    * @param tableName 表名。
    * @param data 新行数据。
    * @param viewId 视图 ID，默认 default。
-   * @returns 本地模式下通常返回 IDataRow；远端 CRUD 模式下可能返回 CrudResult。
+   * @returns 本地模式下通常返回 DataRow；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或创建失败时抛错。
    */
-  async createRow(params: { tableName: string; data: Partial<IDataRow>; viewId?: string }): Promise<IDataRow | CrudResult<IDataRow>> {
+  async createRow(params: { tableName: string; data: Partial<DataRow>; viewId?: string }): Promise<DataRow | CrudResult<DataRow>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'createRow.tableName')
     const data = this.requireObjectArg(params.data, 'createRow.data')
     const viewId = params.viewId ?? 'default'
@@ -885,7 +894,7 @@ export class DataSetCrudTool {
    * - immediate + API 模式：优先走 view.crud.batchCreateRecords
    * - 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult
    */
-  async createRows(params: { tableName: string; items: Array<Partial<IDataRow>>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+  async createRows(params: { tableName: string; items: Array<Partial<DataRow>>; viewId?: string }): Promise<CrudResult<BatchResult>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'createRows.tableName')
     const items = this.requireNonEmptyArray(params.items, 'createRows.items')
     const viewId = params.viewId ?? 'default'
@@ -908,7 +917,7 @@ export class DataSetCrudTool {
    * @returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或更新失败时抛错。
    */
-  async updateRow(params: { tableName: string; id: string | number; data: Partial<IDataRow>; viewId?: string }): Promise<boolean | CrudResult<IDataRow>> {
+  async updateRow(params: { tableName: string; id: string | number; data: Partial<DataRow>; viewId?: string }): Promise<boolean | CrudResult<DataRow>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateRow.tableName')
     const data = this.requireObjectArg(params.data, 'updateRow.data')
     const viewId = params.viewId ?? 'default'
@@ -925,7 +934,7 @@ export class DataSetCrudTool {
    *
    * 对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。
    */
-  async updateRows(params: { tableName: string; items: Array<{ id: string | number; data: Partial<IDataRow> }>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+  async updateRows(params: { tableName: string; items: Array<{ id: string | number; data: Partial<DataRow> }>; viewId?: string }): Promise<CrudResult<BatchResult>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateRows.tableName')
     const items = this.requireNonEmptyArray(params.items, 'updateRows.items')
     const viewId = params.viewId ?? 'default'
@@ -1166,11 +1175,11 @@ export class DataSetCrudTool {
     return value
   }
 
-  private requireObjectArg<T>(value: T, label: string): Exclude<T, undefined> {
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+  private requireObjectArg<T extends object>(value: T, label: string): T {
+    if (!isRecord(value)) {
       throw new Error(`${label} must be an object`)
     }
-    return value as Exclude<T, undefined>
+    return value
   }
 
   private requireNonEmptyArray<T>(value: T[] | undefined, label: string): T[] {
@@ -1181,10 +1190,14 @@ export class DataSetCrudTool {
   }
 
   private requireViewDependency(value: ViewDependency | Partial<ViewDependency>, label: string): ViewDependency {
-    const dependency = this.requireObjectArg(value, label) as ViewDependency
-    this.requireNonEmptyString(dependency.parentTable, `${label}.parentTable`)
-    this.requireNonEmptyString(dependency.childTable, `${label}.childTable`)
-    return dependency
+    this.requireObjectArg(value, label)
+    const parentTable = this.requireNonEmptyString(value.parentTable, `${label}.parentTable`)
+    const childTable = this.requireNonEmptyString(value.childTable, `${label}.childTable`)
+    return {
+      ...value,
+      parentTable,
+      childTable,
+    }
   }
 
   private normalizeTableNameArg(
@@ -1219,7 +1232,7 @@ export class DataSetCrudTool {
    * @param view 目标视图。
    * @param metadata 需要应用的视图元数据。
    */
-  private applyViewMetadata(table: DataTable, view: DataView, metadata: Partial<IViewMetadata>): void {
+  private applyViewMetadata(table: DataTable, view: DataView, metadata: Partial<ViewMetadata>): void {
     const rows = metadata.rows
     if (rows !== undefined) {
       // rows 先落到 DataView，再补齐内联 default view 的 DataTable.rows，保证视图和源数据一致。
@@ -1269,8 +1282,8 @@ export class DataSetCrudTool {
   }
 
   private toCrudResult(result: unknown, defaultSuccess: boolean): CrudResult {
-    if (typeof result === 'object' && result !== null && 'success' in result) {
-      return result as CrudResult
+    if (isCrudResult(result)) {
+      return result
     }
 
     if (result instanceof Error) {
@@ -1340,10 +1353,10 @@ export class DataSetCrudTool {
    * @returns 命中的行；不存在时返回 undefined。
    */
   private findRowById(
-    rows: readonly IDataRow[],
+    rows: readonly DataRow[],
     id: string | number,
-    getPkKey: (row: IDataRow) => string | number | undefined,
-  ): IDataRow | undefined {
+    getPkKey: (row: DataRow) => string | number | undefined,
+  ): DataRow | undefined {
     // 使用显式队列遍历 children，避免树形结构场景遗漏深层节点。
     const stack = [...rows]
     while (stack.length > 0) {
@@ -1352,7 +1365,7 @@ export class DataSetCrudTool {
       if (getPkKey(row) === id) return row
       const children = row['children']
       if (Array.isArray(children)) {
-        stack.unshift(...children.filter((child): child is IDataRow => typeof child === 'object' && child !== null))
+        stack.unshift(...children.filter(isDataRow))
       }
     }
     return undefined

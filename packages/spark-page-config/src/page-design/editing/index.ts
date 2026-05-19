@@ -5,7 +5,6 @@ export {
 export type {
   PageDesignEditPhase,
   PageDesignEditHost,
-  PageDesignEditState,
 } from './edit-session'
 
 export type {

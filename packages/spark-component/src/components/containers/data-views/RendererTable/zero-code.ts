@@ -1,4 +1,4 @@
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { getSelectedRows } from '../../../../page/actions/index.js'
 import { createContainerCrudContext, getNativeRefValue } from '../zero-code-shared.js'
@@ -10,8 +10,8 @@ import type { ValueRef } from '../../../shared-types.js'
 
 export interface NativeTableLike {
   clearSelection?: () => void
-  toggleRowSelection?: (row: IDataRow, selected?: boolean) => void
-  setCurrentRow?: (row: IDataRow | null) => void
+  toggleRowSelection?: (row: DataRow, selected?: boolean) => void
+  setCurrentRow?: (row: DataRow | null) => void
   doLayout?: () => void
 }
 
@@ -82,7 +82,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       'current-change': {
         systemDefault: (currentRow: unknown) => {
           resolvedView.value?.selection.setCurrentRow(
-            (currentRow as IDataRow | null) ?? null,
+            (currentRow as DataRow | null) ?? null,
             currentRowOriginatorId,
           )
         },
@@ -90,7 +90,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       'row-click': {
         systemDefault: (row: unknown) => {
           resolvedView.value?.selection.setCurrentRow(
-            row as IDataRow,
+            row as DataRow,
             currentRowOriginatorId,
           )
         },
@@ -98,7 +98,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       'selection-change': {
         systemDefault: (selection: unknown) => {
           resolvedView.value?.selection.setSelectedRows(
-            selection as IDataRow[],
+            selection as DataRow[],
             selectedRowsOriginatorId,
           )
         },

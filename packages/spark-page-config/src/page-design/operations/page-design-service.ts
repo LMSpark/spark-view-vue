@@ -101,16 +101,21 @@ export function pageDesignServiceFailure(code: string, msg: string, fix: string)
   return { ok: false, code, msg, fix }
 }
 
+function getProp(value: object, key: string): unknown {
+  const desc = Object.getOwnPropertyDescriptor(value, key)
+  return desc?.value
+}
+
 export function isPageDesignServiceResult(value: unknown): value is PageDesignServiceResult<unknown> {
   if (typeof value !== 'object' || value === null || !('ok' in value)) return false
-  const candidate = value as Partial<PageDesignServiceResult<unknown>>
-  if (candidate.ok === true) {
-    return 'data' in candidate && typeof candidate.summary === 'string'
+  const ok = getProp(value, 'ok')
+  if (ok === true) {
+    return 'data' in value && typeof getProp(value, 'summary') === 'string'
   }
-  if (candidate.ok === false) {
-    return typeof candidate.code === 'string'
-      && typeof candidate.msg === 'string'
-      && typeof candidate.fix === 'string'
+  if (ok === false) {
+    return typeof getProp(value, 'code') === 'string'
+      && typeof getProp(value, 'msg') === 'string'
+      && typeof getProp(value, 'fix') === 'string'
   }
   return false
 }

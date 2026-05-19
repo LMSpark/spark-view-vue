@@ -46,14 +46,14 @@ export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } 
 const pageLogger = Logger('PageConfig')
 
 const REQUEST_TIMEOUT = 10_000
-const REQUIRED_PAGE_CONFIG_FILE_NAMES = ['rule.json', 'pagedata.json'] as const
+const REQUIRED_PAGE_CONFIG_FILE_NAMES: readonly PageConfigFileName[] = ['rule.json', 'pagedata.json']
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** 必填字段默认值（getHeaders / pagesConfigBaseUrl 可选，不在此列） */
 const DEFAULT_OPTIONS = {
   apiBaseUrl: '/api',
-  fileStorage: 'localStorage' as const,
+  fileStorage: 'localStorage',
   enableValidation: false,
   timeout: REQUEST_TIMEOUT,
 } satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
@@ -61,6 +61,10 @@ const DEFAULT_OPTIONS = {
 type ResolvedConfigLoaderOptions =
   Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
   & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
+
+function isUnknownArray(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value)
+}
 
 function trimTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')
@@ -226,6 +230,9 @@ export class PageConfigLoader implements ConfigLoader {
 
     const dataResult = await this.loadPageData(pageId)
     if (!dataResult.success) return this.failFrom(dataResult.error, dataResult.reason)
+    if (dataResult.data === undefined) {
+      throw new Error(`Page data loader returned no data: ${pageId}/pagedata.json`)
+    }
 
     const scriptResult = await this.loadOptionalPageFile(pageId, 'script.js', this.scriptLoader, knownFiles)
     if (!scriptResult.success) return this.failFrom(scriptResult.error, scriptResult.reason)
@@ -246,7 +253,7 @@ export class PageConfigLoader implements ConfigLoader {
       data: {
         pageId,
         rule: ruleResult.data ?? [],
-        data: dataResult.data as PageDataConfig,
+        data: dataResult.data,
         script: scriptResult.data,
         css: cssResult.data,
       },
@@ -306,7 +313,7 @@ export class PageConfigLoader implements ConfigLoader {
     })
     if (!result.success) {
       if (descriptor.required) {
-        return this.pageFileContentResultFromData(result, path) as ConfigLoadResult<never>
+        return this.pageFileContentResultFromData(result, path)
       }
       return { success: true, source: 'remote' }
     }
@@ -329,19 +336,24 @@ export class PageConfigLoader implements ConfigLoader {
     if (this.pageFileManifest !== null) return this.pageFileManifest
 
     try {
-      const rows = await this.fileApiRequest.get<unknown>('/__list', undefined, {
+      const response: unknown = await this.fileApiRequest.get<unknown>('/__list', undefined, {
         meta: { silentHttpError: true },
       })
-      if (!Array.isArray(rows)) return null
+      if (!isUnknownArray(response)) return null
+
+      function getProp(obj: object, key: string): unknown {
+        const desc = Object.getOwnPropertyDescriptor(obj, key)
+        return desc?.value
+      }
 
       const manifest = new Map<string, Set<PageConfigFileName>>()
-      for (const row of rows) {
+      for (const row of response) {
         if (row === null || typeof row !== 'object') continue
-        const item = row as Record<string, unknown>
-        const pageId = item['pageId']
+        const pageId = getProp(row, 'pageId')
         if (typeof pageId !== 'string' || pageId.trim() === '') continue
-        const files = Array.isArray(item['files'])
-          ? item['files'].filter((name): name is PageConfigFileName => this.isPageConfigFileName(name))
+        const filesRaw = getProp(row, 'files')
+        const files = Array.isArray(filesRaw)
+          ? filesRaw.filter((name): name is PageConfigFileName => this.isPageConfigFileName(name))
           : []
         manifest.set(pageId, new Set(files))
       }
@@ -355,7 +367,7 @@ export class PageConfigLoader implements ConfigLoader {
 
   private isPageConfigFileName(value: unknown): value is PageConfigFileName {
     return typeof value === 'string'
-      && ((PAGE_CONFIG_FILE_NAMES as readonly string[]).includes(value) || this.fileRegistry.has(value))
+      && (PAGE_CONFIG_FILE_NAMES.some((filename) => filename === value) || this.fileRegistry.has(value))
   }
 
   private isKnownMissing(
@@ -429,7 +441,7 @@ export class PageConfigLoader implements ConfigLoader {
       return {
         success: false,
         error: `${this.pagesConfigBase}${path}: ${r.error ?? ''}`,
-        ...(isNotFound ? { reason: 'not-found' as const } : (r.reason !== undefined ? { reason: r.reason } : {})),
+        ...(isNotFound ? { reason: 'not-found' } : (r.reason !== undefined ? { reason: r.reason } : {})),
         timestamp
       }
     }

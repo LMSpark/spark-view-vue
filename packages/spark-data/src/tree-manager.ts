@@ -18,6 +18,23 @@ import { applyPlatformProjectScope } from './core/platform-scoped-url'
 
 import { Logger, createRequest, type HttpClient } from '@spark-view/spark-utils'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isFlatTreeNode(value: unknown): value is FlatTreeNode {
+  const record = isRecord(value) ? value : null
+  return record !== null
+    && (typeof record['id'] === 'string' || typeof record['id'] === 'number')
+    && typeof record['name'] === 'string'
+}
+
+function resolveMovedNode(response: { node?: FlatTreeNode } | FlatTreeNode): FlatTreeNode {
+  if (isRecord(response) && isFlatTreeNode(response['node'])) return response['node']
+  if (isFlatTreeNode(response)) return response
+  throw new Error('[TreeManager] move endpoint returned invalid node')
+}
+
 /**
  * 树管理器类
  * 管理 DataView 中的树形数据视图
@@ -279,7 +296,7 @@ export class TreeManager {
       const payload: Record<string, unknown> = { id: nodeId, newParentId }
       if (index !== undefined) payload['index'] = index
       const response = await this._callEndpoint<{ node?: FlatTreeNode } | FlatTreeNode>(endpoint, payload)
-      const moved = (response as { node?: FlatTreeNode }).node ?? (response as FlatTreeNode)
+      const moved = resolveMovedNode(response)
       const normalized: FlatTreeNode = {
         ...existing,
         ...moved,
@@ -485,4 +502,3 @@ export class TreeManager {
   }
 
 }
-

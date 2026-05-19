@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { isActionDescriptorDisabled } from '../packages/spark-component/src/page/actions/executor-helpers'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
@@ -173,7 +173,7 @@ describe('DataView CRUD bridge', () => {
   it('builtin append-row should call view.addRow instead of appendRow', async () => {
     const { dataSet, view } = createDataView()
     const pageService = createPageService()
-    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as IDataRow)
+    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as DataRow)
     const appendRowSpy = vi.spyOn(view, 'appendRow')
 
     const desc = nodeToActionDescriptor({
@@ -383,7 +383,7 @@ describe('DataView CRUD bridge', () => {
   it('action executor append-row should call view.addRow instead of appendRow', async () => {
     const { dataSet, view } = createDataView()
     const pageService = createPageService()
-    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as IDataRow)
+    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as DataRow)
     const appendRowSpy = vi.spyOn(view, 'appendRow')
 
     await executeActionDescriptor(

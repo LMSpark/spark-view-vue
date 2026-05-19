@@ -31,7 +31,7 @@ import type {
 } from './action-types'
 import { isCancellableControl, type CancellableControl } from '../../components/containers/support/interactionControl.js'
 import { Logger } from '@spark-view/spark-utils'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import { extractErrorMessage, interpolate, createActionNotifier, isRowLike } from './executor-helpers'
 
@@ -107,7 +107,7 @@ function resolveNavigateRow(
   ctx: ActionExecutionContext,
   scope: ActionExecutionScope | undefined,
   eventArgs: unknown[] | undefined,
-): IDataRow | null {
+): DataRow | null {
   const eventRow = eventArgs?.[0]
   if (isRowLike(eventRow)) return eventRow
   if (isRowLike(scope?.row)) return scope.row

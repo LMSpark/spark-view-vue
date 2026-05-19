@@ -8,7 +8,7 @@ import {
   type DataViewKeyDiagnostic,
   type DataViewMemberDiagnostic,
   type DataView,
-  type IDataRow,
+  type DataRow,
 } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../internal'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
@@ -36,10 +36,10 @@ function resolveMaybeValue<T>(source: MaybeRefOrGetter<T> | undefined): T | unde
   return source === undefined ? undefined : toValue(source)
 }
 
-function pickRowFromSource(source: unknown): IDataRow | null {
+function pickRowFromSource(source: unknown): DataRow | null {
   const sourceRecord = toDataRecord(source)
   if (!sourceRecord) return null
-  return toDataRecord(sourceRecord['currentRow']) as IDataRow | null
+  return toDataRecord(sourceRecord['currentRow']) as DataRow | null
 }
 
 interface UseContainerDataSourceOptions<TSource> {
@@ -70,7 +70,7 @@ interface UseContainerDataSourceEffectsOptions<TSource> {
 
 export interface ContainerDataSourceState<TSource> {
   resolvedView: ComputedRef<TSource | null>
-  resolvedDataRow: ComputedRef<IDataRow | null>
+  resolvedDataRow: ComputedRef<DataRow | null>
 }
 
 function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOptions<TSource>): ContainerDataSourceState<TSource> {
@@ -107,7 +107,7 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
     return null
   })
 
-  const resolvedDataRow = computed<IDataRow | null>(() => {
+  const resolvedDataRow = computed<DataRow | null>(() => {
     const provided = resolveMaybeValue(options.externalDataSource)
     if (provided !== undefined) return pickRowFromSource(provided)
 
@@ -115,7 +115,7 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
 
     const viewRecord = toDataRecord(resolvedView.value)
     const currentRow = viewRecord ? toDataRecord(viewRecord['currentRow']) : null
-    if (currentRow) return currentRow as IDataRow
+    if (currentRow) return currentRow as DataRow
 
     const inherited = resolveMaybeValue(options.inheritedDataSource)
     return pickRowFromSource(inherited)

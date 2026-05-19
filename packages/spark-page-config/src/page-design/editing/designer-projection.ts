@@ -1,10 +1,10 @@
-import type { DataColumn, IDataSetMetadata, ITableMetadata, TableRelation } from '@spark-view/spark-data'
+import type { DataColumn, DataSetMetadata, TableMetadata, TableRelation } from '@spark-view/spark-data'
 
 export interface DesignerColumnProjection extends DataColumn {
   id: string
 }
 
-export interface DesignerTableProjection extends Omit<ITableMetadata, 'columns'> {
+export interface DesignerTableProjection extends Omit<TableMetadata, 'columns'> {
   id: string
   x: number
   y: number
@@ -32,7 +32,7 @@ function getDefaultTablePosition(index: number): { x: number; y: number } {
 }
 
 export function reconcileDesignerTableUiState(
-  metadata: IDataSetMetadata,
+  metadata: DataSetMetadata,
   currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>,
   createId: () => string,
   layoutForNewTable?: LayoutForNewTable,
@@ -64,7 +64,7 @@ export function reconcileDesignerTableUiState(
 }
 
 export function projectDesignerTables(
-  metadata: IDataSetMetadata,
+  metadata: DataSetMetadata,
   tableUiState: Record<string, DesignerTableUiState>,
   createId: () => string,
 ): DesignerTableProjection[] {
@@ -87,7 +87,7 @@ export function projectDesignerTables(
   })
 }
 
-export function projectDesignerRelations(metadata: IDataSetMetadata): DesignerRelationProjection[] {
+export function projectDesignerRelations(metadata: DataSetMetadata): DesignerRelationProjection[] {
   return (metadata.tableRelations ?? []).map((rel) => ({
     ...rel,
     relationType: 'one-to-many',
@@ -98,9 +98,9 @@ export function buildDataSetMetadataFromDesignerProjection(params: {
   dataSetName: string
   tables: readonly DesignerTableProjection[]
   relations: readonly DesignerRelationProjection[]
-  viewDependencies?: NonNullable<IDataSetMetadata['viewDependencies']>
-}): IDataSetMetadata {
-  const tablesObj: Record<string, ITableMetadata> = {}
+  viewDependencies?: NonNullable<DataSetMetadata['viewDependencies']>
+}): DataSetMetadata {
+  const tablesObj: Record<string, TableMetadata> = {}
   const tablePositions: Record<string, { x: number; y: number }> = {}
 
   for (const table of params.tables) {
@@ -128,7 +128,7 @@ export function buildDataSetMetadataFromDesignerProjection(params: {
   }
 }
 
-export function hasDesignerProjectionChanges(current: IDataSetMetadata, persisted: IDataSetMetadata | null): boolean {
+export function hasDesignerProjectionChanges(current: DataSetMetadata, persisted: DataSetMetadata | null): boolean {
   if (!persisted) {
     return Object.keys(current.tables).length > 0 || (current.tableRelations?.length ?? 0) > 0
   }
@@ -141,7 +141,7 @@ export function hasDesignerProjectionChanges(current: IDataSetMetadata, persiste
   )
 }
 
-function isEqualComparableMetadata(a: IDataSetMetadata, b: IDataSetMetadata): boolean {
+function isEqualComparableMetadata(a: DataSetMetadata, b: DataSetMetadata): boolean {
   if (a.dataSetName !== b.dataSetName) return false
 
   const aTableKeys = Object.keys(a.tables)
@@ -184,7 +184,7 @@ function isEqualComparableMetadata(a: IDataSetMetadata, b: IDataSetMetadata): bo
   return true
 }
 
-function isEqualTableMetadata(a: ITableMetadata, b: ITableMetadata): boolean {
+function isEqualTableMetadata(a: TableMetadata, b: TableMetadata): boolean {
   if (a.tableName !== b.tableName) return false
   if (a.resourceType !== b.resourceType) return false
   if (a.resourceId !== b.resourceId) return false
@@ -231,12 +231,21 @@ function isEqualRelation(a: TableRelation, b: TableRelation): boolean {
 }
 
 function isEqualViewDeps(
-  a: IDataSetMetadata['viewDependencies'],
-  b: IDataSetMetadata['viewDependencies'],
+  a: DataSetMetadata['viewDependencies'],
+  b: DataSetMetadata['viewDependencies'],
 ): boolean {
   if (!a && !b) return true
   if (!a || !b) return false
   return isEqualArray(a as unknown[], b as unknown[])
+}
+
+function getObjectEntries(value: object): Array<[string, unknown]> {
+  const entries: Array<[string, unknown]> = []
+  for (const key of Object.keys(value)) {
+    const desc = Object.getOwnPropertyDescriptor(value, key)
+    if (desc) entries.push([key, desc.value])
+  }
+  return entries
 }
 
 function isEqualObject(a: unknown, b: unknown): boolean {
@@ -244,12 +253,13 @@ function isEqualObject(a: unknown, b: unknown): boolean {
   if (a === null || a === undefined || b === null || b === undefined) return false
   if (typeof a !== 'object' || typeof b !== 'object') return false
   if (Array.isArray(a) !== Array.isArray(b)) return false
-  if (Array.isArray(a)) return isEqualArray(a as unknown[], b as unknown[])
-  const aKeys = Object.keys(a as Record<string, unknown>)
-  const bKeys = Object.keys(b as Record<string, unknown>)
-  if (aKeys.length !== bKeys.length) return false
-  for (const key of aKeys) {
-    if (!isEqualObject((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) return false
+  if (Array.isArray(a) && Array.isArray(b)) return isEqualArray(a, b)
+  const aEntries = getObjectEntries(a)
+  const bEntries = getObjectEntries(b)
+  if (aEntries.length !== bEntries.length) return false
+  const bMap = new Map(bEntries)
+  for (const [key, aVal] of aEntries) {
+    if (!bMap.has(key) || !isEqualObject(aVal, bMap.get(key))) return false
   }
   return true
 }
@@ -264,7 +274,7 @@ function isEqualArray(a: unknown[] | undefined, b: unknown[] | undefined): boole
   return true
 }
 
-function normalizeDesignerComparableMetadata(metadata: IDataSetMetadata): IDataSetMetadata {
+function normalizeDesignerComparableMetadata(metadata: DataSetMetadata): DataSetMetadata {
   const { pageId: _pageId, ...rest } = metadata
   const tableEntries = Object.entries(metadata.tables)
   const tablePositions = Object.fromEntries(

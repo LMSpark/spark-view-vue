@@ -4,11 +4,22 @@ import type {
   ChildPlacement,
   LinkTarget,
   NavContextConfig,
+  NavContextInput,
   NavContextItem,
   NavNode,
   NavNodeKind,
   NavPermissionMode,
 } from './nav-model'
+
+function isNavContextConfig(value: NavContextInput | undefined): value is NavContextConfig {
+  return typeof value === 'object' && !Array.isArray(value) && 'source' in value
+}
+
+const CHILD_PLACEMENT_VALUES: ReadonlySet<string> = new Set(['header', 'sidebar', 'toolbar', 'user-menu', 'parent', 'flat'])
+
+function isChildPlacement(value: string): value is ChildPlacement {
+  return CHILD_PLACEMENT_VALUES.has(value)
+}
 
 export interface NavigationNodeDraft {
   id: string
@@ -69,7 +80,6 @@ export const DEFAULT_NAV_ICON_BY_KIND: Record<NavNodeKind, string> = {
   'ref': 'Connection',
 }
 
-const ROOT_CHILD_PLACEMENTS = new Set(['header', 'sidebar'])
 const SYSTEM_CHILD_PLACEMENTS = new Set(['toolbar', 'user-menu'])
 
 export function defaultNavIconByKind(kind: NavNodeKind): string {
@@ -123,10 +133,13 @@ export function normalizeNavNode(node: NavNode, parentPlacement?: string): NavNo
   return cloned
 }
 
+function isRootChildPlacement(value: string): value is 'header' | 'sidebar' {
+  return value === 'header' || value === 'sidebar'
+}
+
 export function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
-  return ROOT_CHILD_PLACEMENTS.has(String(value ?? '').trim())
-    ? (value as 'header' | 'sidebar')
-    : 'header'
+  const normalized = String(value ?? '').trim()
+  return isRootChildPlacement(normalized) ? normalized : 'header'
 }
 
 export function normalizeNavRoot(config: {
@@ -270,24 +283,19 @@ export function createNavigationNodeDraft(node: NavNode): NavigationNodeDraftInp
     }
   }
 
-  if (typeof node.context === 'object') {
-    const cfg = node.context as {
-      source?: unknown
-      placeholder?: string
-      defaultValue?: unknown
-      paramName?: string
-    }
+  if (isNavContextConfig(node.context)) {
+    const source = node.context.source
     return {
       draft,
       context: {
         hasContext: true,
-        items: Array.isArray(cfg.source)
-          ? normalizeContextItems(cfg.source as NavContextItem[])
-          : [],
+        items: Array.isArray(source) ? normalizeContextItems(source) : [],
         config: {
-          placeholder: cfg.placeholder ?? '',
-          defaultValue: cfg.defaultValue !== null && cfg.defaultValue !== undefined ? String(cfg.defaultValue) : '',
-          paramName: cfg.paramName ?? '',
+          placeholder: node.context.placeholder ?? '',
+          defaultValue: node.context.defaultValue !== undefined
+            ? String(node.context.defaultValue)
+            : '',
+          paramName: node.context.paramName ?? '',
         },
       },
     }
@@ -397,7 +405,7 @@ export function createNavigationNodePatch(input: NavigationNodeDraftInput): Navi
     }
   }
   if (draft.parentPageId) patch.parentPageId = draft.parentPageId
-  if (draft.childPlacement) patch.childPlacement = draft.childPlacement as ChildPlacement
+  if (draft.childPlacement && isChildPlacement(draft.childPlacement)) patch.childPlacement = draft.childPlacement
   if (draft.hidden !== false) patch.hidden = draft.hidden
   if (draft.disabled !== false) patch.disabled = draft.disabled
   patch.permissionMode = draft.permissionMode

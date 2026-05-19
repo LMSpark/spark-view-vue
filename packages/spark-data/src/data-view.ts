@@ -7,15 +7,15 @@
  */
 
 import type {
-  IDataRow, IViewMetadata, FilterExpression, FilterFieldRef, FilterOperator, FilterValueExpression, SortExpression,
+  DataRow, ViewMetadata, FilterExpression, FilterFieldRef, FilterOperator, FilterValueExpression, SortExpression,
   QueryParams, DataColumn, DataRelation,
   CrudResult, CrudOperationConfig,
-  IDataSource,
+  DataSource,
   AggregateResultRow,
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
-  IEventEmitter,
+  SparkEventEmitter,
   PkValue, DataViewEditingFieldChangeEvent, DataViewApplyEditingRowsResult,
 } from './types'
 import { RequestState } from './types'
@@ -49,9 +49,9 @@ import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-deleg
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataViewEventMap extends Record<string, any[]> {
   /** 当前行变化 */
-  currentRowChanged: [currentRow: IDataRow | null, originatorId?: string]
+  currentRowChanged: [currentRow: DataRow | null, originatorId?: string]
   /** 选中行变化 */
-  selectedRowsChanged: [selectedRows: IDataRow[], originatorId?: string]
+  selectedRowsChanged: [selectedRows: DataRow[], originatorId?: string]
   /** 行数据批量变化（防抖 16ms） */
   rowsChanged: []
   /** 编辑态字段变化 */
@@ -82,25 +82,63 @@ const REQUEST_SUPERSEDED_MESSAGE = 'Request superseded'
 const LEGACY_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$\[/
 const LEGACY_PARENT_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$parent\[/
 
-function isFilterFieldRef(value: unknown): value is FilterFieldRef {
-  return value !== null
-    && typeof value === 'object'
-    && 'kind' in value
-    && 'field' in value
-    && (value as { kind?: unknown }).kind === 'field'
-    && typeof (value as { field?: unknown }).field === 'string'
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
-function resolveFilterFieldRef(fieldName: string, row: IDataRow): unknown {
-  const rowValue: unknown = row
-  if (rowValue === null || typeof rowValue !== 'object' || Array.isArray(rowValue)) {
-    throw new Error(`过滤值表达式解析时收到非法行数据，字段 "${fieldName}"`)
+function isDataRow(value: unknown): value is DataRow {
+  return isRecord(value)
+}
+
+function dataRowFromRecord(record: Record<string, unknown>): DataRow {
+  return { ...record }
+}
+
+function dataRowFromPartial(record: Partial<DataRow>): DataRow {
+  return { ...record }
+}
+
+function dataRowsFromUnknown(value: unknown, context: string): DataRow[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`${context}: rows 必须是数组`)
   }
-  if (!(fieldName in rowValue)) {
+  return value.map((item, index) => {
+    if (!isRecord(item)) {
+      throw new Error(`${context}: rows[${index}] 必须是对象`)
+    }
+    return dataRowFromRecord(item)
+  })
+}
+
+function normalizeServerRowsData(
+  data: unknown,
+  context: string,
+): { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } | DataRow[] {
+  if (Array.isArray(data)) return dataRowsFromUnknown(data, context)
+  const record = isRecord(data) ? data : null
+  if (record === null) {
+    throw new Error(`${context}: 服务端响应必须是数组或对象`)
+  }
+
+  const normalized: { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } = {}
+  if (record['rows'] !== undefined) normalized.rows = dataRowsFromUnknown(record['rows'], context)
+  if (typeof record['total'] === 'number') normalized.total = record['total']
+  if (typeof record['page'] === 'number') normalized.page = record['page']
+  if (typeof record['pageSize'] === 'number') normalized.pageSize = record['pageSize']
+  return normalized
+}
+
+function isFilterFieldRef(value: unknown): value is FilterFieldRef {
+  return isRecord(value)
+    && value['kind'] === 'field'
+    && typeof value['field'] === 'string'
+}
+
+function resolveFilterFieldRef(fieldName: string, row: DataRow): unknown {
+  if (!(fieldName in row)) {
     throw new Error(`过滤值表达式引用了不存在的字段 "${fieldName}"`)
   }
-  const rowRecord = rowValue as Record<string, unknown>
-  return rowRecord[fieldName]
+  return row[fieldName]
 }
 
 function assertNoLegacyFilterPlaceholderString(value: string): void {
@@ -138,7 +176,7 @@ function getArrayFilterValue(value: unknown): unknown[] | null {
 // DataView 类
 // ─────────────────────────────────────────────
 
-export class DataView implements IDataSource {
+export class DataView implements DataSource {
 
   // ─────────────────────────────────────────────
   // DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）
@@ -172,7 +210,7 @@ export class DataView implements IDataSource {
   tableName: string
   viewId: string
 
-  rows: IDataRow[] = []
+  rows: DataRow[] = []
 
   // ─────────────────────────────────────────────
   // 主键（全部委托给 _primaryKeyDelegate）
@@ -223,7 +261,7 @@ export class DataView implements IDataSource {
   get isMultiSelect(): boolean { return this.selectionDelimiter !== '' }
 
   /** 当前行（getter：按主键从整棵 rows 树查找，带缓存；rows 刷新后自动指向新对象） */
-  get currentRow(): IDataRow | null {
+  get currentRow(): DataRow | null {
     if (this._currentRowId === null) return null
     const c = this._crCache
     if (c.id === this._currentRowId && c.ver === this._rowsVersion) return c.row
@@ -233,14 +271,14 @@ export class DataView implements IDataSource {
   }
 
   /** 多选行数组（getter：按主键从整棵 rows 树查找，带缓存；rows 刷新后自动指向新对象） */
-  get selectedRows(): IDataRow[] {
+  get selectedRows(): DataRow[] {
     if (this._selectedRowIds.length === 0) return []
     const c = this._srCache
     if (c.selVer === this._selectionIdsVersion && c.rowsVer === this._rowsVersion) return c.rows
     const rowById = this.getRowByIdMap()
     const rows = this._selectedRowIds
       .map(id => rowById.get(id) ?? null)
-      .filter((row): row is IDataRow => row !== null)
+      .filter((row): row is DataRow => row !== null)
     this._srCache = { selVer: this._selectionIdsVersion, rowsVer: this._rowsVersion, rows }
     return rows
   }
@@ -264,7 +302,7 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /** 设置当前行（自动提取主键存储，null 清除） */
-  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+  setCurrentRow(row: DataRow | null, originatorId?: string): void {
     this.selectionDelegate.setCurrentRow(row, originatorId)
   }
 
@@ -274,17 +312,17 @@ export class DataView implements IDataSource {
   }
 
   /** 设置多选行（覆盖式） */
-  setSelectedRows(rows: IDataRow[], originatorId?: string): void {
+  setSelectedRows(rows: DataRow[], originatorId?: string): void {
     this.selectionDelegate.setSelectedRows(rows, originatorId)
   }
 
   /** 追加多选行（返回实际新增数量） */
-  addSelectedRows(rows: IDataRow[]): number {
+  addSelectedRows(rows: DataRow[]): number {
     return this.selectionDelegate.addSelectedRows(rows)
   }
 
   /** 移除多选行（返回实际移除数量） */
-  removeSelectedRows(rows: IDataRow[]): number {
+  removeSelectedRows(rows: DataRow[]): number {
     return this.selectionDelegate.removeSelectedRows(rows)
   }
 
@@ -338,7 +376,7 @@ export class DataView implements IDataSource {
     return table.resourceType === 'static-data' || (table.api?.list === undefined && this.rows.length > 0)
   }
 
-  private _getStaticLocalFilterSourceRows(): IDataRow[] {
+  private _getStaticLocalFilterSourceRows(): DataRow[] {
     const sourceRows = this._dataTable?.rows ?? this.rows
     const clonedRows = sourceRows.map(row => ({ ...row }))
     if (clonedRows.length > 0) this._applyComputedColumns(clonedRows)
@@ -404,16 +442,22 @@ export class DataView implements IDataSource {
     availableFields?: ReadonlySet<string>,
   ): void {
     if ('type' in expr) {
-      if (expr.type === 'and' || expr.type === 'or' || expr.type === '!and' || expr.type === '!or') {
-        expr.children.forEach(child => this._validateFilterExpressionNode(child, availableFields))
-        return
+      switch (expr.type) {
+        case 'and':
+        case 'or':
+        case '!and':
+        case '!or':
+          expr.children.forEach(child => this._validateFilterExpressionNode(child, availableFields))
+          return
+        case '!condition':
+          if (expr.field.trim() === '') {
+            throw new Error(`过滤条件字段不能为空 [${this.tableName}@${this.viewId}]`)
+          }
+          this._validateFilterValueExpression(expr.value, availableFields)
+          return
+        default:
+          throw new Error(`非法过滤表达式类型 [${this.tableName}@${this.viewId}]`)
       }
-      const conditionExpr = expr as Extract<FilterExpression, { type: '!condition' }>
-      if (conditionExpr.field.trim() === '') {
-        throw new Error(`过滤条件字段不能为空 [${this.tableName}@${this.viewId}]`)
-      }
-      this._validateFilterValueExpression(conditionExpr.value, availableFields)
-      return
     }
 
     if (expr.field.trim() === '') {
@@ -461,7 +505,7 @@ export class DataView implements IDataSource {
     }
   }
 
-  private _resolveFilterValueExpression(value: FilterValueExpression, row: IDataRow): unknown {
+  private _resolveFilterValueExpression(value: FilterValueExpression, row: DataRow): unknown {
     if (typeof value === 'string') {
       assertNoLegacyFilterPlaceholderString(value)
       return value
@@ -472,7 +516,7 @@ export class DataView implements IDataSource {
   }
 
   private _matchesFilterCondition(
-    row: IDataRow,
+    row: DataRow,
     expr: Extract<FilterExpression, { field: string; op: FilterOperator }>,
   ): boolean {
     const rowValue = row[expr.field]
@@ -525,7 +569,7 @@ export class DataView implements IDataSource {
     }
   }
 
-  private _matchesFilterExpression(row: IDataRow, expr: FilterExpression): boolean {
+  private _matchesFilterExpression(row: DataRow, expr: FilterExpression): boolean {
     if ('type' in expr) {
       switch (expr.type) {
         case '!condition':
@@ -604,7 +648,7 @@ export class DataView implements IDataSource {
   }
 
   /** @internal 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */
-  stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow> {
+  stripComputedColumns(data: Partial<DataRow>): Partial<DataRow> {
     return this._computedDelegate.strip(data)
   }
 
@@ -638,23 +682,23 @@ export class DataView implements IDataSource {
   }
 
   /** 对行集合及其嵌套子节点执行计算列求值（就地写入）——供 DataView 内部调用。 */
-  private _applyComputedColumns(rows: IDataRow[]): void {
-    const allRows: IDataRow[] = []
+  private _applyComputedColumns(rows: DataRow[]): void {
+    const allRows: DataRow[] = []
     const stack = [...rows]
     while (stack.length > 0) {
       const row = stack.shift()
       if (row === undefined) continue
       allRows.push(row)
-      const children = (row as Record<string, unknown>)['children']
+      const children = row['children']
       if (Array.isArray(children) && children.length > 0) {
-        stack.unshift(...children.filter((c): c is IDataRow => c !== null && c !== undefined && typeof c === 'object'))
+        stack.unshift(...children.filter(isDataRow))
       }
     }
     this._computedDelegate.apply(allRows)
   }
 
   // ─────────────────────────────────────────────
-  // 表元数据暴露（IDataSource.columns 实现）
+  // 表元数据暴露（DataSource.columns 实现）
   // ─────────────────────────────────────────────
 
   /**
@@ -733,16 +777,16 @@ export class DataView implements IDataSource {
   /** 选中 ID 版本号——每次 emitSelectedRowsChanged 后自增 */
   private _selectionIdsVersion = 0
   /** currentRow getter 缓存 */
-  private _crCache: { id: string | number | null; ver: number; row: IDataRow | null } = { id: null, ver: -1, row: null }
+  private _crCache: { id: string | number | null; ver: number; row: DataRow | null } = { id: null, ver: -1, row: null }
   /** selectedRows getter 缓存 */
-  private _srCache: { selVer: number; rowsVer: number; rows: IDataRow[] } = { selVer: -1, rowsVer: -1, rows: [] }
+  private _srCache: { selVer: number; rowsVer: number; rows: DataRow[] } = { selVer: -1, rowsVer: -1, rows: [] }
   /** 整棵 rows 树的 ID → row 缓存（含 nested children） */
-  private _rowByIdCache: { ver: number; rows: Map<string | number, IDataRow> } = { ver: -1, rows: new Map() }
+  private _rowByIdCache: { ver: number; rows: Map<string | number, DataRow> } = { ver: -1, rows: new Map() }
 
   /** 编辑态 patch：UI 字段变化先进入这里，apply 后再进入 editRowById / dirtyTracking。 */
-  private _editingPatches = new Map<PkValue, Partial<IDataRow>>()
+  private _editingPatches = new Map<PkValue, Partial<DataRow>>()
   /** 首次进入编辑态前的行快照，用于 discard / diff / 诊断。 */
-  private _editingOriginalRows = new Map<PkValue, IDataRow>()
+  private _editingOriginalRows = new Map<PkValue, DataRow>()
 
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
@@ -753,7 +797,7 @@ export class DataView implements IDataSource {
   /** requestData() 进行中的 Promise（用于并发调用复用，避免丢弃后续请求） */
   private _pendingRequestData: Promise<void> | null = null
   /** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */
-  rowIndexMap?: Map<IDataRow, number> | undefined
+  rowIndexMap?: Map<DataRow, number> | undefined
   /** rowsChanged 事件微任务合并标记 */
   private rowsChangedDebouncer = false
   /** rowsChanged 防抖窗口内是否需要补发 selection/currentRow 领域事件 */
@@ -780,23 +824,23 @@ export class DataView implements IDataSource {
   }
 
   /** 深度遍历整棵 rows 树（含 nested children） */
-  private visitRowsDeep(visitor: (row: IDataRow) => void): void {
+  private visitRowsDeep(visitor: (row: DataRow) => void): void {
     const stack = [...this.rows]
     while (stack.length > 0) {
       const row = stack.shift()
       if (!row) continue
       visitor(row)
-      const children = (row as Record<string, unknown>)['children']
+      const children = row['children']
       if (Array.isArray(children) && children.length > 0) {
-        stack.unshift(...children.filter((child): child is IDataRow => typeof child === 'object' && child !== null))
+        stack.unshift(...children.filter(isDataRow))
       }
     }
   }
 
   /** 获取整棵 rows 树的 ID → row 映射（rowsVersion 缓存） */
-  private getRowByIdMap(): Map<string | number, IDataRow> {
+  private getRowByIdMap(): Map<string | number, DataRow> {
     if (this._rowByIdCache.ver === this._rowsVersion) return this._rowByIdCache.rows
-    const rows = new Map<string | number, IDataRow>()
+    const rows = new Map<string | number, DataRow>()
     this.visitRowsDeep(row => {
       const pk = this.getPkKey(row)
       if (pk !== undefined) rows.set(pk, row)
@@ -806,12 +850,12 @@ export class DataView implements IDataSource {
   }
 
   /** 按 ID 从整棵 rows 树查找节点 */
-  private getRowById(id: string | number): IDataRow | null {
+  private getRowById(id: string | number): DataRow | null {
     return this.getRowByIdMap().get(id) ?? null
   }
 
   private _syncRetrievedRow(
-    row: IDataRow,
+    row: DataRow,
     options?: RetrieveRecordOptions,
     fallbackId?: string | number,
   ): void {
@@ -890,7 +934,7 @@ export class DataView implements IDataSource {
 
   private syncRowsFromTreeManager(): void {
     if (!this.treeManager) return
-    this.replaceRows(this.treeManager.getAllNodes() as IDataRow[])
+    this.replaceRows(this.treeManager.getAllNodes().map(dataRowFromRecord))
   }
 
   // ─────────────────────────────────────────────
@@ -1006,9 +1050,9 @@ export class DataView implements IDataSource {
   get dirtyTracking(): DirtyTrackingDelegate { return this.dirtyTrackingDelegate }
 
   /** 当前编辑态行集合（按 rows 顺序返回 overlay 后的浅拷贝，含重新求值的计算列）。 */
-  get editingRows(): IDataRow[] {
+  get editingRows(): DataRow[] {
     if (this._editingPatches.size === 0) return []
-    const result: IDataRow[] = []
+    const result: DataRow[] = []
     const included = new Set<PkValue>()
     for (const row of this.rows) {
       const rowId = this.getPkKey(row)
@@ -1028,7 +1072,7 @@ export class DataView implements IDataSource {
   }
 
   /** 事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / configChanged / requestStateChanged / mutatingChanged） */
-  readonly events: IEventEmitter<DataViewEventMap> = createEventEmitter()
+  readonly events: SparkEventEmitter<DataViewEventMap> = createEventEmitter()
 
   protected logger = Logger('DataView')
 
@@ -1045,37 +1089,37 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 接口实现 getter（ICrudHost / ICascadeHost）
+  // 接口实现 getter（CrudHost / CascadeHost）
   // ─────────────────────────────────────────────
 
-  /** ICascadeHost：向上访问 DataSet（独立 DataTable 未关联 DataSet 时返回 undefined） */
+  /** CascadeHost：向上访问 DataSet（独立 DataTable 未关联 DataSet 时返回 undefined） */
   get dataSet(): DataSet | undefined {
     this.checkDestroyed()
     return this.checkDataTableAttached().dataSet
   }
 
-  /** ICrudHost: CrudService 实例 */
+  /** CrudHost: CrudService 实例 */
   get crudService(): CrudService | undefined { this.checkDestroyed(); return this.checkDataTableAttached().crudService }
-  /** ICrudHost: CRUD 操作配置 */
+  /** CrudHost: CRUD 操作配置 */
   get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); return this.checkDataTableAttached().crudConfig }
-  /** ICrudHost: 数据校验器 */
+  /** CrudHost: 数据校验器 */
   get validator(): DataValidator | undefined { this.checkDestroyed(); return this.checkDataTableAttached().validator }
 
   // ─────────────────────────────────────────────
-  // 主键（IRowStore 接口 + ISaveChangesHost 接口 + 公共委托访问器）
+  // 主键（RowStore 接口 + SaveChangesHost 接口 + 公共委托访问器）
   // ─────────────────────────────────────────────
 
   /** 主键委托访问器（setPrimaryKeyGenerator / generatePrimaryKey 等通过 view.pk.xxx 访问） */
   get pk(): PrimaryKeyDelegate { return this._primaryKeyDelegate }
 
-  /** IRowStore: 实际生效的主键字段名列表（不含合成列 `_pk`） */
+  /** RowStore: 实际生效的主键字段名列表（不含合成列 `_pk`） */
   get effectivePkFields(): string[] { return this._primaryKeyDelegate.effectivePkFields }
 
-  /** IRowStore: 获取行的主键值（标量） */
-  getPkKey(row: IDataRow): string | number | undefined { return this._primaryKeyDelegate.getPkKey(row) }
+  /** RowStore: 获取行的主键值（标量） */
+  getPkKey(row: DataRow): string | number | undefined { return this._primaryKeyDelegate.getPkKey(row) }
 
-  /** ISaveChangesHost: 从行数据构建服务端 PK payload */
-  buildServerPk(row: IDataRow): Record<string, unknown> { return this._primaryKeyDelegate.buildServerPk(row) }
+  /** SaveChangesHost: 从行数据构建服务端 PK payload */
+  buildServerPk(row: DataRow): Record<string, unknown> { return this._primaryKeyDelegate.buildServerPk(row) }
 
   // ─────────────────────────────────────────────
   // 请求流
@@ -1186,7 +1230,7 @@ export class DataView implements IDataSource {
       }
 
       if (result.success && result.data !== undefined) {
-        this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
+        this.updateFromServer(normalizeServerRowsData(result.data, `DataView.loadFromServer ${this.tableName}@${this.viewId}`))
         // 确保树形数据的所有子节点计算列已求值，再触发 autoFirst（会级联到子视图）
         this._applyComputedColumns(this.rows)
         this.selectionDelegate.applyAutoFirst()
@@ -1214,7 +1258,7 @@ export class DataView implements IDataSource {
   async retrieveRecord(
     pk: Record<string, unknown>,
     options?: RetrieveRecordOptions,
-  ): Promise<CrudResult<IDataRow>> {
+  ): Promise<CrudResult<DataRow>> {
     this.checkDestroyed()
     const result = await this.crudDelegate.retrieveRecord(pk)
     if (result.success && result.data) {
@@ -1230,7 +1274,7 @@ export class DataView implements IDataSource {
   async retrieveRecordById(
     id: string | number,
     options?: RetrieveRecordOptions,
-  ): Promise<CrudResult<IDataRow>> {
+  ): Promise<CrudResult<DataRow>> {
     this.checkDestroyed()
     const localRow = this.getRowById(id)
     const serverPk = localRow
@@ -1268,7 +1312,7 @@ export class DataView implements IDataSource {
         return this._createRequestSupersededResult()
       }
 
-      this.updateFromServer(rows as IDataRow[])
+      this.updateFromServer(rows.map(dataRowFromRecord))
       // 确保树形数据的所有子节点计算列已求值，再触发 autoFirst（会级联到子视图）
       this._applyComputedColumns(this.rows)
       this.selectionDelegate.applyAutoFirst()
@@ -1294,20 +1338,21 @@ export class DataView implements IDataSource {
   }
 
   /** 无 API 时的内存级联过滤（从 DataTable.rows 按依赖过滤条件写入视图）。 */
-  applyInMemoryCascade(rel: DataRelation, parentRows: readonly IDataRow[]): void {
+  applyInMemoryCascade(rel: DataRelation, parentRows: readonly DataRow[]): void {
     // 从 DataTable.rows 读取全量静态源数据（可在多次父行切换中反复过滤）
-    const srcRows: IDataRow[] = this._dataTable?.rows ?? []
+    const srcRows: DataRow[] = this._dataTable?.rows ?? []
     const relationFilter = this.dataSet?.resolveDependencyFilter(rel)
     let filteredRows = srcRows.slice()
 
     if (relationFilter === null) {
       filteredRows = []
     } else if (relationFilter !== undefined) {
-      filteredRows = srcRows.filter((row: IDataRow) => this._matchesFilterExpression(row, relationFilter))
+      filteredRows = srcRows.filter((row: DataRow) => this._matchesFilterExpression(row, relationFilter))
     } else if (parentRows.length > 0 && typeof rel.childField === 'string') {
       const pField = typeof rel.parentField === 'string' ? rel.parentField : 'id'
-      const parentValues = new Set<unknown>(parentRows.map((r: IDataRow) => r[pField]))
-      filteredRows = srcRows.filter((r: IDataRow) => parentValues.has(r[rel.childField as string]))
+      const childField = rel.childField
+      const parentValues = new Set<unknown>(parentRows.map((r: DataRow) => r[pField]))
+      filteredRows = srcRows.filter((r: DataRow) => parentValues.has(r[childField]))
     }
 
     this.updateFromServer(filteredRows)
@@ -1321,20 +1366,20 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定 */
-  updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
+  updateFromServer(data: { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } | DataRow[]): void {
     this.localMutationDelegate.updateFromServer(data)
     this.syncTreeManagerFromRows()
     this.emitRowsChanged()
   }
 
   /** 本地追加一行，触发计算列求值 + 聚合重算 + rowsChanged */
-  appendRow(row: IDataRow): void {
+  appendRow(row: DataRow): void {
     this.localMutationDelegate.appendRow(row)
     this.syncTreeManagerFromRows()
   }
 
   /** 本地按主键部分更新一行；返回是否成功（行不存在时 false） */
-  updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
+  updateRowById(id: string | number, data: Partial<DataRow>): boolean {
     const updated = this.localMutationDelegate.updateRowById(id, data)
     if (updated) this.syncTreeManagerFromRows()
     return updated
@@ -1350,7 +1395,7 @@ export class DataView implements IDataSource {
   }
 
   /** 本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态 */
-  replaceRows(rows: IDataRow[]): void {
+  replaceRows(rows: DataRow[]): void {
     this._dirtyTrackingDelegate?.clearAll()
     this.clearEditingState()
     this.localMutationDelegate.replaceRows(rows)
@@ -1367,13 +1412,13 @@ export class DataView implements IDataSource {
   }
 
   /** 获取指定行当前编辑态 patch。 */
-  getEditingPatch(id: PkValue): Partial<IDataRow> | undefined {
+  getEditingPatch(id: PkValue): Partial<DataRow> | undefined {
     const patch = this._editingPatches.get(id)
     return patch ? { ...patch } : undefined
   }
 
   /** 获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。 */
-  getEditingRow(id: PkValue): IDataRow | null {
+  getEditingRow(id: PkValue): DataRow | null {
     const row = this.getRowById(id) ?? this._editingOriginalRows.get(id) ?? null
     if (!row) return null
     const patch = this._editingPatches.get(id)
@@ -1385,7 +1430,7 @@ export class DataView implements IDataSource {
   }
 
   /** 将 UI 字段值写入编辑态，不直接污染 rows。 */
-  updateEditingValue(id: PkValue, field: string, value: unknown): IDataRow {
+  updateEditingValue(id: PkValue, field: string, value: unknown): DataRow {
     this.checkDestroyed()
     const normalizedField = field.trim()
     if (normalizedField.length === 0) {
@@ -1413,9 +1458,10 @@ export class DataView implements IDataSource {
     }
 
     const originalRow = this._editingOriginalRows.get(id) ?? sourceRow
-    const nextPatch = Object.fromEntries(
-      Object.entries(previousPatch).filter(([key]) => key !== normalizedField),
-    ) as Partial<IDataRow>
+    const nextPatch: Partial<DataRow> = {}
+    for (const [key, patchValue] of Object.entries(previousPatch)) {
+      if (key !== normalizedField) nextPatch[key] = patchValue
+    }
     if (!Object.is(originalRow[normalizedField], value)) {
       nextPatch[normalizedField] = value
     }
@@ -1501,7 +1547,7 @@ export class DataView implements IDataSource {
    * 本地新增行。commitMode='staged' 时标记为 pending-create（saveChanges 统一提交）；
    * commitMode='immediate' 且已配置 API 时立即调用 crud.createRecord。
    */
-  async addRow(data: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow>> {
+  async addRow(data: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow>> {
     this.checkDestroyed()
     const row = this._primaryKeyDelegate.ensurePrimaryKey(data)
     if (this.shouldDirectCommitCrud('create')) {
@@ -1540,8 +1586,8 @@ export class DataView implements IDataSource {
    */
   async editRowById(
     id: string | number,
-    data: Partial<IDataRow>,
-  ): Promise<boolean | CrudResult<IDataRow>> {
+    data: Partial<DataRow>,
+  ): Promise<boolean | CrudResult<DataRow>> {
     this.checkDestroyed()
     if (this.shouldDirectCommitCrud('update')) {
       return this.crudDelegate.updateRecord(id, data)
@@ -1562,7 +1608,7 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /** 当前所有脏行的行对象数组（按 rows 顺序） */
-  get dirtyRows(): IDataRow[] {
+  get dirtyRows(): DataRow[] {
     const ids = this.dirtyTrackingDelegate.dirtyRowIds
     if (ids.size === 0) return []
     return this.rows.filter(r => {
@@ -1670,7 +1716,7 @@ export class DataView implements IDataSource {
     })
   }
 
-  moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null> {
+  moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null> {
     return this._ensureTreeManager().moveNode(nodeId, newParentId, index).then(() => {
       this.syncRowsFromTreeManager()
       return this.getRowById(nodeId)
@@ -1744,8 +1790,8 @@ export class DataView implements IDataSource {
     return sort.map(f => `${f.field}:${f.direction ?? 'asc'}`).join(',')
   }
 
-  private _buildRemoteViewConfig(): IViewMetadata {
-    const config: IViewMetadata = {
+  private _buildRemoteViewConfig(): ViewMetadata {
+    const config: ViewMetadata = {
       tableName: this.tableName,
       viewId: this.viewId,
       page: this.page,
@@ -1854,7 +1900,7 @@ export class DataView implements IDataSource {
     this.rowsChangedDebouncer = false
     this.pendingRowsSelectionChanged = false
 
-    // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）
+    // 4. 清理事件监听器（Batch 2 已扩展 SparkEventEmitter.removeAllListeners）
     this.events.removeAllListeners()
 
     // 5. 清空数据
@@ -1920,8 +1966,8 @@ export class DataView implements IDataSource {
   // 序列化 / 反序列化
   // ─────────────────────────────────────────────
 
-  /** 将 IViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。 */
-  applyViewConfig(vc: Partial<IViewMetadata>): void {
+  /** 将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。 */
+  applyViewConfig(vc: Partial<ViewMetadata>): void {
     if (vc.filterExpression !== undefined) {
       this._validateFilterExpression(vc.filterExpression)
       this.filterExpression = vc.filterExpression
@@ -1938,7 +1984,12 @@ export class DataView implements IDataSource {
     if (vc.valueField !== undefined) this.valueField = vc.valueField
     if (vc.labelField !== undefined) this.labelField = vc.labelField
     if (vc.selectionDelimiter !== undefined) this.selectionDelimiter = vc.selectionDelimiter
-    if (vc.aggregates !== undefined) (this as { aggregates: Record<string, AggregateColumnConfig> }).aggregates = vc.aggregates
+    if (vc.aggregates !== undefined) {
+      for (const key of Object.keys(this.aggregates)) {
+        Reflect.deleteProperty(this.aggregates, key)
+      }
+      Object.assign(this.aggregates, vc.aggregates)
+    }
     this.page = vc.page ?? 1
     this.pageSize = vc.pageSize ?? 20
     if (vc.filterExpression !== undefined && this._shouldApplyStaticLocalFilter()) {
@@ -1947,7 +1998,7 @@ export class DataView implements IDataSource {
     this.emitConfigChanged()
   }
 
-  configure(config: Partial<IViewMetadata>): void {
+  configure(config: Partial<ViewMetadata>): void {
     this.applyViewConfig(config)
   }
 
@@ -1986,10 +2037,10 @@ export class DataView implements IDataSource {
     this.selectionDelegate.applyAutoFirst()
   }
 
-  toJson(): IViewMetadata {
-    const serializedRows = this.rows.map((row) => this.stripComputedColumns(row) as IDataRow)
+  toJson(): ViewMetadata {
+    const serializedRows = this.rows.map((row) => dataRowFromPartial(this.stripComputedColumns(row)))
 
-    const result: IViewMetadata = {
+    const result: ViewMetadata = {
       tableName: this.tableName,
       viewId: this.viewId,
       page: this.page,
@@ -2011,7 +2062,7 @@ export class DataView implements IDataSource {
     return result
   }
 
-  static fromJson(data: IViewMetadata, tableName: string, viewId: string): DataView {
+  static fromJson(data: ViewMetadata, tableName: string, viewId: string): DataView {
     const v = new DataView(tableName, viewId)
     if (data.rows !== undefined) v.rows = [...data.rows]
     v.applyViewConfig(data)

@@ -8,7 +8,7 @@
  * - `custom` — 自定义生成函数
  */
 
-import type { IDataRow } from '../types'
+import type { DataRow } from '../types'
 
 // ─────────────────────────────────────────────
 // 类型定义
@@ -35,7 +35,7 @@ export interface PrimaryKeyGeneratorConfig {
   /** 主键字段名 */
   fields: string
   /** 自定义生成函数（strategy='custom' 时必需） */
-  generator?: (row: Partial<IDataRow>, existingRows: IDataRow[]) => string | number | Record<string, string | number>
+  generator?: (row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>
   /** 自增起始值（strategy='auto-increment' 时，默认 1） */
   startValue?: number
 }
@@ -88,8 +88,8 @@ export class PrimaryKeyGenerator {
    * @returns 主键值
    */
   generate(
-    row: Partial<IDataRow>,
-    existingRows: IDataRow[] = []
+    row: Partial<DataRow>,
+    existingRows: DataRow[] = []
   ): string | number {
     const { strategy } = this.config
     const field = this.config.fields
@@ -126,7 +126,7 @@ export class PrimaryKeyGenerator {
   /**
    * 生成自增 ID
    */
-  private generateAutoIncrement(existingRows: IDataRow[], field: string): number {
+  private generateAutoIncrement(existingRows: DataRow[], field: string): number {
     if (existingRows.length === 0) {
       return this.autoIncrementCounter++
     }

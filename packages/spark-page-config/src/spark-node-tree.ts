@@ -1077,11 +1077,11 @@ function requireNonEmptyString(value: string | undefined, fieldName: string): st
 /**
  * 断言输入是对象参数。
  */
-function requireObjectArg<T>(value: T, fieldName: string): Exclude<T, undefined> {
+function requireObjectArg<T extends object>(value: T | undefined | null, fieldName: string): T {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${fieldName} must be an object`)
   }
-  return value as Exclude<T, undefined>
+  return value
 }
 
 /**
@@ -1113,7 +1113,12 @@ function requireRecord(value: unknown, fieldName: string): Record<string, unknow
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${fieldName} must be an object`)
   }
-  return value as Record<string, unknown>
+  const result: Record<string, unknown> = {}
+  for (const key of Object.getOwnPropertyNames(value)) {
+    const desc = Object.getOwnPropertyDescriptor(value, key)
+    if (desc) result[key] = desc.value
+  }
+  return result
 }
 
 /**
@@ -1442,13 +1447,9 @@ function normalizeSparkNodeWithComponentIdsRecursive(
   path: number[],
 ): SparkNode {
   const normalized = normalizeSparkNode(node)
-  const source = node as unknown as Record<string, unknown>
 
-  const rawChildren = Array.isArray(source['children'])
-    ? (source['children'] as unknown[])
-    : (Array.isArray(normalized.children) ? normalized.children : [])
-
-  const children = rawChildren.map((child, index) => {
+  const sourceChildren = normalized.children ?? []
+  const children = sourceChildren.map((child, index) => {
     if (!isSparkNode(child)) return child
     return normalizeSparkNodeWithComponentIdsRecursive(child, fillMissingComponentId, usedIds, [...path, index])
   })
@@ -1465,24 +1466,18 @@ function normalizeSparkNodeWithComponentIdsRecursive(
     usedIds.add(componentId)
   }
 
-  const nextProps = normalized.props !== undefined ? { ...normalized.props } : undefined
+  const nextProps = normalized.props !== undefined && Object.keys(normalized.props).length > 0
+    ? { ...normalized.props }
+    : undefined
 
-  const nextNode: Record<string, unknown> = {
+  const nextNode: SparkNode = {
     type: normalized.type,
+    ...(componentId !== undefined ? { id: componentId } : {}),
+    ...(nextProps !== undefined ? { props: nextProps } : {}),
     children,
   }
 
-  if (componentId !== undefined) {
-    nextNode['id'] = componentId
-  }
-
-  if (nextProps !== undefined && Object.keys(nextProps).length > 0) {
-    nextNode['props'] = nextProps
-  } else {
-    delete nextNode['props']
-  }
-
-  return nextNode as unknown as SparkNode
+  return nextNode
 }
 
 function generateAutoComponentId(type: string, path: number[]): string {
@@ -1743,9 +1738,10 @@ function collectDataViewKeysRecursive(node: SparkNode, out: Set<string>): void {
 function collectHandlerNamesRecursive(node: SparkNode, out: Set<string>): void {
   const on = node.props?.['on']
   if (on !== null && typeof on === 'object') {
-    for (const handler of Object.values(on as Record<string, unknown>)) {
-      if (typeof handler === 'string' && handler.length > 0) {
-        out.add(handler)
+    for (const key of Object.keys(on)) {
+      const desc = Object.getOwnPropertyDescriptor(on, key)
+      if (desc && typeof desc.value === 'string' && desc.value.length > 0) {
+        out.add(desc.value)
       }
     }
   }

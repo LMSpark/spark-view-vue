@@ -12,8 +12,8 @@ import type {
 import type {
   CrudApi,
   HttpEndpoint,
-  IDataRow,
-  IDataSource,
+  DataRow,
+  DataSource,
   CrudResult,
   QueryParams,
   BatchResult,
@@ -32,7 +32,28 @@ const UNRESOLVED_URL_TEMPLATE_RE = /:\w+|\{\w+\}/
 
 /** 批量操作默认并发度 */
 const DEFAULT_BATCH_CONCURRENCY = 5
-const WRAPPED_RESULT_KEYS = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted'] as const
+type WrappedResultKey = 'data' | 'node' | 'record' | 'item' | 'result' | 'rows' | 'deleted'
+type WrappedEndpointResult<T> = {
+  success?: boolean
+  message?: string
+} & Partial<Record<WrappedResultKey, T>>
+type EndpointResult<T> = T | WrappedEndpointResult<T>
+
+const WRAPPED_RESULT_KEYS: readonly WrappedResultKey[] = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted']
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isHttpClient(value: unknown): value is HttpClient {
+  if (!isRecord(value)) return false
+  return typeof value['get'] === 'function'
+}
+
+function isWrappedEndpointResult<T>(value: EndpointResult<T>): value is WrappedEndpointResult<T> {
+  if (!isRecord(value)) return false
+  return 'success' in value || WRAPPED_RESULT_KEYS.some(key => key in value)
+}
 
 // ===== 接口定义 =====
 
@@ -62,12 +83,12 @@ export class CrudService {
     endpointContextProvider?: () => Record<string, unknown>
   ) {
     this.endpointContextProvider = endpointContextProvider
-    if (httpConfigOrClient && typeof (httpConfigOrClient as HttpClient).get === 'function') {
+    if (isHttpClient(httpConfigOrClient)) {
       // M5: 传入现有 HttpClient 实例，跳过 createRequest（共享 auth/拦截器）
-      this.http = httpConfigOrClient as HttpClient
+      this.http = httpConfigOrClient
     } else {
       this.http = httpConfigOrClient
-        ? createRequest(httpConfigOrClient as Partial<RequestConfig>)
+        ? createRequest(httpConfigOrClient)
         : createRequest()
     }
   }
@@ -89,7 +110,7 @@ export class CrudService {
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
-  async create<T = IDataRow>(
+  async create<T extends Record<string, unknown> = DataRow>(
     data: Partial<T>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
@@ -115,7 +136,7 @@ export class CrudService {
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
-  async retrieve<T = IDataRow>(
+  async retrieve<T extends Record<string, unknown> = DataRow>(
     pk: Record<string, unknown>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
@@ -173,7 +194,7 @@ export class CrudService {
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
-  async update<T = IDataRow>(
+  async update<T extends Record<string, unknown> = DataRow>(
     pk: Record<string, unknown>,
     data: Partial<T>,
     config?: CrudOperationConfig
@@ -226,7 +247,7 @@ export class CrudService {
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
-  async list<T = IDataSource>(
+  async list<T = DataSource>(
     params?: QueryParams,
     config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
@@ -300,7 +321,7 @@ export class CrudService {
    * @param config CRUD操作配置（包含权限快照）
    * @returns 批量操作结果
    */
-  async batchCreate<T = IDataRow>(
+  async batchCreate<T extends Record<string, unknown> = DataRow>(
     items: Array<Partial<T>>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
@@ -327,7 +348,7 @@ export class CrudService {
    * @param config CRUD操作配置（包含权限快照）
    * @returns 批量操作结果
    */
-  async batchUpdate<T = IDataRow>(
+  async batchUpdate<T extends Record<string, unknown> = DataRow>(
     items: Array<Partial<T>>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
@@ -337,7 +358,7 @@ export class CrudService {
 
     try {
       const requestConfig = this.buildRequestConfig(config)
-      const sanitizedItems = items.map(item => this.sanitizeDataForUpload(item as Record<string, unknown>))
+      const sanitizedItems = items.map(item => this.sanitizeDataForUpload(item))
       const results = await this.executeBatch(this.api.batch.update, sanitizedItems, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量更新完成', { total: items.length, success: successCount })
@@ -395,7 +416,7 @@ export class CrudService {
       formData.append('file', file)
 
       // 不要手动设置 Content-Type：浏览器 / HTTP 客户端会自动添加 boundary
-      const result = await this.executeEndpoint(this.api.import, formData, {
+      const result = await this.executeEndpoint<{ imported: number; failed: number }>(this.api.import, formData, {
         ...config,
         headers: {
           ...config?.headers
@@ -403,7 +424,7 @@ export class CrudService {
       })
 
       this.logger.info('数据导入成功', result)
-      return { success: true, data: result as { imported: number; failed: number } }
+      return { success: true, data: result }
     } catch (error) {
       this.logger.error('数据导入失败', error)
       return this.errorResult('Import failed', error)
@@ -431,7 +452,7 @@ export class CrudService {
       const requestConfig = this.buildRequestConfig(config)
       const mergedQueryParams = { ...(resolvedEndpoint.params ?? {}), ...queryParams }
 
-      const result = await this.http.requestFull({
+      const result = await this.http.requestFull<Blob>({
         url: resolvedEndpoint.url,
         method: endpoint.method ?? 'GET',
         params: mergedQueryParams,
@@ -441,7 +462,7 @@ export class CrudService {
       })
 
       this.logger.info('数据导出成功')
-      return { success: true, data: result.data as Blob }
+      return { success: true, data: result.data }
     } catch (error) {
       this.logger.error('数据导出失败', error)
       return this.errorResult('Export failed', error)
@@ -506,8 +527,8 @@ export class CrudService {
     data?: unknown,
     config?: Partial<RequestConfig>
   ): Promise<T> {
-    const value = await this.executeEndpointRaw<unknown>(endpoint, data, config)
-    return this.unwrapEndpointResult<T>(value)
+    const value = await this.executeEndpointRaw<EndpointResult<T>>(endpoint, data, config)
+    return this.unwrapEndpointResult(value)
   }
 
   private async executeEndpointRaw<T>(
@@ -548,27 +569,21 @@ export class CrudService {
     }
   }
 
-  private unwrapEndpointResult<T>(value: unknown): T {
-    if (!this.isRecord(value)) return value as T
+  private unwrapEndpointResult<T>(value: EndpointResult<T>): T {
+    if (!isWrappedEndpointResult(value)) return value
 
-    if (value['success'] === false) {
-      const message = typeof value['message'] === 'string' && value['message'].trim().length > 0
-        ? value['message']
+    if (value.success === false) {
+      const message = typeof value.message === 'string' && value.message.trim().length > 0
+        ? value.message
         : 'CRUD endpoint returned success=false'
       throw new Error(message)
     }
 
     for (const key of WRAPPED_RESULT_KEYS) {
-      if (key in value) {
-        return value[key] as T
-      }
+      const result = value[key]
+      if (result !== undefined) return result
     }
-
-    return value as T
-  }
-
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return value !== null && typeof value === 'object' && !Array.isArray(value)
+    throw new Error('CRUD endpoint returned a wrapper without data')
   }
 
   /**
@@ -591,7 +606,7 @@ export class CrudService {
     concurrency = DEFAULT_BATCH_CONCURRENCY,
     onProgress?: (completed: number, total: number) => void
   ): Promise<Array<CrudResult<T>>> {
-    const results: Array<CrudResult<T>> = new Array(items.length).fill(null) as Array<CrudResult<T>>
+    const results: Array<CrudResult<T>> = items.map(() => ({ success: false, message: 'Batch item not executed' }))
     let nextIndex = 0
     let completed = 0
 
@@ -638,9 +653,7 @@ export class CrudService {
     const headers = { ...endpoint.headers }
 
     const contextParams = this.endpointContextProvider?.() ?? {}
-    const dataParams = (data !== null && data !== undefined && typeof data === 'object')
-      ? data as Record<string, unknown>
-      : {}
+    const dataParams = isRecord(data) ? data : {}
     const templateParams = { ...contextParams, ...dataParams }
     const resolved = resolveUrlTemplate(endpoint.url, templateParams)
     const url = applyPlatformProjectScope(resolved.url, contextParams)
@@ -681,8 +694,8 @@ export class CrudService {
    * @returns 数据项数量
    */
   private getResultCount(result: unknown): number {
-    if (result !== null && result !== undefined && typeof result === 'object' && 'rows' in result) {
-      const rows = (result as { rows?: unknown[] }).rows
+    if (isRecord(result) && 'rows' in result) {
+      const rows = result['rows']
       return Array.isArray(rows) ? rows.length : 0
     }
     if (Array.isArray(result)) {
@@ -702,7 +715,7 @@ export class CrudService {
       data: {
         successCount,
         failureCount: results.length - successCount,
-        results: results as CrudResult[],
+        results,
         errors
       }
     }

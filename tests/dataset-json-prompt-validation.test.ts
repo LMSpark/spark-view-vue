@@ -15,10 +15,10 @@
 
 import { afterEach, describe, it, expect } from 'vitest'
 import { DataSet } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 
 /** 读取行字段（绕过 noPropertyAccessFromIndexSignature） */
-const f = (row: IDataRow | undefined | null, field: string): unknown => row?.[field]
+const f = (row: DataRow | undefined | null, field: string): unknown => row?.[field]
 
 const flushDataViewDebouncers = () => new Promise<void>(resolve => setTimeout(resolve, 32))
 

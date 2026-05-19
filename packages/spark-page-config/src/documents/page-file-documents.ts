@@ -4,11 +4,11 @@
  * rule.json / pagedata.json 使用领域模型作为真源，script.js / style.css 使用文本模型作为真源；
  * 设计时编辑、预览和版本保存都通过同一组 PageFileDocument 读写。
  */
-import { DataSetCrudTool, type IDataSetMetadata } from '@spark-view/spark-data'
+import { DataSetCrudTool, type DataSetMetadata } from '@spark-view/spark-data'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../types'
 import { SparkNodeTree } from '../spark-node-tree'
-import type { SparkNode } from '../spark-node'
+import { getSparkNodeChildren, type SparkNode } from '../spark-node'
 
 export interface PageConfigValueRef<T> {
   value: T
@@ -72,7 +72,21 @@ function parsePageDataText(rawText: string): Record<string, unknown> {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error('pagedata.json 顶层必须是 JSON 对象')
   }
-  return parsed as Record<string, unknown>
+  const result: Record<string, unknown> = {}
+  for (const key of Object.keys(parsed)) {
+    const desc = Object.getOwnPropertyDescriptor(parsed, key)
+    if (desc) result[key] = desc.value
+  }
+  return result
+}
+
+function metadataToRecord(meta: DataSetMetadata): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const key of Object.keys(meta)) {
+    const desc = Object.getOwnPropertyDescriptor(meta, key)
+    if (desc) result[key] = desc.value
+  }
+  return result
 }
 
 export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
@@ -81,7 +95,7 @@ export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
   tool: DataSetCrudTool
 } {
   const tool = DataSetCrudTool.fromJson(rawValue)
-  const value = tool.toJson() as unknown as Record<string, unknown>
+  const value = metadataToRecord(tool.toJson())
 
   return {
     text: `${JSON.stringify(value, null, 2)}\n`,
@@ -311,7 +325,7 @@ function serializeRuleChildren(children: SparkNode[]): string {
 
 function readChildrenFromTree(tree: SparkNodeTree): SparkNode[] {
   const root = tree.toJSON()
-  return Array.isArray(root.children) ? (root.children as SparkNode[]) : []
+  return getSparkNodeChildren(root.children)
 }
 
 function createRuleDocument(): PageFileDocument<SparkNodeTree> {
@@ -344,8 +358,8 @@ function createRuleDocument(): PageFileDocument<SparkNodeTree> {
   })
 }
 
-function canonicalizeMetadata(metadata: IDataSetMetadata): string {
-  return canonicalizePageDataValue(metadata as unknown as Record<string, unknown>).text
+function canonicalizeMetadata(metadata: DataSetMetadata): string {
+  return canonicalizePageDataValue(metadataToRecord(metadata)).text
 }
 
 function createPageDataDocument(): PageFileDocument<DataSetCrudTool> {
@@ -512,17 +526,21 @@ export function forEachDocument(
  * 对于已知的四文件（rule.json / pagedata.json / script.js / style.css），
  * 使用对应的领域文档工厂；对于未知文件类型，回退为 text-backed 文档。
  */
+function widenDocument<T>(doc: PageFileDocument<T>): PageFileDocument<unknown> {
+  return doc
+}
+
 export function createPageDocumentsFromRegistry(
   registry: PageFileRegistry = createDefaultFileRegistry(),
 ): Record<string, PageFileDocument<unknown>> {
   const result: Record<string, PageFileDocument<unknown>> = {}
   for (const [name] of registry) {
     if (name === 'rule.json') {
-      result[name] = createRuleDocument() as PageFileDocument<unknown>
+      result[name] = widenDocument(createRuleDocument())
     } else if (name === 'pagedata.json') {
-      result[name] = createPageDataDocument() as PageFileDocument<unknown>
+      result[name] = widenDocument(createPageDataDocument())
     } else {
-      result[name] = createTextDocument(name as 'script.js' | 'style.css') as PageFileDocument<unknown>
+      result[name] = widenDocument(createTextDocument(name as 'script.js' | 'style.css'))
     }
   }
   return result

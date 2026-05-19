@@ -9,8 +9,6 @@ import type {
   AiFunctionRegistration,
   AiModuleInstanceParam,
   AiModuleRegistration,
-  AiModuleRegistrationData,
-  AiModuleRegistrationStoreSnapshot,
   AiRuntimeFunctionId,
   AiRuntimeModuleId,
   AiRuntimeModuleInstanceId,
@@ -22,15 +20,9 @@ import type {
   AiRuntimeAppendFunctionCallOptions,
   AiRuntimeAppendMessageOptions,
   AiRuntimeCompleteFunctionCallOptions,
-  AiRuntimeFunctionCallHistoryEntry,
-  AiRuntimeHistoryEntry,
-  AiRuntimeMessageHistoryEntry,
   AiRuntimeRecordFunctionCallRequestOptions,
-  AiRuntimeSessionRecord,
   AiRuntimeStartSessionOptions,
-  AiRuntimeStartSessionResult,
   AiRuntimeStopSessionOptions,
-  AiRuntimeStopSessionResult,
 } from './session-events'
 
 export type {
@@ -195,29 +187,3 @@ export type AiRegisteredModuleRecordFunctionCallRequestOptions = Omit<AiRuntimeR
 export type AiRegisteredModuleCompleteFunctionCallOptions = Omit<AiRuntimeCompleteFunctionCallOptions, 'moduleId'>
 export type AiRegisteredModuleTranslateFunctionCallOptions = Omit<AiRuntimeTranslateFunctionCallOptions, 'moduleId'>
 export type AiRegisteredModuleExecuteFunctionCallOptions = Omit<AiRuntimeExecuteFunctionCallOptions, 'moduleId'>
-
-export interface AiRegisteredModuleApi {
-  readonly moduleId: AiRuntimeModuleId
-  readonly registration: AiModuleRegistration
-  getRegistration(): AiModuleRegistration
-  getRegistrationData(): AiModuleRegistrationData
-  getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot
-  getSession(moduleInstanceId: AiRuntimeModuleInstanceId): AiRuntimeSessionRecord | null
-  listSessions(): readonly AiRuntimeSessionRecord[]
-  getSessionHistory(moduleInstanceId: AiRuntimeModuleInstanceId): readonly AiRuntimeHistoryEntry[]
-  appendMessage(options: AiRegisteredModuleAppendMessageOptions): AiRuntimeMessageHistoryEntry
-  recordFunctionCallRequest(options: AiRegisteredModuleRecordFunctionCallRequestOptions): AiRuntimeFunctionCallHistoryEntry
-  completeFunctionCall(options: AiRegisteredModuleCompleteFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry
-  appendFunctionCall(options: AiRegisteredModuleAppendFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry
-  startSession(options: AiRegisteredModuleStartSessionOptions): Promise<AiRuntimeStartSessionResult>
-  stopSession(options: AiRegisteredModuleStopSessionOptions): AiRuntimeStopSessionResult
-  projectKnowledge(options: AiRegisteredModuleProjectKnowledgeOptions): Promise<AiRuntimeKnowledgeProjection>
-  translateFunctionCall(options: AiRegisteredModuleTranslateFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult>
-  executeFunctionCall(options: AiRegisteredModuleExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>>
-  createFunctionResultMessage(options: AiRuntimeCreateFunctionResultMessageOptions): AiRuntimeFunctionResultMessage
-}
-
-export interface AiRuntimeApi {
-  registerModule(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi
-  getKnowledgeProjection(): unknown
-}

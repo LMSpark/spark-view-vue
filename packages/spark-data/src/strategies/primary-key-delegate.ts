@@ -22,10 +22,14 @@
  * - `_pk` 是保留字段名，业务表不应使用
  */
 
-import type { IDataRow, DataColumn } from '../types'
+import type { DataRow, DataColumn } from '../types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from '../core/primary-key-generator'
 import { createPrimaryKeyGenerator } from '../core/primary-key-generator'
 import { isSameRow } from '../core/utils'
+
+function dataRowFromPartial(row: Partial<DataRow>): DataRow {
+  return { ...row }
+}
 
 // ─────────────────────────────────────────────
 // 模块级工具函数
@@ -100,8 +104,8 @@ export class PrimaryKeyDelegate {
   constructor(
     private readonly _getColumns: () => DataColumn[],
     private readonly _getColumnMap: () => Map<string, DataColumn> | undefined,
-    private readonly _getRows: () => IDataRow[],
-    private readonly _registerComputed: (name: string, fn: (row: IDataRow) => unknown) => void,
+    private readonly _getRows: () => DataRow[],
+    private readonly _registerComputed: (name: string, fn: (row: DataRow) => unknown) => void,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -154,7 +158,7 @@ export class PrimaryKeyDelegate {
     this._syntheticPkFields = undefined // 清除多列状态
 
     const getColumnMap = this._getColumnMap
-    this._registerComputed('_pk', (row: IDataRow) => {
+    this._registerComputed('_pk', (row: DataRow) => {
       const value = row[field]
       if (value === undefined || value === null) return undefined
       return coercePkValue(value, getColumnMap()?.get(field))
@@ -284,11 +288,14 @@ export class PrimaryKeyDelegate {
    *
    * 所有内部 Map/Set/`===` 比较均使用此方法。
    */
-  getPkKey(row: IDataRow): string | number | undefined {
+  getPkKey(row: DataRow): string | number | undefined {
     // 快速路径：_pk 计算列已注册，值已预计算
     if (this._pkColumnRegistered) {
       const pk = row['_pk']
-      if (pk !== undefined && pk !== null) return pk as string | number
+      if (typeof pk === 'string' || typeof pk === 'number') return pk
+      if (pk !== undefined && pk !== null) {
+        throw new Error(`Invalid computed primary key type: ${typeof pk}`)
+      }
       // _pk 存在但为 undefined/null → 主键值缺失
       if ('_pk' in row) return undefined
     }
@@ -310,7 +317,7 @@ export class PrimaryKeyDelegate {
    *
    * @internal 供 saveChanges / CrudDelegate 等构建服务端请求使用
    */
-  buildServerPk(row: IDataRow): Record<string, unknown> {
+  buildServerPk(row: DataRow): Record<string, unknown> {
     const result: Record<string, unknown> = {}
     for (const f of this.effectivePkFields) result[f] = row[f]
     return result
@@ -321,7 +328,7 @@ export class PrimaryKeyDelegate {
    *
    * 优先使用 `_pk`（预计算）进行比较，否则回退到 `isSameRow`。
    */
-  isSamePrimaryKey(row1: IDataRow, row2: IDataRow): boolean {
+  isSamePrimaryKey(row1: DataRow, row2: DataRow): boolean {
     if (this._pkColumnRegistered) {
       const pk1 = row1['_pk']
       const pk2 = row2['_pk']
@@ -363,12 +370,12 @@ export class PrimaryKeyDelegate {
    *
    * @throws 如果未配置主键生成器
    */
-  generatePrimaryKey(row: Partial<IDataRow>): IDataRow {
+  generatePrimaryKey(row: Partial<DataRow>): DataRow {
     if (!this._primaryKeyGenerator) {
       throw new Error('未配置主键生成器，请先调用 setPrimaryKeyGenerator()')
     }
     const pkValue = this._primaryKeyGenerator.generate(row, this._getRows())
-    return { ...row, [this.primaryKey]: pkValue } as IDataRow
+    return dataRowFromPartial({ ...row, [this.primaryKey]: pkValue })
   }
 
   /**
@@ -377,9 +384,9 @@ export class PrimaryKeyDelegate {
    * @param row 部分数据行
    * @returns 包含主键的数据行（如果需要生成）或原始数据（如果已有主键）
    */
-  ensurePrimaryKey(row: Partial<IDataRow>): IDataRow {
+  ensurePrimaryKey(row: Partial<DataRow>): DataRow {
     if (!this._primaryKeyGenerator) {
-      return row as IDataRow
+      return dataRowFromPartial(row)
     }
     const fields = this.effectivePkFields
     const hasPrimaryKey = fields.every(field => {
@@ -387,7 +394,7 @@ export class PrimaryKeyDelegate {
       return value !== undefined && value !== null
     })
     if (hasPrimaryKey) {
-      return row as IDataRow
+      return dataRowFromPartial(row)
     }
     return this.generatePrimaryKey(row)
   }

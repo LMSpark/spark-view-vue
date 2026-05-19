@@ -1,4 +1,4 @@
-import type { CrudResult, IDataRow } from '@spark-view/spark-data'
+import type { CrudResult, DataRow } from '@spark-view/spark-data'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 
@@ -46,9 +46,9 @@ export function createCancelledCrudResult<T>(message: string): CrudResult<T> {
   }
 }
 
-export type RowClickHandler = CancelableHandler<[IDataRow, unknown, Event | undefined]>
-export type RowSelectionHandler = CancelableHandler<[IDataRow[]]>
-export type CurrentRowChangeHandler = CancelableHandler<[IDataRow | null, IDataRow | null | undefined]>
-export type AddRowHandler = CancelableHandler<[Partial<IDataRow>]>
-export type EditRowHandler = CancelableHandler<[string | number, Partial<IDataRow>]>
+export type RowClickHandler = CancelableHandler<[DataRow, unknown, Event | undefined]>
+export type RowSelectionHandler = CancelableHandler<[DataRow[]]>
+export type CurrentRowChangeHandler = CancelableHandler<[DataRow | null, DataRow | null | undefined]>
+export type AddRowHandler = CancelableHandler<[Partial<DataRow>]>
+export type EditRowHandler = CancelableHandler<[string | number, Partial<DataRow>]>
 export type RemoveRowHandler = CancelableHandler<[string | number]>

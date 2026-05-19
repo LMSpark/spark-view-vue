@@ -28,8 +28,16 @@ export interface SparkNode {
  */
 export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'id', 'props', 'children'])
 
+function getOwnPropertyKeys(value: object): string[] {
+  const keys: string[] = []
+  for (const key of Object.getOwnPropertyNames(value)) {
+    try { keys.push(key) } catch { /* ignore */ }
+  }
+  return keys
+}
+
 function assertSparkNodeRootKeys(node: SparkNode): void {
-  for (const key of Object.keys(node as unknown as Record<string, unknown>)) {
+  for (const key of getOwnPropertyKeys(node)) {
     if (!SPARK_NODE_STRUCT_KEYS.has(key)) {
       throw new Error(`[spark] SparkNode root field "${key}" is invalid. Put business input under SparkNode.props.`)
     }
@@ -46,7 +54,7 @@ function normalizeSparkNodeChildren(children: SparkNodeChildren | undefined): Sp
 }
 
 function normalizeSparkNodeIdentity(node: SparkNode, props: Record<string, unknown> | undefined): string | undefined {
-  const rawTopLevelId = (node as { id?: unknown }).id
+  const rawTopLevelId = node['id']
   if (typeof rawTopLevelId === 'string') return rawTopLevelId
 
   const legacyPropsId = props?.['id']
@@ -69,15 +77,7 @@ export function normalizeSparkNode(node: SparkNode): SparkNode {
     throw new Error('[spark] SparkNode.type must be a non-empty string')
   }
 
-  const rawProps = (node as { props?: unknown }).props
-  const hasObjectProps = rawProps !== undefined
-    && rawProps !== null
-    && typeof rawProps === 'object'
-    && !Array.isArray(rawProps)
-
-  const normalizedProps = hasObjectProps
-    ? { ...(rawProps as Record<string, unknown>) }
-    : undefined
+  const normalizedProps = node.props !== undefined ? { ...node.props } : undefined
 
   const normalizedId = normalizeSparkNodeIdentity(node, normalizedProps)
 
@@ -94,14 +94,16 @@ export function normalizeSparkNode(node: SparkNode): SparkNode {
   }
 }
 
+function getStringProp(value: object, key: string): string | undefined {
+  const desc = Object.getOwnPropertyDescriptor(value, key)
+  return desc && typeof desc.value === 'string' ? desc.value : undefined
+}
+
 /** 判断值是否为 SparkNode 配置对象。 */
 export function isSparkNode(value: unknown): value is SparkNode {
-  return value !== null
-    && typeof value === 'object'
-    && !Array.isArray(value)
-    && 'type' in value
-    && typeof (value as { type?: unknown }).type === 'string'
-    && ((value as { type: string }).type.trim().length > 0)
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+  const typeVal = getStringProp(value, 'type')
+  return typeVal !== undefined && typeVal.trim().length > 0
 }
 
 /** 从混合 children 中提取结构子节点。 */

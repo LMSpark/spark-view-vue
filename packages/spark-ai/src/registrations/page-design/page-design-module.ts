@@ -2,9 +2,6 @@ import type {
   AiModuleRegistration,
   AiFunctionRegistration,
   AiRuntimeFunctionCallResult,
-  AiRuntimeKnowledgeProjection,
-  AiRuntimeMessageRole,
-  AiRuntimeMessageSource,
   FunctionExecutionContext,
 } from '../../core/protocol/runtime-contracts'
 import type {
@@ -52,31 +49,14 @@ export type PageDesignModuleId =
   | typeof DATASET_MODULE_ID
   | typeof KNOWLEDGE_MODULE_ID
 
-export interface PageDesignRuntimeContext {
-  instanceId: string
-  moduleId: typeof PAGE_DESIGN_MODULE_ID
-  moduleInstanceId: string
+type PageDesignRuntimeContext = {
+  readonly instanceId: string
+  readonly moduleId: typeof PAGE_DESIGN_MODULE_ID
+  readonly moduleInstanceId: string
 }
 
-export interface PageDesignModuleOptions {
-  getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
-}
-
-export interface PageDesignExecuteFunctionCallOptions extends PageDesignRuntimeContext {
-  readonly action: string
-  readonly args: unknown
-  readonly projection?: AiRuntimeKnowledgeProjection | undefined
-}
-
-export interface PageDesignAppendMessageOptions extends PageDesignRuntimeContext {
-  readonly role: AiRuntimeMessageRole
-  readonly content: string
-  readonly source?: AiRuntimeMessageSource | undefined
-  readonly metadata?: Record<string, unknown> | undefined
-}
-
-export interface PageDesignStopSessionOptions extends PageDesignRuntimeContext {
-  readonly reason?: string | undefined
+export type PageDesignModuleOptions = {
+  readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
 }
 
 type PageDesignFunctionApplyResult = object | AiRuntimeFunctionCallResult<unknown>
@@ -89,25 +69,25 @@ type PageDesignRuntimeFunctionRegistration = AiFunctionRegistration & {
   readonly validate?: ((args: unknown, context: FunctionExecutionContext) => string | null) | undefined
 }
 
-interface PageDesignFunctionHandler {
+type PageDesignFunctionHandler = {
   readonly functionId: string
-  validate?: (args: unknown, context: FunctionExecutionContext) => string | null
-  apply: PageDesignFunctionApply
+  readonly validate?: ((args: unknown, context: FunctionExecutionContext) => string | null) | undefined
+  readonly apply: PageDesignFunctionApply
 }
 
-interface PageDesignFunctionBindingRuntime {
+type PageDesignFunctionBindingRuntime = {
   readonly service: PageDesignService
   readonly knowledge: AiKnowledgeProjection
 }
 
-interface PageDesignServiceMethodBinding {
+type PageDesignServiceMethodBinding = {
   readonly serviceLabel: string
   readonly methodName: string
   readonly mutates: boolean
   readonly fixHint: string
 }
 
-interface PageDesignPayloadProp {
+type PageDesignPayloadProp = {
   readonly name: string
   readonly type?: string | undefined
   readonly required?: boolean | undefined
@@ -115,7 +95,7 @@ interface PageDesignPayloadProp {
   readonly schema?: LlmJsonSchema | undefined
 }
 
-interface PageDesignPayloadEntry {
+type PageDesignPayloadEntry = {
   readonly type: string
   readonly filePath?: string | undefined
   readonly category?: string | undefined
@@ -127,7 +107,7 @@ interface PageDesignPayloadEntry {
   readonly source?: string | undefined
 }
 
-interface PageDesignPayloadCatalog {
+type PageDesignPayloadCatalog = {
   readonly version: string
   readonly componentCount: number
   readonly components: Readonly<Record<string, PageDesignPayloadEntry>>
@@ -519,7 +499,7 @@ function createTextModelHandlers(
 function createKnowledgeHandlers(
   runtime: PageDesignFunctionBindingRuntime,
 ): readonly PageDesignFunctionHandler[] {
-  const rows = [...new AiKnowledgeCatalog({}).parameterTable, ...PAGE_DESIGN_PAYLOAD_FUNCTIONS]
+  const rows = [...new AiKnowledgeCatalog().parameterTable, ...PAGE_DESIGN_PAYLOAD_FUNCTIONS]
   return rows.map((row) => ({
     functionId: row.functionId,
     validate: (args) => validateFunctionParams(row, args),
@@ -616,7 +596,7 @@ function createPageDesignRuntimeModule(
     ...TEXT_MODEL_TOOL_MODULE.getFunctions(),
     ...NODE_TREE_TOOL_MODULE.getFunctions(),
     ...DATASET_TOOL_MODULE.getFunctions(),
-    ...new AiKnowledgeCatalog({}).parameterTable,
+    ...new AiKnowledgeCatalog().parameterTable,
     ...PAGE_DESIGN_PAYLOAD_FUNCTIONS,
   ]
   const rowsByFunctionId = new Map(allRows.map((row) => [row.functionId, row]))

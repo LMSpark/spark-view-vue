@@ -72,7 +72,7 @@ function readToolCalls(value: unknown): readonly AiHostTransportToolCall[] {
   return Array.isArray(value) ? value.filter(isTransportToolCall) : []
 }
 
-interface ParsedSseEvent {
+type ParsedSseEvent = {
   readonly event: string
   readonly data: string
 }

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
@@ -41,7 +41,7 @@
       >
         <template #default="slotProps">
           <span class="custom-tree-node">
-            <RendererHostScope :row="(slotProps?.data as IDataRow | undefined)">
+            <RendererHostScope :row="(slotProps?.data as DataRow | undefined)">
               <template v-if="nodeContentChildren.length > 0">
                 <SparkComponentRenderer
                   v-for="(child, index) in nodeContentChildren"
@@ -102,7 +102,7 @@ import {
   type SparkNode,
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
-import type { IDataRow, DataView } from '@spark-view/spark-data'
+import type { DataRow, DataView } from '@spark-view/spark-data'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,

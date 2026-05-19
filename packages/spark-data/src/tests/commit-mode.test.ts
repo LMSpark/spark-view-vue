@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData, DataView } from '../index'
-import type { IDataRow, CrudApi } from '../types'
+import type { DataRow, CrudApi } from '../types'
 
 // ─────────────────────────────────────────────
 // 辅助
 // ─────────────────────────────────────────────
 
-function createStagedView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]) {
+function createStagedView(rows: DataRow[] = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]) {
   const ds = SparkData.createDataSet({
     dataSetName: 'TestDS',
     tables: {
@@ -27,7 +27,7 @@ function createStagedView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }, { id: 2,
   return { ds, view }
 }
 
-function createImmediateView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }]) {
+function createImmediateView(rows: DataRow[] = [{ id: 1, name: 'Alice' }]) {
   const ds = SparkData.createDataSet({
     dataSetName: 'ImmDS',
     tables: {
@@ -87,11 +87,11 @@ function createMasterDetailStagedDataSet() {
 
 function setupMockApi(view: DataView) {
   const mockCrud = {
-    create: vi.fn(async (row: Partial<IDataRow>) => ({
+    create: vi.fn(async (row: Partial<DataRow>) => ({
       success: true,
       data: { ...row, _server: true },
     })),
-    update: vi.fn(async (_pk: Record<string, unknown>, data: Partial<IDataRow>) => ({
+    update: vi.fn(async (_pk: Record<string, unknown>, data: Partial<DataRow>) => ({
       success: true,
       data: { ...data, _server: true },
     })),
@@ -250,11 +250,11 @@ describe('commitMode=staged: dirty tracking lifecycle', () => {
     const calls: string[] = []
     const orderApi = setupMockApi(orders)
     const itemApi = setupMockApi(items)
-    orderApi.update.mockImplementation(async (_pk: Record<string, unknown>, data: Partial<IDataRow>) => {
+    orderApi.update.mockImplementation(async (_pk: Record<string, unknown>, data: Partial<DataRow>) => {
       calls.push('Orders')
       return { success: true, data: { ...data, _server: true } }
     })
-    itemApi.update.mockImplementation(async (_pk: Record<string, unknown>, data: Partial<IDataRow>) => {
+    itemApi.update.mockImplementation(async (_pk: Record<string, unknown>, data: Partial<DataRow>) => {
       calls.push('Items')
       return { success: true, data: { ...data, _server: true } }
     })

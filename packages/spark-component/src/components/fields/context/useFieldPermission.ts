@@ -1,7 +1,7 @@
 import { computed, getCurrentInstance } from 'vue'
 import { FieldVisibility } from '@spark-view/spark-data'
 import type { DataColumn } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '../../internal'
 import { usePermission } from '../../../permission/index.js'
 import type { SparkFieldSemanticProps } from '../../shared-types.js'
@@ -60,8 +60,8 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     return columnToFormRules(column)
   })
 
-  const currentRow = computed<IDataRow | null>(() => activeRow.value)
-  const selectedRows = computed<IDataRow[]>(() => activeSelectedRows.value)
+  const currentRow = computed<DataRow | null>(() => activeRow.value)
+  const selectedRows = computed<DataRow[]>(() => activeSelectedRows.value)
 
   function hasRawProp(...keys: string[]): boolean {
     const rawProps = instance?.vnode.props
@@ -128,20 +128,20 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     return formatValue(sourceFieldValue.value)
   })
 
-  function isTableCellHidden(row: IDataRow): boolean {
+  function isTableCellHidden(row: DataRow): boolean {
     return perm.resolveFieldState(fieldName.value, row)?.visibility === FieldVisibility.Hidden
   }
 
-  function getRowRawValue(row: IDataRow): unknown {
+  function getRowRawValue(row: DataRow): unknown {
     if (!fieldName.value) return fallbackValue
     return row[fieldName.value]
   }
 
-  function getRowRawStringValue(row: IDataRow): string {
+  function getRowRawStringValue(row: DataRow): string {
     return String(getRowRawValue(row) ?? '')
   }
 
-  function getTableCellDisplayValue(row: IDataRow): string {
+  function getTableCellDisplayValue(row: DataRow): string {
     if (!fieldName.value) return formatValue(fallbackValue)
     return formatValue(getRowRawValue(row))
   }

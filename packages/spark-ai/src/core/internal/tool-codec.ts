@@ -13,12 +13,7 @@ export interface AiRuntimeToolSpec {
   }
 }
 
-export interface AiRuntimeToolCodec {
-  readonly tools: readonly AiRuntimeToolSpec[]
-  actionOf(toolName: string): string | null
-}
-
-export interface AiRuntimeToolCodecOptions {
+export type AiRuntimeToolCodecOptions = {
   readonly includeActions?: ReadonlySet<string> | ((exposure: AiRuntimeFunctionExposure) => boolean) | undefined
 }
 
@@ -60,30 +55,32 @@ function shouldIncludeExposure(exposure: AiRuntimeFunctionExposure, options: AiR
   return includeActions.has(exposure.action)
 }
 
-export function createAiRuntimeToolCodec(
-  projection: AiRuntimeKnowledgeProjection,
-  options: AiRuntimeToolCodecOptions = {},
-): AiRuntimeToolCodec {
-  const actionByToolName = new Map<string, string>()
-  const tools = projection.availableFunctions.flatMap((exposure, index): AiRuntimeToolSpec[] => {
-    if (!shouldIncludeExposure(exposure, options)) return []
-    let toolName = toolNameForExposure(exposure, index)
-    if (actionByToolName.has(toolName)) toolName = `ai_${index}_${toolName}`.slice(0, 64)
-    actionByToolName.set(toolName, exposure.action)
-    return [{
-      type: 'function',
-      function: {
-        name: toolName,
-        description: buildToolDescription(exposure),
-        parameters: schemaToParameters(exposure.paramsSchema),
-      },
-    }]
-  })
+export class AiRuntimeToolCodec {
+  readonly tools: readonly AiRuntimeToolSpec[]
 
-  return {
-    tools,
-    actionOf(toolName: string): string | null {
-      return actionByToolName.get(toolName) ?? null
-    },
+  private readonly actionByToolName = new Map<string, string>()
+
+  constructor(
+    projection: AiRuntimeKnowledgeProjection,
+    options: AiRuntimeToolCodecOptions = {},
+  ) {
+    this.tools = projection.availableFunctions.flatMap((exposure, index): AiRuntimeToolSpec[] => {
+      if (!shouldIncludeExposure(exposure, options)) return []
+      let toolName = toolNameForExposure(exposure, index)
+      if (this.actionByToolName.has(toolName)) toolName = `ai_${index}_${toolName}`.slice(0, 64)
+      this.actionByToolName.set(toolName, exposure.action)
+      return [{
+        type: 'function',
+        function: {
+          name: toolName,
+          description: buildToolDescription(exposure),
+          parameters: schemaToParameters(exposure.paramsSchema),
+        },
+      }]
+    })
+  }
+
+  actionOf(toolName: string): string | null {
+    return this.actionByToolName.get(toolName) ?? null
   }
 }

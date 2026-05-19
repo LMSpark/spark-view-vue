@@ -16,7 +16,7 @@ import { useSparkComponent } from '../packages/spark-component/src/core/useSpark
 import type { SparkNode } from '../packages/spark-component/src/core/types'
 import { DATA_ROW } from '../packages/spark-component/src/components/internal'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 // el-table-column stub：将所有 props/attrs 输出到 data-* 属性，便于断言
@@ -41,7 +41,7 @@ const ElTableColumnStub = defineComponent({
       'data-align': props.align ?? '',
       'data-label-class-name': props.labelClassName ?? '',
       'data-class-name': props.className ?? '',
-    }, slots['default']?.({ row: { id: 1, name: 'Test' } as IDataRow, $index: 0 }))
+    }, slots['default']?.({ row: { id: 1, name: 'Test' } as DataRow, $index: 0 }))
   },
 })
 
@@ -95,8 +95,8 @@ function mountFCR(overrides: Record<string, unknown> = {}) {
       mergedChildren: [],
       isCurrentFieldHidden: false,
       currentDisplayValue: '1',
-      isTableCellHidden: noop as (row: IDataRow) => boolean,
-      getTableCellDisplayValue: ((row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: IDataRow) => string,
+      isTableCellHidden: noop as (row: DataRow) => boolean,
+      getTableCellDisplayValue: ((row: DataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: DataRow) => string,
       validationRules: [],
       ...overrides,
     },
@@ -231,7 +231,7 @@ describe('useFieldContext attrs 集成传递', () => {
         shouldRenderCurrentField: computed(() => true),
         currentDisplayValue: computed(() => '1'),
         isTableCellHidden: () => false,
-        getTableCellDisplayValue: (row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
+        getTableCellDisplayValue: (row: DataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
         validationRules: computed(() => [] as never[]),
       }
       const fieldCtx = useFieldContext({
@@ -401,7 +401,7 @@ describe('字段宿主推导会考虑中间层', () => {
           type: 'r-field-scope',
           ...(props.id !== undefined ? { id: props.id } : {}),
         })
-        sparkProvide(DATA_ROW, { id: 1 } as IDataRow)
+        sparkProvide(DATA_ROW, { id: 1 } as DataRow)
 
         return () => h('div', { class: 'scope-comp' }, 'scope')
       },

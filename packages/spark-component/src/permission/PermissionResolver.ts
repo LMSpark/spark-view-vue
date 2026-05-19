@@ -5,7 +5,7 @@
  * 合并了动作权限相关的模型/行级判断。
  */
 
-import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
+import type { DataRow, ModelPermission } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { nodeInputProp } from '../core/types'
@@ -16,8 +16,8 @@ import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
 // ── 动作权限上下文 ──
 
 export interface PermissionActionContext {
-  modelPermission?: IModelPermission
-  row?: IDataRow | null
+  modelPermission?: ModelPermission
+  row?: DataRow | null
   permissionMode?: NavPermissionMode | undefined
 }
 
@@ -108,7 +108,7 @@ export function isPermittedAction(
 
 export function resolveFieldPermissionState(
   field: string | undefined,
-  row: IDataRow | null | undefined,
+  row: DataRow | null | undefined,
   config: Omit<IFieldRenderConfig, 'field'> = {},
   permissionMode?: NavPermissionMode,
 ): IFieldRenderState | null {
@@ -129,14 +129,14 @@ export function isRowScopedPermAction(action: PermissionAction | undefined): boo
 }
 
 /** 判断 SparkNode 的模型级动作（create/import/export）是否被权限允许 */
-export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined, permissionMode?: NavPermissionMode): boolean {
+export function isModelActionAllowed(action: SparkNode, modelPerm: ModelPermission | undefined, permissionMode?: NavPermissionMode): boolean {
   const permAction = resolveNodePermAction(action).action
   if (!isModelScopedPermAction(permAction)) return true
   return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm, permissionMode } : { permissionMode })
 }
 
 /** 判断 SparkNode 的行级动作（edit/delete/create-child）是否被权限允许 */
-export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined, permissionMode?: NavPermissionMode): boolean {
+export function isRowActionAllowed(action: SparkNode, row: DataRow | undefined, permissionMode?: NavPermissionMode): boolean {
   const permAction = resolveNodePermAction(action).action
   if (!isRowScopedPermAction(permAction)) return true
 

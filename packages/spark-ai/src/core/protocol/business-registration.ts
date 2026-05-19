@@ -1,7 +1,7 @@
 /**
  * 业务注册协议。
  *
- * 模块注册契约、持久化快照结构、便捷基类。
+ * 模块注册契约与便捷基类。
  * 注册实现优先继承 class 主路径，不再保留旧 I* 兼容契约。
  */
 
@@ -51,69 +51,6 @@ export interface AiModuleRegistration {
   readonly modules?: readonly AiModuleRegistration[] | undefined
   readonly instanceParam?: AiModuleInstanceParam | undefined
   getFunctions(): readonly AiFunctionRegistration[]
-}
-
-// ── 纯数据快照（可 JSON 序列化落库） ──
-
-export interface AiModuleRegistrationData {
-  readonly moduleId: AiRuntimeModuleId
-  readonly name: string
-  readonly description: string
-  readonly prompt?: string | undefined
-  readonly instanceParam?: AiModuleInstanceParam | undefined
-  readonly functions: readonly AiFunctionRegistration[]
-  readonly modules: readonly AiModuleRegistrationData[]
-}
-
-// ── 结构化持久化快照行 ──
-
-export interface AiModuleRegistrationStoreModule {
-  readonly modulePath: AiRuntimeModulePath
-  readonly parentModulePath?: AiRuntimeModulePath | undefined
-  readonly moduleId: AiRuntimeModuleId
-  readonly sortOrder: number
-  readonly name: string
-  readonly description: string
-  readonly prompt?: string | undefined
-  readonly instanceParamName?: string | undefined
-  readonly instanceParamDescription?: string | undefined
-}
-
-export interface AiFunctionRegistrationStoreFunction {
-  readonly modulePath: AiRuntimeModulePath
-  readonly functionId: AiRuntimeFunctionId
-  readonly sortOrder: number
-  readonly description: string
-  readonly paramsSchema: LlmParameterSchemaRoot
-  readonly resultSchema?: LlmJsonObject | undefined
-  readonly maxExecutionMs?: number | undefined
-  readonly scope?: 'collection' | 'instance'
-}
-
-export interface AiFunctionRegistrationUsageRule {
-  readonly modulePath: AiRuntimeModulePath
-  readonly functionId: AiRuntimeFunctionId
-  readonly sortOrder: number
-  readonly rule: string
-}
-
-export interface AiFunctionRegistrationFailureMode {
-  readonly modulePath: AiRuntimeModulePath
-  readonly functionId: AiRuntimeFunctionId
-  readonly sortOrder: number
-  readonly code: string
-  readonly when: string
-  readonly fix: string
-}
-
-// ── 结构化持久化快照 ──
-
-export interface AiModuleRegistrationStoreSnapshot {
-  readonly rootModulePath: AiRuntimeModulePath
-  readonly modules: readonly AiModuleRegistrationStoreModule[]
-  readonly functions: readonly AiFunctionRegistrationStoreFunction[]
-  readonly usageRules: readonly AiFunctionRegistrationUsageRule[]
-  readonly failureModes: readonly AiFunctionRegistrationFailureMode[]
 }
 
 // ── 便捷基类 ──

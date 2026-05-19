@@ -1,6 +1,6 @@
 export type LeaveRequestDraftStatus = 'draft' | 'submitted' | 'cancelled'
 
-export interface LeaveRequestDraftFields {
+export type LeaveRequestDraftFields = {
   readonly applicantName?: string | undefined
   readonly leaveType?: string | undefined
   readonly startDate?: string | undefined
@@ -10,7 +10,7 @@ export interface LeaveRequestDraftFields {
   readonly approver?: string | undefined
 }
 
-export interface LeaveRequestDraftState {
+export type LeaveRequestDraftState = {
   readonly leaveDraftId: string
   readonly status: LeaveRequestDraftStatus
   readonly fields: LeaveRequestDraftFields
@@ -21,7 +21,7 @@ export interface LeaveRequestDraftState {
   readonly cancelReason?: string | undefined
 }
 
-export interface LeaveRequestServiceContext {
+export type LeaveRequestServiceContext = {
   readonly requestId: string
   readonly leaveDraftId: string
 }

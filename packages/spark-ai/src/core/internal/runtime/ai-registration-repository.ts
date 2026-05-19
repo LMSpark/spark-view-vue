@@ -1,8 +1,4 @@
-import type {
-  AiModuleRegistration,
-  AiModuleRegistrationData,
-  AiModuleRegistrationStoreSnapshot,
-} from '../../protocol/runtime-contracts'
+import type { AiModuleRegistration } from '../../protocol/runtime-contracts'
 import type { AiRuntimeProjector } from './ai-runtime-support'
 
 export class AiRegistrationRepository {
@@ -10,8 +6,7 @@ export class AiRegistrationRepository {
 
   constructor(private readonly projector: AiRuntimeProjector) {}
 
-  registerModule(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiModuleRegistration {
-    const registration = this.projector.createRuntimeRegistration(source)
+  registerModule(registration: AiModuleRegistration): AiModuleRegistration {
     this.projector.assertUniqueRegistrationKeys(registration)
     if (this.modules.has(registration.moduleId)) {
       throw new Error(`Duplicate AI module registration: ${registration.moduleId}`)
@@ -35,23 +30,4 @@ export class AiRegistrationRepository {
   listModuleRegistrations(): readonly AiModuleRegistration[] {
     return Array.from(this.modules.values())
   }
-
-  getModuleRegistrationData(moduleId: string): AiModuleRegistrationData | undefined {
-    const registration = this.modules.get(moduleId)
-    return registration === undefined ? undefined : this.projector.createRegistrationData(registration)
-  }
-
-  listModuleRegistrationData(): readonly AiModuleRegistrationData[] {
-    return Array.from(this.modules.values()).map((registration) => this.projector.createRegistrationData(registration))
-  }
-
-  getModuleRegistrationStoreSnapshot(moduleId: string): AiModuleRegistrationStoreSnapshot | undefined {
-    const registration = this.modules.get(moduleId)
-    return registration === undefined ? undefined : this.projector.createRegistrationStoreSnapshot(registration)
-  }
-
-  listModuleRegistrationStoreSnapshots(): readonly AiModuleRegistrationStoreSnapshot[] {
-    return Array.from(this.modules.values()).map((registration) => this.projector.createRegistrationStoreSnapshot(registration))
-  }
-
 }

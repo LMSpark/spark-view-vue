@@ -7,7 +7,7 @@
  * `computeAggregateRow` 纯函数也在此文件定义（原位于 computed-column-delegate.ts）。
  */
 
-import type { IDataRow, AggregateColumnConfig, AggregateType, AggregateResultRow } from '../types'
+import type { DataRow, AggregateColumnConfig, AggregateType, AggregateResultRow } from '../types'
 
 // ─────────────────────────────────────────────
 // 聚合行计算（纯函数）
@@ -24,7 +24,7 @@ import type { IDataRow, AggregateColumnConfig, AggregateType, AggregateResultRow
  */
 export function computeAggregateRow(
   aggregates: Record<string, AggregateColumnConfig>,
-  rows: readonly IDataRow[],
+  rows: readonly DataRow[],
 ): AggregateResultRow {
   const aggCols = Object.entries(aggregates)
   if (aggCols.length === 0) return {}
@@ -124,7 +124,7 @@ export class AggregateDelegate {
    * @param rows         全部行（已含计算列求值结果）
    * @param selectedRows 当前选中行（无选中时传空数组）
    */
-  recompute(rows: IDataRow[], selectedRows: IDataRow[], options?: { emit?: boolean }): void {
+  recompute(rows: DataRow[], selectedRows: DataRow[], options?: { emit?: boolean }): void {
     const aggs = this.getAggregates()
     if (Object.keys(aggs).length === 0) return
     this._summaryRow = computeAggregateRow(aggs, rows)
@@ -141,7 +141,7 @@ export class AggregateDelegate {
    *
    * @param selectedRows 当前选中行
    */
-  recomputeSelection(selectedRows: IDataRow[], options?: { emit?: boolean }): void {
+  recomputeSelection(selectedRows: DataRow[], options?: { emit?: boolean }): void {
     const aggs = this.getAggregates()
     if (Object.keys(aggs).length === 0) return
     this._selectionSummaryRow = selectedRows.length > 0

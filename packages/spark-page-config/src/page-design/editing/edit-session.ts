@@ -14,12 +14,7 @@ export interface PageDesignEditHost {
   writeStyle?: (content: string) => void
 }
 
-export interface PageDesignEditState {
-  phase: PageDesignEditPhase
-  host: PageDesignEditHost | null
-}
-
-export class PageDesignEditSession implements PageDesignEditState {
+export class PageDesignEditSession {
   phase: PageDesignEditPhase = 'idle'
 
   host: PageDesignEditHost | null = null

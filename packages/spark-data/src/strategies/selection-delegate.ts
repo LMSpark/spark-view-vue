@@ -8,17 +8,21 @@
  * - 无效选中状态清理（行数据刷新后同步调用）
  * - 行索引缓存管理（rowIndexMap，O(n) 构建 O(1) 查找）
  *
- * 通过 ISelectionHost 接口与宿主（DataView）交互：
+ * 通过 SelectionHost 接口与宿主（DataView）交互：
  * - 仅依赖最小公共状态集合，不直接引用 DataView 类（避免循环依赖）
  * - 选中状态字段与宿主同引用，外部访问 DataView.currentRow 等字段时即可读到最新值
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { IDataRow } from '../types'
-import type { ISelectionHost, EmitCurrentRowChangedFn, EmitSelectedRowsChangedFn } from './types'
+import type { DataRow } from '../types'
+import type { SelectionHost, EmitCurrentRowChangedFn, EmitSelectedRowsChangedFn } from './types'
 import { pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
+
+function isDataRow(value: unknown): value is DataRow {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
 
 export class SelectionDelegate {
 
@@ -26,11 +30,11 @@ export class SelectionDelegate {
   private _suppressSelectionSync = false
 
   /** @internal version-cached pk→row Map: reused while host.rows reference is stable */
-  private _cachedRows: IDataRow[] | undefined
-  private _cachedIdToRowMap: Map<string | number, IDataRow> | undefined
+  private _cachedRows: DataRow[] | undefined
+  private _cachedIdToRowMap: Map<string | number, DataRow> | undefined
 
   constructor(
-    private host: ISelectionHost,
+    private host: SelectionHost,
     private emitCurrentRowChanged: EmitCurrentRowChangedFn,
     private emitSelectedRowsChanged: EmitSelectedRowsChangedFn,
   ) {}
@@ -47,26 +51,26 @@ export class SelectionDelegate {
   }
 
   /** 深度遍历整棵 rows 树（含 nested children） */
-  private getAllRows(): IDataRow[] {
-    const result: IDataRow[] = []
+  private getAllRows(): DataRow[] {
+    const result: DataRow[] = []
     const stack = [...this.host.rows]
     while (stack.length > 0) {
       const row = stack.shift()
       if (!row) continue
       result.push(row)
-      const children = (row as Record<string, unknown>)['children']
+      const children = row['children']
       if (Array.isArray(children) && children.length > 0) {
-        stack.unshift(...children.filter((child): child is IDataRow => typeof child === 'object' && child !== null))
+        stack.unshift(...children.filter(isDataRow))
       }
     }
     return result
   }
 
   /** 获取 pk → row 映射（version-cached：行引用不变时复用） */
-  private getIdToRowMap(): Map<string | number, IDataRow> {
+  private getIdToRowMap(): Map<string | number, DataRow> {
     const rows = this.host.rows
     if (rows === this._cachedRows && this._cachedIdToRowMap) return this._cachedIdToRowMap
-    const m = new Map<string | number, IDataRow>()
+    const m = new Map<string | number, DataRow>()
     for (const row of this.getAllRows()) {
       const pk = this.host.getPkKey(row)
       if (pk !== undefined) m.set(pk, row)
@@ -169,7 +173,7 @@ export class SelectionDelegate {
    * 内部提取 PK 后委托给 {@link _setCurrentId}。
    * 外部 UI 层推荐使用 {@link setCurrentRowById}。
    */
-  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+  setCurrentRow(row: DataRow | null, originatorId?: string): void {
     if (row === null) {
       this._setCurrentId(null, originatorId)
       return
@@ -188,7 +192,7 @@ export class SelectionDelegate {
    * 内部提取 PK 后委托给 {@link _setSelectedIds}。
    * 外部 UI 层推荐使用 {@link setSelectedRowsById}。
    */
-  setSelectedRows(rows: IDataRow[], originatorId?: string): void {
+  setSelectedRows(rows: DataRow[], originatorId?: string): void {
     const host = this.host
     if (!Array.isArray(rows)) {
       logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: host.tableName, viewId: host.viewId })
@@ -314,7 +318,7 @@ export class SelectionDelegate {
    *
    * @returns 实际添加的行数
    */
-  addSelectedRows(rows: IDataRow[]): number {
+  addSelectedRows(rows: DataRow[]): number {
     this.checkDestroyed()
     const host = this.host
 
@@ -342,7 +346,7 @@ export class SelectionDelegate {
    *
    * @returns 实际移除的行数
    */
-  removeSelectedRows(rows: IDataRow[]): number {
+  removeSelectedRows(rows: DataRow[]): number {
     this.checkDestroyed()
     const host = this.host
 
@@ -485,7 +489,7 @@ export class SelectionDelegate {
         const values: string[] = []
         for (const r of rows) {
           const parts = fields.map(f => {
-            const v: unknown = (r as Record<string, unknown>)[f]
+            const v: unknown = r[f]
             return v !== undefined && v !== null ? String(v) : ''
           })
           if (parts.some(p => p !== '')) values.push(parts.join(':'))
@@ -495,7 +499,7 @@ export class SelectionDelegate {
       const field = host.valueField
       const values: string[] = []
       for (const r of rows) {
-        const v: unknown = (r as Record<string, unknown>)[field]
+        const v: unknown = r[field]
         if (v !== undefined && v !== null) values.push(String(v))
       }
       return host.selectionDelimiter ? values.join(host.selectionDelimiter) : (values[0] ?? '')
@@ -523,7 +527,7 @@ export class SelectionDelegate {
         const matchedPks: Array<string | number> = []
         for (const row of this.getAllRows()) {
           const parts = fields.map(f => {
-            const v: unknown = (row as Record<string, unknown>)[f]
+            const v: unknown = row[f]
             return v !== undefined && v !== null ? String(v) : ''
           })
           if (tokenSet.has(parts.join(':'))) {
@@ -538,7 +542,7 @@ export class SelectionDelegate {
       const tokenSet = new Set(tokens)
       const matchedPks: Array<string | number> = []
       for (const row of this.getAllRows()) {
-        const fv: unknown = (row as Record<string, unknown>)[field]
+        const fv: unknown = row[field]
         if (fv !== undefined && fv !== null && tokenSet.has(String(fv))) {
           const pk = host.getPkKey(row)
           if (pk !== undefined) matchedPks.push(pk)
@@ -572,7 +576,7 @@ export class SelectionDelegate {
     return host._selectedRowIds.map(id => {
       const row = rowMap.get(id)
       if (!row) return String(id)
-      const v: unknown = (row as Record<string, unknown>)[field]
+      const v: unknown = row[field]
       return v !== undefined && v !== null ? String(v) : String(id)
     })
   }
@@ -588,7 +592,7 @@ export class SelectionDelegate {
     if (!host.labelField) return String(host._currentRowId)
     const row = host.currentRow
     if (!row) return String(host._currentRowId)
-    const v: unknown = (row as Record<string, unknown>)[host.labelField]
+    const v: unknown = row[host.labelField]
     return v !== undefined && v !== null ? String(v) : String(host._currentRowId)
   }
 }

@@ -12,7 +12,7 @@
 // ============================================================
 
 import { watchEffect } from 'vue'
-import type { DataView, IDataRow, IDataSource } from '@spark-view/spark-data'
+import type { DataView, DataRow, DataSource } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 
 // ============================================================
@@ -42,14 +42,14 @@ export interface DataViewBridgeBaseContext {
 }
 
 export interface CurrentRowChangedContext {
-  row: IDataRow | null
+  row: DataRow | null
   originatorId?: string
   view: DataView
   eventName: 'currentRowChanged'
 }
 
 export interface SelectedRowsChangedContext {
-  rows: IDataRow[]
+  rows: DataRow[]
   originatorId?: string
   view: DataView
   eventName: 'selectedRowsChanged'
@@ -66,7 +66,7 @@ export interface ClearedContext {
 }
 
 export interface RequestStateChangedContext {
-  state: NonNullable<IDataSource['requestState']>
+  state: NonNullable<DataSource['requestState']>
   view: DataView
   eventName: 'requestStateChanged'
 }
@@ -154,10 +154,10 @@ export interface DataViewEventBridgeOptions {
 // ============================================================
 
 type DataViewBridgeEventArgs =
-  | [currentRow: IDataRow | null, originatorId?: string]
-  | [selectedRows: IDataRow[], originatorId?: string]
+  | [currentRow: DataRow | null, originatorId?: string]
+  | [selectedRows: DataRow[], originatorId?: string]
   | []
-  | [requestState: NonNullable<IDataSource['requestState']>]
+  | [requestState: NonNullable<DataSource['requestState']>]
   | [mutating: boolean]
 
 type DataViewBridgeEventHandler = (...args: DataViewBridgeEventArgs) => void
@@ -324,7 +324,7 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       runWithErrorBoundary(eventName, view, runner)
     }
 
-    const handleCurrentRowChanged = (row: IDataRow | null, originatorId?: string) => {
+    const handleCurrentRowChanged = (row: DataRow | null, originatorId?: string) => {
       runOriginatorEvent('currentRowChanged', originatorId, () =>
         options.onCurrentRowChanged?.({
           row,
@@ -335,7 +335,7 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
       )
     }
 
-    const handleSelectedRowsChanged = (rows: IDataRow[], originatorId?: string) => {
+    const handleSelectedRowsChanged = (rows: DataRow[], originatorId?: string) => {
       runOriginatorEvent('selectedRowsChanged', originatorId, () =>
         options.onSelectedRowsChanged?.({
           rows,
@@ -350,7 +350,7 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
 
     const handleCleared = createNoArgBridgeHandler('cleared', options.onCleared)
 
-    const handleRequestStateChanged = (state: NonNullable<IDataSource['requestState']>) => {
+    const handleRequestStateChanged = (state: NonNullable<DataSource['requestState']>) => {
       runWithErrorBoundary('requestStateChanged', view, () =>
         options.onRequestStateChanged?.({ state, view, eventName: 'requestStateChanged' })
       )

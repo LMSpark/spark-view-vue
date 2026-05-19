@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, shallowRef } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { DATA_ROW, DATA_SOURCE, useSparkConsume } from '../../internal'
 import { isDataViewEditingSource, resolveDataViewEditingRow } from './dataViewEditing'
 
@@ -31,13 +31,13 @@ export function useActiveFieldRow() {
     })
   }
 
-  const activeRow = computed<IDataRow | null>(() => {
+  const activeRow = computed<DataRow | null>(() => {
     dataSourceRevision.value
     const row = contextData ?? dataSource?.currentRow ?? null
     return resolveDataViewEditingRow(dataSource, row) ?? row
   })
 
-  const activeSelectedRows = computed<IDataRow[]>(() => {
+  const activeSelectedRows = computed<DataRow[]>(() => {
     const rows = dataSource?.selectedRows
     return rows === undefined ? [] : rows.slice()
   })

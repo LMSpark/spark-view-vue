@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LeaveRequestModule,
-  type LeaveRequestRuntimeContext,
 } from '../packages/spark-ai/src'
 
-function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:session`): LeaveRequestRuntimeContext {
+function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:session`) {
   return {
     moduleId: LeaveRequestModule.moduleId,
     moduleInstanceId: leaveDraftId,
@@ -14,23 +13,21 @@ function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:sessi
 }
 
 describe('leave-request module', () => {
-  it('exports JSON-persistable registration data', async () => {
+  it('projects class-first tool registrations without data snapshot compatibility', async () => {
     const leave = new LeaveRequestModule({ now: () => 1778030000000 })
-    const registrationData = leave.getRegistrationData()
-    const registrationStore = leave.getRegistrationStoreSnapshot()
 
-    expect(JSON.parse(JSON.stringify(registrationData))).toEqual(registrationData)
-    expect(JSON.parse(JSON.stringify(registrationStore))).toEqual(registrationStore)
-    expect(registrationData.moduleId).toBe(LeaveRequestModule.moduleId)
-    expect(registrationData.description).toBe('帮助员工收集、确认并提交人工请假申请。')
-    expect(registrationData.prompt).toContain('你正在处理人工请假业务。')
-    expect(registrationData.functions.map((item) => item.functionId)).toEqual([
+    expect('getRegistrationData' in leave).toBe(false)
+    expect('getRegistrationStoreSnapshot' in leave).toBe(false)
+    expect(leave.moduleId).toBe(LeaveRequestModule.moduleId)
+    expect(leave.description).toBe('帮助员工收集、确认并提交人工请假申请。')
+    expect(typeof leave.prompt).toBe('string')
+    expect(leave.getFunctions().map((item) => item.functionId)).toEqual([
       'describeDraft',
       'setDraftFields',
       'submitDraft',
       'cancelDraft',
     ])
-    const setDraftFields = registrationData.functions.find((item) => item.functionId === 'setDraftFields')
+    const setDraftFields = leave.getFunctions().find((item) => item.functionId === 'setDraftFields')
     expect(JSON.stringify(setDraftFields?.paramsSchema)).toContain('系统提示中的当前日期')
     expect(setDraftFields?.usageRules).toEqual(expect.arrayContaining([
       expect.stringContaining('当前日期换算'),

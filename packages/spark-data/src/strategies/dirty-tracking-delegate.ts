@@ -32,8 +32,8 @@
  * - **pending delete 快照** (`_deleteSnapshots`)：强引用——提交失败可将行还原回 UI。
  */
 
-import type { IDataRow, DataColumn, CrudResult } from '../types'
-import type { ISaveChangesHost, ICrudNetworkOps } from './types'
+import type { DataRow, DataColumn, CrudResult } from '../types'
+import type { SaveChangesHost, CrudNetworkOps } from './types'
 
 // ─────────────────────────────────────────────
 // Host 接口
@@ -47,7 +47,7 @@ import type { ISaveChangesHost, ICrudNetworkOps } from './types'
  * - 排除计算列（computeExpression）
  * - 排除权限元字段（_perm / _modelPerm）
  */
-export interface IDirtyTrackingHost {
+export interface DirtyTrackingHost {
   /** 返回 DataTable 列定义（未 attach 时可能返回 undefined） */
   readonly columns: readonly DataColumn[] | undefined
   /** 返回计算列名集合（用于排除） */
@@ -104,9 +104,9 @@ export interface SaveChangesData {
 
 export class DirtyTrackingDelegate {
 
-  private _host: IDirtyTrackingHost
+  private _host: DirtyTrackingHost
 
-  constructor(host: IDirtyTrackingHost) {
+  constructor(host: DirtyTrackingHost) {
     this._host = host
   }
 
@@ -139,7 +139,7 @@ export class DirtyTrackingDelegate {
 
   // ── pending creates ───────────────────────
   /** 待新增行数据（pk → row），行从未在服务端存在，强引用保留 */
-  private _createRows = new Map<string | number, IDataRow>()
+  private _createRows = new Map<string | number, DataRow>()
   /** 待新增行主键集合（与 _createRows 同步维护，避免每次 getter 创建新 Set） */
   private _createIds = new Set<string | number>()
 
@@ -151,13 +151,13 @@ export class DirtyTrackingDelegate {
    * 连续编辑不覆盖——diff 始终相对于服务端原始值。
    * WeakRef：GC 压力下允许回收，saveChanges 降级为"提交当前数据"。
    */
-  private _dirtySnapshots = new Map<string | number, WeakRef<IDataRow>>()
+  private _dirtySnapshots = new Map<string | number, WeakRef<DataRow>>()
 
   // ── pending deletes ───────────────────────
   /** 待删除行主键集合 */
   private _deleteIds = new Set<string | number>()
   /** 待删除行快照（强引用：提交失败时需还原 UI） */
-  private _deleteSnapshots = new Map<string | number, IDataRow>()
+  private _deleteSnapshots = new Map<string | number, DataRow>()
 
   // ─────────────────────────────────────────────
   // 写入 — 新增
@@ -169,7 +169,7 @@ export class DirtyTrackingDelegate {
    * 特殊情况：若该 id 曾被登记为待删除（先删后撤销），则改为撤销删除，
    * 新行直接进入 clean 状态（仅还原，不重复追踪新增）。
    */
-  trackCreate(id: string | number, row: IDataRow): void {
+  trackCreate(id: string | number, row: DataRow): void {
     if (this._deleteIds.has(id)) {
       // 撤销删除：清除 pending delete，行回到 clean
       this._deleteIds.delete(id)
@@ -206,13 +206,13 @@ export class DirtyTrackingDelegate {
    * @param id       行主键
    * @param original 编辑**前**的行对象（浅拷贝后以 WeakRef 包装）
    */
-  markDirty(id: string | number, original: IDataRow): void {
+  markDirty(id: string | number, original: DataRow): void {
     if (this._createRows.has(id)) return   // pending create 不需要 dirty 追踪
     if (!this._dirtyIds.has(id)) {
       // 只快照可变业务列（排除 pk、计算列、_perm）
       const fields = this._getEditableFields()
       if (fields) {
-        const snapshot: IDataRow = {}
+        const snapshot: DataRow = {}
         for (const f of fields) snapshot[f] = original[f]
         this._dirtySnapshots.set(id, new WeakRef(snapshot))
       } else {
@@ -249,7 +249,7 @@ export class DirtyTrackingDelegate {
    * @param id       行主键
    * @param snapshot 被删除行的完整快照（强引用，提交失败时用于还原 UI）
    */
-  trackDelete(id: string | number, snapshot: IDataRow): void {
+  trackDelete(id: string | number, snapshot: DataRow): void {
     if (this._createRows.has(id)) {
       // 本地新行被删除 → 取消新增即可，不产生 server delete
       this.cancelCreate(id)
@@ -333,7 +333,7 @@ export class DirtyTrackingDelegate {
   }
 
   /** 待新增行数组 */
-  get pendingCreateRows(): IDataRow[] { return [...this._createRows.values()] }
+  get pendingCreateRows(): DataRow[] { return [...this._createRows.values()] }
 
   /** 待删除行主键（ReadonlySet） */
   get pendingDeleteIds(): ReadonlySet<string | number> { return this._deleteIds }
@@ -341,7 +341,7 @@ export class DirtyTrackingDelegate {
   /**
    * 获取 pending-delete 行的快照（提交失败时用于还原 UI）。
    */
-  getPendingDeleteSnapshot(id: string | number): IDataRow | undefined {
+  getPendingDeleteSnapshot(id: string | number): DataRow | undefined {
     return this._deleteSnapshots.get(id)
   }
 
@@ -350,7 +350,7 @@ export class DirtyTrackingDelegate {
    *
    * @returns 快照；行不脏或弱引用已被 GC 回收时返回 undefined
    */
-  getOriginal(id: string | number): IDataRow | undefined {
+  getOriginal(id: string | number): DataRow | undefined {
     return this._dirtySnapshots.get(id)?.deref()
   }
 
@@ -361,7 +361,7 @@ export class DirtyTrackingDelegate {
    * @param current 当前行对象
    * @returns 字段名 → `{ from, to }`；行不脏或快照已被 GC 回收时返回 `{}`
    */
-  getDiff(id: string | number, current: IDataRow): RowDiff {
+  getDiff(id: string | number, current: DataRow): RowDiff {
     const original = this._dirtySnapshots.get(id)?.deref()
     if (!original) return {}
 
@@ -377,8 +377,8 @@ export class DirtyTrackingDelegate {
     } else {
       const allKeys = new Set([...Object.keys(original), ...Object.keys(current)])
       for (const key of allKeys) {
-        const fromVal = (original as Record<string, unknown>)[key]
-        const toVal = (current as Record<string, unknown>)[key]
+        const fromVal = original[key]
+        const toVal = current[key]
         if (!Object.is(fromVal, toVal)) diff[key] = { from: fromVal, to: toVal }
       }
     }
@@ -400,8 +400,8 @@ export class DirtyTrackingDelegate {
    * @param ids  指定要保存的行主键列表；不传则保存全部待提交变更
    */
   async executeChanges(
-    host: ISaveChangesHost,
-    crud: ICrudNetworkOps,
+    host: SaveChangesHost,
+    crud: CrudNetworkOps,
     ids?: Array<string | number>,
   ): Promise<CrudResult<SaveChangesData>> {
     const filterByIds = ids !== undefined ? new Set(ids) : undefined
@@ -421,7 +421,7 @@ export class DirtyTrackingDelegate {
     const failedErrors: Record<string | number, string> = {}
 
     // O(n) 构建 pk→row 索引，避免循环内 O(n) rows.find
-    const pkToRow = new Map<string | number, IDataRow>()
+    const pkToRow = new Map<string | number, DataRow>()
     for (const r of host.rows) {
       const pk = host.getPkKey(r)
       if (pk !== undefined) pkToRow.set(pk, r)

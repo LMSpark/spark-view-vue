@@ -83,7 +83,7 @@ import {
   watchEffect,
 } from 'vue'
 import type { PropType } from 'vue'
-import type { IDataRow, IDataSource } from '@spark-view/spark-data'
+import type { DataRow, DataSource } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
 import {
@@ -406,16 +406,16 @@ function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
 }
 
 // dataSource 优先取节点显式注入，其次沿父能力链回溯 DATA_SOURCE。
-function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): IDataSource | null {
-  return asObject<IDataSource>(rawProps['dataSource'])
-    ?? consumeSparkCapability<IDataSource>(parentContext, DATA_SOURCE)
+function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): DataSource | null {
+  return asObject<DataSource>(rawProps['dataSource'])
+    ?? consumeSparkCapability<DataSource>(parentContext, DATA_SOURCE)
 }
 
 // row 优先取节点局部作用域，其次退回 data，再次沿父能力链回溯 DATA_ROW。
-function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): IDataRow | null {
-  return asObject<IDataRow>(rawProps['row'])
-    ?? asObject<IDataRow>(rawProps['data'])
-    ?? consumeSparkCapability<IDataRow>(parentContext, DATA_ROW)
+function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): DataRow | null {
+  return asObject<DataRow>(rawProps['row'])
+    ?? asObject<DataRow>(rawProps['data'])
+    ?? consumeSparkCapability<DataRow>(parentContext, DATA_ROW)
 }
 
 /**

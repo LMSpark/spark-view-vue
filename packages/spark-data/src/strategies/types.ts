@@ -6,8 +6,8 @@
  */
 
 import type {
-  IDataRow,
-  IDataSet,
+  DataRow,
+  DataSetContract,
   DataRelation,
   CrudResult,
   CrudOperationConfig,
@@ -37,11 +37,11 @@ export type EmitRowsChangedFn = (options?: { selectionChanged?: boolean }) => vo
  * LocalMutationDelegate 变更后的后处理回调（计算列求值 + 聚合重算）。
  * 在 emitRowsChanged 之前、同步调用。
  *
- * - `IDataRow[]`：仅对这些行重新求值计算列，再重算聚合
+ * - `DataRow[]`：仅对这些行重新求值计算列，再重算聚合
  * - `'all'`：全量行重新求值计算列，再重算聚合
  * - `null`：跳过计算列求值（删除行场景），只重算聚合
  */
-export type PostMutationFn = (affectedRows: IDataRow[] | 'all' | null) => void
+export type PostMutationFn = (affectedRows: DataRow[] | 'all' | null) => void
 
 /** CascadeDelegate 向宿主发射 cleared 事件的回调签名 */
 export type EmitClearedFn = () => void
@@ -58,18 +58,18 @@ export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
 // ─────────────────────────────────────────────
 
 /** 视图标识（tableName + viewId） */
-export interface IViewIdentity {
+export interface ViewIdentity {
   readonly tableName: string
   readonly viewId: string
 }
 
 /** 行存储 + 主键访问 */
-export interface IRowStore {
-  readonly rows: IDataRow[]
+export interface RowStore {
+  readonly rows: DataRow[]
   /** 主键字段名（始终为单字符串；多列 PK 通过 _pk 合成列统一为标量） */
   readonly primaryKey: string
   /** 获取行的主键值（用于 Map/Set/=== 内部比较） */
-  getPkKey(row: IDataRow): string | number | undefined
+  getPkKey(row: DataRow): string | number | undefined
   /** 实际生效的主键字段名列表（不含合成列 _pk），供委托校验/遍历真实字段 */
   readonly effectivePkFields: string[]
 }
@@ -84,15 +84,15 @@ export interface IRowStore {
  *
  * @internal 仅供 spark-data 内部委托使用，外部不应直接操作这些字段。
  */
-export interface ISelectionState {
+export interface SelectionState {
   /** @internal 当前行主键值——委托可写 */
   _currentRowId: string | number | null
   /** @internal 多选行主键值列表——委托通过整体赋值维护（shallowReactive 友好） */
   _selectedRowIds: Array<string | number>
   /** 只读 getter，按 _currentRowId 从 rows 解析行对象 */
-  readonly currentRow: IDataRow | null
+  readonly currentRow: DataRow | null
   /** 只读 getter，按 _selectedRowIds 从 rows 过滤行对象数组 */
-  readonly selectedRows: IDataRow[]
+  readonly selectedRows: DataRow[]
 }
 
 // ─────────────────────────────────────────────
@@ -106,7 +106,7 @@ export interface ISelectionState {
  * 选中状态以主键值存储，委托写入 _currentRowId / _selectedRowIds；
  * currentRow / selectedRows 是宿主 DataView 上的 getter（按需从 rows 解析），委托只读。
  */
-export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionState {
+export interface SelectionHost extends ViewIdentity, RowStore, SelectionState {
   readonly autoCurrentFirst: boolean
   readonly autoSelectFirst: boolean
   isDestroyed(): boolean
@@ -126,13 +126,13 @@ export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionStat
  * LocalMutationDelegate 所需的宿主能力（ISP 最小子集）
  *
  * 涵盖本地行数据写入所需的所有可变字段及辅助方法。
- * 选中状态以主键值存储，委托通过 ISelectionState 可变契约写入。
+ * 选中状态以主键值存储，委托通过 SelectionState 可变契约写入。
  *
- * @see ISelectionState 可变契约说明
+ * @see SelectionState 可变契约说明
  */
-export interface ILocalMutationHost extends IViewIdentity, IRowStore, ISelectionState {
-  // ── 行数据（覆盖 IRowStore.readonly 为可写，shallowReactive 整体赋值触发响应式） ──
-  rows: IDataRow[]
+export interface LocalMutationHost extends ViewIdentity, RowStore, SelectionState {
+  // ── 行数据（覆盖 RowStore.readonly 为可写，shallowReactive 整体赋值触发响应式） ──
+  rows: DataRow[]
 
   // ── 分页（委托直接写入） ──────────────────
   total: number
@@ -140,7 +140,7 @@ export interface ILocalMutationHost extends IViewIdentity, IRowStore, ISelection
   pageSize: number
 
   // ── 行索引缓存（updateRowById 行对象替换时原地更新）──
-  rowIndexMap?: Map<IDataRow, number> | undefined
+  rowIndexMap?: Map<DataRow, number> | undefined
 
   // ── 工具方法 ──────────────────────────────
   isDestroyed(): boolean
@@ -155,7 +155,7 @@ export interface ILocalMutationHost extends IViewIdentity, IRowStore, ISelection
  *
  * DataView 实现此接口，CrudDelegate 仅通过此接口与宿主交互。
  */
-export interface ICrudHost extends IRowStore {
+export interface CrudHost extends RowStore {
   /** 表名（用于错误信息） */
   readonly tableName: string
   /** CrudService 实例（来自 DataTable，未配置 API 时为 undefined） */
@@ -168,12 +168,12 @@ export interface ICrudHost extends IRowStore {
   /** 已注册计算列名集合（提交前剥离） */
   readonly computedColumnNames: ReadonlySet<string>
   /** 从数据对象中移除计算列字段（浅拷贝，无计算列时返回原对象） */
-  stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow>
+  stripComputedColumns(data: Partial<DataRow>): Partial<DataRow>
 
   /** 追加一行到 rows */
-  appendRow(row: IDataRow): void
+  appendRow(row: DataRow): void
   /** 按主键更新一行 */
-  updateRowById(id: string | number, data: Partial<IDataRow>): boolean
+  updateRowById(id: string | number, data: Partial<DataRow>): boolean
   /** 按主键删除一行 */
   deleteRowById(id: string | number): boolean
   /** 重置状态（requestState→Idle，清空行和选中；通过领域事件通知订阅者） */
@@ -192,20 +192,20 @@ export interface ICrudHost extends IRowStore {
  * DataView 实现此接口，executeChanges 通过此接口完成三阶段提交
  * （pending create → dirty update → pending delete）。
  */
-export interface ISaveChangesHost {
-  readonly rows: IDataRow[]
+export interface SaveChangesHost {
+  readonly rows: DataRow[]
   /** 主键字段名（fallback PK payload 所用） */
   readonly primaryKey: string
   /** 获取行的标量主键值 */
-  getPkKey(row: IDataRow): string | number | undefined
+  getPkKey(row: DataRow): string | number | undefined
   /** 从行构建服务端 PK payload（用于 CRUD HTTP 请求） */
-  buildServerPk(row: IDataRow): Record<string, unknown>
+  buildServerPk(row: DataRow): Record<string, unknown>
   /** 从数据对象中移除计算列字段（浅拷贝） */
-  stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow>
+  stripComputedColumns(data: Partial<DataRow>): Partial<DataRow>
   /** 按主键删除一行 */
   deleteRowById(id: string | number): boolean
   /** 追加一行到 rows */
-  appendRow(row: IDataRow): void
+  appendRow(row: DataRow): void
 }
 
 /**
@@ -214,9 +214,9 @@ export interface ISaveChangesHost {
  * DirtyTrackingDelegate.executeChanges() 通过此接口提交数据，
  * 解耦 DataView facade 方法与 CRUD 网络层。
  */
-export interface ICrudNetworkOps {
-  createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>>
-  updateRecord(id: string | number, data: Partial<IDataRow>, serverPk?: Record<string, unknown>): Promise<CrudResult<IDataRow>>
+export interface CrudNetworkOps {
+  createRecord(data: Partial<DataRow>): Promise<CrudResult<DataRow>>
+  updateRecord(id: string | number, data: Partial<DataRow>, serverPk?: Record<string, unknown>): Promise<CrudResult<DataRow>>
   deleteRecord(id: string | number, serverPk?: Record<string, unknown>): Promise<CrudResult<boolean>>
 }
 
@@ -225,9 +225,9 @@ export interface ICrudNetworkOps {
 /**
  * CascadeDelegate 所需的宿主能力
  */
-export interface ICascadeHost extends IViewIdentity {
+export interface CascadeHost extends ViewIdentity {
   /** DataSet（沿 parent 链向上访问；DataTable 尚未绑定时为 undefined） */
-  readonly dataSet: IDataSet | undefined
+  readonly dataSet: DataSetContract | undefined
   /** 只读，级联时检查状态 */
   readonly requestState: RequestState
   /**
@@ -254,7 +254,7 @@ export interface ICascadeHost extends IViewIdentity {
    * 从源 DataTable.rows 中按 rel.childField === parentRow[parentField|'id'] 过滤，
    * 结果直接写入视图（相当于一次无网络的 loadFromServer）。
    */
-  applyInMemoryCascade(rel: DataRelation, parentRows: readonly IDataRow[]): void
+  applyInMemoryCascade(rel: DataRelation, parentRows: readonly DataRow[]): void
 }
 
 // ─────────────────────────────────────────────

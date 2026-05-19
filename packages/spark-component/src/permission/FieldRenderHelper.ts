@@ -5,7 +5,7 @@
  * 内部直接调用 checker 纯函数，调用方无需传入 checker 依赖。
  */
 
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
@@ -30,7 +30,7 @@ export interface IFieldRenderState {
 /**
  * 计算单个字段的渲染状态（可见性 + 可编辑性 + 展示值）。
  */
-export function computeFieldState(config: IFieldRenderConfig, row: IDataRow, permissionMode?: NavPermissionMode): IFieldRenderState {
+export function computeFieldState(config: IFieldRenderConfig, row: DataRow, permissionMode?: NavPermissionMode): IFieldRenderState {
   const { field } = config
   const visibility = getFieldVisibility(field, row, permissionMode)
   const readable = visibility !== FieldVisibility.Hidden && (config.visible !== false)

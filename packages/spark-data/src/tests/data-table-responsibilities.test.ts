@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { DataView, DataSet } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { DataTable } from '../data-table'
 
 
@@ -19,7 +20,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
     expect(Array.isArray(def.rows)).toBe(true)
 
     // 通过 views['default'] 操作 rows
-    def.rows.splice(0, def.rows.length, { id: 1 } as any)
+    def.rows.splice(0, def.rows.length, { id: 1 })
     expect(def.rows).toHaveLength(1)
     expect(def.rows[0]).toEqual({ id: 1 })
 
@@ -77,7 +78,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' }],
-          views: { default: { rows: [{ id: 1 } as any] } }
+          views: { default: { rows: [{ id: 1 }] } }
         }
       }
     })
@@ -105,37 +106,37 @@ describe('DataTable responsibilities (refactor verification)', () => {
     const def = t.getOrCreateView('default')
 
     // 初始互不影响
-    def.rows.splice(0, def.rows.length, { id: 1, name: 'A' } as any)
-    v1.rows.splice(0, v1.rows.length, { id: 2, name: 'B' } as any)
+    def.rows.splice(0, def.rows.length, { id: 1, name: 'A' })
+    v1.rows.splice(0, v1.rows.length, { id: 2, name: 'B' })
     expect(def.rows).toHaveLength(1)
     expect(v1.rows).toHaveLength(1)
 
     // CRUD：由于 mock 替换了 createRecord，需要手动模拟真实行为
     // 真实 createRecord 会 push 到 views['default'].rows 并通知
-    ;(t as any).createRecord = async (data: any) => {
+    const createRecord = async (data: DataRow) => {
       def.rows.push(data)
-      return { success: true, data } as any
+      return { success: true, data }
     }
-    await (t as any).createRecord({ id: 3, name: 'C' })
-    expect(def.rows.some(r => (r as any).id === 3)).toBe(true)
+    await createRecord({ id: 3, name: 'C' })
+    expect(def.rows.some(r => r['id'] === 3)).toBe(true)
 
     // updateRecord 也应影响 views['default']
-    ;(t as any).updateRecord = async (id: any, data: any) => {
-      const idx = def.rows.findIndex(r => (r as any).id === id)
+    const updateRecord = async (id: number, data: Partial<DataRow>) => {
+      const idx = def.rows.findIndex(r => r['id'] === id)
       if (idx >= 0) def.rows[idx] = { ...def.rows[idx], ...data, id }
-      return { success: true, data: { id, ...data } } as any
+      return { success: true, data: { id, ...data } }
     }
-    await (t as any).updateRecord(3, { name: 'C-updated' })
-    expect(def.rows.some(r => (r as any).name === 'C-updated')).toBe(true)
+    await updateRecord(3, { name: 'C-updated' })
+    expect(def.rows.some(r => r['name'] === 'C-updated')).toBe(true)
 
     // 删除记录
-    ;(t as any).deleteRecord = async (id: any) => {
-      const idx = def.rows.findIndex(r => (r as any).id === id)
+    const deleteRecord = async (id: number) => {
+      const idx = def.rows.findIndex(r => r['id'] === id)
       if (idx >= 0) def.rows.splice(idx, 1)
-      return { success: true } as any
+      return { success: true }
     }
-    await (t as any).deleteRecord(3)
-    expect(def.rows.some(r => (r as any).id === 3)).toBe(false)
+    await deleteRecord(3)
+    expect(def.rows.some(r => r['id'] === 3)).toBe(false)
   })
 })
 

@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types.js'
 
@@ -22,8 +22,8 @@ export interface FieldContextProps {
   isCurrentFieldHidden: boolean
   shouldRenderCurrentField: boolean
   currentDisplayValue: string
-  isTableCellHidden: (row: IDataRow) => boolean
-  getTableCellDisplayValue: (row: IDataRow) => string
+  isTableCellHidden: (row: DataRow) => boolean
+  getTableCellDisplayValue: (row: DataRow) => string
   validationRules: FormItemRule[]
 }
 
@@ -33,8 +33,8 @@ interface FieldPermissionForContext {
   isCurrentFieldHidden: ComputedRef<boolean>
   shouldRenderCurrentField: ComputedRef<boolean>
   currentDisplayValue: ComputedRef<string>
-  isTableCellHidden: (row: IDataRow) => boolean
-  getTableCellDisplayValue: (row: IDataRow) => string
+  isTableCellHidden: (row: DataRow) => boolean
+  getTableCellDisplayValue: (row: DataRow) => string
   validationRules: ComputedRef<FormItemRule[]>
 }
 

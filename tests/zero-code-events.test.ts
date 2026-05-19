@@ -15,7 +15,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import { RendererTable } from '@spark-view/spark-component'
 import { normalizeRuleEvents, normalizeOnProps } from '../packages/spark-component/src/page/binding/bind-normalize'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
@@ -68,7 +68,7 @@ function createActionContext(overrides?: Partial<ActionExecutionContext>): Actio
   }
 }
 
-function createInlineDataSet(tableName: string, rows: IDataRow[]) {
+function createInlineDataSet(tableName: string, rows: DataRow[]) {
   return SparkData.createDataSet({
     dataSetName: `ZC-${tableName}`,
     tables: {

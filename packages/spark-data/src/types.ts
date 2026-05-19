@@ -4,11 +4,11 @@
  * 数据模型、权限、过滤/排序、关系、树 的唯一类型源
  */
 import type { DataTable } from './data-table'
-import type { DataView as SparkDataView } from './data-view'
+import type { DataView } from './data-view'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
+export interface SparkEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
@@ -48,8 +48,8 @@ export interface DataSetAppServices {
  * ```
  */
 export interface ViewChangeHandlers {
-  currentRowChanged?: (tableName: string, viewId: string, currentRow: IDataRow | null, originatorId?: string) => void
-  selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: IDataRow[], originatorId?: string) => void
+  currentRowChanged?: (tableName: string, viewId: string, currentRow: DataRow | null, originatorId?: string) => void
+  selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: DataRow[], originatorId?: string) => void
   rowsChanged?: (tableName: string, viewId: string) => void
   editingFieldChanged?: (tableName: string, viewId: string, event: DataViewEditingFieldChangeEvent) => void
   editingChanged?: (tableName: string, viewId: string) => void
@@ -69,7 +69,7 @@ export interface ViewChangeHandlers {
  * 采用类似JWT的设计理念，权限信息由服务端一次性计算并返回前端，
  * 前端保存权限快照，在数据更新时回传给服务端，避免重复计算。
  */
-export interface IInstancePermission {
+export interface InstancePermission {
   allowCreateChild?: boolean
   allowDelete?: boolean
   editableFields?: string[]
@@ -86,7 +86,7 @@ export interface IInstancePermission {
  * 权限信息在首次数据加载时由服务端计算并缓存，
  * 前端负责维护和传递权限状态。
  */
-export interface IModelPermission {
+export interface ModelPermission {
   /** 是否允许新增记录。 */
   allowCreate?: boolean
   /** 是否允许导入记录。 */
@@ -100,10 +100,12 @@ export interface IModelPermission {
 }
 
 /** 实例权限字段名 */
-export const INSTANCE_PERMISSION_FIELD = '_perm' as const
+const INSTANCE_PERMISSION_FIELD_VALUE = '_perm'
+export const INSTANCE_PERMISSION_FIELD = INSTANCE_PERMISSION_FIELD_VALUE
 
 /** 模型权限字段名 */
-export const MODEL_PERMISSION_FIELD = '_modelPerm' as const
+const MODEL_PERMISSION_FIELD_VALUE = '_modelPerm'
+export const MODEL_PERMISSION_FIELD = MODEL_PERMISSION_FIELD_VALUE
 
 /** 字段可见性枚举 */
 export enum FieldVisibility {
@@ -134,8 +136,8 @@ export type PkValue = string | number
 // ── 数据行 ──────────────────────────────────
 
 /** 数据行（带权限） */
-export type IDataRow = Record<string, unknown> & {
-  _perm?: IInstancePermission
+export type DataRow = Record<string, unknown> & {
+  _perm?: InstancePermission
 }
 
 /** DataView 编辑态字段变更事件。 */
@@ -146,8 +148,8 @@ export interface DataViewEditingFieldChangeEvent {
   field: string
   previousValue: unknown
   nextValue: unknown
-  editingRow: IDataRow
-  patch: Partial<IDataRow>
+  editingRow: DataRow
+  patch: Partial<DataRow>
 }
 
 /** DataView 编辑态应用结果。 */
@@ -254,9 +256,9 @@ export interface DataSetSaveChangesResult {
  *
  * r-table 等纯列表容器仅需此接口。
  */
-export interface IRowDataSource {
+export interface RowDataSource {
   /** 当前视图行集合，表格/列表/树等数据容器的主要渲染输入。 */
-  rows?: readonly IDataRow[]
+  rows?: readonly DataRow[]
   /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
   columns?: readonly DataColumn[]
   /** 表名（来自 DataView.tableName） */
@@ -270,11 +272,11 @@ export interface IRowDataSource {
  *
  * r-form / r-detail 等详情容器消费此接口。
  */
-export interface ICurrentRowSource extends IRowDataSource {
+export interface CurrentRowSource extends RowDataSource {
   /** 当前聚焦行（UI 高亮行 / 级联父行） */
-  currentRow?: IDataRow | null
+  currentRow?: DataRow | null
   /** 当前选中行集合（勾选行 / 级联选中行） */
-  selectedRows?: readonly IDataRow[]
+  selectedRows?: readonly DataRow[]
 }
 
 /**
@@ -284,12 +286,12 @@ export interface ICurrentRowSource extends IRowDataSource {
  *
  * 边界：
  * - DataView 对应 table + viewId 的 API 视图（含 requestData/refresh/requestState）。
- * - IDataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataViewKey 解析得到）。
+ * - DataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataViewKey 解析得到）。
  *
  * 1. 行级计算列：`columns[].computeExpression` 对每一行求值，结果写回该行字段。
  *    表达式可直接读取行字段，可通过 `ctx` 读取外部上下文，也可通过
  *    `$sum/$count/$avg/$min/$max/$list/$join` 读取 DataRelation 匹配到的子表行。
- * 2. 视图级聚合配置：定义在 `IViewMetadata.aggregates`，不是 `IDataSource` 字段。
+ * 2. 视图级聚合配置：定义在 `ViewMetadata.aggregates`，不是 `DataSource` 字段。
  *    每个输出项包含 `type / field / separator` 等后端 API 认得的规则信息。
  * 3. 运行时聚合结果：`aggregateResult` 基于当前 `rows` 计算，`selectionAggregateResult`
  *    基于当前 `selectedRows` 计算；二者都是由 aggregates 配置生成的“聚合结果输出行”，
@@ -299,9 +301,9 @@ export interface ICurrentRowSource extends IRowDataSource {
  * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */
-export interface IDataSource extends ICurrentRowSource {
+export interface DataSource extends CurrentRowSource {
   /** 模型级权限快照，供工具栏和容器判断新增、导入、导出等按钮可用性。 */
-  _modelPerm?: IModelPermission
+  _modelPerm?: ModelPermission
   /** 当前查询结果总行数，用于分页器展示总量。 */
   total?: number
   /** 当前页码，通常从 1 开始。 */
@@ -340,14 +342,14 @@ export interface IDataSource extends ICurrentRowSource {
 // ===== 数据模型类型 =====
 
 /** 计算列函数签名：接收当前行，返回计算值 */
-export type ComputedColumnFn = (row: IDataRow) => unknown
+export type ComputedColumnFn = (row: DataRow) => unknown
 
 // ===== 聚合类型 =====
 
 /**
  * 视图聚合函数类型。
  *
- * 配置在 `IViewMetadata.aggregates`（运行时为 `view.aggregates`）上。DataView 会先
+ * 配置在 `ViewMetadata.aggregates`（运行时为 `view.aggregates`）上。DataView 会先
  * 对 `computeExpression` 求值，再按 aggregates 的 key 生成输出行：
  * `view.aggregateResult[key]` / `view.selectionAggregateResult[key]`。
  *
@@ -470,7 +472,7 @@ export type InferColumnValue<T extends ColumnType> =
  * - **渲染属性**（label, visible, editable, ...）：描述 UI 呈现方式，供表格 / 表单组件消费
  *
  * 渲染属性均为可选，不影响纯数据层使用。
- * UI 组件通过 `IDataSource.columns` 或 `DataView.columns` 读取列元数据。
+ * UI 组件通过 `DataSource.columns` 或 `DataView.columns` 读取列元数据。
  */
 export interface DataColumn {
   name: string
@@ -569,17 +571,25 @@ export interface DataColumn {
  *
  * 保留 `(string & {})` 扩展口，允许业务侧继续定义更细的资源类型。
  */
-export const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES = [
+type RecommendedTableResourceType =
+  | 'database-table'
+  | 'database-view'
+  | 'third-party-api'
+  | 'static-data'
+  | 'dictionary'
+  | 'logical-view'
+
+export const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES: readonly RecommendedTableResourceType[] = [
   'database-table',
   'database-view',
   'third-party-api',
   'static-data',
   'dictionary',
   'logical-view',
-] as const
+] 
 
 export type TableResourceType =
-  | (typeof TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES)[number]
+  | RecommendedTableResourceType
   | (string & {})
 
 /**
@@ -593,14 +603,19 @@ export type TableResourceType =
  * - `child`     — 从表 / 明细表
  * - `reference` — 引用表 / 参考表 / 查找表
  */
-export const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES = [
+type RecommendedTableBusinessCategory =
+  | 'master'
+  | 'child'
+  | 'reference'
+
+export const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES: readonly RecommendedTableBusinessCategory[] = [
   'master',
   'child',
   'reference',
-] as const
+] 
 
 export type TableBusinessCategory =
-  | (typeof TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES)[number]
+  | RecommendedTableBusinessCategory
   | (string & {})
 
 /**
@@ -673,7 +688,7 @@ export interface HttpEndpoint {
 // ===== 序列化接口 =====
 
 /** 数据视图元数据 */
-export interface IViewMetadata {
+export interface ViewMetadata {
   tableName?: string
   viewId?: string
   /**
@@ -682,7 +697,7 @@ export interface IViewMetadata {
    * 当前建模约定：仅当表的 resourceType = 'static-data' 时，才应在配置中直接声明 rows；
    * 其他资源类型应把数据视为远端来源，通过 requestData/loadFromServer 等机制获取。
    */
-  rows?: IDataRow[]
+  rows?: DataRow[]
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
   /** 请求成功后自动将 currentRow 设为第一行 */
@@ -762,7 +777,7 @@ export interface IViewMetadata {
  * - 所有默认视图字段均必须进入 `views.default`
  * - 表级不再承载 `rows / autoCurrentFirst / autoSelectFirst / page / pageSize` 等视图字段
  */
-export interface ITableMetadata extends TableSemanticMetadata {
+export interface TableMetadata extends TableSemanticMetadata {
   tableName: string
   columns: DataColumn[]
   /**
@@ -775,7 +790,7 @@ export interface ITableMetadata extends TableSemanticMetadata {
   /** 表级 CRUD 配置（超时、重试、权限等） */
   crudConfig?: CrudOperationConfig | undefined
   /** 视图集合；canonical 结构中必须包含 `default` 视图 */
-  views: { default: IViewMetadata } & Record<string, IViewMetadata>
+  views: { default: ViewMetadata } & Record<string, ViewMetadata>
 }
 
 /**
@@ -783,14 +798,14 @@ export interface ITableMetadata extends TableSemanticMetadata {
  *
  * 顶层只承载数据集自身字段；表的默认视图数据必须继续下沉到 `tables.*.views.default`。
  */
-export interface IDataSetMetadata {
+export interface DataSetMetadata {
   /**
    * Schema 格式版本（用于未来迁移兼容）。
    * 当前 canonical 结构为 2：`tables -> views -> default`。
    */
   schemaVersion?: number
   dataSetName: string
-  tables: Record<string, ITableMetadata>
+  tables: Record<string, TableMetadata>
 
   /** L1: 表关系 — 声明表间外键/逻辑关联 */
   tableRelations?: TableRelation[]
@@ -802,7 +817,7 @@ export interface IDataSetMetadata {
   /** DataSet.saveChanges 的默认提交策略。 */
   saveChanges?: DataSetSaveChangesConfig
   /** 可选的设计器布局信息（如画布坐标）。 */
-  layout?: IDataSetLayoutMetadata
+  layout?: DataSetLayoutMetadata
 }
 
 /**
@@ -810,7 +825,7 @@ export interface IDataSetMetadata {
  *
  * 该结构不参与运行时数据计算，仅用于设计器/编辑器恢复画布布局。
  */
-export interface IDataSetLayoutMetadata {
+export interface DataSetLayoutMetadata {
   /** 表名 -> 画布位置。 */
   tablePositions?: Record<string, { x: number; y: number }>
 }
@@ -1187,7 +1202,7 @@ export enum RequestState {
  * 消费者（渲染层、能力系统）应依赖此接口而非具体 DataSet 类，
  * 便于测试 mock 与未来扩展。
  */
-export interface IDataSet {
+export interface DataSetContract {
   /** 数据集名称 */
   readonly dataSetName: string
   /** 数据表集合 */
@@ -1255,7 +1270,7 @@ export interface IDataSet {
   /** 获取数据表 */
   getTable(name: string): DataTable | undefined
   /** 获取数据视图（委托到 DataTable） */
-  getView(tableName: string, viewId?: string): SparkDataView | undefined
+  getView(tableName: string, viewId?: string): DataView | undefined
   /** 保存 DataSet 范围内的编辑态和 staged 变更；默认按表关系父表先于子表提交所有有变更视图。 */
   saveChanges(options?: DataSetSaveChangesOptions): Promise<CrudResult<DataSetSaveChangesResult>>
   /** 注入 APP_SERVICES（用于 URL 模板 tenant/project 作用域解析） */
@@ -1265,7 +1280,7 @@ export interface IDataSet {
   /** 生成端点 URL 模板上下文参数 */
   getRequestTemplateParams(): Record<string, unknown>
   /** 序列化为 JSON 友好的元数据对象 */
-  toJson(): IDataSetMetadata
+  toJson(): DataSetMetadata
   /**
    * 订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）
    * @returns 取消订阅函数
@@ -1323,7 +1338,7 @@ export interface QueryParams {
   fields?: string[]  // 要查询的字段列表
   include?: string[] // 要包含的关联数据
   viewId?: string
-  viewConfig?: IViewMetadata
+  viewConfig?: ViewMetadata
   treeMode?: 'flat' | 'nested'
   parentId?: string | number | null
   rootId?: string | number | null
@@ -1331,8 +1346,8 @@ export interface QueryParams {
   limit?: number
 
   // ===== 权限快照利用 =====
-  modelPermission?: IModelPermission       // 完整的模型级权限对象（用于提取权限令牌）
-  instancePermission?: IInstancePermission // 完整的实例级权限对象（用于提取权限令牌）
+  modelPermission?: ModelPermission       // 完整的模型级权限对象（用于提取权限令牌）
+  instancePermission?: InstancePermission // 完整的实例级权限对象（用于提取权限令牌）
 
   [key: string]: unknown
 }
@@ -1360,8 +1375,8 @@ export interface CrudOperationConfig {
   skipPermissionCheck?: boolean
 
   // ===== 权限快照利用 =====
-  modelPermission?: IModelPermission       // 完整的模型级权限对象（用于提取权限令牌）
-  instancePermission?: IInstancePermission // 完整的实例级权限对象（用于提取权限令牌）
+  modelPermission?: ModelPermission       // 完整的模型级权限对象（用于提取权限令牌）
+  instancePermission?: InstancePermission // 完整的实例级权限对象（用于提取权限令牌）
 
   // ===== 数据处理 =====
   validateData?: boolean

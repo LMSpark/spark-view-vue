@@ -4,7 +4,7 @@
 
 import type { AiRuntimeKnowledgeProjection } from '../protocol/runtime-protocol'
 import { createAiHostStreamKey, toAiHostRuntimeScope } from './scope'
-import { createAiRuntimeToolCodec } from '../internal/tool-codec'
+import { AiRuntimeToolCodec } from '../internal/tool-codec'
 import { addGuidedAiToolAction, createInitialAiToolActionSet } from '../internal/tool-exposure-policy'
 import { actionModuleId, emitLlmDiagnosticEvent, stringifyAiHostPayload } from './diagnostics'
 import { toCurrentTurnMessages } from './turn-utils'
@@ -53,7 +53,7 @@ export class AiHostToolLoopRunner {
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
       if (request.signal?.aborted) return
       const currentRound = round + 1
-      const codec = createAiRuntimeToolCodec(
+      const codec = new AiRuntimeToolCodec(
         projection,
         enabledActions === null ? {} : { includeActions: enabledActions },
       )

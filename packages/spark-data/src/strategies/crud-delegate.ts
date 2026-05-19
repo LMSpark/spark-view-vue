@@ -9,7 +9,7 @@
  * - 数据校验代理
  * - CRUD 生命周期事件（before/after hooks）
  *
- * 通过 ICrudHost 接口与宿主（DataView）交互，
+ * 通过 CrudHost 接口与宿主（DataView）交互，
  * 不直接依赖 DataView 类（避免循环引用）。
  *
  * CrudService 实例由 DataTable 持有并缓存（模型级共享）。
@@ -18,14 +18,22 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { CrudService } from '../crud-service'
 import type {
-  IDataRow, CrudResult, BatchResult,
+  DataRow, CrudResult, BatchResult,
   CrudOperationConfig, QueryParams,
 } from '../types'
 import type { ValidationResult, ValidationError } from '../validation'
-import type { ICrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
+import type { CrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
+
+function isDataRow(value: unknown): value is DataRow {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+function dataRowFromPartial(row: Partial<DataRow>): DataRow {
+  return { ...row }
+}
 
 /**
  * CRUD 委托
@@ -37,7 +45,7 @@ const logger = Logger('DataView:CRUD')
 export class CrudDelegate {
 
   constructor(
-    private host: ICrudHost,
+    private host: CrudHost,
     private emitCrudLifecycle: EmitCrudLifecycleFn,
     private emitMutating: MutatingFn,
   ) {}
@@ -80,18 +88,18 @@ export class CrudDelegate {
   }
 
   /** 从数据中剥离计算列字段（提交前调用） */
-  private stripComputed(data: Partial<IDataRow>): Partial<IDataRow> {
+  private stripComputed(data: Partial<DataRow>): Partial<DataRow> {
     return this.host.stripComputedColumns(data)
   }
 
   /** 批量剥离计算列 */
-  private stripComputedBatch(items: Array<Partial<IDataRow>>): Array<Partial<IDataRow>> {
+  private stripComputedBatch(items: Array<Partial<DataRow>>): Array<Partial<DataRow>> {
     if (this.host.computedColumnNames.size === 0) return items
     return items.map(item => this.host.stripComputedColumns(item))
   }
 
   /** 校验数据行 */
-  private validateRow(row: IDataRow): ValidationResult | null {
+  private validateRow(row: DataRow): ValidationResult | null {
     if (!this.host.validator) return null
     return this.host.validator.validate(row)
   }
@@ -132,11 +140,13 @@ export class CrudDelegate {
   }
 
   /** 批量校验所有行，返回错误消息列表（消除 batchCreateRecords/batchUpdateRecords 中的重复循环） */
-  private collectBatchValidationErrors(items: Array<Partial<IDataRow>>): string[] {
+  private collectBatchValidationErrors(items: Array<Partial<DataRow>>): string[] {
     if (!this.host.validator) return []
     const errors: string[] = []
     for (let i = 0; i < items.length; i++) {
-      const result = this.validateRow(items[i] as IDataRow)
+      const item = items[i]
+      if (item === undefined) continue
+      const result = this.validateRow(dataRowFromPartial(item))
       if (result && !result.valid) {
         errors.push(`第${i + 1}条: ${result.errors[0]?.message ?? '校验失败'}`)
       }
@@ -158,27 +168,27 @@ export class CrudDelegate {
   // ─────────────────────────────────────────────
 
   /** 查询单条记录，不修改本地 rows。 */
-  async retrieveRecord(pk: Record<string, unknown>): Promise<CrudResult<IDataRow>> {
+  async retrieveRecord(pk: Record<string, unknown>): Promise<CrudResult<DataRow>> {
     if (!this.fireBefore('retrieve', pk)) return this.cancelledResult('retrieve')
 
-    const result = await this.ensureCrudService().retrieve<IDataRow>(pk, this.getCrudConfig())
+    const result = await this.ensureCrudService().retrieve<DataRow>(pk, this.getCrudConfig())
     this.fireAfter('retrieve', pk, result)
     return result
   }
 
   /** 新增记录，成功后追加至 rows */
-  async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  async createRecord(data: Partial<DataRow>): Promise<CrudResult<DataRow>> {
     if (!this.fireBefore('create', data)) return this.cancelledResult('create')
 
     const cleanData = this.stripComputed(data)
-    const validationResult = this.validateRow(cleanData as IDataRow)
+    const validationResult = this.validateRow(dataRowFromPartial(cleanData))
     if (validationResult && !validationResult.valid) {
       return this.validationFailedResult(validationResult.errors)
     }
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.create<IDataRow>(cleanData, this.getCrudConfig())
+      const result = await svc.create<DataRow>(cleanData, this.getCrudConfig())
       if (result.success && result.data) {
         this.host.appendRow(result.data)   // appendRow 内部已发射 rowsChanged
       }
@@ -195,9 +205,9 @@ export class CrudDelegate {
    */
   async updateRecord(
     id: string | number,
-    data: Partial<IDataRow>,
+    data: Partial<DataRow>,
     serverPk?: Record<string, unknown>,
-  ): Promise<CrudResult<IDataRow>> {
+  ): Promise<CrudResult<DataRow>> {
     if (!this.fireBefore('update', { id, ...data })) return this.cancelledResult('update')
 
     const cleanData = this.stripComputed(data)
@@ -206,7 +216,7 @@ export class CrudDelegate {
       ? this.stripComputed({ ...originalRow, ...cleanData })
       : cleanData
     const validationTarget = requestData
-    const validationResult = this.validateRow(validationTarget as IDataRow)
+    const validationResult = this.validateRow(dataRowFromPartial(validationTarget))
     if (validationResult && !validationResult.valid) {
       return this.validationFailedResult(validationResult.errors)
     }
@@ -214,7 +224,7 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const pk = serverPk ?? { [this.host.primaryKey]: id }
-      const result = await svc.update<IDataRow>(pk, requestData, this.getCrudConfig())
+      const result = await svc.update<DataRow>(pk, requestData, this.getCrudConfig())
       if (result.success && result.data) {
         this.host.updateRowById(id, result.data)
       }
@@ -251,7 +261,7 @@ export class CrudDelegate {
   // ─────────────────────────────────────────────
 
   /** 批量新增 */
-  async batchCreateRecords(items: Array<Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+  async batchCreateRecords(items: Array<Partial<DataRow>>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchCreate', items)) return this.cancelledResult('batchCreate')
 
     const cleanItems = this.stripComputedBatch(items)
@@ -266,10 +276,10 @@ export class CrudDelegate {
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.batchCreate<IDataRow>(cleanItems, this.getCrudConfig())
+      const result = await svc.batchCreate<DataRow>(cleanItems, this.getCrudConfig())
       if (result.success && result.data !== undefined) {
         for (const r of result.data.results) {
-          if (r.success && r.data !== undefined) this.host.appendRow(r.data as IDataRow)  // 每行 appendRow 内部已发射（防抖合并）
+          if (r.success && isDataRow(r.data)) this.host.appendRow(r.data)  // 每行 appendRow 内部已发射（防抖合并）
         }
       }
       this.fireAfter('batchCreate', items, result)
@@ -278,7 +288,7 @@ export class CrudDelegate {
   }
 
   /** 批量更新（items 中必须包含主键字段，主键名由 host.primaryKey 决定） */
-  async batchUpdateRecords(items: Array<Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+  async batchUpdateRecords(items: Array<Partial<DataRow>>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchUpdate', items)) return this.cancelledResult('batchUpdate')
 
     const cleanItems = this.stripComputedBatch(items)
@@ -293,11 +303,11 @@ export class CrudDelegate {
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.batchUpdate<IDataRow>(cleanItems, this.getCrudConfig())
+      const result = await svc.batchUpdate<DataRow>(cleanItems, this.getCrudConfig())
       if (result.success && result.data !== undefined) {
         for (const r of result.data.results) {
-          if (r.success && r.data !== undefined) {
-            const record = r.data as IDataRow
+          if (r.success && isDataRow(r.data)) {
+            const record = r.data
             const id = this.host.getPkKey(record)
             if (id !== undefined) this.host.updateRowById(id, record)  // updateRowById 内部已发射
           }
@@ -315,7 +325,7 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       // 构建 pk→row Map（O(n)），避免 _buildServerPkFromId 每次 O(n) find（O(n²) → O(n)）
-      const rowMap = new Map<string | number, IDataRow>()
+      const rowMap = new Map<string | number, DataRow>()
       for (const row of this.host.rows) {
         const pk = this.host.getPkKey(row)
         if (pk !== undefined) rowMap.set(pk, row)
@@ -358,12 +368,12 @@ export class CrudDelegate {
    * 尝试从 rows 中查找行以提取真实 PK 字段，否则回退到单字段。
    */
   /** 使用预构建 Map 查找行（批量操作用，避免 O(n²)） */
-  private _buildServerPkFromIdWithMap(id: string | number, rowMap: Map<string | number, IDataRow>): Record<string, unknown> {
+  private _buildServerPkFromIdWithMap(id: string | number, rowMap: Map<string | number, DataRow>): Record<string, unknown> {
     return this._extractPkPayload(id, rowMap.get(id))
   }
 
   /** 从行对象提取 PK payload，找不到行时回退到单字段 */
-  private _extractPkPayload(id: string | number, row: IDataRow | undefined): Record<string, unknown> {
+  private _extractPkPayload(id: string | number, row: DataRow | undefined): Record<string, unknown> {
     if (row) {
       const result: Record<string, unknown> = {}
       for (const f of this.host.effectivePkFields) result[f] = row[f]

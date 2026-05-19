@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DataColumn, IDataRow, RequestState } from '@spark-view/spark-data'
+import type { DataColumn, DataRow, RequestState } from '@spark-view/spark-data'
 
 interface AggregateEntry {
   key: string
@@ -31,9 +31,9 @@ interface AggregateEntry {
 }
 
 const props = withDefaults(defineProps<{
-  rows?: readonly IDataRow[]
+  rows?: readonly DataRow[]
   columns?: readonly DataColumn[]
-  selectedRows?: readonly IDataRow[]
+  selectedRows?: readonly DataRow[]
   total?: number
   page?: number
   pageSize?: number

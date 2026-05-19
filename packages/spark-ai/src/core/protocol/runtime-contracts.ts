@@ -23,12 +23,6 @@ export type {
   FunctionFailureMode,
   AiFunctionRegistration,
   AiModuleRegistration,
-  AiModuleRegistrationData,
-  AiModuleRegistrationStoreModule,
-  AiFunctionRegistrationStoreFunction,
-  AiFunctionRegistrationUsageRule,
-  AiFunctionRegistrationFailureMode,
-  AiModuleRegistrationStoreSnapshot,
   AiModuleInstanceParam,
   ModulePromptProvider,
   ModulePromptContext,
@@ -83,8 +77,6 @@ export type {
   AiRuntimeFunctionResultMessage,
   AiRuntimeProjectKnowledgeOptions,
   AiRuntimeOptions,
-  AiRegisteredModuleApi,
-  AiRuntimeApi,
 } from './runtime-protocol'
 
 // ── AI Host（app 层最小消费面） ──
@@ -92,7 +84,7 @@ export type {
 // 此处直接导出工具层所需的 value 和类型。
 
 export {
-  createAiRuntimeToolCodec,
+  AiRuntimeToolCodec,
 } from '../internal/tool-codec'
 
 export {
@@ -105,7 +97,6 @@ export {
 } from '../internal/invocation-helpers'
 
 export type {
-  AiRuntimeToolCodec,
   AiRuntimeToolCodecOptions,
 } from '../internal/tool-codec'
 

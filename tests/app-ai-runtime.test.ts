@@ -1,22 +1,45 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
-  AppAiBusinessRegistry,
   FetchAppAiTransport,
   createAppAiRuntimeMonitor,
-  registerAppAiBusinesses,
   uploadAppAiAttachment,
-  type AppAiTransport,
 } from '@/services/app-ai'
-import type { AiHostStreamTurnInput } from '@spark-view/spark-ai/host'
+import type { AiHostStreamTurnInput, AiHostTransport } from '@spark-view/spark-ai/host'
+import { AiHostBusinessRegistry } from '@spark-view/spark-ai/host'
+import { registerAppAiBusinesses } from '@spark-view/spark-ai/registrations'
+
+type FetchMock = ReturnType<typeof vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>>
+
+function firstFetchCall(fetchMock: FetchMock): { url: RequestInfo | URL; init: RequestInit | undefined } {
+  const call = fetchMock.mock.calls[0]
+  if (call === undefined) throw new Error('Expected fetch to be called')
+  const init = call.length > 1 ? call[1] : undefined
+  return { url: call[0], init }
+}
+
+function requireRequestInit(init: RequestInit | undefined): RequestInit {
+  if (init === undefined) throw new Error('Expected fetch RequestInit')
+  return init
+}
+
+function requireFormDataBody(body: BodyInit | null | undefined): FormData {
+  if (body instanceof FormData) return body
+  throw new Error('Expected fetch body to be FormData')
+}
+
+function requireStringBody(body: BodyInit | null | undefined): string {
+  if (typeof body === 'string') return body
+  throw new Error('Expected fetch body to be a JSON string')
+}
 
 describe('App AI panel resolver', () => {
   it('starts explicit business sessions and enumerates AI core ledger sessions', async () => {
-    const registry = new AppAiBusinessRegistry()
+    const registry = new AiHostBusinessRegistry()
     registerAppAiBusinesses({ registry })
 
     const streamedTurns: AiHostStreamTurnInput[] = []
-    const transport: AppAiTransport = {
+    const transport: AiHostTransport = {
       streamTurn: vi.fn(async (input) => {
         streamedTurns.push(input)
         input.onDelta?.('已进入请假草稿')
@@ -71,7 +94,7 @@ describe('App AI panel resolver', () => {
   })
 
   it('keeps business instances isolated by core ledger scope', async () => {
-    const registry = new AppAiBusinessRegistry()
+    const registry = new AiHostBusinessRegistry()
     registerAppAiBusinesses({ registry })
     const monitor = createAppAiRuntimeMonitor({
       registry,
@@ -95,7 +118,7 @@ describe('App AI panel resolver', () => {
   })
 
   it('allows monitor-side human intervention through the registered runtime', async () => {
-    const registry = new AppAiBusinessRegistry()
+    const registry = new AiHostBusinessRegistry()
     registerAppAiBusinesses({ registry })
     const monitor = createAppAiRuntimeMonitor({
       registry,
@@ -123,7 +146,7 @@ describe('App AI panel resolver', () => {
   })
 
   it('uploads AI attachments with auth headers and FormData body', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({
+    const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(async () => new Response(JSON.stringify({
       fileId: 'file-1',
       name: 'note.txt',
       size: 5,
@@ -140,18 +163,19 @@ describe('App AI panel resolver', () => {
       size: 5,
       mimeType: 'text/plain',
     })
-    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
-    expect(url).toBe('/api/ai/upload')
+    const call = firstFetchCall(fetchMock)
+    const init = requireRequestInit(call.init)
+    expect(call.url).toBe('/api/ai/upload')
     expect(init.headers).toEqual({ Authorization: 'Bearer token-1' })
-    expect(init.body).toBeInstanceOf(FormData)
-    expect((init.body as FormData).get('file')).toBe(file)
+    const body = requireFormDataBody(init.body)
+    expect(body.get('file')).toBe(file)
   })
 })
 
 describe('FetchAppAiTransport', () => {
   it('keeps stream turn envelopes scoped to the explicit business target', async () => {
     const sessionId = 'manualLeave:draft-1'
-    const fetchMock = vi.fn(async () => new Response([
+    const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(async () => new Response([
       'event: result',
       `data: ${JSON.stringify({
         sessionId,
@@ -186,9 +210,10 @@ describe('FetchAppAiTransport', () => {
     })
 
     expect(result.text).toBe('ok')
-    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
-    expect(url).toBe('/api/ai/sessions/manualLeave%3Adraft-1/turn/stream')
-    expect(JSON.parse(init.body as string)).toMatchObject({
+    const call = firstFetchCall(fetchMock)
+    const init = requireRequestInit(call.init)
+    expect(call.url).toBe('/api/ai/sessions/manualLeave%3Adraft-1/turn/stream')
+    expect(JSON.parse(requireStringBody(init.body))).toMatchObject({
       scope: {
         moduleId: 'manualLeave',
         moduleInstanceId: 'draft-1',

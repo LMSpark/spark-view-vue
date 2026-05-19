@@ -12,13 +12,13 @@
  *   - buildRowIndexMap : O(n) 构建 row→index 映射（加速 updateRowById 行对象替换）
  */
 
-import type { IDataRow } from '../types'
-import type { EmitRowsChangedFn, ILocalMutationHost, PostMutationFn } from './types'
+import type { DataRow } from '../types'
+import type { EmitRowsChangedFn, LocalMutationHost, PostMutationFn } from './types'
 import { buildPkSet, pruneInvalidSelections } from '../core/utils'
 
 export class LocalMutationDelegate {
   constructor(
-    private readonly host: ILocalMutationHost,
+    private readonly host: LocalMutationHost,
     private readonly emitRowsChanged: EmitRowsChangedFn,
     private readonly postMutation?: PostMutationFn,
   ) {}
@@ -38,8 +38,8 @@ export class LocalMutationDelegate {
   }
 
   /** 构建 row → index 映射（O(n)），供 updateRowById 原地更新 rowIndexMap 复用 */
-  buildRowIndexMap(rows: IDataRow[]): Map<IDataRow, number> {
-    const m = new Map<IDataRow, number>()
+  buildRowIndexMap(rows: DataRow[]): Map<DataRow, number> {
+    const m = new Map<DataRow, number>()
     let i = 0
     for (const row of rows) m.set(row, i++)
     return m
@@ -53,7 +53,7 @@ export class LocalMutationDelegate {
    * 将服务端响应同步到本地字段（rows / total / page / pageSize）
    */
   updateFromServer(
-    data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[],
+    data: { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } | DataRow[],
   ): void {
     const h = this.host
     if (Array.isArray(data)) {
@@ -70,7 +70,7 @@ export class LocalMutationDelegate {
   }
 
   /** 本地追加一行，发射 rowsChanged */
-  appendRow(row: IDataRow): void {
+  appendRow(row: DataRow): void {
     this.host.rows = [...this.host.rows, row]
     this.host.rowIndexMap = undefined   // 新行未加入缓存，直接失效
     this.postMutation?.([row])
@@ -82,7 +82,7 @@ export class LocalMutationDelegate {
    * 同步 currentRow / selectedRows 引用（引用已变，UI 需感知）
    * @returns 是否成功（行不存在时 false）
    */
-  updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
+  updateRowById(id: string | number, data: Partial<DataRow>): boolean {
     const h = this.host
     const idx = h.rows.findIndex(r => h.getPkKey(r) === id)
     if (idx < 0) return false
@@ -163,7 +163,7 @@ export class LocalMutationDelegate {
   }
 
   /** 本地整批替换所有行，清理无效选中引用，发射 rowsChanged */
-  replaceRows(rows: IDataRow[]): void {
+  replaceRows(rows: DataRow[]): void {
     const h = this.host
     const selectionBefore = {
       currentRowId: h._currentRowId,

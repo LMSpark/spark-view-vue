@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest'
 import { extractColumnRules, isColumnRequired } from '../column-validation'
 import { createValidator, createSchema } from '../validation'
-import type { DataColumn, IDataRow } from '@spark-view/spark-data'
+import type { DataColumn } from '@spark-view/spark-data'
 
 // ===== extractColumnRules =====
 
@@ -130,7 +130,7 @@ describe('DataValidator - 新增验证属性', () => {
   it('minLength 校验：字符串过短', () => {
     const columns: DataColumn[] = [{ name: 'name', type: 'string', minLength: 2 }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ name: 'A' } as IDataRow)
+    const result = validator.validate({ name: 'A' })
     expect(result.valid).toBe(false)
     expect(result.errors[0]!.code).toBe('MIN_LENGTH')
   })
@@ -138,7 +138,7 @@ describe('DataValidator - 新增验证属性', () => {
   it('maxLength 校验：字符串过长', () => {
     const columns: DataColumn[] = [{ name: 'name', type: 'string', maxLength: 5 }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ name: 'TooLongName' } as IDataRow)
+    const result = validator.validate({ name: 'TooLongName' })
     expect(result.valid).toBe(false)
     expect(result.errors[0]!.code).toBe('MAX_LENGTH')
   })
@@ -146,7 +146,7 @@ describe('DataValidator - 新增验证属性', () => {
   it('min 校验：数值过小', () => {
     const columns: DataColumn[] = [{ name: 'age', type: 'number', min: 0 }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ age: -1 } as IDataRow)
+    const result = validator.validate({ age: -1 })
     expect(result.valid).toBe(false)
     expect(result.errors[0]!.code).toBe('MIN_VALUE')
   })
@@ -154,7 +154,7 @@ describe('DataValidator - 新增验证属性', () => {
   it('max 校验：数值过大', () => {
     const columns: DataColumn[] = [{ name: 'score', type: 'number', max: 100 }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ score: 150 } as IDataRow)
+    const result = validator.validate({ score: 150 })
     expect(result.valid).toBe(false)
     expect(result.errors[0]!.code).toBe('MAX_VALUE')
   })
@@ -162,7 +162,7 @@ describe('DataValidator - 新增验证属性', () => {
   it('pattern 校验：不匹配正则', () => {
     const columns: DataColumn[] = [{ name: 'email', type: 'string', pattern: '^[\\w.-]+@[\\w.-]+\\.\\w+$' }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ email: 'not-an-email' } as IDataRow)
+    const result = validator.validate({ email: 'not-an-email' })
     expect(result.valid).toBe(false)
     expect(result.errors[0]!.code).toBe('PATTERN')
   })
@@ -170,7 +170,7 @@ describe('DataValidator - 新增验证属性', () => {
   it('pattern 校验：匹配正则通过', () => {
     const columns: DataColumn[] = [{ name: 'email', type: 'string', pattern: '^[\\w.-]+@[\\w.-]+\\.\\w+$' }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ email: 'test@example.com' } as IDataRow)
+    const result = validator.validate({ email: 'test@example.com' })
     expect(result.valid).toBe(true)
   })
 
@@ -180,14 +180,14 @@ describe('DataValidator - 新增验证属性', () => {
       pattern: '^1[3-9]\\d{9}$', patternMessage: '手机号格式不对',
     }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ phone: '12345' } as IDataRow)
+    const result = validator.validate({ phone: '12345' })
     expect(result.errors[0]!.message).toBe('手机号格式不对')
   })
 
   it('required: true 生效（替代 allowDBNull）', () => {
     const columns: DataColumn[] = [{ name: 'name', type: 'string', required: true }]
     const validator = createValidator(createSchema(columns))
-    const result = validator.validate({ name: '' } as IDataRow)
+    const result = validator.validate({ name: '' })
     expect(result.valid).toBe(false)
     expect(result.errors[0]!.code).toBe('REQUIRED')
   })
@@ -199,18 +199,18 @@ describe('DataValidator - 新增验证属性', () => {
     const validator = createValidator(createSchema(columns))
 
     // 空值 → required 失败（后续校验跳过）
-    expect(validator.validate({ code: '' } as IDataRow).errors).toHaveLength(1)
+    expect(validator.validate({ code: '' }).errors).toHaveLength(1)
 
     // 太短
-    const short = validator.validate({ code: 'AB' } as IDataRow)
+    const short = validator.validate({ code: 'AB' })
     expect(short.errors.some(e => e.code === 'MIN_LENGTH')).toBe(true)
 
     // 太长
-    const long = validator.validate({ code: 'ABCDEFGHIJK' } as IDataRow)
+    const long = validator.validate({ code: 'ABCDEFGHIJK' })
     expect(long.errors.some(e => e.code === 'MAX_LENGTH')).toBe(true)
 
     // 正好
-    expect(validator.validate({ code: 'ABCDE' } as IDataRow).valid).toBe(true)
+    expect(validator.validate({ code: 'ABCDE' }).valid).toBe(true)
   })
 
   it('null/undefined 值跳过长度和范围校验（allowDBNull: true）', () => {
@@ -218,7 +218,7 @@ describe('DataValidator - 新增验证属性', () => {
       name: 'nickname', type: 'string', allowDBNull: true, minLength: 2, maxLength: 10,
     }]
     const validator = createValidator(createSchema(columns))
-    expect(validator.validate({ nickname: null } as IDataRow).valid).toBe(true)
-    expect(validator.validate({ nickname: undefined } as IDataRow).valid).toBe(true)
+    expect(validator.validate({ nickname: null }).valid).toBe(true)
+    expect(validator.validate({ nickname: undefined }).valid).toBe(true)
   })
 })

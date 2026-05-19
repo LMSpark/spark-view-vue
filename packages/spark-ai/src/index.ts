@@ -9,21 +9,18 @@
  */
 
 export {
+  AiRegisteredModule,
   AiRuntime,
   AiInvocationProtocol,
   LlmParamsValidator,
   addGuidedAiToolAction,
-  createAiRuntimeToolCodec,
+  AiRuntimeToolCodec,
   createInitialAiToolActionSet,
 } from './core'
 
 export type {
-  AiRuntimeApi,
   AiRuntimeAction,
   AiModuleRegistration,
-  AiModuleRegistrationData,
-  AiModuleRegistrationStoreModule,
-  AiModuleRegistrationStoreSnapshot,
   AiModuleInstanceBinding,
   AiModuleInstanceParam,
   AiRuntimeAppendFunctionCallOptions,
@@ -71,15 +68,11 @@ export type {
   AiRuntimeStopSessionOptions,
   AiRuntimeStopSessionResult,
   AiRuntimeTranslateFunctionCallOptions,
-  AiRuntimeToolCodec,
   AiRuntimeToolCodecOptions,
   AiRuntimeToolExposurePolicyOptions,
   AiRuntimeToolSpec,
   AiRuntimeInstanceScope,
   AiFunctionRegistration,
-  AiFunctionRegistrationFailureMode,
-  AiFunctionRegistrationStoreFunction,
-  AiFunctionRegistrationUsageRule,
   FunctionFailureMode,
   FunctionExecutionContext,
   ModulePromptContext,
@@ -113,13 +106,8 @@ export type {
   DatasetCrudToolFunctionId,
   EditLifecycleFunctionFailureMode,
   EditLifecycleFunctionId,
-  PageDesignAppendMessageOptions,
-  PageDesignModuleContext,
-  PageDesignExecuteFunctionCallOptions,
   PageDesignModuleId,
   PageDesignModuleOptions,
-  PageDesignRuntimeContext,
-  PageDesignStopSessionOptions,
   SparkNodeTreeToolFailureMode,
   SparkNodeTreeToolFunctionId,
   TextModelFunctionFailureMode,
@@ -134,13 +122,9 @@ export {
 } from './registrations/leave-request'
 
 export type {
-  LeaveRequestAppendMessageOptions,
   LeaveRequestDraftFields,
   LeaveRequestDraftState,
   LeaveRequestDraftStatus,
-  LeaveRequestExecuteFunctionCallOptions,
-  LeaveRequestRuntimeContext,
   LeaveRequestServiceContext,
   LeaveRequestServiceResult,
-  LeaveRequestStopSessionOptions,
 } from './registrations/leave-request'

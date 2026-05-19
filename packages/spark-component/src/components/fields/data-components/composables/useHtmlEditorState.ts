@@ -1,5 +1,5 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 import type { Ref } from 'vue'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -9,7 +9,7 @@ interface UseHtmlEditorStateOptions {
   isCurrentFieldEditable: ValueRef<boolean>
   syncValue: (value: string) => void
   emitUpdate: (value: string) => void
-  getRowRawValue: (row: IDataRow) => unknown
+  getRowRawValue: (row: DataRow) => unknown
 }
 
 export function stripHtml(value: unknown): string {
@@ -56,7 +56,7 @@ export function useHtmlEditorState(options: UseHtmlEditorStateOptions) {
     void nextTick(() => syncEditorSurface())
   }
 
-  function getPlainTableValue(row: IDataRow): string {
+  function getPlainTableValue(row: DataRow): string {
     return stripHtml(options.getRowRawValue(row))
   }
 
