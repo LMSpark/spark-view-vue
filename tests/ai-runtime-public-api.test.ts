@@ -16,7 +16,7 @@ const AI_CORE_AND_CONSUMER_SOURCE_ROOTS: readonly string[] = [
   ...CONSUMER_SOURCE_ROOTS,
 ]
 
-const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions)\b|\bcreateAiRuntimeToolCodec\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
+const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions|KnowledgeProjection)\b|\bcreateAiRuntimeToolCodec\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
 const LEGACY_FUNCTIONS_READ_RE = /\.functions\b/
 const CONSUMER_INTERFACE_DECL_RE = /^\s*(?:export\s+)?interface\s+/
 const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/

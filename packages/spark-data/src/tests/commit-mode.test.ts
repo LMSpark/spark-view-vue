@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData, DataView } from '../index'
 import type { DataRow, CrudApi } from '../types'
+import { setMember } from './test-type-helpers'
 
 // ─────────────────────────────────────────────
 // 辅助
@@ -113,9 +114,8 @@ function setupMockApi(view: DataView) {
   const table = view.dataTable!
   table.api = api
 
-  ;(table as any)._crudService = mockCrud   // 注入 mock（绕过只读 getter）
-
-  ;(view as any)._crudDelegate = undefined  // 重置懒初始化，下次调用时使用新 crudService
+  setMember(table, '_crudService', mockCrud)
+  setMember(view, '_crudDelegate', undefined)
 
   return mockCrud
 }

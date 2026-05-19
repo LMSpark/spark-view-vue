@@ -238,6 +238,7 @@ export class PageDataLoader extends BaseDataLoader {
 - 注册运行时必须走 `registerModule()` / module-bound API 主路径；不得重新添加 `registerBusiness()` 或 `AiRegisteredBusinessApi`。
 - module-bound runtime handle 使用具名 `AiRegisteredModule` class；不得重新添加 `AiRegisteredModuleApi`、`AiRuntimeApi` 这类单实现机械接口。
 - LLM tool codec 使用具名 `AiRuntimeToolCodec` class；不得重新添加 `createAiRuntimeToolCodec()` 这类返回匿名对象的工厂主路径。
+- knowledge projection 返回具体 `AiKnowledgeProjector` class；不得重新添加 `AiKnowledgeProjection` 这种单实现接口影子。
 - `registerModule()` 只接收 class-first `AiModuleRegistration` 实例；不得重新支持 `AiModuleRegistrationData`、`AiModuleRegistrationStoreSnapshot` 或其它纯数据注册源。
 - registered module handle、business module、host runtime 不得重新暴露 `getRegistrationData()` / `getRegistrationStoreSnapshot()` 兼容 API。
 - 消费层不得依赖 `AiRegisteredBusinessApi`、相对包根 `../index`、`../core`、`../../core`、`../core/host` 等 barrel 入口；同包内部按 protocol/internal/host 的具体文件导入，应用层只使用公开 subpath（如 `@spark-view/spark-ai/host`）。
