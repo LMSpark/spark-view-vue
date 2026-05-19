@@ -219,7 +219,7 @@ async function doAppend(
   if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
     payload[idField] = inferNextRowId(view, idField)
   }
-  const result = await view.addRow(payload as DataRow)
+  const result = await view.addRow(payload)
   if (isCrudResult(result) && !result.success) {
     notifier.notify('warning', desc.failureMessage
       ? interpolate(desc.failureMessage, {}, null)
@@ -509,16 +509,8 @@ export async function executeMove(
     return
   }
 
-  const mover = view as DataView & {
-    moveTreeNode?: (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<DataRow | null>
-  }
-  if (typeof mover.moveTreeNode !== 'function') {
-    notifier.notify('warning', desc.failureMessage ?? '移动失败')
-    return
-  }
-
   const newParentId = resolveMoveTargetParentId(view, desc, scope, idField)
-  await mover.moveTreeNode(id, newParentId, desc.index)
+  await view.moveTreeNode(id, newParentId, desc.index)
   notifier.notify('success', desc.successMessage ?? '移动成功')
 }
 
@@ -696,9 +688,8 @@ export async function executeSubmitCurrentForm(
 }
 
 function createAutoRequestId(): string {
-  const cryptoLike = globalThis.crypto as Crypto | undefined
-  if (cryptoLike?.randomUUID) {
-    return cryptoLike.randomUUID()
+  if (typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
   }
   return `tx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }

@@ -5,6 +5,7 @@ import {
   forEachDocument,
   isPageFileDocumentDirty,
   type PageDocumentRegistry,
+  type PageFileLoadState,
   type PageFileName,
 } from '../documents'
 import type {
@@ -108,9 +109,10 @@ export class PageConfigEditWorkspace {
 
     const loadEpoch = this.activePageFilesLoadEpoch
     this.activePageFilesLoadPageId = pageId
-    const previousLoadStates = new Map(
-      PAGE_FILE_NAMES.map(entry => [entry, this.documents[entry].loadState.value] as const),
-    )
+    const previousLoadStates = new Map<PageFileName, PageFileLoadState>()
+    for (const entry of PAGE_FILE_NAMES) {
+      previousLoadStates.set(entry, this.documents[entry].loadState.value)
+    }
 
     for (const entry of PAGE_FILE_NAMES) {
       const doc = this.documents[entry]
@@ -122,13 +124,13 @@ export class PageConfigEditWorkspace {
     }
 
     const loadPromise = (async () => {
-      let loadedSnapshots: ReadonlyArray<readonly [PageFileName, string]>
+      let loadedSnapshots: Array<{ name: PageFileName; text: string }>
       try {
         loadedSnapshots = await Promise.all(
-          PAGE_FILE_NAMES.map(async (entry) => [
-            entry,
-            await this.fetchRemotePageFileContent(pageId, entry, { forceReload, allowMissingAsEmpty }),
-          ] as const),
+          PAGE_FILE_NAMES.map(async (entry) => ({
+            name: entry,
+            text: await this.fetchRemotePageFileContent(pageId, entry, { forceReload, allowMissingAsEmpty }),
+          })),
         )
       } catch (error) {
         if (this.activePageFilesLoadEpoch === loadEpoch && this.activePageId === pageId) {
@@ -141,13 +143,13 @@ export class PageConfigEditWorkspace {
 
       if (this.activePageFilesLoadEpoch !== loadEpoch || this.activePageId !== pageId) return
 
-      for (const [entry, loadedText] of loadedSnapshots) {
-        const doc = this.documents[entry]
-        if (!forceReload && this.isDocumentDirty(entry)) {
+      for (const snapshot of loadedSnapshots) {
+        const doc = this.documents[snapshot.name]
+        if (!forceReload && this.isDocumentDirty(snapshot.name)) {
           doc.loadState.value = 'loaded'
           continue
         }
-        doc.loadFromText(loadedText, { markSaved: true })
+        doc.loadFromText(snapshot.text, { markSaved: true })
       }
     })().finally(() => {
       if (this.activePageFilesLoadEpoch === loadEpoch && this.activePageFilesLoadPageId === pageId) {

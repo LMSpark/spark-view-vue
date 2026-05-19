@@ -343,22 +343,14 @@ export interface SaveDataSetAction extends ActionDescriptorBase, ActionUiDecorat
 
 // ── 类型守卫 ──────────────────────────────────────────────────────────────
 
-interface ActionDescriptorShape {
-  action: unknown
-}
-
 /**
  * 判断任意值是否为合法的 ActionDescriptor。
  * 只检查结构（非数组对象且有字符串 action 字段），不验证 action 值是否在枚举内。
  * 调用方在 switch 分发时会做穷举窄化，非法 action 会走 default 分支打 warn。
  */
 export function isActionDescriptor(value: unknown): value is ActionDescriptor {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    typeof (value as ActionDescriptorShape).action === 'string'
-  )
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+  return 'action' in value && typeof value.action === 'string'
 }
 
 // ── 运行时上下文 ──────────────────────────────────────────────────────────

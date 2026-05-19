@@ -138,6 +138,17 @@ function readNestedActionDescriptor(value: unknown): ActionDescriptor | undefine
   return mapBuiltinAction(rawAction, record) ?? undefined
 }
 
+function readStringRecord(value: unknown): Record<string, string> | undefined {
+  const record = asRecord(value)
+  if (!record) return undefined
+
+  const result: Record<string, string> = {}
+  for (const [key, entryValue] of Object.entries(record)) {
+    if (typeof entryValue === 'string') result[key] = entryValue
+  }
+  return Object.keys(result).length > 0 ? result : undefined
+}
+
 function withThen<T extends ActionDescriptor>(desc: T, props: Record<string, unknown>): T {
   const then = readNestedActionDescriptor(props['then'])
   if (then) desc.then = then
@@ -178,8 +189,8 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (payload) desc.appendPayload = payload
       const inheritFields = readOptionalStringArray(props['inheritFields'])
       if (inheritFields) desc.inheritFields = inheritFields
-      const inheritFieldMap = asRecord(props['inheritFieldMap'])
-      if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap as Record<string, string>
+      const inheritFieldMap = readStringRecord(props['inheritFieldMap'])
+      if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap
       if (readBoolean(props['setCurrentRowOnSuccess']) === true) desc.setCurrentRowOnSuccess = true
       return withThen(desc, props)
     }
@@ -192,8 +203,8 @@ function mapBuiltinAction(name: BuiltinActionName, props: Record<string, unknown
       if (payload) desc.appendPayload = payload
       const inheritFields = readOptionalStringArray(props['inheritFields'])
       if (inheritFields) desc.inheritFields = inheritFields
-      const inheritFieldMap = asRecord(props['inheritFieldMap'])
-      if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap as Record<string, string>
+      const inheritFieldMap = readStringRecord(props['inheritFieldMap'])
+      if (inheritFieldMap) desc.inheritFieldMap = inheritFieldMap
       if (readBoolean(props['setCurrentRowOnSuccess']) === true) desc.setCurrentRowOnSuccess = true
       const prompt = pickPrompt(props, 'append')
       if (prompt) desc.prompt = prompt

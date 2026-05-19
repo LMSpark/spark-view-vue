@@ -72,6 +72,7 @@ import {
   onUnmounted,
   isVNode,
   type VNode,
+  type VNodeArrayChildren,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
@@ -79,7 +80,7 @@ import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { SparkNodeTree, type ConfigLoader, type PageRoute, type PageConfig } from '@spark-view/spark-page-config'
-import { nodeId, type SparkNode } from '../../core/types'
+import { getSparkNodeChildren, nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
 import {
   PAGE_SERVICE,
@@ -125,22 +126,18 @@ interface RenderFunctionRegistration {
   revisionRef: RenderFunctionRevisionRef
   invalidatePage?: () => void
 }
-const RENDER_FUNCTION_REGISTRY_KEY = Symbol.for('spark:page-render-function-registry')
+const renderFunctionRegistries = new WeakMap<object, Map<string, RenderFunctionRegistration>>()
 
-type RenderFunctionRegistryOwner = {
+type VueComponentRegistry = {
   component(name: string): unknown
   component(name: string, component: object): void
-} & Record<PropertyKey, unknown>
+}
 
 function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegistration> {
-  const owner = app as RenderFunctionRegistryOwner
-  const existing = owner[RENDER_FUNCTION_REGISTRY_KEY]
-  if (existing instanceof Map) {
-    return existing as Map<string, RenderFunctionRegistration>
-  }
-
+  const existing = renderFunctionRegistries.get(app)
+  if (existing) return existing
   const created = new Map<string, RenderFunctionRegistration>()
-  owner[RENDER_FUNCTION_REGISTRY_KEY] = created
+  renderFunctionRegistries.set(app, created)
   return created
 }
 
@@ -151,8 +148,12 @@ function invalidateRenderFunctionRegistration(registration: RenderFunctionRegist
 function isRenderEventProp(key: string, value: unknown): boolean {
   if (!key.startsWith('on') || key.length <= 2) return false
   if (key.startsWith('onVnode')) return false
-  if (typeof value === 'function') return true
-  return Array.isArray(value) && value.some(item => typeof item === 'function')
+  if (isCallable(value)) return true
+  return Array.isArray(value) && value.some(isCallable)
+}
+
+function isCallable(value: unknown): value is (...args: unknown[]) => unknown {
+  return typeof value === 'function'
 }
 
 function wrapRenderEventHandler(
@@ -175,15 +176,28 @@ function wrapRenderEventHandler(
 }
 
 function wrapRenderEventProp(value: unknown, invalidate: () => void): unknown {
-  if (typeof value === 'function') {
-    return wrapRenderEventHandler(value as (...args: unknown[]) => unknown, invalidate)
+  if (isCallable(value)) {
+    return wrapRenderEventHandler(value, invalidate)
   }
   if (Array.isArray(value)) {
-    return value.map(item => typeof item === 'function'
-      ? wrapRenderEventHandler(item as (...args: unknown[]) => unknown, invalidate)
+    return value.map(item => isCallable(item)
+      ? wrapRenderEventHandler(item, invalidate)
       : item)
   }
   return value
+}
+
+function wrapVNodeChildren(childrenValue: VNode['children'], invalidate: () => void): VNode['children'] {
+  if (!Array.isArray(childrenValue)) return childrenValue
+  return childrenValue.map(item => wrapVNodeArrayChild(item, invalidate))
+}
+
+function wrapVNodeArrayChild(child: VNodeArrayChildren[number], invalidate: () => void): VNodeArrayChildren[number] {
+  if (Array.isArray(child)) {
+    return child.map(item => wrapVNodeArrayChild(item, invalidate))
+  }
+  if (!isVNode(child)) return child
+  return wrapScriptVNode(child, invalidate)
 }
 
 function wrapScriptRenderOutput(output: unknown, invalidate: () => void): unknown {
@@ -192,7 +206,11 @@ function wrapScriptRenderOutput(output: unknown, invalidate: () => void): unknow
   }
   if (!isVNode(output)) return output
 
-  const cloned = cloneVNode(output as VNode)
+  return wrapScriptVNode(output, invalidate)
+}
+
+function wrapScriptVNode(vnode: VNode, invalidate: () => void): VNode {
+  const cloned = cloneVNode(vnode)
   const props = cloned.props
   if (props) {
     let hasWrappedEvent = false
@@ -207,9 +225,7 @@ function wrapScriptRenderOutput(output: unknown, invalidate: () => void): unknow
     }
   }
 
-  if (Array.isArray(cloned.children)) {
-    cloned.children = cloned.children.map(item => wrapScriptRenderOutput(item, invalidate)) as typeof cloned.children
-  }
+  cloned.children = wrapVNodeChildren(cloned.children, invalidate)
 
   return cloned
 }
@@ -234,10 +250,34 @@ function createPageRoute(route: RouteLocationNormalizedLoaded): PageRoute {
     get path() { return route.path },
     get fullPath() { return route.fullPath },
     get name() { return route.name ?? null },
-    get params() { return route.params as Record<string, string | string[]> },
-    get query() { return route.query as Record<string, string | string[] | null> },
+    get params() { return toPageRouteParams(route.params) },
+    get query() { return toPageRouteQuery(route.query) },
     get hash() { return route.hash },
   }
+}
+
+function toPageRouteParams(params: RouteLocationNormalizedLoaded['params']): Record<string, string | string[]> {
+  const result: Record<string, string | string[]> = {}
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === 'string') result[key] = value
+    else if (Array.isArray(value)) result[key] = value.filter((item): item is string => typeof item === 'string')
+  }
+  return result
+}
+
+function toPageRouteQuery(query: RouteLocationNormalizedLoaded['query']): Record<string, string | string[] | null> {
+  const result: Record<string, string | string[] | null> = {}
+  for (const [key, value] of Object.entries(query)) {
+    if (typeof value === 'string' || value === null) result[key] = value
+    else if (Array.isArray(value)) result[key] = value.filter((item): item is string => typeof item === 'string')
+  }
+  return result
+}
+
+function readRouteString(value: unknown): string | undefined {
+  if (typeof value === 'string' && value.length > 0) return value
+  if (Array.isArray(value)) return value.find((item): item is string => typeof item === 'string' && item.length > 0)
+  return undefined
 }
 
 function resolveCurrentPageId(
@@ -248,28 +288,28 @@ function resolveCurrentPageId(
   const resolved =
     pageId ??
     pageConfigPageId ??
-    (route.meta['pageId'] as string | undefined) ??
-    (route.params['id'] as string | undefined) ??
-    (route.name as string | undefined)
+    readRouteString(route.meta['pageId']) ??
+    readRouteString(route.params['id']) ??
+    readRouteString(route.name)
   if (!resolved) throw new Error('配置无效: 无法确定页面ID')
   return resolved
 }
 
 function registerRenderFunctionsForPage(
-  app: object,
+  app: VueComponentRegistry & object,
   pageFunctions: Record<string, (...args: unknown[]) => unknown>,
 ): void {
   const fnMap = getRenderFunctionRegistry(app)
-  const vueApp = app as RenderFunctionRegistryOwner
 
   for (const [name, fn] of Object.entries(pageFunctions)) {
     if (!name.startsWith('Render') || typeof fn !== 'function') continue
     const camelName = name.charAt(0).toLowerCase() + name.slice(1)
     const invalidatePage = () => invalidateRenderFunctionsForPage(app, pageFunctions)
+    const renderFunction = createRenderFunction(fn)
 
     const existingRef = fnMap.get(name) ?? fnMap.get(camelName)
     if (existingRef) {
-      existingRef.fnRef.value = fn as RenderFunction
+      existingRef.fnRef.value = renderFunction
       existingRef.invalidatePage = invalidatePage
       fnMap.set(name, existingRef)
       fnMap.set(camelName, existingRef)
@@ -277,7 +317,7 @@ function registerRenderFunctionsForPage(
       continue
     }
 
-    const fnRef = shallowRef<RenderFunction | null>(fn as RenderFunction)
+    const fnRef = shallowRef<RenderFunction | null>(renderFunction)
     const registration: RenderFunctionRegistration = {
       fnRef,
       revisionRef: shallowRef(0),
@@ -300,9 +340,13 @@ function registerRenderFunctionsForPage(
         return wrapScriptRenderOutput(registration.fnRef.value?.({ ...attrs }), invalidate)
       },
     }))
-    vueApp.component(name, component)
-    vueApp.component(camelName, component)
+    app.component(name, component)
+    app.component(camelName, component)
   }
+}
+
+function createRenderFunction(fn: (...args: unknown[]) => unknown): RenderFunction {
+  return (propsBag?: Record<string, unknown>) => fn(propsBag)
 }
 
 // ==================== Props — h(type, props, children) ====================
@@ -379,7 +423,7 @@ let _nodeTree: SparkNodeTree | null = null
 let _crudTool: DataSetCrudTool | null = null
 const pageContainer = ref<HTMLElement | null>(null)
 const currentCapabilityContext = currentInstance
-  ? sparkResolveContextOwner(currentInstance as object)
+  ? sparkResolveContextOwner(currentInstance)
   : null
 
 // ── CSS 作用域 ──
@@ -388,7 +432,11 @@ sparkProvide(CSS_SCOPE, { inject(css: string) { setScopedCss(currentPageId.value
 
 // ── 页面权限模式 ──
 // 与导航节点默认语义保持一致：未提供 permissionMode 时默认 'masked'。
-sparkProvide(PAGE_PERMISSION_MODE, (route.meta['permissionMode'] as NavPermissionMode | undefined) ?? 'masked')
+function isNavPermissionMode(value: unknown): value is NavPermissionMode {
+  return value === 'none' || value === 'masked' || value === 'invisible'
+}
+
+sparkProvide(PAGE_PERMISSION_MODE, isNavPermissionMode(route.meta['permissionMode']) ? route.meta['permissionMode'] : 'masked')
 
 // ── DataSet ──
 const pds = usePageDataSet({ enableDataSet: props.enableDataSet })
@@ -470,7 +518,7 @@ function formatRuntimeError(errorLike: unknown): string {
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   if ((typeof value !== 'object' && typeof value !== 'function') || value === null) return false
-  return typeof (value as { then?: unknown }).then === 'function'
+  return typeof Reflect.get(value, 'then') === 'function'
 }
 
 function isObjectLike(value: unknown): value is object {
@@ -609,7 +657,7 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
   }
 
   // 4. rule → SparkNodeTree → buildPageChildren → children
-  _nodeTree = SparkNodeTree.fromPageChildren(nodeProps.rule as unknown as SparkNode[])
+  _nodeTree = SparkNodeTree.fromPageChildren(nodeProps.rule)
   rebuildChildren()
 }
 
@@ -675,8 +723,8 @@ function rebuildChildren(): void {
     children.value = []
     return
   }
-  const ruleNodes = _nodeTree.root.children ?? []
-  children.value = buildPageChildren(ruleNodes as unknown as import('@spark-view/spark-page-config').RuleConfig[], {
+  const ruleNodes = getSparkNodeChildren(_nodeTree.root.children)
+  children.value = buildPageChildren(ruleNodes, {
     callFunc: callPageFunction,
     actionCtx,
   })

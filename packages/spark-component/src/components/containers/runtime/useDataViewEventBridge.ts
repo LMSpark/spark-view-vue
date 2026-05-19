@@ -13,7 +13,6 @@
 
 import { watchEffect } from 'vue'
 import type { DataView, DataRow, DataSource } from '@spark-view/spark-data'
-import type { ValueRef } from '../../shared-types.js'
 
 // ============================================================
 // § 类型定义
@@ -112,7 +111,7 @@ export interface OriginatorFilterContext {
  */
 export interface DataViewEventBridgeOptions {
   /** 已解析 DataView（为空时桥接层处于 detached 状态）。 */
-  resolvedView: ValueRef<DataView | null>
+  resolvedView: { readonly value: DataView | null }
   /** 命中该 originatorId 的事件会被过滤。 */
   ignoreOriginatorId?: string
   /** 自定义 originatorId 过滤策略（返回 false 则不分发）。 */
@@ -170,6 +169,15 @@ interface BridgeRegistrationFactory {
   createHandler: BridgeHandlerFactory
 }
 
+function isBridgeHandler(value: unknown): value is DataViewBridgeEventHandler {
+  return typeof value === 'function'
+}
+
+function createBridgeHandler(value: unknown): DataViewBridgeEventHandler | null {
+  if (!isBridgeHandler(value)) return null
+  return (...args: DataViewBridgeEventArgs) => value(...args)
+}
+
 /**
  * 组装 originator 过滤上下文。
  *
@@ -199,7 +207,8 @@ function registerDataViewEvents(
 
   for (const registration of registrations) {
     if (!registration.enabled) continue
-    const handler = registration.createHandler() as DataViewBridgeEventHandler
+    const handler = createBridgeHandler(registration.createHandler())
+    if (!handler) continue
     view.events.on(registration.eventName, handler)
     cleanupHandlers.push(() => {
       view.events.off(registration.eventName, handler)

@@ -26,8 +26,11 @@ export function createContainerCrudContext(options: CreateContainerCrudContextOp
 /**
  * 统一读取原生组件 ref，屏蔽重复的空值与类型断言模板。
  */
-export function getNativeRefValue<T>(nativeRef: ValueRef<unknown>): T | null {
+export function getNativeRefValue<T>(
+  nativeRef: ValueRef<unknown>,
+  accept: (value: unknown) => value is T,
+): T | null {
   const value = nativeRef.value
   if (value === null || value === undefined) return null
-  return value as T
+  return accept(value) ? value : null
 }

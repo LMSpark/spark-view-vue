@@ -10,6 +10,7 @@ import {
   createContainerCrudContext,
   getNativeRefValue,
 } from '../zero-code-shared.js'
+import { isDataRecord } from '../data-row-utils.js'
 import type { RendererTreeApi } from './types'
 
 export interface TreeNode {
@@ -44,7 +45,7 @@ export interface NativeTreeLike {
   insertBefore?: (data: unknown, refNode: unknown) => void
   insertAfter?: (data: unknown, refNode: unknown) => void
   remove?: (nodeOrData: unknown) => void
-  getNode?: (key: string | number) => unknown
+  getNode?: (key: string | number) => NativeTreeNodeLike | undefined
 }
 
 export interface NativeTreeNodeLike {
@@ -77,6 +78,31 @@ interface RendererTreeZeroCodeOptions {
   treeIdField: ValueRef<string>
 }
 
+function isDataRow(value: unknown): value is DataRow {
+  return isDataRecord(value)
+}
+
+function isNativeTreeLike(value: unknown): value is NativeTreeLike {
+  if (typeof value !== 'object' || value === null) return false
+  return (!('getCurrentNode' in value) || typeof value.getCurrentNode === 'function')
+    && (!('setCurrentKey' in value) || typeof value.setCurrentKey === 'function')
+    && (!('filter' in value) || typeof value.filter === 'function')
+    && (!('getCheckedNodes' in value) || typeof value.getCheckedNodes === 'function')
+    && (!('getCheckedKeys' in value) || typeof value.getCheckedKeys === 'function')
+    && (!('setCheckedKeys' in value) || typeof value.setCheckedKeys === 'function')
+    && (!('append' in value) || typeof value.append === 'function')
+    && (!('insertBefore' in value) || typeof value.insertBefore === 'function')
+    && (!('insertAfter' in value) || typeof value.insertAfter === 'function')
+    && (!('remove' in value) || typeof value.remove === 'function')
+    && (!('getNode' in value) || typeof value.getNode === 'function')
+}
+
+function isNativeTreeNodeLike(value: unknown): value is NativeTreeNodeLike {
+  if (typeof value !== 'object' || value === null) return false
+  return (!('expand' in value) || typeof value.expand === 'function')
+    && (!('data' in value) || isDataRow(value.data))
+}
+
 export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions) {
   const {
     props,
@@ -89,13 +115,13 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   } = options
 
   function getNodeKey(data: unknown): string | number | null {
-    const node = data as DataRow | null | undefined
-    const key = node?.[nodeKeyField.value]
+    if (!isDataRow(data)) return null
+    const key = data[nodeKeyField.value]
     return typeof key === 'string' || typeof key === 'number' ? key : null
   }
 
   function getNativeTree(): NativeTreeLike | null {
-    return getNativeRefValue<NativeTreeLike>(nativeTreeRef)
+    return getNativeRefValue(nativeTreeRef, isNativeTreeLike)
   }
 
   function syncCurrentByKey(key: string | number | null | undefined): void {
@@ -128,7 +154,8 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     getCurrentNode() {
       const tree = getNativeTree()
       if (!tree || typeof tree.getCurrentNode !== 'function') return null
-      return (tree.getCurrentNode() as DataRow | null) ?? null
+      const currentNode = tree.getCurrentNode()
+      return isDataRow(currentNode) ? currentNode : null
     },
     setCurrentKey(key) {
       syncCurrentByKey(key)
@@ -147,8 +174,10 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
         return
       }
       for (const pathId of path.pathIds) {
-        const nativeNode = tree.getNode(pathId) as NativeTreeNodeLike | undefined
-        nativeNode?.expand?.()
+        const nativeNode = tree.getNode(pathId)
+        if (isNativeTreeNodeLike(nativeNode)) {
+          nativeNode.expand?.()
+        }
       }
 
       syncCurrentByKey(key)
@@ -161,7 +190,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     getCheckedNodes(leafOnly, includeHalfChecked) {
       const tree = getNativeTree()
       if (!tree || typeof tree.getCheckedNodes !== 'function') return []
-      return tree.getCheckedNodes(leafOnly, includeHalfChecked) as DataRow[]
+      return tree.getCheckedNodes(leafOnly, includeHalfChecked).filter(isDataRow)
     },
     getCheckedKeys() {
       const tree = getNativeTree()
@@ -191,19 +220,19 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       const tree = getNativeTree()
       if (!tree) return
       const refNode = tree.getNode?.(refKey)
-      if (refNode !== null && refNode !== undefined) tree.insertBefore?.(nodeData, refNode)
+      if (refNode !== undefined) tree.insertBefore?.(nodeData, refNode)
     },
     insertAfter(refKey, nodeData) {
       const tree = getNativeTree()
       if (!tree) return
       const refNode = tree.getNode?.(refKey)
-      if (refNode !== null && refNode !== undefined) tree.insertAfter?.(nodeData, refNode)
+      if (refNode !== undefined) tree.insertAfter?.(nodeData, refNode)
     },
     updateNode(key, patch) {
       const tree = getNativeTree()
       if (!tree) return false
-      const elNode = tree.getNode?.(key) as { data?: DataRow } | undefined
-      if (elNode?.data === undefined) return false
+      const elNode = tree.getNode?.(key)
+      if (!isNativeTreeNodeLike(elNode) || elNode.data === undefined) return false
       Object.assign(elNode.data, patch)
       return true
     },
@@ -211,7 +240,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       const tree = getNativeTree()
       if (!tree) return false
       const elNode = tree.getNode?.(key)
-      if (elNode === null || elNode === undefined) return false
+      if (elNode === undefined) return false
       tree.remove?.(elNode)
       return true
     },

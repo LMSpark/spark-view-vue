@@ -58,12 +58,12 @@ export interface PageConfigFiles {
 /**
  * 页面配置四文件名。
  */
-export const PAGE_CONFIG_FILE_NAMES = [
+export const PAGE_CONFIG_FILE_NAMES: readonly ['rule.json', 'pagedata.json', 'script.js', 'style.css'] = [
   'rule.json',
   'pagedata.json',
   'script.js',
   'style.css',
-] as const
+]
 export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
 
 /**

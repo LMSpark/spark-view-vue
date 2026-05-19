@@ -23,6 +23,16 @@ export function createPageComponentRegistry(): PageComponentRegistry {
     return Array.from(apiMap.values()).filter(item => item.type === type)
   }
 
+  function getApi<T = unknown>(id: string): T | null
+  function getApi(id: string): unknown {
+    return apiMap.get(id)?.api ?? null
+  }
+
+  function getApisByType<T = unknown>(type: string): T[]
+  function getApisByType(type: string): unknown[] {
+    return listApis(type).map(item => item.api)
+  }
+
   return {
     registerInstance(entry) {
       const normalized = entry.props === undefined
@@ -58,12 +68,7 @@ export function createPageComponentRegistry(): PageComponentRegistry {
       apiMap.delete(id)
     },
     listApis,
-    getApi<T = unknown>(id: string): T | null {
-      const entry = apiMap.get(id)
-      return entry ? (entry.api as T) : null
-    },
-    getApisByType<T = unknown>(type: string): T[] {
-      return listApis(type).map(item => item.api as T)
-    },
+    getApi,
+    getApisByType,
   }
 }

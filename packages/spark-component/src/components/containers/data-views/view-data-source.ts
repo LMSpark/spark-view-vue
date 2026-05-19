@@ -14,7 +14,6 @@ import { PAGE_DATASET } from '../../internal'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
 import type {
   DataViewState,
-  ResolvedViewRef,
 } from './view-runtime-state.js'
 import { useDataViewState } from './view-runtime-state.js'
 import { toDataRecord } from './data-row-utils.js'
@@ -39,7 +38,13 @@ function resolveMaybeValue<T>(source: MaybeRefOrGetter<T> | undefined): T | unde
 function pickRowFromSource(source: unknown): DataRow | null {
   const sourceRecord = toDataRecord(source)
   if (!sourceRecord) return null
-  return toDataRecord(sourceRecord['currentRow']) as DataRow | null
+  return toDataRecord(sourceRecord['currentRow'])
+}
+
+function isDataView(value: unknown): value is DataView {
+  if (value === null || typeof value !== 'object') return false
+  return typeof Reflect.get(value, 'requestData') === 'function'
+    && typeof Reflect.get(value, 'dataTable') === 'object'
 }
 
 interface UseContainerDataSourceOptions<TSource> {
@@ -115,7 +120,7 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
 
     const viewRecord = toDataRecord(resolvedView.value)
     const currentRow = viewRecord ? toDataRecord(viewRecord['currentRow']) : null
-    if (currentRow) return currentRow as DataRow
+    if (currentRow) return currentRow
 
     const inherited = resolveMaybeValue(options.inheritedDataSource)
     return pickRowFromSource(inherited)
@@ -143,14 +148,15 @@ export function useContainerDataSource(
     ...options,
     mapView: (view: DataView) => view,
   })
-  return { ...useDataViewState(state.resolvedView as ResolvedViewRef), ...state }
+  return { ...useDataViewState(state.resolvedView), ...state }
 }
 
 function shouldAutoLoad(view: DataView): boolean {
   if (typeof view.requestData !== 'function') return false
 
-  const autoLoadState = view as { autoLoad?: boolean; autoLoadConfigured?: boolean }
-  if (autoLoadState.autoLoadConfigured === true && autoLoadState.autoLoad === false) return false
+  const autoLoadConfigured = Reflect.get(view, 'autoLoadConfigured')
+  const autoLoad = Reflect.get(view, 'autoLoad')
+  if (autoLoadConfigured === true && autoLoad === false) return false
 
   const table = view.dataTable
   if (table?.resourceType === 'static-data') return false
@@ -180,10 +186,9 @@ function useContainerDataSourceAutoLoadEffect<TSource>(options: {
     options.resolvedView,
     (source) => {
       if (source === null) return
-      const maybeView = source as unknown as DataView
-      if (!shouldAutoLoad(maybeView)) return
+      if (!isDataView(source) || !shouldAutoLoad(source)) return
 
-      void maybeView.requestData().catch((error: unknown) => {
+      void source.requestData().catch((error: unknown) => {
         options.logger.error(`${options.logPrefix}: requestData() 失败`, error)
       })
     },

@@ -32,6 +32,14 @@ function extractNamesFromScript(scriptText: string): string[] {
   return Array.from(names)
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isCallable(value: unknown): value is (...args: unknown[]) => unknown {
+  return typeof value === 'function'
+}
+
 /**
  * 编译业务脚本为可执行的函数对象
  *
@@ -69,13 +77,16 @@ export function compileFunctions(
 
     const func = new Function('__ctx', fullScript)
     const safeContext = createSafeProxy(context)
-    const result = (func as (ctx: PageContext) => Record<string, unknown>)(safeContext)
+    // Dynamic page scripts intentionally compile through Function; the result is validated below.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const result: unknown = func(safeContext)
+    if (!isRecord(result)) return {}
 
     // 过滤掉 undefined 的函数
     const filteredResult: Record<string, (...args: unknown[]) => unknown> = {}
-    for (const key of Object.keys(result)) {
-      if (result[key] !== undefined) {
-        filteredResult[key] = result[key] as (...args: unknown[]) => unknown
+    for (const [key, value] of Object.entries(result)) {
+      if (isCallable(value)) {
+        filteredResult[key] = (...args: unknown[]) => value(...args)
       }
     }
 

@@ -31,9 +31,12 @@ const _notifierLogger = Logger('action-executor')
  * 适用于从 SparkNode props 中读取配置对象（appendPayload、patch 等）。
  */
 export function asRecord(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null
+  const record: Record<string, unknown> = {}
+  for (const [key, entryValue] of Object.entries(value)) {
+    record[key] = entryValue
+  }
+  return record
 }
 
 /**
@@ -68,8 +71,9 @@ export function interpolate(
       const segments = name.split('.')
       let cur: unknown = row
       for (const seg of segments) {
-        if (cur === null || cur === undefined || typeof cur !== 'object') { cur = undefined; break }
-        cur = (cur as Record<string, unknown>)[seg]
+        const record = asRecord(cur)
+        if (!record) { cur = undefined; break }
+        cur = record[seg]
       }
       if (cur !== undefined && cur !== null) return String(cur)
     }
@@ -376,7 +380,7 @@ export const BUILTIN_ACTION_META = {
   'message-row': { label: '查看' },
   'message-current': { label: '查看当前' },
   'save-dataset': { label: '保存全部' },
-} as const satisfies Record<string, BuiltinActionMeta>
+} satisfies Record<string, BuiltinActionMeta>
 
 export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
 
@@ -467,10 +471,10 @@ export function isActionDescriptorDisabled(
 ): boolean {
   if (!view) return false
 
-  const uiDesc = descriptor as Partial<{ disabledWhenRow: Record<string, unknown> }>
-  if (uiDesc.disabledWhenRow) {
+  const disabledWhenRow = 'disabledWhenRow' in descriptor ? descriptor.disabledWhenRow : undefined
+  if (disabledWhenRow) {
     const checkRow = scope?.row ?? view.currentRow ?? null
-    if (_matchesRowCondition(checkRow, uiDesc.disabledWhenRow)) return true
+    if (_matchesRowCondition(checkRow, disabledWhenRow)) return true
   }
 
   switch (descriptor.action) {

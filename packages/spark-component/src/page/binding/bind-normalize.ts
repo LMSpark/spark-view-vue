@@ -32,6 +32,14 @@ import { extractActionExecutionControl } from '../actions'
 /** 沙箱函数调用签名 */
 type CallFunc = (functionName: string, ...args: unknown[]) => unknown
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isCallable(value: unknown): value is (...args: unknown[]) => unknown {
+  return typeof value === 'function'
+}
+
 // ── 单项包装 ───────────────────────────────────────────────────────────────
 
 function wrapStringHandler(name: string, callFunc: CallFunc): (...args: unknown[]) => unknown {
@@ -73,8 +81,8 @@ function collapseHandlerArray(
       wrapped.push(wrapStringHandler(item, callFunc))
     } else if (actionCtx && isActionDescriptor(item)) {
       wrapped.push(wrapActionDescriptor(item, actionCtx))
-    } else if (typeof item === 'function') {
-      wrapped.push(item as (...args: unknown[]) => unknown)
+    } else if (isCallable(item)) {
+      wrapped.push((...args: unknown[]) => item(...args))
     }
   }
 
@@ -131,8 +139,8 @@ function normalizeOnProps(
 ): void {
   for (const [key, value] of Object.entries(props)) {
     if (key === 'on') {
-      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-        props[key] = normalizeRuleEvents(value as Record<string, unknown>, callFunc, actionCtx)
+      if (isRecord(value)) {
+        props[key] = normalizeRuleEvents(value, callFunc, actionCtx)
       }
       continue
     }

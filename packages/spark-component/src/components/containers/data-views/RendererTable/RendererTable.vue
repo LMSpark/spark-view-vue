@@ -51,7 +51,7 @@
         >
           <template #default="scope">
             <div class="renderer-table-row-actions">
-              <RendererHostScope :row="(scope.row as DataRow)" :children="actionScopeChildren" />
+              <RendererHostScope :row="toScopeRow(scope.row)" :children="actionScopeChildren" />
             </div>
           </template>
         </el-table-column>
@@ -72,7 +72,7 @@
             :class-name="rowFragmentStringProp(child, 'class')"
           >
             <template #default="scope">
-              <RendererHostScope :row="(scope.row as DataRow)" :children="rowFragmentChildren(child)" />
+              <RendererHostScope :row="toScopeRow(scope.row)" :children="rowFragmentChildren(child)" />
             </template>
           </el-table-column>
 
@@ -95,7 +95,7 @@
         >
           <template #default="scope">
             <div class="renderer-table-row-actions">
-              <RendererHostScope :row="(scope.row as DataRow)" :children="actionScopeChildren" />
+              <RendererHostScope :row="toScopeRow(scope.row)" :children="actionScopeChildren" />
             </div>
           </template>
         </el-table-column>
@@ -150,6 +150,7 @@ import RendererHostScope from '../../support/RendererHostScope.vue'
 import DataViewMetaBar from '../DataViewMetaBar.vue'
 import { DataMember } from '@spark-view/spark-data'
 import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnContext'
+import { toDataRecord } from '../data-row-utils'
 
 // ── 输入 props 与列节点预处理 ─────────────────────────────────────────
 
@@ -310,10 +311,12 @@ function rowFragmentChildren(node: SparkNode): SparkNode[] {
   return getSparkNodeChildren(node.children)
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : {}
+function toPlainRecord(value: unknown): Record<string, unknown> {
+  return toDataRecord(value) ?? {}
+}
+
+function toScopeRow(value: unknown): DataRow | undefined {
+  return toDataRecord(value) ?? undefined
 }
 
 function readBoolean(value: unknown): boolean | undefined {
@@ -322,7 +325,7 @@ function readBoolean(value: unknown): boolean | undefined {
 
 // ── 基础 el-table props：resizable 默认 true，且与 border 联动 ──────────────────────────
 const baseElTableProps = computed<Record<string, unknown>>(() => {
-  const legacyTableProps = asRecord(props.tableProps)
+  const legacyTableProps = toPlainRecord(props.tableProps)
   const resolvedResizable = props.resizable ?? readBoolean(legacyTableProps['resizable']) ?? true
   const resolvedBorder = resolvedResizable === true
     ? true
@@ -412,7 +415,7 @@ const selectedRowIdSet = computed<Set<string | number>>(() => {
   const ids = new Set<string | number>()
   if (typeof keyField !== 'string' || keyField.length === 0) return ids
   for (const row of dataState.selectedRows.value) {
-    const key = (row as Record<string, unknown>)[keyField]
+    const key = row[keyField]
     if (typeof key === 'string' || typeof key === 'number') ids.add(key)
   }
   return ids
@@ -423,7 +426,7 @@ const selectedRowRefSet = computed<Set<DataRow>>(() => new Set(dataState.selecte
 function isSelectedRow(row: DataRow): boolean {
   const keyField = dataState.primaryKey.value
   if (typeof keyField === 'string' && keyField.length > 0) {
-    const key = (row as Record<string, unknown>)[keyField]
+    const key = row[keyField]
     if ((typeof key === 'string' || typeof key === 'number') && selectedRowIdSet.value.has(key)) return true
   }
   return selectedRowRefSet.value.has(row)
@@ -466,8 +469,8 @@ watch(
       if (!table) return
       table.clearSelection?.()
       for (const row of rows.value) {
-        if (isSelectedRow(row as DataRow)) {
-          table.toggleRowSelection?.(row as DataRow, true)
+        if (isSelectedRow(row)) {
+          table.toggleRowSelection?.(row, true)
         }
       }
     } finally {

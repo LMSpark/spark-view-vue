@@ -39,7 +39,36 @@ interface TreeSeedBuildResult {
 }
 
 function toTreeRows(rows: readonly DataRow[]): TreeNode[] {
-  return rows as unknown as TreeNode[]
+  return rows.map(toTreeNode)
+}
+
+function toTreeNode(row: DataRow): TreeNode {
+  const node: TreeNode = {}
+  for (const [key, value] of Object.entries(row)) {
+    if (key === 'children') continue
+    node[key] = value
+  }
+  const children = row['children']
+  if (Array.isArray(children)) {
+    node.children = children
+      .map(toDataRecord)
+      .filter((record): record is Record<string, unknown> => record !== null)
+      .map(toDataRow)
+      .map(toTreeNode)
+  }
+  return node
+}
+
+function toDataRow(record: Record<string, unknown>): DataRow {
+  const row: DataRow = {}
+  for (const [key, value] of Object.entries(record)) {
+    row[key] = value
+  }
+  return row
+}
+
+function toDataRows(records: ReadonlyArray<Record<string, unknown>>): DataRow[] {
+  return records.map(toDataRow)
 }
 
 function resolveParentId(rawParentId: unknown): string | number | null {
@@ -95,12 +124,13 @@ function buildTreeSeedNodes(rows: readonly DataRow[], fields: TreeFieldNames): T
 }
 
 function buildNestedTreeRows(fields: TreeFieldNames, seedNodes: TreeManagerSeedNode[]): DataRow[] {
-  return SparkData.createTreeManager({
+  const nestedRows = SparkData.createTreeManager({
     idField: fields.idField,
     parentIdField: fields.parentIdField,
     textField: fields.textField,
     treeMode: 'nested',
-  }, seedNodes).buildNestedTree() as unknown as DataRow[]
+  }, seedNodes).buildNestedTree()
+  return toDataRows(nestedRows)
 }
 
 export function buildTreeTableRows(
@@ -114,7 +144,7 @@ export function buildTreeTableRows(
   if (!treeConfig) return toMutableRows(rows)
 
   if (view?.treeManager) {
-    return view.treeManager.buildNestedTree() as unknown as DataRow[]
+    return toDataRows(view.treeManager.buildNestedTree())
   }
 
   const fields = resolveTreeFieldNames(treeConfig, primaryKey)
@@ -143,7 +173,7 @@ export function useRendererTreeViewState(options: RendererTreeViewStateOptions):
 
     const view = options.dataState.resolvedView.value
     if (view?.treeManager) {
-      return view.treeManager.buildNestedTree() as unknown as TreeNode[]
+      return toTreeRows(toDataRows(view.treeManager.buildNestedTree()))
     }
 
     const fields = resolveTreeFieldNames(treeConfig.value, treeIdField.value)

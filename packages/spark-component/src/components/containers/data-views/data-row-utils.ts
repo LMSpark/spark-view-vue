@@ -1,10 +1,14 @@
 import type { DataRow } from '@spark-view/spark-data'
 
-const TREE_LABEL_FALLBACK_FIELDS = ['label', 'name', 'title'] as const
+const TREE_LABEL_FALLBACK_FIELDS: readonly ['label', 'name', 'title'] = ['label', 'name', 'title']
+
+export function isDataRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || value === undefined || typeof value !== 'object' || Array.isArray(value)) return false
+  return true
+}
 
 export function toDataRecord(value: unknown): Record<string, unknown> | null {
-  if (value === null || value === undefined || typeof value !== 'object' || Array.isArray(value)) return null
-  return value as Record<string, unknown>
+  return isDataRecord(value) ? value : null
 }
 
 export function readStringField(record: Record<string, unknown>, key: string): string | undefined {
@@ -13,7 +17,7 @@ export function readStringField(record: Record<string, unknown>, key: string): s
 }
 
 export function toMutableRows(rows: readonly DataRow[]): DataRow[] {
-  return rows as DataRow[]
+  return [...rows]
 }
 
 export function resolveTreeNodeText(

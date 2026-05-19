@@ -95,11 +95,10 @@ export function buildPageChildren(
     if (Array.isArray(value)) return value.map(bindValue)
     if (value === null || typeof value !== 'object') return value
 
-    const candidate = value as Record<string, unknown>
-    if (typeof candidate['type'] === 'string') return bindNode(candidate)
+    if (isSparkNode(value)) return bindNode(value)
 
     const normalizedObject: Record<string, unknown> = {}
-    for (const [key, nested] of Object.entries(candidate)) {
+    for (const [key, nested] of Object.entries(value)) {
       normalizedObject[key] = bindValue(nested)
     }
     return normalizedObject
@@ -117,8 +116,8 @@ export function buildPageChildren(
    * 4. 绑定 children
    * 5. 最后统一处理顶层 id 去重
    */
-  function bindNode(current: Record<string, unknown>): SparkNode {
-    const normalized = normalizeSparkNode(current as unknown as SparkNode)
+  function bindNode(current: SparkNode): SparkNode {
+    const normalized = normalizeSparkNode(current)
     const cloned: SparkNode = { type: normalized.type }
 
     // 仅复制合法 props 对象；数组/null/原始值都视为无 props。
@@ -137,7 +136,7 @@ export function buildPageChildren(
 
     // children 保持结构位置，不在绑定层做额外结构提升；这里只做递归绑定与类型收敛。
     if (Array.isArray(normalized.children)) {
-      const children = (normalized.children as unknown[]).map(bindValue).filter(isSparkChild)
+      const children = normalized.children.map(bindValue).filter(isSparkChild)
       if (children.length > 0) cloned.children = children
     }
 
@@ -158,5 +157,5 @@ export function buildPageChildren(
   }
 
   // 根级规则逐项绑定，保持输入顺序稳定。
-  return rules.map(rule => bindNode(rule as unknown as Record<string, unknown>))
+  return rules.map(bindNode)
 }

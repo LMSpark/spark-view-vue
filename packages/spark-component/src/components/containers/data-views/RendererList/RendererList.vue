@@ -115,6 +115,7 @@ import {
   nodeId,
   DATA_SOURCE,
   MODULE_CONTEXT,
+  type SparkNode,
 } from '../../../internal'
 import type { RListProps } from './RendererList.props'
 import type { DataView, DataRow } from '@spark-view/spark-data'
@@ -231,8 +232,8 @@ const itemGridStyle = computed<Record<string, string | number>>(() => ({
   minWidth: 0,
 }))
 
-const rawItemActionsToolbarConfig = computed(() => ({
-  type: 'r-toolbar' as const,
+const rawItemActionsToolbarConfig = computed<SparkNode>(() => ({
+  type: 'r-toolbar',
   children: itemActionConfigs.value,
 }))
 

@@ -210,7 +210,15 @@ interface TargetMethodSucceeded {
 type TargetMethodResult = TargetMethodMissing | TargetMethodSucceeded
 
 function useNamedMethod(target: unknown, methodName: string, params: unknown): TargetMethodResult {
-  const member: unknown = Reflect.get(target as object, methodName)
+  if (target === null || typeof target !== 'object') {
+    return {
+      ok: false,
+      code: 'METHOD_NOT_FOUND',
+      methodName,
+    }
+  }
+
+  const member: unknown = Reflect.get(target, methodName)
   if (typeof member !== 'function') {
     return {
       ok: false,
@@ -219,17 +227,26 @@ function useNamedMethod(target: unknown, methodName: string, params: unknown): T
     }
   }
 
-  const method = member as (this: object, params?: unknown) => unknown
   return {
     ok: true,
-    data: method.apply(target as object, [params]),
+    data: member.call(target, params),
   }
+}
+
+function hasToJson(value: object): value is { toJson: () => unknown } {
+  return 'toJson' in value && typeof value.toJson === 'function'
+}
+
+function readToJson(value: object): (() => unknown) | null {
+  if (!hasToJson(value)) return null
+  return () => value.toJson()
 }
 
 function toSerializableServiceData(value: unknown): unknown {
   if (value === null || typeof value !== 'object') return value
-  if (typeof (value as { toJson?: unknown }).toJson === 'function') {
-    return toSerializableServiceData((value as { toJson: () => unknown }).toJson())
+  const toJson = readToJson(value)
+  if (toJson !== null) {
+    return toSerializableServiceData(toJson())
   }
   if (Array.isArray(value)) return value.map(toSerializableServiceData)
 
@@ -237,8 +254,9 @@ function toSerializableServiceData(value: unknown): unknown {
   const serialized = JSON.stringify(value, (_key, nested: unknown) => {
     if (typeof nested === 'bigint') return nested.toString()
     if (nested === null || typeof nested !== 'object') return nested
-    if (typeof (nested as { toJson?: unknown }).toJson === 'function') {
-      return toSerializableServiceData((nested as { toJson: () => unknown }).toJson())
+    const nestedToJson = readToJson(nested)
+    if (nestedToJson !== null) {
+      return toSerializableServiceData(nestedToJson())
     }
     if (seen.has(nested)) return '[Circular]'
     seen.add(nested)

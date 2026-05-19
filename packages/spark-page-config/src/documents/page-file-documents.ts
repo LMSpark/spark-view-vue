@@ -122,7 +122,7 @@ export interface LoadFromTextOptions {
 }
 
 export interface PageFileDocument<TModel = unknown> {
-  readonly name: PageFileName
+  readonly name: string
   readonly model: PageConfigValueRef<TModel | null>
   readonly text: PageConfigComputedRef<string>
   readonly savedText: PageConfigValueRef<string>
@@ -393,7 +393,7 @@ function createPageDataDocument(): PageFileDocument<DataSetCrudTool> {
 
 const HISTORY_LIMIT = 100
 
-function createTextDocument(name: 'script.js' | 'style.css'): PageFileDocument<string> {
+function createTextDocument(name: string): PageFileDocument<string> {
   const changes = createDocumentChangeNotifier()
   const model = createValueRef<string | null>(null, changes.notify)
   const savedText = createValueRef('', changes.notify)
@@ -540,7 +540,7 @@ export function createPageDocumentsFromRegistry(
     } else if (name === 'pagedata.json') {
       result[name] = widenDocument(createPageDataDocument())
     } else {
-      result[name] = widenDocument(createTextDocument(name as 'script.js' | 'style.css'))
+      result[name] = widenDocument(createTextDocument(name))
     }
   }
   return result

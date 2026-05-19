@@ -41,7 +41,7 @@
       >
         <template #default="slotProps">
           <span class="custom-tree-node">
-            <RendererHostScope :row="(slotProps?.data as DataRow | undefined)">
+            <RendererHostScope :row="toScopeRow(slotProps?.data)">
               <template v-if="nodeContentChildren.length > 0">
                 <SparkComponentRenderer
                   v-for="(child, index) in nodeContentChildren"
@@ -107,7 +107,6 @@ import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
   type TreeNode,
-  type NativeTreeNodeLike,
   type NativeTreeLike,
   type ElTreeNode,
   type ElTreeComponent,
@@ -174,6 +173,10 @@ function getNodeLabel(data: unknown): string {
   return resolveTreeNodeText(node, labelField.value, '节点')
 }
 
+function toScopeRow(data: unknown): DataRow | undefined {
+  return toDataRecord(data) ?? undefined
+}
+
 const elTreeFieldProps = computed(() => ({
   children: 'children',
   label: labelField.value,
@@ -204,7 +207,7 @@ const showToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
 
-const nativeTreeRef = ref<unknown>(null)
+const nativeTreeRef = ref<NativeTreeLike | null>(null)
 
 const {
   treeApi,
@@ -236,7 +239,7 @@ watch(
   currentRow,
   async (nextCurrentRow) => {
     await nextTick()
-    const tree = nativeTreeRef.value as NativeTreeLike | null
+    const tree = nativeTreeRef.value
     if (!tree?.setCurrentKey) return
     const key = getNodeKey(nextCurrentRow)
     tree.setCurrentKey(key ?? null)
@@ -274,16 +277,16 @@ watch(
 
 async function applyExpandLevel(
   nextTreeData: TreeNode[],
-  treeRef: { value: unknown },
+  treeRef: { value: NativeTreeLike | null },
   resolveNodeKey: (data: unknown) => string | number | null,
   level: number,
 ): Promise<void> {
   if (!Number.isFinite(level) || level < 2) return
   await nextTick()
-  const tree = treeRef.value as NativeTreeLike | null
+  const tree = treeRef.value
   for (const key of collectExpandKeysByLevel(nextTreeData, resolveNodeKey, level)) {
     const nativeNode = tree?.getNode?.(key)
-    ;(nativeNode as NativeTreeNodeLike | undefined)?.expand?.()
+    nativeNode?.expand?.()
   }
 }
 

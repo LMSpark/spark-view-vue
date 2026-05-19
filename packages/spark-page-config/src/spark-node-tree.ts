@@ -594,7 +594,10 @@ export class SparkNodeTree {
       if (node) {
         const parentPath = path.slice(0, -1)
         const parent = parentPath.length > 0 ? this._findNodeByPath(parentPath) : null
-        const lastIndex: number = path[path.length - 1] as number
+        const lastIndex = path.at(-1)
+        if (lastIndex === undefined) {
+          throw new Error(`Path for node "${next.componentId}" is invalid`)
+        }
         return { node, parent, index: lastIndex, depth: path.length }
       }
     }
@@ -999,7 +1002,7 @@ function normalizeSetPropsBatchParams(
         `setPropsBatch.items[${index}].componentId`,
       ),
       props: requireRecord(item['props'], `setPropsBatch.items[${index}].props`),
-      ...(item['merge'] !== undefined ? { merge: item['merge'] as boolean } : {}),
+      ...(item['merge'] !== undefined ? { merge: requireBoolean(item['merge'], `setPropsBatch.items[${index}].merge`) } : {}),
     }
   })
   assertUniqueNodeIds(items.map((item) => item.componentId), 'setPropsBatch.items')
@@ -1074,6 +1077,13 @@ function requireNonEmptyString(value: string | undefined, fieldName: string): st
   return value
 }
 
+function requireBoolean(value: unknown, fieldName: string): boolean {
+  if (typeof value !== 'boolean') {
+    throw new Error(`${fieldName} must be a boolean`)
+  }
+  return value
+}
+
 /**
  * 断言输入是对象参数。
  */
@@ -1092,8 +1102,7 @@ function assertNodeLike(node: unknown, fieldName: string): asserts node is Spark
     throw new Error(`${fieldName} must be a SparkNode with a non-empty type`)
   }
 
-  const candidate = node as { type?: unknown }
-  if (typeof candidate.type !== 'string' || candidate.type.length === 0) {
+  if (!('type' in node) || typeof node.type !== 'string' || node.type.length === 0) {
     throw new Error(`${fieldName} must be a SparkNode with a non-empty type`)
   }
 }
@@ -1426,7 +1435,7 @@ function parseSparkNodeJsonInput(json: SparkNodeTreeJsonInput | SparkNodeTreeRul
   }
 
   try {
-    return JSON.parse(trimmed) as unknown
+    return JSON.parse(trimmed)
   } catch {
     throw new Error('fromJson.json must be valid JSON')
   }

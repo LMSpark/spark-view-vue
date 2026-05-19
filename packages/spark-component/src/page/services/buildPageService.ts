@@ -21,10 +21,14 @@ import type {
 import { createRequest, isRequestError } from '@spark-view/spark-utils'
 import { pageLogger } from './pageLogger'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
 /** 内部实现：ElMessageBox.confirm() 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常。这是 PageServiceCapability 内部实现细节，script.js 不能直接访问 ElMessageBox（已从沙箱移除）。 */
 function isElCancelAction(e: unknown): boolean {
   if (e === 'cancel') return true
-  return typeof e === 'object' && e !== null && (e as Record<string, unknown>)['action'] === 'cancel'
+  return isRecord(e) && e['action'] === 'cancel'
 }
 
 /** 可选的外部 UI 服务注入（测试 / Storybook 用） */
@@ -54,16 +58,24 @@ function mapFile(file: File): PageSelectedFile {
 }
 
 function extractUploadedUrl(response: unknown): string | undefined {
-  if (typeof response !== 'object' || response === null) return undefined
-  const record = response as Record<string, unknown>
-  const candidate = record['url'] ?? record['path'] ?? record['filePath'] ?? record['data']
+  if (!isRecord(response)) return undefined
+  const candidate = response['url'] ?? response['path'] ?? response['filePath'] ?? response['data']
   if (typeof candidate === 'string') return candidate
-  if (typeof candidate === 'object' && candidate !== null) {
-    const nested = candidate as Record<string, unknown>
-    const nestedCandidate = nested['url'] ?? nested['path'] ?? nested['filePath']
+  if (isRecord(candidate)) {
+    const nestedCandidate = candidate['url'] ?? candidate['path'] ?? candidate['filePath']
     return typeof nestedCandidate === 'string' ? nestedCandidate : undefined
   }
   return undefined
+}
+
+function stringifyQueryParams(params: Record<string, unknown>): Record<string, string> {
+  const query: Record<string, string> = {}
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      query[key] = String(value)
+    }
+  }
+  return query
 }
 
 function createFilePicker(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]> {
@@ -141,7 +153,7 @@ async function uploadSelectedFiles(options: PageUploadFilesOptions): Promise<Pag
 
     let responseData: unknown
     try {
-      responseData = await client.post<unknown>(options.action, formData, {
+      responseData = await client.post(options.action, formData, {
         ...(Object.keys(headers).length > 0 ? { headers } : {}),
         ...(options.withCredentials === true ? { withCredentials: true } : {}),
       })
@@ -255,9 +267,8 @@ export function buildPageService(
           inputValue:        defaultValue,
         })
         // ElMessageBox.prompt 结果类型是 MessageBoxData，需要运行时检查
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return typeof result === 'object' && result !== null && 'value' in result
-          ? (result as { value: string }).value
+        return isRecord(result) && typeof result['value'] === 'string'
+          ? result['value']
           : null
       } catch (e) {
         if (!isElCancelAction(e)) {
@@ -322,7 +333,7 @@ export function buildPageService(
     },
 
     navigate: (path, params) => {
-      router.push(params ? { path, query: params as Record<string, string> } : path)
+      router.push(params ? { path, query: stringifyQueryParams(params) } : path)
         .catch((err: unknown) => { pageLogger.warn('导航失败', { path, error: err }) })
     },
   }

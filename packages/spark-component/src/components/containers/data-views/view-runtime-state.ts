@@ -11,6 +11,7 @@ import {
 } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import { extractModelPermission } from '../../../permission/index.js'
+import type { ModelPermissionSource } from '../../../permission/index.js'
 import { toDataRecord } from './data-row-utils.js'
 import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
 
@@ -80,14 +81,25 @@ export type DataViewState = DataViewRuntimeState & ContainerDataViewContextState
 /** 聚合结果运行时类型（key -> 聚合值）。 */
 export type AggregateResultState = Readonly<Record<string, unknown>>
 
-/** resolvedView 的标准 ref 形态。 */
-export type ResolvedViewRef = ValueRef<DataView | null>
+/** resolvedView 的标准只读 ref 形态。 */
+export interface ResolvedViewRef {
+  readonly value: DataView | null
+}
 
 const EMPTY_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_ROWS: readonly DataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
+
+function isModelPermissionSource(value: unknown): value is ModelPermissionSource {
+  if (value === null || typeof value !== 'object') return false
+  return !('_modelPerm' in value) || (typeof value._modelPerm === 'object' && value._modelPerm !== null)
+}
+
+function readModelPermissionSource(value: unknown): ModelPermissionSource | null {
+  return isModelPermissionSource(value) ? value : null
+}
 
 interface DataViewRuntimeRevisions {
   rowsRevision: ValueRef<number>
@@ -217,7 +229,7 @@ export function useDataViewState(
 
   const _modelPerm = computed<DataSource['_modelPerm']>(() => {
     revisions.configRevision.value
-    return (resolvedView.value as DataSource | null)?._modelPerm
+    return readModelPermissionSource(resolvedView.value)?._modelPerm
   })
   const value = computed<DataSource['value']>(() => {
     revisions.selectionRevision.value
@@ -284,7 +296,7 @@ export function useDataViewState(
 
   const modelPermission = computed<ModelPermission | undefined>(() => {
     revisions.configRevision.value
-    return extractModelPermission(resolvedView.value as DataSource | null)
+    return extractModelPermission(readModelPermissionSource(resolvedView.value))
   })
 
   return {

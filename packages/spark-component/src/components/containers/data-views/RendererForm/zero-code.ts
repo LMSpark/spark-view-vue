@@ -13,6 +13,13 @@ interface NativeFormLike {
   clearValidate?: () => void
 }
 
+function isNativeFormLike(value: unknown): value is NativeFormLike {
+  if (typeof value !== 'object' || value === null) return false
+  return (!('validate' in value) || typeof value.validate === 'function')
+    && (!('resetFields' in value) || typeof value.resetFields === 'function')
+    && (!('clearValidate' in value) || typeof value.clearValidate === 'function')
+}
+
 interface RendererFormZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
@@ -35,10 +42,10 @@ export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions)
       return formModel
     },
     getNativeForm() {
-      return getNativeRefValue<NativeFormLike>(nativeFormRef)
+      return getNativeRefValue(nativeFormRef, isNativeFormLike)
     },
     async validate() {
-      const form = getNativeRefValue<NativeFormLike>(nativeFormRef)
+      const form = getNativeRefValue(nativeFormRef, isNativeFormLike)
       if (!form || typeof form.validate !== 'function') return true
       try {
         return await form.validate()
@@ -47,12 +54,12 @@ export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions)
       }
     },
     resetFields() {
-      const form = getNativeRefValue<NativeFormLike>(nativeFormRef)
+      const form = getNativeRefValue(nativeFormRef, isNativeFormLike)
       if (!form || typeof form.resetFields !== 'function') return
       form.resetFields()
     },
     clearValidate() {
-      const form = getNativeRefValue<NativeFormLike>(nativeFormRef)
+      const form = getNativeRefValue(nativeFormRef, isNativeFormLike)
       if (!form || typeof form.clearValidate !== 'function') return
       form.clearValidate()
     },

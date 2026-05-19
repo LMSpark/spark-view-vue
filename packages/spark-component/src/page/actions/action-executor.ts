@@ -207,7 +207,34 @@ export async function executeActionDescriptor(
 
 /** 提取 descriptor 上的 UI 装饰字段（data-mutating 类型才有，其他类型安全转型取 undefined）。 */
 function decoratorOf(descriptor: ActionDescriptor): ActionUiDecorator | undefined {
-  return descriptor as ActionUiDecorator
+  switch (descriptor.action) {
+    case 'show-message':
+    case 'confirm':
+    case 'alert':
+    case 'navigate':
+    case 'open':
+    case 'set-field':
+      return undefined
+    case 'append-row':
+    case 'delete':
+    case 'patch':
+    case 'move':
+    case 'message-row':
+    case 'refresh':
+    case 'clear-rows':
+    case 'submit-current-form':
+    case 'save-dataset':
+      return descriptor
+    default:
+      return undefined
+  }
+}
+
+function readUnknownActionName(value: unknown): string {
+  if (value !== null && typeof value === 'object' && 'action' in value) {
+    if (typeof value.action === 'string') return value.action
+  }
+  return 'unknown'
 }
 
 /**
@@ -307,7 +334,7 @@ async function dispatchAction(
       return
     default: {
       const exhaustive: never = descriptor
-      logger.warn(`未知 action 类型: ${(exhaustive as { action: string }).action}`)
+      logger.warn(`未知 action 类型: ${readUnknownActionName(exhaustive)}`)
     }
   }
 }

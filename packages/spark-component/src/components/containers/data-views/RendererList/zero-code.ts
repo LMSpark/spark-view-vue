@@ -1,5 +1,6 @@
 import type { DataView, DataRow } from '@spark-view/spark-data'
 import { createContainerCrudContext } from '../zero-code-shared.js'
+import { isDataRecord } from '../data-row-utils.js'
 import type { RendererListApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -18,7 +19,9 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
     eventDefaults: {
       'item-click': {
         systemDefault: (row: unknown) => {
-          resolvedView.value?.setCurrentRow(row as DataRow)
+          if (isDataRow(row)) {
+            resolvedView.value?.setCurrentRow(row)
+          }
         },
       },
     },
@@ -27,7 +30,7 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
   const listApi: RendererListApi = {
     ...baseMethods,
     getRows() {
-      return rows.value as DataRow[]
+      return [...rows.value]
     },
     getItemCount() {
       return rows.value.length
@@ -38,4 +41,8 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
     dispatch,
     listApi,
   }
+}
+
+function isDataRow(value: unknown): value is DataRow {
+  return isDataRecord(value)
 }

@@ -2,7 +2,7 @@ import type { DataView, DataRow } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { getSelectedRows } from '../../../../page/actions/index.js'
 import { createContainerCrudContext, getNativeRefValue } from '../zero-code-shared.js'
-import { toDataRecord } from '../data-row-utils.js'
+import { isDataRecord, toDataRecord } from '../data-row-utils.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -24,9 +24,28 @@ interface RendererTableZeroCodeOptions {
   logger: LoggerApi
 }
 
-type LoadTreePathResult = Awaited<ReturnType<RendererTableApi['loadTreePath']>>
+function isDataRow(value: unknown): value is DataRow {
+  return isDataRecord(value)
+}
 
-function stripSyntheticTreeName<T>(value: T, textField: string | undefined): T {
+function toDataRows(value: unknown): DataRow[] {
+  return Array.isArray(value) ? value.filter(isDataRow) : []
+}
+
+function isNativeTableLike(value: unknown): value is NativeTableLike {
+  if (typeof value !== 'object' || value === null) return false
+  const clearSelection = Reflect.get(value, 'clearSelection')
+  const toggleRowSelection = Reflect.get(value, 'toggleRowSelection')
+  const setCurrentRow = Reflect.get(value, 'setCurrentRow')
+  const doLayout = Reflect.get(value, 'doLayout')
+  return (clearSelection === undefined || typeof clearSelection === 'function')
+    && (toggleRowSelection === undefined || typeof toggleRowSelection === 'function')
+    && (setCurrentRow === undefined || typeof setCurrentRow === 'function')
+    && (doLayout === undefined || typeof doLayout === 'function')
+}
+
+function stripSyntheticTreeName<T>(value: T, textField: string | undefined): T
+function stripSyntheticTreeName(value: unknown, textField: string | undefined): unknown {
   if (textField === undefined || textField === 'name') return value
 
   if (Array.isArray(value)) {
@@ -36,7 +55,7 @@ function stripSyntheticTreeName<T>(value: T, textField: string | undefined): T {
       if (nextItem !== item) changed = true
       return nextItem
     })
-    return (changed ? nextValue : value) as T
+    return changed ? nextValue : value
   }
 
   const record = toDataRecord(value)
@@ -59,10 +78,11 @@ function stripSyntheticTreeName<T>(value: T, textField: string | undefined): T {
     nextValue[key] = nextEntryValue
   }
 
-  return (changed ? nextValue : value) as T
+  return changed ? nextValue : value
 }
 
-function sanitizeTreePayload<T>(value: T, view: DataView | null | undefined): T {
+function sanitizeTreePayload<T>(value: T, view: DataView | null | undefined): T
+function sanitizeTreePayload(value: unknown, view: DataView | null | undefined): unknown {
   return stripSyntheticTreeName(value, view?.treeConfig?.textField)
 }
 
@@ -82,15 +102,16 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       'current-change': {
         systemDefault: (currentRow: unknown) => {
           resolvedView.value?.selection.setCurrentRow(
-            (currentRow as DataRow | null) ?? null,
+            isDataRow(currentRow) ? currentRow : null,
             currentRowOriginatorId,
           )
         },
       },
       'row-click': {
         systemDefault: (row: unknown) => {
+          if (!isDataRow(row)) return
           resolvedView.value?.selection.setCurrentRow(
-            row as DataRow,
+            row,
             currentRowOriginatorId,
           )
         },
@@ -98,7 +119,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       'selection-change': {
         systemDefault: (selection: unknown) => {
           resolvedView.value?.selection.setSelectedRows(
-            selection as DataRow[],
+            toDataRows(selection),
             selectedRowsOriginatorId,
           )
         },
@@ -107,7 +128,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
   })
 
   function getNativeTable() {
-    return getNativeRefValue<NativeTableLike>(nativeTableRef)
+    return getNativeRefValue(nativeTableRef, isNativeTableLike)
   }
 
   const tableApi: RendererTableApi = {
@@ -141,7 +162,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       const view = resolvedView.value
       if (!view) return null
       const result = await view.loadTreePath(id)
-      return sanitizeTreePayload(result, view) as LoadTreePathResult
+      return sanitizeTreePayload(result, view)
     },
     async expandToNode(key) {
       const view = resolvedView.value
