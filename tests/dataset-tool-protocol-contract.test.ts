@@ -15,12 +15,19 @@ function isActiveFunction(functionId: string): boolean {
   return functionId.length > 0
 }
 
-function propertiesOf(schema: unknown): Record<string, unknown> {
-  expect(schema).toMatchObject({ properties: expect.any(Object) })
-  return (schema as { properties: Record<string, unknown> }).properties
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-const DATASET_ROWS = new DatasetModule().functions
+function propertiesOf(schema: unknown): Record<string, unknown> {
+  expect(schema).toMatchObject({ properties: expect.any(Object) })
+  if (!isRecord(schema) || !isRecord(schema['properties'])) {
+    throw new Error('schema.properties must be an object')
+  }
+  return schema['properties']
+}
+
+const DATASET_ROWS = new DatasetModule().getFunctions()
 
 function getRow(functionId: string) {
   return DATASET_ROWS.find(r => r.functionId === functionId)

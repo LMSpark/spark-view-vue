@@ -26,14 +26,12 @@ export type StaticAiToolModuleOptions = {
   readonly name: string
   readonly description: string
   readonly prompt?: ModulePromptProvider | undefined
-  readonly functions?: readonly AiFunctionRegistration[] | undefined
+  readonly functionRegistrations?: readonly AiFunctionRegistration[] | undefined
   readonly modules?: readonly AiModuleRegistration[] | undefined
   readonly instanceParam?: AiModuleInstanceParam | undefined
 }
 
 export abstract class StaticAiToolModule extends AiModuleRegistrationBase {
-  readonly entity: Record<string, () => unknown> = {}
-
   private readonly functionRegistrations: readonly AiFunctionRegistration[]
 
   protected constructor(options: StaticAiToolModuleOptions) {
@@ -45,11 +43,7 @@ export abstract class StaticAiToolModule extends AiModuleRegistrationBase {
       options.modules ?? [],
       options.instanceParam,
     )
-    this.functionRegistrations = options.functions ?? []
-  }
-
-  get functions(): readonly AiFunctionRegistration[] {
-    return this.functionRegistrations
+    this.functionRegistrations = options.functionRegistrations ?? []
   }
 
   override getFunctions(): readonly AiFunctionRegistration[] {
@@ -86,15 +80,12 @@ export type RuntimeBackedBusinessModuleOptions = StaticAiToolModuleOptions & {
 }
 
 export abstract class RuntimeBackedBusinessModule extends StaticAiToolModule {
-  readonly businessId: string
-
   protected readonly core: AiRuntime
 
   protected readonly ai: AiRegisteredModuleApi
 
   protected constructor(options: RuntimeBackedBusinessModuleOptions) {
     super(options)
-    this.businessId = options.moduleId
     this.core = options.runtime ?? new AiRuntime(options.runtimeOptions ?? {})
     this.ai = this.core.registerModule(this)
   }
@@ -167,29 +158,8 @@ export abstract class RuntimeBackedBusinessModule extends StaticAiToolModule {
     return this.ai.getRegistrationData()
   }
 
-  getBusinessRegistrationData() {
-    const data = this.getRegistrationData()
-    return {
-      businessId: data.moduleId,
-      name: data.name,
-      description: data.description,
-      ...(data.prompt === undefined ? {} : { prompt: data.prompt }),
-      ...(data.instanceParam === undefined ? {} : { instanceParam: data.instanceParam }),
-      functions: data.functions,
-      modules: data.modules,
-    }
-  }
-
   getRegistrationStoreSnapshot() {
     return this.ai.getRegistrationStoreSnapshot()
-  }
-
-  getBusinessRegistrationStoreSnapshot() {
-    const snapshot = this.getRegistrationStoreSnapshot()
-    return {
-      rootBusinessPath: snapshot.rootModulePath,
-      ...snapshot,
-    }
   }
 
   async translateFunctionCall(

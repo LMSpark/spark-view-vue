@@ -91,7 +91,7 @@ export class NodeTreeModule extends StaticAiToolModule {
       name: 'Page Design Node Tree',
       description: '当前页面 SparkNodeTree/rule.json 结构读写。',
       prompt: '当前页面 SparkNodeTree/rule.json 结构读写。',
-      functions: NODE_TREE_FUNCTIONS,
+      functionRegistrations: NODE_TREE_FUNCTIONS,
     })
   }
 }

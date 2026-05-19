@@ -1,12 +1,12 @@
 /**
  * @packageDocumentation
  * 运行时协议总出口 — 按消费者分类：
- * 1. 业务注册契约（business-registration）
+ * 1. 模块注册契约（business-registration）
  * 2. 会话事件协议（session-events）
  * 3. Core 内部运行时协议（runtime-protocol）
  * 4. AI Host 交互协议（host-protocol）
  *
- * 所有类型均从分类文件中 re-export，保持向后兼容。
+ * 所有类型均从分类文件中 re-export，作为 class-first runtime 契约面。
  */
 
 // ── 业务注册 ──
@@ -22,17 +22,13 @@ export type {
   AiRuntimeFunctionId,
   FunctionFailureMode,
   AiFunctionRegistration,
-  IModuleRegistration,
   AiModuleRegistration,
-  IBusinessRegistration,
   AiModuleRegistrationData,
-  IBusinessRegistrationData,
   AiModuleRegistrationStoreModule,
   AiFunctionRegistrationStoreFunction,
   AiFunctionRegistrationUsageRule,
   AiFunctionRegistrationFailureMode,
   AiModuleRegistrationStoreSnapshot,
-  IBusinessRegistrationStoreSnapshot,
   AiModuleInstanceParam,
   ModulePromptProvider,
   ModulePromptContext,
@@ -88,7 +84,6 @@ export type {
   AiRuntimeProjectKnowledgeOptions,
   AiRuntimeOptions,
   AiRegisteredModuleApi,
-  AiRegisteredBusinessApi,
   AiRuntimeApi,
 } from './runtime-protocol'
 

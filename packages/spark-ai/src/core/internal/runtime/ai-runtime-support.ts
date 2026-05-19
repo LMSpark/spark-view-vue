@@ -16,6 +16,7 @@ import type {
   AiRuntimeInstanceScope,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
+import { AiModuleRegistrationBase } from '../../protocol/runtime-contracts'
 import type { LlmJsonObject, LlmJsonSchema, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../llm-params-validator'
 import { cloneRuntimeValue, isRecord } from './runtime-utils'
@@ -86,22 +87,46 @@ function cloneRegistrationJsonObject(value: unknown, path: string): LlmJsonObjec
   return cloned
 }
 
-interface ProjectModuleOptions {
+type ProjectModuleOptions = {
   /** 当前要投影的模块注册。 */
-  module: AiModuleRegistration
+  readonly module: AiModuleRegistration
   /** 调用方传入的会话 scope。 */
-  scope: AiRuntimeInstanceScope
+  readonly scope: AiRuntimeInstanceScope
   /** 父级模块路径 ID，用于递归拼接 modulePath。 */
-  parentIds: readonly string[]
+  readonly parentIds: readonly string[]
   /** 父级模块实例参数，用于注入子函数 schema。 */
-  parentContextParams: readonly AiRuntimeFunctionContextParam[]
+  readonly parentContextParams: readonly AiRuntimeFunctionContextParam[]
 }
 
-interface RegistrationStoreBuildState {
+type RegistrationStoreBuildState = {
   readonly modules: AiModuleRegistrationStoreModule[]
   readonly functions: AiFunctionRegistrationStoreFunction[]
   readonly usageRules: AiFunctionRegistrationUsageRule[]
   readonly failureModes: AiFunctionRegistrationFailureMode[]
+}
+
+class DataBackedAiModuleRegistration extends AiModuleRegistrationBase {
+  private readonly functionRegistrations: readonly AiFunctionRegistration[]
+
+  constructor(
+    data: AiModuleRegistrationData,
+    modules: readonly AiModuleRegistration[],
+    functionRegistrations: readonly AiFunctionRegistration[],
+  ) {
+    super(
+      data.moduleId,
+      data.name,
+      data.description,
+      data.prompt,
+      modules,
+      data.instanceParam === undefined ? undefined : { ...data.instanceParam },
+    )
+    this.functionRegistrations = functionRegistrations
+  }
+
+  override getFunctions(): readonly AiFunctionRegistration[] {
+    return this.functionRegistrations
+  }
 }
 
 /** 负责把递归模块注册树投影成 LLM 可见知识的无状态工具。 */
@@ -377,15 +402,11 @@ export class AiRuntimeProjector {
   private runtimeRegistrationFromData(data: AiModuleRegistrationData, modulePath: string): AiModuleRegistration {
     const modules = data.modules.map((child) => this.runtimeRegistrationFromData(child, `${modulePath}/${child.moduleId}`))
     const functions = data.functions.map((definition) => this.functionRegistrationFromData(definition, modulePath))
-    return {
-      moduleId: data.moduleId,
-      name: data.name,
-      description: data.description,
-      ...(data.prompt !== undefined ? { prompt: data.prompt } : {}),
-      ...(data.instanceParam !== undefined ? { instanceParam: { ...data.instanceParam } } : {}),
+    return new DataBackedAiModuleRegistration(
+      data,
       modules,
-      getFunctions: () => functions.map((definition) => this.cloneFunctionRegistration(definition, modulePath)),
-    }
+      functions.map((definition) => this.cloneFunctionRegistration(definition, modulePath)),
+    )
   }
 
   /** 将纯数据函数注册适配成运行时函数注册。 */

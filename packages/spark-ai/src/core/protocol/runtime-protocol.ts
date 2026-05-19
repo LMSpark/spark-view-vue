@@ -16,9 +16,6 @@ import type {
   AiRuntimeModuleInstanceId,
   AiRuntimeModulePath,
   FunctionFailureMode,
-  IBusinessRegistration,
-  IBusinessRegistrationData,
-  IBusinessRegistrationStoreSnapshot,
 } from './business-registration'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
 import type {
@@ -220,16 +217,7 @@ export interface AiRegisteredModuleApi {
   createFunctionResultMessage(options: AiRuntimeCreateFunctionResultMessageOptions): AiRuntimeFunctionResultMessage
 }
 
-export interface AiRegisteredBusinessApi extends AiRegisteredModuleApi {
-  readonly businessId: AiRuntimeModuleId
-  readonly businessRegistration: IBusinessRegistration
-  getBusinessRegistration(): IBusinessRegistration
-  getBusinessRegistrationData(): IBusinessRegistrationData
-  getBusinessRegistrationStoreSnapshot(): IBusinessRegistrationStoreSnapshot
-}
-
 export interface AiRuntimeApi {
-  registerBusiness(source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi
   registerModule(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi
   getKnowledgeProjection(): unknown
 }

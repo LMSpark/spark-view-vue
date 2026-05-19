@@ -16,24 +16,7 @@ const AI_CORE_AND_CONSUMER_SOURCE_ROOTS: readonly string[] = [
   ...CONSUMER_SOURCE_ROOTS,
 ]
 
-const FUNCTION_COMPATIBILITY_FILES: readonly string[] = [
-  'packages/spark-ai/src/registrations/internal/registration-base.ts',
-]
-
-const CORE_LEGACY_COMPATIBILITY_FILES: readonly string[] = [
-  'packages/spark-ai/src/core/index.ts',
-  'packages/spark-ai/src/core/host/types.ts',
-  'packages/spark-ai/src/core/internal/runtime/ai-business-registration-adapter.ts',
-  'packages/spark-ai/src/core/internal/runtime/ai-registered-api-factory.ts',
-  'packages/spark-ai/src/core/internal/runtime/ai-registration-repository.ts',
-  'packages/spark-ai/src/core/internal/runtime/ai-runtime.ts',
-  'packages/spark-ai/src/core/protocol/business-registration.ts',
-  'packages/spark-ai/src/core/protocol/runtime-contracts.ts',
-  'packages/spark-ai/src/core/protocol/runtime-protocol.ts',
-]
-
 const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAiRegisteredBusinessApi\b|\bregisterBusiness\s*\(|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
-const LEGACY_CORE_COMPATIBILITY_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAiRegisteredBusinessApi\b|\bregisterBusiness\s*\(/
 const LEGACY_FUNCTIONS_READ_RE = /\.functions\b/
 const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/
 
@@ -110,7 +93,7 @@ function collectSourceFiles(root: string): string[] {
 }
 
 function legacyRegistrationSourceViolations(): string[] {
-  return CONSUMER_SOURCE_ROOTS
+  return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
     .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
@@ -123,27 +106,11 @@ function legacyRegistrationSourceViolations(): string[] {
 }
 
 function legacyFunctionsReadViolations(): string[] {
-  const compatibilityFiles = new Set(FUNCTION_COMPATIBILITY_FILES.map((file) => join(process.cwd(), file)))
   return collectSourceFiles(join(process.cwd(), 'packages/spark-ai/src/registrations'))
-    .filter((file) => !compatibilityFiles.has(file))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       return content.split(/\r?\n/).flatMap((line, index) => (
         LEGACY_FUNCTIONS_READ_RE.test(line)
-          ? [`${relative(process.cwd(), file)}:${index + 1}`]
-          : []
-      ))
-    })
-}
-
-function legacyCoreCompatibilityViolations(): string[] {
-  const compatibilityFiles = new Set(CORE_LEGACY_COMPATIBILITY_FILES.map((file) => join(process.cwd(), file)))
-  return collectSourceFiles(join(process.cwd(), 'packages/spark-ai/src/core'))
-    .filter((file) => !compatibilityFiles.has(file))
-    .flatMap((file) => {
-      const content = readFileSync(file, 'utf8')
-      return content.split(/\r?\n/).flatMap((line, index) => (
-        LEGACY_CORE_COMPATIBILITY_RE.test(line)
           ? [`${relative(process.cwd(), file)}:${index + 1}`]
           : []
       ))
@@ -184,7 +151,7 @@ describe('ai runtime class-only public surface', () => {
     expect(typeof SparkAiHost.AiHostBusinessRegistry).toBe('function')
   })
 
-  it('keeps class-first registrations compatible with legacy function reads', () => {
+  it('exposes class-first registrations without legacy compatibility fields', () => {
     const lifecycle = new SparkAi.LifecycleModule()
     const leaveRegistration = new SparkAi.LeaveRequestModuleRegistration()
     const leaveModule = new SparkAi.LeaveRequestModule()
@@ -194,67 +161,35 @@ describe('ai runtime class-only public surface', () => {
       },
     })
 
-    expect(lifecycle.getFunctions()).toBe(lifecycle.functions)
-    expect(lifecycle.functions.length).toBeGreaterThan(0)
-    expect(lifecycle.entity).toEqual({})
+    expect(lifecycle.getFunctions().length).toBeGreaterThan(0)
+    expect('functions' in lifecycle).toBe(false)
+    expect('entity' in lifecycle).toBe(false)
 
-    expect(leaveRegistration.getFunctions()).toBe(leaveRegistration.functions)
-    expect(leaveRegistration.functions.length).toBeGreaterThan(0)
+    expect(leaveRegistration.getFunctions().length).toBeGreaterThan(0)
+    expect('functions' in leaveRegistration).toBe(false)
 
-    expect(leaveModule.businessId).toBe('manualLeave')
-    expect(leaveModule.entity).toEqual({})
-    expect(leaveModule.getFunctions()).toBe(leaveModule.functions)
-    expect(pageDesignModule.getFunctions()).toBe(pageDesignModule.functions)
-    expect(pageDesignModule.functions).toEqual([])
+    expect('businessId' in leaveModule).toBe(false)
+    expect('entity' in leaveModule).toBe(false)
+    expect(leaveModule.getFunctions().length).toBeGreaterThan(0)
+    expect(pageDesignModule.getFunctions()).toEqual([])
     expect(leaveModule.getRegistrationData()).toMatchObject({
       moduleId: 'manualLeave',
       description: '帮助员工收集、确认并提交人工请假申请。',
       prompt: expect.stringContaining('你正在处理人工请假业务'),
       functions: expect.any(Array),
     })
-    expect(leaveModule.getBusinessRegistrationData()).toMatchObject({
-      businessId: 'manualLeave',
-      description: '帮助员工收集、确认并提交人工请假申请。',
-      functions: expect.any(Array),
-    })
     expect(leaveModule.getRegistrationStoreSnapshot()).toMatchObject({
       rootModulePath: 'manualLeave',
     })
-    expect(leaveModule.getBusinessRegistrationStoreSnapshot()).toMatchObject({
-      rootBusinessPath: 'manualLeave',
-      rootModulePath: 'manualLeave',
-    })
   })
 
-  it('keeps legacy business registration entrypoint available on core only', () => {
+  it('removes legacy business registration entrypoints from core', () => {
     const core = new SparkAi.AiRuntime()
-    const api = core.registerBusiness({
-      moduleId: 'legacyBusiness',
-      businessId: 'legacyBusiness',
-      name: 'Legacy business',
-      entity: {},
-      prompt: 'Legacy prompt.',
-      functions: [],
-    })
-
-    expect(api.businessId).toBe('legacyBusiness')
-    expect(api.getBusinessRegistrationData()).toMatchObject({
-      businessId: 'legacyBusiness',
-      description: 'Legacy prompt.',
-      prompt: 'Legacy prompt.',
-    })
-    expect(api.getBusinessRegistrationStoreSnapshot()).toMatchObject({
-      rootBusinessPath: 'legacyBusiness',
-      rootModulePath: 'legacyBusiness',
-    })
+    expect('registerBusiness' in core).toBe(false)
   })
 
-  it('keeps consumer registrations off legacy registration contracts and entrypoints', () => {
+  it('keeps ai core and consumers off legacy registration contracts and entrypoints', () => {
     expect(legacyRegistrationSourceViolations()).toEqual([])
-  })
-
-  it('keeps legacy business compatibility isolated inside core compatibility boundaries', () => {
-    expect(legacyCoreCompatibilityViolations()).toEqual([])
   })
 
   it('keeps runtime-backed modules on getFunctions as the primary function path', () => {

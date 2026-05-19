@@ -100,7 +100,7 @@ export class TextModelModule extends StaticAiToolModule {
       name: 'Page Design Text Model',
       description: '当前页面 script.js/style.css live 文本模型读写。',
       prompt: '当前页面 script.js/style.css live 文本模型读写。',
-      functions: TEXT_MODEL_FUNCTIONS,
+      functionRegistrations: TEXT_MODEL_FUNCTIONS,
     })
   }
 }

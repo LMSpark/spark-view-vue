@@ -1,10 +1,7 @@
 import type {
-  IBusinessRegistration,
   AiModuleRegistration,
-  AiRegisteredBusinessApi,
   AiRegisteredModuleApi,
 } from '../../protocol/runtime-contracts'
-import { aiBusinessRegistrationAdapter } from './ai-business-registration-adapter'
 import type { AiRegistrationRepository } from './ai-registration-repository'
 import type { AiSessionLedger } from './ai-session-ledger'
 import type { AiProjectionService } from './ai-projection-service'
@@ -52,18 +49,6 @@ export class AiRegisteredApiFactory {
     }
   }
 
-  createRegisteredBusinessApi(moduleApi: AiRegisteredModuleApi): AiRegisteredBusinessApi {
-    const businessId = moduleApi.moduleId
-    const businessRegistration: IBusinessRegistration = aiBusinessRegistrationAdapter.moduleToBusinessRegistration(moduleApi.getRegistration())
-    return {
-      ...moduleApi,
-      businessId,
-      businessRegistration,
-      getBusinessRegistration: () => aiBusinessRegistrationAdapter.moduleToBusinessRegistration(moduleApi.getRegistration()),
-      getBusinessRegistrationData: () => aiBusinessRegistrationAdapter.moduleDataToBusinessData(moduleApi.getRegistrationData()),
-      getBusinessRegistrationStoreSnapshot: () => aiBusinessRegistrationAdapter.moduleStoreToBusinessStoreSnapshot(moduleApi.getRegistrationStoreSnapshot()),
-    }
-  }
 }
 
 function missingRegistrationData(moduleId: string): never {

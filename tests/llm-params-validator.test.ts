@@ -6,7 +6,7 @@ import {
   type LlmParameterSchemaRoot,
 } from '../packages/spark-ai/src'
 
-const DATASET_ROWS = new DatasetModule().functions
+const DATASET_ROWS = new DatasetModule().getFunctions()
 
 function validateDatasetParams(functionId: string, args: unknown): string | null {
   const row = DATASET_ROWS.find(r => r.functionId === functionId)

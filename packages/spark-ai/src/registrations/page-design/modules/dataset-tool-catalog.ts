@@ -295,7 +295,7 @@ export class DatasetModule extends StaticAiToolModule {
       name: 'Page Design DataSet',
       description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
       prompt: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
-      functions: DATASET_FUNCTIONS,
+      functionRegistrations: DATASET_FUNCTIONS,
     })
   }
 }

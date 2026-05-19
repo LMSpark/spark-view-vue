@@ -230,15 +230,15 @@ export class PageDataLoader extends BaseDataLoader {
 
 `packages/spark-ai` 的 AI core 采用 class-first 主路径：
 
-- `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 只作为 core 公共兼容契约保留，不作为新消费层实现方式。
-- `packages/spark-ai/src/registrations/**` 与 `src/services/app-ai/**` 不得继续 `implements I*` 注册类型，也不得把旧 `I*` 注册类型作为显式返回类型或字段类型。
+- `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 等旧兼容契约已删除；AI core、registrations、app-ai 都不得重新引入。
+- `packages/spark-ai/src/registrations/**` 与 `src/services/app-ai/**` 不得 `implements I*` 注册类型，也不得把旧 `I*` 注册类型作为显式返回类型或字段类型。
 - 新增注册模块优先继承或组合已有 class：`AiModuleRegistrationBase`、`StaticAiToolModule`、`RuntimeBackedBusinessModule`，或在本地建立清晰的 class 层次。
 - 注册对象不要使用匿名 `class extends ...`；需要临时注册层时也使用具名本地 class。
 - AI core 与消费层不得用 `as` 类型断言绕过 TypeScript 检查；需要收窄 unknown 时使用类型守卫、显式返回类型、`satisfies` 或运行时校验后构造 typed object。
-- 消费层注册运行时必须走 `registerModule()` / module-bound API 主路径；`registerBusiness()` 只留给 core 公共兼容面。
+- 注册运行时必须走 `registerModule()` / module-bound API 主路径；不得重新添加 `registerBusiness()` 或 `AiRegisteredBusinessApi`。
 - 消费层不得依赖 `AiRegisteredBusinessApi`、相对包根 `../index`、`../core`、`../../core`、`../core/host` 等 barrel 入口；同包内部按 protocol/internal/host 的具体文件导入，应用层只使用公开 subpath（如 `@spark-view/spark-ai/host`）。
-- runtime 主路径使用 `getFunctions()`；`.functions` 只用于兼容旧读取方式。静态模块函数表用模块级常量传入 `super({ functions })`，不要在子类里覆盖 `functions` 属性。
-- 只有 core 公共协议、`AiRuntime.registerBusiness()` 兼容入口、registration repository/factory 和 `AiBusinessRegistrationAdapter` 可以出现旧 `I*` 兼容命名；其他 core 文件不得新增旧业务注册协议引用。
+- runtime 主路径使用 `getFunctions()`；不得重新添加 `.functions` 兼容读取。静态模块函数表用模块级常量传入 `super({ functionRegistrations })`，不要在子类里覆盖 `functions` 属性。
+- core 内部不得重新添加旧业务注册适配器、旧 business registration data/store snapshot 转换器或任何旧 `I*` 兼容命名。
 
 ## 编码前判断清单
 

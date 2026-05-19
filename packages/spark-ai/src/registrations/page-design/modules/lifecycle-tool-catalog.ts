@@ -63,7 +63,7 @@ export class LifecycleModule extends StaticAiToolModule {
       name: 'Page Design Lifecycle',
       description: '页面设计编辑运行态引导与进度查询。',
       prompt: '页面设计编辑运行态引导与进度查询。',
-      functions: LIFECYCLE_FUNCTIONS,
+      functionRegistrations: LIFECYCLE_FUNCTIONS,
     })
   }
 }

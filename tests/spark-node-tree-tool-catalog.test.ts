@@ -4,7 +4,7 @@ import {
   NodeTreeModule,
 } from '../packages/spark-ai/src/registrations/page-design/modules/node-tree-tool-catalog'
 
-const NODE_TREE_ROWS = new NodeTreeModule().functions
+const NODE_TREE_ROWS = new NodeTreeModule().getFunctions()
 
 function getRow(functionId: string) {
   return NODE_TREE_ROWS.find(r => r.functionId === functionId)

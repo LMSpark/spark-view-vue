@@ -195,14 +195,14 @@ class PageDesignRuntimeToolModule extends StaticAiToolModule {
     name: string,
     description: string,
     prompt: string,
-    functions: readonly PageDesignRuntimeFunctionRegistration[],
+    functionRegistrations: readonly PageDesignRuntimeFunctionRegistration[],
   ) {
     super({
       moduleId,
       name,
       description,
       prompt,
-      functions,
+      functionRegistrations,
     })
   }
 }

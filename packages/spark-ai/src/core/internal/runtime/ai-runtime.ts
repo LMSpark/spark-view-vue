@@ -1,11 +1,7 @@
 import type {
-  IBusinessRegistration,
-  IBusinessRegistrationData,
-  IBusinessRegistrationStoreSnapshot,
   AiModuleRegistration,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreSnapshot,
-  AiRegisteredBusinessApi,
   AiRegisteredModuleApi,
   AiRuntimeApi,
   AiRuntimeOptions,
@@ -31,11 +27,11 @@ import type { AiKnowledgeProjection } from '../knowledge/knowledge-projection'
  * - AI session ledger
  * - knowledge projection service
  * - function-call translator/executor
- * - registered module/business handle factory
+ * - registered module handle factory
  *
  * Session, projection, message, and function-call operations are intentionally
- * available only through the registered handle returned by registerModule or
- * registerBusiness. This keeps moduleId binding as the single public path and
+ * available only through the registered handle returned by registerModule.
+ * This keeps moduleId binding as the single public path and
  * prevents callers from bypassing the module registration boundary.
  */
 export class AiRuntime implements AiRuntimeApi {
@@ -65,11 +61,6 @@ export class AiRuntime implements AiRuntimeApi {
       this.translator,
       this.executor,
     )
-  }
-
-  registerBusiness(source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot): AiRegisteredBusinessApi {
-    const registration = this.registrations.registerBusiness(source)
-    return this.apiFactory.createRegisteredBusinessApi(this.apiFactory.createRegisteredModuleApi(registration))
   }
 
   registerModule(source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot): AiRegisteredModuleApi {

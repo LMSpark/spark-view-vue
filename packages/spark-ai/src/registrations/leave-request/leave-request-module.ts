@@ -104,7 +104,7 @@ export class LeaveRequestModuleRegistration extends StaticAiToolModule {
       name: '人工请假',
       description: '帮助员工收集、确认并提交人工请假申请。',
       prompt: '帮助员工收集、确认并提交人工请假申请。',
-      functions: LEAVE_REQUEST_FUNCTIONS,
+      functionRegistrations: LEAVE_REQUEST_FUNCTIONS,
     })
   }
 }
@@ -244,7 +244,7 @@ export class LeaveRequestModule extends RuntimeBackedBusinessModule {
         'Live state 由人工请假服务维护；不要声称已经保存到数据库，除非 submitDraft 成功。',
         '提交前必须补齐必填字段；日期不明确时先追问，不要猜测。',
       ].join('\n'),
-      functions: LEAVE_REQUEST_REGISTRATION.getFunctions(),
+      functionRegistrations: LEAVE_REQUEST_REGISTRATION.getFunctions(),
       runtimeOptions: options.now === undefined ? {} : { now: options.now },
     })
     this.service = service
