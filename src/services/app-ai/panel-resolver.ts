@@ -24,7 +24,7 @@ import type { AiRuntimeMessageHistoryEntry, AiRuntimeSessionRecord } from '@spar
 export type AppAiPanelSessionResolver = (config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>
 export type AppAiPanelResolverOptions = AiHostOptions
 
-export interface AppAiRuntimeSessionSnapshot {
+export type AppAiRuntimeSessionSnapshot = {
   readonly sessionId: string
   readonly pageId: string
   readonly storageKey: string
@@ -35,51 +35,44 @@ export interface AppAiRuntimeSessionSnapshot {
   readonly session: AiRuntimeSessionRecord | null
 }
 
-export interface AppAiRuntimeMonitorSnapshot {
+export type AppAiRuntimeMonitorSnapshot = {
   readonly activeSessionId: string | null
   readonly sessions: readonly AppAiRuntimeSessionSnapshot[]
 }
 
-export interface AppAiRuntimeMonitor {
-  readonly resolveRuntimeSession: AppAiPanelSessionResolver
-  getSnapshot(): AppAiRuntimeMonitorSnapshot
-  subscribe(listener: (snapshot: AppAiRuntimeMonitorSnapshot) => void): () => void
-  focusSession(sessionId: string): AiSessionConfig | null
-  appendHumanMessage(sessionId: string, content: string): AiRuntimeMessageHistoryEntry
-  closeSession(sessionId: string, reason?: string): Promise<void>
+type AppAiRuntimeSessionEntry = {
+  config: AiSessionConfig
+  readonly session: AiHostBusinessSession
 }
 
-export function createAppAiRuntimeMonitor(options: AppAiPanelResolverOptions): AppAiRuntimeMonitor {
-  const sessions = new Map<string, {
-    config: AiSessionConfig
-    readonly session: AiHostBusinessSession
-  }>()
-  const configBySessionId = new Map<string, AiSessionConfig>()
-  const listeners = new Set<(snapshot: AppAiRuntimeMonitorSnapshot) => void>()
-  let activeSessionId: string | null = null
+export class AppAiRuntimeMonitor {
+  private readonly sessions = new Map<string, AppAiRuntimeSessionEntry>()
 
-  const emit = () => {
-    const snapshot = getSnapshot()
-    for (const listener of listeners) listener(snapshot)
-  }
+  private readonly configBySessionId = new Map<string, AiSessionConfig>()
 
-  const resolveRuntimeSession: AppAiPanelSessionResolver = async (config) => {
+  private readonly listeners = new Set<(snapshot: AppAiRuntimeMonitorSnapshot) => void>()
+
+  private activeSessionId: string | null = null
+
+  constructor(private readonly options: AppAiPanelResolverOptions) {}
+
+  readonly resolveRuntimeSession: AppAiPanelSessionResolver = async (config) => {
     const target = resolveAiSessionTarget(config)
     const sessionKey = `${target.businessRegistrationId}:${target.businessInstanceId}`
-    let entry = sessions.get(sessionKey)
+    let entry = this.sessions.get(sessionKey)
     if (entry === undefined) {
       entry = {
         config,
-        session: createAiHostBusinessSession(options, target),
+        session: createAiHostBusinessSession(this.options, target),
       }
-      sessions.set(sessionKey, entry)
+      this.sessions.set(sessionKey, entry)
     } else {
       entry.config = config
     }
     await entry.session.start()
-    activeSessionId = entry.session.sessionId
-    configBySessionId.set(entry.session.sessionId, config)
-    emit()
+    this.activeSessionId = entry.session.sessionId
+    this.configBySessionId.set(entry.session.sessionId, config)
+    this.emit()
 
     return {
       ...config,
@@ -88,13 +81,13 @@ export function createAppAiRuntimeMonitor(options: AppAiPanelResolverOptions): A
       pageId: config.pageId ?? entry.session.pageId,
       sender: async (request) => {
         await entry.session.send(toHostRequest(request))
-        emit()
+        this.emit()
       },
     }
   }
 
-  function getSnapshot(): AppAiRuntimeMonitorSnapshot {
-    const runtimeSessions = options.registry.list().flatMap((runtime) => (
+  getSnapshot(): AppAiRuntimeMonitorSnapshot {
+    const runtimeSessions = this.options.registry.list().flatMap((runtime) => (
       runtime.listSessions().map((session): AppAiRuntimeSessionSnapshot => ({
         sessionId: session.instanceId,
         pageId: session.moduleInstanceId,
@@ -110,85 +103,93 @@ export function createAppAiRuntimeMonitor(options: AppAiPanelResolverOptions): A
       }))
     ))
     return {
-      activeSessionId: activeSessionId !== null && runtimeSessions.some((session) => session.sessionId === activeSessionId)
-        ? activeSessionId
+      activeSessionId: this.activeSessionId !== null && runtimeSessions.some((session) => session.sessionId === this.activeSessionId)
+        ? this.activeSessionId
         : null,
       sessions: runtimeSessions,
     }
   }
 
-  return {
-    resolveRuntimeSession,
-    getSnapshot,
-    subscribe(listener) {
-      listeners.add(listener)
-      listener(getSnapshot())
-      return () => {
-        listeners.delete(listener)
-      }
-    },
-    focusSession(sessionId) {
-      if (findRuntimeSession(sessionId, options) === null) return null
-      activeSessionId = sessionId
-      emit()
-      return configBySessionId.get(sessionId) ?? null
-    },
-    appendHumanMessage(sessionId, content) {
-      const record = requireRuntimeSession(sessionId, options)
-      const runtime = options.registry.get(record.moduleId)
-      if (runtime === undefined) {
-        throw new Error(`AI business runtime is not registered: ${record.moduleId}`)
-      }
-      const trimmed = content.trim()
-      if (trimmed === '') {
-        throw new Error('人工干预内容不能为空。')
-      }
-      const result = runtime.appendMessage({
-        moduleId: record.moduleId,
-        moduleInstanceId: record.moduleInstanceId,
-        instanceId: record.instanceId,
-        role: 'user',
-        content: trimmed,
-        source: 'ui',
-        metadata: { intervention: 'human' },
-      })
-      emit()
-      return result
-    },
-    async closeSession(sessionId, reason = 'human intervention closed session') {
-      const record = requireRuntimeSession(sessionId, options)
-      const runtime = options.registry.get(record.moduleId)
-      if (runtime === undefined) {
-        throw new Error(`AI business runtime is not registered: ${record.moduleId}`)
-      }
-      await runtime.endBusinessInstance?.({
-        moduleId: record.moduleId,
-        moduleInstanceId: record.moduleInstanceId,
-        instanceId: record.instanceId,
-      }, {
-        status: 'abort',
-        reason,
-        releaseInstance: false,
-      })
-      emit()
-    },
+  subscribe(listener: (snapshot: AppAiRuntimeMonitorSnapshot) => void): () => void {
+    this.listeners.add(listener)
+    listener(this.getSnapshot())
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+
+  focusSession(sessionId: string): AiSessionConfig | null {
+    if (this.findRuntimeSession(sessionId) === null) return null
+    this.activeSessionId = sessionId
+    this.emit()
+    return this.configBySessionId.get(sessionId) ?? null
+  }
+
+  appendHumanMessage(sessionId: string, content: string): AiRuntimeMessageHistoryEntry {
+    const record = this.requireRuntimeSession(sessionId)
+    const runtime = this.options.registry.get(record.moduleId)
+    if (runtime === undefined) {
+      throw new Error(`AI business runtime is not registered: ${record.moduleId}`)
+    }
+    const trimmed = content.trim()
+    if (trimmed === '') {
+      throw new Error('人工干预内容不能为空。')
+    }
+    const result = runtime.appendMessage({
+      moduleId: record.moduleId,
+      moduleInstanceId: record.moduleInstanceId,
+      instanceId: record.instanceId,
+      role: 'user',
+      content: trimmed,
+      source: 'ui',
+      metadata: { intervention: 'human' },
+    })
+    this.emit()
+    return result
+  }
+
+  async closeSession(sessionId: string, reason = 'human intervention closed session'): Promise<void> {
+    const record = this.requireRuntimeSession(sessionId)
+    const runtime = this.options.registry.get(record.moduleId)
+    if (runtime === undefined) {
+      throw new Error(`AI business runtime is not registered: ${record.moduleId}`)
+    }
+    await runtime.endBusinessInstance?.({
+      moduleId: record.moduleId,
+      moduleInstanceId: record.moduleInstanceId,
+      instanceId: record.instanceId,
+    }, {
+      status: 'abort',
+      reason,
+      releaseInstance: false,
+    })
+    this.emit()
+  }
+
+  private emit(): void {
+    const snapshot = this.getSnapshot()
+    for (const listener of this.listeners) listener(snapshot)
+  }
+
+  private findRuntimeSession(sessionId: string): AiRuntimeSessionRecord | null {
+    for (const runtime of this.options.registry.list()) {
+      const found = runtime.listSessions().find((session) => session.instanceId === sessionId)
+      if (found !== undefined) return found
+    }
+    return null
+  }
+
+  private requireRuntimeSession(sessionId: string): AiRuntimeSessionRecord {
+    const record = this.findRuntimeSession(sessionId)
+    if (record === null) {
+      throw new Error(`AI runtime session is not monitored: ${sessionId}`)
+    }
+    return record
   }
 }
 
-function findRuntimeSession(sessionId: string, options: AppAiPanelResolverOptions): AiRuntimeSessionRecord | null {
-  for (const runtime of options.registry.list()) {
-    const found = runtime.listSessions().find((session) => session.instanceId === sessionId)
-    if (found !== undefined) return found
-  }
-  return null
-}
-
-function requireRuntimeSession(sessionId: string, options: AppAiPanelResolverOptions): AiRuntimeSessionRecord {
-  const record = findRuntimeSession(sessionId, options)
-  if (record === null) {
-    throw new Error(`AI runtime session is not monitored: ${sessionId}`)
-  }
-  return record
+export function createAppAiRuntimeMonitor(options: AppAiPanelResolverOptions): AppAiRuntimeMonitor {
+  return new AppAiRuntimeMonitor(options)
 }
 
 export function createAppAiPanelResolver(options: AppAiPanelResolverOptions): AppAiPanelSessionResolver {
