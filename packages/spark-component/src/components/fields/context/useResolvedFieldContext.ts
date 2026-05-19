@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance } from 'vue'
-import type { SparkCapabilityContext } from '../../internal'
+import type { ICapabilityContext } from '../../internal'
 import { type SparkRuntimeOwner, sparkResolveParentContext } from '../../../core/capability-context.js'
 
 export type FieldRenderMode = string
@@ -21,7 +21,7 @@ function inferModeFromHostType(hostType: string | null): FieldRenderMode | null 
   return null
 }
 
-function resolveModeFromContextChain(start: SparkCapabilityContext | null): FieldRenderMode {
+function resolveModeFromContextChain(start: ICapabilityContext | null): FieldRenderMode {
   let current = start
   while (current !== null) {
     const mode = inferModeFromHostType(typeof current.type === 'string' ? current.type : null)

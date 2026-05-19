@@ -25,11 +25,12 @@ export type {
 
 // ── 3.5 权限渲染 API ──
 export * as permission from './permission/index.js'
-export type { IFieldRenderConfig, IFieldRenderState, PermissionActionContext } from './permission/index.js'
+export type { FieldRenderConfig, FieldRenderState, PermissionActionContext } from './permission/index.js'
 
 // ── 4. 核心类型 ──
 export type {
   CapabilityName,
+  ICapabilityContext,
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,
@@ -68,23 +69,24 @@ export {
   sparkConsumeFromProvider,
 } from './core/index.js'
 export type {
-  IAppServicesCapability,
-  IPageServiceCapability,
-  IThemeCapability,
+  AppServicesCapability,
+  PageServiceCapability,
+  ThemeCapability,
   ThemeMode,
-  IModuleContextItem,
-  IModuleContext,
+  ModuleContextItem,
+  ModuleContext,
   ModuleContextCapability,
   PageMessageType,
   PageDialogResult,
-  IPageDialogOptions,
-  IPageBrowseFilesOptions,
-  IPageUploadFilesOptions,
-  IPageSelectEntitiesOptions,
+  PageDialogOptions,
+  PageBrowseFilesOptions,
+  PageUploadFilesOptions,
+  PageSelectEntitiesOptions,
   PageSelectableValue,
-  IPageSelectedEntity,
-  IPageSelectedFile,
-  IPageUploadedFile,
+  PageSelectorOption,
+  PageSelectedEntity,
+  PageSelectedFile,
+  PageUploadedFile,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,

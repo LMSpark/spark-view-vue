@@ -88,12 +88,10 @@ export interface SparkTitleContentProps {
 }
 
 /**
- * 标题 + 内容容器语义。
  *
  * 作为容器 props 的命名中间层，承接 page-header、popover 这类
  * 既保留 `SparkNodeProps` 根层，又复用标题/正文语义的场景。
  */
-export interface SparkTitleContentContainerProps extends SparkTitleContentProps {}
 
 /**
  * 展示组件值语义。
@@ -669,11 +667,9 @@ export interface SparkFloatingLayerProps {
 }
 
 /**
- * 浮层容器语义。
  *
  * 适用于 tooltip、popover 这类以浮层配置为主的容器组件。
  */
-export interface SparkFloatingLayerContainerProps extends SparkFloatingLayerProps {}
 
 /**
  * Grid 布局容器语义。
@@ -763,22 +759,18 @@ export interface SparkRowInteractionEventProps {
 }
 
 /**
- * 数据容器语义。
  *
  * 作为 DataView 驱动容器的命名中间层，统一表达它们与页面数据空间的绑定关系。
  */
-export interface SparkDataContainerProps extends SparkTableModelProps {}
 
 /**
- * 可编辑数据容器语义。
  *
  * 在数据容器基础上增加统一 CRUD 动作入口，适用于 form、detail、list、tree、table。
  */
 export interface SparkCrudDataContainerProps
-  extends SparkDataContainerProps, SparkCrudEventProps {}
+  extends SparkTableModelProps, SparkCrudEventProps {}
 
 /**
- * 行交互数据容器语义。
  *
  * 在可编辑数据容器基础上继续收口行点击、选中集合变化、当前行变化等交互事件。
  */

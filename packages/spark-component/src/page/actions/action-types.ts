@@ -17,7 +17,7 @@
  */
 
 import type { DataView, DataRow, DataSetContract, DataSetSaveChangesMode, DataSetSaveChangesViewSelector } from '@spark-view/spark-data'
-import type { IPageServiceCapability, PageMessageType } from '../../core/capability-keys.js'
+import type { PageServiceCapability, PageMessageType } from '../../core/capability-keys.js'
 import type { CancellableControl } from '../../components/containers/support/interactionControl.js'
 
 // ── 通用 UI 装饰（data-mutating 动作共享） ────────────────────────────────
@@ -380,7 +380,7 @@ export interface ActionExecutionContext {
    */
   getDataSource?: () => DataView | null
   /** 获取页面服务能力（消息/确认/弹窗等 UI 交互）；未注册时返回 null */
-  getPageService: () => IPageServiceCapability | null
+  getPageService: () => PageServiceCapability | null
   /** 获取路由器（navigate 动作使用）；非路由环境返回 null */
   getRouter: () => RouterLike | null
 }

@@ -11,7 +11,7 @@ import type { SparkNode } from '../core/types'
 import { nodeInputProp } from '../core/types'
 import { canCreate, canImport, canExport, canDelete, canCreateChild, canEdit } from './PermissionChecker'
 import { computeFieldState } from './FieldRenderHelper'
-import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
+import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 // ── 动作权限上下文 ──
 
@@ -109,9 +109,9 @@ export function isPermittedAction(
 export function resolveFieldPermissionState(
   field: string | undefined,
   row: DataRow | null | undefined,
-  config: Omit<IFieldRenderConfig, 'field'> = {},
+  config: Omit<FieldRenderConfig, 'field'> = {},
   permissionMode?: NavPermissionMode,
-): IFieldRenderState | null {
+): FieldRenderState | null {
   if (!field || !row) return null
   return computeFieldState({ field, ...config }, row, permissionMode)
 }

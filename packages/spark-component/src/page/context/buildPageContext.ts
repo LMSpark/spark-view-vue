@@ -6,8 +6,8 @@
  */
 
 import { h, type Ref } from 'vue'
-import type { IPageServiceCapability } from '../../core/capability-keys.js'
-import type { IModuleContext, PageComponentRegistry } from '../../core/capability-keys.js'
+import type { PageServiceCapability } from '../../core/capability-keys.js'
+import type { ModuleContext, PageComponentRegistry } from '../../core/capability-keys.js'
 import type { PageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
@@ -81,11 +81,11 @@ interface PageContextDeps {
   getDataSet: () => DataSet | null
   pageRoute: PageRoute
   pageContainer: Ref<HTMLElement | null>
-  pageService: IPageServiceCapability
+  pageService: PageServiceCapability
   /** 页面级组件注册中心 getter（可选） */
   getComponentRegistry?: () => PageComponentRegistry | null
   /** 模块上下文 getter（可选，每次调用返回最新快照） */
-  getModuleContext?: () => IModuleContext | null
+  getModuleContext?: () => ModuleContext | null
 }
 
 function createComponentAccess(getRegistry?: () => PageComponentRegistry | null): PageContext['$components'] {

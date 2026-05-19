@@ -28,7 +28,7 @@ import { useRouter, type Router } from 'vue-router'
 import {
   APP_SERVICES,
 } from '../../core/capability-keys.js'
-import type { IAppServicesCapability } from '../../core/capability-keys.js'
+import type { AppServicesCapability } from '../../core/capability-keys.js'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { PAGE_COMPONENT_REGISTRY } from '../../core/capability-keys'
 import type { PageComponentRegistry } from '../../core/capability-keys'
@@ -52,7 +52,7 @@ interface RendererSetupReturn {
   /** 页面级组件注册中心（实例 + API） */
   componentRegistry: PageComponentRegistry
   /** APP_SERVICES 能力载荷（用于下游注入到 DataSet 等运行时） */
-  appServices: IAppServicesCapability
+  appServices: AppServicesCapability
   /**
    * 带竞态保护的异步加载封装
    *

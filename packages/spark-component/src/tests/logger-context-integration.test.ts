@@ -10,10 +10,10 @@
 import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { Spark, useSparkComponent, APP_SERVICES, type IAppServicesCapability } from '@spark-view/spark-component'
+import { Spark, useSparkComponent, APP_SERVICES, type AppServicesCapability } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
-function createAppServices(logger: LoggerApi): IAppServicesCapability {
+function createAppServices(logger: LoggerApi): AppServicesCapability {
   return {
     router: {
       push: async () => undefined,

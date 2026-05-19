@@ -6,7 +6,6 @@
  * - 能力系统通过 capabilities Map 实现（继承自 ICapabilityContext）
  */
 
-import type { ICapabilityContext } from '@spark-view/spark-utils'
 export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config'
 export {
   SPARK_NODE_STRUCT_KEYS,
@@ -18,8 +17,11 @@ export {
   nodeInputProps,
 } from '@spark-view/spark-page-config'
 
+import type { ICapabilityContext } from '@spark-view/spark-utils'
+
 // 能力名称类型（从 spark-utils 重新导出）
-export type { CapabilityName } from '@spark-view/spark-utils'
+export type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
+export type SparkCapabilityContext = ICapabilityContext
 
 // ============================================================================
 // 组件定义（注册表使用）
@@ -47,16 +49,9 @@ export interface ComponentDefinition {
 export type ComponentChildrenMode = 'auto' | 'prop' | 'slot'
 
 // ============================================================================
-// 能力上下文（核心）
-// ============================================================================
 
 /**
- * SparkCapabilityContext - 纯能力上下文
- *
- * 只保留能力系统运行所需的最小结构：id / type / parent / capabilities。
- * 不再承载 Vue 组件 props、children、state、logger 等运行时字段。
  */
-export type SparkCapabilityContext = ICapabilityContext
 
 // ============================================================================
 // 筛选项配置（RendererFilter.vue 使用）

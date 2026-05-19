@@ -21,7 +21,7 @@ import {
   isRowActionAllowed,
 } from './PermissionResolver'
 import type { PermissionAction, PermissionActionContext } from './PermissionResolver'
-import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
+import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 export interface UsePermissionReturn {
   /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */
@@ -40,8 +40,8 @@ export interface UsePermissionReturn {
   resolveFieldState(
     field: string | undefined,
     row: DataRow | null | undefined,
-    config?: Omit<IFieldRenderConfig, 'field'>,
-  ): IFieldRenderState | null
+    config?: Omit<FieldRenderConfig, 'field'>,
+  ): FieldRenderState | null
 
 }
 

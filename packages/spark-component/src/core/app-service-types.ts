@@ -16,7 +16,7 @@ export type PageMessageType = 'success' | 'error' | 'warning' | 'info'
 export type PageDialogResult = 'confirm' | 'cancel' | 'close'
 export type PageSelectableValue = string | number | boolean
 
-export interface IPageDialogOptions {
+export interface PageDialogOptions {
   title?: string
   message?: string
   content?: string
@@ -28,14 +28,14 @@ export interface IPageDialogOptions {
   width?: string
 }
 
-export interface IPageBrowseFilesOptions {
+export interface PageBrowseFilesOptions {
   title?: string
   accept?: string
   multiple?: boolean
   currentValue?: string
 }
 
-export interface IPageSelectedFile {
+export interface PageSelectedFile {
   name: string
   size: number
   type: string
@@ -43,7 +43,7 @@ export interface IPageSelectedFile {
   file: File
 }
 
-export interface IPageUploadFilesOptions extends IPageBrowseFilesOptions {
+export interface PageUploadFilesOptions extends PageBrowseFilesOptions {
   action: string
   method?: 'POST' | 'PUT' | 'PATCH'
   fieldName?: string
@@ -53,12 +53,12 @@ export interface IPageUploadFilesOptions extends IPageBrowseFilesOptions {
   files?: File[]
 }
 
-export interface IPageUploadedFile extends IPageSelectedFile {
+export interface PageUploadedFile extends PageSelectedFile {
   response: unknown
   url?: string
 }
 
-export interface IPageSelectorOption {
+export interface PageSelectorOption {
   label: string
   value: PageSelectableValue
   description?: string
@@ -66,7 +66,7 @@ export interface IPageSelectorOption {
   raw?: unknown
 }
 
-export interface IPageSelectEntitiesOptions {
+export interface PageSelectEntitiesOptions {
   title?: string
   entityName?: string
   placeholder?: string
@@ -76,25 +76,25 @@ export interface IPageSelectEntitiesOptions {
   cancelText?: string
   emptyText?: string
   currentValue?: PageSelectableValue | PageSelectableValue[] | string
-  options?: IPageSelectorOption[]
+  options?: PageSelectorOption[]
 }
 
-export type IPageSelectedEntity = IPageSelectorOption
+export type PageSelectedEntity = PageSelectorOption
 
-export interface IPageServiceCapability {
+export interface PageServiceCapability {
   showMessage(message: string, type?: PageMessageType): void
   showConfirm(message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: PageMessageType }): Promise<boolean>
   showPrompt(message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }): Promise<string | null>
   showAlert(message: string, title?: string, options?: { type?: PageMessageType }): Promise<void>
-  showDialog(options: IPageDialogOptions): Promise<PageDialogResult>
-  selectEntities(options: IPageSelectEntitiesOptions): Promise<IPageSelectedEntity[]>
-  browseFiles(options?: IPageBrowseFilesOptions): Promise<IPageSelectedFile[]>
-  uploadFiles(options: IPageUploadFilesOptions): Promise<IPageUploadedFile[]>
+  showDialog(options: PageDialogOptions): Promise<PageDialogResult>
+  selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectedEntity[]>
+  browseFiles(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]>
+  uploadFiles(options: PageUploadFilesOptions): Promise<PageUploadedFile[]>
   showLoading(show: boolean, text?: string): void
   navigate(path: string, params?: Record<string, unknown>): void
 }
 
-export interface IAppServicesCapability {
+export interface AppServicesCapability {
   router?: {
     push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
     replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
@@ -105,5 +105,5 @@ export interface IAppServicesCapability {
   tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
   configLoader?: unknown
   authService?: unknown
-  pageService?: Partial<IPageServiceCapability>
+  pageService?: Partial<PageServiceCapability>
 }

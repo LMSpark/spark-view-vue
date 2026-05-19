@@ -10,7 +10,7 @@ import { FieldVisibility } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
 
-export interface IFieldRenderConfig {
+export interface FieldRenderConfig {
   field: string
   visible?: boolean
   editable?: boolean
@@ -18,7 +18,7 @@ export interface IFieldRenderConfig {
   width?: number | string
 }
 
-export interface IFieldRenderState {
+export interface FieldRenderState {
   field: string
   visibility: FieldVisibility
   readable: boolean
@@ -30,7 +30,7 @@ export interface IFieldRenderState {
 /**
  * 计算单个字段的渲染状态（可见性 + 可编辑性 + 展示值）。
  */
-export function computeFieldState(config: IFieldRenderConfig, row: DataRow, permissionMode?: NavPermissionMode): IFieldRenderState {
+export function computeFieldState(config: FieldRenderConfig, row: DataRow, permissionMode?: NavPermissionMode): FieldRenderState {
   const { field } = config
   const visibility = getFieldVisibility(field, row, permissionMode)
   const readable = visibility !== FieldVisibility.Hidden && (config.visible !== false)

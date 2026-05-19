@@ -21,7 +21,7 @@ import { sparkFindNearestProvider, sparkFindNearestProviderByKeys } from '@spark
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 import { DATA_ROW } from './capability-keys.js'
-import type { SparkCapabilityContext, SparkNode } from './types.js'
+import type { SparkNode } from './types.js'
 import { SPARK_NODE_STRUCT_KEYS, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from './capability-context.js'
 
@@ -73,7 +73,7 @@ export interface UseSparkCapabilityReaderReturn {
 }
 
 export interface UseSparkComponentOptions {
-  parentContext?: SparkCapabilityContext
+  parentContext?: ICapabilityContext
 }
 
 interface HostTypeResolverOptions<T extends string = string> {
@@ -82,7 +82,7 @@ interface HostTypeResolverOptions<T extends string = string> {
 
 interface ResolvedHostType<T extends string = string> {
   hostType: T | null
-  parentContext: SparkCapabilityContext | null
+  parentContext: ICapabilityContext | null
 }
 
 export type SparkNodeInput = {
@@ -104,7 +104,7 @@ function normalizeHostType<T extends string>(
 }
 
 export function resolveHostTypeFromContext<T extends string = string>(
-  parentContext: SparkCapabilityContext | null,
+  parentContext: ICapabilityContext | null,
   options: HostTypeResolverOptions<T> = {},
 ): ResolvedHostType<T> {
   let currentContext = parentContext
@@ -214,14 +214,14 @@ function buildEffectiveConfig(instance: RuntimeInstance, configInput: SparkNodeI
 // 这样组件即使经过中间包装层，也仍然能沿 Spark 运行时树正确消费能力。
 function resolveParentContext(
   currentOwner: SparkRuntimeOwner | null,
-  overrideParentContext?: SparkCapabilityContext,
-): SparkCapabilityContext | null {
+  overrideParentContext?: ICapabilityContext,
+): ICapabilityContext | null {
   return sparkResolveParentContext(currentOwner, overrideParentContext)
 }
 
 function registerPageComponentInstance(
   registry: PageComponentRegistry | null | undefined,
-  context: SparkCapabilityContext,
+  context: ICapabilityContext,
   props?: Record<string, unknown>,
 ): void {
   if (!registry) return
@@ -249,7 +249,7 @@ function isLoggerApi(value: unknown): value is LoggerApi {
 }
 
 // logger 始终从页面层 APP_SERVICES 取，避免局部子树私自覆盖后形成日志分叉。
-function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
+function createPageLoggerProxy(context: ICapabilityContext): LoggerApi {
   const consumeFromCurrent = createSparkCapabilityConsumer(context)
   const resolveLogger = (): LoggerApi => {
     const appServices = consumeFromCurrent(APP_SERVICES)

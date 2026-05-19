@@ -5,7 +5,7 @@
  */
 
 import type { Router } from 'vue-router'
-import type { IAppServicesCapability } from '../../core/capability-keys.js'
+import type { AppServicesCapability } from '../../core/capability-keys.js'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 /**
@@ -14,7 +14,7 @@ import type { LoggerApi } from '@spark-view/spark-utils'
 export function buildAppServices(
   router: Router,
   logger: LoggerApi
-): IAppServicesCapability {
+): AppServicesCapability {
   return {
     router: {
       push: (to) => router.push(to as Parameters<Router['push']>[0]),

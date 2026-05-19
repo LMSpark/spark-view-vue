@@ -1,15 +1,14 @@
 import { reactive } from 'vue'
 import { createRequest } from '@spark-view/spark-utils'
-import type { RequestError } from '@spark-view/spark-utils'
 import type {
-  IPageBrowseFilesOptions,
-  IPageDialogOptions,
-  IPageSelectedEntity,
-  IPageSelectEntitiesOptions,
-  IPageServiceCapability,
-  IPageSelectedFile,
-  IPageUploadFilesOptions,
-  IPageUploadedFile,
+  PageBrowseFilesOptions,
+  PageDialogOptions,
+  PageSelectedEntity,
+  PageSelectEntitiesOptions,
+  PageServiceCapability,
+  PageSelectedFile,
+  PageUploadFilesOptions,
+  PageUploadedFile,
   PageDialogResult,
 } from '@spark-view/spark-component'
 
@@ -34,7 +33,7 @@ interface SelectorState {
   cancelText: string
   emptyText: string
   searchKeyword: string
-  options: IPageSelectedEntity[]
+  options: PageSelectedEntity[]
   selectedValues: string[]
 }
 
@@ -64,9 +63,9 @@ const selectorState = reactive<SelectorState>({
 })
 
 let dialogResolver: ((result: PageDialogResult) => void) | null = null
-let selectorResolver: ((result: IPageSelectedEntity[]) => void) | null = null
+let selectorResolver: ((result: PageSelectedEntity[]) => void) | null = null
 
-function mapFile(file: File): IPageSelectedFile {
+function mapFile(file: File): PageSelectedFile {
   return {
     name: file.name,
     size: file.size,
@@ -76,20 +75,29 @@ function mapFile(file: File): IPageSelectedFile {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function getErrorResponse(value: unknown): unknown {
+  if (!isRecord(value)) return value
+  return value['response'] ?? value
+}
+
 function extractUploadedUrl(response: unknown): string | undefined {
-  if (typeof response !== 'object' || response === null) return undefined
-  const record = response as Record<string, unknown>
+  if (!isRecord(response)) return undefined
+  const record = response
   const candidate = record['url'] ?? record['path'] ?? record['filePath'] ?? record['data']
   if (typeof candidate === 'string') return candidate
-  if (typeof candidate === 'object' && candidate !== null) {
-    const nested = candidate as Record<string, unknown>
+  if (isRecord(candidate)) {
+    const nested = candidate
     const nestedCandidate = nested['url'] ?? nested['path'] ?? nested['filePath']
     return typeof nestedCandidate === 'string' ? nestedCandidate : undefined
   }
   return undefined
 }
 
-function normalizeSelectorKeys(value: IPageSelectEntitiesOptions['currentValue'] | undefined): string[] {
+function normalizeSelectorKeys(value: PageSelectEntitiesOptions['currentValue'] | undefined): string[] {
   if (Array.isArray(value)) return value.map(item => String(item))
   if (typeof value === 'string') {
     if (!value.trim()) return []
@@ -99,7 +107,7 @@ function normalizeSelectorKeys(value: IPageSelectEntitiesOptions['currentValue']
   return []
 }
 
-async function browseFiles(options?: IPageBrowseFilesOptions): Promise<IPageSelectedFile[]> {
+async function browseFiles(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]> {
   return await new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -120,7 +128,7 @@ async function browseFiles(options?: IPageBrowseFilesOptions): Promise<IPageSele
   })
 }
 
-async function selectEntities(options: IPageSelectEntitiesOptions): Promise<IPageSelectedEntity[]> {
+async function selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectedEntity[]> {
   if (selectorResolver) {
     selectorResolver([])
   }
@@ -137,16 +145,16 @@ async function selectEntities(options: IPageSelectEntitiesOptions): Promise<IPag
   selectorState.selectedValues = normalizeSelectorKeys(options.currentValue)
   selectorState.visible = true
 
-  return await new Promise<IPageSelectedEntity[]>((resolve) => {
+  return await new Promise<PageSelectedEntity[]>((resolve) => {
     selectorResolver = resolve
   })
 }
 
-async function uploadFiles(options: IPageUploadFilesOptions): Promise<IPageUploadedFile[]> {
+async function uploadFiles(options: PageUploadFilesOptions): Promise<PageUploadedFile[]> {
   const selectedFiles = options.files ?? (await browseFiles(options)).map(item => item.file)
   if (selectedFiles.length === 0) return []
 
-  const results: IPageUploadedFile[] = []
+  const results: PageUploadedFile[] = []
   for (const file of selectedFiles) {
     const formData = new FormData()
     formData.append(options.fieldName ?? 'file', file)
@@ -168,7 +176,7 @@ async function uploadFiles(options: IPageUploadFilesOptions): Promise<IPageUploa
         ...(options.withCredentials === true ? { withCredentials: true } : {}),
       })
     } catch (err) {
-      responseData = (err as RequestError).response
+      responseData = getErrorResponse(err)
     }
     const uploadedUrl = extractUploadedUrl(responseData)
     results.push({
@@ -181,7 +189,7 @@ async function uploadFiles(options: IPageUploadFilesOptions): Promise<IPageUploa
   return results
 }
 
-async function showDialog(options: IPageDialogOptions): Promise<PageDialogResult> {
+async function showDialog(options: PageDialogOptions): Promise<PageDialogResult> {
   if (dialogResolver) {
     dialogResolver('close')
   }
@@ -207,7 +215,7 @@ function resolveDialog(result: PageDialogResult): void {
   if (resolver) resolver(result)
 }
 
-function resolveSelector(result: IPageSelectedEntity[]): void {
+function resolveSelector(result: PageSelectedEntity[]): void {
   const resolver = selectorResolver
   selectorResolver = null
   selectorState.visible = false
@@ -220,7 +228,7 @@ export const appPageUiState = {
   selector: selectorState,
 }
 
-export const appPageUiService: Pick<IPageServiceCapability, 'showDialog' | 'selectEntities' | 'browseFiles' | 'uploadFiles'> = {
+export const appPageUiService: Pick<PageServiceCapability, 'showDialog' | 'selectEntities' | 'browseFiles' | 'uploadFiles'> = {
   showDialog,
   selectEntities,
   browseFiles,
@@ -242,7 +250,7 @@ export function closeAppDialog(): void {
 export function confirmAppSelector(): void {
   const selected = selectorState.selectedValues
     .map((selectedValue) => selectorState.options.find(option => String(option.value) === selectedValue) ?? null)
-    .filter((option): option is IPageSelectedEntity => option !== null)
+    .filter((option): option is PageSelectedEntity => option !== null)
   resolveSelector(selectorState.multiple ? selected : selected.slice(0, 1))
 }
 

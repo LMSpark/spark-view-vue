@@ -1,14 +1,14 @@
 import type {
-  SparkFloatingLayerContainerProps,
+  SparkFloatingLayerProps,
   SparkNodeProps,
-  SparkTitleContentContainerProps,
+  SparkTitleContentProps,
 } from '../../shared-types'
 import type { SparkNode } from '../../internal'
 
 export interface RPopoverProps
   extends SparkNodeProps,
-    SparkFloatingLayerContainerProps,
-    SparkTitleContentContainerProps {
+    SparkFloatingLayerProps,
+    SparkTitleContentProps {
   /** 浮层正文节点列表。 */
   contentChildren?: SparkNode[]
   /** 浮层宽度。 */

@@ -1,4 +1,4 @@
-import type { SparkFloatingLayerContainerProps, SparkNodeProps } from '../../shared-types'
+import type { SparkFloatingLayerProps, SparkNodeProps } from '../../shared-types'
 
 export interface DropdownItem {
   /** 菜单项文本 */
@@ -13,7 +13,7 @@ export interface DropdownItem {
   icon?: SparkText
 }
 
-export interface RDropdownProps extends SparkNodeProps, SparkFloatingLayerContainerProps {
+export interface RDropdownProps extends SparkNodeProps, SparkFloatingLayerProps {
   /** 菜单项列表 */
   items?: DropdownItem[]
   /** 触发方式 */

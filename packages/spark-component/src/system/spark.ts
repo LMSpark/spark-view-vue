@@ -13,7 +13,7 @@
 import { createSparkCapabilityContext } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
-import type { SparkCapabilityContext, ComponentRegistry, SparkNode } from '../core/types.js'
+import type { ICapabilityContext, ComponentRegistry, SparkNode } from '../core/types.js'
 import { nodeId, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/types.js'
 
 /* -------------------------------------------------------------------------- */
@@ -21,8 +21,8 @@ import { nodeId, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/type
 /** Spark.createSystem() 返回的隔离测试系统 */
 export interface SparkSystem {
   registry: ComponentRegistry
-  rootContext: SparkCapabilityContext
-  createContext(config: Partial<SparkCapabilityContext> & { type: string }, parent?: SparkCapabilityContext): SparkCapabilityContext
+  rootContext: ICapabilityContext
+  createContext(config: Partial<ICapabilityContext> & { type: string }, parent?: ICapabilityContext): ICapabilityContext
 }
 
 /* -------------------------------------------------------------------------- */
@@ -86,7 +86,7 @@ export const Spark = {
     return {
       registry,
       rootContext,
-      createContext(config: Partial<SparkCapabilityContext> & { type: string }, parent?: SparkCapabilityContext): SparkCapabilityContext {
+      createContext(config: Partial<ICapabilityContext> & { type: string }, parent?: ICapabilityContext): ICapabilityContext {
         const parentCtx = parent ?? rootContext
         return createSparkCapabilityContext({
           id: config.id ?? `test-${++_testCounter}`,

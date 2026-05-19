@@ -1,14 +1,14 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type {
-  IPageSelectedEntity,
-  IPageSelectEntitiesOptions,
-  IPageServiceCapability,
+  PageSelectorOption,
+  PageSelectEntitiesOptions,
+  PageServiceCapability,
 } from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
 interface UseSelectorFieldActionsOptions {
-  pageService: IPageServiceCapability | null
+  pageService: PageServiceCapability | null
   isEditable: ComputedRef<boolean>
 }
 
@@ -19,7 +19,7 @@ export function useSelectorFieldActions(options: UseSelectorFieldActionsOptions)
   const hasSelectorCapability = computed(() => typeof pageService?.selectEntities === 'function')
   const primaryAction = chooseByMode<'select' | 'view'>('select', 'view')
 
-  async function selectEntities(selectorOptions: IPageSelectEntitiesOptions): Promise<IPageSelectedEntity[]> {
+  async function selectEntities(selectorOptions: PageSelectEntitiesOptions): Promise<PageSelectorOption[]> {
     if (typeof pageService?.selectEntities !== 'function') return []
     return await pageService.selectEntities(selectorOptions)
   }

@@ -102,7 +102,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { IPageSelectedEntity } from '@spark-view/spark-component'
+import type { PageSelectedEntity } from '@spark-view/spark-component'
 import {
   appPageUiState,
   cancelAppDialog,
@@ -136,7 +136,7 @@ function handleSearchKeywordUpdate(value: string): void {
   appPageUiState.selector.searchKeyword = value
 }
 
-function toggleSelectorOption(option: IPageSelectedEntity, checked: boolean): void {
+function toggleSelectorOption(option: PageSelectedEntity, checked: boolean): void {
   const key = String(option.value)
   if (checked) {
     if (!appPageUiState.selector.selectedValues.includes(key)) {
@@ -147,7 +147,7 @@ function toggleSelectorOption(option: IPageSelectedEntity, checked: boolean): vo
   appPageUiState.selector.selectedValues = appPageUiState.selector.selectedValues.filter(value => value !== key)
 }
 
-function selectSingleOption(option: IPageSelectedEntity): void {
+function selectSingleOption(option: PageSelectedEntity): void {
   appPageUiState.selector.selectedValues = [String(option.value)]
 }
 </script>

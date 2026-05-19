@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { IPageSelectedFile, IPageUploadedFile } from '../../../internal'
+import type { PageSelectedFile, PageUploadedFile } from '../../../internal'
 import type {
   SparkFieldSemanticProps,
   SparkFileFieldProps,
@@ -30,18 +30,18 @@ interface UploadBrowseFieldStateOptions {
     accept: string
     multiple: boolean
     currentValue: string
-  }) => Promise<IPageSelectedFile[]>
+  }) => Promise<PageSelectedFile[]>
   uploadFiles: (options: {
     action: NonNullable<SparkFileUploadActionProps['action']>
     accept: string
     multiple: boolean
     fieldName: string
     currentValue: string
-  }) => Promise<IPageUploadedFile[]>
+  }) => Promise<PageUploadedFile[]>
   updateValue: (value: string) => void | Promise<void>
   browseWritesValue?: boolean | undefined
-  getBrowseValue?: ((file: IPageSelectedFile) => string) | undefined
-  getUploadValue?: ((file: IPageUploadedFile) => string) | undefined
+  getBrowseValue?: ((file: PageSelectedFile) => string) | undefined
+  getUploadValue?: ((file: PageUploadedFile) => string) | undefined
 }
 
 interface FileBrowserFieldStateOptions {
@@ -58,7 +58,7 @@ interface FileBrowserFieldStateOptions {
     accept: string
     multiple: boolean
     currentValue: string
-  }) => Promise<IPageSelectedFile[]>
+  }) => Promise<PageSelectedFile[]>
   updateValue: (value: string) => void | Promise<void>
 }
 

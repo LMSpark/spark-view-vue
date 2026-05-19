@@ -1,4 +1,4 @@
-import type { SparkDataContainerProps, SparkNodeProps } from '../../shared-types'
+import type { SparkTableModelProps, SparkNodeProps } from '../../shared-types'
 import type { RTailProps } from '../zones/RendererTail.types'
 import type { ToolbarPosition } from '../runtime/container-ui'
 
@@ -11,7 +11,7 @@ export type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 /**
  * `RendererToolbar` Vue 组件公开属性。
  */
-export interface RToolbarProps extends SparkNodeProps, SparkDataContainerProps {
+export interface RToolbarProps extends SparkNodeProps, SparkTableModelProps {
   /** 尾部动作区（通常放次要按钮） */
   tail?: RTailProps
   /** 工具栏停靠位置 */

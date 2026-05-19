@@ -1,28 +1,28 @@
 /**
  * PAGE_SERVICE 能力构建工厂
  *
- * 构建 IPageServiceCapability 实现，
+ * 构建 PageServiceCapability 实现，
  * 优先使用 props 注入的 UI 服务（测试/Storybook），回退到 Element Plus。
  */
 
 import type { Router } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type {
-  IPageBrowseFilesOptions,
-  IPageDialogOptions,
-  IPageSelectedEntity,
-  IPageSelectEntitiesOptions,
-  IPageServiceCapability,
-  IPageSelectedFile,
-  IPageUploadFilesOptions,
-  IPageUploadedFile,
+  PageBrowseFilesOptions,
+  PageDialogOptions,
+  PageSelectorOption,
+  PageSelectEntitiesOptions,
+  PageServiceCapability,
+  PageSelectedFile,
+  PageUploadFilesOptions,
+  PageUploadedFile,
   PageDialogResult,
 } from '../../core/capability-keys.js'
 import type { RequestError } from '@spark-view/spark-utils'
 import { createRequest } from '@spark-view/spark-utils'
 import { pageLogger } from './pageLogger'
 
-/** 内部实现：ElMessageBox.confirm() 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常。这是 IPageServiceCapability 内部实现细节，script.js 不能直接访问 ElMessageBox（已从沙箱移除）。 */
+/** 内部实现：ElMessageBox.confirm() 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常。这是 PageServiceCapability 内部实现细节，script.js 不能直接访问 ElMessageBox（已从沙箱移除）。 */
 function isElCancelAction(e: unknown): boolean {
   if (e === 'cancel') return true
   return typeof e === 'object' && e !== null && (e as Record<string, unknown>)['action'] === 'cancel'
@@ -41,10 +41,10 @@ export interface PageServiceOverrides {
     alert: (msg: string, title?: string) => Promise<unknown>
     prompt?: (msg: string, title?: string) => Promise<string | null>
   } | undefined
-  pageService?: Partial<IPageServiceCapability> | undefined
+  pageService?: Partial<PageServiceCapability> | undefined
 }
 
-function mapFile(file: File): IPageSelectedFile {
+function mapFile(file: File): PageSelectedFile {
   return {
     name: file.name,
     size: file.size,
@@ -67,7 +67,7 @@ function extractUploadedUrl(response: unknown): string | undefined {
   return undefined
 }
 
-function createFilePicker(options?: IPageBrowseFilesOptions): Promise<IPageSelectedFile[]> {
+function createFilePicker(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -88,7 +88,7 @@ function createFilePicker(options?: IPageBrowseFilesOptions): Promise<IPageSelec
   })
 }
 
-function normalizeSelectorKeys(value: IPageSelectEntitiesOptions['currentValue'] | undefined): string[] {
+function normalizeSelectorKeys(value: PageSelectEntitiesOptions['currentValue'] | undefined): string[] {
   if (Array.isArray(value)) return value.map(item => String(item))
   if (typeof value === 'string') {
     if (!value.trim()) return []
@@ -98,7 +98,7 @@ function normalizeSelectorKeys(value: IPageSelectEntitiesOptions['currentValue']
   return []
 }
 
-function selectFallbackEntities(options: IPageSelectEntitiesOptions): IPageSelectedEntity[] {
+function selectFallbackEntities(options: PageSelectEntitiesOptions): PageSelectorOption[] {
   const candidates = options.options?.filter(option => option.disabled !== true) ?? []
   if (candidates.length === 0) return []
   if (typeof window === 'undefined' || typeof window.prompt !== 'function') return []
@@ -121,11 +121,11 @@ function selectFallbackEntities(options: IPageSelectEntitiesOptions): IPageSelec
   return firstMatch ? [firstMatch] : []
 }
 
-async function uploadSelectedFiles(options: IPageUploadFilesOptions): Promise<IPageUploadedFile[]> {
+async function uploadSelectedFiles(options: PageUploadFilesOptions): Promise<PageUploadedFile[]> {
   const selectedFiles = options.files ?? (await createFilePicker(options)).map(item => item.file)
   if (selectedFiles.length === 0) return []
 
-  const results: IPageUploadedFile[] = []
+  const results: PageUploadedFile[] = []
   for (const file of selectedFiles) {
     const formData = new FormData()
     formData.append(options.fieldName ?? 'file', file)
@@ -160,7 +160,7 @@ async function uploadSelectedFiles(options: IPageUploadFilesOptions): Promise<IP
   return results
 }
 
-async function showFallbackDialog(options: IPageDialogOptions): Promise<PageDialogResult> {
+async function showFallbackDialog(options: PageDialogOptions): Promise<PageDialogResult> {
   const title = options.title ?? '提示'
   const message = options.content ?? options.message ?? ''
   try {
@@ -197,7 +197,7 @@ async function showFallbackDialog(options: IPageDialogOptions): Promise<PageDial
 export function buildPageService(
   router: Router,
   overrides?: PageServiceOverrides
-): IPageServiceCapability {
+): PageServiceCapability {
   const extension = overrides?.pageService
 
   return {

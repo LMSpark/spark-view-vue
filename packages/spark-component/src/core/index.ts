@@ -19,6 +19,7 @@ export type {
 
 export type {
   CapabilityName,
+  ICapabilityContext,
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,
@@ -41,18 +42,19 @@ export {
 } from './types.js'
 
 export type {
-  IAppServicesCapability,
-  IPageServiceCapability,
+  AppServicesCapability,
+  PageServiceCapability,
   PageMessageType,
   PageDialogResult,
-  IPageDialogOptions,
-  IPageBrowseFilesOptions,
-  IPageUploadFilesOptions,
-  IPageSelectEntitiesOptions,
+  PageDialogOptions,
+  PageBrowseFilesOptions,
+  PageUploadFilesOptions,
+  PageSelectEntitiesOptions,
   PageSelectableValue,
-  IPageSelectedEntity,
-  IPageSelectedFile,
-  IPageUploadedFile,
+  PageSelectorOption,
+  PageSelectedEntity,
+  PageSelectedFile,
+  PageUploadedFile,
   NavPermissionMode,
 } from './capability-keys.js'
 
@@ -64,9 +66,9 @@ export {
 
 export type {
   ThemeMode,
-  IThemeCapability,
-  IModuleContextItem,
-  IModuleContext,
+  ThemeCapability,
+  ModuleContextItem,
+  ModuleContext,
   ModuleContextCapability,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
@@ -88,5 +90,4 @@ export {
   sparkFindNearestProviderByKeys,
   sparkConsumeFromProvider,
 } from '@spark-view/spark-utils'
-
 

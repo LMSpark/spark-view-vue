@@ -8,7 +8,7 @@
  * 3. 应用服务与权限键（从 spark-utils 迁入）：
  *    APP_SERVICES / PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
  *
- * 注：IAppServicesCapability / IPageServiceCapability 等依赖 LoggerApi 的类型定义
+ * 注：AppServicesCapability / PageServiceCapability 等依赖 LoggerApi 的类型定义
  * 放在 app-service-types.ts，避免在同一文件里既 import 又 declare module
  * '@spark-view/spark-utils'，防止循环模块增强问题。
  */
@@ -17,8 +17,8 @@ import { defineCapability } from '@spark-view/spark-utils'
 import type { DataRow, DataSetContract, DataSource } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
-  IPageServiceCapability,
-  IAppServicesCapability,
+  PageServiceCapability,
+  AppServicesCapability,
 } from './app-service-types.js'
 
 export type {
@@ -26,16 +26,16 @@ export type {
   PageMessageType,
   PageDialogResult,
   PageSelectableValue,
-  IPageDialogOptions,
-  IPageBrowseFilesOptions,
-  IPageSelectedFile,
-  IPageUploadFilesOptions,
-  IPageUploadedFile,
-  IPageSelectorOption,
-  IPageSelectEntitiesOptions,
-  IPageSelectedEntity,
-  IPageServiceCapability,
-  IAppServicesCapability,
+  PageDialogOptions,
+  PageBrowseFilesOptions,
+  PageSelectedFile,
+  PageUploadFilesOptions,
+  PageUploadedFile,
+  PageSelectorOption,
+  PageSelectEntitiesOptions,
+  PageSelectedEntity,
+  PageServiceCapability,
+  AppServicesCapability,
 } from './app-service-types.js'
 
 // ── 主题类型（spark-component 层自有定义，spark-app 用自己本地的副本） ──────
@@ -44,7 +44,7 @@ export type {
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 /** 主题服务能力接口（最小契约，不含 Vue 响应式） */
-export interface IThemeCapability {
+export interface ThemeCapability {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
@@ -55,22 +55,22 @@ export interface IThemeCapability {
 // ── 模块上下文能力 ────────────────────────────────────────────────────────
 
 /** 模块列表项 */
-export interface IModuleContextItem {
+export interface ModuleContextItem {
   id: string | number
   title: string
 }
 
 /** 当前模块上下文快照 */
-export interface IModuleContext {
+export interface ModuleContext {
   selected: string | number | null
-  items: readonly IModuleContextItem[]
+  items: readonly ModuleContextItem[]
   nodeId: string
 }
 
 /** MODULE_CONTEXT 能力接口 */
 export interface ModuleContextCapability {
-  getCurrent(): IModuleContext | null
-  subscribe(handler: (next: IModuleContext | null, prev: IModuleContext | null) => void): () => void
+  getCurrent(): ModuleContext | null
+  subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void
 }
 
 // ── 页面组件注册表能力 ─────────────────────────────────────────────────────
@@ -118,8 +118,8 @@ declare module '@spark-view/spark-utils' {
     'spark:capability:page-component-registry': PageComponentRegistry
     'spark:capability:module-context': ModuleContextCapability
     'spark:capability:css-scope': PageCssScopeCapability
-    'spark:capability:app-services': IAppServicesCapability
-    'spark:capability:page-service': IPageServiceCapability
+    'spark:capability:app-services': AppServicesCapability
+    'spark:capability:page-service': PageServiceCapability
     'spark:capability:permission-mode': NavPermissionMode
   }
 }
@@ -134,6 +134,6 @@ export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:c
 export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry')
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
 
-export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
-export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
+export const APP_SERVICES = defineCapability<AppServicesCapability>('spark:capability:app-services')
+export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service')
 export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode')

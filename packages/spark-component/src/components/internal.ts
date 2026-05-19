@@ -24,7 +24,7 @@ export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 export type {
   SparkNode,
   SparkNodeChildren,
-  SparkCapabilityContext,
+  ICapabilityContext,
   LoggerApi,
 } from '../core/index.js'
 export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode, isSparkNode, getSparkNodeChildren } from '../core/index.js'
@@ -43,19 +43,19 @@ export {
   sparkConsumeFromProvider,
 } from '../core/index.js'
 export type {
-  IAppServicesCapability,
-  IPageServiceCapability,
-  IModuleContext,
+  AppServicesCapability,
+  PageServiceCapability,
+  ModuleContext,
   PageMessageType,
   PageDialogResult,
-  IPageDialogOptions,
-  IPageBrowseFilesOptions,
-  IPageUploadFilesOptions,
-  IPageSelectEntitiesOptions,
+  PageDialogOptions,
+  PageBrowseFilesOptions,
+  PageUploadFilesOptions,
+  PageSelectEntitiesOptions,
   PageSelectableValue,
-  IPageSelectedEntity,
-  IPageSelectedFile,
-  IPageUploadedFile,
+  PageSelectorOption,
+  PageSelectedFile,
+  PageUploadedFile,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,

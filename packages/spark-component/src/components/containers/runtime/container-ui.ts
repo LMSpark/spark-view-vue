@@ -19,7 +19,7 @@ import { computed, onUnmounted, ref, toValue } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import {
   getSparkNodeChildren,
-  type IModuleContext,
+  type ModuleContext,
   type ModuleContextCapability,
   type SparkNode,
   type SparkNodeChildren,
@@ -48,8 +48,8 @@ const DEFAULT_TOOLBAR_POSITION: ToolbarPosition = 'top'
  */
 export function useContainerModuleContext(
   capability: ModuleContextCapability | null,
-): Ref<IModuleContext | null> {
-  const moduleContext = ref<IModuleContext | null>(capability?.getCurrent() ?? null)
+): Ref<ModuleContext | null> {
+  const moduleContext = ref<ModuleContext | null>(capability?.getCurrent() ?? null)
 
   const unsubscribe = capability?.subscribe((next) => {
     moduleContext.value = next
