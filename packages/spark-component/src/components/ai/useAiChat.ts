@@ -155,7 +155,7 @@ export interface AiSseEventEntry {
 /**
  * SSE 事件的业务归属信息。
  *
- * 由 App AI Host/transport 附加，帮助把底层 SSE 事件映射回业务注册、
+ * 由 App AI transport 附加，帮助把底层 SSE 事件映射回业务注册、
  * 业务实例、事件模块和前端 turn。
  */
 export interface AiSseEventScope {

@@ -12,7 +12,7 @@
 
 ### 01:20 核心机制
 
-SPARK_VIEW 的 monorepo 不是为了看起来整齐，而是为了划边界。根应用负责集成，`spark-component` 负责组件解释和运行时，`spark-data` 负责数据模型，`spark-page-config` 负责配置加载和编译，`spark-ai` 负责通用 AI 协议和业务模块接入。
+SPARK_VIEW 的 monorepo 不是为了看起来整齐，而是为了划边界。根应用负责集成，`spark-component` 负责组件解释和运行时，`spark-data` 负责数据模型，`spark-page-config` 负责配置加载和编译，`spark-ai` 负责 AI Core 协议和业务模块接入。
 
 ### 03:30 源码跟读
 

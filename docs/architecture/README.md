@@ -12,4 +12,4 @@
 
 - 这里记录“系统为什么这样设计”，不是“新手怎么使用”。
 - 若文档依赖旧实现前提，必须在文件顶部明确归档说明。
-- 与 AI Core、通用宿主或 AI 业务服务直接相关的规则不要放这里，统一放到 [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](../ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)。
+- 与 AI Core、显式业务会话或 AI 业务服务直接相关的规则不要放这里，统一放到 [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](../ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)。

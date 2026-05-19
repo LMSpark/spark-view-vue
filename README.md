@@ -209,7 +209,7 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 ## 📚 文档导航
 
 - [🏗️ 架构设计](docs/architecture/DATAFLOW_ARCHITECTURE.md) - 完整的数据流和分层架构
-- [🤖 SPARK AI 包使用指南](docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md) - AI Core、通用宿主与 AI 业务服务关系的唯一入口
+- [🤖 SPARK AI 包使用指南](docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md) - AI Core、业务按钮与显式业务会话关系的唯一入口
 - [⚙️ 组件开发](docs/guides/COMPONENT_DEVELOPMENT.md) - 组件注册和能力系统
 - [📊 数据管理](docs/guides/DATA_MANAGEMENT.md) - DataSet 和 TreeManager 使用
 - [🌲 树能力总览](docs/guides/TREE_CAPABILITY.md) - 树容器、DataView、TreeManager、导航树 API 与零代码动作

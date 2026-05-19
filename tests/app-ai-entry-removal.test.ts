@@ -18,8 +18,8 @@ describe('app shell AI entry removal', () => {
   })
 
   it('should not expose the generic App AI entry from the default header', () => {
-    expect(headerSource).not.toContain("AI 宿主")
     expect(headerSource).not.toContain("command=\"ai-chat\"")
+    expect(headerSource).not.toContain("'user-command', 'ai-chat'")
     expect(appSource).toContain(':upload-file="uploadAppAiAttachment"')
   })
 })

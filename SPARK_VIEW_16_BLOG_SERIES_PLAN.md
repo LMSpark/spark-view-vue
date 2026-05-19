@@ -619,7 +619,7 @@ flowchart LR
 
 ### 第 15 篇：业务 AI 落地样例：以 Page Design 为第一块试金石
 
-**一句话核心论点**：PageDesign 只是通用 AI Runtime 的首个业务样例，它由 nodeTree、dataset、jsonDoc、textModel、knowledge 等子模块组成，用来证明自然语言可以受约束地落到四文件变更。
+**一句话核心论点**：PageDesign 只是 AI Core Runtime 的首个业务样例，它由 nodeTree、dataset、jsonDoc、textModel、knowledge 等子模块组成，用来证明自然语言可以受约束地落到四文件变更。
 
 **目标读者与收益**
 

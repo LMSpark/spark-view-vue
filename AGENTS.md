@@ -62,7 +62,18 @@ tests/                  # 根级 Vitest 测试
 5. **绝不要在 `clearDataSet()` 中调用 `DataSet.destroy()`。** DataSet 实例会跨导航缓存复用。
 6. **配置优先。** 优先使用 `rule.json`、`pagedata.json` 和现有渲染器能力。只有配置无法表达行为时才使用 `script.js`。
 7. **Fail-fast。** 不要添加掩盖缺失 API、无效配置或状态不一致的静默回退。
-8. **Commit scope 仅限于： `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
+8. **Commit scope 仅限于：** `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
+
+## AI 代码生成行为准则
+
+Codex 生成或修改代码时，必须遵守 `docs/ai/AI_CODE_GENERATION_BEHAVIOR.md`。
+
+核心方向：
+- 不要默认用 `interface` 搞一切。
+- 优先按“接口契约 -> class 基础/默认实现 -> 具体 class -> 必要子类”的层次组织代码。
+- 只有稳定契约、跨模块能力、DTO/config/payload 或多个实现共享协议才使用 `interface`。
+- 如果只有一个实现，默认使用具体 class 或普通函数，不机械创建 `XxxInterface` / `XxxImpl`。
+- 泛型、工具类型和公共导出必须收敛；新增抽象前必须有真实重复、稳定扩展点或跨模块契约。
 
 ## DataViewKey 绑定格式
 

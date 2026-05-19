@@ -19,7 +19,7 @@
  * @catalogInternal
  * @description AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。
  *
- * AiLauncherButton — 通用 AI 入口按钮。
+ * AiLauncherButton — 业务 AI 会话入口按钮。
  *
  * 组件只做一件事：绑定一个 AI 业务注册体（`config`）并控制面板开关。
  * 不再承担任何摊平业务字段拼装逻辑。

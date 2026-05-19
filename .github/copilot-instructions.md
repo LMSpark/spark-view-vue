@@ -38,6 +38,7 @@
 
 ## 不可协商规则
 
+- **AI 代码生成行为准则：** 生成或修改代码必须遵守 [docs/ai/AI_CODE_GENERATION_BEHAVIOR.md](../docs/ai/AI_CODE_GENERATION_BEHAVIOR.md)。不要默认用 `interface`、泛型和零散导出扁平化一切；优先按“接口契约 -> class 基础/默认实现 -> 具体 class -> 必要子类”的层次组织。
 - **UI 组装强制 SOP**（AI Tool 调用规范）：
   1. 需要构造组件时，先调用 `queryPayloads({})` 或 `queryPayloads({ category: 'container' })` / `queryPayloads({ keyword: '...' })` 查全量/分类/关键词参数荷载列表。
   2. 选定组件类型（如 r-table）后，必定调用 `guidePayload({ key: 'r-table' })` 拉取该型 SparkNode JSON Schema (配置规格)。
@@ -74,6 +75,7 @@
 扩展本文档前，先把现有文档当作规范来源。
 
 - [docs/README.md](../docs/README.md) — 文档索引和阅读顺序
+- [docs/ai/AI_CODE_GENERATION_BEHAVIOR.md](../docs/ai/AI_CODE_GENERATION_BEHAVIOR.md) — Codex、Copilot、Claude 共同遵守的代码生成行为准则
 - [docs/guides/QUICKSTART.md](../docs/guides/QUICKSTART.md) — 本地设置和启动流程
 - [docs/guides/DATA_MANAGEMENT.md](../docs/guides/DATA_MANAGEMENT.md) — `DataSet`、`DataView`、关系、计算列、聚合
 - [docs/guides/CONFIG_SYSTEM.md](../docs/guides/CONFIG_SYSTEM.md) — 页面配置、脚本边界、运行时配置行为

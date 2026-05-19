@@ -584,8 +584,8 @@ flowchart TD
 ```mermaid
 flowchart TD
   LLM["LLM"]
-  Host["App AI Host"]
-  Transport["FetchAppAiHostTransport"]
+  Panel["AppAiPanel / RuntimeMonitor"]
+  Transport["FetchAppAiTransport"]
   BackendSession["spark-ai-server<br/>AiSessionService"]
   Runtime["PageDesignModule / AiRuntime"]
   Service["PageDesignService"]
@@ -595,13 +595,13 @@ flowchart TD
   TextModels["script.js / style.css live model"]
   Files["rule / pagedata / script / style"]
 
-  Host --> Transport
+  Panel --> Transport
   Transport --> BackendSession
   BackendSession --> LLM
   LLM --> BackendSession
   BackendSession --> Transport
-  Transport --> Host
-  Host --> Runtime
+  Transport --> Panel
+  Panel --> Runtime
   Runtime --> Service
   Service --> EditHost
   EditHost --> NodeTree
@@ -612,7 +612,7 @@ flowchart TD
   TextModels --> Files
 ```
 
-这里还有一个关键细节：LLM tool call 的闭环由 [src/services/ai-host/tool-loop.ts](../src/services/ai-host/tool-loop.ts) 驱动。后端 SSE 返回 `toolCalls` 后，前端在本地执行 `runtime.executeFunctionCall`，再把 assistant/tool messages 通过 `/turn/append` 追加回后端会话。因此后端保存的是 LLM 对话、计划中的 tool calls 和追加回去的 tool result 消息；页面配置的实际编辑仍发生在前端宿主绑定的编辑对象里。
+这里还有一个关键细节：LLM tool call 的闭环由 [packages/spark-ai/src/core/host/tool-loop.ts](../packages/spark-ai/src/core/host/tool-loop.ts) 驱动。后端 SSE 返回 `toolCalls` 后，前端在本地执行 `runtime.executeFunctionCall`，再把 assistant/tool messages 通过 `/turn/append` 追加回后端会话。因此后端保存的是 LLM 对话、计划中的 tool calls 和追加回去的 tool result 消息；页面配置的实际编辑仍发生在前端业务 runtime 绑定的编辑对象里。
 
 ### 12.3 后端 AI session
 
@@ -968,15 +968,15 @@ flowchart LR
 12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView 领域事件如何映射到 UI 状态。
 13. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Core 组合根和函数调用边界。
 14. [packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts)：理解 page-design 工具如何绑定页面编辑服务。
-15. [src/services/ai-host/tool-loop.ts](../src/services/ai-host/tool-loop.ts)：理解 LLM tool call 如何在前端执行并 append 回后端。
-16. [src/services/ai-host/transport.ts](../src/services/ai-host/transport.ts)：理解前端 AI transport、SSE envelope unwrap 和 protocol v3。
+15. [packages/spark-ai/src/core/host/tool-loop.ts](../packages/spark-ai/src/core/host/tool-loop.ts)：理解 LLM tool call 如何在前端执行并 append 回后端。
+16. [src/services/app-ai/transport.ts](../src/services/app-ai/transport.ts)：理解前端 AI transport、SSE envelope unwrap 和 protocol v3。
 17. [src/views/app/dev-system/DevSystem.vue](../src/views/app/dev-system/DevSystem.vue)：理解设计时工作台。
 18. [spark-ai-server/src/main/java/com/spark/ai/api/ApiEnvelopeAdvice.java](../spark-ai-server/src/main/java/com/spark/ai/api/ApiEnvelopeAdvice.java)：理解统一 API envelope。
 19. [spark-ai-server/src/main/java/com/spark/ai/security/AccessGuardService.java](../spark-ai-server/src/main/java/com/spark/ai/security/AccessGuardService.java)：理解 tenant/project/user 访问校验。
 20. [spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java](../spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java)：理解页面配置存储 SPI。
 21. [spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java](../spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java)：理解后端 LLM 会话持久化和 SSE envelope。
 22. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
-23. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 AI Core、通用宿主与 AI 业务服务关系。
+23. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 AI Core、显式业务会话与 APP 装配关系。
 
 ## 21. 结语
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * 通用 AI 对话请求体。
+ * AI Core 对话请求体。
  *
  * POST /api/ai/chat/stream
  * {

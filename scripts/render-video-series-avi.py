@@ -20,7 +20,7 @@ EPISODES = [
         "long": [
             ("为什么值得拆成 16 篇", "从页面资产化到生产工具链", "真实后台页面会长出主从表、树数据、权限、版本回滚和 AI 修改。这个系列要回答的，是怎样把页面变成可持续演进的软件资产。"),
             ("一条工程主线", "四文件、Renderer、DataSet、权限、AI、DevSystem", "SPARK_VIEW 的答案不是某个组件，而是一组工程边界：资产、运行时、数据内核、权限边界、AI Runtime 和生产工具链。"),
-            ("先抓主骨架", "1 / 2 / 7 / 10 / 13 / 14 / 16", "快速建立全局感，可以先看理念、四文件、运行时、数据模型、权限边界、通用 AI 和 DevSystem。"),
+            ("先抓主骨架", "1 / 2 / 7 / 10 / 13 / 14 / 16", "快速建立全局感，可以先看理念、四文件、运行时、数据模型、权限边界、AI Core 和 DevSystem。"),
             ("完整跟源码", "从理念走到生产化", "如果要维护或改造这套系统，就按顺序看完。下一集先拆掉一个误会：SPARK_VIEW 不是 JSON 表单生成器。"),
         ],
         "short": [
@@ -110,7 +110,7 @@ def render_frame(episode_title: str, scene: tuple[str, str, str], kind: str, ind
     draw.text((732, 244), "Video Series", font=FONT_SUBTITLE, fill="#5E6673")
     draw.text((732, 302), f"{kind.upper()}  {index:02d}/{total:02d}", font=FONT_BADGE, fill="#5E35B1")
 
-    labels = ["页面资产化", "运行时解释", "数据内核", "权限边界", "通用 AI", "DevSystem"]
+    labels = ["页面资产化", "运行时解释", "数据内核", "权限边界", "AI Core", "DevSystem"]
     for i, label in enumerate(labels):
         x = 730 + (i % 3) * 136
         y = 348 + (i // 3) * 42

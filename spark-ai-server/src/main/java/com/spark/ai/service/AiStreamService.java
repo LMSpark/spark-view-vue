@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 通用 AI 流式对话服务（DeepSeek 深度适配）。
+ * AI Core 流式对话服务（DeepSeek 深度适配）。
  *
  * <ul>
  *   <li>调用 OpenAI 兼容端点（stream: true），逐 token 流式转发给客户端 SSE。</li>
