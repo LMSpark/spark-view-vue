@@ -1,6 +1,21 @@
 import { describe, it, expect } from 'vitest'
 import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 import { CrudService } from '../crud-service'
+import { getMember, requireRecord } from './test-type-helpers'
+
+type SanitizeDataForUpload = (data: Record<string, unknown>) => unknown
+
+function isSanitizeDataForUpload(value: unknown): value is SanitizeDataForUpload {
+  return typeof value === 'function'
+}
+
+function sanitizeDataForUpload(service: CrudService, data: Record<string, unknown>): Record<string, unknown> {
+  const member = getMember(service, 'sanitizeDataForUpload')
+  if (!isSanitizeDataForUpload(member)) {
+    throw new Error('Expected sanitizeDataForUpload method')
+  }
+  return requireRecord(member(data), 'Expected sanitized data to be an object')
+}
 
 describe('CrudService - Permission Data Sanitization', () => {
   it('should sanitize permission fields from data before upload', () => {
@@ -24,8 +39,7 @@ describe('CrudService - Permission Data Sanitization', () => {
       }
     }
 
-    // Call the private method using type assertion
-    const sanitized = (service as any).sanitizeDataForUpload(testData)
+    const sanitized = sanitizeDataForUpload(service, testData)
 
     // Verify permission fields are removed
     expect(sanitized).not.toHaveProperty(INSTANCE_PERMISSION_FIELD)
@@ -46,7 +60,7 @@ describe('CrudService - Permission Data Sanitization', () => {
       value: 456
     }
 
-    const sanitized = (service as any).sanitizeDataForUpload(testData)
+    const sanitized = sanitizeDataForUpload(service, testData)
 
     expect(sanitized.name).toBe('Clean Item')
     expect(sanitized.value).toBe(456)

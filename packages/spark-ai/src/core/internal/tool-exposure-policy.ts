@@ -1,7 +1,7 @@
 import type { AiRuntimeKnowledgeProjection } from '../protocol/runtime-protocol'
 import { AiInvocationProtocol } from './invocation-helpers'
 
-export interface AiRuntimeToolExposurePolicyOptions {
+export type AiRuntimeToolExposurePolicyOptions = {
   readonly threshold?: number | undefined
   readonly initialModuleIds?: readonly string[] | ReadonlySet<string> | undefined
   readonly guideFunctionId?: string | undefined

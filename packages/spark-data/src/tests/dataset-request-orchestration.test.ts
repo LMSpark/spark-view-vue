@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import { RequestState } from '../types'
+import type { QueryParams } from '../types'
 
 function viewDependency(
   parent: string,
@@ -36,15 +37,15 @@ describe('DataView.requestData orchestration', () => {
     const pSpy = vi.spyOn(pView, 'loadFromServer').mockImplementation(async () => {
       pView.rows.splice(0, pView.rows.length, { id: 11 })
       pView.requestState = RequestState.Loaded
-      return { success: true, data: pView.rows } as any
+      return { success: true, data: pView.rows }
     })
 
-    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
+    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: QueryParams) => {
       expect(params).toBeDefined()
-      expect(params.filter).toEqual({ field: 'parentId', op: '==', value: 11 })
+      expect(params?.filter).toEqual({ field: 'parentId', op: '==', value: 11 })
       cView.rows.splice(0, cView.rows.length, { id: 101, parentId: 11 })
       cView.requestState = RequestState.Loaded
-      return { success: true, data: cView.rows } as any
+      return { success: true, data: cView.rows }
     })
 
     expect(pView.requestState).toBe(RequestState.Idle)
@@ -81,7 +82,7 @@ describe('DataView.requestData orchestration', () => {
     // parent load succeeds, but returns no rows
     const pSpy = vi.spyOn(pView, 'loadFromServer').mockImplementation(async () => {
       pView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
     const cSpy = vi.spyOn(cView, 'loadFromServer')
 
@@ -122,15 +123,15 @@ describe('DataView.requestData orchestration', () => {
       // 直接写 _currentRowId，避免 setCurrentRow 触发 currentRowChanged 干扰编排
       pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null
       pView.requestState = RequestState.Loaded
-      return { success: true, data: pView.rows } as any
+      return { success: true, data: pView.rows }
     })
 
-    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
+    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: QueryParams) => {
       expect(params).toBeDefined()
-      expect(params.filter).toEqual({ field: 'parentUuid', op: '==', value: 'p-1' })
+      expect(params?.filter).toEqual({ field: 'parentUuid', op: '==', value: 'p-1' })
       cView.rows.splice(0, cView.rows.length, { id: 101, parentUuid: 'p-1' })
       cView.requestState = RequestState.Loaded
-      return { success: true, data: cView.rows } as any
+      return { success: true, data: cView.rows }
     })
 
     await cView.requestData()
@@ -185,11 +186,11 @@ describe('DataView.requestData orchestration', () => {
     pView.rows.splice(0, pView.rows.length, { id: 11 }, { id: 12 })
     pView.requestState = RequestState.Loaded
 
-    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
+    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: QueryParams) => {
       expect(params).toBeDefined()
-      expect(params.page).toBe(1)
-      expect(params.pageSize).toBe(20)
-      expect(params.filter).toEqual({
+      expect(params?.page).toBe(1)
+      expect(params?.pageSize).toBe(20)
+      expect(params?.filter).toEqual({
         type: 'and',
         children: [
           { field: 'parentId', op: 'in', value: [11, 12] },
@@ -197,7 +198,7 @@ describe('DataView.requestData orchestration', () => {
         ],
       })
       cView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
 
     await cView.requestData()
@@ -235,24 +236,24 @@ describe('DataView.requestData orchestration', () => {
       aView.rows.splice(0, aView.rows.length, { id: 1 })
       aView.requestState = RequestState.Loaded
       aView.events.emit('rowsChanged')
-      return { success: true, data: aView.rows } as any
+      return { success: true, data: aView.rows }
     })
 
-    const bSpy = vi.spyOn(bView, 'loadFromServer').mockImplementation(async (params?: any) => {
+    const bSpy = vi.spyOn(bView, 'loadFromServer').mockImplementation(async (params?: QueryParams) => {
       expect(params).toBeDefined()
-      expect(params.filter).toEqual({ field: 'aId', op: '==', value: 1 })
+      expect(params?.filter).toEqual({ field: 'aId', op: '==', value: 1 })
       bView.rows.splice(0, bView.rows.length, { id: 10, aId: 1 })
       bView.requestState = RequestState.Loaded
       bView.events.emit('rowsChanged')
-      return { success: true, data: bView.rows } as any
+      return { success: true, data: bView.rows }
     })
 
-    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
+    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: QueryParams) => {
       expect(params).toBeDefined()
-      expect(params.filter).toEqual({ field: 'bId', op: '==', value: 10 })
+      expect(params?.filter).toEqual({ field: 'bId', op: '==', value: 10 })
       cView.rows.splice(0, cView.rows.length, { id: 100, bId: 10 })
       cView.requestState = RequestState.Loaded
-      return { success: true, data: cView.rows } as any
+      return { success: true, data: cView.rows }
     })
 
     // 只调用 A 的 C — 期望 B 和 C 被 step 4.4 自动级联触发
@@ -288,7 +289,7 @@ describe('DataView.requestData orchestration', () => {
       // requestData 在调 loadFromServer 之前处于 Preparing 阶段
       capturedState = view.requestState
       view.requestState = RequestState.Loaded
-      return { success: true } as any
+      return { success: true }
     })
 
     await view.requestData()

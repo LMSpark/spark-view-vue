@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
+import { requireArray, requireRecord } from './test-type-helpers'
 
 describe('Cascade with computed parent field on tree data', () => {
   it('should apply computed columns to nested children after updateFromServer', () => {
@@ -43,7 +45,7 @@ describe('Cascade with computed parent field on tree data', () => {
     const parentView = ds.getView('Parent', 'default')!
 
     // Simulate tree data load with nested children
-    const treeData: any[] = [
+    const treeData: DataRow[] = [
       { id: 1, kind: 'a', children: [
         { id: 2, kind: 'b', children: [] }
       ]}
@@ -59,7 +61,7 @@ describe('Cascade with computed parent field on tree data', () => {
     expect(rootRow!['computedKey']).toBe('typeA')
 
     // Verify computed column on nested child (this is what the tree-traversal fix ensures)
-    const nestedChild = (rootRow as any)?.children?.[0]
+    const nestedChild = requireRecord(requireArray(rootRow?.['children'], 'Expected root children')[0], 'Expected nested child')
     expect(nestedChild).toBeDefined()
     expect('computedKey' in nestedChild!).toBe(true)
     expect(nestedChild!['computedKey']).toBe('typeB')

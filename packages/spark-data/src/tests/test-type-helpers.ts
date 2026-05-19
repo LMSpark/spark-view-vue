@@ -17,6 +17,11 @@ export function requireRecord(value: unknown, message: string): Record<string, u
   throw new Error(message)
 }
 
+export function requireArray(value: unknown, message: string): unknown[] {
+  if (Array.isArray(value)) return value
+  throw new Error(message)
+}
+
 export function requireNumber(value: unknown, message: string): number {
   if (typeof value === 'number') return value
   throw new Error(message)

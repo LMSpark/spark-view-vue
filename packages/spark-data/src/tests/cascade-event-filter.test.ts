@@ -75,7 +75,7 @@ describe('cascade event filter — no spurious child requests', () => {
     // 子视图 mock
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
       cView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
 
     // 父仅发出 selectedRowsChanged 事件（用户多选，但子视图 dep=currentRow，与之无关）
@@ -95,11 +95,13 @@ describe('cascade event filter — no spurious child requests', () => {
 
     // 父已加载，selectedRows 设为第一行
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView._selectedRowIds.splice(0, pView._selectedRowIds.length, pView.getPkKey(pView.rows[0]!) as string | number)
+    const selectedKey = pView.getPkKey(pView.rows[0]!)
+    if (selectedKey === null) throw new Error('Expected selected row key')
+    pView._selectedRowIds.splice(0, pView._selectedRowIds.length, selectedKey)
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
       cView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
 
     // 父仅发出 currentRowChanged 事件（用户点选某行，但子视图 dep=selectedRows，与之无关）
@@ -121,7 +123,7 @@ describe('cascade event filter — no spurious child requests', () => {
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
       cView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
 
     pView.events.emit('currentRowChanged', pView.rows[0]!)
@@ -142,10 +144,10 @@ describe('cascade event filter — no spurious child requests', () => {
     setParentLoaded(pView, [{ id: 42 }])
     pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null
 
-    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
+    const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: { filter?: unknown }) => {
       expect(params?.filter).toEqual({ field: 'orderId', op: '==', value: 42 })
       cView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
 
     pView.events.emit('currentRowChanged', pView.currentRow)
@@ -166,7 +168,7 @@ describe('cascade event filter — no spurious child requests', () => {
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
       cView.requestState = RequestState.Loaded
-      return { success: true, data: [] } as any
+      return { success: true, data: [] }
     })
 
     pView.events.emit('rowsChanged')
@@ -230,7 +232,7 @@ describe('cascade reload — parent changes during child loading triggers immedi
       loadCallCount.push(callIndex)
       cView.rows.splice(0, cView.rows.length, { id: 100 + callIndex, orderId: pView.currentRow?.['id'] ?? 0 })
       cView.requestState = RequestState.Loaded
-      return { success: true, data: cView.rows } as any
+      return { success: true, data: cView.rows }
     })
 
     // 启动第一次加载（dep=currentRow, currentRow=id=1）
