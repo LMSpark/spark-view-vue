@@ -1,16 +1,16 @@
-import {
-  type AiFunctionRegistration,
-  type AiRuntimeFunctionCallResult,
-  type AiRuntimeKnowledgeProjection,
-  type AiRuntimeMessageRole,
-  type AiRuntimeMessageSource,
-  type AiRuntimeStartSessionResult,
-  type FunctionExecutionContext,
+import type {
+  AiFunctionRegistration,
+  AiRuntimeFunctionCallResult,
+  AiRuntimeKnowledgeProjection,
+  AiRuntimeMessageRole,
+  AiRuntimeMessageSource,
+  AiRuntimeStartSessionResult,
+  FunctionExecutionContext,
 } from '../../core/protocol/runtime-contracts'
-import {
-  type LlmJsonObject,
-  type LlmJsonSchema,
-  type LlmParameterSchemaRoot,
+import type {
+  LlmJsonObject,
+  LlmJsonSchema,
+  LlmParameterSchemaRoot,
 } from '../../core/protocol/parameter-schema'
 import { LlmParamsValidator } from '../../core/internal/llm-params-validator'
 import {

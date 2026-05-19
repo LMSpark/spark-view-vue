@@ -1,15 +1,15 @@
-import {
-  type AiModuleRegistration,
-  type AiFunctionRegistration,
-  type AiRuntimeFunctionCallResult,
-  type AiRuntimeKnowledgeProjection,
-  type AiRuntimeMessageRole,
-  type AiRuntimeMessageSource,
-  type FunctionExecutionContext,
+import type {
+  AiModuleRegistration,
+  AiFunctionRegistration,
+  AiRuntimeFunctionCallResult,
+  AiRuntimeKnowledgeProjection,
+  AiRuntimeMessageRole,
+  AiRuntimeMessageSource,
+  FunctionExecutionContext,
 } from '../../core/protocol/runtime-contracts'
-import {
-  type LlmJsonSchema,
-  type LlmParameterSchemaRoot,
+import type {
+  LlmJsonSchema,
+  LlmParameterSchemaRoot,
 } from '../../core/protocol/parameter-schema'
 import { AiRuntime } from '../../core/internal/runtime/ai-runtime'
 import { AiKnowledgeCatalog } from '../../core/internal/knowledge/knowledge-tool-catalog'
@@ -205,10 +205,12 @@ const PAGE_DESIGN_PAYLOAD_FUNCTIONS: readonly AiFunctionRegistration[] = [
   },
 ]
 
-function toObject(value: unknown): Record<string, unknown> | null {
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null
+}
+
+function toObject(value: unknown): Record<string, unknown> | null {
+  return isObjectRecord(value) ? value : null
 }
 
 function toServiceContext(context: PageDesignRuntimeContext | FunctionExecutionContext): PageDesignServiceContext {

@@ -21,7 +21,7 @@ import type {
   AiHostBusinessRuntime,
   AiHostBusinessRuntimeContext,
 } from '../core/host/types'
-import { AiHostBusinessRegistry } from '../core/host/business-registry'
+import type { AiHostBusinessRegistry } from '../core/host/business-registry'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config'
 import type { RuntimeBackedBusinessModule } from './internal/registration-base'
 import { LeaveRequestModule } from './leave-request'

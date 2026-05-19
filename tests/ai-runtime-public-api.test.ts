@@ -128,6 +128,7 @@ describe('ai runtime class-only public surface', () => {
     expect(api.businessId).toBe('legacyBusiness')
     expect(api.getBusinessRegistrationData()).toMatchObject({
       businessId: 'legacyBusiness',
+      description: 'Legacy prompt.',
       prompt: 'Legacy prompt.',
     })
     expect(api.getBusinessRegistrationStoreSnapshot()).toMatchObject({

@@ -235,7 +235,7 @@ export class PageDataLoader extends BaseDataLoader {
 - 新增注册模块优先继承或组合已有 class：`AiModuleRegistrationBase`、`StaticAiToolModule`、`RuntimeBackedBusinessModule`，或在本地建立清晰的 class 层次。
 - 注册对象不要使用匿名 `class extends ...`；需要临时注册层时也使用具名本地 class。
 - 消费层注册运行时必须走 `registerModule()` / module-bound API 主路径；`registerBusiness()` 只留给 core 公共兼容面。
-- 消费层不得依赖 `AiRegisteredBusinessApi` 或相对导入包根 `../index`；需要能力时直接依赖本层 class 或 core/host 下层出口。
+- 消费层不得依赖 `AiRegisteredBusinessApi`、相对包根 `../index`、`../core`、`../../core`、`../core/host` 等 barrel 入口；同包内部按 protocol/internal/host 的具体文件导入，应用层只使用公开 subpath（如 `@spark-view/spark-ai/host`）。
 - runtime 主路径使用 `getFunctions()`；`.functions` 只用于兼容旧读取方式。
 - 只有 `packages/spark-ai/src/core/**` 可以处理旧 `I*` 兼容适配；适配逻辑应收敛到内部 class，不向消费层扩散。
 

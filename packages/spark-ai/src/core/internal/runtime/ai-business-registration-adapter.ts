@@ -6,6 +6,7 @@ import type {
   AiModuleRegistrationData,
   AiModuleRegistrationStoreSnapshot,
 } from '../../protocol/runtime-contracts'
+import { isRecord } from './runtime-utils'
 
 /**
  * 兼容旧 Business 注册命名与新 Module 注册主路径的内部适配器。
@@ -15,27 +16,25 @@ import type {
 export class AiBusinessRegistrationAdapter {
   /** 识别 Business 源是否为运行时实例（有 getFunctions 方法）。 */
   isBusinessRegistrationInstance(source: unknown): source is IBusinessRegistration {
-    return typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function'
+    return isRecord(source) && typeof source['getFunctions'] === 'function'
   }
 
   /** 判断是否为 BusinessData 格式。 */
   isBusinessRegistrationDataFormat(source: unknown): source is IBusinessRegistrationData {
-    return typeof source === 'object'
-      && source !== null
+    return isRecord(source)
       && !this.isBusinessRegistrationInstance(source)
-      && typeof (source as { readonly businessId?: unknown }).businessId === 'string'
-      && Array.isArray((source as { readonly functions?: unknown }).functions)
-      && Array.isArray((source as { readonly modules?: unknown }).modules)
+      && typeof source['businessId'] === 'string'
+      && Array.isArray(source['functions'])
+      && Array.isArray(source['modules'])
   }
 
   /** 判断是否为 BusinessStoreSnapshot 格式。 */
   isBusinessStoreSnapshotFormat(source: unknown): source is IBusinessRegistrationStoreSnapshot {
-    return typeof source === 'object'
-      && source !== null
-      && typeof (source as { readonly rootBusinessPath?: unknown }).rootBusinessPath === 'string'
-      && typeof (source as { readonly rootModulePath?: unknown }).rootModulePath === 'string'
-      && Array.isArray((source as { readonly modules?: unknown }).modules)
-      && Array.isArray((source as { readonly functions?: unknown }).functions)
+    return isRecord(source)
+      && typeof source['rootBusinessPath'] === 'string'
+      && typeof source['rootModulePath'] === 'string'
+      && Array.isArray(source['modules'])
+      && Array.isArray(source['functions'])
   }
 
   /** Business 源转为 Module 源（识别类型后路由到具体转换）。 */

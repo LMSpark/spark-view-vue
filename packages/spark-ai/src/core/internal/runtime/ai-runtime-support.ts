@@ -604,7 +604,7 @@ export class AiRuntimeProjector {
   private isRuntimeRegistration(
     source: AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot,
   ): source is AiModuleRegistration {
-    return typeof (source as { readonly getFunctions?: unknown }).getFunctions === 'function'
+    return isRecord(source) && typeof source['getFunctions'] === 'function'
   }
 
   /** 动态 prompt provider 是运行时能力，不是可落库的注册内容。 */
@@ -621,13 +621,13 @@ export class AiRuntimeProjector {
     // 没有上下文参数时仍然克隆 schema，保证对外快照不可反向修改注册源。
     if (contextParams.length === 0) return cloneRuntimeValue(schema)
 
-    const cloned = cloneRuntimeValue(schema) as Record<string, unknown>
-    if (Object.keys(cloned).length !== 0 && cloned['type'] !== 'object') {
+    const cloned = cloneRuntimeValue(schema)
+    if (Object.keys(cloned).length !== 0 && cloned.type !== 'object') {
       throw new Error('paramsSchema root must be standard JSON Schema type=object')
     }
-    const properties = isRecord(cloned['properties']) ? { ...cloned['properties'] } : {}
-    const required = Array.isArray(cloned['required'])
-      ? cloned['required'].filter((key): key is string => typeof key === 'string')
+    const properties = cloned.properties === undefined ? {} : { ...cloned.properties }
+    const required = Array.isArray(cloned.required)
+      ? cloned.required.filter((key): key is string => typeof key === 'string')
       : []
     for (const param of contextParams) {
       properties[param.paramName] = {
