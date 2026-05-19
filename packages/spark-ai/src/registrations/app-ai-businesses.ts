@@ -5,25 +5,27 @@
  * 并注册到 AiHostBusinessRegistry。
  */
 
-import {
-  AiInvocationProtocol,
-  LeaveRequestModule,
-  PageDesignModule,
-  type AiModuleRegistrationData,
-  type AiRuntimeFunctionCallResult,
-  type AiRuntimeHistoryEntry,
-  type AiRuntimeMessageHistoryEntry,
-  type AiRuntimeSessionRecord,
-  type AiRuntimeStartSessionResult,
-} from '../index'
 import type {
+  AiRuntimeFunctionCallResult,
+  AiRuntimeHistoryEntry,
+  AiRuntimeMessageHistoryEntry,
+  AiRuntimeSessionRecord,
+  AiRuntimeStartSessionResult,
+} from '../core/protocol/runtime-contracts'
+import { AiInvocationProtocol } from '../core/internal/invocation-helpers'
+import type {
+  AiHostBusinessAfterFunctionCallOptions,
+  AiHostBusinessAppendMessageOptions,
+  AiHostBusinessExecuteFunctionCallOptions,
+  AiHostBusinessLifecycleDirective,
   AiHostBusinessRuntime,
   AiHostBusinessRuntimeContext,
-} from '../core/host'
-import type {
-  AiHostBusinessRegistry,
-} from '../core/host'
+} from '../core/host/types'
+import { AiHostBusinessRegistry } from '../core/host/business-registry'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config'
+import type { RuntimeBackedBusinessModule } from './internal/registration-base'
+import { LeaveRequestModule } from './leave-request'
+import { PageDesignModule } from './page-design'
 
 export interface RegisterAppAiBusinessesOptions {
   readonly registry: AiHostBusinessRegistry
@@ -116,90 +118,74 @@ function pageDesignEditHostUnavailableMessage(result: AiRuntimeFunctionCallResul
 /**
  * 基于模块的业务运行时抽象基类。
  *
- * LeaveRequestBusinessRuntime 和 PageDesignBusinessRuntime 有大量重复委托代码——
+ * LeaveRequestHostRuntime 和 PageDesignHostRuntime 有大量重复委托代码——
  * startSession、appendMessage、executeFunctionCall、endBusinessInstance、
  * getSessionHistory、releaseModuleInstance 都是把调用者的 options 注入
  * moduleId 后委托给内部模块。
  *
  * 提取此基类后，子类只需覆盖 moduleId、afterFunctionCall 或 getSystemPrompt。
  */
-abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
+abstract class ModuleBackedHostRuntime implements AiHostBusinessRuntime {
   /** 业务模块 ID */
   abstract readonly moduleId: string
 
-  /**
-   * 内部持有的业务模块实例，所有操作委托给它。
-   * 用 object 类型而非具体接口，避免两个模块 context 类型的协变冲突；
-   * 子类通过 override 声明为具体模块类型。
-   */
-  protected module: object
-
-  constructor(module: object) {
-    this.module = module
-  }
+  constructor(protected readonly module: RuntimeBackedBusinessModule) {}
 
   /** 注册数据（子类可覆盖，默认委托） */
-  getRegistrationData(): AiModuleRegistrationData {
-    return (this.module as { getRegistrationData(): AiModuleRegistrationData }).getRegistrationData()
+  getRegistrationData() {
+    return this.module.getRegistrationData()
   }
-
-  /** 业务注册数据（子类可覆盖，默认委托） */
 
   /** 开始 AI 会话 — 注入 moduleId 后委托给内部模块 */
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult> {
-    return (this.module as { startSession(o: Record<string, unknown>): Promise<AiRuntimeStartSessionResult> })
-      .startSession({ ...context, moduleId: this.moduleId })
+    return this.module.startSession({ ...context, moduleId: this.moduleId })
   }
 
   /** 追加消息到会话 — 注入 moduleId 后委托给内部模块 */
-  appendMessage(options: AiHostBusinessRuntimeContext & { role: 'system' | 'user' | 'assistant'; content: string; source?: 'system' | 'ui' | 'llm'; metadata?: Record<string, unknown> }): AiRuntimeMessageHistoryEntry {
-    return (this.module as { appendMessage(o: Record<string, unknown>): AiRuntimeMessageHistoryEntry })
-      .appendMessage({ ...options, moduleId: this.moduleId })
+  appendMessage(options: AiHostBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry {
+    return this.module.appendMessage({ ...options, moduleId: this.moduleId })
   }
 
   /** 读取 core session ledger 中的当前业务实例会话。 */
   getSession(context: AiHostBusinessRuntimeContext): AiRuntimeSessionRecord | null {
-    return (this.module as { getSession(o: Record<string, unknown>): AiRuntimeSessionRecord | null })
-      .getSession({ ...context, moduleId: this.moduleId })
+    return this.module.getSession({ ...context, moduleId: this.moduleId })
   }
 
   /** 枚举 core session ledger。面板监视器只从这里读取会话事实源。 */
   listSessions(): readonly AiRuntimeSessionRecord[] {
-    return (this.module as { listSessions(): readonly AiRuntimeSessionRecord[] }).listSessions()
+    return this.module.listSessions()
   }
 
   /** 执行函数调用 — 注入 moduleId 后委托给内部模块 */
-  executeFunctionCall(options: AiHostBusinessRuntimeContext & { action: string; args: unknown; projection?: unknown }): Promise<AiRuntimeFunctionCallResult<unknown>> {
-    return (this.module as { executeFunctionCall(o: Record<string, unknown>): Promise<AiRuntimeFunctionCallResult<unknown>> })
-      .executeFunctionCall({ ...options, moduleId: this.moduleId })
+  executeFunctionCall(options: AiHostBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
+    return this.module.executeFunctionCall({ ...options, moduleId: this.moduleId })
   }
 
   /** 函数调用后的生命周期指令 — 子类可覆盖，默认继续 */
-  afterFunctionCall(_options: AiHostBusinessRuntimeContext & { action: string; args: unknown; result: AiRuntimeFunctionCallResult<unknown> }): { status: 'continue' | 'complete' | 'abort'; reason?: string; finalAssistantMessage?: string; releaseInstance?: boolean } {
+  afterFunctionCall(_options: AiHostBusinessAfterFunctionCallOptions): AiHostBusinessLifecycleDirective {
     return { status: 'continue' }
   }
 
   /** 结束业务实例 — 注入 moduleId 后停止会话并可选释放实例 */
-  endBusinessInstance(context: AiHostBusinessRuntimeContext, directive: { status: 'continue' | 'complete' | 'abort'; reason?: string; finalAssistantMessage?: string; releaseInstance?: boolean }): void {
-    ;(this.module as { stopSession(o: Record<string, unknown>): void }).stopSession({
+  endBusinessInstance(context: AiHostBusinessRuntimeContext, directive: AiHostBusinessLifecycleDirective): void {
+    this.module.stopSession({
       ...context,
       moduleId: this.moduleId,
       reason: directive.reason ?? directive.status,
     })
     if (directive.releaseInstance === true) {
-      ;(this.module as { releaseModuleInstance(id: string): void }).releaseModuleInstance(context.moduleInstanceId)
+      this.module.releaseModuleInstance(context.moduleInstanceId)
     }
   }
 
   /** 获取会话历史 — 注入 moduleId 后委托给内部模块 */
   getSessionHistory(context: AiHostBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[] {
-    return (this.module as { getSessionHistory(o: Record<string, unknown>): readonly AiRuntimeHistoryEntry[] })
-      .getSessionHistory({ ...context, moduleId: this.moduleId })
+    return this.module.getSessionHistory({ ...context, moduleId: this.moduleId })
   }
 
   /** 释放模块实例 — 委托给内部模块 */
   releaseModuleInstance(moduleInstanceId: string): void {
-    ;(this.module as { releaseModuleInstance(id: string): void }).releaseModuleInstance(moduleInstanceId)
+    this.module.releaseModuleInstance(moduleInstanceId)
   }
 
   /** 获取系统提示词（可选覆盖，默认无） */
@@ -214,17 +200,14 @@ abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
  * - submitDraft / cancelDraft 后自动结束会话并释放实例
  * - 业务实例 ID 必须由按钮/API 在打开面板前显式传入
  */
-class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
+class LeaveRequestHostRuntime extends ModuleBackedHostRuntime {
   override readonly moduleId = LeaveRequestModule.moduleId
-
-  /** LeaveRequest 业务模块实例，持有草稿状态和 AI 运行时 */
-  declare protected readonly module: LeaveRequestModule
 
   override getSystemPrompt(_context: AiHostBusinessRuntimeContext): string {
     return createLeaveRequestSystemPrompt()
   }
 
-  override afterFunctionCall(options: AiHostBusinessRuntimeContext & { action: string; args: unknown; result: AiRuntimeFunctionCallResult<unknown> }): { status: 'continue' | 'complete' | 'abort'; reason?: string; finalAssistantMessage?: string; releaseInstance?: boolean } {
+  override afterFunctionCall(options: AiHostBusinessAfterFunctionCallOptions): AiHostBusinessLifecycleDirective {
     const functionId = actionFunctionId(options.action)
     if (functionId === 'submitDraft' && options.result.ok) {
       return {
@@ -253,10 +236,10 @@ class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
  * - 实例 ID 来自业务按钮解析出的当前页面 ID
  * - EditHost 不可用时自动结束会话
  */
-class PageDesignBusinessRuntime extends ModuleBackedBusinessRuntime {
+class PageDesignHostRuntime extends ModuleBackedHostRuntime {
   override readonly moduleId = PageDesignModule.moduleId
 
-  override afterFunctionCall(options: AiHostBusinessRuntimeContext & { action: string; args: unknown; result: AiRuntimeFunctionCallResult<unknown> }): { status: 'continue' | 'complete' | 'abort'; reason?: string; finalAssistantMessage?: string; releaseInstance?: boolean } {
+  override afterFunctionCall(options: AiHostBusinessAfterFunctionCallOptions): AiHostBusinessLifecycleDirective {
     const unavailableMessage = pageDesignEditHostUnavailableMessage(options.result)
     if (unavailableMessage !== null) {
       return {
@@ -272,14 +255,14 @@ class PageDesignBusinessRuntime extends ModuleBackedBusinessRuntime {
 
 export function registerAppAiBusinesses(options: RegisterAppAiBusinessesOptions): void {
   const leaveModule = new LeaveRequestModule()
-  options.registry.register(new LeaveRequestBusinessRuntime(leaveModule))
+  options.registry.register(new LeaveRequestHostRuntime(leaveModule))
 
   if (options.getPageDesignEditHost === undefined) return
 
   const pageDesignModule = new PageDesignModule({
     getEditToolHost: (context) => options.getPageDesignEditHost?.(context) ?? missingPageDesignEditHost(),
   })
-  options.registry.register(new PageDesignBusinessRuntime(pageDesignModule))
+  options.registry.register(new PageDesignHostRuntime(pageDesignModule))
 }
 
 function missingPageDesignEditHost(): never {

@@ -13,7 +13,7 @@ import type {
   AiRuntimeMessageHistoryEntry,
   AiRuntimeSessionRecord,
   AiRuntimeStartSessionResult,
-} from '../index'
+} from '../protocol/runtime-contracts'
 import type { AiModuleRegistrationData, IBusinessRegistrationData } from '../protocol/business-registration'
 export type { AiModuleRegistrationData, IBusinessRegistrationData }
 

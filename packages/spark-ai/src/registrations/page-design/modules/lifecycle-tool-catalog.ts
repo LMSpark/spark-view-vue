@@ -1,4 +1,6 @@
-import { type AiFunctionRegistration, type FunctionFailureMode, type IModuleRegistration, noParamsSchema } from '../../../core'
+import type { AiFunctionRegistration, FunctionFailureMode } from '../../../core/protocol/runtime-contracts'
+import { noParamsSchema } from '../../../core/internal/json-schema-helpers'
+import { StaticAiToolModule } from '../../internal/registration-base'
 
 export type EditLifecycleFunctionFailureMode = FunctionFailureMode
 export type EditLifecycleFunctionId = 'bootstrap' | 'describeProgress'
@@ -8,12 +10,17 @@ const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件�
 const BOOTSTRAP_RULE = 'bootstrap 仅做 live binding 可用性校验，不接收文件快照参数。'
 const PHASE_RULE = '执行成功后进入 editing phase。'
 
-export class LifecycleModule implements IModuleRegistration {
-  readonly moduleId = 'lifecycle'
-  readonly name = 'Page Design Lifecycle'
-  readonly entity: Record<string, () => unknown> = {}
-  readonly prompt = '页面设计编辑运行态引导与进度查询。'
-  readonly functions: readonly AiFunctionRegistration[] = [
+export class LifecycleModule extends StaticAiToolModule {
+  constructor() {
+    super({
+      moduleId: 'lifecycle',
+      name: 'Page Design Lifecycle',
+      description: '页面设计编辑运行态引导与进度查询。',
+      prompt: '页面设计编辑运行态引导与进度查询。',
+    })
+  }
+
+  override readonly functions: readonly AiFunctionRegistration[] = [
     {
       functionId: 'bootstrap',
       description: '引导编辑会话：校验 live binding 能力并进入 editing phase。',

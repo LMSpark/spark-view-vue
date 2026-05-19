@@ -1,30 +1,24 @@
 import {
-  AiRuntime,
-  LlmParamsValidator,
-  type IBusinessRegistration,
-  type IBusinessRegistrationData,
-  type IBusinessRegistrationStoreSnapshot,
   type AiFunctionRegistration,
-  type AiModuleRegistration,
-  type AiModuleRegistrationData,
-  type AiModuleRegistrationStoreSnapshot,
-  type AiRegisteredBusinessApi,
   type AiRuntimeFunctionCallResult,
-  type AiRuntimeFunctionCallTranslationResult,
-  type AiRuntimeHistoryEntry,
   type AiRuntimeKnowledgeProjection,
-  type AiRuntimeMessageHistoryEntry,
   type AiRuntimeMessageRole,
   type AiRuntimeMessageSource,
-  type AiRuntimeSessionRecord,
   type AiRuntimeStartSessionResult,
-  type AiRuntimeStopSessionResult,
   type FunctionExecutionContext,
-  type IModuleRegistration,
+} from '../../core/protocol/runtime-contracts'
+import {
   type LlmJsonObject,
   type LlmJsonSchema,
   type LlmParameterSchemaRoot,
-} from '../../core'
+} from '../../core/protocol/parameter-schema'
+import { LlmParamsValidator } from '../../core/internal/llm-params-validator'
+import {
+  RuntimeBackedBusinessModule,
+  type RuntimeBackedExecuteFunctionCallOptions,
+  type RuntimeBackedModuleContext,
+  StaticAiToolModule,
+} from '../internal/registration-base'
 import {
   LeaveRequestService,
   isLeaveRequestServiceResult,
@@ -103,12 +97,17 @@ const DRAFT_RESULT_SCHEMA: LlmJsonObject = {
   missingFields: 'string[] — 提交前仍缺少的字段。',
 }
 
-export class LeaveRequestModuleRegistration implements IModuleRegistration {
-  readonly moduleId = 'manualLeave'
-  readonly name = '人工请假'
-  readonly entity: Record<string, () => unknown> = {}
-  readonly prompt = '帮助员工收集、确认并提交人工请假申请。'
-  readonly functions: readonly AiFunctionRegistration[] = [
+export class LeaveRequestModuleRegistration extends StaticAiToolModule {
+  constructor() {
+    super({
+      moduleId: 'manualLeave',
+      name: '人工请假',
+      description: '帮助员工收集、确认并提交人工请假申请。',
+      prompt: '帮助员工收集、确认并提交人工请假申请。',
+    })
+  }
+
+  override readonly functions: readonly AiFunctionRegistration[] = [
   {
     functionId: 'describeDraft',
     description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
@@ -170,7 +169,7 @@ function toServiceContext(context: LeaveRequestRuntimeContext | FunctionExecutio
 }
 
 function validateParams(functionId: string, args: unknown): string | null {
-  const row = LEAVE_REQUEST_REGISTRATION.functions.find((r) => r.functionId === functionId)
+  const row = LEAVE_REQUEST_REGISTRATION.getFunctions().find((r) => r.functionId === functionId)
   if (!row) return `未知 ${functionId} 函数`
   const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
   return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
@@ -208,7 +207,7 @@ function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
 
-export class LeaveRequestModule implements IBusinessRegistration {
+export class LeaveRequestModule extends RuntimeBackedBusinessModule {
   static readonly moduleId = LEAVE_REQUEST_MODULE_ID
 
   static assertContext(context: { readonly moduleId: string }): asserts context is LeaveRequestRuntimeContext {
@@ -224,130 +223,35 @@ export class LeaveRequestModule implements IBusinessRegistration {
     return `leaveDraft:${randomId}`
   }
 
-  readonly businessId = LEAVE_REQUEST_MODULE_ID
-
-  readonly moduleId = LEAVE_REQUEST_MODULE_ID
-
-  readonly name = '人工请假'
-
-  readonly description = '帮助员工收集、确认并提交人工请假申请。'
-
-  readonly prompt = [
-    '你正在处理人工请假业务。请根据用户输入收集请假人、请假类型、开始日期、结束日期和请假事由。',
-    'Live state 由人工请假服务维护；不要声称已经保存到数据库，除非 submitDraft 成功。',
-    '提交前必须补齐必填字段；日期不明确时先追问，不要猜测。',
-  ].join('\n')
-
-  readonly entity: Record<string, () => unknown> = {}
-
-  readonly functions: readonly AiFunctionRegistration[] = LEAVE_REQUEST_REGISTRATION.functions
-
-  readonly modules: readonly AiModuleRegistration[] = []
-
   private readonly service: LeaveRequestService
 
-  private readonly core: AiRuntime
-
-  private readonly ai: AiRegisteredBusinessApi
-
   constructor(options: { now?: () => number } = {}) {
-    this.service = new LeaveRequestService(options.now)
-    this.core = new AiRuntime(options.now === undefined ? {} : { now: options.now })
-    this.ai = this.core.registerBusiness(this)
-  }
-
-  async projectKnowledge(context: LeaveRequestRuntimeContext): Promise<AiRuntimeKnowledgeProjection> {
-    LeaveRequestModule.assertContext(context)
-    return this.ai.projectKnowledge({
-      instanceId: context.instanceId,
-      moduleInstanceId: context.moduleInstanceId,
-      runtimeInstanceId: context.instanceId,
+    const service = new LeaveRequestService(options.now)
+    super({
+      moduleId: LEAVE_REQUEST_MODULE_ID,
+      name: '人工请假',
+      description: '帮助员工收集、确认并提交人工请假申请。',
+      prompt: [
+        '你正在处理人工请假业务。请根据用户输入收集请假人、请假类型、开始日期、结束日期和请假事由。',
+        'Live state 由人工请假服务维护；不要声称已经保存到数据库，除非 submitDraft 成功。',
+        '提交前必须补齐必填字段；日期不明确时先追问，不要猜测。',
+      ].join('\n'),
+      functions: LEAVE_REQUEST_REGISTRATION.getFunctions(),
+      runtimeOptions: options.now === undefined ? {} : { now: options.now },
     })
+    this.service = service
   }
 
-  async startSession(context: LeaveRequestRuntimeContext): Promise<AiRuntimeStartSessionResult> {
+  override async startSession(context: RuntimeBackedModuleContext): Promise<AiRuntimeStartSessionResult> {
     LeaveRequestModule.assertContext(context)
     this.service.getDraft(context.moduleInstanceId)
-    return this.ai.startSession({
-      instanceId: context.instanceId,
-      moduleInstanceId: context.moduleInstanceId,
-      runtimeInstanceId: context.instanceId,
-    })
+    return super.startSession(context)
   }
 
-  stopSession(options: LeaveRequestStopSessionOptions): AiRuntimeStopSessionResult {
+  override async executeFunctionCall(options: RuntimeBackedExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
     LeaveRequestModule.assertContext(options)
-    return this.ai.stopSession({
-      instanceId: options.instanceId,
-      moduleInstanceId: options.moduleInstanceId,
-      ...(options.reason === undefined ? {} : { reason: options.reason }),
-    })
-  }
-
-  appendMessage(options: LeaveRequestAppendMessageOptions): AiRuntimeMessageHistoryEntry {
-    LeaveRequestModule.assertContext(options)
-    return this.ai.appendMessage({
-      instanceId: options.instanceId,
-      moduleInstanceId: options.moduleInstanceId,
-      runtimeInstanceId: options.instanceId,
-      role: options.role,
-      content: options.content,
-      ...(options.source === undefined ? {} : { source: options.source }),
-      ...(options.metadata === undefined ? {} : { metadata: options.metadata }),
-    })
-  }
-
-  getSession(context: LeaveRequestRuntimeContext): AiRuntimeSessionRecord | null {
-    LeaveRequestModule.assertContext(context)
-    return this.ai.getSession(context.moduleInstanceId)
-  }
-
-  listSessions(): readonly AiRuntimeSessionRecord[] {
-    return this.ai.listSessions()
-  }
-
-  getSessionHistory(context: LeaveRequestRuntimeContext): readonly AiRuntimeHistoryEntry[] {
-    LeaveRequestModule.assertContext(context)
-    return this.ai.getSessionHistory(context.moduleInstanceId)
-  }
-
-  getRegistrationData(): AiModuleRegistrationData {
-    return this.ai.getRegistrationData()
-  }
-
-  getBusinessRegistrationData(): IBusinessRegistrationData {
-    return this.ai.getBusinessRegistrationData()
-  }
-
-  getRegistrationStoreSnapshot(): AiModuleRegistrationStoreSnapshot {
-    return this.ai.getRegistrationStoreSnapshot()
-  }
-
-  getBusinessRegistrationStoreSnapshot(): IBusinessRegistrationStoreSnapshot {
-    return this.ai.getBusinessRegistrationStoreSnapshot()
-  }
-
-  async translateFunctionCall(options: LeaveRequestExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallTranslationResult> {
-    LeaveRequestModule.assertContext(options)
-    return this.ai.translateFunctionCall({
-      instanceId: options.instanceId,
-      moduleInstanceId: options.moduleInstanceId,
-      runtimeInstanceId: options.instanceId,
-      action: options.action,
-      args: options.args,
-      ...(options.projection === undefined ? {} : { projection: options.projection }),
-    })
-  }
-
-  async executeFunctionCall(options: LeaveRequestExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
-    LeaveRequestModule.assertContext(options)
-    return this.ai.executeFunctionCall({
-      instanceId: options.instanceId,
-      moduleInstanceId: options.moduleInstanceId,
-      runtimeInstanceId: options.instanceId,
-      action: options.action,
-      args: options.args,
-      ...(options.projection === undefined ? {} : { projection: options.projection }),
+    return this.executeRegisteredFunctionCall({
+      ...options,
       validate: ({ functionRegistration, args }) => validateParams(functionRegistration.functionId, args),
       run: ({ functionRegistration, args, context }) => executeServiceMethod(functionRegistration.functionId, this.service, args, context),
       normalizeResult: (value) => isLeaveRequestServiceResult(value)
@@ -365,7 +269,7 @@ export class LeaveRequestModule implements IBusinessRegistration {
     return cloneJson(this.service.getDraft(leaveDraftId))
   }
 
-  releaseModuleInstance(leaveDraftId: string): void {
+  override releaseModuleInstance(leaveDraftId: string): void {
     this.service.releaseDraft(leaveDraftId)
   }
 }

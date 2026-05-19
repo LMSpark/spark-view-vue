@@ -2,7 +2,7 @@
  * 业务注册协议。
  *
  * 模块/业务注册契约、持久化快照结构、便捷基类。
- * 所有注册模块必须 `implements IModuleRegistration`。
+ * 新注册实现优先继承 class 主路径；I* 契约仅作为公共兼容类型保留。
  */
 
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'

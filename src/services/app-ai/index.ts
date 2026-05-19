@@ -1,3 +1,9 @@
+import type {
+  AiChatSendRequest,
+  AiSseEventInput,
+} from '@spark-view/spark-component'
+import type { AiHostStreamTurnInput } from '@spark-view/spark-ai/host'
+
 export { createAppAiPanelResolver, createAppAiRuntimeMonitor } from './panel-resolver'
 export type {
   AppAiPanelResolverOptions,
@@ -7,7 +13,10 @@ export type {
   AppAiRuntimeSessionSnapshot,
 } from './panel-resolver'
 export { FetchAppAiTransport, uploadAppAiAttachment } from './transport'
-export { AiHostBusinessRegistry as AppAiBusinessRegistry } from '@spark-view/spark-ai/host'
+export {
+  AiHostBusinessRegistry as AppAiBusinessRegistry,
+  toAiHostRuntimeScope as toRuntimeScope,
+} from '@spark-view/spark-ai/host'
 
 export {
   registerAppAiBusinesses,
@@ -47,27 +56,7 @@ export type {
   AiHostTurnMeta as AppAiTurnMeta,
 } from '@spark-view/spark-ai/host'
 
-import type {
-  AiChatSendRequest,
-  AiSseEventInput,
-} from '@spark-view/spark-component'
-import type {
-  AiHostBusinessRuntimeContext,
-  AiHostBusinessScope,
-} from '@spark-view/spark-ai/host'
-
-/** 将 AiHostBusinessScope 转为 AiHostBusinessRuntimeContext */
-export function toRuntimeScope(scope: AiHostBusinessScope): AiHostBusinessRuntimeContext {
-  return {
-    moduleId: scope.businessRegistrationId,
-    moduleInstanceId: scope.businessInstanceId,
-    instanceId: scope.instanceId,
-  }
-}
-
 export type AppAiSender = (request: AiChatSendRequest) => Promise<void>
-
-import type { AiHostStreamTurnInput } from '@spark-view/spark-ai/host'
 
 export type AppAiStreamTurnInput = Omit<AiHostStreamTurnInput, 'onSseEvent'> & {
   readonly onSseEvent?: ((event: AiSseEventInput) => void) | undefined

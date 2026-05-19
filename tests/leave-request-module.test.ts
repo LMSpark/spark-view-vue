@@ -22,6 +22,8 @@ describe('leave-request module', () => {
     expect(JSON.parse(JSON.stringify(registrationData))).toEqual(registrationData)
     expect(JSON.parse(JSON.stringify(registrationStore))).toEqual(registrationStore)
     expect(registrationData.moduleId).toBe(LeaveRequestModule.moduleId)
+    expect(registrationData.description).toBe('帮助员工收集、确认并提交人工请假申请。')
+    expect(registrationData.prompt).toContain('你正在处理人工请假业务。')
     expect(registrationData.functions.map((item) => item.functionId)).toEqual([
       'describeDraft',
       'setDraftFields',

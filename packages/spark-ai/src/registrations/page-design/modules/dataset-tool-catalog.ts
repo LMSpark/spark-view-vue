@@ -1,4 +1,16 @@
-import { type AiFunctionRegistration, type FunctionFailureMode, type IModuleRegistration, anySchema, arraySchema, booleanSchema, enumSchema, noParamsSchema, numberSchema, objectSchema, paramsSchema, stringSchema } from '../../../core'
+import type { AiFunctionRegistration, FunctionFailureMode } from '../../../core/protocol/runtime-contracts'
+import {
+  anySchema,
+  arraySchema,
+  booleanSchema,
+  enumSchema,
+  noParamsSchema,
+  numberSchema,
+  objectSchema,
+  paramsSchema,
+  stringSchema,
+} from '../../../core/internal/json-schema-helpers'
+import { StaticAiToolModule } from '../../internal/registration-base'
 
 export type DatasetCrudToolFunctionFailureMode = FunctionFailureMode
 export type DatasetCrudToolFunctionId = string
@@ -274,12 +286,17 @@ const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.ge
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
 const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用当前 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
 
-export class DatasetModule implements IModuleRegistration {
-  readonly moduleId = 'dataset'
-  readonly name = 'Page Design DataSet'
-  readonly entity: Record<string, () => unknown> = {}
-  readonly prompt = '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。'
-  readonly functions: readonly AiFunctionRegistration[] = [
+export class DatasetModule extends StaticAiToolModule {
+  constructor() {
+    super({
+      moduleId: 'dataset',
+      name: 'Page Design DataSet',
+      description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
+      prompt: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
+    })
+  }
+
+  override readonly functions: readonly AiFunctionRegistration[] = [
   {
     functionId: 'export',
     description: '导出当前 DataSet 元数据快照',

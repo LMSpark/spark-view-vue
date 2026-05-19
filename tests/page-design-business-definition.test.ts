@@ -88,6 +88,8 @@ describe('pageDesign module definition', () => {
 
     const registrationData = pageDesign.getRegistrationData()
     expect(JSON.parse(JSON.stringify(registrationData))).toEqual(registrationData)
+    expect(registrationData.description).toBe('单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。')
+    expect(registrationData.prompt).toBe('你正在处理页面设计业务，支持 lifecycle、textModel、nodeTree、dataset、knowledge 五大子模块。')
     expect(registrationData.functions).toEqual([])
     expect(registrationData.modules.every((module) => !('getFunctions' in module))).toBe(true)
     expect(registrationData.modules.map((module) => module.moduleId)).toEqual([

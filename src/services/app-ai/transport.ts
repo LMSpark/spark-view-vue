@@ -6,18 +6,12 @@ import type {
   AiHostStreamTurnResult,
   AiHostTransport,
   AiHostTransportToolCall,
-  AiHostBusinessRuntimeContext,
-  AiHostBusinessScope,
 } from '@spark-view/spark-ai/host'
 import {
   createAiHostStreamKey,
   toAiHostRuntimeScope as toHostRuntimeScope,
 } from '@spark-view/spark-ai/host'
 import { createAuthHeaders, getFetchHttpClient } from '@/services/http'
-
-function toRuntimeScope(scope: AiHostBusinessScope): AiHostBusinessRuntimeContext {
-  return toHostRuntimeScope(scope)
-}
 
 const PROTOCOL_VERSION = 3
 
@@ -120,7 +114,7 @@ export class FetchAppAiTransport implements AiHostTransport {
         systemPrompt: input.systemPrompt,
         tools: input.tools,
         mode: 'function',
-        scope: toRuntimeScope(input.scope),
+        scope: toHostRuntimeScope(input.scope),
         turn: toTransportTurn(input.turn),
         messages: input.messages,
       },
@@ -208,7 +202,7 @@ export class FetchAppAiTransport implements AiHostTransport {
   async appendMessages(input: AiHostAppendMessagesInput): Promise<void> {
     const body = await getFetchHttpClient().post<unknown>(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
       protocolVersion: PROTOCOL_VERSION,
-      scope: toRuntimeScope(input.scope),
+      scope: toHostRuntimeScope(input.scope),
       turn: toTransportTurn(input.turn),
       messages: input.messages,
     }, {

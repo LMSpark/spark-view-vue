@@ -2,7 +2,7 @@
  * 诊断工具函数。
  */
 
-import { AiInvocationProtocol } from '../index'
+import { AiInvocationProtocol } from '../internal/invocation-helpers'
 import { createAiHostStreamKey } from './scope'
 import type { AiHostBusinessScope, AiHostChatRequest, AiHostTurnMeta } from './types'
 

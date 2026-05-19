@@ -226,6 +226,19 @@ export class PageDataLoader extends BaseDataLoader {
 }
 ```
 
+## SPARK AI Core 约束
+
+`packages/spark-ai` 的 AI core 采用 class-first 主路径：
+
+- `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 只作为 core 公共兼容契约保留，不作为新消费层实现方式。
+- `packages/spark-ai/src/registrations/**` 与 `src/services/app-ai/**` 不得继续 `implements I*` 注册类型，也不得把旧 `I*` 注册类型作为显式返回类型或字段类型。
+- 新增注册模块优先继承或组合已有 class：`AiModuleRegistrationBase`、`StaticAiToolModule`、`RuntimeBackedBusinessModule`，或在本地建立清晰的 class 层次。
+- 注册对象不要使用匿名 `class extends ...`；需要临时注册层时也使用具名本地 class。
+- 消费层注册运行时必须走 `registerModule()` / module-bound API 主路径；`registerBusiness()` 只留给 core 公共兼容面。
+- 消费层不得依赖 `AiRegisteredBusinessApi` 或相对导入包根 `../index`；需要能力时直接依赖本层 class 或 core/host 下层出口。
+- runtime 主路径使用 `getFunctions()`；`.functions` 只用于兼容旧读取方式。
+- 只有 `packages/spark-ai/src/core/**` 可以处理旧 `I*` 兼容适配；适配逻辑应收敛到内部 class，不向消费层扩散。
+
 ## 编码前判断清单
 
 AI 在新增类型、抽象或导出前必须先判断：

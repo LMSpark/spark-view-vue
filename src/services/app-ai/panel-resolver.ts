@@ -10,6 +10,7 @@ import {
 } from '@spark-view/spark-component'
 import type {
   AiHostChatRequest,
+  AiHostBusinessSession,
   AiHostFcCallRecord,
   AiHostOptions,
   AiHostSseEvent,
@@ -18,7 +19,7 @@ import {
   createAiHostBusinessStorageKey,
   createAiHostBusinessSession,
 } from '@spark-view/spark-ai/host'
-import type { AiRuntimeMessageHistoryEntry, AiRuntimeSessionRecord } from '@spark-view/spark-ai'
+import type { AiRuntimeMessageHistoryEntry, AiRuntimeSessionRecord } from '@spark-view/spark-ai/core'
 
 export type AppAiPanelSessionResolver = (config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>
 export type AppAiPanelResolverOptions = AiHostOptions
@@ -51,7 +52,7 @@ export interface AppAiRuntimeMonitor {
 export function createAppAiRuntimeMonitor(options: AppAiPanelResolverOptions): AppAiRuntimeMonitor {
   const sessions = new Map<string, {
     config: AiSessionConfig
-    readonly session: ReturnType<typeof createAiHostBusinessSession>
+    readonly session: AiHostBusinessSession
   }>()
   const configBySessionId = new Map<string, AiSessionConfig>()
   const listeners = new Set<(snapshot: AppAiRuntimeMonitorSnapshot) => void>()

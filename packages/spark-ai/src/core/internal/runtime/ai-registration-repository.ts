@@ -7,12 +7,7 @@ import type {
   AiModuleRegistrationStoreSnapshot,
 } from '../../protocol/runtime-contracts'
 import type { AiRuntimeProjector } from './ai-runtime-support'
-import {
-  moduleSourceFromBusiness,
-  moduleStoreToBusinessStoreSnapshot,
-  moduleToBusinessRegistration,
-  moduleDataToBusinessData,
-} from './ai-runtime-support'
+import { aiBusinessRegistrationAdapter } from './ai-business-registration-adapter'
 
 export class AiRegistrationRepository {
   private readonly modules = new Map<string, AiModuleRegistration>()
@@ -22,7 +17,7 @@ export class AiRegistrationRepository {
   constructor(private readonly projector: AiRuntimeProjector) {}
 
   registerBusiness(source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot): AiModuleRegistration {
-    const moduleSource = moduleSourceFromBusiness(source)
+    const moduleSource = aiBusinessRegistrationAdapter.moduleSourceFromBusiness(source)
     const registration = this.projector.createRuntimeRegistration(moduleSource)
     this.projector.assertUniqueRegistrationKeys(registration)
     if (this.modules.has(registration.moduleId)) {
@@ -80,20 +75,20 @@ export class AiRegistrationRepository {
   getBusinessRegistration(businessId: string): IBusinessRegistration | undefined {
     if (!this.businessIds.has(businessId)) return undefined
     const registration = this.modules.get(businessId)
-    return registration === undefined ? undefined : moduleToBusinessRegistration(registration)
+    return registration === undefined ? undefined : aiBusinessRegistrationAdapter.moduleToBusinessRegistration(registration)
   }
 
   listBusinessRegistrations(): readonly IBusinessRegistration[] {
     return Array.from(this.businessIds.values()).flatMap((businessId) => {
       const registration = this.modules.get(businessId)
-      return registration === undefined ? [] : [moduleToBusinessRegistration(registration)]
+      return registration === undefined ? [] : [aiBusinessRegistrationAdapter.moduleToBusinessRegistration(registration)]
     })
   }
 
   getBusinessRegistrationData(businessId: string): IBusinessRegistrationData | undefined {
     if (!this.businessIds.has(businessId)) return undefined
     const data = this.getModuleRegistrationData(businessId)
-    return data === undefined ? undefined : moduleDataToBusinessData(data)
+    return data === undefined ? undefined : aiBusinessRegistrationAdapter.moduleDataToBusinessData(data)
   }
 
   listBusinessRegistrationData(): readonly IBusinessRegistrationData[] {
@@ -106,7 +101,7 @@ export class AiRegistrationRepository {
   getBusinessRegistrationStoreSnapshot(businessId: string): IBusinessRegistrationStoreSnapshot | undefined {
     if (!this.businessIds.has(businessId)) return undefined
     const snapshot = this.getModuleRegistrationStoreSnapshot(businessId)
-    return snapshot === undefined ? undefined : moduleStoreToBusinessStoreSnapshot(snapshot)
+    return snapshot === undefined ? undefined : aiBusinessRegistrationAdapter.moduleStoreToBusinessStoreSnapshot(snapshot)
   }
 
   listBusinessRegistrationStoreSnapshots(): readonly IBusinessRegistrationStoreSnapshot[] {

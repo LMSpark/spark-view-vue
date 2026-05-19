@@ -1,4 +1,15 @@
-import { type AiFunctionRegistration, type FunctionFailureMode, type IModuleRegistration, anySchema, arraySchema, booleanSchema, noParamsSchema, numberSchema, objectSchema, paramsSchema, stringSchema } from '../../../core'
+import type { AiFunctionRegistration, FunctionFailureMode } from '../../../core/protocol/runtime-contracts'
+import {
+  anySchema,
+  arraySchema,
+  booleanSchema,
+  noParamsSchema,
+  numberSchema,
+  objectSchema,
+  paramsSchema,
+  stringSchema,
+} from '../../../core/internal/json-schema-helpers'
+import { StaticAiToolModule } from '../../internal/registration-base'
 
 export type SparkNodeTreeToolFailureMode = FunctionFailureMode
 export type SparkNodeTreeToolFunctionId =
@@ -72,12 +83,17 @@ const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点�
 const SCALAR_PARENT_COMPONENT_RULE = 'parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。'
 const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实例对应的 root；如需最新子树快照，请读取 tree.root 或 toJSON()。'
 
-export class NodeTreeModule implements IModuleRegistration {
-  readonly moduleId = 'nodeTree'
-  readonly name = 'Page Design Node Tree'
-  readonly entity: Record<string, () => unknown> = {}
-  readonly prompt = '当前页面 SparkNodeTree/rule.json 结构读写。'
-  readonly functions: readonly AiFunctionRegistration[] = [
+export class NodeTreeModule extends StaticAiToolModule {
+  constructor() {
+    super({
+      moduleId: 'nodeTree',
+      name: 'Page Design Node Tree',
+      description: '当前页面 SparkNodeTree/rule.json 结构读写。',
+      prompt: '当前页面 SparkNodeTree/rule.json 结构读写。',
+    })
+  }
+
+  override readonly functions: readonly AiFunctionRegistration[] = [
   {
     functionId: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
