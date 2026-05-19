@@ -33,6 +33,25 @@ function isObjectSchemaRoot(value: unknown): value is LlmParameterSchemaRoot & {
   return isPlainRecord(value) && value['type'] === 'object'
 }
 
+function errorParam(error: ErrorObject, key: string): unknown {
+  return isPlainRecord(error.params) ? error.params[key] : undefined
+}
+
+function stringParam(error: ErrorObject, key: string): string | undefined {
+  const value = errorParam(error, key)
+  return typeof value === 'string' ? value : undefined
+}
+
+function numberParam(error: ErrorObject, key: string): number | undefined {
+  const value = errorParam(error, key)
+  return typeof value === 'number' ? value : undefined
+}
+
+function unknownArrayParam(error: ErrorObject, key: string): readonly unknown[] | undefined {
+  const value = errorParam(error, key)
+  return Array.isArray(value) ? value : undefined
+}
+
 export class LlmParamsValidator {
   private constructor() {}
 
@@ -86,13 +105,13 @@ export class LlmParamsValidator {
 
   private static pathFromAjvError(error: ErrorObject): string {
     if (error.keyword === 'required') {
-      const missingProperty = (error.params as { missingProperty?: string }).missingProperty
+      const missingProperty = stringParam(error, 'missingProperty')
       return missingProperty === undefined
         ? LlmParamsValidator.jsonPointerToPath(error.instancePath)
         : `${LlmParamsValidator.jsonPointerToPath(error.instancePath)}.${missingProperty}`
     }
     if (error.keyword === 'additionalProperties') {
-      const additionalProperty = (error.params as { additionalProperty?: string }).additionalProperty
+      const additionalProperty = stringParam(error, 'additionalProperty')
       return additionalProperty === undefined
         ? LlmParamsValidator.jsonPointerToPath(error.instancePath)
         : `${LlmParamsValidator.jsonPointerToPath(error.instancePath)}.${additionalProperty}`
@@ -115,7 +134,7 @@ export class LlmParamsValidator {
     if (error.keyword === 'required') return '缺少必填字段'
     if (error.keyword === 'additionalProperties') return '未声明的字段'
     if (error.keyword === 'type') {
-      const type = (error.params as { type?: string }).type
+      const type = stringParam(error, 'type')
       if (type === 'array') return '应为数组'
       if (type === 'object') return '应为对象'
       if (type === 'string') return '应为字符串'
@@ -124,19 +143,19 @@ export class LlmParamsValidator {
       return type === undefined ? '类型不匹配' : `类型不匹配，期望 ${type}`
     }
     if (error.keyword === 'enum') {
-      const allowedValues = (error.params as { allowedValues?: unknown[] }).allowedValues
+      const allowedValues = unknownArrayParam(error, 'allowedValues')
       return Array.isArray(allowedValues)
         ? `必须是以下枚举之一: ${allowedValues.map(item => JSON.stringify(item)).join(' | ')}`
         : '必须是枚举允许值之一'
     }
     if (error.keyword === 'const') {
-      const allowedValue = (error.params as { allowedValue?: unknown }).allowedValue
+      const allowedValue = errorParam(error, 'allowedValue')
       return `必须等于 ${JSON.stringify(allowedValue)}`
     }
-    if (error.keyword === 'maxLength') return `长度不能超过 ${(error.params as { limit?: number }).limit}`
-    if (error.keyword === 'minLength') return `长度不能少于 ${(error.params as { limit?: number }).limit}`
-    if (error.keyword === 'minimum') return `数值不能小于 ${(error.params as { comparison?: string; limit?: number }).limit}`
-    if (error.keyword === 'maximum') return `数值不能大于 ${(error.params as { comparison?: string; limit?: number }).limit}`
+    if (error.keyword === 'maxLength') return `长度不能超过 ${numberParam(error, 'limit')}`
+    if (error.keyword === 'minLength') return `长度不能少于 ${numberParam(error, 'limit')}`
+    if (error.keyword === 'minimum') return `数值不能小于 ${numberParam(error, 'limit')}`
+    if (error.keyword === 'maximum') return `数值不能大于 ${numberParam(error, 'limit')}`
     return error.message ?? '不满足 JSON Schema'
   }
 

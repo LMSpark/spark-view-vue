@@ -13,17 +13,7 @@ const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.boot
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
-export class TextModelModule extends StaticAiToolModule {
-  constructor() {
-    super({
-      moduleId: 'textModel',
-      name: 'Page Design Text Model',
-      description: '当前页面 script.js/style.css live 文本模型读写。',
-      prompt: '当前页面 script.js/style.css live 文本模型读写。',
-    })
-  }
-
-  override readonly functions: readonly AiFunctionRegistration[] = [
+const TEXT_MODEL_FUNCTIONS: readonly AiFunctionRegistration[] = [
   {
     functionId: 'readScript',
     description: '读取 script.js 当前完整文本模型内容。',
@@ -101,5 +91,16 @@ export class TextModelModule extends StaticAiToolModule {
       },
     ],
   },
-  ]
+]
+
+export class TextModelModule extends StaticAiToolModule {
+  constructor() {
+    super({
+      moduleId: 'textModel',
+      name: 'Page Design Text Model',
+      description: '当前页面 script.js/style.css live 文本模型读写。',
+      prompt: '当前页面 script.js/style.css live 文本模型读写。',
+      functions: TEXT_MODEL_FUNCTIONS,
+    })
+  }
 }

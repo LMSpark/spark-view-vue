@@ -32,7 +32,7 @@ export type LeaveRequestServiceResult<TResult> =
 
 function cloneJson<T>(value: T): T {
   if (value === null || value === undefined || typeof value !== 'object') return value
-  return JSON.parse(JSON.stringify(value)) as T
+  return globalThis.structuredClone(value)
 }
 
 function success<TResult>(data: TResult, summary: string): LeaveRequestServiceResult<TResult> {
@@ -44,13 +44,12 @@ export function leaveRequestServiceFailure(code: string, msg: string, fix: strin
 }
 
 export function isLeaveRequestServiceResult(value: unknown): value is LeaveRequestServiceResult<unknown> {
-  if (typeof value !== 'object' || value === null || !('ok' in value)) return false
-  const candidate = value as Partial<LeaveRequestServiceResult<unknown>>
-  if (candidate.ok === true) return 'data' in candidate && typeof candidate.summary === 'string'
-  if (candidate.ok === false) {
-    return typeof candidate.code === 'string'
-      && typeof candidate.msg === 'string'
-      && typeof candidate.fix === 'string'
+  if (!isRecord(value)) return false
+  if (value['ok'] === true) return 'data' in value && typeof value['summary'] === 'string'
+  if (value['ok'] === false) {
+    return typeof value['code'] === 'string'
+      && typeof value['msg'] === 'string'
+      && typeof value['fix'] === 'string'
   }
   return false
 }

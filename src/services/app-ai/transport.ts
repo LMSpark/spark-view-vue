@@ -9,7 +9,7 @@ import type {
 } from '@spark-view/spark-ai/host'
 import {
   createAiHostStreamKey,
-  toAiHostRuntimeScope as toHostRuntimeScope,
+  toAiHostRuntimeScope,
 } from '@spark-view/spark-ai/host'
 import { createAuthHeaders, getFetchHttpClient } from '@/services/http'
 
@@ -42,6 +42,19 @@ function isApiEnvelope(value: unknown): value is {
     && typeof value['requestId'] === 'string'
 }
 
+function isTransportToolFunction(value: unknown): value is AiHostTransportToolCall['function'] {
+  return value === undefined || (isRecord(value)
+    && (value['name'] === undefined || typeof value['name'] === 'string')
+    && (value['arguments'] === undefined || typeof value['arguments'] === 'string'))
+}
+
+function isTransportToolCall(value: unknown): value is AiHostTransportToolCall {
+  return isRecord(value)
+    && (value['id'] === undefined || typeof value['id'] === 'string')
+    && (value['type'] === undefined || typeof value['type'] === 'string')
+    && isTransportToolFunction(value['function'])
+}
+
 function unwrapApiEnvelope(value: unknown): unknown {
   if (!isApiEnvelope(value)) return value
   if (value.ok) return value.data
@@ -56,7 +69,7 @@ function toTransportTurn(input: AiHostStreamTurnInput['turn']): { turnId: string
 }
 
 function readToolCalls(value: unknown): readonly AiHostTransportToolCall[] {
-  return Array.isArray(value) ? value.filter(isRecord) as AiHostTransportToolCall[] : []
+  return Array.isArray(value) ? value.filter(isTransportToolCall) : []
 }
 
 interface ParsedSseEvent {
@@ -114,7 +127,7 @@ export class FetchAppAiTransport implements AiHostTransport {
         systemPrompt: input.systemPrompt,
         tools: input.tools,
         mode: 'function',
-        scope: toHostRuntimeScope(input.scope),
+        scope: toAiHostRuntimeScope(input.scope),
         turn: toTransportTurn(input.turn),
         messages: input.messages,
       },
@@ -202,7 +215,7 @@ export class FetchAppAiTransport implements AiHostTransport {
   async appendMessages(input: AiHostAppendMessagesInput): Promise<void> {
     const body = await getFetchHttpClient().post<unknown>(`${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
       protocolVersion: PROTOCOL_VERSION,
-      scope: toHostRuntimeScope(input.scope),
+      scope: toAiHostRuntimeScope(input.scope),
       turn: toTransportTurn(input.turn),
       messages: input.messages,
     }, {

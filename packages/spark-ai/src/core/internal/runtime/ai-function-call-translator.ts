@@ -7,7 +7,6 @@ import type {
   AiRuntimeFunctionExposure,
   AiRuntimeModuleExposure,
   AiRuntimeProjectKnowledgeOptions,
-  AiRuntimeSessionRecord,
   AiRuntimeTranslateFunctionCallOptions,
   FunctionExecutionContext,
 } from '../../protocol/runtime-contracts'
@@ -51,7 +50,7 @@ export class AiFunctionCallTranslator {
         'Use a distinct AI session instanceId, or keep the same moduleId/moduleInstanceId scope for this alias.',
       )
     }
-    const session = this.sessions.getSession(scope.moduleId, scope.moduleInstanceId) as AiRuntimeSessionRecord
+    const session = this.sessions.requireStartedSession(scope)
 
     let address: ActionAddress
     try {

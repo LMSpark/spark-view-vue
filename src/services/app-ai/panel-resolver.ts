@@ -215,7 +215,7 @@ function toHostRequest(request: AiChatSendRequest): AiHostChatRequest {
         turnId: record.turnId,
         round: record.round,
         status: record.status,
-        result: record.result as unknown,
+        result: record.result,
         durationMs: record.durationMs,
       }
       if (record.callId !== undefined) input.callId = record.callId

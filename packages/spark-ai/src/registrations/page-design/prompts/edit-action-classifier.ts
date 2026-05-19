@@ -1,4 +1,4 @@
-const READ_ONLY_ACTION_PREFIXES = [
+const READ_ONLY_ACTION_PREFIXES: readonly string[] = [
   'bootstrap',
   'collect',
   'count',
@@ -9,9 +9,9 @@ const READ_ONLY_ACTION_PREFIXES = [
   'list',
   'query',
   'read',
-] as const
+]
 
-const WRITE_ACTION_PREFIXES = [
+const WRITE_ACTION_PREFIXES: readonly string[] = [
   'add',
   'append',
   'clear',
@@ -27,7 +27,7 @@ const WRITE_ACTION_PREFIXES = [
   'set',
   'update',
   'write',
-] as const
+]
 
 function startsWithActionPrefix(functionId: string, prefixes: readonly string[]): boolean {
   const normalized = functionId.trim()

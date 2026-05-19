@@ -1,12 +1,10 @@
 import type {
-  IBusinessRegistration,
-  IBusinessRegistrationData,
-  IBusinessRegistrationStoreSnapshot,
   AiFunctionRegistration,
   AiFunctionRegistrationFailureMode,
   AiFunctionRegistrationStoreFunction,
   AiFunctionRegistrationUsageRule,
   AiModuleInstanceBinding,
+  AiModuleInstanceParam,
   AiModuleRegistration,
   AiModuleRegistrationData,
   AiModuleRegistrationStoreModule,
@@ -18,9 +16,8 @@ import type {
   AiRuntimeInstanceScope,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
-import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
+import type { LlmJsonObject, LlmJsonSchema, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../llm-params-validator'
-import { aiBusinessRegistrationAdapter } from './ai-business-registration-adapter'
 import { cloneRuntimeValue, isRecord } from './runtime-utils'
 
 /**
@@ -35,6 +32,18 @@ function isPlainJsonRecord(value: unknown): value is Record<string, unknown> {
   if (!isRecord(value)) return false
   const prototype: unknown = Object.getPrototypeOf(value)
   return prototype === Object.prototype || prototype === null
+}
+
+function isRegistrationJsonValue(value: unknown): value is LlmJsonObject[keyof LlmJsonObject] {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return true
+  if (typeof value === 'number') return Number.isFinite(value)
+  if (Array.isArray(value)) return value.every(isRegistrationJsonValue)
+  if (!isPlainJsonRecord(value)) return false
+  return Object.values(value).every(isRegistrationJsonValue)
+}
+
+function isRegistrationJsonObject(value: unknown): value is LlmJsonObject {
+  return isPlainJsonRecord(value) && Object.values(value).every(isRegistrationJsonValue)
 }
 
 /** 校验注册快照中的任意值能无损写入 JSON 数据库字段。 */
@@ -70,7 +79,11 @@ function cloneRegistrationJsonObject(value: unknown, path: string): LlmJsonObjec
     throw new Error(`Registration data ${path} must be a JSON object`)
   }
   assertRegistrationJsonValue(value, path)
-  return JSON.parse(JSON.stringify(value)) as LlmJsonObject
+  const cloned: unknown = JSON.parse(JSON.stringify(value))
+  if (!isRegistrationJsonObject(cloned)) {
+    throw new Error(`Registration data ${path} must remain a JSON object after clone`)
+  }
+  return cloned
 }
 
 interface ProjectModuleOptions {
@@ -569,17 +582,23 @@ export class AiRuntimeProjector {
       if ((row.instanceParamName === undefined) !== (row.instanceParamDescription === undefined)) {
         throw new Error(`Registration store module ${row.modulePath} must store both instanceParamName and instanceParamDescription`)
       }
+      let instanceParam: AiModuleInstanceParam | undefined
+      if (row.instanceParamName !== undefined) {
+        const description = row.instanceParamDescription
+        if (description === undefined) {
+          throw new Error(`Registration store module ${row.modulePath} must store instanceParamDescription`)
+        }
+        instanceParam = {
+          name: row.instanceParamName,
+          description,
+        }
+      }
       return {
         moduleId: row.moduleId,
         name: row.name,
         description: row.description,
         ...(row.prompt !== undefined ? { prompt: row.prompt } : {}),
-        ...(row.instanceParamName !== undefined ? {
-          instanceParam: {
-            name: row.instanceParamName,
-            description: row.instanceParamDescription as string,
-          },
-        } : {}),
+        ...(instanceParam !== undefined ? { instanceParam } : {}),
         functions,
         modules,
       }
@@ -625,7 +644,7 @@ export class AiRuntimeProjector {
     if (Object.keys(cloned).length !== 0 && cloned.type !== 'object') {
       throw new Error('paramsSchema root must be standard JSON Schema type=object')
     }
-    const properties = cloned.properties === undefined ? {} : { ...cloned.properties }
+    const properties: Record<string, LlmJsonSchema> = cloned.properties === undefined ? {} : { ...cloned.properties }
     const required = Array.isArray(cloned.required)
       ? cloned.required.filter((key): key is string => typeof key === 'string')
       : []
@@ -636,12 +655,13 @@ export class AiRuntimeProjector {
       }
       if (!required.includes(param.paramName)) required.push(param.paramName)
     }
-    return {
+    const nextSchema: LlmParameterSchemaRoot = {
       ...cloned,
       type: 'object',
       properties,
       required,
-    } as LlmParameterSchemaRoot
+    }
+    return nextSchema
   }
 
   private collectPrompts(module: AiRuntimeModuleExposure, parts: string[]): void {
@@ -720,53 +740,4 @@ export class AiRuntimeArgValidator {
     const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, schema)
     return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
   }
-}
-
-// ── Business↔Module 投影转换：在不同命名约定之间转换字段名 ──
-
-/** 识别 Business 源是否为运行时实例（有 getFunctions 方法）。 */
-export function isBusinessRegistrationInstance(source: unknown): source is IBusinessRegistration {
-  return aiBusinessRegistrationAdapter.isBusinessRegistrationInstance(source)
-}
-
-/** 判断是否为 BusinessData 格式。 */
-export function isBusinessRegistrationDataFormat(source: unknown): source is IBusinessRegistrationData {
-  return aiBusinessRegistrationAdapter.isBusinessRegistrationDataFormat(source)
-}
-
-/** 判断是否为 BusinessStoreSnapshot 格式。 */
-export function isBusinessStoreSnapshotFormat(source: unknown): source is IBusinessRegistrationStoreSnapshot {
-  return aiBusinessRegistrationAdapter.isBusinessStoreSnapshotFormat(source)
-}
-
-/** Business 源转为 Module 源（识别类型后路由到具体转换）。 */
-export function moduleSourceFromBusiness(
-  source: IBusinessRegistration | IBusinessRegistrationData | IBusinessRegistrationStoreSnapshot,
-): AiModuleRegistration | AiModuleRegistrationData | AiModuleRegistrationStoreSnapshot {
-  return aiBusinessRegistrationAdapter.moduleSourceFromBusiness(source)
-}
-
-/** Business 实例 → Module 实例（重命名字段 businessId→moduleId）。 */
-export function businessToModuleRegistration(business: IBusinessRegistration): AiModuleRegistration {
-  return aiBusinessRegistrationAdapter.businessToModuleRegistration(business)
-}
-
-/** Module 实例 → Business 实例（反向转换）。 */
-export function moduleToBusinessRegistration(module: AiModuleRegistration): IBusinessRegistration {
-  return aiBusinessRegistrationAdapter.moduleToBusinessRegistration(module)
-}
-
-/** BusinessData → ModuleData（字段重命名）。 */
-export function businessDataToModuleData(data: IBusinessRegistrationData): AiModuleRegistrationData {
-  return aiBusinessRegistrationAdapter.businessDataToModuleData(data)
-}
-
-/** ModuleData → BusinessData（字段重命名）。 */
-export function moduleDataToBusinessData(data: AiModuleRegistrationData): IBusinessRegistrationData {
-  return aiBusinessRegistrationAdapter.moduleDataToBusinessData(data)
-}
-
-/** Module 快照 → Business 快照（新增 rootBusinessPath 字段）。 */
-export function moduleStoreToBusinessStoreSnapshot(snapshot: AiModuleRegistrationStoreSnapshot): IBusinessRegistrationStoreSnapshot {
-  return aiBusinessRegistrationAdapter.moduleStoreToBusinessStoreSnapshot(snapshot)
 }

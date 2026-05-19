@@ -34,7 +34,7 @@ export type StaticAiToolModuleOptions = {
 export abstract class StaticAiToolModule extends AiModuleRegistrationBase {
   readonly entity: Record<string, () => unknown> = {}
 
-  readonly functions: readonly AiFunctionRegistration[]
+  private readonly functionRegistrations: readonly AiFunctionRegistration[]
 
   protected constructor(options: StaticAiToolModuleOptions) {
     super(
@@ -45,11 +45,15 @@ export abstract class StaticAiToolModule extends AiModuleRegistrationBase {
       options.modules ?? [],
       options.instanceParam,
     )
-    this.functions = options.functions ?? []
+    this.functionRegistrations = options.functions ?? []
+  }
+
+  get functions(): readonly AiFunctionRegistration[] {
+    return this.functionRegistrations
   }
 
   override getFunctions(): readonly AiFunctionRegistration[] {
-    return this.functions
+    return this.functionRegistrations
   }
 }
 

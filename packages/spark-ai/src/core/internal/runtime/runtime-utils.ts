@@ -14,11 +14,7 @@ export function cloneRuntimeValue<T>(value: T): T {
   try {
     return globalThis.structuredClone(value)
   } catch {
-    try {
-      return JSON.parse(JSON.stringify(value)) as T
-    } catch {
-      return value
-    }
+    return value
   }
 }
 
@@ -85,15 +81,14 @@ export function normalizeFunctionCallResult(value: unknown, action: string): AiR
 }
 
 function isFunctionCallResult(value: unknown): value is AiRuntimeFunctionCallResult<unknown> {
-  if (typeof value !== 'object' || value === null || !('ok' in value)) return false
-  const candidate = value as Partial<AiRuntimeFunctionCallResult<unknown>>
-  if (candidate.ok === true) {
-    return 'data' in candidate && typeof candidate.summary === 'string'
+  if (!isRecord(value)) return false
+  if (value['ok'] === true) {
+    return 'data' in value && typeof value['summary'] === 'string'
   }
-  if (candidate.ok === false) {
-    return typeof candidate.code === 'string'
-      && typeof candidate.msg === 'string'
-      && typeof candidate.fix === 'string'
+  if (value['ok'] === false) {
+    return typeof value['code'] === 'string'
+      && typeof value['msg'] === 'string'
+      && typeof value['fix'] === 'string'
   }
   return false
 }

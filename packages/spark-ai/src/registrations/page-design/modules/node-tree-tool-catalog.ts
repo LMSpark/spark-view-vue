@@ -1,4 +1,5 @@
 import type { AiFunctionRegistration, FunctionFailureMode } from '../../../core/protocol/runtime-contracts'
+import type { LlmJsonObject, LlmJsonSchemaObject } from '../../../core/protocol/parameter-schema'
 import {
   anySchema,
   arraySchema,
@@ -34,14 +35,14 @@ export type SparkNodeTreeToolFunctionId =
   | 'removeNodes'
 
 const NO_PARAMS = noParamsSchema('该 nodeTree 读取函数不接受参数，请传 {} 或留空。')
-const EMPTY_EXAMPLE = {} as const
+const EMPTY_EXAMPLE: LlmJsonObject = {}
 const COMPONENT_ID_SCHEMA = stringSchema(
   '节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段）；绝对禁止使用组件类型名（r-table、r-tabs、r-text、r-select 等）作为 componentId，类型名不是 id',
 )
-const PARENT_COMPONENT_ID_SCHEMA = {
+const PARENT_COMPONENT_ID_SCHEMA: LlmJsonSchemaObject = {
   type: ['string', 'null'],
   description: '父节点的 id 值（同 COMPONENT_ID_PARAM 规则）；null/省略表示当前绑定组件实例',
-} as const
+}
 const INDEX_SCHEMA = numberSchema('插入位置；省略时追加到末尾')
 const PROPS_SCHEMA = objectSchema({}, {
   additionalProperties: true,
@@ -90,10 +91,12 @@ export class NodeTreeModule extends StaticAiToolModule {
       name: 'Page Design Node Tree',
       description: '当前页面 SparkNodeTree/rule.json 结构读写。',
       prompt: '当前页面 SparkNodeTree/rule.json 结构读写。',
+      functions: NODE_TREE_FUNCTIONS,
     })
   }
+}
 
-  override readonly functions: readonly AiFunctionRegistration[] = [
+const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
   {
     functionId: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
@@ -521,5 +524,4 @@ export class NodeTreeModule extends StaticAiToolModule {
       },
     ],
   },
-  ]
-}
+]

@@ -6,18 +6,92 @@ import { describe, expect, it } from 'vitest'
 import * as SparkAi from '../packages/spark-ai/src'
 import * as SparkAiHost from '@spark-view/spark-ai/host'
 
-const CONSUMER_SOURCE_ROOTS = [
+const CONSUMER_SOURCE_ROOTS: readonly string[] = [
   'packages/spark-ai/src/registrations',
   'src/services/app-ai',
-] as const
+]
 
-const RUNTIME_BACKED_MODULE_FILES = [
-  'packages/spark-ai/src/registrations/page-design/page-design-module.ts',
-  'packages/spark-ai/src/registrations/leave-request/leave-request-module.ts',
-] as const
+const AI_CORE_AND_CONSUMER_SOURCE_ROOTS: readonly string[] = [
+  'packages/spark-ai/src/core',
+  ...CONSUMER_SOURCE_ROOTS,
+]
+
+const FUNCTION_COMPATIBILITY_FILES: readonly string[] = [
+  'packages/spark-ai/src/registrations/internal/registration-base.ts',
+]
+
+const CORE_LEGACY_COMPATIBILITY_FILES: readonly string[] = [
+  'packages/spark-ai/src/core/index.ts',
+  'packages/spark-ai/src/core/host/types.ts',
+  'packages/spark-ai/src/core/internal/runtime/ai-business-registration-adapter.ts',
+  'packages/spark-ai/src/core/internal/runtime/ai-registered-api-factory.ts',
+  'packages/spark-ai/src/core/internal/runtime/ai-registration-repository.ts',
+  'packages/spark-ai/src/core/internal/runtime/ai-runtime.ts',
+  'packages/spark-ai/src/core/protocol/business-registration.ts',
+  'packages/spark-ai/src/core/protocol/runtime-contracts.ts',
+  'packages/spark-ai/src/core/protocol/runtime-protocol.ts',
+]
 
 const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAiRegisteredBusinessApi\b|\bregisterBusiness\s*\(|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
+const LEGACY_CORE_COMPATIBILITY_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAiRegisteredBusinessApi\b|\bregisterBusiness\s*\(/
 const LEGACY_FUNCTIONS_READ_RE = /\.functions\b/
+const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/
+
+function stripNonCodeSegments(line: string, inBlockComment: boolean): { code: string; inBlockComment: boolean } {
+  let code = ''
+  let quote: string | null = null
+  let escaping = false
+  let index = 0
+  let blockComment = inBlockComment
+
+  while (index < line.length) {
+    const char = line[index] ?? ''
+    const next = line[index + 1] ?? ''
+
+    if (blockComment) {
+      if (char === '*' && next === '/') {
+        blockComment = false
+        code += '  '
+        index += 2
+        continue
+      }
+      code += ' '
+      index += 1
+      continue
+    }
+
+    if (quote !== null) {
+      if (escaping) {
+        escaping = false
+      } else if (char === '\\') {
+        escaping = true
+      } else if (char === quote) {
+        quote = null
+      }
+      code += ' '
+      index += 1
+      continue
+    }
+
+    if (char === '/' && next === '/') break
+    if (char === '/' && next === '*') {
+      blockComment = true
+      code += '  '
+      index += 2
+      continue
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char
+      code += ' '
+      index += 1
+      continue
+    }
+    code += char
+    index += 1
+  }
+
+  return { code, inBlockComment: blockComment }
+}
 
 function collectSourceFiles(root: string): string[] {
   const files: string[] = []
@@ -49,15 +123,53 @@ function legacyRegistrationSourceViolations(): string[] {
 }
 
 function legacyFunctionsReadViolations(): string[] {
-  return RUNTIME_BACKED_MODULE_FILES.flatMap((file) => {
-    const absoluteFile = join(process.cwd(), file)
-    const content = readFileSync(absoluteFile, 'utf8')
-    return content.split(/\r?\n/).flatMap((line, index) => (
-      LEGACY_FUNCTIONS_READ_RE.test(line)
-        ? [`${relative(process.cwd(), absoluteFile)}:${index + 1}`]
-        : []
-    ))
-  })
+  const compatibilityFiles = new Set(FUNCTION_COMPATIBILITY_FILES.map((file) => join(process.cwd(), file)))
+  return collectSourceFiles(join(process.cwd(), 'packages/spark-ai/src/registrations'))
+    .filter((file) => !compatibilityFiles.has(file))
+    .flatMap((file) => {
+      const content = readFileSync(file, 'utf8')
+      return content.split(/\r?\n/).flatMap((line, index) => (
+        LEGACY_FUNCTIONS_READ_RE.test(line)
+          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          : []
+      ))
+    })
+}
+
+function legacyCoreCompatibilityViolations(): string[] {
+  const compatibilityFiles = new Set(CORE_LEGACY_COMPATIBILITY_FILES.map((file) => join(process.cwd(), file)))
+  return collectSourceFiles(join(process.cwd(), 'packages/spark-ai/src/core'))
+    .filter((file) => !compatibilityFiles.has(file))
+    .flatMap((file) => {
+      const content = readFileSync(file, 'utf8')
+      return content.split(/\r?\n/).flatMap((line, index) => (
+        LEGACY_CORE_COMPATIBILITY_RE.test(line)
+          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          : []
+      ))
+    })
+}
+
+function typeAssertionViolations(): string[] {
+  return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
+    .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
+    .flatMap((file) => {
+      const content = readFileSync(file, 'utf8')
+      let importOrExportBlock = false
+      let inBlockComment = false
+      return content.split(/\r?\n/).flatMap((line, index) => {
+        const trimmed = line.trim()
+        if (/^(import|export)\s+(?:type\s+)?\{/.test(trimmed)) importOrExportBlock = true
+        const inImportOrExportBlock = importOrExportBlock
+        if (inImportOrExportBlock && /\}\s+from\s+['"]/.test(trimmed)) importOrExportBlock = false
+        if (inImportOrExportBlock) return []
+        const scan = stripNonCodeSegments(line, inBlockComment)
+        inBlockComment = scan.inBlockComment
+        return TS_ASSERTION_RE.test(scan.code)
+          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          : []
+      })
+    })
 }
 
 describe('ai runtime class-only public surface', () => {
@@ -141,7 +253,15 @@ describe('ai runtime class-only public surface', () => {
     expect(legacyRegistrationSourceViolations()).toEqual([])
   })
 
+  it('keeps legacy business compatibility isolated inside core compatibility boundaries', () => {
+    expect(legacyCoreCompatibilityViolations()).toEqual([])
+  })
+
   it('keeps runtime-backed modules on getFunctions as the primary function path', () => {
     expect(legacyFunctionsReadViolations()).toEqual([])
+  })
+
+  it('keeps ai core and consumers off TypeScript assertion escapes', () => {
+    expect(typeAssertionViolations()).toEqual([])
   })
 })

@@ -8,8 +8,12 @@ export interface AiRuntimeToolExposurePolicyOptions {
 }
 
 const DEFAULT_STAGED_TOOL_EXPOSURE_THRESHOLD = 24
-const DEFAULT_INITIAL_MODULE_IDS = ['knowledge', 'lifecycle'] as const
+const DEFAULT_INITIAL_MODULE_IDS: readonly string[] = ['knowledge', 'lifecycle']
 const DEFAULT_GUIDE_FUNCTION_ID = 'guideFunction'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 function optionModuleIdSet(options: AiRuntimeToolExposurePolicyOptions): ReadonlySet<string> {
   const moduleIds = options.initialModuleIds ?? DEFAULT_INITIAL_MODULE_IDS
@@ -59,8 +63,8 @@ export function addGuidedAiToolAction(
 ): void {
   const guideFunctionId = options.guideFunctionId ?? DEFAULT_GUIDE_FUNCTION_ID
   if (enabledActions === null || functionIdFromAction(executedAction) !== guideFunctionId || !result.ok) return
-  if (typeof args !== 'object' || args === null || Array.isArray(args)) return
-  const guidedAction = (args as { readonly action?: unknown }).action
+  if (!isRecord(args)) return
+  const guidedAction = args['action']
   if (typeof guidedAction !== 'string' || guidedAction.trim() === '') return
   if (hasProjectedAction(projection, guidedAction)) {
     enabledActions.add(guidedAction)

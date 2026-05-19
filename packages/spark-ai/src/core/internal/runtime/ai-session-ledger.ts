@@ -65,7 +65,7 @@ export class AiSessionLedger {
       ...(options.metadata === undefined ? {} : { metadata: cloneRuntimeValue(options.metadata) }),
     }
     this.storeHistoryEntry(session, entry, timestamp)
-    return this.cloneHistoryEntry(entry) as AiRuntimeMessageHistoryEntry
+    return this.cloneHistoryEntry(entry)
   }
 
   recordFunctionCallRequest(options: AiRuntimeRecordFunctionCallRequestOptions): AiRuntimeFunctionCallHistoryEntry {
@@ -98,7 +98,7 @@ export class AiSessionLedger {
       ...(options.metadata === undefined ? {} : { metadata: cloneRuntimeValue(options.metadata) }),
     }
     this.replaceHistoryEntry(session, index, updated, timestamp)
-    return this.cloneHistoryEntry(updated) as AiRuntimeFunctionCallHistoryEntry
+    return this.cloneHistoryEntry(updated)
   }
 
   appendFunctionCall(options: AiRuntimeAppendFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry {
@@ -119,7 +119,7 @@ export class AiSessionLedger {
       ...(options.metadata === undefined ? {} : { metadata: cloneRuntimeValue(options.metadata) }),
     }
     this.storeHistoryEntry(session, entry, timestamp)
-    return this.cloneHistoryEntry(entry) as AiRuntimeFunctionCallHistoryEntry
+    return this.cloneHistoryEntry(entry)
   }
 
   prepareStartScope(options: AiRuntimeStartSessionOptions): AiRuntimeProjectKnowledgeOptions {
@@ -218,7 +218,11 @@ export class AiSessionLedger {
     }
     this.bindSessionAliases(normalized)
     const sessionKey = moduleScopeKey(normalized.moduleId, normalized.moduleInstanceId)
-    return this.sessions.get(sessionKey) as AiRuntimeSessionRecord
+    const session = this.sessions.get(sessionKey)
+    if (session === undefined) {
+      throw new Error(`SESSION_NOT_STARTED: AI session for ${normalized.moduleId}/${normalized.moduleInstanceId} has not been started.`)
+    }
+    return session
   }
 
   getSessionFailure(scope: AiRuntimeProjectKnowledgeOptions): AiRuntimeFunctionCallFailure | null {
@@ -373,6 +377,9 @@ export class AiSessionLedger {
     }
   }
 
+  private cloneHistoryEntry(entry: AiRuntimeMessageHistoryEntry): AiRuntimeMessageHistoryEntry
+  private cloneHistoryEntry(entry: AiRuntimeFunctionCallHistoryEntry): AiRuntimeFunctionCallHistoryEntry
+  private cloneHistoryEntry(entry: AiRuntimeHistoryEntry): AiRuntimeHistoryEntry
   private cloneHistoryEntry(entry: AiRuntimeHistoryEntry): AiRuntimeHistoryEntry {
     return cloneRuntimeValue(entry)
   }

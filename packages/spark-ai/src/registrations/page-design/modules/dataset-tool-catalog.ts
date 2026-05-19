@@ -1,9 +1,11 @@
 import type { AiFunctionRegistration, FunctionFailureMode } from '../../../core/protocol/runtime-contracts'
+import type { LlmJsonSchemaObject } from '../../../core/protocol/parameter-schema'
 import {
   anySchema,
   arraySchema,
   booleanSchema,
   enumSchema,
+  type JsonSchemaProperties,
   noParamsSchema,
   numberSchema,
   objectSchema,
@@ -19,53 +21,53 @@ const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请�
 const TABLE_NAME_PARAM = stringSchema('表名')
 const VIEW_ID_PARAM = stringSchema('视图 ID；省略时默认 default')
 const COLUMN_NAME_PARAM = stringSchema('列名')
-const ROW_ID_PARAM = {
+const ROW_ID_PARAM: LlmJsonSchemaObject = {
   type: ['string', 'number'],
   description: '主键值',
-} as const
+}
 const PARENT_TABLE_PARAM = stringSchema('父表名')
 const CHILD_TABLE_PARAM = stringSchema('子表名')
 const RESOURCE_ID_PARAM = stringSchema('资源 ID')
-const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES = [
+const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES: readonly string[] = [
   'database-table',
   'database-view',
   'third-party-api',
   'static-data',
   'dictionary',
   'logical-view',
-] as const
+]
 
-const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES = [
+const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES: readonly string[] = [
   'master',
   'child',
   'reference',
-] as const
+]
 
-const RESOURCE_TYPE_SCHEMA = {
+const RESOURCE_TYPE_SCHEMA: LlmJsonSchemaObject = {
   type: 'string',
   examples: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
   description: '资源类型推荐值字典；优先使用内置资源类型，也允许业务侧自定义字符串。',
-} as const
+}
 
-const NULLABLE_RESOURCE_TYPE_SCHEMA = {
+const NULLABLE_RESOURCE_TYPE_SCHEMA: LlmJsonSchemaObject = {
   ...RESOURCE_TYPE_SCHEMA,
   type: ['string', 'null'],
   description: '资源类型推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
-} as const
+}
 
-const BUSINESS_CATEGORY_SCHEMA = {
+const BUSINESS_CATEGORY_SCHEMA: LlmJsonSchemaObject = {
   type: 'string',
   examples: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
   description: '业务分类推荐值字典；优先使用 master / child / reference，也允许业务侧自定义字符串。',
-} as const
+}
 
-const NULLABLE_BUSINESS_CATEGORY_SCHEMA = {
+const NULLABLE_BUSINESS_CATEGORY_SCHEMA: LlmJsonSchemaObject = {
   ...BUSINESS_CATEGORY_SCHEMA,
   type: ['string', 'null'],
   description: '业务分类推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
-} as const
+}
 
-const DATA_COLUMN_FIELDS_SCHEMA = {
+const DATA_COLUMN_FIELDS_SCHEMA: JsonSchemaProperties = {
   name: stringSchema('列名，必填，表内唯一'),
   type: stringSchema('ColumnType，必填；常用 string/number/boolean/date/datetime'),
   label: stringSchema('UI 显示标题'),
@@ -81,7 +83,7 @@ const DATA_COLUMN_FIELDS_SCHEMA = {
   pattern: stringSchema('正则表达式字符串'),
   patternMessage: stringSchema('正则失败提示'),
   computeExpression: stringSchema('计算列表达式'),
-} as const
+}
 
 const DATA_COLUMN_SCHEMA = objectSchema(DATA_COLUMN_FIELDS_SCHEMA, {
   required: ['name', 'type'],
@@ -166,7 +168,7 @@ const CRUD_HTTP_ENDPOINT_SCHEMA = objectSchema({
   required: ['url'],
 })
 
-const CRUD_LIST_ENDPOINT_SCHEMA = {
+const CRUD_LIST_ENDPOINT_SCHEMA: LlmJsonSchemaObject = {
   ...CRUD_HTTP_ENDPOINT_SCHEMA,
   properties: {
     ...CRUD_HTTP_ENDPOINT_SCHEMA.properties,
@@ -176,7 +178,7 @@ const CRUD_LIST_ENDPOINT_SCHEMA = {
       sortParam: stringSchema('排序参数名'),
     }),
   },
-} as const
+}
 
 const CRUD_API_SCHEMA = objectSchema({
   list: CRUD_LIST_ENDPOINT_SCHEMA,
@@ -247,18 +249,18 @@ const RELATION_UPDATE_SCHEMA = objectSchema({
   cascadeDelete: booleanSchema('是否级联删除'),
 })
 
-const DEPENDENCY_TYPE_RECOMMENDED_VALUES = [
+const DEPENDENCY_TYPE_RECOMMENDED_VALUES: readonly string[] = [
   'currentRow',
   'selectedRows',
   'allRows',
   'pagedRows',
-] as const
+]
 
-const DEPENDENCY_TYPE_PARAM = {
+const DEPENDENCY_TYPE_PARAM: LlmJsonSchemaObject = {
   type: 'string',
   examples: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
   description: '父表 default 视图哪类数据变化触发子表 default 视图级联；常用 currentRow / selectedRows / allRows / pagedRows，默认 currentRow。',
-} as const
+}
 
 const VIEW_DEPENDENCY_SCHEMA = objectSchema({
   parentTable: PARENT_TABLE_PARAM,
@@ -293,10 +295,12 @@ export class DatasetModule extends StaticAiToolModule {
       name: 'Page Design DataSet',
       description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
       prompt: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
+      functions: DATASET_FUNCTIONS,
     })
   }
+}
 
-  override readonly functions: readonly AiFunctionRegistration[] = [
+const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
   {
     functionId: 'export',
     description: '导出当前 DataSet 元数据快照',
@@ -1738,5 +1742,4 @@ export class DatasetModule extends StaticAiToolModule {
       },
     ],
   },
-  ]
-}
+]

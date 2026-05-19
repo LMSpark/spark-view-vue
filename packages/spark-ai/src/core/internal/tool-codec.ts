@@ -31,7 +31,7 @@ function schemaToParameters(schema: LlmParameterSchemaRoot): Record<string, unkn
   if (schema.type !== 'object') {
     throw new Error('LLM tool parameters must be standard JSON Schema with root type=object')
   }
-  return schema as Record<string, unknown>
+  return { ...schema }
 }
 
 function toolNameForExposure(exposure: AiRuntimeFunctionExposure, index: number): string {

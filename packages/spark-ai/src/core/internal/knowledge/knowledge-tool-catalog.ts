@@ -1,5 +1,5 @@
 import type { FunctionFailureMode } from '../../protocol/runtime-contracts'
-import type { LlmJsonObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
+import type { LlmJsonObject, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../llm-params-validator'
 
 export type AiKnowledgeFunctionFailureMode = FunctionFailureMode
@@ -38,11 +38,13 @@ const NO_PARAMS: LlmParameterSchemaRoot = {
   additionalProperties: false,
   description: 'queryModules 不接受参数，请传 {} 或留空。',
 }
-const STRING_PARAM = (description: string, options: { minLength?: number } = {}) => ({
-  type: 'string',
-  description,
-  ...(options.minLength !== undefined ? { minLength: options.minLength } : {}),
-}) as const
+function stringParam(description: string, options: { minLength?: number } = {}): LlmJsonSchemaObject {
+  return {
+    type: 'string',
+    description,
+    ...(options.minLength !== undefined ? { minLength: options.minLength } : {}),
+  }
+}
 
 export class AiKnowledgeCatalog {
   readonly parameterTable: readonly AiKnowledgeFunctionParameterRow[]
@@ -59,9 +61,9 @@ export class AiKnowledgeCatalog {
         paramsSchema: {
           type: 'object',
           properties: {
-            modulePath: STRING_PARAM('按模块路径过滤，例如 root/child。'),
-            moduleId: STRING_PARAM('按模块 ID 精确过滤。'),
-            keyword: STRING_PARAM('按 action/description/modulePath 模糊搜索。'),
+            modulePath: stringParam('按模块路径过滤，例如 root/child。'),
+            moduleId: stringParam('按模块 ID 精确过滤。'),
+            keyword: stringParam('按 action/description/modulePath 模糊搜索。'),
           },
         },
         resultSchema: {
@@ -98,7 +100,7 @@ export class AiKnowledgeCatalog {
           type: 'object',
           required: ['action'],
           properties: {
-            action: STRING_PARAM('函数 action，例如 root-1@module@actionName。', { minLength: 1 }),
+            action: stringParam('函数 action，例如 root-1@module@actionName。', { minLength: 1 }),
           },
         },
         resultSchema: {

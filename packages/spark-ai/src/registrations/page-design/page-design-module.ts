@@ -133,6 +133,62 @@ interface PageDesignPayloadCatalog {
   readonly components: Readonly<Record<string, PageDesignPayloadEntry>>
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isOptionalString(value: unknown): boolean {
+  return value === undefined || typeof value === 'string'
+}
+
+function isOptionalBoolean(value: unknown): boolean {
+  return value === undefined || typeof value === 'boolean'
+}
+
+function isLlmJsonSchema(value: unknown): value is LlmJsonSchema {
+  return typeof value === 'boolean' || isObjectRecord(value)
+}
+
+function isPageDesignPayloadProp(value: unknown): value is PageDesignPayloadProp {
+  return isObjectRecord(value)
+    && typeof value['name'] === 'string'
+    && isOptionalString(value['type'])
+    && isOptionalBoolean(value['required'])
+    && isOptionalString(value['description'])
+    && (value['schema'] === undefined || isLlmJsonSchema(value['schema']))
+}
+
+function isPageDesignPayloadEntry(value: unknown): value is PageDesignPayloadEntry {
+  return isObjectRecord(value)
+    && typeof value['type'] === 'string'
+    && isOptionalString(value['filePath'])
+    && isOptionalString(value['category'])
+    && isOptionalString(value['description'])
+    && isOptionalBoolean(value['internal'])
+    && isOptionalBoolean(value['configurable'])
+    && (value['props'] === undefined || (Array.isArray(value['props']) && value['props'].every(isPageDesignPayloadProp)))
+    && (value['emits'] === undefined || Array.isArray(value['emits']))
+    && isOptionalString(value['source'])
+}
+
+function readPageDesignPayloadCatalog(value: unknown): PageDesignPayloadCatalog {
+  if (!isObjectRecord(value) || typeof value['version'] !== 'string' || typeof value['componentCount'] !== 'number' || !isObjectRecord(value['components'])) {
+    throw new Error('PageDesign component payload catalog is invalid')
+  }
+  const components: Record<string, PageDesignPayloadEntry> = {}
+  for (const [key, entry] of Object.entries(value['components'])) {
+    if (!isPageDesignPayloadEntry(entry)) {
+      throw new Error(`PageDesign component payload catalog entry is invalid: ${key}`)
+    }
+    components[key] = entry
+  }
+  return {
+    version: value['version'],
+    componentCount: value['componentCount'],
+    components,
+  }
+}
+
 class PageDesignRuntimeToolModule extends StaticAiToolModule {
   constructor(
     moduleId: PageDesignModuleId,
@@ -151,7 +207,7 @@ class PageDesignRuntimeToolModule extends StaticAiToolModule {
   }
 }
 
-const PAGE_DESIGN_COMPONENT_CATALOG: PageDesignPayloadCatalog = componentCatalogPayload as PageDesignPayloadCatalog
+const PAGE_DESIGN_COMPONENT_CATALOG: PageDesignPayloadCatalog = readPageDesignPayloadCatalog(componentCatalogPayload)
 
 const PAGE_DESIGN_PAYLOAD_FUNCTIONS: readonly AiFunctionRegistration[] = [
   {
@@ -205,12 +261,34 @@ const PAGE_DESIGN_PAYLOAD_FUNCTIONS: readonly AiFunctionRegistration[] = [
   },
 ]
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
 function toObject(value: unknown): Record<string, unknown> | null {
   return isObjectRecord(value) ? value : null
+}
+
+function readRequiredStringArg(args: unknown, key: string): string {
+  const input = toObject(args)
+  const value = input?.[key]
+  if (typeof value !== 'string') {
+    throw new Error(`Missing required string argument: ${key}`)
+  }
+  return value
+}
+
+function isPageDesignRuntimeFunctionRegistration(
+  value: AiFunctionRegistration,
+): value is PageDesignRuntimeFunctionRegistration {
+  return 'apply' in value
+    && typeof value.apply === 'function'
+    && (!('validate' in value) || value.validate === undefined || typeof value.validate === 'function')
+}
+
+function requirePageDesignRuntimeFunctionRegistration(
+  value: AiFunctionRegistration,
+): PageDesignRuntimeFunctionRegistration {
+  if (!isPageDesignRuntimeFunctionRegistration(value)) {
+    throw new Error(`PageDesign function registration is not executable: ${value.functionId}`)
+  }
+  return value
 }
 
 function toServiceContext(context: PageDesignRuntimeContext | FunctionExecutionContext): PageDesignServiceContext {
@@ -423,11 +501,11 @@ function createTextModelHandlers(
         case 'readScript':
           return service.readTextModel(toServiceContext(context), 'script')
         case 'writeScript':
-          return service.writeTextModel(toServiceContext(context), 'script', (args as { content: string }).content)
+          return service.writeTextModel(toServiceContext(context), 'script', readRequiredStringArg(args, 'content'))
         case 'readStyle':
           return service.readTextModel(toServiceContext(context), 'style')
         case 'writeStyle':
-          return service.writeTextModel(toServiceContext(context), 'style', (args as { content: string }).content)
+          return service.writeTextModel(toServiceContext(context), 'style', readRequiredStringArg(args, 'content'))
         default:
           throw new Error(`unreachable: ${row.functionId}`)
       }
@@ -461,7 +539,7 @@ function createKnowledgeHandlers(
           return { ok: true, data: { items }, summary: `已返回 ${items.length} 个模块目录项` }
         }
         case 'guideFunction': {
-          const action = (args as { action: string }).action
+          const action = readRequiredStringArg(args, 'action')
           const guide = runtime.knowledge.guideFunction(toKnowledgeScope(context), action)
           if (guide === null) {
             return pageDesignServiceFailure(
@@ -533,14 +611,14 @@ function createPageDesignRuntimeModule(
   prompt: string,
   handlers: readonly PageDesignFunctionHandler[],
 ): AiModuleRegistration {
-  const allRows = [
+  const allRows: readonly AiFunctionRegistration[] = [
     ...LIFECYCLE_TOOL_MODULE.getFunctions(),
     ...TEXT_MODEL_TOOL_MODULE.getFunctions(),
     ...NODE_TREE_TOOL_MODULE.getFunctions(),
     ...DATASET_TOOL_MODULE.getFunctions(),
     ...new AiKnowledgeCatalog({}).parameterTable,
     ...PAGE_DESIGN_PAYLOAD_FUNCTIONS,
-  ] as readonly AiFunctionRegistration[]
+  ]
   const rowsByFunctionId = new Map(allRows.map((row) => [row.functionId, row]))
   const functions: readonly PageDesignRuntimeFunctionRegistration[] = handlers.map((handler) => {
     const row = rowsByFunctionId.get(handler.functionId)
@@ -603,11 +681,11 @@ export class PageDesignModule extends RuntimeBackedBusinessModule {
     return this.executeRegisteredFunctionCall({
       ...options,
       validate: ({ functionRegistration, args, context }) => (
-        functionRegistration as PageDesignRuntimeFunctionRegistration
-      ).validate?.(args, context) ?? null,
+        requirePageDesignRuntimeFunctionRegistration(functionRegistration).validate?.(args, context) ?? null
+      ),
       run: ({ functionRegistration, args, context }) => (
-        functionRegistration as PageDesignRuntimeFunctionRegistration
-      ).apply(args, context),
+        requirePageDesignRuntimeFunctionRegistration(functionRegistration).apply(args, context)
+      ),
       normalizeResult: (value) => isPageDesignServiceResult(value)
         ? value
         : {

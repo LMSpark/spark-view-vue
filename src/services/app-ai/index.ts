@@ -2,7 +2,30 @@ import type {
   AiChatSendRequest,
   AiSseEventInput,
 } from '@spark-view/spark-component'
-import type { AiHostStreamTurnInput } from '@spark-view/spark-ai/host'
+import type {
+  AiHostAppendMessagesInput,
+  AiHostBusinessAfterFunctionCallOptions,
+  AiHostBusinessAppendMessageOptions,
+  AiHostBusinessExecuteFunctionCallOptions,
+  AiHostBusinessLifecycleDirective,
+  AiHostBusinessLifecycleStatus,
+  AiHostBusinessRuntime,
+  AiHostBusinessRuntimeContext,
+  AiHostBusinessScope,
+  AiHostOptions,
+  AiHostSelectedBusiness,
+  AiHostStreamTurnInput,
+  AiHostStreamTurnResult,
+  AiHostTransport,
+  AiHostTransportMessage,
+  AiHostTransportToolCall,
+  AiHostTransportToolSpec,
+  AiHostTurnMeta,
+} from '@spark-view/spark-ai/host'
+import {
+  AiHostBusinessRegistry,
+  toAiHostRuntimeScope,
+} from '@spark-view/spark-ai/host'
 
 export { createAppAiPanelResolver, createAppAiRuntimeMonitor } from './panel-resolver'
 export type {
@@ -13,10 +36,8 @@ export type {
   AppAiRuntimeSessionSnapshot,
 } from './panel-resolver'
 export { FetchAppAiTransport, uploadAppAiAttachment } from './transport'
-export {
-  AiHostBusinessRegistry as AppAiBusinessRegistry,
-  toAiHostRuntimeScope as toRuntimeScope,
-} from '@spark-view/spark-ai/host'
+export const AppAiBusinessRegistry = AiHostBusinessRegistry
+export const toRuntimeScope = toAiHostRuntimeScope
 
 export {
   registerAppAiBusinesses,
@@ -36,25 +57,23 @@ export type {
   PageDesignEditHostSnapshot,
 } from '@spark-view/spark-page-config'
 
-export type {
-  AiHostAppendMessagesInput as AppAiAppendMessagesInput,
-  AiHostBusinessAfterFunctionCallOptions as AppAiBusinessAfterFunctionCallOptions,
-  AiHostBusinessAppendMessageOptions as AppAiBusinessAppendMessageOptions,
-  AiHostBusinessExecuteFunctionCallOptions as AppAiBusinessExecuteFunctionCallOptions,
-  AiHostBusinessLifecycleDirective as AppAiBusinessLifecycleDirective,
-  AiHostBusinessLifecycleStatus as AppAiBusinessLifecycleStatus,
-  AiHostBusinessRuntime as AppAiBusinessRuntime,
-  AiHostBusinessRuntimeContext as AppAiBusinessRuntimeContext,
-  AiHostBusinessScope as AppAiBusinessScope,
-  AiHostOptions as AppAiOptions,
-  AiHostSelectedBusiness as AppAiSelectedBusiness,
-  AiHostStreamTurnResult as AppAiStreamTurnResult,
-  AiHostTransport as AppAiTransport,
-  AiHostTransportMessage as AppAiTransportMessage,
-  AiHostTransportToolCall as AppAiTransportToolCall,
-  AiHostTransportToolSpec as AppAiTransportToolSpec,
-  AiHostTurnMeta as AppAiTurnMeta,
-} from '@spark-view/spark-ai/host'
+export type AppAiAppendMessagesInput = AiHostAppendMessagesInput
+export type AppAiBusinessAfterFunctionCallOptions = AiHostBusinessAfterFunctionCallOptions
+export type AppAiBusinessAppendMessageOptions = AiHostBusinessAppendMessageOptions
+export type AppAiBusinessExecuteFunctionCallOptions = AiHostBusinessExecuteFunctionCallOptions
+export type AppAiBusinessLifecycleDirective = AiHostBusinessLifecycleDirective
+export type AppAiBusinessLifecycleStatus = AiHostBusinessLifecycleStatus
+export type AppAiBusinessRuntime = AiHostBusinessRuntime
+export type AppAiBusinessRuntimeContext = AiHostBusinessRuntimeContext
+export type AppAiBusinessScope = AiHostBusinessScope
+export type AppAiOptions = AiHostOptions
+export type AppAiSelectedBusiness = AiHostSelectedBusiness
+export type AppAiStreamTurnResult = AiHostStreamTurnResult
+export type AppAiTransport = AiHostTransport
+export type AppAiTransportMessage = AiHostTransportMessage
+export type AppAiTransportToolCall = AiHostTransportToolCall
+export type AppAiTransportToolSpec = AiHostTransportToolSpec
+export type AppAiTurnMeta = AiHostTurnMeta
 
 export type AppAiSender = (request: AiChatSendRequest) => Promise<void>
 

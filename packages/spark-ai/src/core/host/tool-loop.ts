@@ -183,12 +183,13 @@ export class AiHostToolLoopRunner {
       args,
       projection,
     })
+    const defaultDirective: AiHostBusinessLifecycleDirective = { status: 'continue' }
     const directive = await runtime.afterFunctionCall?.({
       ...runtimeContext,
       action,
       args,
       result,
-    }) ?? { status: 'continue' as const }
+    }) ?? defaultDirective
     const durationMs = Date.now() - started
     const eventModuleId = actionModuleId(action)
     request.onFcCall?.({

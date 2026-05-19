@@ -104,10 +104,12 @@ export class LeaveRequestModuleRegistration extends StaticAiToolModule {
       name: '人工请假',
       description: '帮助员工收集、确认并提交人工请假申请。',
       prompt: '帮助员工收集、确认并提交人工请假申请。',
+      functions: LEAVE_REQUEST_FUNCTIONS,
     })
   }
+}
 
-  override readonly functions: readonly AiFunctionRegistration[] = [
+const LEAVE_REQUEST_FUNCTIONS: readonly AiFunctionRegistration[] = [
   {
     functionId: 'describeDraft',
     description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
@@ -156,8 +158,7 @@ export class LeaveRequestModuleRegistration extends StaticAiToolModule {
       { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '不要取消草稿，提示用户走审批撤回流程。' },
     ],
   },
-  ]
-}
+]
 
 const LEAVE_REQUEST_REGISTRATION = new LeaveRequestModuleRegistration()
 
@@ -185,7 +186,7 @@ function executeServiceMethod(
     case 'describeDraft':
       return service.describeDraft(toServiceContext(context))
     case 'setDraftFields':
-      return service.setDraftFields(toServiceContext(context), (args as { fields: unknown }).fields)
+      return service.setDraftFields(toServiceContext(context), readRequiredArg(args, 'fields'))
     case 'submitDraft':
       return service.submitDraft(toServiceContext(context))
     case 'cancelDraft':
@@ -202,9 +203,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function readRequiredArg(args: unknown, key: string): unknown {
+  if (!isRecord(args) || !(key in args)) {
+    throw new Error(`Missing required argument: ${key}`)
+  }
+  return args[key]
+}
+
 function cloneJson<T>(value: T): T {
   if (value === null || value === undefined || typeof value !== 'object') return value
-  return JSON.parse(JSON.stringify(value)) as T
+  return globalThis.structuredClone(value)
 }
 
 export class LeaveRequestModule extends RuntimeBackedBusinessModule {
