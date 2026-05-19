@@ -96,6 +96,10 @@ describe('AiChatWidget persistence', () => {
       request.onDelta?.('重开后仍然可见')
     })
     const config = {
+      target: {
+        businessRegistrationId: 'test',
+        businessInstanceId: 'app-ai-panel-reopen-session',
+      },
       storageKey: 'app-ai-panel-reopen-session',
       title: '页面模型级编辑',
       sender,
@@ -139,6 +143,10 @@ describe('AiChatWidget persistence', () => {
 
     const wrapper = mount(AppAiPanel)
     await store.open({
+      target: {
+        businessRegistrationId: 'pageDesign',
+        businessInstanceId: 'work-evaluation',
+      },
       storageKey: () => storageKeyRef.value,
       disablePersistence: () => disablePersistenceRef.value,
       title: '页面设计 AI',
@@ -939,7 +947,7 @@ describe('AiChatWidget persistence', () => {
       props: {
         sender,
         storageKey: 'ai-chat-widget-download-diagnostics',
-        pageId: 'app-ai-host',
+        pageId: 'app-ai-panel',
       },
     })
 
@@ -952,7 +960,7 @@ describe('AiChatWidget persistence', () => {
     expect(createObjectURL).toHaveBeenCalledTimes(1)
     expect(createObjectURL.mock.calls[0]?.[0]).toBeInstanceOf(Blob)
     const blob = createObjectURL.mock.calls[0]?.[0] as Blob
-    await expect(blob.text()).resolves.toContain('"pageId": "app-ai-host"')
+    await expect(blob.text()).resolves.toContain('"pageId": "app-ai-panel"')
     expect(clickSpy).toHaveBeenCalledTimes(1)
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:ai-diagnostics')
 

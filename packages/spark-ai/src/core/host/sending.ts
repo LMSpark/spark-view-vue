@@ -1,16 +1,18 @@
 /**
  * 框架无关的 AI Host 消息发送逻辑。
  *
- * 核心流程：选择/复用业务 → 追加用户消息 → 运行工具调用循环。
+ * 核心流程：使用显式业务 scope → 启动/复用会话 → 追加用户消息 → 运行工具调用循环。
  * 不依赖 Vue/React/Angular。
  */
 
 import { AiHostToolLoopRunner } from './tool-loop'
-import { toAiHostRuntimeScope } from './scope'
-import { latestUserInput } from './turn-utils'
-import { AiHostBusinessSelector } from './business-selector'
+import { createAiHostBusinessScope, createAiHostBusinessStorageKey, normalizeAiHostBusinessTarget, toAiHostRuntimeScope } from './scope'
+import { latestUserInput, normalizeTurn } from './turn-utils'
 import type {
   AiHostBusinessRuntimeContext,
+  AiHostBusinessScope,
+  AiHostBusinessSession,
+  AiHostBusinessTarget,
   AiHostChatRequest,
   AiHostOptions,
   AiHostSelectedBusiness,
@@ -20,6 +22,7 @@ import type {
 export interface AiHostSendInput {
   readonly request: AiHostChatRequest
   readonly turn: AiHostTurnMeta
+  readonly scope: AiHostBusinessScope
 }
 
 export interface AiHostSendContext {
@@ -30,26 +33,15 @@ export interface AiHostSendContext {
 }
 
 export class AiHostMessageSender {
-  private readonly businessSelector: AiHostBusinessSelector
   private readonly toolLoopRunner: AiHostToolLoopRunner
 
-  constructor(options: AiHostOptions) {
-    this.businessSelector = new AiHostBusinessSelector(options)
+  constructor(private readonly options: AiHostOptions) {
     this.toolLoopRunner = new AiHostToolLoopRunner(options)
   }
 
-  async send(
-    input: AiHostSendInput,
-    ctx: AiHostSendContext,
-  ): Promise<void> {
-    const { request, turn } = input
-    const selected = await this.businessSelector.selectBusiness(
-      request,
-      turn,
-      ctx.selected,
-      ctx.clearSelected,
-    )
-    if (selected === null) return
+  async send(input: AiHostSendInput, ctx: AiHostSendContext): Promise<void> {
+    const { request, turn, scope } = input
+    const selected = await this.resolveSelectedBusiness(scope, ctx)
 
     ctx.setSelected(selected)
 
@@ -66,5 +58,106 @@ export class AiHostMessageSender {
       turn,
       ctx.clearSelected,
     )
+  }
+
+  private async resolveSelectedBusiness(
+    scope: AiHostBusinessScope,
+    ctx: AiHostSendContext,
+  ): Promise<AiHostSelectedBusiness> {
+    if (ctx.selected !== null && isSameScope(ctx.selected.scope, scope)) {
+      return ctx.selected
+    }
+    ctx.clearSelected()
+    const runtime = this.options.registry.get(scope.businessRegistrationId)
+    if (runtime === undefined) {
+      throw new Error(`AI business runtime is not registered: ${scope.businessRegistrationId}`)
+    }
+    const projection = await runtime.startSession(toAiHostRuntimeScope(scope))
+    return {
+      runtime,
+      scope,
+      projection,
+    }
+  }
+}
+
+function isSameScope(left: AiHostBusinessScope, right: AiHostBusinessScope): boolean {
+  return left.businessRegistrationId === right.businessRegistrationId
+    && left.businessInstanceId === right.businessInstanceId
+    && left.instanceId === right.instanceId
+}
+
+export function createAiHostBusinessSession(
+  options: AiHostOptions,
+  targetInput: AiHostBusinessTarget,
+): AiHostBusinessSession {
+  const target = normalizeAiHostBusinessTarget(targetInput)
+  const scope = createAiHostBusinessScope(target.businessRegistrationId, target.businessInstanceId)
+  const storageKey = createAiHostBusinessStorageKey(scope)
+  const senderCore = new AiHostMessageSender(options)
+  let selected: AiHostSelectedBusiness | null = null
+
+  const clearSelected = () => {
+    selected = null
+  }
+
+  const resolveRuntime = () => {
+    const runtime = options.registry.get(scope.businessRegistrationId)
+    if (runtime === undefined) {
+      throw new Error(`AI business runtime is not registered: ${scope.businessRegistrationId}`)
+    }
+    return runtime
+  }
+
+  const start = async (): Promise<void> => {
+    if (selected !== null && isSameScope(selected.scope, scope)) return
+    const runtime = resolveRuntime()
+    selected = {
+      runtime,
+      scope,
+      projection: await runtime.startSession(toAiHostRuntimeScope(scope)),
+    }
+  }
+
+  const getSessionRecord = () => {
+    const runtime = selected?.runtime ?? options.registry.get(scope.businessRegistrationId)
+    return runtime?.getSession?.(toAiHostRuntimeScope(scope)) ?? null
+  }
+
+  const send = async (request: AiHostChatRequest): Promise<void> => {
+    const sendCtx: AiHostSendContext = {
+      get selected() { return selected },
+      clearSelected,
+      setSelected: (next) => {
+        selected = next
+      },
+      appendUserMessage: (runtimeScope: AiHostBusinessRuntimeContext, content: string) => {
+        const runtime = selected?.runtime
+        if (runtime === undefined) return
+        runtime.appendMessage({
+          ...runtimeScope,
+          role: 'user',
+          content,
+          source: 'ui',
+        })
+      },
+    }
+    await senderCore.send({
+      request,
+      turn: request.turn ?? normalizeTurn(request),
+      scope,
+    }, sendCtx)
+  }
+
+  return {
+    target,
+    scope,
+    storageKey,
+    sessionId: scope.instanceId,
+    pageId: target.businessInstanceId,
+    sender: send,
+    start,
+    getSessionRecord,
+    send,
   }
 }

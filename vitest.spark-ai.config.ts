@@ -12,7 +12,7 @@ export default defineConfig({
     environment: 'jsdom',
     include: [
       'tests/app-ai-entry-removal.test.ts',
-      'tests/app-ai-host.test.ts',
+      'tests/app-ai-runtime.test.ts',
       'tests/ai-chat-widget-persistence.test.ts',
       'tests/ai-panel-store.test.ts',
       'tests/ai-runtime-business.test.ts',

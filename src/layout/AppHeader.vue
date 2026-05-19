@@ -30,13 +30,6 @@
         </button>
       </el-tooltip>
 
-      <!-- AI 宿主 -->
-      <el-tooltip v-if="hasAction('ai-chat')" content="AI 宿主" placement="bottom" :show-after="300">
-        <button class="header-btn" @click="$emit('user-command', 'ai-chat')">
-          <el-icon :size="18"><ChatDotRound /></el-icon>
-        </button>
-      </el-tooltip>
-
       <!-- 搜索 -->
       <el-tooltip v-if="hasAction('search')" content="搜索" placement="bottom" :show-after="300">
         <button class="header-btn" @click="$emit('user-command', 'search')">
@@ -137,9 +130,6 @@
               <el-dropdown-item command="settings">
                 <el-icon><Setting /></el-icon>系统设置
               </el-dropdown-item>
-              <el-dropdown-item command="ai-chat">
-                <el-icon><ChatDotRound /></el-icon>AI 宿主
-              </el-dropdown-item>
               <el-dropdown-item divided command="home">
                 <el-icon><HomeFilled /></el-icon>应用工场主页
               </el-dropdown-item>
@@ -158,7 +148,7 @@
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import {
   Fold, Expand, Search, FullScreen, Bell, Sunny, Moon,
-  User, Setting, SwitchButton, ArrowDown, HomeFilled, ChatDotRound,
+  User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
 import type { NavNode } from '@spark-view/spark-page-config'

@@ -14,10 +14,10 @@ import {
   type AiRuntimeFunctionCallResult,
   type AiRuntimeHistoryEntry,
   type AiRuntimeMessageHistoryEntry,
+  type AiRuntimeSessionRecord,
   type AiRuntimeStartSessionResult,
 } from '../index'
 import type {
-  AiHostBusinessResolveInput,
   AiHostBusinessRuntime,
   AiHostBusinessRuntimeContext,
 } from '../core/host'
@@ -28,9 +28,7 @@ import type { PageDesignEditHost } from '@spark-view/spark-page-config'
 
 export interface RegisterAppAiBusinessesOptions {
   readonly registry: AiHostBusinessRegistry
-  readonly resolveLeaveDraftId?: (input: AiHostBusinessResolveInput) => string
   readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
-  readonly resolvePageDesignInstanceId?: (input: AiHostBusinessResolveInput) => string | null
 }
 
 function getRuntimeTimeZone(): string {
@@ -124,11 +122,7 @@ function pageDesignEditHostUnavailableMessage(result: AiRuntimeFunctionCallResul
  * getSessionHistory、releaseModuleInstance 都是把调用者的 options 注入
  * moduleId 后委托给内部模块。
  *
- * 提取此基类后，子类只需覆盖：
- * - moduleId — 业务模块标识
- * - resolveBusinessInstance — 实例解析逻辑（各业务不同）
- * - afterFunctionCall — 函数调用后的业务特有回调
- * - getSystemPrompt / canReuseSelection — 可选覆盖
+ * 提取此基类后，子类只需覆盖 moduleId、afterFunctionCall 或 getSystemPrompt。
  */
 abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
   /** 业务模块 ID */
@@ -141,16 +135,9 @@ abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
    */
   protected module: object
 
-  constructor(
-    module: object,
-    /** 实例 ID 解析函数，返回 null 表示无法解析 */
-    protected readonly resolveInstanceId: (input: AiHostBusinessResolveInput) => string | null,
-  ) {
+  constructor(module: object) {
     this.module = module
   }
-
-  /** 解析业务实例 ID — 各业务实现不同，必须由子类提供 */
-  abstract resolveBusinessInstance(input: AiHostBusinessResolveInput): string
 
   /** 注册数据（子类可覆盖，默认委托） */
   getRegistrationData(): AiModuleRegistrationData {
@@ -172,6 +159,17 @@ abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
   appendMessage(options: AiHostBusinessRuntimeContext & { role: 'system' | 'user' | 'assistant'; content: string; source?: 'system' | 'ui' | 'llm'; metadata?: Record<string, unknown> }): AiRuntimeMessageHistoryEntry {
     return (this.module as { appendMessage(o: Record<string, unknown>): AiRuntimeMessageHistoryEntry })
       .appendMessage({ ...options, moduleId: this.moduleId })
+  }
+
+  /** 读取 core session ledger 中的当前业务实例会话。 */
+  getSession(context: AiHostBusinessRuntimeContext): AiRuntimeSessionRecord | null {
+    return (this.module as { getSession(o: Record<string, unknown>): AiRuntimeSessionRecord | null })
+      .getSession({ ...context, moduleId: this.moduleId })
+  }
+
+  /** 枚举 core session ledger。面板监视器只从这里读取会话事实源。 */
+  listSessions(): readonly AiRuntimeSessionRecord[] {
+    return (this.module as { listSessions(): readonly AiRuntimeSessionRecord[] }).listSessions()
   }
 
   /** 执行函数调用 — 注入 moduleId 后委托给内部模块 */
@@ -218,24 +216,13 @@ abstract class ModuleBackedBusinessRuntime implements AiHostBusinessRuntime {
  * 差异点：
  * - 需要自定义系统提示词（含时区和当前日期，LLM 据此解析相对日期）
  * - submitDraft / cancelDraft 后自动结束会话并释放实例
- * - 实例 ID 解析不会失败（始终通过 resolveLeaveDraftId 生成新 draftId）
+ * - 业务实例 ID 必须由按钮/API 在打开面板前显式传入
  */
 class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
   override readonly moduleId = LeaveRequestModule.moduleId
 
   /** LeaveRequest 业务模块实例，持有草稿状态和 AI 运行时 */
   declare protected readonly module: LeaveRequestModule
-
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- constructor narrows parameter types
-  constructor(module: LeaveRequestModule, resolveInstanceId: (input: AiHostBusinessResolveInput) => string | null) {
-    super(module, resolveInstanceId)
-  }
-
-  override resolveBusinessInstance(input: AiHostBusinessResolveInput): string {
-    const id = this.resolveInstanceId(input)
-    if (id === null) throw new Error('LeaveRequest instance id resolver returned null')
-    return id
-  }
 
   override getSystemPrompt(_context: AiHostBusinessRuntimeContext): string {
     return createLeaveRequestSystemPrompt()
@@ -267,34 +254,11 @@ class LeaveRequestBusinessRuntime extends ModuleBackedBusinessRuntime {
  * 页面设计业务运行时。
  *
  * 差异点：
- * - 实例 ID 解析依赖当前选中的页面，未选中时抛错
- * - 支持 canReuseSelection（用户切换页面时可复用当前会话）
+ * - 实例 ID 来自业务按钮解析出的当前页面 ID
  * - EditHost 不可用时自动结束会话
  */
 class PageDesignBusinessRuntime extends ModuleBackedBusinessRuntime {
   override readonly moduleId = PageDesignModule.moduleId
-
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- constructor narrows parameter types
-  constructor(module: PageDesignModule, resolveInstanceId: (input: AiHostBusinessResolveInput) => string | null) {
-    super(module, resolveInstanceId)
-  }
-
-  override resolveBusinessInstance(input: AiHostBusinessResolveInput): string {
-    const pageId = this.resolveInstanceId(input)
-    if (pageId === null || pageId.trim() === '') {
-      throw new Error('PageDesign 需要先在开发系统中打开并选中一个配置页面。')
-    }
-    return pageId
-  }
-
-  canReuseSelection(input: AiHostBusinessResolveInput, currentScope: { businessInstanceId: string }): boolean {
-    try {
-      const pageId = this.resolveInstanceId(input)
-      return pageId !== null && pageId.trim() !== '' && pageId === currentScope.businessInstanceId
-    } catch {
-      return false
-    }
-  }
 
   override afterFunctionCall(options: AiHostBusinessRuntimeContext & { action: string; args: unknown; result: AiRuntimeFunctionCallResult<unknown> }): { status: 'continue' | 'complete' | 'abort'; reason?: string; finalAssistantMessage?: string; releaseInstance?: boolean } {
     const unavailableMessage = pageDesignEditHostUnavailableMessage(options.result)
@@ -312,20 +276,14 @@ class PageDesignBusinessRuntime extends ModuleBackedBusinessRuntime {
 
 export function registerAppAiBusinesses(options: RegisterAppAiBusinessesOptions): void {
   const leaveModule = new LeaveRequestModule()
-  options.registry.register(new LeaveRequestBusinessRuntime(
-    leaveModule,
-    options.resolveLeaveDraftId ?? (() => LeaveRequestModule.createDraftId()),
-  ))
+  options.registry.register(new LeaveRequestBusinessRuntime(leaveModule))
 
   if (options.getPageDesignEditHost === undefined) return
 
   const pageDesignModule = new PageDesignModule({
     getEditToolHost: (context) => options.getPageDesignEditHost?.(context) ?? missingPageDesignEditHost(),
   })
-  options.registry.register(new PageDesignBusinessRuntime(
-    pageDesignModule,
-    options.resolvePageDesignInstanceId ?? ((input) => input.context.pageId ?? null),
-  ))
+  options.registry.register(new PageDesignBusinessRuntime(pageDesignModule))
 }
 
 function missingPageDesignEditHost(): never {

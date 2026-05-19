@@ -279,7 +279,7 @@ describe('AI core module projection and translation API', () => {
       functionId: translated.translation.context.functionId,
       activePath: translated.translation.context.activePath,
     })
-    const result = { ok: true, data: { accepted: true }, summary: 'accepted' }
+    const result = { ok: true, data: { accepted: true }, summary: 'accepted' } as const
     const resultMessage = leaveApi.createFunctionResultMessage({
       action: translated.translation.action,
       result,

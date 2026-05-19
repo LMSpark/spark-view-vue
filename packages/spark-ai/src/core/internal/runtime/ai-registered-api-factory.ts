@@ -33,6 +33,7 @@ export class AiRegisteredApiFactory {
       getRegistrationData: () => this.registrations.getModuleRegistrationData(moduleId) ?? missingRegistrationData(moduleId),
       getRegistrationStoreSnapshot: () => this.registrations.getModuleRegistrationStoreSnapshot(moduleId) ?? missingRegistrationData(moduleId),
       getSession: (moduleInstanceId) => this.sessions.getSession(moduleId, moduleInstanceId),
+      listSessions: () => this.sessions.listSessions(moduleId),
       getSessionHistory: (moduleInstanceId) => this.sessions.getSessionHistory(moduleId, moduleInstanceId),
       appendMessage: (options) => this.sessions.appendMessage({ ...options, moduleId }),
       recordFunctionCallRequest: (options) => this.sessions.recordFunctionCallRequest({ ...options, moduleId }),

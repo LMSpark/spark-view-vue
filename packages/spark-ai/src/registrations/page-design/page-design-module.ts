@@ -23,6 +23,8 @@ import {
   type AiKnowledgeProjection,
   type AiRegisteredBusinessApi,
   type FunctionExecutionContext,
+  type LlmJsonSchema,
+  type LlmParameterSchemaRoot,
 } from '../../core'
 import {
   PageDesignService,
@@ -35,6 +37,7 @@ import { DatasetModule } from './modules/dataset-tool-catalog'
 import { LifecycleModule } from './modules/lifecycle-tool-catalog'
 import { NodeTreeModule } from './modules/node-tree-tool-catalog'
 import { TextModelModule } from './modules/text-model-tool-catalog'
+import componentCatalogPayload from './payloads/component-catalog.json'
 
 const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 const LIFECYCLE_MODULE_ID = 'lifecycle'
@@ -98,6 +101,86 @@ interface PageDesignServiceMethodBinding {
   readonly fixHint: string
 }
 
+interface PageDesignPayloadProp {
+  readonly name: string
+  readonly type?: string | undefined
+  readonly required?: boolean | undefined
+  readonly description?: string | undefined
+  readonly schema?: LlmJsonSchema | undefined
+}
+
+interface PageDesignPayloadEntry {
+  readonly type: string
+  readonly filePath?: string | undefined
+  readonly category?: string | undefined
+  readonly description?: string | undefined
+  readonly internal?: boolean | undefined
+  readonly configurable?: boolean | undefined
+  readonly props?: readonly PageDesignPayloadProp[] | undefined
+  readonly emits?: readonly unknown[] | undefined
+  readonly source?: string | undefined
+}
+
+interface PageDesignPayloadCatalog {
+  readonly version: string
+  readonly componentCount: number
+  readonly components: Readonly<Record<string, PageDesignPayloadEntry>>
+}
+
+const PAGE_DESIGN_COMPONENT_CATALOG: PageDesignPayloadCatalog = componentCatalogPayload as PageDesignPayloadCatalog
+
+const PAGE_DESIGN_PAYLOAD_FUNCTIONS: readonly AiFunctionRegistration[] = [
+  {
+    functionId: 'queryPayloads',
+    description: '查询可用于当前页面设计的组件参数荷载目录，支持 category/keyword/key/expression 过滤。',
+    paramsSchema: {
+      type: 'object',
+      properties: {
+        expression: { type: 'string', description: '兼容旧调用的查询表达式，例如 components[?category==`container`].type。' },
+        category: { type: 'string', description: '按组件 category 精确过滤，例如 container、field、display。' },
+        keyword: { type: 'string', description: '按 type、category、description 或 filePath 模糊搜索。' },
+        key: { type: 'string', description: '按组件 type/key 精确查询。' },
+        configurableOnly: { type: 'boolean', description: '为 true 时仅返回 configurable=true 且 internal=false 的组件。' },
+        limit: { type: 'integer', minimum: 1, maximum: 50, description: '最多返回条数，默认 20。' },
+      },
+      additionalProperties: false,
+    },
+    resultSchema: {
+      items: 'PageDesignPayloadSummary[] — 组件荷载摘要，包含 key/type/category/description/requiredProps。',
+    },
+    usageRules: [
+      '新增或替换 SparkNode 前先查询候选组件。',
+      '拿到目标 key 后再调用 guidePayload 获取完整 paramsSchema。',
+    ],
+  },
+  {
+    functionId: 'guidePayload',
+    description: '查询单个组件 type/key 的参数荷载指南，用于构造合法 SparkNode props。',
+    paramsSchema: {
+      type: 'object',
+      required: ['key'],
+      properties: {
+        key: { type: 'string', minLength: 1, description: '组件 type/key，例如 renderer-button。' },
+      },
+      additionalProperties: false,
+    },
+    resultSchema: {
+      payload: 'PageDesignPayloadGuide — 组件完整荷载指南，包含 props 与 paramsSchema。',
+    },
+    usageRules: [
+      '构造 node.props 前必须按目标组件 key 查询指南。',
+      '如果返回 PAYLOAD_NOT_FOUND，先 queryPayloads 选择替代组件，不要猜 props。',
+    ],
+    failureModes: [
+      {
+        code: 'PAYLOAD_NOT_FOUND',
+        when: 'key 不存在于组件荷载目录。',
+        fix: '先调用 queryPayloads 按 category 或 keyword 选择可用组件。',
+      },
+    ],
+  },
+]
+
 function toObject(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -115,6 +198,144 @@ function toKnowledgeScope(context: FunctionExecutionContext): { moduleId: string
   return {
     moduleId: context.moduleId,
     moduleInstanceId: context.moduleInstanceId,
+  }
+}
+
+function payloadRows(): PageDesignPayloadEntry[] {
+  return Object.values(PAGE_DESIGN_COMPONENT_CATALOG.components)
+}
+
+function payloadKey(entry: PageDesignPayloadEntry): string {
+  return entry.type
+}
+
+function payloadMatchesExpression(entry: PageDesignPayloadEntry, expression: string): boolean {
+  const categoryMatch = /category\s*==\s*`([^`]+)`/.exec(expression)
+  if (categoryMatch !== null) {
+    return entry.category === categoryMatch[1]
+  }
+  const typeMatch = /type\s*==\s*`([^`]+)`/.exec(expression)
+  if (typeMatch !== null) {
+    return entry.type === typeMatch[1]
+  }
+  return true
+}
+
+function payloadMatchesKeyword(entry: PageDesignPayloadEntry, keyword: string): boolean {
+  const haystack = [
+    entry.type,
+    entry.category ?? '',
+    entry.description ?? '',
+    entry.filePath ?? '',
+  ].join('\n').toLowerCase()
+  return haystack.includes(keyword.toLowerCase())
+}
+
+function payloadLimit(input: Record<string, unknown>): number {
+  const rawLimit = input['limit']
+  if (typeof rawLimit !== 'number' || !Number.isInteger(rawLimit)) return 20
+  return Math.min(Math.max(rawLimit, 1), 50)
+}
+
+function findPayloadEntry(key: string): PageDesignPayloadEntry | null {
+  const direct = PAGE_DESIGN_COMPONENT_CATALOG.components[key]
+  if (direct !== undefined) return direct
+  return payloadRows().find((entry) => entry.type === key) ?? null
+}
+
+function summarizePayload(entry: PageDesignPayloadEntry): Record<string, unknown> {
+  const props = entry.props ?? []
+  const requiredProps = props.filter((prop) => prop.required === true).map((prop) => prop.name)
+  return {
+    key: payloadKey(entry),
+    type: entry.type,
+    ...(entry.category === undefined ? {} : { category: entry.category }),
+    ...(entry.description === undefined ? {} : { description: entry.description }),
+    ...(entry.filePath === undefined ? {} : { filePath: entry.filePath }),
+    configurable: entry.configurable === true,
+    internal: entry.internal === true,
+    propCount: props.length,
+    ...(requiredProps.length === 0 ? {} : { requiredProps }),
+  }
+}
+
+function createPayloadParamsSchema(entry: PageDesignPayloadEntry): LlmParameterSchemaRoot {
+  const properties: Record<string, LlmJsonSchema> = {}
+  const required: string[] = []
+  for (const prop of entry.props ?? []) {
+    properties[prop.name] = prop.schema ?? {
+      type: 'string',
+      ...(prop.description === undefined ? {} : { description: prop.description }),
+    }
+    if (prop.required === true) required.push(prop.name)
+  }
+  return {
+    type: 'object',
+    properties,
+    ...(required.length === 0 ? {} : { required }),
+    additionalProperties: true,
+  }
+}
+
+function queryPageDesignPayloads(args: unknown): AiRuntimeFunctionCallResult<unknown> {
+  const input = toObject(args) ?? {}
+  const expression = typeof input['expression'] === 'string' ? input['expression'].trim() : ''
+  const category = typeof input['category'] === 'string' ? input['category'].trim() : ''
+  const keyword = typeof input['keyword'] === 'string' ? input['keyword'].trim() : ''
+  const key = typeof input['key'] === 'string' ? input['key'].trim() : ''
+  const configurableOnly = input['configurableOnly'] === true
+  const limit = payloadLimit(input)
+
+  let rows = payloadRows()
+  if (expression.length > 0) {
+    rows = rows.filter((entry) => payloadMatchesExpression(entry, expression))
+  }
+  if (category.length > 0) {
+    rows = rows.filter((entry) => entry.category === category)
+  }
+  if (keyword.length > 0) {
+    rows = rows.filter((entry) => payloadMatchesKeyword(entry, keyword))
+  }
+  if (key.length > 0) {
+    rows = rows.filter((entry) => payloadKey(entry) === key || entry.type === key)
+  }
+  if (configurableOnly) {
+    rows = rows.filter((entry) => entry.configurable === true && entry.internal !== true)
+  }
+
+  const items = rows.slice(0, limit).map((entry) => summarizePayload(entry))
+  return {
+    ok: true,
+    data: {
+      version: PAGE_DESIGN_COMPONENT_CATALOG.version,
+      total: rows.length,
+      items,
+    },
+    summary: `已返回 ${items.length}/${rows.length} 个组件荷载摘要`,
+  }
+}
+
+function guidePageDesignPayload(args: unknown): AiRuntimeFunctionCallResult<unknown> {
+  const input = toObject(args) ?? {}
+  const key = typeof input['key'] === 'string' ? input['key'].trim() : ''
+  if (key.length === 0) {
+    return pageDesignServiceFailure('INVALID_PAYLOAD_KEY', 'guidePayload requires a non-empty key', '传入 { key: "component-type" }。')
+  }
+  const entry = findPayloadEntry(key)
+  if (entry === null) {
+    return pageDesignServiceFailure('PAYLOAD_NOT_FOUND', `组件荷载 "${key}" 不存在`, '先调用 queryPayloads 按 category 或 keyword 选择可用组件。')
+  }
+  return {
+    ok: true,
+    data: {
+      payload: {
+        ...summarizePayload(entry),
+        props: entry.props ?? [],
+        emits: entry.emits ?? [],
+        paramsSchema: createPayloadParamsSchema(entry),
+      },
+    },
+    summary: `${key} 组件荷载指南已返回`,
   }
 }
 
@@ -195,7 +416,8 @@ function createTextModelHandlers(
 function createKnowledgeHandlers(
   runtime: PageDesignFunctionBindingRuntime,
 ): ReadonlyArray<PageDesignFunctionHandler<typeof KNOWLEDGE_MODULE_ID>> {
-  return new AiKnowledgeCatalog({}).parameterTable.map((row) => ({
+  const rows = [...new AiKnowledgeCatalog({}).parameterTable, ...PAGE_DESIGN_PAYLOAD_FUNCTIONS]
+  return rows.map((row) => ({
     functionId: row.functionId,
     validate: (args) => {
       const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
@@ -228,6 +450,10 @@ function createKnowledgeHandlers(
           }
           return { ok: true, data: { guide }, summary: `${action} 函数指南已返回` }
         }
+        case 'queryPayloads':
+          return queryPageDesignPayloads(args)
+        case 'guidePayload':
+          return guidePageDesignPayload(args)
         default:
           throw new Error(`unreachable: ${row.functionId}`)
       }
@@ -332,7 +558,7 @@ export class PageDesignModule implements IBusinessRegistration {
     return new (class extends AiModuleRegistrationBase {
       constructor() { super(moduleId, name, description, prompt) }
       override getFunctions(): ReadonlyArray<AiFunctionRegistration & { apply: PageDesignFunctionApply }> {
-        const allRows = [...new LifecycleModule().functions, ...new TextModelModule().functions, ...new NodeTreeModule().functions, ...new DatasetModule().functions, ...new AiKnowledgeCatalog({}).parameterTable] as readonly AiFunctionRegistration[]
+        const allRows = [...new LifecycleModule().functions, ...new TextModelModule().functions, ...new NodeTreeModule().functions, ...new DatasetModule().functions, ...new AiKnowledgeCatalog({}).parameterTable, ...PAGE_DESIGN_PAYLOAD_FUNCTIONS] as readonly AiFunctionRegistration[]
         return handlers.map((handler) => ({
           functionId: handler.functionId,
           description: allRows.find(r => r.functionId === handler.functionId)?.description ?? handler.functionId,
@@ -406,6 +632,10 @@ export class PageDesignModule implements IBusinessRegistration {
   getSession(context: PageDesignRuntimeContext): AiRuntimeSessionRecord | null {
     PageDesignModule.assertContext(context)
     return this.ai.getSession(context.moduleInstanceId)
+  }
+
+  listSessions(): readonly AiRuntimeSessionRecord[] {
+    return this.ai.listSessions()
   }
 
   getSessionHistory(context: PageDesignRuntimeContext): readonly AiRuntimeHistoryEntry[] {

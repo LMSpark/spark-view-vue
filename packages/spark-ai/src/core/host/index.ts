@@ -3,7 +3,7 @@
  *
  * 跨框架 AI Host 协议与运行时。
  *
- * 提供框架无关的业务路由、工具调用循环和传输层契约，
+ * 提供框架无关的显式业务会话、工具调用循环和传输层契约，
  * 不依赖 Vue/React/Angular 等前端框架。
  */
 
@@ -15,17 +15,14 @@ export type {
   AiHostBusinessExecuteFunctionCallOptions,
   AiHostBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus,
-  AiHostBusinessResolveInput,
   AiHostBusinessRuntime,
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
+  AiHostBusinessSession,
+  AiHostBusinessTarget,
   AiHostChatRequest,
-  AiHostContext,
   AiHostFcCallRecord,
   AiHostOptions,
-  AiHostRouteBusinessInput,
-  AiHostRouteDecision,
-  AiHostRoutingCandidate,
   AiHostSelectedBusiness,
   AiHostSender,
   AiHostStreamTurnInput,
@@ -42,7 +39,9 @@ export type {
 export {
   createAiHostBusinessScope,
   createAiHostBusinessSessionId,
+  createAiHostBusinessStorageKey,
   createAiHostStreamKey,
+  normalizeAiHostBusinessTarget,
   toAiHostRuntimeScope,
 } from './scope'
 
@@ -56,14 +55,7 @@ export {
 // 业务注册表
 export {
   AiHostBusinessRegistry,
-  createAiHostRoutingCandidateFromBusiness,
-  createAiHostRoutingCandidateFromRegistration,
 } from './business-registry'
-
-// 业务选择器
-export {
-  AiHostBusinessSelector,
-} from './business-selector'
 
 // 工具调用循环
 export {
@@ -80,6 +72,7 @@ export {
 // 消息发送（框架无关的 send 核心逻辑）
 export {
   AiHostMessageSender,
+  createAiHostBusinessSession,
 } from './sending'
 
 export type {

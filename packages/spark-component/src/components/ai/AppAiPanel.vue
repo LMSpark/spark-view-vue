@@ -44,6 +44,49 @@
       </header>
 
       <div class="app-ai-panel__body">
+        <section v-if="monitorSessions.length > 0" class="app-ai-panel__monitor" @mousedown.stop>
+          <div class="app-ai-panel__monitor-list">
+            <button
+              v-for="item in monitorSessions"
+              :key="item.sessionId"
+              class="app-ai-panel__session-chip"
+              :class="{ 'is-active': item.sessionId === activeMonitorSessionId }"
+              :title="`${item.target.businessRegistrationId} / ${item.target.businessInstanceId}`"
+              @click="focusRuntimeSession(item.sessionId)"
+            >
+              <span class="app-ai-panel__session-name">{{ item.target.businessRegistrationId }}</span>
+              <span class="app-ai-panel__session-id">{{ item.target.businessInstanceId }}</span>
+              <span class="app-ai-panel__session-status">{{ item.session?.status ?? 'Pending' }}</span>
+            </button>
+          </div>
+          <div v-if="activeMonitorSessionId" class="app-ai-panel__intervention">
+            <input
+              v-model="humanInterventionText"
+              class="app-ai-panel__intervention-input"
+              placeholder="人工干预备注"
+              @keydown.enter.prevent="appendHumanIntervention"
+            >
+            <button class="app-ai-panel__intervention-btn" @click="appendHumanIntervention">写入</button>
+            <button class="app-ai-panel__intervention-btn" @click="closeRuntimeSession">关闭</button>
+          </div>
+          <div v-if="activeMonitorSession" class="app-ai-panel__session-detail">
+            <div class="app-ai-panel__session-detail-title">
+              <span>{{ activeMonitorSession.target.businessRegistrationId }}</span>
+              <span>{{ activeMonitorSession.target.businessInstanceId }}</span>
+            </div>
+            <div class="app-ai-panel__history-list">
+              <div
+                v-for="entry in activeMonitorHistory"
+                :key="entry.id"
+                class="app-ai-panel__history-entry"
+              >
+                <span class="app-ai-panel__history-kind">{{ historyEntryLabel(entry) }}</span>
+                <span class="app-ai-panel__history-text">{{ historyEntryText(entry) }}</span>
+              </div>
+              <div v-if="activeMonitorHistory.length === 0" class="app-ai-panel__history-empty">暂无会话内容</div>
+            </div>
+          </div>
+        </section>
         <AiChatWidget
           v-if="sender && storageKey"
           :storage-key="storageKey"
@@ -71,7 +114,7 @@
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg>
           </div>
-          <p>尚未注入 AI 会话</p>
+          <p>{{ resolveError ?? '尚未注入 AI 会话' }}</p>
           <span>请在业务页进入对应入口启动 AI</span>
         </div>
       </div>
@@ -96,13 +139,64 @@
  * @catalogInternal
  * @description 全局可拖拽/缩放 AI 面板，读取 useAiPanelStore 当前会话配置并承载 AiChatWidget；适合应用层统一挂载一次作为 AI 工作台入口。
  */
-import { computed, ref, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, shallowRef, onBeforeUnmount, watch, toValue } from 'vue'
 import AiChatWidget from './AiChatWidget.vue'
-import { useAiPanelStore } from './useAiPanelStore'
+import {
+  resolveAiSessionTarget,
+  resolveAiSessionPageId,
+  useAiPanelStore,
+  type AiResolvedSessionConfig,
+  type AiSessionConfig,
+  type AiSessionToolLog,
+} from './useAiPanelStore'
 import { readCache, writeCache, PANEL_LAYOUT_PREFIX } from './aiSessionCache'
 import type { FileAttachment, StreamAiChatText, TokenUsage } from './useAiChat'
 
+type RuntimeMonitorHistoryEntry = {
+  readonly id: string
+  readonly kind: 'message' | 'functionCall'
+  readonly role?: string | undefined
+  readonly content?: string | undefined
+  readonly action?: string | undefined
+  readonly status?: string | undefined
+  readonly error?: { readonly msg?: string | undefined } | undefined
+}
+
+interface RuntimeMonitorSessionSnapshot {
+  readonly sessionId: string
+  readonly pageId: string
+  readonly storageKey: string
+  readonly target: {
+    readonly businessRegistrationId: string
+    readonly businessInstanceId: string
+  }
+  readonly session: {
+    readonly status?: string
+    readonly history?: readonly RuntimeMonitorHistoryEntry[]
+    readonly updatedAt?: number
+  } | null
+}
+
+interface RuntimeMonitorSnapshot {
+  readonly activeSessionId: string | null
+  readonly sessions: readonly RuntimeMonitorSessionSnapshot[]
+}
+
+interface RuntimeMonitor {
+  getSnapshot(): RuntimeMonitorSnapshot
+  subscribe(listener: (snapshot: RuntimeMonitorSnapshot) => void): () => void
+  focusSession(sessionId: string): AiSessionConfig | null | Promise<AiSessionConfig | null>
+  appendHumanMessage(sessionId: string, content: string): unknown
+  closeSession(sessionId: string, reason?: string): void | Promise<void>
+}
+
 const props = defineProps<{
+  /** Resolve raw session config into an AI runtime session monitored by this panel. */
+  resolveRuntimeSession?: (config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>
+  /** @deprecated Use resolveRuntimeSession. */
+  resolveSessionConfig?: (config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>
+  /** Runtime monitor; 面板只订阅并展示 AI core session，不持有业务状态事实。 */
+  runtimeMonitor?: RuntimeMonitor | undefined
   /** Streaming chat implementation; 由应用层注入真实 LLM 流式调用。 */
   streamAiChatText?: StreamAiChatText | undefined
   /** Token usage parser; 将 provider 原始 usage 转成统一 token 统计。 */
@@ -117,20 +211,66 @@ const uploadFile = props.uploadFile
 
 const store = useAiPanelStore()
 const visible = store.visible
-const storageKey = store.storageKey
-const disablePersistence = store.disablePersistence
-const pageId = store.pageId
-const title = store.title
-const placeholder = store.placeholder
-const externalToolLogs = store.externalToolLogs
-const clearExternalToolLogs = store.clearExternalToolLogs
-const fcErrorReporter = store.fcErrorReporter
-const turnConcurrency = store.turnConcurrency
-const draftActions = store.draftActions
-const actionTitleMap = store.actionTitleMap
-const actionPrefixTitleMap = store.actionPrefixTitleMap
-const actionSuffixTitleMap = store.actionSuffixTitleMap
-const sender = store.sender
+const resolvedConfig = shallowRef<AiResolvedSessionConfig | null>(null)
+const resolveError = ref<string | null>(null)
+let latestResolveRevision: symbol | null = null
+
+watch(
+  () => store.config.value,
+  (config) => {
+    resolvedConfig.value = null
+    resolveError.value = null
+    if (config === null) return
+    const revision = Symbol('ai-session-resolve')
+    latestResolveRevision = revision
+    void resolvePanelConfig(config, revision)
+  },
+  { immediate: true },
+)
+
+async function resolvePanelConfig(config: AiSessionConfig, revision: symbol): Promise<void> {
+  try {
+    const resolver = props.resolveRuntimeSession ?? props.resolveSessionConfig
+    const next = resolver !== undefined
+      ? await resolver(config)
+      : fallbackResolvedConfig(config)
+    if (latestResolveRevision !== revision) return
+    resolvedConfig.value = next
+  } catch (error) {
+    if (latestResolveRevision !== revision) return
+    resolveError.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+function fallbackResolvedConfig(config: AiSessionConfig): AiResolvedSessionConfig {
+  if (config.sender === undefined) {
+    throw new Error('[AppAiPanel] 当前 AI 会话缺少 sender，请通过 resolveRuntimeSession 注入。')
+  }
+  return {
+    ...config,
+    sender: config.sender,
+    storageKey: config.storageKey ?? (() => {
+      const target = resolveAiSessionTarget(config)
+      return `spark-ai:${target.businessRegistrationId}:${target.businessInstanceId}`
+    }),
+  }
+}
+
+const activeConfig = computed(() => resolvedConfig.value)
+const storageKey = computed(() => activeConfig.value === null ? '' : toValue(activeConfig.value.storageKey))
+const disablePersistence = computed(() => toValue(activeConfig.value?.disablePersistence ?? false) === true)
+const pageId = computed(() => activeConfig.value === null ? '' : resolveAiSessionPageId(activeConfig.value))
+const title = computed(() => toValue(activeConfig.value?.title ?? store.title.value))
+const placeholder = computed(() => toValue(activeConfig.value?.placeholder ?? store.placeholder.value))
+const externalToolLogs = computed<AiSessionToolLog[] | undefined>(() => activeConfig.value?.externalToolLogs?.value)
+const clearExternalToolLogs = computed<(() => void) | undefined>(() => activeConfig.value?.clearExternalToolLogs)
+const fcErrorReporter = computed(() => activeConfig.value?.fcErrorReporter)
+const turnConcurrency = computed(() => toValue(activeConfig.value?.turnConcurrency))
+const draftActions = computed(() => toValue(activeConfig.value?.draftActions))
+const actionTitleMap = computed(() => toValue(activeConfig.value?.actionTitleMap))
+const actionPrefixTitleMap = computed(() => toValue(activeConfig.value?.actionPrefixTitleMap))
+const actionSuffixTitleMap = computed(() => toValue(activeConfig.value?.actionSuffixTitleMap))
+const sender = computed(() => activeConfig.value?.sender)
 
 const externalToolLogProps = computed(() => {
   if (externalToolLogs.value === undefined) return {}
@@ -139,6 +279,68 @@ const externalToolLogProps = computed(() => {
     ...(clearExternalToolLogs.value !== undefined ? { clearExternalToolLogs: clearExternalToolLogs.value } : {}),
   }
 })
+
+const EMPTY_MONITOR_SNAPSHOT: RuntimeMonitorSnapshot = {
+  activeSessionId: null,
+  sessions: [],
+}
+const monitorSnapshot = ref<RuntimeMonitorSnapshot>(EMPTY_MONITOR_SNAPSHOT)
+const monitorSessions = computed(() => monitorSnapshot.value.sessions)
+const activeMonitorSessionId = computed(() => monitorSnapshot.value.activeSessionId)
+const activeMonitorSession = computed(() => {
+  const sessionId = activeMonitorSessionId.value
+  if (sessionId === null) return null
+  return monitorSessions.value.find((item) => item.sessionId === sessionId) ?? null
+})
+const activeMonitorHistory = computed<readonly RuntimeMonitorHistoryEntry[]>(() => activeMonitorSession.value?.session?.history ?? [])
+const humanInterventionText = ref('')
+
+watch(
+  () => props.runtimeMonitor,
+  (monitor, _previous, onCleanup) => {
+    monitorSnapshot.value = EMPTY_MONITOR_SNAPSHOT
+    if (monitor === undefined) return
+    const unsubscribe = monitor.subscribe((snapshot) => {
+      monitorSnapshot.value = snapshot
+    })
+    onCleanup(unsubscribe)
+  },
+  { immediate: true },
+)
+
+async function focusRuntimeSession(sessionId: string): Promise<void> {
+  const config = await props.runtimeMonitor?.focusSession(sessionId)
+  if (config === null || config === undefined) return
+  if (store.visible.value) {
+    await store.sync(config)
+  } else {
+    await store.open(config)
+  }
+}
+
+async function appendHumanIntervention(): Promise<void> {
+  const sessionId = activeMonitorSessionId.value
+  if (sessionId === null) return
+  await props.runtimeMonitor?.appendHumanMessage(sessionId, humanInterventionText.value)
+  humanInterventionText.value = ''
+}
+
+async function closeRuntimeSession(): Promise<void> {
+  const sessionId = activeMonitorSessionId.value
+  if (sessionId === null) return
+  await props.runtimeMonitor?.closeSession(sessionId)
+}
+
+function historyEntryLabel(entry: RuntimeMonitorHistoryEntry): string {
+  if (entry.kind === 'message') return entry.role ?? 'message'
+  return entry.status ?? 'function'
+}
+
+function historyEntryText(entry: RuntimeMonitorHistoryEntry): string {
+  if (entry.kind === 'message') return entry.content ?? ''
+  const suffix = entry.status === 'failed' && entry.error !== undefined ? `: ${entry.error.msg}` : ''
+  return `${entry.action ?? ''}${suffix}`
+}
 
 // ────────────────── 位置 / 尺寸（localStorage 持久化） ──────────────────
 const STORAGE_KEY = `${PANEL_LAYOUT_PREFIX}layout`
@@ -469,6 +671,130 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 0;
   background: transparent;
+}
+
+.app-ai-panel__monitor {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--el-border-color-lighter, #e4e7ed);
+  background: var(--el-bg-color, #fff);
+}
+
+.app-ai-panel__monitor-list {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  overflow-x: auto;
+}
+
+.app-ai-panel__session-chip {
+  display: inline-grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  padding: 5px 8px;
+  border: 1px solid var(--el-border-color, #dcdfe6);
+  border-radius: 6px;
+  background: var(--el-fill-color-blank, #fff);
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.app-ai-panel__session-chip.is-active {
+  border-color: var(--el-color-primary, #409eff);
+  background: var(--el-color-primary-light-9, #ecf5ff);
+  color: var(--el-color-primary, #409eff);
+}
+
+.app-ai-panel__session-name,
+.app-ai-panel__session-id {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-ai-panel__session-status {
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--el-fill-color-light, #f5f7fa);
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+}
+
+.app-ai-panel__intervention {
+  display: flex;
+  gap: 6px;
+  padding: 0 8px 8px;
+}
+
+.app-ai-panel__intervention-input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--el-border-color, #dcdfe6);
+  border-radius: 6px;
+  background: var(--el-bg-color, #fff);
+  color: var(--el-text-color-primary);
+}
+
+.app-ai-panel__intervention-btn {
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--el-border-color, #dcdfe6);
+  border-radius: 6px;
+  background: var(--el-fill-color-blank, #fff);
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+}
+
+.app-ai-panel__session-detail {
+  margin: 0 8px 8px;
+  border: 1px solid var(--el-border-color-lighter, #e4e7ed);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.app-ai-panel__session-detail-title {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--el-fill-color-light, #f5f7fa);
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+
+.app-ai-panel__history-list {
+  max-height: 116px;
+  overflow: auto;
+}
+
+.app-ai-panel__history-entry {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--el-border-color-lighter, #e4e7ed);
+  font-size: 12px;
+}
+
+.app-ai-panel__history-kind {
+  color: var(--el-text-color-secondary);
+}
+
+.app-ai-panel__history-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-ai-panel__history-empty {
+  padding: 10px 8px;
+  color: var(--el-text-color-placeholder);
+  font-size: 12px;
 }
 
 .app-ai-panel__empty {

@@ -8,6 +8,14 @@
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
+        <AiLauncherButton
+          :config="pageDesignAiConfig"
+          :resolve-target="resolvePageDesignAiTarget"
+          :disabled="!state.activePageId.value"
+          label="页面 AI"
+          icon="ChatDotRound"
+          @launch-error="handleAiLaunchError"
+        />
         <el-button size="small" @click="switchToPreview" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
@@ -117,6 +125,11 @@ import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
 import NavIcon from '@/components/NavIcon.vue'
+import {
+  AiLauncherButton,
+  type AiBusinessSessionTarget,
+  type AiSessionConfigInput,
+} from '@spark-view/spark-component'
 
 const {
   state,
@@ -141,6 +154,26 @@ const FILE_ICON_MAP: Record<PageFileName, string> = {
 
 function fileIcon(name: PageFileName): string {
   return FILE_ICON_MAP[name]
+}
+
+const pageDesignAiConfig: AiSessionConfigInput = {
+  title: () => state.activePageId.value ? `页面设计 · ${state.activePageId.value}` : '页面设计 AI',
+  placeholder: '描述要调整的页面配置或组件行为',
+}
+
+function resolvePageDesignAiTarget(): AiBusinessSessionTarget {
+  const pageId = state.activePageId.value.trim()
+  if (pageId === '') {
+    throw new Error('PageDesign 需要先在开发系统中打开并选中一个配置页面。')
+  }
+  return {
+    businessRegistrationId: 'pageDesign',
+    businessInstanceId: pageId,
+  }
+}
+
+function handleAiLaunchError(error: unknown): void {
+  state.addStatus(error instanceof Error ? error.message : String(error), 'error')
 }
 
 onMounted(() => {

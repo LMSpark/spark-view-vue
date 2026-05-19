@@ -63,7 +63,16 @@ export type {
   AiSessionEventName,
   AiSessionEventHandler,
   AiSessionHooks,
+  AiBusinessSessionTarget,
   AiSessionConfig,
+  AiSessionConfigInput,
+  AiResolvedSessionConfig,
+} from './useAiPanelStore'
+
+export {
+  createAiSessionStorageKey,
+  resolveAiSessionPageId,
+  resolveAiSessionTarget,
 } from './useAiPanelStore'
 
 export {

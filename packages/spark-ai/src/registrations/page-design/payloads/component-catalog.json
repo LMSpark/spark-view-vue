@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-19T01:40:32.797Z",
+  "buildTime": "2026-05-19T06:26:32.921Z",
   "componentCount": 110,
   "components": {
     "about": {
@@ -450,18 +450,24 @@
       "type": "ai-launcher-button",
       "filePath": "packages/spark-component/src/components/ai/AiLauncherButton.vue",
       "category": "feature",
-      "description": "AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。 配置入口：type=\"ai-launcher-button\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：config。 关键 props：config, label。 主要事件：active-change, shortcut-trigger, before-open。",
+      "description": "AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。 配置入口：type=\"ai-launcher-button\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：config。 关键 props：config, label。 主要事件：active-change, shortcut-trigger, resolve-target, before-open。",
       "internal": true,
       "configurable": false,
       "props": [
         {
           "name": "config",
-          "type": "AiSessionConfig",
+          "type": "AiSessionConfigInput",
           "required": true,
-          "description": "AI 业务注册体（唯一业务入口）。",
+          "description": "AI 会话配置。业务按钮可只提供展示配置，target 由 resolveTarget / resolve-target 解析。",
           "schema": {
-            "$ref": "#/$defs/AiSessionConfig"
+            "$ref": "#/$defs/AiSessionConfigInput"
           }
+        },
+        {
+          "name": "resolveTarget",
+          "type": "(() => AiBusinessSessionTarget | Promise<AiBusinessSessionTarget>)",
+          "required": false,
+          "description": "程序式业务目标解析 API；返回业务注册 ID 与业务实例 ID。"
         },
         {
           "name": "label",
@@ -532,6 +538,23 @@
           "name": "shortcut-trigger",
           "type": "[]",
           "description": "快捷键命中（在执行 open/close 之前触发，可用于埋点）。"
+        },
+        {
+          "name": "resolve-target",
+          "type": "[payload: AiLauncherResolveTargetPayload]",
+          "description": "解析业务目标——在打开面板前触发；处理器通过 resolve/cancel/reject/waitUntil 返回结果。",
+          "schema": {
+            "title": "[payload: AiLauncherResolveTargetPayload]",
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/AiLauncherResolveTargetPayload",
+                "title": "payload",
+                "description": "Event payload; 承载本次事件的上下文数据。"
+              }
+            ],
+            "description": "解析业务目标——在打开面板前触发；处理器通过 resolve/cancel/reject/waitUntil 返回结果。"
+          }
         },
         {
           "name": "before-open",
@@ -13871,6 +13894,16 @@
     }
   },
   "$defs": {
+    "(promise: Promise<AiBusinessSessionTarget | null>): void": {
+      "title": "(promise: Promise<AiBusinessSessionTarget | null>): void",
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "null"
+        }
+      ],
+      "description": "注册异步解析 API。事件处理器应同步调用 waitUntil(api())。"
+    },
     "AiFcLoopConfig": {
       "title": "AiFcLoopConfig",
       "type": "object",
@@ -13923,24 +13956,58 @@
       ],
       "description": "Before-open payload with session config and cancel function."
     },
+    "AiLauncherResolveTargetPayload": {
+      "title": "AiLauncherResolveTargetPayload",
+      "type": "object",
+      "properties": {
+        "config": {
+          "description": "原始按钮配置。",
+          "$ref": "#/$defs/AiSessionConfigInput"
+        },
+        "resolve": {
+          "description": "同步提供解析结果。"
+        },
+        "cancel": {
+          "description": "取消本次打开。"
+        },
+        "reject": {
+          "description": "上报解析失败。"
+        },
+        "waitUntil": {
+          "description": "注册异步解析 API。事件处理器应同步调用 waitUntil(api())。",
+          "$ref": "#/$defs/(promise: Promise<AiBusinessSessionTarget | null>): void"
+        }
+      },
+      "required": [
+        "config",
+        "resolve",
+        "cancel",
+        "reject",
+        "waitUntil"
+      ],
+      "description": "Event payload; 承载本次事件的上下文数据。"
+    },
     "AiSessionConfig": {
       "title": "AiSessionConfig",
       "type": "object",
       "properties": {
+        "target": {
+          "description": "已解析的业务 AI 会话目标。打开面板前必须确定。"
+        },
         "storageKey": {
           "type": "string",
-          "description": "持久化 key。AiChatWidget 按此从 localStorage 恢复/写入当前会话历史。"
+          "description": "持久化 key。默认由 target 派生：spark-ai:${businessRegistrationId}:${businessInstanceId}。"
         },
         "disablePersistence": {
           "type": "boolean",
-          "description": "禁用会话快照读写。用于业务尚未被语义路由选定的 pending 阶段。"
+          "description": "禁用会话快照读写。通常只有临时诊断或特殊会话需要关闭。"
         },
         "pageId": {
           "type": "string",
-          "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。"
+          "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 businessInstanceId。"
         },
         "sender": {
-          "description": "聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。"
+          "description": "聊天发送器——由 AppAiPanel resolver 注入；业务按钮不应手写。"
         },
         "title": {
           "type": "string",
@@ -14011,10 +14078,102 @@
         }
       },
       "required": [
-        "storageKey",
-        "sender"
+        "target"
       ],
-      "description": "AI 业务注册体（唯一业务入口）。"
+      "description": "即将打开的 AI 会话配置。"
+    },
+    "AiSessionConfigInput": {
+      "title": "AiSessionConfigInput",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "面板标题。"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "输入框 placeholder。"
+        },
+        "pageId": {
+          "type": "string",
+          "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 businessInstanceId。"
+        },
+        "draftActions": {
+          "type": "array",
+          "description": "人工触发的诊断草稿按钮。"
+        },
+        "actionTitleMap": {
+          "type": "string",
+          "description": "action 精确标题映射（可选，业务侧注入）。"
+        },
+        "actionPrefixTitleMap": {
+          "type": "string",
+          "description": "action 前缀标题映射（可选，业务侧注入）。"
+        },
+        "actionSuffixTitleMap": {
+          "type": "string",
+          "description": "action 后缀标题映射（可选，业务侧注入）。"
+        },
+        "systemPrompt": {
+          "type": "string",
+          "description": "自定义 system prompt。sender 可读取并随请求下发。"
+        },
+        "sender": {
+          "description": "聊天发送器——由 AppAiPanel resolver 注入；业务按钮不应手写。"
+        },
+        "storageKey": {
+          "type": "string",
+          "description": "持久化 key。默认由 target 派生：spark-ai:${businessRegistrationId}:${businessInstanceId}。"
+        },
+        "disablePersistence": {
+          "type": "boolean",
+          "description": "禁用会话快照读写。通常只有临时诊断或特殊会话需要关闭。"
+        },
+        "externalToolLogs": {
+          "type": "array",
+          "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。"
+        },
+        "clearExternalToolLogs": {
+          "description": "清空外部工具日志。若未提供，面板只清空自身内部日志。"
+        },
+        "turnConcurrency": {
+          "description": "turn 并发配置；默认由 AiChatWidget 保持 1 个在途 turn。"
+        },
+        "fcErrorReporter": {
+          "description": "FC 调用失败时的诊断回传器。"
+        },
+        "beforeOpen": {
+          "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
+        },
+        "toolGuide": {
+          "type": "string",
+          "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。"
+        },
+        "toolCatalog": {
+          "type": "array",
+          "description": "工具目录（function schema 列表）。"
+        },
+        "toolInstances": {
+          "type": "string",
+          "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。"
+        },
+        "fcLoop": {
+          "description": "SSE + Function-Call 循环配置。",
+          "$ref": "#/$defs/AiFcLoopConfig"
+        },
+        "feedback": {
+          "description": "反馈机制（文本 + 点赞点踩）。",
+          "$ref": "#/$defs/AiFeedbackConfig"
+        },
+        "hooks": {
+          "description": "声明式生命周期 hooks（事件名即字段名）。"
+        },
+        "target": {}
+      },
+      "description": "AI 会话配置。业务按钮可只提供展示配置，target 由 resolveTarget / resolve-target 解析。",
+      "examples": [
+        {}
+      ]
     },
     "AiTurnConcurrencyConfig": {
       "title": "AiTurnConcurrencyConfig",

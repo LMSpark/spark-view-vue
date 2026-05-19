@@ -43,6 +43,12 @@ export class AiSessionLedger {
     return session === undefined ? null : this.cloneSession(session)
   }
 
+  listSessions(moduleId?: string): readonly AiRuntimeSessionRecord[] {
+    return Array.from(this.sessions.values())
+      .filter((session) => moduleId === undefined || session.moduleId === moduleId)
+      .map((session) => this.cloneSession(session))
+  }
+
   getSessionHistory(moduleId: string, moduleInstanceId: string): readonly AiRuntimeHistoryEntry[] {
     const session = this.sessions.get(moduleScopeKey(moduleId, moduleInstanceId))
     return session?.history.map((entry) => this.cloneHistoryEntry(entry)) ?? []

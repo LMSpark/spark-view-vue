@@ -240,7 +240,7 @@ export class LeaveRequestModule implements IBusinessRegistration {
 
   readonly entity: Record<string, () => unknown> = {}
 
-  readonly functions: readonly AiFunctionRegistration[] = []
+  readonly functions: readonly AiFunctionRegistration[] = LEAVE_REQUEST_REGISTRATION.functions
 
   readonly modules: readonly AiModuleRegistration[] = []
 
@@ -300,6 +300,10 @@ export class LeaveRequestModule implements IBusinessRegistration {
   getSession(context: LeaveRequestRuntimeContext): AiRuntimeSessionRecord | null {
     LeaveRequestModule.assertContext(context)
     return this.ai.getSession(context.moduleInstanceId)
+  }
+
+  listSessions(): readonly AiRuntimeSessionRecord[] {
+    return this.ai.listSessions()
   }
 
   getSessionHistory(context: LeaveRequestRuntimeContext): readonly AiRuntimeHistoryEntry[] {

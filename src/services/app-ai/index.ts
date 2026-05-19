@@ -1,5 +1,12 @@
-export { AppAiHost } from './app-ai-host'
-export { FetchAppAiHostTransport, uploadAppAiAttachment } from './transport'
+export { createAppAiPanelResolver, createAppAiRuntimeMonitor } from './panel-resolver'
+export type {
+  AppAiPanelResolverOptions,
+  AppAiPanelSessionResolver,
+  AppAiRuntimeMonitor,
+  AppAiRuntimeMonitorSnapshot,
+  AppAiRuntimeSessionSnapshot,
+} from './panel-resolver'
+export { FetchAppAiTransport, uploadAppAiAttachment } from './transport'
 export { AiHostBusinessRegistry as AppAiBusinessRegistry } from '@spark-view/spark-ai/host'
 
 export {
@@ -27,18 +34,13 @@ export type {
   AiHostBusinessExecuteFunctionCallOptions as AppAiBusinessExecuteFunctionCallOptions,
   AiHostBusinessLifecycleDirective as AppAiBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus as AppAiBusinessLifecycleStatus,
-  AiHostBusinessResolveInput as AppAiBusinessResolveInput,
   AiHostBusinessRuntime as AppAiBusinessRuntime,
   AiHostBusinessRuntimeContext as AppAiBusinessRuntimeContext,
   AiHostBusinessScope as AppAiBusinessScope,
-  AiHostContext as AppAiHostContext,
-  AiHostOptions as AppAiHostOptions,
-  AiHostRouteBusinessInput as AppAiRouteBusinessInput,
-  AiHostRouteDecision as AppAiRouteDecision,
-  AiHostRoutingCandidate as AppAiRoutingCandidate,
+  AiHostOptions as AppAiOptions,
   AiHostSelectedBusiness as AppAiSelectedBusiness,
   AiHostStreamTurnResult as AppAiStreamTurnResult,
-  AiHostTransport as AppAiHostTransport,
+  AiHostTransport as AppAiTransport,
   AiHostTransportMessage as AppAiTransportMessage,
   AiHostTransportToolCall as AppAiTransportToolCall,
   AiHostTransportToolSpec as AppAiTransportToolSpec,
@@ -63,7 +65,7 @@ export function toRuntimeScope(scope: AiHostBusinessScope): AiHostBusinessRuntim
   }
 }
 
-export type AppAiHostSender = (request: AiChatSendRequest) => Promise<void>
+export type AppAiSender = (request: AiChatSendRequest) => Promise<void>
 
 import type { AiHostStreamTurnInput } from '@spark-view/spark-ai/host'
 

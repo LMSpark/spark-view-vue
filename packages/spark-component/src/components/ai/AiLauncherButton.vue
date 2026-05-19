@@ -24,20 +24,26 @@
  * 组件只做一件事：绑定一个 AI 业务注册体（`config`）并控制面板开关。
  * 不再承担任何摊平业务字段拼装逻辑。
  */
-import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
+import { computed, onMounted, onScopeDispose, ref, shallowRef, watch } from 'vue'
 import * as Icons from '@element-plus/icons-vue'
 import { Logger } from '@spark-view/spark-utils'
 import {
+  resolveAiSessionTarget,
   useAiPanelStore,
+  type AiBusinessSessionTarget,
   type AiSessionConfig,
+  type AiSessionConfigInput,
 } from './useAiPanelStore'
 
 const logger = Logger('AiLauncherButton')
 
 // ── Props ───────────────────────────────────────────────────────────────────
 interface Props {
-  /** AI 业务注册体（唯一业务入口）。 */
-  config: AiSessionConfig
+  /** AI 会话配置。业务按钮可只提供展示配置，target 由 resolveTarget / resolve-target 解析。 */
+  config: AiSessionConfigInput
+
+  /** 程序式业务目标解析 API；返回业务注册 ID 与业务实例 ID。 */
+  resolveTarget?: () => AiBusinessSessionTarget | Promise<AiBusinessSessionTarget>
 
   /** Button label; 展示在 AI 启动按钮上的文字。 */
   label?: string
@@ -71,6 +77,20 @@ interface AiLauncherBeforeOpenPayload {
   cancel: () => void
 }
 
+/** resolve-target 事件载荷：允许业务通过事件接入异步 API 来解析业务目标。 */
+interface AiLauncherResolveTargetPayload {
+  /** 原始按钮配置。 */
+  config: AiSessionConfigInput
+  /** 同步提供解析结果。 */
+  resolve: (target: AiBusinessSessionTarget) => void
+  /** 取消本次打开。 */
+  cancel: () => void
+  /** 上报解析失败。 */
+  reject: (error: unknown) => void
+  /** 注册异步解析 API。事件处理器应同步调用 waitUntil(api())。 */
+  waitUntil: (promise: Promise<AiBusinessSessionTarget | null | undefined>) => void
+}
+
 const props = withDefaults(defineProps<Props>(), {
   label: 'AI',
   size: 'small',
@@ -87,28 +107,34 @@ const emit = defineEmits<{
   /** 快捷键命中（在执行 open/close 之前触发，可用于埋点）。 */
   'shortcut-trigger': []
   /**
+   * 解析业务目标——在打开面板前触发；处理器通过 resolve/cancel/reject/waitUntil 返回结果。
+   */
+  'resolve-target': [payload: AiLauncherResolveTargetPayload]
+  /**
    * 即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。
    * @param payload Before-open payload with session config and cancel function.
    */
   'before-open': [payload: AiLauncherBeforeOpenPayload]
+  /** 启动失败；用于业务页把 target 解析错误直接展示给用户。 */
+  'launch-error': [error: unknown]
 }>()
 
-const sessionConfig: AiSessionConfig = props.config
-if (!sessionConfig) {
+if (!props.config) {
   throw new Error('[AiLauncherButton] `config` 不能为空。')
 }
 
 // ── 与全局 AI 面板的绑定 ────────────────────────────────────────────────────
 const store = useAiPanelStore()
+const openedConfig = shallowRef<AiSessionConfig | null>(null)
 
 const isActive = computed(
-  () => store.visible.value && store.getCurrentConfig() === sessionConfig,
+  () => store.visible.value && openedConfig.value !== null && store.getCurrentConfig() === openedConfig.value,
 )
 
 watch(isActive, (active) => emit('active-change', active), { immediate: true })
 
 onScopeDispose(() => {
-  store.disposeIf(sessionConfig)
+  if (openedConfig.value !== null) store.disposeIf(openedConfig.value)
 })
 
 // ── 图标解析 ────────────────────────────────────────────────────────────────
@@ -131,23 +157,71 @@ const iconComponent = computed(() => {
  */
 const launching = ref(false)
 
+function buildResolvedConfig(target: AiBusinessSessionTarget): AiSessionConfig {
+  const resolved = {
+    ...(props.config as unknown as Record<string, unknown>),
+    target,
+  } as AiSessionConfig
+  resolveAiSessionTarget(resolved)
+  return resolved
+}
+
+async function resolveLaunchTarget(): Promise<AiBusinessSessionTarget | null> {
+  if (props.resolveTarget !== undefined) {
+    return resolveAiSessionTarget({ target: await props.resolveTarget() })
+  }
+
+  let resolvedTarget: AiBusinessSessionTarget | null = null
+  let cancelled = false
+  let rejected: unknown
+  const pending: Promise<AiBusinessSessionTarget | null | undefined>[] = []
+
+  emit('resolve-target', {
+    config: props.config,
+    resolve: (target) => { resolvedTarget = target },
+    cancel: () => { cancelled = true },
+    reject: (error) => { rejected = error },
+    waitUntil: (promise) => { pending.push(promise) },
+  })
+
+  if (cancelled) return null
+  if (rejected !== undefined) throw rejected
+  if (resolvedTarget !== null) {
+    return resolveAiSessionTarget({ target: resolvedTarget })
+  }
+  if (pending.length > 0) {
+    const awaited = await pending[pending.length - 1]
+    if (awaited === null || awaited === undefined) return null
+    return resolveAiSessionTarget({ target: awaited })
+  }
+  if (props.config.target !== undefined) {
+    return resolveAiSessionTarget({ target: props.config.target as AiSessionConfig['target'] })
+  }
+  throw new Error('[AiLauncherButton] 未解析到 AI 业务目标，请提供 resolveTarget、resolve-target 事件或 config.target。')
+}
+
 async function handleClick(): Promise<void> {
   if (launching.value) return
   if (isActive.value) {
     store.close()
     return
   }
-  let cancelled = false
-  emit('before-open', {
-    config: sessionConfig,
-    cancel: () => { cancelled = true },
-  })
-  if (cancelled) return
   launching.value = true
   try {
+    const target = await resolveLaunchTarget()
+    if (target === null) return
+    const sessionConfig = buildResolvedConfig(target)
+    let cancelled = false
+    emit('before-open', {
+      config: sessionConfig,
+      cancel: () => { cancelled = true },
+    })
+    if (cancelled) return
+    openedConfig.value = sessionConfig
     await store.open(sessionConfig)
   } catch (error) {
     logger.error('启动 AI 流程失败', error)
+    emit('launch-error', error)
   } finally {
     launching.value = false
   }

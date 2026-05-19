@@ -17,9 +17,9 @@ describe('app shell AI entry removal', () => {
     expect(mainSource).not.toContain('__SPARK_ENABLE_AI')
   })
 
-  it('should expose the App AI host entry from the default header', () => {
-    expect(headerSource).toContain("AI 宿主")
-    expect(headerSource).toContain("'ai-chat'")
+  it('should not expose the generic App AI entry from the default header', () => {
+    expect(headerSource).not.toContain("AI 宿主")
+    expect(headerSource).not.toContain("command=\"ai-chat\"")
     expect(appSource).toContain(':upload-file="uploadAppAiAttachment"')
   })
 })

@@ -1,8 +1,6 @@
 import type { FileAttachment } from '@spark-view/spark-component'
 import type {
   AiHostAppendMessagesInput,
-  AiHostRouteBusinessInput,
-  AiHostRouteDecision,
   AiHostSseEvent,
   AiHostStreamTurnInput,
   AiHostStreamTurnResult,
@@ -15,7 +13,6 @@ import {
   createAiHostStreamKey,
   toAiHostRuntimeScope as toHostRuntimeScope,
 } from '@spark-view/spark-ai/host'
-import { AiInvocationProtocol } from '@spark-view/spark-ai'
 import { createAuthHeaders, getFetchHttpClient } from '@/services/http'
 
 function toRuntimeScope(scope: AiHostBusinessScope): AiHostBusinessRuntimeContext {
@@ -60,38 +57,8 @@ function unwrapApiEnvelope(value: unknown): unknown {
   throw new Error(message)
 }
 
-function extractJsonObject(text: string): Record<string, unknown> | null {
-  const json = AiInvocationProtocol.extractFirstJsonObject(text)
-  if (json === null) return null
-  const parsed = tryParseJson(json)
-  return isRecord(parsed) ? parsed : null
-}
-
-function normalizeRouteDecision(value: unknown): AiHostRouteDecision {
-  if (!isRecord(value)) return { moduleId: null, confidence: 0, reason: '路由模型没有返回 JSON 对象。' }
-  const moduleId = typeof value['moduleId'] === 'string' && value['moduleId'].trim().length > 0
-    ? value['moduleId'].trim()
-    : null
-  const confidence = typeof value['confidence'] === 'number' && Number.isFinite(value['confidence'])
-    ? Math.max(0, Math.min(1, value['confidence']))
-    : 0
-  const reason = typeof value['reason'] === 'string' ? value['reason'] : ''
-  return { moduleId, confidence, reason }
-}
-
 function toTransportTurn(input: AiHostStreamTurnInput['turn']): { turnId: string } {
   return { turnId: input.turnId }
-}
-
-function buildRoutePrompt(input: AiHostRouteBusinessInput): string {
-  return [
-    '你是 SPARK 的 AI 业务路由器。只能从候选注册信息中选择业务。',
-    '请只返回一个 JSON 对象，不要输出额外解释。',
-    'JSON 形状：{"moduleId": string|null, "confidence": number, "reason": string}',
-    '如果用户意图不清晰，moduleId 返回 null，confidence 小于 0.65。',
-    `候选业务注册信息：${JSON.stringify(input.candidates)}`,
-    `用户输入：${input.userInput}`,
-  ].join('\n\n')
 }
 
 function readToolCalls(value: unknown): readonly AiHostTransportToolCall[] {
@@ -129,7 +96,7 @@ async function readResponseChunks(
   }
 }
 
-export class FetchAppAiHostTransport implements AiHostTransport {
+export class FetchAppAiTransport implements AiHostTransport {
   constructor(
     private readonly baseUrl = '/api/ai',
     private readonly getHeaders: AppAiHeaderProvider = createAuthHeaders,
@@ -140,26 +107,6 @@ export class FetchAppAiHostTransport implements AiHostTransport {
       'Content-Type': 'application/json',
       ...this.getHeaders(),
     }
-  }
-
-  async routeBusiness(input: AiHostRouteBusinessInput): Promise<AiHostRouteDecision> {
-    const businessInstanceId = `route-${input.turn.turnId}`
-    const sessionId = `appAiRouter:${businessInstanceId}`
-    const result = await this.streamTurn({
-      sessionId,
-      turn: input.turn,
-      systemPrompt: '你是严格的 JSON 业务路由器。',
-      tools: [],
-      messages: [{ role: 'user', content: buildRoutePrompt(input) }],
-      scope: {
-        businessRegistrationId: 'appAiRouter',
-        businessInstanceId,
-        instanceId: sessionId,
-        runtimeInstanceId: sessionId,
-      },
-      ...(input.signal === undefined ? {} : { signal: input.signal }),
-    })
-    return normalizeRouteDecision(extractJsonObject(result.text))
   }
 
   async streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult> {

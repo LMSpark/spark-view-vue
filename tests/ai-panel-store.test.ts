@@ -4,6 +4,10 @@ import { useAiPanelStore, type AiSessionConfig } from '@spark-view/spark-compone
 
 function makeConfig(overrides: Partial<AiSessionConfig> = {}): AiSessionConfig {
   return {
+    target: {
+      businessRegistrationId: 'test',
+      businessInstanceId: 'session-1',
+    },
     storageKey: 'test-storage-key',
     title: 'Test Session',
     placeholder: 'test placeholder',

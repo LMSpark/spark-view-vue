@@ -7,7 +7,7 @@
 
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
 
-// ── 基础 ID（foundation，也被 ai-host.ts 引用） ──
+// ── 基础 ID（foundation，也被 AI host protocol 引用） ──
 
 export type AiRuntimeModuleId = string
 export type AiRuntimeModuleInstanceId = string

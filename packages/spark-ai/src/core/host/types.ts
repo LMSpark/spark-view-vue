@@ -11,6 +11,7 @@ import type {
   AiRuntimeFunctionCallResult,
   AiRuntimeHistoryEntry,
   AiRuntimeMessageHistoryEntry,
+  AiRuntimeSessionRecord,
   AiRuntimeStartSessionResult,
 } from '../index'
 import type { AiModuleRegistrationData, IBusinessRegistrationData } from '../protocol/business-registration'
@@ -20,6 +21,7 @@ export type { AiModuleRegistrationData, IBusinessRegistrationData }
 
 export interface AiHostChatRequest {
   historyMsgs: Array<{ readonly role: 'user' | 'assistant' | 'system'; readonly content: string }>
+  turn?: AiHostTurnMeta
   systemPrompt?: string
   signal?: AbortSignal
   onReasoning?: (reasoning: string) => void
@@ -61,17 +63,12 @@ export interface AiHostBusinessScope {
   readonly runtimeInstanceId: string
 }
 
-// ── 上下文与解析 ──
-
-export interface AiHostContext {
-  readonly pageId?: string | undefined
-  readonly routePath?: string | undefined
+export interface AiHostBusinessTarget {
+  readonly businessRegistrationId: string
+  readonly businessInstanceId: string
 }
 
-export interface AiHostBusinessResolveInput {
-  readonly userInput: string
-  readonly context: AiHostContext
-}
+// ── 业务运行时上下文 ──
 
 export interface AiHostBusinessRuntimeContext {
   readonly moduleId: string
@@ -115,35 +112,16 @@ export interface AiHostBusinessRuntime {
   readonly moduleId: string
   getRegistrationData(): AiModuleRegistrationData
   getBusinessRegistrationData?(): IBusinessRegistrationData
-  resolveBusinessInstance(input: AiHostBusinessResolveInput): string
-  canReuseSelection?(input: AiHostBusinessResolveInput, currentScope: AiHostBusinessScope): boolean
   getSystemPrompt?(context: AiHostBusinessRuntimeContext): string | undefined
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult>
   appendMessage(options: AiHostBusinessAppendMessageOptions): AiRuntimeMessageHistoryEntry
+  getSession?(context: AiHostBusinessRuntimeContext): AiRuntimeSessionRecord | null
+  listSessions(): readonly AiRuntimeSessionRecord[]
   executeFunctionCall(options: AiHostBusinessExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>>
   afterFunctionCall?(options: AiHostBusinessAfterFunctionCallOptions): AiHostBusinessLifecycleDirective | Promise<AiHostBusinessLifecycleDirective>
   endBusinessInstance?(context: AiHostBusinessRuntimeContext, directive: AiHostBusinessLifecycleDirective): void | Promise<void>
   getSessionHistory(context: AiHostBusinessRuntimeContext): readonly AiRuntimeHistoryEntry[]
   releaseModuleInstance?(moduleInstanceId: string): void
-}
-
-// ── 路由候选 ──
-
-export interface AiHostRoutingCandidate {
-  readonly moduleId: string
-  readonly name: string
-  readonly description: string
-  readonly prompt?: string | undefined
-  readonly functions: ReadonlyArray<{
-    readonly functionId: string
-    readonly description: string
-  }>
-}
-
-export interface AiHostRouteDecision {
-  readonly moduleId: string | null
-  readonly confidence: number
-  readonly reason: string
 }
 
 // ── Turn 元信息 ──
@@ -211,17 +189,9 @@ export interface AiHostAppendMessagesInput {
   readonly messages: readonly AiHostTransportMessage[]
 }
 
-export interface AiHostRouteBusinessInput {
-  readonly userInput: string
-  readonly candidates: readonly AiHostRoutingCandidate[]
-  readonly turn: AiHostTurnMeta
-  readonly signal?: AbortSignal | undefined
-}
-
 // ── 传输层契约 ──
 
 export interface AiHostTransport {
-  routeBusiness(input: AiHostRouteBusinessInput): Promise<AiHostRouteDecision>
   streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult>
   appendMessages(input: AiHostAppendMessagesInput): Promise<void>
 }
@@ -232,16 +202,26 @@ export interface AiHostOptions {
   readonly registry: {
     get(moduleId: string): AiHostBusinessRuntime | undefined
     list(): readonly AiHostBusinessRuntime[]
-    routingCandidates(): readonly AiHostRoutingCandidate[]
   }
   readonly transport: AiHostTransport
-  readonly context?: (() => AiHostContext) | undefined
   readonly maxToolRounds?: number | undefined
 }
 
 // ── 宿主发送器 ──
 
 export type AiHostSender = (request: AiHostChatRequest) => Promise<void>
+
+export interface AiHostBusinessSession {
+  readonly target: AiHostBusinessTarget
+  readonly scope: AiHostBusinessScope
+  readonly storageKey: string
+  readonly sessionId: string
+  readonly pageId: string
+  readonly sender: AiHostSender
+  start(): Promise<void>
+  getSessionRecord(): AiRuntimeSessionRecord | null
+  send(request: AiHostChatRequest): Promise<void>
+}
 
 // ── 已选业务 ──
 

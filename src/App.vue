@@ -120,8 +120,12 @@
   <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
   <AppPageUiHost />
 
-  <!-- APP 层统一 AI 宿主面板 -->
-  <AppAiPanel :upload-file="uploadAppAiAttachment" />
+  <!-- APP 层统一 AI 工作台面板 -->
+  <AppAiPanel
+    :resolve-runtime-session="appAiRuntimeMonitor.resolveRuntimeSession"
+    :runtime-monitor="appAiRuntimeMonitor"
+    :upload-file="uploadAppAiAttachment"
+  />
 
   </template>
 </template>
@@ -151,7 +155,6 @@ import {
   APP_SERVICES,
   AppAiPanel,
   MODULE_CONTEXT,
-  useAiPanelStore,
   useSparkComponent,
   type IModuleContext,
   type ModuleContextCapability,
@@ -175,20 +178,18 @@ import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScop
 import { getPublicPaths } from '@/config/vue-page-map'
 import {
   AppAiBusinessRegistry,
-  AppAiHost,
-  FetchAppAiHostTransport,
+  FetchAppAiTransport,
+  createAppAiRuntimeMonitor,
   uploadAppAiAttachment,
-} from '@/services/ai-host'
+} from '@/services/app-ai'
 import {
   registerAppAiBusinesses,
 } from '@spark-view/spark-ai/registrations'
 import {
   resolvePageDesignEditHost,
-  resolvePageDesignEditPageId,
 } from '@spark-view/spark-page-config'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
-const aiPanelStore = useAiPanelStore()
 
 const route = useRoute()
 const router = useRouter()
@@ -206,14 +207,11 @@ registerAppAiBusinesses({
     }
     return host
   },
-  resolvePageDesignInstanceId: (input) => resolvePageDesignEditPageId(input.context.pageId) ?? input.context.pageId ?? null,
 })
-const appAiHost = new AppAiHost({
+const appAiRuntimeMonitor = createAppAiRuntimeMonitor({
   registry: appAiRegistry,
-  transport: new FetchAppAiHostTransport(),
-  context: createAppAiHostContext,
+  transport: new FetchAppAiTransport(),
 })
-const appAiPanelConfig = appAiHost.createPanelConfig()
 const currentUsername = computed(() => {
   const user = getUser()
   return user?.displayName ?? user?.username ?? '管理员'
@@ -394,14 +392,6 @@ function jumpToExpectedContext(): void {
   void router.replace(expectedPath)
 }
 
-function createAppAiHostContext(): { pageId?: string; routePath: string } {
-  const pageId = readRoutePageId()
-  return {
-    ...(pageId === null ? {} : { pageId }),
-    routePath: route.path,
-  }
-}
-
 /* ── 项目切换服务（供子组件注入） ── */
 const projectSwitchService: ProjectSwitchService = {
   async switchAndReload(projectId: string) {
@@ -439,9 +429,6 @@ navigationActionRegistry.register('profile', () => {
 })
 navigationActionRegistry.register('settings', () => {
   showConfigurator.value = true
-})
-navigationActionRegistry.register('ai-chat', () => {
-  void aiPanelStore.open(appAiPanelConfig)
 })
 navigationActionRegistry.register('home', () => {
   const user = getUser()
@@ -618,7 +605,6 @@ onMounted(() => {
 
   // 允许任意组件通过自定义事件触发导航重新加载
   window.addEventListener('spark:reloadNavigation', () => { void reloadNavigation() })
-  void aiPanelStore.sync(appAiPanelConfig)
 })
 
 onUnmounted(() => {

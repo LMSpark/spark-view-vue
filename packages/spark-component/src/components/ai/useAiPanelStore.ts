@@ -149,6 +149,17 @@ export type AiSessionHooks = {
 }
 
 /**
+ * 业务 AI 会话目标。
+ *
+ * businessRegistrationId 表示业务注册，例如 pageDesign、manualLeave。
+ * businessInstanceId 表示具体业务实例，例如页面 ID、请假草稿 ID。
+ */
+export interface AiBusinessSessionTarget {
+  readonly businessRegistrationId: string
+  readonly businessInstanceId: string
+}
+
+/**
  * AI 会话标准配置。
  *
  * 所有文本字段支持 `MaybeRefOrGetter<string>`，以便业务随上下文动态变更
@@ -157,14 +168,16 @@ export type AiSessionHooks = {
  * externalToolLogs 必须是 Ref/ComputedRef，面板通过它驱动工具日志视图。
  */
 export interface AiSessionConfig {
-  /** 持久化 key。AiChatWidget 按此从 localStorage 恢复/写入当前会话历史。 */
-  readonly storageKey: MaybeRefOrGetter<string>
-  /** 禁用会话快照读写。用于业务尚未被语义路由选定的 pending 阶段。 */
+  /** 已解析的业务 AI 会话目标。打开面板前必须确定。 */
+  readonly target: MaybeRefOrGetter<AiBusinessSessionTarget>
+  /** AI core runtime 生成的持久化 key；业务按钮不应手写。 */
+  readonly storageKey?: MaybeRefOrGetter<string>
+  /** 禁用会话快照读写。通常只有临时诊断或特殊会话需要关闭。 */
   readonly disablePersistence?: MaybeRefOrGetter<boolean | undefined>
-  /** 业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 storageKey。 */
+  /** 业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 businessInstanceId。 */
   readonly pageId?: MaybeRefOrGetter<string | undefined>
-  /** 聊天发送器——业务会话的入口，把自己的会话逻辑实现在这里。 */
-  readonly sender: AiChatSender
+  /** AI core runtime 生成的发送器；业务按钮不应手写。 */
+  readonly sender?: AiChatSender
   /** 面板标题。 */
   readonly title?: MaybeRefOrGetter<string>
   /** 输入框 placeholder。 */
@@ -205,6 +218,15 @@ export interface AiSessionConfig {
   readonly hooks?: AiSessionHooks
 }
 
+export type AiSessionConfigInput = Omit<AiSessionConfig, 'target' | 'storageKey' | 'sender'> & {
+  readonly target?: MaybeRefOrGetter<AiBusinessSessionTarget | null | undefined>
+}
+
+export type AiResolvedSessionConfig = AiSessionConfig & {
+  readonly sender: AiChatSender
+  readonly storageKey: MaybeRefOrGetter<string>
+}
+
 const DEFAULT_STORAGE_KEY = 'ai-panel-global'
 const DEFAULT_TITLE = 'AI 助手'
 const DEFAULT_PLACEHOLDER = '有什么可以帮您？'
@@ -212,12 +234,52 @@ const DEFAULT_PLACEHOLDER = '有什么可以帮您？'
 const visible = ref(false)
 const configRef = shallowRef<AiSessionConfig | null>(null)
 
-const storageKey = computed(() => toValue(configRef.value?.storageKey ?? DEFAULT_STORAGE_KEY))
+function normalizeRequiredText(value: unknown, fieldName: string): string {
+  if (typeof value !== 'string') {
+    throw new Error(`[AiSessionConfig] ${fieldName} 必须是非空字符串。`)
+  }
+  const trimmed = value.trim()
+  if (trimmed === '') {
+    throw new Error(`[AiSessionConfig] ${fieldName} 不能为空。`)
+  }
+  return trimmed
+}
+
+export function resolveAiSessionTarget(config: { readonly target: MaybeRefOrGetter<AiBusinessSessionTarget | null | undefined> }): AiBusinessSessionTarget {
+  const raw = toValue(config.target)
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error('[AiSessionConfig] target 必须在打开 AI 面板前解析完成。')
+  }
+  return {
+    businessRegistrationId: normalizeRequiredText(raw.businessRegistrationId, 'target.businessRegistrationId'),
+    businessInstanceId: normalizeRequiredText(raw.businessInstanceId, 'target.businessInstanceId'),
+  }
+}
+
+export function createAiSessionStorageKey(target: AiBusinessSessionTarget): string {
+  const normalized = resolveAiSessionTarget({ target })
+  return `spark-ai:${normalized.businessRegistrationId}:${normalized.businessInstanceId}`
+}
+
+function resolveRuntimeStorageKey(config: AiSessionConfig): string {
+  if (config.storageKey !== undefined) {
+    const explicit = normalizeRequiredText(toValue(config.storageKey), 'storageKey')
+    return explicit
+  }
+  return createAiSessionStorageKey(resolveAiSessionTarget(config))
+}
+
+export function resolveAiSessionPageId(config: AiSessionConfig): string {
+  if (config.pageId !== undefined) {
+    const explicit = toValue(config.pageId)
+    if (typeof explicit === 'string' && explicit.trim() !== '') return explicit.trim()
+  }
+  return resolveAiSessionTarget(config).businessInstanceId
+}
+
+const storageKey = computed(() => configRef.value === null ? DEFAULT_STORAGE_KEY : resolveRuntimeStorageKey(configRef.value))
 const disablePersistence = computed(() => toValue(configRef.value?.disablePersistence ?? false) === true)
-const pageId = computed(() => {
-  const rawPageId = configRef.value?.pageId !== undefined ? toValue(configRef.value.pageId) : undefined
-  return typeof rawPageId === 'string' && rawPageId.trim() !== '' ? rawPageId : storageKey.value
-})
+const pageId = computed(() => configRef.value === null ? DEFAULT_STORAGE_KEY : resolveAiSessionPageId(configRef.value))
 const title = computed(() => toValue(configRef.value?.title ?? DEFAULT_TITLE))
 const placeholder = computed(() => toValue(configRef.value?.placeholder ?? DEFAULT_PLACEHOLDER))
 const externalToolLogs = computed<AiSessionToolLog[] | undefined>(() => {
@@ -325,6 +387,7 @@ async function runBeforeOpen(config: AiSessionConfig): Promise<void> {
 }
 
 async function open(config: AiSessionConfig): Promise<void> {
+  resolveAiSessionTarget(config)
   configRef.value = config
   emit('open', { config })
   await runBeforeOpen(config)
@@ -333,6 +396,7 @@ async function open(config: AiSessionConfig): Promise<void> {
 }
 
 async function sync(config: AiSessionConfig): Promise<void> {
+  resolveAiSessionTarget(config)
   const previousConfig = configRef.value
   configRef.value = config
   emit('sync', { previousConfig, config })
@@ -377,6 +441,7 @@ function getCurrentConfig(): AiSessionConfig | null {
 export function useAiPanelStore() {
   return {
     visible,
+    config: configRef,
     storageKey,
     disablePersistence,
     pageId,
